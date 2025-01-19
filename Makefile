@@ -1,0 +1,16 @@
+wasm:
+	emcc -O1 main.c -o build/scene.js -s NO_EXIT_RUNTIME=1  -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s EXPORTED_FUNCTIONS="['_main', '_setContext']"
+
+#\
+Use "ccall" as method call to access the wasm functions\
+EXPORTED_RUNTIME_METHOD =>  Module.methodname("myfunction")\
+EXPORTED_FUNCTIONS => Module._myFunction()\
+NO_EXIT_RUNTIME => disable program exit after main, allow custom function exports
+
+
+compile:
+	clang main.c && ./a.out
+
+serve:
+	cd ./build
+	python -m http.server
