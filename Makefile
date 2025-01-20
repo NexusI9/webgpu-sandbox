@@ -1,5 +1,10 @@
 wasm:
-	emcc -O1 main.c -o build/scene.js -s NO_EXIT_RUNTIME=1  -s "EXPORTED_RUNTIME_METHODS=['ccall']" -s EXPORTED_FUNCTIONS="['_main', '_setContext']"
+	emcc -O1 utils/file.c main.c -o build/scene.js \
+-s NO_EXIT_RUNTIME=1  \
+-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
+-s EXPORTED_FUNCTIONS="['_main', '_setContext']" \
+-s USE_WEBGPU=1 \
+--preload-file ./shader/default.wgsl
 
 #\
 Use "ccall" as method call to access the wasm functions\
