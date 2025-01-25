@@ -1,5 +1,5 @@
 wasm:
-	emcc -O1 utils/file.c main.c -o build/scene.js \
+	emcc -O1 utils/file.c backend/generator.c main.c -o build/scene.js \
 -s NO_EXIT_RUNTIME=1  \
 -s "EXPORTED_RUNTIME_METHODS=['ccall']" \
 -s EXPORTED_FUNCTIONS="['_main', '_setContext']" \

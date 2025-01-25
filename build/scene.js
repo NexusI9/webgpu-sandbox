@@ -31,7 +31,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbifgoebq.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbnxhbvis.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -212,7 +212,7 @@ Module['FS_createPath']("/", "shader", true, true);
 
   })();
 
-// end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbifgoebq.js
+// end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbnxhbvis.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -716,6 +716,9 @@ async function createWasm() {
     wasmMemory = wasmExports['memory'];
     
     updateMemoryViews();
+
+    wasmTable = wasmExports['__indirect_function_table'];
+    
 
     addOnInit(wasmExports['__wasm_call_ctors']);
 
@@ -3558,6 +3561,156 @@ async function createWasm() {
   }
   }
 
+  var JSEvents = {
+  memcpy(target, src, size) {
+        HEAP8.set(HEAP8.subarray(src, src + size), target);
+      },
+  removeAllEventListeners() {
+        while (JSEvents.eventHandlers.length) {
+          JSEvents._removeHandler(JSEvents.eventHandlers.length - 1);
+        }
+        JSEvents.deferredCalls = [];
+      },
+  inEventHandler:0,
+  deferredCalls:[],
+  deferCall(targetFunction, precedence, argsList) {
+        function arraysHaveEqualContent(arrA, arrB) {
+          if (arrA.length != arrB.length) return false;
+  
+          for (var i in arrA) {
+            if (arrA[i] != arrB[i]) return false;
+          }
+          return true;
+        }
+        // Test if the given call was already queued, and if so, don't add it again.
+        for (var call of JSEvents.deferredCalls) {
+          if (call.targetFunction == targetFunction && arraysHaveEqualContent(call.argsList, argsList)) {
+            return;
+          }
+        }
+        JSEvents.deferredCalls.push({
+          targetFunction,
+          precedence,
+          argsList
+        });
+  
+        JSEvents.deferredCalls.sort((x,y) => x.precedence < y.precedence);
+      },
+  removeDeferredCalls(targetFunction) {
+        JSEvents.deferredCalls = JSEvents.deferredCalls.filter((call) => call.targetFunction != targetFunction);
+      },
+  canPerformEventHandlerRequests() {
+        if (navigator.userActivation) {
+          // Verify against transient activation status from UserActivation API
+          // whether it is possible to perform a request here without needing to defer. See
+          // https://developer.mozilla.org/en-US/docs/Web/Security/User_activation#transient_activation
+          // and https://caniuse.com/mdn-api_useractivation
+          // At the time of writing, Firefox does not support this API: https://bugzilla.mozilla.org/show_bug.cgi?id=1791079
+          return navigator.userActivation.isActive;
+        }
+  
+        return JSEvents.inEventHandler && JSEvents.currentEventHandler.allowsDeferredCalls;
+      },
+  runDeferredCalls() {
+        if (!JSEvents.canPerformEventHandlerRequests()) {
+          return;
+        }
+        var deferredCalls = JSEvents.deferredCalls;
+        JSEvents.deferredCalls = [];
+        for (var call of deferredCalls) {
+          call.targetFunction(...call.argsList);
+        }
+      },
+  eventHandlers:[],
+  removeAllHandlersOnTarget:(target, eventTypeString) => {
+        for (var i = 0; i < JSEvents.eventHandlers.length; ++i) {
+          if (JSEvents.eventHandlers[i].target == target &&
+            (!eventTypeString || eventTypeString == JSEvents.eventHandlers[i].eventTypeString)) {
+             JSEvents._removeHandler(i--);
+           }
+        }
+      },
+  _removeHandler(i) {
+        var h = JSEvents.eventHandlers[i];
+        h.target.removeEventListener(h.eventTypeString, h.eventListenerFunc, h.useCapture);
+        JSEvents.eventHandlers.splice(i, 1);
+      },
+  registerOrRemoveHandler(eventHandler) {
+        if (!eventHandler.target) {
+          return -4;
+        }
+        if (eventHandler.callbackfunc) {
+          eventHandler.eventListenerFunc = function(event) {
+            // Increment nesting count for the event handler.
+            ++JSEvents.inEventHandler;
+            JSEvents.currentEventHandler = eventHandler;
+            // Process any old deferred calls the user has placed.
+            JSEvents.runDeferredCalls();
+            // Process the actual event, calls back to user C code handler.
+            eventHandler.handlerFunc(event);
+            // Process any new deferred calls that were placed right now from this event handler.
+            JSEvents.runDeferredCalls();
+            // Out of event handler - restore nesting count.
+            --JSEvents.inEventHandler;
+          };
+  
+          eventHandler.target.addEventListener(eventHandler.eventTypeString,
+                                               eventHandler.eventListenerFunc,
+                                               eventHandler.useCapture);
+          JSEvents.eventHandlers.push(eventHandler);
+        } else {
+          for (var i = 0; i < JSEvents.eventHandlers.length; ++i) {
+            if (JSEvents.eventHandlers[i].target == eventHandler.target
+             && JSEvents.eventHandlers[i].eventTypeString == eventHandler.eventTypeString) {
+               JSEvents._removeHandler(i--);
+             }
+          }
+        }
+        return 0;
+      },
+  getNodeNameForTarget(target) {
+        if (!target) return '';
+        if (target == window) return '#window';
+        if (target == screen) return '#screen';
+        return target?.nodeName || '';
+      },
+  fullscreenEnabled() {
+        return document.fullscreenEnabled
+        // Safari 13.0.3 on macOS Catalina 10.15.1 still ships with prefixed webkitFullscreenEnabled.
+        // TODO: If Safari at some point ships with unprefixed version, update the version check above.
+        || document.webkitFullscreenEnabled
+         ;
+      },
+  };
+  
+  var maybeCStringToJsString = (cString) => {
+      // "cString > 2" checks if the input is a number, and isn't of the special
+      // values we accept here, EMSCRIPTEN_EVENT_TARGET_* (which map to 0, 1, 2).
+      // In other words, if cString > 2 then it's a pointer to a valid place in
+      // memory, and points to a C string.
+      return cString > 2 ? UTF8ToString(cString) : cString;
+    };
+  
+  /** @type {Object} */
+  var specialHTMLTargets = [0, typeof document != 'undefined' ? document : 0, typeof window != 'undefined' ? window : 0];
+  var findEventTarget = (target) => {
+      target = maybeCStringToJsString(target);
+      var domElement = specialHTMLTargets[target] || (typeof document != 'undefined' ? document.querySelector(target) : null);
+      return domElement;
+    };
+  
+  var getBoundingClientRect = (e) => specialHTMLTargets.indexOf(e) < 0 ? e.getBoundingClientRect() : {'left':0,'top':0};
+  var _emscripten_get_element_css_size = (target, width, height) => {
+      target = findEventTarget(target);
+      if (!target) return -4;
+  
+      var rect = getBoundingClientRect(target);
+      HEAPF64[((width)>>3)] = rect.width;
+      HEAPF64[((height)>>3)] = rect.height;
+  
+      return 0;
+    };
+
   var getHeapMax = () =>
       HEAPU8.length;
   
@@ -3572,6 +3725,30 @@ async function createWasm() {
       abortOnCannotGrowMemory(requestedSize);
     };
 
+  
+  var _emscripten_set_element_css_size = (target, width, height) => {
+      target = findEventTarget(target);
+      if (!target) return -4;
+  
+      target.style.width = width + "px";
+      target.style.height = height + "px";
+  
+      return 0;
+    };
+
+  
+  var handleException = (e) => {
+      // Certain exception types we do not treat as errors since they are used for
+      // internal control flow.
+      // 1. ExitStatus, which is thrown by exit()
+      // 2. "unwind", which is thrown by emscripten_unwind_to_js_event_loop() and others
+      //    that wish to return to JS event loop.
+      if (e instanceof ExitStatus || e == 'unwind') {
+        return EXITSTATUS;
+      }
+      quit_(1, e);
+    };
+  
   
   var runtimeKeepaliveCounter = 0;
   var keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0;
@@ -3591,6 +3768,627 @@ async function createWasm() {
       _proc_exit(status);
     };
   var _exit = exitJS;
+  
+  
+  var maybeExit = () => {
+      if (!keepRuntimeAlive()) {
+        try {
+          _exit(EXITSTATUS);
+        } catch (e) {
+          handleException(e);
+        }
+      }
+    };
+  var callUserCallback = (func) => {
+      if (ABORT) {
+        return;
+      }
+      try {
+        func();
+        maybeExit();
+      } catch (e) {
+        handleException(e);
+      }
+    };
+  
+  var _emscripten_set_main_loop_timing = (mode, value) => {
+      MainLoop.timingMode = mode;
+      MainLoop.timingValue = value;
+  
+      if (!MainLoop.func) {
+        return 1; // Return non-zero on failure, can't set timing mode when there is no main loop.
+      }
+  
+      if (!MainLoop.running) {
+        
+        MainLoop.running = true;
+      }
+      if (mode == 0) {
+        MainLoop.scheduler = function MainLoop_scheduler_setTimeout() {
+          var timeUntilNextTick = Math.max(0, MainLoop.tickStartTime + value - _emscripten_get_now())|0;
+          setTimeout(MainLoop.runner, timeUntilNextTick); // doing this each time means that on exception, we stop
+        };
+        MainLoop.method = 'timeout';
+      } else if (mode == 1) {
+        MainLoop.scheduler = function MainLoop_scheduler_rAF() {
+          MainLoop.requestAnimationFrame(MainLoop.runner);
+        };
+        MainLoop.method = 'rAF';
+      } else if (mode == 2) {
+        if (typeof MainLoop.setImmediate == 'undefined') {
+          if (typeof setImmediate == 'undefined') {
+            // Emulate setImmediate. (note: not a complete polyfill, we don't emulate clearImmediate() to keep code size to minimum, since not needed)
+            var setImmediates = [];
+            var emscriptenMainLoopMessageId = 'setimmediate';
+            /** @param {Event} event */
+            var MainLoop_setImmediate_messageHandler = (event) => {
+              // When called in current thread or Worker, the main loop ID is structured slightly different to accommodate for --proxy-to-worker runtime listening to Worker events,
+              // so check for both cases.
+              if (event.data === emscriptenMainLoopMessageId || event.data.target === emscriptenMainLoopMessageId) {
+                event.stopPropagation();
+                setImmediates.shift()();
+              }
+            };
+            addEventListener("message", MainLoop_setImmediate_messageHandler, true);
+            MainLoop.setImmediate = /** @type{function(function(): ?, ...?): number} */((func) => {
+              setImmediates.push(func);
+              if (ENVIRONMENT_IS_WORKER) {
+                Module['setImmediates'] ??= [];
+                Module['setImmediates'].push(func);
+                postMessage({target: emscriptenMainLoopMessageId}); // In --proxy-to-worker, route the message via proxyClient.js
+              } else postMessage(emscriptenMainLoopMessageId, "*"); // On the main thread, can just send the message to itself.
+            });
+          } else {
+            MainLoop.setImmediate = setImmediate;
+          }
+        }
+        MainLoop.scheduler = function MainLoop_scheduler_setImmediate() {
+          MainLoop.setImmediate(MainLoop.runner);
+        };
+        MainLoop.method = 'immediate';
+      }
+      return 0;
+    };
+  var MainLoop = {
+  running:false,
+  scheduler:null,
+  method:"",
+  currentlyRunningMainloop:0,
+  func:null,
+  arg:0,
+  timingMode:0,
+  timingValue:0,
+  currentFrameNumber:0,
+  queue:[],
+  preMainLoop:[],
+  postMainLoop:[],
+  pause() {
+        MainLoop.scheduler = null;
+        // Incrementing this signals the previous main loop that it's now become old, and it must return.
+        MainLoop.currentlyRunningMainloop++;
+      },
+  resume() {
+        MainLoop.currentlyRunningMainloop++;
+        var timingMode = MainLoop.timingMode;
+        var timingValue = MainLoop.timingValue;
+        var func = MainLoop.func;
+        MainLoop.func = null;
+        // do not set timing and call scheduler, we will do it on the next lines
+        setMainLoop(func, 0, false, MainLoop.arg, true);
+        _emscripten_set_main_loop_timing(timingMode, timingValue);
+        MainLoop.scheduler();
+      },
+  updateStatus() {
+        if (Module['setStatus']) {
+          var message = Module['statusMessage'] || 'Please wait...';
+          var remaining = MainLoop.remainingBlockers ?? 0;
+          var expected = MainLoop.expectedBlockers ?? 0;
+          if (remaining) {
+            if (remaining < expected) {
+              Module['setStatus'](`{message} ({expected - remaining}/{expected})`);
+            } else {
+              Module['setStatus'](message);
+            }
+          } else {
+            Module['setStatus']('');
+          }
+        }
+      },
+  init() {
+        Module['preMainLoop'] && MainLoop.preMainLoop.push(Module['preMainLoop']);
+        Module['postMainLoop'] && MainLoop.postMainLoop.push(Module['postMainLoop']);
+      },
+  runIter(func) {
+        if (ABORT) return;
+        for (var pre of MainLoop.preMainLoop) {
+          if (pre() === false) {
+            return; // |return false| skips a frame
+          }
+        }
+        callUserCallback(func);
+        for (var post of MainLoop.postMainLoop) {
+          post();
+        }
+      },
+  nextRAF:0,
+  fakeRequestAnimationFrame(func) {
+        // try to keep 60fps between calls to here
+        var now = Date.now();
+        if (MainLoop.nextRAF === 0) {
+          MainLoop.nextRAF = now + 1000/60;
+        } else {
+          while (now + 2 >= MainLoop.nextRAF) { // fudge a little, to avoid timer jitter causing us to do lots of delay:0
+            MainLoop.nextRAF += 1000/60;
+          }
+        }
+        var delay = Math.max(MainLoop.nextRAF - now, 0);
+        setTimeout(func, delay);
+      },
+  requestAnimationFrame(func) {
+        if (typeof requestAnimationFrame == 'function') {
+          requestAnimationFrame(func);
+          return;
+        }
+        var RAF = MainLoop.fakeRequestAnimationFrame;
+        RAF(func);
+      },
+  };
+  
+  
+  var _emscripten_get_now = () => performance.now();
+  
+  
+    /**
+     * @param {number=} arg
+     * @param {boolean=} noSetTiming
+     */
+  var setMainLoop = (iterFunc, fps, simulateInfiniteLoop, arg, noSetTiming) => {
+      MainLoop.func = iterFunc;
+      MainLoop.arg = arg;
+  
+      var thisMainLoopId = MainLoop.currentlyRunningMainloop;
+      function checkIsRunning() {
+        if (thisMainLoopId < MainLoop.currentlyRunningMainloop) {
+          
+          maybeExit();
+          return false;
+        }
+        return true;
+      }
+  
+      // We create the loop runner here but it is not actually running until
+      // _emscripten_set_main_loop_timing is called (which might happen a
+      // later time).  This member signifies that the current runner has not
+      // yet been started so that we can call runtimeKeepalivePush when it
+      // gets it timing set for the first time.
+      MainLoop.running = false;
+      MainLoop.runner = function MainLoop_runner() {
+        if (ABORT) return;
+        if (MainLoop.queue.length > 0) {
+          var start = Date.now();
+          var blocker = MainLoop.queue.shift();
+          blocker.func(blocker.arg);
+          if (MainLoop.remainingBlockers) {
+            var remaining = MainLoop.remainingBlockers;
+            var next = remaining%1 == 0 ? remaining-1 : Math.floor(remaining);
+            if (blocker.counted) {
+              MainLoop.remainingBlockers = next;
+            } else {
+              // not counted, but move the progress along a tiny bit
+              next = next + 0.5; // do not steal all the next one's progress
+              MainLoop.remainingBlockers = (8*remaining + next)/9;
+            }
+          }
+          MainLoop.updateStatus();
+  
+          // catches pause/resume main loop from blocker execution
+          if (!checkIsRunning()) return;
+  
+          setTimeout(MainLoop.runner, 0);
+          return;
+        }
+  
+        // catch pauses from non-main loop sources
+        if (!checkIsRunning()) return;
+  
+        // Implement very basic swap interval control
+        MainLoop.currentFrameNumber = MainLoop.currentFrameNumber + 1 | 0;
+        if (MainLoop.timingMode == 1 && MainLoop.timingValue > 1 && MainLoop.currentFrameNumber % MainLoop.timingValue != 0) {
+          // Not the scheduled time to render this frame - skip.
+          MainLoop.scheduler();
+          return;
+        } else if (MainLoop.timingMode == 0) {
+          MainLoop.tickStartTime = _emscripten_get_now();
+        }
+  
+        MainLoop.runIter(iterFunc);
+  
+        // catch pauses from the main loop itself
+        if (!checkIsRunning()) return;
+  
+        MainLoop.scheduler();
+      }
+  
+      if (!noSetTiming) {
+        if (fps && fps > 0) {
+          _emscripten_set_main_loop_timing(0, 1000.0 / fps);
+        } else {
+          // Do rAF by rendering each frame (no decimating)
+          _emscripten_set_main_loop_timing(1, 1);
+        }
+  
+        MainLoop.scheduler();
+      }
+  
+      if (simulateInfiniteLoop) {
+        throw 'unwind';
+      }
+    };
+  
+  var wasmTableMirror = [];
+  
+  /** @type {WebAssembly.Table} */
+  var wasmTable;
+  var getWasmTableEntry = (funcPtr) => {
+      var func = wasmTableMirror[funcPtr];
+      if (!func) {
+        if (funcPtr >= wasmTableMirror.length) wasmTableMirror.length = funcPtr + 1;
+        /** @suppress {checkTypes} */
+        wasmTableMirror[funcPtr] = func = wasmTable.get(funcPtr);
+      }
+      return func;
+    };
+  var _emscripten_set_main_loop = (func, fps, simulateInfiniteLoop) => {
+      var iterFunc = getWasmTableEntry(func);
+      setMainLoop(iterFunc, fps, simulateInfiniteLoop);
+    };
+
+  
+  
+  
+  var registerUiEventCallback = (target, userData, useCapture, callbackfunc, eventTypeId, eventTypeString, targetThread) => {
+      JSEvents.uiEvent ||= _malloc(36);
+  
+      target = findEventTarget(target);
+  
+      var uiEventHandlerFunc = (e = event) => {
+        if (e.target != target) {
+          // Never take ui events such as scroll via a 'bubbled' route, but always from the direct element that
+          // was targeted. Otherwise e.g. if app logs a message in response to a page scroll, the Emscripten log
+          // message box could cause to scroll, generating a new (bubbled) scroll message, causing a new log print,
+          // causing a new scroll, etc..
+          return;
+        }
+        var b = document.body; // Take document.body to a variable, Closure compiler does not outline access to it on its own.
+        if (!b) {
+          // During a page unload 'body' can be null, with "Cannot read property 'clientWidth' of null" being thrown
+          return;
+        }
+        var uiEvent = JSEvents.uiEvent;
+        HEAP32[((uiEvent)>>2)] = 0; // always zero for resize and scroll
+        HEAP32[(((uiEvent)+(4))>>2)] = b.clientWidth;
+        HEAP32[(((uiEvent)+(8))>>2)] = b.clientHeight;
+        HEAP32[(((uiEvent)+(12))>>2)] = innerWidth;
+        HEAP32[(((uiEvent)+(16))>>2)] = innerHeight;
+        HEAP32[(((uiEvent)+(20))>>2)] = outerWidth;
+        HEAP32[(((uiEvent)+(24))>>2)] = outerHeight;
+        HEAP32[(((uiEvent)+(28))>>2)] = pageXOffset | 0; // scroll offsets are float
+        HEAP32[(((uiEvent)+(32))>>2)] = pageYOffset | 0;
+        if (getWasmTableEntry(callbackfunc)(eventTypeId, uiEvent, userData)) e.preventDefault();
+      };
+  
+      var eventHandler = {
+        target,
+        eventTypeString,
+        callbackfunc,
+        handlerFunc: uiEventHandlerFunc,
+        useCapture
+      };
+      return JSEvents.registerOrRemoveHandler(eventHandler);
+    };
+  var _emscripten_set_resize_callback_on_thread = (target, userData, useCapture, callbackfunc, targetThread) =>
+      registerUiEventCallback(target, userData, useCapture, callbackfunc, 10, "resize", targetThread);
+
+  
+  
+  
+  var stringToUTF8 = (str, outPtr, maxBytesToWrite) => {
+      return stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
+    };
+  
+  var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
+  var stringToUTF8OnStack = (str) => {
+      var size = lengthBytesUTF8(str) + 1;
+      var ret = stackAlloc(size);
+      stringToUTF8(str, ret, size);
+      return ret;
+    };
+  
+  
+  
+  var WebGPU = {
+  errorCallback:(callback, type, message, userdata) => {
+        var sp = stackSave();
+        var messagePtr = stringToUTF8OnStack(message);
+        getWasmTableEntry(callback)(type, messagePtr, userdata);
+        stackRestore(sp);
+      },
+  initManagers:() => {
+  
+        /** @constructor */
+        function Manager() {
+          this.objects = {};
+          this.nextId = 1;
+          this.create = function(object, wrapper = {}) {
+            var id = this.nextId++;
+            
+            wrapper.refcount = 1;
+            wrapper.object = object;
+            this.objects[id] = wrapper;
+            return id;
+          };
+          this.get = function(id) {
+            if (!id) return undefined;
+            var o = this.objects[id];
+            
+            return o.object;
+          };
+          this.reference = function(id) {
+            var o = this.objects[id];
+            
+            o.refcount++;
+          };
+          this.release = function(id) {
+            var o = this.objects[id];
+            
+            
+            o.refcount--;
+            if (o.refcount <= 0) {
+              delete this.objects[id];
+            }
+          };
+        }
+  
+        WebGPU.mgrSurface = new Manager();
+        WebGPU.mgrSwapChain = new Manager();
+  
+        WebGPU.mgrAdapter = new Manager();
+        // TODO: Release() the device's default queue when the device is freed.
+        WebGPU.mgrDevice = new Manager();
+        WebGPU.mgrQueue = new Manager();
+  
+        WebGPU.mgrCommandBuffer = new Manager();
+        WebGPU.mgrCommandEncoder = new Manager();
+        WebGPU.mgrRenderPassEncoder = new Manager();
+        WebGPU.mgrComputePassEncoder = new Manager();
+  
+        WebGPU.mgrBindGroup = new Manager();
+        WebGPU.mgrBuffer = new Manager();
+        WebGPU.mgrSampler = new Manager();
+        WebGPU.mgrTexture = new Manager();
+        WebGPU.mgrTextureView = new Manager();
+        WebGPU.mgrQuerySet = new Manager();
+  
+        WebGPU.mgrBindGroupLayout = new Manager();
+        WebGPU.mgrPipelineLayout = new Manager();
+        WebGPU.mgrRenderPipeline = new Manager();
+        WebGPU.mgrComputePipeline = new Manager();
+        WebGPU.mgrShaderModule = new Manager();
+  
+        WebGPU.mgrRenderBundleEncoder = new Manager();
+        WebGPU.mgrRenderBundle = new Manager();
+      },
+  makeColor:(ptr) => {
+        return {
+          "r": HEAPF64[((ptr)>>3)],
+          "g": HEAPF64[(((ptr)+(8))>>3)],
+          "b": HEAPF64[(((ptr)+(16))>>3)],
+          "a": HEAPF64[(((ptr)+(24))>>3)],
+        };
+      },
+  makeExtent3D:(ptr) => {
+        return {
+          "width": HEAPU32[((ptr)>>2)],
+          "height": HEAPU32[(((ptr)+(4))>>2)],
+          "depthOrArrayLayers": HEAPU32[(((ptr)+(8))>>2)],
+        };
+      },
+  makeOrigin3D:(ptr) => {
+        return {
+          "x": HEAPU32[((ptr)>>2)],
+          "y": HEAPU32[(((ptr)+(4))>>2)],
+          "z": HEAPU32[(((ptr)+(8))>>2)],
+        };
+      },
+  makeImageCopyTexture:(ptr) => {
+        
+        return {
+          "texture": WebGPU.mgrTexture.get(
+            HEAPU32[(((ptr)+(4))>>2)]),
+          "mipLevel": HEAPU32[(((ptr)+(8))>>2)],
+          "origin": WebGPU.makeOrigin3D(ptr + 12),
+          "aspect": WebGPU.TextureAspect[HEAPU32[(((ptr)+(24))>>2)]],
+        };
+      },
+  makeTextureDataLayout:(ptr) => {
+        
+        var bytesPerRow = HEAPU32[(((ptr)+(16))>>2)];
+        var rowsPerImage = HEAPU32[(((ptr)+(20))>>2)];
+        return {
+          "offset": HEAPU32[((((ptr + 4))+(8))>>2)] * 0x100000000 + HEAPU32[(((ptr)+(8))>>2)],
+          "bytesPerRow": bytesPerRow === 4294967295 ? undefined : bytesPerRow,
+          "rowsPerImage": rowsPerImage === 4294967295 ? undefined : rowsPerImage,
+        };
+      },
+  makeImageCopyBuffer:(ptr) => {
+        
+        var layoutPtr = ptr + 8;
+        var bufferCopyView = WebGPU.makeTextureDataLayout(layoutPtr);
+        bufferCopyView["buffer"] = WebGPU.mgrBuffer.get(
+          HEAPU32[(((ptr)+(32))>>2)]);
+        return bufferCopyView;
+      },
+  makePipelineConstants:(constantCount, constantsPtr) => {
+        if (!constantCount) return;
+        var constants = {};
+        for (var i = 0; i < constantCount; ++i) {
+          var entryPtr = constantsPtr + 16 * i;
+          var key = UTF8ToString(HEAPU32[(((entryPtr)+(4))>>2)]);
+          constants[key] = HEAPF64[(((entryPtr)+(8))>>3)];
+        }
+        return constants;
+      },
+  makePipelineLayout:(layoutPtr) => {
+        if (!layoutPtr) return 'auto';
+        return WebGPU.mgrPipelineLayout.get(layoutPtr);
+      },
+  makeProgrammableStageDescriptor:(ptr) => {
+        if (!ptr) return undefined;
+        
+        var desc = {
+          "module": WebGPU.mgrShaderModule.get(
+            HEAPU32[(((ptr)+(4))>>2)]),
+          "constants": WebGPU.makePipelineConstants(
+            HEAPU32[(((ptr)+(12))>>2)],
+            HEAPU32[(((ptr)+(16))>>2)]),
+        };
+        var entryPointPtr = HEAPU32[(((ptr)+(8))>>2)];
+        if (entryPointPtr) desc["entryPoint"] = UTF8ToString(entryPointPtr);
+        return desc;
+      },
+  fillLimitStruct:(limits, supportedLimitsOutPtr) => {
+        var limitsOutPtr = supportedLimitsOutPtr + 8;
+  
+        function setLimitValueU32(name, limitOffset) {
+          var limitValue = limits[name];
+          HEAP32[(((limitsOutPtr)+(limitOffset))>>2)] = limitValue;
+        }
+        function setLimitValueU64(name, limitOffset) {
+          var limitValue = limits[name];
+          HEAP64[(((limitsOutPtr)+(limitOffset))>>3)] = BigInt(limitValue);
+        }
+    
+        setLimitValueU32('maxTextureDimension1D', 0);
+        setLimitValueU32('maxTextureDimension2D', 4);
+        setLimitValueU32('maxTextureDimension3D', 8);
+        setLimitValueU32('maxTextureArrayLayers', 12);
+        setLimitValueU32('maxBindGroups', 16);
+        setLimitValueU32('maxBindGroupsPlusVertexBuffers', 20);
+        setLimitValueU32('maxBindingsPerBindGroup', 24);
+        setLimitValueU32('maxDynamicUniformBuffersPerPipelineLayout', 28);
+        setLimitValueU32('maxDynamicStorageBuffersPerPipelineLayout', 32);
+        setLimitValueU32('maxSampledTexturesPerShaderStage', 36);
+        setLimitValueU32('maxSamplersPerShaderStage', 40);
+        setLimitValueU32('maxStorageBuffersPerShaderStage', 44);
+        setLimitValueU32('maxStorageTexturesPerShaderStage', 48);
+        setLimitValueU32('maxUniformBuffersPerShaderStage', 52);
+        setLimitValueU32('minUniformBufferOffsetAlignment', 72);
+        setLimitValueU32('minStorageBufferOffsetAlignment', 76);
+    
+        setLimitValueU64('maxUniformBufferBindingSize', 56);
+        setLimitValueU64('maxStorageBufferBindingSize', 64);
+    
+        setLimitValueU32('maxVertexBuffers', 80);
+        setLimitValueU64('maxBufferSize', 88);
+        setLimitValueU32('maxVertexAttributes', 96);
+        setLimitValueU32('maxVertexBufferArrayStride', 100);
+        setLimitValueU32('maxInterStageShaderComponents', 104);
+        setLimitValueU32('maxInterStageShaderVariables', 108);
+        setLimitValueU32('maxColorAttachments', 112);
+        setLimitValueU32('maxColorAttachmentBytesPerSample', 116);
+        setLimitValueU32('maxComputeWorkgroupStorageSize', 120);
+        setLimitValueU32('maxComputeInvocationsPerWorkgroup', 124);
+        setLimitValueU32('maxComputeWorkgroupSizeX', 128);
+        setLimitValueU32('maxComputeWorkgroupSizeY', 132);
+        setLimitValueU32('maxComputeWorkgroupSizeZ', 136);
+        setLimitValueU32('maxComputeWorkgroupsPerDimension', 140);
+      },
+  Int_BufferMapState:{
+  unmapped:1,
+  pending:2,
+  mapped:3,
+  },
+  Int_CompilationMessageType:{
+  error:1,
+  warning:2,
+  info:3,
+  },
+  Int_DeviceLostReason:{
+  undefined:1,
+  unknown:1,
+  destroyed:2,
+  },
+  Int_PreferredFormat:{
+  rgba8unorm:18,
+  bgra8unorm:23,
+  },
+  WGSLFeatureName:[,"readonly_and_readwrite_storage_textures","packed_4x8_integer_dot_product","unrestricted_pointer_parameters","pointer_composite_access"],
+  AddressMode:[,"clamp-to-edge","repeat","mirror-repeat"],
+  AlphaMode:[,"opaque","premultiplied"],
+  BlendFactor:[,"zero","one","src","one-minus-src","src-alpha","one-minus-src-alpha","dst","one-minus-dst","dst-alpha","one-minus-dst-alpha","src-alpha-saturated","constant","one-minus-constant"],
+  BlendOperation:[,"add","subtract","reverse-subtract","min","max"],
+  BufferBindingType:[,"uniform","storage","read-only-storage"],
+  BufferMapState:{
+  1:"unmapped",
+  2:"pending",
+  3:"mapped",
+  },
+  CompareFunction:[,"never","less","equal","less-equal","greater","not-equal","greater-equal","always"],
+  CompilationInfoRequestStatus:["success","error","device-lost","unknown"],
+  CullMode:[,"none","front","back"],
+  ErrorFilter:{
+  1:"validation",
+  2:"out-of-memory",
+  3:"internal",
+  },
+  FeatureName:[,"depth-clip-control","depth32float-stencil8","timestamp-query","texture-compression-bc","texture-compression-etc2","texture-compression-astc","indirect-first-instance","shader-f16","rg11b10ufloat-renderable","bgra8unorm-storage","float32-filterable"],
+  FilterMode:[,"nearest","linear"],
+  FrontFace:[,"ccw","cw"],
+  IndexFormat:[,"uint16","uint32"],
+  LoadOp:[,"clear","load"],
+  MipmapFilterMode:[,"nearest","linear"],
+  PowerPreference:[,"low-power","high-performance"],
+  PrimitiveTopology:[,"point-list","line-list","line-strip","triangle-list","triangle-strip"],
+  QueryType:{
+  1:"occlusion",
+  2:"timestamp",
+  },
+  SamplerBindingType:[,"filtering","non-filtering","comparison"],
+  StencilOperation:[,"keep","zero","replace","invert","increment-clamp","decrement-clamp","increment-wrap","decrement-wrap"],
+  StorageTextureAccess:[,"write-only","read-only","read-write"],
+  StoreOp:[,"store","discard"],
+  TextureAspect:[,"all","stencil-only","depth-only"],
+  TextureDimension:[,"1d","2d","3d"],
+  TextureFormat:[,"r8unorm","r8snorm","r8uint","r8sint","r16uint","r16sint","r16float","rg8unorm","rg8snorm","rg8uint","rg8sint","r32float","r32uint","r32sint","rg16uint","rg16sint","rg16float","rgba8unorm","rgba8unorm-srgb","rgba8snorm","rgba8uint","rgba8sint","bgra8unorm","bgra8unorm-srgb","rgb10a2uint","rgb10a2unorm","rg11b10ufloat","rgb9e5ufloat","rg32float","rg32uint","rg32sint","rgba16uint","rgba16sint","rgba16float","rgba32float","rgba32uint","rgba32sint","stencil8","depth16unorm","depth24plus","depth24plus-stencil8","depth32float","depth32float-stencil8","bc1-rgba-unorm","bc1-rgba-unorm-srgb","bc2-rgba-unorm","bc2-rgba-unorm-srgb","bc3-rgba-unorm","bc3-rgba-unorm-srgb","bc4-r-unorm","bc4-r-snorm","bc5-rg-unorm","bc5-rg-snorm","bc6h-rgb-ufloat","bc6h-rgb-float","bc7-rgba-unorm","bc7-rgba-unorm-srgb","etc2-rgb8unorm","etc2-rgb8unorm-srgb","etc2-rgb8a1unorm","etc2-rgb8a1unorm-srgb","etc2-rgba8unorm","etc2-rgba8unorm-srgb","eac-r11unorm","eac-r11snorm","eac-rg11unorm","eac-rg11snorm","astc-4x4-unorm","astc-4x4-unorm-srgb","astc-5x4-unorm","astc-5x4-unorm-srgb","astc-5x5-unorm","astc-5x5-unorm-srgb","astc-6x5-unorm","astc-6x5-unorm-srgb","astc-6x6-unorm","astc-6x6-unorm-srgb","astc-8x5-unorm","astc-8x5-unorm-srgb","astc-8x6-unorm","astc-8x6-unorm-srgb","astc-8x8-unorm","astc-8x8-unorm-srgb","astc-10x5-unorm","astc-10x5-unorm-srgb","astc-10x6-unorm","astc-10x6-unorm-srgb","astc-10x8-unorm","astc-10x8-unorm-srgb","astc-10x10-unorm","astc-10x10-unorm-srgb","astc-12x10-unorm","astc-12x10-unorm-srgb","astc-12x12-unorm","astc-12x12-unorm-srgb"],
+  TextureSampleType:[,"float","unfilterable-float","depth","sint","uint"],
+  TextureViewDimension:[,"1d","2d","2d-array","cube","cube-array","3d"],
+  VertexFormat:[,"uint8x2","uint8x4","sint8x2","sint8x4","unorm8x2","unorm8x4","snorm8x2","snorm8x4","uint16x2","uint16x4","sint16x2","sint16x4","unorm16x2","unorm16x4","snorm16x2","snorm16x4","float16x2","float16x4","float32","float32x2","float32x3","float32x4","uint32","uint32x2","uint32x3","uint32x4","sint32","sint32x2","sint32x3","sint32x4","unorm10-10-10-2"],
+  VertexStepMode:[,"vertex-buffer-not-used","vertex","instance"],
+  FeatureNameString2Enum:{
+  undefined:"0",
+  'depth-clip-control':"1",
+  'depth32float-stencil8':"2",
+  'timestamp-query':"3",
+  'texture-compression-bc':"4",
+  'texture-compression-etc2':"5",
+  'texture-compression-astc':"6",
+  'indirect-first-instance':"7",
+  'shader-f16':"8",
+  'rg11b10ufloat-renderable':"9",
+  'bgra8unorm-storage':"10",
+  'float32-filterable':"11",
+  },
+  };
+  var _emscripten_webgpu_get_device = () => {
+      if (WebGPU.preinitializedDeviceId === undefined) {
+        var device = Module['preinitializedWebGPUDevice'];
+        var deviceWrapper = { queueId: WebGPU.mgrQueue.create(device["queue"]) };
+        WebGPU.preinitializedDeviceId = WebGPU.mgrDevice.create(device, deviceWrapper);
+      }
+      WebGPU.mgrDevice.reference(WebGPU.preinitializedDeviceId);
+      return WebGPU.preinitializedDeviceId;
+    };
+
 
   function _fd_close(fd) {
   try {
@@ -3693,18 +4491,74 @@ async function createWasm() {
   }
   }
 
-
-  var handleException = (e) => {
-      // Certain exception types we do not treat as errors since they are used for
-      // internal control flow.
-      // 1. ExitStatus, which is thrown by exit()
-      // 2. "unwind", which is thrown by emscripten_unwind_to_js_event_loop() and others
-      //    that wish to return to JS event loop.
-      if (e instanceof ExitStatus || e == 'unwind') {
-        return EXITSTATUS;
+  var _wgpuDeviceCreateSwapChain = (deviceId, surfaceId, descriptor) => {
+      
+      var device = WebGPU.mgrDevice.get(deviceId);
+      var context = WebGPU.mgrSurface.get(surfaceId);
+  
+      var canvasSize = [
+        HEAPU32[(((descriptor)+(16))>>2)],
+        HEAPU32[(((descriptor)+(20))>>2)]
+      ];
+  
+      if (canvasSize[0] !== 0) {
+        context["canvas"]["width"] = canvasSize[0];
       }
-      quit_(1, e);
+  
+      if (canvasSize[1] !== 0) {
+        context["canvas"]["height"] = canvasSize[1];
+      }
+  
+      var configuration = {
+        "device": device,
+        "format": WebGPU.TextureFormat[
+          HEAPU32[(((descriptor)+(12))>>2)]],
+        "usage": HEAPU32[(((descriptor)+(8))>>2)],
+        "alphaMode": "opaque",
+      };
+      context.configure(configuration);
+  
+      return WebGPU.mgrSwapChain.create(context);
     };
+
+  var _wgpuDeviceGetQueue = (deviceId) => {
+      var queueId = WebGPU.mgrDevice.objects[deviceId].queueId;
+      // Returns a new reference to the existing queue.
+      WebGPU.mgrQueue.reference(queueId);
+      return queueId;
+    };
+
+  var _wgpuDeviceRelease = (id) => WebGPU.mgrDevice.release(id);
+
+  var findCanvasEventTarget = findEventTarget;
+  
+  
+  var _wgpuInstanceCreateSurface = (instanceId, descriptor) => {
+      
+      
+      var nextInChainPtr = HEAPU32[((descriptor)>>2)];
+      var descriptorFromCanvasHTMLSelector = nextInChainPtr;
+  
+      
+      var selectorPtr = HEAPU32[(((descriptorFromCanvasHTMLSelector)+(8))>>2)];
+      
+      var canvas = findCanvasEventTarget(selectorPtr);
+      var context = canvas.getContext('webgpu');
+      if (!context) return 0;
+  
+      var labelPtr = HEAPU32[(((descriptor)+(4))>>2)];
+      if (labelPtr) context.surfaceLabelWebGPU = UTF8ToString(labelPtr);
+  
+      return WebGPU.mgrSurface.create(context);
+    };
+
+  var _wgpuQueueRelease = (id) => WebGPU.mgrQueue.release(id);
+
+  var _wgpuRenderPipelineRelease = (id) => WebGPU.mgrRenderPipeline.release(id);
+
+  var _wgpuSwapChainRelease = (id) => WebGPU.mgrSwapChain.release(id);
+
+
 
 
   var getCFunc = (ident) => {
@@ -3716,18 +4570,6 @@ async function createWasm() {
       HEAP8.set(array, buffer);
     };
   
-  
-  var stringToUTF8 = (str, outPtr, maxBytesToWrite) => {
-      return stringToUTF8Array(str, HEAPU8, outPtr, maxBytesToWrite);
-    };
-  
-  var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
-  var stringToUTF8OnStack = (str) => {
-      var size = lengthBytesUTF8(str) + 1;
-      var ret = stackAlloc(size);
-      stringToUTF8(str, ret, size);
-      return ret;
-    };
   
   
   
@@ -3815,6 +4657,12 @@ async function createWasm() {
       /** @suppress {checkTypes} */
       MEMFS.doesNotExistError.stack = '<generic error, no stack>';
       ;
+
+      Module["requestAnimationFrame"] = MainLoop.requestAnimationFrame;
+      Module["pauseMainLoop"] = MainLoop.pause;
+      Module["resumeMainLoop"] = MainLoop.resume;
+      MainLoop.init();;
+WebGPU.initManagers();;
 var wasmImports = {
   /** @export */
   __assert_fail: ___assert_fail,
@@ -3825,7 +4673,17 @@ var wasmImports = {
   /** @export */
   __syscall_openat: ___syscall_openat,
   /** @export */
+  emscripten_get_element_css_size: _emscripten_get_element_css_size,
+  /** @export */
   emscripten_resize_heap: _emscripten_resize_heap,
+  /** @export */
+  emscripten_set_element_css_size: _emscripten_set_element_css_size,
+  /** @export */
+  emscripten_set_main_loop: _emscripten_set_main_loop,
+  /** @export */
+  emscripten_set_resize_callback_on_thread: _emscripten_set_resize_callback_on_thread,
+  /** @export */
+  emscripten_webgpu_get_device: _emscripten_webgpu_get_device,
   /** @export */
   exit: _exit,
   /** @export */
@@ -3835,11 +4693,26 @@ var wasmImports = {
   /** @export */
   fd_seek: _fd_seek,
   /** @export */
-  fd_write: _fd_write
+  fd_write: _fd_write,
+  /** @export */
+  wgpuDeviceCreateSwapChain: _wgpuDeviceCreateSwapChain,
+  /** @export */
+  wgpuDeviceGetQueue: _wgpuDeviceGetQueue,
+  /** @export */
+  wgpuDeviceRelease: _wgpuDeviceRelease,
+  /** @export */
+  wgpuInstanceCreateSurface: _wgpuInstanceCreateSurface,
+  /** @export */
+  wgpuQueueRelease: _wgpuQueueRelease,
+  /** @export */
+  wgpuRenderPipelineRelease: _wgpuRenderPipelineRelease,
+  /** @export */
+  wgpuSwapChainRelease: _wgpuSwapChainRelease
 };
 var wasmExports;
 createWasm();
 var ___wasm_call_ctors = () => (___wasm_call_ctors = wasmExports['__wasm_call_ctors'])();
+var _malloc = (a0) => (_malloc = wasmExports['malloc'])(a0);
 var _setContext = Module['_setContext'] = (a0, a1, a2) => (_setContext = Module['_setContext'] = wasmExports['setContext'])(a0, a1, a2);
 var _main = Module['_main'] = (a0, a1) => (_main = Module['_main'] = wasmExports['main'])(a0, a1);
 var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);

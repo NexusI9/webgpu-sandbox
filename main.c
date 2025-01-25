@@ -1,68 +1,230 @@
-
-#include <stdio.h>
 #include <emscripten/emscripten.h>
-
+#include <stdint.h>
+#include <stdio.h>
 
 // HEADERS
+#include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
-#include "include/file.h"
-#include "include/webgpu.h"
+#include "webgpu/webgpu.h"
 
-// MACROS
-//#define EMSCRIPTEN_KEEPALIVE
+#include "utils/file.h"
 
-#ifdef __cplusplus
-#define EXTERN extern "C"
-#else
-#define EXTERN
-#endif
+#include "backend/generator.h"
+#include "backend/state.h"
 
 //  RESOURCES
 //  https://github.com/seyhajin/webgpu-wasm-c
 //  https://developer.chrome.com/docs/web-platform/webgpu/build-app?hl=en
 //  https://stackoverflow.com/questions/23997312/how-do-i-read-a-user-specified-file-in-an-emscripten-compiled-library
 
-typedef struct {
-
-  struct {
-    const char *name;
-    int width;
-    int height;
-    int dpi;
-  } context;
-
-  struct {
-    WGPUInstance instance;
-    WGPUDevice device;
-    WGPUQueue queue;
-    WGPUSurface surface;
-    WGPURenderPipeline pipeline;
-  } wgpu;
-
-  struct {
-    WGPUBuffer v_buffer, i_buffer, u_buffer;
-    WGPUBindGroup bind_group;
-  } store;
-
-} state_t;
-
 static state_t state;
+
+static int resize(int, const EmscriptenUiEvent *, void *);
+
+void draw() {}
+
+void setup_triangle() {
+  float const vertex_data[] = {
+      -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.0f,
+      0.5f,  0.5f,  0.0f, 0.0f, 1.0f, -0.5f, 0.5f,  1.0f, 1.0f, 1.0f,
+  };
+
+  uint16_t index_data[] = {0, 1, 2, 0, 2, 3};
+
+  // set vertex and index buffer
+  state.store.v_buffer = create_buffer(&state, vertex_data, sizeof(vertex_data),
+                                       WGPUBufferUsage_Vertex);
+  state.store.i_buffer = create_buffer(&state, vertex_data, sizeof(index_data),
+                                       WGPUBufferUsage_Index);
+
+  // setup uniform buffer
+  state.store.u_buffer =
+      create_buffer(&state, &state.uniform.rot, sizeof(state.uniform.rot),
+                    WGPUBufferUsage_Uniform);
+
+  state.store.bind_group = wgpuDeviceCreateBindGroup(
+      state.wgpu.device, &(WGPUBindGroupDescriptor){
+                             .layout = wgpuRenderPipelineGetBindGroupLayout(
+                                 state.wgpu.pipeline, 0),
+                             .entryCount = 1,
+                             .entries =
+                                 &(WGPUBindGroupEntry){
+                                     .binding = 0,
+                                     .offset = 0,
+                                     .buffer = state.store.u_buffer,
+                                     .size = sizeof(state.uniform.rot),
+                                 },
+                         });
+}
+
+void init_pipeline() {
+
+  // Overall order :
+  // VERTEX ATTR____VERTEX BUFFER___BINDGROUP_____PIPELINE
+  // TEXTURES______________________/             /
+  // SHADER ____________________________________/
+
+  // Loading shader
+  void *shader_triangle_code;
+  const char *shader_path = "./shader/default.wgsl";
+  store_file(shader_triangle_code, shader_path);
+
+  // Compile shader
+  WGPUShaderModule shader_triangle =
+      create_shader(&state, shader_triangle_code, NULL);
+
+  // layout vertex attributes
+  WGPUVertexAttribute vert_attr[2] = {
+      [0] = {.format = WGPUVertexFormat_Float32x2,
+             .offset = 0,
+             .shaderLocation = 0},
+      [1] = {.format = WGPUVertexFormat_Float32x2,
+             .offset = 2 * sizeof(float),
+             .shaderLocation = 1}};
+
+  // set buffer layout
+  WGPUVertexBufferLayout vert_buffer_layout = {.arrayStride = 5 * sizeof(float),
+                                               .attributeCount = 2,
+                                               .attributes = vert_attr};
+
+  // bind resources like textures, buffer and samplers
+  // allow better gpu optimisation since layout is clearly defined
+  WGPUBindGroupLayout bindgroup_layout = wgpuDeviceCreateBindGroupLayout(
+      state.wgpu.device,
+      &(WGPUBindGroupLayoutDescriptor){
+          .entryCount = 1,
+          .entries = &(WGPUBindGroupLayoutEntry){
+              .binding = 0,
+              .visibility = WGPUShaderStage_Vertex,
+              // buffer binding layout
+              .buffer = {.type = WGPUBufferBindingType_Uniform}}});
+
+  WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
+      state.wgpu.device,
+      &(WGPUPipelineLayoutDescriptor){.bindGroupLayoutCount = 1,
+                                      .bindGroupLayouts = &bindgroup_layout});
+
+  // create pipeline
+  state.wgpu.pipeline = wgpuDeviceCreateRenderPipeline(
+      state.wgpu.device,
+      &(WGPURenderPipelineDescriptor){
+          .layout = pipeline_layout,
+          // vertex x shader link
+          .vertex =
+              {
+                  .module = shader_triangle,
+                  .entryPoint = "vs_main",
+                  .bufferCount = 1,
+                  .buffers = &vert_buffer_layout,
+              },
+          // draw settings
+          .primitive =
+              {
+                  .frontFace = WGPUFrontFace_CCW,
+                  .cullMode = WGPUCullMode_None,
+                  .topology = WGPUPrimitiveTopology_TriangleList,
+                  .stripIndexFormat = WGPUIndexFormat_Undefined,
+              },
+          .fragment =
+              &(WGPUFragmentState){
+                  .module = shader_triangle,
+                  .entryPoint = "fs_main",
+                  .targetCount = 1,
+                  // Color targets
+                  .targets =
+                      &(WGPUColorTargetState){
+                          .format = WGPUTextureFormat_BGRA8Unorm,
+                          .writeMask = WGPUColorWriteMask_All,
+                          .blend =
+                              &(WGPUBlendState){
+                                  .color =
+                                      {
+                                          .operation = WGPUBlendOperation_Add,
+                                          .srcFactor = WGPUBlendFactor_One,
+                                          .dstFactor = WGPUBlendFactor_One,
+                                      },
+                                  .alpha =
+                                      {
+                                          .operation = WGPUBlendOperation_Add,
+                                          .srcFactor = WGPUBlendFactor_One,
+                                          .dstFactor = WGPUBlendFactor_One,
+                                      },
+                              },
+                      },
+              },
+          .multisample =
+              {
+                  .count = 1,
+                  .mask = 0xFFFFFFFF,
+                  .alphaToCoverageEnabled = false,
+              },
+          .depthStencil = NULL,
+      });
+
+  // clean up
+  wgpuBindGroupLayoutRelease(bindgroup_layout);
+  wgpuPipelineLayoutRelease(pipeline_layout);
+  wgpuShaderModuleRelease(shader_triangle);
+}
 
 int main() {
   printf("WASM INIT\n");
-
-  // Loading shader
-  void *shader;
-  const char *shader_path = "./shader/default.wgsl";
-  store_file(shader, shader_path);
 
   // setup state
   state.context.name = "canvas";
   state.wgpu.instance = wgpuCreateInstance(NULL);
   state.wgpu.device = emscripten_webgpu_get_device();
+  state.wgpu.queue = wgpuDeviceGetQueue(state.wgpu.device);
 
-      return 0;
+  resize(0, NULL, NULL);
+  emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, false,
+                                 (em_ui_callback_func)resize);
+
+  // Set pipeline
+  init_pipeline();
+  setup_triangle;
+
+  // Update Loop
+  emscripten_set_main_loop(draw, 0, 1);
+
+  // Quit
+  wgpuRenderPipelineRelease(state.wgpu.pipeline);
+  wgpuSwapChainRelease(state.wgpu.swapchain);
+  wgpuQueueRelease(state.wgpu.queue);
+  wgpuDeviceRelease(state.wgpu.device);
+  wgpuInstanceRelease(state.wgpu.instance);
+
+  return 0;
 }
+
+int resize(int event_type, const EmscriptenUiEvent *ui_event, void *user_data) {
+  double w, h;
+
+  // retrieve canvas dimension
+  emscripten_get_element_css_size(state.context.name, &w, &h);
+  state.context.width = (int)w;
+  state.context.height = (int)h;
+
+  // set canvas size
+  emscripten_set_element_css_size(state.context.name, state.context.width,
+                                  state.context.height);
+
+  // reset swap chain on resize
+  if (state.wgpu.swapchain) {
+    wgpuSwapChainRelease(state.wgpu.swapchain);
+    state.wgpu.swapchain = NULL;
+  }
+
+  state.wgpu.swapchain = create_swapchain(&state);
+
+  return 1;
+}
+
+#ifdef __cplusplus
+#define EXTERN extern "C"
+#else
+#define EXTERN
+#endif
 
 // EMSCRIPTEN_KEEPALIVE make function available in web environment (not
 // eliminated as DEAD code)

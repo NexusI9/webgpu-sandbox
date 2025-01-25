@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "../include/file.h"
-#include "../include/file.h"
+#include "file.h"
 
 void store_file(void *buffer, const char *path) {
 
