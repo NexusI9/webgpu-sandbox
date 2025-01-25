@@ -59,7 +59,7 @@ void setup_triangle() {
 
 void init_pipeline() {
 
-  // Overall order :
+  // Overall order
   // VERTEX ATTR____VERTEX BUFFER___BINDGROUP_____PIPELINE
   // TEXTURES______________________/             /
   // SHADER ____________________________________/
@@ -182,7 +182,7 @@ int main() {
 
   // Set pipeline
   init_pipeline();
-  setup_triangle;
+  setup_triangle();
 
   // Update Loop
   emscripten_set_main_loop(draw, 0, 1);
