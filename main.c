@@ -9,11 +9,12 @@
 #include <stdio.h>
 
 // HEADERS
+#include "backend/generator.h"
+#include "backend/state.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
+#include "utils/file.h"
 #include <webgpu/webgpu.h>
-#include "backend/state.h"
-#include "backend/generator.h"
 
 #define SHADER_SOURCE(...) #__VA_ARGS__ // stringify (#) macros argument
 
@@ -25,45 +26,6 @@ static void draw();
 static void init_pipeline();
 static void setup_triangle();
 
-static const char *shader_code = SHADER_SOURCE(
-      struct VertexIn {
-        @location(0) aPos : vec2<f32>,
-        @location(1) aCol : vec3<f32>,
-    };
-    struct VertexOut {
-        @location(0) vCol : vec3<f32>,
-        @builtin(position) Position : vec4<f32>,
-    };
-    struct Rotation {
-        @location(0) degs : f32,
-    };
-    @group(0) @binding(0) var<uniform> uRot : Rotation;
-
-    // vertex shader
-
-    @vertex
-    fn vs_main(input : VertexIn) -> VertexOut {
-        var rads : f32 = radians(uRot.degs);
-        var cosA : f32 = cos(rads);
-        var sinA : f32 = sin(rads);
-        var rot : mat3x3<f32> = mat3x3<f32>(
-            vec3<f32>( cosA, sinA, 0.0),
-            vec3<f32>(-sinA, cosA, 0.0),
-            vec3<f32>( 0.0,  0.0,  1.0));
-        var output : VertexOut;
-        output.Position = vec4<f32>(rot * vec3<f32>(input.aPos, 1.0), 1.0);
-        output.vCol = input.aCol;
-        return output;
-    }
-
-    // fragment shader
-
-    @fragment
-    fn fs_main(@location(0) vCol : vec3<f32>) -> @location(0) vec4<f32> {
-        return vec4<f32>(vCol, 1.0);
-    }
-      );
-
 void draw() {
 
   // update roation
@@ -73,191 +35,222 @@ void draw() {
   wgpuQueueWriteBuffer(state.wgpu.queue, state.store.u_buffer, 0,
                        &state.uniform.rot, sizeof(state.uniform.rot));
 
-// update rotation
-    state.uniform.rot += 0.1f;
-    state.uniform.rot = state.uniform.rot >= 360.f ? 0.0f : state.uniform.rot;
-    wgpuQueueWriteBuffer(state.wgpu.queue, state.store.u_buffer, 0, &state.uniform.rot, sizeof(state.uniform.rot));
+  // update rotation
+  state.uniform.rot += 0.1f;
+  state.uniform.rot = state.uniform.rot >= 360.f ? 0.0f : state.uniform.rot;
+  wgpuQueueWriteBuffer(state.wgpu.queue, state.store.u_buffer, 0,
+                       &state.uniform.rot, sizeof(state.uniform.rot));
 
-    // create texture view
-    WGPUTextureView back_buffer = wgpuSwapChainGetCurrentTextureView(state.wgpu.swapchain);
+  // create texture view
+  WGPUTextureView back_buffer =
+      wgpuSwapChainGetCurrentTextureView(state.wgpu.swapchain);
 
-    // create command encoder
-    WGPUCommandEncoder cmd_encoder = wgpuDeviceCreateCommandEncoder(state.wgpu.device, NULL);
+  // create command encoder
+  WGPUCommandEncoder cmd_encoder =
+      wgpuDeviceCreateCommandEncoder(state.wgpu.device, NULL);
 
-    // begin render pass
-    WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(cmd_encoder, &(WGPURenderPassDescriptor){
-        // color attachments
-        .colorAttachmentCount = 1,
-        .colorAttachments = &(WGPURenderPassColorAttachment){
-            .view = back_buffer,
-            .loadOp = WGPULoadOp_Clear,
-            .storeOp = WGPUStoreOp_Store,
-            .clearValue = (WGPUColor){ 0.2f, 0.2f, 0.3f, 1.0f },
-            .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED
-        },
-    });
+  // begin render pass
+  WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(
+      cmd_encoder,
+      &(WGPURenderPassDescriptor){
+          // color attachments
+          .colorAttachmentCount = 1,
+          .colorAttachments =
+              &(WGPURenderPassColorAttachment){
+                  .view = back_buffer,
+                  .loadOp = WGPULoadOp_Clear,
+                  .storeOp = WGPUStoreOp_Store,
+                  .clearValue = (WGPUColor){0.2f, 0.2f, 0.3f, 1.0f},
+                  .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED},
+      });
 
-    // draw quad (comment these five lines to simply clear the screen)
-    wgpuRenderPassEncoderSetPipeline(render_pass, state.wgpu.pipeline);
-    wgpuRenderPassEncoderSetBindGroup(render_pass, 0, state.store.bind_group, 0, 0);
-    wgpuRenderPassEncoderSetVertexBuffer(render_pass, 0, state.store.v_buffer, 0, WGPU_WHOLE_SIZE);
-    wgpuRenderPassEncoderSetIndexBuffer(render_pass, state.store.i_buffer, WGPUIndexFormat_Uint16, 0, WGPU_WHOLE_SIZE);
-    wgpuRenderPassEncoderDrawIndexed(render_pass, 6, 1, 0, 0, 0);
+  // draw quad (comment these five lines to simply clear the screen)
+  wgpuRenderPassEncoderSetPipeline(render_pass, state.wgpu.pipeline);
+  wgpuRenderPassEncoderSetBindGroup(render_pass, 0, state.store.bind_group, 0,
+                                    0);
+  wgpuRenderPassEncoderSetVertexBuffer(render_pass, 0, state.store.v_buffer, 0,
+                                       WGPU_WHOLE_SIZE);
+  wgpuRenderPassEncoderSetIndexBuffer(render_pass, state.store.i_buffer,
+                                      WGPUIndexFormat_Uint16, 0,
+                                      WGPU_WHOLE_SIZE);
+  wgpuRenderPassEncoderDrawIndexed(render_pass, 6, 1, 0, 0, 0);
 
-    // end render pass
-    wgpuRenderPassEncoderEnd(render_pass);
+  // end render pass
+  wgpuRenderPassEncoderEnd(render_pass);
 
-    // create command buffer
-    WGPUCommandBuffer cmd_buffer = wgpuCommandEncoderFinish(cmd_encoder, NULL); // after 'end render pass'
+  // create command buffer
+  WGPUCommandBuffer cmd_buffer =
+      wgpuCommandEncoderFinish(cmd_encoder, NULL); // after 'end render pass'
 
-    // submit commands    
-    wgpuQueueSubmit(state.wgpu.queue, 1, &cmd_buffer);
+  // submit commands
+  wgpuQueueSubmit(state.wgpu.queue, 1, &cmd_buffer);
 
-    // release all
-    wgpuRenderPassEncoderRelease(render_pass);
-    wgpuCommandEncoderRelease(cmd_encoder);
-    wgpuCommandBufferRelease(cmd_buffer);
-    wgpuTextureViewRelease(back_buffer);
+  // release all
+  wgpuRenderPassEncoderRelease(render_pass);
+  wgpuCommandEncoderRelease(cmd_encoder);
+  wgpuCommandBufferRelease(cmd_buffer);
+  wgpuTextureViewRelease(back_buffer);
 }
 
+void init_pipeline() {
 
-void init_pipeline(){
+  // Loading shader
+  char *shader_triangle_code = NULL;
+  const char *shader_path = "./shader/default.wgsl";
+  store_file(&shader_triangle_code, shader_path);
 
-    // compile shaders
-  WGPUShaderModule shader_triangle = create_shader(&state,shader_code, NULL);
+  // compile shaders
+  WGPUShaderModule shader_triangle =
+      create_shader(&state, shader_triangle_code, NULL);
 
-    // describe buffer layouts
-    WGPUVertexAttribute vertex_attributes[2] = {
-        // position: x, y
-        [0] = {
-            .format = WGPUVertexFormat_Float32x2,
-            .offset = 0,
-            .shaderLocation = 0,
-        },
-        // color: r, g, b
-        [1] = {
-            .format = WGPUVertexFormat_Float32x3,
-            .offset = 2 * sizeof(float),
-            .shaderLocation = 1,
-        }
-    };
-    WGPUVertexBufferLayout vertex_buffer_layout = {
-        .arrayStride = 5 * sizeof(float),
-        .attributeCount = 2,
-        .attributes = vertex_attributes,
-    };
+  // describe buffer layouts
+  WGPUVertexAttribute vertex_attributes[2] = {
+      // position: x, y
+      [0] =
+          {
+              .format = WGPUVertexFormat_Float32x2,
+              .offset = 0,
+              .shaderLocation = 0,
+          },
+      // color: r, g, b
+      [1] = {
+          .format = WGPUVertexFormat_Float32x3,
+          .offset = 2 * sizeof(float),
+          .shaderLocation = 1,
+      }};
+  WGPUVertexBufferLayout vertex_buffer_layout = {
+      .arrayStride = 5 * sizeof(float),
+      .attributeCount = 2,
+      .attributes = vertex_attributes,
+  };
 
-    // describe pipeline layout
-    WGPUBindGroupLayout bindgroup_layout = wgpuDeviceCreateBindGroupLayout(state.wgpu.device, &(WGPUBindGroupLayoutDescriptor){
-        .entryCount = 1,
-        // bind group layout entry
-        .entries = &(WGPUBindGroupLayoutEntry){
-            .binding = 0,
-            .visibility = WGPUShaderStage_Vertex,
-            // buffer binding layout
-            .buffer = {
-                .type = WGPUBufferBindingType_Uniform,
-            }
-        },
-    });
-    WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(state.wgpu.device, &(WGPUPipelineLayoutDescriptor){
-        .bindGroupLayoutCount = 1,
-        .bindGroupLayouts = &bindgroup_layout,
-    });
-    
-    // create pipeline
-    state.wgpu.pipeline = wgpuDeviceCreateRenderPipeline(state.wgpu.device, &(WGPURenderPipelineDescriptor){
-        // pipeline layout
-        .layout = pipeline_layout,
-        // vertex state
-        .vertex = {
-            .module = shader_triangle,
-            .entryPoint = "vs_main",
-            .bufferCount = 1,
-            .buffers = &vertex_buffer_layout,
-        },
-        // primitive state
-        .primitive = {
-            .frontFace = WGPUFrontFace_CCW,
-            .cullMode = WGPUCullMode_None,
-            .topology = WGPUPrimitiveTopology_TriangleList,
-            .stripIndexFormat = WGPUIndexFormat_Undefined,
-        },
-        // fragment state
-        .fragment = &(WGPUFragmentState){
-            .module = shader_triangle,
-            .entryPoint = "fs_main",
-            .targetCount = 1,
-            // color target state
-            .targets = &(WGPUColorTargetState){
-                .format = WGPUTextureFormat_BGRA8Unorm,
-                .writeMask = WGPUColorWriteMask_All,
-                // blend state
-                .blend = &(WGPUBlendState){
-                    .color = {
-                        .operation = WGPUBlendOperation_Add,
-                        .srcFactor = WGPUBlendFactor_One,
-                        .dstFactor = WGPUBlendFactor_One,
-                    },
-                    .alpha = {
-                        .operation = WGPUBlendOperation_Add,
-                        .srcFactor = WGPUBlendFactor_One,
-                        .dstFactor = WGPUBlendFactor_One,
-                    },
-                },
-            },
-        },
-        // multi-sampling state
-        .multisample = {
-            .count = 1,
-            .mask = 0xFFFFFFFF,
-            .alphaToCoverageEnabled = false,
-        },
-        // depth-stencil state
-        .depthStencil = NULL,
-        
-    });
+  // describe pipeline layout
+  WGPUBindGroupLayout bindgroup_layout = wgpuDeviceCreateBindGroupLayout(
+      state.wgpu.device,
+      &(WGPUBindGroupLayoutDescriptor){
+          .entryCount = 1,
+          // bind group layout entry
+          .entries =
+              &(WGPUBindGroupLayoutEntry){
+                  .binding = 0,
+                  .visibility = WGPUShaderStage_Vertex,
+                  // buffer binding layout
+                  .buffer =
+                      {
+                          .type = WGPUBufferBindingType_Uniform,
+                      }},
+      });
+  WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
+      state.wgpu.device, &(WGPUPipelineLayoutDescriptor){
+                             .bindGroupLayoutCount = 1,
+                             .bindGroupLayouts = &bindgroup_layout,
+                         });
 
-    wgpuBindGroupLayoutRelease(bindgroup_layout);
-    wgpuPipelineLayoutRelease(pipeline_layout);
-    wgpuShaderModuleRelease(shader_triangle);
+  // create pipeline
+  state.wgpu.pipeline = wgpuDeviceCreateRenderPipeline(
+      state.wgpu.device,
+      &(WGPURenderPipelineDescriptor){
+          // pipeline layout
+          .layout = pipeline_layout,
+          // vertex state
+          .vertex =
+              {
+                  .module = shader_triangle,
+                  .entryPoint = "vs_main",
+                  .bufferCount = 1,
+                  .buffers = &vertex_buffer_layout,
+              },
+          // primitive state
+          .primitive =
+              {
+                  .frontFace = WGPUFrontFace_CCW,
+                  .cullMode = WGPUCullMode_None,
+                  .topology = WGPUPrimitiveTopology_TriangleList,
+                  .stripIndexFormat = WGPUIndexFormat_Undefined,
+              },
+          // fragment state
+          .fragment =
+              &(WGPUFragmentState){
+                  .module = shader_triangle,
+                  .entryPoint = "fs_main",
+                  .targetCount = 1,
+                  // color target state
+                  .targets =
+                      &(WGPUColorTargetState){
+                          .format = WGPUTextureFormat_BGRA8Unorm,
+                          .writeMask = WGPUColorWriteMask_All,
+                          // blend state
+                          .blend =
+                              &(WGPUBlendState){
+                                  .color =
+                                      {
+                                          .operation = WGPUBlendOperation_Add,
+                                          .srcFactor = WGPUBlendFactor_One,
+                                          .dstFactor = WGPUBlendFactor_One,
+                                      },
+                                  .alpha =
+                                      {
+                                          .operation = WGPUBlendOperation_Add,
+                                          .srcFactor = WGPUBlendFactor_One,
+                                          .dstFactor = WGPUBlendFactor_One,
+                                      },
+                              },
+                      },
+              },
+          // multi-sampling state
+          .multisample =
+              {
+                  .count = 1,
+                  .mask = 0xFFFFFFFF,
+                  .alphaToCoverageEnabled = false,
+              },
+          // depth-stencil state
+          .depthStencil = NULL,
 
+      });
+
+  wgpuBindGroupLayoutRelease(bindgroup_layout);
+  wgpuPipelineLayoutRelease(pipeline_layout);
+  wgpuShaderModuleRelease(shader_triangle);
 }
 
-void setup_triangle(){
+void setup_triangle() {
 
-    // create the vertex buffer (x, y, r, g, b) and index buffer
-    float const vertex_data[] = {
-        // x, y          // r, g, b
-       -0.5f, -0.5f,     1.0f, 0.0f, 0.0f, // bottom-left
-        0.5f, -0.5f,     0.0f, 1.0f, 0.0f, // bottom-right
-        0.5f,  0.5f,     0.0f, 0.0f, 1.0f, // top-right
-       -0.5f,  0.5f,     1.0f, 1.0f, 0.0f, // top-left
-    };
-    uint16_t index_data[] = {
-        0, 1, 2,
-        0, 2, 3,
-    };
-    state.store.v_buffer = create_buffer(&state, vertex_data, sizeof(vertex_data), WGPUBufferUsage_Vertex);
-    state.store.i_buffer = create_buffer(&state, index_data, sizeof(index_data), WGPUBufferUsage_Index);
-    
-    // create the uniform bind group
-    state.store.u_buffer = create_buffer(&state, &state.uniform.rot, sizeof(state.uniform.rot), WGPUBufferUsage_Uniform);
-    state.store.bind_group = wgpuDeviceCreateBindGroup(state.wgpu.device, &(WGPUBindGroupDescriptor){
-        .layout = wgpuRenderPipelineGetBindGroupLayout(state.wgpu.pipeline, 0),
-        .entryCount = 1,
-        // bind group entry
-        .entries = &(WGPUBindGroupEntry){
-            .binding = 0,
-            .offset = 0,
-            .buffer = state.store.u_buffer,
-            .size = sizeof(state.uniform.rot),
-        },
-    });
+  // create the vertex buffer (x, y, r, g, b) and index buffer
+  float const vertex_data[] = {
+      // x, y          // r, g, b
+      -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, // bottom-left
+      0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, // bottom-right
+      0.5f,  0.5f,  0.0f, 0.0f, 1.0f, // top-right
+      -0.5f, 0.5f,  1.0f, 1.0f, 0.0f, // top-left
+  };
+  uint16_t index_data[] = {
+      0, 1, 2, 0, 2, 3,
+  };
+  state.store.v_buffer = create_buffer(&state, vertex_data, sizeof(vertex_data),
+                                       WGPUBufferUsage_Vertex);
+  state.store.i_buffer = create_buffer(&state, index_data, sizeof(index_data),
+                                       WGPUBufferUsage_Index);
 
-    
+  // create the uniform bind group
+  state.store.u_buffer =
+      create_buffer(&state, &state.uniform.rot, sizeof(state.uniform.rot),
+                    WGPUBufferUsage_Uniform);
+  state.store.bind_group = wgpuDeviceCreateBindGroup(
+      state.wgpu.device, &(WGPUBindGroupDescriptor){
+                             .layout = wgpuRenderPipelineGetBindGroupLayout(
+                                 state.wgpu.pipeline, 0),
+                             .entryCount = 1,
+                             // bind group entry
+                             .entries =
+                                 &(WGPUBindGroupEntry){
+                                     .binding = 0,
+                                     .offset = 0,
+                                     .buffer = state.store.u_buffer,
+                                     .size = sizeof(state.uniform.rot),
+                                 },
+                         });
 }
-
 
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused

@@ -1,5 +1,5 @@
 wasm:
-	emcc backend/generator.c main.c -o build/wgpu_scene.js \
+	emcc utils/file.c backend/generator.c main.c -o build/wgpu_scene.js \
 -s NO_EXIT_RUNTIME=1  \
 -s "EXPORTED_RUNTIME_METHODS=['ccall']" \
 -s EXPORTED_FUNCTIONS="['_main']" \
