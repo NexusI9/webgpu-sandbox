@@ -11,7 +11,18 @@ struct Rotation {
   @location(0) degs : f32,
 };
 
+struct Camera {
+  view : mat4x4<f32>,
+  position : vec3<f32>,
+};
+
+struct Viewport{
+   projection : mat4x4<f32>,   
+}
+
 @group(0) @binding(0) var<uniform> uRot : Rotation;
+@group(0) @binding(1) var<uniform> uViewport : Viewport;
+@group(0) @binding(2) var<uniform> uCamera : Camera;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {

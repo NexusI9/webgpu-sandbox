@@ -9,22 +9,28 @@
 #include <stdio.h>
 
 // HEADERS
-#include "backend/generator.h"
-#include "backend/state.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
-#include "utils/file.h"
 #include <webgpu/webgpu.h>
 
-#define SHADER_SOURCE(...) #__VA_ARGS__ // stringify (#) macros argument
+#include "utils/file.h"
+
+#include "backend/generator.h"
+#include "backend/state.h"
+
+#include "runtime/camera.h"
+#include "runtime/scene.h"
+#include "runtime/viewport.h"
 
 static state_t state;
+static scene main_scene;
 
 // callbacks
 static int resize(int, const EmscriptenUiEvent *, void *);
 static void draw();
 static void init_pipeline();
 static void setup_triangle();
+static void init_scene();
 
 void draw() {
 
@@ -92,6 +98,16 @@ void draw() {
   wgpuTextureViewRelease(back_buffer);
 }
 
+void init_scene() {
+
+  main_scene.camera = camera_create();
+  main_scene.viewport = (viewport){
+      .fov = 0.0f,
+      .near_clip = 1.0f,
+      .far_clip = 100.0f,
+  };
+}
+
 void init_pipeline() {
 
   // Loading shader
@@ -150,9 +166,7 @@ void init_pipeline() {
   state.wgpu.pipeline = wgpuDeviceCreateRenderPipeline(
       state.wgpu.device,
       &(WGPURenderPipelineDescriptor){
-          // pipeline layout
           .layout = pipeline_layout,
-          // vertex state
           .vertex =
               {
                   .module = shader_triangle,
@@ -160,7 +174,6 @@ void init_pipeline() {
                   .bufferCount = 1,
                   .buffers = &vertex_buffer_layout,
               },
-          // primitive state
           .primitive =
               {
                   .frontFace = WGPUFrontFace_CCW,
@@ -168,7 +181,6 @@ void init_pipeline() {
                   .topology = WGPUPrimitiveTopology_TriangleList,
                   .stripIndexFormat = WGPUIndexFormat_Undefined,
               },
-          // fragment state
           .fragment =
               &(WGPUFragmentState){
                   .module = shader_triangle,
@@ -197,14 +209,12 @@ void init_pipeline() {
                               },
                       },
               },
-          // multi-sampling state
           .multisample =
               {
                   .count = 1,
                   .mask = 0xFFFFFFFF,
                   .alphaToCoverageEnabled = false,
               },
-          // depth-stencil state
           .depthStencil = NULL,
 
       });
@@ -269,6 +279,7 @@ int main(int argc, const char *argv[]) {
 
   init_pipeline();
   setup_triangle();
+
   // Update Loop
   emscripten_set_main_loop(draw, 0, 1);
 

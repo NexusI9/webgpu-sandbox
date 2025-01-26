@@ -31,7 +31,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmp5olvhn3_.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpyt9r5olk.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -208,25 +208,25 @@ Module['FS_createPath']("/", "shader", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/shader/default.wgsl", "start": 0, "end": 948}], "remote_package_size": 948});
+    loadPackage({"files": [{"filename": "/shader/default.wgsl", "start": 0, "end": 1176}], "remote_package_size": 1176});
 
   })();
 
-// end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmp5olvhn3_.js
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpug3ghslc.js
+// end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpyt9r5olk.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbmti4t_v.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpug3ghslc.js
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpksi4mria.js
+  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbmti4t_v.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpuo0ao0kw.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpksi4mria.js
+  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpuo0ao0kw.js
 
 
 // Sometimes an existing Module object exists with properties

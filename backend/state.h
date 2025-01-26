@@ -1,5 +1,5 @@
-#ifndef STATE_H_
-#define STATE_H_
+#ifndef _STATE_H_
+#define _STATE_H_
 
 #include "webgpu/webgpu.h"
 

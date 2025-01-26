@@ -1,5 +1,5 @@
-#ifndef GENERATOR_H_
-#define GENERATOR_H_
+#ifndef _GENERATOR_H_
+#define _GENERATOR_H_
 
 #include "webgpu/webgpu.h"
 #include "state.h"
