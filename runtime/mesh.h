@@ -1,6 +1,10 @@
 #ifndef _MESH_H_
 #define _MESH_H_
+
 #include <stdint.h>
+#include "webgpu/webgpu.h"
+#include "../backend/state.h"
+#include "shader.h"
 
 // Builder Pattern | Descriptor Pattern
 typedef struct {
@@ -34,11 +38,15 @@ typedef struct {
   } index;
 
   struct {
-
+      WGPUBuffer vertex, index, uniform;
   } buffer;
+
+   
 
 } mesh;
 
 mesh mesh_create(const MeshCreateDescriptor *);
+WGPUBuffer mesh_create_vertex_buffer(state_t, void*, size_t);
+
 
 #endif

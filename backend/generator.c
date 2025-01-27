@@ -1,30 +1,31 @@
 #include "generator.h"
+#include "webgpu/webgpu.h"
 
-WGPUShaderModule create_shader(const state_t *state, const char *code,
+WGPUShaderModule create_shader(const WGPUDevice *device, const char *code,
                                const char *label) {
+    
   WGPUShaderModuleWGSLDescriptor wgsl = {
       .chain.sType = WGPUSType_ShaderModuleWGSLDescriptor,
       .code = code,
   };
 
   return wgpuDeviceCreateShaderModule(
-      state->wgpu.device, &(WGPUShaderModuleDescriptor){
+      *device, &(WGPUShaderModuleDescriptor){
                               .nextInChain = (WGPUChainedStruct *)(&wgsl),
                               .label = label,
                           });
 }
 
-WGPUBuffer create_buffer(const state_t *state, const void *data, size_t size,
-                         WGPUBufferUsage usage) {
+WGPUBuffer create_buffer(const CreateBufferDescriptor* bf) {
   // prepare buffer object
   WGPUBuffer buffer = wgpuDeviceCreateBuffer(
-      state->wgpu.device, &(WGPUBufferDescriptor){
-                              .usage = WGPUBufferUsage_CopyDst | usage,
-                              .size = size,
+     *bf->device, &(WGPUBufferDescriptor){
+                              .usage = WGPUBufferUsage_CopyDst | bf->usage,
+                              .size = bf->size,
                           });
 
   // populate buffer
-  wgpuQueueWriteBuffer(state->wgpu.queue, buffer, 0, data, size);
+  wgpuQueueWriteBuffer(*bf->queue, buffer, 0, bf->data, bf->size);
   return buffer;
 }
 

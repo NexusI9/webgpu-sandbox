@@ -6,6 +6,7 @@ runtime/scene.c \
 runtime/camera.c \
 runtime/viewport.c \
 runtime/mesh.c \
+runtime/shader.c \
 main.c \
 -o build/wgpu_scene.js \
 -s NO_EXIT_RUNTIME=1  \

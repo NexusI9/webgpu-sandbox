@@ -26,4 +26,5 @@ scene scene_create(camera);
 
 void scene_add_mesh(scene *, mesh *);
 
+
 #endif

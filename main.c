@@ -21,6 +21,7 @@
 #include "runtime/camera.h"
 #include "runtime/mesh.h"
 #include "runtime/scene.h"
+#include "runtime/shader.h"
 #include "runtime/viewport.h"
 
 static state_t state;
@@ -109,15 +110,11 @@ void init_scene() {
 
 void init_pipeline() {
 
-  // Loading shader
-  char *shader_triangle_code = NULL;
-  const char *shader_path = "./shader/default.wgsl";
-  store_file(&shader_triangle_code, shader_path);
-
-  // compile shaders
-
-  WGPUShaderModule shader_triangle =
-      create_shader(&state, shader_triangle_code, NULL);
+  const shader tri_shader = shader_create(&(ShaderCreateDescriptor){
+      .path = "./shader/default.wgsl",
+      .label = "triangle",
+      .device = &state.wgpu.device,
+  });
 
   // describe buffer layouts
   WGPUVertexAttribute vertex_attributes[2] = {
@@ -134,6 +131,7 @@ void init_pipeline() {
           .offset = 2 * sizeof(float),
           .shaderLocation = 1,
       }};
+
   WGPUVertexBufferLayout vertex_buffer_layout = {
       .arrayStride = 5 * sizeof(float),
       .attributeCount = 2,
@@ -169,7 +167,7 @@ void init_pipeline() {
           .layout = pipeline_layout,
           .vertex =
               {
-                  .module = shader_triangle,
+                  .module = tri_shader.module,
                   .entryPoint = "vs_main",
                   .bufferCount = 1,
                   .buffers = &vertex_buffer_layout,
@@ -183,7 +181,7 @@ void init_pipeline() {
               },
           .fragment =
               &(WGPUFragmentState){
-                  .module = shader_triangle,
+                  .module = tri_shader.module,
                   .entryPoint = "fs_main",
                   .targetCount = 1,
                   // color target state
@@ -221,7 +219,7 @@ void init_pipeline() {
 
   wgpuBindGroupLayoutRelease(bindgroup_layout);
   wgpuPipelineLayoutRelease(pipeline_layout);
-  wgpuShaderModuleRelease(shader_triangle);
+  wgpuShaderModuleRelease(tri_shader.module);
 }
 
 void setup_triangle() {
@@ -237,7 +235,7 @@ void setup_triangle() {
 
   uint16_t index_data[] = {0, 1, 2, 0, 2, 3};
 
-  const mesh triangle_mesh = mesh_create(&(MeshCreateDescriptor){
+  const mesh tri_mesh = mesh_create(&(MeshCreateDescriptor){
       .vertex =
           {
               .data = vertex_data,
@@ -250,31 +248,46 @@ void setup_triangle() {
           },
   });
 
-  state.store.v_buffer =
-      create_buffer(&state, triangle_mesh.vertex.data, sizeof(vertex_data),
-                    WGPUBufferUsage_Vertex);
-  state.store.i_buffer =
-      create_buffer(&state, triangle_mesh.index.data, sizeof(index_data),
-                    WGPUBufferUsage_Index);
+  // store vertex in buffer
+  state.store.v_buffer = create_buffer(&(CreateBufferDescriptor){
+      .queue = &state.wgpu.queue,
+      .device = &state.wgpu.device,
+      .data = (void *)tri_mesh.vertex.data,
+      .size = tri_mesh.vertex.length * sizeof(float),
+      .usage = WGPUBufferUsage_Vertex,
+  });
+
+  // store index in buffer
+  state.store.i_buffer = create_buffer(&(CreateBufferDescriptor){
+      .queue = &state.wgpu.queue,
+      .device = &state.wgpu.device,
+      .data = (void *)tri_mesh.index.data,
+      .size = tri_mesh.index.length * sizeof(uint16_t),
+      .usage = WGPUBufferUsage_Index,
+  });
 
   // create the uniform bind group
-  state.store.u_buffer =
-      create_buffer(&state, &state.uniform.rot, sizeof(state.uniform.rot),
-                    WGPUBufferUsage_Uniform);
-  state.store.bind_group = wgpuDeviceCreateBindGroup(
-      state.wgpu.device, &(WGPUBindGroupDescriptor){
-                             .layout = wgpuRenderPipelineGetBindGroupLayout(
-                                 state.wgpu.pipeline, 0),
-                             .entryCount = 1,
-                             // bind group entry
-                             .entries =
-                                 &(WGPUBindGroupEntry){
-                                     .binding = 0,
-                                     .offset = 0,
-                                     .buffer = state.store.u_buffer,
-                                     .size = sizeof(state.uniform.rot),
-                                 },
-                         });
+  state.store.u_buffer = create_buffer(&(CreateBufferDescriptor){
+      .queue = &state.wgpu.queue,
+      .device = &state.wgpu.device,
+      .data = (void *)&state.uniform.rot,
+      .size = sizeof(state.uniform.rot),
+      .usage = WGPUBufferUsage_Uniform,
+  });
+
+  state.store.bind_group = shader_bind_group(&(ShaderBindGroupDescriptor){
+      .device = &state.wgpu.device,
+      .pipeline = &state.wgpu.pipeline,
+      .group_index = 0,
+      .entry_count = 1,
+      .entries =
+          &(WGPUBindGroupEntry){
+              .binding = 0,
+              .offset = 0,
+              .buffer = state.store.u_buffer,
+              .size = sizeof(state.uniform.rot),
+          },
+  });
 }
 
 int main(int argc, const char *argv[]) {
