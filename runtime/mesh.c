@@ -1,17 +1,16 @@
 #include "mesh.h"
 
-mesh mesh_create(const MeshDescriptor* md){
+mesh mesh_create(const MeshCreateDescriptor *md) {
 
-    mesh new_mesh;
+  mesh new_mesh;
 
-    //vertices
-    new_mesh.vertex = md->vertex;
-    new_mesh.vertex_length = md->vertex_length;
+  // vertices
+  new_mesh.vertex.data = md->vertex.data;
+  new_mesh.vertex.length = md->vertex.length;
+  
+  // indexes
+  new_mesh.index.data = md->index.data;
+  new_mesh.index.length = md->index.length;
 
-    //indexes
-    new_mesh.index = md->index;
-    new_mesh.index_length = md->index_length;
-   
-    return new_mesh;
-    
+  return new_mesh;
 }

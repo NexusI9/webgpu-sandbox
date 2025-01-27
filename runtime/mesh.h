@@ -2,29 +2,43 @@
 #define _MESH_H_
 #include <stdint.h>
 
-//Builder Pattern | Descriptor Pattern
-typedef struct{
-    
-    const float* vertex;
-    const uint16_t vertex_length;
-    
-    const uint16_t* index;
-    const uint16_t index_length;
-    
-} MeshDescriptor;
+// Builder Pattern | Descriptor Pattern
+typedef struct {
 
-typedef struct{
+  struct {
+    const float *data;
+    uint16_t length;
+  } vertex;
 
-    uint8_t id;
-    
-    const float* vertex;
-    uint16_t vertex_length;
-    
-    const uint16_t* index;
-    uint16_t index_length;
-    
+  struct {
+    const uint16_t *data;
+    uint16_t length;
+  } index;
+
+} MeshCreateDescriptor;
+
+typedef struct {
+
+  uint8_t id;
+
+  // vertex list
+  struct {
+    const float *data;
+    uint16_t length;
+  } vertex;
+
+  // index list
+  struct {
+    const uint16_t *data;
+    uint16_t length;
+  } index;
+
+  struct {
+
+  } buffer;
+
 } mesh;
 
-mesh mesh_create(const MeshDescriptor*);
+mesh mesh_create(const MeshCreateDescriptor *);
 
 #endif

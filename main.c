@@ -237,17 +237,25 @@ void setup_triangle() {
 
   uint16_t index_data[] = {0, 1, 2, 0, 2, 3};
 
-  const mesh triangle_mesh = mesh_create(
-      &(MeshDescriptor){.vertex = vertex_data,
-                        .vertex_length = sizeof(vertex_data) / sizeof(float),
-                        .index = index_data,
-                        .index_length = sizeof(index_data) / sizeof(uint16_t)});
+  const mesh triangle_mesh = mesh_create(&(MeshCreateDescriptor){
+      .vertex =
+          {
+              .data = vertex_data,
+              .length = sizeof(vertex_data) / sizeof(float),
+          },
+      .index =
+          {
+              .data = index_data,
+              .length = sizeof(index_data) / sizeof(uint16_t),
+          },
+  });
 
   state.store.v_buffer =
-      create_buffer(&state, triangle_mesh.vertex, sizeof(vertex_data),
+      create_buffer(&state, triangle_mesh.vertex.data, sizeof(vertex_data),
                     WGPUBufferUsage_Vertex);
-  state.store.i_buffer = create_buffer(
-      &state, triangle_mesh.index, sizeof(index_data), WGPUBufferUsage_Index);
+  state.store.i_buffer =
+      create_buffer(&state, triangle_mesh.index.data, sizeof(index_data),
+                    WGPUBufferUsage_Index);
 
   // create the uniform bind group
   state.store.u_buffer =
