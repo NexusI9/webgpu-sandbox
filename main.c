@@ -19,6 +19,7 @@
 #include "backend/state.h"
 
 #include "runtime/camera.h"
+#include "runtime/mesh.h"
 #include "runtime/scene.h"
 #include "runtime/viewport.h"
 
@@ -100,12 +101,10 @@ void draw() {
 
 void init_scene() {
 
-  main_scene.camera = camera_create();
-  main_scene.viewport = (viewport){
-      .fov = 0.0f,
-      .near_clip = 1.0f,
-      .far_clip = 100.0f,
-  };
+  viewport vp = viewport_create(45.0f, 0.1f, 100.0f);
+  camera cam = camera_create();
+
+  main_scene = scene_create(cam);
 }
 
 void init_pipeline() {
@@ -116,6 +115,7 @@ void init_pipeline() {
   store_file(&shader_triangle_code, shader_path);
 
   // compile shaders
+
   WGPUShaderModule shader_triangle =
       create_shader(&state, shader_triangle_code, NULL);
 
@@ -227,20 +227,27 @@ void init_pipeline() {
 void setup_triangle() {
 
   // create the vertex buffer (x, y, r, g, b) and index buffer
-  float const vertex_data[] = {
+  const float vertex_data[] = {
       // x, y          // r, g, b
       -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, // bottom-left
       0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, // bottom-right
       0.5f,  0.5f,  0.0f, 0.0f, 1.0f, // top-right
       -0.5f, 0.5f,  1.0f, 1.0f, 0.0f, // top-left
   };
-  uint16_t index_data[] = {
-      0, 1, 2, 0, 2, 3,
-  };
-  state.store.v_buffer = create_buffer(&state, vertex_data, sizeof(vertex_data),
-                                       WGPUBufferUsage_Vertex);
-  state.store.i_buffer = create_buffer(&state, index_data, sizeof(index_data),
-                                       WGPUBufferUsage_Index);
+
+  uint16_t index_data[] = {0, 1, 2, 0, 2, 3};
+
+  const mesh triangle_mesh = mesh_create(
+      &(MeshDescriptor){.vertex = vertex_data,
+                        .vertex_length = sizeof(vertex_data) / sizeof(float),
+                        .index = index_data,
+                        .index_length = sizeof(index_data) / sizeof(uint16_t)});
+
+  state.store.v_buffer =
+      create_buffer(&state, triangle_mesh.vertex, sizeof(vertex_data),
+                    WGPUBufferUsage_Vertex);
+  state.store.i_buffer = create_buffer(
+      &state, triangle_mesh.index, sizeof(index_data), WGPUBufferUsage_Index);
 
   // create the uniform bind group
   state.store.u_buffer =
@@ -277,6 +284,7 @@ int main(int argc, const char *argv[]) {
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, false,
                                  (em_ui_callback_func)resize);
 
+  init_scene();
   init_pipeline();
   setup_triangle();
 

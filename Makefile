@@ -2,8 +2,10 @@ wasm:
 	emcc \
 utils/file.c \
 backend/generator.c \
+runtime/scene.c \
 runtime/camera.c \
 runtime/viewport.c \
+runtime/mesh.c \
 main.c \
 -o build/wgpu_scene.js \
 -s NO_EXIT_RUNTIME=1  \
