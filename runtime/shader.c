@@ -55,7 +55,7 @@ void set_vertex_layout(shader *shader) {
 
   // set x,y
   shader->vertex.attribute[0] = (WGPUVertexAttribute){
-      .format = WGPUVertexFormat_Float32x2,
+      .format = WGPUVertexFormat_Float32x3,
       .offset = 0,
       .shaderLocation = 0,
   };
@@ -63,13 +63,13 @@ void set_vertex_layout(shader *shader) {
   // set r,g,b
   shader->vertex.attribute[1] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
-      .offset = 2 * sizeof(float),
+      .offset = 3 * sizeof(float),
       .shaderLocation = 1,
   };
 
   // define layout from attributes above
   shader->vertex.layout = (WGPUVertexBufferLayout){
-      .arrayStride = 5 * sizeof(float),
+      .arrayStride = 6 * sizeof(float),
       .attributeCount = 2,
       .attributes = shader->vertex.attribute,
   };

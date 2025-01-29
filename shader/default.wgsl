@@ -1,6 +1,6 @@
 // attribute/uniform decls
 struct VertexIn {
-  @location(0) aPos : vec2<f32>, @location(1) aCol : vec3<f32>,
+  @location(0) aPos : vec3<f32>, @location(1) aCol : vec3<f32>,
 };
 
 struct VertexOut {
@@ -34,8 +34,13 @@ struct Viewport {
   var rot : mat3x3<f32> = mat3x3<f32>(vec3<f32>(cosA, sinA, 0.0),
                                       vec3<f32>(-sinA, cosA, 0.0),
                                       vec3<f32>(0.0, 0.0, 1.0));
+
+  var cam : mat4x4<f32> = mat4x4<f32>(
+                vec4<f32>(1.0, 0.0, 0.0, 0.0), vec4<f32>(0.0, 1.0, 0.0, 0.0),
+                vec4<f32>(0.0, 0.0, 1.0, 0.0), vec4<f32>(0.0, 0.0, 0.0, 1.0));
+
   var output : VertexOut;
-  output.Position = vec4<f32>(vec3<f32>(input.aPos, 1.0), 1.0);
+  output.Position = cam * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
   return output;
 }

@@ -37,7 +37,7 @@ static void init_scene();
 
 void draw() {
 
-  // update roation
+  // update rotation
   // state.uniform.rot += 0.1f;
   // state.uniform.rot = state.uniform.rot > 360.0f ? 0.0f : state.uniform.rot;
 
@@ -100,17 +100,39 @@ void setup_triangle() {
 
   // create the vertex buffer (x, y, r, g, b) and index buffer
   const float vertex_data[] = {
-      // x, y          // r, g, b
-      -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, // bottom-left
-      0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, // bottom-right
-      0.5f,  0.5f,  0.0f, 0.0f, 1.0f, // top-right
-      -0.5f, 0.5f,  1.0f, 1.0f, 0.0f, // top-left
+      // Front face
+      -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, // Bottom-left
+      0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // Bottom-right
+      0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,   // Top-right
+      -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f,  // Top-left
+
+      // Back face
+      -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, // Bottom-left
+      0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  // Bottom-right
+      0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f,   // Top-right
+      -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f,  // Top-left
   };
 
-  uint16_t index_data[] = {0, 1, 2, 0, 2, 3};
+  uint16_t index_data[] = {// Front face
+                           0, 1, 2, 0, 2, 3,
+
+                           // Back face
+                           5, 4, 7, 5, 7, 6,
+
+                           // Left face
+                           4, 0, 3, 4, 3, 7,
+
+                           // Right face
+                           1, 5, 6, 1, 6, 2,
+
+                           // Top face
+                           3, 2, 6, 3, 6, 7,
+
+                           // Bottom face
+                           4, 5, 1, 4, 1, 0};
 
   shader triangle_shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./shader/default.wgsl",
+      .path = "./shader/rotation.wgsl",
       .label = "triangle",
       .device = &state.wgpu.device,
   });
@@ -127,14 +149,14 @@ void setup_triangle() {
       .vertex =
           {
               .data = vertex_data,
-              .length = sizeof(vertex_data) / sizeof(float),
+              .length = sizeof(vertex_data) / sizeof(vertex_data[0]),
           },
 
       // index data
       .index =
           {
               .data = index_data,
-              .length = sizeof(index_data) / sizeof(uint16_t),
+              .length = sizeof(index_data) / sizeof(index_data[0]),
           },
 
       // shader

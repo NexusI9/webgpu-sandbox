@@ -13,7 +13,9 @@ main.c \
 -s "EXPORTED_RUNTIME_METHODS=['ccall']" \
 -s EXPORTED_FUNCTIONS="['_main']" \
 -s USE_WEBGPU=1 \
+--preload-file ./shader/rotation.wgsl \
 --preload-file ./shader/default.wgsl
+
 #\
 Use "ccall" as method call to access the wasm functions\
 EXPORTED_RUNTIME_METHOD =>  Module.methodname("myfunction")\
