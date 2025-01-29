@@ -20,6 +20,9 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
   new_mesh.index.data = md->index.data;
   new_mesh.index.length = md->index.length;
 
+  // set shader
+  new_mesh.shader = md->shader;
+
   // push vertices & index data to buffer
 
   // store vertex in buffer
@@ -91,7 +94,7 @@ void mesh_create_uniform_buffer(mesh *mesh,
 
 void mesh_draw(const mesh *mesh, WGPURenderPassEncoder *render_pass,
                const camera *camera, const viewport *viewport) {
-
+  
   // draw shader
   shader_draw(&mesh->shader, render_pass, camera, viewport);
 

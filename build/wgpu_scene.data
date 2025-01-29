@@ -20,8 +20,8 @@ struct Viewport {
 }
 
 // camera viewport
-@group(1) @binding(0) var<uniform> uViewport : Viewport;
-@group(1) @binding(1) var<uniform> uCamera : Camera;
+//@group(1) @binding(0) var<uniform> uViewport : Viewport;
+//@group(1) @binding(1) var<uniform> uCamera : Camera;
 
 // rot
 @group(0) @binding(0) var<uniform> uRot : Rotation;

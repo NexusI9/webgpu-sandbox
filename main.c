@@ -26,6 +26,7 @@
 
 static state_t state;
 static scene main_scene;
+static mesh tri_mesh;
 
 // callbacks
 static int resize(int, const EmscriptenUiEvent *, void *);
@@ -37,17 +38,12 @@ static void init_scene();
 void draw() {
 
   // update roation
-  state.uniform.rot += 0.1f;
-  state.uniform.rot = state.uniform.rot > 360.0f ? 0.0f : state.uniform.rot;
-  // append update to queue
-  wgpuQueueWriteBuffer(state.wgpu.queue, state.store.u_buffer, 0,
-                       &state.uniform.rot, sizeof(state.uniform.rot));
+  // state.uniform.rot += 0.1f;
+  // state.uniform.rot = state.uniform.rot > 360.0f ? 0.0f : state.uniform.rot;
 
-  // update rotation
-  state.uniform.rot += 0.1f;
-  state.uniform.rot = state.uniform.rot >= 360.f ? 0.0f : state.uniform.rot;
-  wgpuQueueWriteBuffer(state.wgpu.queue, state.store.u_buffer, 0,
-                       &state.uniform.rot, sizeof(state.uniform.rot));
+  // append update to queue
+  // wgpuQueueWriteBuffer(state.wgpu.queue, state.store.u_buffer,
+  // 0,&state.uniform.rot, sizeof(state.uniform.rot));
 
   // create texture view
   WGPUTextureView back_buffer =
@@ -72,16 +68,8 @@ void draw() {
                   .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED},
       });
 
-  // draw quad (comment these five lines to simply clear the screen)
-  wgpuRenderPassEncoderSetPipeline(render_pass, state.wgpu.pipeline);
-  wgpuRenderPassEncoderSetBindGroup(render_pass, 0, state.store.bind_group, 0,
-                                    0);
-  wgpuRenderPassEncoderSetVertexBuffer(render_pass, 0, state.store.v_buffer, 0,
-                                       WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderSetIndexBuffer(render_pass, state.store.i_buffer,
-                                      WGPUIndexFormat_Uint16, 0,
-                                      WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderDrawIndexed(render_pass, 6, 1, 0, 0, 0);
+  // draw mesh scene
+  scene_draw(&main_scene, &render_pass);
 
   // end render pass
   wgpuRenderPassEncoderEnd(render_pass);
@@ -105,121 +93,7 @@ void init_scene() {
   viewport vp = viewport_create(45.0f, 0.1f, 100.0f);
   camera cam = camera_create();
 
-  main_scene = scene_create(cam);
-}
-
-void init_pipeline() {
-
-  const shader tri_shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./shader/default.wgsl",
-      .label = "triangle",
-      .device = &state.wgpu.device,
-  });
-
-  // describe buffer layouts
-  WGPUVertexAttribute vertex_attributes[2] = {
-      // position: x, y
-      [0] =
-          {
-              .format = WGPUVertexFormat_Float32x2,
-              .offset = 0,
-              .shaderLocation = 0,
-          },
-      // color: r, g, b
-      [1] = {
-          .format = WGPUVertexFormat_Float32x3,
-          .offset = 2 * sizeof(float),
-          .shaderLocation = 1,
-      }};
-
-  WGPUVertexBufferLayout vertex_buffer_layout = {
-      .arrayStride = 5 * sizeof(float),
-      .attributeCount = 2,
-      .attributes = vertex_attributes,
-  };
-
-  // describe pipeline layout
-  WGPUBindGroupLayout bindgroup_layout = wgpuDeviceCreateBindGroupLayout(
-      state.wgpu.device,
-      &(WGPUBindGroupLayoutDescriptor){
-          .entryCount = 1,
-          // bind group layout entry
-          .entries =
-              &(WGPUBindGroupLayoutEntry){
-                  .binding = 0,
-                  .visibility = WGPUShaderStage_Vertex,
-                  // buffer binding layout
-                  .buffer =
-                      {
-                          .type = WGPUBufferBindingType_Uniform,
-                      }},
-      });
-  WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
-      state.wgpu.device, &(WGPUPipelineLayoutDescriptor){
-                             .bindGroupLayoutCount = 1,
-                             .bindGroupLayouts = &bindgroup_layout,
-                         });
-
-  // create pipeline
-  state.wgpu.pipeline = wgpuDeviceCreateRenderPipeline(
-      state.wgpu.device,
-      &(WGPURenderPipelineDescriptor){
-          .layout = pipeline_layout,
-          .vertex =
-              {
-                  .module = tri_shader.module,
-                  .entryPoint = "vs_main",
-                  .bufferCount = 1,
-                  .buffers = &vertex_buffer_layout,
-              },
-          .primitive =
-              {
-                  .frontFace = WGPUFrontFace_CCW,
-                  .cullMode = WGPUCullMode_None,
-                  .topology = WGPUPrimitiveTopology_TriangleList,
-                  .stripIndexFormat = WGPUIndexFormat_Undefined,
-              },
-          .fragment =
-              &(WGPUFragmentState){
-                  .module = tri_shader.module,
-                  .entryPoint = "fs_main",
-                  .targetCount = 1,
-                  // color target state
-                  .targets =
-                      &(WGPUColorTargetState){
-                          .format = WGPUTextureFormat_BGRA8Unorm,
-                          .writeMask = WGPUColorWriteMask_All,
-                          // blend state
-                          .blend =
-                              &(WGPUBlendState){
-                                  .color =
-                                      {
-                                          .operation = WGPUBlendOperation_Add,
-                                          .srcFactor = WGPUBlendFactor_One,
-                                          .dstFactor = WGPUBlendFactor_One,
-                                      },
-                                  .alpha =
-                                      {
-                                          .operation = WGPUBlendOperation_Add,
-                                          .srcFactor = WGPUBlendFactor_One,
-                                          .dstFactor = WGPUBlendFactor_One,
-                                      },
-                              },
-                      },
-              },
-          .multisample =
-              {
-                  .count = 1,
-                  .mask = 0xFFFFFFFF,
-                  .alphaToCoverageEnabled = false,
-              },
-          .depthStencil = NULL,
-
-      });
-
-  wgpuBindGroupLayoutRelease(bindgroup_layout);
-  wgpuPipelineLayoutRelease(pipeline_layout);
-  wgpuShaderModuleRelease(tri_shader.module);
+  main_scene = scene_create(cam, vp);
 }
 
 void setup_triangle() {
@@ -235,59 +109,61 @@ void setup_triangle() {
 
   uint16_t index_data[] = {0, 1, 2, 0, 2, 3};
 
-  const mesh tri_mesh = mesh_create(&(MeshCreateDescriptor){
+  shader triangle_shader = shader_create(&(ShaderCreateDescriptor){
+      .path = "./shader/default.wgsl",
+      .label = "triangle",
+      .device = &state.wgpu.device,
+  });
+
+  tri_mesh = mesh_create(&(MeshCreateDescriptor){
+      // wgpu object
+      .wgpu =
+          {
+              .queue = &state.wgpu.queue,
+              .device = &state.wgpu.device,
+          },
+
+      // vertex data
       .vertex =
           {
               .data = vertex_data,
               .length = sizeof(vertex_data) / sizeof(float),
           },
+
+      // index data
       .index =
           {
               .data = index_data,
               .length = sizeof(index_data) / sizeof(uint16_t),
           },
+
+      // shader
+      .shader = triangle_shader,
   });
 
-  // store vertex in buffer
-  state.store.v_buffer = create_buffer(&(CreateBufferDescriptor){
-      .queue = &state.wgpu.queue,
-      .device = &state.wgpu.device,
-      .data = (void *)tri_mesh.vertex.data,
-      .size = tri_mesh.vertex.length * sizeof(float),
-      .usage = WGPUBufferUsage_Vertex,
-  });
+  // bind the rotation uniform
+  mesh_create_uniform_buffer(&tri_mesh,
+                             &(MeshCreateBufferDescriptor){
+                                 .data = &tri_mesh.shader.uniforms.rot,
+                                 .size = sizeof(tri_mesh.shader.uniforms.rot),
+                             });
 
-  // store index in buffer
-  state.store.i_buffer = create_buffer(&(CreateBufferDescriptor){
-      .queue = &state.wgpu.queue,
-      .device = &state.wgpu.device,
-      .data = (void *)tri_mesh.index.data,
-      .size = tri_mesh.index.length * sizeof(uint16_t),
-      .usage = WGPUBufferUsage_Index,
-  });
+  shader_add_bind_group(
+      &tri_mesh.shader,
+      &(ShaderBindGroupDescriptor){
+          .group_index = 0,
+          .entry_count = 1,
+          .entries =
+              &(WGPUBindGroupEntry){
+                  .binding = 0,
+                  .offset = 0,
+                  .buffer = tri_mesh.buffer.uniform,
+                  .size = sizeof(tri_mesh.shader.uniforms.rot),
+              },
+      });
 
-  // create the uniform bind group
-  state.store.u_buffer = create_buffer(&(CreateBufferDescriptor){
-      .queue = &state.wgpu.queue,
-      .device = &state.wgpu.device,
-      .data = (void *)&state.uniform.rot,
-      .size = sizeof(state.uniform.rot),
-      .usage = WGPUBufferUsage_Uniform,
-  });
-
-  state.store.bind_group = shader_bind_group(&(ShaderBindGroupDescriptor){
-      .device = &state.wgpu.device,
-      .pipeline = &state.wgpu.pipeline,
-      .group_index = 0,
-      .entry_count = 1,
-      .entries =
-          &(WGPUBindGroupEntry){
-              .binding = 0,
-              .offset = 0,
-              .buffer = state.store.u_buffer,
-              .size = sizeof(state.uniform.rot),
-          },
-  });
+  // add triangle to scene
+  scene_add_mesh(&main_scene, &tri_mesh);
 }
 
 int main(int argc, const char *argv[]) {
@@ -306,7 +182,6 @@ int main(int argc, const char *argv[]) {
                                  (em_ui_callback_func)resize);
 
   init_scene();
-  init_pipeline();
   setup_triangle();
 
   // Update Loop

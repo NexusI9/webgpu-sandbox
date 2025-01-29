@@ -38,11 +38,26 @@ typedef struct {
 typedef struct {
   char *source; // shader source code
   WGPUShaderModule module;
-  ShaderBindGroupList bind_group_list; // TODO: separate statics from dynamics
+
+  // uniforms
+  ShaderBindGroupList bind_groups; // TODO: separate statics from dynamics
                                        // (often updated) BindGroups
+
+  // wgpu
   WGPUDevice *device;
-  WGPUVertexBufferLayout vertex_layout;
   WGPURenderPipeline pipeline;
+
+  // vertex data
+  struct {
+    WGPUVertexAttribute attribute[2];
+    WGPUVertexBufferLayout layout;
+  } vertex;
+
+  // uniforms
+  struct {
+    float rot;
+  } uniforms;
+
 } shader;
 
 // methods

@@ -2,6 +2,7 @@
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <assert.h>
+#include <stdio.h>
 
 scene scene_create(camera camera, viewport viewport) {
 
@@ -28,7 +29,7 @@ void scene_add_mesh(scene *scene, mesh *mesh) {
   if (mesh_list->length == mesh_list->capacity - 1) {
     // TODO: find a way to realloc double size (realloc doesn't seem to be
     // included in emscripten)
-    assert("Scene mesh list reached full capacity"), exit(0);
+    perror("Scene mesh list reached full capacity"), exit(0);
     return;
   } else {
     mesh_list->items[mesh_list->length++] = mesh;

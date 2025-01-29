@@ -17,6 +17,9 @@ shader shader_create(const ShaderCreateDescriptor *sd) {
   shader.module = create_shader(sd->device, shader.source, sd->label);
   shader.device = sd->device;
 
+  // define bind_group length
+  shader.bind_groups.length = 0;
+
   // set vertex layout
   set_vertex_layout(&shader);
 
@@ -38,9 +41,8 @@ WGPUBindGroup shader_add_bind_group(shader *shader,
                            .entries = bd->entries,
                        });
 
-  if (shader->bind_group_list.length < SHADER_MAX_BIND_GROUP) {
-    shader->bind_group_list.items[shader->bind_group_list.length++] =
-        bind_group;
+  if (shader->bind_groups.length < SHADER_MAX_BIND_GROUP) {
+    shader->bind_groups.items[shader->bind_groups.length++] = bind_group;
   } else {
     perror("Bind group list at full capacity");
   }
@@ -50,33 +52,30 @@ WGPUBindGroup shader_add_bind_group(shader *shader,
 
 // Define vertex layout to be used in pipeline
 void set_vertex_layout(shader *shader) {
-  WGPUVertexAttribute vertex_attributes[2] = {
-      // position: x, y
-      [0] =
-          {
-              .format = WGPUVertexFormat_Float32x2,
-              .offset = 0,
-              .shaderLocation = 0,
-          },
-      // color: r, g, b
-      [1] =
-          {
-              .format = WGPUVertexFormat_Float32x3,
-              .offset = 2 * sizeof(float),
-              .shaderLocation = 1,
-          },
+
+  // set x,y
+  shader->vertex.attribute[0] = (WGPUVertexAttribute){
+      .format = WGPUVertexFormat_Float32x2,
+      .offset = 0,
+      .shaderLocation = 0,
+  };
+
+  // set r,g,b
+  shader->vertex.attribute[1] = (WGPUVertexAttribute){
+      .format = WGPUVertexFormat_Float32x3,
+      .offset = 2 * sizeof(float),
+      .shaderLocation = 1,
   };
 
   // define layout from attributes above
-  shader->vertex_layout = (WGPUVertexBufferLayout){
+  shader->vertex.layout = (WGPUVertexBufferLayout){
       .arrayStride = 5 * sizeof(float),
       .attributeCount = 2,
-      .attributes = vertex_attributes,
+      .attributes = shader->vertex.attribute,
   };
 }
 
 void set_pipeline(shader *shader) {
-
 
   WGPUBindGroupLayout bindgroup_layout = wgpuDeviceCreateBindGroupLayout(
       *shader->device,
@@ -110,7 +109,7 @@ void set_pipeline(shader *shader) {
                   .module = shader->module,
                   .entryPoint = "vs_main",
                   .bufferCount = 1,
-                  .buffers = &shader->vertex_layout,
+                  .buffers = &shader->vertex.layout,
               },
           .primitive =
               {
@@ -167,11 +166,12 @@ void set_pipeline(shader *shader) {
 
 void shader_draw(const shader *shader, WGPURenderPassEncoder *render_pass,
                  const camera *camera, const viewport *viewport) {
+
   wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline);
 
   // update bind groupd (uniforms, projection/view matrix...)
-  for (int i = 0; i < shader->bind_group_list.length; i++) {
+  for (int i = 0; i < shader->bind_groups.length; i++) {
     wgpuRenderPassEncoderSetBindGroup(*render_pass, 0,
-                                      shader->bind_group_list.items[i], 0, 0);
+                                      shader->bind_groups.items[i], 0, 0);
   }
 }
