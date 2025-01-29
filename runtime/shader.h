@@ -41,7 +41,7 @@ typedef struct {
 
   // uniforms
   ShaderBindGroupList bind_groups; // TODO: separate statics from dynamics
-                                       // (often updated) BindGroups
+                                   // (often updated) BindGroups
 
   // wgpu
   WGPUDevice *device;
@@ -56,6 +56,8 @@ typedef struct {
   // uniforms
   struct {
     float rot;
+    mat4 projection;
+    mat4 view;
   } uniforms;
 
 } shader;

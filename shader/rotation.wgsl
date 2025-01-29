@@ -8,7 +8,7 @@ struct VertexOut {
 };
 
 struct Rotation {
-  @location(0) degs : f32,
+  degs : f32,
 };
 
 struct Camera {
@@ -20,7 +20,7 @@ struct Viewport {
 }
 
 // camera viewport
-//@group(1) @binding(0) var<uniform> uViewport : Viewport;
+@group(1) @binding(0) var<uniform> uViewport : Viewport;
 //@group(1) @binding(1) var<uniform> uCamera : Camera;
 
 
@@ -56,7 +56,7 @@ fn view_matrix(angle : f32, camera_pos : vec3<f32>) -> mat4x4<f32> {
   var near : f32 = 0.1;
   var far : f32 = 100.0;
   var camera_pos : vec3<f32> = vec3<f32>(0.0, 0.0, -5.0);
-  var rotation_angle : f32 = radians(10.0); // Slight rotation
+  var rotation_angle : f32 = radians(45.0); // Slight rotation
 
   var projection : mat4x4<f32> = perspective_matrix(fov, aspect, near, far);
   var view : mat4x4<f32> = view_matrix(rotation_angle, camera_pos);

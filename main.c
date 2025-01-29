@@ -90,7 +90,12 @@ void draw() {
 
 void init_scene() {
 
-  viewport vp = viewport_create(45.0f, 0.1f, 100.0f);
+  viewport vp = viewport_create(&(ViewportCreateDescriptor){
+      .fov = 45.0f,
+      .near_clip = 0.1f,
+      .far_clip = 100.0f,
+      .aspect = 1920.0f / 1080.0f,
+  });
   camera cam = camera_create();
 
   main_scene = scene_create(cam, vp);
