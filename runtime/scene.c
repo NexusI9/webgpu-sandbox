@@ -45,3 +45,5 @@ void scene_draw(scene *scene, WGPURenderPassEncoder *render_pass) {
               &scene->viewport);
   }
 }
+
+

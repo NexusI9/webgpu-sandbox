@@ -76,21 +76,6 @@ void mesh_create_index_buffer(mesh *mesh,
   });
 }
 
-// send uniform data to GPU
-void mesh_create_uniform_buffer(mesh *mesh,
-                                const MeshCreateBufferDescriptor *bd) {
-
-  if (mesh->wgpu.device == NULL || mesh->wgpu.queue == NULL)
-    perror("Mesh has no device or queue"), exit(0);
-
-  mesh->buffer.uniform = create_buffer(&(CreateBufferDescriptor){
-      .queue = mesh->wgpu.queue,
-      .device = mesh->wgpu.device,
-      .data = (void *)bd->data,
-      .size = bd->size,
-      .usage = WGPUBufferUsage_Uniform,
-  });
-}
 
 void mesh_draw(const mesh *mesh, WGPURenderPassEncoder *render_pass,
                const camera *camera, const viewport *viewport) {

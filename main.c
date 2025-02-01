@@ -27,6 +27,7 @@
 static state_t state;
 static scene main_scene;
 static mesh tri_mesh;
+static float rot = 0.0f;
 
 // callbacks
 static int resize(int, const EmscriptenUiEvent *, void *);
@@ -140,7 +141,10 @@ void setup_triangle() {
       .path = "./shader/rotation.wgsl",
       .label = "triangle",
       .device = &state.wgpu.device,
+      .queue = &state.wgpu.queue,
   });
+
+  printf("%p\n", &state.wgpu.device);
 
   tri_mesh = mesh_create(&(MeshCreateDescriptor){
       // wgpu object
@@ -169,25 +173,19 @@ void setup_triangle() {
   });
 
   // bind the rotation uniform
-  mesh_create_uniform_buffer(&tri_mesh,
-                             &(MeshCreateBufferDescriptor){
-                                 .data = &tri_mesh.shader.uniforms.rot,
-                                 .size = sizeof(tri_mesh.shader.uniforms.rot),
-                             });
+  shader_add_uniform(&tri_mesh.shader, &(ShaderCreateUniformDescriptor){
+                                           .data = &rot,
+                                           .size = sizeof(rot),
+                                           .group_index = 0,
+                                           .entry_count = 1,
+                                           .entries =
+                                               &(WGPUBindGroupEntry){
+                                                   .binding = 0,
+                                                   .offset = 0,
+                                                   .size = sizeof(rot),
+                                               },
+                                       });
 
-  shader_add_bind_group(
-      &tri_mesh.shader,
-      &(ShaderBindGroupDescriptor){
-          .group_index = 0,
-          .entry_count = 1,
-          .entries =
-              &(WGPUBindGroupEntry){
-                  .binding = 0,
-                  .offset = 0,
-                  .buffer = tri_mesh.buffer.uniform,
-                  .size = sizeof(tri_mesh.shader.uniforms.rot),
-              },
-      });
 
   // add triangle to scene
   scene_add_mesh(&main_scene, &tri_mesh);
@@ -203,7 +201,7 @@ int main(int argc, const char *argv[]) {
   state.wgpu.instance = wgpuCreateInstance(NULL);
   state.wgpu.device = emscripten_webgpu_get_device();
   state.wgpu.queue = wgpuDeviceGetQueue(state.wgpu.device);
-
+  
   resize(0, NULL, NULL);
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, false,
                                  (em_ui_callback_func)resize);

@@ -16,35 +16,40 @@
 
 // descriptors
 typedef struct {
+  uint64_t offset;
+  uint64_t size;
+  uint32_t binding;
+} ShaderUniformEntry;
+
+typedef struct {
   uint8_t group_index;
   uint8_t entry_count;
   WGPUBindGroupEntry *entries;
-} ShaderBindGroupDescriptor;
+  void *data;
+  size_t size;
+} ShaderCreateUniformDescriptor;
 
 typedef struct {
   char *path;
   const char *label;
   WGPUDevice *device;
-  camera camera;
-  viewport viewport;
+  WGPUQueue *queue;
 } ShaderCreateDescriptor;
 
 // core
 typedef struct {
-  WGPUBindGroup items[SHADER_MAX_BIND_GROUP];
-  size_t length;
-} ShaderBindGroupList;
+  WGPUBuffer buffer;
+  void *data;
+  WGPUBindGroup bind_group;
+} ShaderUniforms;
 
 typedef struct {
   char *source; // shader source code
   WGPUShaderModule module;
 
-  // uniforms
-  ShaderBindGroupList bind_groups; // TODO: separate statics from dynamics
-                                   // (often updated) BindGroups
-
   // wgpu
   WGPUDevice *device;
+  WGPUQueue *queue;
   WGPURenderPipeline pipeline;
 
   // vertex data
@@ -54,19 +59,21 @@ typedef struct {
   } vertex;
 
   // uniforms
+  // TODO: separate statics from dynamics
+  // (often updated) BindGroups
+
   struct {
-    float rot;
-    mat4 projection;
-    mat4 view;
+    ShaderUniforms items[SHADER_MAX_BIND_GROUP];
+    size_t length;
   } uniforms;
 
 } shader;
 
 // methods
 shader shader_create(const ShaderCreateDescriptor *);
-WGPUBindGroup shader_add_bind_group(shader *,
-                                    const ShaderBindGroupDescriptor *);
-
+WGPUBindGroup shader_add_uniform(shader *,
+                                 const ShaderCreateUniformDescriptor *);
 void shader_draw(const shader *, WGPURenderPassEncoder *, const camera *,
                  const viewport *);
+
 #endif
