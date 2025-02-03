@@ -31,7 +31,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbymkpuju.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmp043x_xfq.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -208,25 +208,25 @@ Module['FS_createPath']("/", "shader", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/shader/default.wgsl", "start": 0, "end": 1390}, {"filename": "/shader/rotation.wgsl", "start": 1390, "end": 3550}], "remote_package_size": 3550});
+    loadPackage({"files": [{"filename": "/shader/default.wgsl", "start": 0, "end": 1390}, {"filename": "/shader/rotation.wgsl", "start": 1390, "end": 3554}], "remote_package_size": 3554});
 
   })();
 
-// end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbymkpuju.js
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmph0wh14lr.js
+// end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmp043x_xfq.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbii1lbro.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmph0wh14lr.js
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpp9k2jqkv.js
+  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpbii1lbro.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpkzi4iky7.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpp9k2jqkv.js
+  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpkzi4iky7.js
 
 
 // Sometimes an existing Module object exists with properties

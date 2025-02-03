@@ -58,22 +58,31 @@ typedef struct {
     WGPUVertexBufferLayout layout;
   } vertex;
 
-  // uniforms
+  // uniforms data along with userful information (buffer, group index...)
   // TODO: separate statics from dynamics
   // (often updated) BindGroups
-
   struct {
     ShaderUniforms items[SHADER_MAX_BIND_GROUP];
     size_t length;
   } uniforms;
 
+  // registered bind group unique indexes
+  struct {
+    uint8_t items[SHADER_MAX_BIND_GROUP];
+    size_t length;
+  } bind_groups;
+
+  int8_t projection_view_bindgroup;
+
 } shader;
 
 // methods
 shader shader_create(const ShaderCreateDescriptor *);
-WGPUBindGroup shader_add_uniform(shader *,
-                                 const ShaderCreateUniformDescriptor *);
+void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
 void shader_draw(const shader *, WGPURenderPassEncoder *, const camera *,
                  const viewport *);
+
+void shader_bind_camera(shader *, camera *, viewport *, uint8_t);
+void shader_release(shader *);
 
 #endif

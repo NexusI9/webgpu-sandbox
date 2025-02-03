@@ -144,8 +144,6 @@ void setup_triangle() {
       .queue = &state.wgpu.queue,
   });
 
-  printf("%p\n", &state.wgpu.device);
-
   tri_mesh = mesh_create(&(MeshCreateDescriptor){
       // wgpu object
       .wgpu =
@@ -183,9 +181,14 @@ void setup_triangle() {
                                                    .binding = 0,
                                                    .offset = 0,
                                                    .size = sizeof(rot),
-                                               },
-                                       });
-
+					   },
+					   });
+  
+ 
+  // bind camera and viewport
+  // shader_bind_camera(&tri_mesh.shader, &main_scene.camera,
+  // &main_scene.viewport,
+  //                 1);
 
   // add triangle to scene
   scene_add_mesh(&main_scene, &tri_mesh);
@@ -201,7 +204,7 @@ int main(int argc, const char *argv[]) {
   state.wgpu.instance = wgpuCreateInstance(NULL);
   state.wgpu.device = emscripten_webgpu_get_device();
   state.wgpu.queue = wgpuDeviceGetQueue(state.wgpu.device);
-  
+
   resize(0, NULL, NULL);
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, false,
                                  (em_ui_callback_func)resize);

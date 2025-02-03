@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "shader.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <assert.h>
@@ -25,6 +26,11 @@ void scene_add_mesh(scene *scene, mesh *mesh) {
 
   mesh_list *mesh_list = &scene->mesh_list;
 
+  // RELEASE MEMORY
+  // lock mesh shader (release module)
+  shader_release(&mesh->shader);      
+  
+  // ADD MESH TO LIST
   // eventually expand mesh array if overflow
   if (mesh_list->length == mesh_list->capacity - 1) {
     // TODO: find a way to realloc double size (realloc doesn't seem to be

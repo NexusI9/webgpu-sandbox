@@ -13,3 +13,14 @@ void camera_reset(camera *c) {
     glm_mat4_identity(c->view_matrix);
   }
 }
+
+CameraUniform camera_uniform(camera *c) {
+  // Combine directly view matrix and camera position so faster to upload into
+  // buffer
+  CameraUniform cam_uni;
+
+  glm_vec3_copy(c->position, cam_uni.position);
+  glm_mat4_copy(c->view_matrix, cam_uni.view);
+
+  return cam_uni;
+}

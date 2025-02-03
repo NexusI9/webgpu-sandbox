@@ -5,6 +5,11 @@
 #include "../include/cglm/vec3.h"
 
 typedef struct {
+  mat4 view;
+  vec3 position;
+} CameraUniform;
+
+typedef struct {
   vec3 position;
   vec3 euler_rotation;
   mat4 view_matrix;
@@ -17,6 +22,7 @@ void camera_reset(camera *);
 float camera_position(const camera *);
 float camera_euler_rotation(const camera *);
 mat4 *camera_view_matrix(const camera *);
+CameraUniform camera_uniform(camera *);
 
 // set
 void camera_translate(const camera *, vec3);
