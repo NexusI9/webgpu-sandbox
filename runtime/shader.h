@@ -8,7 +8,7 @@
 #define SHADER_GROUP_VIEWPORT 0
 #define SHADER_BIND_CAMERA 0
 #define SHADER_BIND_VIEWPORT 1
-#define SHADER_MAX_BIND_GROUP 32
+#define SHADER_MAX_BIND_GROUP 4
 
 #include "camera.h"
 #include "viewport.h"
@@ -37,11 +37,19 @@ typedef struct {
 } ShaderCreateDescriptor;
 
 // core
+
 typedef struct {
-  WGPUBuffer buffer;
-  void *data;
-  WGPUBindGroup bind_group;
-} ShaderUniforms;
+  WGPUBindGroupEntry items[SHADER_MAX_BIND_GROUP];
+  size_t length;
+} ShaderBindGroupEntries;
+
+typedef struct {
+  WGPUBuffer buffer;              // unform buffer
+  void *data;                     // uniform data
+  WGPUBindGroup bind_group;       // bind group
+  uint8_t index;                  // bind group id
+  ShaderBindGroupEntries entries; // entries (uniform)
+} ShaderBindGroup;
 
 typedef struct {
   char *source; // shader source code
@@ -60,15 +68,9 @@ typedef struct {
 
   // uniforms data along with userful information (buffer, group index...)
   // TODO: separate statics from dynamics
-  // (often updated) BindGroups
-  struct {
-    ShaderUniforms items[SHADER_MAX_BIND_GROUP];
-    size_t length;
-  } uniforms;
-
   // registered bind group unique indexes
   struct {
-    uint8_t items[SHADER_MAX_BIND_GROUP];
+    ShaderBindGroup items[SHADER_MAX_BIND_GROUP];
     size_t length;
   } bind_groups;
 

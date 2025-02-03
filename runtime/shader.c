@@ -20,9 +20,6 @@ shader shader_create(const ShaderCreateDescriptor *sd) {
   shader.device = sd->device;
   shader.queue = sd->queue;
 
-  // define uniforms length
-  shader.uniforms.length = 0;
-
   // define bind groups length
   shader.bind_groups.length = 0;
 
@@ -68,50 +65,51 @@ void update_pipeline(shader *shader) {
     shader->pipeline = NULL;
   }
 
+  printf("bind group length: %lu\n", shader->bind_groups.length);
+
   // build bind group entries for each individual group index
-  WGPUBindGroupLayoutEntry uniform_entries[shader->bind_groups.length];
+  WGPUBindGroupLayout bindgroup_layout[shader->bind_groups.length];
+
+  // go through shader bind groups
   for (int i = 0; i < shader->bind_groups.length; i++) {
-    uniform_entries[i] = (WGPUBindGroupLayoutEntry){
-        // assign stored id
-        .binding = shader->bind_groups.items[i],
-        // buffer binding layout
-        .buffer = {.type = WGPUBufferBindingType_Uniform},
-        // set visibility to vertex
-        .visibility = WGPUShaderStage_Vertex,
-    };
+
+    ShaderBindGroupEntries *current_entries =
+        &shader->bind_groups.items[i].entries;
+
+    printf("[%d]entries length: %lu\n", i, current_entries->length);
+
+    WGPUBindGroupLayoutEntry entries[current_entries->length];
+
+    // go through each groups entries
+    for (int j = 0; j < current_entries->length; j++) {
+      printf("bind: %ul\n", current_entries->items[j].binding);
+      entries[j] = (WGPUBindGroupLayoutEntry){
+          // assign stored id
+          .binding = current_entries->items[j].binding,
+          // buffer binding layout
+          .buffer = {.type = WGPUBufferBindingType_Uniform},
+          // set visibility to vertex
+          .visibility = WGPUShaderStage_Vertex,
+      };
+    }
+
+    bindgroup_layout[i] = wgpuDeviceCreateBindGroupLayout(
+        *shader->device,
+        &(WGPUBindGroupLayoutDescriptor){
+            .entryCount = shader->bind_groups.items[i].entries.length,
+            // bind group layout entry
+            .entries = entries,
+        });
   }
 
-  WGPUBindGroupLayout bindgroup_layout = wgpuDeviceCreateBindGroupLayout(
-      *shader->device,
-      &(WGPUBindGroupLayoutDescriptor){
-          .entryCount = shader->bind_groups.length,
-          // bind group layout entry
-          .entries =
-              &(WGPUBindGroupLayoutEntry){
-                  // assign stored id
-                  .binding = 0,
-                  // buffer binding layout
-                  .buffer = {.type = WGPUBufferBindingType_Uniform},
-                  // set visibility to vertex
-                  .visibility = WGPUShaderStage_Vertex,
-              },
-      });
-
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
-      *shader->device,
-      &(WGPUPipelineLayoutDescriptor){
-          // set layout to 0 or 1 depending if bind groups have been added
-          // will throw warning if binGroupLAYOUTCount >
-          // BinGroupLayouts.entries.length
-          .bindGroupLayoutCount = (int)glm_min(shader->bind_groups.length, 1),
-          .bindGroupLayouts = &bindgroup_layout,
-      });
+      *shader->device, &(WGPUPipelineLayoutDescriptor){
+                           // total count (?)
+                           .bindGroupLayoutCount = shader->bind_groups.length,
+                           .bindGroupLayouts = bindgroup_layout,
+                       });
 
   // create pipeline
-  printf("%p\n%d\n%lu\n", &shader->pipeline,
-         (int)glm_min(shader->bind_groups.length, 1),
-         shader->bind_groups.length);
-
   shader->pipeline = wgpuDeviceCreateRenderPipeline(
       *shader->device,
       &(WGPURenderPipelineDescriptor){
@@ -169,7 +167,10 @@ void update_pipeline(shader *shader) {
       });
 
   // clear layouts
-  wgpuBindGroupLayoutRelease(bindgroup_layout);
+  for (int i = 0; i < shader->bind_groups.length; i++) {
+    wgpuBindGroupLayoutRelease(bindgroup_layout[i]);
+  }
+
   wgpuPipelineLayoutRelease(pipeline_layout);
 }
 
@@ -179,10 +180,10 @@ void shader_draw(const shader *shader, WGPURenderPassEncoder *render_pass,
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline);
 
-  // update bind groupd (uniforms, projection/view matrix...)
-  for (int i = 0; i < shader->uniforms.length; i++) {
+  // update bind group (uniforms, projection/view matrix...)
+  for (int i = 0; i < shader->bind_groups.length; i++) {
     wgpuRenderPassEncoderSetBindGroup(
-        *render_pass, 0, shader->uniforms.items[i].bind_group, 0, 0);
+        *render_pass, 0, shader->bind_groups.items[i].bind_group, 0, 0);
   }
 }
 
@@ -192,7 +193,7 @@ void shader_add_uniform(shader *shader,
   if (shader->device == NULL || shader->queue == NULL)
     perror("Shader has no device or queue"), exit(0);
 
-  else if (shader->uniforms.length < SHADER_MAX_BIND_GROUP) {
+  else if (shader->bind_groups.length < SHADER_MAX_BIND_GROUP) {
 
     // Steps:
     //   1. Increment bind group length
@@ -203,52 +204,67 @@ void shader_add_uniform(shader *shader,
     //   4. Store buffer reference into Uniform object (CPU side)
     //   5. Bind buffer to shader bind group
 
-    shader->uniforms.length += 1;
-
-    // add bind group index in bind group array if not in it
-    //(will be used for pipeline bind group layout)
     int in = 0, i = 0;
+    size_t index = shader->bind_groups.length;
     for (i = 0; i < shader->bind_groups.length; i++) {
       // check if group index is already in shader bind group index
-      if (bd->group_index == shader->bind_groups.items[i]) {
-        in = 1;
+      if (bd->group_index == shader->bind_groups.items[i].index) {
+        in = 1;    // true
+        index = i; // override group
         break;
       }
     }
 
     if (in == 0) {
-      shader->bind_groups.items[shader->bind_groups.length++] = bd->group_index;
+      // Increment bind_groupd length (push new bind group)
+      shader->bind_groups.items[shader->bind_groups.length++].index =
+          bd->group_index;
+
+      // init new bind group entries legnth to 0
+      shader->bind_groups.items[shader->bind_groups.length].entries.length = 0;
+
+      // set index for further references
+      index = 0;
     }
+
+    ShaderBindGroup *current_bind_group = &shader->bind_groups.items[index];
+
+    // upload new uniforms buffer (CPU data => GPU) and store
+    current_bind_group->buffer = create_buffer(&(CreateBufferDescriptor){
+        .queue = shader->queue,
+        .device = shader->device,
+        .data = (void *)bd->data,
+        .size = bd->size,
+        .usage = WGPUBufferUsage_Uniform,
+    });
+
+    // combine argument entries with uniform buffer
+    for (i = 0; i < bd->entry_count; i++) {
+
+      // assign buffer to entries first
+      bd->entries[i].buffer = current_bind_group->buffer;
+
+      // finally transfer entries
+      current_bind_group->entries.items[i] = bd->entries[i];
+
+      // update length
+      current_bind_group->entries.length++;
+    }
+
 
     // update pipeline by allocating bind group space in pipeline
     update_pipeline(shader);
 
-    // upload new uniforms buffer (CPU data => GPU)
-    shader->uniforms.items[shader->uniforms.length - 1].buffer =
-        create_buffer(&(CreateBufferDescriptor){
-            .queue = shader->queue,
-            .device = shader->device,
-            .data = (void *)bd->data,
-            .size = bd->size,
-            .usage = WGPUBufferUsage_Uniform,
-        });
-
-    // combine argument entries with uniform buffer
-    for (i = 0; i < bd->entry_count; i++) {
-      bd->entries[i].buffer =
-          shader->uniforms.items[shader->uniforms.length - 1].buffer;
-    }
-
-    // link buffer to shader pipeline
+    // create bind group: link buffer to shader pipeline
     WGPUBindGroup bind_group = wgpuDeviceCreateBindGroup(
         *shader->device, &(WGPUBindGroupDescriptor){
                              .layout = wgpuRenderPipelineGetBindGroupLayout(
-                                 shader->pipeline, bd->group_index),
-                             .entryCount = bd->entry_count,
-                             .entries = bd->entries,
+                                 shader->pipeline, current_bind_group->index),
+                             .entryCount = current_bind_group->entries.length,
+                             .entries = current_bind_group->entries.items,
                          });
 
-    shader->uniforms.items[shader->uniforms.length - 1].bind_group = bind_group;
+    current_bind_group->bind_group = bind_group;
 
   } else {
     perror("Bind group list at full capacity");
@@ -260,32 +276,32 @@ void shader_bind_camera(shader *shader, camera *camera, viewport *viewport,
 
   // bind camera
   CameraUniform cam_uni = camera_uniform(camera);
-  shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
-                                 .group_index = group_index,
-                                 .entry_count = 1,
-                                 .data = &cam_uni,
-                                 .size = sizeof(CameraUniform),
-                                 .entries =
-                                     &(WGPUBindGroupEntry){
-                                         .binding = 0,
-                                         .size = sizeof(CameraUniform),
-                                         .offset = 0,
-                                     },
-                             });
 
-  // bind viewport
-  shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
-                                 .group_index = group_index,
-                                 .entry_count = 1,
-                                 .data = &viewport->projection,
-                                 .size = sizeof(mat4),
-                                 .entries =
-                                     &(WGPUBindGroupEntry){
-                                         .binding = 1,
-                                         .size = sizeof(mat4),
-                                         .offset = 0,
-                                     },
-                             });
+  WGPUBindGroupEntry entries[2] = {
+      // camera
+      {
+          .binding = 0,
+          .size = sizeof(CameraUniform),
+          .offset = 0,
+      },
+
+      // viewport
+      {
+          .binding = 1,
+          .size = sizeof(mat4),
+          .offset = 0,
+      },
+
+  };
+
+  shader_add_uniform(shader,
+                     &(ShaderCreateUniformDescriptor){
+                         .group_index = group_index,
+                         .entry_count = 2,
+                         .data = (void *[]){&cam_uni, &viewport->projection},
+                         .size = sizeof(CameraUniform) + sizeof(mat4),
+                         .entries = entries,
+                     });
 }
 
 void shader_release(shader *shader) {

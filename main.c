@@ -181,14 +181,13 @@ void setup_triangle() {
                                                    .binding = 0,
                                                    .offset = 0,
                                                    .size = sizeof(rot),
-					   },
-					   });
-  
- 
+                                               },
+                                               });
+
   // bind camera and viewport
   // shader_bind_camera(&tri_mesh.shader, &main_scene.camera,
   // &main_scene.viewport,
-  //                 1);
+  //                  1);
 
   // add triangle to scene
   scene_add_mesh(&main_scene, &tri_mesh);
