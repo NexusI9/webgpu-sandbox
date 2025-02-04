@@ -34,6 +34,7 @@ typedef struct {
   const char *label;
   WGPUDevice *device;
   WGPUQueue *queue;
+  const char *name;
 } ShaderCreateDescriptor;
 
 // core
@@ -54,6 +55,7 @@ typedef struct {
 typedef struct {
   char *source; // shader source code
   WGPUShaderModule module;
+  const char *name;
 
   // wgpu
   WGPUDevice *device;
@@ -81,10 +83,11 @@ typedef struct {
 // methods
 shader shader_create(const ShaderCreateDescriptor *);
 void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
-void shader_draw(const shader *, WGPURenderPassEncoder *, const camera *,
+void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
                  const viewport *);
 
 void shader_bind_camera(shader *, camera *, viewport *, uint8_t);
 void shader_release(shader *);
+void shader_build(shader *);
 
 #endif

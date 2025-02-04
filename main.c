@@ -137,12 +137,31 @@ void setup_triangle() {
                            // Bottom face
                            4, 5, 1, 4, 1, 0};
 
-  shader triangle_shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./shader/rotation.wgsl",
-      .label = "triangle",
-      .device = &state.wgpu.device,
-      .queue = &state.wgpu.queue,
-  });
+  shader triangle_shader =
+      shader_create(&(ShaderCreateDescriptor){.path = "./shader/rotation.wgsl",
+                                              .label = "triangle",
+                                              .device = &state.wgpu.device,
+                                              .queue = &state.wgpu.queue,
+                                              .name = "triangle"});
+
+  // bind the rotation uniform
+  shader_add_uniform(&triangle_shader, &(ShaderCreateUniformDescriptor){
+                                           .data = &rot,
+                                           .size = sizeof(rot),
+                                           .group_index = 0,
+                                           .entry_count = 1,
+                                           .entries =
+                                               &(WGPUBindGroupEntry){
+                                                   .binding = 0,
+                                                   .offset = 0,
+                                                   .size = sizeof(rot),
+                                               },
+                                       });
+
+  printf("======> camera\n");
+  // bind camera and viewport
+  shader_bind_camera(&triangle_shader, &main_scene.camera, &main_scene.viewport,
+                     1);
 
   tri_mesh = mesh_create(&(MeshCreateDescriptor){
       // wgpu object
@@ -170,24 +189,7 @@ void setup_triangle() {
       .shader = triangle_shader,
   });
 
-  // bind the rotation uniform
-  shader_add_uniform(&tri_mesh.shader, &(ShaderCreateUniformDescriptor){
-                                           .data = &rot,
-                                           .size = sizeof(rot),
-                                           .group_index = 0,
-                                           .entry_count = 1,
-                                           .entries =
-                                               &(WGPUBindGroupEntry){
-                                                   .binding = 0,
-                                                   .offset = 0,
-                                                   .size = sizeof(rot),
-                                               },
-                                               });
 
-  // bind camera and viewport
-  // shader_bind_camera(&tri_mesh.shader, &main_scene.camera,
-  // &main_scene.viewport,
-  //                  1);
 
   // add triangle to scene
   scene_add_mesh(&main_scene, &tri_mesh);

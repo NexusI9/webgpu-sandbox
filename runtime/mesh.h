@@ -70,6 +70,6 @@ typedef struct {
 mesh mesh_create(const MeshCreateDescriptor *);
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);
-void mesh_draw(const mesh *, WGPURenderPassEncoder *, const camera *, const viewport *);
+void mesh_draw(mesh *, WGPURenderPassEncoder *, const camera *, const viewport *);
 
 #endif

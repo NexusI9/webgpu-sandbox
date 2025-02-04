@@ -19,10 +19,6 @@ struct Viewport {
   projection : mat4x4<f32>,
 }
 
-// camera viewport
-@group(1) @binding(0) var<uniform> uCamera : Camera;
-@group(1) @binding(1) var<uniform> uViewport : Viewport;
-
 // Define Projection Matrix (Perspective)
 fn perspective_matrix(fov : f32, aspect : f32, near : f32, far : f32)
     -> mat4x4<f32> {
@@ -46,6 +42,10 @@ fn view_matrix(angle : f32, camera_pos : vec3<f32>) -> mat4x4<f32> {
 
 // rot
 @group(0) @binding(0) var<uniform> uRot : Rotation;
+
+// camera viewport
+@group(1) @binding(0) var<uniform> uCamera : Camera;
+@group(1) @binding(1) var<uniform> uViewport : Viewport;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {

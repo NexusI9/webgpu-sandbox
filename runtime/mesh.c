@@ -22,6 +22,8 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
 
   // set shader
   new_mesh.shader = md->shader;
+  // build shader (set pipeline)
+  shader_build(&new_mesh.shader);
 
   // push vertices & index data to buffer
 
@@ -76,10 +78,9 @@ void mesh_create_index_buffer(mesh *mesh,
   });
 }
 
-
-void mesh_draw(const mesh *mesh, WGPURenderPassEncoder *render_pass,
+void mesh_draw(mesh *mesh, WGPURenderPassEncoder *render_pass,
                const camera *camera, const viewport *viewport) {
-  
+
   // draw shader
   shader_draw(&mesh->shader, render_pass, camera, viewport);
 
