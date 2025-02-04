@@ -158,7 +158,6 @@ void setup_triangle() {
                                                },
                                        });
 
-  printf("======> camera\n");
   // bind camera and viewport
   shader_bind_camera(&triangle_shader, &main_scene.camera, &main_scene.viewport,
                      1);

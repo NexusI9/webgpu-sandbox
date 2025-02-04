@@ -76,14 +76,10 @@ void shader_build(shader *shader) {
     ShaderBindGroupEntries *current_entries =
         &shader->bind_groups.items[i].entries;
 
-    printf("[bind group: %d] entries length: %lu\n", i,
-           current_entries->length);
-
     WGPUBindGroupLayoutEntry entries[current_entries->length];
 
     // go through each groups entries
     for (int j = 0; j < current_entries->length; j++) {
-      printf("entry with binding: %u\n", current_entries->items[j].binding);
       entries[j] = (WGPUBindGroupLayoutEntry){
           // assign stored id
           .binding = current_entries->items[j].binding,
@@ -101,8 +97,6 @@ void shader_build(shader *shader) {
                              .entries = entries,
                          });
   }
-
-  printf("bind group length: %lu\n", shader->bind_groups.length);
 
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
       *shader->device, &(WGPUPipelineLayoutDescriptor){
@@ -223,7 +217,6 @@ void shader_add_uniform(shader *shader,
     //     a. Allocate space in GPU
     //     b. Write data in buffer
     //   4. Store buffer reference into Uniform object (CPU side)
-    //   5. Bind buffer to shader bind group
 
     int in = 0, i = 0;
     size_t index = shader->bind_groups.length;
@@ -249,8 +242,6 @@ void shader_add_uniform(shader *shader,
       // init new bind group entries legnth to 0
       shader->bind_groups.items[shader->bind_groups.length].entries.length = 0;
     }
-
-    printf("in: %d\t index: %lu\n", in, index);
 
     ShaderBindGroup *current_bind_group = &shader->bind_groups.items[index];
 
