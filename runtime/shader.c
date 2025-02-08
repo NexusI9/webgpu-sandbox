@@ -2,7 +2,9 @@
 #include "../backend/generator.h"
 #include "../utils/file.h"
 #include "camera.h"
+#include "viewport.h"
 #include "webgpu/webgpu.h"
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -86,7 +88,7 @@ void shader_build(shader *shader) {
           // buffer binding layout
           .buffer = {.type = WGPUBufferBindingType_Uniform},
           // set visibility to vertex
-          .visibility = WGPUShaderStage_Vertex,
+          .visibility = shader->bind_groups.items[i].visibility,
       };
     }
 
@@ -254,6 +256,10 @@ void shader_add_uniform(shader *shader,
         .usage = WGPUBufferUsage_Uniform,
     });
 
+    // add global bind group visibility (may require to do a entry based
+    // visibility in the future)
+    current_bind_group->visibility = bd->visibility | WGPUShaderStage_Vertex;
+
     // combine argument entries with uniform buffer
     for (i = 0; i < bd->entry_count; i++) {
 
@@ -275,8 +281,13 @@ void shader_add_uniform(shader *shader,
 void shader_bind_camera(shader *shader, camera *camera, viewport *viewport,
                         uint8_t group_index) {
 
-  // bind camera
-  CameraUniform cam_uni = camera_uniform(camera);
+  ShaderViewProjectionUniform proj_view_data;
+
+  glm_vec3_copy(camera->position, proj_view_data.uCamera.position);
+  glm_mat4_copy(camera->view, proj_view_data.uCamera.view);
+  // glm_mat4_copy(viewport->projection, proj_view_data.uViewport.projection);
+
+  glm_mat4_identity(proj_view_data.uViewport.projection);
 
   WGPUBindGroupEntry entries[2] = {
       // camera
@@ -289,19 +300,26 @@ void shader_bind_camera(shader *shader, camera *camera, viewport *viewport,
       // viewport
       {
           .binding = 1,
-          .size = sizeof(mat4),
+          .size = sizeof(ViewportUniform),
           .offset = 0,
       },
   };
 
-  shader_add_uniform(shader,
-                     &(ShaderCreateUniformDescriptor){
-                         .group_index = group_index,
-                         .entry_count = 2,
-                         .data = (void *[]){&cam_uni, &viewport->projection},
-                         .size = sizeof(CameraUniform) + sizeof(mat4),
-                         .entries = entries,
-                     });
+  printf("mat4:%lu\tuni:%lu\n", sizeof(mat4), sizeof(ViewportUniform));
+  mat4 p;
+  glm_mat4_copy(proj_view_data.uViewport.projection, p);
+
+  for (int i = 0; i < 4; i++) {
+    printf("%f\t%f\t%f\t%f\n", p[i][0], p[i][1], p[i][2], p[i][3]);
+  }
+
+  shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
+                                 .group_index = group_index,
+                                 .entry_count = 2,
+                                 .data = &proj_view_data,
+                                 .size = sizeof(ShaderViewProjectionUniform),
+                                 .entries = entries,
+                             });
 }
 
 void shader_release(shader *shader) {

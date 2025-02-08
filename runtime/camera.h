@@ -12,7 +12,7 @@ typedef struct {
 typedef struct {
   vec3 position;
   vec3 euler_rotation;
-  mat4 view_matrix;
+  mat4 view;
 } camera;
 
 camera camera_create();
@@ -21,11 +21,12 @@ void camera_reset(camera *);
 // get
 float camera_position(const camera *);
 float camera_euler_rotation(const camera *);
-mat4 *camera_view_matrix(const camera *);
+mat4 *camera_view(const camera *);
 CameraUniform camera_uniform(camera *);
 
 // set
-void camera_translate(const camera *, vec3);
-void camera_rotate(const camera *, vec3);
+void camera_translate(camera *, vec3);
+void camera_rotate(camera *, vec3);
+void camera_update_view(camera *);
 
 #endif

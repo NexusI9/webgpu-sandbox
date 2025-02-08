@@ -98,6 +98,8 @@ void init_scene() {
       .aspect = 1920.0f / 1080.0f,
   });
   camera cam = camera_create();
+  camera_translate(&cam, (vec3){0.0f, 0.0f, -8.0f});
+  camera_rotate(&cam, (vec3){0.0f, 0.0f, 20.0f});
 
   main_scene = scene_create(cam, vp);
 }
@@ -162,6 +164,7 @@ void setup_triangle() {
   shader_bind_camera(&triangle_shader, &main_scene.camera, &main_scene.viewport,
                      1);
 
+ 
   tri_mesh = mesh_create(&(MeshCreateDescriptor){
       // wgpu object
       .wgpu =
@@ -187,8 +190,6 @@ void setup_triangle() {
       // shader
       .shader = triangle_shader,
   });
-
-
 
   // add triangle to scene
   scene_add_mesh(&main_scene, &tri_mesh);

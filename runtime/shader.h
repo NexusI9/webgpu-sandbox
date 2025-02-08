@@ -16,6 +16,11 @@
 
 // descriptors
 typedef struct {
+  CameraUniform uCamera;
+  ViewportUniform uViewport;
+} ShaderViewProjectionUniform;
+
+typedef struct {
   uint64_t offset;
   uint64_t size;
   uint32_t binding;
@@ -27,6 +32,7 @@ typedef struct {
   WGPUBindGroupEntry *entries;
   void *data;
   size_t size;
+  WGPUShaderStageFlags visibility;
 } ShaderCreateUniformDescriptor;
 
 typedef struct {
@@ -45,11 +51,12 @@ typedef struct {
 } ShaderBindGroupEntries;
 
 typedef struct {
-  WGPUBuffer buffer;              // unform buffer
-  void *data;                     // uniform data
-  WGPUBindGroup bind_group;       // bind group
-  uint8_t index;                  // bind group id
-  ShaderBindGroupEntries entries; // entries (uniform)
+  WGPUBuffer buffer;               // unform buffer
+  void *data;                      // uniform data
+  WGPUBindGroup bind_group;        // bind group
+  uint8_t index;                   // bind group id
+  ShaderBindGroupEntries entries;  // entries (uniform)
+  WGPUShaderStageFlags visibility; // visibility (frag | vert)
 } ShaderBindGroup;
 
 typedef struct {

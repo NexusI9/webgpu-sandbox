@@ -4,6 +4,10 @@
 #include "../include/cglm/mat4.h"
 
 typedef struct {
+  mat4 projection;
+} ViewportUniform;
+
+typedef struct {
   float fov;
   float near_clip;
   float far_clip;
@@ -19,6 +23,6 @@ typedef struct {
 } viewport;
 
 viewport viewport_create(const ViewportCreateDescriptor *);
-mat4 *viewport_projection_matrix(viewport *);
+void viewport_update_projection(viewport *);
 
 #endif

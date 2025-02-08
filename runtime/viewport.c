@@ -1,28 +1,37 @@
 #include "viewport.h"
 #include <math.h>
 
-viewport viewport_create(const ViewportCreateDescriptor * view_desc) {
+viewport viewport_create(const ViewportCreateDescriptor *view_desc) {
   // set viewport default values
-  viewport v =
-      (viewport){
+  viewport v = (viewport){
       .fov = view_desc->fov,
       .near_clip = view_desc->near_clip,
-      .far_clip = view_desc->far_clip
+      .far_clip = view_desc->far_clip,
+      .aspect = view_desc->aspect,
   };
 
   // init projection matrix
-  glm_mat4_identity(v.projection);
+  viewport_update_projection(&v);
 
   return v;
 }
 
-mat4 *viewport_projection_matrix(viewport *viewport) {
+void viewport_update_projection(viewport *viewport) {
 
   // update projection matrix
-  float far = viewport->far_clip;
-  float near = viewport->near_clip;
-  float aspect = viewport->aspect;
-  float f = 1.0 / tan(viewport->fov * 0.5f);
+  /*  float fov = glm_rad(viewport->fov);
+    float far = viewport->far_clip;
+    float near = viewport->near_clip;
+    float aspect = viewport->aspect;
+    float f = 1.0 / tan(fov * 0.5f);
+  */
+
+  float fov = glm_rad(24.0f);
+  float far = 100.0f;
+  float near = 0.1f;
+  float aspect = 1920.0f / 1080.0f;
+  float f = 1.0f / tan(fov * 0.5f);
+
   mat4 proj = {
       {f / aspect, 0.0f, 0.0f, 0.0f},
       {0.0f, f, 0.0f, 0.0f},
@@ -32,5 +41,4 @@ mat4 *viewport_projection_matrix(viewport *viewport) {
 
   // replace viewport projection
   glm_mat4_copy(proj, viewport->projection);
-  return &viewport->projection;
 }
