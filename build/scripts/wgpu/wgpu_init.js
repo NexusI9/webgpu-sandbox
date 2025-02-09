@@ -7,6 +7,9 @@ var Module = {
   canvas: (function () {
     return document.getElementById("canvas");
   })(),
+  locateFile: function (url) {
+    return "scripts/wgpu/" + url;
+  },
 };
 
 initWebGPU = async () => {
