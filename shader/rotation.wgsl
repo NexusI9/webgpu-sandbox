@@ -12,7 +12,7 @@ struct Rotation {
 };
 
 struct Camera {
-  view : mat4x4<f32>, position : vec3<f32>,
+  view : mat4x4<f32>, position : vec4<f32>,
 };
 
 struct Viewport {
@@ -40,8 +40,6 @@ fn perspective_matrix(fov : f32, aspect : f32, near : f32, far : f32)
 @group(1) @binding(0) var<uniform> uCamera : Camera;
 @group(1) @binding(1) var<uniform> uViewport : Viewport;
 
-@group(2) @binding(0) var<uniform> uColor : Color;
-
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
@@ -54,7 +52,7 @@ fn perspective_matrix(fov : f32, aspect : f32, near : f32, far : f32)
   var projection : mat4x4<f32> = perspective_matrix(fov, aspect, near, far);
 
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = projection * uCamera.view;
+  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
 
   var output : VertexOut;
   output.Position = cam * vec4<f32>(input.aPos, 1.0);
@@ -65,6 +63,6 @@ fn perspective_matrix(fov : f32, aspect : f32, near : f32, far : f32)
 
 // fragment shader
 @fragment fn fs_main(@location(0) vCol : vec3<f32>) -> @location(0) vec4<f32> {
-    
-    return vec4<f32>(uColor.red, uColor.green, uColor.blue, 1.0);
+
+  return vec4<f32>(vCol, 1.0);
 }

@@ -92,7 +92,7 @@ void draw() {
 void init_scene() {
 
   viewport vp = viewport_create(&(ViewportCreateDescriptor){
-      .fov = 45.0f,
+      .fov = 34.0f,
       .near_clip = 0.1f,
       .far_clip = 100.0f,
       .aspect = 1920.0f / 1080.0f,
@@ -148,12 +148,11 @@ void setup_triangle() {
 
   // bind the rotation uniform
   shader_add_uniform(&triangle_shader, &(ShaderCreateUniformDescriptor){
-                                           .data = &rot,
-                                           .size = sizeof(rot),
                                            .group_index = 0,
                                            .entry_count = 1,
                                            .entries =
-                                               &(WGPUBindGroupEntry){
+                                               &(ShaderBindGroupEntry){
+                                                   .data = &rot,
                                                    .binding = 0,
                                                    .offset = 0,
                                                    .size = sizeof(rot),
@@ -162,9 +161,8 @@ void setup_triangle() {
 
   // bind camera and viewport
   shader_bind_camera(&triangle_shader, &main_scene.camera, &main_scene.viewport,
-                     1);
+    1);
 
- 
   tri_mesh = mesh_create(&(MeshCreateDescriptor){
       // wgpu object
       .wgpu =
