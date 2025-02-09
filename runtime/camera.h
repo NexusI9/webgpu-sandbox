@@ -3,10 +3,11 @@
 
 #include "../include/cglm/mat4.h"
 #include "../include/cglm/vec3.h"
+#include "../include/cglm/vec4.h"
 
 typedef struct {
   mat4 view;
-  vec3 position;
+  vec4 position;
 } CameraUniform;
 
 typedef struct {

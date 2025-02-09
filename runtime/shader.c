@@ -253,7 +253,7 @@ void shader_add_uniform(shader *shader,
         .device = shader->device,
         .data = (void *)bd->data,
         .size = bd->size,
-        .usage = WGPUBufferUsage_Uniform,
+        .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
     });
 
     // add global bind group visibility (may require to do a entry based
@@ -263,6 +263,7 @@ void shader_add_uniform(shader *shader,
     // combine argument entries with uniform buffer
     for (i = 0; i < bd->entry_count; i++) {
 
+      printf("index: %d\n", i);
       // assign buffer to entries first
       bd->entries[i].buffer = current_bind_group->buffer;
 
@@ -283,11 +284,13 @@ void shader_bind_camera(shader *shader, camera *camera, viewport *viewport,
 
   ShaderViewProjectionUniform proj_view_data;
 
+  // store camera data
   glm_vec3_copy(camera->position, proj_view_data.uCamera.position);
   glm_mat4_copy(camera->view, proj_view_data.uCamera.view);
-  // glm_mat4_copy(viewport->projection, proj_view_data.uViewport.projection);
 
-  glm_mat4_identity(proj_view_data.uViewport.projection);
+  // store viewport data
+  glm_mat4_copy(viewport->projection, proj_view_data.uViewport.projection);
+  // glm_mat4_zero(proj_view_data.uViewport.projection);
 
   WGPUBindGroupEntry entries[2] = {
       // camera
@@ -301,25 +304,25 @@ void shader_bind_camera(shader *shader, camera *camera, viewport *viewport,
       {
           .binding = 1,
           .size = sizeof(ViewportUniform),
-          .offset = 0,
+          .offset = sizeof(CameraUniform),
       },
   };
 
-  printf("mat4:%lu\tuni:%lu\n", sizeof(mat4), sizeof(ViewportUniform));
-  mat4 p;
+  /*mat4 p;
   glm_mat4_copy(proj_view_data.uViewport.projection, p);
 
   for (int i = 0; i < 4; i++) {
-    printf("%f\t%f\t%f\t%f\n", p[i][0], p[i][1], p[i][2], p[i][3]);
-  }
+      printf("%f\t%f\t%f\t%f\n", p[i][0], p[i][1], p[i][2], p[i][3]);
+    }*/
 
   shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
                                  .group_index = group_index,
                                  .entry_count = 2,
                                  .data = &proj_view_data,
                                  .size = sizeof(ShaderViewProjectionUniform),
-                                 .entries = entries,
-                             });
+                                 .visibility = WGPUShaderStage_Vertex |
+                                               WGPUShaderStage_Fragment,
+                                 .entries = entries});
 }
 
 void shader_release(shader *shader) {

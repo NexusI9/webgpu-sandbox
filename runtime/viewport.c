@@ -26,11 +26,13 @@ void viewport_update_projection(viewport *viewport) {
     float f = 1.0 / tan(fov * 0.5f);
   */
 
+  glm_mat4_zero(viewport->projection);
+
   float fov = glm_rad(24.0f);
   float far = 100.0f;
   float near = 0.1f;
   float aspect = 1920.0f / 1080.0f;
-  float f = 1.0f / tan(fov * 0.5f);
+  float f = 1.0f / tanf(fov * 0.5f);
 
   mat4 proj = {
       {f / aspect, 0.0f, 0.0f, 0.0f},
@@ -41,4 +43,10 @@ void viewport_update_projection(viewport *viewport) {
 
   // replace viewport projection
   glm_mat4_copy(proj, viewport->projection);
+}
+
+ViewportUniform viewport_uniform(viewport *viewport) {
+  ViewportUniform uViewport;
+  glm_mat4_copy(viewport->projection, uViewport.projection);
+  return uViewport;
 }

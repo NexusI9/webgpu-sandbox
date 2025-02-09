@@ -19,7 +19,11 @@ CameraUniform camera_uniform(camera *c) {
   // buffer
   CameraUniform cam_uni;
 
-  glm_vec3_copy(c->position, cam_uni.position);
+  //transform vec3 to vec4 for alignment sake
+  vec4 pos_uniform =
+      (vec4){c->position[0], c->position[1], c->position[2], 1.0f};
+
+  glm_vec4_copy(pos_uniform, cam_uni.position);
   glm_mat4_copy(c->view, cam_uni.view);
 
   return cam_uni;

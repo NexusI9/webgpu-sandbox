@@ -53,7 +53,7 @@ typedef struct {
 typedef struct {
   WGPUBuffer buffer;               // unform buffer
   void *data;                      // uniform data
-  WGPUBindGroup bind_group;        // bind group
+  WGPUBindGroup bind_group;        // bind groupgit 
   uint8_t index;                   // bind group id
   ShaderBindGroupEntries entries;  // entries (uniform)
   WGPUShaderStageFlags visibility; // visibility (frag | vert)
