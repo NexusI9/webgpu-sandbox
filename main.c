@@ -139,12 +139,13 @@ void setup_triangle() {
                            // Bottom face
                            4, 5, 1, 4, 1, 0};
 
-  shader triangle_shader =
-      shader_create(&(ShaderCreateDescriptor){.path = "./shader/rotation.wgsl",
-                                              .label = "triangle",
-                                              .device = &state.wgpu.device,
-                                              .queue = &state.wgpu.queue,
-                                              .name = "triangle"});
+  shader triangle_shader = shader_create(&(ShaderCreateDescriptor){
+      .path = "./shader/rotation.wgsl",
+      .label = "triangle",
+      .name = "triangle",
+      .device = &state.wgpu.device,
+      .queue = &state.wgpu.queue,
+  });
 
   // bind the rotation uniform
   shader_add_uniform(&triangle_shader, &(ShaderCreateUniformDescriptor){
@@ -161,7 +162,7 @@ void setup_triangle() {
 
   // bind camera and viewport
   shader_bind_camera(&triangle_shader, &main_scene.camera, &main_scene.viewport,
-    1);
+                     1);
 
   tri_mesh = mesh_create(&(MeshCreateDescriptor){
       // wgpu object
@@ -210,6 +211,8 @@ int main(int argc, const char *argv[]) {
 
   init_scene();
   setup_triangle();
+
+  
 
   // Update Loop
   emscripten_set_main_loop(draw, 0, 1);
