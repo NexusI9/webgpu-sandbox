@@ -16,26 +16,6 @@
 
 // descriptors
 typedef struct {
-  CameraUniform uCamera;
-  ViewportUniform uViewport;
-} ShaderViewProjectionUniform;
-
-typedef struct {
-  uint64_t offset;
-  uint64_t size;
-  uint32_t binding;
-} ShaderUniformEntry;
-
-typedef struct {
-  uint8_t group_index;
-  uint8_t entry_count;
-  WGPUBindGroupEntry *entries;
-  void *data;
-  size_t size;
-  WGPUShaderStageFlags visibility;
-} ShaderCreateUniformDescriptor;
-
-typedef struct {
   char *path;
   const char *label;
   WGPUDevice *device;
@@ -43,22 +23,41 @@ typedef struct {
   const char *name;
 } ShaderCreateDescriptor;
 
-// core
+// bind group
+typedef struct {
+  uint32_t binding;
+  WGPUBuffer buffer;
+  uint64_t size;
+  uint64_t offset;
+  void *data;
+} ShaderBindGroupEntry;
 
 typedef struct {
-  WGPUBindGroupEntry items[SHADER_MAX_BIND_GROUP];
+  ShaderBindGroupEntry items[SHADER_MAX_BIND_GROUP];
   size_t length;
 } ShaderBindGroupEntries;
 
 typedef struct {
-  WGPUBuffer buffer;               // unform buffer
-  void *data;                      // uniform data
-  WGPUBindGroup bind_group;        // bind groupgit 
+  WGPUBindGroup bind_group;        // bind group
   uint8_t index;                   // bind group id
   ShaderBindGroupEntries entries;  // entries (uniform)
   WGPUShaderStageFlags visibility; // visibility (frag | vert)
 } ShaderBindGroup;
 
+// uniform
+typedef struct {
+  CameraUniform uCamera;
+  ViewportUniform uViewport;
+} ShaderViewProjectionUniform;
+
+typedef struct {
+  uint8_t group_index;
+  uint8_t entry_count;
+  ShaderBindGroupEntry *entries;
+  WGPUShaderStageFlags visibility;
+} ShaderCreateUniformDescriptor;
+
+// core
 typedef struct {
   char *source; // shader source code
   WGPUShaderModule module;
