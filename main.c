@@ -16,7 +16,7 @@
 #include "utils/file.h"
 
 #include "backend/generator.h"
-#include "backend/state.h"
+#include "backend/renderer.h"
 
 #include "runtime/camera.h"
 #include "runtime/mesh.h"
@@ -24,84 +24,32 @@
 #include "runtime/shader.h"
 #include "runtime/viewport.h"
 
-static state_t state;
 static scene main_scene;
 static mesh tri_mesh;
 static float rot = 0.0f;
+static renderer main_renderer;
 
 // callbacks
-static int resize(int, const EmscriptenUiEvent *, void *);
-static void draw();
 static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
 
-void draw() {
-
-  // update rotation
-  // state.uniform.rot += 0.1f;
-  // state.uniform.rot = state.uniform.rot > 360.0f ? 0.0f : state.uniform.rot;
-
-  // append update to queue
-  // wgpuQueueWriteBuffer(state.wgpu.queue, state.store.u_buffer,
-  // 0,&state.uniform.rot, sizeof(state.uniform.rot));
-
-  // create texture view
-  WGPUTextureView back_buffer =
-      wgpuSwapChainGetCurrentTextureView(state.wgpu.swapchain);
-
-  // create command encoder
-  WGPUCommandEncoder cmd_encoder =
-      wgpuDeviceCreateCommandEncoder(state.wgpu.device, NULL);
-
-  // begin render pass
-  WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(
-      cmd_encoder,
-      &(WGPURenderPassDescriptor){
-          // color attachments
-          .colorAttachmentCount = 1,
-          .colorAttachments =
-              &(WGPURenderPassColorAttachment){
-                  .view = back_buffer,
-                  .loadOp = WGPULoadOp_Clear,
-                  .storeOp = WGPUStoreOp_Store,
-                  .clearValue = (WGPUColor){0.2f, 0.2f, 0.3f, 1.0f},
-                  .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED},
-      });
-
-  // draw mesh scene
-  scene_draw(&main_scene, &render_pass);
-
-  // end render pass
-  wgpuRenderPassEncoderEnd(render_pass);
-
-  // create command buffer
-  WGPUCommandBuffer cmd_buffer =
-      wgpuCommandEncoderFinish(cmd_encoder, NULL); // after 'end render pass'
-
-  // submit commands
-  wgpuQueueSubmit(state.wgpu.queue, 1, &cmd_buffer);
-
-  // release all
-  wgpuRenderPassEncoderRelease(render_pass);
-  wgpuCommandEncoderRelease(cmd_encoder);
-  wgpuCommandBufferRelease(cmd_buffer);
-  wgpuTextureViewRelease(back_buffer);
-}
-
 void init_scene() {
 
-  viewport vp = viewport_create(&(ViewportCreateDescriptor){
+  // set viewport
+  viewport viewport = viewport_create(&(ViewportCreateDescriptor){
       .fov = 34.0f,
       .near_clip = 0.1f,
       .far_clip = 100.0f,
       .aspect = 1920.0f / 1080.0f,
   });
-  camera cam = camera_create();
-  camera_translate(&cam, (vec3){0.0f, 0.0f, -8.0f});
-  camera_rotate(&cam, (vec3){0.0f, 0.0f, 20.0f});
 
-  main_scene = scene_create(cam, vp);
+  // set camera
+  camera camera = camera_create();
+  camera_translate(&camera, (vec3){0.0f, 0.0f, -8.0f});
+  camera_rotate(&camera, (vec3){0.0f, 0.0f, 20.0f});
+
+  main_scene = scene_create(camera, viewport);
 }
 
 void setup_triangle() {
@@ -143,8 +91,8 @@ void setup_triangle() {
       .path = "./shader/rotation.wgsl",
       .label = "triangle",
       .name = "triangle",
-      .device = &state.wgpu.device,
-      .queue = &state.wgpu.queue,
+      .device = &main_renderer.wgpu.device,
+      .queue = &main_renderer.wgpu.queue,
   });
 
   // bind the rotation uniform
@@ -168,8 +116,8 @@ void setup_triangle() {
       // wgpu object
       .wgpu =
           {
-              .queue = &state.wgpu.queue,
-              .device = &state.wgpu.device,
+              .queue = &main_renderer.wgpu.queue,
+              .device = &main_renderer.wgpu.device,
           },
 
       // vertex data
@@ -194,60 +142,30 @@ void setup_triangle() {
   scene_add_mesh(&main_scene, &tri_mesh);
 }
 
+void draw() {
+  renderer_draw(&main_renderer, &main_scene);
+  return;
+}
+
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused
 
   printf("WASM INIT\n");
 
-  // setup state
-  state.context.name = "canvas";
-  state.wgpu.instance = wgpuCreateInstance(NULL);
-  state.wgpu.device = emscripten_webgpu_get_device();
-  state.wgpu.queue = wgpuDeviceGetQueue(state.wgpu.device);
-
-  resize(0, NULL, NULL);
-  emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, false,
-                                 (em_ui_callback_func)resize);
+  // init renderer
+  main_renderer = renderer_create("canvas");
+  renderer_init(&main_renderer);
 
   init_scene();
   setup_triangle();
-
-  
 
   // Update Loop
   emscripten_set_main_loop(draw, 0, 1);
 
   // Quit
-  wgpuRenderPipelineRelease(state.wgpu.pipeline);
-  wgpuSwapChainRelease(state.wgpu.swapchain);
-  wgpuQueueRelease(state.wgpu.queue);
-  wgpuDeviceRelease(state.wgpu.device);
-  wgpuInstanceRelease(state.wgpu.instance);
+  renderer_end_frame(&main_renderer);
 
   return 0;
-}
-
-int resize(int event_type, const EmscriptenUiEvent *ui_event, void *user_data) {
-  double w, h;
-
-  // retrieve canvas dimension
-  emscripten_get_element_css_size(state.context.name, &w, &h);
-  state.context.width = (int)w;
-  state.context.height = (int)h;
-
-  // set canvas size
-  emscripten_set_element_css_size(state.context.name, state.context.width,
-                                  state.context.height);
-
-  // reset swap chain on resize
-  if (state.wgpu.swapchain) {
-    wgpuSwapChainRelease(state.wgpu.swapchain);
-    state.wgpu.swapchain = NULL;
-  }
-
-  state.wgpu.swapchain = create_swapchain(&state);
-
-  return 1;
 }
 
 /*#ifdef __cplusplus

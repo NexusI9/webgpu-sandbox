@@ -28,24 +28,3 @@ WGPUBuffer create_buffer(const CreateBufferDescriptor* bf) {
   wgpuQueueWriteBuffer(*bf->queue, buffer, 0, bf->data, bf->size);
   return buffer;
 }
-
-WGPUSwapChain create_swapchain(const state_t *state) {
-  WGPUSurface surface = wgpuInstanceCreateSurface(
-      state->wgpu.instance,
-      &(WGPUSurfaceDescriptor){
-          .nextInChain = (WGPUChainedStruct *)(&(
-              WGPUSurfaceDescriptorFromCanvasHTMLSelector){
-              .chain.sType = WGPUSType_SurfaceDescriptorFromCanvasHTMLSelector,
-              .selector = state->context.name,
-          })});
-
-  return wgpuDeviceCreateSwapChain(
-      state->wgpu.device, surface,
-      &(WGPUSwapChainDescriptor){
-          .usage = WGPUTextureUsage_RenderAttachment,
-          .format = WGPUTextureFormat_BGRA8Unorm,
-          .width = state->context.width,
-          .height = state->context.height,
-          .presentMode = WGPUPresentMode_Fifo,
-      });
-}
