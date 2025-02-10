@@ -29,7 +29,7 @@ static mesh tri_mesh;
 static float rot = 0.0f;
 static renderer main_renderer;
 
-// callbacks
+// callbacksd
 static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
@@ -47,9 +47,11 @@ void init_scene() {
   // set camera
   camera camera = camera_create();
   camera_translate(&camera, (vec3){0.0f, 0.0f, -8.0f});
-  camera_rotate(&camera, (vec3){0.0f, 0.0f, 20.0f});
+  camera_rotate(&camera, (vec3){0.0f, 20.0f, 00.0f});
 
   main_scene = scene_create(camera, viewport);
+  camera_set_mode(&main_scene.camera, FLYING);
+  
 }
 
 void setup_triangle() {
@@ -95,22 +97,9 @@ void setup_triangle() {
       .queue = &main_renderer.wgpu.queue,
   });
 
-  // bind the rotation uniform
-  shader_add_uniform(&triangle_shader, &(ShaderCreateUniformDescriptor){
-                                           .group_index = 0,
-                                           .entry_count = 1,
-                                           .entries =
-                                               &(ShaderBindGroupEntry){
-                                                   .data = &rot,
-                                                   .binding = 0,
-                                                   .offset = 0,
-                                                   .size = sizeof(rot),
-                                               },
-                                       });
-
   // bind camera and viewport
   shader_bind_camera(&triangle_shader, &main_scene.camera, &main_scene.viewport,
-                     1);
+                     0);
 
   tri_mesh = mesh_create(&(MeshCreateDescriptor){
       // wgpu object
