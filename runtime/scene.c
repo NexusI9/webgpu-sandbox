@@ -20,6 +20,7 @@ scene scene_create(camera camera, viewport viewport) {
   scene.mesh_list.capacity = SCENE_MESH_LIST_DEFAULT_CAPACITY;
 
   return scene;
+  
 }
 
 void scene_add_mesh(scene *scene, mesh *mesh) {

@@ -24,12 +24,19 @@ typedef struct {
 } ShaderCreateDescriptor;
 
 // bind group
+
+/* Takes in some data useful for the uniform update as well as the entry data
+ * that will be overriden and uploaded to the GPU*/
+typedef void (*UpdateCallback)(void *callback_data, void *entry_data);
+
 typedef struct {
   uint32_t binding;
   WGPUBuffer buffer;
   uint64_t size;
   uint64_t offset;
   void *data;
+  UpdateCallback update_callback;
+  void *update_data;
 } ShaderBindGroupEntry;
 
 typedef struct {

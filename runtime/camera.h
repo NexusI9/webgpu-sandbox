@@ -10,14 +10,19 @@ typedef struct {
   vec4 position;
 } CameraUniform;
 
+typedef enum { FIXED, FLYING, ORBIT } CameraMode;
+
 typedef struct {
   vec3 position;
   vec3 euler_rotation;
   mat4 view;
+  float speed;
 } camera;
 
 camera camera_create();
 void camera_reset(camera *);
+void camera_set_mode(camera *, CameraMode);
+void camera_update_uniform(void *, void *);
 
 // get
 float camera_position(const camera *);
