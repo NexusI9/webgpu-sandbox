@@ -1,7 +1,6 @@
 #ifndef _MESH_H_
 #define _MESH_H_
 
-#include "../backend/state.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>

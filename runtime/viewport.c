@@ -8,6 +8,7 @@ viewport viewport_create(const ViewportCreateDescriptor *view_desc) {
       .near_clip = view_desc->near_clip,
       .far_clip = view_desc->far_clip,
       .aspect = view_desc->aspect,
+      .clock = view_desc->clock,
   };
 
   // init projection matrix

@@ -2,8 +2,16 @@
 #define _RENDERER_H_
 
 #include "../runtime/scene.h"
+#include "clock.h"
 
 typedef struct {
+  const char *name;
+  cclock *clock;
+} RendererCreateDescriptor;
+
+typedef struct {
+
+    cclock *clock; //update clock delta on draw
 
   struct {
     const char *name;
@@ -22,7 +30,7 @@ typedef struct {
 
 } renderer;
 
-renderer renderer_create(const char *);
+renderer renderer_create(const RendererCreateDescriptor *);
 void renderer_init(renderer *);
 void renderer_draw(const renderer *, scene *);
 

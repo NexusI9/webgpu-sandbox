@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "clock.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "webgpu/webgpu.h"
@@ -6,10 +7,11 @@
 static int renderer_resize(renderer *, int, const EmscriptenUiEvent *, void *);
 static WGPUSwapChain renderer_create_swapchain(const renderer *);
 
-renderer renderer_create(const char *name) {
+renderer renderer_create(const RendererCreateDescriptor *rd) {
 
   renderer new_renderer;
-  new_renderer.context.name = name;
+  new_renderer.context.name = rd->name;
+  new_renderer.clock = rd->clock;
   new_renderer.wgpu.instance = wgpuCreateInstance(NULL);
   new_renderer.wgpu.device = emscripten_webgpu_get_device();
   new_renderer.wgpu.queue = wgpuDeviceGetQueue(new_renderer.wgpu.device);
@@ -77,13 +79,11 @@ void renderer_end_frame(const renderer *renderer) {
   wgpuQueueRelease(renderer->wgpu.queue);
   wgpuDeviceRelease(renderer->wgpu.device);
   wgpuInstanceRelease(renderer->wgpu.instance);
-  
 }
 
+void renderer_draw(const renderer *renderer, scene *scene) {
 
-void renderer_draw(const renderer* renderer, scene * scene){
-    
-    // update rotation
+  // update rotation
   // state.uniform.rot += 0.1f;
   // state.uniform.rot = state.uniform.rot > 360.0f ? 0.0f : state.uniform.rot;
 
@@ -133,4 +133,6 @@ void renderer_draw(const renderer* renderer, scene * scene){
   wgpuCommandBufferRelease(cmd_buffer);
   wgpuTextureViewRelease(back_buffer);
 
+  // update clock delta
+  clock_update_delta(renderer->clock);
 }

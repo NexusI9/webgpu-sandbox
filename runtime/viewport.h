@@ -1,6 +1,7 @@
 #ifndef _VIEWPORT_H_
 #define _VIEWPORT_H_
 
+#include "../backend/clock.h"
 #include "../include/cglm/mat4.h"
 
 typedef struct {
@@ -12,6 +13,7 @@ typedef struct {
   float near_clip;
   float far_clip;
   float aspect;
+  cclock *clock;
 } ViewportCreateDescriptor;
 
 typedef struct {
@@ -20,6 +22,7 @@ typedef struct {
   float far_clip;
   float aspect;
   mat4 projection;
+  cclock *clock;
 } viewport;
 
 viewport viewport_create(const ViewportCreateDescriptor *);

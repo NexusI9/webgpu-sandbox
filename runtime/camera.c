@@ -1,12 +1,19 @@
 #include "camera.h"
 #include "constants.h"
 #include "emscripten/html5.h"
+#include "input.h"
 #include <stdio.h>
 
-camera camera_create() {
+camera camera_create(const CameraCreateDescriptor *cd) {
   camera c;
+
+  // set matrix and position to 0
   camera_reset(&c);
-  c.speed = 0.1f;
+
+  // assign additional attributes
+  c.speed = cd->speed;
+  c.clock = cd->clock;
+
   return c;
 }
 
@@ -18,51 +25,25 @@ void camera_reset(camera *c) {
   }
 }
 
-static bool camera_flying_keyboard_callback(
-    int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData) {
+void camera_draw(camera *camera) {
 
-  camera *cam = (camera *)userData;
+  if (input_key(KEY_FORWARD_FR))
+    camera_translate(camera,
+                     (vec3){0.0f, 0.0f, camera->speed * camera->clock->delta});
 
-  printf("key code:%d\n", keyEvent->keyCode);
-  switch (keyEvent->keyCode) {
+  if (input_key(KEY_BACKWARD_FR))
+    camera_translate(
+        camera, (vec3){0.0f, 0.0f, -1 * camera->speed * camera->clock->delta});
 
-  case KEY_FORWARD_FR: {
-    camera_translate(cam, (vec3){
-                              cam->position[0],
-                              cam->position[1],
-                              cam->position[2],
-                          });
-    break;
-  }
-
-  case KEY_BACKWARD_FR:
-    break;
-
-  case KEY_LEFT_FR:
-    break;
-
-  case KEY_RIGHT_FR:
-    break;
-
-  default:
-    break;
-  }
-
-  camera_update_view(cam);
-
-  return false;
+  camera_update_view(camera);
 }
 
 void camera_set_mode(camera *camera, CameraMode mode) {
-
-  const char *target = EVENT_DEFAULT_TARGET;
 
   // set event listeners depending on camera mode
   switch (mode) {
 
   case FLYING:
-    emscripten_set_keydown_callback(target, camera, false,
-                                    camera_flying_keyboard_callback);
     return;
 
   case ORBIT:
@@ -103,7 +84,9 @@ void camera_update_uniform(void *callback_camera, void *data) {
 }
 
 void camera_translate(camera *camera, vec3 new_position) {
-  glm_vec3_copy(new_position, camera->position);
+  camera->position[0] += new_position[0];
+  camera->position[1] += new_position[1];
+  camera->position[2] += new_position[2];
   camera_update_view(camera);
 }
 

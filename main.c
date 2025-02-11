@@ -15,6 +15,7 @@
 
 #include "utils/file.h"
 
+#include "backend/clock.h"
 #include "backend/generator.h"
 #include "backend/renderer.h"
 
@@ -23,11 +24,13 @@
 #include "runtime/scene.h"
 #include "runtime/shader.h"
 #include "runtime/viewport.h"
+#include "runtime/input.h"
 
 static scene main_scene;
 static mesh tri_mesh;
 static float rot = 0.0f;
 static renderer main_renderer;
+static cclock main_clock;
 
 // callbacksd
 static void init_pipeline();
@@ -45,13 +48,18 @@ void init_scene() {
   });
 
   // set camera
-  camera camera = camera_create();
+  camera camera = camera_create(&(CameraCreateDescriptor){
+      .speed = 20.0f,
+      .clock = &main_clock,
+  });
+
+  // init camera position
   camera_translate(&camera, (vec3){0.0f, 0.0f, -8.0f});
   camera_rotate(&camera, (vec3){0.0f, 20.0f, 00.0f});
 
   main_scene = scene_create(camera, viewport);
+  // TODO: check if possible to set the mode in the descriptor
   camera_set_mode(&main_scene.camera, FLYING);
-  
 }
 
 void setup_triangle() {
@@ -142,9 +150,17 @@ int main(int argc, const char *argv[]) {
   printf("WASM INIT\n");
 
   // init renderer
-  main_renderer = renderer_create("canvas");
+  main_renderer = renderer_create(&(RendererCreateDescriptor){
+	  .name = "canvas",
+	  .clock = &main_clock
+      });
+  
   renderer_init(&main_renderer);
 
+  // poll inputs
+  input_listen();
+
+  // set scene
   init_scene();
   setup_triangle();
 

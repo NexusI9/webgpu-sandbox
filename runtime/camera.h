@@ -1,6 +1,8 @@
 #ifndef _CAMERA_H_
 #define _CAMERA_H_
 
+#include "../backend/clock.h"
+
 #include "../include/cglm/mat4.h"
 #include "../include/cglm/vec3.h"
 #include "../include/cglm/vec4.h"
@@ -13,16 +15,23 @@ typedef struct {
 typedef enum { FIXED, FLYING, ORBIT } CameraMode;
 
 typedef struct {
+  cclock *clock;
+  float speed;
+} CameraCreateDescriptor;
+
+typedef struct {
+  cclock *clock;
   vec3 position;
   vec3 euler_rotation;
   mat4 view;
   float speed;
 } camera;
 
-camera camera_create();
+camera camera_create(const CameraCreateDescriptor *);
 void camera_reset(camera *);
 void camera_set_mode(camera *, CameraMode);
 void camera_update_uniform(void *, void *);
+void camera_draw(camera *);
 
 // get
 float camera_position(const camera *);
