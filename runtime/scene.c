@@ -4,7 +4,6 @@
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <assert.h>
-#include <malloc/_malloc.h>
 #include <stdio.h>
 
 scene scene_create(camera camera, viewport viewport) {

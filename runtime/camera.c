@@ -2,6 +2,7 @@
 #include "constants.h"
 #include "emscripten/html5.h"
 #include "input.h"
+#include <stdint.h>
 #include <stdio.h>
 
 camera camera_create(const CameraCreateDescriptor *cd) {
@@ -13,6 +14,7 @@ camera camera_create(const CameraCreateDescriptor *cd) {
   // assign additional attributes
   c.speed = cd->speed;
   c.clock = cd->clock;
+  c.mode = cd->mode;
 
   return c;
 }
@@ -22,39 +24,58 @@ void camera_reset(camera *c) {
     glm_vec3_zero(c->position);
     glm_vec3_zero(c->euler_rotation);
     glm_mat4_identity(c->view);
+
+    vec3 target = (vec3){0.0f, 0.0f, 1.0f};
+    vec3 up = (vec3){0.0f, 1.0f, 0.0f};
+
+    glm_vec3_copy(target, c->target);
+    glm_vec3_copy(up, c->up);
   }
 }
 
-void camera_draw(camera *camera) {
+static void camera_flying_mode_controler(camera *camera) {
+
+  uint8_t boost = input_key(KEY_CAP) ? 3 : 1;
 
   if (input_key(KEY_FORWARD_FR))
-    camera_translate(camera,
-                     (vec3){0.0f, 0.0f, camera->speed * camera->clock->delta});
+    camera_translate(camera, (vec3){
+                                 0.0f,
+                                 0.0f,
+                                 camera->speed * boost * camera->clock->delta,
+                             });
 
   if (input_key(KEY_BACKWARD_FR))
-    camera_translate(
-        camera, (vec3){0.0f, 0.0f, -1 * camera->speed * camera->clock->delta});
-
-  camera_update_view(camera);
+    camera_translate(camera,
+                     (vec3){
+                         0.0f,
+                         0.0f,
+                         -1 * camera->speed * boost * camera->clock->delta,
+                     });
 }
 
-void camera_set_mode(camera *camera, CameraMode mode) {
+static void camera_orbit_mode_controler(camera *camera) {}
 
-  // set event listeners depending on camera mode
-  switch (mode) {
+void camera_draw(camera *camera) {
+
+  switch (camera->mode) {
 
   case FLYING:
+    camera_flying_mode_controler(camera);
     return;
 
   case ORBIT:
-
+    camera_orbit_mode_controler(camera);
     return;
 
   case FIXED:
   default:
     return;
   }
+
+  camera_update_view(camera);
 }
+
+void camera_set_mode(camera *camera, CameraMode mode) { camera->mode = mode; }
 
 CameraUniform camera_uniform(camera *c) {
   // Combine directly view matrix and camera position so faster to upload into
@@ -77,16 +98,21 @@ void camera_update_uniform(void *callback_camera, void *data) {
   camera *cast_cam = (camera *)callback_camera;
   CameraUniform *new_data = (CameraUniform *)data;
 
-  // transfer updated camera values
+  // transfer updated camera values (position and view)
   CameraUniform uCamera = camera_uniform(cast_cam);
   glm_mat4_copy(uCamera.view, new_data->view);
   glm_vec4_copy(uCamera.position, new_data->position);
 }
 
 void camera_translate(camera *camera, vec3 new_position) {
+  // get the absolute value, need to transfom the new position into
+  // the camera coordinate system (relative)
+  // https://www.ogldev.org/www/tutorial13/tutorial13.html
+
   camera->position[0] += new_position[0];
   camera->position[1] += new_position[1];
   camera->position[2] += new_position[2];
+
   camera_update_view(camera);
 }
 
@@ -96,6 +122,8 @@ void camera_rotate(camera *camera, vec3 new_rotation) {
 }
 
 void camera_update_view(camera *camera) {
+  // Yaw-pitch-roll camera (1st approach)
+  // Depends on camera_rotate/translate => update_view
 
   float rot_x = camera->euler_rotation[0];
   float rot_y = camera->euler_rotation[1];
@@ -117,4 +145,63 @@ void camera_update_view(camera *camera) {
   };
 
   glm_mat4_copy(new_view, camera->view);
+}
+
+void camera_look_at(camera *camera, vec3 position, vec3 target) {
+  // UVN camera (2nd approach)
+
+  vec3 forward;
+  glm_vec3_sub(target, position, forward);
+  glm_vec3_normalize(forward);
+
+  vec3 world_up = {0.0f, 1.0f, 0.0f};
+
+  // need to avoid forward being parallel to world_up
+  if (fabs(glm_vec3_dot(forward, world_up)) > 0.99f) {
+    // use x axis as up instead
+    glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, world_up);
+  }
+
+  vec3 right;
+  glm_vec3_cross(world_up, forward, right);
+  glm_vec3_normalize(right);
+
+  vec3 up;
+  glm_vec3_cross(forward, right, up);
+
+  printf("Up: %f,%f,%f\n", up[0], up[1], up[2]);
+  printf("Right: %f,%f,%f\n", right[0], right[1], right[2]);
+  printf("Forward: %f,%f,%f\n", forward[0], forward[1], forward[2]);
+
+  // create new view matrix
+  mat4 view = {
+      {
+          right[0],
+          up[0],
+          forward[0],
+          0.0f,
+      },
+      {
+          right[1],
+          up[1],
+          forward[1],
+          0.0f,
+      },
+      {
+          right[2],
+          up[2],
+          forward[2],
+          0.0f,
+      },
+      {
+          -glm_vec3_dot(right, position),
+          -glm_vec3_dot(up, position),
+          -glm_vec3_dot(forward, position),
+          1.0f,
+      },
+  };
+
+  // update camera view
+  glm_vec3_copy(position, camera->position);
+  glm_mat4_copy(view, camera->view);
 }

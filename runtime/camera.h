@@ -17,14 +17,22 @@ typedef enum { FIXED, FLYING, ORBIT } CameraMode;
 typedef struct {
   cclock *clock;
   float speed;
+  CameraMode mode;
 } CameraCreateDescriptor;
 
 typedef struct {
+
   cclock *clock;
+
   vec3 position;
   vec3 euler_rotation;
+  vec3 target;
+  vec3 up;
   mat4 view;
+
   float speed;
+  CameraMode mode;
+
 } camera;
 
 camera camera_create(const CameraCreateDescriptor *);
@@ -32,6 +40,7 @@ void camera_reset(camera *);
 void camera_set_mode(camera *, CameraMode);
 void camera_update_uniform(void *, void *);
 void camera_draw(camera *);
+void camera_look_at(camera *, vec3, vec3);
 
 // get
 float camera_position(const camera *);
