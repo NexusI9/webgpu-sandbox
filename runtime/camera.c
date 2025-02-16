@@ -72,23 +72,27 @@ static void camera_flying_mode_controller(camera *camera) {
 
   // Define new position
   uint8_t boost = input_key(KEY_CAP) ? 3 : 1;
+
   float velocity = camera->speed * boost * camera->clock->delta;
-  vec3 new_position;
-  glm_vec3_copy(camera->position, new_position);
+  vec3 velo_vector = {velocity, velocity, velocity};
+
+  vec3 velo_forward;
+  glm_vec3_mul(velo_vector, camera->forward, velo_forward);
+
+  vec3 velo_side;
+  glm_vec3_mul(velo_vector, camera->right, velo_side);
 
   if (input_key(KEY_FORWARD_FR)) // Forward
-    new_position[2] += velocity;
+    glm_vec3_add(camera->position, velo_forward, camera->position);
 
   if (input_key(KEY_BACKWARD_FR)) // Backward
-    new_position[2] += -1 * velocity;
+    glm_vec3_sub(camera->position, velo_forward, camera->position);
 
   if (input_key(KEY_LEFT_FR)) // Left
-    new_position[0] += -1 * velocity;
+    glm_vec3_sub(camera->position, velo_side, camera->position);
 
   if (input_key(KEY_RIGHT_FR)) // Right
-    new_position[0] += velocity;
-
-  glm_vec3_copy(new_position, camera->position);
+    glm_vec3_add(camera->position, velo_side, camera->position);
 
   // Define new target from yaw and pitch
   // mouse movement > yaw pitch > forward vector > target vector
@@ -100,7 +104,7 @@ static void camera_flying_mode_controller(camera *camera) {
   camera_target_from_yaw_pitch(camera, yaw, pitch);
 
   // Update view matrix depending on new position and new target;
-  camera_look_at(camera, new_position, camera->target);
+  camera_look_at(camera, camera->position, camera->target);
 }
 
 static void camera_orbit_mode_controler(camera *camera) {}

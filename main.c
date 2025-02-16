@@ -20,11 +20,11 @@
 #include "backend/renderer.h"
 
 #include "runtime/camera.h"
+#include "runtime/input.h"
 #include "runtime/mesh.h"
 #include "runtime/scene.h"
 #include "runtime/shader.h"
 #include "runtime/viewport.h"
-#include "runtime/input.h"
 
 static scene main_scene;
 static mesh tri_mesh;
@@ -51,14 +51,16 @@ void init_scene() {
   camera camera = camera_create(&(CameraCreateDescriptor){
       .speed = 20.0f,
       .clock = &main_clock,
+      .mode = FLYING,
   });
-
-  // init camera position
-  camera_translate(&camera, (vec3){0.0f, 0.0f, -8.0f});
-  camera_rotate(&camera, (vec3){0.0f, 20.0f, 00.0f});
 
   main_scene = scene_create(camera, viewport);
   // TODO: check if possible to set the mode in the descriptor
+
+  // init camera position
+  camera_look_at(&main_scene.camera, (vec3){12.0f, 12.0f, 12.0f},
+                 (vec3){0.0f, 0.0f, 0.0f});
+  // camera_translate(&main_scene.camera, (vec3){0.0f, 0.0f, 12.0f});
   camera_set_mode(&main_scene.camera, FLYING);
 }
 
@@ -150,11 +152,9 @@ int main(int argc, const char *argv[]) {
   printf("WASM INIT\n");
 
   // init renderer
-  main_renderer = renderer_create(&(RendererCreateDescriptor){
-	  .name = "canvas",
-	  .clock = &main_clock
-      });
-  
+  main_renderer = renderer_create(
+      &(RendererCreateDescriptor){.name = "canvas", .clock = &main_clock});
+
   renderer_init(&main_renderer);
 
   // poll inputs

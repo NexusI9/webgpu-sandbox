@@ -57,7 +57,7 @@ void input_listen() {
   emscripten_set_keyup_callback(target, NULL, false, input_key_up);
 
   // mouse move event listener
-  //emscripten_set_mousemove_callback(target, NULL, false, input_mouse_move);
+  emscripten_set_mousemove_callback(target, NULL, false, input_mouse_move);
 }
 
 bool input_key(unsigned int key) {
