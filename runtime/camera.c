@@ -1,7 +1,10 @@
 #include "camera.h"
+#include "../include/cglm/affine.h"
+#include "../utils/system.h"
 #include "constants.h"
 #include "emscripten/html5.h"
 #include "input.h"
+#include "string.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -25,32 +28,79 @@ void camera_reset(camera *c) {
     glm_vec3_zero(c->euler_rotation);
     glm_mat4_identity(c->view);
 
-    vec3 target = (vec3){0.0f, 0.0f, 1.0f};
-    vec3 up = (vec3){0.0f, 1.0f, 0.0f};
-
+    vec3 target = {0.0f, 0.0f, 0.0f};
     glm_vec3_copy(target, c->target);
+
+    vec3 up = {0.0f, 1.0f, 0.0f};
     glm_vec3_copy(up, c->up);
+
+    vec3 forward = {0.0f, 0.0f, 0.0f};
+    glm_vec3_copy(forward, c->forward);
+
+    vec3 right = {0.0f, 0.0f, 0.0f};
+    glm_vec3_copy(right, c->right);
   }
 }
 
-static void camera_flying_mode_controler(camera *camera) {
+static void camera_target_from_yaw_pitch(camera *camera, float yaw,
+                                         float pitch) {
 
+  /*
+    update forward vector depending on yaw and pitch factor
+    then update the camera target based on the position
+    and the newly rotated forward
+*/
+
+  vec3 *forward = &camera->forward;
+  vec3 *up = &camera->up;
+  vec3 *right = &camera->right;
+
+  // apply the yaw rotation along the up vector
+  mat4 yaw_matrix;
+  glm_rotate_make(yaw_matrix, yaw, *up);
+  glm_mat4_mulv3(yaw_matrix, *forward, 1.0f, *forward);
+
+  // apply pitch rotation along the right vector
+  mat4 pitch_matrix;
+  glm_rotate_make(pitch_matrix, pitch, *right);
+  glm_mat4_mulv3(pitch_matrix, *forward, 1.0f, *forward);
+
+  glm_vec3_add(camera->position, *forward, camera->target);
+}
+
+static void camera_flying_mode_controller(camera *camera) {
+
+  // Define new position
   uint8_t boost = input_key(KEY_CAP) ? 3 : 1;
+  float velocity = camera->speed * boost * camera->clock->delta;
+  vec3 new_position;
+  glm_vec3_copy(camera->position, new_position);
 
-  if (input_key(KEY_FORWARD_FR))
-    camera_translate(camera, (vec3){
-                                 0.0f,
-                                 0.0f,
-                                 camera->speed * boost * camera->clock->delta,
-                             });
+  if (input_key(KEY_FORWARD_FR)) // Forward
+    new_position[2] += velocity;
 
-  if (input_key(KEY_BACKWARD_FR))
-    camera_translate(camera,
-                     (vec3){
-                         0.0f,
-                         0.0f,
-                         -1 * camera->speed * boost * camera->clock->delta,
-                     });
+  if (input_key(KEY_BACKWARD_FR)) // Backward
+    new_position[2] += -1 * velocity;
+
+  if (input_key(KEY_LEFT_FR)) // Left
+    new_position[0] += -1 * velocity;
+
+  if (input_key(KEY_RIGHT_FR)) // Right
+    new_position[0] += velocity;
+
+  glm_vec3_copy(new_position, camera->position);
+
+  // Define new target from yaw and pitch
+  // mouse movement > yaw pitch > forward vector > target vector
+  float yaw = -g_input.mouse.movement.x * INPUT_MOUSE_SENSITIVITY *
+              camera->clock->delta;
+  float pitch = -g_input.mouse.movement.y * INPUT_MOUSE_SENSITIVITY *
+                camera->clock->delta;
+
+  camera_target_from_yaw_pitch(camera, yaw, pitch);
+
+  // Update view matrix depending on new position and new target;
+  camera_look_at(camera, new_position, camera->target);
 }
 
 static void camera_orbit_mode_controler(camera *camera) {}
@@ -60,7 +110,7 @@ void camera_draw(camera *camera) {
   switch (camera->mode) {
 
   case FLYING:
-    camera_flying_mode_controler(camera);
+    camera_flying_mode_controller(camera);
     return;
 
   case ORBIT:
@@ -130,18 +180,33 @@ void camera_update_view(camera *camera) {
   float rot_z = camera->euler_rotation[2];
 
   mat4 new_view = (mat4){
-      {cos(rot_y) * cos(rot_z), cos(rot_y) * sin(rot_z), -sin(rot_y), 0.0f},
+      {
+          cos(rot_y) * cos(rot_z),
+          cos(rot_y) * sin(rot_z),
+          -sin(rot_y),
+          0.0f,
+      },
 
-      {sin(rot_x) * sin(rot_y) * cos(rot_z) - cos(rot_x) * sin(rot_z),
-       sin(rot_x) * sin(rot_y) * sin(rot_z) + cos(rot_x) * cos(rot_z),
-       sin(rot_x) * cos(rot_y), 0.0f},
+      {
+          sin(rot_x) * sin(rot_y) * cos(rot_z) - cos(rot_x) * sin(rot_z),
+          sin(rot_x) * sin(rot_y) * sin(rot_z) + cos(rot_x) * cos(rot_z),
+          sin(rot_x) * cos(rot_y),
+          0.0f,
+      },
 
-      {cos(rot_x) * sin(rot_y) * cos(rot_z) + sin(rot_x) * sin(rot_z),
-       cos(rot_x) * sin(rot_y) * sin(rot_z) - sin(rot_x) * cos(rot_z),
-       cos(rot_x) * cos(rot_y), 0.0f},
+      {
+          cos(rot_x) * sin(rot_y) * cos(rot_z) + sin(rot_x) * sin(rot_z),
+          cos(rot_x) * sin(rot_y) * sin(rot_z) - sin(rot_x) * cos(rot_z),
+          cos(rot_x) * cos(rot_y),
+          0.0f,
+      },
 
-      {-1 * camera->position[0], -1 * camera->position[1],
-       -1 * camera->position[2], 1.0f},
+      {
+          -1 * camera->position[0],
+          -1 * camera->position[1],
+          -1 * camera->position[2],
+          1.0f,
+      },
   };
 
   glm_mat4_copy(new_view, camera->view);
@@ -150,58 +215,61 @@ void camera_update_view(camera *camera) {
 void camera_look_at(camera *camera, vec3 position, vec3 target) {
   // UVN camera (2nd approach)
 
-  vec3 forward;
-  glm_vec3_sub(target, position, forward);
-  glm_vec3_normalize(forward);
+  vec3 *forward = &camera->forward;
+  vec3 *up = &camera->up;
+  vec3 *right = &camera->right;
+
+  glm_vec3_sub(target, position, *forward);
+  glm_vec3_normalize(*forward);
 
   vec3 world_up = {0.0f, 1.0f, 0.0f};
 
   // need to avoid forward being parallel to world_up
-  if (fabs(glm_vec3_dot(forward, world_up)) > 0.99f) {
+  if (fabs(glm_vec3_dot(*forward, world_up)) > 0.99f) {
     // use x axis as up instead
-    glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, world_up);
+    vec3 correct_up = {0.0f, 0.0f, 1.0f};
+    glm_vec3_copy(correct_up, world_up);
   }
 
-  vec3 right;
-  glm_vec3_cross(world_up, forward, right);
-  glm_vec3_normalize(right);
+  // set right vector
+  glm_vec3_cross(*forward, world_up, *right);
+  glm_vec3_normalize(*right);
 
-  vec3 up;
-  glm_vec3_cross(forward, right, up);
-
-  printf("Up: %f,%f,%f\n", up[0], up[1], up[2]);
-  printf("Right: %f,%f,%f\n", right[0], right[1], right[2]);
-  printf("Forward: %f,%f,%f\n", forward[0], forward[1], forward[2]);
+  // set  up vector
+  glm_vec3_cross(*right, *forward, *up);
 
   // create new view matrix
   mat4 view = {
       {
-          right[0],
-          up[0],
-          forward[0],
+          (*right)[0],
+          (*up)[0],
+          (*forward)[0],
           0.0f,
       },
       {
-          right[1],
-          up[1],
-          forward[1],
+          (*right)[1],
+          (*up)[1],
+          (*forward)[1],
           0.0f,
       },
       {
-          right[2],
-          up[2],
-          forward[2],
+          (*right)[2],
+          (*up)[2],
+          (*forward)[2],
           0.0f,
       },
       {
-          -glm_vec3_dot(right, position),
-          -glm_vec3_dot(up, position),
-          -glm_vec3_dot(forward, position),
+          -glm_vec3_dot(*right, position),
+          -glm_vec3_dot(*up, position),
+          -glm_vec3_dot(*forward, position),
           1.0f,
       },
   };
 
   // update camera view
-  glm_vec3_copy(position, camera->position);
-  glm_mat4_copy(view, camera->view);
+  // TODO : look like glm_..._copy is flawed
+  // Can be related to alignment issue
+  // Try with : alignas(16) mat4 view;
+  memcpy(camera->position, position, sizeof(vec3));
+  memcpy(camera->view, view, sizeof(mat4));
 }

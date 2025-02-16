@@ -1,4 +1,5 @@
 #include "input.h"
+#include "../utils/math.h"
 #include "constants.h"
 #include "emscripten/html5.h"
 #include <stdio.h>
@@ -27,6 +28,21 @@ static bool input_key_up(int eventType, const EmscriptenKeyboardEvent *keyEvent,
   return false;
 }
 
+static bool input_mouse_move(int eventType,
+                             const EmscriptenMouseEvent *mouseEvent,
+                             void *userData) {
+
+  // movement
+  g_input.mouse.movement.x = MIN(mouseEvent->movementX, INPUT_MAX_MOVEMENT);
+  g_input.mouse.movement.y = MIN(mouseEvent->movementY, INPUT_MAX_MOVEMENT);
+
+  // position
+  g_input.mouse.x = mouseEvent->screenX;
+  g_input.mouse.y = mouseEvent->screenY;
+
+  return false;
+}
+
 void input_set_key(unsigned int key, bool state) { g_input.keys[key] = state; }
 
 void input_disable_all_keys() { memset(g_input.keys, 0, sizeof(g_input.keys)); }
@@ -39,6 +55,9 @@ void input_listen() {
 
   // key up event listener
   emscripten_set_keyup_callback(target, NULL, false, input_key_up);
+
+  // mouse move event listener
+  //emscripten_set_mousemove_callback(target, NULL, false, input_mouse_move);
 }
 
 bool input_key(unsigned int key) {

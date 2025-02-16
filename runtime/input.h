@@ -2,12 +2,25 @@
 #define _INPUT_H_
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #define INPUT_KEY_LENGTH 128
+#define INPUT_MAX_MOVEMENT 20
+#define INPUT_MOUSE_SENSITIVITY 0.4
 
 typedef struct {
 
   bool keys[INPUT_KEY_LENGTH];
+
+  struct {
+
+    uint8_t x, y;
+
+    struct {
+      int8_t x, y;
+    } movement;
+
+  } mouse;
 
 } input;
 
