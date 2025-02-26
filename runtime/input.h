@@ -6,7 +6,7 @@
 
 #define INPUT_KEY_LENGTH 128
 #define INPUT_MAX_MOVEMENT 20
-#define INPUT_MOUSE_SENSITIVITY 0.4
+#define INPUT_MOUSE_SENSITIVITY 0.02f
 
 typedef struct {
 
@@ -14,10 +14,10 @@ typedef struct {
 
   struct {
 
-    uint8_t x, y;
+    int x, y;
 
     struct {
-      int8_t x, y;
+      int x, y;
     } movement;
 
   } mouse;

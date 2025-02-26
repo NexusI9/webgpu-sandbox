@@ -1,9 +1,11 @@
 #include "camera.h"
 #include "../include/cglm/affine.h"
+#include "../utils/math.h"
 #include "../utils/system.h"
 #include "constants.h"
 #include "emscripten/html5.h"
 #include "input.h"
+#include "math.h"
 #include "string.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -107,7 +109,23 @@ static void camera_flying_mode_controller(camera *camera) {
   camera_look_at(camera, camera->position, camera->target);
 }
 
-static void camera_orbit_mode_controler(camera *camera) {}
+static float value = 0.0f;
+static void camera_orbit_mode_controler(camera *camera) {
+
+  float yaw = -g_input.mouse.x * INPUT_MOUSE_SENSITIVITY;
+  float pitch = g_input.mouse.y * INPUT_MOUSE_SENSITIVITY;
+
+  float radius = glm_vec3_distance(camera->position, camera->target);
+
+  vec3 new_pos = {
+      radius * cosf(pitch) * sinf(yaw),
+      radius * sinf(pitch),
+      radius * cosf(pitch) * cosf(yaw),
+  };
+
+  glm_vec3_copy(new_pos, camera->position);
+  camera_look_at(camera, camera->position, camera->target);
+}
 
 void camera_draw(camera *camera) {
 
@@ -122,6 +140,7 @@ void camera_draw(camera *camera) {
     return;
 
   case FIXED:
+    // remove event listeners
   default:
     return;
   }
@@ -167,12 +186,12 @@ void camera_translate(camera *camera, vec3 new_position) {
   camera->position[1] += new_position[1];
   camera->position[2] += new_position[2];
 
-  camera_update_view(camera);
+  // camera_update_view(camera);
 }
 
 void camera_rotate(camera *camera, vec3 new_rotation) {
   glm_vec3_copy(new_rotation, camera->euler_rotation);
-  camera_update_view(camera);
+  // camera_update_view(camera);
 }
 
 void camera_update_view(camera *camera) {

@@ -2,6 +2,7 @@
 #include "../utils/math.h"
 #include "constants.h"
 #include "emscripten/html5.h"
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
