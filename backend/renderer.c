@@ -136,3 +136,7 @@ void renderer_draw(const renderer *renderer, scene *scene) {
   // update clock delta
   clock_update_delta(renderer->clock);
 }
+
+void renderer_set_draw(const void * callback){
+   emscripten_set_main_loop(callback, 0, 1);   
+}

@@ -35,5 +35,6 @@ void renderer_init(renderer *);
 void renderer_draw(const renderer *, scene *);
 
 void renderer_end_frame(const renderer *);
+void renderer_set_draw(const void *);
 
 #endif

@@ -58,10 +58,10 @@ void init_scene() {
   // TODO: check if possible to set the mode in the descriptor
 
   // init camera position
-  camera_look_at(&main_scene.camera, (vec3){12.0f, 12.0f, 12.0f},
+  camera_look_at(&main_scene.camera, (vec3){0.0f, 0.0f, 10.0f},
                  (vec3){0.0f, 0.0f, 0.0f});
   // camera_translate(&main_scene.camera, (vec3){0.0f, 0.0f, 12.0f});
-  camera_set_mode(&main_scene.camera, FLYING);
+  camera_set_mode(&main_scene.camera, ORBIT);
 }
 
 void setup_triangle() {
@@ -165,7 +165,7 @@ int main(int argc, const char *argv[]) {
   setup_triangle();
 
   // Update Loop
-  emscripten_set_main_loop(draw, 0, 1);
+  renderer_set_draw(draw);
 
   // Quit
   renderer_end_frame(&main_renderer);
