@@ -1,5 +1,6 @@
 #include "camera.h"
 #include "../include/cglm/affine.h"
+#include "../include/cglm/quat.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
 #include "constants.h"
@@ -117,13 +118,30 @@ static void camera_orbit_mode_controler(camera *camera) {
 
   float radius = glm_vec3_distance(camera->position, camera->target);
 
-  vec3 new_pos = {
-      radius * cosf(pitch) * sinf(yaw),
-      radius * sinf(pitch),
-      radius * cosf(pitch) * cosf(yaw),
-  };
+  // 1. Create Picth & Yaw Quaternions
 
-  glm_vec3_copy(new_pos, camera->position);
+  // create quaternions
+  versor q_pitch, q_yaw, q_final;
+
+  // x axis rotation quaternions
+  glm_quatv(q_pitch, pitch, (vec3){1.0f, 0.0f, 0.0f});
+
+  // y axis rotation quaternions
+  glm_quatv(q_yaw, yaw, (vec3){0.0f, 1.0f, 0.0f});
+
+  // combine x & y quats
+  glm_quat_mul(q_pitch, q_yaw, q_final);
+
+  // 2. apply rotation to a BASE POSITION
+  vec3 new_pos = {0.0f, 0.0f, radius}; // start at fixed distance
+
+  // rotate base position using final quat
+  glm_quat_rotatev(q_final, new_pos, new_pos);
+
+  // 3. Offset position relative to target
+  glm_vec3_add(new_pos, camera->target, camera->position);
+
+  //glm_vec3_copy(new_pos, camera->position);
   camera_look_at(camera, camera->position, camera->target);
 }
 
