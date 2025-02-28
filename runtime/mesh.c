@@ -46,6 +46,15 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
   return new_mesh;
 }
 
+mesh mesh_create_primitive(const MeshCreatePrimitiveDescriptor *md) {
+  return mesh_create(&(MeshCreateDescriptor){
+      .wgpu = md->wgpu,
+      .index = md->primitive.index,
+      .vertex = md->primitive.vertex,
+      .shader = md->shader,
+  });
+}
+
 // send vertex data to GPU
 void mesh_create_vertex_buffer(mesh *mesh,
                                const MeshCreateBufferDescriptor *bd) {
