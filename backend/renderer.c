@@ -83,14 +83,6 @@ void renderer_end_frame(const renderer *renderer) {
 
 void renderer_draw(const renderer *renderer, scene *scene) {
 
-  // update rotation
-  // state.uniform.rot += 0.1f;
-  // state.uniform.rot = state.uniform.rot > 360.0f ? 0.0f : state.uniform.rot;
-
-  // append update to queue
-  // wgpuQueueWriteBuffer(state.wgpu.queue, state.store.u_buffer,
-  // 0,&state.uniform.rot, sizeof(state.uniform.rot));
-
   // create texture view
   WGPUTextureView back_buffer =
       wgpuSwapChainGetCurrentTextureView(renderer->wgpu.swapchain);
@@ -137,6 +129,10 @@ void renderer_draw(const renderer *renderer, scene *scene) {
   clock_update_delta(renderer->clock);
 }
 
-void renderer_set_draw(const void * callback){
-   emscripten_set_main_loop(callback, 0, 1);   
+void renderer_set_draw(const void *callback) {
+  emscripten_set_main_loop(callback, 0, 1);
+}
+
+void renderer_lock_mouse(const renderer *renderer) {
+  emscripten_request_pointerlock(renderer->context.name, true);
 }

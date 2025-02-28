@@ -11,7 +11,7 @@ typedef struct {
 
 typedef struct {
 
-    cclock *clock; //update clock delta on draw
+  cclock *clock; // update clock delta on draw
 
   struct {
     const char *name;
@@ -36,5 +36,6 @@ void renderer_draw(const renderer *, scene *);
 
 void renderer_end_frame(const renderer *);
 void renderer_set_draw(const void *);
+void renderer_lock_mouse(const renderer *);
 
 #endif

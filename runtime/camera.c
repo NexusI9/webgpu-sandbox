@@ -116,7 +116,9 @@ static void camera_orbit_mode_controler(camera *camera) {
   float yaw = -g_input.mouse.x * INPUT_MOUSE_SENSITIVITY;
   float pitch = g_input.mouse.y * INPUT_MOUSE_SENSITIVITY;
 
-  float radius = glm_vec3_distance(camera->position, camera->target);
+  // TODO: dynamic radius based on mouse zoom or keyboard?
+  float radius = glm_vec3_distance(camera->position, camera->target) +
+                 g_input.mouse.wheel.deltaY * INPUT_WHEEL_SENSITIVITY;
 
   // 1. Create Picth & Yaw Quaternions
 
@@ -141,7 +143,7 @@ static void camera_orbit_mode_controler(camera *camera) {
   // 3. Offset position relative to target
   glm_vec3_add(new_pos, camera->target, camera->position);
 
-  //glm_vec3_copy(new_pos, camera->position);
+  // glm_vec3_copy(new_pos, camera->position);
   camera_look_at(camera, camera->position, camera->target);
 }
 

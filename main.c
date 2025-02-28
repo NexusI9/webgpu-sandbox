@@ -156,6 +156,7 @@ int main(int argc, const char *argv[]) {
       &(RendererCreateDescriptor){.name = "canvas", .clock = &main_clock});
 
   renderer_init(&main_renderer);
+  renderer_lock_mouse(&main_renderer);
 
   // poll inputs
   input_listen();

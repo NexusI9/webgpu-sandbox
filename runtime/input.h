@@ -7,6 +7,7 @@
 #define INPUT_KEY_LENGTH 128
 #define INPUT_MAX_MOVEMENT 20
 #define INPUT_MOUSE_SENSITIVITY 0.02f
+#define INPUT_WHEEL_SENSITIVITY 0.02f
 
 typedef struct {
 
@@ -19,6 +20,10 @@ typedef struct {
     struct {
       int x, y;
     } movement;
+
+    struct {
+      double deltaX, deltaY;
+    } wheel;
 
   } mouse;
 
