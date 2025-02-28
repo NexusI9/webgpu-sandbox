@@ -1,6 +1,7 @@
 #ifndef _MESH_H_
 #define _MESH_H_
 
+#include "../resources/primitive/primitive.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -18,19 +19,23 @@ typedef struct {
   // wgpu
   MeshWGPU wgpu;
 
-  struct {
-    const float *data;
-    uint16_t length;
-  } vertex;
-
-  struct {
-    const uint16_t *data;
-    uint16_t length;
-  } index;
+  vertex vertex;
+  index index;
 
   shader shader;
 
 } MeshCreateDescriptor;
+
+typedef struct {
+
+  // wgpu
+  MeshWGPU wgpu;
+    
+  primitive primitive;
+    
+  shader shader;
+
+} MeshPrimitiveCreateDescriptor;
 
 typedef struct {
   void *data;
@@ -66,9 +71,15 @@ typedef struct {
 
 } mesh;
 
+// create mesh from custom vertex and index array
 mesh mesh_create(const MeshCreateDescriptor *);
+
+// create mesh from primitive (preset)
+mesh mesh_create_primitive(const MeshPrimitiveCreateDescriptor *);
+
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);
-void mesh_draw(mesh *, WGPURenderPassEncoder *, const camera *, const viewport *);
+void mesh_draw(mesh *, WGPURenderPassEncoder *, const camera *,
+               const viewport *);
 
 #endif
