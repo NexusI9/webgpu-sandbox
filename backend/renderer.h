@@ -7,6 +7,7 @@
 typedef struct {
   const char *name;
   cclock *clock;
+  bool lock_mouse;
 } RendererCreateDescriptor;
 
 typedef struct {

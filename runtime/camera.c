@@ -22,6 +22,7 @@ camera camera_create(const CameraCreateDescriptor *cd) {
   c.clock = cd->clock;
   c.mode = cd->mode;
 
+  camera_set_mode(&c, c.mode);
   return c;
 }
 

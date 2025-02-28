@@ -51,7 +51,7 @@ void init_scene() {
   camera camera = camera_create(&(CameraCreateDescriptor){
       .speed = 20.0f,
       .clock = &main_clock,
-      .mode = FLYING,
+      .mode = ORBIT,
   });
 
   main_scene = scene_create(camera, viewport);
@@ -60,8 +60,7 @@ void init_scene() {
   // init camera position
   camera_look_at(&main_scene.camera, (vec3){0.0f, 0.0f, 10.0f},
                  (vec3){0.0f, 0.0f, 0.0f});
-  // camera_translate(&main_scene.camera, (vec3){0.0f, 0.0f, 12.0f});
-  camera_set_mode(&main_scene.camera, ORBIT);
+  
 }
 
 void setup_triangle() {
@@ -152,11 +151,13 @@ int main(int argc, const char *argv[]) {
   printf("WASM INIT\n");
 
   // init renderer
-  main_renderer = renderer_create(
-      &(RendererCreateDescriptor){.name = "canvas", .clock = &main_clock});
+  main_renderer = renderer_create(&(RendererCreateDescriptor){
+      .name = "canvas",
+      .clock = &main_clock,
+      .lock_mouse = true,
+  });
 
   renderer_init(&main_renderer);
-  renderer_lock_mouse(&main_renderer);
 
   // poll inputs
   input_listen();

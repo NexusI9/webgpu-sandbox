@@ -16,6 +16,9 @@ renderer renderer_create(const RendererCreateDescriptor *rd) {
   new_renderer.wgpu.device = emscripten_webgpu_get_device();
   new_renderer.wgpu.queue = wgpuDeviceGetQueue(new_renderer.wgpu.device);
 
+  if (rd->lock_mouse)
+    renderer_lock_mouse(&new_renderer);
+
   return new_renderer;
 }
 
