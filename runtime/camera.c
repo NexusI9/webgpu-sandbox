@@ -21,6 +21,7 @@ camera camera_create(const CameraCreateDescriptor *cd) {
   c.speed = cd->speed;
   c.clock = cd->clock;
   c.mode = cd->mode;
+  c.sensitivity = cd->sensitivity;
 
   camera_set_mode(&c, c.mode);
   return c;
@@ -100,10 +101,10 @@ static void camera_flying_mode_controller(camera *camera) {
 
   // Define new target from yaw and pitch
   // mouse movement > yaw pitch > forward vector > target vector
-  float yaw = -g_input.mouse.movement.x * INPUT_MOUSE_SENSITIVITY *
-              camera->clock->delta;
-  float pitch = -g_input.mouse.movement.y * INPUT_MOUSE_SENSITIVITY *
-                camera->clock->delta;
+  float yaw =
+      -g_input.mouse.movement.x * camera->sensitivity * camera->clock->delta;
+  float pitch =
+      -g_input.mouse.movement.y * camera->sensitivity * camera->clock->delta;
 
   camera_target_from_yaw_pitch(camera, yaw, pitch);
 
@@ -114,12 +115,12 @@ static void camera_flying_mode_controller(camera *camera) {
 static float value = 0.0f;
 static void camera_orbit_mode_controler(camera *camera) {
 
-  float yaw = -g_input.mouse.x * INPUT_MOUSE_SENSITIVITY;
-  float pitch = g_input.mouse.y * INPUT_MOUSE_SENSITIVITY;
+  float yaw = -g_input.mouse.x * camera->sensitivity;
+  float pitch = g_input.mouse.y * camera->sensitivity;
 
   // TODO: dynamic radius based on mouse zoom or keyboard?
   float radius = glm_vec3_distance(camera->position, camera->target) +
-                 g_input.mouse.wheel.deltaY * INPUT_WHEEL_SENSITIVITY;
+                 g_input.mouse.wheel.deltaY * camera->wheel_sensitivity;
 
   // 1. Create Picth & Yaw Quaternions
 

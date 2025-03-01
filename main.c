@@ -54,7 +54,9 @@ void init_scene() {
   camera camera = camera_create(&(CameraCreateDescriptor){
       .speed = 20.0f,
       .clock = &main_clock,
-      .mode = ORBIT,
+      .mode = FLYING,
+      .sensitivity = 1.0f,
+      .wheel_sensitivity = 0.03f,
   });
 
   main_scene = scene_create(camera, viewport);
@@ -68,12 +70,12 @@ void init_scene() {
 void setup_grid() {
 
   GridUniform grid_uniform = {
-      .size = 20.0f,
-      .cell_size = 5.0f,
-      .thickness = 0.3f,
+      .size = 100.0f,
+      .cell_size = 100.0f,
+      .thickness = 32.0f,
   };
 
-  glm_vec4_copy((vec4){1.0f, 1.0f, 0.0f, 1.0f}, grid_uniform.color);
+  glm_vec4_copy((vec4){0.2f, 0.2f, 0.2f, 1.0f}, grid_uniform.color);
 
   mesh grid = grid_create_mesh(&(GridCreateDescriptor){
       .uniform = grid_uniform,

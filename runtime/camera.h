@@ -18,6 +18,8 @@ typedef struct {
   cclock *clock;
   float speed;
   CameraMode mode;
+  float sensitivity;
+  float wheel_sensitivity;
 } CameraCreateDescriptor;
 
 typedef struct {
@@ -35,6 +37,8 @@ typedef struct {
   mat4 view;
 
   float speed;
+  float sensitivity;
+  float wheel_sensitivity;
   CameraMode mode;
 
 } camera;
