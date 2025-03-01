@@ -105,9 +105,17 @@ struct GridData {
 
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
-
   var output : VertexOut;
-  output.Position = cam * uMesh.model * vec4<f32>(input.aPos, 1.0);
+
+  // Put the grid below the camera
+  var translate_matrix
+      : mat4x4<f32> = mat4x4<f32>(
+            vec4<f32>(1.0, 0.0, 0.0, 0.0), vec4<f32>(0.0, 1.0, 0.0, 0.0),
+            vec4<f32>(0.0, 0.0, 1.0, 0.0),
+            vec4<f32>(uCamera.position.x, 0.0, uCamera.position.z, 1.0));
+
+  output.Position =
+      cam * translate_matrix * uMesh.model * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
 
@@ -125,10 +133,12 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var edge_tone : f32 = 1.0; // 0.5 for the edge
 
   // Move Uv to the opposite camera direction to compensate the grid translation
-  var compensUv : vec2<f32> = vec2(uv.x + uCamera.position.x * patternSize,
-                                   uv.y - uCamera.position.y * patternSize);
+  var compensUv : vec2<f32> = vec2(uv.x - uCamera.position.x * patternSize,
+                                   uv.y + uCamera.position.z * patternSize);
 
-  var gridUv : vec2<f32> = sign(vec2(edge) - (compensUv % patternSize));
+  var gridUv
+      : vec2<f32> =
+            sign(vec2(edge) - fract(compensUv / patternSize) * patternSize);
   var pattern : vec4<f32> = vec4(face_tone - sign(gridUv.x + gridUv.y + 1.0) *
                                                  (face_tone - edge_tone));
 
@@ -149,7 +159,7 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var axisMask : vec4<f32> = vec4(min(1.0f - xAxis, 1.0f - yAxis));
 
   // Setup gradient
-  var fadeFactor : f32 = max(100.0f / abs(uCamera.position.z), 50.0f);
+  var fadeFactor : f32 = max(100.0f / abs(uCamera.position.y), 50.0f);
   var ray : f32 = min(distance(uv, center) * uGrid.scale / fadeFactor, 1.0f);
   var grad : vec3<f32> = mix(white, black, ray);
 

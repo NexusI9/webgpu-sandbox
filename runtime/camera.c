@@ -22,6 +22,7 @@ camera camera_create(const CameraCreateDescriptor *cd) {
   c.clock = cd->clock;
   c.mode = cd->mode;
   c.sensitivity = cd->sensitivity;
+  c.wheel_sensitivity = cd->wheel_sensitivity;
 
   camera_set_mode(&c, c.mode);
   return c;
@@ -112,7 +113,6 @@ static void camera_flying_mode_controller(camera *camera) {
   camera_look_at(camera, camera->position, camera->target);
 }
 
-static float value = 0.0f;
 static void camera_orbit_mode_controler(camera *camera) {
 
   float yaw = -g_input.mouse.x * camera->sensitivity;

@@ -56,7 +56,7 @@ void init_scene() {
       .clock = &main_clock,
       .mode = FLYING,
       .sensitivity = 1.0f,
-      .wheel_sensitivity = 0.03f,
+      .wheel_sensitivity = 0.01f,
   });
 
   main_scene = scene_create(camera, viewport);
