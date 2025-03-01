@@ -30,14 +30,12 @@ mesh grid_create_mesh(const GridCreateDescriptor *gd) {
       .shader = shader,
   });
 
-  mesh_bind_matrices(&grid_mesh, gd->camera, gd->viewport, 0);
+  mesh_scale(&grid_mesh, (vec3){new_grid.size, new_grid.size, new_grid.size});
 
   // bind camera and viewport
-  /*
-    NOTE: binding groups shall be created in order (0 first, then 1)
-    TODO: need to study why the following order works but when
-    binding camera first and then creating new bind group it doesn't work.
-   */
+  // NOTE: binding groups shall be created in order (0 first, then 1)
+
+  mesh_bind_matrices(&grid_mesh, gd->camera, gd->viewport, 0);
 
   GridUniform uGrid = grid_uniform(&new_grid);
 

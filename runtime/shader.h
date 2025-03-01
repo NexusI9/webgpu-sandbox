@@ -82,7 +82,7 @@ typedef struct {
 
   // vertex data
   struct {
-    WGPUVertexAttribute attribute[2];
+    WGPUVertexAttribute attribute[3];
     WGPUVertexBufferLayout layout;
   } vertex;
 

@@ -68,7 +68,7 @@ void init_scene() {
 void setup_grid() {
 
   mesh grid = grid_create_mesh(&(GridCreateDescriptor){
-      .size = 8.0f,
+      .size = 20.0f,
       .cell_size = 5.0f,
       .camera = &main_scene.camera,
       .viewport = &main_scene.viewport,

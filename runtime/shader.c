@@ -36,24 +36,31 @@ shader shader_create(const ShaderCreateDescriptor *sd) {
 // Define vertex layout to be used in pipeline
 void set_vertex_layout(shader *shader) {
 
-  // set x,y
+  // set x,y,z
   shader->vertex.attribute[0] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
       .offset = 0,
       .shaderLocation = 0,
   };
 
-  // set r,g,b
+  // set u,v
   shader->vertex.attribute[1] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
       .offset = 3 * sizeof(float),
       .shaderLocation = 1,
   };
 
+  // set r,g,b
+  shader->vertex.attribute[2] = (WGPUVertexAttribute){
+      .format = WGPUVertexFormat_Float32x2,
+      .offset = 6 * sizeof(float),
+      .shaderLocation = 2,
+  };
+
   // define layout from attributes above
   shader->vertex.layout = (WGPUVertexBufferLayout){
-      .arrayStride = 6 * sizeof(float),
-      .attributeCount = 2,
+      .arrayStride = 8 * sizeof(float),
+      .attributeCount = 3,
       .attributes = shader->vertex.attribute,
   };
 }

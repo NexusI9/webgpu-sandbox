@@ -2,16 +2,16 @@
 
 static const float cube_vertex_data[] = {
     // Front face
-    -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, // Bottom-left
-    0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f,  // Bottom-right
-    0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,   // Top-right
-    -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f,  // Top-left
+    -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
+    0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,  // Bottom-right
+    0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,   // Top-right
+    -0.5f, 0.5f, 0.5f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,  // Top-left
 
     // Back face
-    -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, // Bottom-left
-    0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f,  // Bottom-right
-    0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f,   // Top-right
-    -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f,  // Top-left
+    -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, // Bottom-left
+    0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,  // Bottom-right
+    0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,   // Top-right
+    -0.5f, 0.5f, -0.5f, 0.5f, 0.5f, 0.5f, 0.0f, 1.0f,  // Top-left
 };
 
 static uint16_t cube_index_data[] = { // Front face
@@ -32,7 +32,6 @@ static uint16_t cube_index_data[] = { // Front face
     // Bottom face
     4, 5, 1, 4, 1, 0};
 
-
 primitive primitive_cube() {
 
   return (primitive){
@@ -51,4 +50,3 @@ primitive primitive_cube() {
           },
   };
 }
-
