@@ -70,6 +70,17 @@ struct Viewport {
   projection : mat4x4<f32>,
 }
 
+// NOTE:
+// Need to add padding cause WebGPU align to memory based on 16-bytes
+// alignment rule Meaning that data need to be a multiple of 16 bytes 1 float
+// (4bytes) is automatically handled by WebGPU, 3 floats (12 bytes) as well:
+// both are padded automatically to 16bytes. However for 2 floats (8 bytes) like
+// the case below, provoke misalignment Each bind group has independent
+// alignment.
+// Maybe a trick to have better control on that is to use struct
+// Also the 16 bytes alignment only matter in the GPU side, meaning the C struct
+// doesn't require this padding.
+
 struct GridData {
   division : f32, scale : f32, _padding : vec2<f32>
 }

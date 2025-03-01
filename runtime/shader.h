@@ -73,7 +73,12 @@ typedef struct {
   // wgpu
   WGPUDevice *device;
   WGPUQueue *queue;
-  WGPURenderPipeline pipeline;
+
+  // pipeline
+  struct {
+    WGPURenderPipeline handle;
+    WGPUPipelineLayout layout;
+  } pipeline;
 
   // vertex data
   struct {
