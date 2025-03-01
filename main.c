@@ -67,16 +67,22 @@ void init_scene() {
 
 void setup_grid() {
 
-  mesh grid = grid_create_mesh(&(GridCreateDescriptor){
+  GridUniform grid_uniform = {
       .size = 20.0f,
       .cell_size = 5.0f,
+      .thickness = 0.3f,
+  };
+
+  glm_vec4_copy((vec4){1.0f, 1.0f, 0.0f, 1.0f}, grid_uniform.color);
+
+  mesh grid = grid_create_mesh(&(GridCreateDescriptor){
+      .uniform = grid_uniform,
       .camera = &main_scene.camera,
       .viewport = &main_scene.viewport,
       .device = &main_renderer.wgpu.device,
       .queue = &main_renderer.wgpu.queue,
   });
 
-  
   // add triangle to scene
   scene_add_mesh(&main_scene, grid);
 }

@@ -5,14 +5,15 @@
 #include <webgpu/webgpu.h>
 
 typedef struct {
+  vec4 color;
   float size;
   float cell_size;
+  float thickness;
 } GridUniform;
 
 typedef struct {
 
-  uint16_t size;
-  float cell_size;
+  GridUniform uniform;
 
   WGPUDevice *device;
   WGPUQueue *queue;
@@ -24,8 +25,7 @@ typedef struct {
 
 typedef struct {
 
-  float size;
-  float cell_size;
+  GridUniform uniform;
 
   WGPUDevice *device;
   WGPUQueue *queue;
@@ -35,7 +35,6 @@ typedef struct {
 
 } grid;
 
-GridUniform grid_uniform(const grid *);
-mesh grid_create_mesh(const GridCreateDescriptor *);
+mesh grid_create_mesh(GridCreateDescriptor *);
 
 #endif

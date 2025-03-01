@@ -1,14 +1,7 @@
 #include "grid.h"
 #include "../primitive/plane.h"
 
-GridUniform grid_uniform(const grid *grid) {
-  return (GridUniform){.cell_size = grid->cell_size, .size = grid->size};
-}
-mesh grid_create_mesh(const GridCreateDescriptor *gd) {
-
-  grid new_grid;
-  new_grid.cell_size = gd->cell_size;
-  new_grid.size = gd->size;
+mesh grid_create_mesh(GridCreateDescriptor *gd) {
 
   primitive plane = primitive_plane();
 
@@ -30,19 +23,21 @@ mesh grid_create_mesh(const GridCreateDescriptor *gd) {
       .shader = shader,
   });
 
-  mesh_scale(&grid_mesh, (vec3){new_grid.size, new_grid.size, new_grid.size});
+  mesh_scale(&grid_mesh, (vec3){
+                             gd->uniform.size,
+                             gd->uniform.size,
+                             gd->uniform.size,
+                         });
 
   // bind camera and viewport
   // NOTE: binding groups shall be created in order (0 first, then 1)
 
   mesh_bind_matrices(&grid_mesh, gd->camera, gd->viewport, 0);
 
-  GridUniform uGrid = grid_uniform(&new_grid);
-
   ShaderBindGroupEntry grid_entries[1] = {
       {
           .binding = 0,
-          .data = &uGrid,
+          .data = &gd->uniform,
           .size = sizeof(GridUniform),
           .offset = 0,
       },
