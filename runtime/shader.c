@@ -61,13 +61,14 @@ void set_vertex_layout(shader *shader) {
 void shader_build(shader *shader) {
 
   // clear pipeline if existing
+    
   if (shader->pipeline) {
     wgpuRenderPipelineRelease(shader->pipeline);
     shader->pipeline = NULL;
   }
 
   // build bind group entries for each individual group index
-  WGPUBindGroupLayout bindgroup_layout[shader->bind_groups.length];
+  WGPUBindGroupLayout bindgroup_layouts[shader->bind_groups.length];
 
   // go through shader bind groups
   for (int i = 0; i < shader->bind_groups.length; i++) {
@@ -79,8 +80,9 @@ void shader_build(shader *shader) {
 
     // go through each groups entries
     for (int j = 0; j < current_entries->length; j++) {
+
       entries[j] = (WGPUBindGroupLayoutEntry){
-          // assign stored id
+          // assign stored binding index
           .binding = current_entries->items[j].binding,
           // buffer binding layout
           .buffer = {.type = WGPUBufferBindingType_Uniform},
@@ -89,7 +91,7 @@ void shader_build(shader *shader) {
       };
     }
 
-    bindgroup_layout[i] = wgpuDeviceCreateBindGroupLayout(
+    bindgroup_layouts[i] = wgpuDeviceCreateBindGroupLayout(
         *shader->device, &(WGPUBindGroupLayoutDescriptor){
                              .entryCount = current_entries->length,
                              // bind group layout entry
@@ -101,7 +103,7 @@ void shader_build(shader *shader) {
       *shader->device, &(WGPUPipelineLayoutDescriptor){
                            // total bind groups count
                            .bindGroupLayoutCount = shader->bind_groups.length,
-                           .bindGroupLayouts = &bindgroup_layout[0],
+                           .bindGroupLayouts = bindgroup_layouts,
                            .label = shader->name,
                        });
 
@@ -190,14 +192,16 @@ void shader_build(shader *shader) {
                              .entries = converted_entries,
                          });
 
+    // cache bind group
     current_bind_group->bind_group = bind_group;
-
-    // release layouts
-    wgpuBindGroupLayoutRelease(bindgroup_layout[i]);
   }
 
-  // release pipeline
+  // Release pipeline
   wgpuPipelineLayoutRelease(pipeline_layout);
+  // release layouts
+  for (int i = 0; i < shader->bind_groups.length; i++) {
+    wgpuBindGroupLayoutRelease(bindgroup_layouts[i]);
+  }
 }
 
 void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
@@ -225,8 +229,8 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
                              current_entry->data, current_entry->size);
       }
     }
-    // link bind group
 
+    // link bind group
     wgpuRenderPassEncoderSetBindGroup(*render_pass, current_bind_group->index,
                                       current_bind_group->bind_group, 0, NULL);
   }
@@ -238,7 +242,7 @@ void shader_add_uniform(shader *shader,
   /*
     TODO: Currently we create a buffer per uniform so we don't need to worry
     about the alignment. However this approach is less optimal (since more call
-    to WGPU) Need to create a way to combine uniforms data into 1 buffer and
+    to GPU) Need to create a way to combine uniforms data into 1 buffer and
     handle the alignment
    */
 
@@ -307,40 +311,6 @@ void shader_add_uniform(shader *shader,
   } else {
     perror("Bind group list at full capacity");
   }
-}
-
-void shader_bind_camera(shader *shader, camera *camera, viewport *viewport,
-                        uint8_t group_index) {
-
-  ShaderViewProjectionUniform proj_view_data;
-
-  CameraUniform uCamera = camera_uniform(camera);
-  ViewportUniform uViewport = viewport_uniform(viewport);
-
-  ShaderBindGroupEntry entries[2] = {
-      // camera
-      {.binding = 0,
-       .data = &uCamera,
-       .size = sizeof(CameraUniform),
-       .offset = 0,
-       .update_callback = camera_update_uniform,
-       .update_data = camera},
-
-      // viewport
-      {
-          .binding = 1,
-          .data = &uViewport,
-          .size = sizeof(ViewportUniform),
-          .offset = 0,
-      },
-  };
-
-  shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
-                                 .group_index = group_index,
-                                 .entry_count = 2,
-                                 .visibility = WGPUShaderStage_Vertex |
-                                               WGPUShaderStage_Fragment,
-                                 .entries = entries});
 }
 
 void shader_release(shader *shader) {

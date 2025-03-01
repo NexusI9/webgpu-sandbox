@@ -13,6 +13,7 @@
 #include "emscripten/html5_webgpu.h"
 #include <webgpu/webgpu.h>
 
+#include "resources/debug/grid.h"
 #include "utils/file.h"
 
 #include "backend/clock.h"
@@ -64,37 +65,20 @@ void init_scene() {
                  (vec3){0.0f, 0.0f, 0.0f});
 }
 
-void setup_triangle() {
+void setup_grid() {
 
-  primitive plane = primitive_plane();
-
-  shader triangle_shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./shader/rotation.wgsl",
-      .label = "triangle",
-      .name = "triangle",
+  mesh grid = grid_create_mesh(&(GridCreateDescriptor){
+      .size = 8.0f,
+      .cell_size = 5.0f,
+      .camera = &main_scene.camera,
+      .viewport = &main_scene.viewport,
       .device = &main_renderer.wgpu.device,
       .queue = &main_renderer.wgpu.queue,
   });
 
-  // bind camera and viewport
-  shader_bind_camera(&triangle_shader, &main_scene.camera, &main_scene.viewport,
-                     0);
-
-  tri_mesh = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
-      // wgpu object
-      .wgpu =
-          {
-              .queue = &main_renderer.wgpu.queue,
-              .device = &main_renderer.wgpu.device,
-          },
-
-      .primitive = plane,
-      // shader
-      .shader = triangle_shader,
-  });
-
+  
   // add triangle to scene
-  scene_add_mesh(&main_scene, &tri_mesh);
+  scene_add_mesh(&main_scene, grid);
 }
 
 void draw() {
@@ -121,7 +105,7 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
-  setup_triangle();
+  setup_grid();
 
   // Update Loop
   renderer_set_draw(draw);

@@ -8,7 +8,7 @@
 #define SHADER_GROUP_VIEWPORT 0
 #define SHADER_BIND_CAMERA 0
 #define SHADER_BIND_VIEWPORT 1
-#define SHADER_MAX_BIND_GROUP 4
+#define SHADER_MAX_BIND_GROUP 12
 
 #include "camera.h"
 #include "viewport.h"
@@ -95,12 +95,17 @@ typedef struct {
 
 // methods
 shader shader_create(const ShaderCreateDescriptor *);
+
 void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
+
+// on update
 void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
                  const viewport *);
 
-void shader_bind_camera(shader *, camera *, viewport *, uint8_t);
+// release pipeline once setup is done (called in scene add mesh)
 void shader_release(shader *);
+
+// build up the whole pipeline
 void shader_build(shader *);
 
 #endif

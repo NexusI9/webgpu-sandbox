@@ -12,7 +12,7 @@ void print_vec4(vec4 vector) {
 }
 
 void print_mat4(mat4 matrix) {
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < 4; i++) {
     print_vec4(matrix[i]);
   }
 }

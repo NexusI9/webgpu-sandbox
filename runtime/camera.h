@@ -42,7 +42,7 @@ typedef struct {
 camera camera_create(const CameraCreateDescriptor *);
 void camera_reset(camera *);
 void camera_set_mode(camera *, CameraMode);
-void camera_update_uniform(void *, void *);
+void camera_update_matrix_uniform(void *, void *);
 void camera_draw(camera *);
 void camera_look_at(camera *, vec3, vec3);
 

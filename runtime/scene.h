@@ -9,7 +9,7 @@
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 
 typedef struct {
-  mesh **items;
+  mesh *items;
   uint8_t capacity;
   uint8_t length;
 } mesh_list;
@@ -28,7 +28,7 @@ typedef struct {
 } scene;
 
 scene scene_create(camera, viewport);
-void scene_add_mesh(scene *, mesh *);
+void scene_add_mesh(scene *, mesh);
 void scene_draw(scene *, WGPURenderPassEncoder *);
 
 #endif

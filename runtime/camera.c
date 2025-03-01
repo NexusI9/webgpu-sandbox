@@ -187,7 +187,7 @@ CameraUniform camera_uniform(camera *c) {
   return cam_uni;
 }
 
-void camera_update_uniform(void *callback_camera, void *data) {
+void camera_update_matrix_uniform(void *callback_camera, void *data) {
 
   camera *cast_cam = (camera *)callback_camera;
   CameraUniform *new_data = (CameraUniform *)data;

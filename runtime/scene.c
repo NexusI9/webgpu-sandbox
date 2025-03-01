@@ -23,13 +23,15 @@ scene scene_create(camera camera, viewport viewport) {
   return scene;
 }
 
-void scene_add_mesh(scene *scene, mesh *mesh) {
+void scene_add_mesh(scene *scene, mesh mesh) {
 
   mesh_list *mesh_list = &scene->mesh_list;
 
-  // RELEASE MEMORY
+  // BUILD SHADER
+  // build shader (establish pipeline from previously set bind groups)
+  shader_build(&mesh.shader);
   // lock mesh shader (release module)
-  shader_release(&mesh->shader);
+  shader_release(&mesh.shader);
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow
@@ -38,6 +40,7 @@ void scene_add_mesh(scene *scene, mesh *mesh) {
     perror("Scene mesh list reached full capacity"), exit(0);
     return;
   } else {
+    // Copy mesh to list
     mesh_list->items[mesh_list->length++] = mesh;
   }
 }
@@ -49,7 +52,7 @@ void scene_draw(scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < scene->mesh_list.length; i++) {
-    mesh_draw(scene->mesh_list.items[i], render_pass, &scene->camera,
+    mesh_draw(&scene->mesh_list.items[i], render_pass, &scene->camera,
               &scene->viewport);
   }
 }

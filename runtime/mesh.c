@@ -1,8 +1,28 @@
 #include "mesh.h"
 #include "../backend/generator.h"
+#include "../include/cglm/euler.h"
+#include "../include/cglm/quat.h"
+#include "../utils/system.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
 #include <stdio.h>
+
+MeshUniform mesh_model_uniform(mesh *mesh) {
+
+  MeshUniform uModel;
+
+  vec4 position = {
+      mesh->position[0],
+      mesh->position[1],
+      mesh->position[2],
+      1.0f,
+  };
+
+  glm_mat4_copy(mesh->model, uModel.model);
+  glm_vec4_copy(position, uModel.position);
+
+  return uModel;
+}
 
 mesh mesh_create(const MeshCreateDescriptor *md) {
 
@@ -22,10 +42,9 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
 
   // set shader
   new_mesh.shader = md->shader;
-  // build shader (set pipeline)
-  shader_build(&new_mesh.shader);
 
-  // push vertices & index data to buffer
+  // init model matrix
+  glm_mat4_identity(new_mesh.model);
 
   // store vertex in buffer
   mesh_create_vertex_buffer(
@@ -101,4 +120,86 @@ void mesh_draw(mesh *mesh, WGPURenderPassEncoder *render_pass,
                                       WGPU_WHOLE_SIZE);
   wgpuRenderPassEncoderDrawIndexed(*render_pass, mesh->index.length, 1, 0, 0,
                                    0);
+}
+
+void mesh_scale(mesh *mesh, vec3 scale) {
+  glm_vec3_copy(scale, mesh->scale);
+
+  mat4 transform_matrix = {
+      {scale[0], 0.0f, 0.0f, 0.0f},
+      {0.0f, scale[1], 0.0f, 0.0f},
+      {0.0f, 0.0f, scale[2], 0.0f},
+      {0.0f, 0.0f, 0.0f, 1.0f},
+  };
+
+  glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
+}
+void mesh_position(mesh *mesh, vec3 position) {
+  glm_vec3_copy(position, mesh->position);
+
+  mat4 transform_matrix = {
+      {1.0f, 0.0f, 0.0f, position[0]},
+      {0.0f, 1.0f, 0.0f, position[1]},
+      {0.0f, 0.0f, 1.0f, position[2]},
+      {0.0f, 0.0f, 0.0f, 1.0f},
+  };
+
+  glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
+}
+
+void mesh_rotate(mesh *mesh, vec3 rotation) {
+  glm_vec3_copy(rotation, mesh->rotation);
+
+  versor q;
+  glm_euler_xyz(rotation, &q);
+
+  mat4 transform_matrix;
+  glm_quat_mat4(q, transform_matrix);
+
+  glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
+}
+
+void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
+                        uint8_t group_index) {
+
+  ShaderViewProjectionUniform proj_view_data;
+
+  CameraUniform uCamera = camera_uniform(camera);
+  ViewportUniform uViewport = viewport_uniform(viewport);
+  MeshUniform uMesh = mesh_model_uniform(mesh);
+
+  ShaderBindGroupEntry entries[3] = {
+      // viewport
+      {
+          .binding = 0,
+          .data = &uViewport,
+          .size = sizeof(ViewportUniform),
+          .offset = 0,
+      },
+      // camera
+      {
+          .binding = 1,
+          .data = &uCamera,
+          .size = sizeof(CameraUniform),
+          .offset = 0,
+          .update_callback = camera_update_matrix_uniform,
+          .update_data = camera,
+      },
+      // model
+      {
+          .binding = 2,
+          .data = &uMesh,
+          .size = sizeof(MeshUniform),
+          .offset = 0,
+      },
+  };
+
+  shader_add_uniform(&mesh->shader, &(ShaderCreateUniformDescriptor){
+                                        .group_index = group_index,
+                                        .entry_count = 3,
+                                        .visibility = WGPUShaderStage_Vertex |
+                                                      WGPUShaderStage_Fragment,
+                                        .entries = entries});
+
+
 }
