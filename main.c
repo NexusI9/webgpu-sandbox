@@ -54,8 +54,8 @@ void init_scene() {
   camera camera = camera_create(&(CameraCreateDescriptor){
       .speed = 20.0f,
       .clock = &main_clock,
-      .mode = FLYING,
-      .sensitivity = 1.0f,
+      .mode = ORBIT,
+      .sensitivity = 0.02f,
       .wheel_sensitivity = 0.01f,
   });
 
@@ -67,7 +67,33 @@ void init_scene() {
                  (vec3){0.0f, 0.0f, 0.0f});
 }
 
-void setup_grid() {
+void add_cube() {
+
+  shader cube_shader = shader_create(&(ShaderCreateDescriptor){
+      .path = "./shader/rotation.wgsl",
+      .label = "cube",
+      .name = "cube",
+      .device = &main_renderer.wgpu.device,
+      .queue = &main_renderer.wgpu.queue,
+  });
+
+  primitive cube_prim = primitive_cube();
+
+  mesh cube_mesh = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
+      .primitive = cube_prim,
+      .shader = cube_shader,
+      .wgpu =
+          {
+              .device = &main_renderer.wgpu.device,
+              .queue = &main_renderer.wgpu.queue,
+          },
+  });
+
+  mesh_bind_matrices(&cube_mesh, &main_scene.camera, &main_scene.viewport, 0);
+  scene_add_mesh(&main_scene, cube_mesh);
+}
+
+void add_grid() {
 
   GridUniform grid_uniform = {
       .size = 100.0f,
@@ -113,7 +139,8 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
-  setup_grid();
+  add_grid();
+  add_cube();
 
   // Update Loop
   renderer_set_draw(draw);

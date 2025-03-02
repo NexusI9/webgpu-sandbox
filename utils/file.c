@@ -8,6 +8,7 @@ void store_file(char **buffer, const char *path) {
   long l_size;
 
   fp = fopen(path, "rb");
+
   if (!fp)
     perror("Couldn't load file\n"), exit(1);
 
@@ -26,6 +27,6 @@ void store_file(char **buffer, const char *path) {
 
   /*Null terminate the buffer*/
   (*buffer)[l_size] = '\0';
-  
+
   fclose(fp);
 }

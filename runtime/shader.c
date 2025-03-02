@@ -214,7 +214,7 @@ void shader_build(shader *shader) {
     current_bind_group->bind_group = bind_group;
 
     // release layouts
-    // wgpuBindGroupLayoutRelease(bindgroup_layouts[i]);
+    wgpuBindGroupLayoutRelease(bindgroup_layouts[i]);
   }
 
   shader_pipeline_release(shader);

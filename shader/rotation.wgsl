@@ -1,11 +1,19 @@
 // attribute/uniform decls
 struct VertexIn {
-  @location(0) aPos : vec3<f32>, @location(1) aCol : vec3<f32>,
+  @location(0) aPos : vec3<f32>,
+                      @location(1) aCol : vec3<f32>,
+                                          @location(2) aUv : vec2<f32>,
 };
 
 struct VertexOut {
-  @location(0) vCol : vec3<f32>, @builtin(position) Position : vec4<f32>,
+  @builtin(position) Position : vec4<f32>,
+                                @location(0) vCol : vec3<f32>,
+                                                    @location(1) vUv : vec2<f32>
 };
+
+struct Mesh {
+  model : mat4x4<f32>, position : vec4<f32>,
+}
 
 struct Camera {
   view : mat4x4<f32>, position : vec4<f32>,
@@ -16,8 +24,9 @@ struct Viewport {
 }
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uCamera : Camera;
-@group(0) @binding(1) var<uniform> uViewport : Viewport;
+@group(0) @binding(0) var<uniform> uViewport : Viewport;
+@group(0) @binding(1) var<uniform> uCamera : Camera;
+@group(0) @binding(2) var<uniform> uMesh : Mesh;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {

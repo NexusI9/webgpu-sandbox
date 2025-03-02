@@ -12,7 +12,7 @@ typedef struct {
   WGPUBufferUsage usage;
 } CreateBufferDescriptor;
 
-WGPUShaderModule create_shader(const WGPUDevice *, const char *, const char *);
+WGPUShaderModule create_shader(const WGPUDevice *, char *, const char *);
 WGPUBuffer create_buffer(const CreateBufferDescriptor *);
 
 #endif
