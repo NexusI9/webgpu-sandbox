@@ -199,6 +199,9 @@ void camera_update_matrix_uniform(void *callback_camera, void *data) {
   CameraUniform uCamera = camera_uniform(cast_cam);
   glm_mat4_copy(uCamera.view, new_data->view);
   glm_vec4_copy(uCamera.position, new_data->position);
+  glm_vec4_copy(uCamera.lookat, new_data->lookat);
+  new_data->mode = uCamera.mode;
+  
 }
 
 void camera_translate(camera *camera, vec3 new_position) {

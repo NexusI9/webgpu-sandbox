@@ -20,7 +20,7 @@ struct Camera {
          position : vec4<f32>,
                     lookat : vec4<f32>,
                              mode : u32,
-                                    _pad : vec3<u32>,
+                                    _pad : vec4<u32>
 };
 // mode flags
 const CAMERA_MODE_FIXED : u32 = 1u << 0u;
@@ -65,7 +65,7 @@ struct GridData {
   var output : VertexOut;
   var offset : vec2<f32> = vec2<f32>(uCamera.position.x, uCamera.position.z);
 
-  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 1u) {
+  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 0u) {
     // fix position to target (lookat) if camera is Orbit mode
     offset.x = uCamera.lookat.x;
     offset.y = uCamera.lookat.z;
@@ -92,7 +92,7 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
 
   var offset : vec2<f32> = vec2<f32>(uCamera.position.x, uCamera.position.z);
 
-  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 1u) {
+  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 0u) {
     // switch offset to target (lookat) if camera is Orbit mode
     offset.x = uCamera.lookat.x;
     offset.y = uCamera.lookat.z;
@@ -105,7 +105,7 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var edge_tone : f32 = 1.0; // 0.5 for the edge
 
   // Move Uv to the opposite camera direction to compensate the grid translation
-  var compensUv : vec2<f32> = vec2(uv.x - offset.x * patternSize,
+  var compensUv : vec2<f32> = vec2(uv.x + offset.x * patternSize,
                                    uv.y + offset.y * patternSize);
 
   var gridUv
@@ -141,6 +141,7 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
 
 @fragment fn fs_main(@location(0) vCol : vec3<f32>,
                      @location(1) vUv : vec2<f32>) -> @location(0) vec4<f32> {
+
 
   return draw_grid(vUv);
 }

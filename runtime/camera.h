@@ -18,8 +18,8 @@ typedef struct {
   mat4 view;
   vec4 position;
   vec4 lookat;
-  CameraMode mode;
-  uint32_t _pad[12];
+  uint32_t mode;
+  uint32_t _pad[4];
 } CameraUniform;
 
 typedef struct {
