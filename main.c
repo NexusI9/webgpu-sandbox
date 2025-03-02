@@ -54,8 +54,8 @@ void init_scene() {
   camera camera = camera_create(&(CameraCreateDescriptor){
       .speed = 20.0f,
       .clock = &main_clock,
-      .mode = ORBIT,
-      .sensitivity = 0.02f,
+      .mode = FLYING,
+      .sensitivity = 1.0f,
       .wheel_sensitivity = 0.01f,
   });
 
