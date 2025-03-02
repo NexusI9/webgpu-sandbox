@@ -1,7 +1,7 @@
 #!/bin/bash
 
 C_FILES := $(shell find . -type f -name "*.c")
-WGSL_FILES := $(shell find ./shader -type f -name "*.wgsl" | sed 's/^/--preload-file /')
+WGSL_FILES := $(shell find ./runtime/assets/shader -type f -name "*.wgsl" | sed 's/^/--preload-file /')
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
 wasm:

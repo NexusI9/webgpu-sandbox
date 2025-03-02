@@ -70,7 +70,7 @@ void init_scene() {
 void add_cube() {
 
   shader cube_shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./shader/rotation.wgsl",
+      .path = "./runtime/assets/shader/rotation.wgsl",
       .label = "cube",
       .name = "cube",
       .device = &main_renderer.wgpu.device,
