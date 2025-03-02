@@ -67,8 +67,16 @@ struct Mesh {
 }
 
 struct Camera {
-  view : mat4x4<f32>, position : vec4<f32>,
+  view : mat4x4<f32>,
+         position : vec4<f32>,
+                    lookat : vec4<f32>,
+                             mode : u32,
+                                    _pad : vec3<u32>,
 };
+// mode flags
+const CAMERA_MODE_FIXED : u32 = 1u << 0u;
+const CAMERA_MODE_FLYING : u32 = 1u << 1u;
+const CAMERA_MODE_ORBIT : u32 = 1u << 2u;
 
 struct Viewport {
   projection : mat4x4<f32>,
@@ -82,8 +90,8 @@ struct Viewport {
 // the case below, provoke misalignment Each bind group has independent
 // alignment.
 // Maybe a trick to have better control on that is to use struct
-// Also the 16 bytes alignment only matter in the GPU side, meaning the C struct
-// doesn't require this padding.
+// Important to align both C and WGPU struct, especially if the struct isn't the
+// last of the bind group
 
 struct GridData {
   color : vec4<f32>,
@@ -106,13 +114,20 @@ struct GridData {
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
   var output : VertexOut;
+  var offset : vec2<f32> = vec2<f32>(uCamera.position.x, uCamera.position.z);
+
+  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 1u) {
+    // fix position to target (lookat) if camera is Orbit mode
+    offset.x = uCamera.lookat.x;
+    offset.y = uCamera.lookat.z;
+  }
 
   // Put the grid below the camera
   var translate_matrix
-      : mat4x4<f32> = mat4x4<f32>(
-            vec4<f32>(1.0, 0.0, 0.0, 0.0), vec4<f32>(0.0, 1.0, 0.0, 0.0),
-            vec4<f32>(0.0, 0.0, 1.0, 0.0),
-            vec4<f32>(uCamera.position.x, 0.0, uCamera.position.z, 1.0));
+      : mat4x4<f32> = mat4x4<f32>(vec4<f32>(1.0, 0.0, 0.0, 0.0),
+                                  vec4<f32>(0.0, 1.0, 0.0, 0.0),
+                                  vec4<f32>(0.0, 0.0, 1.0, 0.0),
+                                  vec4<f32>(offset.x, 0.0, offset.y, 1.0));
 
   output.Position =
       cam * translate_matrix * uMesh.model * vec4<f32>(input.aPos, 1.0);
@@ -126,6 +141,14 @@ struct GridData {
 
 fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
 
+  var offset : vec2<f32> = vec2<f32>(uCamera.position.x, uCamera.position.z);
+
+  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 1u) {
+    // switch offset to target (lookat) if camera is Orbit mode
+    offset.x = uCamera.lookat.x;
+    offset.y = uCamera.lookat.z;
+  }
+
   // Setup grid
   var patternSize : f32 = 1.0 / uGrid.division;   // size of the tile
   var edge : f32 = patternSize / uGrid.thickness; // size of the edge
@@ -133,8 +156,8 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var edge_tone : f32 = 1.0; // 0.5 for the edge
 
   // Move Uv to the opposite camera direction to compensate the grid translation
-  var compensUv : vec2<f32> = vec2(uv.x - uCamera.position.x * patternSize,
-                                   uv.y + uCamera.position.z * patternSize);
+  var compensUv : vec2<f32> = vec2(uv.x - offset.x * patternSize,
+                                   uv.y + offset.y * patternSize);
 
   var gridUv
       : vec2<f32> =
@@ -190,7 +213,11 @@ struct Mesh {
 }
 
 struct Camera {
-  view : mat4x4<f32>, position : vec4<f32>,
+  view : mat4x4<f32>,
+         position : vec4<f32>,
+                    lookat : vec4<f32>,
+                             mode : u32,
+                                    _pad : vec3<u32>,
 };
 
 struct Viewport {

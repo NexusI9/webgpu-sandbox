@@ -16,7 +16,11 @@ struct Mesh {
 }
 
 struct Camera {
-  view : mat4x4<f32>, position : vec4<f32>,
+  view : mat4x4<f32>,
+         position : vec4<f32>,
+                    lookat : vec4<f32>,
+                             mode : u32,
+                                    _pad : vec3<u32>,
 };
 
 struct Viewport {

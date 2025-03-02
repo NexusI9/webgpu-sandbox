@@ -6,13 +6,21 @@
 #include "../include/cglm/mat4.h"
 #include "../include/cglm/vec3.h"
 #include "../include/cglm/vec4.h"
+#include <stdint.h>
+
+typedef enum {
+  FIXED = 1 << 0,
+  FLYING = 1 << 1,
+  ORBIT = 1 << 2,
+} CameraMode;
 
 typedef struct {
   mat4 view;
   vec4 position;
+  vec4 lookat;
+  CameraMode mode;
+  uint32_t _pad[12];
 } CameraUniform;
-
-typedef enum { FIXED, FLYING, ORBIT } CameraMode;
 
 typedef struct {
   cclock *clock;
