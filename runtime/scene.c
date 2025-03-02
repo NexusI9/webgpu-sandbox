@@ -16,7 +16,7 @@ scene scene_create(camera camera, viewport viewport) {
 
   // init mesh list
   scene.mesh_list.items =
-      malloc(SCENE_MESH_LIST_DEFAULT_CAPACITY * sizeof(mesh *));
+      malloc(SCENE_MESH_LIST_DEFAULT_CAPACITY * sizeof(mesh));
   scene.mesh_list.length = 0;
   scene.mesh_list.capacity = SCENE_MESH_LIST_DEFAULT_CAPACITY;
 
