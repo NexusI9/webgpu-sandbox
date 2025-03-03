@@ -2,19 +2,22 @@
 
 C_FILES := $(shell find . -type f -name "*.c")
 WGSL_FILES := $(shell find ./runtime/assets/shader -type f -name "*.wgsl" | sed 's/^/--preload-file /')
+GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 's/^/--preload-file /')
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
 wasm:
 	emcc $(C_FILES) -o $(OUTPUT) \
+	-I include \
 	-s NO_EXIT_RUNTIME=1 \
 	-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
 	-s EXPORTED_FUNCTIONS="['_main']" \
 	-s USE_WEBGPU=1 \
 	-s SINGLE_FILE \
-	$(WGSL_FILES)
+	$(WGSL_FILES) \
+	$(GLTF_FILES)
 
 	@echo "Compilation completed: $(OUTPUT)"
-
+	
 #\
 Use "ccall" as method call to access the wasm functions\
 EXPORTED_RUNTIME_METHOD =>  Module.methodname("myfunction")\

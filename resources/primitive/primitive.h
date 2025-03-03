@@ -6,17 +6,17 @@
 typedef struct {
   const float *data;
   uint16_t length;
-} vertex;
+} vertex_attribute;
 
 typedef struct {
   const uint16_t *data;
   uint16_t length;
-} index;
+} vertex_index;
 
 typedef struct {
 
-  vertex vertex;
-  index index;
+  vertex_attribute vertex;
+  vertex_index index;
 
 } primitive;
 

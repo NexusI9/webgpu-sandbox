@@ -20,6 +20,7 @@
 #include "backend/generator.h"
 #include "backend/renderer.h"
 
+#include "resources/loader/loader.gltf.h"
 #include "resources/primitive/cube.h"
 #include "resources/primitive/plane.h"
 #include "runtime/camera.h"
@@ -70,7 +71,7 @@ void init_scene() {
 void add_cube() {
 
   shader cube_shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./runtime/assets/shader/rotation.wgsl",
+      .path = "./runtime/assets/shader/shader.rotation.wgsl",
       .label = "cube",
       .name = "cube",
       .device = &main_renderer.wgpu.device,
@@ -115,6 +116,14 @@ void add_grid() {
   scene_add_mesh(&main_scene, grid);
 }
 
+void import_cube() {
+
+  mesh cube;
+
+  loader_gltf_load(&cube, "./resources/assets/gltf/cube.gltf",
+                   &(cgltf_options){0});
+}
+
 void draw() {
   renderer_draw(&main_renderer, &main_scene);
   return;
@@ -140,7 +149,8 @@ int main(int argc, const char *argv[]) {
   // set scene
   init_scene();
   add_grid();
-  add_cube();
+  // add_cube();
+  import_cube();
 
   // Update Loop
   renderer_set_draw(draw);

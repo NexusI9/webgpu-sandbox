@@ -17,8 +17,8 @@ typedef struct {
 // Builder Pattern | Descriptor Pattern
 typedef struct {
   MeshWGPU wgpu;
-  vertex vertex;
-  index index;
+  vertex_attribute vertex;
+  vertex_index index;
   shader shader;
 } MeshCreateDescriptor;
 
@@ -53,17 +53,10 @@ typedef struct {
   MeshWGPU wgpu;
 
   // vertex list
-
-  struct {
-    const float *data;
-    int16_t length;
-  } vertex;
+  vertex_attribute vertex;
 
   // index list
-  struct {
-    const uint16_t *data;
-    uint16_t length;
-  } index;
+  vertex_index index;
 
   struct {
     WGPUBuffer vertex, index;

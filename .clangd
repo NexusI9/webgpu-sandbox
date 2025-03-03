@@ -1,2 +1,2 @@
 CompileFlags:
-  Add: [-I/usr/local/Cellar/emscripten/4.0.1/libexec/cache/sysroot/include/]
+  Add: [-I/usr/local/Cellar/emscripten/4.0.1/libexec/cache/sysroot/include/, -I/Users/elkhantour/Documents/C/webgpu-expe/include/]

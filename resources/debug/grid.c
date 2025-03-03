@@ -6,7 +6,7 @@ mesh grid_create_mesh(GridCreateDescriptor *gd) {
   primitive plane = primitive_plane();
 
   shader shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./runtime/assets/shader/grid.wgsl",
+      .path = "./runtime/assets/shader/shader.grid.wgsl",
       .label = "grid",
       .name = "grid",
       .device = gd->device,
