@@ -23,7 +23,7 @@ scene scene_create(camera camera, viewport viewport) {
   return scene;
 }
 
-void scene_add_mesh(scene *scene, mesh mesh) {
+mesh *scene_add_mesh(scene *scene, mesh mesh) {
 
   mesh_list *mesh_list = &scene->mesh_list;
 
@@ -35,14 +35,18 @@ void scene_add_mesh(scene *scene, mesh mesh) {
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow
-  if (mesh_list->length == mesh_list->capacity - 1) {
-    mesh_list = realloc(mesh_list, 2 * sizeof(mesh_list->length));
+  if (mesh_list->length == mesh_list->capacity) {
+    mesh_list->capacity *= 2;
+    mesh_list = realloc(mesh_list, mesh_list->capacity);
+
     perror("Scene mesh list reached full capacity"), exit(0);
-    return;
+    return NULL;
   } else {
     // Copy mesh to list
     mesh_list->items[mesh_list->length++] = mesh;
   }
+
+  return &mesh_list->items[mesh_list->length - 1];
 }
 
 void scene_draw(scene *scene, WGPURenderPassEncoder *render_pass) {

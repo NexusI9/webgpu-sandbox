@@ -68,7 +68,7 @@ void init_scene() {
                  (vec3){0.0f, 0.0f, 0.0f});
 }
 
-void add_cube() {
+mesh add_cube(vec3 position) {
 
   shader cube_shader = shader_create(&(ShaderCreateDescriptor){
       .path = "./runtime/assets/shader/shader.rotation.wgsl",
@@ -90,8 +90,11 @@ void add_cube() {
           },
   });
 
+  mesh_position(&cube_mesh, position);
+
   mesh_bind_matrices(&cube_mesh, &main_scene.camera, &main_scene.viewport, 0);
-  scene_add_mesh(&main_scene, cube_mesh);
+
+  return cube_mesh;
 }
 
 void add_grid() {
@@ -149,8 +152,14 @@ int main(int argc, const char *argv[]) {
   // set scene
   init_scene();
   add_grid();
-  // add_cube();
-  import_cube();
+
+  mesh child_cube = add_cube((vec3){3.0f, 2.0f, 1.0f});
+  mesh parent_cube = add_cube((vec3){0.0f, 0.0f, 0.0f});
+  
+  mesh_add_child(child_cube, &parent_cube);
+  mesh *cube_mesh = scene_add_mesh(&main_scene, parent_cube);
+
+  // import_cube();
 
   // Update Loop
   renderer_set_draw(draw);

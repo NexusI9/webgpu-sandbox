@@ -358,7 +358,7 @@ struct Viewport {
   var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
 
   var output : VertexOut;
-  output.Position = cam * vec4<f32>(input.aPos, 1.0);
+  output.Position = cam * uMesh.model * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
 
   return output;

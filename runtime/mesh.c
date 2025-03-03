@@ -46,6 +46,11 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
   // init model matrix
   glm_mat4_identity(new_mesh.model);
 
+  // init child list
+  new_mesh.children.length = 0;
+  new_mesh.children.capacity = 0;
+  new_mesh.children.items = NULL;
+
   // store vertex in buffer
   mesh_create_vertex_buffer(
       &new_mesh,
@@ -138,10 +143,10 @@ void mesh_position(mesh *mesh, vec3 position) {
   glm_vec3_copy(position, mesh->position);
 
   mat4 transform_matrix = {
-      {1.0f, 0.0f, 0.0f, position[0]},
-      {0.0f, 1.0f, 0.0f, position[1]},
-      {0.0f, 0.0f, 1.0f, position[2]},
-      {0.0f, 0.0f, 0.0f, 1.0f},
+      {1.0f, 0.0f, 0.0f, 0.0f},
+      {0.0f, 1.0f, 0.0f, 0.0f},
+      {0.0f, 0.0f, 1.0f, 0.0f},
+      {position[0], position[1], position[2], 1.0f},
   };
 
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
@@ -200,6 +205,31 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
                                         .visibility = WGPUShaderStage_Vertex |
                                                       WGPUShaderStage_Fragment,
                                         .entries = entries});
+}
 
+mesh *mesh_add_child(mesh child, mesh *dest) {
 
+  // init list
+  if (dest->children.items == NULL) {
+    dest->children.capacity = MESH_CHILD_LENGTH;
+    dest->children.items = malloc(sizeof(mesh) * dest->children.capacity);
+  }
+
+  // expand list
+  if (dest->children.length == dest->children.capacity) {
+    size_t new_capacity = dest->children.capacity * 2;
+    mesh *new_list =
+        realloc(dest->children.items, sizeof(mesh) * dest->children.capacity);
+    if (new_list == NULL) {
+      perror("Failed to expand mesh list\n"), exit(1);
+      return NULL;
+    }
+
+    dest->children.items = new_list;
+    dest->children.capacity = new_capacity;
+  }
+
+  dest->children.items[dest->children.length++] = child;
+
+  return &dest->children.items[dest->children.length - 1];
 }
