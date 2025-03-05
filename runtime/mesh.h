@@ -44,6 +44,7 @@ typedef struct {
 // TODO: make it a linked list
 typedef struct {
   struct mesh *items;
+  size_t *index;
   size_t capacity;
   size_t length;
 } mesh_list;
@@ -51,7 +52,7 @@ typedef struct {
 // Core
 typedef struct mesh {
 
-  uint8_t id;
+  size_t id;
 
   // transforms
   mat4 model;
@@ -85,6 +86,8 @@ mesh mesh_create(const MeshCreateDescriptor *);
 mesh mesh_create_primitive(const MeshCreatePrimitiveDescriptor *);
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);
+
+void mesh_build(mesh *);
 void mesh_draw(mesh *, WGPURenderPassEncoder *, const camera *,
                const viewport *);
 
@@ -92,7 +95,7 @@ void mesh_scale(mesh *, vec3);
 void mesh_position(mesh *, vec3);
 void mesh_rotate(mesh *, vec3);
 
-mesh *mesh_add_child(mesh, mesh *);
+size_t mesh_add_child(mesh, mesh *);
 
 MeshUniform mesh_model_uniform(mesh *);
 

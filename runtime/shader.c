@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+static void shader_module_release(shader *);
 static void set_vertex_layout(shader *);
 
 shader shader_create(const ShaderCreateDescriptor *sd) {
@@ -218,6 +219,7 @@ void shader_build(shader *shader) {
   }
 
   shader_pipeline_release(shader);
+  shader_module_release(shader);
 }
 
 void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
@@ -329,7 +331,7 @@ void shader_add_uniform(shader *shader,
   }
 }
 
-void shader_release(shader *shader) {
+void shader_module_release(shader *shader) {
   // releasing shader module before drawing
   // invoked when adding the shader to the mesh (mesh_create)
   wgpuShaderModuleRelease(shader->module);

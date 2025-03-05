@@ -5,6 +5,7 @@
 #include "../utils/system.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
+#include <stddef.h>
 #include <stdio.h>
 
 MeshUniform mesh_model_uniform(mesh *mesh) {
@@ -111,6 +112,19 @@ void mesh_create_index_buffer(mesh *mesh,
   });
 }
 
+void mesh_build(mesh *mesh) {
+
+  // reccursively build shader
+  shader_build(&mesh->shader);
+
+  // build children
+  if (mesh->children.items != NULL) {
+    for (size_t c = 0; c < mesh->children.length; c++) {
+      mesh_build(&mesh->children.items[c]);
+    }
+  }
+}
+
 void mesh_draw(mesh *mesh, WGPURenderPassEncoder *render_pass,
                const camera *camera, const viewport *viewport) {
 
@@ -125,6 +139,14 @@ void mesh_draw(mesh *mesh, WGPURenderPassEncoder *render_pass,
                                       WGPU_WHOLE_SIZE);
   wgpuRenderPassEncoderDrawIndexed(*render_pass, mesh->index.length, 1, 0, 0,
                                    0);
+
+  // draw children
+  // TODO: REDUCE DRAW CALL.........
+  if (mesh->children.items != NULL) {
+    for (size_t c = 0; c < mesh->children.length; c++) {
+      mesh_draw(&mesh->children.items[c], render_pass, camera, viewport);
+    }
+  }
 }
 
 void mesh_scale(mesh *mesh, vec3 scale) {
@@ -207,12 +229,13 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
                                         .entries = entries});
 }
 
-mesh *mesh_add_child(mesh child, mesh *dest) {
+size_t mesh_add_child(mesh child, mesh *dest) {
 
   // init list
   if (dest->children.items == NULL) {
     dest->children.capacity = MESH_CHILD_LENGTH;
     dest->children.items = malloc(sizeof(mesh) * dest->children.capacity);
+    dest->children.index = malloc(sizeof(size_t) * dest->children.capacity);
   }
 
   // expand list
@@ -220,16 +243,31 @@ mesh *mesh_add_child(mesh child, mesh *dest) {
     size_t new_capacity = dest->children.capacity * 2;
     mesh *new_list =
         realloc(dest->children.items, sizeof(mesh) * dest->children.capacity);
-    if (new_list == NULL) {
+    size_t *new_index =
+        realloc(dest->children.items, sizeof(size_t) * dest->children.capacity);
+
+    if (new_list == NULL || new_index == NULL) {
       perror("Failed to expand mesh list\n"), exit(1);
-      return NULL;
     }
 
     dest->children.items = new_list;
+    dest->children.index = new_index;
     dest->children.capacity = new_capacity;
   }
 
-  dest->children.items[dest->children.length++] = child;
+  size_t id = dest->children.length;
 
-  return &dest->children.items[dest->children.length - 1];
+  // assign child to parent
+  dest->children.items[id] = child;
+
+  // assing child id
+  dest->children.index[id] = id;
+  dest->children.items[id].id = id;
+
+  // assign parent to child
+  dest->children.items[id].parent = dest;
+
+  dest->children.length++;
+
+  return id;
 }

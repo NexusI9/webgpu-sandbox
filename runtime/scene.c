@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "camera.h"
+#include "mesh.h"
 #include "shader.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
@@ -27,11 +28,9 @@ mesh *scene_add_mesh(scene *scene, mesh mesh) {
 
   mesh_list *mesh_list = &scene->mesh_list;
 
-  // BUILD SHADER
+  // BUILD MESH
   // build shader (establish pipeline from previously set bind groups)
-  shader_build(&mesh.shader);
-  // lock mesh shader (release module)
-  shader_release(&mesh.shader);
+  mesh_build(&mesh);
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow

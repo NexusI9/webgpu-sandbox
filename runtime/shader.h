@@ -107,9 +107,6 @@ void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
 void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
                  const viewport *);
 
-// release pipeline once setup is done (called in scene add mesh)
-void shader_release(shader *);
-
 // build up the whole pipeline
 void shader_build(shader *);
 
