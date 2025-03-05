@@ -18,7 +18,7 @@ void loader_gltf_load(mesh *mesh, const char *path,
     return;
 
   case cgltf_result_success:
-    printf("successfully imported GLTF\n");
+    loader_gltf_create_mesh(mesh, data);
     cgltf_free(data);
     return;
 
@@ -35,3 +35,10 @@ void loader_gltf_load(mesh *mesh, const char *path,
     return;
   }
 }
+
+void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
+    //data->meshes;
+  printf("load mesh\n");
+}
+
+void loader_gltf_create_shader(shader *shader, cgltf_data *data) {}

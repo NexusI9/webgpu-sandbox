@@ -1,11 +1,11 @@
 #include "plane.h"
 
 static const float plane_vertex_data[] = {
-    // Positions           // Colors              // UVs
-    -0.5f, 0.0f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Bottom-left
-    0.5f,  0.0f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // Bottom-right
-    0.5f,  0.0f, 0.5f,  0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // Top-right
-    -0.5f, 0.0f, 0.5f,  1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // Top-left
+    // Positions          // Normals            // Colors          // UVs
+    -0.5f, 0.0f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
+     0.5f, 0.0f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
+     0.5f, 0.0f,  0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // Top-right
+    -0.5f, 0.0f,  0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 0.0f,  0.0f, 1.0f  // Top-left
 };
 
 static uint16_t plane_index_data[] = {
