@@ -1,9 +1,12 @@
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #define CGLTF_IMPLEMENTATION
 #include "../include/cglm/vec2.h"
 #include "../include/cglm/vec3.h"
 #include "../include/cglm/vec4.h"
+#include "../runtime/vertex.h"
+#include "../utils/system.h"
 #include "loader.gltf.h"
 #include <stdio.h>
 
@@ -13,9 +16,8 @@ static void loader_gltf_create_shader(shader *, cgltf_data *);
 static void loader_gltf_add_vertex_attribute(vertex_attribute *, size_t,
                                              size_t);
 
-static void loader_gltf_accessor_to_vec4(cgltf_accessor *, vec4);
-static void loader_gltf_accessor_to_vec3(cgltf_accessor *, vec3);
-static void loader_gltf_accessor_to_vec2(cgltf_accessor *, vec2);
+static float *loader_gltf_attributes_from_accessor(cgltf_accessor *);
+static void loader_gltf_accessor_to_array(cgltf_accessor *, float *, uint8_t);
 
 void loader_gltf_load(mesh *mesh, const char *path,
                       const cgltf_options *options) {
@@ -56,23 +58,27 @@ void loader_gltf_load(mesh *mesh, const char *path,
 void loader_gltf_add_vertex_attribute(vertex_attribute *attribute_list,
                                       size_t offset, size_t count) {}
 
-static void loader_gltf_accessor_to_vec3(cgltf_accessor *accessor,
-                                         vec3 destination) {
+float *loader_gltf_attributes_from_accessor(cgltf_accessor *accessor) {
 
   cgltf_buffer_view *buffer_view = accessor->buffer_view;
 
   // combine accessor and buffer view offset
   size_t offset = buffer_view->offset + accessor->offset;
-  float *attributes = (float *)((uint8_t *)buffer_view->buffer->data + offset);
-
-  for (size_t a = 0; a < accessor->count; a++) {
-    printf("attribute %lu: %f, %f, %f\n", a, attributes[a * 3],
-           attributes[a * 3 + 1], attributes[a * 3 + 2]);
-  }
+  return (float *)((uint8_t *)buffer_view->buffer->data + offset);
 }
 
-static void loader_gltf_accessor_to_vec2(cgltf_accessor *accessor,
-                                         vec2 destination) {}
+static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
+                                          float *destination, uint8_t count) {
+
+  float *attributes = loader_gltf_attributes_from_accessor(accessor);
+  size_t index = 0;
+  for (size_t a = 0; a < accessor->count; a++) {
+    for (uint8_t u = 0; u < count; u++) {
+      // printf("%lu\t%lu\t%f\n", a, index, attributes[a * 3 + u]);
+      destination[index++] = attributes[a * 3 + u];
+    }
+  }
+}
 
 void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
   // data->meshes;
@@ -93,31 +99,40 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
 
       // fallback values in case no color or uv coordinates
       // need to maintain correct standaridzed structure for shaders
-      
-      vec3 position = {0.0f, 0.0f, 0.0f};
-      vec3 normal = {0.0f, 0.0f, 0.0f};
-      vec3 color = {0.0f, 0.0f, 0.0f};
-      vec2 uv = {0.0f, 0.0f};
+      const size_t vertex_number = accessor->count;
+      float position[3 * vertex_number]; // vec3
+      float normal[3 * vertex_number];   // vec3
+      float color[3 * vertex_number];    // vec3
+      float uv[2 * vertex_number];       // vec2
+      size_t index[vertex_number];       // long
+
+      // init to 0.0
+      memset(position, 0, sizeof(position));
+      memset(normal, 0, sizeof(normal));
+      memset(color, 0, sizeof(color));
+      memset(uv, 0, sizeof(uv));
+      memset(index, 0, sizeof(index));
+
       switch (attribute->type) {
 
         // position
       case cgltf_attribute_type_position:
-
+        loader_gltf_accessor_to_array(accessor, position, 3);
         break;
 
         // color
       case cgltf_attribute_type_color:
-
+        loader_gltf_accessor_to_array(accessor, color, 3);
         break;
 
         // normals
       case cgltf_attribute_type_normal:
-
+        loader_gltf_accessor_to_array(accessor, normal, 3);
         break;
 
         // uv
       case cgltf_attribute_type_texcoord:
-
+        loader_gltf_accessor_to_array(accessor, uv, 2);
         break;
 
       default:
@@ -127,6 +142,7 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
 
     // index
     cgltf_accessor *index_accessor = gl_mesh.primitives[0].indices;
+
     cgltf_buffer_view *index_buffer_view = index_accessor->buffer_view;
     size_t index_offset = index_buffer_view->offset + index_accessor->offset;
 
