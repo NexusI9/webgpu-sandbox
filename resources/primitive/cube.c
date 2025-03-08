@@ -1,6 +1,6 @@
 #include "cube.h"
 
-static const float cube_vertex_data[] = {
+static float cube_vertex_data[] = {
     // Front face
     -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
      0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,  0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // Bottom-right

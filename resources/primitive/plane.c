@@ -1,6 +1,6 @@
 #include "plane.h"
 
-static const float plane_vertex_data[] = {
+static float plane_vertex_data[] = {
     // Positions          // Normals            // Colors          // UVs
     -0.5f, 0.0f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
      0.5f, 0.0f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
