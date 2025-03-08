@@ -3,8 +3,9 @@
 
 #include "../include/cglm/vec2.h"
 #include "../include/cglm/vec3.h"
+#include <stddef.h>
 
-#define VERTEX_STRIDE 3 * 3 * 3 * 2
+#define VERTEX_STRIDE 11
 /*
   Cannonical structure of a vertex
  */
@@ -18,12 +19,12 @@ typedef struct {
 
 typedef struct {
   float *data;
-  uint16_t length;
+  size_t length;
 } vertex_attribute;
 
 typedef struct {
   uint16_t *data;
-  uint16_t length;
+  size_t length;
 } vertex_index;
 
 /*

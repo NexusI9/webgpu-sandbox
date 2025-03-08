@@ -62,16 +62,18 @@ void loader_gltf_load(mesh *mesh, const char *path,
 void loader_gltf_add_vertex_attribute(vertex_attribute *vert_attribute,
                                       float *data, size_t offset, size_t count,
                                       uint8_t dimension) {
-
   size_t row = 0;
-  for (size_t i = 0; i < count; i += dimension) {
+  for (size_t i = 0; i < count * dimension; i += dimension) {
     size_t row_offset = row * VERTEX_STRIDE + offset;
+    // prevent overflow
     for (uint8_t x = 0; x < dimension; x++) {
-      size_t index = i + x;
-      vert_attribute->data[offset + x] = data[index];
+      size_t index = x + i;
+      if (row_offset + x < vert_attribute->length)
+        vert_attribute->data[row_offset + x] = data[index];
     }
     row++;
   }
+
 }
 
 float *loader_gltf_attributes(cgltf_accessor *accessor) {
@@ -89,9 +91,11 @@ void loader_gltf_init_vertex_lists(vertex_attribute *attributes,
   // init vertex list
   vertex_list_create(list, count);
 
-  // init vertex data (interweaved attributes)
-  attributes->data =
-      (float *)calloc(VERTEX_STRIDE * list->count, sizeof(float));
+  // init vertex data (interleaved attributes)
+  // list->count is the number of vertex used by index array
+  // need to multiply by 3
+  attributes->length = list->count * VERTEX_STRIDE;
+  attributes->data = (float *)calloc(attributes->length, sizeof(float));
 }
 
 static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
@@ -101,7 +105,7 @@ static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
   size_t index = 0;
   for (size_t a = 0; a < accessor->count; a++) {
     for (uint8_t u = 0; u < count; u++) {
-      destination[index++] = attributes[a * 3 + u];
+      destination[index++] = attributes[a * count + u];
     }
   }
 }
@@ -116,13 +120,13 @@ uint16_t *loader_gltf_index(cgltf_mesh *mesh) {
   uint16_t *index_data =
       (uint16_t *)((uint8_t *)index_buffer_view->buffer->data + index_offset);
 
+  //DELETEME: print_list_uint16(index_data, index_accessor->count, 1);
+
   return index_data;
 }
 
 void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
-  // data->meshes;
-  printf("load mesh\n");
-
+  // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
 
     cgltf_mesh gl_mesh = data->meshes[m];
@@ -144,13 +148,14 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       if (a == 0)
         loader_gltf_init_vertex_lists(&vert_attr, &vert_list, accessor->count);
 
+      printf("accessor:%lu\n", accessor->count);
       switch (attribute->type) {
 
         // position
       case cgltf_attribute_type_position:
         printf("position\n");
         loader_gltf_accessor_to_array(accessor, vert_list.position, 3);
-        // interweave vertex data
+        // interleave vertex data
         loader_gltf_add_vertex_attribute(&vert_attr, vert_list.position, 0,
                                          vert_list.count, 3);
         break;
@@ -183,6 +188,8 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
         break;
       }
     }
+
+    //DELETEME: print_list_float(vert_attr.data, vert_attr.length, VERTEX_STRIDE);
 
     // load index
     vert_index.data = loader_gltf_index(&gl_mesh);

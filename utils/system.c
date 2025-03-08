@@ -25,7 +25,7 @@ void print_list_float(float *list, size_t length, size_t stride) {
 
     printf("%f\t", list[i]);
 
-    if ((i + i) % stride == 0)
+    if ((i + 1) % stride == 0)
       printf("\n");
   }
 
@@ -39,11 +39,11 @@ void print_list_uint16(uint16_t *list, size_t length, size_t stride) {
 
     printf("%u\t", list[i]);
 
-    if ((i + i) % stride == 0)
-      printf("\n");
+    /*if ((i + i) % stride == 0)
+      printf("\n");*/
   }
+  printf("\n");
 
   if (length % stride != 0)
     printf("\n");
 }
-
