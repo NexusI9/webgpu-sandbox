@@ -24,17 +24,19 @@ scene scene_create(camera camera, viewport viewport) {
   return scene;
 }
 
-mesh *scene_add_mesh(scene *scene, mesh mesh) {
+mesh *scene_add_mesh(scene *scene, mesh *mesh) {
 
   mesh_list *mesh_list = &scene->mesh_list;
 
   // BUILD MESH
   // build shader (establish pipeline from previously set bind groups)
-  mesh_build(&mesh);
+  mesh_build(mesh);
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow
+
   if (mesh_list->length == mesh_list->capacity) {
+    printf("expand\n");
     mesh_list->capacity *= 2;
     mesh_list = realloc(mesh_list, mesh_list->capacity);
 
@@ -42,7 +44,7 @@ mesh *scene_add_mesh(scene *scene, mesh mesh) {
     return NULL;
   } else {
     // Copy mesh to list
-    mesh_list->items[mesh_list->length++] = mesh;
+    mesh_list->items[mesh_list->length++] = *mesh;
   }
 
   return &mesh_list->items[mesh_list->length - 1];

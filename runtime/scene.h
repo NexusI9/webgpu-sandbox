@@ -22,7 +22,7 @@ typedef struct {
 } scene;
 
 scene scene_create(camera, viewport);
-mesh *scene_add_mesh(scene *, mesh);
+mesh *scene_add_mesh(scene *, mesh *);
 void scene_draw(scene *, WGPURenderPassEncoder *);
 
 #endif

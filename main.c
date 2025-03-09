@@ -68,10 +68,10 @@ void init_scene() {
                  (vec3){0.0f, 0.0f, 0.0f});
 }
 
-mesh add_cube(vec3 position) {
+mesh *add_cube(mesh *cube, vec3 position) {
 
   shader cube_shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./runtime/assets/shader/shader.rotation.wgsl",
+      .path = "./runtime/assets/shader/shader.default.wgsl",
       .label = "cube",
       .name = "cube",
       .device = &main_renderer.wgpu.device,
@@ -80,7 +80,7 @@ mesh add_cube(vec3 position) {
 
   primitive cube_prim = primitive_cube();
 
-  mesh cube_mesh = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
+  *cube = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
       .primitive = cube_prim,
       .shader = cube_shader,
       .wgpu =
@@ -90,11 +90,11 @@ mesh add_cube(vec3 position) {
           },
   });
 
-  mesh_position(&cube_mesh, position);
+  mesh_position(cube, position);
 
-  mesh_bind_matrices(&cube_mesh, &main_scene.camera, &main_scene.viewport, 0);
+  mesh_bind_matrices(cube, &main_scene.camera, &main_scene.viewport, 0);
 
-  return cube_mesh;
+  return cube;
 }
 
 void add_grid() {
@@ -116,12 +116,18 @@ void add_grid() {
   });
 
   // add triangle to scene
-  scene_add_mesh(&main_scene, grid);
+  scene_add_mesh(&main_scene, &grid);
 }
 
 void import_cube() {
 
-  mesh cube;
+  mesh cube = mesh_create(&(MeshCreateDescriptor){
+      .wgpu =
+          {
+              .device = &main_renderer.wgpu.device,
+              .queue = &main_renderer.wgpu.queue,
+          },
+  });
 
   loader_gltf_load(&cube, "./resources/assets/gltf/cube.gltf",
                    &(cgltf_options){0});
@@ -153,11 +159,22 @@ int main(int argc, const char *argv[]) {
   init_scene();
   add_grid();
 
-  mesh child_cube = add_cube((vec3){3.0f, 2.0f, 1.0f});
-  mesh parent_cube = add_cube((vec3){0.0f, 0.0f, 0.0f});
+  mesh child_cube;
+  add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
 
-  mesh_add_child(child_cube, &parent_cube);
-  mesh *cube_mesh = scene_add_mesh(&main_scene, parent_cube);
+  mesh child_cube_A;
+  add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
+
+  mesh child_cube_B;
+  add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
+
+  mesh parent_cube;
+  add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
+
+  mesh_add_child(&child_cube, &parent_cube);
+  mesh_add_child(&child_cube_A, &parent_cube);
+  mesh_add_child(&child_cube_B, &parent_cube);
+  scene_add_mesh(&main_scene, &parent_cube);
 
   import_cube();
 

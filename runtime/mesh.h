@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define MESH_CHILD_LENGTH 4
+#define MESH_CHILD_LENGTH 12
 
 typedef struct {
 
@@ -95,7 +95,9 @@ void mesh_scale(mesh *, vec3);
 void mesh_position(mesh *, vec3);
 void mesh_rotate(mesh *, vec3);
 
-size_t mesh_add_child(mesh, mesh *);
+size_t mesh_add_child(mesh *, mesh *);
+size_t mesh_add_child_empty(mesh *);
+mesh *mesh_get_child(mesh *, size_t);
 
 MeshUniform mesh_model_uniform(mesh *);
 

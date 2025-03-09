@@ -229,7 +229,7 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
                                         .entries = entries});
 }
 
-size_t mesh_add_child(mesh child, mesh *dest) {
+size_t mesh_add_child(mesh *child, mesh *dest) {
 
   // init list
   if (dest->children.items == NULL) {
@@ -257,8 +257,10 @@ size_t mesh_add_child(mesh child, mesh *dest) {
 
   size_t id = dest->children.length;
 
+  printf("add child %lu: %p\n", id, child);
+
   // assign child to parent
-  dest->children.items[id] = child;
+  dest->children.items[id] = *child;
 
   // assing child id
   dest->children.index[id] = id;
@@ -266,8 +268,17 @@ size_t mesh_add_child(mesh child, mesh *dest) {
 
   // assign parent to child
   dest->children.items[id].parent = dest;
-
   dest->children.length++;
 
   return id;
+}
+
+size_t mesh_add_child_empty(mesh *mesh) {
+
+  struct mesh *temp_mesh;
+  return mesh_add_child(temp_mesh, mesh);
+}
+
+mesh *mesh_get_child(mesh *mesh, size_t index) {
+  return &mesh->children.items[index];
 }
