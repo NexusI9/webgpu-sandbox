@@ -30,39 +30,19 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
   mesh new_mesh;
 
   // set wgpu
-  new_mesh.wgpu.device = md->wgpu.device;
-  new_mesh.wgpu.queue = md->wgpu.queue;
+  new_mesh.device = md->device;
+  new_mesh.queue = md->queue;
 
   // set vertices
-  if (md->vertex.length > 0) {
-    new_mesh.vertex.data = md->vertex.data;
-    new_mesh.vertex.length = md->vertex.length;
-
-    // store vertex in buffer
-    mesh_create_vertex_buffer(
-        &new_mesh,
-        &(MeshCreateBufferDescriptor){
-            .data = (void *)new_mesh.vertex.data,
-            .size = new_mesh.vertex.length * sizeof(new_mesh.vertex.data[0]),
-        });
-  }
+  if (md->vertex.length > 0)
+    mesh_add_vertex_attribute(&new_mesh, &md->vertex);
 
   // set indexes
-  if (md->index.length > 0) {
-    new_mesh.index.data = md->index.data;
-    new_mesh.index.length = md->index.length;
-
-    // store index in buffer
-    mesh_create_index_buffer(
-        &new_mesh,
-        &(MeshCreateBufferDescriptor){
-            .data = (void *)new_mesh.index.data,
-            .size = new_mesh.index.length * sizeof(new_mesh.vertex.data[0]),
-        });
-  }
+  if (md->index.length > 0)
+    mesh_add_vertex_index(&new_mesh, &md->index);
 
   // set shader
-  new_mesh.shader = md->shader;
+  mesh_add_shader(&new_mesh, &md->shader);
 
   // init model matrix
   glm_mat4_identity(new_mesh.model);
@@ -77,23 +57,56 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
 
 mesh mesh_create_primitive(const MeshCreatePrimitiveDescriptor *md) {
   return mesh_create(&(MeshCreateDescriptor){
-      .wgpu = md->wgpu,
+      .queue = md->queue,
+      .device = md->device,
       .index = md->primitive.index,
       .vertex = md->primitive.vertex,
       .shader = md->shader,
   });
 }
 
+void mesh_add_vertex_attribute(mesh *mesh, const vertex_attribute *attributes) {
+
+  mesh->vertex.data = attributes->data;
+  mesh->vertex.length = attributes->length;
+
+  // store vertex in buffer
+  mesh_create_vertex_buffer(
+      mesh, &(MeshCreateBufferDescriptor){
+                .data = (void *)mesh->vertex.data,
+                .size = mesh->vertex.length * sizeof(mesh->vertex.data[0]),
+            });
+}
+
+void mesh_add_vertex_index(mesh *mesh, const vertex_index *indexes) {
+
+  mesh->index.data = indexes->data;
+  mesh->index.length = indexes->length;
+
+  // store index in buffer
+  mesh_create_index_buffer(
+      mesh, &(MeshCreateBufferDescriptor){
+                .data = (void *)mesh->index.data,
+                .size = mesh->index.length * sizeof(mesh->index.data[0]),
+            });
+}
+
+void mesh_add_shader(mesh *mesh, const shader *shader) {
+  mesh->shader = *shader;
+}
+
+void mesh_add_parent(mesh *child, mesh *parent) { child->parent = parent; }
+
 // send vertex data to GPU
 void mesh_create_vertex_buffer(mesh *mesh,
                                const MeshCreateBufferDescriptor *bd) {
 
-  if (mesh->wgpu.device == NULL || mesh->wgpu.queue == NULL)
+  if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue"), exit(0);
 
   mesh->buffer.vertex = create_buffer(&(CreateBufferDescriptor){
-      .queue = mesh->wgpu.queue,
-      .device = mesh->wgpu.device,
+      .queue = mesh->queue,
+      .device = mesh->device,
       .data = (void *)bd->data,
       .size = bd->size,
       .usage = WGPUBufferUsage_Vertex,
@@ -104,12 +117,12 @@ void mesh_create_vertex_buffer(mesh *mesh,
 void mesh_create_index_buffer(mesh *mesh,
                               const MeshCreateBufferDescriptor *bd) {
 
-  if (mesh->wgpu.device == NULL || mesh->wgpu.queue == NULL)
+  if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue"), exit(0);
 
   mesh->buffer.index = create_buffer(&(CreateBufferDescriptor){
-      .queue = mesh->wgpu.queue,
-      .device = mesh->wgpu.device,
+      .queue = mesh->queue,
+      .device = mesh->device,
       .data = (void *)bd->data,
       .size = bd->size,
       .usage = WGPUBufferUsage_Index,
@@ -280,11 +293,8 @@ size_t mesh_add_child_empty(mesh *mesh) {
   // add empty mesh, still need to initialize it before adding
   // this ensure proper init array
   struct mesh temp_mesh = mesh_create(&(MeshCreateDescriptor){
-      .wgpu =
-          {
-              .device = mesh->wgpu.device,
-              .queue = mesh->wgpu.queue,
-          },
+      .device = mesh->device,
+      .queue = mesh->queue,
   });
 
   return mesh_add_child(&temp_mesh, mesh);

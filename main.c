@@ -83,11 +83,9 @@ mesh *add_cube(mesh *cube, vec3 position) {
   *cube = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
       .primitive = cube_prim,
       .shader = cube_shader,
-      .wgpu =
-          {
-              .device = &main_renderer.wgpu.device,
-              .queue = &main_renderer.wgpu.queue,
-          },
+      .device = &main_renderer.wgpu.device,
+      .queue = &main_renderer.wgpu.queue,
+
   });
 
   mesh_position(cube, position);
@@ -122,15 +120,19 @@ void add_grid() {
 void import_cube() {
 
   mesh cube = mesh_create(&(MeshCreateDescriptor){
-      .wgpu =
-          {
-              .device = &main_renderer.wgpu.device,
-              .queue = &main_renderer.wgpu.queue,
-          },
+      .device = &main_renderer.wgpu.device,
+      .queue = &main_renderer.wgpu.queue,
   });
 
-  loader_gltf_load(&cube, "./resources/assets/gltf/cube.gltf",
+  loader_gltf_load(&cube, "./resources/assets/gltf/ico.gltf",
                    &(cgltf_options){0});
+
+  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 0);
+  for (int c = 0; c < cube.children.length; c++)
+    mesh_bind_matrices(&cube.children.items[c], &main_scene.camera,
+                       &main_scene.viewport, 0);
+
+  scene_add_mesh(&main_scene, &cube);
 }
 
 void draw() {

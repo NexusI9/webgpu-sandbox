@@ -12,7 +12,8 @@
 #include <stdio.h>
 
 static void loader_gltf_create_mesh(mesh *, cgltf_data *);
-static void loader_gltf_create_shader(shader *, cgltf_data *);
+static void loader_gltf_create_shader(shader *, WGPUDevice *, WGPUQueue *,
+                                      cgltf_primitive *);
 
 static void loader_gltf_add_vertex_attribute(vertex_attribute *, float *,
                                              size_t, size_t, uint8_t);
@@ -153,6 +154,7 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
 
       vertex_attribute vert_attr;
       vertex_index vert_index;
+      shader shader;
 
       cgltf_primitive current_primitive = gl_mesh.primitives[p];
 
@@ -209,20 +211,43 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       // load index
       vert_index = loader_gltf_index(&current_primitive);
 
-      // "primitive mesh" that will either be added as
-      // parent or child depending on index
-      if (p == 0) {
-        parent_mesh->vertex = vert_attr;
-        parent_mesh->index = vert_index;
-      } else {
-        // add child to parent mesh if current primitive > 0
-        size_t new_child = mesh_add_child_empty(mesh);
-        struct mesh *child_mesh = mesh_get_child(mesh, new_child);
-        child_mesh->vertex = vert_attr;
-        child_mesh->index = vert_index;
+      // load shader
+      loader_gltf_create_shader(&shader, mesh->device, mesh->queue,
+                                &current_primitive);
+
+      // add to parent itself if primitive == 0
+      struct mesh *target_mesh = parent_mesh;
+
+      // add child to parent mesh if current primitive > 0
+      if (p > 0) {
+        size_t new_child = mesh_add_child_empty(parent_mesh);
+        struct mesh *child_mesh = mesh_get_child(parent_mesh, new_child);
+        target_mesh = child_mesh;
       }
+
+      // dynamically define mesh attributes
+      mesh_add_vertex_attribute(target_mesh, &vert_attr);
+      mesh_add_vertex_index(target_mesh, &vert_index);
+      mesh_add_shader(target_mesh, &shader);
+      mesh_add_parent(target_mesh, parent_mesh);
     }
   }
 }
 
-void loader_gltf_create_shader(shader *shader, cgltf_data *data) {}
+void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
+                               WGPUQueue *queue, cgltf_primitive *primitive) {
+
+  // Use default pbr shader as default
+  // TODO: Add a custom path for different shader in loader configuration
+
+  cgltf_material *material = primitive->material;
+
+  *shader = shader_create(&(ShaderCreateDescriptor){
+      .path = "./runtime/assets/shader/shader.pbr.wgsl",
+      .label = material->name,
+      .name = material->name,
+      .device = device,
+      .queue = queue,
+  });
+  
+}

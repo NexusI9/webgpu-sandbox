@@ -4,29 +4,25 @@
 #include "../resources/primitive/primitive.h"
 #include "camera.h"
 #include "shader.h"
+#include "vertex.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>
 
 #define MESH_CHILD_LENGTH 12
 
-typedef struct {
-
-  WGPUDevice *device;
-  WGPUQueue *queue;
-
-} MeshWGPU;
-
 // Builder Pattern | Descriptor Pattern
 typedef struct {
-  MeshWGPU wgpu;
+  WGPUDevice *device;
+  WGPUQueue *queue;
   vertex_attribute vertex;
   vertex_index index;
   shader shader;
 } MeshCreateDescriptor;
 
 typedef struct {
-  MeshWGPU wgpu;
+  WGPUDevice *device;
+  WGPUQueue *queue;
   primitive primitive;
   shader shader;
 } MeshCreatePrimitiveDescriptor;
@@ -61,7 +57,8 @@ typedef struct mesh {
   vec3 rotation;
 
   // wgpu
-  MeshWGPU wgpu;
+  WGPUDevice *device;
+  WGPUQueue *queue;
 
   // vertex list
   vertex_attribute vertex;
@@ -84,6 +81,12 @@ typedef struct mesh {
 
 mesh mesh_create(const MeshCreateDescriptor *);
 mesh mesh_create_primitive(const MeshCreatePrimitiveDescriptor *);
+
+void mesh_add_vertex_attribute(mesh *, const vertex_attribute *);
+void mesh_add_vertex_index(mesh *, const vertex_index *);
+void mesh_add_shader(mesh *, const shader *);
+void mesh_add_parent(mesh *, mesh *);
+
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);
 
