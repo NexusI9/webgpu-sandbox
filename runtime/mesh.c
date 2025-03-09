@@ -34,12 +34,32 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
   new_mesh.wgpu.queue = md->wgpu.queue;
 
   // set vertices
-  new_mesh.vertex.data = md->vertex.data;
-  new_mesh.vertex.length = md->vertex.length;
+  if (md->vertex.length > 0) {
+    new_mesh.vertex.data = md->vertex.data;
+    new_mesh.vertex.length = md->vertex.length;
+
+    // store vertex in buffer
+    mesh_create_vertex_buffer(
+        &new_mesh,
+        &(MeshCreateBufferDescriptor){
+            .data = (void *)new_mesh.vertex.data,
+            .size = new_mesh.vertex.length * sizeof(new_mesh.vertex.data[0]),
+        });
+  }
 
   // set indexes
-  new_mesh.index.data = md->index.data;
-  new_mesh.index.length = md->index.length;
+  if (md->index.length > 0) {
+    new_mesh.index.data = md->index.data;
+    new_mesh.index.length = md->index.length;
+
+    // store index in buffer
+    mesh_create_index_buffer(
+        &new_mesh,
+        &(MeshCreateBufferDescriptor){
+            .data = (void *)new_mesh.index.data,
+            .size = new_mesh.index.length * sizeof(new_mesh.vertex.data[0]),
+        });
+  }
 
   // set shader
   new_mesh.shader = md->shader;
@@ -51,22 +71,6 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
   new_mesh.children.length = 0;
   new_mesh.children.capacity = 0;
   new_mesh.children.items = NULL;
-
-  // store vertex in buffer
-  mesh_create_vertex_buffer(
-      &new_mesh,
-      &(MeshCreateBufferDescriptor){
-          .data = (void *)new_mesh.vertex.data,
-          .size = new_mesh.vertex.length * sizeof(new_mesh.vertex.data[0]),
-      });
-
-  // store index in buffer
-  mesh_create_index_buffer(
-      &new_mesh,
-      &(MeshCreateBufferDescriptor){
-          .data = (void *)new_mesh.index.data,
-          .size = new_mesh.index.length * sizeof(new_mesh.vertex.data[0]),
-      });
 
   return new_mesh;
 }
@@ -257,8 +261,6 @@ size_t mesh_add_child(mesh *child, mesh *dest) {
 
   size_t id = dest->children.length;
 
-  printf("add child %lu: %p\n", id, child);
-
   // assign child to parent
   dest->children.items[id] = *child;
 
@@ -275,8 +277,17 @@ size_t mesh_add_child(mesh *child, mesh *dest) {
 
 size_t mesh_add_child_empty(mesh *mesh) {
 
-  struct mesh *temp_mesh;
-  return mesh_add_child(temp_mesh, mesh);
+  // add empty mesh, still need to initialize it before adding
+  // this ensure proper init array
+  struct mesh temp_mesh = mesh_create(&(MeshCreateDescriptor){
+      .wgpu =
+          {
+              .device = mesh->wgpu.device,
+              .queue = mesh->wgpu.queue,
+          },
+  });
+
+  return mesh_add_child(&temp_mesh, mesh);
 }
 
 mesh *mesh_get_child(mesh *mesh, size_t index) {

@@ -130,9 +130,13 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
   for (size_t m = 0; m < data->meshes_count; m++) {
 
     cgltf_mesh gl_mesh = data->meshes[m];
+    struct mesh *parent_mesh = mesh;
 
-    // get accessors to decode buffers into typed data (vertex, indices...)
-    // load vertex attributes
+    // if > 0 mesh, then append as child of initial mesh (level 1)
+    if (m > 0) {
+      size_t new_child = mesh_add_child_empty(mesh);
+      parent_mesh = mesh_get_child(mesh, new_child);
+    }
 
     // GLTF PRIMITIVES
     // primitives are vertices that belong to a same mesh but have different
@@ -142,24 +146,21 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
     // primitive 0 = parent, primitive n = child
     for (size_t p = 0; p < gl_mesh.primitives_count; p++) {
 
-      vertex_list vert_list; // raw vertex list (uninterleaved)
-      struct mesh *target_mesh = mesh;
-      cgltf_primitive current_primitive = gl_mesh.primitives[p];
+      // get accessors to decode buffers into typed data (vertex, indices...)
+      // load vertex attributes
 
-      // "primitive mesh" that will either be added as
-      // parent or chiild depending on index
-      if (p > 0) {
-        printf("primitive %lu\n", p);
-        size_t child_id = mesh_add_child_empty(mesh);
-        // target_mesh = mesh_get_child(mesh, child_id);
-      }
+      vertex_list vert_list; // raw vertex list (non-interleaved)
+
+      vertex_attribute vert_attr;
+      vertex_index vert_index;
+
+      cgltf_primitive current_primitive = gl_mesh.primitives[p];
 
       // Initialize vertex lists with 0.0:
       // need fallback values in case no color or uv coordinates
       // ensure to maintain correct standaridzed structure for shaders
       loader_gltf_init_vertex_lists(
-          &target_mesh->vertex, &vert_list,
-          current_primitive.attributes[0].data->count);
+          &vert_attr, &vert_list, current_primitive.attributes[0].data->count);
 
       for (size_t a = 0; a < current_primitive.attributes_count; a++) {
 
@@ -172,29 +173,29 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
         case cgltf_attribute_type_position:
           loader_gltf_accessor_to_array(accessor, vert_list.position, 3);
           // interleave vertex data
-          loader_gltf_add_vertex_attribute(
-              &target_mesh->vertex, vert_list.position, 0, vert_list.count, 3);
+          loader_gltf_add_vertex_attribute(&vert_attr, vert_list.position, 0,
+                                           vert_list.count, 3);
           break;
 
           // normals
         case cgltf_attribute_type_normal:
           loader_gltf_accessor_to_array(accessor, vert_list.normal, 3);
-          loader_gltf_add_vertex_attribute(
-              &target_mesh->vertex, vert_list.normal, 3, vert_list.count, 3);
+          loader_gltf_add_vertex_attribute(&vert_attr, vert_list.normal, 3,
+                                           vert_list.count, 3);
           break;
 
           // color
         case cgltf_attribute_type_color:
           loader_gltf_accessor_to_array(accessor, vert_list.color, 3);
-          loader_gltf_add_vertex_attribute(
-              &target_mesh->vertex, vert_list.color, 6, vert_list.count, 3);
+          loader_gltf_add_vertex_attribute(&vert_attr, vert_list.color, 6,
+                                           vert_list.count, 3);
           break;
 
           // uv
         case cgltf_attribute_type_texcoord:
           loader_gltf_accessor_to_array(accessor, vert_list.uv, 2);
-          loader_gltf_add_vertex_attribute(&target_mesh->vertex, vert_list.uv,
-                                           9, vert_list.count, 2);
+          loader_gltf_add_vertex_attribute(&vert_attr, vert_list.uv, 9,
+                                           vert_list.count, 2);
           break;
 
         default:
@@ -206,7 +207,20 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       // target_mesh.vertex.length, VERTEX_STRIDE);
 
       // load index
-      target_mesh->index = loader_gltf_index(&current_primitive);
+      vert_index = loader_gltf_index(&current_primitive);
+
+      // "primitive mesh" that will either be added as
+      // parent or child depending on index
+      if (p == 0) {
+        parent_mesh->vertex = vert_attr;
+        parent_mesh->index = vert_index;
+      } else {
+        // add child to parent mesh if current primitive > 0
+        size_t new_child = mesh_add_child_empty(mesh);
+        struct mesh *child_mesh = mesh_get_child(mesh, new_child);
+        child_mesh->vertex = vert_attr;
+        child_mesh->index = vert_index;
+      }
     }
   }
 }
