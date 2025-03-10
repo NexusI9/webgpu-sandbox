@@ -1,3 +1,4 @@
+#include "limits.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -214,26 +215,33 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       struct mesh *target_mesh = parent_mesh;
 
       // add child to parent mesh if current primitive > 0
-      char mesh_name[MESH_NAME_MAX_LENGTH];
-
       if (p > 0) {
         size_t new_child = mesh_add_child_empty(parent_mesh);
         struct mesh *child_mesh = mesh_get_child(parent_mesh, new_child);
         target_mesh = child_mesh;
-        snprintf(mesh_name, sizeof(mesh_name), "%s %lu", gl_mesh.name, p);
+	
+        // need to dynamically allocate name
+	// iteration use same frame stack
+	// meaning addresses will be reused throughout the loop
+	// this leads the latest mesh name (pointer) -
+	// to be shared accross all children mesh
+	// (same issue with shader)
+	
+        asprintf(&target_mesh->name, "%s %lu", gl_mesh.name, p);
       } else {
-        snprintf(mesh_name, sizeof(mesh_name), "%s", gl_mesh.name);
+        asprintf(&target_mesh->name, "%s", gl_mesh.name);
       }
 
       // load shader
       loader_gltf_create_shader(&target_mesh->shader, mesh->device, mesh->queue,
                                 &current_primitive);
 
-      // dynamically define mesh attributes
-      mesh_set_name(target_mesh, mesh_name);
+      // dynamically define mesh attribute
       mesh_set_vertex_attribute(target_mesh, &vert_attr);
       mesh_set_vertex_index(target_mesh, &vert_index);
       mesh_set_parent(target_mesh, parent_mesh);
+
+      printf("%p: name: %s\n", target_mesh, target_mesh->name);
     }
   }
 }
@@ -245,14 +253,13 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
   // TODO: Add a custom path for different shader in loader configuration
 
   cgltf_material *material = primitive->material;
-  shader_create(shader,
-                    &(ShaderCreateDescriptor){
-                        .path = "./runtime/assets/shader/shader.pbr.wgsl",
-                        .label = material->name,
-                        .name = material->name,
-                        .device = device,
-                        .queue = queue,
-                    });
+  shader_create(shader, &(ShaderCreateDescriptor){
+                            .path = "./runtime/assets/shader/shader.pbr.wgsl",
+                            .label = material->name,
+                            .name = material->name,
+                            .device = device,
+                            .queue = queue,
+                        });
 
   // TODO: bind pbr related uniforms
 }

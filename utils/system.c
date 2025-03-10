@@ -51,16 +51,15 @@ void print_list_uint16(uint16_t *list, size_t length, size_t stride) {
 void print_mesh_tree(mesh *mesh, uint16_t level) {
 
   for (uint16_t l = 0; l < level; l++)
-    printf(" ");
+    printf("\t");
 
   if (level != 0)
     printf("L ");
 
-  printf("%s\n", mesh->name);
+  printf("[%p] %s\n", mesh, mesh->name);
 
   level++;
 
-  for(int i = 0; i < mesh->children.length; i++)
-      print_mesh_tree(&mesh->children.items[i], level);
-  
+  for (int i = 0; i < mesh->children.length; i++)
+    print_mesh_tree(&mesh->children.items[i], level);
 }

@@ -143,13 +143,11 @@ void mesh_create_index_buffer(mesh *mesh,
 
 void mesh_build(mesh *mesh) {
 
-  printf("mesh name: %s\n", mesh->name);
   // reccursively build shader
   shader_build(&mesh->shader);
 
   // build children
   if (mesh->children.items != NULL) {
-    printf("build children\n");
     for (size_t c = 0; c < mesh->children.length; c++) {
       mesh_build(&mesh->children.items[c]);
     }

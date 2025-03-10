@@ -36,7 +36,6 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 // Define vertex layout to be used in pipeline
 void set_vertex_layout(shader *shader) {
 
-  printf("set vertex layout: %p\n", shader);
   // set x,y,z
   shader->vertex.attribute[0] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
