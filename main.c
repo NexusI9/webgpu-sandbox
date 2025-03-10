@@ -71,24 +71,23 @@ void init_scene() {
 
 mesh *add_cube(mesh *cube, vec3 position) {
 
-  shader cube_shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./runtime/assets/shader/shader.default.wgsl",
-      .label = "cube",
-      .name = "cube",
-      .device = &main_renderer.wgpu.device,
-      .queue = &main_renderer.wgpu.queue,
-  });
-
   primitive cube_prim = primitive_cube();
 
   *cube = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
       .primitive = cube_prim,
       .name = "cube",
-      .shader = cube_shader,
       .device = &main_renderer.wgpu.device,
       .queue = &main_renderer.wgpu.queue,
-
   });
+
+  mesh_set_shader(cube,
+                  &(ShaderCreateDescriptor){
+                      .path = "./runtime/assets/shader/shader.default.wgsl",
+                      .label = "cube",
+                      .name = "cube",
+                      .device = &main_renderer.wgpu.device,
+                      .queue = &main_renderer.wgpu.queue,
+                  });
 
   mesh_position(cube, position);
 
@@ -167,7 +166,7 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
-  // add_grid();
+  add_grid();
 
   mesh child_cube;
   // add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});

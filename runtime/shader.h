@@ -99,7 +99,7 @@ typedef struct {
 } shader;
 
 // methods
-shader shader_create(const ShaderCreateDescriptor *);
+void shader_create(shader *, const ShaderCreateDescriptor *);
 
 void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
 

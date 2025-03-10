@@ -13,34 +13,30 @@
 static void shader_module_release(shader *);
 static void set_vertex_layout(shader *);
 
-shader shader_create(const ShaderCreateDescriptor *sd) {
-  shader shader;
+void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 
   // store shader string in memory
-  store_file(&shader.source, sd->path);
+  store_file(&shader->source, sd->path);
 
   // compile shader module intro GPU device
-  shader.module = create_shader(sd->device, shader.source, sd->label);
-  shader.device = sd->device;
-  shader.queue = sd->queue;
+  shader->module = create_shader(sd->device, shader->source, sd->label);
+  shader->device = sd->device;
+  shader->queue = sd->queue;
 
   // define bind groups length
-  shader.bind_groups.length = 0;
+  shader->bind_groups.length = 0;
 
   // set name
-  shader.name = strdup(sd->name);
+  shader->name = strdup(sd->name);
 
   // set vertex layout
-  set_vertex_layout(&shader);
-
-  return shader;
+  set_vertex_layout(shader);
 }
 
 // Define vertex layout to be used in pipeline
 void set_vertex_layout(shader *shader) {
 
-  printf("shader: %s\n", shader->name);
-  printf("set vertex layout\n");
+  printf("set vertex layout: %p\n", shader);
   // set x,y,z
   shader->vertex.attribute[0] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,

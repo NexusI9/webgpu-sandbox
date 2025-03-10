@@ -31,7 +31,7 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
   mesh new_mesh;
 
   // set name
-  mesh_add_name(&new_mesh, md->name);
+  mesh_set_name(&new_mesh, md->name);
 
   // set wgpu
   new_mesh.device = md->device;
@@ -39,14 +39,14 @@ mesh mesh_create(const MeshCreateDescriptor *md) {
 
   // set vertices
   if (md->vertex.length > 0)
-    mesh_add_vertex_attribute(&new_mesh, &md->vertex);
+    mesh_set_vertex_attribute(&new_mesh, &md->vertex);
 
   // set indexes
   if (md->index.length > 0)
-    mesh_add_vertex_index(&new_mesh, &md->index);
+    mesh_set_vertex_index(&new_mesh, &md->index);
 
-  // set shader
-  mesh_add_shader(&new_mesh, &md->shader);
+  // TODO: uniformise shader creation (ref || value)
+  new_mesh.shader = md->shader;
 
   // init model matrix
   glm_mat4_identity(new_mesh.model);
@@ -65,12 +65,11 @@ mesh mesh_create_primitive(const MeshCreatePrimitiveDescriptor *md) {
       .device = md->device,
       .index = md->primitive.index,
       .vertex = md->primitive.vertex,
-      .shader = md->shader,
       .name = md->name,
   });
 }
 
-void mesh_add_vertex_attribute(mesh *mesh, const vertex_attribute *attributes) {
+void mesh_set_vertex_attribute(mesh *mesh, const vertex_attribute *attributes) {
 
   mesh->vertex.data = attributes->data;
   mesh->vertex.length = attributes->length;
@@ -83,7 +82,7 @@ void mesh_add_vertex_attribute(mesh *mesh, const vertex_attribute *attributes) {
             });
 }
 
-void mesh_add_vertex_index(mesh *mesh, const vertex_index *indexes) {
+void mesh_set_vertex_index(mesh *mesh, const vertex_index *indexes) {
 
   mesh->index.data = indexes->data;
   mesh->index.length = indexes->length;
@@ -96,23 +95,26 @@ void mesh_add_vertex_index(mesh *mesh, const vertex_index *indexes) {
             });
 }
 
-void mesh_add_shader(mesh *mesh, const shader *shader) {
-  mesh->shader = *shader;
-}
+void mesh_set_parent(mesh *child, mesh *parent) { child->parent = parent; }
 
-void mesh_add_parent(mesh *child, mesh *parent) { child->parent = parent; }
-
-void mesh_add_name(mesh *mesh, const char *name) {
+void mesh_set_name(mesh *mesh, const char *name) {
   free(mesh->name);
   mesh->name = strdup(name);
+}
+
+void mesh_set_shader(mesh *mesh, const ShaderCreateDescriptor *desc) {
+  // alias to shader_create
+  shader_create(&mesh->shader, desc);
 }
 
 // send vertex data to GPU
 void mesh_create_vertex_buffer(mesh *mesh,
                                const MeshCreateBufferDescriptor *bd) {
 
+  /*printf("name:%s, device: %p, queue:%p\n", mesh->name, mesh->device,
+    mesh->queue);*/
   if (mesh->device == NULL || mesh->queue == NULL)
-    perror("Mesh has no device or queue"), exit(0);
+    perror("Mesh has no device or queue "), exit(0);
 
   mesh->buffer.vertex = create_buffer(&(CreateBufferDescriptor){
       .queue = mesh->queue,
@@ -142,7 +144,6 @@ void mesh_create_index_buffer(mesh *mesh,
 void mesh_build(mesh *mesh) {
 
   printf("mesh name: %s\n", mesh->name);
-
   // reccursively build shader
   shader_build(&mesh->shader);
 

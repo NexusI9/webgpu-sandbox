@@ -86,11 +86,11 @@ typedef struct mesh {
 mesh mesh_create(const MeshCreateDescriptor *);
 mesh mesh_create_primitive(const MeshCreatePrimitiveDescriptor *);
 
-void mesh_add_vertex_attribute(mesh *, const vertex_attribute *);
-void mesh_add_vertex_index(mesh *, const vertex_index *);
-void mesh_add_shader(mesh *, const shader *);
-void mesh_add_parent(mesh *, mesh *);
-void mesh_add_name(mesh *, const char *);
+void mesh_set_vertex_attribute(mesh *, const vertex_attribute *);
+void mesh_set_vertex_index(mesh *, const vertex_index *);
+void mesh_set_parent(mesh *, mesh *);
+void mesh_set_name(mesh *, const char *);
+void mesh_set_shader(mesh *, const ShaderCreateDescriptor *);
 
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);

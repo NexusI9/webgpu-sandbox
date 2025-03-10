@@ -137,8 +137,9 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
     if (m > 0) {
       size_t new_child = mesh_add_child_empty(mesh);
       parent_mesh = mesh_get_child(mesh, new_child);
-      printf("Parent mesh:%p\n", parent_mesh);
     }
+
+    // shader *shader_list[gl_mesh.primitives_count];
 
     // GLTF PRIMITIVES
     // primitives are vertices that belong to a same mesh but have different
@@ -151,10 +152,8 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       // load vertex attributes
 
       vertex_list vert_list; // raw vertex list (non-interleaved)
-
       vertex_attribute vert_attr;
       vertex_index vert_index;
-      shader shader;
 
       cgltf_primitive current_primitive = gl_mesh.primitives[p];
 
@@ -211,10 +210,6 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       // load index
       vert_index = loader_gltf_index(&current_primitive);
 
-      // load shader
-      loader_gltf_create_shader(&shader, mesh->device, mesh->queue,
-                                &current_primitive);
-
       // add to parent itself if primitive == 0
       struct mesh *target_mesh = parent_mesh;
 
@@ -230,12 +225,15 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
         snprintf(mesh_name, sizeof(mesh_name), "%s", gl_mesh.name);
       }
 
+      // load shader
+      loader_gltf_create_shader(&target_mesh->shader, mesh->device, mesh->queue,
+                                &current_primitive);
+
       // dynamically define mesh attributes
-      mesh_add_vertex_attribute(target_mesh, &vert_attr);
-      mesh_add_vertex_index(target_mesh, &vert_index);
-      mesh_add_shader(target_mesh, &shader);
-      mesh_add_parent(target_mesh, parent_mesh);
-      mesh_add_name(target_mesh, mesh_name);
+      mesh_set_name(target_mesh, mesh_name);
+      mesh_set_vertex_attribute(target_mesh, &vert_attr);
+      mesh_set_vertex_index(target_mesh, &vert_index);
+      mesh_set_parent(target_mesh, parent_mesh);
     }
   }
 }
@@ -247,14 +245,14 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
   // TODO: Add a custom path for different shader in loader configuration
 
   cgltf_material *material = primitive->material;
-
-  *shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./runtime/assets/shader/shader.pbr.wgsl",
-      .label = material->name,
-      .name = material->name,
-      .device = device,
-      .queue = queue,
-  });
+  shader_create(shader,
+                    &(ShaderCreateDescriptor){
+                        .path = "./runtime/assets/shader/shader.pbr.wgsl",
+                        .label = material->name,
+                        .name = material->name,
+                        .device = device,
+                        .queue = queue,
+                    });
 
   // TODO: bind pbr related uniforms
 }

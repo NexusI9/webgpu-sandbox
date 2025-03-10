@@ -5,21 +5,21 @@ mesh grid_create_mesh(GridCreateDescriptor *gd) {
 
   primitive plane = primitive_plane();
 
-  shader shader = shader_create(&(ShaderCreateDescriptor){
-      .path = "./runtime/assets/shader/shader.grid.wgsl",
-      .label = "grid",
-      .name = "grid",
-      .device = gd->device,
-      .queue = gd->queue,
-  });
-
   mesh grid_mesh = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
       .name = "grid",
       .queue = gd->queue,
       .device = gd->device,
       .primitive = plane,
-      .shader = shader,
   });
+
+  mesh_set_shader(&grid_mesh,
+                  &(ShaderCreateDescriptor){
+                      .path = "./runtime/assets/shader/shader.grid.wgsl",
+                      .label = "grid",
+                      .name = "grid",
+                      .device = gd->device,
+                      .queue = gd->queue,
+                  });
 
   mesh_scale(&grid_mesh, (vec3){
                              gd->uniform.size,
