@@ -14,6 +14,7 @@ mesh grid_create_mesh(GridCreateDescriptor *gd) {
   });
 
   mesh grid_mesh = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
+      .name = "grid",
       .queue = gd->queue,
       .device = gd->device,
       .primitive = plane,

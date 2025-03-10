@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #define MESH_CHILD_LENGTH 12
+#define MESH_NAME_MAX_LENGTH 64
 
 // Builder Pattern | Descriptor Pattern
 typedef struct {
@@ -18,6 +19,7 @@ typedef struct {
   vertex_attribute vertex;
   vertex_index index;
   shader shader;
+  const char *name;
 } MeshCreateDescriptor;
 
 typedef struct {
@@ -25,6 +27,7 @@ typedef struct {
   WGPUQueue *queue;
   primitive primitive;
   shader shader;
+  const char *name;
 } MeshCreatePrimitiveDescriptor;
 
 typedef struct {
@@ -49,6 +52,7 @@ typedef struct {
 typedef struct mesh {
 
   size_t id;
+  char *name;
 
   // transforms
   mat4 model;
@@ -86,6 +90,7 @@ void mesh_add_vertex_attribute(mesh *, const vertex_attribute *);
 void mesh_add_vertex_index(mesh *, const vertex_index *);
 void mesh_add_shader(mesh *, const shader *);
 void mesh_add_parent(mesh *, mesh *);
+void mesh_add_name(mesh *, const char *);
 
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);

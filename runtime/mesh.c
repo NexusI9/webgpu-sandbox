@@ -7,6 +7,7 @@
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 MeshUniform mesh_model_uniform(mesh *mesh) {
 
@@ -28,6 +29,9 @@ MeshUniform mesh_model_uniform(mesh *mesh) {
 mesh mesh_create(const MeshCreateDescriptor *md) {
 
   mesh new_mesh;
+
+  // set name
+  mesh_add_name(&new_mesh, md->name);
 
   // set wgpu
   new_mesh.device = md->device;
@@ -62,6 +66,7 @@ mesh mesh_create_primitive(const MeshCreatePrimitiveDescriptor *md) {
       .index = md->primitive.index,
       .vertex = md->primitive.vertex,
       .shader = md->shader,
+      .name = md->name,
   });
 }
 
@@ -97,6 +102,11 @@ void mesh_add_shader(mesh *mesh, const shader *shader) {
 
 void mesh_add_parent(mesh *child, mesh *parent) { child->parent = parent; }
 
+void mesh_add_name(mesh *mesh, const char *name) {
+  free(mesh->name);
+  mesh->name = strdup(name);
+}
+
 // send vertex data to GPU
 void mesh_create_vertex_buffer(mesh *mesh,
                                const MeshCreateBufferDescriptor *bd) {
@@ -131,11 +141,14 @@ void mesh_create_index_buffer(mesh *mesh,
 
 void mesh_build(mesh *mesh) {
 
+  printf("mesh name: %s\n", mesh->name);
+
   // reccursively build shader
   shader_build(&mesh->shader);
 
   // build children
   if (mesh->children.items != NULL) {
+    printf("build children\n");
     for (size_t c = 0; c < mesh->children.length; c++) {
       mesh_build(&mesh->children.items[c]);
     }

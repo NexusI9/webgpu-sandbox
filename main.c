@@ -29,6 +29,7 @@
 #include "runtime/scene.h"
 #include "runtime/shader.h"
 #include "runtime/viewport.h"
+#include "utils/system.h"
 
 static scene main_scene;
 static mesh tri_mesh;
@@ -82,6 +83,7 @@ mesh *add_cube(mesh *cube, vec3 position) {
 
   *cube = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
       .primitive = cube_prim,
+      .name = "cube",
       .shader = cube_shader,
       .device = &main_renderer.wgpu.device,
       .queue = &main_renderer.wgpu.queue,
@@ -120,17 +122,23 @@ void add_grid() {
 void import_cube() {
 
   mesh cube = mesh_create(&(MeshCreateDescriptor){
+      .name = "master_cube",
       .device = &main_renderer.wgpu.device,
       .queue = &main_renderer.wgpu.queue,
   });
 
-  loader_gltf_load(&cube, "./resources/assets/gltf/ico.gltf",
+  loader_gltf_load(&cube, "./resources/assets/gltf/cube.gltf",
                    &(cgltf_options){0});
 
+  printf("<< GLTF DONE >>\n");
+
+  // TODO: handle child bind
   mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 0);
   for (int c = 0; c < cube.children.length; c++)
     mesh_bind_matrices(&cube.children.items[c], &main_scene.camera,
                        &main_scene.viewport, 0);
+
+  print_mesh_tree(&cube, 0);
 
   scene_add_mesh(&main_scene, &cube);
 }
@@ -159,24 +167,24 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
-  add_grid();
+  // add_grid();
 
   mesh child_cube;
-  add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
+  // add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
 
   mesh child_cube_A;
-  add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
+  // add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
 
   mesh child_cube_B;
-  add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
+  // add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
 
   mesh parent_cube;
-  add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
+  // add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
 
-  mesh_add_child(&child_cube, &parent_cube);
-  mesh_add_child(&child_cube_A, &parent_cube);
-  mesh_add_child(&child_cube_B, &parent_cube);
-  scene_add_mesh(&main_scene, &parent_cube);
+  // mesh_add_child(&child_cube, &parent_cube);
+  // mesh_add_child(&child_cube_A, &parent_cube);
+  // mesh_add_child(&child_cube_B, &parent_cube);
+  //  scene_add_mesh(&main_scene, &parent_cube);
 
   import_cube();
 

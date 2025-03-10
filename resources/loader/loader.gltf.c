@@ -137,6 +137,7 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
     if (m > 0) {
       size_t new_child = mesh_add_child_empty(mesh);
       parent_mesh = mesh_get_child(mesh, new_child);
+      printf("Parent mesh:%p\n", parent_mesh);
     }
 
     // GLTF PRIMITIVES
@@ -146,7 +147,6 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
     // children maybe in the future we will need to create a dedicated array.
     // primitive 0 = parent, primitive n = child
     for (size_t p = 0; p < gl_mesh.primitives_count; p++) {
-
       // get accessors to decode buffers into typed data (vertex, indices...)
       // load vertex attributes
 
@@ -205,8 +205,8 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
         }
       }
 
-      // DELETEME: print_list_float(target_mesh.vertex.data,
-      // target_mesh.vertex.length, VERTEX_STRIDE);
+      // DELETEME: print_list_float(vert_attr.data,
+      // vert_attr.length, VERTEX_STRIDE);
 
       // load index
       vert_index = loader_gltf_index(&current_primitive);
@@ -219,10 +219,15 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       struct mesh *target_mesh = parent_mesh;
 
       // add child to parent mesh if current primitive > 0
+      char mesh_name[MESH_NAME_MAX_LENGTH];
+
       if (p > 0) {
         size_t new_child = mesh_add_child_empty(parent_mesh);
         struct mesh *child_mesh = mesh_get_child(parent_mesh, new_child);
         target_mesh = child_mesh;
+        snprintf(mesh_name, sizeof(mesh_name), "%s %lu", gl_mesh.name, p);
+      } else {
+        snprintf(mesh_name, sizeof(mesh_name), "%s", gl_mesh.name);
       }
 
       // dynamically define mesh attributes
@@ -230,6 +235,7 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       mesh_add_vertex_index(target_mesh, &vert_index);
       mesh_add_shader(target_mesh, &shader);
       mesh_add_parent(target_mesh, parent_mesh);
+      mesh_add_name(target_mesh, mesh_name);
     }
   }
 }
@@ -249,5 +255,6 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
       .device = device,
       .queue = queue,
   });
-  
+
+  // TODO: bind pbr related uniforms
 }

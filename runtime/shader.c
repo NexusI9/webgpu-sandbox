@@ -2,6 +2,8 @@
 #include "../backend/generator.h"
 #include "../utils/file.h"
 #include "camera.h"
+#include "string.h"
+#include "vertex.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <math.h>
@@ -25,11 +27,11 @@ shader shader_create(const ShaderCreateDescriptor *sd) {
   // define bind groups length
   shader.bind_groups.length = 0;
 
+  // set name
+  shader.name = strdup(sd->name);
+
   // set vertex layout
   set_vertex_layout(&shader);
-
-  // set name
-  shader.name = sd->name != NULL ? sd->name : "undefined";
 
   return shader;
 }
@@ -37,6 +39,8 @@ shader shader_create(const ShaderCreateDescriptor *sd) {
 // Define vertex layout to be used in pipeline
 void set_vertex_layout(shader *shader) {
 
+  printf("shader: %s\n", shader->name);
+  printf("set vertex layout\n");
   // set x,y,z
   shader->vertex.attribute[0] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
@@ -67,7 +71,7 @@ void set_vertex_layout(shader *shader) {
 
   // define layout from attributes above
   shader->vertex.layout = (WGPUVertexBufferLayout){
-      .arrayStride = 11 * sizeof(float),
+      .arrayStride = VERTEX_STRIDE * sizeof(float),
       .attributeCount = 4,
       .attributes = shader->vertex.attribute,
   };

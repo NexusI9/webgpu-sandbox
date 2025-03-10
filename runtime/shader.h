@@ -17,10 +17,10 @@
 // descriptors
 typedef struct {
   char *path;
-  const char *label;
+  char *label;
   WGPUDevice *device;
   WGPUQueue *queue;
-  const char *name;
+  char *name;
 } ShaderCreateDescriptor;
 
 // bind group
@@ -68,7 +68,7 @@ typedef struct {
 typedef struct {
   char *source; // shader source code
   WGPUShaderModule module;
-  const char *name;
+  char *name;
 
   // wgpu
   WGPUDevice *device;
