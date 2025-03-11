@@ -69,16 +69,16 @@ void init_scene() {
                  (vec3){0.0f, 0.0f, 0.0f});
 }
 
-mesh *add_cube(mesh *cube, vec3 position) {
+void add_cube(mesh *cube, vec3 position) {
 
   primitive cube_prim = primitive_cube();
 
-  *cube = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
-      .primitive = cube_prim,
-      .name = "cube",
-      .device = &main_renderer.wgpu.device,
-      .queue = &main_renderer.wgpu.queue,
-  });
+  mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
+                                  .primitive = cube_prim,
+                                  .name = "cube",
+                                  .device = &main_renderer.wgpu.device,
+                                  .queue = &main_renderer.wgpu.queue,
+                              });
 
   mesh_set_shader(cube,
                   &(ShaderCreateDescriptor){
@@ -92,8 +92,6 @@ mesh *add_cube(mesh *cube, vec3 position) {
   mesh_position(cube, position);
 
   mesh_bind_matrices(cube, &main_scene.camera, &main_scene.viewport, 0);
-
-  return cube;
 }
 
 void add_grid() {
@@ -106,13 +104,14 @@ void add_grid() {
 
   glm_vec4_copy((vec4){0.2f, 0.2f, 0.2f, 1.0f}, grid_uniform.color);
 
-  mesh grid = grid_create_mesh(&(GridCreateDescriptor){
-      .uniform = grid_uniform,
-      .camera = &main_scene.camera,
-      .viewport = &main_scene.viewport,
-      .device = &main_renderer.wgpu.device,
-      .queue = &main_renderer.wgpu.queue,
-  });
+  mesh grid;
+  grid_create_mesh(&grid, &(GridCreateDescriptor){
+                              .uniform = grid_uniform,
+                              .camera = &main_scene.camera,
+                              .viewport = &main_scene.viewport,
+                              .device = &main_renderer.wgpu.device,
+                              .queue = &main_renderer.wgpu.queue,
+                          });
 
   // add triangle to scene
   scene_add_mesh(&main_scene, &grid);
@@ -120,24 +119,21 @@ void add_grid() {
 
 void import_cube() {
 
-  mesh cube = mesh_create(&(MeshCreateDescriptor){
-      .name = "master_cube",
-      .device = &main_renderer.wgpu.device,
-      .queue = &main_renderer.wgpu.queue,
-  });
+  mesh cube;
+  mesh_create(&cube, &(MeshCreateDescriptor){
+                         .name = "master_cube",
+                         .device = &main_renderer.wgpu.device,
+                         .queue = &main_renderer.wgpu.queue,
+                     });
 
   loader_gltf_load(&cube, "./resources/assets/gltf/cube.gltf",
                    &(cgltf_options){0});
-
-  printf("<< GLTF DONE >>\n");
 
   // TODO: handle child bind
   mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 0);
   for (int c = 0; c < cube.children.length; c++)
     mesh_bind_matrices(&cube.children.items[c], &main_scene.camera,
                        &main_scene.viewport, 0);
-
-  print_mesh_tree(&cube, 0);
 
   scene_add_mesh(&main_scene, &cube);
 }
@@ -169,21 +165,21 @@ int main(int argc, const char *argv[]) {
   add_grid();
 
   mesh child_cube;
-  // add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
+  add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
 
   mesh child_cube_A;
-  // add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
+  add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
 
   mesh child_cube_B;
-  // add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
+  add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
 
   mesh parent_cube;
-  // add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
+  add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
 
-  // mesh_add_child(&child_cube, &parent_cube);
-  // mesh_add_child(&child_cube_A, &parent_cube);
-  // mesh_add_child(&child_cube_B, &parent_cube);
-  //  scene_add_mesh(&main_scene, &parent_cube);
+  mesh_add_child(&child_cube, &parent_cube);
+  mesh_add_child(&child_cube_A, &parent_cube);
+  mesh_add_child(&child_cube_B, &parent_cube);
+  scene_add_mesh(&main_scene, &parent_cube);
 
   import_cube();
 

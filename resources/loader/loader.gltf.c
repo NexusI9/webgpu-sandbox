@@ -240,8 +240,6 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       mesh_set_vertex_attribute(target_mesh, &vert_attr);
       mesh_set_vertex_index(target_mesh, &vert_index);
       mesh_set_parent(target_mesh, parent_mesh);
-
-      printf("%p: name: %s\n", target_mesh, target_mesh->name);
     }
   }
 }

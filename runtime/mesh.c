@@ -26,47 +26,44 @@ MeshUniform mesh_model_uniform(mesh *mesh) {
   return uModel;
 }
 
-mesh mesh_create(const MeshCreateDescriptor *md) {
-
-  mesh new_mesh;
+void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
-  mesh_set_name(&new_mesh, md->name);
+  mesh_set_name(mesh, md->name);
 
   // set wgpu
-  new_mesh.device = md->device;
-  new_mesh.queue = md->queue;
+  mesh->device = md->device;
+  mesh->queue = md->queue;
 
   // set vertices
   if (md->vertex.length > 0)
-    mesh_set_vertex_attribute(&new_mesh, &md->vertex);
+    mesh_set_vertex_attribute(mesh, &md->vertex);
 
   // set indexes
   if (md->index.length > 0)
-    mesh_set_vertex_index(&new_mesh, &md->index);
+    mesh_set_vertex_index(mesh, &md->index);
 
   // TODO: uniformise shader creation (ref || value)
-  new_mesh.shader = md->shader;
+  mesh->shader = md->shader;
 
   // init model matrix
-  glm_mat4_identity(new_mesh.model);
+  glm_mat4_identity(mesh->model);
 
   // init child list
-  new_mesh.children.length = 0;
-  new_mesh.children.capacity = 0;
-  new_mesh.children.items = NULL;
-
-  return new_mesh;
+  mesh->children.length = 0;
+  mesh->children.capacity = 0;
+  mesh->children.items = NULL;
 }
 
-mesh mesh_create_primitive(const MeshCreatePrimitiveDescriptor *md) {
-  return mesh_create(&(MeshCreateDescriptor){
-      .queue = md->queue,
-      .device = md->device,
-      .index = md->primitive.index,
-      .vertex = md->primitive.vertex,
-      .name = md->name,
-  });
+void mesh_create_primitive(mesh *mesh,
+                           const MeshCreatePrimitiveDescriptor *md) {
+  mesh_create(mesh, &(MeshCreateDescriptor){
+                        .queue = md->queue,
+                        .device = md->device,
+                        .index = md->primitive.index,
+                        .vertex = md->primitive.vertex,
+                        .name = md->name,
+                    });
 }
 
 void mesh_set_vertex_attribute(mesh *mesh, const vertex_attribute *attributes) {
@@ -304,10 +301,12 @@ size_t mesh_add_child_empty(mesh *mesh) {
 
   // add empty mesh, still need to initialize it before adding
   // this ensure proper init array
-  struct mesh temp_mesh = mesh_create(&(MeshCreateDescriptor){
-      .device = mesh->device,
-      .queue = mesh->queue,
-  });
+  struct mesh temp_mesh;
+  
+  mesh_create(&temp_mesh, &(MeshCreateDescriptor){
+                              .device = mesh->device,
+                              .queue = mesh->queue,
+                          });
 
   return mesh_add_child(&temp_mesh, mesh);
 }

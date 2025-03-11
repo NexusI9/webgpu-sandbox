@@ -1,36 +1,35 @@
 #include "grid.h"
 #include "../primitive/plane.h"
 
-mesh grid_create_mesh(GridCreateDescriptor *gd) {
+void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
   primitive plane = primitive_plane();
 
-  mesh grid_mesh = mesh_create_primitive(&(MeshCreatePrimitiveDescriptor){
-      .name = "grid",
-      .queue = gd->queue,
-      .device = gd->device,
-      .primitive = plane,
-  });
+  mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
+                                  .name = "grid",
+                                  .queue = gd->queue,
+                                  .device = gd->device,
+                                  .primitive = plane,
+                              });
 
-  mesh_set_shader(&grid_mesh,
-                  &(ShaderCreateDescriptor){
-                      .path = "./runtime/assets/shader/shader.grid.wgsl",
-                      .label = "grid",
-                      .name = "grid",
-                      .device = gd->device,
-                      .queue = gd->queue,
-                  });
+  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
+                            .path = "./runtime/assets/shader/shader.grid.wgsl",
+                            .label = "grid",
+                            .name = "grid",
+                            .device = gd->device,
+                            .queue = gd->queue,
+                        });
 
-  mesh_scale(&grid_mesh, (vec3){
-                             gd->uniform.size,
-                             gd->uniform.size,
-                             gd->uniform.size,
-                         });
+  mesh_scale(mesh, (vec3){
+                       gd->uniform.size,
+                       gd->uniform.size,
+                       gd->uniform.size,
+                   });
 
   // bind camera and viewport
   // NOTE: binding groups shall be created in order (0 first, then 1)
 
-  mesh_bind_matrices(&grid_mesh, gd->camera, gd->viewport, 0);
+  mesh_bind_matrices(mesh, gd->camera, gd->viewport, 0);
 
   ShaderBindGroupEntry grid_entries[1] = {
       {
@@ -41,14 +40,11 @@ mesh grid_create_mesh(GridCreateDescriptor *gd) {
       },
   };
 
-  shader_add_uniform(
-      &grid_mesh.shader,
-      &(ShaderCreateUniformDescriptor){
-          .group_index = 1,
-          .entry_count = 1,
-          .entries = grid_entries,
-          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-      });
-
-  return grid_mesh;
+  shader_add_uniform(&mesh->shader, &(ShaderCreateUniformDescriptor){
+                                        .group_index = 1,
+                                        .entry_count = 1,
+                                        .entries = grid_entries,
+                                        .visibility = WGPUShaderStage_Vertex |
+                                                      WGPUShaderStage_Fragment,
+                                    });
 }

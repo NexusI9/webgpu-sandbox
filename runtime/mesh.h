@@ -83,8 +83,8 @@ typedef struct mesh {
 
 } mesh;
 
-mesh mesh_create(const MeshCreateDescriptor *);
-mesh mesh_create_primitive(const MeshCreatePrimitiveDescriptor *);
+void mesh_create(mesh *, const MeshCreateDescriptor *);
+void mesh_create_primitive(mesh *, const MeshCreatePrimitiveDescriptor *);
 
 void mesh_set_vertex_attribute(mesh *, const vertex_attribute *);
 void mesh_set_vertex_index(mesh *, const vertex_index *);
