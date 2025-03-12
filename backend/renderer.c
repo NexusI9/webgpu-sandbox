@@ -105,7 +105,7 @@ void renderer_draw(const renderer *renderer, scene *scene) {
                   .view = back_buffer,
                   .loadOp = WGPULoadOp_Clear,
                   .storeOp = WGPUStoreOp_Store,
-                  .clearValue = (WGPUColor){0.2f, 0.2f, 0.3f, 1.0f},
+                  .clearValue = (WGPUColor){0.15f, 0.15f, 0.18f, 1.0f},
                   .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED},
       });
 

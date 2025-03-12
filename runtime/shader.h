@@ -64,6 +64,30 @@ typedef struct {
   WGPUShaderStageFlags visibility;
 } ShaderCreateUniformDescriptor;
 
+// pbr uniforms
+typedef struct {
+  WGPUSampler sampler;
+  WGPUTexture texture;
+} ShaderTexture;
+
+typedef struct {
+  vec4 diffuse_factor;
+  float metallic_factor;
+  float roughness_factor;
+  float occlusion_factor;
+  float normalScale;
+  vec3 emissive_factor;
+  float _padding;
+} ShaderPBRUniform;
+
+typedef struct {
+  ShaderTexture diffuse;
+  ShaderTexture metallic;
+  ShaderTexture normal;
+  ShaderTexture occlusion;
+  ShaderTexture emissive;
+} ShaderPBRTextures;
+
 // core
 typedef struct {
   char *source; // shader source code

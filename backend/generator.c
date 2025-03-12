@@ -31,3 +31,5 @@ WGPUBuffer create_buffer(const CreateBufferDescriptor *bf) {
   wgpuQueueWriteBuffer(*bf->queue, buffer, 0, bf->data, bf->size);
   return buffer;
 }
+
+ShaderTexture create_texture(const CreateTextureDescriptor *tx) {}

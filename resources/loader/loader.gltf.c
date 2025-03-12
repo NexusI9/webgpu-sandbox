@@ -1,16 +1,19 @@
-#include "limits.h"
-#include <stddef.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#define CGLTF_IMPLEMENTATION
+#include "loader.gltf.h"
 #include "../include/cglm/vec2.h"
 #include "../include/cglm/vec3.h"
 #include "../include/cglm/vec4.h"
 #include "../runtime/vertex.h"
 #include "../utils/system.h"
-#include "loader.gltf.h"
+#define CGLTF_IMPLEMENTATION
+#include "cgltf/cgltf.h"
+#include "limits.h"
+#include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
 
 static void loader_gltf_create_mesh(mesh *, cgltf_data *);
 static void loader_gltf_create_shader(shader *, WGPUDevice *, WGPUQueue *,
@@ -24,6 +27,8 @@ static void loader_gltf_init_vertex_lists(vertex_attribute *, vertex_list *,
 static float *loader_gltf_attributes(cgltf_accessor *);
 static void loader_gltf_accessor_to_array(cgltf_accessor *, float *, uint8_t);
 static vertex_index loader_gltf_index(cgltf_primitive *);
+static void loader_gltf_bind_uniforms(shader *, cgltf_material *);
+static void loader_gltf_extract_texture(ShaderTexture *, cgltf_texture_view *);
 
 void loader_gltf_load(mesh *mesh, const char *path,
                       const cgltf_options *options) {
@@ -219,14 +224,14 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
         size_t new_child = mesh_add_child_empty(parent_mesh);
         struct mesh *child_mesh = mesh_get_child(parent_mesh, new_child);
         target_mesh = child_mesh;
-	
+
         // need to dynamically allocate name
-	// iteration use same frame stack
-	// meaning addresses will be reused throughout the loop
-	// this leads the latest mesh name (pointer) -
-	// to be shared accross all children mesh
-	// (same issue with shader)
-	
+        // iteration use same frame stack
+        // meaning addresses will be reused throughout the loop
+        // this leads the latest mesh name (pointer) -
+        // to be shared accross all children mesh
+        // (same issue with shader)
+
         asprintf(&target_mesh->name, "%s %lu", gl_mesh.name, p);
       } else {
         asprintf(&target_mesh->name, "%s", gl_mesh.name);
@@ -260,4 +265,64 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
                         });
 
   // TODO: bind pbr related uniforms
+  loader_gltf_bind_uniforms(shader, material);
+}
+
+void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
+
+  // store the texture_views (hold pointer to actual texture + other data)
+  ShaderPBRTextures shader_texture;
+
+  // diffuse
+  loader_gltf_extract_texture(
+      &shader_texture.diffuse,
+      &material->pbr_metallic_roughness.base_color_texture);
+
+  // metallic
+  loader_gltf_extract_texture(
+      &shader_texture.metallic,
+      &material->pbr_metallic_roughness.metallic_roughness_texture);
+
+  // normal
+  loader_gltf_extract_texture(&shader_texture.normal,
+                              &material->normal_texture);
+
+  // occlusion
+  loader_gltf_extract_texture(&shader_texture.occlusion,
+                              &material->occlusion_texture);
+
+  // emissive
+  loader_gltf_extract_texture(&shader_texture.emissive,
+                              &material->emissive_texture);
+}
+
+void loader_gltf_extract_texture(ShaderTexture *shader_texture,
+                                 cgltf_texture_view *texture_view) {
+
+  if (texture_view->texture) {
+
+    // extract textures from texture_view
+    // 1. if uri => load image
+    // 2. if buffer_view => store buffer & size
+    cgltf_image *image = texture_view->texture->image;
+    int width, height, channels;
+    if (image->buffer_view) {
+      cgltf_decode_uri(image->uri);
+      unsigned char *image_data =
+          (unsigned char *)image->buffer_view->buffer->data +
+          image->buffer_view->offset;
+
+      int stb_data =
+          stbi_info_from_memory(image_data, image->buffer_view->buffer->size,
+                                &width, &height, &channels);
+
+      printf("Texture width: %d, height: %d, channel:%d\n", width, height,
+             channels);
+    } else {
+      printf("Loader GLTF: Texture found but couldn't be loaded\n");
+    }
+
+  } else {
+    printf("Loader GLTF: Couldn't find texture\n");
+  }
 }
