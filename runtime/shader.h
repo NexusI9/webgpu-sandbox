@@ -31,12 +31,13 @@ typedef void (*UpdateCallback)(void *callback_data, void *entry_data);
 
 typedef struct {
   uint32_t binding;
-  WGPUBuffer buffer;
   uint64_t size;
   uint64_t offset;
   void *data;
   UpdateCallback update_callback;
   void *update_data;
+  // private
+  WGPUBuffer buffer;
 } ShaderBindGroupEntry;
 
 typedef struct {
@@ -75,7 +76,7 @@ typedef struct {
   float metallic_factor;
   float roughness_factor;
   float occlusion_factor;
-  float normalScale;
+  float normal_scale;
   vec3 emissive_factor;
   float _padding;
 } ShaderPBRUniform;

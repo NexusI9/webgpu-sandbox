@@ -1,5 +1,5 @@
 #include "mesh.h"
-#include "../backend/generator.h"
+#include "../backend/buffer.h"
 #include "../include/cglm/euler.h"
 #include "../include/cglm/quat.h"
 #include "../utils/system.h"
@@ -113,13 +113,14 @@ void mesh_create_vertex_buffer(mesh *mesh,
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue "), exit(0);
 
-  mesh->buffer.vertex = create_buffer(&(CreateBufferDescriptor){
-      .queue = mesh->queue,
-      .device = mesh->device,
-      .data = (void *)bd->data,
-      .size = bd->size,
-      .usage = WGPUBufferUsage_Vertex,
-  });
+  buffer_create(&mesh->buffer.vertex, &(CreateBufferDescriptor){
+                                          .queue = mesh->queue,
+                                          .device = mesh->device,
+                                          .data = (void *)bd->data,
+                                          .size = bd->size,
+                                          .usage = WGPUBufferUsage_Vertex,
+                                          .mappedAtCreation = false,
+                                      });
 }
 
 // send index data to GPU
@@ -129,13 +130,14 @@ void mesh_create_index_buffer(mesh *mesh,
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue"), exit(0);
 
-  mesh->buffer.index = create_buffer(&(CreateBufferDescriptor){
-      .queue = mesh->queue,
-      .device = mesh->device,
-      .data = (void *)bd->data,
-      .size = bd->size,
-      .usage = WGPUBufferUsage_Index,
-  });
+  buffer_create(&mesh->buffer.index, &(CreateBufferDescriptor){
+                                         .queue = mesh->queue,
+                                         .device = mesh->device,
+                                         .data = (void *)bd->data,
+                                         .size = bd->size,
+                                         .usage = WGPUBufferUsage_Index,
+                                         .mappedAtCreation = false,
+                                     });
 }
 
 void mesh_build(mesh *mesh) {
@@ -252,7 +254,15 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
                                         .entry_count = 3,
                                         .visibility = WGPUShaderStage_Vertex |
                                                       WGPUShaderStage_Fragment,
-                                        .entries = entries});
+                                        .entries = entries,
+                                    });
+
+  if (mesh->children.items != NULL) {
+    for (size_t c = 0; c < mesh->children.length; c++) {
+      mesh_bind_matrices(&mesh->children.items[c], camera, viewport,
+                         group_index);
+    }
+  }
 }
 
 size_t mesh_add_child(mesh *child, mesh *dest) {
@@ -302,7 +312,7 @@ size_t mesh_add_child_empty(mesh *mesh) {
   // add empty mesh, still need to initialize it before adding
   // this ensure proper init array
   struct mesh temp_mesh;
-  
+
   mesh_create(&temp_mesh, &(MeshCreateDescriptor){
                               .device = mesh->device,
                               .queue = mesh->queue,

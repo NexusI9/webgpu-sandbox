@@ -17,7 +17,7 @@
 #include "utils/file.h"
 
 #include "backend/clock.h"
-#include "backend/generator.h"
+#include "backend/buffer.h"
 #include "backend/renderer.h"
 
 #include "resources/loader/loader.gltf.h"
@@ -130,10 +130,7 @@ void import_cube() {
                    &(cgltf_options){0});
 
   // TODO: handle child bind
-  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 0);
-  for (int c = 0; c < cube.children.length; c++)
-    mesh_bind_matrices(&cube.children.items[c], &main_scene.camera,
-                       &main_scene.viewport, 0);
+  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 1);
 
   scene_add_mesh(&main_scene, &cube);
 }

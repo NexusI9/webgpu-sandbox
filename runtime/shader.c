@@ -1,5 +1,5 @@
 #include "shader.h"
-#include "../backend/generator.h"
+#include "../backend/buffer.h"
 #include "../utils/file.h"
 #include "camera.h"
 #include "string.h"
@@ -19,7 +19,7 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
   store_file(&shader->source, sd->path);
 
   // compile shader module intro GPU device
-  shader->module = create_shader(sd->device, shader->source, sd->label);
+  buffer_create_shader(&shader->module, sd->device, shader->source, sd->label);
   shader->device = sd->device;
   shader->queue = sd->queue;
 
@@ -317,13 +317,16 @@ void shader_add_uniform(shader *shader,
       ShaderBindGroupEntry *current_entry = &bd->entries[i];
 
       // assign buffer to entry
-      bd->entries[i].buffer = create_buffer(&(CreateBufferDescriptor){
-          .queue = shader->queue,
-          .device = shader->device,
-          .data = (void *)current_entry->data,
-          .size = current_entry->size,
-          .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
-      });
+      buffer_create(
+          &bd->entries[i].buffer,
+          &(CreateBufferDescriptor){
+              .queue = shader->queue,
+              .device = shader->device,
+              .data = (void *)current_entry->data,
+              .size = current_entry->size,
+              .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
+              .mappedAtCreation = false,
+          });
 
       // transfer entry to shader bind group list
       current_bind_group->entries.items[i] = bd->entries[i];
