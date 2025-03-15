@@ -178,7 +178,7 @@ int main(int argc, const char *argv[]) {
   mesh_add_child(&child_cube_B, &parent_cube);
   scene_add_mesh(&main_scene, &parent_cube);
 
-  import_cube();
+  //import_cube();
 
   // Update Loop
   renderer_set_draw(draw);

@@ -341,11 +341,11 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
       {.binding = 5, .texture_view = shader_texture.emissive.texture_view},
   };
 
-  shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
+  /*shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
                                  .group_index = 0,
                                  .entry_count = 5,
                                  .entries = texture_entries,
-                             });
+				 });*/
 }
 
 uint8_t loader_gltf_extract_texture(ShaderTexture *shader_texture,

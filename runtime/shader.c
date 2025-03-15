@@ -1,6 +1,7 @@
 #include "shader.h"
 #include "../backend/buffer.h"
 #include "../utils/file.h"
+#include "../utils/system.h"
 #include "camera.h"
 #include "string.h"
 #include "vertex.h"
@@ -9,14 +10,15 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static void shader_module_release(shader *);
 static void shader_set_vertex_layout(shader *);
 static ShaderBindGroup *shader_get_bind_group(shader *, size_t);
 static bool shader_validate_binding(shader *);
-static void shader_build_layout(shader *);
-static void shader_build_pipeline(shader *);
-static void shader_build_bind(shader *);
+static WGPUBindGroupLayout *shader_build_layout(shader *);
+static void shader_build_pipeline(shader *, WGPUBindGroupLayout *);
+static void shader_build_bind(shader *, WGPUBindGroupLayout *);
 
 void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 
@@ -87,17 +89,29 @@ static void shader_pipeline_release(shader *shader) {
   wgpuPipelineLayoutRelease(shader->pipeline.layout);
 }
 
-// TODO: split the steps into distincts function (layout / create / bind)
 void shader_build(shader *shader) {
 
   // clear pipeline if existing
+  VERBOSE_PRINT("Building Shader: %s\n", shader->name);
 
   if (shader->pipeline.handle)
     shader_pipeline_clear(shader);
 
   // build bind group entries for each individual group index
 
-  WGPUBindGroupLayout bindgroup_layouts[shader->bind_groups.length];
+  WGPUBindGroupLayout *bindgroup_layouts = shader_build_layout(shader);
+  shader_build_pipeline(shader, bindgroup_layouts);
+  shader_build_bind(shader, bindgroup_layouts);
+
+  shader_pipeline_release(shader);
+  shader_module_release(shader);
+  free(bindgroup_layouts);
+}
+
+WGPUBindGroupLayout *shader_build_layout(shader *shader) {
+
+  WGPUBindGroupLayout *layout_list = (WGPUBindGroupLayout *)malloc(
+      shader->bind_groups.length * sizeof(WGPUBindGroupLayout));
 
   // go through shader bind groups
   for (int i = 0; i < shader->bind_groups.length; i++) {
@@ -105,7 +119,9 @@ void shader_build(shader *shader) {
     ShaderBindGroupUniforms *current_entries =
         &shader->bind_groups.items[i].uniforms;
 
-    WGPUBindGroupLayoutEntry entries[current_entries->length];
+    // WGPUBindGroupLayoutEntry entries[current_entries->length];
+    WGPUBindGroupLayoutEntry *entries = (WGPUBindGroupLayoutEntry *)malloc(
+        current_entries->length * sizeof(WGPUBindGroupLayoutEntry));
 
     // go through each groups entries
     for (int j = 0; j < current_entries->length; j++) {
@@ -120,19 +136,26 @@ void shader_build(shader *shader) {
       };
     }
 
-    bindgroup_layouts[i] = wgpuDeviceCreateBindGroupLayout(
+    layout_list[i] = wgpuDeviceCreateBindGroupLayout(
         *shader->device, &(WGPUBindGroupLayoutDescriptor){
                              .entryCount = current_entries->length,
                              // bind group layout entry
                              .entries = entries,
                          });
+
+    free(entries);
   }
+
+  return layout_list;
+}
+
+void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
 
   shader->pipeline.layout = wgpuDeviceCreatePipelineLayout(
       *shader->device, &(WGPUPipelineLayoutDescriptor){
                            // total bind groups count
                            .bindGroupLayoutCount = shader->bind_groups.length,
-                           .bindGroupLayouts = bindgroup_layouts,
+                           .bindGroupLayouts = layout,
                            .label = shader->name,
                        });
 
@@ -193,12 +216,16 @@ void shader_build(shader *shader) {
           .depthStencil = NULL,
 
       });
+}
+
+void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
 
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
     ShaderBindGroup *current_bind_group = &shader->bind_groups.items[i];
 
-    WGPUBindGroupEntry converted_entries[current_bind_group->uniforms.length];
+    WGPUBindGroupEntry *converted_entries = (WGPUBindGroupEntry *)malloc(
+        current_bind_group->uniforms.length * sizeof(WGPUBindGroupEntry));
 
     // map shader bind group entry to WGPU bind group entry
     // (basically the same just without data and callback attributes)
@@ -226,11 +253,10 @@ void shader_build(shader *shader) {
     current_bind_group->bind_group = bind_group;
 
     // release layouts
-    wgpuBindGroupLayoutRelease(bindgroup_layouts[i]);
-  }
+    wgpuBindGroupLayoutRelease(layouts[i]);
 
-  shader_pipeline_release(shader);
-  shader_module_release(shader);
+    free(converted_entries);
+  }
 }
 
 void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
