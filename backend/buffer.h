@@ -26,6 +26,5 @@ typedef struct {
 void buffer_create_shader(WGPUShaderModule *, const WGPUDevice *, char *,
                           const char *);
 void buffer_create(WGPUBuffer *, const CreateBufferDescriptor *);
-void buffer_create_texture(ShaderBindGroupTextureEntry *,
-                           const CreateTextureDescriptor *);
+void buffer_create_texture(WGPUTextureView *, const CreateTextureDescriptor *);
 #endif

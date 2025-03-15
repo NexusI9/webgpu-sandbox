@@ -11,12 +11,17 @@
 #define SHADER_MAX_BIND_GROUP 12
 
 #define SHADER_MAX_UNIFORMS 12
-#define SHADER_MAX_TEXTURES 6
-#define SHADER_MAX_SAMPLERS 6
+#define SHADER_UNIFORMS_DEFAULT_CAPACITY 8
 
 #include "camera.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
+
+typedef enum {
+  UNIFORM,
+  TEXTURE,
+  SAMPLER,
+} ShaderUniformType;
 
 // descriptors
 typedef struct {
@@ -50,10 +55,18 @@ typedef struct {
   int height;
   unsigned char *data;
   size_t size;
+  // private
+  WGPUTextureView texture_view;
 } ShaderBindGroupTextureEntry;
 
 typedef struct {
   uint32_t binding;
+  WGPUAddressMode addressModeU;
+  WGPUAddressMode addressModeV;
+  WGPUAddressMode addressModeW;
+  WGPUFilterMode minFilter;
+  WGPUFilterMode magFilter;
+  // private
   WGPUSampler sampler;
 } ShaderBindGroupSamplerEntry;
 
@@ -64,12 +77,14 @@ typedef struct {
 } ShaderBindGroupUniforms;
 
 typedef struct {
-  ShaderBindGroupTextureEntry items[SHADER_MAX_TEXTURES];
+  ShaderBindGroupTextureEntry *items;
+  size_t capacity;
   size_t length;
 } ShaderBindGroupTextures;
 
 typedef struct {
-  ShaderBindGroupSamplerEntry items[SHADER_MAX_SAMPLERS];
+  ShaderBindGroupSamplerEntry *items;
+  size_t capacity;
   size_t length;
 } ShaderBindGroupSamplers;
 

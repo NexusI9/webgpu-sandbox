@@ -91,12 +91,12 @@ void renderer_draw(const renderer *renderer, scene *scene) {
       wgpuSwapChainGetCurrentTextureView(renderer->wgpu.swapchain);
 
   // create command encoder
-  WGPUCommandEncoder cmd_encoder =
+  WGPUCommandEncoder render_encoder =
       wgpuDeviceCreateCommandEncoder(renderer->wgpu.device, NULL);
 
   // begin render pass
   WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(
-      cmd_encoder,
+      render_encoder,
       &(WGPURenderPassDescriptor){
           // color attachments
           .colorAttachmentCount = 1,
@@ -116,16 +116,16 @@ void renderer_draw(const renderer *renderer, scene *scene) {
   wgpuRenderPassEncoderEnd(render_pass);
 
   // create command buffer
-  WGPUCommandBuffer cmd_buffer =
-      wgpuCommandEncoderFinish(cmd_encoder, NULL); // after 'end render pass'
+  WGPUCommandBuffer render_buffer =
+      wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
 
   // submit commands
-  wgpuQueueSubmit(renderer->wgpu.queue, 1, &cmd_buffer);
+  wgpuQueueSubmit(renderer->wgpu.queue, 1, &render_buffer);
 
   // release all
   wgpuRenderPassEncoderRelease(render_pass);
-  wgpuCommandEncoderRelease(cmd_encoder);
-  wgpuCommandBufferRelease(cmd_buffer);
+  wgpuCommandEncoderRelease(render_encoder);
+  wgpuCommandBufferRelease(render_buffer);
   wgpuTextureViewRelease(back_buffer);
 
   // update clock delta

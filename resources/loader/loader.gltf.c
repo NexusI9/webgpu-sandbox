@@ -303,8 +303,8 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
 
   // 2. bind pbdr textures
   // store the texture_views (hold pointer to actual texture + other data)
-  /*
-    uint8_t texture_length = 5;
+
+  uint8_t texture_length = 5;
   cgltf_texture_view *texture_view_list[] = {
       &material->pbr_metallic_roughness.base_color_texture,
       &material->pbr_metallic_roughness.metallic_roughness_texture,
@@ -312,76 +312,91 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
       &material->occlusion_texture,
       &material->emissive_texture,
   };
-  ShaderBindGroupTextureEntry *texture_list[texture_length];
+  ShaderBindGroupTextureEntry texture_list[texture_length];
   ShaderBindGroupTextureEntry texture_entries[texture_length];
+  ShaderBindGroupSamplerEntry sampler_entries[texture_length];
 
   for (int t = 0; t < texture_length; t++) {
-    loader_gltf_extract_texture(texture_view_list[t], texture_list[t]);
+    loader_gltf_extract_texture(texture_view_list[t], &texture_list[t]);
+    // create texture entries
     texture_entries[t] = (ShaderBindGroupTextureEntry){
         .binding = t + 1,
-        .data = texture_list[t]->data,
-        .size = texture_list[t]->size,
-        .width = texture_list[t]->width,
-        .height = texture_list[t]->height,
+        .data = texture_list[t].data,
+        .size = texture_list[t].size,
+        .width = texture_list[t].width,
+        .height = texture_list[t].height,
+    };
+
+    // create sampler entries
+    sampler_entries[t] = (ShaderBindGroupSamplerEntry){
+        .addressModeU = WGPUAddressMode_ClampToEdge,
+        .addressModeV = WGPUAddressMode_ClampToEdge,
+        .addressModeW = WGPUAddressMode_ClampToEdge,
+        .minFilter = WGPUFilterMode_Linear,
+        .magFilter = WGPUFilterMode_Linear,
     };
   }
 
+  // send texture + sampler to shader
   shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
                                  .group_index = 0,
                                  .entry_count = texture_length,
                                  .entries = texture_entries,
                              });
-  */
+
+  shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){
+                                 .group_index = 0,
+                                 .entry_count = texture_length,
+                                 .entries = sampler_entries,
+                             });
 }
 
 uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
                                     ShaderBindGroupTextureEntry *shader_entry) {
-  /*
-    if (texture_view->texture) {
-      // extract textures from texture_view
-      // 1. if uri => load image (TODO)
-      // 2. if buffer_view => store buffer & size
-      cgltf_image *image = texture_view->texture->image;
-      int width, height, channels;
-      if (image->buffer_view) {
-        cgltf_decode_uri(image->uri);
-        shader_entry->size = image->buffer_view->buffer->size;
-        shader_entry->data = (unsigned char *)image->buffer_view->buffer->data +
-                             image->buffer_view->offset;
 
-        int stb_data = stbi_info_from_memory(
-            shader_entry->data, shader_entry->size, &shader_entry->width,
-            &shader_entry->height, &channels);
+  if (texture_view->texture) {
+    // extract textures from texture_view
+    // 1. if uri => load image (TODO)
+    // 2. if buffer_view => store buffer & size
+    cgltf_image *image = texture_view->texture->image;
+    int width, height, channels;
+    if (image->buffer_view) {
+      cgltf_decode_uri(image->uri);
+      shader_entry->size = image->buffer_view->buffer->size;
+      shader_entry->data = (unsigned char *)image->buffer_view->buffer->data +
+                           image->buffer_view->offset;
 
-        return 1;
+      int stb_data = stbi_info_from_memory(
+          shader_entry->data, shader_entry->size, &shader_entry->width,
+          &shader_entry->height, &channels);
 
-      } else {
-        VERBOSE_PRINT(
-            "Loader GLTF: Texture found but couldn't be loaded, loading "
-            "default texture\n");
-        loader_gltf_load_fallback_texture(shader_entry);
-        return 0;
-      }
+      return 1;
 
     } else {
       VERBOSE_PRINT(
-          "Loader GLTF: Couldn't find texture, loading default texture\n");
+          "Loader GLTF: Texture found but couldn't be loaded, loading "
+          "default texture\n");
       loader_gltf_load_fallback_texture(shader_entry);
       return 0;
     }
-  */
+
+  } else {
+    VERBOSE_PRINT(
+        "Loader GLTF: Couldn't find texture, loading default texture\n");
+    loader_gltf_load_fallback_texture(shader_entry);
+    return 0;
+  }
 
   return 0;
 }
 
 void loader_gltf_load_fallback_texture(
     ShaderBindGroupTextureEntry *shader_entry) {
-  /*
-uint8_t black_pixel[4] = {0, 0, 0, 255};
 
-shader_entry->data = black_pixel;
-shader_entry->width = 1;
-shader_entry->height = 1;
-shader_entry->size = sizeof(black_pixel);
-  */
+  uint8_t black_pixel[4] = {0, 0, 0, 255};
+
+  shader_entry->data = black_pixel;
+  shader_entry->width = 1;
+  shader_entry->height = 1;
+  shader_entry->size = sizeof(black_pixel);
 }

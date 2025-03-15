@@ -27,7 +27,7 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
                        .mappedAtCreation = bf->mappedAtCreation,
                    });
 
-  /*
+  /*NOTE:
     Mapped at Creation
 
     Map the buffer directly to the memory
@@ -50,85 +50,73 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
   wgpuQueueWriteBuffer(*bf->queue, *buffer, 0, bf->data, bf->size);
 }
 
-void buffer_create_texture(ShaderBindGroupTextureEntry *shader_texture,
+void buffer_create_texture(WGPUTextureView *texture_view,
                            const CreateTextureDescriptor *tx) {
 
-  /*
-// sample + texture (ShaderTexture will be used later in the shader binding
-// process)
+  // sample + texture (ShaderTexture will be used later in the shader binding
+  // process)
 
-// create sampler
-// TODO: eventually remove sampler from shadertexture if static arguments
-// cause we could simply use it during the binding process
-shader_texture->sampler = wgpuDeviceCreateSampler(
-    *tx->device, &(WGPUSamplerDescriptor){
-                     .addressModeU = WGPUAddressMode_ClampToEdge,
-                     .addressModeV = WGPUAddressMode_ClampToEdge,
-                     .addressModeW = WGPUAddressMode_ClampToEdge,
-                     .minFilter = WGPUFilterMode_Linear,
-                     .magFilter = WGPUFilterMode_Linear,
-                 });
+  // create GPU texture handle (used for binding as texture view argument/
+  // "texture gpu reference")
+  WGPUTexture texture = wgpuDeviceCreateTexture(
+      *tx->device,
+      &(WGPUTextureDescriptor){
+          .size =
+              {
+                  .width = tx->width,
+                  .height = tx->height,
+                  .depthOrArrayLayers = 1,
+              },
+          .format = WGPUTextureFormat_RGBA8Uint,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+          .dimension = WGPUTextureDimension_2D,
+          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+      });
 
-// create GPU texture handle (used for binding as texture view argument/
-// "texture gpu reference")
-shader_texture->texture = wgpuDeviceCreateTexture(
-    *tx->device,
-    &(WGPUTextureDescriptor){
-        .size =
-            {
-                .width = tx->width,
-                .height = tx->height,
-                .depthOrArrayLayers = 1,
-            },
-        .format = WGPUTextureFormat_RGBA8Uint,
-        .mipLevelCount = 1,
-        .sampleCount = 1,
-        .dimension = WGPUTextureDimension_2D,
-        .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-    });
+  // create stagging buffer (CPU 2 GPU)
+  WGPUBuffer stagging_buffer;
+  buffer_create(&stagging_buffer, &(CreateBufferDescriptor){
+                                      .device = tx->device,
+                                      .queue = tx->queue,
+                                      .data = tx->data,
+                                      .mappedAtCreation = true,
+                                      .size = tx->size,
+                                  });
 
-// create stagging buffer (CPU 2 GPU)
-WGPUBuffer stagging_buffer;
-buffer_create(&stagging_buffer, &(CreateBufferDescriptor){
-                                    .device = tx->device,
-                                    .queue = tx->queue,
-                                    .data = tx->data,
-                                    .mappedAtCreation = true,
-                                    .size = tx->size,
-                                });
+  // Encoder records GPU operations:
+  // - Texture upload
+  // - Buffer upload
+  // - Render passes
+  // - Compute passes
+  WGPUCommandEncoder encoder =
+      wgpuDeviceCreateCommandEncoder(*tx->device, NULL);
 
-// Encoder records GPU operations:
-// - Texture upload
-// - Buffer upload
-// - Render passes
-// - Compute passes
-WGPUCommandEncoder encoder =
-    wgpuDeviceCreateCommandEncoder(*tx->device, NULL);
+  wgpuCommandEncoderCopyBufferToTexture(
+      encoder,
+      // Source buffer where image data is stored in CPU memory.
+      &(WGPUImageCopyBuffer){
+          .buffer = stagging_buffer,
+          .layout =
+              {
+                  .offset = 0,
+                  .bytesPerRow = tx->width * 4,
+                  .rowsPerImage = tx->height,
+              },
+      },
+      // Destination texture in GPU memory.
+      &(WGPUImageCopyTexture){
+          .texture = texture,
+          .mipLevel = 0,
+          .origin = {0, 0, 0},
+          .aspect = WGPUTextureAspect_All,
+      },
+      // Size (width, height, depth) of the copied region.
+      &(WGPUExtent3D){tx->width, tx->height, 1});
 
-wgpuCommandEncoderCopyBufferToTexture(
-    encoder,
-    // Source buffer where image data is stored in CPU memory.
-    &(WGPUImageCopyBuffer){
-        .buffer = stagging_buffer,
-        .layout =
-            {
-                .offset = 0,
-                .bytesPerRow = tx->width * 4,
-                .rowsPerImage = tx->height,
-            },
-    },
-    // Destination texture in GPU memory.
-    &(WGPUImageCopyTexture){
-        .texture = shader_texture->texture,
-        .mipLevel = 0,
-        .origin = {0, 0, 0},
-        .aspect = WGPUTextureAspect_All,
-    },
-    // Size (width, height, depth) of the copied region.
-    &(WGPUExtent3D){tx->width, tx->height, 1});
+  WGPUCommandBuffer commandBuffer = wgpuCommandEncoderFinish(encoder, NULL);
+  wgpuQueueSubmit(*tx->queue, 1, &commandBuffer);
 
-WGPUCommandBuffer commandBuffer = wgpuCommandEncoderFinish(encoder, NULL);
-wgpuQueueSubmit(*tx->queue, 1, &commandBuffer);
-
-*/
+  // create texture view (used in binding process)
+  *texture_view = wgpuTextureCreateView(texture, NULL);
 }
