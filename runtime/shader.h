@@ -10,6 +10,10 @@
 #define SHADER_BIND_VIEWPORT 1
 #define SHADER_MAX_BIND_GROUP 12
 
+#define SHADER_MAX_UNIFORMS 12
+#define SHADER_MAX_TEXTURES 6
+#define SHADER_MAX_SAMPLERS 6
+
 #include "camera.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
@@ -42,10 +46,10 @@ typedef struct {
 
 typedef struct {
   uint32_t binding;
-    /*int width;
+  int width;
   int height;
   unsigned char *data;
-  size_t size;*/
+  size_t size;
 } ShaderBindGroupTextureEntry;
 
 typedef struct {
@@ -55,17 +59,17 @@ typedef struct {
 
 // uniform / texture / sampler array
 typedef struct {
-  ShaderBindGroupEntry items[SHADER_MAX_BIND_GROUP];
+  ShaderBindGroupEntry items[SHADER_MAX_UNIFORMS];
   size_t length;
 } ShaderBindGroupUniforms;
 
 typedef struct {
-  ShaderBindGroupTextureEntry items[SHADER_MAX_BIND_GROUP];
+  ShaderBindGroupTextureEntry items[SHADER_MAX_TEXTURES];
   size_t length;
 } ShaderBindGroupTextures;
 
 typedef struct {
-  ShaderBindGroupSamplerEntry items[SHADER_MAX_BIND_GROUP];
+  ShaderBindGroupSamplerEntry items[SHADER_MAX_SAMPLERS];
   size_t length;
 } ShaderBindGroupSamplers;
 
@@ -117,7 +121,6 @@ typedef struct {
   vec3 emissive_factor;
   float _padding;
 } ShaderPBRUniform;
-
 
 // core
 typedef struct {
