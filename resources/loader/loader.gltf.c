@@ -303,14 +303,7 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
 
   // 2. bind pbdr textures
   // store the texture_views (hold pointer to actual texture + other data)
-  ShaderPBRTextures shader_texture;
   uint8_t texture_length = 5;
-  ShaderBindGroupTextureEntry *texture_list[] = {
-      &shader_texture.diffuse,  &shader_texture.metallic,
-      &shader_texture.normal,   &shader_texture.occlusion,
-      &shader_texture.emissive,
-  };
-
   cgltf_texture_view *texture_view_list[] = {
       &material->pbr_metallic_roughness.base_color_texture,
       &material->pbr_metallic_roughness.metallic_roughness_texture,
@@ -318,7 +311,7 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
       &material->occlusion_texture,
       &material->emissive_texture,
   };
-
+  ShaderBindGroupTextureEntry *texture_list[texture_length];
   ShaderBindGroupTextureEntry texture_entries[texture_length];
 
   for (int t = 0; t < texture_length; t++) {

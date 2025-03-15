@@ -108,11 +108,11 @@ typedef struct {
 } ShaderCreateSamplerDescriptor;
 
 // pbr uniforms
-typedef struct {
+/*typedef struct {
   WGPUSampler sampler;
   WGPUTexture texture;
   WGPUTextureView texture_view;
-} ShaderTexture;
+} ShaderTexture;*/
 
 typedef struct {
   vec4 diffuse_factor;
@@ -124,13 +124,14 @@ typedef struct {
   float _padding;
 } ShaderPBRUniform;
 
+/*
 typedef struct {
   ShaderBindGroupTextureEntry diffuse;
   ShaderBindGroupTextureEntry metallic;
   ShaderBindGroupTextureEntry normal;
   ShaderBindGroupTextureEntry occlusion;
   ShaderBindGroupTextureEntry emissive;
-} ShaderPBRTextures;
+  } ShaderPBRTextures;*/
 
 // core
 typedef struct {
