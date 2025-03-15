@@ -7,6 +7,16 @@
 #include "../include/cglm/vec4.h"
 #include "../runtime/mesh.h"
 
+#ifndef VERBOSE_MODE
+#define VERBOSE_MODE 1
+#endif
+
+#if VERBOSE_MODE
+#define VERBOSE_PRINT(...) printf(__VA_ARGS__)
+#else
+#define VERBOSE_PRINT(...) // no-op
+#endif
+
 void print_vec4(vec4);
 void print_vec3(vec3);
 void print_vec2(vec2);

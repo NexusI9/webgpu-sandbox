@@ -4,6 +4,7 @@
 #include "../include/cglm/vec4.h"
 #include "../runtime/vertex.h"
 #include "../utils/system.h"
+#include "webgpu/webgpu.h"
 #define CGLTF_IMPLEMENTATION
 #include "cgltf/cgltf.h"
 #include "limits.h"
@@ -29,8 +30,11 @@ static float *loader_gltf_attributes(cgltf_accessor *);
 static void loader_gltf_accessor_to_array(cgltf_accessor *, float *, uint8_t);
 static vertex_index loader_gltf_index(cgltf_primitive *);
 static void loader_gltf_bind_uniforms(shader *, cgltf_material *);
-static void loader_gltf_extract_texture(ShaderTexture *, cgltf_texture_view *,
-                                        WGPUDevice *, WGPUQueue *);
+static uint8_t loader_gltf_extract_texture(ShaderTexture *,
+                                           cgltf_texture_view *, WGPUDevice *,
+                                           WGPUQueue *);
+static void loader_gltf_load_fallback_texture(ShaderTexture *, WGPUDevice *,
+                                              WGPUQueue *);
 
 void loader_gltf_load(mesh *mesh, const char *path,
                       const cgltf_options *options) {
@@ -272,6 +276,34 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
 
 void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
 
+  // 1. bind pbr factor
+  ShaderPBRUniform uPBR = {
+      .metallic_factor = material->pbr_metallic_roughness.metallic_factor,
+      .roughness_factor = material->pbr_metallic_roughness.roughness_factor,
+      .occlusion_factor = 1.0f,
+      .normal_scale = 1.0f};
+
+  glm_vec4_copy(material->pbr_metallic_roughness.base_color_factor,
+                uPBR.diffuse_factor);
+
+  glm_vec3_copy(material->emissive_factor, uPBR.emissive_factor);
+
+  ShaderBindGroupEntry entries[1] = {{
+      .binding = 0,
+      .offset = 0,
+      .size = sizeof(ShaderPBRUniform),
+      .data = (void *)&uPBR,
+  }};
+
+  shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
+                                 .group_index = 0,
+                                 .entry_count = 1,
+                                 .entries = entries,
+                                 .visibility = WGPUShaderStage_Vertex |
+                                               WGPUShaderStage_Fragment,
+                             });
+
+  // 2. bind pbdr textures
   // store the texture_views (hold pointer to actual texture + other data)
   ShaderPBRTextures shader_texture;
 
@@ -301,37 +333,24 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
                               &material->emissive_texture, shader->device,
                               shader->queue);
 
-  // bind pbr factor
-  ShaderPBRUniform uPBR = {
-      .metallic_factor = material->pbr_metallic_roughness.metallic_factor,
-      .roughness_factor = material->pbr_metallic_roughness.roughness_factor,
-      .occlusion_factor = 1.0f,
-      .normal_scale = 1.0f};
+  ShaderBindGroupTextureEntry texture_entries[5] = {
+      {.binding = 1, .texture_view = shader_texture.diffuse.texture_view},
+      {.binding = 2, .texture_view = shader_texture.metallic.texture_view},
+      {.binding = 3, .texture_view = shader_texture.normal.texture_view},
+      {.binding = 4, .texture_view = shader_texture.occlusion.texture_view},
+      {.binding = 5, .texture_view = shader_texture.emissive.texture_view},
+  };
 
-  glm_vec4_copy(material->pbr_metallic_roughness.base_color_factor,
-                uPBR.diffuse_factor);
-
-  glm_vec3_copy(material->emissive_factor, uPBR.emissive_factor);
-
-  ShaderBindGroupEntry entries[1] = {{
-      .binding = 0,
-      .offset = 0,
-      .size = sizeof(ShaderPBRUniform),
-      .data = (void *)&uPBR,
-  }};
-
-  shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
+  shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
                                  .group_index = 0,
-                                 .entry_count = 1,
-                                 .entries = entries,
-                                 .visibility = WGPUShaderStage_Vertex |
-                                               WGPUShaderStage_Fragment,
+                                 .entry_count = 5,
+                                 .entries = texture_entries,
                              });
 }
 
-void loader_gltf_extract_texture(ShaderTexture *shader_texture,
-                                 cgltf_texture_view *texture_view,
-                                 WGPUDevice *device, WGPUQueue *queue) {
+uint8_t loader_gltf_extract_texture(ShaderTexture *shader_texture,
+                                    cgltf_texture_view *texture_view,
+                                    WGPUDevice *device, WGPUQueue *queue) {
 
   if (texture_view->texture) {
 
@@ -359,11 +378,44 @@ void loader_gltf_extract_texture(ShaderTexture *shader_texture,
                                                 .size = size,
                                             });
 
+      // create texture view
+      shader_texture->texture_view =
+          wgpuTextureCreateView(shader_texture->texture, NULL);
+
+      return 1;
+
     } else {
-      printf("Loader GLTF: Texture found but couldn't be loaded\n");
+      VERBOSE_PRINT(
+          "Loader GLTF: Texture found but couldn't be loaded, loading "
+          "default texture\n");
+      loader_gltf_load_fallback_texture(shader_texture, device, queue);
+      return 0;
     }
 
   } else {
-    printf("Loader GLTF: Couldn't find texture\n");
+    VERBOSE_PRINT(
+        "Loader GLTF: Couldn't find texture, loading default texture\n");
+    loader_gltf_load_fallback_texture(shader_texture, device, queue);
+    return 0;
   }
+}
+
+void loader_gltf_load_fallback_texture(ShaderTexture *shader_texture,
+                                       WGPUDevice *device, WGPUQueue *queue) {
+
+  uint8_t black_pixel[4] = {0, 0, 0, 255};
+
+  // create black texture
+  buffer_create_texture(shader_texture, &(CreateTextureDescriptor){
+                                            .width = 1,
+                                            .height = 1,
+                                            .data = black_pixel,
+                                            .device = device,
+                                            .queue = queue,
+                                            .size = sizeof(black_pixel),
+                                        });
+
+  // create texture view
+  shader_texture->texture_view =
+      wgpuTextureCreateView(shader_texture->texture, NULL);
 }

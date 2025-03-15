@@ -41,18 +41,43 @@ typedef struct {
 } ShaderBindGroupEntry;
 
 typedef struct {
-  ShaderBindGroupEntry items[SHADER_MAX_BIND_GROUP];
-  size_t length;
-} ShaderBindGroupEntries;
+  uint32_t binding;
+  WGPUTextureView texture_view;
+} ShaderBindGroupTextureEntry;
 
 typedef struct {
-  WGPUBindGroup bind_group;        // bind group
-  uint8_t index;                   // bind group id
-  ShaderBindGroupEntries entries;  // entries (uniform)
-  WGPUShaderStageFlags visibility; // visibility (frag | vert)
+  uint32_t binding;
+  WGPUSampler sampler;
+} ShaderBindGroupSamplerEntry;
+
+// uniform / texture / sampler array
+typedef struct {
+  ShaderBindGroupEntry items[SHADER_MAX_BIND_GROUP];
+  size_t length;
+} ShaderBindGroupUniforms;
+
+typedef struct {
+  ShaderBindGroupTextureEntry items[SHADER_MAX_BIND_GROUP];
+  size_t length;
+} ShaderBindGroupTextures;
+
+typedef struct {
+  ShaderBindGroupSamplerEntry items[SHADER_MAX_BIND_GROUP];
+  size_t length;
+} ShaderBindGroupSamplers;
+
+// Bind group main
+typedef struct {
+  WGPUBindGroup bind_group;         // bind group
+  uint8_t index;                    // bind group id
+  WGPUShaderStageFlags visibility;  // visibility (frag | vert)
+                                    // ELEMENTS:
+  ShaderBindGroupUniforms uniforms; // uniforms
+  ShaderBindGroupTextures textures; // textures
+  ShaderBindGroupSamplers samplers; // samplers
 } ShaderBindGroup;
 
-// uniform
+// Descriptors
 typedef struct {
   CameraUniform uCamera;
   ViewportUniform uViewport;
@@ -65,10 +90,25 @@ typedef struct {
   WGPUShaderStageFlags visibility;
 } ShaderCreateUniformDescriptor;
 
+typedef struct {
+  uint8_t group_index;
+  uint8_t entry_count;
+  ShaderBindGroupTextureEntry *entries;
+  WGPUShaderStageFlags visibility;
+} ShaderCreateTextureDescriptor;
+
+typedef struct {
+  uint8_t group_index;
+  uint8_t entry_count;
+  ShaderBindGroupSamplerEntry *entries;
+  WGPUShaderStageFlags visibility;
+} ShaderCreateSamplerDescriptor;
+
 // pbr uniforms
 typedef struct {
   WGPUSampler sampler;
   WGPUTexture texture;
+  WGPUTextureView texture_view;
 } ShaderTexture;
 
 typedef struct {
@@ -127,7 +167,8 @@ typedef struct {
 void shader_create(shader *, const ShaderCreateDescriptor *);
 
 void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
-
+void shader_add_texture(shader *, const ShaderCreateTextureDescriptor *);
+void shader_add_sampler(shader *, const ShaderCreateSamplerDescriptor *);
 // on update
 void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
                  const viewport *);

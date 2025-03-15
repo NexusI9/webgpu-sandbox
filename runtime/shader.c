@@ -11,7 +11,12 @@
 #include <stdio.h>
 
 static void shader_module_release(shader *);
-static void set_vertex_layout(shader *);
+static void shader_set_vertex_layout(shader *);
+static ShaderBindGroup *shader_get_bind_group(shader *, size_t);
+static bool shader_validate_binding(shader *);
+static void shader_build_layout(shader *);
+static void shader_build_pipeline(shader *);
+static void shader_build_bind(shader *);
 
 void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 
@@ -30,11 +35,11 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
   shader->name = strdup(sd->name);
 
   // set vertex layout
-  set_vertex_layout(shader);
+  shader_set_vertex_layout(shader);
 }
 
 // Define vertex layout to be used in pipeline
-void set_vertex_layout(shader *shader) {
+void shader_set_vertex_layout(shader *shader) {
 
   // set x,y,z
   shader->vertex.attribute[0] = (WGPUVertexAttribute){
@@ -97,8 +102,8 @@ void shader_build(shader *shader) {
   // go through shader bind groups
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
-    ShaderBindGroupEntries *current_entries =
-        &shader->bind_groups.items[i].entries;
+    ShaderBindGroupUniforms *current_entries =
+        &shader->bind_groups.items[i].uniforms;
 
     WGPUBindGroupLayoutEntry entries[current_entries->length];
 
@@ -193,13 +198,13 @@ void shader_build(shader *shader) {
 
     ShaderBindGroup *current_bind_group = &shader->bind_groups.items[i];
 
-    WGPUBindGroupEntry converted_entries[current_bind_group->entries.length];
+    WGPUBindGroupEntry converted_entries[current_bind_group->uniforms.length];
 
     // map shader bind group entry to WGPU bind group entry
     // (basically the same just without data and callback attributes)
-    for (int j = 0; j < current_bind_group->entries.length; j++) {
+    for (int j = 0; j < current_bind_group->uniforms.length; j++) {
       ShaderBindGroupEntry *current_entry =
-          &current_bind_group->entries.items[j];
+          &current_bind_group->uniforms.items[j];
       converted_entries[j].binding = current_entry->binding;
       converted_entries[j].buffer = current_entry->buffer;
       converted_entries[j].offset = current_entry->offset;
@@ -213,7 +218,7 @@ void shader_build(shader *shader) {
         &(WGPUBindGroupDescriptor){
             .layout = wgpuRenderPipelineGetBindGroupLayout(
                 shader->pipeline.handle, current_bind_group->index),
-            .entryCount = current_bind_group->entries.length,
+            .entryCount = current_bind_group->uniforms.length,
             .entries = converted_entries,
         });
 
@@ -239,9 +244,9 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
 
     ShaderBindGroup *current_bind_group = &shader->bind_groups.items[i];
     // update bindgroup entries (callback)
-    for (int j = 0; j < current_bind_group->entries.length; j++) {
+    for (int j = 0; j < current_bind_group->uniforms.length; j++) {
       ShaderBindGroupEntry *current_entry =
-          &current_bind_group->entries.items[j];
+          &current_bind_group->uniforms.items[j];
 
       // TODO: separate dynamic (callback) from static (non callback) shader in
       // two arrays so no last minute decision
@@ -270,10 +275,7 @@ void shader_add_uniform(shader *shader,
     handle the alignment
    */
 
-  if (shader->device == NULL || shader->queue == NULL)
-    perror("Shader has no device or queue"), exit(0);
-
-  else if (shader->bind_groups.length < SHADER_MAX_BIND_GROUP) {
+  if (shader_validate_binding(shader)) {
 
     // Steps:
     //   - Increment bind group length
@@ -282,37 +284,12 @@ void shader_add_uniform(shader *shader,
     //     b. Write data in buffer
     //   - Store buffer reference into Uniform object (CPU side)
 
-    int in = 0, i = 0;
-    size_t index = shader->bind_groups.length;
-    for (i = 0; i < shader->bind_groups.length; i++) {
-      // check if group index is already in shader bind group index
-      if (bd->group_index == shader->bind_groups.items[i].index) {
-        in = 1;    // true
-        index = i; // override group
-        break;
-      }
-    }
-
-    // init new bind group
-    if (in == 0) {
-
-      // set index for further references
-      index = shader->bind_groups.length;
-
-      // Increment bind_groupd length (push new bind group)
-      shader->bind_groups.items[shader->bind_groups.length].index =
-          bd->group_index;
-
-      // init new bind group entries legnth to 0
-      shader->bind_groups.items[shader->bind_groups.length++].entries.length =
-          0;
-    }
-
-    ShaderBindGroup *current_bind_group = &shader->bind_groups.items[index];
+    ShaderBindGroup *current_bind_group =
+        shader_get_bind_group(shader, bd->group_index);
     current_bind_group->visibility = bd->visibility | WGPUShaderStage_Vertex;
 
     // combine argument entries with uniform buffer
-    for (i = 0; i < bd->entry_count; i++) {
+    for (int i = 0; i < bd->entry_count; i++) {
 
       ShaderBindGroupEntry *current_entry = &bd->entries[i];
 
@@ -329,19 +306,77 @@ void shader_add_uniform(shader *shader,
           });
 
       // transfer entry to shader bind group list
-      current_bind_group->entries.items[i] = bd->entries[i];
+      current_bind_group->uniforms.items[i] = bd->entries[i];
 
       // update length
-      current_bind_group->entries.length++;
+      current_bind_group->uniforms.length++;
     }
-
-  } else {
-    perror("Bind group list at full capacity");
   }
 }
+
+void shader_add_texture(shader *shader,
+                        const ShaderCreateTextureDescriptor *desc) {
+
+  if (shader_validate_binding(shader)) {
+    ShaderBindGroup *current_bind_group =
+        shader_get_bind_group(shader, desc->group_index);
+
+    for (int i = 0; i < desc->entry_count; i++) {
+      current_bind_group->textures.items[i] = desc->entries[i];
+      current_bind_group->textures.length++;
+    }
+  }
+}
+void shader_add_sampler(shader *shader,
+                        const ShaderCreateSamplerDescriptor *desc) {}
 
 void shader_module_release(shader *shader) {
   // releasing shader module before drawing
   // invoked when adding the shader to the mesh (mesh_create)
   wgpuShaderModuleRelease(shader->module);
+}
+
+ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
+
+  // check if a bind group in the shader isn't already registered
+  // if not, it creates a new bind group entry to the list
+
+  int in = 0, i = 0;
+  size_t index = shader->bind_groups.length;
+  for (i = 0; i < shader->bind_groups.length; i++) {
+    // check if group index is already in shader bind group index
+    if (group_index == shader->bind_groups.items[i].index) {
+      in = 1;    // true
+      index = i; // override group
+      break;
+    }
+  }
+
+  // init new bind group
+  if (in == 0) {
+
+    // set index for further references
+    index = shader->bind_groups.length;
+
+    // Increment bind_groupd length (push new bind group)
+    shader->bind_groups.items[shader->bind_groups.length].index = group_index;
+
+    // init new bind group entries legnth to 0
+    shader->bind_groups.items[shader->bind_groups.length++].uniforms.length = 0;
+  }
+
+  return &shader->bind_groups.items[index];
+}
+
+bool shader_validate_binding(shader *shader) {
+  if (shader->device == NULL || shader->queue == NULL) {
+    perror("Shader has no device or queue");
+    return 0;
+
+  } else if (shader->bind_groups.length >= SHADER_MAX_BIND_GROUP) {
+    perror("Bind group list at full capacity");
+    return 0;
+  }
+
+  return 1;
 }

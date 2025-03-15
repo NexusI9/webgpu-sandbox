@@ -57,6 +57,8 @@ void buffer_create_texture(ShaderTexture *shader_texture,
   // process)
 
   // create sampler
+  // TODO: eventually remove sampler from shadertexture if static arguments
+  // cause we could simply use it during the binding process
   shader_texture->sampler = wgpuDeviceCreateSampler(
       *tx->device, &(WGPUSamplerDescriptor){
                        .addressModeU = WGPUAddressMode_ClampToEdge,
@@ -66,7 +68,8 @@ void buffer_create_texture(ShaderTexture *shader_texture,
                        .magFilter = WGPUFilterMode_Linear,
                    });
 
-  // create GPU side texture
+  // create GPU texture handle (used for binding as texture view argument/
+  // "texture gpu reference")
   shader_texture->texture = wgpuDeviceCreateTexture(
       *tx->device,
       &(WGPUTextureDescriptor){
@@ -93,8 +96,14 @@ void buffer_create_texture(ShaderTexture *shader_texture,
                                       .size = tx->size,
                                   });
 
+  // Encoder records GPU operations:
+  // - Texture upload
+  // - Buffer upload
+  // - Render passes
+  // - Compute passes
   WGPUCommandEncoder encoder =
       wgpuDeviceCreateCommandEncoder(*tx->device, NULL);
+
   wgpuCommandEncoderCopyBufferToTexture(
       encoder,
       // Source buffer where image data is stored in CPU memory.
@@ -116,4 +125,7 @@ void buffer_create_texture(ShaderTexture *shader_texture,
       },
       // Size (width, height, depth) of the copied region.
       &(WGPUExtent3D){tx->width, tx->height, 1});
+
+  WGPUCommandBuffer commandBuffer = wgpuCommandEncoderFinish(encoder, NULL);
+  wgpuQueueSubmit(*tx->queue, 1, &commandBuffer);
 }
