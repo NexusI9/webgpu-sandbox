@@ -8,17 +8,28 @@
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <math.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 static void shader_module_release(shader *);
 static void shader_set_vertex_layout(shader *);
+
+// build related methods
 static ShaderBindGroup *shader_get_bind_group(shader *, size_t);
-static bool shader_validate_binding(shader *, ShaderUniformType);
-static WGPUBindGroupLayout *shader_build_layout(shader *);
+static bool shader_validate_binding(shader *);
 static void shader_build_pipeline(shader *, WGPUBindGroupLayout *);
 static void shader_build_bind(shader *, WGPUBindGroupLayout *);
+
+// layout methods
+static WGPUBindGroupLayout *shader_build_layout(shader *);
+static void shader_layout_uniforms(shader *, ShaderBindGroup *, int,
+                                   WGPUBindGroupLayout *);
+static void shader_layout_textures(shader *, ShaderBindGroup *, int,
+                                   WGPUBindGroupLayout *);
+static void shader_layout_samplers(shader *, ShaderBindGroup *, int,
+                                   WGPUBindGroupLayout *);
 
 void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 
@@ -110,6 +121,10 @@ void shader_build(shader *shader) {
 
 WGPUBindGroupLayout *shader_build_layout(shader *shader) {
 
+  // need to first define bind group layout before actually pushing values in it
+  // divide the uniforms type if different classes (uniforms/ textures/ sampler)
+  // as they require dedicated layouts
+
   // need to use malloc cause of VLA (variable length array)
   WGPUBindGroupLayout *layout_list = (WGPUBindGroupLayout *)malloc(
       shader->bind_groups.length * sizeof(WGPUBindGroupLayout));
@@ -117,37 +132,105 @@ WGPUBindGroupLayout *shader_build_layout(shader *shader) {
   // go through shader bind groups
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
-    ShaderBindGroupUniforms *current_entries =
-        &shader->bind_groups.items[i].uniforms;
+    ShaderBindGroup *current_group = &shader->bind_groups.items[i];
 
-    // WGPUBindGroupLayoutEntry entries[current_entries->length];
-    WGPUBindGroupLayoutEntry *entries = (WGPUBindGroupLayoutEntry *)malloc(
-        current_entries->length * sizeof(WGPUBindGroupLayoutEntry));
+    if (current_group->uniforms.length > 0)
+      shader_layout_uniforms(shader, current_group, i, layout_list);
 
-    // go through each groups entries
-    for (int j = 0; j < current_entries->length; j++) {
+    //if (current_group->textures.length > 0)
+	//shader_layout_textures(shader, current_group, i, layout_list);
 
-      entries[j] = (WGPUBindGroupLayoutEntry){
-          // assign stored binding index
-          .binding = current_entries->items[j].binding,
-          // buffer binding layout
-          .buffer = {.type = WGPUBufferBindingType_Uniform},
-          // set visibility to vertex
-          .visibility = shader->bind_groups.items[i].visibility,
-      };
-    }
-
-    layout_list[i] = wgpuDeviceCreateBindGroupLayout(
-        *shader->device, &(WGPUBindGroupLayoutDescriptor){
-                             .entryCount = current_entries->length,
-                             // bind group layout entry
-                             .entries = entries,
-                         });
-
-    free(entries);
+    //if (current_group->samplers.length > 0)
+	//shader_layout_samplers(shader, current_group, i, layout_list);
   }
 
   return layout_list;
+}
+
+void shader_layout_uniforms(shader *shader, ShaderBindGroup *bindgroup,
+                            int index, WGPUBindGroupLayout *layout_list) {
+
+  ShaderBindGroupUniforms *uniform_entries = &bindgroup->uniforms;
+
+  WGPUBindGroupLayoutEntry *layout_entries = (WGPUBindGroupLayoutEntry *)malloc(
+      uniform_entries->length * sizeof(WGPUBindGroupLayoutEntry));
+
+  // go through each entries
+  for (int j = 0; j < uniform_entries->length; j++) {
+
+    layout_entries[j] = (WGPUBindGroupLayoutEntry){
+        // assign stored binding index
+        .binding = uniform_entries->items[j].binding,
+        // buffer binding layout
+        .buffer = {.type = WGPUBufferBindingType_Uniform},
+        // set visibility to vertex
+        .visibility = bindgroup->visibility,
+    };
+  }
+
+  // add to layout list
+  layout_list[index] = wgpuDeviceCreateBindGroupLayout(
+      *shader->device, &(WGPUBindGroupLayoutDescriptor){
+                           .entryCount = uniform_entries->length,
+                           // bind group layout entry
+                           .entries = layout_entries,
+                       });
+
+  free(layout_entries);
+}
+
+void shader_layout_textures(shader *shader, ShaderBindGroup *bindgroup,
+                            int index, WGPUBindGroupLayout *layout_list) {
+
+  ShaderBindGroupTextures *texture_entries = &bindgroup->textures;
+
+  WGPUBindGroupLayoutEntry *layout_entries = (WGPUBindGroupLayoutEntry *)malloc(
+      texture_entries->length * sizeof(WGPUBindGroupLayoutEntry));
+
+  // go through each entries
+  for (int j = 0; j < texture_entries->length; j++) {
+    layout_entries[j] = (WGPUBindGroupLayoutEntry){
+        .binding = texture_entries->items[j].binding,
+        .texture = {.sampleType = WGPUTextureSampleType_Float},
+        .visibility = bindgroup->visibility,
+    };
+  }
+
+  // add to layout list
+  layout_list[index] = wgpuDeviceCreateBindGroupLayout(
+      *shader->device, &(WGPUBindGroupLayoutDescriptor){
+                           .entryCount = texture_entries->length,
+                           .entries = layout_entries,
+                       });
+
+  free(layout_entries);
+}
+
+void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
+                            int index, WGPUBindGroupLayout *layout_list) {
+
+  ShaderBindGroupTextures *sampler_entries = &bindgroup->textures;
+
+  WGPUBindGroupLayoutEntry *layout_entries = (WGPUBindGroupLayoutEntry *)malloc(
+      sampler_entries->length * sizeof(WGPUBindGroupLayoutEntry));
+
+  // go through each entries
+  for (int j = 0; j < sampler_entries->length; j++) {
+    layout_entries[j] = (WGPUBindGroupLayoutEntry){
+        .binding = sampler_entries->items[j].binding,
+        .sampler = {.type = WGPUSamplerBindingType_Filtering},
+        .visibility = bindgroup->visibility,
+    };
+  }
+
+  // add to layout list
+  layout_list[index] = wgpuDeviceCreateBindGroupLayout(
+      *shader->device, &(WGPUBindGroupLayoutDescriptor){
+                           .entryCount = sampler_entries->length,
+                           .entries = layout_entries,
+                       });
+
+  free(layout_entries);
 }
 
 void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
@@ -270,6 +353,7 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
     ShaderBindGroup *current_bind_group = &shader->bind_groups.items[i];
+
     // update bindgroup entries (callback)
     for (int j = 0; j < current_bind_group->uniforms.length; j++) {
       ShaderBindGroupEntry *current_entry =
@@ -302,7 +386,7 @@ void shader_add_uniform(shader *shader,
     handle the alignment
    */
 
-  if (shader_validate_binding(shader, UNIFORM)) {
+  if (shader_validate_binding(shader)) {
 
     // Steps:
     //   - Increment bind group length
@@ -313,6 +397,7 @@ void shader_add_uniform(shader *shader,
 
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, bd->group_index);
+
     current_bind_group->visibility = bd->visibility | WGPUShaderStage_Vertex;
 
     // combine argument entries with uniform buffer
@@ -344,11 +429,17 @@ void shader_add_uniform(shader *shader,
 void shader_add_texture(shader *shader,
                         const ShaderCreateTextureDescriptor *desc) {
 
-  if (shader_validate_binding(shader, TEXTURE)) {
+  if (shader_validate_binding(shader)) {
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, desc->group_index);
 
     for (int i = 0; i < desc->entry_count; i++) {
+
+      if (current_bind_group->textures.length ==
+          current_bind_group->textures.capacity) {
+        VERBOSE_PRINT("Texture array reached maximum capacity\n");
+        break;
+      }
 
       ShaderBindGroupTextureEntry *current_entry = &desc->entries[i];
       // generate texture + texture view from data & size
@@ -370,11 +461,17 @@ void shader_add_texture(shader *shader,
 void shader_add_sampler(shader *shader,
                         const ShaderCreateSamplerDescriptor *desc) {
 
-  if (shader_validate_binding(shader, SAMPLER)) {
+  if (shader_validate_binding(shader)) {
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, desc->group_index);
 
     for (int i = 0; i < desc->entry_count; i++) {
+
+      if (current_bind_group->samplers.length ==
+          current_bind_group->samplers.capacity) {
+        VERBOSE_PRINT("Sampler array reached maximum capacity\n");
+        break;
+      }
 
       // generate texture + sampler + texture view from data & size
       ShaderBindGroupSamplerEntry *current_entry = &desc->entries[i];
@@ -430,7 +527,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
     shader->bind_groups.items[shader->bind_groups.length].uniforms.length = 0;
 
     // NOTE: max stack allocation easily reached with static Texture and sampler
-    // arrays, so need to allocate on the heap
+    // arrays, so need to allocate them on the heap
 
     // set texture dynamic array
     shader->bind_groups.items[shader->bind_groups.length].textures.length = 0;
@@ -443,7 +540,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
 
     // set sampler dynamic array
     shader->bind_groups.items[shader->bind_groups.length].samplers.length = 0;
-    shader->bind_groups.items[shader->bind_groups.length].textures.capacity =
+    shader->bind_groups.items[shader->bind_groups.length].samplers.capacity =
         SHADER_UNIFORMS_DEFAULT_CAPACITY;
     shader->bind_groups.items[shader->bind_groups.length].samplers.items =
         (ShaderBindGroupSamplerEntry *)malloc(
@@ -458,7 +555,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
 
 // TODO add more validation by uniforms type (UNIFORM/ TEX/ SAMPLER...) check if
 // it doesn't overflow with max accepted length
-bool shader_validate_binding(shader *shader, ShaderUniformType type) {
+bool shader_validate_binding(shader *shader) {
 
   if (shader->device == NULL || shader->queue == NULL) {
     perror("Shader has no device or queue");

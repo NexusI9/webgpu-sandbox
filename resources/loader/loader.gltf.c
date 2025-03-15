@@ -393,10 +393,15 @@ uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
 void loader_gltf_load_fallback_texture(
     ShaderBindGroupTextureEntry *shader_entry) {
 
-  uint8_t black_pixel[4] = {0, 0, 0, 255};
+  shader_entry->width = 64;
+  shader_entry->height = 64;
+  shader_entry->size = shader_entry->width * shader_entry->height * 4;
+  shader_entry->data =
+      (void *)calloc(shader_entry->width * shader_entry->height, 4);
 
-  shader_entry->data = black_pixel;
-  shader_entry->width = 1;
-  shader_entry->height = 1;
-  shader_entry->size = sizeof(black_pixel);
+  // set all pixels to black
+  for (size_t i = 3; i < shader_entry->size; i += 4) {
+    // set alpha channel to 255
+    shader_entry->data[i] = 255;
+  }
 }

@@ -17,11 +17,6 @@
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 
-typedef enum {
-  UNIFORM,
-  TEXTURE,
-  SAMPLER,
-} ShaderUniformType;
 
 // descriptors
 typedef struct {
