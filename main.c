@@ -111,10 +111,10 @@ void add_grid() {
                               .viewport = &main_scene.viewport,
                               .device = &main_renderer.wgpu.device,
                               .queue = &main_renderer.wgpu.queue,
-                              });
+                          });
 
   // add triangle to scene
-  //scene_add_mesh(&main_scene, &grid);
+  scene_add_mesh(&main_scene, &grid);
 }
 
 void import_cube() {
@@ -162,21 +162,21 @@ int main(int argc, const char *argv[]) {
   add_grid();
 
   mesh child_cube;
-  // add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
+  add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
 
   mesh child_cube_A;
-  // add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
+  add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
 
   mesh child_cube_B;
-  // add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
+  add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
 
   mesh parent_cube;
-  // add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
+  add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
 
-  // mesh_add_child(&child_cube, &parent_cube);
-  // mesh_add_child(&child_cube_A, &parent_cube);
-  // mesh_add_child(&child_cube_B, &parent_cube);
-  // scene_add_mesh(&main_scene, &parent_cube);
+  mesh_add_child(&child_cube, &parent_cube);
+  mesh_add_child(&child_cube_A, &parent_cube);
+  mesh_add_child(&child_cube_B, &parent_cube);
+  scene_add_mesh(&main_scene, &parent_cube);
 
   // import_cube();
 

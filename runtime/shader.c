@@ -407,9 +407,10 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
     shader->bind_groups.items[shader->bind_groups.length].index = group_index;
 
     // init new bind group entries legnth to 0
-    shader->bind_groups.items[shader->bind_groups.length++].uniforms.length = 0;
-    shader->bind_groups.items[shader->bind_groups.length++].textures.length = 0;
-    shader->bind_groups.items[shader->bind_groups.length++].samplers.length = 0;
+    shader->bind_groups.items[shader->bind_groups.length].uniforms.length = 0;
+    shader->bind_groups.items[shader->bind_groups.length].textures.length = 0;
+    shader->bind_groups.items[shader->bind_groups.length].samplers.length = 0;
+    shader->bind_groups.length++;
   }
 
   return &shader->bind_groups.items[index];

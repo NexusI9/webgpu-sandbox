@@ -42,10 +42,10 @@ typedef struct {
 
 typedef struct {
   uint32_t binding;
-  int width;
+    /*int width;
   int height;
   unsigned char *data;
-  size_t size;
+  size_t size;*/
 } ShaderBindGroupTextureEntry;
 
 typedef struct {
@@ -108,12 +108,6 @@ typedef struct {
 } ShaderCreateSamplerDescriptor;
 
 // pbr uniforms
-/*typedef struct {
-  WGPUSampler sampler;
-  WGPUTexture texture;
-  WGPUTextureView texture_view;
-} ShaderTexture;*/
-
 typedef struct {
   vec4 diffuse_factor;
   float metallic_factor;
@@ -124,14 +118,6 @@ typedef struct {
   float _padding;
 } ShaderPBRUniform;
 
-/*
-typedef struct {
-  ShaderBindGroupTextureEntry diffuse;
-  ShaderBindGroupTextureEntry metallic;
-  ShaderBindGroupTextureEntry normal;
-  ShaderBindGroupTextureEntry occlusion;
-  ShaderBindGroupTextureEntry emissive;
-  } ShaderPBRTextures;*/
 
 // core
 typedef struct {
