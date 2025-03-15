@@ -4,13 +4,13 @@
 void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
   primitive plane = primitive_plane();
-
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .name = "grid",
                                   .queue = gd->queue,
                                   .device = gd->device,
                                   .primitive = plane,
                               });
+
 
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
                             .path = "./runtime/assets/shader/shader.grid.wgsl",
@@ -25,7 +25,6 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                        gd->uniform.size,
                        gd->uniform.size,
                    });
-
   // bind camera and viewport
   // NOTE: binding groups shall be created in order (0 first, then 1)
 

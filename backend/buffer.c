@@ -53,6 +53,7 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
 void buffer_create_texture(ShaderTexture *shader_texture,
                            const CreateTextureDescriptor *tx) {
 
+    /*
   // sample + texture (ShaderTexture will be used later in the shader binding
   // process)
 
@@ -128,4 +129,6 @@ void buffer_create_texture(ShaderTexture *shader_texture,
 
   WGPUCommandBuffer commandBuffer = wgpuCommandEncoderFinish(encoder, NULL);
   wgpuQueueSubmit(*tx->queue, 1, &commandBuffer);
+
+  */
 }

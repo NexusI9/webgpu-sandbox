@@ -110,6 +110,7 @@ void shader_build(shader *shader) {
 
 WGPUBindGroupLayout *shader_build_layout(shader *shader) {
 
+  // need to use malloc cause of VLA (variable length array)
   WGPUBindGroupLayout *layout_list = (WGPUBindGroupLayout *)malloc(
       shader->bind_groups.length * sizeof(WGPUBindGroupLayout));
 
@@ -343,15 +344,33 @@ void shader_add_uniform(shader *shader,
 void shader_add_texture(shader *shader,
                         const ShaderCreateTextureDescriptor *desc) {
 
-  if (shader_validate_binding(shader)) {
-    ShaderBindGroup *current_bind_group =
-        shader_get_bind_group(shader, desc->group_index);
+  /*
+if (shader_validate_binding(shader)) {
+  ShaderBindGroup *current_bind_group =
+      shader_get_bind_group(shader, desc->group_index);
 
-    for (int i = 0; i < desc->entry_count; i++) {
-      current_bind_group->textures.items[i] = desc->entries[i];
-      current_bind_group->textures.length++;
-    }
+  for (int i = 0; i < desc->entry_count; i++) {
+
+    // generate texture + sampler + texture view from data & size
+
+    buffer_create_texture(shader_texture, &(CreateTextureDescriptor){
+                                              .width = width,
+                                              .height = height,
+                                              .data = image_data,
+                                              .device = device,
+                                              .queue = queue,
+                                              .size = size,
+                                          });
+
+    // create texture view
+    shader_texture->texture_view =
+        wgpuTextureCreateView(shader_texture->texture, NULL);
+
+    current_bind_group->textures.items[i] = desc->entries[i];
+    current_bind_group->textures.length++;
   }
+}
+  */
 }
 void shader_add_sampler(shader *shader,
                         const ShaderCreateSamplerDescriptor *desc) {}
@@ -389,6 +408,8 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
 
     // init new bind group entries legnth to 0
     shader->bind_groups.items[shader->bind_groups.length++].uniforms.length = 0;
+    shader->bind_groups.items[shader->bind_groups.length++].textures.length = 0;
+    shader->bind_groups.items[shader->bind_groups.length++].samplers.length = 0;
   }
 
   return &shader->bind_groups.items[index];

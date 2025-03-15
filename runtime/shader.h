@@ -42,7 +42,10 @@ typedef struct {
 
 typedef struct {
   uint32_t binding;
-  WGPUTextureView texture_view;
+  int width;
+  int height;
+  unsigned char *data;
+  size_t size;
 } ShaderBindGroupTextureEntry;
 
 typedef struct {
@@ -122,11 +125,11 @@ typedef struct {
 } ShaderPBRUniform;
 
 typedef struct {
-  ShaderTexture diffuse;
-  ShaderTexture metallic;
-  ShaderTexture normal;
-  ShaderTexture occlusion;
-  ShaderTexture emissive;
+  ShaderBindGroupTextureEntry diffuse;
+  ShaderBindGroupTextureEntry metallic;
+  ShaderBindGroupTextureEntry normal;
+  ShaderBindGroupTextureEntry occlusion;
+  ShaderBindGroupTextureEntry emissive;
 } ShaderPBRTextures;
 
 // core
