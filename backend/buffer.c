@@ -1,5 +1,7 @@
 #include "buffer.h"
+#include "../runtime/texture.h"
 #include "webgpu/webgpu.h"
+#include "stb/stb_image.h"
 
 void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice *device,
                           char *code, const char *label) {
@@ -20,12 +22,12 @@ void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice *device,
 
 void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
   // prepare buffer object
-  *buffer = wgpuDeviceCreateBuffer(
-      *bf->device, &(WGPUBufferDescriptor){
-                       .usage = WGPUBufferUsage_CopyDst | bf->usage,
-                       .size = bf->size,
-                       .mappedAtCreation = bf->mappedAtCreation,
-                   });
+  *buffer = wgpuDeviceCreateBuffer(*bf->device,
+                                   &(WGPUBufferDescriptor){
+                                       .usage = bf->usage,
+                                       .size = bf->size,
+                                       .mappedAtCreation = bf->mappedAtCreation,
+                                   });
 
   /*NOTE:
     Mapped at Creation
@@ -56,6 +58,8 @@ void buffer_create_texture(WGPUTextureView *texture_view,
   // sample + texture (ShaderTexture will be used later in the shader binding
   // process)
 
+  // TODO: Implement a chunk based upload for textures > 1024
+
   // create GPU texture handle (used for binding as texture view argument/
   // "texture gpu reference")
   WGPUTexture texture = wgpuDeviceCreateTexture(
@@ -74,48 +78,23 @@ void buffer_create_texture(WGPUTextureView *texture_view,
           .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
       });
 
-  // create stagging buffer (CPU 2 GPU)
-  WGPUBuffer stagging_buffer;
-  buffer_create(&stagging_buffer, &(CreateBufferDescriptor){
-                                      .device = tx->device,
-                                      .queue = tx->queue,
-                                      .data = tx->data,
-                                      .mappedAtCreation = true,
-                                      .size = tx->size,
-                                  });
 
-  // Encoder records GPU operations:
-  // - Texture upload
-  // - Buffer upload
-  // - Render passes
-  // - Compute passes
-  WGPUCommandEncoder encoder =
-      wgpuDeviceCreateCommandEncoder(*tx->device, NULL);
+  wgpuQueueWriteTexture(*tx->queue,
+                        &(WGPUImageCopyTexture){
+                            .texture = texture,
+                            .mipLevel = 0,
+                            .origin = {0, 0, 0},
+                            .aspect = WGPUTextureAspect_All,
+                        },
+                        tx->data, tx->size,
+                        &(WGPUTextureDataLayout){
+                            .offset = 0,
+                            .bytesPerRow = tx->width * TEXTURE_DEFAULT_CHANNELS,
+                            .rowsPerImage = tx->height,
+                        },
+                        &(WGPUExtent3D){tx->width, tx->height, 1});
 
-  wgpuCommandEncoderCopyBufferToTexture(
-      encoder,
-      // Source buffer where image data is stored in CPU memory.
-      &(WGPUImageCopyBuffer){
-          .buffer = stagging_buffer,
-          .layout =
-              {
-                  .offset = 0,
-                  .bytesPerRow = tx->width * 4,
-                  .rowsPerImage = tx->height,
-              },
-      },
-      // Destination texture in GPU memory.
-      &(WGPUImageCopyTexture){
-          .texture = texture,
-          .mipLevel = 0,
-          .origin = {0, 0, 0},
-          .aspect = WGPUTextureAspect_All,
-      },
-      // Size (width, height, depth) of the copied region.
-      &(WGPUExtent3D){tx->width, tx->height, 1});
-
-  WGPUCommandBuffer commandBuffer = wgpuCommandEncoderFinish(encoder, NULL);
-  wgpuQueueSubmit(*tx->queue, 1, &commandBuffer);
+  stbi_image_free(tx->data);
 
   // create texture view (used in binding process)
   *texture_view = wgpuTextureCreateView(texture, NULL);

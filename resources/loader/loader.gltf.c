@@ -15,6 +15,7 @@
 #include <string.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "../backend/buffer.h"
+#include "../runtime/texture.h"
 #include "stb/stb_image.h"
 
 static void loader_gltf_create_mesh(mesh *, cgltf_data *);
@@ -279,7 +280,8 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
       .metallic_factor = material->pbr_metallic_roughness.metallic_factor,
       .roughness_factor = material->pbr_metallic_roughness.roughness_factor,
       .occlusion_factor = 1.0f,
-      .normal_scale = 1.0f};
+      .normal_scale = 1.0f,
+  };
 
   glm_vec4_copy(material->pbr_metallic_roughness.base_color_factor,
                 uPBR.diffuse_factor);
@@ -317,10 +319,12 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
   ShaderBindGroupSamplerEntry sampler_entries[texture_length];
 
   for (int t = 0; t < texture_length; t++) {
+
     loader_gltf_extract_texture(texture_view_list[t], &texture_list[t]);
+
     // create texture entries
     texture_entries[t] = (ShaderBindGroupTextureEntry){
-        .binding = t + 1,
+        .binding = t,
         .data = texture_list[t].data,
         .size = texture_list[t].size,
         .width = texture_list[t].width,
@@ -329,6 +333,7 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
 
     // create sampler entries
     sampler_entries[t] = (ShaderBindGroupSamplerEntry){
+        .binding = t,
         .addressModeU = WGPUAddressMode_ClampToEdge,
         .addressModeV = WGPUAddressMode_ClampToEdge,
         .addressModeW = WGPUAddressMode_ClampToEdge,
@@ -338,14 +343,14 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
   }
 
   // send texture + sampler to shader
-  shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
-                                 .group_index = 0,
+  /*shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
+                                 .group_index = 1,
                                  .entry_count = texture_length,
                                  .entries = texture_entries,
-                             });
+                                 });*/
 
   shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){
-                                 .group_index = 0,
+                                 .group_index = 1,
                                  .entry_count = texture_length,
                                  .entries = sampler_entries,
                              });
@@ -358,17 +363,27 @@ uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
     // extract textures from texture_view
     // 1. if uri => load image (TODO)
     // 2. if buffer_view => store buffer & size
+
+    // TODO: check why cgltf buffer->size return smaller size that w * h *
+    // channels
     cgltf_image *image = texture_view->texture->image;
     int width, height, channels;
     if (image->buffer_view) {
       cgltf_decode_uri(image->uri);
-      shader_entry->size = image->buffer_view->buffer->size;
-      shader_entry->data = (unsigned char *)image->buffer_view->buffer->data +
-                           image->buffer_view->offset;
 
-      int stb_data = stbi_info_from_memory(
-          shader_entry->data, shader_entry->size, &shader_entry->width,
-          &shader_entry->height, &channels);
+      unsigned char *gltf_data =
+          (unsigned char *)image->buffer_view->buffer->data +
+          image->buffer_view->offset;
+
+      // use stbi to convert gltf image from RGB(A) to RGBA, ensuring 4 channels
+      // TODO: more flexible texture upload (RGB/RGBA, large texture
+      // handling...)
+      shader_entry->data = stbi_load_from_memory(
+          gltf_data, image->buffer_view->buffer->size, &shader_entry->width,
+          &shader_entry->height, &channels, TEXTURE_DEFAULT_CHANNELS);
+
+      shader_entry->size =
+          shader_entry->width * shader_entry->height * TEXTURE_DEFAULT_CHANNELS;
 
       return 1;
 
@@ -395,12 +410,13 @@ void loader_gltf_load_fallback_texture(
 
   shader_entry->width = 64;
   shader_entry->height = 64;
-  shader_entry->size = shader_entry->width * shader_entry->height * 4;
-  shader_entry->data =
-      (void *)calloc(shader_entry->width * shader_entry->height, 4);
+  shader_entry->size =
+      shader_entry->width * shader_entry->height * TEXTURE_DEFAULT_CHANNELS;
+  shader_entry->data = (void *)calloc(
+      shader_entry->width * shader_entry->height, TEXTURE_DEFAULT_CHANNELS);
 
   // set all pixels to black
-  for (size_t i = 3; i < shader_entry->size; i += 4) {
+  for (size_t i = 3; i < shader_entry->size; i += TEXTURE_DEFAULT_CHANNELS) {
     // set alpha channel to 255
     shader_entry->data[i] = 255;
   }

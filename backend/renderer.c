@@ -91,6 +91,12 @@ void renderer_draw(const renderer *renderer, scene *scene) {
       wgpuSwapChainGetCurrentTextureView(renderer->wgpu.swapchain);
 
   // create command encoder
+  // encoder records GPU operations:
+  // - Texture upload
+  // - Buffer upload
+  // - Render passes
+  // - Compute passes
+
   WGPUCommandEncoder render_encoder =
       wgpuDeviceCreateCommandEncoder(renderer->wgpu.device, NULL);
 

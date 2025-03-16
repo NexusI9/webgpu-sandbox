@@ -17,7 +17,6 @@
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 
-
 // descriptors
 typedef struct {
   char *path;

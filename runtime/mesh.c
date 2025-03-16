@@ -113,14 +113,15 @@ void mesh_create_vertex_buffer(mesh *mesh,
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue "), exit(0);
 
-  buffer_create(&mesh->buffer.vertex, &(CreateBufferDescriptor){
-                                          .queue = mesh->queue,
-                                          .device = mesh->device,
-                                          .data = (void *)bd->data,
-                                          .size = bd->size,
-                                          .usage = WGPUBufferUsage_Vertex,
-                                          .mappedAtCreation = false,
-                                      });
+  buffer_create(&mesh->buffer.vertex,
+                &(CreateBufferDescriptor){
+                    .queue = mesh->queue,
+                    .device = mesh->device,
+                    .data = (void *)bd->data,
+                    .size = bd->size,
+                    .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
+                    .mappedAtCreation = false,
+                });
 }
 
 // send index data to GPU
@@ -130,14 +131,15 @@ void mesh_create_index_buffer(mesh *mesh,
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue"), exit(0);
 
-  buffer_create(&mesh->buffer.index, &(CreateBufferDescriptor){
-                                         .queue = mesh->queue,
-                                         .device = mesh->device,
-                                         .data = (void *)bd->data,
-                                         .size = bd->size,
-                                         .usage = WGPUBufferUsage_Index,
-                                         .mappedAtCreation = false,
-                                     });
+  buffer_create(&mesh->buffer.index,
+                &(CreateBufferDescriptor){
+                    .queue = mesh->queue,
+                    .device = mesh->device,
+                    .data = (void *)bd->data,
+                    .size = bd->size,
+                    .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
+                    .mappedAtCreation = false,
+                });
 }
 
 void mesh_build(mesh *mesh) {

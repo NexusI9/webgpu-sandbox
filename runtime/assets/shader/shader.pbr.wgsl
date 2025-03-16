@@ -50,25 +50,25 @@ struct PBRMaterial {
 
 @group(0) @binding(0) var<uniform> uMaterial : PBRMaterial;
 
-//@group(1) @binding(1) var diffuse_texture : texture_2d<f32>;
-//@group(1) @binding(2) var metallic_texture : texture_2d<f32>;
-//@group(1) @binding(3) var normal_texture : texture_2d<f32>;
-//@group(1) @binding(4) var occlusion_texture : texture_2d<f32>;
-//@group(1) @binding(5) var emissive_texture : texture_2d<f32>;
+//@group(1) @binding(0) var diffuse_texture : texture_2d<f32>;
+//@group(1) @binding(1) var metallic_texture : texture_2d<f32>;
+//@group(1) @binding(2) var normal_texture : texture_2d<f32>;
+//@group(1) @binding(3) var occlusion_texture : texture_2d<f32>;
+//@group(1) @binding(4) var emissive_texture : texture_2d<f32>;
 
-//@group(1) @binding(6) var diffuse_sampler : sampler;
-//@group(1) @binding(7) var metallic_sampler : sampler;
-//@group(1) @binding(8) var normal_sampler : sampler;
-//@group(1) @binding(9) var occlusion_sampler : sampler;
-//@group(1) @binding(10) var emissive_sampler : sampler;
+@group(1) @binding(0) var diffuse_sampler : sampler;
+@group(1) @binding(1) var metallic_sampler : sampler;
+@group(1) @binding(2) var normal_sampler : sampler;
+@group(1) @binding(3) var occlusion_sampler : sampler;
+@group(1) @binding(4) var emissive_sampler : sampler;
 
 // light
-//@group(2) @binding(0) var<uniform> light_direction : vec3<f32>;
+//@group(3) @binding(0) var<uniform> light_direction : vec3<f32>;
 
 // camera viewport
-@group(1) @binding(0) var<uniform> uViewport : Viewport;
-@group(1) @binding(1) var<uniform> uCamera : Camera;
-@group(1) @binding(2) var<uniform> uMesh : Mesh;
+@group(2) @binding(0) var<uniform> uViewport : Viewport;
+@group(2) @binding(1) var<uniform> uCamera : Camera;
+@group(2) @binding(2) var<uniform> uMesh : Mesh;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
