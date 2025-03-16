@@ -62,13 +62,13 @@ struct PBRMaterial {
 @group(1) @binding(3) var occlusion_sampler : sampler;
 @group(1) @binding(4) var emissive_sampler : sampler;
 
-// light
-//@group(3) @binding(0) var<uniform> light_direction : vec3<f32>;
-
 // camera viewport
 @group(2) @binding(0) var<uniform> uViewport : Viewport;
 @group(2) @binding(1) var<uniform> uCamera : Camera;
 @group(2) @binding(2) var<uniform> uMesh : Mesh;
+
+// light
+//@group(3) @binding(0) var<uniform> light_direction : vec3<f32>;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {

@@ -302,7 +302,6 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
                                  .visibility = WGPUShaderStage_Vertex |
                                                WGPUShaderStage_Fragment,
                              });
-
   // 2. bind pbdr textures
   // store the texture_views (hold pointer to actual texture + other data)
 
@@ -353,6 +352,7 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
                                  .group_index = 1,
                                  .entry_count = texture_length,
                                  .entries = sampler_entries,
+                                 .visibility = WGPUShaderStage_Fragment,
                              });
 }
 
