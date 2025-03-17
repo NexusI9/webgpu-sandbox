@@ -242,7 +242,6 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
 
   // go through each entries
   for (int j = 0; j < sampler_entries->length; j++) {
-    printf("layout sampler %d in bind group %d\n", j, bindgroup->index);
     layout_entries[j] = (WGPUBindGroupLayoutEntry){
         .sampler = {.type = WGPUSamplerBindingType_Filtering},
         .binding = sampler_entries->items[j].binding,
@@ -526,6 +525,9 @@ void shader_add_texture(shader *shader,
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, desc->group_index);
 
+    current_bind_group->visibility =
+        desc->visibility | WGPUShaderStage_Fragment;
+
     for (int i = 0; i < desc->entry_count; i++) {
 
       if (current_bind_group->textures.length ==
@@ -558,7 +560,8 @@ void shader_add_sampler(shader *shader,
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, desc->group_index);
 
-    current_bind_group->visibility = desc->visibility | WGPUShaderStage_Vertex;
+    current_bind_group->visibility =
+        desc->visibility | WGPUShaderStage_Fragment;
 
     for (int i = 0; i < desc->entry_count; i++) {
 

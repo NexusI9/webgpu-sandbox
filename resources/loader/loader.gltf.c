@@ -346,6 +346,7 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
                                  .group_index = 1,
                                  .entry_count = texture_length,
                                  .entries = texture_entries,
+                                 .visibility = WGPUShaderStage_Fragment,
                              });
 
   shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){

@@ -1,7 +1,7 @@
 #include "buffer.h"
 #include "../runtime/texture.h"
-#include "webgpu/webgpu.h"
 #include "stb/stb_image.h"
+#include "webgpu/webgpu.h"
 
 void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice *device,
                           char *code, const char *label) {
@@ -71,13 +71,14 @@ void buffer_create_texture(WGPUTextureView *texture_view,
                   .height = tx->height,
                   .depthOrArrayLayers = 1,
               },
-          .format = WGPUTextureFormat_RGBA8Unorm,
+          .format =
+              WGPUTextureFormat_RGBA8Unorm, // normalize from 0-255 ->
+                                            // 0.0-1.0, since use f32 in shader
           .mipLevelCount = 1,
           .sampleCount = 1,
           .dimension = WGPUTextureDimension_2D,
           .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
       });
-
 
   wgpuQueueWriteTexture(*tx->queue,
                         &(WGPUImageCopyTexture){
