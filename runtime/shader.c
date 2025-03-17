@@ -28,7 +28,6 @@ static void shader_layout_uniforms(shader *, ShaderBindGroup *,
 static void shader_layout_textures(shader *, ShaderBindGroup *,
                                    WGPUBindGroupLayout *);
 static void shader_layout_samplers(shader *, ShaderBindGroup *,
-                                   WGPUBindGroupLayout *, int,
                                    WGPUBindGroupLayout *);
 
 // build methods
@@ -121,7 +120,7 @@ void shader_build(shader *shader) {
 
   WGPUBindGroupLayout *bindgroup_layouts = shader_build_layout(shader);
   shader_build_pipeline(shader, bindgroup_layouts);
-  shader_build_bind(shader, bindgroup_layouts);
+  // shader_build_bind(shader, bindgroup_layouts);
 
   shader_pipeline_release(shader);
   shader_module_release(shader);
@@ -142,6 +141,7 @@ WGPUBindGroupLayout *shader_build_layout(shader *shader) {
 
   */
 
+  printf("bind group length: %lu\n", shader->bind_groups.length);
   // need to use malloc cause of VLA (variable length array)
   WGPUBindGroupLayout *layout_list = (WGPUBindGroupLayout *)malloc(
       shader->bind_groups.length * sizeof(WGPUBindGroupLayout));
@@ -150,18 +150,29 @@ WGPUBindGroupLayout *shader_build_layout(shader *shader) {
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
     ShaderBindGroup *current_group = &shader->bind_groups.items[i];
-    WGPUBindGroupLayout *current_layout = &layout_list[i];
 
-    if (current_group->uniforms.length > 0)
-      shader_layout_uniforms(shader, current_group, current_layout);
+    // if (current_group->uniforms.length > 0)
+    // shader_layout_uniforms(shader, current_group, layout_list);
 
-    /*if (current_group->textures.length > 0)
-      shader_layout_textures(shader, current_group, current_layout);*/
+    // if (current_group->textures.length > 0)
+    // shader_layout_textures(shader, current_group, i, layout_list);
 
     if (current_group->samplers.length > 0)
-      shader_layout_samplers(shader, current_group, current_layout, i,
-                             layout_list);
+      shader_layout_samplers(shader, current_group, layout_list);
   }
+
+  // go through shader bind groups
+  /*  layout_list[0] = wgpuDeviceCreateBindGroupLayout(
+        *shader->device,
+        &(WGPUBindGroupLayoutDescriptor){
+            .entryCount = 1,
+            .entries =
+                &(WGPUBindGroupLayoutEntry){
+                    .binding = 0,
+                    .sampler = {.type = WGPUSamplerBindingType_Filtering},
+                    .visibility = WGPUShaderStage_Fragment,
+                },
+                });*/
 
   return layout_list;
 }
@@ -231,8 +242,7 @@ void shader_layout_textures(shader *shader, ShaderBindGroup *bindgroup,
 }
 
 void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
-                            WGPUBindGroupLayout *layout, int index,
-                            WGPUBindGroupLayout *layout_list) {
+                            WGPUBindGroupLayout *layout) {
 
   ShaderBindGroupSamplers *sampler_entries = &bindgroup->samplers;
 
@@ -265,6 +275,18 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
 }
 
 void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
+
+  WGPUBindGroupLayout el_layout = wgpuDeviceCreateBindGroupLayout(
+      *shader->device,
+      &(WGPUBindGroupLayoutDescriptor){
+          .entryCount = 1,
+          .entries =
+              &(WGPUBindGroupLayoutEntry){
+                  .binding = 0,
+                  .sampler = {.type = WGPUSamplerBindingType_Filtering},
+                  .visibility = WGPUShaderStage_Fragment,
+              },
+      });
 
   shader->pipeline.layout = wgpuDeviceCreatePipelineLayout(
       *shader->device, &(WGPUPipelineLayoutDescriptor){
@@ -331,24 +353,57 @@ void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
           .depthStencil = NULL,
 
       });
+
+  WGPUSampler base_sampler = wgpuDeviceCreateSampler(
+      *shader->device, &(WGPUSamplerDescriptor){
+                           .addressModeU = WGPUAddressMode_ClampToEdge,
+                           .addressModeV = WGPUAddressMode_ClampToEdge,
+                           .addressModeW = WGPUAddressMode_ClampToEdge,
+                           .minFilter = WGPUFilterMode_Linear,
+                           .magFilter = WGPUFilterMode_Linear,
+                       });
+
+  WGPUBindGroupEntry sampler_entries[1] = {
+      {
+          .binding = 0,
+          .sampler = base_sampler,
+      },
+  };
+
+  shader->bind_groups.items[0].bind_group = wgpuDeviceCreateBindGroup(
+      *shader->device,
+      &(WGPUBindGroupDescriptor){.layout = wgpuRenderPipelineGetBindGroupLayout(
+                                     shader->pipeline.handle, 0),
+                                 .entryCount = 1,
+                                 .entries = sampler_entries});
 }
 
 void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
 
-  for (int i = 0; i < shader->bind_groups.length; i++) {
+  WGPUSampler base_sampler = wgpuDeviceCreateSampler(
+      *shader->device, &(WGPUSamplerDescriptor){
+                           .addressModeU = WGPUAddressMode_ClampToEdge,
+                           .addressModeV = WGPUAddressMode_ClampToEdge,
+                           .addressModeW = WGPUAddressMode_ClampToEdge,
+                           .minFilter = WGPUFilterMode_Linear,
+                           .magFilter = WGPUFilterMode_Linear,
+                       });
 
-    ShaderBindGroup *current_group = &shader->bind_groups.items[i];
-    WGPUBindGroupLayout *current_layout = &layouts[i];
+  WGPUBindGroupEntry sampler_entries[1] = {
+      {
+          .binding = 0,
+          .sampler = base_sampler,
+      },
+  };
 
-    if (current_group->uniforms.length > 0)
-      shader_bind_uniforms(shader, current_group, current_layout);
+  wgpuDeviceCreateBindGroup(
+      *shader->device,
+      &(WGPUBindGroupDescriptor){.layout = wgpuRenderPipelineGetBindGroupLayout(
+                                     shader->pipeline.handle, 0),
+                                 .entryCount = 1,
+                                 .entries = sampler_entries});
 
-    /*!!if (current_group->textures.length > 0)
-      shader_bind_textures(shader, current_group, current_layout);*/
-
-    if (current_group->samplers.length > 0)
-      shader_bind_samplers(shader, current_group, current_layout);
-  }
+  // free(sampler_entries);
 }
 
 void shader_bind_uniforms(shader *shader, ShaderBindGroup *bindgroup,

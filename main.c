@@ -130,7 +130,7 @@ void import_cube() {
                    &(cgltf_options){0});
 
   // TODO: handle child bind
-  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 2);
+  // mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 2);
 
   scene_add_mesh(&main_scene, &cube);
 }
@@ -159,7 +159,7 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
-  add_grid();
+  /*add_grid();
 
   mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
@@ -176,7 +176,7 @@ int main(int argc, const char *argv[]) {
   mesh_add_child(&child_cube, &parent_cube);
   mesh_add_child(&child_cube_A, &parent_cube);
   mesh_add_child(&child_cube_B, &parent_cube);
-  scene_add_mesh(&main_scene, &parent_cube);
+  scene_add_mesh(&main_scene, &parent_cube);*/
 
   import_cube();
 

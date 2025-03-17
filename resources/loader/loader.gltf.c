@@ -295,13 +295,13 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
       .data = (void *)&uPBR,
   }};
 
-  shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
+  /*shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
                                  .group_index = 0,
                                  .entry_count = 1,
                                  .entries = entries,
                                  .visibility = WGPUShaderStage_Vertex |
                                                WGPUShaderStage_Fragment,
-                             });
+                             });*/
   // 2. bind pbdr textures
   // store the texture_views (hold pointer to actual texture + other data)
 
@@ -349,7 +349,7 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
                                  });*/
 
   shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){
-                                 .group_index = 1,
+                                 .group_index = 0,
                                  .entry_count = texture_length,
                                  .entries = sampler_entries,
                                  .visibility = WGPUShaderStage_Fragment,
