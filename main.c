@@ -130,7 +130,7 @@ void import_cube() {
                    &(cgltf_options){0});
 
   // TODO: handle child bind
-  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 2);
+  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 3);
 
   scene_add_mesh(&main_scene, &cube);
 }

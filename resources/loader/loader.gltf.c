@@ -342,14 +342,14 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
   }
 
   // send texture + sampler to shader
-  /*shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
+  shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
                                  .group_index = 1,
                                  .entry_count = texture_length,
                                  .entries = texture_entries,
-                                 });*/
+                             });
 
   shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){
-                                 .group_index = 1,
+                                 .group_index = 2,
                                  .entry_count = texture_length,
                                  .entries = sampler_entries,
                                  .visibility = WGPUShaderStage_Fragment,
