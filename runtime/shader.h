@@ -14,6 +14,7 @@
 #define SHADER_UNIFORMS_DEFAULT_CAPACITY 8
 
 #include "camera.h"
+#include "pipeline.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 
@@ -142,10 +143,7 @@ typedef struct {
   WGPUQueue *queue;
 
   // pipeline
-  struct {
-    WGPURenderPipeline handle;
-    WGPUPipelineLayout layout;
-  } pipeline;
+  pipeline pipeline;
 
   // vertex data
   struct {

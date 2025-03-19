@@ -97,5 +97,5 @@ struct PBRMaterial {
   var emissive = textureSample(emissive_texture, emissive_sampler, vUv);
 
   // return vec4<f32>(1.0, 1.0, 1.0, 1.0);
-  return vec4(diffuse.rgb, 0.0);
+  return vec4(diffuse.rgb, 1.0);
 }

@@ -291,7 +291,7 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
 
 void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
 
-  shader->pipeline.layout = wgpuDeviceCreatePipelineLayout(
+  WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
       *shader->device, &(WGPUPipelineLayoutDescriptor){
                            // total bind groups count
                            .bindGroupLayoutCount = shader->bind_groups.length,
@@ -300,67 +300,16 @@ void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
                        });
 
   // create pipeline
-  shader->pipeline.handle = wgpuDeviceCreateRenderPipeline(
-      *shader->device,
-      &(WGPURenderPipelineDescriptor){
-          .layout = shader->pipeline.layout,
-          .label = "Shader",
-          .vertex =
-              {
-                  .module = shader->module,
-                  .entryPoint = "vs_main",
-                  .bufferCount = 1,
-                  .buffers = &shader->vertex.layout,
-              },
-          .primitive =
-              {
-                  .frontFace = WGPUFrontFace_CCW,
-                  .cullMode = WGPUCullMode_Back,
-                  .topology = WGPUPrimitiveTopology_TriangleList,
-                  .stripIndexFormat = WGPUIndexFormat_Undefined,
-              },
-          .fragment =
-              &(WGPUFragmentState){
-                  .module = shader->module,
-                  .entryPoint = "fs_main",
-                  .targetCount = 1,
-                  // color target state
-                  .targets =
-                      &(WGPUColorTargetState){
-                          .format = WGPUTextureFormat_BGRA8Unorm,
-                          .writeMask = WGPUColorWriteMask_All,
-                          // blend state
-                          .blend =
-                              &(WGPUBlendState){
-                                  .color =
-                                      {
-                                          .operation = WGPUBlendOperation_Add,
-                                          .srcFactor = WGPUBlendFactor_One,
-                                          .dstFactor = WGPUBlendFactor_Zero,
-                                      },
-                                  .alpha =
-                                      {
-                                          .operation = WGPUBlendOperation_Add,
-                                          .srcFactor = WGPUBlendFactor_One,
-                                          .dstFactor = WGPUBlendFactor_Zero,
-                                      },
-                              },
-                      },
-              },
-          .multisample =
-              {
-                  .count = 1,
-                  .mask = 0xFFFFFFFF,
-                  .alphaToCoverageEnabled = false,
-              },
-          .depthStencil =
-              &(WGPUDepthStencilState){
-                  .format = WGPUTextureFormat_Depth24Plus,
-                  .depthWriteEnabled = true,
-                  .depthCompare = WGPUCompareFunction_Less,
-              },
 
-      });
+  // create pipeline
+  pipeline_create_default(&shader->pipeline,
+                          &(PipelineCreateDescriptor){
+                              .layout = pipeline_layout,
+                              .vertex_layout = &shader->vertex.layout,
+                              .device = shader->device,
+                              .module = &shader->module,
+                          });
+
 }
 
 void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {

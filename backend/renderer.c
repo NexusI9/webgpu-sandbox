@@ -117,7 +117,7 @@ static void renderer_create_texture_view(const renderer *renderer,
                         .baseMipLevel = 0,
                         .mipLevelCount = 1, // match above texture
                         .baseArrayLayer = 0,
-                        .arrayLayerCount = 1,
+                        .arrayLayerCount = 1, // not using array texture (only 1)
                         .aspect = WGPUTextureAspect_DepthOnly,
                     });
 }
