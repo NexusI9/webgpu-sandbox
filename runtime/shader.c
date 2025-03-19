@@ -16,6 +16,36 @@
 static void shader_module_release(shader *);
 static void shader_set_vertex_layout(shader *);
 
+/*
+
+  OVERALL BUILDING PROCESS:
+  1. First build layouts for uniforms, textures + samplers
+  2. Build pipeline based on those layouts
+  3. Actually bind the buffer/textures view and samplers
+
+  +------------------+
+  |   Build Layout   |
+  |------------------|
+  | Layout Uniforms  |
+  | Layout Textures  |
+  | Layout Samplers  |
+  +------------------+
+           ||
+  +------------------+
+  |  Build Pipeline  |
+  +------------------+
+           ||
+  +------------------+
+  |       Bind       |
+  |------------------|
+  | Build Uniforms   |
+  | Build Textures   |
+  | Build Samplers   |
+  +------------------+
+
+
+ */
+
 // build related methods
 static ShaderBindGroup *shader_get_bind_group(shader *, size_t);
 static bool shader_validate_binding(shader *);
@@ -285,7 +315,7 @@ void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
           .primitive =
               {
                   .frontFace = WGPUFrontFace_CCW,
-                  .cullMode = WGPUCullMode_None,
+                  .cullMode = WGPUCullMode_Back,
                   .topology = WGPUPrimitiveTopology_TriangleList,
                   .stripIndexFormat = WGPUIndexFormat_Undefined,
               },
@@ -306,13 +336,13 @@ void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
                                       {
                                           .operation = WGPUBlendOperation_Add,
                                           .srcFactor = WGPUBlendFactor_One,
-                                          .dstFactor = WGPUBlendFactor_One,
+                                          .dstFactor = WGPUBlendFactor_Zero,
                                       },
                                   .alpha =
                                       {
                                           .operation = WGPUBlendOperation_Add,
                                           .srcFactor = WGPUBlendFactor_One,
-                                          .dstFactor = WGPUBlendFactor_One,
+                                          .dstFactor = WGPUBlendFactor_Zero,
                                       },
                               },
                       },
@@ -323,7 +353,12 @@ void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
                   .mask = 0xFFFFFFFF,
                   .alphaToCoverageEnabled = false,
               },
-          .depthStencil = NULL,
+          .depthStencil =
+              &(WGPUDepthStencilState){
+                  .format = WGPUTextureFormat_Depth24Plus,
+                  .depthWriteEnabled = true,
+                  .depthCompare = WGPUCompareFunction_Less,
+              },
 
       });
 }

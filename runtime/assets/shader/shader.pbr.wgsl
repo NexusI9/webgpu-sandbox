@@ -90,6 +90,12 @@ struct PBRMaterial {
                      @location(1) vCol : vec3<f32>,
                      @location(2) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
+  var diffuse = textureSample(diffuse_texture, diffuse_sampler, vUv);
+  var metallic = textureSample(metallic_texture, metallic_sampler, vUv);
+  var normal = textureSample(normal_texture, normal_sampler, vUv);
+  var occlusion = textureSample(occlusion_texture, occlusion_sampler, vUv);
+  var emissive = textureSample(emissive_texture, emissive_sampler, vUv);
+
   // return vec4<f32>(1.0, 1.0, 1.0, 1.0);
-  return textureSample(diffuse_texture, diffuse_sampler, vUv);
+  return vec4(diffuse.rgb, 0.0);
 }
