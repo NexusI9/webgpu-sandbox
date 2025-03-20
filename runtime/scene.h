@@ -16,13 +16,19 @@ typedef struct {
   // viewport
   viewport viewport;
 
-  // meshes
-  mesh_list mesh_list;
+  // meshes layers
+  // due to depth test, need to write fully solid mesh first and then
+  // transparent meshes
+  struct {
+    mesh_list solid;
+    mesh_list alpha;
+  } meshes;
 
 } scene;
 
 scene scene_create(camera, viewport);
-mesh *scene_add_mesh(scene *, mesh *);
+mesh *scene_add_mesh_solid(scene *, mesh *);
+mesh *scene_add_mesh_alpha(scene *, mesh *);
 void scene_draw(scene *, WGPURenderPassEncoder *);
 
 #endif

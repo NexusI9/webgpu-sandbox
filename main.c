@@ -114,7 +114,7 @@ void add_grid() {
                           });
 
   // add triangle to scene
-  scene_add_mesh(&main_scene, &grid);
+  scene_add_mesh_alpha(&main_scene, &grid);
 }
 
 void import_cube() {
@@ -132,7 +132,7 @@ void import_cube() {
   // TODO: handle child bind
   mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 3);
 
-  scene_add_mesh(&main_scene, &cube);
+  scene_add_mesh_solid(&main_scene, &cube);
 }
 
 void draw() {
@@ -175,7 +175,7 @@ int main(int argc, const char *argv[]) {
   mesh_add_child(&child_cube, &parent_cube);
   mesh_add_child(&child_cube_A, &parent_cube);
   mesh_add_child(&child_cube_B, &parent_cube);
-  scene_add_mesh(&main_scene, &parent_cube);
+  scene_add_mesh_solid(&main_scene, &parent_cube);
 
   import_cube();
 
