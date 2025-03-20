@@ -36,7 +36,6 @@ mesh *scene_add_mesh(scene *scene, mesh *mesh) {
   // eventually expand mesh array if overflow
 
   if (mesh_list->length == mesh_list->capacity) {
-    printf("expand\n");
     mesh_list->capacity *= 2;
     mesh_list = realloc(mesh_list, mesh_list->capacity);
 

@@ -159,7 +159,6 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
-  add_grid();
 
   mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
@@ -179,6 +178,8 @@ int main(int argc, const char *argv[]) {
   scene_add_mesh(&main_scene, &parent_cube);
 
   import_cube();
+
+  add_grid();
 
   // Update Loop
   renderer_set_draw(draw);

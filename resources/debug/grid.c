@@ -1,5 +1,6 @@
 #include "grid.h"
 #include "../primitive/plane.h"
+#include "webgpu/webgpu.h"
 
 void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
@@ -11,7 +12,6 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                                   .primitive = plane,
                               });
 
-
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
                             .path = "./runtime/assets/shader/shader.grid.wgsl",
                             .label = "grid",
@@ -19,6 +19,10 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                             .device = gd->device,
                             .queue = gd->queue,
                         });
+
+  shader_pipeline_custom(&mesh->shader, &(PipelineCustomAttributes){
+                                            .cullMode = WGPUCullMode_None,
+                                        });
 
   mesh_scale(mesh, (vec3){
                        gd->uniform.size,

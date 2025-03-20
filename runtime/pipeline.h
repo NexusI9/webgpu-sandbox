@@ -3,11 +3,17 @@
 
 #include "webgpu/webgpu.h"
 
+#define PIPELINE_DEFAULT_CULLMODE WGPUCullMode_Back;
+
+typedef struct {
+  WGPUCullMode cullMode;
+} PipelineCustomAttributes;
+
 typedef struct {
   WGPUDevice *device;
   WGPUShaderModule *module;
-  WGPUPipelineLayout layout;
   WGPUVertexBufferLayout *vertex_layout;
+  PipelineCustomAttributes *custom;
 } PipelineCreateDescriptor;
 
 typedef struct {
@@ -18,10 +24,12 @@ typedef struct {
   WGPURenderPipelineDescriptor descriptor;
   WGPURenderPipeline handle;
   WGPUPipelineLayout layout;
+  PipelineCustomAttributes *custom_attributes;
 
 } pipeline;
 
-void pipeline_create_default(pipeline *, const PipelineCreateDescriptor *);
-void pipeline_set_cullmode(pipeline *, WGPUCullMode);
-
+void pipeline_create(pipeline *, const PipelineCreateDescriptor *);
+void pipeline_set_custom(pipeline *, PipelineCustomAttributes *);
+void pipeline_build(pipeline *, WGPUPipelineLayout *);
+void pipeline_clear(pipeline *);
 #endif

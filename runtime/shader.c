@@ -3,6 +3,7 @@
 #include "../utils/file.h"
 #include "../utils/system.h"
 #include "camera.h"
+#include "pipeline.h"
 #include "string.h"
 #include "vertex.h"
 #include "viewport.h"
@@ -87,9 +88,23 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 
   // set vertex layout
   shader_set_vertex_layout(shader);
+
+  // init pipeline
+  pipeline_create(&shader->pipeline,
+                  &(PipelineCreateDescriptor){
+                      .vertex_layout = &shader->vertex.layout,
+                      .device = shader->device,
+                      .module = &shader->module,
+                  });
 }
 
-// Define vertex layout to be used in pipeline
+/**
+   Define standard vertex layout to be used in pipeline
+   1. Position (vec3)
+   2. Normals (vec3)
+   3. Color (vec3)
+   4. Texture Coordinate (vec2)
+ */
 void shader_set_vertex_layout(shader *shader) {
 
   // set x,y,z
@@ -128,23 +143,21 @@ void shader_set_vertex_layout(shader *shader) {
   };
 }
 
-static void shader_pipeline_clear(shader *shader) {
-  wgpuRenderPipelineRelease(shader->pipeline.handle);
-  shader->pipeline.handle = NULL;
-}
-
 static void shader_pipeline_release(shader *shader) {
   // Release pipeline
   wgpuPipelineLayoutRelease(shader->pipeline.layout);
 }
 
+/**
+   Build pipeline based on previously set bind groups
+ */
 void shader_build(shader *shader) {
 
   // clear pipeline if existing
   VERBOSE_PRINT("Building Shader: %s\n", shader->name);
 
   if (shader->pipeline.handle)
-    shader_pipeline_clear(shader);
+    pipeline_clear(&shader->pipeline);
 
   // build bind group entries for each individual group index
 
@@ -300,16 +313,7 @@ void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
                        });
 
   // create pipeline
-
-  // create pipeline
-  pipeline_create_default(&shader->pipeline,
-                          &(PipelineCreateDescriptor){
-                              .layout = pipeline_layout,
-                              .vertex_layout = &shader->vertex.layout,
-                              .device = shader->device,
-                              .module = &shader->module,
-                          });
-
+  pipeline_build(&shader->pipeline, &pipeline_layout);
 }
 
 void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
@@ -419,6 +423,9 @@ void shader_bind_samplers(shader *shader, ShaderBindGroup *bindgroup,
   free(converted_entries);
 }
 
+/**
+   Update method called as such: scene update => mesh update => shader update
+ */
 void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
                  const camera *camera, const viewport *viewport) {
 
@@ -452,6 +459,9 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
   }
 }
 
+/**
+   Add uniform of type Default (vec3, float...) into the shader
+ */
 void shader_add_uniform(shader *shader,
                         const ShaderCreateUniformDescriptor *bd) {
 
@@ -502,6 +512,9 @@ void shader_add_uniform(shader *shader,
   }
 }
 
+/**
+   Add uniform of type Texture into the shader
+ */
 void shader_add_texture(shader *shader,
                         const ShaderCreateTextureDescriptor *desc) {
 
@@ -537,6 +550,10 @@ void shader_add_texture(shader *shader,
     }
   }
 }
+
+/**
+   Add uniform of type Sampler into the shader
+ */
 void shader_add_sampler(shader *shader,
                         const ShaderCreateSamplerDescriptor *desc) {
 
@@ -580,10 +597,11 @@ void shader_module_release(shader *shader) {
   wgpuShaderModuleRelease(shader->module);
 }
 
+/**
+   Check if a bind group in the shader isn't already registered
+   if not, it creates a new bind group entry to the list
+ */
 ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
-
-  // check if a bind group in the shader isn't already registered
-  // if not, it creates a new bind group entry to the list
 
   int in = 0, i = 0;
   size_t index = shader->bind_groups.length;
@@ -635,6 +653,11 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
   return &shader->bind_groups.items[index];
 }
 
+/**
+   Check if the shader has every requirements before binding groups
+   Also checks if the bind groups array isn't already at full capacity
+ */
+
 // TODO add more validation by uniforms type (UNIFORM/ TEX/ SAMPLER...) check
 // if it doesn't overflow with max accepted length
 bool shader_validate_binding(shader *shader) {
@@ -650,4 +673,13 @@ bool shader_validate_binding(shader *shader) {
   }
 
   return 1;
+}
+
+/**
+   Alias method redirecting to pipeline objects
+   Update the cullmode of the existing pipeline descriptor
+ */
+void shader_pipeline_custom(shader *shader,
+                            PipelineCustomAttributes *attributes) {
+  pipeline_set_custom(&shader->pipeline, attributes);
 }

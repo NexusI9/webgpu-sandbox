@@ -169,6 +169,10 @@ void shader_create(shader *, const ShaderCreateDescriptor *);
 void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
 void shader_add_texture(shader *, const ShaderCreateTextureDescriptor *);
 void shader_add_sampler(shader *, const ShaderCreateSamplerDescriptor *);
+
+// pipeline customization
+void shader_pipeline_custom(shader *, PipelineCustomAttributes *);
+
 // on update
 void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
                  const viewport *);

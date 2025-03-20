@@ -1,16 +1,40 @@
 #include "pipeline.h"
+#include "emscripten/emscripten.h"
+#include "string.h"
 #include "webgpu/webgpu.h"
 #include <stdbool.h>
+#include <stdio.h>
 
-void pipeline_create_default(pipeline *pipeline,
-                             const PipelineCreateDescriptor *desc) {
+/**
+  Initialize the default pipeline with a preset descriptor
+ */
+void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 
   pipeline->vertex_layout = desc->vertex_layout;
-  pipeline->layout = desc->layout;
   pipeline->module = desc->module;
   pipeline->device = desc->device;
+  pipeline->custom_attributes = NULL;
+  pipeline->handle = NULL;
+}
+
+/**
+   Release pipeline if exists and create i new one
+ */
+void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
+
+  if (pipeline->handle)
+    wgpuRenderPipelineRelease(pipeline->handle);
+
+  // custom attributes
+  WGPUCullMode cull_mode = pipeline->custom_attributes != NULL
+                               ? pipeline->custom_attributes->cullMode
+                               : PIPELINE_DEFAULT_CULLMODE;
+
+  printf("custom: %p\n", pipeline->custom_attributes);
+  // update bind group layout
+  pipeline->layout = *layout;
   pipeline->descriptor = (WGPURenderPipelineDescriptor){
-      .layout = pipeline->layout,
+      .layout = *layout,
       .label = "Shader",
       .vertex =
           {
@@ -22,7 +46,7 @@ void pipeline_create_default(pipeline *pipeline,
       .primitive =
           {
               .frontFace = WGPUFrontFace_CCW,
-              .cullMode = WGPUCullMode_Back,
+              .cullMode = cull_mode,
               .topology = WGPUPrimitiveTopology_TriangleList,
               .stripIndexFormat = WGPUIndexFormat_Undefined,
           },
@@ -74,4 +98,32 @@ void pipeline_create_default(pipeline *pipeline,
       wgpuDeviceCreateRenderPipeline(*pipeline->device, &pipeline->descriptor);
 }
 
-void pipeline_set_cullmode(pipeline *pipeline, WGPUCullMode cullmode) {}
+/**
+   Release pipeline and set back the handle to null
+ */
+void pipeline_clear(pipeline *pipeline) {
+  wgpuRenderPipelineRelease(pipeline->handle);
+  pipeline->handle = NULL;
+
+  // reset custom attributes
+  if (pipeline->custom_attributes != NULL) {
+    free(pipeline->custom_attributes);
+    pipeline->custom_attributes = NULL;
+  }
+}
+
+/**
+   Initialize the custom attributes that will overide the default during the
+   pipeline build
+ */
+void pipeline_set_custom(pipeline *pipeline,
+                         PipelineCustomAttributes *attributes) {
+
+  if (pipeline->custom_attributes == NULL)
+    pipeline->custom_attributes =
+        (PipelineCustomAttributes *)malloc(sizeof(PipelineCustomAttributes));
+
+  *pipeline->custom_attributes = (PipelineCustomAttributes){
+      .cullMode = attributes->cullMode,
+  };
+}
