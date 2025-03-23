@@ -10,7 +10,11 @@
 #define SHADER_BIND_VIEWPORT 1
 #define SHADER_MAX_BIND_GROUP 12
 
+#define SHADER_MAX_UNIFORMS 12
+#define SHADER_UNIFORMS_DEFAULT_CAPACITY 8
+
 #include "camera.h"
+#include "pipeline.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 
@@ -42,27 +46,40 @@ typedef struct {
 
 typedef struct {
   uint32_t binding;
+  int width;
+  int height;
+  unsigned char *data;
+  size_t size;
+  // private
   WGPUTextureView texture_view;
 } ShaderBindGroupTextureEntry;
 
 typedef struct {
   uint32_t binding;
+  WGPUAddressMode addressModeU;
+  WGPUAddressMode addressModeV;
+  WGPUAddressMode addressModeW;
+  WGPUFilterMode minFilter;
+  WGPUFilterMode magFilter;
+  // private
   WGPUSampler sampler;
 } ShaderBindGroupSamplerEntry;
 
 // uniform / texture / sampler array
 typedef struct {
-  ShaderBindGroupEntry items[SHADER_MAX_BIND_GROUP];
+  ShaderBindGroupEntry items[SHADER_MAX_UNIFORMS];
   size_t length;
 } ShaderBindGroupUniforms;
 
 typedef struct {
-  ShaderBindGroupTextureEntry items[SHADER_MAX_BIND_GROUP];
+  ShaderBindGroupTextureEntry *items;
+  size_t capacity;
   size_t length;
 } ShaderBindGroupTextures;
 
 typedef struct {
-  ShaderBindGroupSamplerEntry items[SHADER_MAX_BIND_GROUP];
+  ShaderBindGroupSamplerEntry *items;
+  size_t capacity;
   size_t length;
 } ShaderBindGroupSamplers;
 
@@ -106,12 +123,6 @@ typedef struct {
 
 // pbr uniforms
 typedef struct {
-  WGPUSampler sampler;
-  WGPUTexture texture;
-  WGPUTextureView texture_view;
-} ShaderTexture;
-
-typedef struct {
   vec4 diffuse_factor;
   float metallic_factor;
   float roughness_factor;
@@ -120,14 +131,6 @@ typedef struct {
   vec3 emissive_factor;
   float _padding;
 } ShaderPBRUniform;
-
-typedef struct {
-  ShaderTexture diffuse;
-  ShaderTexture metallic;
-  ShaderTexture normal;
-  ShaderTexture occlusion;
-  ShaderTexture emissive;
-} ShaderPBRTextures;
 
 // core
 typedef struct {
@@ -140,10 +143,7 @@ typedef struct {
   WGPUQueue *queue;
 
   // pipeline
-  struct {
-    WGPURenderPipeline handle;
-    WGPUPipelineLayout layout;
-  } pipeline;
+  pipeline pipeline;
 
   // vertex data
   struct {
@@ -169,6 +169,10 @@ void shader_create(shader *, const ShaderCreateDescriptor *);
 void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
 void shader_add_texture(shader *, const ShaderCreateTextureDescriptor *);
 void shader_add_sampler(shader *, const ShaderCreateSamplerDescriptor *);
+
+// pipeline customization
+void shader_pipeline_custom(shader *, PipelineCustomAttributes *);
+
 // on update
 void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
                  const viewport *);

@@ -3,6 +3,7 @@
 
 #include "../runtime/scene.h"
 #include "clock.h"
+#include "webgpu/webgpu.h"
 
 typedef struct {
   const char *name;
@@ -26,7 +27,7 @@ typedef struct {
     WGPUDevice device;
     WGPUQueue queue;
     WGPUSwapChain swapchain;
-    WGPURenderPipeline pipeline;
+    WGPURenderPipeline pipeline; 
   } wgpu;
 
 } renderer;

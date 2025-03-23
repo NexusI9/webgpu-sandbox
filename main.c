@@ -16,8 +16,8 @@
 #include "resources/debug/grid.h"
 #include "utils/file.h"
 
-#include "backend/clock.h"
 #include "backend/buffer.h"
+#include "backend/clock.h"
 #include "backend/renderer.h"
 
 #include "resources/loader/loader.gltf.h"
@@ -102,7 +102,7 @@ void add_grid() {
       .thickness = 32.0f,
   };
 
-  glm_vec4_copy((vec4){0.2f, 0.2f, 0.2f, 1.0f}, grid_uniform.color);
+  glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
 
   mesh grid;
   grid_create_mesh(&grid, &(GridCreateDescriptor){
@@ -114,7 +114,7 @@ void add_grid() {
                           });
 
   // add triangle to scene
-  scene_add_mesh(&main_scene, &grid);
+  scene_add_mesh_alpha(&main_scene, &grid);
 }
 
 void import_cube() {
@@ -130,9 +130,9 @@ void import_cube() {
                    &(cgltf_options){0});
 
   // TODO: handle child bind
-  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 1);
+  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 3);
 
-  scene_add_mesh(&main_scene, &cube);
+  scene_add_mesh_solid(&main_scene, &cube);
 }
 
 void draw() {
@@ -159,7 +159,6 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
-  add_grid();
 
   mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
@@ -176,9 +175,11 @@ int main(int argc, const char *argv[]) {
   mesh_add_child(&child_cube, &parent_cube);
   mesh_add_child(&child_cube_A, &parent_cube);
   mesh_add_child(&child_cube_B, &parent_cube);
-  scene_add_mesh(&main_scene, &parent_cube);
+  scene_add_mesh_solid(&main_scene, &parent_cube);
 
-  //import_cube();
+  import_cube();
+
+  add_grid();
 
   // Update Loop
   renderer_set_draw(draw);

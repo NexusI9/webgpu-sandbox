@@ -9,8 +9,8 @@ static float plane_vertex_data[] = {
 };
 
 static uint16_t plane_index_data[] = {
-    0, 1, 2, // First triangle
-    0, 2, 3  // Second triangle
+    0, 1, 2,  // First triangle (Bottom-left → Bottom-right → Top-right)
+    2, 3, 0   // Second triangle (Top-right → Top-left → Bottom-left)
 };
 
 primitive primitive_plane() {

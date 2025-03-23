@@ -6,6 +6,7 @@
 
 static int renderer_resize(renderer *, int, const EmscriptenUiEvent *, void *);
 static WGPUSwapChain renderer_create_swapchain(const renderer *);
+static void renderer_create_texture_view(const renderer *, WGPUTextureView *);
 
 renderer renderer_create(const RendererCreateDescriptor *rd) {
 
@@ -84,6 +85,43 @@ void renderer_end_frame(const renderer *renderer) {
   wgpuInstanceRelease(renderer->wgpu.instance);
 }
 
+static void renderer_create_texture_view(const renderer *renderer,
+                                         WGPUTextureView *texture_view) {
+
+  // Need to create a texture view for Z buffer stencil
+  // by default set depth based on draw call order (first ones in
+  // backgrounds...)
+  // => Need to create a depth texture: a hidden buffer storing depth values for
+  // each pixel
+  WGPUTexture depthTexture = wgpuDeviceCreateTexture(
+      renderer->wgpu.device,
+      &(WGPUTextureDescriptor){
+          .usage = WGPUTextureUsage_RenderAttachment, // used in rendering pass
+          .size =
+              (WGPUExtent3D){
+                  renderer->context.width,
+                  renderer->context.height,
+                  1,
+              },
+          .format =
+              WGPUTextureFormat_Depth24Plus, // texture with 24bit-depth format
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+          .dimension = WGPUTextureDimension_2D,
+      });
+
+  *texture_view = wgpuTextureCreateView(
+      depthTexture, &(WGPUTextureViewDescriptor){
+                        .format = WGPUTextureFormat_Depth24Plus,
+                        .dimension = WGPUTextureViewDimension_2D,
+                        .baseMipLevel = 0,
+                        .mipLevelCount = 1, // match above texture
+                        .baseArrayLayer = 0,
+                        .arrayLayerCount = 1, // not using array texture (only 1)
+                        .aspect = WGPUTextureAspect_DepthOnly,
+                    });
+}
+
 void renderer_draw(const renderer *renderer, scene *scene) {
 
   // create texture view
@@ -91,12 +129,21 @@ void renderer_draw(const renderer *renderer, scene *scene) {
       wgpuSwapChainGetCurrentTextureView(renderer->wgpu.swapchain);
 
   // create command encoder
-  WGPUCommandEncoder cmd_encoder =
+  // encoder records GPU operations:
+  // - Texture upload
+  // - Buffer upload
+  // - Render passes
+  // - Compute passes
+
+  WGPUCommandEncoder render_encoder =
       wgpuDeviceCreateCommandEncoder(renderer->wgpu.device, NULL);
+
+  WGPUTextureView depth_texture_view;
+  renderer_create_texture_view(renderer, &depth_texture_view);
 
   // begin render pass
   WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(
-      cmd_encoder,
+      render_encoder,
       &(WGPURenderPassDescriptor){
           // color attachments
           .colorAttachmentCount = 1,
@@ -106,8 +153,18 @@ void renderer_draw(const renderer *renderer, scene *scene) {
                   .loadOp = WGPULoadOp_Clear,
                   .storeOp = WGPUStoreOp_Store,
                   .clearValue = (WGPUColor){0.15f, 0.15f, 0.18f, 1.0f},
-                  .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED},
-      });
+                  .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+              },
+          .depthStencilAttachment = &(WGPURenderPassDepthStencilAttachment){
+              // attach depth texture to render pass to WGPU knows where to
+              // write depth values
+              .view = depth_texture_view,
+              .depthClearValue = 1.0f, // far plane
+              .depthLoadOp =
+                  WGPULoadOp_Clear, // Clear depth at start of render pass
+              .depthStoreOp = WGPUStoreOp_Store, // Keep depth for later use
+              .depthReadOnly = false,            // Allow depth write
+          }});
 
   // draw mesh scene
   scene_draw(scene, &render_pass);
@@ -116,16 +173,16 @@ void renderer_draw(const renderer *renderer, scene *scene) {
   wgpuRenderPassEncoderEnd(render_pass);
 
   // create command buffer
-  WGPUCommandBuffer cmd_buffer =
-      wgpuCommandEncoderFinish(cmd_encoder, NULL); // after 'end render pass'
+  WGPUCommandBuffer render_buffer =
+      wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
 
   // submit commands
-  wgpuQueueSubmit(renderer->wgpu.queue, 1, &cmd_buffer);
+  wgpuQueueSubmit(renderer->wgpu.queue, 1, &render_buffer);
 
   // release all
   wgpuRenderPassEncoderRelease(render_pass);
-  wgpuCommandEncoderRelease(cmd_encoder);
-  wgpuCommandBufferRelease(cmd_buffer);
+  wgpuCommandEncoderRelease(render_encoder);
+  wgpuCommandBufferRelease(render_buffer);
   wgpuTextureViewRelease(back_buffer);
 
   // update clock delta

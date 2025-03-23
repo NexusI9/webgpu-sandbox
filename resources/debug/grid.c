@@ -1,10 +1,10 @@
 #include "grid.h"
 #include "../primitive/plane.h"
+#include "webgpu/webgpu.h"
 
 void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
   primitive plane = primitive_plane();
-
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .name = "grid",
                                   .queue = gd->queue,
@@ -20,12 +20,15 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                             .queue = gd->queue,
                         });
 
+  shader_pipeline_custom(&mesh->shader, &(PipelineCustomAttributes){
+                                            .cullMode = WGPUCullMode_None,
+                                        });
+
   mesh_scale(mesh, (vec3){
                        gd->uniform.size,
                        gd->uniform.size,
                        gd->uniform.size,
                    });
-
   // bind camera and viewport
   // NOTE: binding groups shall be created in order (0 first, then 1)
 
