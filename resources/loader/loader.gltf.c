@@ -275,34 +275,7 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
 
 void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
 
-  // 1. bind pbr factor
-  ShaderPBRUniform uPBR = {
-      .metallic_factor = material->pbr_metallic_roughness.metallic_factor,
-      .roughness_factor = material->pbr_metallic_roughness.roughness_factor,
-      .occlusion_factor = 1.0f,
-      .normal_scale = 1.0f,
-  };
-
-  glm_vec4_copy(material->pbr_metallic_roughness.base_color_factor,
-                uPBR.diffuse_factor);
-
-  glm_vec3_copy(material->emissive_factor, uPBR.emissive_factor);
-
-  ShaderBindGroupEntry entries[1] = {{
-      .binding = 0,
-      .offset = 0,
-      .size = sizeof(ShaderPBRUniform),
-      .data = (void *)&uPBR,
-  }};
-
-  shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
-                                 .group_index = 0,
-                                 .entry_count = 1,
-                                 .entries = entries,
-                                 .visibility = WGPUShaderStage_Vertex |
-                                               WGPUShaderStage_Fragment,
-                             });
-  // 2. bind pbdr textures
+  // bind pbdr textures
   // store the texture_views (hold pointer to actual texture + other data)
 
   uint8_t texture_length = 5;
@@ -343,14 +316,14 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
 
   // send texture + sampler to shader
   shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
-                                 .group_index = 1,
+                                 .group_index = 0,
                                  .entry_count = texture_length,
                                  .entries = texture_entries,
                                  .visibility = WGPUShaderStage_Fragment,
                              });
 
   shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){
-                                 .group_index = 2,
+                                 .group_index = 1,
                                  .entry_count = texture_length,
                                  .entries = sampler_entries,
                                  .visibility = WGPUShaderStage_Fragment,

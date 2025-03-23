@@ -25,6 +25,7 @@ struct Camera {
                                     _pad : vec4<u32>
 };
 // mode flags
+// use bitwise operators to match with C enum
 const CAMERA_MODE_FIXED : u32 = 1u << 0u;
 const CAMERA_MODE_FLYING : u32 = 1u << 1u;
 const CAMERA_MODE_ORBIT : u32 = 1u << 2u;
@@ -89,7 +90,6 @@ struct GridData {
 }
 
 // fragment shader
-
 fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
 
   var offset : vec2<f32> = vec2<f32>(uCamera.position.x, uCamera.position.z);
