@@ -102,7 +102,7 @@ void add_grid() {
       .thickness = 32.0f,
   };
 
-  glm_vec4_copy((vec4){0.2f, 0.2f, 0.2f, 1.0f}, grid_uniform.color);
+  glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
 
   mesh grid;
   grid_create_mesh(&grid, &(GridCreateDescriptor){

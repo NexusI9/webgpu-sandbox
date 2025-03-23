@@ -7,9 +7,9 @@
 #include <assert.h>
 #include <stdio.h>
 
+static void scene_init_mesh_list(mesh_list *);
 static mesh *scene_add_mesh(mesh_list *, mesh *);
 static void scene_draw_mesh_list(scene *, WGPURenderPassEncoder *, mesh_list *);
-static void scene_init_mesh_list(mesh_list *);
 
 scene scene_create(camera camera, viewport viewport) {
 
@@ -27,12 +27,10 @@ scene scene_create(camera camera, viewport viewport) {
 }
 
 mesh *scene_add_mesh_solid(scene *scene, mesh *mesh) {
-
   return scene_add_mesh(&scene->meshes.solid, mesh);
 }
 
 mesh *scene_add_mesh_alpha(scene *scene, mesh *mesh) {
-
   return scene_add_mesh(&scene->meshes.alpha, mesh);
 }
 

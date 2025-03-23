@@ -136,13 +136,13 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var fadeFactor : f32 = max(100.0f / abs(uCamera.position.y), 50.0f);
   var ray : f32 = min(distance(uv, center) * uGrid.scale / fadeFactor, 1.0f);
   var grad : vec3<f32> = mix(white, black, ray);
-
+  var avg : f32 = (grad.r + grad.g + grad.b) / 3.0f;
   return (uGrid.color * pattern * axisMask + vec4(axis, 1.0f)) *
-         vec4(grad, 1.0f);
+         vec4(grad, avg);
 }
 
 @fragment fn fs_main(@location(0) vCol : vec3<f32>,
                      @location(1) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
-   return draw_grid(vUv);
+  return draw_grid(vUv);
 }
