@@ -66,7 +66,7 @@ void mesh_create_primitive(mesh *mesh,
                     });
 }
 
-void mesh_set_vertex_attribute(mesh *mesh, const vertex_attribute *attributes) {
+void mesh_set_vertex_attribute(mesh *mesh, const VertexAttribute *attributes) {
 
   mesh->vertex.data = attributes->data;
   mesh->vertex.length = attributes->length;
@@ -79,7 +79,7 @@ void mesh_set_vertex_attribute(mesh *mesh, const vertex_attribute *attributes) {
             });
 }
 
-void mesh_set_vertex_index(mesh *mesh, const vertex_index *indexes) {
+void mesh_set_vertex_index(mesh *mesh, const VertexIndex *indexes) {
 
   mesh->index.data = indexes->data;
   mesh->index.length = indexes->length;

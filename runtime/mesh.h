@@ -16,8 +16,8 @@
 typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;
-  vertex_attribute vertex;
-  vertex_index index;
+  VertexAttribute vertex;
+  VertexIndex index;
   shader shader;
   const char *name;
 } MeshCreateDescriptor;
@@ -65,10 +65,10 @@ typedef struct mesh {
   WGPUQueue *queue;
 
   // vertex list
-  vertex_attribute vertex;
+  VertexAttribute vertex;
 
   // index list
-  vertex_index index;
+  VertexIndex index;
 
   struct {
     WGPUBuffer vertex, index;
@@ -86,8 +86,8 @@ typedef struct mesh {
 void mesh_create(mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(mesh *, const MeshCreatePrimitiveDescriptor *);
 
-void mesh_set_vertex_attribute(mesh *, const vertex_attribute *);
-void mesh_set_vertex_index(mesh *, const vertex_index *);
+void mesh_set_vertex_attribute(mesh *, const VertexAttribute *);
+void mesh_set_vertex_index(mesh *, const VertexIndex *);
 void mesh_set_parent(mesh *, mesh *);
 void mesh_set_name(mesh *, const char *);
 void mesh_set_shader(mesh *, const ShaderCreateDescriptor *);

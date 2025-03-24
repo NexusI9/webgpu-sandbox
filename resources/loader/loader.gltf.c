@@ -22,14 +22,14 @@ static void loader_gltf_create_mesh(mesh *, cgltf_data *);
 static void loader_gltf_create_shader(shader *, WGPUDevice *, WGPUQueue *,
                                       cgltf_primitive *);
 
-static void loader_gltf_add_vertex_attribute(vertex_attribute *, float *,
-                                             size_t, size_t, uint8_t);
+static void loader_gltf_add_vertex_attribute(VertexAttribute *, float *, size_t,
+                                             size_t, uint8_t);
 
-static void loader_gltf_init_vertex_lists(vertex_attribute *, vertex_list *,
+static void loader_gltf_init_vertex_lists(VertexAttribute *, VertexList *,
                                           size_t);
 static float *loader_gltf_attributes(cgltf_accessor *);
 static void loader_gltf_accessor_to_array(cgltf_accessor *, float *, uint8_t);
-static vertex_index loader_gltf_index(cgltf_primitive *);
+static VertexIndex loader_gltf_index(cgltf_primitive *);
 static void loader_gltf_bind_uniforms(shader *, cgltf_material *);
 static uint8_t loader_gltf_extract_texture(cgltf_texture_view *,
                                            ShaderBindGroupTextureEntry *);
@@ -71,7 +71,7 @@ void loader_gltf_load(mesh *mesh, const char *path,
   cgltf_free(data);
 }
 
-void loader_gltf_add_vertex_attribute(vertex_attribute *vert_attribute,
+void loader_gltf_add_vertex_attribute(VertexAttribute *vert_attribute,
                                       float *data, size_t offset, size_t count,
                                       uint8_t dimension) {
   size_t row = 0;
@@ -96,8 +96,8 @@ float *loader_gltf_attributes(cgltf_accessor *accessor) {
   return (float *)((uint8_t *)buffer_view->buffer->data + offset);
 }
 
-void loader_gltf_init_vertex_lists(vertex_attribute *attributes,
-                                   vertex_list *list, size_t count) {
+void loader_gltf_init_vertex_lists(VertexAttribute *attributes,
+                                   VertexList *list, size_t count) {
 
   // init vertex list
   vertex_list_create(list, count);
@@ -121,7 +121,7 @@ static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
   }
 }
 
-vertex_index loader_gltf_index(cgltf_primitive *source) {
+VertexIndex loader_gltf_index(cgltf_primitive *source) {
 
   // index
   cgltf_accessor *index_accessor = source->indices;
@@ -133,7 +133,7 @@ vertex_index loader_gltf_index(cgltf_primitive *source) {
 
   // DELETEME: print_list_uint16(index_data, index_accessor->count, 1);
 
-  return (vertex_index){.data = index_data, .length = index_accessor->count};
+  return (VertexIndex){.data = index_data, .length = index_accessor->count};
 }
 
 void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
@@ -162,9 +162,9 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       // get accessors to decode buffers into typed data (vertex, indices...)
       // load vertex attributes
 
-      vertex_list vert_list; // raw vertex list (non-interleaved)
-      vertex_attribute vert_attr;
-      vertex_index vert_index;
+      VertexList vert_list; // raw vertex list (non-interleaved)
+      VertexAttribute vert_attr;
+      VertexIndex vert_index;
 
       cgltf_primitive current_primitive = gl_mesh.primitives[p];
 

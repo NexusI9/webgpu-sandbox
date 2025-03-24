@@ -8,7 +8,7 @@ void vertex_create(vertex *vertex) {
   glm_vec2_copy((vec2){0.0f, 0.0f}, vertex->uv);
 }
 
-void vertex_list_create(vertex_list *list, size_t count) {
+void vertex_list_create(VertexList *list, size_t count) {
 
   list->count = count;
 

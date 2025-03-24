@@ -43,6 +43,21 @@ struct Material {
                                                        emissive : vec3<f32>,
 };
 
+struct PointLight {
+  position : vec3<f32>, color : vec4<f32>, strength : f32,
+};
+
+struct AmbientLight {
+  color : vec4<f32>, strength : f32, _padding : vec3<f32>,
+};
+
+struct DirectionalLight {
+  position : vec3<f32>,
+             lookat : vec3<f32>,
+                      color : vec4<f32>,
+                              _padding : vec2<f32>,
+};
+
 // material pbr
 // 1. texture : The actual image data stored in VRAM (pixel colors, normal maps,
 // etc.)

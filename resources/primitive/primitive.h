@@ -6,8 +6,8 @@
 
 typedef struct {
 
-  vertex_attribute vertex;
-  vertex_index index;
+  VertexAttribute vertex;
+  VertexIndex index;
 
 } primitive;
 

@@ -20,12 +20,12 @@ typedef struct {
 typedef struct {
   float *data;
   size_t length;
-} vertex_attribute;
+} VertexAttribute;
 
 typedef struct {
   uint16_t *data;
   size_t length;
-} vertex_index;
+} VertexIndex;
 
 /*
   List of mesh vertex attributes and index
@@ -40,9 +40,9 @@ typedef struct {
   uint16_t *index;
   size_t count;
 
-} vertex_list; // TODO: unsure about the naming..
+} VertexList; // TODO: unsure about the naming..
 
 void vertex_create(vertex *);
-void vertex_list_create(vertex_list *, size_t);
+void vertex_list_create(VertexList *, size_t);
 
 #endif
