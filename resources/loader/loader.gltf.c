@@ -390,7 +390,7 @@ void loader_gltf_load_fallback_texture(
       shader_entry->width * shader_entry->height, TEXTURE_DEFAULT_CHANNELS);
 
   // set all pixels to black
-  for (size_t i = 3; i < shader_entry->size; i += TEXTURE_DEFAULT_CHANNELS) {
+  for (size_t i = 0; i < shader_entry->size; i++) {
     // set alpha channel to 255
     shader_entry->data[i] = 255;
   }

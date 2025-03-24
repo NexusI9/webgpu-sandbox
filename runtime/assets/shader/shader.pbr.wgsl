@@ -16,7 +16,7 @@ struct VertexOut {
                            @location(3) vFrag : vec3<f32>
 };
 
-const PI : f32 = 3.1415926535897931;
+const PI : f32 = 3.14159265359;
 
 struct Mesh {
   model : mat4x4<f32>, position : vec4<f32>,
@@ -76,7 +76,7 @@ struct Material {
   var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
   var output : VertexOut;
 
-  output.vPosition = cam * uMesh.model * vec4<f32>(input.aPos, 1.0);
+  output.vPosition = cam * uMesh.model * vec4<f32>(input.aPos, 1.0f);
   output.vNormal = normalize(input.aNorm);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
@@ -125,10 +125,10 @@ fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
 
   var material : Material;
   material.albedo = diffuse.rgb;
-  material.metallic = metallic.r;
+  material.metallic = metallic.b;
   material.roughness = metallic.g;                     // roughness in G channel
   material.normal = normalize(normal.rgb * 2.0 - 1.0); // convert to [-1,+1]
-  material.occlusion = occlusion.r;
+  material.occlusion = occlusion.b;
   material.emissive = emissive.rgb;
 
   return material;
@@ -186,13 +186,13 @@ fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
   var kD = vec3(1.0f) - kS;
   kD *= 1.0f - material.metallic;
 
-  var diffuse = (material.albedo / PI) * NdotL;
-  var Lo = (kD * diffuse * specular) * light_color * NdotL;
+  var diffuse : vec3<f32> = (material.albedo / PI) * NdotL;
+  var Lo : vec3<f32> = (kD * diffuse + specular) * light_color * NdotL;
 
-  // 7. Apply AO
-  var ambient : vec3<f32> =
-                    vec3(0.03f) * material.albedo; //* material.occlusion
-  var color = ambient * Lo;
+  // 7. Apply AO //0.03f
+  // change first operator to alter ambient light
+  var ambient : vec3<f32> = vec3(0.2f) * material.albedo * material.occlusion;
+  var color = ambient + Lo;
 
-  return vec4<f32>(ambient, 1.0f);
+  return vec4<f32>(color, 1.0f);
 }
