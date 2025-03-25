@@ -181,9 +181,8 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   var N : vec3<f32> = normalize(material.normal); // surface normal
   var V : vec3<f32> =
               normalize(camera_position - fragment_position); // view vector
-  var L : vec3<f32> =
-              normalize(light_position - fragment_position); // light direction
-  var H : vec3<f32> = normalize(V + L);                      // halfway vector
+  var L : vec3<f32> = normalize(light_position);              // light direction
+  var H : vec3<f32> = normalize(V + L);                       // halfway vector
 
   // 2. Fresnel effect
   // Determines how much light reflects vs. refracts
@@ -250,7 +249,18 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
   for (var i = 0u; i < point_light_list.length; i = i + 1u) {
     let light = point_light_list.items[i];
     Lo += compute_point_light(material, vFrag, uCamera.position.xyz,
-                              light.position, light.color, light.intensity);
+                              light.position - vFrag, light.color,
+                              light.intensity);
+  }
+
+  // calculate direction lights
+  // basically the same a point light, but use a fixed light direction instead of
+  // a one per fragment like a point light
+  for (var i = 0u; i < directional_light_list.length; i = i + 1u) {
+    let light = directional_light_list.items[i];
+    let light_direction = -1.0f * light.lookat - light.position;
+    Lo += compute_point_light(material, vFrag, uCamera.position.xyz,
+                              light_direction, light.color, light.intensity);
   }
 
   // calulate ambient lights

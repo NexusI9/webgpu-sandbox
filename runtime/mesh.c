@@ -295,17 +295,18 @@ void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
     // update length
     directional_uniform.length = directional_list->length;
     // update entries
-    for (size_t i = 0; i < directional_uniform.length; i++)
+    for (size_t i = 0; i < directional_uniform.length; i++) {
       directional_uniform.items[i] = directional_list->items[i];
+      printf("Directional:%f \n", directional_uniform.items[i].position[0]);
+    }
   }
 
   if (point_list) {
     // update length
     point_uniform.length = point_list->length;
     // update entries
-    for (size_t i = 0; i < point_uniform.length; i++) {
+    for (size_t i = 0; i < point_uniform.length; i++)
       point_uniform.items[i] = point_list->items[i];
-    }
   }
 
   ShaderBindGroupEntry entries[3] = {
