@@ -734,7 +734,7 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
   }
 
   // calculate direction lights
-  // basically the same a point light, but use a fixed light.position instead of
+  // basically the same a point light, but use a fixed light direction instead of
   // a one per fragment like a point light
   for (var i = 0u; i < directional_light_list.length; i = i + 1u) {
     let light = directional_light_list.items[i];

@@ -295,10 +295,8 @@ void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
     // update length
     directional_uniform.length = directional_list->length;
     // update entries
-    for (size_t i = 0; i < directional_uniform.length; i++) {
+    for (size_t i = 0; i < directional_uniform.length; i++)
       directional_uniform.items[i] = directional_list->items[i];
-      printf("Directional:%f \n", directional_uniform.items[i].position[0]);
-    }
   }
 
   if (point_list) {

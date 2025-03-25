@@ -30,7 +30,6 @@ void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
                                ? pipeline->custom_attributes->cullMode
                                : PIPELINE_DEFAULT_CULLMODE;
 
-  printf("custom: %p\n", pipeline->custom_attributes);
   // update bind group layout
   pipeline->layout = *layout;
   pipeline->descriptor = (WGPURenderPipelineDescriptor){

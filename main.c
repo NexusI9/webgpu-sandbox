@@ -70,23 +70,16 @@ void init_scene() {
                  (vec3){0.0f, 0.0f, 0.0f});
 
   // set light
-  /*scene_add_point_light(&main_scene, &(PointLightDescriptor){
+  scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
                                          .intensity = 2.0f,
                                          .position = {3.0f, 3.0f, 3.0f},
-                                         });*/
+                                     });
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
                                            .intensity = 0.2f,
                                        });
-
-  scene_add_directional_light(&main_scene, &(DirectionalLightDescriptor){
-                                               .color = {1.0f, 1.0f, 1.0f},
-                                               .target = {1.0f, 1.0f, 1.0f},
-                                               .position = {3.0f, 2.0f, 0.0f},
-                                               .intensity = 1.0f,
-                                           });
 }
 
 void add_cube(mesh *cube, vec3 position) {

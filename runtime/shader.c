@@ -215,9 +215,6 @@ void shader_layout_uniforms(shader *shader, ShaderBindGroup *bindgroup,
   WGPUBindGroupLayoutEntry *layout_entries = (WGPUBindGroupLayoutEntry *)malloc(
       uniform_entries->length * sizeof(WGPUBindGroupLayoutEntry));
 
-  printf("bind group %d: type Uniforms with %lu entries\n", bindgroup->index,
-         uniform_entries->length);
-
   // go through each entries
   for (int j = 0; j < uniform_entries->length; j++) {
 
@@ -250,9 +247,6 @@ void shader_layout_textures(shader *shader, ShaderBindGroup *bindgroup,
   WGPUBindGroupLayoutEntry *layout_entries = (WGPUBindGroupLayoutEntry *)malloc(
       texture_entries->length * sizeof(WGPUBindGroupLayoutEntry));
 
-  printf("bind group %d: type Uniforms with %lu entries\n", bindgroup->index,
-         texture_entries->length);
-
   // go through each entries
   for (int j = 0; j < texture_entries->length; j++) {
     layout_entries[j] = (WGPUBindGroupLayoutEntry){
@@ -279,9 +273,6 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
 
   WGPUBindGroupLayoutEntry *layout_entries = (WGPUBindGroupLayoutEntry *)malloc(
       sampler_entries->length * sizeof(WGPUBindGroupLayoutEntry));
-
-  printf("bind group %d: type Sampler with %lu entries\n", bindgroup->index,
-         sampler_entries->length);
 
   // go through each entries
   for (int j = 0; j < sampler_entries->length; j++) {
