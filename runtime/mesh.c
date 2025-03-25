@@ -3,6 +3,7 @@
 #include "../include/cglm/euler.h"
 #include "../include/cglm/quat.h"
 #include "../utils/system.h"
+#include "light.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
@@ -265,6 +266,88 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
                          group_index);
     }
   }
+}
+
+void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
+                      DirectionalLightList *directional_list,
+                      PointLightList *point_list, uint8_t group_index) {
+
+  // init light list uniforms
+  // due to WGSL array uniforms necessity to have constant size, uniforms lists
+  // are already set at <light_list>[12], init them all to 0
+  // by default we will upload all the lights (point, ambient, directional)
+  // within a defined group
+  AmbientLightListUniform ambient_uniform = (AmbientLightListUniform){
+      .length = 0,
+      .items = {0},
+  };
+
+  DirectionalLightListUniform directional_uniform =
+      (DirectionalLightListUniform){
+          .length = 0,
+          .items = {0},
+      };
+
+  PointLightListUniform point_uniform = (PointLightListUniform){
+      .length = 0,
+      .items = {0},
+  };
+
+  if (ambient_list) {
+    // update length
+    ambient_uniform.length = ambient_list->length;
+    // update entries
+    for (size_t i = 0; i < ambient_uniform.length; i++)
+      ambient_uniform.items[i] = ambient_list->items[i];
+  }
+
+  if (directional_list) {
+    // update length
+    directional_uniform.length = directional_list->length;
+    // update entries
+    for (size_t i = 0; i < directional_uniform.length; i++)
+      directional_uniform.items[i] = directional_list->items[i];
+  }
+
+  if (point_list) {
+    // update length
+    point_uniform.length = point_list->length;
+    // update entries
+    for (size_t i = 0; i < point_uniform.length; i++)
+      point_uniform.items[i] = point_list->items[i];
+  }
+
+  ShaderBindGroupEntry entries[3] = {
+      // ambient light
+      {
+          .binding = 0,
+          .data = &ambient_list,
+          .offset = 0,
+          .size = sizeof(AmbientLightListUniform),
+      },
+      // directional light
+      {
+          .binding = 1,
+          .data = &directional_list,
+          .offset = 0,
+          .size = sizeof(DirectionalLightListUniform),
+      },
+      // point light
+      {
+          .binding = 2,
+          .data = &point_list,
+          .offset = 0,
+          .size = sizeof(PointLightListUniform),
+      },
+  };
+
+  shader_add_uniform(&mesh->shader, &(ShaderCreateUniformDescriptor){
+                                        .group_index = group_index,
+                                        .entry_count = 3,
+                                        .visibility = WGPUShaderStage_Vertex |
+                                                      WGPUShaderStage_Fragment,
+                                        .entries = entries,
+                                    });
 }
 
 size_t mesh_add_child(mesh *child, mesh *dest) {

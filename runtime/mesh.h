@@ -3,6 +3,7 @@
 
 #include "../resources/primitive/primitive.h"
 #include "camera.h"
+#include "light.h"
 #include "shader.h"
 #include "vertex.h"
 #include "webgpu/webgpu.h"
@@ -46,7 +47,7 @@ typedef struct {
   size_t *index;
   size_t capacity;
   size_t length;
-} mesh_list;
+} MeshList;
 
 // Core
 typedef struct mesh {
@@ -79,7 +80,7 @@ typedef struct mesh {
 
   // hierarchy
   struct mesh *parent;
-  mesh_list children;
+  MeshList children;
 
 } mesh;
 
@@ -111,5 +112,8 @@ MeshUniform mesh_model_uniform(mesh *);
 
 // bind model, camera and viewport to bind group
 void mesh_bind_matrices(mesh *, camera *, viewport *, uint8_t);
+// bind light scene
+void mesh_bind_lights(mesh *, AmbientLightList *, DirectionalLightList *,
+                      PointLightList *, uint8_t);
 
 #endif

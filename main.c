@@ -14,6 +14,7 @@
 #include <webgpu/webgpu.h>
 
 #include "resources/debug/grid.h"
+#include "runtime/light.h"
 #include "utils/file.h"
 
 #include "backend/buffer.h"
@@ -57,7 +58,7 @@ void init_scene() {
       .speed = 20.0f,
       .clock = &main_clock,
       .mode = FLYING,
-      .sensitivity = 1.0f,
+      .sensitivity = 0.2f,
       .wheel_sensitivity = 0.01f,
   });
 
@@ -67,6 +68,13 @@ void init_scene() {
   // init camera position
   camera_look_at(&main_scene.camera, (vec3){0.0f, 0.0f, 10.0f},
                  (vec3){0.0f, 0.0f, 0.0f});
+
+  // set light
+  scene_add_point_light(&main_scene, &(PointLightDescriptor){
+                                         .color = {1.0f, 1.0f, 1.0f},
+                                         .intensity = 10.0f,
+                                         .position = {3.0f, 3.0f, 3.0f},
+                                     });
 }
 
 void add_cube(mesh *cube, vec3 position) {
@@ -131,6 +139,7 @@ void import_cube() {
 
   // TODO: handle child bind
   mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 2);
+  mesh_bind_lights(&cube, NULL, NULL, &main_scene.lights.point, 3);
 
   scene_add_mesh_solid(&main_scene, &cube);
 }
