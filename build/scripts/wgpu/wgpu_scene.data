@@ -652,7 +652,8 @@ fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
 
 fn compute_point_light(material : Material, fragment_position : vec3<f32>,
                        camera_position : vec3<f32>, light_position : vec3<f32>,
-                       light_color : vec3<f32>) -> vec3<f32> {
+                       light_color : vec3<f32>, light_intensity : f32)
+    -> vec3<f32> {
 
   // compute light base on Cook-Torrance BRDF Model
 
@@ -692,7 +693,8 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   kD *= 1.0f - material.metallic;
 
   var diffuse : vec3<f32> = (material.albedo / PI) * NdotL;
-  var Lo : vec3<f32> = (kD * diffuse + specular) * light_color * NdotL;
+  var Lo : vec3<f32> = (kD * diffuse + specular) * light_color *
+                       light_intensity * NdotL;
 
   // 7. Apply AO //0.03f
   // change first operator to alter ambient light
@@ -728,17 +730,16 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
   for (var i = 0u; i < point_light_list.length; i = i + 1u) {
     let light = point_light_list.items[i];
     Lo += compute_point_light(material, vFrag, uCamera.position.xyz,
-                              light.position, light.color);
+                              light.position, light.color, light.intensity);
   }
 
   // calulate ambient lights
   for (var i = 0u; i < ambient_light_list.length; i = i + 1u) {
     let light = ambient_light_list.items[i];
-    ambient += compute_ambient_light(material, light.color, 0.2);
+    ambient += compute_ambient_light(material, light.color, light.intensity);
   }
 
   var color = ambient + Lo;
-  //color = Lo;
 
   return vec4<f32>(color, 1.0f);
 }

@@ -72,13 +72,13 @@ void init_scene() {
   // set light
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
-                                         .intensity = 10.0f,
+                                         .intensity = 2.0f,
                                          .position = {3.0f, 3.0f, 3.0f},
                                      });
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
-                                           .intensity = 10.0f,
+                                           .intensity = 0.2f,
                                        });
 }
 
