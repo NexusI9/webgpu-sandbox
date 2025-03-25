@@ -7,6 +7,7 @@
 #include "shader.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -277,27 +278,16 @@ void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
   // are already set at <light_list>[12], init them all to 0
   // by default we will upload all the lights (point, ambient, directional)
   // within a defined group
-  AmbientLightListUniform ambient_uniform = (AmbientLightListUniform){
-      .length = 0,
-      .items = {0},
-  };
-
-  DirectionalLightListUniform directional_uniform =
-      (DirectionalLightListUniform){
-          .length = 0,
-          .items = {0},
-      };
-
-  PointLightListUniform point_uniform = (PointLightListUniform){
-      .length = 0,
-      .items = {0},
-  };
+  AmbientLightListUniform ambient_uniform = {0};
+  DirectionalLightListUniform directional_uniform = {0};
+  PointLightListUniform point_uniform = {0};
 
   if (ambient_list) {
     // update length
     ambient_uniform.length = ambient_list->length;
     // update entries
     for (size_t i = 0; i < ambient_uniform.length; i++)
+
       ambient_uniform.items[i] = ambient_list->items[i];
   }
 
@@ -313,29 +303,30 @@ void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
     // update length
     point_uniform.length = point_list->length;
     // update entries
-    for (size_t i = 0; i < point_uniform.length; i++)
+    for (size_t i = 0; i < point_uniform.length; i++) {
       point_uniform.items[i] = point_list->items[i];
+    }
   }
 
   ShaderBindGroupEntry entries[3] = {
       // ambient light
       {
           .binding = 0,
-          .data = &ambient_list,
+          .data = &ambient_uniform,
           .offset = 0,
           .size = sizeof(AmbientLightListUniform),
       },
       // directional light
       {
           .binding = 1,
-          .data = &directional_list,
+          .data = &directional_uniform,
           .offset = 0,
           .size = sizeof(DirectionalLightListUniform),
       },
       // point light
       {
           .binding = 2,
-          .data = &point_list,
+          .data = &point_uniform,
           .offset = 0,
           .size = sizeof(PointLightListUniform),
       },

@@ -75,6 +75,11 @@ void init_scene() {
                                          .intensity = 10.0f,
                                          .position = {3.0f, 3.0f, 3.0f},
                                      });
+
+  scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
+                                           .color = {1.0f, 1.0f, 1.0f},
+                                           .intensity = 10.0f,
+                                       });
 }
 
 void add_cube(mesh *cube, vec3 position) {
@@ -139,7 +144,8 @@ void import_cube() {
 
   // TODO: handle child bind
   mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 2);
-  mesh_bind_lights(&cube, NULL, NULL, &main_scene.lights.point, 3);
+  mesh_bind_lights(&cube, &main_scene.lights.ambient, NULL,
+                   &main_scene.lights.point, 3);
 
   scene_add_mesh_solid(&main_scene, &cube);
 }

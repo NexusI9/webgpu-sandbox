@@ -18,11 +18,11 @@ struct VertexOut {
 
 const PI : f32 = 3.14159265359;
 
-struct Mesh {
+struct Mesh { // 80B
   model : mat4x4<f32>, position : vec4<f32>,
 }
 
-struct Camera {
+struct Camera { // 112B
   view : mat4x4<f32>,
          position : vec4<f32>,
                     lookat : vec4<f32>,
@@ -30,7 +30,7 @@ struct Camera {
                                     _pad : vec3<u32>,
 };
 
-struct Viewport {
+struct Viewport { // 64B
   projection : mat4x4<f32>,
 };
 
@@ -44,7 +44,6 @@ struct Material {
 };
 
 // Lights
-
 struct PointLight {
   position : vec3<f32>, _padding : f32, color : vec3<f32>, intensity : f32,
 };
@@ -64,12 +63,12 @@ struct DirectionalLight {
 
 const MAX_LIGHT : u32 = 16u;
 
-struct PointLightStorage {
-  length : u32, items : array<PointLight, MAX_LIGHT>,
-};
-
 struct AmbientLightStorage {
   length : u32, items : array<AmbientLight, MAX_LIGHT>,
+};
+
+struct PointLightStorage {
+  length : u32, items : array<PointLight, MAX_LIGHT>,
 };
 
 struct DirectionalLightStorage {
@@ -171,11 +170,9 @@ fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
   return material;
 }
 
-fn cook_torrance_pbr(material : Material, fragment_position : vec3<f32>,
-                     camera_position : vec3<f32>) -> vec3<f32> {
-
-  var light_pos = vec3<f32>(3.0f, 3.0f, 3.0f);
-  var light_color = vec3<f32>(1.0f, 1.0f, 1.0f);
+fn compute_point_light(material : Material, fragment_position : vec3<f32>,
+                       camera_position : vec3<f32>, light_position : vec3<f32>,
+                       light_color : vec3<f32>) -> vec3<f32> {
 
   // compute light base on Cook-Torrance BRDF Model
 
@@ -184,8 +181,8 @@ fn cook_torrance_pbr(material : Material, fragment_position : vec3<f32>,
   var V : vec3<f32> =
               normalize(camera_position - fragment_position); // view vector
   var L : vec3<f32> =
-              normalize(light_pos - fragment_position); // light direction
-  var H : vec3<f32> = normalize(V + L);                 // halfway vector
+              normalize(light_position - fragment_position); // light direction
+  var H : vec3<f32> = normalize(V + L);                      // halfway vector
 
   // 2. Fresnel effect
   // Determines how much light reflects vs. refracts
@@ -219,10 +216,13 @@ fn cook_torrance_pbr(material : Material, fragment_position : vec3<f32>,
 
   // 7. Apply AO //0.03f
   // change first operator to alter ambient light
-  var ambient : vec3<f32> = vec3(0.2f) * material.albedo * material.occlusion;
-  var color = ambient + Lo;
 
-  return color;
+  return Lo;
+}
+
+fn compute_ambient_light(material : Material, light_color : vec3<f32>,
+                         light_intensity : f32) -> vec3<f32> {
+  return vec3(light_intensity) * material.albedo * material.occlusion;
 }
 
 // fragment shader
@@ -239,7 +239,25 @@ fn cook_torrance_pbr(material : Material, fragment_position : vec3<f32>,
 
   let material = create_material(albedo, metallic, normal, occlusion, emissive);
 
-  let pbr = cook_torrance_pbr(material, vFrag, uCamera.position.xyz);
+  var light_pos = vec3<f32>(0.0f);
+  var light_color = vec3<f32>(0.0f);
+  var Lo : vec3<f32> = vec3<f32>(0.0f);
+  var ambient : vec3<f32> = vec3<f32>(0.0f);
 
-  return vec4<f32>(pbr, 1.0f);
+  // calculate point lights
+  for (var i = 0u; i < point_light_list.length; i = i + 1u) {
+    let light = point_light_list.items[i];
+    Lo += compute_point_light(material, vFrag, uCamera.position.xyz,
+                              light.position, light.color);
+  }
+
+  // calulate ambient lights
+  for (var i = 0u; i < ambient_light_list.length; i = i + 1u) {
+    let light = ambient_light_list.items[i];
+    ambient += compute_ambient_light(material, light.color, 0.2);
+  }
+
+  var color = ambient + Lo;
+
+  return vec4<f32>(color, 1.0f);
 }

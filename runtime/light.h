@@ -25,17 +25,19 @@ typedef struct {
 } DirectionalLightDescriptor;
 
 // light type
+// NOTE: use __attribute__ on list AS WELL AS items (pointlights...) else wrong
+// alignment in list items (i.e. _padding takes color.r value)
 typedef struct {
   vec3 position;
   float _padding;
   vec3 color;
   float intensity;
-} PointLight;
+} __attribute__((aligned(16))) PointLight;
 
 typedef struct {
   vec3 color;
   float intensity;
-} AmbientLight;
+} __attribute__((aligned(16))) AmbientLight;
 
 typedef struct {
   vec3 position;
@@ -44,23 +46,23 @@ typedef struct {
   float _padding_2;
   vec3 color;
   float intensity;
-} DirectionalLight;
+} __attribute__((aligned(16))) DirectionalLight;
 
 // light uniforms
 typedef struct {
   uint32_t length;
   PointLight items[LIGHT_MAX_CAPACITY];
-} PointLightListUniform;
+} __attribute__((aligned(16))) PointLightListUniform;
 
 typedef struct {
   uint32_t length;
   AmbientLight items[LIGHT_MAX_CAPACITY];
-} AmbientLightListUniform;
+} __attribute__((aligned(16))) AmbientLightListUniform;
 
 typedef struct {
   uint32_t length;
   DirectionalLight items[LIGHT_MAX_CAPACITY];
-} DirectionalLightListUniform;
+} __attribute__((aligned(16))) DirectionalLightListUniform;
 
 // light list
 typedef struct {
@@ -84,12 +86,5 @@ typedef struct {
 void light_create_point(PointLight *, PointLightDescriptor *);
 void light_create_directional(DirectionalLight *, DirectionalLightDescriptor *);
 void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
-
-/*
-PointLightListUniform light_point_list_uniform(PointLightList *);
-DirectionalLightListUniform
-light_directional_list_uniform(DirectionalLightList *);
-AmbientLightListUniform light_ambient_list_uniform(AmbientLightList *);
-*/
 
 #endif

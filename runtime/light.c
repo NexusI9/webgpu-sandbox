@@ -1,9 +1,14 @@
 #include "light.h"
+#include "emscripten/emscripten.h"
+#include <stdio.h>
 
 void light_create_point(PointLight *light, PointLightDescriptor *desc) {
 
+  // init to 0
+  *light = (PointLight){0};
+
   // copy intensity
-  *light = (PointLight){.intensity = desc->intensity};
+  light->intensity = desc->intensity;
 
   // copy position
   glm_vec3_copy(desc->position, light->position);
@@ -15,8 +20,11 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
 void light_create_directional(DirectionalLight *light,
                               DirectionalLightDescriptor *desc) {
 
+  // init to 0
+  *light = (DirectionalLight){0};
+
   // copy intensity
-  *light = (DirectionalLight){.intensity = desc->intensity};
+  light->intensity = desc->intensity;
 
   // copy position
   glm_vec3_copy(desc->position, light->position);
@@ -30,16 +38,12 @@ void light_create_directional(DirectionalLight *light,
 
 void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
 
+  // init to 0
+  *light = (AmbientLight){0};
+
   // copy intensity
-  *light = (AmbientLight){.intensity = desc->intensity};
+  light->intensity = desc->intensity;
 
   // copy color
   glm_vec3_copy(desc->color, light->color);
 }
-
-/*
-PointLightListUniform light_point_uniform(PointLightList *list) {}
-DirectionalLightListUniform
-light_directional_uniform(DirectionalLightList *list) {}
-AmbientLightListUniform light_ambient_uniform(AmbientLightList *list) {}
-*/
