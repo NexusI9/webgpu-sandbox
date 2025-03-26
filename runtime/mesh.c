@@ -338,6 +338,13 @@ void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
                                                       WGPUShaderStage_Fragment,
                                         .entries = entries,
                                     });
+
+  if (mesh->children.items != NULL) {
+    for (size_t c = 0; c < mesh->children.length; c++) {
+      mesh_bind_lights(&mesh->children.items[c], ambient_list, directional_list,
+                       point_list, group_index);
+    }
+  }
 }
 
 size_t mesh_add_child(mesh *child, mesh *dest) {
