@@ -31,7 +31,7 @@ if (ENVIRONMENT_IS_NODE) {
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmp26baqplq.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpgqsveyvr.js
 
   Module['expectedDataFileDownloads'] ??= 0;
   Module['expectedDataFileDownloads']++;
@@ -213,25 +213,25 @@ Module['FS_createPath']("/runtime/assets", "shader", true, true);
     }
 
     }
-    loadPackage({"files": [{"filename": "/resources/assets/gltf/cube.gltf", "start": 0, "end": 2239156}, {"filename": "/resources/assets/gltf/ico.gltf", "start": 2239156, "end": 2251410}, {"filename": "/runtime/assets/shader/shader.default.wgsl", "start": 2251410, "end": 2252875}, {"filename": "/runtime/assets/shader/shader.grid.wgsl", "start": 2252875, "end": 2258152}, {"filename": "/runtime/assets/shader/shader.pbr.wgsl", "start": 2258152, "end": 2267663}], "remote_package_size": 2267663});
+    loadPackage({"files": [{"filename": "/resources/assets/gltf/cube.gltf", "start": 0, "end": 3379132}, {"filename": "/resources/assets/gltf/ico.gltf", "start": 3379132, "end": 3391386}, {"filename": "/runtime/assets/shader/shader.default.wgsl", "start": 3391386, "end": 3392851}, {"filename": "/runtime/assets/shader/shader.grid.wgsl", "start": 3392851, "end": 3398128}, {"filename": "/runtime/assets/shader/shader.pbr.wgsl", "start": 3398128, "end": 3407639}], "remote_package_size": 3407639});
 
   })();
 
-// end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmp26baqplq.js
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpn73tclo1.js
+// end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpgqsveyvr.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmppr_f47am.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if (Module['$ww'] || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpn73tclo1.js
-// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpxqudqnev.js
+  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmppr_f47am.js
+// include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpe8w59f6f.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpxqudqnev.js
+  // end include: /var/folders/hx/g36pxlqs1dj0kvmzszq_j3k00000gq/T/tmpe8w59f6f.js
 
 
 // Sometimes an existing Module object exists with properties

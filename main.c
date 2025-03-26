@@ -175,7 +175,7 @@ int main(int argc, const char *argv[]) {
   // set scene
   init_scene();
 
-  mesh child_cube;
+  /*mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
 
   mesh child_cube_A;
@@ -190,7 +190,7 @@ int main(int argc, const char *argv[]) {
   mesh_add_child(&child_cube, &parent_cube);
   mesh_add_child(&child_cube_A, &parent_cube);
   mesh_add_child(&child_cube_B, &parent_cube);
-  scene_add_mesh_solid(&main_scene, &parent_cube);
+  scene_add_mesh_solid(&main_scene, &parent_cube);*/
 
   import_cube();
 
