@@ -34,6 +34,7 @@ static void loader_gltf_bind_uniforms(shader *, cgltf_material *);
 static uint8_t loader_gltf_extract_texture(cgltf_texture_view *,
                                            ShaderBindGroupTextureEntry *);
 static void loader_gltf_load_fallback_texture(ShaderBindGroupTextureEntry *);
+static void loader_gltf_mesh_position(mesh *, const char *, cgltf_data *);
 
 void loader_gltf_load(mesh *mesh, const char *path,
                       const cgltf_options *options) {
@@ -150,7 +151,8 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       parent_mesh = mesh_get_child(mesh, new_child);
     }
 
-    // shader *shader_list[gl_mesh.primitives_count];
+    // set mesh position
+    loader_gltf_mesh_position(parent_mesh, gl_mesh.name, data);
 
     // GLTF PRIMITIVES
     // primitives are vertices that belong to a same mesh but have different
@@ -393,5 +395,40 @@ void loader_gltf_load_fallback_texture(
   for (size_t i = 0; i < shader_entry->size; i++) {
     // set alpha channel to 255
     shader_entry->data[i] = 255;
+  }
+}
+
+void loader_gltf_mesh_position(mesh *mesh, const char *name, cgltf_data *data) {
+
+  // Apply transformation to mesh
+  // Transformation attributes are stored in the nodes
+  // whereas mesh only contain vertices/index related data
+  // need to go through the nodes and compare with the given gltf_mesh to see if
+  // it matches name
+
+  for (size_t n = 0; n < data->nodes_count; n++) {
+
+    cgltf_node *node = &data->nodes[n];
+    if (strcmp(node->mesh->name, name) == 0) {
+
+      // set translation
+      if (node->has_translation)
+        mesh_position(mesh, (vec3){
+                                node->translation[0],
+                                node->translation[1],
+                                node->translation[2],
+                            });
+
+      // set scale
+      if (node->has_scale)
+        mesh_scale(mesh, (vec3){
+                             node->scale[0],
+                             node->scale[1],
+                             node->scale[2],
+                         });
+      // set rotation
+      if (node->has_rotation)
+        mesh_rotate_quat(mesh, node->rotation);
+    }
   }
 }

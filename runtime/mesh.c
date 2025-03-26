@@ -211,10 +211,12 @@ void mesh_rotate(mesh *mesh, vec3 rotation) {
 
   versor q;
   glm_euler_xyz(rotation, &q);
+  mesh_rotate(mesh, q);
+}
 
+void mesh_rotate_quat(mesh *mesh, versor rotation) {
   mat4 transform_matrix;
-  glm_quat_mat4(q, transform_matrix);
-
+  glm_quat_mat4(rotation, transform_matrix);
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
 }
 

@@ -103,6 +103,7 @@ void mesh_draw(mesh *, WGPURenderPassEncoder *, const camera *,
 void mesh_scale(mesh *, vec3);
 void mesh_position(mesh *, vec3);
 void mesh_rotate(mesh *, vec3);
+void mesh_rotate_quat(mesh *, versor);
 
 size_t mesh_add_child(mesh *, mesh *);
 size_t mesh_add_child_empty(mesh *);
