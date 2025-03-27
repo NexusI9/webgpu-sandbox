@@ -142,7 +142,7 @@ typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;
 
-  // pipeline
+  // pipelines
   pipeline pipeline;
 
   // vertex data

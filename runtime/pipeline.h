@@ -28,8 +28,16 @@ typedef struct {
 
 } pipeline;
 
+// 1. init pipeline
 void pipeline_create(pipeline *, const PipelineCreateDescriptor *);
+
+// 2. set custom attributes (optional)
 void pipeline_set_custom(pipeline *, PipelineCustomAttributes *);
+
+// 3. build pipeline layout
 void pipeline_build(pipeline *, WGPUPipelineLayout *);
+
+// 4. destroyer
 void pipeline_clear(pipeline *);
+
 #endif

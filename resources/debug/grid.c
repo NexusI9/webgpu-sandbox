@@ -20,9 +20,10 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                             .queue = gd->queue,
                         });
 
-  shader_pipeline_custom(&mesh->shader, &(PipelineCustomAttributes){
-                                            .cullMode = WGPUCullMode_None,
-                                        });
+  shader_pipeline_custom(mesh_shader_default(mesh),
+                         &(PipelineCustomAttributes){
+                             .cullMode = WGPUCullMode_None,
+                         });
 
   mesh_scale(mesh, (vec3){
                        gd->uniform.size,
@@ -43,11 +44,12 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
       },
   };
 
-  shader_add_uniform(&mesh->shader, &(ShaderCreateUniformDescriptor){
-                                        .group_index = 1,
-                                        .entry_count = 1,
-                                        .entries = grid_entries,
-                                        .visibility = WGPUShaderStage_Vertex |
-                                                      WGPUShaderStage_Fragment,
-                                    });
+  shader_add_uniform(
+      mesh_shader_default(mesh),
+      &(ShaderCreateUniformDescriptor){
+          .group_index = 1,
+          .entry_count = 1,
+          .entries = grid_entries,
+          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+      });
 }

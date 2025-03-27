@@ -11,6 +11,9 @@
 #include <stdio.h>
 #include <string.h>
 
+// Shadow map is implicitely handled withing mesh
+static void mesh_init_shadow_shader(mesh *);
+
 MeshUniform mesh_model_uniform(mesh *mesh) {
 
   MeshUniform uModel;
@@ -47,6 +50,9 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
   // TODO: uniformise shader creation (ref || value)
   mesh->shader = md->shader;
+
+  // init shadow shader
+  mesh_init_shadow_shader(mesh);
 
   // init model matrix
   glm_mat4_identity(mesh->model);
@@ -144,24 +150,43 @@ void mesh_create_index_buffer(mesh *mesh,
                 });
 }
 
-void mesh_build(mesh *mesh) {
+/**
+   Build mesh and children shaders pipeline
+   If given shader is NULL, it will choose the default shader as fallback
+ */
+void mesh_build(mesh *mesh, shader *build_shader) {
+
+  shader *default_shader = build_shader;
+
+  if (build_shader == NULL)
+    default_shader = mesh_shader_default(mesh);
 
   // reccursively build shader
-  shader_build(&mesh->shader);
+  shader_build(default_shader);
 
   // build children
   if (mesh->children.items != NULL) {
     for (size_t c = 0; c < mesh->children.length; c++) {
-      mesh_build(&mesh->children.items[c]);
+      mesh_build(&mesh->children.items[c], build_shader);
     }
   }
 }
 
-void mesh_draw(mesh *mesh, WGPURenderPassEncoder *render_pass,
-               const camera *camera, const viewport *viewport) {
+/**
+   Mesh main draw function
+ */
+void mesh_draw(mesh *mesh, shader *draw_shader,
+               WGPURenderPassEncoder *render_pass, const camera *camera,
+               const viewport *viewport) {
 
   // draw shader
-  shader_draw(&mesh->shader, render_pass, camera, viewport);
+  // if shader is null, use default shader
+  shader *default_shader = draw_shader;
+
+  if (draw_shader == NULL)
+    default_shader = mesh_shader_default(mesh);
+
+  shader_draw(default_shader, render_pass, camera, viewport);
 
   // draw indexes from buffer
   wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, mesh->buffer.vertex, 0,
@@ -176,11 +201,15 @@ void mesh_draw(mesh *mesh, WGPURenderPassEncoder *render_pass,
   // TODO: REDUCE DRAW CALL.........
   if (mesh->children.items != NULL) {
     for (size_t c = 0; c < mesh->children.length; c++) {
-      mesh_draw(&mesh->children.items[c], render_pass, camera, viewport);
+      struct mesh *child = &mesh->children.items[c];
+      mesh_draw(child, draw_shader, render_pass, camera, viewport);
     }
   }
 }
 
+/**
+   Apply scale to mesh transform matrix
+ */
 void mesh_scale(mesh *mesh, vec3 scale) {
   glm_vec3_copy(scale, mesh->scale);
 
@@ -193,6 +222,10 @@ void mesh_scale(mesh *mesh, vec3 scale) {
 
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
 }
+
+/**
+   Apply translation to mesh transform matrix
+ */
 void mesh_position(mesh *mesh, vec3 position) {
   glm_vec3_copy(position, mesh->position);
 
@@ -206,6 +239,10 @@ void mesh_position(mesh *mesh, vec3 position) {
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
 }
 
+/**
+   Converts a vec3 rotation to quaternion and
+   apply rotation to mesh transform matrix
+ */
 void mesh_rotate(mesh *mesh, vec3 rotation) {
   glm_vec3_copy(rotation, mesh->rotation);
 
@@ -214,12 +251,23 @@ void mesh_rotate(mesh *mesh, vec3 rotation) {
   mesh_rotate(mesh, q);
 }
 
+/**
+   Apply rotation to mesh transform matrix
+ */
 void mesh_rotate_quat(mesh *mesh, versor rotation) {
   mat4 transform_matrix;
   glm_quat_mat4(rotation, transform_matrix);
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
 }
 
+/**
+   Bind Mesh, Camera and Projection matrix to a given mesh shader
+   Note that the binding process follows a fixed convention of order, meaning
+   one shall ensure the shader actually fits the bellow binding order:
+   - Binding 0: Viewport projection matrix
+   - Binding 1: Camera matrix
+   - Binding 2: Model matrix
+ */
 void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
                         uint8_t group_index) {
 
@@ -271,15 +319,17 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
   }
 }
 
+/**
+   Init light list uniforms
+   due to WGSL array uniforms necessity to have constant size, uniforms lists
+   are already set at <light_list>[12], init them all to 0
+   by default we will upload all the lights (point, ambient, directional)
+   within a defined group
+  */
 void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
                       DirectionalLightList *directional_list,
                       PointLightList *point_list, uint8_t group_index) {
 
-  // init light list uniforms
-  // due to WGSL array uniforms necessity to have constant size, uniforms lists
-  // are already set at <light_list>[12], init them all to 0
-  // by default we will upload all the lights (point, ambient, directional)
-  // within a defined group
   AmbientLightListUniform ambient_uniform = {0};
   DirectionalLightListUniform directional_uniform = {0};
   PointLightListUniform point_uniform = {0};
@@ -288,25 +338,46 @@ void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
     // update length
     ambient_uniform.length = ambient_list->length;
     // update entries
-    for (size_t i = 0; i < ambient_uniform.length; i++)
+    for (size_t i = 0; i < ambient_uniform.length; i++) {
+      AmbientLight *light = &ambient_list->items[i];
+      AmbientLightUniform *uniform = &ambient_uniform.items[i];
 
-      ambient_uniform.items[i] = ambient_list->items[i];
+      // map light to light uniform (including paddings...)
+      *uniform = (AmbientLightUniform){0};
+      uniform->intensity = light->intensity;
+      glm_vec3_copy(light->color, uniform->color);
+    }
   }
 
   if (directional_list) {
     // update length
     directional_uniform.length = directional_list->length;
     // update entries
-    for (size_t i = 0; i < directional_uniform.length; i++)
-      directional_uniform.items[i] = directional_list->items[i];
+    for (size_t i = 0; i < directional_uniform.length; i++) {
+      DirectionalLight *light = &directional_list->items[i];
+      DirectionalLightUniform *uniform = &directional_uniform.items[i];
+
+      *uniform = (DirectionalLightUniform){0};
+      uniform->intensity = light->intensity;
+      glm_vec3_copy(light->color, uniform->color);
+      glm_vec3_copy(light->position, uniform->position);
+      glm_vec3_copy(light->target, uniform->target);
+    }
   }
 
   if (point_list) {
     // update length
     point_uniform.length = point_list->length;
     // update entries
-    for (size_t i = 0; i < point_uniform.length; i++)
-      point_uniform.items[i] = point_list->items[i];
+    for (size_t i = 0; i < point_uniform.length; i++) {
+      PointLight *light = &point_list->items[i];
+      PointLightUniform *uniform = &point_uniform.items[i];
+
+      *uniform = (PointLightUniform){0};
+      uniform->intensity = light->intensity;
+      glm_vec3_copy(light->color, uniform->color);
+      glm_vec3_copy(light->position, uniform->position);
+    }
   }
 
   ShaderBindGroupEntry entries[3] = {
@@ -391,12 +462,15 @@ size_t mesh_add_child(mesh *child, mesh *dest) {
   return id;
 }
 
+/**
+   Add and initialize an empty child to the given mesh
+ */
 size_t mesh_add_child_empty(mesh *mesh) {
 
-  // add empty mesh, still need to initialize it before adding
-  // this ensure proper init array
   struct mesh temp_mesh;
 
+  // still need to initialize it before adding
+  // this ensure proper init array
   mesh_create(&temp_mesh, &(MeshCreateDescriptor){
                               .device = mesh->device,
                               .queue = mesh->queue,
@@ -405,6 +479,66 @@ size_t mesh_add_child_empty(mesh *mesh) {
   return mesh_add_child(&temp_mesh, mesh);
 }
 
+/**
+   Retireve the mesh children address at the given index from the mesh children
+   list
+ */
 mesh *mesh_get_child(mesh *mesh, size_t index) {
   return &mesh->children.items[index];
+}
+
+/**
+   Return mesh default shader
+ */
+shader *mesh_shader_default(mesh *mesh) { return &mesh->shader; }
+
+/**
+   Return mesh shadow shader
+ */
+shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader_shadow; }
+
+/**
+   Init mesh shadow shader.
+   By default all mesh have a shadow shader to generate shadow map
+   during the bind light process we will generate the depth map since that's
+   where we get out scene lights
+ */
+void mesh_init_shadow_shader(mesh *mesh) {
+
+  shader_create(&mesh->shader_shadow,
+                &(ShaderCreateDescriptor){
+                    .path = "./runtime/assets/shader/shader.shadow.wgsl",
+                    .label = "shadow",
+                    .device = mesh->device,
+                    .queue = mesh->queue,
+                    .name = "shadow",
+                });
+}
+
+/**
+   Bind a specific point light view to the mesh's shadow shader
+   The function is called during the scene shadow updating process
+   As to provide to the shadow shader each lights views.
+
+   Note that the view matrix shall be combination of the [projection view] *
+   [light view] already multiplied together as there is currently no need to
+   upload separate views in the shader.
+ */
+void mesh_bind_shadow(mesh *mesh, mat4 *view) {
+
+  shader_add_uniform(&mesh->shader_shadow,
+                     &(ShaderCreateUniformDescriptor){
+                         .group_index = 0,
+                         .entry_count = 1,
+                         .visibility = WGPUShaderStage_Vertex,
+                         .entries =
+                             (ShaderBindGroupEntry[]){
+                                 {
+                                     .binding = 0,
+                                     .data = view,
+                                     .size = sizeof(mat4),
+                                     .offset = 0,
+                                 },
+                             },
+                     });
 }

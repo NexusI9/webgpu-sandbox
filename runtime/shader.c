@@ -70,6 +70,7 @@ static void shader_bind_textures(shader *, ShaderBindGroup *,
 static void shader_bind_samplers(shader *, ShaderBindGroup *,
                                  WGPUBindGroupLayout *);
 
+
 void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 
   // store shader string in memory

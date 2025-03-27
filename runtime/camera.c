@@ -201,7 +201,6 @@ void camera_update_matrix_uniform(void *callback_camera, void *data) {
   glm_vec4_copy(uCamera.position, new_data->position);
   glm_vec4_copy(uCamera.lookat, new_data->lookat);
   new_data->mode = uCamera.mode;
-  
 }
 
 void camera_translate(camera *camera, vec3 new_position) {
@@ -323,3 +322,5 @@ void camera_look_at(camera *camera, vec3 position, vec3 target) {
   memcpy(camera->position, position, sizeof(vec3));
   memcpy(camera->view, view, sizeof(mat4));
 }
+
+mat4 *camera_view(camera *camera) { return &camera->view; }

@@ -1,9 +1,36 @@
 #ifndef _LIGHT_H_
 #define _LIGHT_H_
 #include "../include/cglm/vec3.h"
+#include "shader.h"
+#include "webgpu/webgpu.h"
 #include <stdint.h>
 
 #define LIGHT_MAX_CAPACITY 16
+#define LIGHT_POINT_VIEWS 6
+#define SHADOW_MAP_SIZE 512
+
+// core type
+typedef struct {
+
+  vec3 position;
+  vec3 color;
+  float intensity;
+
+} PointLight;
+
+typedef struct {
+  vec3 color;
+  float intensity;
+} AmbientLight;
+
+typedef struct {
+
+  vec3 position;
+  vec3 target;
+  vec3 color;
+  float intensity;
+
+} DirectionalLight;
 
 // descriptor type
 typedef struct {
@@ -32,12 +59,12 @@ typedef struct {
   float _padding;
   vec3 color;
   float intensity;
-} __attribute__((aligned(16))) PointLight;
+} __attribute__((aligned(16))) PointLightUniform;
 
 typedef struct {
   vec3 color;
   float intensity;
-} __attribute__((aligned(16))) AmbientLight;
+} __attribute__((aligned(16))) AmbientLightUniform;
 
 typedef struct {
   vec3 position;
@@ -46,35 +73,44 @@ typedef struct {
   float _padding_2;
   vec3 color;
   float intensity;
-} __attribute__((aligned(16))) DirectionalLight;
+} __attribute__((aligned(16))) DirectionalLightUniform;
 
 // light uniforms
 typedef struct {
   uint32_t length;
-  PointLight items[LIGHT_MAX_CAPACITY];
+  PointLightUniform items[LIGHT_MAX_CAPACITY];
 } __attribute__((aligned(16))) PointLightListUniform;
 
 typedef struct {
   uint32_t length;
-  AmbientLight items[LIGHT_MAX_CAPACITY];
+  AmbientLightUniform items[LIGHT_MAX_CAPACITY];
 } __attribute__((aligned(16))) AmbientLightListUniform;
 
 typedef struct {
   uint32_t length;
-  DirectionalLight items[LIGHT_MAX_CAPACITY];
+  DirectionalLightUniform items[LIGHT_MAX_CAPACITY];
 } __attribute__((aligned(16))) DirectionalLightListUniform;
+
+typedef struct {
+  mat4 views[LIGHT_POINT_VIEWS];
+  uint8_t length;
+} PointLightViews;
 
 // light list
 typedef struct {
   size_t length;
-  PointLight items[LIGHT_MAX_CAPACITY];
   size_t capacity;
+  PointLight items[LIGHT_MAX_CAPACITY];
+  WGPUTextureView shadow_texture;
+  WGPUSampler shadow_sampler;
 } PointLightList;
 
 typedef struct {
   size_t length;
-  DirectionalLight items[LIGHT_MAX_CAPACITY];
   size_t capacity;
+  DirectionalLight items[LIGHT_MAX_CAPACITY];
+  WGPUTextureView shadow_texture;
+  WGPUSampler shadow_sampler;
 } DirectionalLightList;
 
 typedef struct {
@@ -87,4 +123,5 @@ void light_create_point(PointLight *, PointLightDescriptor *);
 void light_create_directional(DirectionalLight *, DirectionalLightDescriptor *);
 void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
 
+PointLightViews light_point_views(vec3, viewport *);
 #endif

@@ -28,5 +28,5 @@ typedef struct {
 viewport viewport_create(const ViewportCreateDescriptor *);
 void viewport_update_projection(viewport *);
 ViewportUniform viewport_uniform(viewport *);
-
+mat4 *viewport_projection(viewport *);
 #endif

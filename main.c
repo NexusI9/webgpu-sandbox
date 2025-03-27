@@ -38,7 +38,7 @@ static float rot = 0.0f;
 static renderer main_renderer;
 static cclock main_clock;
 
-// callbacksd
+// callback
 static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
@@ -74,6 +74,12 @@ void init_scene() {
                                          .color = {1.0f, 1.0f, 1.0f},
                                          .intensity = 2.0f,
                                          .position = {3.0f, 3.0f, 3.0f},
+                                     });
+
+  scene_add_point_light(&main_scene, &(PointLightDescriptor){
+                                         .color = {1.0f, 1.0f, 1.0f},
+                                         .intensity = 2.0f,
+                                         .position = {-3.0f, 3.0f, -2.0f},
                                      });
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
@@ -193,8 +199,10 @@ int main(int argc, const char *argv[]) {
   scene_add_mesh_solid(&main_scene, &parent_cube);*/
 
   import_cube();
-
   add_grid();
+
+  // Setup drawing pass may need to move it else where
+  renderer_compute_shadow(&main_renderer, &main_scene);
 
   // Update Loop
   renderer_set_draw(draw);

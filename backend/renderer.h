@@ -27,7 +27,7 @@ typedef struct {
     WGPUDevice device;
     WGPUQueue queue;
     WGPUSwapChain swapchain;
-    WGPURenderPipeline pipeline; 
+    WGPURenderPipeline pipeline;
   } wgpu;
 
 } renderer;
@@ -35,6 +35,7 @@ typedef struct {
 renderer renderer_create(const RendererCreateDescriptor *);
 void renderer_init(renderer *);
 void renderer_draw(const renderer *, scene *);
+void renderer_compute_shadow(renderer *, scene *);
 
 void renderer_end_frame(const renderer *);
 void renderer_set_draw(const void *);

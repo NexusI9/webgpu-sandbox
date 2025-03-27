@@ -1,4 +1,5 @@
 #include "scene.h"
+#include "../utils/system.h"
 #include "camera.h"
 #include "light.h"
 #include "mesh.h"
@@ -53,7 +54,7 @@ mesh *scene_add_mesh(MeshList *mesh_list, mesh *mesh) {
 
   // BUILD MESH
   // build shader (establish pipeline from previously set bind groups)
-  mesh_build(mesh);
+  mesh_build(mesh, NULL);
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow
@@ -77,7 +78,8 @@ void scene_draw_mesh_list(scene *scene, WGPURenderPassEncoder *render_pass,
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
-    mesh_draw(&mesh_list->items[i], render_pass, &scene->camera,
+    mesh *current_mesh = &mesh_list->items[i];
+    mesh_draw(current_mesh, NULL, render_pass, &scene->camera,
               &scene->viewport);
   }
 }
@@ -146,3 +148,4 @@ size_t scene_add_ambient_light(scene *scene, AmbientLightDescriptor *desc) {
 
   return list->length;
 }
+

@@ -42,3 +42,5 @@ ViewportUniform viewport_uniform(viewport *viewport) {
   glm_mat4_copy(viewport->projection, uViewport.projection);
   return uViewport;
 }
+
+mat4 *viewport_projection(viewport *vp) { return &vp->projection; }

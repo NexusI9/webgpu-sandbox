@@ -61,7 +61,7 @@ void camera_look_at(camera *, vec3, vec3);
 // get
 float camera_position(const camera *);
 float camera_euler_rotation(const camera *);
-mat4 *camera_view(const camera *);
+mat4 *camera_view(camera *);
 CameraUniform camera_uniform(camera *);
 
 // set

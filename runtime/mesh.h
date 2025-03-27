@@ -76,6 +76,7 @@ typedef struct mesh {
   } buffer;
 
   // shader
+  shader shader_shadow;
   shader shader;
 
   // hierarchy
@@ -96,9 +97,9 @@ void mesh_set_shader(mesh *, const ShaderCreateDescriptor *);
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);
 
-void mesh_build(mesh *);
-void mesh_draw(mesh *, WGPURenderPassEncoder *, const camera *,
+void mesh_draw(mesh *, shader *, WGPURenderPassEncoder *, const camera *,
                const viewport *);
+void mesh_build(mesh *, shader *);
 
 void mesh_scale(mesh *, vec3);
 void mesh_position(mesh *, vec3);
@@ -111,10 +112,16 @@ mesh *mesh_get_child(mesh *, size_t);
 
 MeshUniform mesh_model_uniform(mesh *);
 
+// DEFAULT SHADER
+shader *mesh_shader_default(mesh *);
 // bind model, camera and viewport to bind group
 void mesh_bind_matrices(mesh *, camera *, viewport *, uint8_t);
 // bind light scene
 void mesh_bind_lights(mesh *, AmbientLightList *, DirectionalLightList *,
                       PointLightList *, uint8_t);
 
+// SHADOW SHADER
+// bind shadow specicif view
+void mesh_bind_shadow(mesh *, mat4 *);
+shader *mesh_shader_shadow(mesh *);
 #endif

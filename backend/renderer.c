@@ -3,6 +3,7 @@
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 
 static int renderer_resize(renderer *, int, const EmscriptenUiEvent *, void *);
 static WGPUSwapChain renderer_create_swapchain(const renderer *);
@@ -111,15 +112,16 @@ static void renderer_create_texture_view(const renderer *renderer,
       });
 
   *texture_view = wgpuTextureCreateView(
-      depthTexture, &(WGPUTextureViewDescriptor){
-                        .format = WGPUTextureFormat_Depth24Plus,
-                        .dimension = WGPUTextureViewDimension_2D,
-                        .baseMipLevel = 0,
-                        .mipLevelCount = 1, // match above texture
-                        .baseArrayLayer = 0,
-                        .arrayLayerCount = 1, // not using array texture (only 1)
-                        .aspect = WGPUTextureAspect_DepthOnly,
-                    });
+      depthTexture,
+      &(WGPUTextureViewDescriptor){
+          .format = WGPUTextureFormat_Depth24Plus,
+          .dimension = WGPUTextureViewDimension_2D,
+          .baseMipLevel = 0,
+          .mipLevelCount = 1, // match above texture
+          .baseArrayLayer = 0,
+          .arrayLayerCount = 1, // not using array texture (only 1)
+          .aspect = WGPUTextureAspect_DepthOnly,
+      });
 }
 
 void renderer_draw(const renderer *renderer, scene *scene) {
@@ -195,4 +197,110 @@ void renderer_set_draw(const void *callback) {
 
 void renderer_lock_mouse(const renderer *renderer) {
   emscripten_request_pointerlock(renderer->context.name, true);
+}
+
+/**
+   The building shadow phase is segmented in numerous steps:
+
+   1. BINDING:
+   For each scene point and directional lights, we bind the relative views to
+   the mesh shadow shader view matrix uniform
+
+   2. DRAWING:
+   Once the view matrix is bound, the mesh is ready to drawn with its shadow
+  shader. For each light views, each mesh will be renderder (under a certain
+  point of view)
+
+   3. STORING:
+  The rendered mesh will be stored in a dedicated Texture that will be held in a
+  arrayed texture in the Light list
+
+  4. TRANSFERT
+  Once the rendered textures are stored, they will be uploaded in the mesh
+  "default shader" as a texture and sampler to be read and reused for calculate
+  the shadow
+
+
+  */
+
+static void renderer_shadow_to_texture(WGPUDevice *, WGPUTextureView *, mesh *);
+
+void renderer_shadow_to_texture(WGPUDevice *device, WGPUTextureView *texture,
+                                mesh *mesh) {
+
+  WGPUCommandEncoder shadow_encoder =
+      wgpuDeviceCreateCommandEncoder(*device, NULL);
+  WGPURenderPassEncoder shadow_pass = wgpuCommandEncoderBeginRenderPass(
+      shadow_encoder, &(WGPURenderPassDescriptor){
+                          .depthStencilAttachment =
+                              &(WGPURenderPassDepthStencilAttachment){
+                                  .view = *texture,
+                                  .depthClearValue = 1.0f,
+                                  .depthLoadOp = WGPULoadOp_Clear,
+                                  .depthStoreOp = WGPUStoreOp_Store,
+                              },
+                      });
+
+  
+}
+
+void renderer_compute_shadow(renderer *renderer, scene *scene) {
+
+  // create multi layered light texture (passed to the renderpass)
+  size_t point_light_length = scene->lights.point.length;
+  uint32_t layer_count = LIGHT_POINT_VIEWS * point_light_length;
+
+  // create shadow map texture
+  WGPUTexture shadow_texture = wgpuDeviceCreateTexture(
+      renderer->wgpu.device,
+      &(WGPUTextureDescriptor){
+          .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, 1},
+          .format = WGPUTextureFormat_Depth32Float,
+          .usage = WGPUTextureUsage_RenderAttachment |
+                   WGPUTextureUsage_TextureBinding,
+          .dimension = WGPUTextureDimension_2D,
+          .mipLevelCount = 1,
+      });
+
+  // create shadow map texture view array
+  WGPUTextureView shadow_texture_view[layer_count];
+  for (int l = 0; l < layer_count; l++) {
+    shadow_texture_view[l] = wgpuTextureCreateView(
+        shadow_texture, &(WGPUTextureViewDescriptor){
+                            .format = WGPUTextureFormat_Depth32Float,
+                            .dimension = WGPUTextureViewDimension_2DArray,
+                            .mipLevelCount = 1,
+                            .arrayLayerCount = layer_count,
+                            .aspect = WGPUTextureAspect_DepthOnly,
+                        });
+  }
+
+  // bind light view projection
+  for (int p = 0; p < scene->lights.point.length; p++) {
+    // retrieve 6 views of point cube
+    PointLightViews light_views = light_point_views(
+        scene->lights.point.items[p].position, &scene->viewport);
+
+    // render scene and store depth map for each view
+    for (int v = 0; v < light_views.length; v++) {
+      mat4 *current_view = &light_views.views[v];
+
+      for (int m = 0; m < scene->meshes.solid.length; m++) {
+
+        // 1. Binding
+        mesh *current_mesh = &scene->meshes.solid.items[m];
+        mesh_bind_shadow(current_mesh, current_view);
+
+        // 2. Render
+        // create shadow render pass
+        renderer_shadow_to_texture(
+            &renderer->wgpu.device,
+            &shadow_texture_view[p * light_views.length + v], current_mesh);
+
+        // 3. Store
+      }
+    }
+  }
+
+  // 4. Transfer
 }
