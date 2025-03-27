@@ -12,7 +12,8 @@
 static void scene_init_mesh_list(MeshList *);
 static void scene_init_light_list(scene *);
 static mesh *scene_add_mesh(MeshList *, mesh *);
-static void scene_draw_mesh_list(scene *, WGPURenderPassEncoder *, MeshList *);
+static void scene_draw_mesh_list(scene *, MeshDrawMethod,
+                                 WGPURenderPassEncoder *, MeshList *);
 
 scene scene_create(camera camera, viewport viewport) {
 
@@ -40,21 +41,22 @@ mesh *scene_add_mesh_alpha(scene *scene, mesh *mesh) {
   return scene_add_mesh(&scene->meshes.alpha, mesh);
 }
 
-void scene_draw(scene *scene, WGPURenderPassEncoder *render_pass) {
+void scene_draw(scene *scene, MeshDrawMethod draw_method,
+                WGPURenderPassEncoder *render_pass) {
 
   // update camera
   camera_draw(&scene->camera);
   // draw solid meshes first
-  scene_draw_mesh_list(scene, render_pass, &scene->meshes.solid);
+  scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.solid);
   // draw transparent meshes then
-  scene_draw_mesh_list(scene, render_pass, &scene->meshes.alpha);
+  scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.alpha);
 }
 
 mesh *scene_add_mesh(MeshList *mesh_list, mesh *mesh) {
 
   // BUILD MESH
   // build shader (establish pipeline from previously set bind groups)
-  mesh_build(mesh, NULL);
+  mesh_build(mesh, MESH_SHADER_DEFAULT);
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow
@@ -73,13 +75,14 @@ mesh *scene_add_mesh(MeshList *mesh_list, mesh *mesh) {
   return &mesh_list->items[mesh_list->length - 1];
 }
 
-void scene_draw_mesh_list(scene *scene, WGPURenderPassEncoder *render_pass,
+void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,
+                          WGPURenderPassEncoder *render_pass,
                           MeshList *mesh_list) {
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = &mesh_list->items[i];
-    mesh_draw(current_mesh, NULL, render_pass, &scene->camera,
+    mesh_draw(current_mesh, draw_method, render_pass, &scene->camera,
               &scene->viewport);
   }
 }
@@ -148,4 +151,3 @@ size_t scene_add_ambient_light(scene *scene, AmbientLightDescriptor *desc) {
 
   return list->length;
 }
-

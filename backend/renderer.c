@@ -169,7 +169,7 @@ void renderer_draw(const renderer *renderer, scene *scene) {
           }});
 
   // draw mesh scene
-  scene_draw(scene, &render_pass);
+  scene_draw(scene, MESH_SHADER_DEFAULT, &render_pass);
 
   // end render pass
   wgpuRenderPassEncoderEnd(render_pass);
@@ -240,8 +240,6 @@ void renderer_shadow_to_texture(WGPUDevice *device, WGPUTextureView *texture,
                                   .depthStoreOp = WGPUStoreOp_Store,
                               },
                       });
-
-  
 }
 
 void renderer_compute_shadow(renderer *renderer, scene *scene) {

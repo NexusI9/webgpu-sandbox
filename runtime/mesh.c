@@ -13,6 +13,7 @@
 
 // Shadow map is implicitely handled withing mesh
 static void mesh_init_shadow_shader(mesh *);
+static shader *mesh_select_shader(mesh *, MeshDrawMethod);
 
 MeshUniform mesh_model_uniform(mesh *mesh) {
 
@@ -154,20 +155,17 @@ void mesh_create_index_buffer(mesh *mesh,
    Build mesh and children shaders pipeline
    If given shader is NULL, it will choose the default shader as fallback
  */
-void mesh_build(mesh *mesh, shader *build_shader) {
+void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
 
-  shader *default_shader = build_shader;
-
-  if (build_shader == NULL)
-    default_shader = mesh_shader_default(mesh);
+  shader *shader = mesh_select_shader(mesh, draw_method);
 
   // reccursively build shader
-  shader_build(default_shader);
+  shader_build(shader);
 
   // build children
   if (mesh->children.items != NULL) {
     for (size_t c = 0; c < mesh->children.length; c++) {
-      mesh_build(&mesh->children.items[c], build_shader);
+      mesh_build(&mesh->children.items[c], draw_method);
     }
   }
 }
@@ -175,18 +173,15 @@ void mesh_build(mesh *mesh, shader *build_shader) {
 /**
    Mesh main draw function
  */
-void mesh_draw(mesh *mesh, shader *draw_shader,
+void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
                WGPURenderPassEncoder *render_pass, const camera *camera,
                const viewport *viewport) {
 
   // draw shader
   // if shader is null, use default shader
-  shader *default_shader = draw_shader;
 
-  if (draw_shader == NULL)
-    default_shader = mesh_shader_default(mesh);
-
-  shader_draw(default_shader, render_pass, camera, viewport);
+  shader *shader = mesh_select_shader(mesh, draw_method);
+  shader_draw(shader, render_pass, camera, viewport);
 
   // draw indexes from buffer
   wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, mesh->buffer.vertex, 0,
@@ -202,7 +197,7 @@ void mesh_draw(mesh *mesh, shader *draw_shader,
   if (mesh->children.items != NULL) {
     for (size_t c = 0; c < mesh->children.length; c++) {
       struct mesh *child = &mesh->children.items[c];
-      mesh_draw(child, draw_shader, render_pass, camera, viewport);
+      mesh_draw(child, draw_method, render_pass, camera, viewport);
     }
   }
 }
@@ -541,4 +536,26 @@ void mesh_bind_shadow(mesh *mesh, mat4 *view) {
                                  },
                              },
                      });
+}
+
+/**
+Select the right mesh method call depending of the defined draw method
+ */
+shader *mesh_select_shader(mesh *mesh, MeshDrawMethod method) {
+
+  switch (method) {
+
+  case MESH_SHADER_SHADOW:
+    return mesh_shader_shadow(mesh);
+    break;
+
+    // TODO Implement other shader presets
+  case MESH_SHADER_CUSTOM:
+  case MESH_SHADER_SOLID:
+  case MESH_SHADER_WIREFRAME:
+  case MESH_SHADER_DEFAULT:
+  default:
+    return mesh_shader_default(mesh);
+    break;
+  }
 }
