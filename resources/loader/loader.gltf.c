@@ -139,6 +139,7 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
 
 void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
 
+  printf("====== ENTER GLTF =====\n");
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
 
@@ -271,7 +272,6 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
                             .queue = queue,
                         });
 
-  // TODO: bind pbr related uniforms
   loader_gltf_bind_uniforms(shader, material);
 }
 

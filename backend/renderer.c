@@ -223,11 +223,13 @@ void renderer_lock_mouse(const renderer *renderer) {
 
   */
 
-static void renderer_shadow_to_texture(WGPUDevice *, WGPUTextureView *, mesh *);
+static void renderer_shadow_to_texture(scene *, WGPUTextureView *,
+                                       WGPUDevice *);
 
-void renderer_shadow_to_texture(WGPUDevice *device, WGPUTextureView *texture,
-                                mesh *mesh) {
+void renderer_shadow_to_texture(scene *scene, WGPUTextureView *texture,
+                                WGPUDevice *device) {
 
+  printf("rendering shadow to texture\n");
   WGPUCommandEncoder shadow_encoder =
       wgpuDeviceCreateCommandEncoder(*device, NULL);
   WGPURenderPassEncoder shadow_pass = wgpuCommandEncoderBeginRenderPass(
@@ -240,9 +242,15 @@ void renderer_shadow_to_texture(WGPUDevice *device, WGPUTextureView *texture,
                                   .depthStoreOp = WGPUStoreOp_Store,
                               },
                       });
+
+  scene_draw(scene, MESH_SHADER_SHADOW, &shadow_pass);
+
+  wgpuRenderPassEncoderEnd(shadow_pass);
 }
 
 void renderer_compute_shadow(renderer *renderer, scene *scene) {
+
+  printf("==== COMPUTING SHADER ====\n");
 
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = scene->lights.point.length;
@@ -274,29 +282,29 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   }
 
   // bind light view projection
-  for (int p = 0; p < scene->lights.point.length; p++) {
+  for (size_t p = 0; p < scene->lights.point.length; p++) {
     // retrieve 6 views of point cube
     PointLightViews light_views = light_point_views(
         scene->lights.point.items[p].position, &scene->viewport);
 
     // render scene and store depth map for each view
-    for (int v = 0; v < light_views.length; v++) {
+    for (size_t v = 0; v < light_views.length; v++) {
       mat4 *current_view = &light_views.views[v];
-
+      printf("view: %lu\n", v);
       for (int m = 0; m < scene->meshes.solid.length; m++) {
-
-        // 1. Binding
+        // 1. Bind meshes
         mesh *current_mesh = &scene->meshes.solid.items[m];
-        mesh_bind_shadow(current_mesh, current_view);
-
-        // 2. Render
-        // create shadow render pass
-        renderer_shadow_to_texture(
-            &renderer->wgpu.device,
-            &shadow_texture_view[p * light_views.length + v], current_mesh);
-
-        // 3. Store
+        //mesh_bind_shadow(current_mesh, current_view);
+        //mesh_build(current_mesh, MESH_SHADER_SHADOW);
       }
+
+      // 2. Render scene
+      // create shadow render pass
+      /*renderer_shadow_to_texture(
+          scene, &shadow_texture_view[p * light_views.length + v],
+          &renderer->wgpu.device);*/
+
+      // 3. Store
     }
   }
 

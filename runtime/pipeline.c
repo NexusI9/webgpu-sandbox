@@ -21,9 +21,9 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
    Release pipeline if exists and create i new one
  */
 void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
-
+  // printf("vertex layout: %u\n", pipeline->vertex_layout->attributes->format);
   if (pipeline->handle)
-    wgpuRenderPipelineRelease(pipeline->handle);
+    pipeline_clear(pipeline);
 
   // custom attributes
   WGPUCullMode cull_mode = pipeline->custom_attributes != NULL
@@ -103,6 +103,9 @@ void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
 void pipeline_clear(pipeline *pipeline) {
   wgpuRenderPipelineRelease(pipeline->handle);
   pipeline->handle = NULL;
+
+  // wgpuPipelineLayoutRelease(pipeline->layout);
+  pipeline->layout = NULL;
 
   // reset custom attributes
   if (pipeline->custom_attributes != NULL) {

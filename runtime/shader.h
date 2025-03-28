@@ -179,5 +179,6 @@ void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
 
 // build up the whole pipeline
 void shader_build(shader *);
-
+void shader_module_release(shader *);
+void shader_bind_group_init(shader *);
 #endif

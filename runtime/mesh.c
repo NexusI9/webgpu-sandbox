@@ -36,6 +36,12 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
   mesh_set_name(mesh, md->name);
+  printf("create mesh %s\n", mesh->name);
+
+  // init child list
+  mesh->children.length = 0;
+  mesh->children.capacity = MESH_CHILD_LENGTH;
+  mesh->children.items = NULL;
 
   // set wgpu
   mesh->device = md->device;
@@ -57,11 +63,6 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
   // init model matrix
   glm_mat4_identity(mesh->model);
-
-  // init child list
-  mesh->children.length = 0;
-  mesh->children.capacity = 0;
-  mesh->children.items = NULL;
 }
 
 void mesh_create_primitive(mesh *mesh,
@@ -157,17 +158,15 @@ void mesh_create_index_buffer(mesh *mesh,
  */
 void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
 
+  printf("Build mesh: %s\n", mesh->name);
   shader *shader = mesh_select_shader(mesh, draw_method);
 
   // reccursively build shader
   shader_build(shader);
 
   // build children
-  if (mesh->children.items != NULL) {
-    for (size_t c = 0; c < mesh->children.length; c++) {
-      mesh_build(&mesh->children.items[c], draw_method);
-    }
-  }
+  for (size_t c = 0; c < mesh->children.length; c++)
+    mesh_build(&mesh->children.items[c], draw_method);
 }
 
 /**
@@ -194,11 +193,10 @@ void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
 
   // draw children
   // TODO: REDUCE DRAW CALL.........
-  if (mesh->children.items != NULL) {
-    for (size_t c = 0; c < mesh->children.length; c++) {
-      struct mesh *child = &mesh->children.items[c];
-      mesh_draw(child, draw_method, render_pass, camera, viewport);
-    }
+
+  for (size_t c = 0; c < mesh->children.length; c++) {
+    struct mesh *child = &mesh->children.items[c];
+    mesh_draw(child, draw_method, render_pass, camera, viewport);
   }
 }
 
@@ -306,12 +304,8 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
                                         .entries = entries,
                                     });
 
-  if (mesh->children.items != NULL) {
-    for (size_t c = 0; c < mesh->children.length; c++) {
-      mesh_bind_matrices(&mesh->children.items[c], camera, viewport,
-                         group_index);
-    }
-  }
+  for (size_t c = 0; c < mesh->children.length; c++)
+    mesh_bind_matrices(&mesh->children.items[c], camera, viewport, group_index);
 }
 
 /**
@@ -407,12 +401,9 @@ void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
                                         .entries = entries,
                                     });
 
-  if (mesh->children.items != NULL) {
-    for (size_t c = 0; c < mesh->children.length; c++) {
-      mesh_bind_lights(&mesh->children.items[c], ambient_list, directional_list,
-                       point_list, group_index);
-    }
-  }
+  for (size_t c = 0; c < mesh->children.length; c++)
+    mesh_bind_lights(&mesh->children.items[c], ambient_list, directional_list,
+                     point_list, group_index);
 }
 
 size_t mesh_add_child(mesh *child, mesh *dest) {
@@ -424,7 +415,7 @@ size_t mesh_add_child(mesh *child, mesh *dest) {
     dest->children.index = malloc(sizeof(size_t) * dest->children.capacity);
   }
 
-  // expand list
+  // expand parent mesh list
   if (dest->children.length == dest->children.capacity) {
     size_t new_capacity = dest->children.capacity * 2;
     mesh *new_list =
@@ -469,7 +460,10 @@ size_t mesh_add_child_empty(mesh *mesh) {
   mesh_create(&temp_mesh, &(MeshCreateDescriptor){
                               .device = mesh->device,
                               .queue = mesh->queue,
+                              .name = mesh->name,
                           });
+
+  printf("temp mesh child length: %lu\n", temp_mesh.children.length);
 
   return mesh_add_child(&temp_mesh, mesh);
 }
@@ -508,6 +502,9 @@ void mesh_init_shadow_shader(mesh *mesh) {
                     .queue = mesh->queue,
                     .name = "shadow",
                 });
+
+  for (size_t c = 0; c < mesh->children.length; c++)
+    mesh_init_shadow_shader(&mesh->children.items[c]);
 }
 
 /**
@@ -536,6 +533,12 @@ void mesh_bind_shadow(mesh *mesh, mat4 *view) {
                                  },
                              },
                      });
+
+  if (mesh->children.items != NULL) {
+    for (size_t c = 0; c < mesh->children.length; c++) {
+      mesh_bind_shadow(&mesh->children.items[c], view);
+    }
+  }
 }
 
 /**

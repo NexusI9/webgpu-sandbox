@@ -57,6 +57,7 @@ mesh *scene_add_mesh(MeshList *mesh_list, mesh *mesh) {
   // BUILD MESH
   // build shader (establish pipeline from previously set bind groups)
   mesh_build(mesh, MESH_SHADER_DEFAULT);
+  //shader_module_release(mesh_shader_default(mesh));
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow
