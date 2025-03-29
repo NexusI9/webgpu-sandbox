@@ -101,7 +101,7 @@ typedef struct {
   size_t length;
   size_t capacity;
   PointLight items[LIGHT_MAX_CAPACITY];
-  WGPUTextureView shadow_textures[LIGHT_MAX_CAPACITY * LIGHT_POINT_VIEWS];
+  WGPUTextureView shadow_texture;
   WGPUSampler shadow_sampler;
 } PointLightList;
 
@@ -109,7 +109,7 @@ typedef struct {
   size_t length;
   size_t capacity;
   DirectionalLight items[LIGHT_MAX_CAPACITY];
-  WGPUTextureView shadow_textures[LIGHT_MAX_CAPACITY];
+  WGPUTextureView shadow_texture;
   WGPUSampler shadow_sampler;
 } DirectionalLightList;
 

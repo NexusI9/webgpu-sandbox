@@ -511,6 +511,11 @@ void shader_add_uniform(shader *shader,
 
 /**
    Add uniform of type Texture into the shader
+   The function upload the texture to the buffer
+   and automatically handles the texture view creation.
+
+   This function is usefull in case one want to upload and bind
+   a texture from "raw data" when reading a file from disk (stbi, gltf...)
  */
 void shader_add_texture(shader *shader,
                         const ShaderCreateTextureDescriptor *desc) {
@@ -543,6 +548,44 @@ void shader_add_texture(shader *shader,
                             });
 
       current_bind_group->textures.items[i] = *current_entry;
+      current_bind_group->textures.length++;
+    }
+  }
+}
+
+/**
+   Add uniform of type Texture into the shader
+   The function takes a "ready" texture view with a
+   valid and already uploaded texture.
+
+   In case one want to bind a raw picture/data (let's say imported from a file),
+   one shall use the shader_add_texture() function that automatically
+   handles the texture and texture view creation from the data.
+ */
+void shader_add_texture_view(shader *shader,
+                             const ShaderCreateTextureViewDescriptor *desc) {
+
+  if (shader_validate_binding(shader)) {
+    ShaderBindGroup *current_bind_group =
+        shader_get_bind_group(shader, desc->group_index);
+
+    current_bind_group->visibility =
+        desc->visibility | WGPUShaderStage_Fragment;
+
+    for (int i = 0; i < desc->entry_count; i++) {
+
+      if (current_bind_group->textures.length ==
+          current_bind_group->textures.capacity) {
+        VERBOSE_PRINT("Texture array reached maximum capacity\n");
+        break;
+      }
+
+      // map the entry to bind group
+      ShaderBindGroupTextureViewEntry *current_entry = &desc->entries[i];
+      current_bind_group->textures.items[i] = (ShaderBindGroupTextureEntry){
+          .texture_view = current_entry->texture_view,
+          .binding = current_entry->binding,
+      };
       current_bind_group->textures.length++;
     }
   }
@@ -639,7 +682,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
 bool shader_validate_binding(shader *shader) {
 
   if (shader->device == NULL || shader->queue == NULL) {
-      perror("Shader has no device or queue");
+    perror("Shader has no device or queue");
     return 0;
   }
 

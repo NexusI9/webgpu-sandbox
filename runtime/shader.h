@@ -63,6 +63,11 @@ typedef struct {
 
 typedef struct {
   uint32_t binding;
+  WGPUTextureView texture_view;
+} ShaderBindGroupTextureViewEntry;
+
+typedef struct {
+  uint32_t binding;
   WGPUAddressMode addressModeU;
   WGPUAddressMode addressModeV;
   WGPUAddressMode addressModeW;
@@ -124,6 +129,13 @@ typedef struct {
 typedef struct {
   uint8_t group_index;
   uint8_t entry_count;
+  ShaderBindGroupTextureViewEntry *entries;
+  WGPUShaderStageFlags visibility;
+} ShaderCreateTextureViewDescriptor;
+
+typedef struct {
+  uint8_t group_index;
+  uint8_t entry_count;
   ShaderBindGroupSamplerEntry *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateSamplerDescriptor;
@@ -175,6 +187,8 @@ void shader_create(shader *, const ShaderCreateDescriptor *);
 
 void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
 void shader_add_texture(shader *, const ShaderCreateTextureDescriptor *);
+void shader_add_texture_view(shader *,
+                             const ShaderCreateTextureViewDescriptor *);
 void shader_add_sampler(shader *, const ShaderCreateSamplerDescriptor *);
 
 // pipeline customization

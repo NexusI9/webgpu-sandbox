@@ -105,7 +105,9 @@ struct DirectionalLightStorage {
     : DirectionalLightStorage;
 @group(3) @binding(2) var<uniform> point_light_list : PointLightStorage;
 
+// shadow
 @group(4) @binding(0) var shadow_maps : texture_2d_array<f32>;
+@group(5) @binding(0) var shadow_sampler : sampler;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
