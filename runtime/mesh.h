@@ -120,6 +120,9 @@ mesh *mesh_get_child(mesh *, size_t);
 
 MeshUniform mesh_model_uniform(mesh *);
 
+// SHADER
+void mesh_clear_bindings(mesh *, MeshDrawMethod);
+
 // DEFAULT SHADER
 shader *mesh_shader_default(mesh *);
 // bind model, camera and viewport to bind group

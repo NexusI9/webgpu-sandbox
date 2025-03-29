@@ -199,7 +199,7 @@ int main(int argc, const char *argv[]) {
   scene_add_mesh_solid(&main_scene, &parent_cube);*/
 
   import_cube();
-  add_grid();
+  //add_grid();
 
   // Setup drawing pass may need to move it else where
   renderer_compute_shadow(&main_renderer, &main_scene);

@@ -534,11 +534,8 @@ void mesh_bind_shadow(mesh *mesh, mat4 *view) {
                              },
                      });
 
-  if (mesh->children.items != NULL) {
-    for (size_t c = 0; c < mesh->children.length; c++) {
-      mesh_bind_shadow(&mesh->children.items[c], view);
-    }
-  }
+  for (size_t c = 0; c < mesh->children.length; c++)
+    mesh_bind_shadow(&mesh->children.items[c], view);
 }
 
 /**
@@ -552,7 +549,7 @@ shader *mesh_select_shader(mesh *mesh, MeshDrawMethod method) {
     return mesh_shader_shadow(mesh);
     break;
 
-    // TODO Implement other shader presets
+    // TODO: Implement other shader presets
   case MESH_SHADER_CUSTOM:
   case MESH_SHADER_SOLID:
   case MESH_SHADER_WIREFRAME:
@@ -561,4 +558,16 @@ shader *mesh_select_shader(mesh *mesh, MeshDrawMethod method) {
     return mesh_shader_default(mesh);
     break;
   }
+}
+
+/**
+   Clear the bind groups of mesh and children
+   Basically an alias of shader method but include the reccursion for childrens
+ */
+void mesh_clear_bindings(mesh *mesh, MeshDrawMethod method) {
+
+  shader_bind_group_clear(mesh_select_shader(mesh, method));
+
+  for (size_t c = 0; c < mesh->children.length; c++)
+    mesh_clear_bindings(&mesh->children.items[c], method);
 }

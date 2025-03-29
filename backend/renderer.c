@@ -250,7 +250,7 @@ void renderer_shadow_to_texture(scene *scene, WGPUTextureView *texture,
 
 void renderer_compute_shadow(renderer *renderer, scene *scene) {
 
-  printf("==== COMPUTING SHADER ====\n");
+  printf("==== COMPUTING SHADOW ====\n");
 
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = scene->lights.point.length;
@@ -268,10 +268,9 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
           .mipLevelCount = 1,
       });
 
-  // create shadow map texture view array
-  WGPUTextureView shadow_texture_view[layer_count];
+  // populate scene point light texture_view
   for (int l = 0; l < layer_count; l++) {
-    shadow_texture_view[l] = wgpuTextureCreateView(
+    scene->lights.point.shadow_textures[l] = wgpuTextureCreateView(
         shadow_texture, &(WGPUTextureViewDescriptor){
                             .format = WGPUTextureFormat_Depth32Float,
                             .dimension = WGPUTextureViewDimension_2DArray,
@@ -294,19 +293,24 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
       for (int m = 0; m < scene->meshes.solid.length; m++) {
         // 1. Bind meshes
         mesh *current_mesh = &scene->meshes.solid.items[m];
-        //mesh_bind_shadow(current_mesh, current_view);
-        //mesh_build(current_mesh, MESH_SHADER_SHADOW);
+        mesh_bind_shadow(current_mesh, current_view);
+        mesh_build(current_mesh, MESH_SHADER_SHADOW);
       }
 
       // 2. Render scene
       // create shadow render pass
-      /*renderer_shadow_to_texture(
-          scene, &shadow_texture_view[p * light_views.length + v],
-          &renderer->wgpu.device);*/
+      renderer_shadow_to_texture(
+          scene,
+          &scene->lights.point.shadow_textures[p * light_views.length + v],
+          &renderer->wgpu.device);
 
-      // 3. Store
+      // 3. Clear meshes bind group
+      for (int m = 0; m < scene->meshes.solid.length; m++) {
+        mesh *current_mesh = &scene->meshes.solid.items[m];
+        mesh_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
+      }
     }
   }
 
-  // 4. Transfer
+  // 4. Transfer depth texture array to default shader
 }

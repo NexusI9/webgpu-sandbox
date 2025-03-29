@@ -81,7 +81,6 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 
   // set name
   shader->name = strdup(sd->name);
-  printf("init shader: %s\n", shader->name);
 
   // store shader string in memory
   store_file(&shader->source, sd->path);
@@ -97,6 +96,7 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
   // set vertex layout
   shader_set_vertex_layout(shader);
 
+  printf("Create shader: %s\n", shader->name);
   // init pipeline
   pipeline_create(&shader->pipeline,
                   &(PipelineCreateDescriptor){
@@ -170,7 +170,7 @@ void shader_build(shader *shader) {
   shader_build_pipeline(shader, bindgroup_layouts);
   shader_build_bind(shader, bindgroup_layouts);
 
-  //shader_module_release(shader);
+  // shader_module_release(shader);
   shader_pipeline_release_layout(shader);
   free(bindgroup_layouts);
 }
@@ -333,7 +333,6 @@ void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
 void shader_bind_uniforms(shader *shader, ShaderBindGroup *bindgroup,
                           WGPUBindGroupLayout *layout) {
 
-  printf("uniform length: %lu\n", bindgroup->uniforms.length);
   WGPUBindGroupEntry *converted_entries = (WGPUBindGroupEntry *)malloc(
       bindgroup->uniforms.length * sizeof(WGPUBindGroupEntry));
 
@@ -621,6 +620,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
     // Increment bind_groupd length (push new bind group)
     shader->bind_groups.items[shader->bind_groups.length].index = group_index;
 
+    // create new bind group
     shader_bind_group_init(shader);
 
     shader->bind_groups.length++;
@@ -639,7 +639,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
 bool shader_validate_binding(shader *shader) {
 
   if (shader->device == NULL || shader->queue == NULL) {
-    perror("Shader has no device or queue");
+      perror("Shader has no device or queue");
     return 0;
   }
 
@@ -675,6 +675,7 @@ void shader_bind_group_init(shader *shader) {
   ShaderBindGroupSamplers *sampler_group =
       &shader->bind_groups.items[shader->bind_groups.length].samplers;
 
+  printf("Init bind groups\n");
   // free and reset bind group if already exists
   if (texture_group->items)
     free(texture_group->items);
@@ -705,4 +706,37 @@ void shader_bind_group_init(shader *shader) {
       (ShaderBindGroupSamplerEntry *)malloc(
           SHADER_UNIFORMS_DEFAULT_CAPACITY *
           sizeof(ShaderBindGroupSamplerEntry));
+}
+
+/**
+   Freeing all shader's bind groups allocation and reseting the length
+ */
+void shader_bind_group_clear(shader *shader) {
+
+  for (size_t b = 0; b < shader->bind_groups.length; b++) {
+    ShaderBindGroup *current_group = &shader->bind_groups.items[b];
+    current_group->bind_group = NULL;
+    current_group->index = 0;
+
+    // reseting uniforms
+    current_group->uniforms.length = 0;
+
+    // reseting textures
+    if (current_group->textures.items)
+      free(current_group->textures.items);
+
+    current_group->textures.items = NULL;
+    current_group->textures.length = 0;
+    current_group->textures.capacity = 0;
+
+    // reseting samplers
+    if (current_group->samplers.items)
+      free(current_group->samplers.items);
+
+    current_group->samplers.items = NULL;
+    current_group->samplers.length = 0;
+    current_group->samplers.capacity = 0;
+  }
+
+  shader->bind_groups.length = 0;
 }

@@ -15,13 +15,18 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
   pipeline->device = desc->device;
   pipeline->custom_attributes = NULL;
   pipeline->handle = NULL;
+
+  printf("create vertex layout format: %u\n",
+         pipeline->vertex_layout->attributes->format);
 }
 
 /**
    Release pipeline if exists and create i new one
  */
 void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
-  // printf("vertex layout: %u\n", pipeline->vertex_layout->attributes->format);
+  printf("Build vertex layout format: %u\n",
+         pipeline->vertex_layout->attributes->format);
+
   if (pipeline->handle)
     pipeline_clear(pipeline);
 

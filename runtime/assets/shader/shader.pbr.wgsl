@@ -105,6 +105,8 @@ struct DirectionalLightStorage {
     : DirectionalLightStorage;
 @group(3) @binding(2) var<uniform> point_light_list : PointLightStorage;
 
+@group(4) @binding(0) var shadow_maps : texture_2d_array<f32>;
+
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
@@ -254,8 +256,8 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
   }
 
   // calculate direction lights
-  // basically the same a point light, but use a fixed light direction instead of
-  // a one per fragment like a point light
+  // basically the same a point light, but use a fixed light direction instead
+  // of a one per fragment like a point light
   for (var i = 0u; i < directional_light_list.length; i = i + 1u) {
     let light = directional_light_list.items[i];
     let light_direction = -1.0f * light.lookat - light.position;

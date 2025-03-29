@@ -34,6 +34,13 @@ typedef struct {
 typedef void (*UpdateCallback)(void *callback_data, void *entry_data);
 
 typedef struct {
+  int8_t *textures;
+  int8_t *views;
+  int8_t *lights;
+  int8_t *shadows;
+} ShaderBindGroupIndexes;
+
+typedef struct {
   uint32_t binding;
   uint64_t size;
   uint64_t offset;
@@ -181,4 +188,5 @@ void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
 void shader_build(shader *);
 void shader_module_release(shader *);
 void shader_bind_group_init(shader *);
+void shader_bind_group_clear(shader *);
 #endif
