@@ -292,13 +292,14 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
   ShaderBindGroupTextureEntry texture_entries[texture_length];
   ShaderBindGroupSamplerEntry sampler_entries[texture_length];
 
+  uint8_t binding = 0;
   for (int t = 0; t < texture_length; t++) {
 
     loader_gltf_extract_texture(texture_view_list[t], &texture_list[t]);
 
     // create texture entries
     texture_entries[t] = (ShaderBindGroupTextureEntry){
-        .binding = t,
+        .binding = binding,
         .data = texture_list[t].data,
         .size = texture_list[t].size,
         .width = texture_list[t].width,
@@ -307,13 +308,15 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
 
     // create sampler entries
     sampler_entries[t] = (ShaderBindGroupSamplerEntry){
-        .binding = t,
+        .binding = binding + 1,
         .addressModeU = WGPUAddressMode_ClampToEdge,
         .addressModeV = WGPUAddressMode_ClampToEdge,
         .addressModeW = WGPUAddressMode_ClampToEdge,
         .minFilter = WGPUFilterMode_Linear,
         .magFilter = WGPUFilterMode_Linear,
     };
+
+    binding += 2;
   }
 
   // send texture + sampler to shader
@@ -325,7 +328,7 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
                              });
 
   shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){
-                                 .group_index = 1,
+                                 .group_index = 0,
                                  .entry_count = texture_length,
                                  .entries = sampler_entries,
                                  .visibility = WGPUShaderStage_Fragment,

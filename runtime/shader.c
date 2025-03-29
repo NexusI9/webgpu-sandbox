@@ -44,9 +44,9 @@
   +------------------+
   |       Bind       |
   |------------------|
-  | Build Uniforms   |
-  | Build Textures   |
-  | Build Samplers   |
+  | Bind Uniforms    |
+  | Bind Textures    |
+  | Bind Samplers    |
   +------------------+
 
 
@@ -62,20 +62,20 @@ static void shader_build_pipeline(shader *, WGPUBindGroupLayout *);
 // layout methods
 static WGPUBindGroupLayout *shader_build_layout(shader *);
 static void shader_layout_uniforms(shader *, ShaderBindGroup *,
-                                   WGPUBindGroupLayout *);
+                                   WGPUBindGroupLayoutEntry *, uint16_t *);
 static void shader_layout_textures(shader *, ShaderBindGroup *,
-                                   WGPUBindGroupLayout *);
+                                   WGPUBindGroupLayoutEntry *, uint16_t *);
 static void shader_layout_samplers(shader *, ShaderBindGroup *,
-                                   WGPUBindGroupLayout *);
+                                   WGPUBindGroupLayoutEntry *, uint16_t *);
 
 // build methods
 static void shader_build_bind(shader *, WGPUBindGroupLayout *);
 static void shader_bind_uniforms(shader *, ShaderBindGroup *,
-                                 WGPUBindGroupLayout *);
+                                 WGPUBindGroupEntry *, uint16_t *);
 static void shader_bind_textures(shader *, ShaderBindGroup *,
-                                 WGPUBindGroupLayout *);
+                                 WGPUBindGroupEntry *, uint16_t *);
 static void shader_bind_samplers(shader *, ShaderBindGroup *,
-                                 WGPUBindGroupLayout *);
+                                 WGPUBindGroupEntry *, uint16_t *);
 
 void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 
@@ -193,37 +193,58 @@ WGPUBindGroupLayout *shader_build_layout(shader *shader) {
   WGPUBindGroupLayout *layout_list = (WGPUBindGroupLayout *)malloc(
       shader->bind_groups.length * sizeof(WGPUBindGroupLayout));
 
-  // go through shader bind groups
+  // go through shader bind groups and combine entries
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
     ShaderBindGroup *current_group = &shader->bind_groups.items[i];
     WGPUBindGroupLayout *current_layout = &layout_list[i];
 
-    if (current_group->uniforms.length > 0)
-      shader_layout_uniforms(shader, current_group, current_layout);
+    // combine all bind group entries in one array
+    uint16_t total_length = current_group->uniforms.length +
+                            current_group->textures.length +
+                            current_group->samplers.length;
 
-    if (current_group->textures.length > 0)
-      shader_layout_textures(shader, current_group, current_layout);
+    uint16_t length = 0;
 
-    if (current_group->samplers.length > 0)
-      shader_layout_samplers(shader, current_group, current_layout);
+    WGPUBindGroupLayoutEntry *layout_entries =
+        (WGPUBindGroupLayoutEntry *)malloc(total_length *
+                                           sizeof(WGPUBindGroupLayoutEntry));
+
+    // layout uniforms
+    shader_layout_uniforms(shader, current_group, layout_entries, &length);
+    // layout textures
+    shader_layout_textures(shader, current_group, layout_entries, &length);
+    // layout samplers
+    shader_layout_samplers(shader, current_group, layout_entries, &length);
+
+    // create layout from previously populated entries array
+    *current_layout = wgpuDeviceCreateBindGroupLayout(
+        *shader->device, &(WGPUBindGroupLayoutDescriptor){
+                             .entryCount = total_length,
+                             .entries = layout_entries,
+                         });
+
+    printf(
+        "[bindgroup %u] total_length: %u, length: %u, entries: %p, list: %p\n",
+        current_group->index, total_length, length, layout_entries,
+        layout_list);
+
+    free(layout_entries);
   }
 
   return layout_list;
 }
 
 void shader_layout_uniforms(shader *shader, ShaderBindGroup *bindgroup,
-                            WGPUBindGroupLayout *layout) {
+                            WGPUBindGroupLayoutEntry *entries,
+                            uint16_t *length) {
 
   ShaderBindGroupUniforms *uniform_entries = &bindgroup->uniforms;
 
-  WGPUBindGroupLayoutEntry *layout_entries = (WGPUBindGroupLayoutEntry *)malloc(
-      uniform_entries->length * sizeof(WGPUBindGroupLayoutEntry));
-
   // go through each entries
   for (int j = 0; j < uniform_entries->length; j++) {
-
-    layout_entries[j] = (WGPUBindGroupLayoutEntry){
+    printf("pushing uniform layout at index: %u\n", *length);
+    entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         // assign stored binding index
         .binding = uniform_entries->items[j].binding,
         // buffer binding layout
@@ -232,74 +253,45 @@ void shader_layout_uniforms(shader *shader, ShaderBindGroup *bindgroup,
         .visibility = bindgroup->visibility,
     };
   }
-
-  // add to layout list
-  *layout = wgpuDeviceCreateBindGroupLayout(
-      *shader->device, &(WGPUBindGroupLayoutDescriptor){
-                           .entryCount = uniform_entries->length,
-                           // bind group layout entry
-                           .entries = layout_entries,
-                       });
-
-  free(layout_entries);
 }
 
 void shader_layout_textures(shader *shader, ShaderBindGroup *bindgroup,
-                            WGPUBindGroupLayout *layout) {
+                            WGPUBindGroupLayoutEntry *entries,
+                            uint16_t *length) {
 
   ShaderBindGroupTextures *texture_entries = &bindgroup->textures;
 
-  WGPUBindGroupLayoutEntry *layout_entries = (WGPUBindGroupLayoutEntry *)malloc(
-      texture_entries->length * sizeof(WGPUBindGroupLayoutEntry));
-
   // go through each entries
   for (int j = 0; j < texture_entries->length; j++) {
-    layout_entries[j] = (WGPUBindGroupLayoutEntry){
+    printf("pushing texture layout at index: %u\n", *length);
+    entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         .texture = {.sampleType = WGPUTextureSampleType_Float},
         .binding = texture_entries->items[j].binding,
         .visibility = bindgroup->visibility,
     };
   }
-
-  // add to layout list
-  *layout = wgpuDeviceCreateBindGroupLayout(
-      *shader->device, &(WGPUBindGroupLayoutDescriptor){
-                           .entryCount = texture_entries->length,
-                           .entries = layout_entries,
-                       });
-
-  free(layout_entries);
 }
 
 void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
-                            WGPUBindGroupLayout *layout) {
+                            WGPUBindGroupLayoutEntry *entries,
+                            uint16_t *length) {
 
   ShaderBindGroupSamplers *sampler_entries = &bindgroup->samplers;
 
-  WGPUBindGroupLayoutEntry *layout_entries = (WGPUBindGroupLayoutEntry *)malloc(
-      sampler_entries->length * sizeof(WGPUBindGroupLayoutEntry));
-
   // go through each entries
   for (int j = 0; j < sampler_entries->length; j++) {
-    layout_entries[j] = (WGPUBindGroupLayoutEntry){
+    printf("pushing sampler layout at index: %u\n", *length);
+    entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         .sampler = {.type = WGPUSamplerBindingType_Filtering},
         .binding = sampler_entries->items[j].binding,
         .visibility = bindgroup->visibility,
     };
   }
-
-  // add to layout list
-  *layout = wgpuDeviceCreateBindGroupLayout(
-      *shader->device, &(WGPUBindGroupLayoutDescriptor){
-                           .entryCount = sampler_entries->length,
-                           .entries = layout_entries,
-                       });
-
-  free(layout_entries);
 }
 
 void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
 
+  printf("list: %p\n", layout);
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
       *shader->device, &(WGPUPipelineLayoutDescriptor){
                            // total bind groups count
@@ -318,105 +310,76 @@ void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
 
     ShaderBindGroup *current_group = &shader->bind_groups.items[i];
     WGPUBindGroupLayout *current_layout = &layouts[i];
+    uint16_t total_length = current_group->uniforms.length +
+                            current_group->textures.length +
+                            current_group->samplers.length;
+    uint16_t length = 0;
 
-    if (current_group->uniforms.length > 0)
-      shader_bind_uniforms(shader, current_group, current_layout);
+    WGPUBindGroupEntry *converted_entries =
+        (WGPUBindGroupEntry *)malloc(total_length * sizeof(WGPUBindGroupEntry));
 
-    if (current_group->textures.length > 0)
-      shader_bind_textures(shader, current_group, current_layout);
+    // bind uniforms
+    shader_bind_uniforms(shader, current_group, converted_entries, &length);
+    // bind textures
+    shader_bind_textures(shader, current_group, converted_entries, &length);
+    // bind samplers
+    shader_bind_samplers(shader, current_group, converted_entries, &length);
 
-    if (current_group->samplers.length > 0)
-      shader_bind_samplers(shader, current_group, current_layout);
+    // cache bind group
+    current_group->bind_group = wgpuDeviceCreateBindGroup(
+        *shader->device, &(WGPUBindGroupDescriptor){
+                             .layout = wgpuRenderPipelineGetBindGroupLayout(
+                                 shader->pipeline.handle, current_group->index),
+                             .entryCount = total_length,
+                             .entries = converted_entries,
+                         });
+
+    // release layouts
+    wgpuBindGroupLayoutRelease(*current_layout);
+    free(converted_entries);
   }
 }
 
 void shader_bind_uniforms(shader *shader, ShaderBindGroup *bindgroup,
-                          WGPUBindGroupLayout *layout) {
-
-  WGPUBindGroupEntry *converted_entries = (WGPUBindGroupEntry *)malloc(
-      bindgroup->uniforms.length * sizeof(WGPUBindGroupEntry));
+                          WGPUBindGroupEntry *entries, uint16_t *index) {
 
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
   for (int j = 0; j < bindgroup->uniforms.length; j++) {
     ShaderBindGroupEntry *current_entry = &bindgroup->uniforms.items[j];
-    converted_entries[j] = (WGPUBindGroupEntry){
+    entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .buffer = current_entry->buffer,
         .offset = current_entry->offset,
         .size = current_entry->size,
     };
   }
-
-  // one pipeline correctly set, create bind group: link buffer to shader
-  // pipeline
-
-  // cache bind group
-  bindgroup->bind_group = wgpuDeviceCreateBindGroup(
-      *shader->device, &(WGPUBindGroupDescriptor){
-                           .layout = wgpuRenderPipelineGetBindGroupLayout(
-                               shader->pipeline.handle, bindgroup->index),
-                           .entryCount = bindgroup->uniforms.length,
-                           .entries = converted_entries,
-                       });
-
-  // release layouts
-  wgpuBindGroupLayoutRelease(*layout);
-  free(converted_entries);
 }
 
 void shader_bind_textures(shader *shader, ShaderBindGroup *bindgroup,
-                          WGPUBindGroupLayout *layout) {
-
-  WGPUBindGroupEntry *converted_entries = (WGPUBindGroupEntry *)malloc(
-      bindgroup->textures.length * sizeof(WGPUBindGroupEntry));
+                          WGPUBindGroupEntry *entries, uint16_t *index) {
 
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
   for (int j = 0; j < bindgroup->textures.length; j++) {
     ShaderBindGroupTextureEntry *current_entry = &bindgroup->textures.items[j];
-    converted_entries[j] = (WGPUBindGroupEntry){
+    entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .textureView = current_entry->texture_view,
     };
   }
-
-  bindgroup->bind_group = wgpuDeviceCreateBindGroup(
-      *shader->device, &(WGPUBindGroupDescriptor){
-                           .layout = wgpuRenderPipelineGetBindGroupLayout(
-                               shader->pipeline.handle, bindgroup->index),
-                           .entryCount = bindgroup->textures.length,
-                           .entries = converted_entries,
-                       });
-
-  wgpuBindGroupLayoutRelease(*layout);
-  free(converted_entries);
 }
 
 void shader_bind_samplers(shader *shader, ShaderBindGroup *bindgroup,
-                          WGPUBindGroupLayout *layout) {
-
-  WGPUBindGroupEntry *converted_entries = (WGPUBindGroupEntry *)malloc(
-      bindgroup->samplers.length * sizeof(WGPUBindGroupEntry));
+                          WGPUBindGroupEntry *entries, uint16_t *index) {
 
   for (int j = 0; j < bindgroup->samplers.length; j++) {
     ShaderBindGroupSamplerEntry *current_entry = &bindgroup->samplers.items[j];
-    converted_entries[j] = (WGPUBindGroupEntry){
+    entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .sampler = current_entry->sampler,
     };
   }
-
-  bindgroup->bind_group = wgpuDeviceCreateBindGroup(
-      *shader->device, &(WGPUBindGroupDescriptor){
-                           .layout = wgpuRenderPipelineGetBindGroupLayout(
-                               shader->pipeline.handle, bindgroup->index),
-                           .entryCount = bindgroup->samplers.length,
-                           .entries = converted_entries,
-                       });
-
-  wgpuBindGroupLayoutRelease(*layout);
-  free(converted_entries);
 }
 
 /**

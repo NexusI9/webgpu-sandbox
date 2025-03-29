@@ -989,30 +989,34 @@ struct DirectionalLightStorage {
 // TODO: combine textures in a texture_2d_array + only use 1 sampler ?
 
 @group(0) @binding(0) var diffuse_texture : texture_2d<f32>;
-@group(0) @binding(1) var metallic_texture : texture_2d<f32>;
-@group(0) @binding(2) var normal_texture : texture_2d<f32>;
-@group(0) @binding(3) var occlusion_texture : texture_2d<f32>;
-@group(0) @binding(4) var emissive_texture : texture_2d<f32>;
+@group(0) @binding(1) var diffuse_sampler : sampler;
 
-@group(1) @binding(0) var diffuse_sampler : sampler;
-@group(1) @binding(1) var metallic_sampler : sampler;
-@group(1) @binding(2) var normal_sampler : sampler;
-@group(1) @binding(3) var occlusion_sampler : sampler;
-@group(1) @binding(4) var emissive_sampler : sampler;
+@group(0) @binding(2) var metallic_texture : texture_2d<f32>;
+@group(0) @binding(3) var metallic_sampler : sampler;
+
+@group(0) @binding(4) var normal_texture : texture_2d<f32>;
+@group(0) @binding(5) var normal_sampler : sampler;
+
+@group(0) @binding(6) var occlusion_texture : texture_2d<f32>;
+@group(0) @binding(7) var occlusion_sampler : sampler;
+
+@group(0) @binding(8) var emissive_texture : texture_2d<f32>;
+@group(0) @binding(9) var emissive_sampler : sampler;
+
 
 // camera viewport
-@group(2) @binding(0) var<uniform> uViewport : Viewport;
-@group(2) @binding(1) var<uniform> uCamera : Camera;
-@group(2) @binding(2) var<uniform> uMesh : Mesh;
+@group(1) @binding(0) var<uniform> uViewport : Viewport;
+@group(1) @binding(1) var<uniform> uCamera : Camera;
+@group(1) @binding(2) var<uniform> uMesh : Mesh;
 
 // light
 // TODO: using uniform for now but check the storage type
-@group(3) @binding(0) var<uniform> ambient_light_list : AmbientLightStorage;
-@group(3) @binding(1) var<uniform> directional_light_list
+@group(2) @binding(0) var<uniform> ambient_light_list : AmbientLightStorage;
+@group(2) @binding(1) var<uniform> directional_light_list
     : DirectionalLightStorage;
-@group(3) @binding(2) var<uniform> point_light_list : PointLightStorage;
-@group(3) @binding(3) var shadow_maps : texture_2d_array<f32>;
-@group(3) @binding(4) var shadow_sampler : sampler;
+@group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
+//@group(3) @binding(3) var shadow_maps : texture_2d_array<f32>;
+//@group(3) @binding(4) var shadow_sampler : sampler;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {

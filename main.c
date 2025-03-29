@@ -149,9 +149,9 @@ void import_cube() {
                    &(cgltf_options){0});
 
   // TODO: handle child bind
-  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 2);
+  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 1);
   mesh_bind_lights(&cube, &main_scene.lights.ambient,
-                   &main_scene.lights.directional, &main_scene.lights.point, 3);
+                   &main_scene.lights.directional, &main_scene.lights.point, 2);
 
   scene_add_mesh_solid(&main_scene, &cube);
 }
@@ -202,7 +202,7 @@ int main(int argc, const char *argv[]) {
   //add_grid();
 
   // Setup drawing pass may need to move it else where
-  renderer_compute_shadow(&main_renderer, &main_scene);
+  //renderer_compute_shadow(&main_renderer, &main_scene);
 
   // Update Loop
   renderer_set_draw(draw);
