@@ -80,6 +80,7 @@ struct DirectionalLightStorage {
 // etc.)
 // 2. sampler : Defines how the GPU reads the texture (filtering, wrapping,
 // mipmaps, etc.)
+// TODO: combine textures in a texture_2d_array + only use 1 sampler ?
 
 @group(0) @binding(0) var diffuse_texture : texture_2d<f32>;
 @group(0) @binding(1) var metallic_texture : texture_2d<f32>;
@@ -104,10 +105,8 @@ struct DirectionalLightStorage {
 @group(3) @binding(1) var<uniform> directional_light_list
     : DirectionalLightStorage;
 @group(3) @binding(2) var<uniform> point_light_list : PointLightStorage;
-
-// shadow
-@group(4) @binding(0) var shadow_maps : texture_2d_array<f32>;
-@group(5) @binding(0) var shadow_sampler : sampler;
+@group(3) @binding(3) var shadow_maps : texture_2d_array<f32>;
+@group(3) @binding(4) var shadow_sampler : sampler;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
