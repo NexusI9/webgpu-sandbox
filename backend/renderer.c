@@ -365,19 +365,37 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   // Generate Shadow maps
   renderer_create_shadow_map(renderer, scene, &shadow_texture);
 
-  // 4. Transfer depth texture array to default shader
+  // Transfer depth texture array to each meshes default shader
   for (int m = 0; m < scene->meshes.solid.length; m++) {
     mesh *current_mesh = &scene->meshes.solid.items[m];
-    /*shader_add_texture_view(
+
+    // add multi-layered texture to default shader
+    shader_add_texture_view(
         mesh_shader_default(current_mesh),
         &(ShaderCreateTextureViewDescriptor){
-            .visibility = WGPUShaderStage_Vertex,
+            .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
             .entry_count = 1,
-            .group_index = 4,
+            .group_index = 2,
             .entries = (ShaderBindGroupTextureViewEntry[]){{
-                .binding = 0,
+                .binding = 3,
                 .texture_view = scene->lights.point.shadow_texture,
             }},
-        });*/
+        });
+
+    // add related sampler to default shader
+    shader_add_sampler(mesh_shader_default(current_mesh),
+                       &(ShaderCreateSamplerDescriptor){
+                           .visibility = WGPUShaderStage_Vertex,
+                           .entry_count = 1,
+                           .group_index = 2,
+                           .entries = (ShaderBindGroupSamplerEntry[]){{
+                               .binding = 4,
+                               .addressModeU = WGPUAddressMode_ClampToEdge,
+                               .addressModeV = WGPUAddressMode_ClampToEdge,
+                               .addressModeW = WGPUAddressMode_ClampToEdge,
+                               .magFilter = WGPUFilterMode_Linear,
+                               .minFilter = WGPUFilterMode_Linear,
+                           }},
+                       });
   }
 }

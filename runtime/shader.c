@@ -224,11 +224,6 @@ WGPUBindGroupLayout *shader_build_layout(shader *shader) {
                              .entries = layout_entries,
                          });
 
-    printf(
-        "[bindgroup %u] total_length: %u, length: %u, entries: %p, list: %p\n",
-        current_group->index, total_length, length, layout_entries,
-        layout_list);
-
     free(layout_entries);
   }
 
@@ -243,7 +238,6 @@ void shader_layout_uniforms(shader *shader, ShaderBindGroup *bindgroup,
 
   // go through each entries
   for (int j = 0; j < uniform_entries->length; j++) {
-    printf("pushing uniform layout at index: %u\n", *length);
     entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         // assign stored binding index
         .binding = uniform_entries->items[j].binding,
@@ -263,7 +257,6 @@ void shader_layout_textures(shader *shader, ShaderBindGroup *bindgroup,
 
   // go through each entries
   for (int j = 0; j < texture_entries->length; j++) {
-    printf("pushing texture layout at index: %u\n", *length);
     entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         .texture = {.sampleType = WGPUTextureSampleType_Float},
         .binding = texture_entries->items[j].binding,
@@ -280,7 +273,6 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
 
   // go through each entries
   for (int j = 0; j < sampler_entries->length; j++) {
-    printf("pushing sampler layout at index: %u\n", *length);
     entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         .sampler = {.type = WGPUSamplerBindingType_Filtering},
         .binding = sampler_entries->items[j].binding,
@@ -291,7 +283,6 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
 
 void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
 
-  printf("list: %p\n", layout);
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
       *shader->device, &(WGPUPipelineLayoutDescriptor){
                            // total bind groups count
@@ -388,7 +379,6 @@ void shader_bind_samplers(shader *shader, ShaderBindGroup *bindgroup,
 void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
                  const camera *camera, const viewport *viewport) {
 
-  // printf("shader pipeline %p\n", shader->pipeline.handle);
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline.handle);
 
@@ -578,7 +568,7 @@ void shader_add_sampler(shader *shader,
       // generate texture + sampler + texture view from data & size
       ShaderBindGroupSamplerEntry *current_entry = &desc->entries[i];
 
-      // creating sampler
+      // creating sampler by mapping desc configuration
       current_entry->sampler = wgpuDeviceCreateSampler(
           *shader->device, &(WGPUSamplerDescriptor){
                                .addressModeU = current_entry->addressModeU,

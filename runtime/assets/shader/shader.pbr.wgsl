@@ -97,20 +97,19 @@ struct DirectionalLightStorage {
 @group(0) @binding(8) var emissive_texture : texture_2d<f32>;
 @group(0) @binding(9) var emissive_sampler : sampler;
 
-
 // camera viewport
 @group(1) @binding(0) var<uniform> uViewport : Viewport;
 @group(1) @binding(1) var<uniform> uCamera : Camera;
 @group(1) @binding(2) var<uniform> uMesh : Mesh;
 
 // light
-// TODO: using uniform for now but check the storage type
+// TODO: using uniform for now, but check the storage type
 @group(2) @binding(0) var<uniform> ambient_light_list : AmbientLightStorage;
 @group(2) @binding(1) var<uniform> directional_light_list
     : DirectionalLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
-//@group(3) @binding(3) var shadow_maps : texture_2d_array<f32>;
-//@group(3) @binding(4) var shadow_sampler : sampler;
+@group(2) @binding(3) var shadow_maps : texture_2d_array<f32>;
+@group(2) @binding(4) var shadow_sampler : sampler;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
@@ -246,6 +245,8 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
   var emissive = textureSample(emissive_texture, emissive_sampler, vUv);
 
   let material = create_material(albedo, metallic, normal, occlusion, emissive);
+
+  var shadow = textureSample(shadow_maps, shadow_sampler, vUv, 2);
 
   var light_pos = vec3<f32>(0.0f);
   var light_color = vec3<f32>(0.0f);

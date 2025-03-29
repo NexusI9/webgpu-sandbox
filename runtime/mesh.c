@@ -36,7 +36,6 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
   mesh_set_name(mesh, md->name);
-  printf("create mesh %s\n", mesh->name);
 
   // init child list
   mesh->children.length = 0;
