@@ -16,7 +16,10 @@ struct VertexOut {
                            @location(3) vFrag : vec3<f32>
 };
 
+// constants
 const PI : f32 = 3.14159265359;
+const POINT_LIGHT_VIEWS : u32 = 6u;
+const MAX_LIGHT : u32 = 16u;
 
 struct Mesh { // 80B
   model : mat4x4<f32>, position : vec4<f32>,
@@ -65,8 +68,6 @@ struct DirectionalLight {
                                                       intensity : f32,
 };
 
-const MAX_LIGHT : u32 = 16u;
-
 struct AmbientLightStorage {
   length : u32, items : array<AmbientLight, MAX_LIGHT>,
 };
@@ -112,7 +113,7 @@ struct DirectionalLightStorage {
 @group(2) @binding(1) var<uniform> directional_light_list
     : DirectionalLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
-@group(2) @binding(3) var shadow_maps : texture_2d_array<f32>;
+@group(2) @binding(3) var shadow_maps : texture_depth_2d_array;
 @group(2) @binding(4) var shadow_sampler : sampler_comparison;
 
 // vertex shader
@@ -236,6 +237,38 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
   return vec3(light_intensity) * material.albedo * material.occlusion;
 }
 
+fn point_shadow_position(world_position : vec3<f32>, light_view : mat4x4<f32>)
+    -> vec3<f32> {
+
+  // transform world position into clip space
+  let shadow_clip = light_view * vec4<f32>(world_position, 1.0f);
+
+  // convert to NDC coordinates
+  let shadow_ndc = shadow_clip.xyz / shadow_clip.w;
+
+  // convert to UV (0-1 range)
+  let shadow_uv = shadow_ndc.xy * 0.5 + 0.5;
+
+  // returns depth to compare
+  return vec3<f32>(shadow_uv, shadow_ndc.z);
+}
+
+fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
+  var factor : f32 = 1.0f; // show by default
+  for (var l : u32 = 0u; l < point_light_list.length; l++) {
+    for (var v : u32 = 0u; v < POINT_LIGHT_VIEWS; v++) {
+      let shadow_position = point_shadow_position(
+          frag_position, point_light_list.items[l].views[v]);
+      let layer = l * point_light_list.length + v;
+      factor *=
+          textureSampleCompare(shadow_maps, shadow_sampler, shadow_position.xy,
+                               layer, shadow_position.z);
+    }
+  }
+
+  return factor;
+}
+
 // fragment shader
 @fragment fn fs_main(@location(0) vNormal : vec3<f32>,
                      @location(1) vCol : vec3<f32>,
@@ -250,7 +283,8 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
 
   let material = create_material(albedo, metallic, normal, occlusion, emissive);
 
-  // var shadow = textureSampleLevel(shadow_maps, shadow_sampler, vUv, 1);
+  let shadow_factor = point_shadow_factor(vFrag);
+  let shadow_color = mix(vec3<f32>(0.0f), vec3<f32>(1.0f), shadow_factor);
 
   var light_pos = vec3<f32>(0.0f);
   var light_color = vec3<f32>(0.0f);
@@ -283,5 +317,6 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
 
   var color = ambient + Lo;
 
-  return vec4<f32>(color, 1.0f);
+  // return vec4<f32>(color, 1.0f);
+  return vec4<f32>(shadow_color, 1.0f);
 }
