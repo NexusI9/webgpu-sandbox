@@ -257,9 +257,14 @@ void shader_layout_textures(shader *shader, ShaderBindGroup *bindgroup,
 
   // go through each entries
   for (int j = 0; j < texture_entries->length; j++) {
+    ShaderBindGroupTextureEntry *current_entry = &texture_entries->items[j];
     entries[(*length)++] = (WGPUBindGroupLayoutEntry){
-        .texture = {.sampleType = WGPUTextureSampleType_Float},
-        .binding = texture_entries->items[j].binding,
+        .texture =
+            {
+                .sampleType = current_entry->sample_type,
+                .viewDimension = current_entry->dimension,
+            },
+        .binding = current_entry->binding,
         .visibility = bindgroup->visibility,
     };
   }
@@ -273,8 +278,10 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
 
   // go through each entries
   for (int j = 0; j < sampler_entries->length; j++) {
+    ShaderBindGroupSamplerEntry *current_entry = &sampler_entries->items[j];
+    printf("sampler type: %u\n", current_entry->type);
     entries[(*length)++] = (WGPUBindGroupLayoutEntry){
-        .sampler = {.type = WGPUSamplerBindingType_Filtering},
+        .sampler = {.type = current_entry->type},
         .binding = sampler_entries->items[j].binding,
         .visibility = bindgroup->visibility,
     };
@@ -354,6 +361,8 @@ void shader_bind_textures(shader *shader, ShaderBindGroup *bindgroup,
   // (basically the same just without data and callback attributes)
   for (int j = 0; j < bindgroup->textures.length; j++) {
     ShaderBindGroupTextureEntry *current_entry = &bindgroup->textures.items[j];
+    printf("[Bingroup %u] Bind Texture to binding : %u\n", bindgroup->index,
+           current_entry->binding);
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .textureView = current_entry->texture_view,
@@ -538,6 +547,9 @@ void shader_add_texture_view(shader *shader,
       current_bind_group->textures.items[i] = (ShaderBindGroupTextureEntry){
           .texture_view = current_entry->texture_view,
           .binding = current_entry->binding,
+          .dimension = current_entry->dimension,
+          .format = current_entry->format,
+          .sample_type = current_entry->sample_type,
       };
       current_bind_group->textures.length++;
     }
@@ -571,6 +583,7 @@ void shader_add_sampler(shader *shader,
       // creating sampler by mapping desc configuration
       current_entry->sampler = wgpuDeviceCreateSampler(
           *shader->device, &(WGPUSamplerDescriptor){
+                               .compare = current_entry->compare,
                                .addressModeU = current_entry->addressModeU,
                                .addressModeV = current_entry->addressModeV,
                                .addressModeW = current_entry->addressModeW,
@@ -671,7 +684,6 @@ void shader_bind_group_init(shader *shader) {
   ShaderBindGroupSamplers *sampler_group =
       &shader->bind_groups.items[shader->bind_groups.length].samplers;
 
-  printf("Init bind groups\n");
   // free and reset bind group if already exists
   if (texture_group->items)
     free(texture_group->items);

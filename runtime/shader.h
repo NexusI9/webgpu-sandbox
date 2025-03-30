@@ -57,13 +57,19 @@ typedef struct {
   int height;
   unsigned char *data;
   size_t size;
+  WGPUTextureViewDimension dimension;
+  WGPUTextureFormat format;
+  WGPUTextureSampleType sample_type;
   // private
   WGPUTextureView texture_view;
 } ShaderBindGroupTextureEntry;
 
 typedef struct {
   uint32_t binding;
+  WGPUTextureViewDimension dimension;
   WGPUTextureView texture_view;
+  WGPUTextureFormat format;
+  WGPUTextureSampleType sample_type;
 } ShaderBindGroupTextureViewEntry;
 
 typedef struct {
@@ -73,6 +79,8 @@ typedef struct {
   WGPUAddressMode addressModeW;
   WGPUFilterMode minFilter;
   WGPUFilterMode magFilter;
+  WGPUSamplerBindingType type;
+  WGPUCompareFunction compare;
   // private
   WGPUSampler sampler;
 } ShaderBindGroupSamplerEntry;

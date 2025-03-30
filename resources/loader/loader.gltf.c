@@ -304,16 +304,21 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
         .size = texture_list[t].size,
         .width = texture_list[t].width,
         .height = texture_list[t].height,
+        .dimension = WGPUTextureViewDimension_2D,
+        .format = WGPUTextureFormat_BGRA8Unorm,
+        .sample_type = WGPUTextureSampleType_Float,
     };
 
     // create sampler entries
     sampler_entries[t] = (ShaderBindGroupSamplerEntry){
         .binding = binding + 1,
+        .type = WGPUSamplerBindingType_Filtering,
         .addressModeU = WGPUAddressMode_ClampToEdge,
         .addressModeV = WGPUAddressMode_ClampToEdge,
         .addressModeW = WGPUAddressMode_ClampToEdge,
         .minFilter = WGPUFilterMode_Linear,
         .magFilter = WGPUFilterMode_Linear,
+        .compare = WGPUCompareFunction_Undefined,
     };
 
     binding += 2;

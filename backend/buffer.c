@@ -3,6 +3,10 @@
 #include "stb/stb_image.h"
 #include "webgpu/webgpu.h"
 
+/**
+   Buffer methods are in charge to upload data to the GPU
+ */
+
 void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice *device,
                           char *code, const char *label) {
 
@@ -80,6 +84,7 @@ void buffer_create_texture(WGPUTextureView *texture_view,
           .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
       });
 
+  // upload texture to GPU
   wgpuQueueWriteTexture(*tx->queue,
                         &(WGPUImageCopyTexture){
                             .texture = texture,

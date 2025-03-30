@@ -72,6 +72,7 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
 
   // copy color
   glm_vec3_copy(desc->color, light->color);
+
 }
 
 void light_create_directional(DirectionalLight *light,

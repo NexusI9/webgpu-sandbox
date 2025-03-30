@@ -11,11 +11,9 @@
 
 // core type
 typedef struct {
-
   vec3 position;
   vec3 color;
   float intensity;
-
 } PointLight;
 
 typedef struct {
@@ -59,6 +57,7 @@ typedef struct {
   float _padding;
   vec3 color;
   float intensity;
+  mat4 views[LIGHT_POINT_VIEWS];
 } __attribute__((aligned(16))) PointLightUniform;
 
 typedef struct {

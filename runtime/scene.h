@@ -42,6 +42,7 @@ scene scene_create(camera, viewport);
 mesh *scene_add_mesh_solid(scene *, mesh *);
 mesh *scene_add_mesh_alpha(scene *, mesh *);
 void scene_draw(scene *, MeshDrawMethod, WGPURenderPassEncoder *);
+void scene_build(scene *, MeshDrawMethod);
 
 size_t scene_add_point_light(scene *, PointLightDescriptor *);
 size_t scene_add_directional_light(scene *, DirectionalLightDescriptor *);

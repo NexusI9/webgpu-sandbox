@@ -314,13 +314,14 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
    by default we will upload all the lights (point, ambient, directional)
    within a defined group
   */
-void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
+void mesh_bind_lights(mesh *mesh, viewport *viewport,
+                      AmbientLightList *ambient_list,
                       DirectionalLightList *directional_list,
                       PointLightList *point_list, uint8_t group_index) {
 
-  AmbientLightListUniform ambient_uniform = {0};
-  DirectionalLightListUniform directional_uniform = {0};
-  PointLightListUniform point_uniform = {0};
+  AmbientLightListUniform ambient_uniform;
+  DirectionalLightListUniform directional_uniform;
+  PointLightListUniform point_uniform;
 
   if (ambient_list) {
     // update length
@@ -365,6 +366,12 @@ void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
       uniform->intensity = light->intensity;
       glm_vec3_copy(light->color, uniform->color);
       glm_vec3_copy(light->position, uniform->position);
+
+      // copy 6 points views for shader depth comparison
+      PointLightViews points_views =
+          light_point_views(light->position, viewport);
+      for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++)
+        glm_mat4_copy(points_views.views[v], uniform->views[v]);
     }
   }
 
@@ -401,8 +408,8 @@ void mesh_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
                                     });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_bind_lights(&mesh->children.items[c], ambient_list, directional_list,
-                     point_list, group_index);
+    mesh_bind_lights(&mesh->children.items[c], viewport, ambient_list,
+                     directional_list, point_list, group_index);
 }
 
 size_t mesh_add_child(mesh *child, mesh *dest) {
@@ -515,7 +522,7 @@ void mesh_init_shadow_shader(mesh *mesh) {
    [light view] already multiplied together as there is currently no need to
    upload separate views in the shader.
  */
-void mesh_bind_shadow(mesh *mesh, mat4 *view) {
+void mesh_bind_shadow_views(mesh *mesh, mat4 *view) {
 
   shader_add_uniform(&mesh->shader_shadow,
                      &(ShaderCreateUniformDescriptor){
@@ -534,7 +541,52 @@ void mesh_bind_shadow(mesh *mesh, mat4 *view) {
                      });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_bind_shadow(&mesh->children.items[c], view);
+    mesh_bind_shadow_views(&mesh->children.items[c], view);
+}
+
+/**
+   Bind the shadow maps and sampler to the default shader
+ */
+void mesh_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
+
+  // add multi-layered texture to default shader
+  shader_add_texture_view(
+      mesh_shader_default(mesh),
+      &(ShaderCreateTextureViewDescriptor){
+          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+          .entry_count = 1,
+          .group_index = 2,
+          .entries = (ShaderBindGroupTextureViewEntry[]){{
+              .binding = 3,
+              .texture_view = *shadow_texture,
+              .dimension = WGPUTextureViewDimension_2DArray,
+              .format = WGPUTextureFormat_Depth32Float,
+	      .sample_type = WGPUTextureSampleType_Depth
+          }},
+      });
+
+  // add related sampler to default shader
+  // NOTE: With depth texture need to use a special sampler type: Comparison
+  shader_add_sampler(
+      mesh_shader_default(mesh),
+      &(ShaderCreateSamplerDescriptor){
+          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+          .entry_count = 1,
+          .group_index = 2,
+          .entries = (ShaderBindGroupSamplerEntry[]){{
+              .binding = 4,
+              .type = WGPUSamplerBindingType_Comparison,
+              .addressModeU = WGPUAddressMode_ClampToEdge,
+              .addressModeV = WGPUAddressMode_ClampToEdge,
+              .addressModeW = WGPUAddressMode_ClampToEdge,
+              .magFilter = WGPUFilterMode_Linear,
+              .minFilter = WGPUFilterMode_Linear,
+              .compare = WGPUCompareFunction_LessEqual,
+          }},
+      });
+
+  for (size_t c = 0; c < mesh->children.length; c++)
+    mesh_bind_shadow_maps(&mesh->children.items[c], shadow_texture);
 }
 
 /**

@@ -14,6 +14,7 @@ static void scene_init_light_list(scene *);
 static mesh *scene_add_mesh(MeshList *, mesh *);
 static void scene_draw_mesh_list(scene *, MeshDrawMethod,
                                  WGPURenderPassEncoder *, MeshList *);
+static void scene_build_mesh_list(scene *, MeshDrawMethod, MeshList *);
 
 scene scene_create(camera camera, viewport viewport) {
 
@@ -52,12 +53,31 @@ void scene_draw(scene *scene, MeshDrawMethod draw_method,
   scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.alpha);
 }
 
-mesh *scene_add_mesh(MeshList *mesh_list, mesh *mesh) {
+/**
+   Build meshes shader in each scene list
+ */
+void scene_build(scene *scene, MeshDrawMethod draw_method) {
 
-  // BUILD MESH
-  // build shader (establish pipeline from previously set bind groups)
-  mesh_build(mesh, MESH_SHADER_DEFAULT);
-  //shader_module_release(mesh_shader_default(mesh));
+  // Build shader (establish pipeline from previously set bind groups)
+    
+  // draw solid meshes first
+  scene_build_mesh_list(scene, draw_method, &scene->meshes.solid);
+  // draw transparent meshes then
+  scene_build_mesh_list(scene, draw_method, &scene->meshes.alpha);
+  
+}
+
+void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
+                           MeshList *mesh_list) {
+
+  for (int i = 0; i < mesh_list->length; i++) {
+    mesh *current_mesh = &mesh_list->items[i];
+    mesh_build(current_mesh, draw_method);
+    // shader_module_release(mesh_shader_default(mesh));
+  }
+}
+
+mesh *scene_add_mesh(MeshList *mesh_list, mesh *mesh) {
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow

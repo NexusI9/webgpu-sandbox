@@ -128,11 +128,12 @@ shader *mesh_shader_default(mesh *);
 // bind model, camera and viewport to bind group
 void mesh_bind_matrices(mesh *, camera *, viewport *, uint8_t);
 // bind light scene
-void mesh_bind_lights(mesh *, AmbientLightList *, DirectionalLightList *,
-                      PointLightList *, uint8_t);
+void mesh_bind_lights(mesh *, viewport *, AmbientLightList *,
+                      DirectionalLightList *, PointLightList *, uint8_t);
 
 // SHADOW SHADER
 // bind shadow specicif view
-void mesh_bind_shadow(mesh *, mat4 *);
+void mesh_bind_shadow_views(mesh *, mat4 *);
+void mesh_bind_shadow_maps(mesh *, WGPUTextureView *);
 shader *mesh_shader_shadow(mesh *);
 #endif

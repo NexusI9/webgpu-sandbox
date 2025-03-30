@@ -261,11 +261,11 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture *texture,
 
    */
 
-  WGPUTextureView layer_view = wgpuTextureCreateView(
+  WGPUTextureView layer_texture_view = wgpuTextureCreateView(
       *texture, &(WGPUTextureViewDescriptor){
-                    .label = "shadow contextual texture view",
+                    .label = "shadow per layer texture view",
                     .format = WGPUTextureFormat_Depth32Float,
-                    .dimension = WGPUTextureViewDimension_2D,
+                    .dimension = WGPUTextureViewDimension_2DArray,
                     .baseArrayLayer = layer,
                     .arrayLayerCount = 1,
                     .mipLevelCount = 1,
@@ -280,7 +280,7 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture *texture,
                           .colorAttachmentCount = 0,
                           .depthStencilAttachment =
                               &(WGPURenderPassDepthStencilAttachment){
-                                  .view = layer_view,
+                                  .view = layer_texture_view,
                                   .depthClearValue = 1.0f,
                                   .depthLoadOp = WGPULoadOp_Clear,
                                   .depthStoreOp = WGPUStoreOp_Store,
@@ -308,12 +308,11 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
     // render scene and store depth map for each view
     for (size_t v = 0; v < light_views.length; v++) {
       mat4 *current_view = &light_views.views[v];
-      printf("view: %lu\n", v);
 
       // 1. Bind meshes
       for (int m = 0; m < scene->meshes.solid.length; m++) {
         mesh *current_mesh = &scene->meshes.solid.items[m];
-        mesh_bind_shadow(current_mesh, current_view);
+        mesh_bind_shadow_views(current_mesh, current_view);
         mesh_build(current_mesh, MESH_SHADER_SHADOW);
       }
 
@@ -334,6 +333,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
 
   printf("==== COMPUTING SHADOW ====\n");
 
+  // https://www.reddit.com/r/GraphicsProgramming/comments/1hgdy2m/question_about_variance_shadow_mapping_and_depth/
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = scene->lights.point.length;
   uint32_t layer_count = LIGHT_POINT_VIEWS * point_light_length;
@@ -342,12 +342,13 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   WGPUTexture shadow_texture = wgpuDeviceCreateTexture(
       renderer->wgpu.device,
       &(WGPUTextureDescriptor){
-          .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, 1},
+          .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, layer_count},
           .format = WGPUTextureFormat_Depth32Float,
           .usage = WGPUTextureUsage_RenderAttachment |
                    WGPUTextureUsage_TextureBinding,
           .dimension = WGPUTextureDimension_2D,
           .mipLevelCount = 1,
+          .sampleCount = 1,
       });
 
   // populate scene point light texture_view
@@ -369,33 +370,9 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   for (int m = 0; m < scene->meshes.solid.length; m++) {
     mesh *current_mesh = &scene->meshes.solid.items[m];
 
-    // add multi-layered texture to default shader
-    shader_add_texture_view(
-        mesh_shader_default(current_mesh),
-        &(ShaderCreateTextureViewDescriptor){
-            .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-            .entry_count = 1,
-            .group_index = 2,
-            .entries = (ShaderBindGroupTextureViewEntry[]){{
-                .binding = 3,
-                .texture_view = scene->lights.point.shadow_texture,
-            }},
-        });
-
-    // add related sampler to default shader
-    shader_add_sampler(mesh_shader_default(current_mesh),
-                       &(ShaderCreateSamplerDescriptor){
-                           .visibility = WGPUShaderStage_Vertex,
-                           .entry_count = 1,
-                           .group_index = 2,
-                           .entries = (ShaderBindGroupSamplerEntry[]){{
-                               .binding = 4,
-                               .addressModeU = WGPUAddressMode_ClampToEdge,
-                               .addressModeV = WGPUAddressMode_ClampToEdge,
-                               .addressModeW = WGPUAddressMode_ClampToEdge,
-                               .magFilter = WGPUFilterMode_Linear,
-                               .minFilter = WGPUFilterMode_Linear,
-                           }},
-                       });
+    // bind shadow texture (view) and sampler to the mesh shader
+    mesh_bind_shadow_maps(current_mesh, &scene->lights.point.shadow_texture);
+    // Finally build mesh with default shader (with imported texture array)
+    mesh_build(current_mesh, MESH_SHADER_DEFAULT);
   }
 }
