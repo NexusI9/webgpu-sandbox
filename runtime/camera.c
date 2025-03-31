@@ -274,19 +274,21 @@ void camera_look_at(camera *camera, vec3 position, vec3 target) {
   vec3 *up = &camera->up;
   vec3 *right = &camera->right;
 
+  vec3 adjusted_up = (vec3){0.0f, 1.0f, 0.0f};
+
   glm_vec3_sub(target, position, *forward);
   glm_normalize(*forward);
 
   // need to avoid forward being parallel to world_up
   // use x axis as up instead
   if (fabs(glm_vec3_dot(*forward, *up)) > 0.99f)
-    glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, *up);
+    glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, adjusted_up);
 
   // calculate right vector
   glm_vec3_cross(*up, *forward, *right);
   glm_normalize(*right);
 
-  glm_lookat(camera->position, target, (vec3){0.0f, 1.0f, 0.0f}, camera->view);
+  glm_lookat(camera->position, target, adjusted_up, camera->view);
 }
 
 mat4 *camera_view(camera *camera) { return &camera->view; }

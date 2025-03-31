@@ -1,4 +1,7 @@
 // attribute/uniform decls
+// WGSL Function references:
+// https://webgpufundamentals.org/webgpu/lessons/webgpu-wgsl-function-reference.html#func-textureSampleCompareLevel
+
 struct VertexIn {
   @location(0) aPos : vec3<f32>,
                       @location(1) aNorm : vec3<f32>,
@@ -259,10 +262,11 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
     for (var v : u32 = 0u; v < POINT_LIGHT_VIEWS; v++) {
       let shadow_position = point_shadow_position(
           frag_position, point_light_list.items[l].views[v]);
-      let layer = l * point_light_list.length + v;
-      factor *=
-          textureSampleCompare(shadow_maps, shadow_sampler, shadow_position.xy,
-                               layer, shadow_position.z);
+      let layer = l * POINT_LIGHT_VIEWS + v;
+      // Factor *=
+      //     textureSampleCompare(shadow_maps, shadow_sampler,
+      //     shadow_position.xy,
+      //   layer, shadow_position.z);
     }
   }
 
@@ -284,7 +288,7 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let material = create_material(albedo, metallic, normal, occlusion, emissive);
 
   let shadow_factor = point_shadow_factor(vFrag);
-  let shadow_color = mix(vec3<f32>(0.0f), vec3<f32>(1.0f), shadow_factor);
+  let shadow_color = mix(vec3<f32>(0.2f), vec3<f32>(1.0f), shadow_factor);
 
   var light_pos = vec3<f32>(0.0f);
   var light_color = vec3<f32>(0.0f);
@@ -317,6 +321,10 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var color = ambient + Lo;
 
+  // let shadow_position =
+  // point_shadow_position(vFrag, point_light_list.items[0].views[1]);
   // return vec4<f32>(color, 1.0f);
-  return vec4<f32>(shadow_color, 1.0f);
+  // return vec4<f32>(color * shadow_color, 1.0f);
+  let point = abs(point_light_list.items[0].views[1][3][3]) - 2.5f;
+  return vec4<f32>(vec3<f32>(point), 1.0f);
 }

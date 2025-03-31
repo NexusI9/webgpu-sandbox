@@ -371,7 +371,7 @@ void mesh_bind_lights(mesh *mesh, viewport *viewport,
       PointLightViews points_views =
           light_point_views(light->position, viewport);
       for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++) {
-	  //glm_mat4_transpose(points_views.views[v]);
+        // glm_mat4_transpose(points_views.views[v]);
         glm_mat4_copy(points_views.views[v], uniform->views[v]);
         print_mat4(uniform->views[v]);
         printf("----\n");
@@ -473,8 +473,6 @@ size_t mesh_add_child_empty(mesh *mesh) {
                               .name = mesh->name,
                           });
 
-  printf("temp mesh child length: %lu\n", temp_mesh.children.length);
-
   return mesh_add_child(&temp_mesh, mesh);
 }
 
@@ -560,13 +558,13 @@ void mesh_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entry_count = 1,
           .group_index = 2,
-          .entries =
-              (ShaderBindGroupTextureViewEntry[]){
-                  {.binding = 3,
-                   .texture_view = *shadow_texture,
-                   .dimension = WGPUTextureViewDimension_2DArray,
-                   .format = WGPUTextureFormat_Depth32Float,
-                   .sample_type = WGPUTextureSampleType_Depth}},
+          .entries = (ShaderBindGroupTextureViewEntry[]){{
+              .binding = 3,
+              .texture_view = *shadow_texture,
+              .dimension = WGPUTextureViewDimension_2DArray,
+              .format = WGPUTextureFormat_Depth32Float,
+              .sample_type = WGPUTextureSampleType_Depth,
+          }},
       });
 
   // add related sampler to default shader

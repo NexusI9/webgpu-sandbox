@@ -1,8 +1,6 @@
 #include "viewport.h"
-#include "../utils/math.h"
 #include "../utils/system.h"
 #include "cglm/cam.h"
-#include <math.h>
 
 viewport viewport_create(const ViewportCreateDescriptor *view_desc) {
   // set viewport default values
@@ -29,7 +27,7 @@ void viewport_update_projection(viewport *viewport) {
   float aspect = viewport->aspect;
   float f = 1.0 / tan(fov * 0.5f);
   glm_perspective(fov, aspect, near, far, viewport->projection);
-  // perspective_lh(fov, aspect, near, far, viewport->projection);
+
 }
 
 ViewportUniform viewport_uniform(viewport *viewport) {

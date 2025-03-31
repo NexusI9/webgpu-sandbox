@@ -47,10 +47,10 @@ void init_scene() {
 
   // set viewport
   viewport viewport = viewport_create(&(ViewportCreateDescriptor){
-      .fov = 34.0f,
+      .fov = 32.0f,
       .near_clip = 0.1f,
       .far_clip = 100.0f,
-      .aspect = 1920.0f / 1080.0f,
+      .aspect = 16.0f / 9.0f,
   });
 
   // set camera
@@ -66,14 +66,21 @@ void init_scene() {
   // TODO: check if possible to set the mode in the descriptor
 
   // init camera position
-  camera_look_at(&main_scene.camera, (vec3){0.0f, 4.0f, 10.0f},
+  camera_look_at(&main_scene.camera, (vec3){3.0f, 3.0f, 3.0f},
                  (vec3){0.0f, 0.0f, 0.0f});
 
-  printf("camera view:\n");
+  printf("projection:\n");
+  print_mat4(main_scene.viewport.projection);
+
+  printf("view:\n");
   print_mat4(main_scene.camera.view);
 
-  printf("viewport view:\n");
-  print_mat4(main_scene.viewport.projection);
+  printf("combined view:\n");
+  mat4 combined;
+  glm_mat4_mul(main_scene.viewport.projection, main_scene.camera.view,
+               combined);
+  print_mat4(combined);
+
   // set light
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
@@ -204,7 +211,7 @@ int main(int argc, const char *argv[]) {
   scene_add_mesh_solid(&main_scene, &parent_cube);*/
 
   import_cube();
-  //add_grid();
+  // add_grid();
 
   // Setup drawing pass may need to move it else where
   renderer_compute_shadow(&main_renderer, &main_scene);
