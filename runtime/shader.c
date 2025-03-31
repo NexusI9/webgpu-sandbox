@@ -279,7 +279,6 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
   // go through each entries
   for (int j = 0; j < sampler_entries->length; j++) {
     ShaderBindGroupSamplerEntry *current_entry = &sampler_entries->items[j];
-    printf("sampler type: %u\n", current_entry->type);
     entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         .sampler = {.type = current_entry->type},
         .binding = sampler_entries->items[j].binding,
@@ -361,8 +360,6 @@ void shader_bind_textures(shader *shader, ShaderBindGroup *bindgroup,
   // (basically the same just without data and callback attributes)
   for (int j = 0; j < bindgroup->textures.length; j++) {
     ShaderBindGroupTextureEntry *current_entry = &bindgroup->textures.items[j];
-    printf("[Bingroup %u] Bind Texture to binding : %u\n", bindgroup->index,
-           current_entry->binding);
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .textureView = current_entry->texture_view,

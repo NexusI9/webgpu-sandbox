@@ -3,6 +3,7 @@
 #include "../include/cglm/quat.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
+#include "cglm/cam.h"
 #include "constants.h"
 #include "emscripten/html5.h"
 #include "input.h"
@@ -105,7 +106,7 @@ static void camera_flying_mode_controller(camera *camera) {
   float yaw =
       -g_input.mouse.movement.x * camera->sensitivity * camera->clock->delta;
   float pitch =
-      -g_input.mouse.movement.y * camera->sensitivity * camera->clock->delta;
+      g_input.mouse.movement.y * camera->sensitivity * camera->clock->delta;
 
   camera_target_from_yaw_pitch(camera, yaw, pitch);
 
@@ -262,65 +263,30 @@ void camera_update_view(camera *camera) {
 }
 
 void camera_look_at(camera *camera, vec3 position, vec3 target) {
-  // UVN camera (2nd approach)
-
-  vec3 *forward = &camera->forward;
-  vec3 *up = &camera->up;
-  vec3 *right = &camera->right;
-
-  glm_vec3_sub(target, position, *forward);
-  glm_vec3_normalize(*forward);
-
-  vec3 world_up = {0.0f, 1.0f, 0.0f};
-
-  // need to avoid forward being parallel to world_up
-  if (fabs(glm_vec3_dot(*forward, world_up)) > 0.99f) {
-    // use x axis as up instead
-    vec3 correct_up = {0.0f, 0.0f, 1.0f};
-    glm_vec3_copy(correct_up, world_up);
-  }
-
-  // set right vector
-  glm_vec3_cross(*forward, world_up, *right);
-  glm_vec3_normalize(*right);
-
-  // set  up vector
-  glm_vec3_cross(*right, *forward, *up);
-
-  // create new view matrix
-  mat4 view = {
-      {
-          (*right)[0],
-          (*up)[0],
-          (*forward)[0],
-          0.0f,
-      },
-      {
-          (*right)[1],
-          (*up)[1],
-          (*forward)[1],
-          0.0f,
-      },
-      {
-          (*right)[2],
-          (*up)[2],
-          (*forward)[2],
-          0.0f,
-      },
-      {
-          -glm_vec3_dot(*right, position),
-          -glm_vec3_dot(*up, position),
-          -glm_vec3_dot(*forward, position),
-          1.0f,
-      },
-  };
 
   // update camera view
   // TODO : look like glm_..._copy is flawed
   // Can be related to alignment issue
   // Try with : alignas(16) mat4 view;
   memcpy(camera->position, position, sizeof(vec3));
-  memcpy(camera->view, view, sizeof(mat4));
+
+  vec3 *forward = &camera->forward;
+  vec3 *up = &camera->up;
+  vec3 *right = &camera->right;
+
+  glm_vec3_sub(target, position, *forward);
+  glm_normalize(*forward);
+
+  // need to avoid forward being parallel to world_up
+  // use x axis as up instead
+  if (fabs(glm_vec3_dot(*forward, *up)) > 0.99f)
+    glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, *up);
+
+  // calculate right vector
+  glm_vec3_cross(*up, *forward, *right);
+  glm_normalize(*right);
+
+  glm_lookat(camera->position, target, (vec3){0.0f, 1.0f, 0.0f}, camera->view);
 }
 
 mat4 *camera_view(camera *camera) { return &camera->view; }

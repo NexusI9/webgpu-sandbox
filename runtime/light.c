@@ -1,5 +1,8 @@
 #include "light.h"
+#include "../utils/math.h"
+#include "../utils/system.h"
 #include "camera.h"
+#define CGLM_FORCE_LEFT_HANDED
 #include "cglm/cam.h"
 #include "emscripten/emscripten.h"
 #include "shader.h"
@@ -72,7 +75,6 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
 
   // copy color
   glm_vec3_copy(desc->color, light->color);
-
 }
 
 void light_create_directional(DirectionalLight *light,
@@ -117,25 +119,39 @@ PointLightViews light_point_views(vec3 light_position, viewport *vp) {
 
   PointLightViews new_views = (PointLightViews){
       .length = LIGHT_POINT_VIEWS,
-      .views = {0},
   };
 
   vec3 directions[LIGHT_POINT_VIEWS] = {
       {1.0f, 0.0f, 0.0f},  {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f},
-      {0.0f - 1.0f, 0.0f}, {0.0f, 0.0f, 1.0f},  {0.0f, 0.0f, -1.0f},
+      {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f},  {0.0f, 0.0f, -1.0f},
   };
 
   vec3 ups[LIGHT_POINT_VIEWS] = {
-      {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, -1.0f},
-      {0.0f, 0.0f, 1.0f},  {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f},
+      {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f, 1.0f},
+      {0.0f, 0.0f, -1.0f}, {0.0f, -1.0f, 0.0f}, {0.0f, -1.0f, 0.0f},
   };
 
+  mat4 projection;
+  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
+  printf("Light projection:\n");
+  print_mat4(projection);
+  printf("----\n");
+  printf("View matrices:\n");
   for (int v = 0; v < new_views.length; v++) {
     vec3 direction;
     mat4 view;
     glm_vec3_add(light_position, directions[v], direction);
-    glm_look(light_position, direction, ups[v], view);
-    glm_mat4_mul(*viewport_projection(vp), view, new_views.views[v]);
+    glm_lookat(light_position, direction, ups[v], view);
+    printf("projection:\n");
+    print_mat4(projection);
+    printf("--- * ---\n");
+    printf("view:\n");
+    print_mat4(view);
+    glm_mat4_mul(view, projection, new_views.views[v]);
+    glm_mat4_transpose(new_views.views[v]);
+    printf("--- = ---\n");
+    print_mat4(new_views.views[v]);
+    printf("------\n");
   }
 
   return new_views;

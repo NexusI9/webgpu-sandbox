@@ -1,4 +1,7 @@
 #include "viewport.h"
+#include "../utils/math.h"
+#include "../utils/system.h"
+#include "cglm/cam.h"
 #include <math.h>
 
 viewport viewport_create(const ViewportCreateDescriptor *view_desc) {
@@ -25,16 +28,8 @@ void viewport_update_projection(viewport *viewport) {
   float near = viewport->near_clip;
   float aspect = viewport->aspect;
   float f = 1.0 / tan(fov * 0.5f);
-
-  mat4 proj = {
-      {f / aspect, 0.0f, 0.0f, 0.0f},
-      {0.0f, f, 0.0f, 0.0f},
-      {0.0f, 0.0f, far / (far - near), 1.0f},
-      {0.0f, 0.0f, -1.0f * (near * far) / (far - near), 0.0f},
-  };
-
-  // replace viewport projection
-  glm_mat4_copy(proj, viewport->projection);
+  glm_perspective(fov, aspect, near, far, viewport->projection);
+  // perspective_lh(fov, aspect, near, far, viewport->projection);
 }
 
 ViewportUniform viewport_uniform(viewport *viewport) {

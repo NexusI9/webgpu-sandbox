@@ -66,9 +66,14 @@ void init_scene() {
   // TODO: check if possible to set the mode in the descriptor
 
   // init camera position
-  camera_look_at(&main_scene.camera, (vec3){0.0f, 0.0f, 10.0f},
+  camera_look_at(&main_scene.camera, (vec3){0.0f, 4.0f, 10.0f},
                  (vec3){0.0f, 0.0f, 0.0f});
 
+  printf("camera view:\n");
+  print_mat4(main_scene.camera.view);
+
+  printf("viewport view:\n");
+  print_mat4(main_scene.viewport.projection);
   // set light
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
@@ -76,11 +81,11 @@ void init_scene() {
                                          .position = {3.0f, 3.0f, 3.0f},
                                      });
 
-  scene_add_point_light(&main_scene, &(PointLightDescriptor){
+  /*scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
                                          .intensity = 2.0f,
                                          .position = {-3.0f, 3.0f, -2.0f},
-                                     });
+                                     });*/
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
@@ -199,7 +204,7 @@ int main(int argc, const char *argv[]) {
   scene_add_mesh_solid(&main_scene, &parent_cube);*/
 
   import_cube();
-  // add_grid();
+  //add_grid();
 
   // Setup drawing pass may need to move it else where
   renderer_compute_shadow(&main_renderer, &main_scene);
