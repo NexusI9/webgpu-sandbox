@@ -96,10 +96,10 @@ static void camera_flying_mode_controller(camera *camera) {
     glm_vec3_sub(camera->position, velo_forward, camera->position);
 
   if (input_key(KEY_LEFT_FR)) // Left
-    glm_vec3_sub(camera->position, velo_side, camera->position);
+    glm_vec3_add(camera->position, velo_side, camera->position);
 
   if (input_key(KEY_RIGHT_FR)) // Right
-    glm_vec3_add(camera->position, velo_side, camera->position);
+    glm_vec3_sub(camera->position, velo_side, camera->position);
 
   // Define new target from yaw and pitch
   // mouse movement > yaw pitch > forward vector > target vector
