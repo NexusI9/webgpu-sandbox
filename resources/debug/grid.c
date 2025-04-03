@@ -1,6 +1,7 @@
 #include "grid.h"
 #include "../primitive/plane.h"
 #include "webgpu/webgpu.h"
+#include "../runtime/material.h"
 
 void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
@@ -33,7 +34,7 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
   // bind camera and viewport
   // NOTE: binding groups shall be created in order (0 first, then 1)
 
-  mesh_bind_matrices(mesh, gd->camera, gd->viewport, 0);
+  material_bind_views(mesh, gd->camera, gd->viewport, 0);
 
   ShaderBindGroupEntry grid_entries[1] = {
       {

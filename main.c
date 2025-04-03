@@ -26,6 +26,7 @@
 #include "resources/primitive/plane.h"
 #include "runtime/camera.h"
 #include "runtime/input.h"
+#include "runtime/material.h"
 #include "runtime/mesh.h"
 #include "runtime/scene.h"
 #include "runtime/shader.h"
@@ -116,7 +117,7 @@ void add_cube(mesh *cube, vec3 position) {
 
   mesh_position(cube, position);
 
-  mesh_bind_matrices(cube, &main_scene.camera, &main_scene.viewport, 0);
+  material_bind_views(cube, &main_scene.camera, &main_scene.viewport, 0);
 }
 
 void add_grid() {
@@ -155,9 +156,10 @@ void import_cube() {
                    &(cgltf_options){0});
 
   // TODO: handle child bind
-  mesh_bind_matrices(&cube, &main_scene.camera, &main_scene.viewport, 1);
-  mesh_bind_lights(&cube, &main_scene.viewport, &main_scene.lights.ambient,
-                   &main_scene.lights.directional, &main_scene.lights.point, 2);
+  material_bind_views(&cube, &main_scene.camera, &main_scene.viewport, 1);
+  material_bind_lights(&cube, &main_scene.viewport, &main_scene.lights.ambient,
+                       &main_scene.lights.directional, &main_scene.lights.point,
+                       2);
 
   scene_add_mesh_solid(&main_scene, &cube);
 }

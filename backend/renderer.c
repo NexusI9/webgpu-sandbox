@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "../runtime/material.h"
 #include "clock.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
@@ -328,7 +329,7 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
       // 1. Bind meshes
       for (int m = 0; m < scene->meshes.solid.length; m++) {
         mesh *current_mesh = &scene->meshes.solid.items[m];
-        mesh_bind_shadow_views(current_mesh, current_view);
+        material_bind_shadow_views(current_mesh, current_view);
         mesh_build(current_mesh, MESH_SHADER_SHADOW);
       }
 
@@ -340,7 +341,7 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
       // 3. Clear meshes bind group
       for (int m = 0; m < scene->meshes.solid.length; m++) {
         mesh *current_mesh = &scene->meshes.solid.items[m];
-        mesh_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
+        material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
       }
     }
   }
@@ -401,7 +402,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
     mesh *current_mesh = &scene->meshes.solid.items[m];
 
     // bind shadow texture (view) and sampler to the mesh shader
-    mesh_bind_shadow_maps(current_mesh, &scene->lights.point.shadow_texture);
+    material_bind_shadow_maps(current_mesh, &scene->lights.point.shadow_texture);
     // Finally build mesh with default shader (with imported texture array)
     mesh_build(current_mesh, MESH_SHADER_DEFAULT);
   }
