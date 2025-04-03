@@ -25,8 +25,8 @@ scene scene_create(camera camera, viewport viewport) {
   scene.viewport = viewport;
 
   // init mesh lists
-  scene_init_mesh_list(&scene.meshes.solid);
-  scene_init_mesh_list(&scene.meshes.alpha);
+  scene_init_mesh_list(&scene.meshes.lit);
+  scene_init_mesh_list(&scene.meshes.unlit);
 
   // init lights
   scene_init_light_list(&scene);
@@ -34,12 +34,12 @@ scene scene_create(camera camera, viewport viewport) {
   return scene;
 }
 
-mesh *scene_add_mesh_solid(scene *scene, mesh *mesh) {
-  return scene_add_mesh(&scene->meshes.solid, mesh);
+mesh *scene_add_mesh_lit(scene *scene, mesh *mesh) {
+  return scene_add_mesh(&scene->meshes.lit, mesh);
 }
 
-mesh *scene_add_mesh_alpha(scene *scene, mesh *mesh) {
-  return scene_add_mesh(&scene->meshes.alpha, mesh);
+mesh *scene_add_mesh_unlit(scene *scene, mesh *mesh) {
+  return scene_add_mesh(&scene->meshes.unlit, mesh);
 }
 
 void scene_draw(scene *scene, MeshDrawMethod draw_method,
@@ -48,9 +48,9 @@ void scene_draw(scene *scene, MeshDrawMethod draw_method,
   // update camera
   camera_draw(&scene->camera);
   // draw solid meshes first
-  scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.solid);
+  scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.lit);
   // draw transparent meshes then
-  scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.alpha);
+  scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.unlit);
 }
 
 /**
@@ -61,9 +61,9 @@ void scene_build(scene *scene, MeshDrawMethod draw_method) {
   // Build shader (establish pipeline from previously set bind groups)
     
   // draw solid meshes first
-  scene_build_mesh_list(scene, draw_method, &scene->meshes.solid);
+  scene_build_mesh_list(scene, draw_method, &scene->meshes.lit);
   // draw transparent meshes then
-  scene_build_mesh_list(scene, draw_method, &scene->meshes.alpha);
+  scene_build_mesh_list(scene, draw_method, &scene->meshes.unlit);
   
 }
 

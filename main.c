@@ -140,7 +140,7 @@ void add_grid() {
                           });
 
   // add triangle to scene
-  scene_add_mesh_alpha(&main_scene, &grid);
+  scene_add_mesh_unlit(&main_scene, &grid);
 }
 
 void import_cube() {
@@ -161,7 +161,7 @@ void import_cube() {
                        &main_scene.lights.directional, &main_scene.lights.point,
                        2);
 
-  scene_add_mesh_solid(&main_scene, &cube);
+  scene_add_mesh_lit(&main_scene, &cube);
 }
 
 void draw() {
@@ -204,7 +204,7 @@ int main(int argc, const char *argv[]) {
   mesh_add_child(&child_cube, &parent_cube);
   mesh_add_child(&child_cube_A, &parent_cube);
   mesh_add_child(&child_cube_B, &parent_cube);
-  scene_add_mesh_solid(&main_scene, &parent_cube);*/
+  scene_add_mesh_lit(&main_scene, &parent_cube);*/
 
   import_cube();
   // add_grid();

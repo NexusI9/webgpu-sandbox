@@ -12,8 +12,8 @@
 // due to depth test, need to write fully solid mesh first and then
 // transparent meshes
 typedef struct {
-  MeshList solid;
-  MeshList alpha;
+  MeshList lit;
+  MeshList unlit;
 } SceneMeshList;
 
 typedef struct {
@@ -39,8 +39,8 @@ typedef struct {
 } scene;
 
 scene scene_create(camera, viewport);
-mesh *scene_add_mesh_solid(scene *, mesh *);
-mesh *scene_add_mesh_alpha(scene *, mesh *);
+mesh *scene_add_mesh_lit(scene *, mesh *);
+mesh *scene_add_mesh_unlit(scene *, mesh *);
 void scene_draw(scene *, MeshDrawMethod, WGPURenderPassEncoder *);
 void scene_build(scene *, MeshDrawMethod);
 

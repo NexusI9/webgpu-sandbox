@@ -327,8 +327,8 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
       mat4 *current_view = &light_views.views[v];
 
       // 1. Bind meshes
-      for (int m = 0; m < scene->meshes.solid.length; m++) {
-        mesh *current_mesh = &scene->meshes.solid.items[m];
+      for (int m = 0; m < scene->meshes.lit.length; m++) {
+        mesh *current_mesh = &scene->meshes.lit.items[m];
         material_bind_shadow_views(current_mesh, current_view);
         mesh_build(current_mesh, MESH_SHADER_SHADOW);
       }
@@ -339,8 +339,8 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
                                  shadow_encoder);
 
       // 3. Clear meshes bind group
-      for (int m = 0; m < scene->meshes.solid.length; m++) {
-        mesh *current_mesh = &scene->meshes.solid.items[m];
+      for (int m = 0; m < scene->meshes.lit.length; m++) {
+        mesh *current_mesh = &scene->meshes.lit.items[m];
         material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
       }
     }
@@ -398,8 +398,8 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   renderer_create_shadow_map(renderer, scene, shadow_texture);
 
   // Transfer depth texture array to each meshes default shader
-  for (int m = 0; m < scene->meshes.solid.length; m++) {
-    mesh *current_mesh = &scene->meshes.solid.items[m];
+  for (int m = 0; m < scene->meshes.lit.length; m++) {
+    mesh *current_mesh = &scene->meshes.lit.items[m];
 
     // bind shadow texture (view) and sampler to the mesh shader
     material_bind_shadow_maps(current_mesh, &scene->lights.point.shadow_texture);
