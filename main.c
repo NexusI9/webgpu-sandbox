@@ -187,7 +187,7 @@ int main(int argc, const char *argv[]) {
   // set scene
   init_scene();
 
-  import_cube();
+  // import_cube();
 
   /*mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
@@ -198,13 +198,13 @@ int main(int argc, const char *argv[]) {
   mesh child_cube_B;
   add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
 
-  mesh parent_cube;
-  add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
-
   mesh_add_child(&child_cube, &parent_cube);
   mesh_add_child(&child_cube_A, &parent_cube);
-  mesh_add_child(&child_cube_B, &parent_cube);
-  scene_add_mesh_solid(&main_scene, &parent_cube);*/
+  mesh_add_child(&child_cube_B, &parent_cube);*/
+
+  mesh parent_cube;
+  add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
+  scene_add_mesh_solid(&main_scene, &parent_cube);
 
   // add_grid();
   //   setup drawing pass may need to move it else where

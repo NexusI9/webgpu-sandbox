@@ -392,9 +392,9 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
     ShaderBindGroup *current_bind_group = &shader->bind_groups.items[i];
-
     // update bindgroup entries (callback)
     for (int j = 0; j < current_bind_group->uniforms.length; j++) {
+
       ShaderBindGroupEntry *current_entry =
           &current_bind_group->uniforms.items[j];
 
@@ -402,6 +402,7 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
       // in two arrays so no last minute decision
       // TODO 2: maybe add a "requires udpate" flag so more efficient update
       if (current_entry->update_callback) {
+        printf("data: %p\n", current_entry->update_callback);
         current_entry->update_callback(current_entry->update_data,
                                        current_entry->data);
         wgpuQueueWriteBuffer(*shader->queue, current_entry->buffer, 0,

@@ -58,7 +58,7 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
     mesh_set_vertex_index(mesh, &md->index);
 
   // TODO: uniformise shader creation (ref || value)
-  //mesh->shaders.texture = md->shader;
+  // mesh->shaders.texture = md->shader;
   // init shadow shader
   mesh_init_shadow_shader(mesh);
 
@@ -107,8 +107,8 @@ void mesh_set_parent(mesh *child, mesh *parent) { child->parent = parent; }
 
 void mesh_set_name(mesh *mesh, const char *name) {
   mesh->name = malloc(strlen(name) + 1);
-  //free(mesh->name);
-  //mesh->name = strdup(name);
+  // free(mesh->name);
+  // mesh->name = strdup(name);
   strcpy(mesh->name, name);
 }
 
@@ -180,7 +180,6 @@ void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
 
   // draw shader
   // if shader is null, use default shader
-
   shader *shader = mesh_select_shader(mesh, draw_method);
   shader_draw(shader, render_pass, camera, viewport);
 
