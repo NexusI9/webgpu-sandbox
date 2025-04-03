@@ -84,8 +84,10 @@ typedef struct mesh {
   } buffer;
 
   // shader
-  shader shader_shadow;
-  shader shader;
+  struct {
+    shader texture;
+    shader shadow;
+  } shader;
 
   // hierarchy
   struct mesh *parent;
