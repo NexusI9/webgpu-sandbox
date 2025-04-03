@@ -116,8 +116,10 @@ struct DirectionalLightStorage {
 @group(2) @binding(1) var<uniform> directional_light_list
     : DirectionalLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
-@group(2) @binding(3) var shadow_maps : texture_depth_2d_array;
-@group(2) @binding(4) var shadow_sampler : sampler_comparison;
+//@group(2) @binding(3) var shadow_maps : texture_depth_2d_array;
+//@group(2) @binding(4) var shadow_sampler : sampler_comparison;
+@group(2) @binding(3) var shadow_maps : texture_2d_array<f32>;
+@group(2) @binding(4) var shadow_sampler : sampler;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
@@ -263,7 +265,7 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
       let shadow_position = point_shadow_position(
           frag_position, point_light_list.items[l].views[v]);
       let layer = l * POINT_LIGHT_VIEWS + v;
-      // Factor *=
+      // factor *=
       //     textureSampleCompare(shadow_maps, shadow_sampler,
       //     shadow_position.xy,
       //   layer, shadow_position.z);
@@ -287,8 +289,14 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   let material = create_material(albedo, metallic, normal, occlusion, emissive);
 
-  let shadow_factor = point_shadow_factor(vFrag);
-  let shadow_color = mix(vec3<f32>(0.2f), vec3<f32>(1.0f), shadow_factor);
+  // let shadow_factor = point_shadow_factor(vFrag);
+  // let shadow_color = mix(vec3<f32>(0.2f), vec3<f32>(1.0f), shadow_factor);
+
+  let coord = vec2<i32>(vUv);
+  var shadow_combined = vec4<f32>(0.0);
+  for (var l : u32 = 0u; l < 6u; l++) {
+    shadow_combined += textureLoad(shadow_maps, coord, l, 0i);
+  }
 
   var light_pos = vec3<f32>(0.0f);
   var light_color = vec3<f32>(0.0f);
@@ -325,6 +333,8 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
   // point_shadow_position(vFrag, point_light_list.items[0].views[1]);
   // return vec4<f32>(color, 1.0f);
   // return vec4<f32>(color * shadow_color, 1.0f);
-  let point = abs(point_light_list.items[0].views[1][3][3]) - 2.5f;
-  return vec4<f32>(vec3<f32>(point), 1.0f);
+
+  // let point = abs(point_light_list.items[0].views[1][3][3]) - 2.5f;
+  // return vec4<f32>(vec3<f32>(point), 1.0f);
+  return vec4<f32>(shadow_combined.rrr, 1.0f);
 }

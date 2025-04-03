@@ -36,6 +36,7 @@ void pipeline_set_custom(pipeline *, PipelineCustomAttributes *);
 
 // 3. build pipeline layout
 void pipeline_build(pipeline *, WGPUPipelineLayout *);
+void pipeline_shadow_build(pipeline *, WGPUPipelineLayout *);
 
 // 4. destroyer
 void pipeline_clear(pipeline *);

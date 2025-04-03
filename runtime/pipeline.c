@@ -103,6 +103,89 @@ void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
 }
 
 /**
+   DEBUG!!
+   Build alternative pipeline for shadow rendering
+ */
+void pipeline_shadow_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
+  printf("Build shadow vertex layout format: %u\n",
+         pipeline->vertex_layout->attributes->format);
+
+  if (pipeline->handle)
+    pipeline_clear(pipeline);
+
+  // custom attributes
+  WGPUCullMode cull_mode = pipeline->custom_attributes != NULL
+                               ? pipeline->custom_attributes->cullMode
+                               : PIPELINE_DEFAULT_CULLMODE;
+
+  // update bind group layout
+  pipeline->layout = *layout;
+  pipeline->descriptor = (WGPURenderPipelineDescriptor){
+      .layout = *layout,
+      .label = "Shader",
+      .vertex =
+          {
+              .module = *pipeline->module,
+              .entryPoint = "vs_main",
+              .bufferCount = 1,
+              .buffers = pipeline->vertex_layout,
+          },
+      .primitive =
+          {
+              .frontFace = WGPUFrontFace_CCW,
+              .cullMode = cull_mode,
+              .topology = WGPUPrimitiveTopology_TriangleList,
+              .stripIndexFormat = WGPUIndexFormat_Undefined,
+          },
+      .fragment =
+          &(WGPUFragmentState){
+              .module = *pipeline->module,
+              .entryPoint = "fs_main",
+              .targetCount = 1,
+              // color target state
+              .targets =
+                  &(WGPUColorTargetState){
+                      .format = WGPUTextureFormat_BGRA8Unorm,
+                      .writeMask = WGPUColorWriteMask_All,
+                      // blend state
+                      .blend =
+                          &(WGPUBlendState){
+                              .color =
+                                  {
+                                      .operation = WGPUBlendOperation_Add,
+                                      .srcFactor = WGPUBlendFactor_SrcAlpha,
+                                      .dstFactor =
+                                          WGPUBlendFactor_OneMinusSrcAlpha,
+                                  },
+                              .alpha =
+                                  {
+                                      .operation = WGPUBlendOperation_Add,
+                                      .srcFactor = WGPUBlendFactor_One,
+                                      .dstFactor = WGPUBlendFactor_Zero,
+                                  },
+                          },
+                  },
+          },
+      .multisample =
+          {
+              .count = 1,
+              .mask = 0xFFFFFFFF,
+              .alphaToCoverageEnabled = false,
+          },
+      /* .depthStencil =
+          &(WGPUDepthStencilState){
+              .format = WGPUTextureFormat_Depth24Plus,
+              .depthWriteEnabled = true,
+              .depthCompare = WGPUCompareFunction_Less,
+          },*/
+
+  };
+
+  pipeline->handle =
+      wgpuDeviceCreateRenderPipeline(*pipeline->device, &pipeline->descriptor);
+}
+
+/**
    Release pipeline and set back the handle to null
  */
 void pipeline_clear(pipeline *pipeline) {

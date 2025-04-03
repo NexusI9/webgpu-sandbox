@@ -69,12 +69,6 @@ void init_scene() {
   camera_look_at(&main_scene.camera, (vec3){3.0f, 3.0f, 3.0f},
                  (vec3){0.0f, 0.0f, 0.0f});
 
-  printf("projection:\n");
-  print_mat4(main_scene.viewport.projection);
-
-  printf("view:\n");
-  print_mat4(main_scene.camera.view);
-
   printf("combined view:\n");
   mat4 combined;
   glm_mat4_mul(main_scene.viewport.projection, main_scene.camera.view,

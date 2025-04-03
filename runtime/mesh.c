@@ -562,8 +562,10 @@ void mesh_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
               .binding = 3,
               .texture_view = *shadow_texture,
               .dimension = WGPUTextureViewDimension_2DArray,
-              .format = WGPUTextureFormat_Depth32Float,
-              .sample_type = WGPUTextureSampleType_Depth,
+              .format =
+                  WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
+              .sample_type =
+                  WGPUTextureSampleType_Float // WGPUTextureSampleType_Depth,
           }},
       });
 
@@ -577,13 +579,15 @@ void mesh_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
           .group_index = 2,
           .entries = (ShaderBindGroupSamplerEntry[]){{
               .binding = 4,
-              .type = WGPUSamplerBindingType_Comparison,
+              .type =
+                  WGPUSamplerBindingType_Filtering, // WGPUSamplerBindingType_Comparison,
               .addressModeU = WGPUAddressMode_ClampToEdge,
               .addressModeV = WGPUAddressMode_ClampToEdge,
               .addressModeW = WGPUAddressMode_ClampToEdge,
               .magFilter = WGPUFilterMode_Linear,
               .minFilter = WGPUFilterMode_Linear,
-              .compare = WGPUCompareFunction_LessEqual,
+              .compare =
+                  WGPUCompareFunction_Undefined // WGPUCompareFunction_LessEqual,
           }},
       });
 

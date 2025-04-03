@@ -223,13 +223,14 @@ void renderer_lock_mouse(const renderer *renderer) {
 
   */
 
-static void renderer_shadow_to_texture(scene *, WGPUTexture *, uint32_t,
-                                       WGPUDevice *);
+static void renderer_shadow_to_texture(scene *, WGPUTexture, uint32_t,
+                                       WGPUDevice *, WGPUCommandEncoder);
 
-static void renderer_create_shadow_map(renderer *, scene *, WGPUTexture *);
+static void renderer_create_shadow_map(renderer *, scene *, WGPUTexture);
 
-void renderer_shadow_to_texture(scene *scene, WGPUTexture *texture,
-                                uint32_t layer, WGPUDevice *device) {
+void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
+                                uint32_t layer, WGPUDevice *device,
+                                WGPUCommandEncoder encoder) {
 
   printf("rendering shadow to texture\n");
 
@@ -262,30 +263,41 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture *texture,
    */
 
   WGPUTextureView layer_texture_view = wgpuTextureCreateView(
-      *texture, &(WGPUTextureViewDescriptor){
-                    .label = "shadow per layer texture view",
-                    .format = WGPUTextureFormat_Depth32Float,
-                    .dimension = WGPUTextureViewDimension_2DArray,
-                    .baseArrayLayer = layer,
-                    .arrayLayerCount = 1,
-                    .mipLevelCount = 1,
-                });
+      texture,
+      &(WGPUTextureViewDescriptor){
+          .label = "shadow per layer texture view",
+          .format =
+              WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
+          .dimension = WGPUTextureViewDimension_2DArray,
+          .baseArrayLayer = layer,
+          .arrayLayerCount = 1,
+          .mipLevelCount = 1,
+          .baseMipLevel = 0,
+      });
 
   // create render pass and render it to the nested layer
-  WGPUCommandEncoder shadow_encoder =
-      wgpuDeviceCreateCommandEncoder(*device, NULL);
 
   WGPURenderPassEncoder shadow_pass = wgpuCommandEncoderBeginRenderPass(
-      shadow_encoder, &(WGPURenderPassDescriptor){
-                          .colorAttachmentCount = 0,
-                          .depthStencilAttachment =
-                              &(WGPURenderPassDepthStencilAttachment){
-                                  .view = layer_texture_view,
-                                  .depthClearValue = 1.0f,
-                                  .depthLoadOp = WGPULoadOp_Clear,
-                                  .depthStoreOp = WGPUStoreOp_Store,
-                              },
-                      });
+      encoder, &(WGPURenderPassDescriptor){
+                   .label = "shadow render pass encoder",
+                   .colorAttachmentCount = 1,
+                   .colorAttachments =
+                       &(WGPURenderPassColorAttachment){
+                           .view = layer_texture_view,
+                           .loadOp = WGPULoadOp_Clear,
+                           .storeOp = WGPUStoreOp_Store,
+                           .clearValue = (WGPUColor){1.0f, 1.0f, 1.0f, 1.0f},
+                           .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+                       },
+                   .depthStencilAttachment = NULL
+                   //.depthStencilAttachment = 0
+                   /* &(WGPURenderPassDepthStencilAttachment){
+                       .view = layer_texture_view,
+                       .depthClearValue = 1.0f,
+                       .depthLoadOp = WGPULoadOp_Clear,
+                       .depthStoreOp = WGPUStoreOp_Store,
+                       },*/
+               });
 
   scene_draw(scene, MESH_SHADER_SHADOW, &shadow_pass);
 
@@ -299,7 +311,11 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture *texture,
     - render to the shadow array
  */
 void renderer_create_shadow_map(renderer *renderer, scene *scene,
-                                WGPUTexture *texture) {
+                                WGPUTexture texture) {
+
+  WGPUCommandEncoder shadow_encoder =
+      wgpuDeviceCreateCommandEncoder(renderer->wgpu.device, NULL);
+
   for (size_t p = 0; p < scene->lights.point.length; p++) {
     // retrieve 6 views of point cube
     PointLightViews light_views = light_point_views(
@@ -317,8 +333,9 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
       }
 
       // 2. Render scene (create shadow render pass to texture layer)
-      renderer_shadow_to_texture(scene, texture, p * light_views.length + v,
-                                 &renderer->wgpu.device);
+      size_t layer = p * light_views.length + v;
+      renderer_shadow_to_texture(scene, texture, layer, &renderer->wgpu.device,
+                                 shadow_encoder);
 
       // 3. Clear meshes bind group
       for (int m = 0; m < scene->meshes.solid.length; m++) {
@@ -327,6 +344,15 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
       }
     }
   }
+
+  // finish encoding command
+  WGPUCommandBuffer command_buffer =
+      wgpuCommandEncoderFinish(shadow_encoder, NULL);
+  wgpuQueueSubmit(renderer->wgpu.queue, 1, &command_buffer);
+
+  // clean up
+  wgpuCommandBufferRelease(command_buffer);
+  wgpuCommandEncoderRelease(shadow_encoder);
 }
 
 void renderer_compute_shadow(renderer *renderer, scene *scene) {
@@ -343,7 +369,8 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
       renderer->wgpu.device,
       &(WGPUTextureDescriptor){
           .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, layer_count},
-          .format = WGPUTextureFormat_Depth32Float,
+          .format =
+              WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
           .usage = WGPUTextureUsage_RenderAttachment |
                    WGPUTextureUsage_TextureBinding,
           .dimension = WGPUTextureDimension_2D,
@@ -353,18 +380,21 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
 
   // populate scene point light texture_view
   scene->lights.point.shadow_texture = wgpuTextureCreateView(
-      shadow_texture, &(WGPUTextureViewDescriptor){
-                          .label = "shadow global texture view",
-                          .format = WGPUTextureFormat_Depth32Float,
-                          .dimension = WGPUTextureViewDimension_2DArray,
-                          .mipLevelCount = 1,
-                          .arrayLayerCount = layer_count,
-                          .baseArrayLayer = 0,
-                          .aspect = WGPUTextureAspect_DepthOnly,
-                      });
+      shadow_texture,
+      &(WGPUTextureViewDescriptor){
+          .label = "shadow global texture view",
+          .format =
+              WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
+          .dimension = WGPUTextureViewDimension_2DArray,
+          .mipLevelCount = 1,
+          .baseMipLevel = 0,
+          .arrayLayerCount = layer_count,
+          .baseArrayLayer = 0,
+          .aspect = WGPUTextureAspect_All, // WGPUTextureAspect_DepthOnly,
+      });
 
   // Generate Shadow maps
-  renderer_create_shadow_map(renderer, scene, &shadow_texture);
+  renderer_create_shadow_map(renderer, scene, shadow_texture);
 
   // Transfer depth texture array to each meshes default shader
   for (int m = 0; m < scene->meshes.solid.length; m++) {
