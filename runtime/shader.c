@@ -402,7 +402,6 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
       // in two arrays so no last minute decision
       // TODO 2: maybe add a "requires udpate" flag so more efficient update
       if (current_entry->update_callback) {
-        printf("data: %p\n", current_entry->update_callback);
         current_entry->update_callback(current_entry->update_data,
                                        current_entry->data);
         wgpuQueueWriteBuffer(*shader->queue, current_entry->buffer, 0,
