@@ -35,7 +35,10 @@ MeshUniform mesh_model_uniform(mesh *mesh) {
 void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
+  printf("name: %s, mesh: %p\n", mesh->name, mesh);
   mesh_set_name(mesh, md->name);
+
+  printf("name: %s, mesh: %p\n", md->name, mesh);
 
   // init child list
   mesh->children.length = 0;
@@ -55,9 +58,9 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
     mesh_set_vertex_index(mesh, &md->index);
 
   // TODO: uniformise shader creation (ref || value)
-  mesh->shader.texture = md->shader;
+  //mesh->shaders.texture = md->shader;
   // init shadow shader
-  // mesh_init_shadow_shader(mesh);
+  mesh_init_shadow_shader(mesh);
 
   // init model matrix
   glm_mat4_identity(mesh->model);
@@ -71,7 +74,6 @@ void mesh_create_primitive(mesh *mesh,
                         .index = md->primitive.index,
                         .vertex = md->primitive.vertex,
                         .name = md->name,
-                        .shader = md->shader,
                     });
 }
 
@@ -104,22 +106,22 @@ void mesh_set_vertex_index(mesh *mesh, const VertexIndex *indexes) {
 void mesh_set_parent(mesh *child, mesh *parent) { child->parent = parent; }
 
 void mesh_set_name(mesh *mesh, const char *name) {
-  free(mesh->name);
-  mesh->name = strdup(name);
+  mesh->name = malloc(strlen(name) + 1);
+  //free(mesh->name);
+  //mesh->name = strdup(name);
+  strcpy(mesh->name, name);
 }
 
 void mesh_set_shader(mesh *mesh, const ShaderCreateDescriptor *desc) {
   // add shader to texture shader
   // alias to shader_create
-  shader_create(&mesh->shader.texture, desc);
+  shader_create(&mesh->shaders.texture, desc);
 }
 
 // send vertex data to GPU
 void mesh_create_vertex_buffer(mesh *mesh,
                                const MeshCreateBufferDescriptor *bd) {
 
-  /*printf("name:%s, device: %p, queue:%p\n", mesh->name, mesh->device,
-    mesh->queue);*/
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue "), exit(0);
 
@@ -297,7 +299,7 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
   };
 
   shader_add_uniform(
-      &mesh->shader.texture,
+      &mesh->shaders.texture,
       &(ShaderCreateUniformDescriptor){
           .group_index = group_index,
           .entry_count = 3,
@@ -375,8 +377,8 @@ void mesh_bind_lights(mesh *mesh, viewport *viewport,
       for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++) {
         // glm_mat4_transpose(points_views.views[v]);
         glm_mat4_copy(points_views.views[v], uniform->views[v]);
-        print_mat4(uniform->views[v]);
-        printf("----\n");
+        // print_mat4(uniform->views[v]);
+        // printf("----\n");
       }
     }
   }
@@ -406,7 +408,7 @@ void mesh_bind_lights(mesh *mesh, viewport *viewport,
   };
 
   shader_add_uniform(
-      &mesh->shader.texture,
+      &mesh->shaders.texture,
       &(ShaderCreateUniformDescriptor){
           .group_index = group_index,
           .entry_count = 3,
@@ -468,12 +470,13 @@ size_t mesh_add_child_empty(mesh *mesh) {
 
   struct mesh temp_mesh;
 
+  printf("child name: %s\n", mesh->name);
   // still need to initialize it before adding
   // this ensure proper init array
   mesh_create(&temp_mesh, &(MeshCreateDescriptor){
+                              .name = mesh->name,
                               .device = mesh->device,
                               .queue = mesh->queue,
-                              .name = mesh->name,
                           });
 
   return mesh_add_child(&temp_mesh, mesh);
@@ -490,12 +493,12 @@ mesh *mesh_get_child(mesh *mesh, size_t index) {
 /**
    Return mesh default shader
  */
-shader *mesh_shader_texture(mesh *mesh) { return &mesh->shader.texture; }
+shader *mesh_shader_texture(mesh *mesh) { return &mesh->shaders.texture; }
 
 /**
    Return mesh shadow shader
  */
-shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader.shadow; }
+shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shaders.shadow; }
 
 /**
    Init mesh shadow shader.

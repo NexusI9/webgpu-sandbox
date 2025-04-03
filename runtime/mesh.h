@@ -27,7 +27,6 @@ typedef struct {
   WGPUQueue *queue;
   VertexAttribute vertex;
   VertexIndex index;
-  shader shader;
   const char *name;
 } MeshCreateDescriptor;
 
@@ -35,7 +34,6 @@ typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;
   primitive primitive;
-  shader shader;
   const char *name;
 } MeshCreatePrimitiveDescriptor;
 
@@ -91,7 +89,7 @@ typedef struct mesh {
     shader texture;
     shader shadow;
     // shader wireframe;
-  } shader;
+  } shaders;
 
   // hierarchy
   struct mesh *parent;
@@ -126,7 +124,7 @@ mesh *mesh_get_child(mesh *, size_t);
 
 MeshUniform mesh_model_uniform(mesh *);
 
-// MATERIAL API 
+// MATERIAL API
 void mesh_clear_bindings(mesh *, MeshDrawMethod);
 
 shader *mesh_shader_texture(mesh *);

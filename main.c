@@ -121,6 +121,7 @@ void add_cube(mesh *cube, vec3 position) {
 
 void add_grid() {
 
+  mesh grid_mesh;
   GridUniform grid_uniform = {
       .size = 100.0f,
       .cell_size = 100.0f,
@@ -129,17 +130,16 @@ void add_grid() {
 
   glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
 
-  mesh grid;
-  grid_create_mesh(&grid, &(GridCreateDescriptor){
-                              .uniform = grid_uniform,
-                              .camera = &main_scene.camera,
-                              .viewport = &main_scene.viewport,
-                              .device = &main_renderer.wgpu.device,
-                              .queue = &main_renderer.wgpu.queue,
-                          });
+  grid_create_mesh(&grid_mesh, &(GridCreateDescriptor){
+                                   .uniform = grid_uniform,
+                                   .camera = &main_scene.camera,
+                                   .viewport = &main_scene.viewport,
+                                   .device = &main_renderer.wgpu.device,
+                                   .queue = &main_renderer.wgpu.queue,
+                               });
 
   // add triangle to scene
-  scene_add_mesh_alpha(&main_scene, &grid);
+  scene_add_mesh_alpha(&main_scene, &grid_mesh);
 }
 
 void import_cube() {
@@ -187,6 +187,8 @@ int main(int argc, const char *argv[]) {
   // set scene
   init_scene();
 
+  import_cube();
+
   /*mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
 
@@ -204,11 +206,9 @@ int main(int argc, const char *argv[]) {
   mesh_add_child(&child_cube_B, &parent_cube);
   scene_add_mesh_solid(&main_scene, &parent_cube);*/
 
-  //import_cube();
-  add_grid();
-
-  // Setup drawing pass may need to move it else where
-  //renderer_compute_shadow(&main_renderer, &main_scene);
+  // add_grid();
+  //   setup drawing pass may need to move it else where
+  //   renderer_compute_shadow(&main_renderer, &main_scene);
 
   scene_build(&main_scene, MESH_SHADER_TEXTURE);
   //  Update Loop

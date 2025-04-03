@@ -5,8 +5,23 @@
 void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
   primitive plane = primitive_plane();
-  shader grid_shader;
-  shader_create(&grid_shader,
+
+  mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
+                                  .name = "grid",
+                                  .queue = gd->queue,
+                                  .device = gd->device,
+                                  .primitive = plane,
+                              });
+
+  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
+                            .path = "./runtime/assets/shader/shader.grid.wgsl",
+                            .label = "grid shader",
+                            .name = "grid shader",
+                            .device = gd->device,
+                            .queue = gd->queue,
+                        });
+  
+  shader_create(mesh_shader_texture(mesh),
                 &(ShaderCreateDescriptor){
                     .path = "./runtime/assets/shader/shader.grid.wgsl",
                     .label = "grid shader",
@@ -15,13 +30,7 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                     .queue = gd->queue,
                 });
 
-  mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
-                                  .name = "grid",
-                                  .queue = gd->queue,
-                                  .device = gd->device,
-                                  .primitive = plane,
-                                  .shader = grid_shader,
-                              });
+  mesh_bind_matrices(mesh, gd->camera, gd->viewport, 0);
 
   shader_pipeline_custom(mesh_shader_texture(mesh),
                          &(PipelineCustomAttributes){
@@ -33,10 +42,9 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                        gd->uniform.size,
                        gd->uniform.size,
                    });
+
   // bind camera and viewport
   // NOTE: binding groups shall be created in order (0 first, then 1)
-
-  mesh_bind_matrices(mesh, gd->camera, gd->viewport, 0);
 
   shader_add_uniform(
       mesh_shader_texture(mesh),

@@ -59,12 +59,13 @@ void scene_draw(scene *scene, MeshDrawMethod draw_method,
 void scene_build(scene *scene, MeshDrawMethod draw_method) {
 
   // Build shader (establish pipeline from previously set bind groups)
-    
+
   // draw solid meshes first
+  printf("Building solid\n");
   scene_build_mesh_list(scene, draw_method, &scene->meshes.solid);
   // draw transparent meshes then
+  printf("Building alpha\n");
   scene_build_mesh_list(scene, draw_method, &scene->meshes.alpha);
-  
 }
 
 void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
@@ -72,8 +73,14 @@ void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
 
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = &mesh_list->items[i];
+    printf("[build] vertex layout format: %u\n",
+           current_mesh->shaders.texture.pipeline.vertex_layout->attributes
+               ->format);
+
+    printf("[build] vertex layout address: %p\n",
+           &current_mesh->shaders.texture.pipeline.vertex_layout);
     mesh_build(current_mesh, draw_method);
-    // shader_module_release(mesh_shader_default(mesh));
+    // shader_module_release(mesh_shader_texture(current_mesh));
   }
 }
 
@@ -88,12 +95,20 @@ mesh *scene_add_mesh(MeshList *mesh_list, mesh *mesh) {
 
     perror("Scene mesh list reached full capacity"), exit(0);
     return NULL;
-  } else {
-    // Copy mesh to list
-    mesh_list->items[mesh_list->length++] = *mesh;
   }
 
-  return &mesh_list->items[mesh_list->length - 1];
+  // Copy mesh to list
+  struct mesh *child_mesh = &mesh_list->items[mesh_list->length++];
+  *child_mesh = *mesh;
+
+  printf(
+      "[add] vertex layout format: %u\n",
+      child_mesh->shaders.texture.pipeline.vertex_layout->attributes->format);
+
+  printf("[add] vertex layout address: %p\n",
+         &child_mesh->shaders.texture.pipeline.vertex_layout);
+
+  return child_mesh;
 }
 
 void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,

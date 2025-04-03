@@ -16,8 +16,10 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
   pipeline->custom_attributes = NULL;
   pipeline->handle = NULL;
 
-  printf("create vertex layout format: %u\n",
+  printf("[create] vertex layout format: %u\n",
          pipeline->vertex_layout->attributes->format);
+
+  printf("[create] vertex layout address: %p\n", &pipeline->vertex_layout);
 }
 
 /**
@@ -26,6 +28,7 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
   printf("Build vertex layout format: %u\n",
          pipeline->vertex_layout->attributes->format);
+
 
   if (pipeline->handle)
     pipeline_clear(pipeline);
@@ -109,6 +112,8 @@ void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
 void pipeline_shadow_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
   printf("Build shadow vertex layout format: %u\n",
          pipeline->vertex_layout->attributes->format);
+
+  printf("[Pipeline] address: %p\n", pipeline);
 
   if (pipeline->handle)
     pipeline_clear(pipeline);

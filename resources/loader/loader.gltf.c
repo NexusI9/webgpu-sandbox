@@ -143,15 +143,18 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
 
+    printf("flag\n");
     cgltf_mesh gl_mesh = data->meshes[m];
     struct mesh *parent_mesh = mesh;
 
+    printf("parent mesh name:%s\n", parent_mesh->name);
     // if > 0 mesh, then append as child of initial mesh (level 1)
     if (m > 0) {
       size_t new_child = mesh_add_child_empty(mesh);
       parent_mesh = mesh_get_child(mesh, new_child);
     }
 
+    printf("inner parent mesh name: %s\n", parent_mesh->name);
     // set mesh position
     loader_gltf_mesh_position(parent_mesh, gl_mesh.name, data);
 
@@ -245,14 +248,15 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
         asprintf(&target_mesh->name, "%s", gl_mesh.name);
       }
 
-      // load shader
-      loader_gltf_create_shader(mesh_shader_texture(target_mesh), mesh->device,
-                                mesh->queue, &current_primitive);
-
+      printf("mesh: %p\n", target_mesh);
       // dynamically define mesh attribute
       mesh_set_vertex_attribute(target_mesh, &vert_attr);
       mesh_set_vertex_index(target_mesh, &vert_index);
       mesh_set_parent(target_mesh, parent_mesh);
+
+      // load shader
+      loader_gltf_create_shader(mesh_shader_texture(target_mesh), mesh->device,
+                                mesh->queue, &current_primitive);
     }
   }
 }
@@ -323,6 +327,8 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
 
     binding += 2;
   }
+
+  printf("binding to shader: %p\n", shader);
 
   // send texture + sampler to shader
   shader_add_texture(shader, &(ShaderCreateTextureDescriptor){

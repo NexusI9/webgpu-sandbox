@@ -96,6 +96,7 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
   // set vertex layout
   shader_set_vertex_layout(shader);
 
+  printf("create shader: %s\n", shader->name);
   // init pipeline
   pipeline_create(&shader->pipeline,
                   &(PipelineCreateDescriptor){
