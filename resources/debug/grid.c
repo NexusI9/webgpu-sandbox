@@ -5,22 +5,25 @@
 void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
   primitive plane = primitive_plane();
+  shader grid_shader;
+  shader_create(&grid_shader,
+                &(ShaderCreateDescriptor){
+                    .path = "./runtime/assets/shader/shader.grid.wgsl",
+                    .label = "grid shader",
+                    .name = "grid shader",
+                    .device = gd->device,
+                    .queue = gd->queue,
+                });
+
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .name = "grid",
                                   .queue = gd->queue,
                                   .device = gd->device,
                                   .primitive = plane,
+                                  .shader = grid_shader,
                               });
 
-  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
-                            .path = "./runtime/assets/shader/shader.grid.wgsl",
-                            .label = "grid",
-                            .name = "grid",
-                            .device = gd->device,
-                            .queue = gd->queue,
-                        });
-
-  shader_pipeline_custom(mesh_shader_default(mesh),
+  shader_pipeline_custom(mesh_shader_texture(mesh),
                          &(PipelineCustomAttributes){
                              .cullMode = WGPUCullMode_None,
                          });
@@ -35,21 +38,20 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
   mesh_bind_matrices(mesh, gd->camera, gd->viewport, 0);
 
-  ShaderBindGroupEntry grid_entries[1] = {
-      {
-          .binding = 0,
-          .data = &gd->uniform,
-          .size = sizeof(GridUniform),
-          .offset = 0,
-      },
-  };
-
   shader_add_uniform(
-      mesh_shader_default(mesh),
+      mesh_shader_texture(mesh),
       &(ShaderCreateUniformDescriptor){
           .group_index = 1,
           .entry_count = 1,
-          .entries = grid_entries,
+          .entries =
+              (ShaderBindGroupEntry[]){
+                  {
+                      .binding = 0,
+                      .data = &gd->uniform,
+                      .size = sizeof(GridUniform),
+                      .offset = 0,
+                  },
+              },
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
       });
 }

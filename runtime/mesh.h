@@ -14,7 +14,7 @@
 #define MESH_NAME_MAX_LENGTH 64
 
 typedef enum {
-  MESH_SHADER_DEFAULT,
+  MESH_SHADER_TEXTURE,
   MESH_SHADER_SHADOW,
   MESH_SHADER_SOLID,
   MESH_SHADER_WIREFRAME,
@@ -83,9 +83,15 @@ typedef struct mesh {
     WGPUBuffer vertex, index;
   } buffer;
 
-  // shader
-  shader shader_shadow;
-  shader shader;
+  // core 3 shaders
+  // - texture: texture shader used in final color render pass
+  // - shadow : vertex only shader used for depth comparison in shadow map
+  // - wireframe : wireframe specific shader
+  struct {
+    shader texture;
+    shader shadow;
+    // shader wireframe;
+  } shader;
 
   // hierarchy
   struct mesh *parent;
@@ -120,20 +126,19 @@ mesh *mesh_get_child(mesh *, size_t);
 
 MeshUniform mesh_model_uniform(mesh *);
 
-// SHADER
+// MATERIAL API 
 void mesh_clear_bindings(mesh *, MeshDrawMethod);
 
-// DEFAULT SHADER
-shader *mesh_shader_default(mesh *);
+shader *mesh_shader_texture(mesh *);
+shader *mesh_shader_shadow(mesh *);
+
 // bind model, camera and viewport to bind group
 void mesh_bind_matrices(mesh *, camera *, viewport *, uint8_t);
 // bind light scene
 void mesh_bind_lights(mesh *, viewport *, AmbientLightList *,
                       DirectionalLightList *, PointLightList *, uint8_t);
 
-// SHADOW SHADER
 // bind shadow specicif view
 void mesh_bind_shadow_views(mesh *, mat4 *);
 void mesh_bind_shadow_maps(mesh *, WGPUTextureView *);
-shader *mesh_shader_shadow(mesh *);
 #endif

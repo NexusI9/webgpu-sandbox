@@ -55,10 +55,9 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
     mesh_set_vertex_index(mesh, &md->index);
 
   // TODO: uniformise shader creation (ref || value)
-  mesh->shader = md->shader;
-
+  mesh->shader.texture = md->shader;
   // init shadow shader
-  mesh_init_shadow_shader(mesh);
+  // mesh_init_shadow_shader(mesh);
 
   // init model matrix
   glm_mat4_identity(mesh->model);
@@ -72,6 +71,7 @@ void mesh_create_primitive(mesh *mesh,
                         .index = md->primitive.index,
                         .vertex = md->primitive.vertex,
                         .name = md->name,
+                        .shader = md->shader,
                     });
 }
 
@@ -109,8 +109,9 @@ void mesh_set_name(mesh *mesh, const char *name) {
 }
 
 void mesh_set_shader(mesh *mesh, const ShaderCreateDescriptor *desc) {
+  // add shader to texture shader
   // alias to shader_create
-  shader_create(&mesh->shader, desc);
+  shader_create(&mesh->shader.texture, desc);
 }
 
 // send vertex data to GPU
@@ -295,13 +296,14 @@ void mesh_bind_matrices(mesh *mesh, camera *camera, viewport *viewport,
       },
   };
 
-  shader_add_uniform(&mesh->shader, &(ShaderCreateUniformDescriptor){
-                                        .group_index = group_index,
-                                        .entry_count = 3,
-                                        .visibility = WGPUShaderStage_Vertex |
-                                                      WGPUShaderStage_Fragment,
-                                        .entries = entries,
-                                    });
+  shader_add_uniform(
+      &mesh->shader.texture,
+      &(ShaderCreateUniformDescriptor){
+          .group_index = group_index,
+          .entry_count = 3,
+          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+          .entries = entries,
+      });
 
   for (size_t c = 0; c < mesh->children.length; c++)
     mesh_bind_matrices(&mesh->children.items[c], camera, viewport, group_index);
@@ -403,13 +405,14 @@ void mesh_bind_lights(mesh *mesh, viewport *viewport,
       },
   };
 
-  shader_add_uniform(&mesh->shader, &(ShaderCreateUniformDescriptor){
-                                        .group_index = group_index,
-                                        .entry_count = 3,
-                                        .visibility = WGPUShaderStage_Vertex |
-                                                      WGPUShaderStage_Fragment,
-                                        .entries = entries,
-                                    });
+  shader_add_uniform(
+      &mesh->shader.texture,
+      &(ShaderCreateUniformDescriptor){
+          .group_index = group_index,
+          .entry_count = 3,
+          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+          .entries = entries,
+      });
 
   for (size_t c = 0; c < mesh->children.length; c++)
     mesh_bind_lights(&mesh->children.items[c], viewport, ambient_list,
@@ -487,12 +490,12 @@ mesh *mesh_get_child(mesh *mesh, size_t index) {
 /**
    Return mesh default shader
  */
-shader *mesh_shader_default(mesh *mesh) { return &mesh->shader; }
+shader *mesh_shader_texture(mesh *mesh) { return &mesh->shader.texture; }
 
 /**
    Return mesh shadow shader
  */
-shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader_shadow; }
+shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader.shadow; }
 
 /**
    Init mesh shadow shader.
@@ -502,7 +505,7 @@ shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader_shadow; }
  */
 void mesh_init_shadow_shader(mesh *mesh) {
 
-  shader_create(&mesh->shader_shadow,
+  shader_create(mesh_shader_shadow(mesh),
                 &(ShaderCreateDescriptor){
                     .path = "./runtime/assets/shader/shader.shadow.wgsl",
                     .label = "shadow",
@@ -526,7 +529,7 @@ void mesh_init_shadow_shader(mesh *mesh) {
  */
 void mesh_bind_shadow_views(mesh *mesh, mat4 *view) {
 
-  shader_add_uniform(&mesh->shader_shadow,
+  shader_add_uniform(mesh_shader_shadow(mesh),
                      &(ShaderCreateUniformDescriptor){
                          .group_index = 0,
                          .entry_count = 1,
@@ -553,7 +556,7 @@ void mesh_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
 
   // add multi-layered texture to default shader
   shader_add_texture_view(
-      mesh_shader_default(mesh),
+      mesh_shader_texture(mesh),
       &(ShaderCreateTextureViewDescriptor){
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entry_count = 1,
@@ -572,7 +575,7 @@ void mesh_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
   // add related sampler to default shader
   // NOTE: With depth texture need to use a special sampler type: Comparison
   shader_add_sampler(
-      mesh_shader_default(mesh),
+      mesh_shader_texture(mesh),
       &(ShaderCreateSamplerDescriptor){
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entry_count = 1,
@@ -610,9 +613,9 @@ shader *mesh_select_shader(mesh *mesh, MeshDrawMethod method) {
   case MESH_SHADER_CUSTOM:
   case MESH_SHADER_SOLID:
   case MESH_SHADER_WIREFRAME:
-  case MESH_SHADER_DEFAULT:
+  case MESH_SHADER_TEXTURE:
   default:
-    return mesh_shader_default(mesh);
+    return mesh_shader_texture(mesh);
     break;
   }
 }

@@ -169,7 +169,7 @@ void renderer_draw(const renderer *renderer, scene *scene) {
           }});
 
   // draw mesh scene
-  scene_draw(scene, MESH_SHADER_DEFAULT, &render_pass);
+  scene_draw(scene, MESH_SHADER_TEXTURE, &render_pass);
 
   // end render pass
   wgpuRenderPassEncoderEnd(render_pass);
@@ -403,6 +403,6 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
     // bind shadow texture (view) and sampler to the mesh shader
     mesh_bind_shadow_maps(current_mesh, &scene->lights.point.shadow_texture);
     // Finally build mesh with default shader (with imported texture array)
-    mesh_build(current_mesh, MESH_SHADER_DEFAULT);
+    mesh_build(current_mesh, MESH_SHADER_TEXTURE);
   }
 }
