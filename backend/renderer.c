@@ -174,7 +174,7 @@ void renderer_draw(const renderer *renderer, scene *scene) {
   // end render pass
   wgpuRenderPassEncoderEnd(render_pass);
 
-  // create command buffer
+  // send command to GPU
   WGPUCommandBuffer render_buffer =
       wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
 
