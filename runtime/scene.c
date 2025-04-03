@@ -73,7 +73,7 @@ void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = &mesh_list->items[i];
     mesh_build(current_mesh, draw_method);
-    // shader_module_release(mesh_shader_default(mesh));
+    // shader_module_release(mesh_shader_texture(mesh));
   }
 }
 

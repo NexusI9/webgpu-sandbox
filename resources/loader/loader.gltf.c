@@ -246,7 +246,7 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       }
 
       // load shader
-      loader_gltf_create_shader(mesh_shader_default(target_mesh), mesh->device,
+      loader_gltf_create_shader(mesh_shader_texture(target_mesh), mesh->device,
                                 mesh->queue, &current_primitive);
 
       // dynamically define mesh attribute

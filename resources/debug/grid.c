@@ -20,7 +20,7 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                             .queue = gd->queue,
                         });
 
-  shader_pipeline_custom(mesh_shader_default(mesh),
+  shader_pipeline_custom(mesh_shader_texture(mesh),
                          &(PipelineCustomAttributes){
                              .cullMode = WGPUCullMode_None,
                          });
@@ -45,7 +45,7 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
   };
 
   shader_add_uniform(
-      mesh_shader_default(mesh),
+      mesh_shader_texture(mesh),
       &(ShaderCreateUniformDescriptor){
           .group_index = 1,
           .entry_count = 1,

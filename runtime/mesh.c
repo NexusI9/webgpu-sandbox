@@ -489,7 +489,7 @@ mesh *mesh_get_child(mesh *mesh, size_t index) {
 /**
    Return mesh default shader
  */
-shader *mesh_shader_default(mesh *mesh) { return &mesh->shader.texture; }
+shader *mesh_shader_texture(mesh *mesh) { return &mesh->shader.texture; }
 
 /**
    Return mesh shadow shader
@@ -555,7 +555,7 @@ void mesh_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
 
   // add multi-layered texture to default shader
   shader_add_texture_view(
-      mesh_shader_default(mesh),
+      mesh_shader_texture(mesh),
       &(ShaderCreateTextureViewDescriptor){
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entry_count = 1,
@@ -574,7 +574,7 @@ void mesh_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
   // add related sampler to default shader
   // NOTE: With depth texture need to use a special sampler type: Comparison
   shader_add_sampler(
-      mesh_shader_default(mesh),
+      mesh_shader_texture(mesh),
       &(ShaderCreateSamplerDescriptor){
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entry_count = 1,
@@ -614,7 +614,7 @@ shader *mesh_select_shader(mesh *mesh, MeshDrawMethod method) {
   case MESH_SHADER_WIREFRAME:
   case MESH_SHADER_DEFAULT:
   default:
-    return mesh_shader_default(mesh);
+    return mesh_shader_texture(mesh);
     break;
   }
 }

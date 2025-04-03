@@ -87,6 +87,7 @@ typedef struct mesh {
   struct {
     shader texture;
     shader shadow;
+    shader wireframe;
   } shader;
 
   // hierarchy
@@ -126,7 +127,7 @@ MeshUniform mesh_model_uniform(mesh *);
 void mesh_clear_bindings(mesh *, MeshDrawMethod);
 
 // DEFAULT SHADER
-shader *mesh_shader_default(mesh *);
+shader *mesh_shader_texture(mesh *);
 // bind model, camera and viewport to bind group
 void mesh_bind_matrices(mesh *, camera *, viewport *, uint8_t);
 // bind light scene
