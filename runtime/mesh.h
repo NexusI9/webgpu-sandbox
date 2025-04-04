@@ -10,7 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define MESH_CHILD_LENGTH 12
+#define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
 
 typedef enum {
@@ -27,7 +27,6 @@ typedef struct {
   WGPUQueue *queue;
   VertexAttribute vertex;
   VertexIndex index;
-  shader shader;
   const char *name;
 } MeshCreateDescriptor;
 
@@ -35,7 +34,6 @@ typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;
   primitive primitive;
-  shader shader;
   const char *name;
 } MeshCreatePrimitiveDescriptor;
 

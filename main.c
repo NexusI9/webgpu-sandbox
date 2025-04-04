@@ -106,6 +106,15 @@ void add_cube(mesh *cube, vec3 position) {
                                   .queue = &main_renderer.wgpu.queue,
                               });
 
+  /*shader_create(mesh_shader_texture(cube),
+                &(ShaderCreateDescriptor){
+                    .path = "./runtime/assets/shader/shader.default.wgsl",
+                    .label = "cube",
+                    .name = "cube",
+                    .device = &main_renderer.wgpu.device,
+                    .queue = &main_renderer.wgpu.queue,
+                    });*/
+
   mesh_set_shader(cube,
                   &(ShaderCreateDescriptor){
                       .path = "./runtime/assets/shader/shader.default.wgsl",
@@ -126,7 +135,7 @@ void add_grid() {
   GridUniform grid_uniform = {
       .size = 100.0f,
       .cell_size = 100.0f,
-      .thickness = 32.0f,
+      .thickness = 44.0f,
   };
 
   glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
@@ -191,25 +200,25 @@ int main(int argc, const char *argv[]) {
   // set scene
   init_scene();
 
-  /*mesh child_cube;
-  add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
+  //mesh child_cube;
+  // add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
 
-  mesh child_cube_A;
-  add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
+  //mesh child_cube_A;
+  // add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
 
-  mesh child_cube_B;
-  add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
+  //mesh child_cube_B;
+  // add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
 
-  mesh parent_cube;
-  add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
+  //mesh parent_cube;
+  //add_cube(&parent_cube, (vec3){4.0f, 2.0f, 1.0f});
 
-  mesh_add_child(&child_cube, &parent_cube);
-  mesh_add_child(&child_cube_A, &parent_cube);
-  mesh_add_child(&child_cube_B, &parent_cube);
-  scene_add_mesh_lit(&main_scene, &parent_cube);*/
+  // mesh_add_child(&child_cube, &parent_cube);
+  // mesh_add_child(&child_cube_A, &parent_cube);
+  // mesh_add_child(&child_cube_B, &parent_cube);
+  // scene_add_mesh_lit(&main_scene, &parent_cube);
 
   import_cube();
-  // add_grid();
+  //add_grid();
 
   // Setup drawing pass may need to move it else where
   // renderer_compute_shadow(&main_renderer, &main_scene);

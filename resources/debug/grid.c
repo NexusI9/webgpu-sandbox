@@ -6,6 +6,7 @@
 void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
   primitive plane = primitive_plane();
+
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .name = "grid",
                                   .queue = gd->queue,
@@ -21,36 +22,38 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                             .queue = gd->queue,
                         });
 
-  /*shader_pipeline_custom(mesh_shader_texture(mesh),
-                         &(PipelineCustomAttributes){
+  pipeline_set_primitive(&mesh_shader_texture(mesh)->pipeline,
+                         (WGPUPrimitiveState){
+                             .frontFace = WGPUFrontFace_CCW,
                              .cullMode = WGPUCullMode_None,
-                             });*/
+                             .topology = WGPUPrimitiveTopology_TriangleList,
+                             .stripIndexFormat = WGPUIndexFormat_Undefined,
+                         });
 
   mesh_scale(mesh, (vec3){
                        gd->uniform.size,
                        gd->uniform.size,
                        gd->uniform.size,
                    });
+
   // bind camera and viewport
   // NOTE: binding groups shall be created in order (0 first, then 1)
-
   material_texture_bind_views(mesh, gd->camera, gd->viewport, 0);
-
-  ShaderBindGroupEntry grid_entries[1] = {
-      {
-          .binding = 0,
-          .data = &gd->uniform,
-          .size = sizeof(GridUniform),
-          .offset = 0,
-      },
-  };
 
   shader_add_uniform(
       mesh_shader_texture(mesh),
       &(ShaderCreateUniformDescriptor){
           .group_index = 1,
           .entry_count = 1,
-          .entries = grid_entries,
+          .entries =
+              (ShaderBindGroupEntry[]){
+                  {
+                      .binding = 0,
+                      .data = &gd->uniform,
+                      .size = sizeof(GridUniform),
+                      .offset = 0,
+                  },
+              },
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
       });
 }

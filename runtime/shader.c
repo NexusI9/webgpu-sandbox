@@ -648,7 +648,7 @@ bool shader_validate_binding(shader *shader) {
     perror("Shader has no device or queue");
     return 0;
   }
-
+  
   if (shader->bind_groups.length >= SHADER_MAX_BIND_GROUP) {
     perror("Bind group list at full capacity");
     return 0;

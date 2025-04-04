@@ -8,7 +8,7 @@
 #define SHADER_GROUP_VIEWPORT 0
 #define SHADER_BIND_CAMERA 0
 #define SHADER_BIND_VIEWPORT 1
-#define SHADER_MAX_BIND_GROUP 12
+#define SHADER_MAX_BIND_GROUP 7 //!! issue here
 
 #define SHADER_MAX_UNIFORMS 12
 #define SHADER_UNIFORMS_DEFAULT_CAPACITY 8
@@ -183,7 +183,7 @@ typedef struct {
   // registered bind group unique indexes
   struct {
     ShaderBindGroup items[SHADER_MAX_BIND_GROUP];
-    size_t length;
+    uint8_t length;
   } bind_groups;
 
   int8_t projection_view_bindgroup;

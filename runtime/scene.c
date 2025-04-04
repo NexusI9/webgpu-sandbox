@@ -58,13 +58,13 @@ void scene_draw(scene *scene, MeshDrawMethod draw_method,
  */
 void scene_build(scene *scene, MeshDrawMethod draw_method) {
 
+  printf("======= BUILD SCENE ======\n");
   // Build shader (establish pipeline from previously set bind groups)
-    
+
   // draw solid meshes first
   scene_build_mesh_list(scene, draw_method, &scene->meshes.lit);
   // draw transparent meshes then
   scene_build_mesh_list(scene, draw_method, &scene->meshes.unlit);
-  
 }
 
 void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,

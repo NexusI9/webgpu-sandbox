@@ -53,11 +53,8 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
   if (md->index.length > 0)
     mesh_set_vertex_index(mesh, &md->index);
 
-  // TODO: uniformise shader creation (ref || value)
-  mesh->shader.texture = md->shader;
-
   // init shadow shader
-  mesh_init_shadow_shader(mesh);
+  // mesh_init_shadow_shader(mesh);
 
   // init model matrix
   glm_mat4_identity(mesh->model);
@@ -65,6 +62,7 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
 void mesh_create_primitive(mesh *mesh,
                            const MeshCreatePrimitiveDescriptor *md) {
+
   mesh_create(mesh, &(MeshCreateDescriptor){
                         .queue = md->queue,
                         .device = md->device,
@@ -350,7 +348,6 @@ void mesh_init_shadow_shader(mesh *mesh) {
     mesh_init_shadow_shader(&mesh->children.items[c]);
 }
 
-
 /**
 Select the right mesh method call depending of the defined draw method
  */
@@ -372,4 +369,3 @@ shader *mesh_select_shader(mesh *mesh, MeshDrawMethod method) {
     break;
   }
 }
-
