@@ -14,10 +14,10 @@
 
    The overall flow is as follow:
 
-   .--------------------------- SHADER ----------------------------.
-   |   .--------------.      .----------------.      .----------.  |
-   |   |    Module    |      |  Vertex Layout |      |  Device  |  |
-   |   '--------------'      '----------------'      '----------'  |
+   .---------------------------- SHADER ---------------------------.
+   |  .--------------.      .----------------.      .----------.   |
+   |  |    Module    |      |  Vertex Layout |      |  Device  |   |
+   |  '--------------'      '----------------'      '----------'   |
    '---------------------------------------------------------------'
                                    |
                          .-------------------.
@@ -54,14 +54,19 @@ typedef struct {
 } PipelineCreateDescriptor;
 
 typedef struct {
+  WGPUFragmentState fragment_state;
+  WGPUColorTargetState color_state;
+  WGPUBlendState blend_state;
+} PipelineFragmentDescriptor;
 
+typedef struct {
+
+  // core
   WGPUDevice *device;
   WGPUShaderModule *module;
   WGPUVertexBufferLayout *vertex_layout;
-  WGPURenderPipelineDescriptor descriptor;
-  WGPURenderPipeline handle;
-  WGPUPipelineLayout layout;
 
+  // cached attributes
   WGPUVertexState vertex_state;
   WGPUFragmentState fragment_state;
   WGPUPrimitiveState primitive_state;
@@ -69,21 +74,24 @@ typedef struct {
   WGPUColorTargetState color_state;
   WGPUBlendState blend_state;
 
+  // layout
+  WGPURenderPipelineDescriptor descriptor;
+  WGPURenderPipeline handle;
+  WGPUPipelineLayout layout;
+
 } pipeline;
 
 // 1. init pipeline
 void pipeline_create(pipeline *, const PipelineCreateDescriptor *);
 
 // 2. set custom attributes (optional)
-void pipeline_set_vertex(pipeline *, WGPUVertexState);
-void pipeline_set_fragment(pipeline *, WGPUFragmentState);
-void pipeline_set_primitive(pipeline *, WGPUPrimitiveState);
-void pipeline_set_stencil(pipeline *, WGPUDepthStencilState);
-void pipeline_set_color(pipeline *, WGPUColorTargetState);
-void pipeline_set_blend(pipeline *, WGPUBlendState);
+void pipeline_set_vertex(pipeline *, const WGPUVertexState);
+void pipeline_set_fragment(pipeline *, const PipelineFragmentDescriptor *);
+void pipeline_set_primitive(pipeline *, const WGPUPrimitiveState);
+void pipeline_set_stencil(pipeline *, const WGPUDepthStencilState);
 
 // 3. build pipeline layout
-void pipeline_build(pipeline *, WGPUPipelineLayout *);
+void pipeline_build(pipeline *, const WGPUPipelineLayout *);
 
 // 4. destroyer
 void pipeline_clear(pipeline *);

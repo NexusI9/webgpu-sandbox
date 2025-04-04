@@ -16,6 +16,12 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
   pipeline->device = desc->device;
   pipeline->handle = NULL;
 
+  /*
+    DEFINE PIPELINE CACHED ATTRIBUTES
+    Define default layout, the default layout correspond to the texture shader
+    layout (including fragment + vertex + depth stencil)
+   */
+
   // Vertex State
   pipeline->vertex_state = (WGPUVertexState){
       .module = *pipeline->module,
@@ -72,49 +78,45 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 /**
    Define custom vertex state for pipeline prior building it
  */
-void pipeline_set_vertex(pipeline *pipeline, WGPUVertexState state) {
+void pipeline_set_vertex(pipeline *pipeline, const WGPUVertexState state) {
   pipeline->vertex_state = state;
 }
 
 /**
    Define custom fragment state for pipeline prior building it
  */
-void pipeline_set_fragment(pipeline *pipeline, WGPUFragmentState state) {
-  pipeline->fragment_state = state;
+void pipeline_set_fragment(pipeline *pipeline,
+                           const PipelineFragmentDescriptor *state) {
+  // cache attributes
+  pipeline->color_state = state->color_state;
+  pipeline->blend_state = state->blend_state;
+  pipeline->fragment_state = state->fragment_state;
+
+  // rebuld fragment state from cached attributes
+  pipeline->color_state.blend = &pipeline->blend_state;
+  pipeline->fragment_state.targets = &pipeline->color_state;
 }
 
 /**
    Define custom primitive state for pipeline prior building it
  */
-void pipeline_set_primitive(pipeline *pipeline, WGPUPrimitiveState state) {
+void pipeline_set_primitive(pipeline *pipeline,
+                            const WGPUPrimitiveState state) {
   pipeline->primitive_state = state;
 }
 
 /**
    Define custom stencil state for pipeline prior building it
  */
-void pipeline_set_stencil(pipeline *pipeline, WGPUDepthStencilState state) {
+void pipeline_set_stencil(pipeline *pipeline,
+                          const WGPUDepthStencilState state) {
   pipeline->stencil_state = state;
-}
-
-/**
-   Define custom color target state for pipeline prior building it
- */
-void pipeline_set_color(pipeline *pipeline, WGPUColorTargetState state) {
-  pipeline->color_state = state;
-}
-
-/**
-   Define custom blend state for pipeline prior building it
- */
-void pipeline_set_blend(pipeline *pipeline, WGPUBlendState state) {
-  pipeline->blend_state = state;
 }
 
 /**
    Release pipeline if exists and create i new one
  */
-void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
+void pipeline_build(pipeline *pipeline, const WGPUPipelineLayout *layout) {
   printf("Build vertex layout format: %u\n",
          pipeline->vertex_layout->attributes->format);
 
