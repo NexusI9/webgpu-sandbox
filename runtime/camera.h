@@ -20,7 +20,7 @@ typedef struct {
   vec4 lookat;
   uint32_t mode;
   uint32_t _pad[4];
-} CameraUniform;
+} __attribute__((aligned(16))) CameraUniform;
 
 typedef struct {
   cclock *clock;

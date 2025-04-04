@@ -175,6 +175,7 @@ void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
   // draw shader
   // if shader is null, use default shader
 
+  //printf("drawing mesh: %s\n", mesh->name);
   shader *shader = mesh_select_shader(mesh, draw_method);
   shader_draw(shader, render_pass, camera, viewport);
 

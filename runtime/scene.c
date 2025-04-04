@@ -11,7 +11,7 @@
 
 static void scene_init_mesh_list(MeshList *);
 static void scene_init_light_list(scene *);
-static mesh *scene_add_mesh(MeshList *, mesh *);
+static mesh *scene_new_mesh(MeshList *);
 static void scene_draw_mesh_list(scene *, MeshDrawMethod,
                                  WGPURenderPassEncoder *, MeshList *);
 static void scene_build_mesh_list(scene *, MeshDrawMethod, MeshList *);
@@ -34,12 +34,12 @@ scene scene_create(camera camera, viewport viewport) {
   return scene;
 }
 
-mesh *scene_add_mesh_lit(scene *scene, mesh *mesh) {
-  return scene_add_mesh(&scene->meshes.lit, mesh);
+mesh *scene_new_mesh_lit(scene *scene) {
+  return scene_new_mesh(&scene->meshes.lit);
 }
 
-mesh *scene_add_mesh_unlit(scene *scene, mesh *mesh) {
-  return scene_add_mesh(&scene->meshes.unlit, mesh);
+mesh *scene_new_mesh_unlit(scene *scene) {
+  return scene_new_mesh(&scene->meshes.unlit);
 }
 
 void scene_draw(scene *scene, MeshDrawMethod draw_method,
@@ -70,14 +70,15 @@ void scene_build(scene *scene, MeshDrawMethod draw_method) {
 void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
                            MeshList *mesh_list) {
 
+  printf("mesh list length: %lu\n", mesh_list->length);
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = &mesh_list->items[i];
     mesh_build(current_mesh, draw_method);
-    // shader_module_release(mesh_shader_texture(mesh));
+    shader_module_release(mesh_shader_texture(current_mesh));
   }
 }
 
-mesh *scene_add_mesh(MeshList *mesh_list, mesh *mesh) {
+mesh *scene_new_mesh(MeshList *mesh_list) {
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow
@@ -85,15 +86,11 @@ mesh *scene_add_mesh(MeshList *mesh_list, mesh *mesh) {
   if (mesh_list->length == mesh_list->capacity) {
     mesh_list->capacity *= 2;
     mesh_list = realloc(mesh_list, mesh_list->capacity);
-
     perror("Scene mesh list reached full capacity"), exit(0);
     return NULL;
-  } else {
-    // Copy mesh to list
-    mesh_list->items[mesh_list->length++] = *mesh;
   }
 
-  return &mesh_list->items[mesh_list->length - 1];
+  return &mesh_list->items[mesh_list->length++];
 }
 
 void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,

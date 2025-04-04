@@ -6,7 +6,7 @@
 
 typedef struct {
   mat4 projection;
-} ViewportUniform;
+} __attribute__((aligned(16))) ViewportUniform;
 
 typedef struct {
   float fov;

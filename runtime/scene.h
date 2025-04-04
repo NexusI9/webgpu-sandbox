@@ -39,8 +39,8 @@ typedef struct {
 } scene;
 
 scene scene_create(camera, viewport);
-mesh *scene_add_mesh_lit(scene *, mesh *);
-mesh *scene_add_mesh_unlit(scene *, mesh *);
+mesh *scene_new_mesh_lit(scene *);
+mesh *scene_new_mesh_unlit(scene *);
 void scene_draw(scene *, MeshDrawMethod, WGPURenderPassEncoder *);
 void scene_build(scene *, MeshDrawMethod);
 

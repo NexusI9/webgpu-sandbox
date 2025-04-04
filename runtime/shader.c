@@ -401,6 +401,7 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
       // TODO: separate dynamic (callback) from static (non callback) shader
       // in two arrays so no last minute decision
       // TODO 2: maybe add a "requires udpate" flag so more efficient update
+      // !! issue here
       if (current_entry->update_callback) {
         current_entry->update_callback(current_entry->update_data,
                                        current_entry->data);
@@ -459,6 +460,29 @@ void shader_add_uniform(shader *shader,
               .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
               .mappedAtCreation = false,
           });
+
+      /*
+        Need to dynamically allocate the uniform if it has a callback function,
+        cause when we use its pointer during the shader draw process, it
+        prevents conflicts if two uniform data have the same address.
+        By this we ensure all data have different addresses and prevent
+        overwriting conflicts.
+
+        static alloc:
+        [mesh_1] uCamera => 0xefd091
+        [mesh_2] uCamera => 0xefd091
+
+        dynamic alloc:
+        [mesh_1] uCamera => 0xefd092
+        [mesh_2] uCamera => 0x48fd23
+
+      */
+
+      if (current_entry->update_callback) {
+        void *temp_data = current_entry->data;
+        current_entry->data = malloc(current_entry->size);
+        memcpy(current_entry->data, temp_data, current_entry->size);
+      }
 
       // transfer entry to shader bind group list
       current_bind_group->uniforms.items[i] = *current_entry;
@@ -664,6 +688,7 @@ bool shader_validate_binding(shader *shader) {
  */
 void shader_bind_group_init(shader *shader) {
 
+  printf("init bind groups\n");
   ShaderBindGroupUniforms *uniform_group =
       &shader->bind_groups.items[shader->bind_groups.length].uniforms;
 
@@ -673,24 +698,30 @@ void shader_bind_group_init(shader *shader) {
   ShaderBindGroupSamplers *sampler_group =
       &shader->bind_groups.items[shader->bind_groups.length].samplers;
 
-  // NOTE: max stack allocation easily reached with static Texture and
-  // sampler arrays, so need to allocate them on the heap
+  /*NOTE:
+    Max stack allocation easily reached with static allocation for
+    Uniforms, Texture and Sampler arrays, so need to allocate them on the heap
+  */
 
+  // init Uniforms dynamic array
   uniform_group->length = 0;
   uniform_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
-  uniform_group->items = (ShaderBindGroupUniformEntry *)malloc(
+  uniform_group->items = (ShaderBindGroupUniformEntry *)aligned_alloc(
+      16,
       SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupUniformEntry));
 
-  // init texture dynamic array
+  // init Texture dynamic array
   texture_group->length = 0;
   texture_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
-  texture_group->items = (ShaderBindGroupTextureEntry *)malloc(
+  texture_group->items = (ShaderBindGroupTextureEntry *)aligned_alloc(
+      16,
       SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupTextureEntry));
 
-  // init sampler dynamic array
+  // init Sampler dynamic array
   sampler_group->length = 0;
   sampler_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
-  sampler_group->items = (ShaderBindGroupSamplerEntry *)malloc(
+  sampler_group->items = (ShaderBindGroupSamplerEntry *)aligned_alloc(
+      16,
       SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupSamplerEntry));
 }
 

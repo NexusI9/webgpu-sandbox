@@ -45,7 +45,7 @@ typedef struct {
 typedef struct {
   mat4 model;
   vec4 position;
-} MeshUniform;
+} __attribute__((aligned(16))) MeshUniform;
 
 // TODO: make it a linked list
 typedef struct {
