@@ -148,6 +148,7 @@ void renderer_draw(const renderer *renderer, scene *scene) {
   WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(
       render_encoder,
       &(WGPURenderPassDescriptor){
+	  .label = "Texture Render Pass",
           // color attachments
           .colorAttachmentCount = 1,
           .colorAttachments =

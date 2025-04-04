@@ -32,33 +32,30 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
       .stripIndexFormat = WGPUIndexFormat_Undefined,
   };
 
+  // Blend State
+  pipeline->blend_state = (WGPUBlendState){
+      .color = {.operation = WGPUBlendOperation_Add,
+                .srcFactor = WGPUBlendFactor_SrcAlpha,
+                .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha},
+      .alpha = {.operation = WGPUBlendOperation_Add,
+                .srcFactor = WGPUBlendFactor_One,
+                .dstFactor = WGPUBlendFactor_Zero},
+  };
+
+  // Color State
+  pipeline->color_state = (WGPUColorTargetState){
+      .format = WGPUTextureFormat_BGRA8Unorm,
+      .writeMask = WGPUColorWriteMask_All,
+      .blend = &pipeline->blend_state,
+  };
+
   // Fragment State
   pipeline->fragment_state = (WGPUFragmentState){
       .module = *pipeline->module,
       .entryPoint = "fs_main",
       .targetCount = 1,
-      // color target state
-      .targets =
-          &(WGPUColorTargetState){
-              .format = WGPUTextureFormat_BGRA8Unorm,
-              .writeMask = WGPUColorWriteMask_All,
-              // blend state
-              .blend =
-                  &(WGPUBlendState){
-                      .color =
-                          {
-                              .operation = WGPUBlendOperation_Add,
-                              .srcFactor = WGPUBlendFactor_SrcAlpha,
-                              .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha,
-                          },
-                      .alpha =
-                          {
-                              .operation = WGPUBlendOperation_Add,
-                              .srcFactor = WGPUBlendFactor_One,
-                              .dstFactor = WGPUBlendFactor_Zero,
-                          },
-                  },
-          },
+      .targets = &pipeline->color_state,
+
   };
 
   // Stencil State
@@ -67,22 +64,6 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
       .depthWriteEnabled = true,
       .depthCompare = WGPUCompareFunction_Less,
   };
-
-  // define pipeline
-  pipeline->descriptor =
-      (WGPURenderPipelineDescriptor){.label = "Shader",
-                                     .primitive = pipeline->primitive_state,
-                                     .vertex = pipeline->vertex_state,
-                                     .fragment = &pipeline->fragment_state,
-                                     .multisample =
-                                         {
-                                             .count = 1,
-                                             .mask = 0xFFFFFFFF,
-                                             .alphaToCoverageEnabled = false,
-                                         },
-                                     .depthStencil = &pipeline->stencil_state
-
-      };
 
   printf("create vertex layout format: %u\n",
          pipeline->vertex_layout->attributes->format);
@@ -117,14 +98,44 @@ void pipeline_set_stencil(pipeline *pipeline, WGPUDepthStencilState state) {
 }
 
 /**
+   Define custom color target state for pipeline prior building it
+ */
+void pipeline_set_color(pipeline *pipeline, WGPUColorTargetState state) {
+  pipeline->color_state = state;
+}
+
+/**
+   Define custom blend state for pipeline prior building it
+ */
+void pipeline_set_blend(pipeline *pipeline, WGPUBlendState state) {
+  pipeline->blend_state = state;
+}
+
+/**
    Release pipeline if exists and create i new one
  */
 void pipeline_build(pipeline *pipeline, WGPUPipelineLayout *layout) {
   printf("Build vertex layout format: %u\n",
          pipeline->vertex_layout->attributes->format);
 
-  // apply layout to pipeline descriptor
-  pipeline->descriptor.layout = *layout;
+  // cache bind group layout
+  pipeline->layout = *layout;
+
+  // transfert cached states to pipeline
+  pipeline->descriptor = (WGPURenderPipelineDescriptor){
+      .layout = *layout,
+      .label = "Shader",
+      .vertex = pipeline->vertex_state,
+      .primitive = pipeline->primitive_state,
+      .fragment = &pipeline->fragment_state,
+      .depthStencil = &pipeline->stencil_state,
+      .multisample =
+          {
+              .count = 1,
+              .mask = 0xFFFFFFFF,
+              .alphaToCoverageEnabled = false,
+          },
+  };
 
   if (pipeline->handle)
     pipeline_clear(pipeline);
@@ -145,5 +156,4 @@ void pipeline_clear(pipeline *pipeline) {
 
   // wgpuPipelineLayoutRelease(pipeline->layout);
   pipeline->layout = NULL;
-
 }

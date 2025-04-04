@@ -5,7 +5,7 @@
 
 /**
    ============================== PIPELINE ==============================
-   
+
    Provide functions to create a pipeline and edit it.
    Since pipelines are differents depending on their purpose (depth/ color)
    It's hard to define a preset/ global pipeline for each objects or pass.
@@ -61,11 +61,13 @@ typedef struct {
   WGPURenderPipelineDescriptor descriptor;
   WGPURenderPipeline handle;
   WGPUPipelineLayout layout;
-    
+
   WGPUVertexState vertex_state;
   WGPUFragmentState fragment_state;
   WGPUPrimitiveState primitive_state;
   WGPUDepthStencilState stencil_state;
+  WGPUColorTargetState color_state;
+  WGPUBlendState blend_state;
 
 } pipeline;
 
@@ -77,6 +79,8 @@ void pipeline_set_vertex(pipeline *, WGPUVertexState);
 void pipeline_set_fragment(pipeline *, WGPUFragmentState);
 void pipeline_set_primitive(pipeline *, WGPUPrimitiveState);
 void pipeline_set_stencil(pipeline *, WGPUDepthStencilState);
+void pipeline_set_color(pipeline *, WGPUColorTargetState);
+void pipeline_set_blend(pipeline *, WGPUBlendState);
 
 // 3. build pipeline layout
 void pipeline_build(pipeline *, WGPUPipelineLayout *);
