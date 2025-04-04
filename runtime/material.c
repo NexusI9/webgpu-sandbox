@@ -16,9 +16,7 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
                                  uint8_t group_index) {
 
   ShaderViewProjectionUniform proj_view_data;
-  CameraUniform *uCamera = malloc(sizeof(CameraUniform));
-  *uCamera = camera_uniform(camera);
-
+  CameraUniform uCamera = camera_uniform(camera);
   ViewportUniform uViewport = viewport_uniform(viewport);
   MeshUniform uMesh = mesh_model_uniform(mesh);
 
