@@ -3,17 +3,54 @@
 
 #include "webgpu/webgpu.h"
 
-#define PIPELINE_DEFAULT_CULLMODE WGPUCullMode_Back;
+/**
+   ============================== PIPELINE ==============================
+   
+   Provide functions to create a pipeline and edit it.
+   Since pipelines are differents depending on their purpose (depth/ color)
+   It's hard to define a preset/ global pipeline for each objects or pass.
+   Thus we need to provide a way to systematize de pipeline creation
+   without loosing the customization aspect.
 
-typedef struct {
-  WGPUCullMode cullMode;
-} PipelineCustomAttributes;
+   The overall flow is as follow:
+
+   .--------------------------- SHADER ----------------------------.
+   |   .--------------.      .----------------.      .----------.  |
+   |   |    Module    |      |  Vertex Layout |      |  Device  |  |
+   |   '--------------'      '----------------'      '----------'  |
+   '---------------------------------------------------------------'
+                                   |
+                         .-------------------.
+                         |  Pipeline Create  |
+                         '-------------------'
+                                   |
+                         .-------------------.
+                         |   Pipeline Edit   |
+                         | .---------------. |
+                         | |     Vertex    | |
+                         | '---------------' |
+                         | .---------------. |
+                         | |   Fragment    | |
+                         | '---------------' |
+                         | .---------------. |
+                         | |   Primitive   | |
+                         | '---------------' |
+                         | .---------------. |
+                         | |    Stencil    | |
+                         | '---------------' |
+                         '-------------------'
+                                   |
+                        (Bind Shader groups...)
+                                   |
+                         .-------------------.      .------ SHADER ------.
+                         |   Pipeline Build  | <----|  Bind group layout |
+                         '-------------------'      '--------------------'
+ */
 
 typedef struct {
   WGPUDevice *device;
   WGPUShaderModule *module;
   WGPUVertexBufferLayout *vertex_layout;
-  PipelineCustomAttributes *custom;
 } PipelineCreateDescriptor;
 
 typedef struct {
@@ -24,7 +61,11 @@ typedef struct {
   WGPURenderPipelineDescriptor descriptor;
   WGPURenderPipeline handle;
   WGPUPipelineLayout layout;
-  PipelineCustomAttributes *custom_attributes;
+    
+  WGPUVertexState vertex_state;
+  WGPUFragmentState fragment_state;
+  WGPUPrimitiveState primitive_state;
+  WGPUDepthStencilState stencil_state;
 
 } pipeline;
 
@@ -32,11 +73,13 @@ typedef struct {
 void pipeline_create(pipeline *, const PipelineCreateDescriptor *);
 
 // 2. set custom attributes (optional)
-void pipeline_set_custom(pipeline *, PipelineCustomAttributes *);
+void pipeline_set_vertex(pipeline *, WGPUVertexState);
+void pipeline_set_fragment(pipeline *, WGPUFragmentState);
+void pipeline_set_primitive(pipeline *, WGPUPrimitiveState);
+void pipeline_set_stencil(pipeline *, WGPUDepthStencilState);
 
 // 3. build pipeline layout
 void pipeline_build(pipeline *, WGPUPipelineLayout *);
-void pipeline_shadow_build(pipeline *, WGPUPipelineLayout *);
 
 // 4. destroyer
 void pipeline_clear(pipeline *);

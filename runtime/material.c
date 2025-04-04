@@ -9,8 +9,8 @@
    - Binding 1: Camera matrix
    - Binding 2: Model matrix
  */
-void material_bind_views(mesh *mesh, camera *camera, viewport *viewport,
-                         uint8_t group_index) {
+void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
+                                 uint8_t group_index) {
 
   ShaderViewProjectionUniform proj_view_data;
 
@@ -54,8 +54,8 @@ void material_bind_views(mesh *mesh, camera *camera, viewport *viewport,
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_bind_views(&mesh->children.items[c], camera, viewport,
-                        group_index);
+    material_texture_bind_views(&mesh->children.items[c], camera, viewport,
+                                group_index);
 }
 
 /**
@@ -65,10 +65,11 @@ void material_bind_views(mesh *mesh, camera *camera, viewport *viewport,
    by default we will upload all the lights (point, ambient, directional)
    within a defined group
   */
-void material_bind_lights(mesh *mesh, viewport *viewport,
-                          AmbientLightList *ambient_list,
-                          DirectionalLightList *directional_list,
-                          PointLightList *point_list, uint8_t group_index) {
+void material_texture_bind_lights(mesh *mesh, viewport *viewport,
+                                  AmbientLightList *ambient_list,
+                                  DirectionalLightList *directional_list,
+                                  PointLightList *point_list,
+                                  uint8_t group_index) {
 
   AmbientLightListUniform ambient_uniform;
   DirectionalLightListUniform directional_uniform;
@@ -164,8 +165,9 @@ void material_bind_lights(mesh *mesh, viewport *viewport,
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_bind_lights(&mesh->children.items[c], viewport, ambient_list,
-                         directional_list, point_list, group_index);
+    material_texture_bind_lights(&mesh->children.items[c], viewport,
+                                 ambient_list, directional_list, point_list,
+                                 group_index);
 }
 
 /**
@@ -189,7 +191,7 @@ void material_clear_bindings(mesh *mesh, MeshDrawMethod method) {
    [light view] already multiplied together as there is currently no need to
    upload separate views in the shader.
  */
-void material_bind_shadow_views(mesh *mesh, mat4 *view) {
+void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 
   shader_add_uniform(&mesh->shader.shadow,
                      &(ShaderCreateUniformDescriptor){
@@ -208,13 +210,13 @@ void material_bind_shadow_views(mesh *mesh, mat4 *view) {
                      });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_bind_shadow_views(&mesh->children.items[c], view);
+    material_shadow_bind_views(&mesh->children.items[c], view);
 }
 
 /**
    Bind the shadow maps and sampler to the default shader
  */
-void material_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
+void material_shadow_bind_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
 
   // add multi-layered texture to default shader
   shader_add_texture_view(
@@ -257,5 +259,5 @@ void material_bind_shadow_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_bind_shadow_maps(&mesh->children.items[c], shadow_texture);
+    material_shadow_bind_maps(&mesh->children.items[c], shadow_texture);
 }

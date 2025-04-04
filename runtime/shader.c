@@ -658,15 +658,6 @@ bool shader_validate_binding(shader *shader) {
 }
 
 /**
-   Alias method redirecting to pipeline objects
-   Update the cullmode of the existing pipeline descriptor
- */
-void shader_pipeline_custom(shader *shader,
-                            PipelineCustomAttributes *attributes) {
-  pipeline_set_custom(&shader->pipeline, attributes);
-}
-
-/**
    Initialise shader bind group lists and eventually free/reset the existing
    ones if already existing
  */

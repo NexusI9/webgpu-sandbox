@@ -329,7 +329,7 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
       // 1. Bind meshes
       for (int m = 0; m < scene->meshes.lit.length; m++) {
         mesh *current_mesh = &scene->meshes.lit.items[m];
-        material_bind_shadow_views(current_mesh, current_view);
+        material_shadow_bind_views(current_mesh, current_view);
         mesh_build(current_mesh, MESH_SHADER_SHADOW);
       }
 
@@ -402,7 +402,8 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
     mesh *current_mesh = &scene->meshes.lit.items[m];
 
     // bind shadow texture (view) and sampler to the mesh shader
-    material_bind_shadow_maps(current_mesh, &scene->lights.point.shadow_texture);
+    material_shadow_bind_maps(current_mesh,
+                              &scene->lights.point.shadow_texture);
     // Finally build mesh with default shader (with imported texture array)
     mesh_build(current_mesh, MESH_SHADER_DEFAULT);
   }

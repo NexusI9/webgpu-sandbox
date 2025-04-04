@@ -1,7 +1,7 @@
 #include "grid.h"
 #include "../primitive/plane.h"
-#include "webgpu/webgpu.h"
 #include "../runtime/material.h"
+#include "webgpu/webgpu.h"
 
 void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
 
@@ -21,10 +21,10 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
                             .queue = gd->queue,
                         });
 
-  shader_pipeline_custom(mesh_shader_texture(mesh),
+  /*shader_pipeline_custom(mesh_shader_texture(mesh),
                          &(PipelineCustomAttributes){
                              .cullMode = WGPUCullMode_None,
-                         });
+                             });*/
 
   mesh_scale(mesh, (vec3){
                        gd->uniform.size,
@@ -34,7 +34,7 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
   // bind camera and viewport
   // NOTE: binding groups shall be created in order (0 first, then 1)
 
-  material_bind_views(mesh, gd->camera, gd->viewport, 0);
+  material_texture_bind_views(mesh, gd->camera, gd->viewport, 0);
 
   ShaderBindGroupEntry grid_entries[1] = {
       {

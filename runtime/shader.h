@@ -199,9 +199,6 @@ void shader_add_texture_view(shader *,
                              const ShaderCreateTextureViewDescriptor *);
 void shader_add_sampler(shader *, const ShaderCreateSamplerDescriptor *);
 
-// pipeline customization
-void shader_pipeline_custom(shader *, PipelineCustomAttributes *);
-
 // on update
 void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
                  const viewport *);

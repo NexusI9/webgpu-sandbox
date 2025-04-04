@@ -117,7 +117,8 @@ void add_cube(mesh *cube, vec3 position) {
 
   mesh_position(cube, position);
 
-  material_bind_views(cube, &main_scene.camera, &main_scene.viewport, 0);
+  material_texture_bind_views(cube, &main_scene.camera, &main_scene.viewport,
+                              0);
 }
 
 void add_grid() {
@@ -156,10 +157,11 @@ void import_cube() {
                    &(cgltf_options){0});
 
   // TODO: handle child bind
-  material_bind_views(&cube, &main_scene.camera, &main_scene.viewport, 1);
-  material_bind_lights(&cube, &main_scene.viewport, &main_scene.lights.ambient,
-                       &main_scene.lights.directional, &main_scene.lights.point,
-                       2);
+  material_texture_bind_views(&cube, &main_scene.camera, &main_scene.viewport,
+                              1);
+  material_texture_bind_lights(
+      &cube, &main_scene.viewport, &main_scene.lights.ambient,
+      &main_scene.lights.directional, &main_scene.lights.point, 2);
 
   scene_add_mesh_lit(&main_scene, &cube);
 }

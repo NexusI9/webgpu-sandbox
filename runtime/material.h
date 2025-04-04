@@ -15,36 +15,43 @@
    Depending on the function, the right standard shader will be automatically
    modified/bound.
 
+   This API serve a more polished and synthesized way to edit and initialize
+   standard shaders. Preventing to manually adjust the shader and pipeline.
 
-      +-----------+                                    +-----------------+
-      | Scene     |---.      +--------------+      .---| Texture Shader  |
-      +-----------+   |      |     Mesh     |      |   +-----------------+
-      +-----------+   |      +--------------+      |
+      .-----------.                                      .-----------------.
+      | Scene     |---.      .--------------.      .---> | Texture Shader  |
+      '-----------'   |      |     Mesh     |      |     '-----------------'
+      .-----------.   |      '--------------'      |
       | Light     |---|             |              |
-      +-----------+   |      +--------------+      |   +-----------------+
-      +-----------+   +------| Material API |------+---| Shadow Shader   |
-      | Camera    |---|      +--------------+      |   +-----------------+
-      +-----------+   |                            |
-      +-----------+   |                            |   +------------------+
-      | Viewport  |---'                            '---| Wireframe Shader |
-      +-----------+                                    +------------------+
+      '-----------'   |      .--------------.      |     .-----------------.
+      .-----------.   +----> | Material API |------+---> | Shadow Shader   |
+      | Camera    |---|      '--------------'      |     '-----------------'
+      '-----------'   |                            |
+      .-----------.   |                            |     .------------------.
+      | Viewport  |---'                            '---> | Wireframe Shader |
+      '-----------'                                      '------------------'
 
 
  */
 
-// COMMON
+// COMMONS
+// create related pipelines
+void material_init_shader_texture(mesh *);
+void material_init_shader_shadow(mesh *);
+
 void material_clear_bindings(mesh *, MeshDrawMethod);
 
 // === TEXTURE SHADER ===
 // bind model, camera and viewport to bind group
-void material_bind_views(mesh *, camera *, viewport *, uint8_t);
+void material_texture_bind_views(mesh *, camera *, viewport *, uint8_t);
 // bind light scene
-void material_bind_lights(mesh *, viewport *, AmbientLightList *,
-                          DirectionalLightList *, PointLightList *, uint8_t);
+void material_texture_bind_lights(mesh *, viewport *, AmbientLightList *,
+                                  DirectionalLightList *, PointLightList *,
+                                  uint8_t);
 
 // === SHADOW SHADER ===
 // bind shadow specicif view
-void material_bind_shadow_views(mesh *, mat4 *);
-void material_bind_shadow_maps(mesh *, WGPUTextureView *);
+void material_shadow_bind_views(mesh *, mat4 *);
+void material_shadow_bind_maps(mesh *, WGPUTextureView *);
 
 #endif
