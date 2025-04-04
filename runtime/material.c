@@ -18,7 +18,7 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
   ViewportUniform uViewport = viewport_uniform(viewport);
   MeshUniform uMesh = mesh_model_uniform(mesh);
 
-  ShaderBindGroupEntry entries[3] = {
+  ShaderBindGroupUniformEntry entries[3] = {
       // viewport
       {
           .binding = 0,
@@ -131,7 +131,7 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
     }
   }
 
-  ShaderBindGroupEntry entries[3] = {
+  ShaderBindGroupUniformEntry entries[3] = {
       // ambient light
       {
           .binding = 0,
@@ -199,7 +199,7 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
                          .entry_count = 1,
                          .visibility = WGPUShaderStage_Vertex,
                          .entries =
-                             (ShaderBindGroupEntry[]){
+                             (ShaderBindGroupUniformEntry[]){
                                  {
                                      .binding = 0,
                                      .data = view,

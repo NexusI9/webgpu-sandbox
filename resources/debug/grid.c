@@ -46,7 +46,7 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
           .group_index = 1,
           .entry_count = 1,
           .entries =
-              (ShaderBindGroupEntry[]){
+              (ShaderBindGroupUniformEntry[]){
                   {
                       .binding = 0,
                       .data = &gd->uniform,

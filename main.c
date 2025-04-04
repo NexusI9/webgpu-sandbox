@@ -217,8 +217,8 @@ int main(int argc, const char *argv[]) {
   // mesh_add_child(&child_cube_B, &parent_cube);
   // scene_add_mesh_lit(&main_scene, &parent_cube);
 
-  import_cube();
-  //add_grid();
+  //import_cube();
+  add_grid();
 
   // Setup drawing pass may need to move it else where
   // renderer_compute_shadow(&main_renderer, &main_scene);

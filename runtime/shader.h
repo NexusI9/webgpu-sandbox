@@ -49,7 +49,7 @@ typedef struct {
   void *update_data;
   // private
   WGPUBuffer buffer;
-} ShaderBindGroupEntry;
+} ShaderBindGroupUniformEntry;
 
 typedef struct {
   uint32_t binding;
@@ -87,8 +87,9 @@ typedef struct {
 
 // uniform / texture / sampler array
 typedef struct {
-  ShaderBindGroupEntry items[SHADER_MAX_UNIFORMS];
+  ShaderBindGroupUniformEntry *items;
   size_t length;
+  size_t capacity;
 } ShaderBindGroupUniforms;
 
 typedef struct {
@@ -123,7 +124,7 @@ typedef struct {
 typedef struct {
   uint8_t group_index;
   uint8_t entry_count;
-  ShaderBindGroupEntry *entries;
+  ShaderBindGroupUniformEntry *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateUniformDescriptor;
 
@@ -183,7 +184,7 @@ typedef struct {
   // registered bind group unique indexes
   struct {
     ShaderBindGroup items[SHADER_MAX_BIND_GROUP];
-    uint8_t length;
+    size_t length;
   } bind_groups;
 
   int8_t projection_view_bindgroup;

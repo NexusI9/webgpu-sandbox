@@ -21,33 +21,33 @@
   2. Build pipeline based on those layouts
   3. Actually bind the buffer/textures view and samplers
 
-  +------------------+
-  |   Add Buffer     |
-  |------------------|
-  | Add Uniforms     |
-  | Add Textures     |
-  | Add Samplers     |
-  +------------------+
-           ||
-  +------------------+
-  |   Build Layout   |
-  |------------------|
-  | Layout Uniforms  |
-  | Layout Textures  |
-  | Layout Samplers  |
-  +------------------+
-           ||
-  +------------------+
-  |  Build Pipeline  |
-  +------------------+
-           ||
-  +------------------+
-  |       Bind       |
-  |------------------|
-  | Bind Uniforms    |
-  | Bind Textures    |
-  | Bind Samplers    |
-  +------------------+
+                  .------------------.
+                  |   Add Buffer     |
+                  |------------------|
+                  | Add Uniforms     |
+                  | Add Textures     |
+                  | Add Samplers     |
+                  '------------------'
+                           ||
+                  .------------------.
+                  |   Build Layout   |
+                  |------------------|
+                  | Layout Uniforms  |
+                  | Layout Textures  |
+                  | Layout Samplers  |
+                  '------------------'
+                           ||
+                  .------------------.
+                  |  Build Pipeline  |
+                  '------------------'
+                           ||
+                  .------------------.
+                  |       Bind       |
+                  |------------------|
+                  | Bind Uniforms    |
+                  | Bind Textures    |
+                  | Bind Samplers    |
+                  '------------------'
 
 
  */
@@ -343,7 +343,7 @@ void shader_bind_uniforms(shader *shader, ShaderBindGroup *bindgroup,
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
   for (int j = 0; j < bindgroup->uniforms.length; j++) {
-    ShaderBindGroupEntry *current_entry = &bindgroup->uniforms.items[j];
+    ShaderBindGroupUniformEntry *current_entry = &bindgroup->uniforms.items[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .buffer = current_entry->buffer,
@@ -395,7 +395,7 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
 
     // update bindgroup entries (callback)
     for (int j = 0; j < current_bind_group->uniforms.length; j++) {
-      ShaderBindGroupEntry *current_entry =
+      ShaderBindGroupUniformEntry *current_entry =
           &current_bind_group->uniforms.items[j];
 
       // TODO: separate dynamic (callback) from static (non callback) shader
@@ -429,13 +429,14 @@ void shader_add_uniform(shader *shader,
    */
 
   if (shader_validate_binding(shader)) {
-
-    // Steps:
-    //   - Increment bind group length
-    //   - Create Buffer (GPU side)
-    //     a. Allocate space in GPU
-    //     b. Write data in buffer
-    //   - Store buffer reference into Uniform object (CPU side)
+    /*
+      Steps:
+        - Increment bind group length
+        - Create Buffer (GPU side)
+          a. Allocate space in GPU
+          b. Write data in buffer
+        - Store buffer reference into Uniform object (CPU side)
+      */
 
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, bd->group_index);
@@ -445,7 +446,7 @@ void shader_add_uniform(shader *shader,
     // combine argument entries with uniform buffer
     for (int i = 0; i < bd->entry_count; i++) {
 
-      ShaderBindGroupEntry *current_entry = &bd->entries[i];
+      ShaderBindGroupUniformEntry *current_entry = &bd->entries[i];
 
       // assign buffer to entry
       buffer_create(
@@ -648,7 +649,7 @@ bool shader_validate_binding(shader *shader) {
     perror("Shader has no device or queue");
     return 0;
   }
-  
+
   if (shader->bind_groups.length >= SHADER_MAX_BIND_GROUP) {
     perror("Bind group list at full capacity");
     return 0;
@@ -672,36 +673,25 @@ void shader_bind_group_init(shader *shader) {
   ShaderBindGroupSamplers *sampler_group =
       &shader->bind_groups.items[shader->bind_groups.length].samplers;
 
-  // free and reset bind group if already exists
-  if (texture_group->items)
-    free(texture_group->items);
-
-  if (sampler_group->items)
-    free(sampler_group->items);
-
-  // init new bind group uniforms length to 0
-  uniform_group->length = 0;
-
   // NOTE: max stack allocation easily reached with static Texture and
   // sampler arrays, so need to allocate them on the heap
 
+  uniform_group->length = 0;
+  uniform_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
+  uniform_group->items = (ShaderBindGroupUniformEntry *)malloc(
+      SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupUniformEntry));
+
   // init texture dynamic array
-  shader->bind_groups.items[shader->bind_groups.length].textures.length = 0;
-  shader->bind_groups.items[shader->bind_groups.length].textures.capacity =
-      SHADER_UNIFORMS_DEFAULT_CAPACITY;
-  shader->bind_groups.items[shader->bind_groups.length].textures.items =
-      (ShaderBindGroupTextureEntry *)malloc(
-          SHADER_UNIFORMS_DEFAULT_CAPACITY *
-          sizeof(ShaderBindGroupTextureEntry));
+  texture_group->length = 0;
+  texture_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
+  texture_group->items = (ShaderBindGroupTextureEntry *)malloc(
+      SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupTextureEntry));
 
   // init sampler dynamic array
-  shader->bind_groups.items[shader->bind_groups.length].samplers.length = 0;
-  shader->bind_groups.items[shader->bind_groups.length].samplers.capacity =
-      SHADER_UNIFORMS_DEFAULT_CAPACITY;
-  shader->bind_groups.items[shader->bind_groups.length].samplers.items =
-      (ShaderBindGroupSamplerEntry *)malloc(
-          SHADER_UNIFORMS_DEFAULT_CAPACITY *
-          sizeof(ShaderBindGroupSamplerEntry));
+  sampler_group->length = 0;
+  sampler_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
+  sampler_group->items = (ShaderBindGroupSamplerEntry *)malloc(
+      SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupSamplerEntry));
 }
 
 /**
