@@ -34,7 +34,8 @@
 
  */
 
-// COMMONS
+// ====== COMMONS ======
+
 // create related pipelines
 void material_init_shader_texture(mesh *);
 void material_init_shader_shadow(mesh *);
@@ -42,6 +43,7 @@ void material_init_shader_shadow(mesh *);
 void material_clear_bindings(mesh *, MeshDrawMethod);
 
 // === TEXTURE SHADER ===
+
 // bind model, camera and viewport to bind group
 void material_texture_bind_views(mesh *, camera *, viewport *, uint8_t);
 // bind light scene
@@ -50,6 +52,7 @@ void material_texture_bind_lights(mesh *, viewport *, AmbientLightList *,
                                   uint8_t);
 
 // === SHADOW SHADER ===
+
 // bind shadow specicif view
 void material_shadow_bind_views(mesh *, mat4 *);
 void material_shadow_bind_maps(mesh *, WGPUTextureView *);
