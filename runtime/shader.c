@@ -688,7 +688,7 @@ bool shader_validate_binding(shader *shader) {
  */
 void shader_bind_group_init(shader *shader) {
 
-  printf("init bind groups for %s\n", shader->name);
+  // printf("init bind groups for %s\n", shader->name);
   ShaderBindGroupUniforms *uniform_group =
       &shader->bind_groups.items[shader->bind_groups.length].uniforms;
 
@@ -757,3 +757,5 @@ void shader_bind_group_clear(shader *shader) {
 
   shader->bind_groups.length = 0;
 }
+
+pipeline *shader_pipeline(shader *shader) { return &shader->pipeline; }

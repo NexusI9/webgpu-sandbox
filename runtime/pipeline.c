@@ -71,8 +71,6 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
       .depthCompare = WGPUCompareFunction_Less,
   };
 
-  printf("create vertex layout format: %u\n",
-         pipeline->vertex_layout->attributes->format);
 }
 
 /**
@@ -117,8 +115,6 @@ void pipeline_set_stencil(pipeline *pipeline,
    Release pipeline if exists and create i new one
  */
 void pipeline_build(pipeline *pipeline, const WGPUPipelineLayout *layout) {
-  printf("Build vertex layout format: %u\n",
-         pipeline->vertex_layout->attributes->format);
 
   // cache bind group layout
   pipeline->layout = *layout;

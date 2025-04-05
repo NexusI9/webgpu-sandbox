@@ -148,7 +148,7 @@ void renderer_draw(const renderer *renderer, scene *scene) {
   WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(
       render_encoder,
       &(WGPURenderPassDescriptor){
-	  .label = "Texture Render Pass",
+          .label = "Texture Render Pass",
           // color attachments
           .colorAttachmentCount = 1,
           .colorAttachments =
@@ -301,6 +301,7 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
                        },*/
                });
 
+  printf("drawing shadow\n");
   scene_draw(scene, MESH_SHADER_SHADOW, &shadow_pass);
 
   wgpuRenderPassEncoderEnd(shadow_pass);
@@ -405,7 +406,8 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
     // bind shadow texture (view) and sampler to the mesh shader
     material_shadow_bind_maps(current_mesh,
                               &scene->lights.point.shadow_texture);
+
     // Finally build mesh with default shader (with imported texture array)
-    mesh_build(current_mesh, MESH_SHADER_DEFAULT);
+    // mesh_build(current_mesh, MESH_SHADER_DEFAULT);
   }
 }

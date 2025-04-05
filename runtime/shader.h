@@ -209,4 +209,6 @@ void shader_build(shader *);
 void shader_module_release(shader *);
 void shader_bind_group_init(shader *);
 void shader_bind_group_clear(shader *);
+
+pipeline *shader_pipeline(shader *);
 #endif

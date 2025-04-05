@@ -4,6 +4,7 @@
 #include "../include/cglm/quat.h"
 #include "../utils/system.h"
 #include "light.h"
+#include "pipeline.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
@@ -36,10 +37,6 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
   mesh_set_name(mesh, md->name);
-
-  printf("mesh: %p\n", mesh);
-  printf("mesh name: %p\n", mesh->name);
-  printf("md name: %p\n", md->name);
 
   // init child list
   mesh->children.length = 0;
@@ -266,9 +263,6 @@ mesh *mesh_new_child(mesh *parent) {
     parent->children.index = calloc(parent->children.capacity, sizeof(size_t));
   }
 
-  printf("new child list: %p\n", parent->children.items);
-  printf("new child index: %p\n", parent->children.index);
-
   // expand parent mesh list
   if (parent->children.length == parent->children.capacity) {
     size_t new_capacity = parent->children.capacity * 2;
@@ -344,7 +338,9 @@ shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader.shadow; }
  */
 void mesh_init_shadow_shader(mesh *mesh) {
 
-  shader_create(mesh_shader_shadow(mesh),
+  // import shadow shader
+  shader *shadow_shader = mesh_shader_shadow(mesh);
+  shader_create(shadow_shader,
                 &(ShaderCreateDescriptor){
                     .path = "./runtime/assets/shader/shader.shadow.wgsl",
                     .label = "shadow",
@@ -353,7 +349,15 @@ void mesh_init_shadow_shader(mesh *mesh) {
                     .name = "shadow",
                 });
 
-  printf("child length: %lu\n", mesh->children.length);
+  // edit shader pipeline
+  /*pipeline_set_fragment(&shadow_shader->pipeline,
+     &(PipelineFragmentDescriptor){ .fragment_state = 0, .color_state = 0,
+                                                      .blend_state = 0,
+                                                  });*/
+  
+  /*pipeline_set_stencil(shader_pipeline(shadow_shader),
+    (WGPUDepthStencilState){0});*/
+
   for (size_t c = 0; c < mesh->children.length; c++)
     mesh_init_shadow_shader(&mesh->children.items[c]);
 }

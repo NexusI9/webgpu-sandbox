@@ -147,22 +147,21 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
     struct mesh *parent_mesh = mesh;
 
     // if > 0 mesh, then append as child of initial mesh (level 1)
-    printf("mesh %lu\n", m);
-    if (m > 0) {
+    if (m > 0)
       parent_mesh = mesh_new_child_empty(mesh);
-    }
 
     // set mesh position
     loader_gltf_mesh_position(parent_mesh, gl_mesh.name, data);
 
-    // GLTF PRIMITIVES
-    // primitives are vertices that belong to a same mesh but have different
-    // material/shader.
-    // In the current case we separate the primitives into mesh
-    // children maybe in the future we will need to create a dedicated array.
-    // primitive 0 = parent, primitive n = child
+    /*
+      GLTF PRIMITIVES
+      primitives are vertices that belong to a same mesh but have different
+      material/shader.
+      In the current case we separate the primitives into mesh
+      children maybe in the future we will need to create a dedicated array.
+      primitive 0 = parent, primitive n = child
+    */
     for (size_t p = 0; p < gl_mesh.primitives_count; p++) {
-      printf("primitive %lu\n", p);
       // get accessors to decode buffers into typed data (vertex, indices...)
       // load vertex attributes
 

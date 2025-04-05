@@ -70,7 +70,6 @@ void scene_build(scene *scene, MeshDrawMethod draw_method) {
 void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
                            MeshList *mesh_list) {
 
-  printf("mesh list length: %lu\n", mesh_list->length);
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = &mesh_list->items[i];
     mesh_build(current_mesh, draw_method);
