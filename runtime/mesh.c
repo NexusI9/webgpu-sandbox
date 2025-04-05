@@ -194,11 +194,9 @@ void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
 
   // draw children
   // TODO: REDUCE DRAW CALL.........
-
-  for (size_t c = 0; c < mesh->children.length; c++) {
-    struct mesh *child = &mesh->children.items[c];
-    mesh_draw(child, draw_method, render_pass, camera, viewport);
-  }
+  for (size_t c = 0; c < mesh->children.length; c++)
+    mesh_draw(&mesh->children.items[c], draw_method, render_pass, camera,
+              viewport);
 }
 
 /**
@@ -354,7 +352,7 @@ void mesh_init_shadow_shader(mesh *mesh) {
      &(PipelineFragmentDescriptor){ .fragment_state = 0, .color_state = 0,
                                                       .blend_state = 0,
                                                   });*/
-  
+
   /*pipeline_set_stencil(shader_pipeline(shadow_shader),
     (WGPUDepthStencilState){0});*/
 
