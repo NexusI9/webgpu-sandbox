@@ -115,9 +115,9 @@ void mesh_position(mesh *, vec3);
 void mesh_rotate(mesh *, vec3);
 void mesh_rotate_quat(mesh *, versor);
 
-size_t mesh_add_child(mesh *, mesh *);
-size_t mesh_add_child_empty(mesh *);
-mesh *mesh_get_child(mesh *, size_t);
+mesh *mesh_new_child(mesh *);
+mesh *mesh_new_child_empty(mesh *);
+mesh *mesh_get_child_by_id(mesh *, size_t);
 
 MeshUniform mesh_model_uniform(mesh *);
 

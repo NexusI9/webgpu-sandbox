@@ -33,9 +33,12 @@ MeshUniform mesh_model_uniform(mesh *mesh) {
 
 void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
-  printf("mesh name: %s\n", mesh->name);
   // set name
   mesh_set_name(mesh, md->name);
+
+  printf("mesh: %p\n", mesh);
+  printf("mesh name: %p\n", mesh->name);
+  printf("md name: %p\n", md->name);
 
   // init child list
   mesh->children.length = 0;
@@ -253,64 +256,66 @@ void mesh_rotate_quat(mesh *mesh, versor rotation) {
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
 }
 
-size_t mesh_add_child(mesh *child, mesh *dest) {
+mesh *mesh_new_child(mesh *parent) {
 
   // init list
-  if (dest->children.items == NULL) {
-    dest->children.capacity = MESH_CHILD_LENGTH;
-    dest->children.items = malloc(sizeof(mesh) * dest->children.capacity);
-    dest->children.index = malloc(sizeof(size_t) * dest->children.capacity);
+  if (parent->children.items == NULL) {
+    parent->children.capacity = MESH_CHILD_LENGTH;
+    parent->children.items = malloc(sizeof(mesh) * parent->children.capacity);
+    parent->children.index = malloc(sizeof(size_t) * parent->children.capacity);
   }
 
+  printf("new child list: %p\n", parent->children.items);
+  printf("new child index: %p\n", parent->children.index);
+
   // expand parent mesh list
-  if (dest->children.length == dest->children.capacity) {
-    size_t new_capacity = dest->children.capacity * 2;
-    mesh *new_list =
-        realloc(dest->children.items, sizeof(mesh) * dest->children.capacity);
-    size_t *new_index =
-        realloc(dest->children.items, sizeof(size_t) * dest->children.capacity);
+  if (parent->children.length == parent->children.capacity) {
+    size_t new_capacity = parent->children.capacity * 2;
+    mesh *new_list = realloc(parent->children.items,
+                             sizeof(mesh) * parent->children.capacity);
+    size_t *new_index = realloc(parent->children.index,
+                                sizeof(size_t) * parent->children.capacity);
 
     if (new_list == NULL || new_index == NULL) {
       perror("Failed to expand mesh list\n"), exit(1);
     }
 
-    dest->children.items = new_list;
-    dest->children.index = new_index;
-    dest->children.capacity = new_capacity;
+    parent->children.items = new_list;
+    parent->children.index = new_index;
+    parent->children.capacity = new_capacity;
   }
 
-  size_t id = dest->children.length;
-
-  // assign child to parent
-  dest->children.items[id] = *child;
+  size_t id = parent->children.length;
+  mesh *child = &parent->children.items[id];
+  memset(child, 0, sizeof(mesh));
 
   // assing child id
-  dest->children.index[id] = id;
-  dest->children.items[id].id = id;
+  parent->children.index[id] = id;
+  child->id = id;
+  child->parent = parent; // assign parent to child
 
-  // assign parent to child
-  dest->children.items[id].parent = dest;
-  dest->children.length++;
+  // increment children length
+  parent->children.length++;
 
-  return id;
+  return child;
 }
 
 /**
    Add and initialize an empty child to the given mesh
  */
-size_t mesh_add_child_empty(mesh *mesh) {
+mesh *mesh_new_child_empty(mesh *mesh) {
 
-  struct mesh temp_mesh;
+  struct mesh *temp_mesh = mesh_new_child(mesh);
 
   // still need to initialize it before adding
   // this ensure proper init array
-  mesh_create(&temp_mesh, &(MeshCreateDescriptor){
-                              .device = mesh->device,
-                              .queue = mesh->queue,
-                              .name = mesh->name,
-                          });
+  mesh_create(temp_mesh, &(MeshCreateDescriptor){
+                             .device = mesh->device,
+                             .queue = mesh->queue,
+                             .name = mesh->name,
+                         });
 
-  return mesh_add_child(&temp_mesh, mesh);
+  return temp_mesh;
 }
 
 /**

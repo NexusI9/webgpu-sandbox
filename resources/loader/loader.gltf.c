@@ -147,10 +147,9 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
     struct mesh *parent_mesh = mesh;
 
     // if > 0 mesh, then append as child of initial mesh (level 1)
+    printf("mesh %lu\n", m);
     if (m > 0) {
-      size_t new_child = mesh_add_child_empty(mesh);
-      printf("mesh %lu\n", m);
-      parent_mesh = mesh_get_child(mesh, new_child);
+      parent_mesh = mesh_new_child_empty(mesh);
     }
 
     // set mesh position
@@ -231,9 +230,7 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
 
       // add child to parent mesh if current primitive > 0
       if (p > 0) {
-        size_t new_child = mesh_add_child_empty(parent_mesh);
-        struct mesh *child_mesh = mesh_get_child(parent_mesh, new_child);
-        target_mesh = child_mesh;
+        target_mesh = mesh_new_child_empty(parent_mesh);
 
         // need to dynamically allocate name
         // iteration use same frame stack
