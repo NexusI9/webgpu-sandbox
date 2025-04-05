@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 // Shadow map is implicitely handled withing mesh
@@ -261,8 +262,8 @@ mesh *mesh_new_child(mesh *parent) {
   // init list
   if (parent->children.items == NULL) {
     parent->children.capacity = MESH_CHILD_LENGTH;
-    parent->children.items = malloc(sizeof(mesh) * parent->children.capacity);
-    parent->children.index = malloc(sizeof(size_t) * parent->children.capacity);
+    parent->children.items = calloc(parent->children.capacity, sizeof(mesh));
+    parent->children.index = calloc(parent->children.capacity, sizeof(size_t));
   }
 
   printf("new child list: %p\n", parent->children.items);
@@ -287,7 +288,6 @@ mesh *mesh_new_child(mesh *parent) {
 
   size_t id = parent->children.length;
   mesh *child = &parent->children.items[id];
-  memset(child, 0, sizeof(mesh));
 
   // assing child id
   parent->children.index[id] = id;
