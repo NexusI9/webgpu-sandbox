@@ -70,7 +70,6 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
       .depthWriteEnabled = true,
       .depthCompare = WGPUCompareFunction_Less,
   };
-
 }
 
 /**
@@ -125,8 +124,6 @@ void pipeline_build(pipeline *pipeline, const WGPUPipelineLayout *layout) {
       .label = "Shader",
       .vertex = pipeline->vertex_state,
       .primitive = pipeline->primitive_state,
-      .fragment = &pipeline->fragment_state,
-      .depthStencil = &pipeline->stencil_state,
       .multisample =
           {
               .count = 1,
@@ -134,6 +131,13 @@ void pipeline_build(pipeline *pipeline, const WGPUPipelineLayout *layout) {
               .alphaToCoverageEnabled = false,
           },
   };
+
+  // add optional fragment or vertex
+  if (pipeline->fragment_state.module != 0)
+    pipeline->descriptor.fragment = &pipeline->fragment_state;
+
+  if (pipeline->stencil_state.format != 0)
+    pipeline->descriptor.depthStencil = &pipeline->stencil_state;
 
   if (pipeline->handle)
     pipeline_clear(pipeline);

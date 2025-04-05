@@ -349,8 +349,8 @@ void mesh_init_shadow_shader(mesh *mesh) {
                                                       .blend_state = 0,
                                                   });*/
 
-  /*pipeline_set_stencil(shader_pipeline(shadow_shader),
-    (WGPUDepthStencilState){0});*/
+  pipeline_set_stencil(shader_pipeline(shadow_shader),
+                       (WGPUDepthStencilState){0});
 
   for (size_t c = 0; c < mesh->children.length; c++)
     mesh_init_shadow_shader(&mesh->children.items[c]);
