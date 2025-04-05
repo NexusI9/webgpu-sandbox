@@ -33,6 +33,7 @@ MeshUniform mesh_model_uniform(mesh *mesh) {
 
 void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
+  printf("mesh name: %s\n", mesh->name);
   // set name
   mesh_set_name(mesh, md->name);
 
@@ -53,11 +54,13 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
   if (md->index.length > 0)
     mesh_set_vertex_index(mesh, &md->index);
 
-  // init shadow shader
-  // mesh_init_shadow_shader(mesh);
-
   // init model matrix
   glm_mat4_identity(mesh->model);
+
+  // init shadow shader by default
+  mesh_init_shadow_shader(mesh);
+
+  // TODO: init shadow shader by default
 }
 
 void mesh_create_primitive(mesh *mesh,
@@ -175,7 +178,7 @@ void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
   // draw shader
   // if shader is null, use default shader
 
-  //printf("drawing mesh: %s\n", mesh->name);
+  // printf("drawing mesh: %s\n", mesh->name);
   shader *shader = mesh_select_shader(mesh, draw_method);
   shader_draw(shader, render_pass, camera, viewport);
 
@@ -336,7 +339,7 @@ shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader.shadow; }
  */
 void mesh_init_shadow_shader(mesh *mesh) {
 
-  shader_create(&mesh->shader.shadow,
+  shader_create(mesh_shader_shadow(mesh),
                 &(ShaderCreateDescriptor){
                     .path = "./runtime/assets/shader/shader.shadow.wgsl",
                     .label = "shadow",
@@ -345,6 +348,7 @@ void mesh_init_shadow_shader(mesh *mesh) {
                     .name = "shadow",
                 });
 
+  printf("child length: %lu\n", mesh->children.length);
   for (size_t c = 0; c < mesh->children.length; c++)
     mesh_init_shadow_shader(&mesh->children.items[c]);
 }

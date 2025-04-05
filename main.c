@@ -63,7 +63,6 @@ void init_scene() {
       .wheel_sensitivity = 0.01f,
   });
 
-  printf("camera mode: %u\n", camera.mode);
   main_scene = scene_create(camera, viewport);
   // TODO: check if possible to set the mode in the descriptor
 
@@ -161,7 +160,6 @@ void import_cube() {
   material_texture_bind_lights(
       cube, &main_scene.viewport, &main_scene.lights.ambient,
       &main_scene.lights.directional, &main_scene.lights.point, 2);
-
 }
 
 void draw() {
@@ -193,15 +191,13 @@ int main(int argc, const char *argv[]) {
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
   mesh child_cube_A;
   add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
-  add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});*/
-  // add_cube((vec3){0.0f, 0.0f, 0.0f});
-  // add_cube((vec3){1.0f, 0.0f, 0.0f});
-
-  printf("camera address: %p\n", &main_scene.camera);
-
+  add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
   // mesh_add_child(&child_cube, &parent_cube);
   // mesh_add_child(&child_cube_A, &parent_cube);
   // mesh_add_child(&child_cube_B, &parent_cube);
+  */
+  // add_cube((vec3){0.0f, 0.0f, 0.0f});
+  // add_cube((vec3){1.0f, 0.0f, 0.0f});
 
   import_cube();
   add_grid();

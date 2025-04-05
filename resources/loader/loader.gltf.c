@@ -149,6 +149,7 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
     // if > 0 mesh, then append as child of initial mesh (level 1)
     if (m > 0) {
       size_t new_child = mesh_add_child_empty(mesh);
+      printf("mesh %lu\n", m);
       parent_mesh = mesh_get_child(mesh, new_child);
     }
 
@@ -162,6 +163,7 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
     // children maybe in the future we will need to create a dedicated array.
     // primitive 0 = parent, primitive n = child
     for (size_t p = 0; p < gl_mesh.primitives_count; p++) {
+      printf("primitive %lu\n", p);
       // get accessors to decode buffers into typed data (vertex, indices...)
       // load vertex attributes
 
