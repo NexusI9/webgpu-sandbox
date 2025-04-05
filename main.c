@@ -80,7 +80,7 @@ void init_scene() {
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
                                          .intensity = 2.0f,
-                                         .position = {3.0f, 3.0f, 3.0f},
+                                         .position = {1.0f, 1.0f, 0.0f},
                                      });
 
   /*scene_add_point_light(&main_scene, &(PointLightDescriptor){

@@ -267,7 +267,7 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
   WGPUTextureView layer_texture_view = wgpuTextureCreateView(
       texture,
       &(WGPUTextureViewDescriptor){
-          .label = "shadow per layer texture view",
+          .label = "Shadow per layer texture view",
           .format =
               WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
           .dimension = WGPUTextureViewDimension_2DArray,
@@ -288,7 +288,7 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
                            .view = layer_texture_view,
                            .loadOp = WGPULoadOp_Clear,
                            .storeOp = WGPUStoreOp_Store,
-                           .clearValue = (WGPUColor){1.0f, 1.0f, 1.0f, 1.0f},
+                           .clearValue = (WGPUColor){0.0f, 0.0f, 0.0f, 1.0f},
                            .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
                        },
                    .depthStencilAttachment = NULL
@@ -301,7 +301,6 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
                        },*/
                });
 
-  printf("drawing shadow\n");
   scene_draw(scene, MESH_SHADER_SHADOW, &shadow_pass);
 
   wgpuRenderPassEncoderEnd(shadow_pass);
@@ -385,7 +384,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   scene->lights.point.shadow_texture = wgpuTextureCreateView(
       shadow_texture,
       &(WGPUTextureViewDescriptor){
-          .label = "shadow global texture view",
+          .label = "Shadow global texture view",
           .format =
               WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
           .dimension = WGPUTextureViewDimension_2DArray,

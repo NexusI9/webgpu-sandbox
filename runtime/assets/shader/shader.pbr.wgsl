@@ -118,8 +118,8 @@ struct DirectionalLightStorage {
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
 //@group(2) @binding(3) var shadow_maps : texture_depth_2d_array;
 //@group(2) @binding(4) var shadow_sampler : sampler_comparison;
-//@group(2) @binding(3) var shadow_maps : texture_2d_array<f32>;
-//@group(2) @binding(4) var shadow_sampler : sampler;
+@group(2) @binding(3) var shadow_maps : texture_2d_array<f32>;
+@group(2) @binding(4) var shadow_sampler : sampler;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
@@ -295,7 +295,8 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let coord = vec2<i32>(vUv);
   var shadow_combined = vec4<f32>(0.0);
   for (var l : u32 = 0u; l < 6u; l++) {
-      //shadow_combined += textureLoad(shadow_maps, coord, l, 0i);
+    shadow_combined *=
+        textureSampleLevel(shadow_maps, shadow_sampler, vUv, l, 0.0);
   }
 
   var light_pos = vec3<f32>(0.0f);
@@ -336,5 +337,12 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   // let point = abs(point_light_list.items[0].views[1][3][3]) - 2.5f;
   // return vec4<f32>(vec3<f32>(point), 1.0f);
-  return vec4<f32>(color, 1.0f);
+
+  let light_index = 0u;
+  let face_index = 1u;
+  let layer_index = light_index * 6u + face_index;
+  let shadow_layer =
+      textureSampleLevel(shadow_maps, shadow_sampler, vUv, layer_index, 0.0);
+  return vec4<f32>(shadow_layer);
+  // return vec4<f32>(color, 1.0f);
 }
