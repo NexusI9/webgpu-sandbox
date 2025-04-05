@@ -51,6 +51,18 @@ void material_texture_bind_lights(mesh *, viewport *, AmbientLightList *,
                                   DirectionalLightList *, PointLightList *,
                                   uint8_t);
 
+void material_texture_add_uniform(mesh *,
+                                  const ShaderCreateUniformDescriptor *);
+
+void material_texture_add_texture(mesh *,
+                                  const ShaderCreateTextureDescriptor *);
+
+void material_texture_add_texture_view(
+    mesh *, const ShaderCreateTextureViewDescriptor *);
+
+void material_texture_add_sampler(mesh *,
+                                  const ShaderCreateSamplerDescriptor *);
+
 // === SHADOW SHADER ===
 
 // bind shadow specicif view

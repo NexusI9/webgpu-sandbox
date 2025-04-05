@@ -40,20 +40,19 @@ void grid_create_mesh(mesh *mesh, GridCreateDescriptor *gd) {
   // NOTE: binding groups shall be created in order (0 first, then 1)
   material_texture_bind_views(mesh, gd->camera, gd->viewport, 0);
 
-  shader_add_uniform(
-      mesh_shader_texture(mesh),
-      &(ShaderCreateUniformDescriptor){
-          .group_index = 1,
-          .entry_count = 1,
-          .entries =
-              (ShaderBindGroupUniformEntry[]){
-                  {
-                      .binding = 0,
-                      .data = &gd->uniform,
-                      .size = sizeof(GridUniform),
-                      .offset = 0,
-                  },
-              },
-          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-      });
+  material_texture_add_uniform(
+      mesh, &(ShaderCreateUniformDescriptor){
+                .group_index = 1,
+                .entry_count = 1,
+                .entries =
+                    (ShaderBindGroupUniformEntry[]){
+                        {
+                            .binding = 0,
+                            .data = &gd->uniform,
+                            .size = sizeof(GridUniform),
+                            .offset = 0,
+                        },
+                    },
+                .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+            });
 }

@@ -262,3 +262,35 @@ void material_shadow_bind_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
   for (size_t c = 0; c < mesh->children.length; c++)
     material_shadow_bind_maps(&mesh->children.items[c], shadow_texture);
 }
+
+/**
+   Transfer Uniform to the right mesh shader (texture)
+ */
+void material_texture_add_uniform(mesh *mesh,
+                                  const ShaderCreateUniformDescriptor *desc) {
+  shader_add_uniform(mesh_shader_texture(mesh), desc);
+}
+
+/**
+   Transfer Texture to the right mesh shader (texture)
+ */
+void material_texture_add_texture(mesh *mesh,
+                                  const ShaderCreateTextureDescriptor *desc) {
+  shader_add_texture(mesh_shader_texture(mesh), desc);
+}
+
+/**
+   Transfer Texture View to the right mesh shader (texture)
+ */
+void material_texture_add_texture_view(
+    mesh *mesh, const ShaderCreateTextureViewDescriptor *desc) {
+  shader_add_texture_view(mesh_shader_texture(mesh), desc);
+}
+
+/**
+   Transfer Sampler to the right mesh shader (texture)
+ */
+void material_texture_add_sampler(mesh *mesh,
+                                  const ShaderCreateSamplerDescriptor *desc) {
+  shader_add_sampler(mesh_shader_texture(mesh), desc);
+}
