@@ -118,8 +118,6 @@ void mesh_set_shader(mesh *mesh, const ShaderCreateDescriptor *desc) {
 void mesh_create_vertex_buffer(mesh *mesh,
                                const MeshCreateBufferDescriptor *bd) {
 
-  /*printf("name:%s, device: %p, queue:%p\n", mesh->name, mesh->device,
-    mesh->queue);*/
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue "), exit(0);
 
@@ -178,8 +176,6 @@ void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
 
   // draw shader
   // if shader is null, use default shader
-
-  // printf("drawing mesh: %s\n", mesh->name);
   shader *shader = mesh_select_shader(mesh, draw_method);
   shader_draw(shader, render_pass, camera, viewport);
 

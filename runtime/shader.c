@@ -81,6 +81,7 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
 
   // set name
   shader->name = strdup(sd->name);
+  VERBOSE_PRINT("Creating shader: %s\n", shader->name);
 
   // store shader string in memory
   store_file(&shader->source, sd->path);
@@ -96,7 +97,6 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
   // set vertex layout
   shader_set_vertex_layout(shader);
 
-  printf("Create shader: %s\n", shader->name);
   // init pipeline
   pipeline_create(&shader->pipeline,
                   &(PipelineCreateDescriptor){
@@ -184,8 +184,10 @@ WGPUBindGroupLayout *shader_build_layout(shader *shader) {
     Layouts define in a higher level what the GPU expects in term of type and
     structure
 
-    [SHADER] => [PIPELINE] <= [LAYOUTS] <= [UNIFORMS]
-      GPU                                      CPU
+    .----------.      +===========+     .---------.     .----------.
+    |  SHADER  | ==> || PIPELINE || <== | LAYOUTS | <== | UNIFORMS |
+    '----------'     +===========+      '---------'     '----------'
+        GPU                                                 CPU
 
   */
 
@@ -384,6 +386,9 @@ void shader_bind_samplers(shader *shader, ShaderBindGroup *bindgroup,
  */
 void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
                  const camera *camera, const viewport *viewport) {
+
+  if (shader->pipeline.handle == NULL)
+    return perror("Shader pipeline not defined for shader, skip drawing");
 
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline.handle);

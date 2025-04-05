@@ -203,7 +203,7 @@ int main(int argc, const char *argv[]) {
   add_grid();
 
   // Setup drawing pass may need to move it else where
-  //renderer_compute_shadow(&main_renderer, &main_scene);
+  renderer_compute_shadow(&main_renderer, &main_scene);
 
   scene_build(&main_scene, MESH_SHADER_DEFAULT);
   //  Update Loop

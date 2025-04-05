@@ -47,10 +47,25 @@ void scene_draw(scene *scene, MeshDrawMethod draw_method,
 
   // update camera
   camera_draw(&scene->camera);
-  // draw solid meshes first
-  scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.lit);
-  // draw transparent meshes then
-  scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.unlit);
+
+  // draw different scene mesh list depending on defined draw method
+  switch (draw_method) {
+
+    // only draw lit mesh if draw method is Shadow
+  case MESH_SHADER_SHADOW:
+    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.lit);
+    break;
+
+  case MESH_SHADER_DEFAULT:
+  case MESH_SHADER_SOLID:
+  case MESH_SHADER_WIREFRAME:
+  case MESH_SHADER_CUSTOM:
+  default:
+    // draw solid meshes first
+    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.lit);
+    // draw transparent meshes then
+    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.unlit);
+  }
 }
 
 /**
