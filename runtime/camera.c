@@ -1,9 +1,7 @@
 #include "camera.h"
-#include "cglm/affine.h"
-#include "cglm/quat.h"
+#include <cglm/cglm.h>
 #include "../utils/math.h"
 #include "../utils/system.h"
-#include "cglm/cam.h"
 #include "constants.h"
 #include "emscripten/html5.h"
 #include "input.h"

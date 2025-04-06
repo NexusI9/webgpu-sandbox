@@ -1,7 +1,6 @@
 #include "mesh.h"
 #include "../backend/buffer.h"
-#include "cglm/euler.h"
-#include "cglm/quat.h"
+#include <cglm/cglm.h>
 #include "../utils/system.h"
 #include "light.h"
 #include "pipeline.h"

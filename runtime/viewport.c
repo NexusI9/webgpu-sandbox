@@ -1,6 +1,6 @@
 #include "viewport.h"
 #include "../utils/system.h"
-#include "cglm/cam.h"
+#include <cglm/cglm.h>
 
 viewport viewport_create(const ViewportCreateDescriptor *view_desc) {
   // set viewport default values

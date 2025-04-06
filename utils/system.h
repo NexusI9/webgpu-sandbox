@@ -1,10 +1,7 @@
 #ifndef _SYSTEM_UTILS_H_
 #define _SYSTEM_UTILS_H_
 
-#include "cglm/mat4.h"
-#include "cglm/vec2.h"
-#include "cglm/vec3.h"
-#include "cglm/vec4.h"
+#include <cglm/cglm.h>
 #include "../runtime/mesh.h"
 
 #ifndef VERBOSE_MODE

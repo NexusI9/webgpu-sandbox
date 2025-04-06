@@ -3,9 +3,7 @@
 
 #include "../backend/clock.h"
 
-#include "cglm/mat4.h"
-#include "cglm/vec3.h"
-#include "cglm/vec4.h"
+#include <cglm/cglm.h>
 #include <stdint.h>
 
 typedef enum {

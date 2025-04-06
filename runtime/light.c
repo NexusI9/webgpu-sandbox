@@ -1,10 +1,10 @@
 #include "light.h"
 #include "../utils/system.h"
 #include "camera.h"
-#include "cglm/cam.h"
 #include "emscripten/emscripten.h"
 #include "shader.h"
 #include "viewport.h"
+#include <cglm/cglm.h>
 #include <stdio.h>
 
 /* =============================== SHADOW PROCESS ==============================
@@ -131,13 +131,13 @@ PointLightViews light_point_views(vec3 light_position, viewport *vp) {
 
   mat4 projection;
   glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
-  print_mat4(projection);
   for (int v = 0; v < new_views.length; v++) {
     vec3 direction;
     mat4 view;
     glm_vec3_add(light_position, directions[v], direction);
     glm_lookat(light_position, direction, ups[v], view);
     glm_mat4_mul(projection, view, new_views.views[v]);
+    print_mat4(new_views.views[v]);
   }
 
   return new_views;

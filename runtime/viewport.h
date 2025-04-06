@@ -2,7 +2,7 @@
 #define _VIEWPORT_H_
 
 #include "../backend/clock.h"
-#include "cglm/mat4.h"
+#include <cglm/cglm.h>
 
 typedef struct {
   mat4 projection;

@@ -6,7 +6,7 @@ GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
 wasm:
-	emcc $(C_FILES) -o $(OUTPUT) \
+	emcc -DCGLM_FORCE_DEPTH_ZERO_TO_ONE $(C_FILES) -o $(OUTPUT) \
 	     -I include \
 	     -s NO_EXIT_RUNTIME=1 \
 	     -s "EXPORTED_RUNTIME_METHODS=['ccall']" \
