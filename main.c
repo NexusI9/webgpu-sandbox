@@ -44,7 +44,7 @@ static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
 
-static vec3 LIGHT_POSITION = {0.0f, 1.0f, 0.0f};
+static vec3 LIGHT_POSITION = {4.0f, 1.0f, 4.0f};
 void init_scene() {
 
   // set viewport
@@ -80,7 +80,7 @@ void init_scene() {
   // set light
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
-                                         .intensity = 1.0f,
+                                         .intensity = 3.0f,
                                          .position =
                                              {
                                                  LIGHT_POSITION[0],

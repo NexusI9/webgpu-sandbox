@@ -195,9 +195,13 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   var N : vec3<f32> = normalize(material.normal); // surface normal
   var V : vec3<f32> =
               normalize(camera_position - fragment_position); // view vector
-  var L : vec3<f32> = normalize(light_position -
-                                fragment_position); // light direction
-  var H : vec3<f32> = normalize(V + L);             // halfway vector
+
+  var distance : f32 = length(fragment_position - light_position);
+  var L : vec3<f32> = vec3<f32>(
+              1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance));
+  // var L : vec3<f32> = normalize(fragment_position); // light direction
+  // (deprectated)
+  var H : vec3<f32> = normalize(V + L); // halfway vector
 
   // 2. Fresnel effect
   // Determines how much light reflects vs. refracts
@@ -233,7 +237,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   // 7. Apply AO //0.03f
   // change first operator to alter ambient light
 
-  return vec3<f32>(dot(N, L));
+  return Lo;
 }
 
 fn compute_ambient_light(material : Material, light_color : vec3<f32>,
