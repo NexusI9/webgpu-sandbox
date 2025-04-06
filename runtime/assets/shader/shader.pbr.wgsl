@@ -198,7 +198,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
 
   var distance : f32 = length(fragment_position - light_position);
   var L : vec3<f32> = vec3<f32>(
-              1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance));
+              1.0 / (1.0 + 0.19 * distance + 0.1 * distance * distance));
   // var L : vec3<f32> = normalize(fragment_position); // light direction
   // (deprectated)
   var H : vec3<f32> = normalize(V + L); // halfway vector
@@ -237,7 +237,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   // 7. Apply AO //0.03f
   // change first operator to alter ambient light
 
-  return Lo;
+  return vec3<f32>(max(dot(N, L), 0.0f));
 }
 
 fn compute_ambient_light(material : Material, light_color : vec3<f32>,
@@ -350,16 +350,16 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
   }
 
   // calulate ambient lights
+  var ambient_intensity = 0.0f;
   for (var i = 0u; i < ambient_light_list.length; i = i + 1u) {
     let light = ambient_light_list.items[i];
     ambient += compute_ambient_light(material, light.color, light.intensity);
+    ambient_intensity += light.intensity;
   }
 
-  var color = ambient + Lo;
+  var color = Lo;
 
-  let point_shadow =
-      mix(vec3<f32>(0.2f), vec3<f32>(1.0f), point_shadow_factor(vFrag));
-  // return vec4<f32>(color * point_shadow, 1.0f);
-  // return vec4<f32>(point_shadow, 1.0f);
-  return vec4<f32>(Lo, 1.0f);
+  let point_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0f),
+                         point_shadow_factor(vFrag));
+  return vec4<f32>(color, 1.0f);
 }

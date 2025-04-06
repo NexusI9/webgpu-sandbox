@@ -138,7 +138,7 @@ PointLightViews light_point_views(vec3 light_position, viewport *vp) {
   };
 
   mat4 projection;
-  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
+  glm_perspective(glm_rad(100.0f), 1.0f, 0.1f, 100.0f, projection);
   for (int v = 0; v < new_views.length; v++) {
     vec3 direction;
     mat4 view;
