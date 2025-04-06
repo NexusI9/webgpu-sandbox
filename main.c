@@ -44,7 +44,7 @@ static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
 
-static vec3 LIGHT_POSITION = {6.0f, 0.0f, 6.0f};
+static vec3 LIGHT_POSITION = {0.0f, 0.5f, 4.0f};
 void init_scene() {
 
   // set viewport
@@ -68,7 +68,7 @@ void init_scene() {
   // TODO: check if possible to set the mode in the descriptor
 
   // init camera position
-  camera_look_at(&main_scene.camera, (vec3){3.0f, 3.0f, 3.0f},
+  camera_look_at(&main_scene.camera, (vec3){20.0f, 20.0f, 0.0f},
                  (vec3){0.0f, 0.0f, 0.0f});
 
   printf("combined view:\n");

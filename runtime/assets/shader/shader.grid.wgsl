@@ -124,10 +124,10 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
 
   // Add X & Y Axis
   var axisThickness : f32 = 0.04f / uGrid.scale;
-  var xAxis : f32 = step(abs(compensUv.x - center.x), axisThickness);
-  var yAxis : f32 = step(abs(compensUv.y - center.y), axisThickness);
-  var xAxisColor : vec3<f32> = mix(black, red, vec3(xAxis));
+  var yAxis : f32 = step(abs(compensUv.x - center.x), axisThickness);
+  var xAxis : f32 = step(abs(compensUv.y - center.y), axisThickness);
   var yAxisColor : vec3<f32> = mix(black, green, vec3(yAxis));
+  var xAxisColor : vec3<f32> = mix(black, red, vec3(xAxis));
   var axis : vec3<f32> = max(xAxisColor, yAxisColor); // combine axis
 
   var axisMask : vec4<f32> = vec4(min(1.0f - xAxis, 1.0f - yAxis));

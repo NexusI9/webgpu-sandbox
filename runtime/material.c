@@ -250,9 +250,9 @@ void material_shadow_bind_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
               .addressModeU = WGPUAddressMode_ClampToEdge,
               .addressModeV = WGPUAddressMode_ClampToEdge,
               .addressModeW = WGPUAddressMode_ClampToEdge,
-              .magFilter = WGPUFilterMode_Nearest,
-              .minFilter = WGPUFilterMode_Nearest,
-              .compare = WGPUCompareFunction_LessEqual,
+              .magFilter = WGPUFilterMode_Linear,
+              .minFilter = WGPUFilterMode_Linear,
+              .compare = WGPUCompareFunction_Less,
           }},
       });
 

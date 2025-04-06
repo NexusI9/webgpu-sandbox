@@ -266,28 +266,37 @@ fn point_shadow_position(world_position : vec3<f32>, light_view : mat4x4<f32>)
   return vec3<f32>(shadow_uv, shadow_ndc.z);
 }
 
+// For point lights since the view opposite direction is fully black, we need to
+// combine the two opposite side (ex top + bottom) before multiplying it to the
+// final factor else they cancel them out
+fn point_shadow_combined_factor(frag_position : vec3<f32>, view : mat4x4<f32>,
+                                layer : u32, bias : f32) -> f32 {
+  let shadow_position = point_shadow_position(frag_position, view);
+  let shadow_depth = shadow_position.z - bias;
+  return textureSampleCompare(shadow_maps, shadow_sampler, shadow_position.xy,
+                              layer, shadow_depth);
+}
+
 fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.005f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
-    for (var v : u32 = 0u; v < POINT_LIGHT_VIEWS; v++) {
+    for (var v : u32 = 0u; v < POINT_LIGHT_VIEWS; v += 2u) {
 
-      let shadow_position = point_shadow_position(
-          frag_position, point_light_list.items[l].views[v]);
-
-      // let shadow_depth = clamp(shadow_position.z - bias, 0.0f, 1.0f);
-      let shadow_depth = shadow_position.z - bias;
       let layer : u32 = l * POINT_LIGHT_VIEWS + v;
 
-      // factor = clamp(point_shadow_position_f(
-      //                   frag_position, point_light_list.items[l].views[0]),
-      //                        0.0f, 1.0f);
+      let factor_a = point_shadow_combined_factor(
+          frag_position, point_light_list.items[l].views[v], layer, bias);
 
-      // factor *= shadow_depth;
-      factor *= textureSampleCompare(shadow_maps, shadow_sampler,
-                                     shadow_position.xy, layer, shadow_depth);
+      let factor_b = point_shadow_combined_factor(
+          frag_position, point_light_list.items[l].views[v + 1u], layer + 1u,
+          bias);
+
+      let final_factor = factor_a + factor_b;
+
+      factor *= final_factor;
     }
   }
 
