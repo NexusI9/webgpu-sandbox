@@ -1,5 +1,6 @@
 #ifndef _LIGHT_H_
 #define _LIGHT_H_
+
 #include "../include/cglm/vec3.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"

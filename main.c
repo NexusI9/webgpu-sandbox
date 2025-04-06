@@ -44,6 +44,7 @@ static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
 
+static vec3 LIGHT_POSITION = {6.0f, 0.0f, 6.0f};
 void init_scene() {
 
   // set viewport
@@ -79,8 +80,13 @@ void init_scene() {
   // set light
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
-                                         .intensity = 2.0f,
-                                         .position = {1.0f, 1.0f, 0.0f},
+                                         .intensity = 1.0f,
+                                         .position =
+                                             {
+                                                 LIGHT_POSITION[0],
+                                                 LIGHT_POSITION[1],
+                                                 LIGHT_POSITION[2],
+                                             },
                                      });
 
   /*scene_add_point_light(&main_scene, &(PointLightDescriptor){
@@ -98,7 +104,7 @@ void init_scene() {
 void add_cube(vec3 position) {
 
   primitive cube_prim = primitive_cube();
-  mesh *cube = scene_new_mesh_lit(&main_scene);
+  mesh *cube = scene_new_mesh_unlit(&main_scene);
   mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = cube_prim,
                                   .name = "cube",
@@ -196,7 +202,11 @@ int main(int argc, const char *argv[]) {
   // mesh_add_child(&child_cube_A, &parent_cube);
   // mesh_add_child(&child_cube_B, &parent_cube);
   */
-  // add_cube((vec3){0.0f, 0.0f, 0.0f});
+  add_cube((vec3){
+      LIGHT_POSITION[0],
+      LIGHT_POSITION[1],
+      LIGHT_POSITION[2],
+  });
   // add_cube((vec3){1.0f, 0.0f, 0.0f});
 
   import_cube();

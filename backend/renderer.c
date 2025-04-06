@@ -265,40 +265,29 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
    */
 
   WGPUTextureView layer_texture_view = wgpuTextureCreateView(
-      texture,
-      &(WGPUTextureViewDescriptor){
-          .label = "Shadow per layer texture view",
-          .format =
-              WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
-          .dimension = WGPUTextureViewDimension_2DArray,
-          .baseArrayLayer = layer,
-          .arrayLayerCount = 1,
-          .mipLevelCount = 1,
-          .baseMipLevel = 0,
-      });
+      texture, &(WGPUTextureViewDescriptor){
+                   .label = "Shadow per layer texture view",
+                   .format = WGPUTextureFormat_Depth32Float,
+                   .dimension = WGPUTextureViewDimension_2DArray,
+                   .baseArrayLayer = layer,
+                   .arrayLayerCount = 1,
+                   .mipLevelCount = 1,
+                   .baseMipLevel = 0,
+               });
 
   // create render pass and render it to the nested layer
 
   WGPURenderPassEncoder shadow_pass = wgpuCommandEncoderBeginRenderPass(
       encoder, &(WGPURenderPassDescriptor){
-                   .label = "shadow render pass encoder",
-                   .colorAttachmentCount = 1,
-                   .colorAttachments =
-                       &(WGPURenderPassColorAttachment){
+                   .label = "Shadow render pass encoder",
+                   .colorAttachmentCount = 0,
+                   .depthStencilAttachment =
+                       &(WGPURenderPassDepthStencilAttachment){
                            .view = layer_texture_view,
-                           .loadOp = WGPULoadOp_Clear,
-                           .storeOp = WGPUStoreOp_Store,
-                           .clearValue = (WGPUColor){0.0f, 0.0f, 0.0f, 1.0f},
-                           .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+                           .depthClearValue = 1.0f,
+                           .depthLoadOp = WGPULoadOp_Clear,
+                           .depthStoreOp = WGPUStoreOp_Store,
                        },
-                   .depthStencilAttachment = NULL
-                   //.depthStencilAttachment = 0
-                   /* &(WGPURenderPassDepthStencilAttachment){
-                       .view = layer_texture_view,
-                       .depthClearValue = 1.0f,
-                       .depthLoadOp = WGPULoadOp_Clear,
-                       .depthStoreOp = WGPUStoreOp_Store,
-                       },*/
                });
 
   scene_draw(scene, MESH_SHADER_SHADOW, &shadow_pass);
@@ -371,8 +360,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
       renderer->wgpu.device,
       &(WGPUTextureDescriptor){
           .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, layer_count},
-          .format =
-              WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
+          .format = WGPUTextureFormat_Depth32Float,
           .usage = WGPUTextureUsage_RenderAttachment |
                    WGPUTextureUsage_TextureBinding,
           .dimension = WGPUTextureDimension_2D,
@@ -382,18 +370,16 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
 
   // populate scene point light texture_view
   scene->lights.point.shadow_texture = wgpuTextureCreateView(
-      shadow_texture,
-      &(WGPUTextureViewDescriptor){
-          .label = "Shadow global texture view",
-          .format =
-              WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
-          .dimension = WGPUTextureViewDimension_2DArray,
-          .mipLevelCount = 1,
-          .baseMipLevel = 0,
-          .arrayLayerCount = layer_count,
-          .baseArrayLayer = 0,
-          .aspect = WGPUTextureAspect_All, // WGPUTextureAspect_DepthOnly,
-      });
+      shadow_texture, &(WGPUTextureViewDescriptor){
+                          .label = "Shadow global texture view",
+                          .format = WGPUTextureFormat_Depth32Float,
+                          .dimension = WGPUTextureViewDimension_2DArray,
+                          .mipLevelCount = 1,
+                          .baseMipLevel = 0,
+                          .arrayLayerCount = layer_count,
+                          .baseArrayLayer = 0,
+                          .aspect = WGPUTextureAspect_DepthOnly,
+                      });
 
   // Generate Shadow maps
   renderer_create_shadow_map(renderer, scene, shadow_texture);
@@ -406,7 +392,5 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
     material_shadow_bind_maps(current_mesh,
                               &scene->lights.point.shadow_texture);
 
-    // Finally build mesh with default shader (with imported texture array)
-    // mesh_build(current_mesh, MESH_SHADER_DEFAULT);
   }
 }

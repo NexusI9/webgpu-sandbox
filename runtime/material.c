@@ -2,6 +2,7 @@
 #include "camera.h"
 #include "mesh.h"
 #include "shader.h"
+#include "webgpu/webgpu.h"
 #include <stdlib.h>
 
 /**
@@ -230,10 +231,8 @@ void material_shadow_bind_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
               .binding = 3,
               .texture_view = *shadow_texture,
               .dimension = WGPUTextureViewDimension_2DArray,
-              .format =
-                  WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
-              .sample_type =
-                  WGPUTextureSampleType_Float // WGPUTextureSampleType_Depth,
+              .format = WGPUTextureFormat_Depth32Float,
+              .sample_type = WGPUTextureSampleType_Depth,
           }},
       });
 
@@ -247,15 +246,13 @@ void material_shadow_bind_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
           .group_index = 2,
           .entries = (ShaderBindGroupSamplerEntry[]){{
               .binding = 4,
-              .type =
-                  WGPUSamplerBindingType_Filtering, // WGPUSamplerBindingType_Comparison,
+              .type = WGPUSamplerBindingType_Comparison,
               .addressModeU = WGPUAddressMode_ClampToEdge,
               .addressModeV = WGPUAddressMode_ClampToEdge,
               .addressModeW = WGPUAddressMode_ClampToEdge,
-              .magFilter = WGPUFilterMode_Linear,
-              .minFilter = WGPUFilterMode_Linear,
-              .compare =
-                  WGPUCompareFunction_Undefined // WGPUCompareFunction_LessEqual,
+              .magFilter = WGPUFilterMode_Nearest,
+              .minFilter = WGPUFilterMode_Nearest,
+              .compare = WGPUCompareFunction_LessEqual,
           }},
       });
 

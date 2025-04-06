@@ -7,15 +7,15 @@ OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
 wasm:
 	emcc $(C_FILES) -o $(OUTPUT) \
-	-I include \
-	-s NO_EXIT_RUNTIME=1 \
-	-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
-	-s EXPORTED_FUNCTIONS="['_main']" \
-	-s USE_WEBGPU=1 \
-	-s SINGLE_FILE \
-	$(WGSL_FILES) \
-	$(GLTF_FILES)
-
+	     -I include \
+	     -s NO_EXIT_RUNTIME=1 \
+	     -s "EXPORTED_RUNTIME_METHODS=['ccall']" \
+	     -s EXPORTED_FUNCTIONS="['_main']" \
+	     -s USE_WEBGPU=1 \
+	     -s SINGLE_FILE \
+	     $(WGSL_FILES) \
+	     $(GLTF_FILES)
+	
 	@echo "Compilation completed: $(OUTPUT)"
 	
 #\

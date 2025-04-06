@@ -1,6 +1,6 @@
 #include "camera.h"
-#include "../include/cglm/affine.h"
-#include "../include/cglm/quat.h"
+#include "cglm/affine.h"
+#include "cglm/quat.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
 #include "cglm/cam.h"

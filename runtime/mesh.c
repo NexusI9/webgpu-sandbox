@@ -1,7 +1,7 @@
 #include "mesh.h"
 #include "../backend/buffer.h"
-#include "../include/cglm/euler.h"
-#include "../include/cglm/quat.h"
+#include "cglm/euler.h"
+#include "cglm/quat.h"
 #include "../utils/system.h"
 #include "light.h"
 #include "pipeline.h"
@@ -343,14 +343,20 @@ void mesh_init_shadow_shader(mesh *mesh) {
                     .name = "shadow",
                 });
 
-  // edit shader pipeline
-  /*pipeline_set_fragment(&shadow_shader->pipeline,
-     &(PipelineFragmentDescriptor){ .fragment_state = 0, .color_state = 0,
-                                                      .blend_state = 0,
-                                                  });*/
+  // edit shader pipeline (vertex only)
+  pipeline_set_fragment(shader_pipeline(shadow_shader),
+                        &(PipelineFragmentDescriptor){
+                            .fragment_state = 0,
+                            .color_state = 0,
+                            .blend_state = 0,
+                        });
 
   pipeline_set_stencil(shader_pipeline(shadow_shader),
-                       (WGPUDepthStencilState){0});
+                       (WGPUDepthStencilState){
+                           .format = WGPUTextureFormat_Depth32Float,
+                           .depthWriteEnabled = true,
+                           .depthCompare = WGPUCompareFunction_Less,
+                       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
     mesh_init_shadow_shader(&mesh->children.items[c]);
