@@ -1101,14 +1101,15 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   var N : vec3<f32> = normalize(material.normal); // surface normal
   var V : vec3<f32> =
               normalize(camera_position - fragment_position); // view vector
-  var L : vec3<f32> = normalize(light_position);              // light direction
-  var H : vec3<f32> = normalize(V + L);                       // halfway vector
+  var L : vec3<f32> = normalize(light_position -
+                                fragment_position); // light direction
+  var H : vec3<f32> = normalize(V + L);             // halfway vector
 
   // 2. Fresnel effect
   // Determines how much light reflects vs. refracts
   var HdotV : f32 = dot_max(H, V);
-  var F0 : vec3<f32> = material.albedo;
-  var F : vec3<f32> = f_schlick(material.albedo, HdotV);
+  var F0 : vec3<f32> = mix(vec3(0.04), material.albedo, material.metallic);
+  var F : vec3<f32> = f_schlick(F0, HdotV);
 
   // 3. Normal Distribution Function - NDF (GGX/ Trowbridge-Reitz)
   // Determine how surface distribute microfacet (i.e. bumps)
@@ -1131,14 +1132,14 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   var kD = vec3(1.0f) - kS;
   kD *= 1.0f - material.metallic;
 
-  var diffuse : vec3<f32> = (material.albedo / PI) * NdotL;
+  var diffuse : vec3<f32> = (material.albedo / PI);
   var Lo : vec3<f32> = (kD * diffuse + specular) * light_color *
                        light_intensity * NdotL;
 
   // 7. Apply AO //0.03f
   // change first operator to alter ambient light
 
-  return Lo;
+  return vec3<f32>(dot(N, L));
 }
 
 fn compute_ambient_light(material : Material, light_color : vec3<f32>,
@@ -1234,11 +1235,10 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
   var ambient : vec3<f32> = vec3<f32>(0.0f);
 
   // calculate point lights
-  for (var i = 0u; i < point_light_list.length; i = i + 1u) {
+  for (var i = 0u; i < point_light_list.length; i++) {
     let light = point_light_list.items[i];
     Lo += compute_point_light(material, vFrag, uCamera.position.xyz,
-                              light.position - vFrag, light.color,
-                              light.intensity);
+                              light.position, light.color, light.intensity);
   }
 
   // calculate direction lights
@@ -1259,15 +1259,11 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var color = ambient + Lo;
 
-  let shadow_factor = point_shadow_factor(vFrag);
-  // let shadow_position =
-  //     point_shadow_position(vFrag, point_light_list.items[0].views[0]);
-
-  // return vec4<f32>(color * shadow_color, 1.0f);
-
-  return vec4<f32>(shadow_factor, 0.0f, 0.0f, 1.0f);
-  // return vec4<f32>(vFrag, 1.0f);
-  //  return vec4<f32>(color, 1.0f);
+  let point_shadow =
+      mix(vec3<f32>(0.2f), vec3<f32>(1.0f), point_shadow_factor(vFrag));
+  // return vec4<f32>(color * point_shadow, 1.0f);
+  // return vec4<f32>(point_shadow, 1.0f);
+  return vec4<f32>(Lo, 1.0f);
 }
 // attribute/uniform decls
 struct VertexIn {
