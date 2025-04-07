@@ -346,7 +346,8 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
 
     // get each light orthographic view depending on target
     LightViews light_views =
-        light_directional_view(scene->lights.directional.items[p].target);
+        light_directional_view(scene->lights.directional.items[p].position,
+                               scene->lights.directional.items[p].target);
 
     // 1. Bind meshes
     for (int m = 0; m < target_mesh_list->length; m++) {
@@ -457,7 +458,8 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
     mesh *current_mesh = &scene->meshes.lit.items[m];
 
     // bind point & directional light texture view + sampler to Textue Shader
-    material_texure_bind_shadow_maps(current_mesh, scene->lights.point.shadow_texture,
-                              scene->lights.directional.shadow_texture);
+    material_texure_bind_shadow_maps(current_mesh,
+                                     scene->lights.point.shadow_texture,
+                                     scene->lights.directional.shadow_texture);
   }
 }

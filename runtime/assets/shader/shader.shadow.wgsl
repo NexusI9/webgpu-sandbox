@@ -14,7 +14,6 @@ struct VertexOut {
       : vec3<f32>,
         @location(2) vUv : vec2<f32>,
                            @location(3) vFrag : vec3<f32>,
-                                                @location(4) vDepth : f32,
 };
 
 struct Mesh { // 80B
@@ -28,6 +27,5 @@ struct Mesh { // 80B
   var out : VertexOut;
   let pos = light_view_projection * uModel.model * vec4<f32>(input.aPos, 1.0f);
   out.vPosition = pos;
-  out.vDepth = pos.z / pos.w; // Normalized depth (NDC)
   return out;
 }

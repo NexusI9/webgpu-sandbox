@@ -107,7 +107,8 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
       glm_vec3_copy(light->color, uniform->color);
       glm_vec3_copy(light->target, uniform->target);
 
-      LightViews directional_view = light_directional_view(light->target);
+      LightViews directional_view =
+          light_directional_view(light->position, light->target);
       glm_mat4_copy(directional_view.views[0], uniform->view);
     }
   }

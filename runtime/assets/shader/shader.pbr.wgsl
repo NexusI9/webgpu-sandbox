@@ -257,10 +257,10 @@ fn directional_shadow_position(world_position : vec3<f32>,
 
   // convert to NDC coordinates
   var shadow_ndc = shadow_clip.xyz / shadow_clip.w;
-  shadow_ndc = shadow_ndc * 0.5f + 0.5f; // convert [-1;1] to [0;1]
+  shadow_ndc = shadow_ndc; // convert [-1;1] to [0;1]
 
   // convert to UV (0-1 range)
-  let shadow_uv = shadow_ndc.xy;
+  let shadow_uv = shadow_ndc.xy * 0.5f + 0.5f;
   let shadow_depth = shadow_ndc.z;
 
   // returns depth to compare
@@ -312,15 +312,20 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.005f;
+  var bias : f32 = 0.0005f;
 
   for (var l : u32 = 0u; l < directional_light_list.length; l++) {
+
     let shadow_position = directional_shadow_position(
         frag_position, directional_light_list.items[l].view);
+
     let shadow_depth = shadow_position.z - bias;
-    factor *= textureSampleCompare(directional_shadow_maps,
-                                   directional_shadow_sampler,
-                                   shadow_position.xy, l, shadow_depth);
+
+    factor = textureSampleCompare(directional_shadow_maps,
+                                  directional_shadow_sampler,
+                                  shadow_position.xy, l, shadow_depth);
+
+    //factor = shadow_depth;
   }
 
   return factor;
@@ -381,4 +386,7 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
                                directional_shadow_factor(vFrag));
 
   return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
+  // return vec4<f32>(
+  //     directional_shadow_position(vFrag,
+  //     directional_light_list.items[0].view), 1.0f);
 }

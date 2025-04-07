@@ -44,8 +44,8 @@ static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
 
-static vec3 LIGHT_POSITION = {0.0f, 0.0f, -4.0f};
-static vec3 LIGHT_TARGET = {0.0f, 0.0f, 4.0f};
+static vec3 LIGHT_POSITION = {0.0f, 6.0f, 6.0f};
+static vec3 LIGHT_TARGET = {0.0f, 0.0f, -3.0f};
 void init_scene() {
 
   // set viewport
@@ -83,14 +83,14 @@ void init_scene() {
   // init camera position
   camera_look_at(&main_scene.camera,
                  (vec3){
-                     light_position[0],
-                     light_position[1],
-                     light_position[2],
+                     20.0f,
+                     20.0f,
+                     20.0f,
                  },
                  (vec3){
-                     LIGHT_TARGET[0],
-                     LIGHT_TARGET[1],
-                     LIGHT_TARGET[2],
+                     0.0f,
+                     0.0f,
+                     0.0f,
                  });
 
   printf("combined view:\n");
@@ -120,7 +120,12 @@ void init_scene() {
                                                        LIGHT_TARGET[1],
                                                        LIGHT_TARGET[2],
                                                    },
-                                               .position = {0.0f, 3.0f, 0.0f},
+                                               .position =
+                                                   {
+                                                       LIGHT_POSITION[0],
+                                                       LIGHT_POSITION[1],
+                                                       LIGHT_POSITION[2],
+                                                   },
                                            });
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
@@ -230,9 +235,9 @@ int main(int argc, const char *argv[]) {
   // mesh_add_child(&child_cube_A, &parent_cube);
   // mesh_add_child(&child_cube_B, &parent_cube);
   */
-  // add_cube((vec3){LIGHT_POSITION[0], LIGHT_POSITION[1], LIGHT_POSITION[2]});
   //  add_cube((vec3){1.0f, 0.0f, 0.0f});
 
+  add_cube((vec3){LIGHT_POSITION[0], LIGHT_POSITION[1], LIGHT_POSITION[2]});
   import_cube();
   add_grid();
 

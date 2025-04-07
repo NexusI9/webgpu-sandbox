@@ -150,7 +150,7 @@ LightViews light_point_views(vec3 light_position) {
    For DL as position agnostic, target is always 0,0,0, but the position
    simulates sun position by being super far away from the scene
  */
-LightViews light_directional_view(vec3 light_target) {
+LightViews light_directional_view(vec3 light_position, vec3 light_target) {
 
   LightViews new_views = (LightViews){.length = LIGHT_DIRECTIONAL_VIEW};
 
@@ -161,21 +161,7 @@ LightViews light_directional_view(vec3 light_target) {
     glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, up);
 
   mat4 projection;
-  float ortho_size = 50.0f;
-  glm_ortho(-ortho_size, ortho_size, -ortho_size, ortho_size, 0.1f, 100.0f,
-            projection);
-
-  // glm_perspective(glm_rad(100.0f), 1.0f, 0.1f, 100.0f, projection);
-  float distance = 70.0;
-  vec3 direction = {-1.0f, -1.0f, -1.0f};
-  glm_normalize(direction);
-  glm_vec3_scale(direction, distance, direction);
-
-  vec3 light_position;
-  glm_vec3_sub(light_target, direction, light_position);
-
-  // printf("invert: %f\n", -1 * light_target[0]);
-  print_vec3(light_position);
+  glm_perspective(glm_rad(45.0f), 1.0f, 0.1f, 100.0f, projection);
 
   for (int v = 0; v < new_views.length; v++) {
     mat4 view;
@@ -184,5 +170,19 @@ LightViews light_directional_view(vec3 light_target) {
     print_mat4(new_views.views[v]);
   }
 
+  /*float ortho_size = 50.0f;
+  glm_ortho(-ortho_size, ortho_size, -ortho_size, ortho_size, 0.1f, 100.0f,
+  projection);*/
+
+  /*
+  float distance = 70.0;
+  vec3 direction = {-1.0f, -1.0f, -1.0f};
+  glm_normalize(direction);
+  glm_vec3_scale(direction, distance, direction);
+
+  vec3 light_position;
+  glm_vec3_sub(light_target, direction, light_position);
+  print_vec3(light_position);
+  */
   return new_views;
 }

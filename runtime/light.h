@@ -124,5 +124,5 @@ void light_create_directional(DirectionalLight *, DirectionalLightDescriptor *);
 void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
 
 LightViews light_point_views(vec3);
-LightViews light_directional_view(vec3);
+LightViews light_directional_view(vec3, vec3);
 #endif
