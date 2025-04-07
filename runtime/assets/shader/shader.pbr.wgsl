@@ -196,9 +196,9 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   var V : vec3<f32> =
               normalize(camera_position - fragment_position); // view vector
 
-  //var distance : f32 = length(fragment_position - light_position);
-  // var L : vec3<f32> = vec3<f32>(
-  // 1.0 / (1.0 + 0.19 * distance + 0.1 * distance * distance));
+  // var distance : f32 = length(fragment_position - light_position);
+  //  var L : vec3<f32> = vec3<f32>(
+  //  1.0 / (1.0 + 0.19 * distance + 0.1 * distance * distance));
   var L : vec3<f32> = vec3<f32>(dot(
               vertex_normal, normalize(light_position - fragment_position)));
   var H : vec3<f32> = normalize(V + L); // halfway vector
@@ -285,7 +285,7 @@ fn point_shadow_combined_factor(frag_position : vec3<f32>, view : mat4x4<f32>,
 fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.005f;
+  var bias : f32 = 0.0002f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
     for (var v : u32 = 0u; v < POINT_LIGHT_VIEWS; v += 2u) {
@@ -357,12 +357,10 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
     ambient_intensity += light.intensity;
   }
 
-  var color = Lo;
+  var color = ambient + Lo;
 
-  let point_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0f),
-                         point_shadow_factor(vFrag));
+  let point_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
+                         clamp(point_shadow_factor(vFrag), 0.0f, 1.0f));
 
-  let light = point_light_list.items[0];
-
-  return vec4<f32>(color, 1.0f);
+  return vec4<f32>(color * point_shadow, 1.0f);
 }
