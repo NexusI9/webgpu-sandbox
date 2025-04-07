@@ -228,7 +228,8 @@ void renderer_lock_mouse(const renderer *renderer) {
 static void renderer_shadow_to_texture(scene *, WGPUTexture, uint32_t,
                                        WGPUDevice *, WGPUCommandEncoder);
 
-static void renderer_create_shadow_map(renderer *, scene *, WGPUTexture);
+static void renderer_create_shadow_map(renderer *, scene *, WGPUTexture,
+                                       WGPUTexture);
 
 void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
                                 uint32_t layer, WGPUDevice *device,
@@ -240,26 +241,26 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
      texture。Both "global Texture view" and "indexed Texture view" point toward
                                the same texture
 
-                           +----------------------+
+                           .----------------------.
                            |      WGPUTexture     |
-                           +----------------------+
+                           '----------------------'
                                   /        \
-   +----------------------------------+   +-------------------------------+
+   .----------------------------------.   .-------------------------------.
    |    WGPUTextureView<all layers>   |   |    WGPUTextureView<layer N>   |
-   +----------------------------------+   +-------------------------------+
+   '----------------------------------'   '-------------------------------'
      Final Texture with all layers         Target a specific texture layer
 
                    |                                     |
                    |                                     |
-                   |		 	 +-------------------------------+
+                   |		 	 .-------------------------------.
                    |			 |        1.Renderpass           |
-                   |			 +-------------------------------+
+                   |			 '-------------------------------.
                    |                         Render to specific layer
                    |
                    |
-    +-------------------------------+
+    .-------------------------------.
     |  2. Shader<texture 2D array>  |
-    +-------------------------------+
+    '-------------------------------'
         Bind the Array to shader
 
    */
@@ -302,37 +303,66 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
     - render to the shadow array
  */
 void renderer_create_shadow_map(renderer *renderer, scene *scene,
-                                WGPUTexture texture) {
+                                WGPUTexture point_shadow_texture,
+                                WGPUTexture directional_shadow_texture) {
 
   WGPUCommandEncoder shadow_encoder =
       wgpuDeviceCreateCommandEncoder(renderer->wgpu.device, NULL);
 
+  MeshList *target_mesh_list = &scene->meshes.lit;
+
+  // I. create Point Light Shadow Map
   for (size_t p = 0; p < scene->lights.point.length; p++) {
     // retrieve 6 views of point cube
-    PointLightViews light_views = light_point_views(
-        scene->lights.point.items[p].position, &scene->viewport);
+    LightViews light_views =
+        light_point_views(scene->lights.point.items[p].position);
 
     // render scene and store depth map for each view
     for (size_t v = 0; v < light_views.length; v++) {
       mat4 *current_view = &light_views.views[v];
 
       // 1. Bind meshes
-      for (int m = 0; m < scene->meshes.lit.length; m++) {
-        mesh *current_mesh = &scene->meshes.lit.items[m];
+      for (int m = 0; m < target_mesh_list->length; m++) {
+        mesh *current_mesh = &target_mesh_list->items[m];
         material_shadow_bind_views(current_mesh, current_view);
         mesh_build(current_mesh, MESH_SHADER_SHADOW);
       }
 
       // 2. Render scene (create shadow render pass to texture layer)
       size_t layer = p * light_views.length + v;
-      renderer_shadow_to_texture(scene, texture, layer, &renderer->wgpu.device,
-                                 shadow_encoder);
+      renderer_shadow_to_texture(scene, point_shadow_texture, layer,
+                                 &renderer->wgpu.device, shadow_encoder);
 
       // 3. Clear meshes bind group
       for (int m = 0; m < scene->meshes.lit.length; m++) {
-        mesh *current_mesh = &scene->meshes.lit.items[m];
+        mesh *current_mesh = &target_mesh_list->items[m];
         material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
       }
+    }
+  }
+
+  // II. create Directional Ligth Shadow Mapping
+  for (size_t p = 0; p < scene->lights.directional.length; p++) {
+
+    // get each light orthographic view depending on target
+    LightViews light_views =
+        light_directional_view(scene->lights.directional.items[p].target);
+
+    // 1. Bind meshes
+    for (int m = 0; m < target_mesh_list->length; m++) {
+      mesh *current_mesh = &target_mesh_list->items[m];
+      material_shadow_bind_views(current_mesh, &light_views.views[0]);
+      mesh_build(current_mesh, MESH_SHADER_SHADOW);
+    }
+
+    // 2. Render scene (create shadow render pass to texture layer)
+    renderer_shadow_to_texture(scene, directional_shadow_texture, p,
+                               &renderer->wgpu.device, shadow_encoder);
+
+    // 3. Clear meshes bind group
+    for (int m = 0; m < scene->meshes.lit.length; m++) {
+      mesh *current_mesh = &target_mesh_list->items[m];
+      material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
     }
   }
 
@@ -353,13 +383,21 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   // https://www.reddit.com/r/GraphicsProgramming/comments/1hgdy2m/question_about_variance_shadow_mapping_and_depth/
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = scene->lights.point.length;
-  uint32_t layer_count = LIGHT_POINT_VIEWS * point_light_length;
+  size_t directional_light_length = scene->lights.point.length;
 
-  // create shadow map texture
-  WGPUTexture shadow_texture = wgpuDeviceCreateTexture(
+  // do NOT compute if not point or directional light in the scene
+  // TODO: fallback white/dark texture if no directional light
+  if (point_light_length == 0 || directional_light_length == 0)
+    return;
+
+  uint32_t point_layer_count = (LIGHT_POINT_VIEWS * point_light_length);
+
+  // create point shadow map texture
+  WGPUTexture point_shadow_texture = wgpuDeviceCreateTexture(
       renderer->wgpu.device,
       &(WGPUTextureDescriptor){
-          .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, layer_count},
+          .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE,
+                                 point_layer_count},
           .format = WGPUTextureFormat_Depth32Float,
           .usage = WGPUTextureUsage_RenderAttachment |
                    WGPUTextureUsage_TextureBinding,
@@ -370,27 +408,56 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
 
   // populate scene point light texture_view
   scene->lights.point.shadow_texture = wgpuTextureCreateView(
-      shadow_texture, &(WGPUTextureViewDescriptor){
-                          .label = "Shadow global texture view",
-                          .format = WGPUTextureFormat_Depth32Float,
-                          .dimension = WGPUTextureViewDimension_2DArray,
-                          .mipLevelCount = 1,
-                          .baseMipLevel = 0,
-                          .arrayLayerCount = layer_count,
-                          .baseArrayLayer = 0,
-                          .aspect = WGPUTextureAspect_DepthOnly,
-                      });
+      point_shadow_texture,
+      &(WGPUTextureViewDescriptor){
+          .label = "Point Light Shadow: global texture view",
+          .format = WGPUTextureFormat_Depth32Float,
+          .dimension = WGPUTextureViewDimension_2DArray,
+          .mipLevelCount = 1,
+          .baseMipLevel = 0,
+          .arrayLayerCount = point_layer_count,
+          .baseArrayLayer = 0,
+          .aspect = WGPUTextureAspect_DepthOnly,
+      });
+
+  // create point shadow map texture
+  WGPUTexture directional_shadow_texture = wgpuDeviceCreateTexture(
+      renderer->wgpu.device,
+      &(WGPUTextureDescriptor){
+          .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE,
+                                 directional_light_length},
+          .format = WGPUTextureFormat_Depth32Float,
+          .usage = WGPUTextureUsage_RenderAttachment |
+                   WGPUTextureUsage_TextureBinding,
+          .dimension = WGPUTextureDimension_2D,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+      });
+
+  // populate scene point light texture_view
+  scene->lights.directional.shadow_texture = wgpuTextureCreateView(
+      directional_shadow_texture,
+      &(WGPUTextureViewDescriptor){
+          .label = "Directional Light Shadow: global texture view",
+          .format = WGPUTextureFormat_Depth32Float,
+          .dimension = WGPUTextureViewDimension_2DArray,
+          .mipLevelCount = 1,
+          .baseMipLevel = 0,
+          .arrayLayerCount = directional_light_length,
+          .baseArrayLayer = 0,
+          .aspect = WGPUTextureAspect_DepthOnly,
+      });
 
   // Generate Shadow maps
-  renderer_create_shadow_map(renderer, scene, shadow_texture);
+  renderer_create_shadow_map(renderer, scene, point_shadow_texture,
+                             directional_shadow_texture);
 
   // Transfer depth texture array to each meshes default shader
   for (int m = 0; m < scene->meshes.lit.length; m++) {
     mesh *current_mesh = &scene->meshes.lit.items[m];
 
-    // bind shadow texture (view) and sampler to the mesh shader
-    material_shadow_bind_maps(current_mesh,
-                              &scene->lights.point.shadow_texture);
-
+    // bind point & directional light texture view + sampler to Textue Shader
+    material_texure_bind_shadow_maps(current_mesh, scene->lights.point.shadow_texture,
+                              scene->lights.directional.shadow_texture);
   }
 }

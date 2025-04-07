@@ -1,6 +1,7 @@
 #ifndef _MATERIAL_H_
 #define _MATERIAL_H_
 #include "mesh.h"
+#include "webgpu/webgpu.h"
 
 /**
    ============================= MATERIAL API ================================
@@ -62,11 +63,17 @@ void material_texture_add_texture_view(
 
 void material_texture_add_sampler(mesh *,
                                   const ShaderCreateSamplerDescriptor *);
+void material_texure_bind_shadow_maps(mesh *, WGPUTextureView, WGPUTextureView);
 
 // === SHADOW SHADER ===
 
+typedef struct {
+  WGPUTextureView *texture_view;
+  uint8_t sampler_binding;
+  uint8_t texture_binding;
+} MaterialShadowBindMapsDescriptor;
+
 // bind shadow specicif view
 void material_shadow_bind_views(mesh *, mat4 *);
-void material_shadow_bind_maps(mesh *, WGPUTextureView *);
 
 #endif

@@ -1,13 +1,14 @@
 #ifndef _LIGHT_H_
 #define _LIGHT_H_
 
-#include <cglm/cglm.h>
 #include "shader.h"
 #include "webgpu/webgpu.h"
+#include <cglm/cglm.h>
 #include <stdint.h>
 
 #define LIGHT_MAX_CAPACITY 16
 #define LIGHT_POINT_VIEWS 6
+#define LIGHT_DIRECTIONAL_VIEW 1
 #define SHADOW_MAP_SIZE 512
 
 // core type
@@ -23,12 +24,10 @@ typedef struct {
 } AmbientLight;
 
 typedef struct {
-
   vec3 position;
   vec3 target;
   vec3 color;
   float intensity;
-
 } DirectionalLight;
 
 // descriptor type
@@ -73,6 +72,7 @@ typedef struct {
   float _padding_2;
   vec3 color;
   float intensity;
+  mat4 view;
 } __attribute__((aligned(16))) DirectionalLightUniform;
 
 // light uniforms
@@ -94,7 +94,7 @@ typedef struct {
 typedef struct {
   mat4 views[LIGHT_POINT_VIEWS];
   uint8_t length;
-} PointLightViews;
+} LightViews;
 
 // light list
 typedef struct {
@@ -123,5 +123,6 @@ void light_create_point(PointLight *, PointLightDescriptor *);
 void light_create_directional(DirectionalLight *, DirectionalLightDescriptor *);
 void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
 
-PointLightViews light_point_views(vec3, viewport *);
+LightViews light_point_views(vec3);
+LightViews light_directional_view(vec3);
 #endif

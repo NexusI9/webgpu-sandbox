@@ -44,7 +44,7 @@ static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
 
-static vec3 LIGHT_POSITION = {0.0f, 0.0f, 4.0f};
+static vec3 LIGHT_POSITION = {0.0f, 0.0f, -4.0f};
 void init_scene() {
 
   // set viewport
@@ -80,7 +80,7 @@ void init_scene() {
   // set light
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
-                                         .intensity = 3.0f,
+                                         .intensity = 2.0f,
                                          .position =
                                              {
                                                  LIGHT_POSITION[0],
@@ -89,12 +89,12 @@ void init_scene() {
                                              },
                                      });
 
-
-  /*scene_add_point_light(&main_scene, &(PointLightDescriptor){
-                                         .color = {1.0f, 1.0f, 1.0f},
-                                         .intensity = 2.0f,
-                                         .position = {-3.0f, 3.0f, -2.0f},
-                                     });*/
+  scene_add_directional_light(&main_scene, &(DirectionalLightDescriptor){
+                                               .color = {1.0f, 1.0f, 1.0f},
+                                               .intensity = 2.0f,
+                                               .target = {-3.0f, 0.0f, -3.0f},
+                                               .position = {0.0f, 3.0f, 0.0f},
+                                           });
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
@@ -203,11 +203,7 @@ int main(int argc, const char *argv[]) {
   // mesh_add_child(&child_cube_A, &parent_cube);
   // mesh_add_child(&child_cube_B, &parent_cube);
   */
-  add_cube((vec3){
-      LIGHT_POSITION[0],
-      LIGHT_POSITION[1],
-      LIGHT_POSITION[2],
-  });
+  //add_cube((vec3){LIGHT_POSITION[0], LIGHT_POSITION[1], LIGHT_POSITION[2]});
   // add_cube((vec3){1.0f, 0.0f, 0.0f});
 
   import_cube();

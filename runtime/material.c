@@ -1,8 +1,10 @@
 #include "material.h"
 #include "camera.h"
+#include "light.h"
 #include "mesh.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 #include <stdlib.h>
 
 /**
@@ -103,8 +105,10 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
       *uniform = (DirectionalLightUniform){0};
       uniform->intensity = light->intensity;
       glm_vec3_copy(light->color, uniform->color);
-      glm_vec3_copy(light->position, uniform->position);
       glm_vec3_copy(light->target, uniform->target);
+
+      LightViews directional_view = light_directional_view(light->target);
+      glm_mat4_copy(directional_view.views[0], uniform->view);
     }
   }
 
@@ -122,14 +126,9 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
       glm_vec3_copy(light->position, uniform->position);
 
       // copy 6 points views for shader depth comparison
-      PointLightViews points_views =
-          light_point_views(light->position, viewport);
-      for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++) {
-        // glm_mat4_transpose(points_views.views[v]);
+      LightViews points_views = light_point_views(light->position);
+      for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++)
         glm_mat4_copy(points_views.views[v], uniform->views[v]);
-        // print_mat4(uniform->views[v]);
-        // printf("----\n");
-      }
     }
   }
 
@@ -218,46 +217,70 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 /**
    Bind the shadow maps and sampler to the default shader
  */
-void material_shadow_bind_maps(mesh *mesh, WGPUTextureView *shadow_texture) {
+void material_texure_bind_shadow_maps(
+    mesh *mesh, WGPUTextureView point_texture_view,
+    WGPUTextureView directional_texture_view) {
 
   // add multi-layered texture to default shader
   shader_add_texture_view(
       mesh_shader_texture(mesh),
       &(ShaderCreateTextureViewDescriptor){
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-          .entry_count = 1,
+          .entry_count = 2,
           .group_index = 2,
-          .entries = (ShaderBindGroupTextureViewEntry[]){{
-              .binding = 3,
-              .texture_view = *shadow_texture,
-              .dimension = WGPUTextureViewDimension_2DArray,
-              .format = WGPUTextureFormat_Depth32Float,
-              .sample_type = WGPUTextureSampleType_Depth,
-          }},
+          .entries =
+              (ShaderBindGroupTextureViewEntry[]){
+                  {
+                      .binding = 3,
+                      .texture_view = point_texture_view,
+                      .dimension = WGPUTextureViewDimension_2DArray,
+                      .format = WGPUTextureFormat_Depth32Float,
+                      .sample_type = WGPUTextureSampleType_Depth,
+                  },
+                  {
+                      .binding = 5,
+                      .texture_view = directional_texture_view,
+                      .dimension = WGPUTextureViewDimension_2DArray,
+                      .format = WGPUTextureFormat_Depth32Float,
+                      .sample_type = WGPUTextureSampleType_Depth,
+                  },
+              },
       });
 
   // add related sampler to default shader
-  // NOTE: With depth texture need to use a special sampler type: Comparison
+  // NOTE: With depth texture need to use a special sampler type:
+  // Comparison
+
+  ShaderBindGroupSamplerEntry point_sampler = {
+      .binding = 4,
+      .type = WGPUSamplerBindingType_Comparison,
+      .addressModeU = WGPUAddressMode_ClampToEdge,
+      .addressModeV = WGPUAddressMode_ClampToEdge,
+      .addressModeW = WGPUAddressMode_ClampToEdge,
+      .magFilter = WGPUFilterMode_Linear,
+      .minFilter = WGPUFilterMode_Linear,
+      .compare = WGPUCompareFunction_Less,
+  };
+
+  ShaderBindGroupSamplerEntry directional_sampler = point_sampler;
+  directional_sampler.binding += 2;
+
   shader_add_sampler(
       mesh_shader_texture(mesh),
       &(ShaderCreateSamplerDescriptor){
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-          .entry_count = 1,
+          .entry_count = 2,
           .group_index = 2,
-          .entries = (ShaderBindGroupSamplerEntry[]){{
-              .binding = 4,
-              .type = WGPUSamplerBindingType_Comparison,
-              .addressModeU = WGPUAddressMode_ClampToEdge,
-              .addressModeV = WGPUAddressMode_ClampToEdge,
-              .addressModeW = WGPUAddressMode_ClampToEdge,
-              .magFilter = WGPUFilterMode_Linear,
-              .minFilter = WGPUFilterMode_Linear,
-              .compare = WGPUCompareFunction_Less,
-          }},
+          .entries =
+              (ShaderBindGroupSamplerEntry[]){
+                  point_sampler,
+                  directional_sampler,
+              },
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_shadow_bind_maps(&mesh->children.items[c], shadow_texture);
+    material_texure_bind_shadow_maps(
+        &mesh->children.items[c], point_texture_view, directional_texture_view);
 }
 
 /**
