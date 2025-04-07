@@ -45,6 +45,7 @@ static void setup_triangle();
 static void init_scene();
 
 static vec3 LIGHT_POSITION = {0.0f, 0.0f, -4.0f};
+static vec3 LIGHT_TARGET = {0.0f, 0.0f, 4.0f};
 void init_scene() {
 
   // set viewport
@@ -67,9 +68,30 @@ void init_scene() {
   main_scene = scene_create(camera, viewport);
   // TODO: check if possible to set the mode in the descriptor
 
+  // DEBUG
+
+  float distance = 70.0;
+  vec3 direction = {-1.0f, -1.0f, -1.0f};
+  glm_normalize(direction);
+  glm_vec3_scale(direction, distance, direction);
+
+  vec3 light_position;
+  glm_vec3_sub(LIGHT_TARGET, direction, light_position);
+
+  // ENDEBUG
+
   // init camera position
-  camera_look_at(&main_scene.camera, (vec3){20.0f, 20.0f, 0.0f},
-                 (vec3){0.0f, 0.0f, 0.0f});
+  camera_look_at(&main_scene.camera,
+                 (vec3){
+                     light_position[0],
+                     light_position[1],
+                     light_position[2],
+                 },
+                 (vec3){
+                     LIGHT_TARGET[0],
+                     LIGHT_TARGET[1],
+                     LIGHT_TARGET[2],
+                 });
 
   printf("combined view:\n");
   mat4 combined;
@@ -92,7 +114,12 @@ void init_scene() {
   scene_add_directional_light(&main_scene, &(DirectionalLightDescriptor){
                                                .color = {1.0f, 1.0f, 1.0f},
                                                .intensity = 2.0f,
-                                               .target = {-3.0f, 0.0f, -3.0f},
+                                               .target =
+                                                   {
+                                                       LIGHT_TARGET[0],
+                                                       LIGHT_TARGET[1],
+                                                       LIGHT_TARGET[2],
+                                                   },
                                                .position = {0.0f, 3.0f, 0.0f},
                                            });
 
@@ -203,8 +230,8 @@ int main(int argc, const char *argv[]) {
   // mesh_add_child(&child_cube_A, &parent_cube);
   // mesh_add_child(&child_cube_B, &parent_cube);
   */
-  //add_cube((vec3){LIGHT_POSITION[0], LIGHT_POSITION[1], LIGHT_POSITION[2]});
-  // add_cube((vec3){1.0f, 0.0f, 0.0f});
+  // add_cube((vec3){LIGHT_POSITION[0], LIGHT_POSITION[1], LIGHT_POSITION[2]});
+  //  add_cube((vec3){1.0f, 0.0f, 0.0f});
 
   import_cube();
   add_grid();

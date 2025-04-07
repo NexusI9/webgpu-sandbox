@@ -17,11 +17,16 @@ struct VertexOut {
                                                 @location(4) vDepth : f32,
 };
 
+struct Mesh { // 80B
+  model : mat4x4<f32>, position : vec4<f32>,
+}
+
 @group(0) @binding(0) var<uniform> light_view_projection : mat4x4<f32>;
+@group(0) @binding(1) var<uniform> uModel : Mesh;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
   var out : VertexOut;
-  let pos = light_view_projection * vec4<f32>(input.aPos, 1.0f);
+  let pos = light_view_projection * uModel.model * vec4<f32>(input.aPos, 1.0f);
   out.vPosition = pos;
   out.vDepth = pos.z / pos.w; // Normalized depth (NDC)
   return out;

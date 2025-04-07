@@ -194,21 +194,28 @@ void material_clear_bindings(mesh *mesh, MeshDrawMethod method) {
  */
 void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 
-  shader_add_uniform(&mesh->shader.shadow,
-                     &(ShaderCreateUniformDescriptor){
-                         .group_index = 0,
-                         .entry_count = 1,
-                         .visibility = WGPUShaderStage_Vertex,
-                         .entries =
-                             (ShaderBindGroupUniformEntry[]){
-                                 {
-                                     .binding = 0,
-                                     .data = view,
-                                     .size = sizeof(mat4),
-                                     .offset = 0,
-                                 },
-                             },
-                     });
+  MeshUniform uModel = mesh_model_uniform(mesh);
+
+  shader_add_uniform(
+      &mesh->shader.shadow,
+      &(ShaderCreateUniformDescriptor){
+          .group_index = 0,
+          .entry_count = 2,
+          .visibility = WGPUShaderStage_Vertex,
+          .entries =
+              (ShaderBindGroupUniformEntry[]){{
+                                                  .binding = 0,
+                                                  .data = view,
+                                                  .size = sizeof(mat4),
+                                                  .offset = 0,
+                                              },
+                                              {
+                                                  .binding = 1,
+                                                  .data = &uModel,
+                                                  .size = sizeof(MeshUniform),
+                                                  .offset = 0,
+                                              }},
+      });
 
   for (size_t c = 0; c < mesh->children.length; c++)
     material_shadow_bind_views(&mesh->children.items[c], view);

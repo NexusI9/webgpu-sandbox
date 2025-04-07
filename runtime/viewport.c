@@ -26,8 +26,8 @@ void viewport_update_projection(viewport *viewport) {
   float near = viewport->near_clip;
   float aspect = viewport->aspect;
   float f = 1.0 / tan(fov * 0.5f);
-  glm_perspective(fov, aspect, near, far, viewport->projection);
 
+  glm_perspective(fov, aspect, near, far, viewport->projection);
 }
 
 ViewportUniform viewport_uniform(viewport *viewport) {

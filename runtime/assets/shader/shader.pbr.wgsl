@@ -256,8 +256,8 @@ fn directional_shadow_position(world_position : vec3<f32>,
   let shadow_clip = light_view * vec4<f32>(world_position, 1.0f);
 
   // convert to NDC coordinates
-  let shadow_ndc =
-      shadow_clip.xyz / shadow_clip.w * 0.5 + 0.5; // convert [-1;1] to [0;1]
+  var shadow_ndc = shadow_clip.xyz / shadow_clip.w;
+  shadow_ndc = shadow_ndc * 0.5f + 0.5f; // convert [-1;1] to [0;1]
 
   // convert to UV (0-1 range)
   let shadow_uv = shadow_ndc.xy;
@@ -339,9 +339,6 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
   var emissive = textureSample(emissive_texture, emissive_sampler, vUv);
 
   let material = create_material(albedo, metallic, normal, occlusion, emissive);
-
-  // let shadow_factor = point_shadow_factor(vFrag);
-  // let shadow_color = mix(vec3<f32>(0.2f), vec3<f32>(1.0f), shadow_factor);
 
   let coord = vec2<i32>(vUv);
 

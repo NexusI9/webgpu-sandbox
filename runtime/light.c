@@ -161,13 +161,14 @@ LightViews light_directional_view(vec3 light_target) {
     glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, up);
 
   mat4 projection;
-  float ortho_size = 10.0f;
+  float ortho_size = 50.0f;
   glm_ortho(-ortho_size, ortho_size, -ortho_size, ortho_size, 0.1f, 100.0f,
             projection);
 
   // glm_perspective(glm_rad(100.0f), 1.0f, 0.1f, 100.0f, projection);
-  float distance = 40.0;
+  float distance = 70.0;
   vec3 direction = {-1.0f, -1.0f, -1.0f};
+  glm_normalize(direction);
   glm_vec3_scale(direction, distance, direction);
 
   vec3 light_position;

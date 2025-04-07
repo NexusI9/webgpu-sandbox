@@ -254,7 +254,7 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
                    |                                     |
                    |		 	 .-------------------------------.
                    |			 |        1.Renderpass           |
-                   |			 '-------------------------------.
+                   |			 '-------------------------------'
                    |                         Render to specific layer
                    |
                    |
