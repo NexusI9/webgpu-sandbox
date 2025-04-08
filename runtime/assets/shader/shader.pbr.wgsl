@@ -271,23 +271,22 @@ fn directional_shadow_position(world_position : vec3<f32>,
 fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.0002f;
+  var bias : f32 = 0.005f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
 
     let light_position = point_light_list.items[l].position;
 
-    let frag_to_light =  frag_position - light_position;
+    let frag_to_light = frag_position - light_position;
     let shadow_direction = normalize(frag_to_light);
 
     let distance = length(frag_to_light);
-    let norm_distance = distance * 0.5f; // normalize to [0,1]
+    let norm_distance = distance / 100.0f; // normalize to [0,1]
 
     let shadow_depth = norm_distance - bias;
 
-    return textureSampleCompare(point_shadow_maps, point_shadow_sampler,
-                                shadow_direction, l, norm_distance);
-    // return shadow_depth;
+    factor = textureSampleCompare(point_shadow_maps, point_shadow_sampler,
+                                  shadow_direction, l, shadow_depth);
   }
 
   return factor;
@@ -372,7 +371,7 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   return vec4<f32>(point_shadow, 1.0);
   // return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
-  //  return vec4<f32>(
-  //      directional_shadow_position(vFrag,
-  //      directional_light_list.items[0].view), 1.0f);
+  //   return vec4<f32>(
+  //       directional_shadow_position(vFrag,
+  //       directional_light_list.items[0].view), 1.0f);
 }

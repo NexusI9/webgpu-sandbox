@@ -265,6 +265,7 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
 
    */
 
+  printf("rendering to layer: %u \n", layer);
   WGPUTextureView layer_texture_view = wgpuTextureCreateView(
       texture, &(WGPUTextureViewDescriptor){
                    .label = "Shadow per layer texture view",
@@ -331,7 +332,6 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
       // 2. Render scene (create shadow render pass to texture layer)
       size_t layer = p * light_views.length + v;
       renderer_shadow_to_texture(scene, point_shadow_texture, layer,
-
                                  &renderer->wgpu.device, shadow_encoder);
 
       // 3. Clear meshes bind group
@@ -409,6 +409,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
           .sampleCount = 1,
       });
 
+  printf("point layer count total: %u\n", point_layer_count);
   // populate scene point light texture_view
   scene->lights.point.shadow_texture = wgpuTextureCreateView(
       point_shadow_texture,

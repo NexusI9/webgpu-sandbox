@@ -26,6 +26,12 @@ struct Mesh { // 80B
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
   var out : VertexOut;
   let pos = light_view_projection * uModel.model * vec4<f32>(input.aPos, 1.0f);
+
   out.vPosition = pos;
   return out;
+}
+
+@fragment fn fg_main(in : VertexOut) -> @location(0) vec4<f32> {
+  let color = in.vPosition.xyz * 0.5f + 0.5f;
+  return vec4<f32>(color, 1.0f);
 }

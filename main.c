@@ -45,7 +45,7 @@ static void setup_triangle();
 static void init_scene();
 
 static vec3 LIGHT_POSITION = {0.0f, 6.0f, 6.0f};
-static vec3 POINT_LIGHT = {2.0f, 0.0f, 1.0f};
+static vec3 POINT_LIGHT = {3.0f, 0.0f, 1.0f};
 static vec3 LIGHT_TARGET = {0.0f, 0.0f, -3.0f};
 void init_scene() {
 
@@ -131,7 +131,7 @@ void init_scene() {
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
-                                           .intensity = 0.2f,
+                                           .intensity = 0.3f,
                                        });
 }
 

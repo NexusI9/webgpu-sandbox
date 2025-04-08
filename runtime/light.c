@@ -115,8 +115,8 @@ LightViews light_point_views(vec3 light_position) {
   vec3 directions[LIGHT_POINT_VIEWS] = {
       {1.0f, 0.0f, 0.0f},  // +x (right)
       {-1.0f, 0.0f, 0.0f}, // -x (left)
-      {0.0f, 1.0f, 0.0f},  // +y (top)
-      {0.0f, -1.0f, 0.0f}, // -y (bottom)
+      {0.0f, 1.0f, 0.0f}, // +y (top)
+      {0.0f, -1.0f, 0.0f},  // -y (bottom)
       {0.0f, 0.0f, 1.0f},  // +z (front)
       {0.0f, 0.0f, -1.0f}, // -z (back)
   };
