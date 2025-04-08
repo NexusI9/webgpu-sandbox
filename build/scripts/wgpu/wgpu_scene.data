@@ -1024,7 +1024,7 @@ struct DirectionalLightStorage {
 @group(2) @binding(1) var<uniform> directional_light_list
     : DirectionalLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
-@group(2) @binding(3) var point_shadow_maps : texture_depth_2d_array;
+@group(2) @binding(3) var point_shadow_maps : texture_depth_cube_array;
 @group(2) @binding(4) var point_shadow_sampler : sampler_comparison;
 @group(2) @binding(5) var directional_shadow_maps : texture_depth_2d_array;
 @group(2) @binding(6) var directional_shadow_sampler : sampler_comparison;
@@ -1173,20 +1173,6 @@ fn directional_shadow_position(world_position : vec3<f32>,
   return vec3<f32>(shadow_uv, shadow_depth);
 }
 
-// For point lights since the view opposite direction is fully black, we need to
-// combine the two opposite side (ex top + bottom) before multiplying it to the
-// final factor else they cancel them out
-fn directional_shadow_combined_factor(frag_position : vec3<f32>,
-                                      view : mat4x4<f32>, layer : u32,
-                                      bias : f32) -> f32 {
-  let shadow_position = directional_shadow_position(frag_position, view);
-  let shadow_depth = shadow_position.z - bias;
-
-  // let shadow_depth = length(frag_position - light_pos);
-  return textureSampleCompare(point_shadow_maps, point_shadow_sampler,
-                              shadow_position.xy, layer, shadow_depth);
-}
-
 // Combine and compute Point light shadow
 fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
@@ -1194,21 +1180,20 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
   var bias : f32 = 0.0002f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
-    for (var v : u32 = 0u; v < POINT_LIGHT_VIEWS; v += 2u) {
 
-      let layer : u32 = l * POINT_LIGHT_VIEWS + v;
+    let light_position = point_light_list.items[l].position;
 
-      let factor_a = directional_shadow_combined_factor(
-          frag_position, point_light_list.items[l].views[v], layer, bias);
+    let frag_to_light =  frag_position - light_position;
+    let shadow_direction = normalize(frag_to_light);
 
-      let factor_b = directional_shadow_combined_factor(
-          frag_position, point_light_list.items[l].views[v + 1u], layer + 1u,
-          bias);
+    let distance = length(frag_to_light);
+    let norm_distance = distance * 0.5f; // normalize to [0,1]
 
-      let final_factor = factor_a + factor_b;
+    let shadow_depth = norm_distance - bias;
 
-      factor *= final_factor;
-    }
+    return textureSampleCompare(point_shadow_maps, point_shadow_sampler,
+                                shadow_direction, l, norm_distance);
+    // return shadow_depth;
   }
 
   return factor;
@@ -1231,7 +1216,7 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
                                   directional_shadow_sampler,
                                   shadow_position.xy, l, shadow_depth);
 
-    //factor = shadow_depth;
+    // factor = shadow_depth;
   }
 
   return factor;
@@ -1291,10 +1276,11 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let directional_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                                directional_shadow_factor(vFrag));
 
-  return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
-  // return vec4<f32>(
-  //     directional_shadow_position(vFrag,
-  //     directional_light_list.items[0].view), 1.0f);
+  return vec4<f32>(point_shadow, 1.0);
+  // return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
+  //  return vec4<f32>(
+  //      directional_shadow_position(vFrag,
+  //      directional_light_list.items[0].view), 1.0f);
 }
 // attribute/uniform decls
 struct VertexIn {

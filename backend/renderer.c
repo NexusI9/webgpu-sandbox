@@ -269,7 +269,7 @@ void renderer_shadow_to_texture(scene *scene, WGPUTexture texture,
       texture, &(WGPUTextureViewDescriptor){
                    .label = "Shadow per layer texture view",
                    .format = WGPUTextureFormat_Depth32Float,
-                   .dimension = WGPUTextureViewDimension_2DArray,
+                   .dimension = WGPUTextureViewDimension_2D,
                    .baseArrayLayer = layer,
                    .arrayLayerCount = 1,
                    .mipLevelCount = 1,
@@ -331,6 +331,7 @@ void renderer_create_shadow_map(renderer *renderer, scene *scene,
       // 2. Render scene (create shadow render pass to texture layer)
       size_t layer = p * light_views.length + v;
       renderer_shadow_to_texture(scene, point_shadow_texture, layer,
+
                                  &renderer->wgpu.device, shadow_encoder);
 
       // 3. Clear meshes bind group
@@ -397,6 +398,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   WGPUTexture point_shadow_texture = wgpuDeviceCreateTexture(
       renderer->wgpu.device,
       &(WGPUTextureDescriptor){
+          .label = "Point Light shadow texture",
           .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE,
                                  point_layer_count},
           .format = WGPUTextureFormat_Depth32Float,
@@ -413,7 +415,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
       &(WGPUTextureViewDescriptor){
           .label = "Point Light Shadow: global texture view",
           .format = WGPUTextureFormat_Depth32Float,
-          .dimension = WGPUTextureViewDimension_2DArray,
+          .dimension = WGPUTextureViewDimension_CubeArray,
           .mipLevelCount = 1,
           .baseMipLevel = 0,
           .arrayLayerCount = point_layer_count,
@@ -425,6 +427,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   WGPUTexture directional_shadow_texture = wgpuDeviceCreateTexture(
       renderer->wgpu.device,
       &(WGPUTextureDescriptor){
+          .label = "Directional Light shadow texture",
           .size = (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE,
                                  directional_light_length},
           .format = WGPUTextureFormat_Depth32Float,

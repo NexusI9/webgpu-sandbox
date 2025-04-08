@@ -241,7 +241,7 @@ void material_texure_bind_shadow_maps(
                   {
                       .binding = 3,
                       .texture_view = point_texture_view,
-                      .dimension = WGPUTextureViewDimension_2DArray,
+                      .dimension = WGPUTextureViewDimension_CubeArray,
                       .format = WGPUTextureFormat_Depth32Float,
                       .sample_type = WGPUTextureSampleType_Depth,
                   },

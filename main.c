@@ -45,6 +45,7 @@ static void setup_triangle();
 static void init_scene();
 
 static vec3 LIGHT_POSITION = {0.0f, 6.0f, 6.0f};
+static vec3 POINT_LIGHT = {2.0f, 0.0f, 1.0f};
 static vec3 LIGHT_TARGET = {0.0f, 0.0f, -3.0f};
 void init_scene() {
 
@@ -105,9 +106,9 @@ void init_scene() {
                                          .intensity = 2.0f,
                                          .position =
                                              {
-                                                 LIGHT_POSITION[0],
-                                                 LIGHT_POSITION[1],
-                                                 LIGHT_POSITION[2],
+                                                 POINT_LIGHT[0],
+                                                 POINT_LIGHT[1],
+                                                 POINT_LIGHT[2],
                                              },
                                      });
 
@@ -237,7 +238,11 @@ int main(int argc, const char *argv[]) {
   */
   //  add_cube((vec3){1.0f, 0.0f, 0.0f});
 
-  add_cube((vec3){LIGHT_POSITION[0], LIGHT_POSITION[1], LIGHT_POSITION[2]});
+  add_cube((vec3){
+      POINT_LIGHT[0],
+      POINT_LIGHT[1],
+      POINT_LIGHT[2],
+  });
   import_cube();
   add_grid();
 
