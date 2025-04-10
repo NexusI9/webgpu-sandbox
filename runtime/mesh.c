@@ -1,11 +1,11 @@
 #include "mesh.h"
 #include "../backend/buffer.h"
-#include <cglm/cglm.h>
 #include "../utils/system.h"
 #include "light.h"
 #include "pipeline.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
+#include <cglm/cglm.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -54,8 +54,11 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
   if (md->index.length > 0)
     mesh_set_vertex_index(mesh, &md->index);
 
-  // init model matrix
+  // init model matrix and transforms
   glm_mat4_identity(mesh->model);
+  glm_vec3_copy(GLM_VEC3_ZERO, mesh->position);
+  glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation);
+  glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
   // init shadow shader by default
   mesh_init_shadow_shader(mesh);
@@ -343,19 +346,22 @@ void mesh_init_shadow_shader(mesh *mesh) {
                 });
 
   // edit shader pipeline (vertex only)
-  pipeline_set_fragment(shader_pipeline(shadow_shader),
+  /*pipeline_set_fragment(shader_pipeline(shadow_shader),
                         &(PipelineFragmentDescriptor){
                             .fragment_state = 0,
                             .color_state = 0,
                             .blend_state = 0,
-                        });
+                            });*/
 
-  pipeline_set_stencil(shader_pipeline(shadow_shader),
+  /*pipeline_set_stencil(shader_pipeline(shadow_shader),
                        (WGPUDepthStencilState){
                            .format = WGPUTextureFormat_Depth32Float,
                            .depthWriteEnabled = true,
                            .depthCompare = WGPUCompareFunction_Less,
-                       });
+                       });*/
+
+  pipeline_set_stencil(shader_pipeline(shadow_shader),
+                       (WGPUDepthStencilState){0});
 
   for (size_t c = 0; c < mesh->children.length; c++)
     mesh_init_shadow_shader(&mesh->children.items[c]);

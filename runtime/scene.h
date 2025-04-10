@@ -12,8 +12,8 @@
 // due to depth test, need to write fully solid mesh first and then
 // transparent meshes
 typedef struct {
-  MeshList lit;
-  MeshList unlit;
+  MeshIndexedList lit;
+  MeshIndexedList unlit;
 } SceneMeshList;
 
 typedef struct {

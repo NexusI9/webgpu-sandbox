@@ -53,7 +53,13 @@ typedef struct {
   size_t *index;
   size_t capacity;
   size_t length;
-} MeshList;
+} MeshIndexedList;
+
+typedef struct {
+  struct mesh *items;
+  size_t capacity;
+  size_t length;
+} MeshList; 
 
 // Core
 typedef struct mesh {
@@ -90,7 +96,7 @@ typedef struct mesh {
 
   // hierarchy
   struct mesh *parent;
-  MeshList children;
+  MeshIndexedList children;
 
 } mesh;
 
@@ -124,4 +130,5 @@ MeshUniform mesh_model_uniform(mesh *);
 shader *mesh_shader_texture(mesh *);
 shader *mesh_shader_shadow(mesh *);
 shader *mesh_select_shader(mesh *, MeshDrawMethod);
+
 #endif

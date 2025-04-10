@@ -9,12 +9,12 @@
 #include <assert.h>
 #include <stdio.h>
 
-static void scene_init_mesh_list(MeshList *);
+static void scene_init_mesh_list(MeshIndexedList *);
 static void scene_init_light_list(scene *);
-static mesh *scene_new_mesh(MeshList *);
+static mesh *scene_new_mesh(MeshIndexedList *);
 static void scene_draw_mesh_list(scene *, MeshDrawMethod,
-                                 WGPURenderPassEncoder *, MeshList *);
-static void scene_build_mesh_list(scene *, MeshDrawMethod, MeshList *);
+                                 WGPURenderPassEncoder *, MeshIndexedList *);
+static void scene_build_mesh_list(scene *, MeshDrawMethod, MeshIndexedList *);
 
 scene scene_create(camera camera, viewport viewport) {
 
@@ -83,7 +83,7 @@ void scene_build(scene *scene, MeshDrawMethod draw_method) {
 }
 
 void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
-                           MeshList *mesh_list) {
+                           MeshIndexedList *mesh_list) {
 
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = &mesh_list->items[i];
@@ -92,7 +92,7 @@ void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
   }
 }
 
-mesh *scene_new_mesh(MeshList *mesh_list) {
+mesh *scene_new_mesh(MeshIndexedList *mesh_list) {
 
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow
@@ -109,7 +109,7 @@ mesh *scene_new_mesh(MeshList *mesh_list) {
 
 void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,
                           WGPURenderPassEncoder *render_pass,
-                          MeshList *mesh_list) {
+                          MeshIndexedList *mesh_list) {
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
@@ -119,7 +119,7 @@ void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,
   }
 }
 
-void scene_init_mesh_list(MeshList *mesh_list) {
+void scene_init_mesh_list(MeshIndexedList *mesh_list) {
 
   mesh_list->items = malloc(SCENE_MESH_LIST_DEFAULT_CAPACITY * sizeof(mesh));
   mesh_list->length = 0;

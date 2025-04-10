@@ -45,7 +45,7 @@ static void setup_triangle();
 static void init_scene();
 
 static vec3 LIGHT_POSITION = {0.0f, 6.0f, 6.0f};
-static vec3 POINT_LIGHT = {3.0f, 0.0f, 1.0f};
+static vec3 POINT_LIGHT = {0.0f, 20.0f, 20.0f};
 static vec3 LIGHT_TARGET = {0.0f, 0.0f, -3.0f};
 void init_scene() {
 
@@ -244,7 +244,7 @@ int main(int argc, const char *argv[]) {
       POINT_LIGHT[2],
   });
   import_cube();
-  add_grid();
+  //add_grid();
 
   // Setup drawing pass may need to move it else where
   renderer_compute_shadow(&main_renderer, &main_scene);

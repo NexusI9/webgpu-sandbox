@@ -1,4 +1,5 @@
 #include "material.h"
+#include "../utils/system.h"
 #include "camera.h"
 #include "light.h"
 #include "mesh.h"
@@ -193,16 +194,25 @@ void material_clear_bindings(mesh *mesh, MeshDrawMethod method) {
    [light view] already multiplied together as there is currently no need to
    upload separate views in the shader.
  */
+
+static float id = 0.0f;
 void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 
   MeshUniform uModel = mesh_model_uniform(mesh);
 
+  id++;
+  float mod_id = id;
+  printf("[%p] Mesh model matrix: %s\n", &uModel, mesh->name);
+  printf("id: %f\n", id);
+  printf("uploading to shader: %p\n", mesh_shader_shadow(mesh));
+  print_mat4(uModel.model);
+
   shader_add_uniform(
-      &mesh->shader.shadow,
+      mesh_shader_shadow(mesh),
       &(ShaderCreateUniformDescriptor){
           .group_index = 0,
-          .entry_count = 2,
-          .visibility = WGPUShaderStage_Vertex,
+          .entry_count = 3,
+          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entries =
               (ShaderBindGroupUniformEntry[]){{
                                                   .binding = 0,
@@ -214,6 +224,12 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
                                                   .binding = 1,
                                                   .data = &uModel,
                                                   .size = sizeof(MeshUniform),
+                                                  .offset = 0,
+                                              },
+                                              {
+                                                  .binding = 2,
+                                                  .data = &id,
+                                                  .size = sizeof(float),
                                                   .offset = 0,
                                               }},
       });
@@ -242,15 +258,19 @@ void material_texure_bind_shadow_maps(
                       .binding = 3,
                       .texture_view = point_texture_view,
                       .dimension = WGPUTextureViewDimension_CubeArray,
-                      .format = WGPUTextureFormat_Depth32Float,
-                      .sample_type = WGPUTextureSampleType_Depth,
+                      .format =
+                          WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
+                      .sample_type =
+                          WGPUTextureSampleType_Float // WGPUTextureSampleType_Depth,
                   },
                   {
                       .binding = 5,
                       .texture_view = directional_texture_view,
                       .dimension = WGPUTextureViewDimension_2DArray,
-                      .format = WGPUTextureFormat_Depth32Float,
-                      .sample_type = WGPUTextureSampleType_Depth,
+                      .format =
+                          WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
+                      .sample_type =
+                          WGPUTextureSampleType_Float, // WGPUTextureSampleType_Depth,
                   },
               },
       });
@@ -261,13 +281,14 @@ void material_texure_bind_shadow_maps(
 
   ShaderBindGroupSamplerEntry point_sampler = {
       .binding = 4,
-      .type = WGPUSamplerBindingType_Comparison,
+      .type =
+          WGPUSamplerBindingType_Filtering, // WGPUSamplerBindingType_Comparison,
       .addressModeU = WGPUAddressMode_ClampToEdge,
       .addressModeV = WGPUAddressMode_ClampToEdge,
       .addressModeW = WGPUAddressMode_ClampToEdge,
       .magFilter = WGPUFilterMode_Linear,
       .minFilter = WGPUFilterMode_Linear,
-      .compare = WGPUCompareFunction_Less,
+      .compare = WGPUCompareFunction_Undefined, // WGPUCompareFunction_Less,
   };
 
   ShaderBindGroupSamplerEntry directional_sampler = point_sampler;

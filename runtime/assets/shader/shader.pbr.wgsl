@@ -118,10 +118,14 @@ struct DirectionalLightStorage {
 @group(2) @binding(1) var<uniform> directional_light_list
     : DirectionalLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
-@group(2) @binding(3) var point_shadow_maps : texture_depth_cube_array;
-@group(2) @binding(4) var point_shadow_sampler : sampler_comparison;
-@group(2) @binding(5) var directional_shadow_maps : texture_depth_2d_array;
-@group(2) @binding(6) var directional_shadow_sampler : sampler_comparison;
+//@group(2) @binding(3) var point_shadow_maps : texture_depth_cube_array;
+//@group(2) @binding(4) var point_shadow_sampler : sampler_comparison;
+//@group(2) @binding(5) var directional_shadow_maps : texture_depth_2d_array;
+//@group(2) @binding(6) var directional_shadow_sampler : sampler_comparison;
+@group(2) @binding(3) var point_shadow_maps : texture_cube_array<f32>;
+@group(2) @binding(4) var point_shadow_sampler : sampler;
+@group(2) @binding(5) var directional_shadow_maps : texture_2d_array<f32>;
+@group(2) @binding(6) var directional_shadow_sampler : sampler;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
@@ -268,9 +272,9 @@ fn directional_shadow_position(world_position : vec3<f32>,
 }
 
 // Combine and compute Point light shadow
-fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
+fn point_shadow_factor(frag_position : vec3<f32>) -> vec4<f32> {
 
-  var factor : f32 = 1.0f; // show by default
+  var factor : vec4<f32> = vec4<f32>(1.0f); // show by default
   var bias : f32 = 0.005f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
@@ -284,9 +288,10 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
     let norm_distance = distance / 100.0f; // normalize to [0,1]
 
     let shadow_depth = norm_distance - bias;
-
-    factor = textureSampleCompare(point_shadow_maps, point_shadow_sampler,
-                                  shadow_direction, l, shadow_depth);
+    factor = textureSample(point_shadow_maps, point_shadow_sampler,
+                           shadow_direction, l);
+    // factor = textureSampleCompare(point_shadow_maps, point_shadow_sampler,
+    //                               shadow_direction, l, shadow_depth);
   }
 
   return factor;
@@ -305,9 +310,9 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
     let shadow_depth = shadow_position.z - bias;
 
-    factor = textureSampleCompare(directional_shadow_maps,
-                                  directional_shadow_sampler,
-                                  shadow_position.xy, l, shadow_depth);
+    // factor = textureSampleCompare(directional_shadow_maps,
+    //                               directional_shadow_sampler,
+    //                               shadow_position.xy, l, shadow_depth);
 
     // factor = shadow_depth;
   }
@@ -363,13 +368,13 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var color = ambient + Lo;
 
-  let point_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
-                         point_shadow_factor(vFrag));
+  // let point_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
+  //                        point_shadow_factor(vFrag));
 
   let directional_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                                directional_shadow_factor(vFrag));
 
-  return vec4<f32>(point_shadow, 1.0);
+  return point_shadow_factor(vFrag);
   // return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
   //   return vec4<f32>(
   //       directional_shadow_position(vFrag,
