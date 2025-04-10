@@ -16,7 +16,7 @@ struct VertexOut {
                            @location(3) vFrag : vec4<f32>,
 };
 
-struct Mesh { // 80B
+struct Mesh {
   model : mat4x4<f32>, position : vec4<f32>,
 }
 
@@ -32,10 +32,5 @@ struct Mesh { // 80B
 }
 
 @fragment fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
-  var ndc = in.vPosition.xyz / in.vPosition.w;
-  ndc = ndc * 0.5 + 0.5;
-  // let color = clamp(abs(ndc), vec4<f32>(0.0f), vec4<f32>(1.0f));
-  //  return vec4<f32>(vec3<f32>(in.vPosition.z), 1.0f);
-  return vec4<f32>(vec3<f32>(ndc), 1.0f);
-  // return vec4<f32>(in.vFrag.xyz, 1.0f);
+  return vec4<f32>(vec3<f32>(in.vPosition.z / in.vPosition.w), 1.0f);
 }
