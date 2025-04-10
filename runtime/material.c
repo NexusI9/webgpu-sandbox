@@ -233,6 +233,22 @@ void material_texure_bind_shadow_maps(
     mesh *mesh, WGPUTextureView point_texture_view,
     WGPUTextureView directional_texture_view) {
 
+  // NOTE: When enabling the shadow as color, make use to update the pbr shadow
+  // accordingly. By default the shader accept a Depth texture for shadow
+  // mapping comparison
+
+#ifdef RENDER_SHADOW_AS_COLOR
+  const WGPUTextureFormat texture_format = WGPUTextureFormat_BGRA8Unorm;
+  const WGPUTextureSampleType texture_sample_type = WGPUTextureSampleType_Float;
+  const WGPUSamplerBindingType sample_type = WGPUSamplerBindingType_Filtering;
+  const WGPUCompareFunction sample_compare = WGPUCompareFunction_Undefined;
+#else
+  const WGPUTextureFormat texture_format = WGPUTextureFormat_Depth32Float;
+  const WGPUTextureSampleType texture_sample_type = WGPUTextureSampleType_Depth;
+  const WGPUSamplerBindingType sample_type = WGPUSamplerBindingType_Comparison;
+  const WGPUCompareFunction sample_compare = WGPUCompareFunction_Less;
+#endif
+
   // add multi-layered texture to default shader
   shader_add_texture_view(
       mesh_shader_texture(mesh),
@@ -246,19 +262,15 @@ void material_texure_bind_shadow_maps(
                       .binding = 3,
                       .texture_view = point_texture_view,
                       .dimension = WGPUTextureViewDimension_CubeArray,
-                      .format =
-                          WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
-                      .sample_type =
-                          WGPUTextureSampleType_Float // WGPUTextureSampleType_Depth,
+                      .format = texture_format,
+                      .sample_type = texture_sample_type,
                   },
                   {
                       .binding = 5,
                       .texture_view = directional_texture_view,
                       .dimension = WGPUTextureViewDimension_2DArray,
-                      .format =
-                          WGPUTextureFormat_BGRA8Unorm, // WGPUTextureFormat_Depth32Float,
-                      .sample_type =
-                          WGPUTextureSampleType_Float, // WGPUTextureSampleType_Depth,
+                      .format = texture_format,
+                      .sample_type = texture_sample_type,
                   },
               },
       });
@@ -269,14 +281,13 @@ void material_texure_bind_shadow_maps(
 
   ShaderBindGroupSamplerEntry point_sampler = {
       .binding = 4,
-      .type =
-          WGPUSamplerBindingType_Filtering, // WGPUSamplerBindingType_Comparison,
+      .type = sample_type,
       .addressModeU = WGPUAddressMode_ClampToEdge,
       .addressModeV = WGPUAddressMode_ClampToEdge,
       .addressModeW = WGPUAddressMode_ClampToEdge,
       .magFilter = WGPUFilterMode_Linear,
       .minFilter = WGPUFilterMode_Linear,
-      .compare = WGPUCompareFunction_Undefined, // WGPUCompareFunction_Less,
+      .compare = sample_compare,
   };
 
   ShaderBindGroupSamplerEntry directional_sampler = point_sampler;

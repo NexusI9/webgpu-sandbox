@@ -18,8 +18,8 @@ void debug_view_create(DebugView *debug_view,
 void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   if (debug_view->length == debug_view->capacity) {
-    printf("Debug view Currently holding max capacity, no more views can be "
-           "added\n");
+    VERBOSE_PRINT("Debug view Currently holding max capacity, no more views "
+                  "can be added\n");
     return;
   }
 

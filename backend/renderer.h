@@ -5,14 +5,13 @@
 #include "clock.h"
 #include "webgpu/webgpu.h"
 
-
 typedef struct {
   const char *name;
   cclock *clock;
   bool lock_mouse;
 } RendererCreateDescriptor;
 
-typedef struct {
+typedef struct renderer {
 
   cclock *clock; // update clock delta on draw
 
@@ -32,6 +31,40 @@ typedef struct {
   } wgpu;
 
 } renderer;
+
+typedef struct {
+  WGPUDevice device;
+  WGPUQueue queue;
+  scene *scene;
+
+  struct {
+    WGPUTexture *color_texture;
+    WGPUTexture *depth_texture;
+  } point_light;
+
+  struct {
+    WGPUTexture *color_texture;
+    WGPUTexture *depth_texture;
+  } directional_light;
+
+} RendererCreateShadowMapDescriptor;
+
+typedef struct {
+  scene *scene;
+  WGPUTexture color_texture;
+  WGPUTexture depth_texture;
+  uint32_t layer;
+  const WGPUDevice *device;
+  WGPUCommandEncoder encoder;
+} RendererShadowToTextureDescriptor;
+
+typedef struct {
+  WGPUTexture *color_texture;
+  WGPUTexture *depth_texture;
+  size_t layer_count;
+  WGPUDevice device;
+  WGPUTextureDimension dimension;
+} RendererCreateShadowTextureDescriptor;
 
 renderer renderer_create(const RendererCreateDescriptor *);
 void renderer_init(renderer *);

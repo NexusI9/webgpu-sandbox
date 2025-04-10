@@ -1,12 +1,22 @@
 #!/bin/bash
 
+# C files
 C_FILES := $(shell find . -type f -name "*.c")
+
+# Shader wgsl files
 WGSL_FILES := $(shell find ./runtime/assets/shader -type f -name "*.wgsl" | sed 's/^/--preload-file /')
+
+# Gltf meshes
 GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 's/^/--preload-file /')
+
+# Main output build script
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
+# Macros
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DRENDER_SHADOW_AS_COLOR
+
 wasm:
-	emcc -DCGLM_FORCE_DEPTH_ZERO_TO_ONE $(C_FILES) -o $(OUTPUT) \
+	emcc $(MACROS) $(C_FILES) -o $(OUTPUT) \
 	     -I include \
 	     -s NO_EXIT_RUNTIME=1 \
 	     -s "EXPORTED_RUNTIME_METHODS=['ccall']" \
