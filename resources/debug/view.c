@@ -27,8 +27,6 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
   mesh *new_view = &debug_view->mesh[debug_view->length++];
   primitive plane = primitive_plane();
 
-  // primitive plane = primitive_cube();
-
   mesh_create_primitive(new_view, &(MeshCreatePrimitiveDescriptor){
                                       .primitive = plane,
                                       .device = debug_view->device,
@@ -39,7 +37,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
   // set view texture
   mesh_set_shader(new_view,
                   &(ShaderCreateDescriptor){
-                      .path = "./runtime/assets/shader/shader.billboard.wgsl",
+                      .path = "./runtime/assets/shader/shader.screen.wgsl",
                       .name = "Debug view billboard shader",
                       .label = "Debug view billboard shader",
                       .device = debug_view->device,

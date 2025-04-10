@@ -22,7 +22,6 @@ struct Mesh { // 80B
 
 @group(0) @binding(0) var<uniform> light_view_projection : mat4x4<f32>;
 @group(0) @binding(1) var<uniform> uModel : Mesh;
-@group(0) @binding(2) var<uniform> id : f32;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
   var out : VertexOut;
@@ -36,14 +35,6 @@ struct Mesh { // 80B
   let ndc = in.vPosition.xyz;
   let depth = in.vPosition.z / in.vPosition.w;
   let color = ndc;
-  // return vec4<f32>(vec3<f32>(depth), 1.0f);
+ return vec4<f32>(vec3<f32>(depth), 1.0f);
   // return vec4<f32>(in.vFrag.xyz, 1.0f);
-  //  return vec4<f32>(vec3<f32>(abs(uModel.model[3][0]),
-  //  abs(uModel.model[3][1]),
-  //                            abs(uModel.model[3][2])),
-  //                 1.0f);
-
-  let r_id = id % 0.0f;
-  let g_id = id % 2.0f;
-  return vec4<f32>(r_id, g_id, 1.0f, 1.0f);
 }

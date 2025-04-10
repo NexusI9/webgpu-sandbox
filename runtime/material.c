@@ -195,38 +195,31 @@ void material_clear_bindings(mesh *mesh, MeshDrawMethod method) {
    upload separate views in the shader.
  */
 
-static float id = 0.0f;
 void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 
   MeshUniform uModel = mesh_model_uniform(mesh);
-
-  id++;
 
   shader_add_uniform(
       mesh_shader_shadow(mesh),
       &(ShaderCreateUniformDescriptor){
           .group_index = 0,
-          .entry_count = 3,
+          .entry_count = 2,
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entries =
-              (ShaderBindGroupUniformEntry[]){{
-                                                  .binding = 0,
-                                                  .data = view,
-                                                  .size = sizeof(mat4),
-                                                  .offset = 0,
-                                              },
-                                              {
-                                                  .binding = 1,
-                                                  .data = &uModel,
-                                                  .size = sizeof(MeshUniform),
-                                                  .offset = 0,
-                                              },
-                                              {
-                                                  .binding = 2,
-                                                  .data = &id,
-                                                  .size = sizeof(float),
-                                                  .offset = 0,
-                                              }},
+              (ShaderBindGroupUniformEntry[]){
+                  {
+                      .binding = 0,
+                      .data = view,
+                      .size = sizeof(mat4),
+                      .offset = 0,
+                  },
+                  {
+                      .binding = 1,
+                      .data = &uModel,
+                      .size = sizeof(MeshUniform),
+                      .offset = 0,
+                  },
+              },
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
