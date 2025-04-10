@@ -25,16 +25,17 @@ struct Mesh { // 80B
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
   var out : VertexOut;
-
-  out.vFrag = uModel.model * vec4<f32>(input.aPos, 1.0f);
-  out.vPosition = light_view_projection * out.vFrag;
+  let model = uModel.model * vec4<f32>(input.aPos, 1.0f);
+  out.vFrag = model;
+  out.vPosition = light_view_projection * model;
   return out;
 }
 
 @fragment fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
-  let ndc = in.vPosition.xyz;
-  let depth = in.vPosition.z / in.vPosition.w;
-  let color = ndc;
- return vec4<f32>(vec3<f32>(depth), 1.0f);
+  var ndc = in.vPosition.xyz / in.vPosition.w;
+  ndc = ndc * 0.5 + 0.5;
+  // let color = clamp(abs(ndc), vec4<f32>(0.0f), vec4<f32>(1.0f));
+  //  return vec4<f32>(vec3<f32>(in.vPosition.z), 1.0f);
+  return vec4<f32>(vec3<f32>(ndc), 1.0f);
   // return vec4<f32>(in.vFrag.xyz, 1.0f);
 }

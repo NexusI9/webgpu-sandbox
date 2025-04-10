@@ -59,11 +59,20 @@ typedef struct {
 } RendererShadowToTextureDescriptor;
 
 typedef struct {
-  WGPUTexture *color_texture;
-  WGPUTexture *depth_texture;
+
+  struct {
+    WGPUTexture *texture;
+    WGPUTextureView *texture_view;
+  } color;
+
+  struct {
+    WGPUTexture *texture;
+    WGPUTextureView *texture_view;
+  } depth;
+
   size_t layer_count;
   WGPUDevice device;
-  WGPUTextureDimension dimension;
+  WGPUTextureViewDimension dimension;
 } RendererCreateShadowTextureDescriptor;
 
 renderer renderer_create(const RendererCreateDescriptor *);

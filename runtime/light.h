@@ -96,21 +96,26 @@ typedef struct {
   uint8_t length;
 } LightViews;
 
+typedef struct {
+  WGPUTextureView texture;
+  WGPUSampler sampler;
+} LightTexture;
+
 // light list
 typedef struct {
   size_t length;
   size_t capacity;
   PointLight items[LIGHT_MAX_CAPACITY];
-  WGPUTextureView shadow_texture;
-  WGPUSampler shadow_sampler;
+  WGPUTextureView color_map;
+  WGPUTextureView depth_map;
 } PointLightList;
 
 typedef struct {
   size_t length;
   size_t capacity;
   DirectionalLight items[LIGHT_MAX_CAPACITY];
-  WGPUTextureView shadow_texture;
-  WGPUSampler shadow_sampler;
+  WGPUTextureView color_map;
+  WGPUTextureView depth_map;
 } DirectionalLightList;
 
 typedef struct {

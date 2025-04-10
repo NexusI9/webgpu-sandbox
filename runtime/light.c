@@ -161,7 +161,7 @@ LightViews light_directional_view(vec3 light_position, vec3 light_target) {
     glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, up);
 
   mat4 projection;
-  glm_perspective(glm_rad(45.0f), 1.0f, 0.1f, 100.0f, projection);
+  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
 
   for (int v = 0; v < new_views.length; v++) {
     mat4 view;
@@ -169,19 +169,5 @@ LightViews light_directional_view(vec3 light_position, vec3 light_target) {
     glm_mat4_mul(projection, view, new_views.views[v]);
   }
 
-  /*float ortho_size = 50.0f;
-  glm_ortho(-ortho_size, ortho_size, -ortho_size, ortho_size, 0.1f, 100.0f,
-  projection);*/
-
-  /*
-  float distance = 70.0;
-  vec3 direction = {-1.0f, -1.0f, -1.0f};
-  glm_normalize(direction);
-  glm_vec3_scale(direction, distance, direction);
-
-  vec3 light_position;
-  glm_vec3_sub(light_target, direction, light_position);
-  print_vec3(light_position);
-  */
   return new_views;
 }

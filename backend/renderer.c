@@ -436,7 +436,7 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
 void renderer_create_shadow_textures(
     const RendererCreateShadowTextureDescriptor *desc) {
 
-  // create point shadow map texture
+  // texture
   WGPUTextureDescriptor texture_descriptor_base = {
       .size =
           (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, desc->layer_count},
@@ -451,18 +451,54 @@ void renderer_create_shadow_textures(
   texture_descriptor_color.label = "Light shadow texture - Color";
   texture_descriptor_color.format = WGPUTextureFormat_BGRA8Unorm;
 
-  // Create color texture
-  *desc->color_texture =
-      wgpuDeviceCreateTexture(desc->device, &texture_descriptor_color);
-
-  // Setup point light depth texture
   WGPUTextureDescriptor texture_descriptor_depth = texture_descriptor_base;
   texture_descriptor_depth.label = "Light shadow texture - Depth";
   texture_descriptor_depth.format = WGPUTextureFormat_Depth32Float;
 
+  // setup texture view
+  WGPUTextureViewDescriptor texture_view_descriptor_base = {
+      .label = "Light Shadow: global texture view - Depth",
+      .format = WGPUTextureFormat_Depth32Float,
+      .dimension = desc->dimension,
+      .mipLevelCount = 1,
+      .baseMipLevel = 0,
+      .arrayLayerCount = desc->layer_count,
+      .baseArrayLayer = 0,
+      .aspect = WGPUTextureAspect_DepthOnly,
+  };
   // Create color texture
-  *desc->depth_texture =
+  *desc->color.texture =
+      wgpuDeviceCreateTexture(desc->device, &texture_descriptor_color);
+  *desc->color.texture_view = wgpuTextureCreateView(
+      *desc->color.texture,
+      &(WGPUTextureViewDescriptor){
+          .label = "Light Shadow: global texture view - Color",
+          .format = WGPUTextureFormat_BGRA8Unorm,
+          .dimension = desc->dimension,
+          .mipLevelCount = 1,
+          .baseMipLevel = 0,
+          .arrayLayerCount = desc->layer_count,
+          .baseArrayLayer = 0,
+          .aspect = WGPUTextureAspect_Undefined,
+      });
+
+  // Setup light depth texture
+
+  // Create depth texture
+  *desc->depth.texture =
       wgpuDeviceCreateTexture(desc->device, &texture_descriptor_depth);
+  *desc->depth.texture_view = wgpuTextureCreateView(
+      *desc->depth.texture,
+      &(WGPUTextureViewDescriptor){
+          .label = "Light Shadow: global texture view - Depth",
+          .format = WGPUTextureFormat_Depth32Float,
+          .dimension = desc->dimension,
+          .mipLevelCount = 1,
+          .baseMipLevel = 0,
+          .arrayLayerCount = desc->layer_count,
+          .baseArrayLayer = 0,
+          .aspect = WGPUTextureAspect_DepthOnly,
+      });
 }
 
 void renderer_compute_shadow(renderer *renderer, scene *scene) {
@@ -483,107 +519,71 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   if (point_light_length == 0 || directional_light_length == 0)
     return;
 
+  /*
+                               For each shadow light:
+
+                 .-----------------.           .-----------------.
+                 |  Color Texture  |           |  Depth Texture  |
+                 '-----------------'           '-----------------'
+                         |                              |
+                 .=======|====== RENDER LIGHT POV ======|=======.
+                 |       |                              |       |
+                 |       |     .----- vertex ----.      |       |
+                 |       |     |    Depth Pass   | <----|       |
+                 |       |     '-----------------'      |       |
+                 |       |              |               |       |
+                 |       |     .--- fragment ---.       |       |
+                 |       |---> |   Color Pass   |       |       |
+                 |       |     '----------------'       |       |
+                 |       |                              |       |
+                 '=======|==============================|======='
+                         |_____________.    .___________|
+                                       |   |
+                              .---------------------.
+                              | Light Texture Array |
+                              '---------------------'
+
+
+     */
+
   // Setup point light
   WGPUTexture point_shadow_texture_color;
   WGPUTexture point_shadow_texture_depth;
   uint32_t point_layer_count = (LIGHT_POINT_VIEWS * point_light_length);
   renderer_create_shadow_textures(&(RendererCreateShadowTextureDescriptor){
-      .color_texture = &point_shadow_texture_color,
-      .depth_texture = &point_shadow_texture_depth,
+      .dimension = WGPUTextureViewDimension_CubeArray,
       .layer_count = point_layer_count,
       .device = renderer->wgpu.device,
+      .color =
+          {
+              .texture = &point_shadow_texture_color,
+              .texture_view = &scene->lights.point.color_map,
+          },
+      .depth =
+          {
+              .texture = &point_shadow_texture_depth,
+              .texture_view = &scene->lights.point.depth_map,
+          },
   });
 
   // setup directionl light
   WGPUTexture directional_shadow_texture_color;
   WGPUTexture directional_shadow_texture_depth;
   renderer_create_shadow_textures(&(RendererCreateShadowTextureDescriptor){
-      .color_texture = &directional_shadow_texture_color,
-      .depth_texture = &directional_shadow_texture_depth,
+      .dimension = WGPUTextureViewDimension_2DArray,
       .layer_count = directional_light_length,
       .device = renderer->wgpu.device,
+      .color =
+          {
+              .texture = &directional_shadow_texture_color,
+              .texture_view = &scene->lights.directional.color_map,
+          },
+      .depth =
+          {
+              .texture = &directional_shadow_texture_depth,
+              .texture_view = &scene->lights.directional.depth_map,
+          },
   });
-
-  /*
-       Set "Depth" or "Color" Texture as default color depending on macro
-                              RENDER_SHADOW_AS_COLOR
-
-                             For each shadow light:
-
-               .-----------------.           .-----------------.
-               |  Color Texture  |           |  Depth Texture  |
-               '-----------------'           '-----------------'
-                       |                              |
-               .=======|====== RENDER LIGHT POV ======|=======.
-               |       |                              |       |
-               |       |     .----- vertex ----.      |       |
-               |       |     |    Depth Pass   | <----|       |
-               |       |     '-----------------'      |       |
-               |       |              |               |       |
-               |       |     .--- fragment ---.       |       |
-               |       |---> |   Color Pass   |       |       |
-               |       |     '----------------'       |       |
-               |       |                              |       |
-               '=======|==============================|======='
-                       |                              |
-                       |    RENDER_SHADOW_AS_COLOR?   |
-                       |                              |
-                       '--> [ YES ]----.----[ NO ] <--'
-                                       |
-                            .---------------------.
-                            | Light Texture Array |
-                            '---------------------'
-
-       Note that this flow is only for debugging purpose only as it requires
-       to adjust the pbr shader to handle either the depth or color texture.
-
-   */
-
-#ifdef RENDER_SHADOW_AS_COLOR
-  // textures
-  WGPUTexture point_shadow_texture = point_shadow_texture_color;
-  WGPUTexture directional_shadow_texture = directional_shadow_texture_color;
-
-  // attributes
-  WGPUTextureFormat shadow_texture_format = WGPUTextureFormat_BGRA8Unorm;
-  WGPUTextureAspect shadow_texture_aspect = WGPUTextureAspect_Undefined;
-#else
-  // textures
-  WGPUTexture point_shadow_texture = point_shadow_texture_depth;
-  WGPUTexture directional_shadow_texture = directional_shadow_texture_depth;
-  
-  // attributes
-  WGPUTextureFormat shadow_texture_format = WGPUTextureFormat_Depth32Float;
-  WGPUTextureAspect shadow_texture_aspect = WGPUTextureAspect_DepthOnly;
-#endif
-
-  // populate scene point light texture_view
-  scene->lights.point.shadow_texture = wgpuTextureCreateView(
-      point_shadow_texture,
-      &(WGPUTextureViewDescriptor){
-          .label = "Point Light Shadow: global texture view",
-          .format = shadow_texture_format,
-          .dimension = WGPUTextureViewDimension_CubeArray,
-          .mipLevelCount = 1,
-          .baseMipLevel = 0,
-          .arrayLayerCount = point_layer_count,
-          .baseArrayLayer = 0,
-          .aspect = shadow_texture_aspect,
-      });
-
-  // populate scene point light texture_view
-  scene->lights.directional.shadow_texture = wgpuTextureCreateView(
-      directional_shadow_texture,
-      &(WGPUTextureViewDescriptor){
-          .label = "Directional Light Shadow: global texture view",
-          .format = shadow_texture_format,
-          .dimension = WGPUTextureViewDimension_2DArray,
-          .mipLevelCount = 1,
-          .baseMipLevel = 0,
-          .arrayLayerCount = directional_light_length,
-          .baseArrayLayer = 0,
-          .aspect = shadow_texture_aspect,
-      });
 
   // Generate Shadow maps (both color and depth map)
   renderer_create_shadow_map(&(RendererCreateShadowMapDescriptor){
@@ -607,9 +607,20 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
     mesh *current_mesh = &scene->meshes.lit.items[m];
 
     // bind point & directional light texture view + sampler to Textue Shader
-    material_texure_bind_shadow_maps(current_mesh,
-                                     scene->lights.point.shadow_texture,
-                                     scene->lights.directional.shadow_texture);
+    // NOTE: When enabling the shadow as color, make use to update the pbr
+    // shadow
+    // accordingly. By default the shader accept a Depth texture for shadow
+    // mapping comparison
+
+#ifdef RENDER_SHADOW_AS_COLOR
+    const WGPUTextureView point_map = scene->lights.point.color_map;
+    const WGPUTextureView directional_map = scene->lights.directional.color_map;
+#else
+    const WGPUTextureView point_map = scene->lights.point.depth_map;
+    const WGPUTextureView directional_map = scene->lights.directional.depth_map;
+#endif
+
+    material_texure_bind_shadow_maps(current_mesh, point_map, directional_map);
   }
 
   // !!DEBUG: Add views to scene
