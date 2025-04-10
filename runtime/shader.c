@@ -404,15 +404,6 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
       ShaderBindGroupUniformEntry *current_entry =
           &current_bind_group->uniforms.items[j];
 
-      if (j == 2) {
-        // Same issue as camera dynamic uniform:
-        // current_entry is fine a point to ≠ pointers
-        // but current_entry->data points to same pointer everytime
-        // printf("%s - [%p] entry data: %f\n", shader->name,
-        // current_entry->data,
-        //       ((float)*(float *)current_entry->data));
-      }
-
       // TODO: separate dynamic (callback) from static (non callback) shader
       // in two arrays so no last minute decision
       // TODO 2: maybe add a "requires udpate" flag so more efficient update
@@ -465,6 +456,18 @@ void shader_add_uniform(shader *shader,
 
       ShaderBindGroupUniformEntry *current_entry = &bd->entries[i];
 
+      // assign buffer to entry
+      buffer_create(
+          &bd->entries[i].buffer,
+          &(CreateBufferDescriptor){
+              .queue = shader->queue,
+              .device = shader->device,
+              .data = (void *)current_entry->data,
+              .size = current_entry->size,
+              .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
+              .mappedAtCreation = false,
+          });
+
       /*
         Need to dynamically allocate the uniform if it has a callback function,
         cause when we use its pointer during the shader draw process, it
@@ -482,24 +485,11 @@ void shader_add_uniform(shader *shader,
 
       */
 
-      // if (current_entry->update_callback) {
-      void *temp_data = current_entry->data;
-      current_entry->data = malloc(current_entry->size);
-      memcpy(current_entry->data, temp_data, current_entry->size);
-      //}
-
-      printf("adding uniform: %f\n", ((float)*(float *)temp_data));
-      // assign buffer to entry
-      buffer_create(
-          &bd->entries[i].buffer,
-          &(CreateBufferDescriptor){
-              .queue = shader->queue,
-              .device = shader->device,
-              .data = (void *)current_entry->data,
-              .size = current_entry->size,
-              .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
-              .mappedAtCreation = false,
-          });
+      if (current_entry->update_callback) {
+        void *temp_data = current_entry->data;
+        current_entry->data = malloc(current_entry->size);
+        memcpy(current_entry->data, temp_data, current_entry->size);
+      }
 
       // transfer entry to shader bind group list
       current_bind_group->uniforms.items[i] = *current_entry;

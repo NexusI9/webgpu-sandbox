@@ -156,11 +156,8 @@ void debug_view_compute_position(DebugView *debug_view, vec3 result) {
     }
   }
 
-  // Since plane primitive is centered, need to add last view width/2 to
-  // compensate
   result[0] = col;
   result[2] = row;
-  printf("column: %f\n", col);
 }
 
 size_t debug_view_length(DebugView *db_view) { return db_view->length; }

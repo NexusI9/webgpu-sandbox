@@ -201,11 +201,6 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
   MeshUniform uModel = mesh_model_uniform(mesh);
 
   id++;
-  float mod_id = id;
-  printf("[%p] Mesh model matrix: %s\n", &uModel, mesh->name);
-  printf("id: %f\n", id);
-  printf("uploading to shader: %p\n", mesh_shader_shadow(mesh));
-  print_mat4(uModel.model);
 
   shader_add_uniform(
       mesh_shader_shadow(mesh),

@@ -167,7 +167,6 @@ LightViews light_directional_view(vec3 light_position, vec3 light_target) {
     mat4 view;
     glm_lookat(light_position, light_target, up, view);
     glm_mat4_mul(projection, view, new_views.views[v]);
-    print_mat4(new_views.views[v]);
   }
 
   /*float ortho_size = 50.0f;

@@ -27,7 +27,7 @@ struct Mesh { // 80B
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
   var out : VertexOut;
 
-  out.vFrag = vec4<f32>(input.aPos, 1.0f) * uModel.model;
+  out.vFrag = uModel.model * vec4<f32>(input.aPos, 1.0f);
   out.vPosition = light_view_projection * out.vFrag;
   return out;
 }
@@ -43,6 +43,7 @@ struct Mesh { // 80B
   //                            abs(uModel.model[3][2])),
   //                 1.0f);
 
-  let new_id = id % 0.0f;
-  return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
+  let r_id = id % 0.0f;
+  let g_id = id % 2.0f;
+  return vec4<f32>(r_id, g_id, 1.0f, 1.0f);
 }

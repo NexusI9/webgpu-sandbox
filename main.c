@@ -44,9 +44,13 @@ static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
 
+// dir light
 static vec3 LIGHT_POSITION = {0.0f, 6.0f, 6.0f};
-static vec3 POINT_LIGHT = {0.0f, 20.0f, 20.0f};
-static vec3 LIGHT_TARGET = {0.0f, 0.0f, -3.0f};
+static vec3 LIGHT_TARGET = {0.0f, 0.0f, 0.0f};
+
+// point light
+static vec3 POINT_LIGHT = {0.0f, 0.0f, 0.0f};
+
 void init_scene() {
 
   // set viewport
@@ -93,12 +97,6 @@ void init_scene() {
                      0.0f,
                      0.0f,
                  });
-
-  printf("combined view:\n");
-  mat4 combined;
-  glm_mat4_mul(main_scene.viewport.projection, main_scene.camera.view,
-               combined);
-  print_mat4(combined);
 
   // set light
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
@@ -244,7 +242,7 @@ int main(int argc, const char *argv[]) {
       POINT_LIGHT[2],
   });
   import_cube();
-  //add_grid();
+  add_grid();
 
   // Setup drawing pass may need to move it else where
   renderer_compute_shadow(&main_renderer, &main_scene);
