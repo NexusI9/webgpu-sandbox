@@ -8,15 +8,17 @@ C_FILES := $(shell find . -type f -name "*.c")
 MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DRENDER_SHADOW_AS_COLOR
 
 # Preprocess cwgsl shader to wgsl Shader files
+
 SHADER_DIR := ./runtime/assets/shader
-CWGSL_IN := $(shell find $(SHADER_DIR) -type f -name "*.cwgsl")
-COMPILE_CWGSL := $(CWGSL_IN:.cwgsl=.wgsl)
+CUSTOM_WGSL_EXT = .wgsl.in
+CUSTOM_WGSL_IN := $(shell find $(SHADER_DIR) -type f -name "*$(CUSTOM_WGSL_EXT)")
+COMPILE_WGSL := $(CUSTOM_WGSL_IN:$(CUSTOM_WGSL_EXT)=.wgsl)
 
 # Get default wgsl files
 WGSL_FILES := $(shell find $(SHADER_DIR) -type f -name "*.wgsl")
 
 # Shader wgsl files
-SHADER_FILES := $(addprefix --preload-file , $(COMPILE_CWGSL) $(WGSL_FILES))  
+SHADER_FILES := $(addprefix --preload-file , $(COMPILE_WGSL) $(WGSL_FILES))  
 
 # Gltf meshes
 GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 's/^/--preload-file /')
@@ -24,10 +26,10 @@ GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 
 # Main output build script
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
-compile_shader:	$(COMPILE_CWGSL)
+compile_shader:	$(COMPILE_WGSL)
 
 clean_shader:
-	rm -f $(COMPILE_CWGSL)
+	rm -f $(COMPILE_WGSL)
 	@echo "Compiled shader cleaned successfully"
 
 wasm: 	
@@ -50,7 +52,7 @@ serve:
 	python -m http.server
 
 
-%.wgsl: %.cwgsl
+%.wgsl: %$(CUSTOM_WGSL_EXT)
 	@echo "Preprocessing shader: $< -> $@"
 	cpp -P $(MACROS) $< > $@
 
