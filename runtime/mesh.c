@@ -355,7 +355,7 @@ void mesh_init_shadow_shader(mesh *mesh) {
 
   pipeline_set_stencil(shader_pipeline(shadow_shader),
                        (WGPUDepthStencilState){
-                           .format = WGPUTextureFormat_Depth32Float,
+                           .format = SHADOW_DEPTH_FORMAT,
                            .depthWriteEnabled = true,
                            .depthCompare = WGPUCompareFunction_Less,
                        });

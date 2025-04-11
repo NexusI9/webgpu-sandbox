@@ -279,7 +279,7 @@ void renderer_shadow_to_texture(const RendererShadowToTextureDescriptor *desc) {
 
   WGPUTextureViewDescriptor layer_texture_descriptor_depth = {
       .label = "Shadow per layer texture view - Depth",
-      .format = WGPUTextureFormat_Depth32Float,
+      .format = SHADOW_DEPTH_FORMAT,
       .dimension = WGPUTextureViewDimension_2D,
       .baseArrayLayer = desc->layer,
       .arrayLayerCount = 1,
@@ -289,7 +289,7 @@ void renderer_shadow_to_texture(const RendererShadowToTextureDescriptor *desc) {
 
   WGPUTextureViewDescriptor layer_texture_descriptor_color = {
       .label = "Shadow per layer texture view - Color",
-      .format = WGPUTextureFormat_BGRA8Unorm,
+      .format = SHADOW_COLOR_FORMAT,
       .dimension = WGPUTextureViewDimension_2D,
       .baseArrayLayer = desc->layer,
       .arrayLayerCount = 1,
@@ -449,16 +449,16 @@ void renderer_create_shadow_textures(
 
   WGPUTextureDescriptor texture_descriptor_color = texture_descriptor_base;
   texture_descriptor_color.label = "Light shadow texture - Color";
-  texture_descriptor_color.format = WGPUTextureFormat_BGRA8Unorm;
+  texture_descriptor_color.format = SHADOW_COLOR_FORMAT;
 
   WGPUTextureDescriptor texture_descriptor_depth = texture_descriptor_base;
   texture_descriptor_depth.label = "Light shadow texture - Depth";
-  texture_descriptor_depth.format = WGPUTextureFormat_Depth32Float;
+  texture_descriptor_depth.format = SHADOW_DEPTH_FORMAT;
 
   // setup texture view
   WGPUTextureViewDescriptor texture_view_descriptor_base = {
       .label = "Light Shadow: global texture view - Depth",
-      .format = WGPUTextureFormat_Depth32Float,
+      .format = SHADOW_DEPTH_FORMAT,
       .dimension = desc->dimension,
       .mipLevelCount = 1,
       .baseMipLevel = 0,
@@ -473,7 +473,7 @@ void renderer_create_shadow_textures(
       *desc->color.texture,
       &(WGPUTextureViewDescriptor){
           .label = "Light Shadow: global texture view - Color",
-          .format = WGPUTextureFormat_BGRA8Unorm,
+          .format = SHADOW_COLOR_FORMAT,
           .dimension = desc->dimension,
           .mipLevelCount = 1,
           .baseMipLevel = 0,
@@ -491,7 +491,7 @@ void renderer_create_shadow_textures(
       *desc->depth.texture,
       &(WGPUTextureViewDescriptor){
           .label = "Light Shadow: global texture view - Depth",
-          .format = WGPUTextureFormat_Depth32Float,
+          .format = SHADOW_DEPTH_FORMAT,
           .dimension = desc->dimension,
           .mipLevelCount = 1,
           .baseMipLevel = 0,

@@ -13,7 +13,8 @@ GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
 # Macros
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DRENDER_SHADOW_AS_COLOR
+#-DRENDER_SHADOW_AS_COLOR
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE 
 
 wasm:
 	emcc $(MACROS) $(C_FILES) -o $(OUTPUT) \

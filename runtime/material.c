@@ -1,4 +1,5 @@
 #include "material.h"
+#include "../backend/renderer.h"
 #include "../utils/system.h"
 #include "camera.h"
 #include "light.h"
@@ -7,7 +8,6 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 #include <stdlib.h>
-
 /**
    Bind Mesh, Camera and Projection matrix to a given mesh shader
    Note that the binding process follows a fixed convention of order, meaning
@@ -238,12 +238,12 @@ void material_texure_bind_shadow_maps(
   // mapping comparison
 
 #ifdef RENDER_SHADOW_AS_COLOR
-  const WGPUTextureFormat texture_format = WGPUTextureFormat_BGRA8Unorm;
+  const WGPUTextureFormat texture_format = SHADOW_COLOR_FORMAT;
   const WGPUTextureSampleType texture_sample_type = WGPUTextureSampleType_Float;
   const WGPUSamplerBindingType sample_type = WGPUSamplerBindingType_Filtering;
   const WGPUCompareFunction sample_compare = WGPUCompareFunction_Undefined;
 #else
-  const WGPUTextureFormat texture_format = WGPUTextureFormat_Depth32Float;
+  const WGPUTextureFormat texture_format = SHADOW_DEPTH_FORMAT;
   const WGPUTextureSampleType texture_sample_type = WGPUTextureSampleType_Depth;
   const WGPUSamplerBindingType sample_type = WGPUSamplerBindingType_Comparison;
   const WGPUCompareFunction sample_compare = WGPUCompareFunction_Less;
