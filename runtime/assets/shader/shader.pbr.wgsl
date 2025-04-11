@@ -2,6 +2,11 @@
 // WGSL Function references:
 // https://webgpufundamentals.org/webgpu/lessons/webgpu-wgsl-function-reference.html#func-textureSampleCompareLevel
 
+// constants
+const PI : f32 = 3.14159265359;
+const POINT_LIGHT_VIEWS : u32 = 6u;
+const MAX_LIGHT : u32 = 16u;
+
 struct VertexIn {
   @location(0) aPos : vec3<f32>,
                       @location(1) aNorm : vec3<f32>,
@@ -16,19 +21,16 @@ struct VertexOut {
                                                         @location(1) vCol
       : vec3<f32>,
         @location(2) vUv : vec2<f32>,
-                           @location(3) vFrag : vec3<f32>
+                           @location(3) vFrag : vec3<f32>,
+                                                @location(4) vShadowPos
+      : vec3<f32>,
 };
 
-// constants
-const PI : f32 = 3.14159265359;
-const POINT_LIGHT_VIEWS : u32 = 6u;
-const MAX_LIGHT : u32 = 16u;
-
-struct Mesh { // 80B
+struct Mesh {
   model : mat4x4<f32>, position : vec4<f32>,
 }
 
-struct Camera { // 112B
+struct Camera {
   view : mat4x4<f32>,
          position : vec4<f32>,
                     lookat : vec4<f32>,
@@ -36,7 +38,7 @@ struct Camera { // 112B
                                     _pad : vec3<u32>,
 };
 
-struct Viewport { // 64B
+struct Viewport {
   projection : mat4x4<f32>,
 };
 
@@ -146,6 +148,17 @@ struct DirectionalLightStorage {
   // used for lightning to know where the vertex is in the world space
   // if only used model, vertex position is "constriained" its own local space
   output.vFrag = (uMesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
+
+  for (var l : u32 = 0u; l < directional_light_list.length; l++) {
+
+    let pos_from_light : vec4<f32> = directional_light_list.items[l].view *
+                                     uMesh.model * vec4<f32>(input.aPos, 1.0f);
+
+    // convert shadow pos XY to [0,1] to fit texture UV
+    output.vShadowPos = vec3<f32>(pos_from_light.xy * vec2<f32>(0.5f, -0.5f) +
+                                      vec2<f32>(0.5f, 0.5f),
+                                  pos_from_light.z);
+  }
 
   return output;
 }
@@ -267,7 +280,8 @@ fn directional_shadow_position(world_position : vec3<f32>,
   shadow_ndc = shadow_ndc; // convert [-1;1] to [0;1]
 
   // convert to UV (0-1 range)
-  let shadow_uv = shadow_ndc.xy * 0.5f + 0.5f;
+  let shadow_uv =
+      shadow_ndc.xy * vec2<f32>(0.5f, -0.5f) + vec2<f32>(0.5f, 0.5f);
   let shadow_depth = shadow_ndc.z;
 
   // returns depth to compare
@@ -292,6 +306,7 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
     let norm_distance = distance / far_plane; // normalize to [0,1]
 
     let shadow_depth = norm_distance - bias;
+
     // factor = textureSample(point_shadow_maps, point_shadow_sampler,
     //                        shadow_direction, l);
     factor = textureSampleCompare(point_shadow_maps, point_shadow_sampler,
@@ -314,9 +329,9 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
     let shadow_depth = shadow_position.z - bias;
 
-    // factor = textureSampleCompare(directional_shadow_maps,
-    //                               directional_shadow_sampler,
-    //                               shadow_position.xy, l, shadow_depth);
+    factor = textureSampleCompare(directional_shadow_maps,
+                                  directional_shadow_sampler,
+                                  shadow_position.xy, l, shadow_depth);
 
     // factor = shadow_depth;
   }
@@ -378,9 +393,9 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let directional_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                                directional_shadow_factor(vFrag));
 
-  return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag)), 1.0f);
+  // return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag)), 1.0f);
 
-  // return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
+  return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
   //    return vec4<f32>(
   //        directional_shadow_position(vFrag,
   //        directional_light_list.items[0].view), 1.0f);
