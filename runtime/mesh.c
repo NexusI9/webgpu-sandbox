@@ -346,13 +346,6 @@ void mesh_init_shadow_shader(mesh *mesh) {
                 });
 
   // edit shader pipeline (vertex only)
-  /*pipeline_set_fragment(shader_pipeline(shadow_shader),
-                        &(PipelineFragmentDescriptor){
-                            .fragment_state = 0,
-                            .color_state = 0,
-                            .blend_state = 0,
-                        });*/
-
   pipeline_set_stencil(shader_pipeline(shadow_shader),
                        (WGPUDepthStencilState){
                            .format = SHADOW_DEPTH_FORMAT,

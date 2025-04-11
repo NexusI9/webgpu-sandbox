@@ -3,8 +3,20 @@
 # C files
 C_FILES := $(shell find . -type f -name "*.c")
 
+# Macros
+#-DRENDER_SHADOW_AS_COLOR
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DRENDER_SHADOW_AS_COLOR
+
+# Preprocess cwgsl shader to wgsl Shader files
+SHADER_DIR := ./runtime/assets/shader
+CWGSL_IN := $(shell find $(SHADER_DIR) -type f -name "*.cwgsl")
+COMPILE_CWGSL := $(CWGSL_IN:.cwgsl=.wgsl)
+
+# Get default wgsl files
+WGSL_FILES := $(shell find $(SHADER_DIR) -type f -name "*.wgsl")
+
 # Shader wgsl files
-WGSL_FILES := $(shell find ./runtime/assets/shader -type f -name "*.wgsl" | sed 's/^/--preload-file /')
+SHADER_FILES := $(addprefix --preload-file , $(COMPILE_CWGSL) $(WGSL_FILES))  
 
 # Gltf meshes
 GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 's/^/--preload-file /')
@@ -12,32 +24,39 @@ GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 
 # Main output build script
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
-# Macros
-#-DRENDER_SHADOW_AS_COLOR
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE 
+compile_shader:	$(COMPILE_CWGSL)
 
-wasm:
+clean_shader:
+	rm -f $(COMPILE_CWGSL)
+	@echo "Compiled shader cleaned successfully"
+
+wasm: 	
 	emcc $(MACROS) $(C_FILES) -o $(OUTPUT) \
-	     -I include \
-	     -s NO_EXIT_RUNTIME=1 \
-	     -s "EXPORTED_RUNTIME_METHODS=['ccall']" \
-	     -s EXPORTED_FUNCTIONS="['_main']" \
-	     -s USE_WEBGPU=1 \
-	     -s SINGLE_FILE \
-	     $(WGSL_FILES) \
-	     $(GLTF_FILES)
-	
-	@echo "Compilation completed: $(OUTPUT)"
-	
+		-I include \
+		-s NO_EXIT_RUNTIME=1 \
+		-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
+		-s EXPORTED_FUNCTIONS="['_main']" \
+		-s USE_WEBGPU=1 \
+		-s SINGLE_FILE \
+		$(SHADER_FILES) \
+		$(GLTF_FILES)
+
+		@echo "Compilation completed: $(OUTPUT)"
+
+build:	compile_shader wasm clean_shader
+
+serve:
+	cd ./build
+	python -m http.server
+
+
+%.wgsl: %.cwgsl
+	@echo "Preprocessing shader: $< -> $@"
+	cpp -P $(MACROS) $< > $@
+
+
 #\
 Use "ccall" as method call to access the wasm functions\
 EXPORTED_RUNTIME_METHOD =>  Module.methodname("myfunction")\
 EXPORTED_FUNCTIONS => Module._myFunction()\
 NO_EXIT_RUNTIME => disable program exit after main, allow custom function exports
-
-compile:
-	clang main.c && ./a.out
-
-serve:
-	cd ./build
-	python -m http.server

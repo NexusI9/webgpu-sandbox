@@ -233,9 +233,6 @@ void material_texure_bind_shadow_maps(
     mesh *mesh, WGPUTextureView point_texture_view,
     WGPUTextureView directional_texture_view) {
 
-  // NOTE: When enabling the shadow as color, make use to update the pbr shadow
-  // accordingly. By default the shader accept a Depth texture for shadow
-  // mapping comparison
 
 #ifdef RENDER_SHADOW_AS_COLOR
   const WGPUTextureFormat texture_format = SHADOW_COLOR_FORMAT;
@@ -285,8 +282,8 @@ void material_texure_bind_shadow_maps(
       .addressModeU = WGPUAddressMode_ClampToEdge,
       .addressModeV = WGPUAddressMode_ClampToEdge,
       .addressModeW = WGPUAddressMode_ClampToEdge,
-      .magFilter = WGPUFilterMode_Linear,
-      .minFilter = WGPUFilterMode_Linear,
+      .magFilter = WGPUFilterMode_Nearest,
+      .minFilter = WGPUFilterMode_Nearest,
       .compare = sample_compare,
   };
 
