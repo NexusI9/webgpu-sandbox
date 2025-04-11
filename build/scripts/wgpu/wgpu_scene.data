@@ -1292,7 +1292,7 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> vec3<f32> {
 
 
     factor = textureSample(point_shadow_maps, point_shadow_sampler,
-                           shadow_direction, l);
+                           shadow_direction, l).r;
 
 
     return vec3<f32>(factor);
@@ -1317,7 +1317,7 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
 
     factor *= textureSample(directional_shadow_maps, directional_shadow_sampler,
-                            shadow_position.xy, l);
+                            shadow_position.xy, l).r;
 
   }
 

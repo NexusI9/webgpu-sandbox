@@ -8,7 +8,6 @@ C_FILES := $(shell find . -type f -name "*.c")
 MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DRENDER_SHADOW_AS_COLOR
 
 # Preprocess cwgsl shader to wgsl Shader files
-
 SHADER_DIR := ./runtime/assets/shader
 CUSTOM_WGSL_EXT = .wgsl.in
 CUSTOM_WGSL_IN := $(shell find $(SHADER_DIR) -type f -name "*$(CUSTOM_WGSL_EXT)")
@@ -26,13 +25,24 @@ GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 
 # Main output build script
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
-compile_shader:	$(COMPILE_WGSL)
+all:
+	@echo "=== COMPILING SHADERS ==="
+	@make compile_shader
+	@echo
+	@echo "=== COMPILING TO WASM ==="
+	@make wasm
+	@echo	
+	@echo "=== CLEANING SHADERS =="
+	@make clean_shader
+
+
+compile_shader: $(COMPILE_WGSL) 
 
 clean_shader:
 	rm -f $(COMPILE_WGSL)
-	@echo "Compiled shader cleaned successfully"
+	@echo
 
-wasm: 	
+wasm:
 	emcc $(MACROS) $(C_FILES) -o $(OUTPUT) \
 		-I include \
 		-s NO_EXIT_RUNTIME=1 \
@@ -43,9 +53,7 @@ wasm:
 		$(SHADER_FILES) \
 		$(GLTF_FILES)
 
-		@echo "Compilation completed: $(OUTPUT)"
-
-build:	compile_shader wasm clean_shader
+	@echo "Compilation completed: $(OUTPUT)"
 
 serve:
 	cd ./build
@@ -53,7 +61,6 @@ serve:
 
 
 %.wgsl: %$(CUSTOM_WGSL_EXT)
-	@echo "Preprocessing shader: $< -> $@"
 	cpp -P $(MACROS) $< > $@
 
 
