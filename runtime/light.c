@@ -124,21 +124,30 @@ LightViews light_point_views(vec3 light_position) {
   vec3 ups[LIGHT_POINT_VIEWS] = {
       {0.0f, 1.0f, 0.0f},  // +x (right)
       {0.0f, 1.0f, 0.0f},  // -x (left)
-      {0.0f, 0.0f, -1.0f},  // +y (top)
+      {0.0f, 0.0f, 1.0f},  // +y (top)
       {0.0f, 0.0f, -1.0f}, // -y (bottom)
       {0.0f, 1.0f, 0.0f},  // +z (front)
       {0.0f, 1.0f, 0.0f},  // -z (back)
   };
 
   mat4 projection;
-  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
+  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 10.0f, projection);
 
   for (int v = 0; v < new_views.length; v++) {
+
+    mat4 test;
+
     vec3 direction;
-    mat4 view;
     glm_vec3_add(light_position, directions[v], direction);
+
+    mat4 view;
     glm_lookat(light_position, direction, ups[v], view);
+
     glm_mat4_mul(projection, view, new_views.views[v]);
+
+    printf("Point light new view:\n");
+    print_mat4(new_views.views[v]);
+
   }
 
   return new_views;

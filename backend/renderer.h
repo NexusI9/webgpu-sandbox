@@ -6,7 +6,7 @@
 #include "webgpu/webgpu.h"
 
 // WGPUTextureFormat_Depth32Float
-#define SHADOW_DEPTH_FORMAT WGPUTextureFormat_Depth24Plus
+#define SHADOW_DEPTH_FORMAT WGPUTextureFormat_Depth32Float
 #define SHADOW_COLOR_FORMAT WGPUTextureFormat_BGRA8Unorm
 
 typedef struct {

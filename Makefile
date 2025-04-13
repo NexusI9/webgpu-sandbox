@@ -5,7 +5,8 @@ C_FILES := $(shell find . -type f -name "*.c")
 
 # Macros
 #-DRENDER_SHADOW_AS_COLOR
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DRENDER_SHADOW_AS_COLOR
+#-DCGLM_FORCE_DEPTH_ZERO_TO_ONE
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE
 
 # Preprocess cwgsl shader to wgsl Shader files
 SHADER_DIR := ./runtime/assets/shader

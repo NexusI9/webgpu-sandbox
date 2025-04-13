@@ -330,7 +330,10 @@ shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader.shadow; }
    Init mesh shadow shader.
    By default all mesh have a shadow shader to generate shadow map
    during the bind light process we will generate the depth map since that's
-   where we get out scene lights
+   where we get out scene lights.
+
+   The init shadow shadow doesn't belong to the material API as it is a
+   necessary component set by default on mesh creation.
  */
 void mesh_init_shadow_shader(mesh *mesh) {
 

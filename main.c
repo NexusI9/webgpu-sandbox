@@ -49,7 +49,8 @@ static vec3 LIGHT_POSITION = {0.0f, 6.0f, 6.0f};
 static vec3 LIGHT_TARGET = {0.0f, 0.0f, 0.0f};
 
 // point light
-static vec3 POINT_LIGHT = {0.0f, -0.4f, -5.0f};
+static vec3 POINT_LIGHT = {0.0f, 0.1f, -0.3f}; // < 1
+//static vec3 POINT_LIGHT = {0.0f, 0.4f, 3.3f}; // < 10
 
 void init_scene() {
 
@@ -88,9 +89,9 @@ void init_scene() {
   // init camera position
   camera_look_at(&main_scene.camera,
                  (vec3){
-                     20.0f,
-                     20.0f,
-                     20.0f,
+                     2.0f,
+                     2.0f,
+                     2.0f,
                  },
                  (vec3){
                      0.0f,
@@ -236,11 +237,11 @@ int main(int argc, const char *argv[]) {
   */
   //  add_cube((vec3){1.0f, 0.0f, 0.0f});
 
-  add_cube((vec3){
+  /*add_cube((vec3){
       POINT_LIGHT[0],
       POINT_LIGHT[1],
       POINT_LIGHT[2],
-  });
+      });*/
   import_cube();
   add_grid();
 

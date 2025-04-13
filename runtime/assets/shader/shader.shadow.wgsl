@@ -28,9 +28,16 @@ struct Mesh {
   let model = uModel.model * vec4<f32>(input.aPos, 1.0f);
   out.vFrag = model;
   out.vPosition = light_view_projection * model;
+
   return out;
 }
 
 @fragment fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
-  return vec4<f32>(vec3<f32>(in.vPosition.z / in.vPosition.w), 1.0f);
+
+  let val = in.vPosition.z / in.vPosition.w;
+  if (val > 10.0f) {
+    return vec4<f32>(vec3<f32>(1.0f, 0.0f, 0.0f), 1.0f);
+  } else {
+    return vec4<f32>(vec3<f32>(val), 1.0f);
+  }
 }

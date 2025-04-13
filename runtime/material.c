@@ -199,6 +199,12 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 
   MeshUniform uModel = mesh_model_uniform(mesh);
 
+  printf("Shadow views: \n");
+  printf("Light projection view:\n");
+  print_mat4(*view);
+  printf("Mesh model matrix:\n");
+  print_mat4(uModel.model);
+
   shader_add_uniform(
       mesh_shader_shadow(mesh),
       &(ShaderCreateUniformDescriptor){
@@ -232,7 +238,6 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 void material_texure_bind_shadow_maps(
     mesh *mesh, WGPUTextureView point_texture_view,
     WGPUTextureView directional_texture_view) {
-
 
 #ifdef RENDER_SHADOW_AS_COLOR
   const WGPUTextureFormat texture_format = SHADOW_COLOR_FORMAT;

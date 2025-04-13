@@ -607,10 +607,6 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
     mesh *current_mesh = &scene->meshes.lit.items[m];
 
     // bind point & directional light texture view + sampler to Textue Shader
-    // NOTE: When enabling the shadow as color, make use to update the pbr
-    // shadow
-    // accordingly. By default the shader accept a Depth texture for shadow
-    // mapping comparison
 
 #ifdef RENDER_SHADOW_AS_COLOR
     const WGPUTextureView point_map = scene->lights.point.color_map;

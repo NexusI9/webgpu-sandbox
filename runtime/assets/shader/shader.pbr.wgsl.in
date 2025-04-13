@@ -277,10 +277,11 @@ fn directional_shadow_position(world_position : vec3<f32>,
 }
 
 // Combine and compute Point light shadow
-fn point_shadow_factor(frag_position : vec3<f32>) -> vec3<f32> {
+fn point_shadow_factor(frag_position : vec3<f32>, frag_coord : vec2<f32>)
+    -> vec3<f32> {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.005f;
+  var bias : f32 = 0.00f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
 
@@ -291,23 +292,25 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> vec3<f32> {
     let distance = length(frag_to_light);
     let shadow_direction = normalize(frag_to_light);
 
-    let far_plane = 100.0f;
+    let far_plane = 1.0f;
     let norm_distance = distance / far_plane; // normalize to [0,1]
     let shadow_depth = norm_distance - bias;
-    let remap_direction = shadow_direction * vec3<f32>(0.0f, 1.0f, 0.0f);
+    let remap_direction = shadow_direction;
 
 #ifdef RENDER_SHADOW_AS_COLOR
     factor = textureSample(point_shadow_maps, point_shadow_sampler,
-                           shadow_direction, l).r;
+                           shadow_direction, l)
+                 .r;
 
 #else
     factor = textureSampleCompare(point_shadow_maps, point_shadow_sampler,
-                                  shadow_direction, l, shadow_depth / 20.0f);
+                                  shadow_direction, l, shadow_depth);
+
+    //factor = shadow_depth;
 #endif
-    return vec3<f32>(factor);
   }
 
-  return vec3<f32>(0.0f);
+  return vec3<f32>(factor);
   // return factor;
 }
 
@@ -326,7 +329,8 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
 #ifdef RENDER_SHADOW_AS_COLOR
     factor *= textureSample(directional_shadow_maps, directional_shadow_sampler,
-                            shadow_position.xy, l).r;
+                            shadow_position.xy, l)
+                  .r;
 #else
     factor *= textureSampleCompare(directional_shadow_maps,
                                    directional_shadow_sampler,
@@ -391,7 +395,7 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let directional_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                                directional_shadow_factor(vFrag));
 
-  return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag)), 1.0f);
+  return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag, vUv)), 1.0f);
   // return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
   //     return vec4<f32>(
   //         directional_shadow_position(vFrag,
