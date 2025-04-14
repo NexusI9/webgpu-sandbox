@@ -281,32 +281,44 @@ fn point_shadow_factor(frag_position : vec3<f32>, frag_coord : vec2<f32>)
     -> vec3<f32> {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.00f;
+  var bias : f32 = 0.000f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
 
     let light_position = point_light_list.items[l].position;
+    let light_view = point_light_list.items[l].views;
 
-    let frag_to_light = frag_position - light_position;
+    let frag_to_light = frag_position - light_position.xyz;
 
     let distance = length(frag_to_light);
     let shadow_direction = normalize(frag_to_light);
 
-    let far_plane = 1.0f;
-    let norm_distance = distance / far_plane; // normalize to [0,1]
+    let far = 100.0f;
+    let near = 0.1f;
+
+    let norm_distance = distance / far; // normalize to [0,1]
     let shadow_depth = norm_distance - bias;
-    let remap_direction = shadow_direction;
+
+    let ld = distance;
+    var nl_depth = (ld - near) / (far - near);
+    nl_depth = (far * nl_depth) / ld;
+
+    var z_n = 2.0f * frag_position.z - 1.0f;
+    z_n =  2.0 * near * far / (far + near - z_n * (far - near));
 
 #ifdef RENDER_SHADOW_AS_COLOR
-    factor = textureSample(point_shadow_maps, point_shadow_sampler,
-                           shadow_direction, l)
-                 .r;
+    factor *= textureSample(point_shadow_maps, point_shadow_sampler,
+                            shadow_direction, l)
+                  .r;
 
 #else
-    factor = textureSampleCompare(point_shadow_maps, point_shadow_sampler,
-                                  shadow_direction, l, shadow_depth);
+    factor *= textureSampleCompare(
+        point_shadow_maps, point_shadow_sampler, shadow_direction, l, shadow_depth);
 
-    //factor = shadow_depth;
+    factor = shadow_depth;
+    // check for color based shadow :
+    // https://www.reddit.com/r/opengl/comments/1guu5hj/trying_to_make_pointlight_shadows_work_running/
+
 #endif
   }
 
@@ -318,7 +330,7 @@ fn point_shadow_factor(frag_position : vec3<f32>, frag_coord : vec2<f32>)
 fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.0005f;
+  var bias : f32 = 0.005f;
 
   for (var l : u32 = 0u; l < directional_light_list.length; l++) {
 
@@ -397,7 +409,7 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag, vUv)), 1.0f);
   // return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
-  //     return vec4<f32>(
-  //         directional_shadow_position(vFrag,
-  //         directional_light_list.items[0].view), 1.0f);
+  //       return vec4<f32>(
+  //           directional_shadow_position(vFrag,
+  //           directional_light_list.items[0].view), 1.0f);
 }

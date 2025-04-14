@@ -199,28 +199,45 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 
   MeshUniform uModel = mesh_model_uniform(mesh);
 
-  printf("Shadow views: \n");
-  printf("Light projection view:\n");
+  mat4 projection;
+  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
+
+  printf("Light projection:\n");
+  print_mat4(projection);
+  printf("Light view:\n");
   print_mat4(*view);
+
   printf("Mesh model matrix:\n");
   print_mat4(uModel.model);
+
+  mat4 result;
+  glm_mul(projection, *view, result);
+  printf("Projections * View:\n");
+  print_mat4(result);
+  printf("\n\n");
 
   shader_add_uniform(
       mesh_shader_shadow(mesh),
       &(ShaderCreateUniformDescriptor){
           .group_index = 0,
-          .entry_count = 2,
+          .entry_count = 3,
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entries =
               (ShaderBindGroupUniformEntry[]){
                   {
                       .binding = 0,
-                      .data = view,
+                      .data = projection,
                       .size = sizeof(mat4),
                       .offset = 0,
                   },
                   {
                       .binding = 1,
+                      .data = view,
+                      .size = sizeof(mat4),
+                      .offset = 0,
+                  },
+                  {
+                      .binding = 2,
                       .data = &uModel,
                       .size = sizeof(MeshUniform),
                       .offset = 0,

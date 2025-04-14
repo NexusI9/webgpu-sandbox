@@ -54,5 +54,4 @@ struct Camera {
 @fragment fn fs_main(@location(1) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
   return textureSample(texture, texture_sampler, vUv);
-  // return vec4<f32>(1.0f);
 }

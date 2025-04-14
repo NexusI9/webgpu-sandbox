@@ -31,55 +31,55 @@
 				0.9238795638084412
 			],
 			"scale":[
-				0.03717638552188873,
-				0.03717638552188873,
-				0.03717638552188873
+				0.040280163288116455,
+				0.040280163288116455,
+				0.040280163288116455
 			],
 			"translation":[
-				0.05257534980773926,
+				0.056964755058288574,
 				0,
-				-0.05257534980773926
+				-0.056964755058288574
 			]
 		},
 		{
 			"mesh":1,
 			"name":"Cube.010",
 			"scale":[
-				0.03717638552188873,
-				0.03717638552188873,
-				0.03717638552188873
+				0.040280163288116455,
+				0.040280163288116455,
+				0.040280163288116455
 			],
 			"translation":[
-				0.22305846214294434,
-				0.11901044845581055,
-				0.03717640042304993
+				0.24168114364147186,
+				0.12894637882709503,
+				0.04028017818927765
 			]
 		},
 		{
 			"mesh":2,
 			"name":"Cube.011",
 			"scale":[
-				0.03717638552188873,
-				0.03717638552188873,
-				0.03717638552188873
+				0.040280163288116455,
+				0.040280163288116455,
+				0.040280163288116455
 			],
 			"translation":[
-				-0.11766338348388672,
-				0.12588977813720703,
-				-0.09360748529434204
+				-0.12748685479164124,
+				0.136400043964386,
+				-0.10142257809638977
 			]
 		},
 		{
 			"mesh":3,
 			"name":"Plane.002",
 			"scale":[
-				0.03717638552188873,
-				0.03717638552188873,
-				0.03717638552188873
+				0.040280163288116455,
+				0.040280163288116455,
+				0.040280163288116455
 			],
 			"translation":[
 				0,
-				-0.03717640042304993,
+				-0.04028017818927765,
 				0
 			]
 		},
@@ -90,17 +90,17 @@
 				0,
 				0.9238795638084412,
 				0,
-				0.3826834261417389
+				0.3826834559440613
 			],
 			"scale":[
-				0.03717638552188873,
-				0.03717638552188873,
-				0.03717638552188873
+				0.04028015956282616,
+				0.040280163288116455,
+				0.04028015956282616
 			],
 			"translation":[
-				-0.05257534980773926,
+				-0.056964755058288574,
 				0,
-				-0.05257534980773926
+				-0.056964755058288574
 			]
 		}
 	],
@@ -1300,27 +1300,39 @@ fn point_shadow_factor(frag_position : vec3<f32>, frag_coord : vec2<f32>)
     -> vec3<f32> {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.00f;
+  var bias : f32 = 0.000f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
 
     let light_position = point_light_list.items[l].position;
+    let light_view = point_light_list.items[l].views;
 
-    let frag_to_light = frag_position - light_position;
+    let frag_to_light = frag_position - light_position.xyz;
 
     let distance = length(frag_to_light);
     let shadow_direction = normalize(frag_to_light);
 
-    let far_plane = 1.0f;
-    let norm_distance = distance / far_plane; // normalize to [0,1]
+    let far = 1.0f;
+    let near = 0.1f;
+
+    let norm_distance = distance / far; // normalize to [0,1]
     let shadow_depth = norm_distance - bias;
-    let remap_direction = shadow_direction;
+
+    let ld = distance;
+    var nl_depth = (ld - near) / (far - near);
+    nl_depth = (far * nl_depth) / ld;
+
+    var z_n = 2.0f * frag_position.z - 1.0f;
+    z_n =  2.0 * near * far / (far + near - z_n * (far - near));
 
 
-    factor = textureSampleCompare(point_shadow_maps, point_shadow_sampler,
-                                  shadow_direction, l, shadow_depth);
+    factor *= textureSampleCompare(
+        point_shadow_maps, point_shadow_sampler, shadow_direction, l, shadow_depth);
 
-    //factor = shadow_depth;
+    factor = shadow_depth;
+    // check for color based shadow :
+    // https://www.reddit.com/r/opengl/comments/1guu5hj/trying_to_make_pointlight_shadows_work_running/
+
 
   }
 
@@ -1332,7 +1344,7 @@ fn point_shadow_factor(frag_position : vec3<f32>, frag_coord : vec2<f32>)
 fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.0005f;
+  var bias : f32 = 0.005f;
 
   for (var l : u32 = 0u; l < directional_light_list.length; l++) {
 
@@ -1407,9 +1419,9 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag, vUv)), 1.0f);
   // return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
-  //     return vec4<f32>(
-  //         directional_shadow_position(vFrag,
-  //         directional_light_list.items[0].view), 1.0f);
+  //       return vec4<f32>(
+  //           directional_shadow_position(vFrag,
+  //           directional_light_list.items[0].view), 1.0f);
 }
 
 // attribute/uniform decls
@@ -1468,7 +1480,6 @@ struct Camera {
 @fragment fn fs_main(@location(1) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
   return textureSample(texture, texture_sampler, vUv);
-  // return vec4<f32>(1.0f);
 }
 // attribute/uniform decls
 struct VertexIn {
@@ -1492,24 +1503,28 @@ struct Mesh {
   model : mat4x4<f32>, position : vec4<f32>,
 }
 
-@group(0) @binding(0) var<uniform> light_view_projection : mat4x4<f32>;
-@group(0) @binding(1) var<uniform> uModel : Mesh;
+@group(0) @binding(0) var<uniform> light_projection : mat4x4<f32>;
+@group(0) @binding(1) var<uniform> view_projection : mat4x4<f32>;
+@group(0) @binding(2) var<uniform> uModel : Mesh;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
+
   var out : VertexOut;
   let model = uModel.model * vec4<f32>(input.aPos, 1.0f);
   out.vFrag = model;
-  out.vPosition = light_view_projection * model;
+  out.vPosition = light_projection * view_projection * model;
 
   return out;
 }
 
 @fragment fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
 
-  let val = in.vPosition.z / in.vPosition.w;
-  if (val > 10.0f) {
-    return vec4<f32>(vec3<f32>(1.0f, 0.0f, 0.0f), 1.0f);
-  } else {
-    return vec4<f32>(vec3<f32>(val), 1.0f);
-  }
+  let z = in.vPosition.z;
+  let near = 0.1f;
+  let far = 100.0f;
+  // linearize Deth
+  // see: https://learnopengl.com/Advanced-OpenGL/Depth-testing
+  let depth = (2.0f * near) / (far + near - z * (far - near));
+
+  return vec4<f32>(vec3<f32>(depth), 1.0f);
 }
