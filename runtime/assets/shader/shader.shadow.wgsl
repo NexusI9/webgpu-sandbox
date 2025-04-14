@@ -39,7 +39,7 @@ struct Mesh {
   let z = in.vPosition.z;
   let near = 0.1f;
   let far = 100.0f;
-  // linearize Deth
+  // linearize Depth
   // see: https://learnopengl.com/Advanced-OpenGL/Depth-testing
   let depth = (2.0f * near) / (far + near - z * (far - near));
 

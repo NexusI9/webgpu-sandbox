@@ -84,14 +84,33 @@ void pipeline_set_vertex(pipeline *pipeline, const WGPUVertexState state) {
  */
 void pipeline_set_fragment(pipeline *pipeline,
                            const PipelineFragmentDescriptor *state) {
+
   // cache attributes
   pipeline->color_state = state->color_state;
   pipeline->blend_state = state->blend_state;
-  pipeline->fragment_state = state->fragment_state;
 
-  // rebuld fragment state from cached attributes
-  pipeline->color_state.blend = &pipeline->blend_state;
-  pipeline->fragment_state.targets = &pipeline->color_state;
+  // set base attributes
+  pipeline->fragment_state = (WGPUFragmentState){
+      .module = state->fragment_state.module,
+      .entryPoint = state->fragment_state.entryPoint,
+      .targetCount = state->fragment_state.targetCount,
+  };
+
+  if (pipeline->color_state.format != 0) {
+
+    // set color base (dirty)
+    pipeline->color_state = (WGPUColorTargetState){
+        .format = state->color_state.format,
+        .writeMask = state->color_state.writeMask,
+    };
+
+    // 1. plug blend -> color state
+    if (pipeline->blend_state.alpha.operation != 0)
+      pipeline->color_state.blend = &pipeline->blend_state;
+
+    // 2. plug color state -> pipeline
+    pipeline->fragment_state.targets = &pipeline->color_state;
+  }
 }
 
 /**

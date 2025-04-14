@@ -277,47 +277,49 @@ fn directional_shadow_position(world_position : vec3<f32>,
 }
 
 // Combine and compute Point light shadow
-fn point_shadow_factor(frag_position : vec3<f32>, frag_coord : vec2<f32>)
-    -> vec3<f32> {
+fn point_shadow_factor(frag_position : vec3<f32>) -> vec3<f32> {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.000f;
+  var bias : f32 = 0.5f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
 
     let light_position = point_light_list.items[l].position;
-    let light_view = point_light_list.items[l].views;
 
     let frag_to_light = frag_position - light_position.xyz;
-
-    let distance = length(frag_to_light);
-    let shadow_direction = normalize(frag_to_light);
+    let current_depth = length(frag_to_light);
 
     let far = 100.0f;
     let near = 0.1f;
 
-    let norm_distance = distance / far; // normalize to [0,1]
-    let shadow_depth = norm_distance - bias;
-
-    let ld = distance;
-    var nl_depth = (ld - near) / (far - near);
-    nl_depth = (far * nl_depth) / ld;
-
-    var z_n = 2.0f * frag_position.z - 1.0f;
-    z_n =  2.0 * near * far / (far + near - z_n * (far - near));
-
 #ifdef RENDER_SHADOW_AS_COLOR
-    factor *= textureSample(point_shadow_maps, point_shadow_sampler,
-                            shadow_direction, l)
-                  .r;
+
+    var closest_depth = textureSample(point_shadow_maps, point_shadow_sampler,
+                                      normalize(frag_to_light), l)
+                            .r;
+
+    closest_depth = closest_depth * far;
+
+    if (current_depth - bias > closest_depth) {
+      factor = 0.0f;
+    } else {
+      factor = 1.0f;
+    }
 
 #else
-    factor *= textureSampleCompare(
-        point_shadow_maps, point_shadow_sampler, shadow_direction, l, shadow_depth);
 
-    factor = shadow_depth;
-    // check for color based shadow :
-    // https://www.reddit.com/r/opengl/comments/1guu5hj/trying_to_make_pointlight_shadows_work_running/
+    // NOTE: Currently doesn't really work, really having a hard time remapping
+    // the depth cube texture map to the shadow_depth for comparison.
+
+    let shadow_direction = normalize(frag_to_light);
+    let norm_distance = current_depth / far; // normalize to [0,1]
+    let shadow_depth = norm_distance - bias;
+    factor *= textureSampleCompare(point_shadow_maps, point_shadow_sampler,
+                                   shadow_direction, l, shadow_depth);
+
+    // factor = shadow_depth;
+    //  check for color based shadow :
+    //  https://www.reddit.com/r/opengl/comments/1guu5hj/trying_to_make_pointlight_shadows_work_running/
 
 #endif
   }
@@ -343,6 +345,7 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
     factor *= textureSample(directional_shadow_maps, directional_shadow_sampler,
                             shadow_position.xy, l)
                   .r;
+
 #else
     factor *= textureSampleCompare(directional_shadow_maps,
                                    directional_shadow_sampler,
@@ -407,7 +410,7 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let directional_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                                directional_shadow_factor(vFrag));
 
-  return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag, vUv)), 1.0f);
+  return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag)), 1.0f);
   // return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
   //       return vec4<f32>(
   //           directional_shadow_position(vFrag,
