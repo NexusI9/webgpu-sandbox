@@ -45,12 +45,12 @@ static void setup_triangle();
 static void init_scene();
 
 // dir light
-static vec3 LIGHT_POSITION = {0.0f, 6.0f, 6.0f};
+static vec3 LIGHT_POSITION = {0.0f, 10.0f, 6.0f};
 static vec3 LIGHT_TARGET = {0.0f, 0.0f, 0.0f};
 
 // point light
-//static vec3 POINT_LIGHT = {0.0f, 0.5f, -0.3f}; // < 1
-//static vec3 POINT_LIGHT = {0.0f, 0.4f, -0.8f}; // < 2
+// static vec3 POINT_LIGHT = {0.0f, 0.5f, -0.3f}; // < 1
+// static vec3 POINT_LIGHT = {0.0f, 0.4f, -0.8f}; // < 2
 // static vec3 POINT_LIGHT = {0.0f, 0.4f, 3.3f}; // < 10
 static vec3 POINT_LIGHT = {0.0f, 2.4f, -5.3f}; // < 20
 
@@ -156,7 +156,7 @@ void add_cube(vec3 position) {
                       .queue = &main_renderer.wgpu.queue,
                   });
 
-  mesh_scale(cube, (vec3){0.1f, 0.1f, 0.1f});
+
   mesh_position(cube, position);
 
   material_texture_bind_views(cube, &main_scene.camera, &main_scene.viewport,
@@ -240,11 +240,11 @@ int main(int argc, const char *argv[]) {
   */
   //  add_cube((vec3){1.0f, 0.0f, 0.0f});
 
-  /*add_cube((vec3){
+  add_cube((vec3){
       POINT_LIGHT[0],
       POINT_LIGHT[1],
       POINT_LIGHT[2],
-      });*/
+  });
   import_cube();
   add_grid();
 

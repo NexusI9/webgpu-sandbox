@@ -130,8 +130,8 @@ LightViews light_point_views(vec3 light_position) {
       {0.0f, 1.0f, 0.0f},  // -z (back)
   };
 
-  // mat4 projection;
-  // glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
+  mat4 projection;
+  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
 
   for (int v = 0; v < new_views.length; v++) {
 
@@ -139,9 +139,9 @@ LightViews light_point_views(vec3 light_position) {
     glm_vec3_add(light_position, directions[v], direction);
 
     mat4 view;
-    glm_lookat(light_position, direction, ups[v], new_views.views[v]);
+    glm_lookat(light_position, direction, ups[v], view);
 
-    // glm_mat4_mul(projection, view, new_views.views[v]);
+    glm_mat4_mul(projection, view, new_views.views[v]);
 
     printf("Point light new view:\n");
     print_mat4(new_views.views[v]);
@@ -171,8 +171,9 @@ LightViews light_directional_view(vec3 light_position, vec3 light_target) {
 
   for (int v = 0; v < new_views.length; v++) {
     mat4 view;
-    glm_lookat(light_position, light_target, up, new_views.views[v]);
+    glm_lookat(light_position, light_target, up, view);
 
+    glm_mat4_mul(projection, view, new_views.views[v]);
     printf("Directional light new view:\n");
     print_mat4(new_views.views[v]);
   }

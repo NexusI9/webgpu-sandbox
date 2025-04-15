@@ -29,7 +29,7 @@ struct Mesh {
   var out : VertexOut;
   let model = uModel.model * vec4<f32>(input.aPos, 1.0f);
   out.vFrag = model;
-  out.vPosition = light_projection * view_projection * model;
+  out.vPosition = view_projection * model;
 
   return out;
 }
