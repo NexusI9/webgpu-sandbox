@@ -257,25 +257,19 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
   return vec3(light_intensity) * material.albedo * material.occlusion;
 }
 
-fn directional_shadow_position(world_position : vec3<f32>,
-                               light_view : mat4x4<f32>) -> vec3<f32> {
+fn compute_depth(position : f32, near : f32, far : f32) -> f32 {
 
-  // transform world position into clip space
-  let shadow_clip = light_view * vec4<f32>(world_position, 1.0f);
+  // let norm_z_comp = (far + near) / (far - near) -
+  //                   (2.0f * far * near) / (far - near) / local_z_comp;
+  // let depth = norm_z_comp - 0.002f;
 
-  // convert to NDC coordinates
-  var shadow_ndc = shadow_clip.xyz / shadow_clip.w;
+  let norm_z_comp = (-position * -1.0f * (far + near)) / (far - near) +
+                    ((-2.0f * far * near) / (far - near));
 
-  // convert [-1;1] to [0;1]
-  let near = 0.1;
-  let far = 100.0f;
-  // convert to UV (0-1 range)
-  let shadow_uv =
-      shadow_ndc.xy * vec2<f32>(0.5f, -0.5f) + vec2<f32>(0.5f, 0.5f);
-  let shadow_depth = shadow_ndc.z;
+  let depth = (far + near) / (far - near) -
+              2.0f * far * near / (norm_z_comp * (far - near));
 
-  // returns depth to compare
-  return vec3<f32>(shadow_uv, shadow_depth);
+  return (depth + 1.0f) * 0.5f;
 }
 
 // Combine and compute Point light shadow
@@ -314,20 +308,11 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> vec3<f32> {
     let abs_vec = abs(frag_to_light);
     let local_z_comp = max(abs_vec.x, max(abs_vec.y, abs_vec.z));
     var shadow_direction = normalize(frag_to_light);
-    // let norm_z_comp = (far + near) / (far - near) -
-    //                   (2.0f * far * near) / (far - near) / local_z_comp;
-    // let depth = norm_z_comp - 0.002f;
 
-    let norm_z_comp = (-local_z_comp * -1.0f * (far + near)) / (far - near) +
-                      ((-2.0f * far * near) / (far - near));
-
-    let depth = (far + near) / (far - near) -
-                2.0f * far * near / (norm_z_comp * (far - near));
-
-    let norm_depth = (depth + 1.0f) * 0.5f;
+    let depth = compute_depth(local_z_comp, near, far);
 
     factor *= textureSampleCompare(point_shadow_maps, point_shadow_sampler,
-                                   shadow_direction, l, norm_depth);
+                                   shadow_direction, l, depth);
 #endif
   }
 
@@ -336,10 +321,28 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> vec3<f32> {
 }
 
 //  Compute Directional light shadow
+
+fn directional_shadow_position(world_position : vec3<f32>,
+                               light_view : mat4x4<f32>) -> vec3<f32> {
+
+  // transform world position into clip space
+  let shadow_clip = light_view * vec4<f32>(world_position, 1.0f);
+
+  // convert to NDC coordinates
+  var shadow_ndc = shadow_clip.xyz / shadow_clip.w;
+
+  // convert to UV (0-1 range)
+  let shadow_uv = shadow_ndc.xy * vec2<f32>(0.5f, -0.5f) + 0.5f;
+  let shadow_depth = shadow_ndc.z;
+
+  // returns depth to compare
+  return vec3<f32>(shadow_uv, shadow_depth);
+}
+
 fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.005f;
+  var bias : f32 = 0.0005f;
 
   for (var l : u32 = 0u; l < directional_light_list.length; l++) {
 
@@ -354,9 +357,11 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
 #else
 
     let shadow_depth = shadow_position.z - bias;
+
     factor *= textureSampleCompare(directional_shadow_maps,
                                    directional_shadow_sampler,
                                    shadow_position.xy, l, shadow_depth);
+
 #endif
   }
 
@@ -417,9 +422,9 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let directional_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                                directional_shadow_factor(vFrag));
 
-  return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag)), 1.0f);
-  // return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
-  //        return vec4<f32>(
-  //            directional_shadow_position(vFrag,
-  //            directional_light_list.items[0].view), 1.0f);
+  // return vec4<f32>(vec3<f32>(point_shadow_factor(vFrag)), 1.0f);
+  return vec4<f32>(vec3<f32>(directional_shadow_factor(vFrag)), 1.0f);
+  //         return vec4<f32>(
+  //             directional_shadow_position(vFrag,
+  //             directional_light_list.items[0].view), 1.0f);
 }

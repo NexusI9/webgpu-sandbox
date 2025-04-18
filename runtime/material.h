@@ -76,4 +76,6 @@ typedef struct {
 // bind shadow specicif view
 void material_shadow_bind_views(mesh *, mat4 *);
 
+void material_shadow_set_cullmode(mesh*, const WGPUCullMode);
+
 #endif

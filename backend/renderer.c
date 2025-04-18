@@ -351,7 +351,8 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
 
   MeshIndexedList *target_mesh_list = &desc->scene->meshes.lit;
   // scene->lights.point.length
-  // I. create Point Light Shadow Map
+
+  // ===== I. create Point Light Shadow Map =====
 
   for (size_t p = 0; p < desc->scene->lights.point.length; p++) {
     // retrieve 6 views of point cube
@@ -388,7 +389,8 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
     }
   }
 
-  // II. create Directional Ligth Shadow Mapping
+  // ===== II. create Directional Ligth Shadow Mapping =====
+
   for (size_t p = 0; p < desc->scene->lights.directional.length; p++) {
 
     // get each light orthographic view depending on target
@@ -400,6 +402,16 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
     for (int m = 0; m < target_mesh_list->length; m++) {
       mesh *current_mesh = &target_mesh_list->items[m];
       material_shadow_bind_views(current_mesh, &light_views.views[0]);
+
+      /*
+        Point Light pipeline use a FRONT cull cause by flipping the scene on
+        the x axis to match cube map coordinates.
+
+        However since directional light use a casual Texture and doesn't require
+        to flip the scene projection, we set back the cull to BACK.
+      */
+
+      material_shadow_set_cullmode(current_mesh, WGPUCullMode_Back);
       mesh_build(current_mesh, MESH_SHADER_SHADOW);
     }
 

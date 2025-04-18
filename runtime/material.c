@@ -202,20 +202,6 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
   mat4 projection;
   glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
 
-  printf("Light projection:\n");
-  print_mat4(projection);
-  printf("Light view:\n");
-  print_mat4(*view);
-
-  printf("Mesh model matrix:\n");
-  print_mat4(uModel.model);
-
-  mat4 result;
-  glm_mul(projection, *view, result);
-  printf("Projections * View:\n");
-  print_mat4(result);
-  printf("\n\n");
-
   shader_add_uniform(
       mesh_shader_shadow(mesh),
       &(ShaderCreateUniformDescriptor){
@@ -360,4 +346,18 @@ void material_texture_add_texture_view(
 void material_texture_add_sampler(mesh *mesh,
                                   const ShaderCreateSamplerDescriptor *desc) {
   shader_add_sampler(mesh_shader_texture(mesh), desc);
+}
+
+void material_shadow_set_cullmode(mesh *mesh, WGPUCullMode mode) {
+
+  pipeline_set_primitive(shader_pipeline(mesh_shader_shadow(mesh)),
+                         (WGPUPrimitiveState){
+                             .frontFace = WGPUFrontFace_CCW,
+                             .cullMode = WGPUCullMode_Back,
+                             .topology = WGPUPrimitiveTopology_TriangleList,
+                             .stripIndexFormat = WGPUIndexFormat_Undefined,
+                         });
+
+  for (size_t c = 0; c < mesh->children.length; c++)
+    material_shadow_set_cullmode(&mesh->children.items[c], mode);
 }

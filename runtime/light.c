@@ -133,11 +133,11 @@ LightViews light_point_views(vec3 light_position) {
   mat4 projection;
   glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
 
-  // flipping X axis to match cubemap coordinates
+  /* Flipping projection X axis to match cubemap coordinates
+     Probably has something to do with the fact that we see the cube maps
+     from inside, so need to mirror its faces.
+   */
   projection[0][0] *= -1.0f;
-
-  printf("PROJECTION\n");
-  print_mat4(projection);
 
   for (int v = 0; v < new_views.length; v++) {
 
@@ -148,9 +148,6 @@ LightViews light_point_views(vec3 light_position) {
     glm_lookat(light_position, direction, ups[v], view);
 
     glm_mat4_mul(projection, view, new_views.views[v]);
-
-    printf("Point light new view:\n");
-    print_mat4(new_views.views[v]);
   }
 
   return new_views;
@@ -173,15 +170,12 @@ LightViews light_directional_view(vec3 light_position, vec3 light_target) {
     glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, up);
 
   mat4 projection;
-  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
+  glm_perspective(glm_rad(65.0f), 1.0f, 0.1f, 100.0f, projection);
 
   for (int v = 0; v < new_views.length; v++) {
     mat4 view;
     glm_lookat(light_position, light_target, up, view);
-
     glm_mat4_mul(projection, view, new_views.views[v]);
-    printf("Directional light new view:\n");
-    print_mat4(new_views.views[v]);
   }
 
   return new_views;
