@@ -632,9 +632,10 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   }
 
   // !!DEBUG: Add views to scene
+  /*
   for (size_t v = 0; v < debug_view_length(&debug_view_light); v++) {
     mesh *view = scene_new_mesh_unlit(scene);
     mesh *view_mesh = &debug_view_light.mesh[v];
     memcpy(view, view_mesh, sizeof(mesh));
-  }
+    }*/
 }
