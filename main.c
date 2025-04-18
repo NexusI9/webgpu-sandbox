@@ -5,6 +5,7 @@
 //  https://stackoverflow.com/questions/23997312/how-do-i-read-a-user-specified-file-in-an-emscripten-compiled-library
 
 #include <emscripten/emscripten.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -113,6 +114,8 @@ void init_scene() {
   scene_add_directional_light(&main_scene, &(DirectionalLightDescriptor){
                                                .color = {1.0f, 1.0f, 1.0f},
                                                .intensity = 2.0f,
+                                               .cutoff = 30.0f,
+                                               .inner_cutoff = 10.0f,
                                                .target =
                                                    {
                                                        LIGHT_TARGET[0],
@@ -152,7 +155,6 @@ void add_cube(vec3 position) {
                       .device = &main_renderer.wgpu.device,
                       .queue = &main_renderer.wgpu.queue,
                   });
-
 
   mesh_position(cube, position);
 

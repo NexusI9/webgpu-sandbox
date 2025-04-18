@@ -27,6 +27,8 @@ typedef struct {
   vec3 position;
   vec3 target;
   vec3 color;
+  float cutoff;
+  float inner_cutoff;
   float intensity;
 } DirectionalLight;
 
@@ -46,6 +48,8 @@ typedef struct {
   vec3 position;
   vec3 target;
   vec3 color;
+  float cutoff;
+  float inner_cutoff;
   float intensity;
 } DirectionalLightDescriptor;
 
@@ -67,9 +71,9 @@ typedef struct {
 
 typedef struct {
   vec3 position;
-  float _padding_1;
+  float cutoff;
   vec3 target;
-  float _padding_2;
+  float inner_cutoff;
   vec3 color;
   float intensity;
   mat4 view;

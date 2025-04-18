@@ -103,13 +103,19 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
       DirectionalLight *light = &directional_list->items[i];
       DirectionalLightUniform *uniform = &directional_uniform.items[i];
 
+      // TODO: create a light method "light_directional_uniform"
       *uniform = (DirectionalLightUniform){0};
       uniform->intensity = light->intensity;
+      uniform->cutoff = light->cutoff;
+      uniform->inner_cutoff = light->inner_cutoff;
       glm_vec3_copy(light->color, uniform->color);
       glm_vec3_copy(light->target, uniform->target);
+      glm_vec3_copy(light->position, uniform->position);
 
+      // get light view matrix
       LightViews directional_view =
           light_directional_view(light->position, light->target);
+
       glm_mat4_copy(directional_view.views[0], uniform->view);
     }
   }
