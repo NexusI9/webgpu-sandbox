@@ -376,6 +376,17 @@ void mesh_init_shadow_shader(mesh *mesh) {
                            .depthCompare = WGPUCompareFunction_Less,
                        });
 
+  /* need to set the cullback to FRONT for point light because the light POV
+   * render is flipped on the X axis to match the cubemap coordinates, such
+   * negative scaling lead to set the cullback to front.*/
+  pipeline_set_primitive(shader_pipeline(shadow_shader),
+                         (WGPUPrimitiveState){
+                             .frontFace = WGPUFrontFace_CCW,
+                             .cullMode = WGPUCullMode_Front,
+                             .topology = WGPUPrimitiveTopology_TriangleList,
+                             .stripIndexFormat = WGPUIndexFormat_Undefined,
+                         });
+
   for (size_t c = 0; c < mesh->children.length; c++)
     mesh_init_shadow_shader(&mesh->children.items[c]);
 }

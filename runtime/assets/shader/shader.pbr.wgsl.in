@@ -267,7 +267,6 @@ fn directional_shadow_position(world_position : vec3<f32>,
   var shadow_ndc = shadow_clip.xyz / shadow_clip.w;
 
   // convert [-1;1] to [0;1]
-
   let near = 0.1;
   let far = 100.0f;
   // convert to UV (0-1 range)
@@ -283,13 +282,14 @@ fn directional_shadow_position(world_position : vec3<f32>,
 fn point_shadow_factor(frag_position : vec3<f32>) -> vec3<f32> {
 
   var factor : f32 = 1.0f; // show by default
-  var bias : f32 = 0.000f;
+  var bias : f32 = 0.05f;
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
 
     let light_position = point_light_list.items[l].position;
 
     var frag_to_light = frag_position - light_position.xyz;
+
     let current_depth = length(frag_to_light);
 
     let far = 100.0f;
@@ -311,26 +311,23 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> vec3<f32> {
 
 #else
 
-    // NOTE: Currently doesn't really work, really having a hard time remapping
-    // the depth cube texture map to the shadow_depth for comparison.
-
-    let shadow_direction = normalize(frag_to_light);
-    let norm_distance = current_depth / 100.0f; // normalize to [0,1]
-
     let abs_vec = abs(frag_to_light);
     let local_z_comp = max(abs_vec.x, max(abs_vec.y, abs_vec.z));
+    var shadow_direction = normalize(frag_to_light);
+    // let norm_z_comp = (far + near) / (far - near) -
+    //                   (2.0f * far * near) / (far - near) / local_z_comp;
+    // let depth = norm_z_comp - 0.002f;
 
-    let norm_z_comp = (far + near) / (far - near) -
-                      (2.0f * far * near) / (far - near) / local_z_comp;
+    let norm_z_comp = (-local_z_comp * -1.0f * (far + near)) / (far - near) +
+                      ((-2.0f * far * near) / (far - near));
 
-    let depth = (norm_z_comp);//+ 1.0) / 0.5;
+    let depth = (far + near) / (far - near) -
+                2.0f * far * near / (norm_z_comp * (far - near));
+
+    let norm_depth = (depth + 1.0f) * 0.5f;
 
     factor *= textureSampleCompare(point_shadow_maps, point_shadow_sampler,
-                                   shadow_direction, l, (depth - bias));
-
-    //  check for color based shadow :
-    //  https://www.reddit.com/r/opengl/comments/1guu5hj/trying_to_make_pointlight_shadows_work_running/
-
+                                   shadow_direction, l, norm_depth);
 #endif
   }
 

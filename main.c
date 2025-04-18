@@ -49,10 +49,7 @@ static vec3 LIGHT_POSITION = {0.0f, 10.0f, 6.0f};
 static vec3 LIGHT_TARGET = {0.0f, 0.0f, 0.0f};
 
 // point light
-// static vec3 POINT_LIGHT = {0.0f, 0.5f, -0.3f}; // < 1
-// static vec3 POINT_LIGHT = {0.0f, 0.4f, -0.8f}; // < 2
-// static vec3 POINT_LIGHT = {0.0f, 0.4f, 3.3f}; // < 10
-static vec3 POINT_LIGHT = {0.0f, 2.4f, -5.3f}; // < 20
+static vec3 POINT_LIGHT = {0.0f, 5.4f, 5.3f}; // < 20
 
 void init_scene() {
 

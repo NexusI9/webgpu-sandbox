@@ -115,8 +115,8 @@ LightViews light_point_views(vec3 light_position) {
   vec3 directions[LIGHT_POINT_VIEWS] = {
       {1.0f, 0.0f, 0.0f},  // +x (right)
       {-1.0f, 0.0f, 0.0f}, // -x (left)
-      {0.0f, 1.0f, 0.0f},  // +y (top)
-      {0.0f, -1.0f, 0.0f}, // -y (bottom)
+      {0.0f, 1.0f, 0.0f}, // +y (top)
+      {0.0f, -1.0f, 0.0f},  // -y (bottom)
       {0.0f, 0.0f, 1.0f},  // +z (front)
       {0.0f, 0.0f, -1.0f}, // -z (back)
   };
@@ -124,14 +124,20 @@ LightViews light_point_views(vec3 light_position) {
   vec3 ups[LIGHT_POINT_VIEWS] = {
       {0.0f, 1.0f, 0.0f},  // +x (right)
       {0.0f, 1.0f, 0.0f},  // -x (left)
-      {0.0f, 0.0f, 1.0f},  // +y (top)
-      {0.0f, 0.0f, -1.0f}, // -y (bottom)
+      {0.0f, 0.0f, -1.0f}, // +y (top)
+      {0.0f, 0.0f, 1.0f},  // -y (bottom)
       {0.0f, 1.0f, 0.0f},  // +z (front)
       {0.0f, 1.0f, 0.0f},  // -z (back)
   };
 
   mat4 projection;
   glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
+
+  // flipping X axis to match cubemap coordinates
+  projection[0][0] *= -1.0f;
+
+  printf("PROJECTION\n");
+  print_mat4(projection);
 
   for (int v = 0; v < new_views.length; v++) {
 
