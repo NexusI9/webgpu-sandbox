@@ -28,6 +28,7 @@ typedef struct {
   vec3 target;
   vec3 color;
   float cutoff;
+  float angle;
   float inner_cutoff;
   float intensity;
 } DirectionalLight;
@@ -49,6 +50,7 @@ typedef struct {
   vec3 target;
   vec3 color;
   float cutoff;
+  float angle;
   float inner_cutoff;
   float intensity;
 } DirectionalLightDescriptor;
@@ -133,5 +135,5 @@ void light_create_directional(DirectionalLight *, DirectionalLightDescriptor *);
 void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
 
 LightViews light_point_views(vec3);
-LightViews light_directional_view(vec3, vec3);
+LightViews light_directional_view(vec3, vec3, float);
 #endif

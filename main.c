@@ -114,8 +114,9 @@ void init_scene() {
   scene_add_directional_light(&main_scene, &(DirectionalLightDescriptor){
                                                .color = {1.0f, 1.0f, 1.0f},
                                                .intensity = 2.0f,
-                                               .cutoff = 30.0f,
-                                               .inner_cutoff = 10.0f,
+                                               .cutoff = 45.0f,
+                                               .angle = 45.0f,
+                                               .inner_cutoff = 30.0f,
                                                .target =
                                                    {
                                                        LIGHT_TARGET[0],

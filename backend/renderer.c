@@ -393,10 +393,11 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
 
   for (size_t p = 0; p < desc->scene->lights.directional.length; p++) {
 
+    DirectionalLight *light = &desc->scene->lights.directional.items[p];
+
     // get each light orthographic view depending on target
-    LightViews light_views = light_directional_view(
-        desc->scene->lights.directional.items[p].position,
-        desc->scene->lights.directional.items[p].target);
+    LightViews light_views =
+        light_directional_view(light->position, light->target, light->angle);
 
     // 1. Bind meshes
     for (int m = 0; m < target_mesh_list->length; m++) {
@@ -404,6 +405,7 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
       material_shadow_bind_views(current_mesh, &light_views.views[0]);
 
       /*
+        Cullmode adjustment below:
         Point Light pipeline use a FRONT cull cause by flipping the scene on
         the x axis to match cube map coordinates.
 
