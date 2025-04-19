@@ -50,7 +50,7 @@ static vec3 LIGHT_POSITION = {0.0f, 4.0f, 6.0f};
 static vec3 LIGHT_TARGET = {0.0f, 0.0f, 0.0f};
 
 // point light
-static vec3 POINT_LIGHT = {0.0f, 5.4f, 5.3f}; // < 20
+static vec3 POINT_LIGHT = {0.0f, 2.4f, 2.3f}; // < 20
 
 void init_scene() {
 
@@ -102,7 +102,7 @@ void init_scene() {
   // set light
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
-                                         .intensity = 2.0f,
+                                         .intensity = 4.0f,
                                          .cutoff = 20.0f,
                                          .inner_cutoff = 50.0f,
                                          .near = 0.1,
@@ -137,7 +137,7 @@ void init_scene() {
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
-                                           .intensity = 0.3f,
+                                           .intensity = 0.1f,
                                        });
 }
 

@@ -348,25 +348,6 @@ void mesh_init_shadow_shader(mesh *mesh) {
                     .name = "shadow",
                 });
 
-  /*pipeline_set_fragment(
-      shader_pipeline(shadow_shader),
-      &(PipelineFragmentDescriptor){
-          .color_state =
-              (WGPUColorTargetState){
-                  .format = SHADOW_COLOR_FORMAT,
-                  .writeMask = WGPUColorWriteMask_All,
-              },
-          .fragment_state =
-              (WGPUFragmentState){
-                  .module = *shader_pipeline(shadow_shader)->module,
-                  .entryPoint = "fs_main",
-                  .targetCount = 1,
-                  .targets = &shader_pipeline(shadow_shader)->color_state,
-
-              },
-          .blend_state = (WGPUBlendState){0},
-
-          });*/
 
   // edit shader pipeline (vertex only)
   pipeline_set_stencil(shader_pipeline(shadow_shader),

@@ -217,8 +217,15 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   // var distance : f32 = length(fragment_position - light_position);
   //  var L : vec3<f32> = vec3<f32>(
   //  1.0 / (1.0 + 0.19 * distance + 0.1 * distance * distance));
-  var L : vec3<f32> = vec3<f32>(dot(
-              vertex_normal, normalize(light_position - fragment_position)));
+
+  // transform normal to worldspace
+  let world_normal = (uMesh.model * vec4<f32>(vertex_normal, 0.0f)).xyz;
+
+  // make dot product to check if normal point towards light or not
+  var L : vec3<f32> =
+              vec3<f32>(dot(normalize(world_normal),
+                            normalize(light_position - fragment_position)));
+
   var H : vec3<f32> = normalize(V + L); // halfway vector
 
   // 2. Fresnel effect
@@ -475,6 +482,7 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
   // basically the same a point light, but use a fixed light direction instead
   // of a one per fragment like a point light
   for (var i = 0u; i < directional_light_list.length; i = i + 1u) {
+
     let light = directional_light_list.items[i];
     let light_direction = -1.0f * light.lookat - light.position;
     Lo += compute_point_light(material, vFrag, vNormal, uCamera.position.xyz,
@@ -494,8 +502,8 @@ fn directional_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let point_shadow = point_shadow_factor(vFrag);
   let directional_shadow = directional_shadow_factor(vFrag);
 
-  let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
-                            point_shadow + directional_shadow);
+  let combined_shadow =
+      mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0), point_shadow + directional_shadow);
 
-  return vec4<f32>(color * directional_shadow, 1.0f);
+  return vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
 }
