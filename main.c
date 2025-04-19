@@ -106,7 +106,7 @@ void init_scene() {
                                          .cutoff = 20.0f,
                                          .inner_cutoff = 50.0f,
                                          .near = 0.1,
-                                         .far = 10.0f,
+                                         .far = 20.0f,
                                          .position =
                                              {
                                                  POINT_LIGHT[0],
