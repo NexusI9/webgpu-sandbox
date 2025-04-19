@@ -103,6 +103,10 @@ void init_scene() {
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
                                          .intensity = 2.0f,
+                                         .cutoff = 20.0f,
+                                         .inner_cutoff = 50.0f,
+                                         .near = 0.1,
+                                         .far = 10.0f,
                                          .position =
                                              {
                                                  POINT_LIGHT[0],
@@ -241,9 +245,9 @@ int main(int argc, const char *argv[]) {
   //  add_cube((vec3){1.0f, 0.0f, 0.0f});
 
   add_cube((vec3){
-      LIGHT_POSITION[0],
-      LIGHT_POSITION[1],
-      LIGHT_POSITION[2],
+      POINT_LIGHT[0],
+      POINT_LIGHT[1],
+      POINT_LIGHT[2],
   });
   import_cube();
   add_grid();

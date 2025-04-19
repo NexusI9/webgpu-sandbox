@@ -20,9 +20,8 @@ struct Mesh {
   model : mat4x4<f32>, position : vec4<f32>,
 }
 
-@group(0) @binding(0) var<uniform> light_projection : mat4x4<f32>;
-@group(0) @binding(1) var<uniform> view_projection : mat4x4<f32>;
-@group(0) @binding(2) var<uniform> uModel : Mesh;
+@group(0) @binding(0) var<uniform> view_projection : mat4x4<f32>;
+@group(0) @binding(1) var<uniform> uModel : Mesh;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 

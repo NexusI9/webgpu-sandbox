@@ -63,8 +63,20 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
   // init to 0
   *light = (PointLight){0};
 
-  // copy intensity
+  // copy intensity (exponent)
   light->intensity = desc->intensity;
+
+  // copy cutoff
+  light->cutoff = cos(glm_rad(desc->cutoff));
+
+  // copy inner cutoff
+  light->inner_cutoff = cos(glm_rad(desc->inner_cutoff));
+
+  // copy near plane
+  light->near = desc->near;
+
+  // copy far plane
+  light->far = desc->far;
 
   // copy position
   glm_vec3_copy(desc->position, light->position);
@@ -115,7 +127,7 @@ void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
    Compute point view for Point light
    Point lights use 6 views, each pointing to different directions
  */
-LightViews light_point_views(vec3 light_position) {
+LightViews light_point_views(vec3 light_position, float near, float far) {
 
   LightViews new_views = (LightViews){.length = LIGHT_POINT_VIEWS};
 
@@ -138,7 +150,7 @@ LightViews light_point_views(vec3 light_position) {
   };
 
   mat4 projection;
-  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
+  glm_perspective(glm_rad(90.0f), 1.0f, near, far, projection);
 
   /* Flipping projection X axis to match cubemap coordinates
      Probably has something to do with the fact that we see the cube maps

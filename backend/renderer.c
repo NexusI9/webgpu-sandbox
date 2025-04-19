@@ -355,9 +355,11 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
   // ===== I. create Point Light Shadow Map =====
 
   for (size_t p = 0; p < desc->scene->lights.point.length; p++) {
+
+    PointLight *light = &desc->scene->lights.point.items[p];
     // retrieve 6 views of point cube
     LightViews light_views =
-        light_point_views(desc->scene->lights.point.items[p].position);
+        light_point_views(light->position, light->near, light->far);
 
     // render scene and store depth map for each view
     for (size_t v = 0; v < light_views.length; v++) {

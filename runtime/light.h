@@ -16,6 +16,10 @@ typedef struct {
   vec3 position;
   vec3 color;
   float intensity;
+  float cutoff;
+  float inner_cutoff;
+  float near;
+  float far;
 } PointLight;
 
 typedef struct {
@@ -38,6 +42,10 @@ typedef struct {
   vec3 position;
   vec3 color;
   float intensity;
+  float cutoff;
+  float inner_cutoff;
+  float near;
+  float far;
 } PointLightDescriptor;
 
 typedef struct {
@@ -60,10 +68,14 @@ typedef struct {
 // alignment in list items (i.e. _padding takes color.r value)
 typedef struct {
   vec3 position;
-  float _padding;
+  float cutoff;
   vec3 color;
   float intensity;
   mat4 views[LIGHT_POINT_VIEWS];
+  float inner_cutoff;
+  float near;
+  float far;
+  float _padding;
 } __attribute__((aligned(16))) PointLightUniform;
 
 typedef struct {
@@ -134,6 +146,6 @@ void light_create_point(PointLight *, PointLightDescriptor *);
 void light_create_directional(DirectionalLight *, DirectionalLightDescriptor *);
 void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
 
-LightViews light_point_views(vec3);
+LightViews light_point_views(vec3, float, float);
 LightViews light_directional_view(vec3, vec3, float);
 #endif

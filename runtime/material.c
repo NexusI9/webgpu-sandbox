@@ -130,11 +130,16 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
 
       *uniform = (PointLightUniform){0};
       uniform->intensity = light->intensity;
+      uniform->cutoff = light->cutoff;
+      uniform->inner_cutoff = light->inner_cutoff;
+      uniform->near = light->near;
+      uniform->far = light->far;
+      
       glm_vec3_copy(light->color, uniform->color);
       glm_vec3_copy(light->position, uniform->position);
 
       // copy 6 points views for shader depth comparison
-      LightViews points_views = light_point_views(light->position);
+      LightViews points_views = light_point_views(light->position, light->near, light->far);
       for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++)
         glm_mat4_copy(points_views.views[v], uniform->views[v]);
     }
@@ -205,31 +210,22 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 
   MeshUniform uModel = mesh_model_uniform(mesh);
 
-  mat4 projection;
-  glm_perspective(glm_rad(90.0f), 1.0f, 0.1f, 100.0f, projection);
-
   shader_add_uniform(
       mesh_shader_shadow(mesh),
       &(ShaderCreateUniformDescriptor){
           .group_index = 0,
-          .entry_count = 3,
+          .entry_count = 2,
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entries =
               (ShaderBindGroupUniformEntry[]){
                   {
                       .binding = 0,
-                      .data = projection,
-                      .size = sizeof(mat4),
-                      .offset = 0,
-                  },
-                  {
-                      .binding = 1,
                       .data = view,
                       .size = sizeof(mat4),
                       .offset = 0,
                   },
                   {
-                      .binding = 2,
+                      .binding = 1,
                       .data = &uModel,
                       .size = sizeof(MeshUniform),
                       .offset = 0,
