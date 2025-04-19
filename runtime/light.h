@@ -9,7 +9,6 @@
 #define LIGHT_MAX_CAPACITY 16
 #define LIGHT_POINT_VIEWS 6
 #define LIGHT_DIRECTIONAL_VIEW 1
-#define SHADOW_MAP_SIZE 512
 
 // core type
 typedef struct {

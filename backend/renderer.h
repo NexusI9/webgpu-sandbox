@@ -8,6 +8,7 @@
 // WGPUTextureFormat_Depth32Float
 #define SHADOW_DEPTH_FORMAT WGPUTextureFormat_Depth32Float
 #define SHADOW_COLOR_FORMAT WGPUTextureFormat_BGRA8Unorm
+#define SHADOW_MAP_SIZE 1024
 
 typedef struct {
   const char *name;
