@@ -95,7 +95,7 @@ void buffer_create_texture(WGPUTextureView *texture_view,
                         tx->data, tx->size,
                         &(WGPUTextureDataLayout){
                             .offset = 0,
-                            .bytesPerRow = tx->width * TEXTURE_DEFAULT_CHANNELS,
+                            .bytesPerRow = tx->width * TEXTURE_CHANNELS_RGBA,
                             .rowsPerImage = tx->height,
                         },
                         &(WGPUExtent3D){tx->width, tx->height, 1});

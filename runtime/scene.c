@@ -132,9 +132,9 @@ void scene_init_light_list(scene *scene) {
   scene->lights.point.capacity = LIGHT_MAX_CAPACITY;
   scene->lights.point.length = 0;
 
-  // init directional light list
-  scene->lights.directional.capacity = LIGHT_MAX_CAPACITY;
-  scene->lights.directional.length = 0;
+  // init spot light list
+  scene->lights.spot.capacity = LIGHT_MAX_CAPACITY;
+  scene->lights.spot.length = 0;
 
   // init ambient light list
   scene->lights.ambient.capacity = LIGHT_MAX_CAPACITY;
@@ -155,17 +155,17 @@ size_t scene_add_point_light(scene *scene, PointLightDescriptor *desc) {
   return list->length;
 }
 
-size_t scene_add_directional_light(scene *scene,
-                                   DirectionalLightDescriptor *desc) {
+size_t scene_add_spot_light(scene *scene,
+                                   SpotLightDescriptor *desc) {
 
-  DirectionalLightList *list = &scene->lights.directional;
+  SpotLightList *list = &scene->lights.spot;
   if (list->length == list->capacity) {
-    perror("Scene directional light capacity reached maximum");
+    perror("Scene spot light capacity reached maximum");
     return -1;
   }
 
-  DirectionalLight *new_light = &list->items[list->length++];
-  light_create_directional(new_light, desc);
+  SpotLight *new_light = &list->items[list->length++];
+  light_create_spot(new_light, desc);
 
   return list->length;
 }

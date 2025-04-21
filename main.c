@@ -115,25 +115,25 @@ void init_scene() {
                                              },
                                      });
 
-  scene_add_directional_light(&main_scene, &(DirectionalLightDescriptor){
-                                               .color = {1.0f, 1.0f, 1.0f},
-                                               .intensity = 2.0f,
-                                               .cutoff = 45.0f,
-                                               .angle = 45.0f,
-                                               .inner_cutoff = 30.0f,
-                                               .target =
-                                                   {
-                                                       LIGHT_TARGET[0],
-                                                       LIGHT_TARGET[1],
-                                                       LIGHT_TARGET[2],
-                                                   },
-                                               .position =
-                                                   {
-                                                       LIGHT_POSITION[0],
-                                                       LIGHT_POSITION[1],
-                                                       LIGHT_POSITION[2],
-                                                   },
-                                           });
+  /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
+            .color = {1.0f, 1.0f, 1.0f},
+            .intensity = 2.0f,
+            .cutoff = 45.0f,
+            .angle = 45.0f,
+            .inner_cutoff = 30.0f,
+            .target =
+                {
+                    LIGHT_TARGET[0],
+                    LIGHT_TARGET[1],
+                    LIGHT_TARGET[2],
+                },
+            .position =
+                {
+                    LIGHT_POSITION[0],
+                    LIGHT_POSITION[1],
+                    LIGHT_POSITION[2],
+                },
+                });*/
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
@@ -205,7 +205,7 @@ void import_cube() {
 
   material_texture_bind_lights(
       cube, &main_scene.viewport, &main_scene.lights.ambient,
-      &main_scene.lights.directional, &main_scene.lights.point, 2);
+      &main_scene.lights.spot, &main_scene.lights.point, 2);
 }
 
 void draw() {

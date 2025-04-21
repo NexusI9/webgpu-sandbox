@@ -18,7 +18,7 @@ typedef struct {
 
 typedef struct {
   PointLightList point;
-  DirectionalLightList directional;
+  SpotLightList spot;
   AmbientLightList ambient;
 } SceneLightList;
 
@@ -45,7 +45,7 @@ void scene_draw(scene *, MeshDrawMethod, WGPURenderPassEncoder *);
 void scene_build(scene *, MeshDrawMethod);
 
 size_t scene_add_point_light(scene *, PointLightDescriptor *);
-size_t scene_add_directional_light(scene *, DirectionalLightDescriptor *);
+size_t scene_add_spot_light(scene *, SpotLightDescriptor *);
 size_t scene_add_ambient_light(scene *, AmbientLightDescriptor *);
 
 #endif

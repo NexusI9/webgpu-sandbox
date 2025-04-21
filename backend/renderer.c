@@ -1,6 +1,8 @@
 #include "renderer.h"
 #include "../resources/debug/view.h"
 #include "../runtime/material.h"
+#include "../runtime/texture.h"
+#include "../utils/math.h"
 #include "../utils/system.h"
 #include "clock.h"
 #include "emscripten/html5.h"
@@ -19,6 +21,9 @@ renderer_create_shadow_textures(const RendererCreateShadowTextureDescriptor *);
 
 static void
 renderer_shadow_to_texture(const RendererShadowToTextureDescriptor *);
+
+static void renderer_shadow_fallback_to_texture(
+    const RendererShadowFallbackToTextureDescriptor *);
 
 static void
 renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *);
@@ -115,9 +120,9 @@ static void renderer_create_texture_view(const renderer *renderer,
           .usage = WGPUTextureUsage_RenderAttachment, // used in rendering pass
           .size =
               (WGPUExtent3D){
-                  renderer->context.width,
-                  renderer->context.height,
-                  1,
+                  .width = renderer->context.width,
+                  .height = renderer->context.height,
+                  .depthOrArrayLayers = 1,
               },
           .format =
               WGPUTextureFormat_Depth24Plus, // texture with 24bit-depth format
@@ -216,10 +221,61 @@ void renderer_lock_mouse(const renderer *renderer) {
 }
 
 /**
+   Render a fallback texture to the color and depth shadow.
+   Used as a fallback if no light are in the scene, simply populate the textures
+   width a fallback value.
+ */
+void renderer_shadow_fallback_to_texture(
+    const RendererShadowFallbackToTextureDescriptor *desc) {
+
+  const int width = TEXTURE_MIN_SIZE;
+  const int height = TEXTURE_MIN_SIZE;
+  const int8_t channels = TEXTURE_CHANNELS_RGBA;
+
+  void *texture_data;
+  size_t texture_size;
+
+  // create fallback texture
+  texture_create_fill(&(TextureCreateFillDescriptor){
+      .channels = channels,
+      .data = texture_data,
+      .size = &texture_size,
+      .width = width,
+      .height = height,
+      .value = 255,
+  });
+
+  const WGPUTextureDataLayout texture_layout = {
+      .offset = 0,
+      .bytesPerRow = width * channels,
+      .rowsPerImage = height,
+  };
+
+  const WGPUExtent3D texture_dimension = {
+      .width = width,
+      .height = height,
+      .depthOrArrayLayers = 1,
+  };
+
+  // write to color texture
+  wgpuQueueWriteTexture(desc->queue,
+                        &(WGPUImageCopyTexture){
+                            .texture = desc->color_texture,
+                            .mipLevel = 0,
+                            .origin = {0, 0, 0},
+                            .aspect = WGPUTextureAspect_All,
+                        },
+                        texture_data, texture_size, &texture_layout,
+                        &texture_dimension);
+
+  // do not need to write to depth texture (automatically set by GPU)
+}
+
+/**
    The building shadow phase is segmented in numerous steps:
 
    1. BINDING:
-   For each scene point and directional lights, we bind the relative views to
+   For each scene point and spot lights, we bind the relative views to
    the mesh shadow shader view matrix uniform
 
    2. DRAWING:
@@ -240,8 +296,6 @@ void renderer_lock_mouse(const renderer *renderer) {
   */
 
 void renderer_shadow_to_texture(const RendererShadowToTextureDescriptor *desc) {
-
-  printf("rendering shadow to texture\n");
 
   /*  Create a new "nested" texture view for each layer that points back to the
      texture。Both "global Texture view" and "indexed Texture view" point toward
@@ -350,11 +404,26 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
       wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
   MeshIndexedList *target_mesh_list = &desc->scene->meshes.lit;
-  // scene->lights.point.length
+
+  const size_t point_length = desc->scene->lights.point.length;
+  const size_t spot_length = desc->scene->lights.spot.length;
 
   // ===== I. create Point Light Shadow Map =====
 
-  for (size_t p = 0; p < desc->scene->lights.point.length; p++) {
+  // load fallback texture if no point light in scene
+  if (point_length == 0) {
+    for (size_t v = 0; v < LIGHT_POINT_VIEWS; v++) {
+      renderer_shadow_fallback_to_texture(
+          &(RendererShadowFallbackToTextureDescriptor){
+              .color_texture = *desc->point_light.color_texture,
+              .depth_texture = *desc->point_light.depth_texture,
+              .layer = v,
+              .queue = desc->queue,
+          });
+    }
+  }
+
+  for (size_t p = 0; p < point_length; p++) {
 
     PointLight *light = &desc->scene->lights.point.items[p];
     // retrieve 6 views of point cube
@@ -391,15 +460,25 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
     }
   }
 
-  // ===== II. create Directional Ligth Shadow Mapping =====
+  // ===== II. create Spot Ligth Shadow Mapping =====
 
-  for (size_t p = 0; p < desc->scene->lights.directional.length; p++) {
+  if (spot_length == 0) {
+    renderer_shadow_fallback_to_texture(
+        &(RendererShadowFallbackToTextureDescriptor){
+            .color_texture = *desc->point_light.color_texture,
+            .depth_texture = *desc->point_light.depth_texture,
+            .layer = 0,
+            .queue = desc->queue,
+        });
+  }
 
-    DirectionalLight *light = &desc->scene->lights.directional.items[p];
+  for (size_t p = 0; p < spot_length; p++) {
+
+    SpotLight *light = &desc->scene->lights.spot.items[p];
 
     // get each light orthographic view depending on target
     LightViews light_views =
-        light_directional_view(light->position, light->target, light->angle);
+        light_spot_view(light->position, light->target, light->angle);
 
     // 1. Bind meshes
     for (int m = 0; m < target_mesh_list->length; m++) {
@@ -411,7 +490,7 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
         Point Light pipeline use a FRONT cull cause by flipping the scene on
         the x axis to match cube map coordinates.
 
-        However since directional light use a casual Texture and doesn't require
+        However since spot light use a casual Texture and doesn't require
         to flip the scene projection, we set back the cull to BACK.
       */
 
@@ -422,8 +501,8 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
     // 2. Render scene (create shadow render pass to texture layer)
     renderer_shadow_to_texture(&(RendererShadowToTextureDescriptor){
         .scene = desc->scene,
-        .color_texture = *desc->directional_light.color_texture,
-        .depth_texture = *desc->directional_light.depth_texture,
+        .color_texture = *desc->spot_light.color_texture,
+        .depth_texture = *desc->spot_light.depth_texture,
         .layer = p,
         .device = &desc->device,
         .encoder = shadow_encoder,
@@ -455,9 +534,13 @@ void renderer_create_shadow_textures(
   // texture
   WGPUTextureDescriptor texture_descriptor_base = {
       .size =
-          (WGPUExtent3D){SHADOW_MAP_SIZE, SHADOW_MAP_SIZE, desc->layer_count},
-      .usage =
-          WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_TextureBinding,
+          (WGPUExtent3D){
+              .width = desc->width,
+              .height = desc->height,
+              .depthOrArrayLayers = desc->layer_count,
+          },
+      .usage = WGPUTextureUsage_CopyDst | WGPUTextureUsage_RenderAttachment |
+               WGPUTextureUsage_TextureBinding,
       .dimension = WGPUTextureDimension_2D,
       .mipLevelCount = 1,
       .sampleCount = 1,
@@ -482,6 +565,7 @@ void renderer_create_shadow_textures(
       .baseArrayLayer = 0,
       .aspect = WGPUTextureAspect_DepthOnly,
   };
+
   // Create color texture
   *desc->color.texture =
       wgpuDeviceCreateTexture(desc->device, &texture_descriptor_color);
@@ -528,12 +612,10 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
 
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = scene->lights.point.length;
-  size_t directional_light_length = scene->lights.point.length;
+  size_t spot_light_length = scene->lights.point.length;
 
-  // do NOT compute if not point or directional light in the scene
+  // do NOT compute if not point or spot light in the scene
   // TODO: fallback white/dark texture if no directional light
-  if (point_light_length == 0 || directional_light_length == 0)
-    return;
 
   /*
                                For each shadow light:
@@ -565,11 +647,17 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   // Setup point light
   WGPUTexture point_shadow_texture_color;
   WGPUTexture point_shadow_texture_depth;
-  uint32_t point_layer_count = (LIGHT_POINT_VIEWS * point_light_length);
+
+  // Switch to minimum size if no light
+  int point_shadow_texture_size =
+      point_light_length > 0 ? SHADOW_MAP_SIZE : TEXTURE_MIN_SIZE;
+
   renderer_create_shadow_textures(&(RendererCreateShadowTextureDescriptor){
       .dimension = WGPUTextureViewDimension_CubeArray,
-      .layer_count = point_layer_count,
+      .layer_count = MAX(point_light_length, 1) * LIGHT_POINT_VIEWS,
       .device = renderer->wgpu.device,
+      .width = point_shadow_texture_size,
+      .height = point_shadow_texture_size,
       .color =
           {
               .texture = &point_shadow_texture_color,
@@ -583,21 +671,26 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   });
 
   // setup directionl light
-  WGPUTexture directional_shadow_texture_color;
-  WGPUTexture directional_shadow_texture_depth;
+  WGPUTexture spot_shadow_texture_color;
+  WGPUTexture spot_shadow_texture_depth;
+  int spot_shadow_texture_size =
+      spot_light_length > 0 ? SHADOW_MAP_SIZE : TEXTURE_MIN_SIZE;
+
   renderer_create_shadow_textures(&(RendererCreateShadowTextureDescriptor){
       .dimension = WGPUTextureViewDimension_2DArray,
-      .layer_count = directional_light_length,
+      .layer_count = MAX(spot_light_length, 1),
       .device = renderer->wgpu.device,
+      .width = spot_shadow_texture_size,
+      .height = spot_shadow_texture_size,
       .color =
           {
-              .texture = &directional_shadow_texture_color,
-              .texture_view = &scene->lights.directional.color_map,
+              .texture = &spot_shadow_texture_color,
+              .texture_view = &scene->lights.spot.color_map,
           },
       .depth =
           {
-              .texture = &directional_shadow_texture_depth,
-              .texture_view = &scene->lights.directional.depth_map,
+              .texture = &spot_shadow_texture_depth,
+              .texture_view = &scene->lights.spot.depth_map,
           },
   });
 
@@ -611,10 +704,10 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
               .color_texture = &point_shadow_texture_color,
               .depth_texture = &point_shadow_texture_depth,
           },
-      .directional_light =
+      .spot_light =
           {
-              .color_texture = &directional_shadow_texture_color,
-              .depth_texture = &directional_shadow_texture_depth,
+              .color_texture = &spot_shadow_texture_color,
+              .depth_texture = &spot_shadow_texture_depth,
           },
   });
 
@@ -622,17 +715,16 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   for (size_t m = 0; m < scene->meshes.lit.length; m++) {
     mesh *current_mesh = &scene->meshes.lit.items[m];
 
-    // bind point & directional light texture view + sampler to Textue Shader
-
+    // bind point & spot light texture view + sampler to Textue Shader
 #ifdef RENDER_SHADOW_AS_COLOR
     const WGPUTextureView point_map = scene->lights.point.color_map;
-    const WGPUTextureView directional_map = scene->lights.directional.color_map;
+    const WGPUTextureView spot_map = scene->lights.directional.color_map;
 #else
     const WGPUTextureView point_map = scene->lights.point.depth_map;
-    const WGPUTextureView directional_map = scene->lights.directional.depth_map;
+    const WGPUTextureView spot_map = scene->lights.spot.depth_map;
 #endif
 
-    material_texure_bind_shadow_maps(current_mesh, point_map, directional_map);
+    material_texure_bind_shadow_maps(current_mesh, point_map, spot_map);
   }
 
   // !!DEBUG: Add views to scene

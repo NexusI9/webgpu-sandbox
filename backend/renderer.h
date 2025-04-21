@@ -50,7 +50,7 @@ typedef struct {
   struct {
     WGPUTexture *color_texture;
     WGPUTexture *depth_texture;
-  } directional_light;
+  } spot_light;
 
 } RendererCreateShadowMapDescriptor;
 
@@ -64,6 +64,13 @@ typedef struct {
 } RendererShadowToTextureDescriptor;
 
 typedef struct {
+  WGPUTexture color_texture;
+  WGPUTexture depth_texture;
+  uint32_t layer;
+  const WGPUQueue queue;
+} RendererShadowFallbackToTextureDescriptor;
+
+typedef struct {
 
   struct {
     WGPUTexture *texture;
@@ -75,6 +82,8 @@ typedef struct {
     WGPUTextureView *texture_view;
   } depth;
 
+  int width;
+  int height;
   size_t layer_count;
   WGPUDevice device;
   WGPUTextureViewDimension dimension;

@@ -13,7 +13,7 @@
   Depth Maps.
    1.Point light use a Cube Shadow Map: meaning that we will use
    our point light as a cube rendering 6 times ou scene with different angles
-   2. For Directional light use Cascade Shadow Map
+   2. For Spot light use Cascade Shadow Map
 
    To Generate the Depth Map we only require a Vertex Shader (no Fragment) as to
   only traslate the vertices under the light projection point of view
@@ -85,11 +85,11 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
   glm_vec3_copy(desc->color, light->color);
 }
 
-void light_create_directional(DirectionalLight *light,
-                              DirectionalLightDescriptor *desc) {
+void light_create_spot(SpotLight *light,
+                              SpotLightDescriptor *desc) {
 
   // init to 0
-  *light = (DirectionalLight){0};
+  *light = (SpotLight){0};
 
   // copy intensity
   light->intensity = desc->intensity;
@@ -173,15 +173,15 @@ LightViews light_point_views(vec3 light_position, float near, float far) {
 }
 
 /**
-   Compute point view for directional light
+   Compute point view for spot light
    Directional Light work as the other way around compared to Point Light
    For DL as position agnostic, target is always 0,0,0, but the position
    simulates sun position by being super far away from the scene
  */
-LightViews light_directional_view(vec3 light_position, vec3 light_target,
+LightViews light_spot_view(vec3 light_position, vec3 light_target,
                                   float angle) {
 
-  LightViews new_views = (LightViews){.length = LIGHT_DIRECTIONAL_VIEW};
+  LightViews new_views = (LightViews){.length = LIGHT_SPOT_VIEW};
 
   vec3 up = {0.0f, 1.0f, 0.0f};
 

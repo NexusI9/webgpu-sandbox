@@ -49,7 +49,7 @@ void material_clear_bindings(mesh *, MeshDrawMethod);
 void material_texture_bind_views(mesh *, camera *, viewport *, uint8_t);
 // bind light scene
 void material_texture_bind_lights(mesh *, viewport *, AmbientLightList *,
-                                  DirectionalLightList *, PointLightList *,
+                                  SpotLightList *, PointLightList *,
                                   uint8_t);
 
 void material_texture_add_uniform(mesh *,

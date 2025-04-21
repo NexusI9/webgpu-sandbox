@@ -1,8 +1,8 @@
 #include "loader.gltf.h"
-#include <cglm/cglm.h>
 #include "../runtime/vertex.h"
 #include "../utils/system.h"
 #include "webgpu/webgpu.h"
+#include <cglm/cglm.h>
 #define CGLTF_IMPLEMENTATION
 #include "cgltf/cgltf.h"
 #include "limits.h"
@@ -360,10 +360,10 @@ uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
       // handling...)
       shader_entry->data = stbi_load_from_memory(
           gltf_data, image->buffer_view->buffer->size, &shader_entry->width,
-          &shader_entry->height, &channels, TEXTURE_DEFAULT_CHANNELS);
+          &shader_entry->height, &channels, TEXTURE_CHANNELS_RGBA);
 
       shader_entry->size =
-          shader_entry->width * shader_entry->height * TEXTURE_DEFAULT_CHANNELS;
+          shader_entry->width * shader_entry->height * TEXTURE_CHANNELS_RGBA;
 
       return 1;
 
@@ -390,16 +390,16 @@ void loader_gltf_load_fallback_texture(
 
   shader_entry->width = 64;
   shader_entry->height = 64;
-  shader_entry->size =
-      shader_entry->width * shader_entry->height * TEXTURE_DEFAULT_CHANNELS;
-  shader_entry->data = (void *)calloc(
-      shader_entry->width * shader_entry->height, TEXTURE_DEFAULT_CHANNELS);
 
-  // set all pixels to black
-  for (size_t i = 0; i < shader_entry->size; i++) {
-    // set alpha channel to 255
-    shader_entry->data[i] = 255;
-  }
+  texture_create_fill(&(TextureCreateFillDescriptor){
+      .width = shader_entry->width,
+      .height = shader_entry->height,
+      .size = &shader_entry->size,
+      .data = &shader_entry->data,
+      .value = 255,
+      .channels = TEXTURE_CHANNELS_RGBA,
+  });
+
 }
 
 void loader_gltf_mesh_position(mesh *mesh, const char *name, cgltf_data *data) {

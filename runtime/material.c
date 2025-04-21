@@ -67,17 +67,17 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
    Init light list uniforms
    due to WGSL array uniforms necessity to have constant size, uniforms lists
    are already set at <light_list>[12], init them all to 0
-   by default we will upload all the lights (point, ambient, directional)
+   by default we will upload all the lights (point, ambient, spot)
    within a defined group
   */
 void material_texture_bind_lights(mesh *mesh, viewport *viewport,
                                   AmbientLightList *ambient_list,
-                                  DirectionalLightList *directional_list,
+                                  SpotLightList *spot_list,
                                   PointLightList *point_list,
                                   uint8_t group_index) {
 
   AmbientLightListUniform ambient_uniform;
-  DirectionalLightListUniform directional_uniform;
+  SpotLightListUniform spot_uniform;
   PointLightListUniform point_uniform;
 
   if (ambient_list) {
@@ -95,16 +95,16 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
     }
   }
 
-  if (directional_list) {
+  if (spot_list) {
     // update length
-    directional_uniform.length = directional_list->length;
+    spot_uniform.length = spot_list->length;
     // update entries
-    for (size_t i = 0; i < directional_uniform.length; i++) {
-      DirectionalLight *light = &directional_list->items[i];
-      DirectionalLightUniform *uniform = &directional_uniform.items[i];
+    for (size_t i = 0; i < spot_uniform.length; i++) {
+      SpotLight *light = &spot_list->items[i];
+      SpotLightUniform *uniform = &spot_uniform.items[i];
 
-      // TODO: create a light method "light_directional_uniform"
-      *uniform = (DirectionalLightUniform){0};
+      // TODO: create a light method "light_spot_uniform"
+      *uniform = (SpotLightUniform){0};
       uniform->intensity = light->intensity;
       uniform->cutoff = light->cutoff;
       uniform->inner_cutoff = light->inner_cutoff;
@@ -113,10 +113,10 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
       glm_vec3_copy(light->position, uniform->position);
 
       // get light view matrix
-      LightViews directional_view =
-          light_directional_view(light->position, light->target, light->angle);
+      LightViews spot_view =
+          light_spot_view(light->position, light->target, light->angle);
 
-      glm_mat4_copy(directional_view.views[0], uniform->view);
+      glm_mat4_copy(spot_view.views[0], uniform->view);
     }
   }
 
@@ -153,12 +153,12 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
           .offset = 0,
           .size = sizeof(AmbientLightListUniform),
       },
-      // directional light
+      // spot light
       {
           .binding = 1,
-          .data = &directional_uniform,
+          .data = &spot_uniform,
           .offset = 0,
-          .size = sizeof(DirectionalLightListUniform),
+          .size = sizeof(SpotLightListUniform),
       },
       // point light
       {
@@ -180,7 +180,7 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
 
   for (size_t c = 0; c < mesh->children.length; c++)
     material_texture_bind_lights(&mesh->children.items[c], viewport,
-                                 ambient_list, directional_list, point_list,
+                                 ambient_list, spot_list, point_list,
                                  group_index);
 }
 
@@ -242,7 +242,7 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
  */
 void material_texure_bind_shadow_maps(
     mesh *mesh, WGPUTextureView point_texture_view,
-    WGPUTextureView directional_texture_view) {
+    WGPUTextureView spot_texture_view) {
 
 #ifdef RENDER_SHADOW_AS_COLOR
   const WGPUTextureFormat texture_format = SHADOW_COLOR_FORMAT;
@@ -274,7 +274,7 @@ void material_texure_bind_shadow_maps(
                   },
                   {
                       .binding = 5,
-                      .texture_view = directional_texture_view,
+                      .texture_view = spot_texture_view,
                       .dimension = WGPUTextureViewDimension_2DArray,
                       .format = texture_format,
                       .sample_type = texture_sample_type,
@@ -297,8 +297,8 @@ void material_texure_bind_shadow_maps(
       .compare = sample_compare,
   };
 
-  ShaderBindGroupSamplerEntry directional_sampler = point_sampler;
-  directional_sampler.binding += 2;
+  ShaderBindGroupSamplerEntry spot_sampler = point_sampler;
+  spot_sampler.binding += 2;
 
   shader_add_sampler(
       mesh_shader_texture(mesh),
@@ -309,13 +309,13 @@ void material_texure_bind_shadow_maps(
           .entries =
               (ShaderBindGroupSamplerEntry[]){
                   point_sampler,
-                  directional_sampler,
+                  spot_sampler,
               },
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
     material_texure_bind_shadow_maps(
-        &mesh->children.items[c], point_texture_view, directional_texture_view);
+        &mesh->children.items[c], point_texture_view, spot_texture_view);
 }
 
 /**

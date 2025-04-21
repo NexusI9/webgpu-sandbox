@@ -8,7 +8,7 @@
 
 #define LIGHT_MAX_CAPACITY 16
 #define LIGHT_POINT_VIEWS 6
-#define LIGHT_DIRECTIONAL_VIEW 1
+#define LIGHT_SPOT_VIEW 1
 
 // core type
 typedef struct {
@@ -34,7 +34,8 @@ typedef struct {
   float angle;
   float inner_cutoff;
   float intensity;
-} DirectionalLight;
+} SpotLight;
+
 
 // descriptor type
 typedef struct {
@@ -60,7 +61,7 @@ typedef struct {
   float angle;
   float inner_cutoff;
   float intensity;
-} DirectionalLightDescriptor;
+} SpotLightDescriptor;
 
 // light type
 // NOTE: use __attribute__ on list AS WELL AS items (pointlights...) else wrong
@@ -90,7 +91,7 @@ typedef struct {
   vec3 color;
   float intensity;
   mat4 view;
-} __attribute__((aligned(16))) DirectionalLightUniform;
+} __attribute__((aligned(16))) SpotLightUniform;
 
 // light uniforms
 typedef struct {
@@ -105,8 +106,8 @@ typedef struct {
 
 typedef struct {
   uint32_t length;
-  DirectionalLightUniform items[LIGHT_MAX_CAPACITY];
-} __attribute__((aligned(16))) DirectionalLightListUniform;
+  SpotLightUniform items[LIGHT_MAX_CAPACITY];
+} __attribute__((aligned(16))) SpotLightListUniform;
 
 typedef struct {
   mat4 views[LIGHT_POINT_VIEWS];
@@ -130,10 +131,10 @@ typedef struct {
 typedef struct {
   size_t length;
   size_t capacity;
-  DirectionalLight items[LIGHT_MAX_CAPACITY];
+  SpotLight items[LIGHT_MAX_CAPACITY];
   WGPUTextureView color_map;
   WGPUTextureView depth_map;
-} DirectionalLightList;
+} SpotLightList;
 
 typedef struct {
   size_t length;
@@ -142,9 +143,9 @@ typedef struct {
 } AmbientLightList;
 
 void light_create_point(PointLight *, PointLightDescriptor *);
-void light_create_directional(DirectionalLight *, DirectionalLightDescriptor *);
+void light_create_spot(SpotLight *, SpotLightDescriptor *);
 void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
 
 LightViews light_point_views(vec3, float, float);
-LightViews light_directional_view(vec3, vec3, float);
+LightViews light_spot_view(vec3, vec3, float);
 #endif
