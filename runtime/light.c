@@ -85,8 +85,7 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
   glm_vec3_copy(desc->color, light->color);
 }
 
-void light_create_spot(SpotLight *light,
-                              SpotLightDescriptor *desc) {
+void light_create_spot(SpotLight *light, SpotLightDescriptor *desc) {
 
   // init to 0
   *light = (SpotLight){0};
@@ -118,6 +117,24 @@ void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
 
   // copy intensity
   light->intensity = desc->intensity;
+
+  // copy color
+  glm_vec3_copy(desc->color, light->color);
+}
+
+void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
+
+  // init to 0
+  *light = (SunLight){0};
+
+  // copy intensity
+  light->intensity = desc->intensity;
+
+  // copy size
+  light->size = desc->size;
+
+  // copy position
+  glm_vec3_copy(desc->position, light->position);
 
   // copy color
   glm_vec3_copy(desc->color, light->color);
@@ -174,12 +191,9 @@ LightViews light_point_views(vec3 light_position, float near, float far) {
 
 /**
    Compute point view for spot light
-   Directional Light work as the other way around compared to Point Light
-   For DL as position agnostic, target is always 0,0,0, but the position
-   simulates sun position by being super far away from the scene
  */
 LightViews light_spot_view(vec3 light_position, vec3 light_target,
-                                  float angle) {
+                           float angle) {
 
   LightViews new_views = (LightViews){.length = LIGHT_SPOT_VIEW};
 
@@ -196,6 +210,42 @@ LightViews light_spot_view(vec3 light_position, vec3 light_target,
     mat4 view;
     glm_lookat(light_position, light_target, up, view);
     glm_mat4_mul(projection, view, new_views.views[v]);
+  }
+
+  return new_views;
+}
+
+/**
+   Compute point view for sun light
+   Sun Light work as the other way around compared to Point or Directionam Light
+   For Sun are position agnostic, target is always 0,0,0, but the position
+   simulates sun position by being super far away from the scene
+ */
+LightViews light_sun_view(vec3 light_position, float size) {
+
+  LightViews new_views = (LightViews){.length = LIGHT_SPOT_VIEW};
+
+  vec3 up = {0.0f, 1.0f, 0.0f};
+
+  // adjust up if direction parallel to world up
+  if (fabs(glm_vec3_dot(light_position, up)) > 0.99f)
+    glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, up);
+
+  mat4 ortho;
+  glm_ortho(-size, size, -size, size, 0.1f, 100.0f, ortho);
+
+  // normalize position
+  glm_vec3_norm(light_position);
+
+  vec3 new_pos;
+  float distance = 50.0f;
+
+  glm_vec3_scale(light_position, 50.0f, new_pos);
+
+  for (int v = 0; v < new_views.length; v++) {
+    mat4 view;
+    glm_lookat(new_pos, (vec3){0.0f, 0.0f, 0.0f}, up, view);
+    glm_mat4_mul(ortho, view, new_views.views[v]);
   }
 
   return new_views;

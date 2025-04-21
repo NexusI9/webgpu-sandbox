@@ -50,7 +50,10 @@ static vec3 LIGHT_POSITION = {0.0f, 4.0f, 6.0f};
 static vec3 LIGHT_TARGET = {0.0f, 0.0f, 0.0f};
 
 // point light
-static vec3 POINT_LIGHT = {0.0f, 2.4f, 2.3f}; // < 20
+static vec3 POINT_LIGHT = {0.0f, 2.4f, 2.3f}; 
+
+//sun light
+static vec3 SUN_LIGHT = {0.0f, 2.4f, 2.3f}; 
 
 void init_scene() {
 
@@ -100,7 +103,7 @@ void init_scene() {
                  });
 
   // set light
-  scene_add_point_light(&main_scene, &(PointLightDescriptor){
+  /*scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
                                          .intensity = 4.0f,
                                          .cutoff = 20.0f,
@@ -113,7 +116,7 @@ void init_scene() {
                                                  POINT_LIGHT[1],
                                                  POINT_LIGHT[2],
                                              },
-                                     });
+                                     });*/
 
   /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
             .color = {1.0f, 1.0f, 1.0f},
@@ -134,6 +137,12 @@ void init_scene() {
                     LIGHT_POSITION[2],
                 },
                 });*/
+
+  scene_add_sun_light(&main_scene, &(SunLightDescriptor){
+	  .position = {
+	      
+	  }
+      });
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},

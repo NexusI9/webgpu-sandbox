@@ -139,6 +139,10 @@ void scene_init_light_list(scene *scene) {
   // init ambient light list
   scene->lights.ambient.capacity = LIGHT_MAX_CAPACITY;
   scene->lights.ambient.length = 0;
+
+  // init ambient light list
+  scene->lights.sun.capacity = LIGHT_MAX_CAPACITY;
+  scene->lights.sun.length = 0;
 }
 
 size_t scene_add_point_light(scene *scene, PointLightDescriptor *desc) {
@@ -146,7 +150,7 @@ size_t scene_add_point_light(scene *scene, PointLightDescriptor *desc) {
   PointLightList *list = &scene->lights.point;
   if (list->length == list->capacity) {
     perror("Scene point light capacity reached maximum");
-    return -1;
+    return 0;
   }
 
   PointLight *new_light = &list->items[list->length++];
@@ -155,13 +159,12 @@ size_t scene_add_point_light(scene *scene, PointLightDescriptor *desc) {
   return list->length;
 }
 
-size_t scene_add_spot_light(scene *scene,
-                                   SpotLightDescriptor *desc) {
+size_t scene_add_spot_light(scene *scene, SpotLightDescriptor *desc) {
 
   SpotLightList *list = &scene->lights.spot;
   if (list->length == list->capacity) {
     perror("Scene spot light capacity reached maximum");
-    return -1;
+    return 0;
   }
 
   SpotLight *new_light = &list->items[list->length++];
@@ -175,11 +178,25 @@ size_t scene_add_ambient_light(scene *scene, AmbientLightDescriptor *desc) {
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
     perror("Scene ambient light capacity reached maximum");
-    return -1;
+    return 0;
   }
 
   AmbientLight *new_light = &list->items[list->length++];
   light_create_ambient(new_light, desc);
+
+  return list->length;
+}
+
+size_t scene_add_sun_light(scene *scene, SunLightDescriptor *desc) {
+
+  SunLightList *list = &scene->lights.sun;
+  if (list->length == list->capacity) {
+    perror("Scene sun light capacity reached maximum");
+    return 0;
+  }
+
+  SunLight *new_light = &list->items[list->length++];
+  light_create_sun(new_light, desc);
 
   return list->length;
 }

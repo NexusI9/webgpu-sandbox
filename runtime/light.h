@@ -36,6 +36,12 @@ typedef struct {
   float intensity;
 } SpotLight;
 
+typedef struct {
+  vec3 position;
+  vec3 color;
+  float size;
+  float intensity;
+} SunLight;
 
 // descriptor type
 typedef struct {
@@ -62,6 +68,13 @@ typedef struct {
   float inner_cutoff;
   float intensity;
 } SpotLightDescriptor;
+
+typedef struct {
+  vec3 position;
+  vec3 color;
+  float size;
+  float intensity;
+} SunLightDescriptor;
 
 // light type
 // NOTE: use __attribute__ on list AS WELL AS items (pointlights...) else wrong
@@ -93,6 +106,13 @@ typedef struct {
   mat4 view;
 } __attribute__((aligned(16))) SpotLightUniform;
 
+typedef struct {
+  vec3 position;
+  float intensity;
+  vec3 color;
+  float _padding;
+} __attribute__((aligned(16))) SunLightUniform;
+
 // light uniforms
 typedef struct {
   uint32_t length;
@@ -108,6 +128,11 @@ typedef struct {
   uint32_t length;
   SpotLightUniform items[LIGHT_MAX_CAPACITY];
 } __attribute__((aligned(16))) SpotLightListUniform;
+
+typedef struct {
+  uint32_t length;
+  SunLightUniform items[LIGHT_MAX_CAPACITY];
+} __attribute__((aligned(16))) SunLightListUniform;
 
 typedef struct {
   mat4 views[LIGHT_POINT_VIEWS];
@@ -142,10 +167,18 @@ typedef struct {
   AmbientLight items[LIGHT_MAX_CAPACITY];
 } AmbientLightList;
 
+typedef struct {
+  size_t length;
+  size_t capacity;
+  SunLight items[LIGHT_MAX_CAPACITY];
+} SunLightList;
+
 void light_create_point(PointLight *, PointLightDescriptor *);
 void light_create_spot(SpotLight *, SpotLightDescriptor *);
 void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
+void light_create_sun(SunLight *, SunLightDescriptor *);
 
 LightViews light_point_views(vec3, float, float);
 LightViews light_spot_view(vec3, vec3, float);
+LightViews light_sun_view(vec3, float);
 #endif
