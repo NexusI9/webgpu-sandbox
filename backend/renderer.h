@@ -50,7 +50,7 @@ typedef struct {
   struct {
     WGPUTexture *color_texture;
     WGPUTexture *depth_texture;
-  } spot_light;
+  } directional_light;
 
 } RendererCreateShadowMapDescriptor;
 

@@ -407,8 +407,15 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
 
   const size_t point_length = desc->scene->lights.point.length;
   const size_t spot_length = desc->scene->lights.spot.length;
+  const size_t sun_length = desc->scene->lights.sun.length;
 
-  // ===== I. create Point Light Shadow Map =====
+  /*
+  ==========================================
+
+     I. create Point Light Shadow Mapping
+
+  ==========================================
+ */
 
   // load fallback texture if no point light in scene
   if (point_length == 0) {
@@ -460,13 +467,19 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
     }
   }
 
-  // ===== II. create Spot Ligth Shadow Mapping =====
+  /*
+    ==========================================
 
-  if (spot_length == 0) {
+       II. create Spot Light Shadow Mapping
+
+    ==========================================
+   */
+
+  if (spot_length == 0 && sun_length == 0) {
     renderer_shadow_fallback_to_texture(
         &(RendererShadowFallbackToTextureDescriptor){
-            .color_texture = *desc->point_light.color_texture,
-            .depth_texture = *desc->point_light.depth_texture,
+            .color_texture = *desc->directional_light.color_texture,
+            .depth_texture = *desc->directional_light.depth_texture,
             .layer = 0,
             .queue = desc->queue,
         });
@@ -501,9 +514,52 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
     // 2. Render scene (create shadow render pass to texture layer)
     renderer_shadow_to_texture(&(RendererShadowToTextureDescriptor){
         .scene = desc->scene,
-        .color_texture = *desc->spot_light.color_texture,
-        .depth_texture = *desc->spot_light.depth_texture,
+        .color_texture = *desc->directional_light.color_texture,
+        .depth_texture = *desc->directional_light.depth_texture,
         .layer = p,
+        .device = &desc->device,
+        .encoder = shadow_encoder,
+    });
+
+    // 3. Clear meshes bind group
+    for (int m = 0; m < desc->scene->meshes.lit.length; m++) {
+      mesh *current_mesh = &target_mesh_list->items[m];
+      material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
+    }
+  }
+
+  /*
+  ==========================================
+
+     III. create Sun Light Shadow Mapping
+
+  ==========================================
+ */
+
+  for (size_t p = 0; p < sun_length; p++) {
+
+    SunLight *light = &desc->scene->lights.sun.items[p];
+
+    // get each light orthographic view depending on target
+    LightViews light_views = light_sun_view(light->position, light->size);
+
+    // 1. Bind meshes
+    for (int m = 0; m < target_mesh_list->length; m++) {
+      mesh *current_mesh = &target_mesh_list->items[m];
+      material_shadow_bind_views(current_mesh, &light_views.views[0]);
+
+      // update cull mode due to point light using front (see Spot light pass
+      // above for more detail)
+      material_shadow_set_cullmode(current_mesh, WGPUCullMode_Back);
+      mesh_build(current_mesh, MESH_SHADER_SHADOW);
+    }
+
+    // 2. Render scene (create shadow render pass to texture layer)
+    renderer_shadow_to_texture(&(RendererShadowToTextureDescriptor){
+        .scene = desc->scene,
+        .color_texture = *desc->directional_light.color_texture,
+        .depth_texture = *desc->directional_light.depth_texture,
+        .layer = spot_length + p,
         .device = &desc->device,
         .encoder = shadow_encoder,
     });
@@ -527,6 +583,10 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
 
 /**
    Create the two shadow textures (color and depth) for the point lights
+   In our semantic we use both terms Maps and Textures, however they both
+   serve different purpose.
+   - The Shadow Texture holds the Shadow mapping.
+   - The Shadow map is the result from our rendering.
  */
 void renderer_create_shadow_textures(
     const RendererCreateShadowTextureDescriptor *desc) {
@@ -601,6 +661,9 @@ void renderer_create_shadow_textures(
       });
 }
 
+/**
+   Main entry point of the shadow computing pass
+ */
 void renderer_compute_shadow(renderer *renderer, scene *scene) {
 
   printf("==== COMPUTING SHADOW ====\n");
@@ -613,9 +676,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = scene->lights.point.length;
   size_t spot_light_length = scene->lights.point.length;
-
-  // do NOT compute if not point or spot light in the scene
-  // TODO: fallback white/dark texture if no directional light
+  size_t sun_light_length = scene->lights.sun.length;
 
   /*
                                For each shadow light:
@@ -670,15 +731,45 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
           },
   });
 
-  // setup directionl light
+  /*
+    Setup spot & sun light
+    Spot and Sun lights are all together stacked up in the same "directional
+    light" texture array.
+    Compared to the point lights that have a dedicated
+    cubemap uniform entry.
+
+    Another semantic to note is that Spot Lights and Sun Lights are both
+    encompassed under the "Directional Light" term.
+
+    The order is the following:
+
+    .--------------. -----.
+    |   Layer 0    |      |
+    |--------------|      |
+    |   Layer 1    |      |     .---------------.
+    |--------------|       >----|  Spot Lights  | --.
+    |   Layer 2    |      |     '--------------'    |
+    |--------------|      |                         |
+    |   Layer 3    | _____'                         |    .-------------------.
+    |--------------| -----.                          >--| Directional Lights |
+    |   Layer 4    |      |                         |   '--------------------'
+    |--------------|      |     .--------------.    |
+    |   Layer 5    |       >----|  Sun Lights  |----'
+    |--------------|      |     '--------------'
+    |   Layer 6    |      |
+    '--------------' _____'
+
+
+  */
   WGPUTexture spot_shadow_texture_color;
   WGPUTexture spot_shadow_texture_depth;
-  int spot_shadow_texture_size =
-      spot_light_length > 0 ? SHADOW_MAP_SIZE : TEXTURE_MIN_SIZE;
+  int spot_shadow_texture_size = (spot_light_length + sun_light_length) > 0
+                                     ? SHADOW_MAP_SIZE
+                                     : TEXTURE_MIN_SIZE;
 
   renderer_create_shadow_textures(&(RendererCreateShadowTextureDescriptor){
       .dimension = WGPUTextureViewDimension_2DArray,
-      .layer_count = MAX(spot_light_length, 1),
+      .layer_count = MAX(spot_light_length + sun_light_length, 1),
       .device = renderer->wgpu.device,
       .width = spot_shadow_texture_size,
       .height = spot_shadow_texture_size,
@@ -704,7 +795,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
               .color_texture = &point_shadow_texture_color,
               .depth_texture = &point_shadow_texture_depth,
           },
-      .spot_light =
+      .directional_light =
           {
               .color_texture = &spot_shadow_texture_color,
               .depth_texture = &spot_shadow_texture_depth,
@@ -728,10 +819,10 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   }
 
   // !!DEBUG: Add views to scene
-  /*
+
   for (size_t v = 0; v < debug_view_length(&debug_view_light); v++) {
     mesh *view = scene_new_mesh_unlit(scene);
     mesh *view_mesh = &debug_view_light.mesh[v];
     memcpy(view, view_mesh, sizeof(mesh));
-    }*/
+  }
 }

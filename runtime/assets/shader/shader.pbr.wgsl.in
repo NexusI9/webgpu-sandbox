@@ -91,7 +91,7 @@ struct PointLightStorage {
   length : u32, items : array<PointLight, MAX_LIGHT>,
 };
 
-struct DirectionalLightStorage {
+struct SpotLightStorage {
   length : u32, items : array<SpotLight, MAX_LIGHT>,
 };
 
@@ -129,19 +129,19 @@ struct SunLightStorage {
 // light
 // TODO: using uniform for now, but check the storage type
 @group(2) @binding(0) var<uniform> ambient_light_list : AmbientLightStorage;
-@group(2) @binding(1) var<uniform> spot_light_list : DirectionalLightStorage;
+@group(2) @binding(1) var<uniform> spot_light_list : SpotLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
 
 #ifdef RENDER_SHADOW_AS_COLOR
 @group(2) @binding(3) var point_shadow_maps : texture_cube_array<f32>;
 @group(2) @binding(4) var point_shadow_sampler : sampler;
-@group(2) @binding(5) var spot_shadow_maps : texture_2d_array<f32>;
-@group(2) @binding(6) var spot_shadow_sampler : sampler;
+@group(2) @binding(5) var directional_shadow_maps : texture_2d_array<f32>;
+@group(2) @binding(6) var directional_shadow_sampler : sampler;
 #else
 @group(2) @binding(3) var point_shadow_maps : texture_depth_cube_array;
 @group(2) @binding(4) var point_shadow_sampler : sampler_comparison;
-@group(2) @binding(5) var spot_shadow_maps : texture_depth_2d_array;
-@group(2) @binding(6) var spot_shadow_sampler : sampler_comparison;
+@group(2) @binding(5) var directional_shadow_maps : texture_depth_2d_array;
+@group(2) @binding(6) var directional_shadow_sampler : sampler_comparison;
 #endif
 
 // vertex shader
@@ -405,7 +405,7 @@ fn spot_shadow_factor(frag_position : vec3<f32>) -> f32 {
     let shadow_position = spot_shadow_position(frag_position, light.view);
 
 #ifdef RENDER_SHADOW_AS_COLOR
-    factor *= textureSample(spot_shadow_maps, spot_shadow_sampler,
+    factor *= textureSample(directional_shadow_maps, directional_shadow_sampler,
                             shadow_position.xy, l)
                   .r;
 
@@ -436,11 +436,14 @@ fn spot_shadow_factor(frag_position : vec3<f32>) -> f32 {
       for (var y = -pcf_half_kernel_size; y <= pcf_half_kernel_size;
            y += 1.0f) {
 
-        let offset_uv =
-            vec2(x, y) / f32(textureDimensions(spot_shadow_maps).x) * spread;
+        let offset_uv = vec2(x, y) /
+                        f32(textureDimensions(directional_shadow_maps).x) *
+                        spread;
+
         let sample_uv = shadow_position.xy + offset_uv;
-        pcf_shadow_factor += textureSampleCompare(
-            spot_shadow_maps, spot_shadow_sampler, sample_uv, l, shadow_depth);
+        pcf_shadow_factor += textureSampleCompare(directional_shadow_maps,
+                                                  directional_shadow_sampler,
+                                                  sample_uv, l, shadow_depth);
         pcf_sample_count += 1u;
       }
     }
