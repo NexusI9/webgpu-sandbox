@@ -130,7 +130,7 @@ void init_scene() {
       &main_scene, &(SunLightDescriptor){
                        .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
                        .color = {1.0f, 1.0f, 1.0f},
-                       .intensity = 1.0f,
+                       .intensity = 2.0f,
                        .size = 10.0f,
                    });
 
