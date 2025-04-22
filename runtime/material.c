@@ -74,11 +74,12 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
                                   AmbientLightList *ambient_list,
                                   SpotLightList *spot_list,
                                   PointLightList *point_list,
-                                  uint8_t group_index) {
+                                  SunLightList *sun_list, uint8_t group_index) {
 
   AmbientLightListUniform ambient_uniform;
   SpotLightListUniform spot_uniform;
   PointLightListUniform point_uniform;
+  SunLightListUniform sun_uniform;
 
   if (ambient_list) {
     // update length
@@ -134,18 +135,39 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
       uniform->inner_cutoff = light->inner_cutoff;
       uniform->near = light->near;
       uniform->far = light->far;
-      
+
       glm_vec3_copy(light->color, uniform->color);
       glm_vec3_copy(light->position, uniform->position);
 
       // copy 6 points views for shader depth comparison
-      LightViews points_views = light_point_views(light->position, light->near, light->far);
+      LightViews points_views =
+          light_point_views(light->position, light->near, light->far);
       for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++)
         glm_mat4_copy(points_views.views[v], uniform->views[v]);
     }
   }
 
-  ShaderBindGroupUniformEntry entries[3] = {
+  if (sun_list) {
+
+    sun_uniform.length = sun_list->length;
+
+    for (size_t i = 0; i < sun_uniform.length; i++) {
+
+      SunLight *light = &sun_list->items[i];
+      SunLightUniform *uniform = &sun_uniform.items[i];
+
+      *uniform = (SunLightUniform){0};
+      uniform->intensity = light->intensity;
+      glm_vec3_copy(light->position, uniform->position);
+      glm_vec3_copy(light->color, uniform->color);
+
+      // get light view matrix
+      LightViews sun_view = light_sun_view(light->position, light->size);
+      glm_mat4_copy(sun_view.views[0], uniform->view);
+    }
+  }
+
+  ShaderBindGroupUniformEntry entries[4] = {
       // ambient light
       {
           .binding = 0,
@@ -167,20 +189,27 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
           .offset = 0,
           .size = sizeof(PointLightListUniform),
       },
+      // sun light
+      {
+          .binding = 3,
+          .data = &sun_uniform,
+          .offset = 0,
+          .size = sizeof(SunLightListUniform),
+      },
   };
 
   shader_add_uniform(
       &mesh->shader.texture,
       &(ShaderCreateUniformDescriptor){
           .group_index = group_index,
-          .entry_count = 3,
+          .entry_count = 4,
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entries = entries,
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
     material_texture_bind_lights(&mesh->children.items[c], viewport,
-                                 ambient_list, spot_list, point_list,
+                                 ambient_list, spot_list, point_list, sun_list,
                                  group_index);
 }
 
@@ -240,9 +269,13 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 /**
    Bind the shadow maps and sampler to the default shader
  */
-void material_texure_bind_shadow_maps(
-    mesh *mesh, WGPUTextureView point_texture_view,
-    WGPUTextureView spot_texture_view) {
+void material_texure_bind_shadow_maps(mesh *mesh,
+                                      WGPUTextureView point_texture_view,
+                                      WGPUTextureView spot_texture_view) {
+
+  const uint8_t point_map_binding = 4;
+  const uint8_t directional_map_binding = 6;
+  const uint8_t sampler_binding = 5;
 
 #ifdef RENDER_SHADOW_AS_COLOR
   const WGPUTextureFormat texture_format = SHADOW_COLOR_FORMAT;
@@ -266,14 +299,14 @@ void material_texure_bind_shadow_maps(
           .entries =
               (ShaderBindGroupTextureViewEntry[]){
                   {
-                      .binding = 3,
+                      .binding = point_map_binding,
                       .texture_view = point_texture_view,
                       .dimension = WGPUTextureViewDimension_CubeArray,
                       .format = texture_format,
                       .sample_type = texture_sample_type,
                   },
                   {
-                      .binding = 5,
+                      .binding = directional_map_binding,
                       .texture_view = spot_texture_view,
                       .dimension = WGPUTextureViewDimension_2DArray,
                       .format = texture_format,
@@ -287,7 +320,7 @@ void material_texure_bind_shadow_maps(
   // Comparison
 
   ShaderBindGroupSamplerEntry point_sampler = {
-      .binding = 4,
+      .binding = sampler_binding,
       .type = sample_type,
       .addressModeU = WGPUAddressMode_ClampToEdge,
       .addressModeV = WGPUAddressMode_ClampToEdge,
@@ -314,8 +347,8 @@ void material_texure_bind_shadow_maps(
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_texure_bind_shadow_maps(
-        &mesh->children.items[c], point_texture_view, spot_texture_view);
+    material_texure_bind_shadow_maps(&mesh->children.items[c],
+                                     point_texture_view, spot_texture_view);
 }
 
 /**

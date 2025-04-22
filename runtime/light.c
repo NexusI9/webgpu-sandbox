@@ -134,7 +134,12 @@ void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
   light->size = desc->size;
 
   // copy position
-  glm_vec3_copy(desc->position, light->position);
+  // For sun: normalize position and set it far away by default
+  float distance = (float)LIGHT_SUN_DISTANCE;
+  vec3 new_position;
+  glm_vec3_norm(desc->position);
+  glm_vec3_scale(desc->position, distance, new_position);
+  glm_vec3_copy(new_position, light->position);
 
   // copy color
   glm_vec3_copy(desc->color, light->color);
@@ -228,23 +233,15 @@ LightViews light_sun_view(vec3 light_position, float size) {
   vec3 up = {0.0f, 1.0f, 0.0f};
 
   // adjust up if direction parallel to world up
-  if (fabs(glm_vec3_dot(light_position, up)) > 0.99f)
-    glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, up);
+  // if (fabs(glm_vec3_dot(light_position, up)) > 0.99f)
+  // glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, up);
 
   mat4 ortho;
   glm_ortho(-size, size, -size, size, 0.1f, 100.0f, ortho);
 
-  // normalize position
-  glm_vec3_norm(light_position);
-
-  vec3 new_pos;
-  float distance = 50.0f;
-
-  glm_vec3_scale(light_position, 50.0f, new_pos);
-
   for (int v = 0; v < new_views.length; v++) {
     mat4 view;
-    glm_lookat(new_pos, (vec3){0.0f, 0.0f, 0.0f}, up, view);
+    glm_lookat(light_position, (vec3){0.0f, 0.0f, 0.0f}, up, view);
     glm_mat4_mul(ortho, view, new_views.views[v]);
   }
 

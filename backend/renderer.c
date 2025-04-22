@@ -242,7 +242,7 @@ void renderer_shadow_fallback_to_texture(
       .size = &texture_size,
       .width = width,
       .height = height,
-      .value = 255,
+      .value = 0,
   });
 
   const WGPUTextureDataLayout texture_layout = {
@@ -468,11 +468,11 @@ void renderer_create_shadow_map(const RendererCreateShadowMapDescriptor *desc) {
   }
 
   /*
-    ==========================================
+    ==================================================
 
-       II. create Spot Light Shadow Mapping
+       II. create Directional Light Shadow Mapping
 
-    ==========================================
+    ==================================================
    */
 
   if (spot_length == 0 && sun_length == 0) {
@@ -675,7 +675,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
 
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = scene->lights.point.length;
-  size_t spot_light_length = scene->lights.point.length;
+  size_t spot_light_length = scene->lights.spot.length;
   size_t sun_light_length = scene->lights.sun.length;
 
   /*
@@ -766,6 +766,7 @@ void renderer_compute_shadow(renderer *renderer, scene *scene) {
   int spot_shadow_texture_size = (spot_light_length + sun_light_length) > 0
                                      ? SHADOW_MAP_SIZE
                                      : TEXTURE_MIN_SIZE;
+
 
   renderer_create_shadow_textures(&(RendererCreateShadowTextureDescriptor){
       .dimension = WGPUTextureViewDimension_2DArray,

@@ -53,7 +53,7 @@ static vec3 LIGHT_TARGET = {0.0f, 0.0f, 0.0f};
 static vec3 POINT_LIGHT = {0.0f, 2.4f, 2.3f};
 
 // sun light
-static vec3 SUN_LIGHT = {0.0f, 2.4f, 2.3f};
+static vec3 SUN_LIGHT = {0.0f, 2.0f, 2.0f};
 
 void init_scene() {
 
@@ -76,18 +76,6 @@ void init_scene() {
 
   main_scene = scene_create(camera, viewport);
   // TODO: check if possible to set the mode in the descriptor
-
-  // DEBUG
-
-  float distance = 70.0;
-  vec3 direction = {-1.0f, -1.0f, -1.0f};
-  glm_normalize(direction);
-  glm_vec3_scale(direction, distance, direction);
-
-  vec3 light_position;
-  glm_vec3_sub(LIGHT_TARGET, direction, light_position);
-
-  // ENDEBUG
 
   // init camera position
   camera_look_at(&main_scene.camera,
@@ -119,30 +107,31 @@ void init_scene() {
                                      });*/
 
   /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
-            .color = {1.0f, 1.0f, 1.0f},
-            .intensity = 2.0f,
-            .cutoff = 45.0f,
-            .angle = 45.0f,
-            .inner_cutoff = 30.0f,
-            .target =
-                {
-                    LIGHT_TARGET[0],
-                    LIGHT_TARGET[1],
-                    LIGHT_TARGET[2],
-                },
-            .position =
-                {
-                    LIGHT_POSITION[0],
-                    LIGHT_POSITION[1],
-                    LIGHT_POSITION[2],
-                },
-                });*/
+                                        .color = {1.0f, 1.0f, 1.0f},
+                                        .intensity = 2.0f,
+                                        .cutoff = 45.0f,
+                                        .angle = 45.0f,
+                                        .inner_cutoff = 30.0f,
+                                        .target =
+                                            {
+                                                LIGHT_TARGET[0],
+                                                LIGHT_TARGET[1],
+                                                LIGHT_TARGET[2],
+                                            },
+                                        .position =
+                                            {
+                                                LIGHT_POSITION[0],
+                                                LIGHT_POSITION[1],
+                                                LIGHT_POSITION[2],
+                                            },
+                                    });*/
 
   scene_add_sun_light(
       &main_scene, &(SunLightDescriptor){
                        .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
+                       .color = {1.0f, 1.0f, 1.0f},
                        .intensity = 1.0f,
-                       .size = 20.0f,
+                       .size = 10.0f,
                    });
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
@@ -215,7 +204,8 @@ void import_cube() {
 
   material_texture_bind_lights(
       cube, &main_scene.viewport, &main_scene.lights.ambient,
-      &main_scene.lights.spot, &main_scene.lights.point, 2);
+      &main_scene.lights.spot, &main_scene.lights.point, &main_scene.lights.sun,
+      2);
 }
 
 void draw() {

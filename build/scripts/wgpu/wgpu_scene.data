@@ -1091,7 +1091,11 @@ struct SpotLight {
 };
 
 struct SunLight {
-  position : vec3<f32>, intensity : f32, color : vec3<f32>, _padding : f32,
+  position : vec3<f32>,
+             intensity : f32,
+                         color : vec3<f32>,
+                                 _padding : f32,
+                                            view : mat4x4<f32>,
 };
 
 struct AmbientLightStorage {
@@ -1107,7 +1111,7 @@ struct SpotLightStorage {
 };
 
 struct SunLightStorage {
-  length : u32, items : array<SpotLight, MAX_LIGHT>,
+  length : u32, items : array<SunLight, MAX_LIGHT>,
 };
 
 // material pbr
@@ -1142,12 +1146,13 @@ struct SunLightStorage {
 @group(2) @binding(0) var<uniform> ambient_light_list : AmbientLightStorage;
 @group(2) @binding(1) var<uniform> spot_light_list : SpotLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
+@group(2) @binding(3) var<uniform> sun_light_list : SunLightStorage;
 
 
-@group(2) @binding(3) var point_shadow_maps : texture_depth_cube_array;
-@group(2) @binding(4) var point_shadow_sampler : sampler_comparison;
-@group(2) @binding(5) var directional_shadow_maps : texture_depth_2d_array;
-@group(2) @binding(6) var directional_shadow_sampler : sampler_comparison;
+@group(2) @binding(4) var point_shadow_maps : texture_depth_cube_array;
+@group(2) @binding(5) var point_shadow_sampler : sampler_comparison;
+@group(2) @binding(6) var directional_shadow_maps : texture_depth_2d_array;
+@group(2) @binding(7) var directional_shadow_sampler : sampler_comparison;
 
 
 // vertex shader
@@ -1227,10 +1232,6 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   var V : vec3<f32> =
               normalize(camera_position - fragment_position); // view vector
 
-  // var distance : f32 = length(fragment_position - light_position);
-  //  var L : vec3<f32> = vec3<f32>(
-  //  1.0 / (1.0 + 0.19 * distance + 0.1 * distance * distance));
-
   // transform normal to worldspace
   let world_normal = (uMesh.model * vec4<f32>(vertex_normal, 0.0f)).xyz;
 
@@ -1283,7 +1284,7 @@ fn compute_ambient_light(material : Material, light_color : vec3<f32>,
   return vec3(light_intensity) * material.albedo * material.occlusion;
 }
 
-fn compute_depth(position : f32, near : f32, far : f32) -> f32 {
+fn compute_point_depth(position : f32, near : f32, far : f32) -> f32 {
 
   // let norm_z_comp = (far + near) / (far - near) -
   //                   (2.0f * far * near) / (far - near) / local_z_comp;
@@ -1300,6 +1301,10 @@ fn compute_depth(position : f32, near : f32, far : f32) -> f32 {
 
 // Combine and compute Point light shadow
 fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
+
+  if (point_light_list.length == 0u) {
+    return 0.0f;
+  }
 
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.002f;
@@ -1322,7 +1327,7 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
     let local_z_comp = max(abs_vec.x, max(abs_vec.y, abs_vec.z));
     var shadow_direction = normalize(frag_to_light);
 
-    let depth = compute_depth(local_z_comp, light.near, light.far);
+    let depth = compute_point_depth(local_z_comp, light.near, light.far);
 
     let distance = length(frag_to_light) / light.far;
 
@@ -1357,8 +1362,6 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
     }
 
     pcf_shadow_factor /= f32(pcf_sample_count);
-
-    // factor = pcf_shadow_factor;
     factor *= pcf_shadow_factor;
 
 
@@ -1369,8 +1372,8 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
 //  Compute Directional light shadow
 
-fn spot_shadow_position(world_position : vec3<f32>, light_view : mat4x4<f32>)
-    -> vec3<f32> {
+fn directional_shadow_position(world_position : vec3<f32>,
+                               light_view : mat4x4<f32>) -> vec3<f32> {
 
   // transform world position into clip space
   let shadow_clip = light_view * vec4<f32>(world_position, 1.0f);
@@ -1388,13 +1391,18 @@ fn spot_shadow_position(world_position : vec3<f32>, light_view : mat4x4<f32>)
 
 fn spot_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
+  if (spot_light_list.length == 0u) {
+    return 0.0f;
+  }
+
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.0005f;
 
   for (var l : u32 = 0u; l < spot_light_list.length; l++) {
 
     let light = spot_light_list.items[l];
-    let shadow_position = spot_shadow_position(frag_position, light.view);
+    let shadow_position =
+        directional_shadow_position(frag_position, light.view);
 
 
 
@@ -1444,6 +1452,60 @@ fn spot_shadow_factor(frag_position : vec3<f32>) -> f32 {
   return factor;
 }
 
+fn sun_shadow_factor(frag_position : vec3<f32>) -> f32 {
+
+  if (sun_light_list.length == 0u) {
+    return 0.0f;
+  }
+
+  var factor : f32 = 1.0f; // show by default
+  var bias : f32 = 0.005f;
+
+  for (var l : u32 = 0u; l < sun_light_list.length; l++) {
+
+    let layer = spot_light_list.length + l;
+    let light = sun_light_list.items[l];
+    let shadow_position =
+        directional_shadow_position(frag_position, light.view);
+
+
+
+    let frag_to_light = light.position - frag_position;
+    let light_direction = normalize(frag_to_light);
+    let shadow_depth = shadow_position.z - bias;
+
+    // PCF
+    var pcf_shadow_factor = 0.0f;
+    var pcf_sample_count = 0u;
+    let pcf_kernel_size = PCF_KERNEL_SIZE;
+    let pcf_half_kernel_size : f32 = f32(pcf_kernel_size / 2u);
+    let spread = 1.0f;
+
+    for (var x = -pcf_half_kernel_size; x <= pcf_half_kernel_size; x += 1.0f) {
+      for (var y = -pcf_half_kernel_size; y <= pcf_half_kernel_size;
+           y += 1.0f) {
+
+        let offset_uv = vec2(x, y) /
+                        f32(textureDimensions(directional_shadow_maps).x) *
+                        spread;
+
+        let sample_uv = shadow_position.xy + offset_uv;
+        pcf_shadow_factor += textureSampleCompare(
+            directional_shadow_maps, directional_shadow_sampler, sample_uv,
+            layer, shadow_depth);
+        pcf_sample_count += 1u;
+      }
+    }
+
+    pcf_shadow_factor /= f32(pcf_sample_count);
+    factor *= pcf_shadow_factor;
+
+
+  }
+
+  return factor;
+}
+
 // fragment shader
 @fragment fn fs_main(@location(0) vNormal : vec3<f32>,
                      @location(1) vCol : vec3<f32>,
@@ -1472,15 +1534,21 @@ fn spot_shadow_factor(frag_position : vec3<f32>) -> f32 {
                               light.position, light.color, light.intensity);
   }
 
-  // calculate direction lights
+  // calculate spot lights
   // basically the same a point light, but use a fixed light direction instead
   // of a one per fragment like a point light
   for (var i = 0u; i < spot_light_list.length; i = i + 1u) {
-
     let light = spot_light_list.items[i];
     let light_direction = -1.0f * light.lookat - light.position;
     Lo += compute_point_light(material, vFrag, vNormal, uCamera.position.xyz,
                               light_direction, light.color, light.intensity);
+  }
+
+  // calculate sun lights
+  for (var i = 0u; i < sun_light_list.length; i = i + 1u) {
+    let light = sun_light_list.items[i];
+    Lo += compute_point_light(material, vFrag, vNormal, uCamera.position.xyz,
+                              light.position, light.color, light.intensity);
   }
 
   // calulate ambient lights
@@ -1491,14 +1559,13 @@ fn spot_shadow_factor(frag_position : vec3<f32>) -> f32 {
     ambient_intensity += light.intensity;
   }
 
-  var color = ambient + Lo;
-
+  // shadow map computation
   let point_shadow = point_shadow_factor(vFrag);
-
   let directional_shadow = spot_shadow_factor(vFrag);
+  let sun_shadow = sun_shadow_factor(vFrag);
 
   let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
-                            point_shadow + directional_shadow);
+                            point_shadow + directional_shadow + sun_shadow);
 
   return vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
 }
@@ -1604,5 +1671,8 @@ struct Mesh {
   // see: https://learnopengl.com/Advanced-OpenGL/Depth-testing
   let depth = (2.0f * near) / (far + near - z * (far - near));
 
-  return vec4<f32>(vec3<f32>(depth), 1.0f);
+  // NOTE: if orthographic projection, don't need to linearize, can simply use z
+  // for debugging purpose
+
+  return vec4<f32>(vec3<f32>(in.vPosition.z), 1.0f);
 }

@@ -9,6 +9,7 @@
 #define LIGHT_MAX_CAPACITY 16
 #define LIGHT_POINT_VIEWS 6
 #define LIGHT_SPOT_VIEW 1
+#define LIGHT_SUN_DISTANCE 10
 
 // core type
 typedef struct {
@@ -111,6 +112,7 @@ typedef struct {
   float intensity;
   vec3 color;
   float _padding;
+  mat4 view;
 } __attribute__((aligned(16))) SunLightUniform;
 
 // light uniforms

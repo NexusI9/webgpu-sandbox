@@ -1,5 +1,6 @@
 #ifndef _MATERIAL_H_
 #define _MATERIAL_H_
+#include "light.h"
 #include "mesh.h"
 #include "webgpu/webgpu.h"
 
@@ -50,7 +51,7 @@ void material_texture_bind_views(mesh *, camera *, viewport *, uint8_t);
 // bind light scene
 void material_texture_bind_lights(mesh *, viewport *, AmbientLightList *,
                                   SpotLightList *, PointLightList *,
-                                  uint8_t);
+                                  SunLightList *, uint8_t);
 
 void material_texture_add_uniform(mesh *,
                                   const ShaderCreateUniformDescriptor *);
@@ -76,6 +77,6 @@ typedef struct {
 // bind shadow specicif view
 void material_shadow_bind_views(mesh *, mat4 *);
 
-void material_shadow_set_cullmode(mesh*, const WGPUCullMode);
+void material_shadow_set_cullmode(mesh *, const WGPUCullMode);
 
 #endif

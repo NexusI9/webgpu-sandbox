@@ -42,5 +42,8 @@ struct Mesh {
   // see: https://learnopengl.com/Advanced-OpenGL/Depth-testing
   let depth = (2.0f * near) / (far + near - z * (far - near));
 
-  return vec4<f32>(vec3<f32>(depth), 1.0f);
+  // NOTE: if orthographic projection, don't need to linearize, can simply use z
+  // for debugging purpose
+
+  return vec4<f32>(vec3<f32>(in.vPosition.z), 1.0f);
 }
