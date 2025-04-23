@@ -1,5 +1,6 @@
 #include "mesh.h"
 #include "../backend/buffer.h"
+#include "../backend/shadow_pass.h"
 #include "../utils/system.h"
 #include "light.h"
 #include "pipeline.h"
@@ -347,7 +348,6 @@ void mesh_init_shadow_shader(mesh *mesh) {
                     .queue = mesh->queue,
                     .name = "shadow",
                 });
-
 
   // edit shader pipeline (vertex only)
   pipeline_set_stencil(shader_pipeline(shadow_shader),

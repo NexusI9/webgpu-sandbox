@@ -1,5 +1,5 @@
 #include "material.h"
-#include "../backend/renderer.h"
+#include "../backend/shadow_pass.h"
 #include "../utils/system.h"
 #include "camera.h"
 #include "light.h"

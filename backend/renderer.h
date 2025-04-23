@@ -5,11 +5,6 @@
 #include "clock.h"
 #include "webgpu/webgpu.h"
 
-// WGPUTextureFormat_Depth32Float
-#define SHADOW_DEPTH_FORMAT WGPUTextureFormat_Depth32Float
-#define SHADOW_COLOR_FORMAT WGPUTextureFormat_BGRA8Unorm
-#define SHADOW_MAP_SIZE 1024
-
 typedef struct {
   const char *name;
   cclock *clock;
@@ -36,58 +31,6 @@ typedef struct renderer {
   } wgpu;
 
 } renderer;
-
-typedef struct {
-  WGPUDevice device;
-  WGPUQueue queue;
-  scene *scene;
-
-  struct {
-    WGPUTexture *color_texture;
-    WGPUTexture *depth_texture;
-  } point_light;
-
-  struct {
-    WGPUTexture *color_texture;
-    WGPUTexture *depth_texture;
-  } directional_light;
-
-} RendererCreateShadowMapDescriptor;
-
-typedef struct {
-  scene *scene;
-  WGPUTexture color_texture;
-  WGPUTexture depth_texture;
-  uint32_t layer;
-  const WGPUDevice *device;
-  WGPUCommandEncoder encoder;
-} RendererShadowToTextureDescriptor;
-
-typedef struct {
-  WGPUTexture color_texture;
-  WGPUTexture depth_texture;
-  uint32_t layer;
-  const WGPUQueue queue;
-} RendererShadowFallbackToTextureDescriptor;
-
-typedef struct {
-
-  struct {
-    WGPUTexture *texture;
-    WGPUTextureView *texture_view;
-  } color;
-
-  struct {
-    WGPUTexture *texture;
-    WGPUTextureView *texture_view;
-  } depth;
-
-  int width;
-  int height;
-  size_t layer_count;
-  WGPUDevice device;
-  WGPUTextureViewDimension dimension;
-} RendererCreateShadowTextureDescriptor;
 
 renderer renderer_create(const RendererCreateDescriptor *);
 void renderer_init(renderer *);
