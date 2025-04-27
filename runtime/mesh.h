@@ -1,11 +1,11 @@
 #ifndef _MESH_H_
 #define _MESH_H_
 
+#include "../geometry/vertex.h"
 #include "../resources/primitive/primitive.h"
 #include "camera.h"
 #include "light.h"
 #include "shader.h"
-#include "vertex.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -59,7 +59,7 @@ typedef struct {
   struct mesh *items;
   size_t capacity;
   size_t length;
-} MeshList; 
+} MeshList;
 
 // Core
 typedef struct mesh {

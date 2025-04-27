@@ -35,6 +35,7 @@ typedef struct renderer {
 renderer renderer_create(const RendererCreateDescriptor *);
 void renderer_init(renderer *);
 void renderer_draw(const renderer *, scene *);
+void renderer_bake_ao(renderer *, scene *);
 void renderer_compute_shadow(renderer *, scene *);
 
 void renderer_end_frame(const renderer *);

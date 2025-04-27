@@ -9,7 +9,6 @@
   Cannonical structure of a vertex
  */
 typedef struct {
-
   vec3 position;
   vec3 normal;
   vec3 color;
@@ -43,5 +42,6 @@ typedef struct {
 
 void vertex_create(vertex *);
 void vertex_list_create(VertexList *, size_t);
+vertex vertex_from_array(float *);
 
 #endif

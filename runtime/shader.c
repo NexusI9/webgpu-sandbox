@@ -5,7 +5,7 @@
 #include "camera.h"
 #include "pipeline.h"
 #include "string.h"
-#include "vertex.h"
+#include "../geometry/vertex.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <math.h>

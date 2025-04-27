@@ -1,5 +1,5 @@
 #include "loader.gltf.h"
-#include "../runtime/vertex.h"
+#include "../geometry/vertex.h"
 #include "../utils/system.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>

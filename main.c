@@ -104,7 +104,7 @@ void init_scene() {
                                                  POINT_LIGHT[1],
                                                  POINT_LIGHT[2],
                                              },
-                                     });*/
+                                             });*/
 
   /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
                                         .color = {1.0f, 1.0f, 1.0f},
@@ -252,11 +252,15 @@ int main(int argc, const char *argv[]) {
   import_cube();
   add_grid();
 
+  // Bake AO textures for static scenes elements
+  renderer_bake_ao(&main_renderer, &main_scene);
+
   // Setup drawing pass may need to move it else where
   renderer_compute_shadow(&main_renderer, &main_scene);
 
   scene_build(&main_scene, MESH_SHADER_DEFAULT);
-  //  Update Loop
+
+  // Update Loop
   renderer_set_draw(draw);
 
   // Quit

@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "../runtime/material.h"
 #include "../utils/system.h"
+#include "ao_bake.h"
 #include "clock.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
@@ -202,6 +203,13 @@ void renderer_set_draw(const void *callback) {
 
 void renderer_lock_mouse(const renderer *renderer) {
   emscripten_request_pointerlock(renderer->context.name, true);
+}
+
+void renderer_bake_ao(renderer *renderer, scene *scene) {
+
+  ao_bake_init(&(AOBakeInitDescriptor){
+      .mesh_list = &scene->meshes.lit,
+  });
 }
 
 /**
