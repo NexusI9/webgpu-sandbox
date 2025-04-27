@@ -4,11 +4,11 @@
 #include "../runtime/mesh.h"
 #include "webgpu/webgpu.h"
 
-#define AO_TEXTURE_SIZE 1024
+#define AO_TEXTURE_SIZE 128
 #define AO_TEXTURE_FORMAT WGPUTextureFormat_R8Unorm
 #define AO_DISTANCE 1.0f
 #define AO_RAY_AMOUNT 20
-#define AO_RAY_MAX_DISTANCE 10.0f
+#define AO_RAY_MAX_DISTANCE 1.0f
 
 typedef struct {
 

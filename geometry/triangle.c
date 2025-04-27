@@ -1,4 +1,5 @@
 #include "triangle.h"
+#include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -80,7 +81,109 @@ void triangle_random_points(triangle *surface, uint16_t amount, vec3 *dest) {
   triangle_rand_list_div(r2, amount, glm_vec3_distance(p1, p3));
   triangle_rand_list_div(r3, amount, glm_vec3_distance(p1, p2));
 
-  for (int n = 0; n < amount; n++) {
+  for (int n = 0; n < amount; n++)
     triangle_rand_dist_trilinear(r1[n], r2[n], r3[n], p1, p2, p3, dest[n]);
+}
+
+/**
+   Retrieve the face surface from the triangle.
+ */
+void triangle_normal(triangle *surface, vec3 dest) {
+  vec3 edge1, edge2;
+
+  glm_vec3_sub(surface->b.position, surface->a.position, edge1);
+  glm_vec3_sub(surface->c.position, surface->a.position, edge2);
+
+  glm_vec3_cross(edge1, edge2, dest);
+  glm_vec3_normalize(dest);
+}
+
+/**
+   Use Moller Trumbore intersection algorithm to check if a given ray traverse a
+   triangle.
+   https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+ */
+void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
+                      float max_distance, vec3 hit) {
+
+  float epsilon = FLT_EPSILON;
+
+  vec3 edge1, edge2, ray_cross_e2;
+
+  glm_vec3_sub(surface->b.position, surface->a.position, edge1);
+  glm_vec3_sub(surface->c.position, surface->a.position, edge2);
+  glm_vec3_cross(ray_direction, edge2, ray_cross_e2);
+
+  float det = glm_vec3_dot(edge1, ray_cross_e2);
+
+  if (det > -epsilon && det < epsilon) {
+    // ray parallel to triangle
+    glm_vec3_zero(hit);
+    return;
   }
+
+  float inv_det = 1.0 / det;
+  vec3 s;
+  glm_vec3_sub(ray_origin, surface->a.position, s);
+  float u = inv_det * glm_vec3_dot(s, ray_cross_e2);
+
+  if ((u < 0 && fabsf(u) > epsilon) || (u > 1 && fabsf(u - 1.0f) > epsilon)) {
+    glm_vec3_zero(hit);
+    return;
+  }
+
+  vec3 s_cross_e1;
+  glm_vec3_cross(s, edge1, s_cross_e1);
+  float v = inv_det * glm_vec3_dot(ray_direction, s_cross_e1);
+
+  if ((v < 0 && fabsf(v) > epsilon) ||
+      (u + v > 1 && fabsf(u + v - 1) > epsilon)) {
+    glm_vec3_zero(hit);
+    return;
+  }
+
+  // compute t to find where interesction is on the line
+  float t = inv_det * glm_vec3_dot(edge2, s_cross_e1);
+
+  if (t > epsilon && t < max_distance) {
+    // intersection
+    vec3 distance;
+    glm_vec3_scale(ray_direction, t, distance);
+    glm_vec3_add(ray_origin, distance, hit);
+  } else {
+    // line interesction but no Ray intersection
+    glm_vec3_zero(hit);
+  }
+}
+
+/**
+   Read a point position in the vertex 3D space and return the equivalent
+   in the UV space
+ */
+void triangle_point_to_uv(triangle *surface, vec3 point, vec2 dest) {
+
+  vec3 p0, p1, p2;
+
+  glm_vec3_sub(surface->b.position, surface->a.position, p0);
+  glm_vec3_sub(surface->c.position, surface->a.position, p1);
+  glm_vec3_sub(point, surface->a.position, p2);
+
+  float d00 = glm_vec3_dot(p0, p0);
+  float d01 = glm_vec3_dot(p0, p1);
+  float d11 = glm_vec3_dot(p1, p1);
+  float d20 = glm_vec3_dot(p2, p0);
+  float d21 = glm_vec3_dot(p2, p1);
+
+  float denom = d00 * d11 - d01 * d01;
+
+  float lambda1 = (d11 * d20 - d01 * d21) / denom;
+  float lambda2 = (d00 * d21 - d01 * d20) / denom;
+  float lambda0 = 1 - lambda1 - lambda2;
+
+  // compute U
+  dest[0] = lambda0 * surface->a.uv[0] + lambda1 * surface->b.uv[0] +
+            lambda2 * surface->c.uv[0];
+  // compute V
+  dest[1] = lambda0 * surface->a.uv[1] + lambda1 * surface->b.uv[1] +
+            lambda2 * surface->c.uv[1];
 }

@@ -5,7 +5,7 @@
 #include "../utils/math.h"
 #include <string.h>
 
-//static DebugView debug_view_light;
+// static DebugView debug_view_light;
 static void shadow_pass_create_textures(const ShadowPassTextureDescriptor *);
 static void shadow_pass_to_texture(const ShadowPassToTextureDescriptor *);
 static void
@@ -19,7 +19,7 @@ void shadow_pass_init(scene *scene, WGPUDevice device, WGPUQueue queue) {
   /*debug_view_create(&debug_view_light, &(DebugViewCreateDescriptor){
                                            .device = &device,
                                            .queue = &queue,
-					   });*/
+                                           });*/
 
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = scene->lights.point.length;
@@ -186,18 +186,15 @@ void shadow_pass_fallback_to_texture(
   const int height = TEXTURE_MIN_SIZE;
   const int8_t channels = TEXTURE_CHANNELS_RGBA;
 
-  void *texture_data;
-  size_t texture_size;
+  texture texture;
 
   // create fallback texture
-  texture_create_fill(&(TextureCreateFillDescriptor){
-      .channels = channels,
-      .data = texture_data,
-      .size = &texture_size,
-      .width = width,
-      .height = height,
-      .value = 0,
-  });
+  texture_create(&texture, &(TextureCreateDescriptor){
+                               .channels = channels,
+                               .width = width,
+                               .height = height,
+                               .value = 0,
+                           });
 
   const WGPUTextureDataLayout texture_layout = {
       .offset = 0,
@@ -211,6 +208,7 @@ void shadow_pass_fallback_to_texture(
       .depthOrArrayLayers = 1,
   };
 
+
   // write to color texture
   wgpuQueueWriteTexture(desc->queue,
                         &(WGPUImageCopyTexture){
@@ -219,7 +217,7 @@ void shadow_pass_fallback_to_texture(
                             .origin = {0, 0, 0},
                             .aspect = WGPUTextureAspect_All,
                         },
-                        texture_data, texture_size, &texture_layout,
+                        texture.data, texture.size, &texture_layout,
                         &texture_dimension);
 
   // do not need to write to depth texture (automatically set by GPU)
@@ -343,7 +341,7 @@ void shadow_pass_to_texture(const ShadowPassToTextureDescriptor *desc) {
                      .texture_view = layer_texture_view_color,
                      .size = {1.0f, 1.0f * 9.0f / 16.0f},
                      .position = {0.0f, 0.0f},
-		     });*/
+                     });*/
 }
 
 /**

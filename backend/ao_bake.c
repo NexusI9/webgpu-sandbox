@@ -1,5 +1,6 @@
 #include "ao_bake.h"
 #include "../geometry/triangle.h"
+#include "../runtime/texture.h"
 #include "../utils/system.h"
 #include "string.h"
 #include <cglm/cglm.h>
@@ -8,19 +9,35 @@
 
 static void ao_bake_global(mesh *, MeshList *);
 static void ao_bake_local(mesh *, MeshList *);
-static void ao_bake_compare_triangle(triangle *, mesh *);
+static void ao_bake_raycast(vec3, vec3, mesh *, texture *);
 static triangle ao_bake_mesh_triangle(mesh *, size_t);
 
 /**
-   Take in the source mesh current triangle as well as a mesh
-   The function then compare the position and normal of each triangles
-   to check if the face of the source triangle or the compare mesh is occluded
+   Raycast from the source surage towards a certain direction an check if the
+   ray traverse a triangle of the compared mesh
  */
-void ao_bake_compare_triangle(triangle *source, mesh *compare) {
+void ao_bake_raycast(vec3 ray_origin, vec3 ray_direction, mesh *compare,
+                     texture *texture) {
 
   for (size_t i = 0; i < compare->index.length; i += 3) {
-
     triangle compare_triangle = ao_bake_mesh_triangle(compare, i);
+    vec3 hit;
+
+    triangle_raycast(&compare_triangle, ray_origin, ray_direction,
+                     AO_RAY_MAX_DISTANCE, hit);
+
+    // is occluded
+    if (hit[0]) {
+      // transpose hit point to triangle UV space
+      vec2 uv;
+      triangle_point_to_uv(&compare_triangle, hit, uv);
+
+      // scale to the texture coordinates
+      glm_vec2_scale(uv, AO_TEXTURE_SIZE, uv);
+
+      // write pixel to texture
+      texture_write_pixel(texture, 0, uv);
+    }
   }
 }
 
@@ -58,43 +75,51 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
   printf("===== BAKING AO =====\n");
 
   for (int s = 0; s < desc->mesh_list->length; s++) {
+
     mesh *source_mesh = &desc->mesh_list->items[s];
     printf("Baking mesh: %s\n", source_mesh->name);
 
-    // go through the mesh triangles and check if it's occluded
+    texture ao_texture;
+    texture_create(&ao_texture, &(TextureCreateDescriptor){
+                                    .width = AO_TEXTURE_SIZE,
+                                    .height = AO_TEXTURE_SIZE,
+                                    .channels = TEXTURE_CHANNELS_RGB,
+                                    .value = 255,
+                                });
 
+    // go through the mesh triangles and check if it's occluded
     for (size_t i = 0; i < source_mesh->index.length; i += 3) {
 
       triangle source_triangle = ao_bake_mesh_triangle(source_mesh, i);
       vec3 rays[AO_RAY_AMOUNT];
+      vec3 ray_normal;
+      triangle_normal(&source_triangle, ray_normal);
       triangle_random_points(&source_triangle, AO_RAY_AMOUNT, rays);
 
       // create a ray on the triangle surface, projects it and check if it
       // collides with another mesh in the scene within a certain distance
       for (uint16_t ray = 0; ray < AO_RAY_AMOUNT; ray++) {
 
-        if (ray == 0)
-          print_vec3(rays[ray]);
-       
-
         for (int c = 0; c < desc->mesh_list->length; c++) {
 
           // TODO: once the index system is properly setup, replace m == s by
-          // src id
-          // == compare id
+          // src id == compare id
           if (c == s)
             continue;
 
           mesh *compare_mesh = &desc->mesh_list->items[c];
-          ao_bake_compare_triangle(&source_triangle, compare_mesh);
+          ao_bake_raycast(rays[ray], ray_normal, compare_mesh, &ao_texture);
 
           // check children
           for (size_t m = 0; m < compare_mesh->children.length; m++)
-            ao_bake_compare_triangle(&source_triangle,
-                                     &compare_mesh->children.items[m]);
+            ao_bake_raycast(rays[ray], ray_normal,
+                            &compare_mesh->children.items[m], &ao_texture);
         }
       }
     }
+
+    texture_save(&ao_texture, "./resources/assets/texture");
+    texture_free(&ao_texture);
 
     if (source_mesh->children.length > 0) {
       ao_bake_init(&(AOBakeInitDescriptor){

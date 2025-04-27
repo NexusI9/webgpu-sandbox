@@ -388,18 +388,16 @@ uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
 void loader_gltf_load_fallback_texture(
     ShaderBindGroupTextureEntry *shader_entry) {
 
-  shader_entry->width = 64;
-  shader_entry->height = 64;
+  shader_entry->width = TEXTURE_MIN_SIZE;
+  shader_entry->height = TEXTURE_MIN_SIZE;
 
-  texture_create_fill(&(TextureCreateFillDescriptor){
-      .width = shader_entry->width,
-      .height = shader_entry->height,
-      .size = &shader_entry->size,
-      .data = &shader_entry->data,
-      .value = 255,
-      .channels = TEXTURE_CHANNELS_RGBA,
-  });
-
+  texture_create_by_ref(shader_entry->data, &shader_entry->size,
+                        &(TextureCreateDescriptor){
+                            .width = shader_entry->width,
+                            .height = shader_entry->height,
+                            .value = 255,
+                            .channels = TEXTURE_CHANNELS_RGBA,
+                        });
 }
 
 void loader_gltf_mesh_position(mesh *mesh, const char *name, cgltf_data *data) {
