@@ -4,6 +4,9 @@
 
 void texture_create(texture *texture, const TextureCreateDescriptor *desc) {
 
+  // if (texture->data)
+  // texture_free(texture);
+
   texture->size = desc->width * desc->height * desc->channels;
   texture->data = (void *)calloc(desc->width * desc->height, desc->channels);
   texture->width = desc->width;
@@ -52,8 +55,6 @@ void texture_write_pixel(texture *texture, int value, vec2 coordinate) {
   }
 }
 
-void texture_save(texture *texture, const char *path) {
-    
-}
+void texture_save(texture *texture, const char *path) {}
 
 void texture_free(texture *texture) { free(texture->data); }

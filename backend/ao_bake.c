@@ -3,6 +3,7 @@
 #include "../runtime/texture.h"
 #include "../utils/system.h"
 #include "string.h"
+#include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <emscripten/emscripten.h>
 #include <stdint.h>
@@ -11,6 +12,48 @@ static void ao_bake_global(mesh *, MeshList *);
 static void ao_bake_local(mesh *, MeshList *);
 static void ao_bake_raycast(vec3, vec3, mesh *, texture *);
 static triangle ao_bake_mesh_triangle(mesh *, size_t);
+static void ao_bake_bind(mesh *, texture *);
+
+/**
+   Bind the texture to the shader
+ */
+void ao_bake_bind(mesh *mesh, texture *texture) {
+
+  shader_add_texture(mesh_shader_texture(mesh),
+                     &(ShaderCreateTextureDescriptor){
+                         .group_index = 0,
+                         .entry_count = 1,
+                         .entries = (ShaderBindGroupTextureEntry[]){
+                             {
+                                 .binding = 8,
+                                 .data = texture->data,
+                                 .size = texture->size,
+                                 .width = texture->width,
+                                 .height = texture->height,
+                                 .dimension = WGPUTextureViewDimension_2D,
+                                 .format = WGPUTextureFormat_BGRA8Unorm,
+                                 .sample_type = WGPUTextureSampleType_Float,
+                             },
+                         }});
+
+  shader_add_sampler(mesh_shader_texture(mesh),
+                     &(ShaderCreateSamplerDescriptor){
+                         .group_index = 0,
+                         .entry_count = 1,
+                         .entries = (ShaderBindGroupSamplerEntry[]){
+                             {
+                                 .binding = 9,
+                                 .type = WGPUSamplerBindingType_Filtering,
+                                 .addressModeU = WGPUAddressMode_ClampToEdge,
+                                 .addressModeV = WGPUAddressMode_ClampToEdge,
+                                 .addressModeW = WGPUAddressMode_ClampToEdge,
+                                 .minFilter = WGPUFilterMode_Linear,
+                                 .magFilter = WGPUFilterMode_Linear,
+                                 .compare = WGPUCompareFunction_Undefined,
+                             },
+                         }});
+
+}
 
 /**
    Raycast from the source surage towards a certain direction an check if the
@@ -83,7 +126,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
     texture_create(&ao_texture, &(TextureCreateDescriptor){
                                     .width = AO_TEXTURE_SIZE,
                                     .height = AO_TEXTURE_SIZE,
-                                    .channels = TEXTURE_CHANNELS_RGB,
+                                    .channels = TEXTURE_CHANNELS_RGBA,
                                     .value = 255,
                                 });
 
@@ -118,8 +161,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
       }
     }
 
-    texture_save(&ao_texture, "./resources/assets/texture");
-    texture_free(&ao_texture);
+    ao_bake_bind(source_mesh, &ao_texture);
 
     if (source_mesh->children.length > 0) {
       ao_bake_init(&(AOBakeInitDescriptor){

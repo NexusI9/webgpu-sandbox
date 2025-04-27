@@ -1130,11 +1130,11 @@ struct SunLightStorage {
 @group(0) @binding(4) var normal_texture : texture_2d<f32>;
 @group(0) @binding(5) var normal_sampler : sampler;
 
-@group(0) @binding(6) var occlusion_texture : texture_2d<f32>;
-@group(0) @binding(7) var occlusion_sampler : sampler;
+@group(0) @binding(6) var emissive_texture : texture_2d<f32>;
+@group(0) @binding(7) var emissive_sampler : sampler;
 
-@group(0) @binding(8) var emissive_texture : texture_2d<f32>;
-@group(0) @binding(9) var emissive_sampler : sampler;
+@group(0) @binding(8) var occlusion_texture : texture_2d<f32>;
+@group(0) @binding(9) var occlusion_sampler : sampler;
 
 // camera viewport
 @group(1) @binding(0) var<uniform> uViewport : Viewport;

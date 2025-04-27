@@ -276,13 +276,14 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
   // bind pbdr textures
   // store the texture_views (hold pointer to actual texture + other data)
 
-  uint8_t texture_length = 5;
+  uint8_t texture_length = 4;
   cgltf_texture_view *texture_view_list[] = {
       &material->pbr_metallic_roughness.base_color_texture,
       &material->pbr_metallic_roughness.metallic_roughness_texture,
-      &material->normal_texture,
-      &material->occlusion_texture,
-      &material->emissive_texture,
+      &material->normal_texture, &material->emissive_texture,
+      // TODO: check how to handle if object already has a AO Texture imported ?
+      // overwrite ?
+      //&material->occlusion_texture : baked separately in the AO pass,
   };
   ShaderBindGroupTextureEntry texture_list[texture_length];
   ShaderBindGroupTextureEntry texture_entries[texture_length];
