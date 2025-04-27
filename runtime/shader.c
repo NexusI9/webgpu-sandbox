@@ -1,11 +1,11 @@
 #include "shader.h"
 #include "../backend/buffer.h"
+#include "../geometry/vertex.h"
 #include "../utils/file.h"
 #include "../utils/system.h"
 #include "camera.h"
 #include "pipeline.h"
 #include "string.h"
-#include "../geometry/vertex.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <math.h>
@@ -492,10 +492,8 @@ void shader_add_uniform(shader *shader,
       }
 
       // transfer entry to shader bind group list
-      current_bind_group->uniforms.items[i] = *current_entry;
-
-      // update length
-      current_bind_group->uniforms.length++;
+      current_bind_group->uniforms
+          .items[current_bind_group->uniforms.length++] = *current_entry;
     }
   }
 }
@@ -538,8 +536,9 @@ void shader_add_texture(shader *shader,
                                 .queue = shader->queue,
                             });
 
-      current_bind_group->textures.items[i] = *current_entry;
-      current_bind_group->textures.length++;
+      current_bind_group->textures
+          .items[current_bind_group->textures.length++] = *current_entry;
+      
     }
   }
 }
@@ -573,14 +572,15 @@ void shader_add_texture_view(shader *shader,
 
       // map the entry to bind group
       ShaderBindGroupTextureViewEntry *current_entry = &desc->entries[i];
-      current_bind_group->textures.items[i] = (ShaderBindGroupTextureEntry){
-          .texture_view = current_entry->texture_view,
-          .binding = current_entry->binding,
-          .dimension = current_entry->dimension,
-          .format = current_entry->format,
-          .sample_type = current_entry->sample_type,
-      };
-      current_bind_group->textures.length++;
+      current_bind_group->textures
+          .items[current_bind_group->textures.length++] =
+          (ShaderBindGroupTextureEntry){
+              .texture_view = current_entry->texture_view,
+              .binding = current_entry->binding,
+              .dimension = current_entry->dimension,
+              .format = current_entry->format,
+              .sample_type = current_entry->sample_type,
+          };
     }
   }
 }
@@ -620,8 +620,8 @@ void shader_add_sampler(shader *shader,
                                .magFilter = current_entry->magFilter,
                            });
 
-      current_bind_group->samplers.items[i] = *current_entry;
-      current_bind_group->samplers.length++;
+      current_bind_group->samplers
+          .items[current_bind_group->samplers.length++] = *current_entry;
     }
   }
 }
