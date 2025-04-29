@@ -7,10 +7,12 @@ void texture_create(texture *texture, const TextureCreateDescriptor *desc) {
   // if (texture->data)
   // texture_free(texture);
 
-  texture->size = desc->width * desc->height * desc->channels;
-  texture->data = (void *)calloc(desc->width * desc->height, desc->channels);
   texture->width = desc->width;
   texture->height = desc->height;
+  texture->channels = desc->channels;
+  texture->size = texture->width * texture->height * texture->channels;
+  texture->data =
+      (void *)calloc(texture->width * texture->height, texture->channels);
 
   if (texture->data == NULL) {
     perror("Could not create texture");

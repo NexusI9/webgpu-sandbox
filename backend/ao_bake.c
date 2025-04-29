@@ -6,6 +6,7 @@
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <emscripten/emscripten.h>
+#include <math.h>
 #include <stdint.h>
 
 static void ao_bake_global(mesh *, MeshList *);
@@ -31,7 +32,7 @@ void ao_bake_bind(mesh *mesh, texture *texture) {
                                  .width = texture->width,
                                  .height = texture->height,
                                  .dimension = WGPUTextureViewDimension_2D,
-                                 .format = WGPUTextureFormat_BGRA8Unorm,
+                                 .format = WGPUTextureFormat_RGBA8Unorm,
                                  .sample_type = WGPUTextureSampleType_Float,
                              },
                          }});
@@ -52,7 +53,6 @@ void ao_bake_bind(mesh *mesh, texture *texture) {
                                  .compare = WGPUCompareFunction_Undefined,
                              },
                          }});
-
 }
 
 /**
@@ -70,7 +70,7 @@ void ao_bake_raycast(vec3 ray_origin, vec3 ray_direction, mesh *compare,
                      AO_RAY_MAX_DISTANCE, hit);
 
     // is occluded
-    if (hit[0]) {
+    if (hit[0] || hit[1] || hit[2]) {
       // transpose hit point to triangle UV space
       vec2 uv;
       triangle_point_to_uv(&compare_triangle, hit, uv);
@@ -130,9 +130,16 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
                                     .value = 255,
                                 });
 
+    /*for (int y = 0; y < 64; y++) {
+      for (int x = 0; x < 64; x++) {
+        texture_write_pixel(&ao_texture, 0, (vec2){x, y});
+      }
+    }*/
+
     // go through the mesh triangles and check if it's occluded
     for (size_t i = 0; i < source_mesh->index.length; i += 3) {
 
+	//continue;
       triangle source_triangle = ao_bake_mesh_triangle(source_mesh, i);
       vec3 rays[AO_RAY_AMOUNT];
       vec3 ray_normal;

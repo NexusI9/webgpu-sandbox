@@ -106,6 +106,8 @@ void triangle_normal(triangle *surface, vec3 dest) {
 void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
                       float max_distance, vec3 hit) {
 
+  // glm_vec3_copy(ray_origin, hit);
+  // return;
   float epsilon = FLT_EPSILON;
 
   vec3 edge1, edge2, ray_cross_e2;
@@ -127,7 +129,7 @@ void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
   glm_vec3_sub(ray_origin, surface->a.position, s);
   float u = inv_det * glm_vec3_dot(s, ray_cross_e2);
 
-  if ((u < 0 && fabsf(u) > epsilon) || (u > 1 && fabsf(u - 1.0f) > epsilon)) {
+  if (u < 0.0f || u > 1.0f) {
     glm_vec3_zero(hit);
     return;
   }
@@ -136,8 +138,7 @@ void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
   glm_vec3_cross(s, edge1, s_cross_e1);
   float v = inv_det * glm_vec3_dot(ray_direction, s_cross_e1);
 
-  if ((v < 0 && fabsf(v) > epsilon) ||
-      (u + v > 1 && fabsf(u + v - 1) > epsilon)) {
+  if (v < 0.0f || u + v > 1.0f) {
     glm_vec3_zero(hit);
     return;
   }
@@ -176,14 +177,16 @@ void triangle_point_to_uv(triangle *surface, vec3 point, vec2 dest) {
 
   float denom = d00 * d11 - d01 * d01;
 
-  float lambda1 = (d11 * d20 - d01 * d21) / denom;
-  float lambda2 = (d00 * d21 - d01 * d20) / denom;
-  float lambda0 = 1 - lambda1 - lambda2;
+  float v = (d11 * d20 - d01 * d21) / denom;
+  float w = (d00 * d21 - d01 * d20) / denom;
+  float u = 1 - v - w;
 
-  // compute U
-  dest[0] = lambda0 * surface->a.uv[0] + lambda1 * surface->b.uv[0] +
-            lambda2 * surface->c.uv[0];
-  // compute V
-  dest[1] = lambda0 * surface->a.uv[1] + lambda1 * surface->b.uv[1] +
-            lambda2 * surface->c.uv[1];
+  vec2 uv0, uv1, uv2;
+  glm_vec2_scale(surface->a.uv, u, uv0);
+  glm_vec2_scale(surface->b.uv, v, uv1);
+  glm_vec2_scale(surface->c.uv, w, uv2);
+
+  vec2 uv01;
+  glm_vec2_add(uv0, uv1, uv01);
+  glm_vec2_add(uv01, uv2, dest);
 }
