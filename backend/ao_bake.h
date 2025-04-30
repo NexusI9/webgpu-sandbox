@@ -2,6 +2,7 @@
 #define _AO_BAKE_H_
 
 #include "../runtime/mesh.h"
+#include "../runtime/scene.h"
 #include "webgpu/webgpu.h"
 
 #define AO_TEXTURE_SIZE 128
@@ -13,6 +14,9 @@
 typedef struct {
 
   MeshIndexedList *mesh_list;
+  scene *scene;
+  WGPUDevice *device;
+  WGPUQueue *queue;
 
 } AOBakeInitDescriptor;
 

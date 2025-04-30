@@ -19,16 +19,19 @@ void line_create(mesh *mesh, const LineCreateDescriptor *desc) {
                     });
 
   mesh_set_vertex_attribute(
-      mesh, &(VertexAttribute){
-                .data = calloc(LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX, sizeof(float)),
-                .length = 0,
-            });
+      mesh,
+      &(VertexAttribute){
+          .data = calloc(LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX_COUNT,
+                         sizeof(float)),
+          .length = 0,
+      });
 
-  mesh_set_vertex_index(mesh,
-                        &(VertexIndex){
-                            .data = calloc(LINE_MAX_POINTS * LINE_VERTEX, sizeof(uint16_t)),
-                            .length = 0,
-                        });
+  mesh_set_vertex_index(
+      mesh,
+      &(VertexIndex){
+          .data = calloc(LINE_MAX_POINTS * LINE_INDEX_COUNT, sizeof(uint16_t)),
+          .length = 0,
+      });
 
   mesh_set_shader(mesh,
                   &(ShaderCreateDescriptor){
@@ -141,7 +144,8 @@ void line_create_plane(const LineCreatePlaneDescriptor *desc) {
  */
 void line_add_point(mesh *mesh, vec3 p1, vec3 p2, vec3 color) {
 
-  if (mesh->vertex.length == LINE_MAX_POINTS - 3) {
+  if (mesh->vertex.length / VERTEX_STRIDE / LINE_VERTEX_COUNT ==
+      LINE_MAX_POINTS - LINE_VERTEX_COUNT - 1) {
     perror("Lines reached maximum, cannot add more point\n");
     return;
   }

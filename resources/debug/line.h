@@ -6,8 +6,8 @@
 
 #define LINE_MAX_POINTS 1024
 #define LINE_THICKNESS 0.005
-#define LINE_VERTEX 8 // generate 8 vertex per line
-#define LINE_INDEX 12 // generate 12 index per line
+#define LINE_VERTEX_COUNT 8 // generate 8 (2*4) vertex per line
+#define LINE_INDEX_COUNT 12 // generate 12 (2*6) index per line
 
 typedef struct {
   WGPUDevice *device;

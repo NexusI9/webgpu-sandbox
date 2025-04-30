@@ -1,5 +1,7 @@
 #include "ao_bake.h"
 #include "../geometry/triangle.h"
+#include "../resources/debug/line.h"
+#include "../runtime/material.h"
 #include "../runtime/texture.h"
 #include "../utils/system.h"
 #include "string.h"
@@ -117,6 +119,14 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
   printf("===== BAKING AO =====\n");
 
+  // DEBUG
+  mesh *line = scene_new_mesh_unlit(desc->scene);
+  line_create(line, &(LineCreateDescriptor){
+                        .device = desc->device,
+                        .queue = desc->queue,
+                        .name = "line mesh",
+                    });
+
   for (int s = 0; s < desc->mesh_list->length; s++) {
 
     mesh *source_mesh = &desc->mesh_list->items[s];
@@ -141,8 +151,8 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
       triangle source_triangle = ao_bake_mesh_triangle(source_mesh, i);
       vec3 rays[AO_RAY_AMOUNT];
-      vec3 ray_normal;
-      triangle_normal(&source_triangle, ray_normal);
+      vec3 ray_direction;
+      triangle_normal(&source_triangle, ray_direction);
       triangle_random_points(&source_triangle, AO_RAY_AMOUNT, rays);
 
       // create a ray on the triangle surface, projects it and check if it
@@ -153,6 +163,12 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
         triangle_point_to_uv(&source_triangle, rays[ray], ray_uv);
         texture_write_pixel(&ao_texture, 0, ray_uv);
 
+        vec3 norm_dir;
+        glm_normalize_to(ray_direction, norm_dir);
+        if (ray < 20) {
+          line_add_point(line, rays[ray], ray_direction, norm_dir);
+        }
+
         for (int c = 0; c < desc->mesh_list->length; c++) {
           continue;
           // TODO: once the index system is properly setup, replace m == s by
@@ -161,11 +177,11 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
             continue;
 
           mesh *compare_mesh = &desc->mesh_list->items[c];
-          ao_bake_raycast(rays[ray], ray_normal, compare_mesh, &ao_texture);
+          ao_bake_raycast(rays[ray], ray_direction, compare_mesh, &ao_texture);
 
           // check children
           for (size_t m = 0; m < compare_mesh->children.length; m++)
-            ao_bake_raycast(rays[ray], ray_normal,
+            ao_bake_raycast(rays[ray], ray_direction,
                             &compare_mesh->children.items[m], &ao_texture);
         }
       }
@@ -176,7 +192,14 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
     if (source_mesh->children.length > 0) {
       ao_bake_init(&(AOBakeInitDescriptor){
           .mesh_list = &source_mesh->children,
+          .scene = desc->scene,
+          .device = desc->device,
+          .queue = desc->queue,
       });
     }
   }
+
+  // DEBUG
+  material_texture_bind_views(line, &desc->scene->camera,
+                              &desc->scene->viewport, 0);
 }

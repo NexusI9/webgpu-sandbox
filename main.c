@@ -200,7 +200,7 @@ void add_line() {
                  (vec3){1.0f, 1.0f, 1.0f});
 
   line_add_point(line, (vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
-    (vec3){0.0f, 1.0f, 0.0f});
+                 (vec3){0.0f, 1.0f, 0.0f});
 
   material_texture_bind_views(line, &main_scene.camera, &main_scene.viewport,
                               0);
@@ -270,8 +270,8 @@ int main(int argc, const char *argv[]) {
       POINT_LIGHT[2],
   });
 
-  // import_cube();
-  add_line();
+  import_cube();
+  // add_line();
   add_grid();
 
   // Bake AO textures for static scenes elements

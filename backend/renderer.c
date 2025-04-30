@@ -209,6 +209,9 @@ void renderer_bake_ao(renderer *renderer, scene *scene) {
 
   ao_bake_init(&(AOBakeInitDescriptor){
       .mesh_list = &scene->meshes.lit,
+      .scene = scene,
+      .queue = &renderer->wgpu.queue,
+      .device = &renderer->wgpu.device,
   });
 }
 
