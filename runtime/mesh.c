@@ -63,8 +63,6 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
   // init shadow shader by default
   mesh_init_shadow_shader(mesh);
-
-  // TODO: init shadow shader by default
 }
 
 void mesh_create_primitive(mesh *mesh,
@@ -81,28 +79,44 @@ void mesh_create_primitive(mesh *mesh,
 
 void mesh_set_vertex_attribute(mesh *mesh, const VertexAttribute *attributes) {
 
+  // reset buffer
+  if (mesh->buffer.vertex) {
+    wgpuBufferRelease(mesh->buffer.vertex);
+    mesh->buffer.vertex = NULL;
+  }
+
   mesh->vertex.data = attributes->data;
   mesh->vertex.length = attributes->length;
 
-  // store vertex in buffer
-  mesh_create_vertex_buffer(
-      mesh, &(MeshCreateBufferDescriptor){
-                .data = (void *)mesh->vertex.data,
-                .size = mesh->vertex.length * sizeof(mesh->vertex.data[0]),
-            });
+  if (mesh->vertex.length) {
+    // store vertex in buffer
+    mesh_create_vertex_buffer(
+        mesh, &(MeshCreateBufferDescriptor){
+                  .data = (void *)mesh->vertex.data,
+                  .size = mesh->vertex.length * sizeof(mesh->vertex.data[0]),
+              });
+  }
 }
 
 void mesh_set_vertex_index(mesh *mesh, const VertexIndex *indexes) {
 
+  // reset buffer
+  if (mesh->buffer.index) {
+    wgpuBufferRelease(mesh->buffer.index);
+    mesh->buffer.index = NULL;
+  }
+
   mesh->index.data = indexes->data;
   mesh->index.length = indexes->length;
 
-  // store index in buffer
-  mesh_create_index_buffer(
-      mesh, &(MeshCreateBufferDescriptor){
-                .data = (void *)mesh->index.data,
-                .size = mesh->index.length * sizeof(mesh->index.data[0]),
-            });
+  if (mesh->index.length) {
+    // store index in buffer
+    mesh_create_index_buffer(
+        mesh, &(MeshCreateBufferDescriptor){
+                  .data = (void *)mesh->index.data,
+                  .size = mesh->index.length * sizeof(mesh->index.data[0]),
+              });
+  }
 }
 
 void mesh_set_parent(mesh *child, mesh *parent) { child->parent = parent; }
@@ -159,11 +173,16 @@ void mesh_create_index_buffer(mesh *mesh,
  */
 void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
 
-  printf("Build mesh: %s\n", mesh->name);
+  VERBOSE_PRINT("Build mesh: %s\n", mesh->name);
   shader *shader = mesh_select_shader(mesh, draw_method);
 
   // reccursively build shader
   shader_build(shader);
+
+  // check if mesh has correct buffer before drawing
+  if (mesh->buffer.index == NULL || mesh->buffer.vertex == NULL) {
+    perror("Mesh doesn't have the right buffers, further error may occurs.\n");
+  }
 
   // build children
   for (size_t c = 0; c < mesh->children.length; c++)

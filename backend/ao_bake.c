@@ -132,14 +132,13 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
     /*for (int y = 0; y < 64; y++) {
       for (int x = 0; x < 64; x++) {
-        texture_write_pixel(&ao_texture, 0, (vec2){x, y});
+      texture_write_pixel(&ao_texture, 0, (vec2){x, y});
       }
-    }*/
+      }*/
 
     // go through the mesh triangles and check if it's occluded
     for (size_t i = 0; i < source_mesh->index.length; i += 3) {
 
-	//continue;
       triangle source_triangle = ao_bake_mesh_triangle(source_mesh, i);
       vec3 rays[AO_RAY_AMOUNT];
       vec3 ray_normal;
@@ -150,8 +149,12 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
       // collides with another mesh in the scene within a certain distance
       for (uint16_t ray = 0; ray < AO_RAY_AMOUNT; ray++) {
 
-        for (int c = 0; c < desc->mesh_list->length; c++) {
+        vec2 ray_uv;
+        triangle_point_to_uv(&source_triangle, rays[ray], ray_uv);
+        texture_write_pixel(&ao_texture, 0, ray_uv);
 
+        for (int c = 0; c < desc->mesh_list->length; c++) {
+          continue;
           // TODO: once the index system is properly setup, replace m == s by
           // src id == compare id
           if (c == s)

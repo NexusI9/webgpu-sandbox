@@ -145,8 +145,8 @@ void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
 
   // compute t to find where interesction is on the line
   float t = inv_det * glm_vec3_dot(edge2, s_cross_e1);
-
-  if (t > epsilon && t < max_distance) {
+  //&&t < max_distance
+  if (t > epsilon) {
     // intersection
     vec3 distance;
     glm_vec3_scale(ray_direction, t, distance);

@@ -15,6 +15,7 @@
 #include <webgpu/webgpu.h>
 
 #include "resources/debug/grid.h"
+#include "resources/debug/line.h"
 #include "runtime/light.h"
 #include "utils/file.h"
 
@@ -177,13 +178,32 @@ void add_grid() {
   glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
 
   mesh *grid = scene_new_mesh_unlit(&main_scene);
-  grid_create_mesh(grid, &(GridCreateDescriptor){
-                             .uniform = grid_uniform,
-                             .camera = &main_scene.camera,
-                             .viewport = &main_scene.viewport,
-                             .device = &main_renderer.wgpu.device,
-                             .queue = &main_renderer.wgpu.queue,
-                         });
+  grid_create(grid, &(GridCreateDescriptor){
+                        .uniform = grid_uniform,
+                        .camera = &main_scene.camera,
+                        .viewport = &main_scene.viewport,
+                        .device = &main_renderer.wgpu.device,
+                        .queue = &main_renderer.wgpu.queue,
+                    });
+}
+
+void add_line() {
+
+  mesh *line = scene_new_mesh_unlit(&main_scene);
+  line_create(line, &(LineCreateDescriptor){
+                        .device = &main_renderer.wgpu.device,
+                        .queue = &main_renderer.wgpu.queue,
+                        .name = "line mesh",
+                    });
+
+  line_add_point(line, (vec3){-2.0f, -4.0f, -2.0f}, (vec3){2.0f, 4.0f, 2.0f},
+                 (vec3){1.0f, 1.0f, 1.0f});
+
+  /*line_add_point(line, (vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
+    (vec3){1.0f, 1.0f, 1.0f});*/
+
+  material_texture_bind_views(line, &main_scene.camera, &main_scene.viewport,
+                              0);
 }
 
 void import_cube() {
@@ -249,7 +269,9 @@ int main(int argc, const char *argv[]) {
       POINT_LIGHT[1],
       POINT_LIGHT[2],
   });
-  import_cube();
+
+  // import_cube();
+  add_line();
   add_grid();
 
   // Bake AO textures for static scenes elements

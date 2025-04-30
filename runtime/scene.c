@@ -45,6 +45,7 @@ mesh *scene_new_mesh_unlit(scene *scene) {
 void scene_draw(scene *scene, MeshDrawMethod draw_method,
                 WGPURenderPassEncoder *render_pass) {
 
+
   // update camera
   camera_draw(&scene->camera);
 

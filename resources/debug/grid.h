@@ -35,6 +35,6 @@ typedef struct {
 
 } grid;
 
-void grid_create_mesh(mesh *, GridCreateDescriptor *);
+void grid_create(mesh *, GridCreateDescriptor *);
 
 #endif

@@ -165,7 +165,6 @@ void shader_build(shader *shader) {
   VERBOSE_PRINT("  └ Building Shader: %s\n", shader->name);
 
   // build bind group entries for each individual group index
-
   WGPUBindGroupLayout *bindgroup_layouts = shader_build_layout(shader);
   shader_build_pipeline(shader, bindgroup_layouts);
   shader_build_bind(shader, bindgroup_layouts);
@@ -538,7 +537,6 @@ void shader_add_texture(shader *shader,
 
       current_bind_group->textures
           .items[current_bind_group->textures.length++] = *current_entry;
-      
     }
   }
 }
