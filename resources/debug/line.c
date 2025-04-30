@@ -20,13 +20,13 @@ void line_create(mesh *mesh, const LineCreateDescriptor *desc) {
 
   mesh_set_vertex_attribute(
       mesh, &(VertexAttribute){
-                .data = calloc(LINE_MAX_POINTS * VERTEX_STRIDE, sizeof(float)),
+                .data = calloc(LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX, sizeof(float)),
                 .length = 0,
             });
 
   mesh_set_vertex_index(mesh,
                         &(VertexIndex){
-                            .data = calloc(LINE_MAX_POINTS, sizeof(uint16_t)),
+                            .data = calloc(LINE_MAX_POINTS * LINE_VERTEX, sizeof(uint16_t)),
                             .length = 0,
                         });
 
