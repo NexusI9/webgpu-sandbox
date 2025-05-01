@@ -1,7 +1,7 @@
 #ifndef _MESH_H_
 #define _MESH_H_
 
-#include "../geometry/vertex.h"
+#include "../resources/geometry/vertex.h"
 #include "../resources/primitive/primitive.h"
 #include "camera.h"
 #include "light.h"

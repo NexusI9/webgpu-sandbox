@@ -1,6 +1,6 @@
 #include "shader.h"
 #include "../backend/buffer.h"
-#include "../geometry/vertex.h"
+#include "../resources/geometry/vertex.h"
 #include "../utils/file.h"
 #include "../utils/system.h"
 #include "camera.h"

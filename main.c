@@ -271,8 +271,6 @@ int main(int argc, const char *argv[]) {
   });
 
   import_cube();
-  // add_line();
-  add_grid();
 
   // Bake AO textures for static scenes elements
   renderer_bake_ao(&main_renderer, &main_scene);
@@ -280,6 +278,7 @@ int main(int argc, const char *argv[]) {
   // Setup drawing pass may need to move it else where
   renderer_compute_shadow(&main_renderer, &main_scene);
 
+  add_grid();
   scene_build(&main_scene, MESH_SHADER_DEFAULT);
 
   // Update Loop

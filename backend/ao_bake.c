@@ -1,5 +1,5 @@
 #include "ao_bake.h"
-#include "../geometry/triangle.h"
+#include "../resources/geometry/triangle.h"
 #include "../resources/debug/line.h"
 #include "../runtime/material.h"
 #include "../runtime/texture.h"
@@ -119,13 +119,14 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
   printf("===== BAKING AO =====\n");
 
-  // DEBUG
+#ifdef AO_BAKE_DISPLAY_RAY
   mesh *line = scene_new_mesh_unlit(desc->scene);
   line_create(line, &(LineCreateDescriptor){
                         .device = desc->device,
                         .queue = desc->queue,
                         .name = "line mesh",
                     });
+#endif
 
   for (int s = 0; s < desc->mesh_list->length; s++) {
 
@@ -151,8 +152,10 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
       triangle source_triangle = ao_bake_mesh_triangle(source_mesh, i);
       vec3 rays[AO_RAY_AMOUNT];
-      vec3 ray_direction;
-      triangle_normal(&source_triangle, ray_direction);
+      vec3 ray_normal;
+      triangle_normal(&source_triangle, ray_normal);
+      glm_vec3_scale(ray_normal, AO_RAY_MAX_DISTANCE, ray_normal);
+      
       triangle_random_points(&source_triangle, AO_RAY_AMOUNT, rays);
 
       // create a ray on the triangle surface, projects it and check if it
@@ -163,11 +166,13 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
         triangle_point_to_uv(&source_triangle, rays[ray], ray_uv);
         texture_write_pixel(&ao_texture, 0, ray_uv);
 
-        vec3 norm_dir;
-        glm_normalize_to(ray_direction, norm_dir);
-        if (ray < 20) {
-          line_add_point(line, rays[ray], ray_direction, norm_dir);
-        }
+        vec3 ray_direction;
+        glm_vec3_add(rays[ray], ray_normal, ray_direction);
+
+#ifdef AO_BAKE_DISPLAY_RAY
+        if (ray < 30)
+          line_add_point(line, rays[ray], ray_direction, ray_normal);
+#endif
 
         for (int c = 0; c < desc->mesh_list->length; c++) {
           continue;
@@ -199,7 +204,8 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
     }
   }
 
-  // DEBUG
+#ifdef AO_BAKE_DISPLAY_RAY
   material_texture_bind_views(line, &desc->scene->camera,
                               &desc->scene->viewport, 0);
+#endif
 }

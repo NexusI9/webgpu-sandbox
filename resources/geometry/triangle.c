@@ -96,6 +96,7 @@ void triangle_normal(triangle *surface, vec3 dest) {
 
   glm_vec3_cross(edge1, edge2, dest);
   glm_vec3_normalize(dest);
+  
 }
 
 /**

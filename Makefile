@@ -4,9 +4,10 @@
 C_FILES := $(shell find . -type f -name "*.c")
 
 # Macros
-#-DRENDER_SHADOW_AS_COLOR
-#-DCGLM_FORCE_DEPTH_ZERO_TO_ONE
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE
+# RENDER_SHADOW_AS_COLOR : render shadow maps as color texture in the shader
+# AO_BAKE_DISPLAY_RAY : display raycast during AO Bake pass
+#CGLM_FORCE_DEPTH_ZERO_TO_ONE
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DAO_BAKE_DISPLAY_RAY
 
 # Preprocess cwgsl shader to wgsl Shader files
 SHADER_DIR := ./runtime/assets/shader
