@@ -1,7 +1,7 @@
 #ifndef _LOADER_GLTF_H_
 #define _LOADER_GLTF_H_
 
-#include "../runtime/mesh.h"
+#include "../runtime/scene.h"
 #include "cgltf/cgltf.h"
 
 typedef struct {
@@ -12,6 +12,6 @@ typedef struct {
   cgltf_texture_view emissive;
 } GLTFTextureViews;
 
-void loader_gltf_load(mesh *, const char *, const cgltf_options *);
+void loader_gltf_load(scene *, const char *, const cgltf_options *);
 
 #endif

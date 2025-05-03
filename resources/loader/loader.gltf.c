@@ -16,7 +16,7 @@
 #include "../runtime/texture.h"
 #include "stb/stb_image.h"
 
-static void loader_gltf_create_mesh(mesh *, cgltf_data *);
+static void loader_gltf_create_mesh(scene *, cgltf_data *);
 static void loader_gltf_create_shader(shader *, WGPUDevice *, WGPUQueue *,
                                       cgltf_primitive *);
 
@@ -34,7 +34,7 @@ static uint8_t loader_gltf_extract_texture(cgltf_texture_view *,
 static void loader_gltf_load_fallback_texture(ShaderBindGroupTextureEntry *);
 static void loader_gltf_mesh_position(mesh *, const char *, cgltf_data *);
 
-void loader_gltf_load(mesh *mesh, const char *path,
+void loader_gltf_load(scene *scene, const char *path,
                       const cgltf_options *options) {
 
   cgltf_data *data = NULL;
@@ -51,7 +51,7 @@ void loader_gltf_load(mesh *mesh, const char *path,
     break;
 
   case cgltf_result_success:
-    loader_gltf_create_mesh(mesh, data);
+    loader_gltf_create_mesh(scene, data);
     break;
 
   case cgltf_result_file_not_found:
@@ -135,21 +135,18 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   return (VertexIndex){.data = index_data, .length = index_accessor->count};
 }
 
-void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
+void loader_gltf_create_mesh(scene *scene, cgltf_data *data) {
 
   printf("====== ENTER GLTF =====\n");
+
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
 
     cgltf_mesh gl_mesh = data->meshes[m];
-    struct mesh *parent_mesh = mesh;
-
-    // if > 0 mesh, then append as child of initial mesh (level 1)
-    if (m > 0)
-      parent_mesh = mesh_new_child_empty(mesh);
+    struct mesh *scene_mesh = scene_new_mesh_lit(scene);
 
     // set mesh position
-    loader_gltf_mesh_position(parent_mesh, gl_mesh.name, data);
+    loader_gltf_mesh_position(scene_mesh, gl_mesh.name, data);
 
     /*
       GLTF PRIMITIVES
@@ -222,12 +219,15 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       // load index
       vert_index = loader_gltf_index(&current_primitive);
 
-      // add to parent itself if primitive == 0
-      struct mesh *target_mesh = parent_mesh;
+      // target current mesh itself if primitive == 0
+      struct mesh *target_mesh = scene_mesh;
 
       // add child to parent mesh if current primitive > 0
+      // and set it as target mesh
       if (p > 0) {
-        target_mesh = mesh_new_child_empty(parent_mesh);
+        target_mesh = scene_new_mesh_lit(scene);
+	// add target mesh pointer to parent mesh children list
+        mesh_add_child(target_mesh, scene_mesh);
 
         // need to dynamically allocate name
         // iteration use same frame stack
@@ -242,13 +242,14 @@ void loader_gltf_create_mesh(mesh *mesh, cgltf_data *data) {
       }
 
       // load shader
-      loader_gltf_create_shader(mesh_shader_texture(target_mesh), mesh->device,
-                                mesh->queue, &current_primitive);
+      loader_gltf_create_shader(mesh_shader_texture(target_mesh),
+                                target_mesh->device, target_mesh->queue,
+                                &current_primitive);
 
       // dynamically define mesh attribute
       mesh_set_vertex_attribute(target_mesh, &vert_attr);
       mesh_set_vertex_index(target_mesh, &vert_index);
-      mesh_set_parent(target_mesh, parent_mesh);
+
     }
   }
 }

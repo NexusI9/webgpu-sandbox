@@ -215,7 +215,7 @@ void import_cube() {
                         .queue = &main_renderer.wgpu.queue,
                     });
 
-  loader_gltf_load(cube, "./resources/assets/gltf/cube.gltf",
+  loader_gltf_load(&main_scene, "./resources/assets/gltf/cube.gltf",
                    &(cgltf_options){0});
 
   // TODO: handle child bind

@@ -9,9 +9,10 @@
 #include <assert.h>
 #include <stdio.h>
 
-static void scene_init_mesh_list(MeshIndexedList *);
+static void scene_init_mesh_layer(MeshIndexedList *);
 static void scene_init_light_list(scene *);
-static mesh *scene_new_mesh(MeshIndexedList *);
+static mesh *scene_new_mesh(scene *);
+static mesh *scene_layer_add_mesh(MeshIndexedList *, mesh *);
 static void scene_draw_mesh_list(scene *, MeshDrawMethod,
                                  WGPURenderPassEncoder *, MeshIndexedList *);
 static void scene_build_mesh_list(scene *, MeshDrawMethod, MeshIndexedList *);
@@ -24,9 +25,14 @@ scene scene_create(camera camera, viewport viewport) {
   scene.camera = camera;
   scene.viewport = viewport;
 
-  // init mesh lists
-  scene_init_mesh_list(&scene.meshes.lit);
-  scene_init_mesh_list(&scene.meshes.unlit);
+  // init global mesh list
+  scene.meshes.entries = malloc(SCENE_MESH_MAX_MESH_CAPACITY * sizeof(mesh));
+  scene.meshes.length = 0;
+  scene.meshes.capacity = SCENE_MESH_MAX_MESH_CAPACITY;
+
+  // init mesh layers
+  scene_init_mesh_layer(&scene.layer.lit);
+  scene_init_mesh_layer(&scene.layer.unlit);
 
   // init lights
   scene_init_light_list(&scene);
@@ -34,17 +40,22 @@ scene scene_create(camera camera, viewport viewport) {
   return scene;
 }
 
+/**
+ Return the new mesh pointer from the global array and push the new pointer to
+ the right scene layer
+ */
 mesh *scene_new_mesh_lit(scene *scene) {
-  return scene_new_mesh(&scene->meshes.lit);
+  mesh *new_mesh = scene_new_mesh(scene);
+  return scene_layer_add_mesh(&scene->layer.lit, new_mesh);
 }
 
 mesh *scene_new_mesh_unlit(scene *scene) {
-  return scene_new_mesh(&scene->meshes.unlit);
+  mesh *new_mesh = scene_new_mesh(scene);
+  return scene_layer_add_mesh(&scene->layer.unlit, new_mesh);
 }
 
 void scene_draw(scene *scene, MeshDrawMethod draw_method,
                 WGPURenderPassEncoder *render_pass) {
-
 
   // update camera
   camera_draw(&scene->camera);
@@ -54,7 +65,7 @@ void scene_draw(scene *scene, MeshDrawMethod draw_method,
 
     // only draw lit mesh if draw method is Shadow
   case MESH_SHADER_SHADOW:
-    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.lit);
+    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->layer.lit);
     break;
 
   case MESH_SHADER_DEFAULT:
@@ -63,9 +74,9 @@ void scene_draw(scene *scene, MeshDrawMethod draw_method,
   case MESH_SHADER_CUSTOM:
   default:
     // draw solid meshes first
-    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.lit);
+    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->layer.lit);
     // draw transparent meshes then
-    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->meshes.unlit);
+    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->layer.unlit);
   }
 }
 
@@ -78,34 +89,48 @@ void scene_build(scene *scene, MeshDrawMethod draw_method) {
   // Build shader (establish pipeline from previously set bind groups)
 
   // draw solid meshes first
-  scene_build_mesh_list(scene, draw_method, &scene->meshes.lit);
+  scene_build_mesh_list(scene, draw_method, &scene->layer.lit);
   // draw transparent meshes then
-  scene_build_mesh_list(scene, draw_method, &scene->meshes.unlit);
+  scene_build_mesh_list(scene, draw_method, &scene->layer.unlit);
 }
 
 void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
                            MeshIndexedList *mesh_list) {
-
+   
   for (int i = 0; i < mesh_list->length; i++) {
-    mesh *current_mesh = &mesh_list->entries[i];
+    mesh *current_mesh = mesh_list->entries[i];
     mesh_build(current_mesh, draw_method);
     shader_module_release(mesh_shader_texture(current_mesh));
   }
 }
 
-mesh *scene_new_mesh(MeshIndexedList *mesh_list) {
-
+/**
+   Add a mesh pointer from the global array to the indexed list (scene layer)
+ */
+static mesh *scene_layer_add_mesh(MeshIndexedList *mesh_list, mesh *mesh) {
   // ADD MESH TO LIST
   // eventually expand mesh array if overflow
 
   if (mesh_list->length == mesh_list->capacity) {
-    mesh_list->capacity *= 2;
-    mesh_list = realloc(mesh_list, mesh_list->capacity);
+    // mesh_list->capacity *= 2;
+    // mesh_list = realloc(mesh_list, mesh_list->capacity);
     perror("Scene mesh list reached full capacity"), exit(0);
-    return NULL;
+    return 0;
   }
 
-  return &mesh_list->entries[mesh_list->length++];
+  mesh_list->entries[mesh_list->length] = mesh;
+  mesh_list->length++;
+  return mesh;
+}
+
+mesh *scene_new_mesh(scene *scene) {
+
+  if (scene->meshes.length == scene->meshes.capacity) {
+    VERBOSE_PRINT("Scene mesh list reached max capacity\n");
+    return 0;
+  }
+
+  return &scene->meshes.entries[scene->meshes.length++];
 }
 
 void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,
@@ -114,13 +139,13 @@ void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
-    mesh *current_mesh = &mesh_list->entries[i];
+    mesh *current_mesh = mesh_list->entries[i];
     mesh_draw(current_mesh, draw_method, render_pass, &scene->camera,
               &scene->viewport);
   }
 }
 
-void scene_init_mesh_list(MeshIndexedList *mesh_list) {
+void scene_init_mesh_layer(MeshIndexedList *mesh_list) {
 
   mesh_list->entries = malloc(SCENE_MESH_LIST_DEFAULT_CAPACITY * sizeof(mesh));
   mesh_list->length = 0;

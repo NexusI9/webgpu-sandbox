@@ -49,7 +49,7 @@ typedef struct {
 
 // TODO: make it a linked list
 typedef struct {
-  struct mesh *entries;
+  struct mesh **entries;
   size_t *index;
   size_t capacity;
   size_t length;
@@ -121,6 +121,7 @@ void mesh_position(mesh *, vec3);
 void mesh_rotate(mesh *, vec3);
 void mesh_rotate_quat(mesh *, versor);
 
+mesh *mesh_add_child(mesh *, mesh *);
 mesh *mesh_new_child(mesh *);
 mesh *mesh_new_child_empty(mesh *);
 mesh *mesh_get_child_by_id(mesh *, size_t);

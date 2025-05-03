@@ -15,6 +15,8 @@
 
 // Shadow map is implicitely handled withing mesh
 static void mesh_init_shadow_shader(mesh *);
+static mesh *mesh_children_list_check_init(mesh *);
+static mesh *mesh_children_list_check_capacity(mesh *);
 
 MeshUniform mesh_model_uniform(mesh *mesh) {
 
@@ -186,7 +188,7 @@ void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
 
   // build children
   for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_build(&mesh->children.entries[c], draw_method);
+    mesh_build(mesh->children.entries[c], draw_method);
 }
 
 /**
@@ -213,7 +215,7 @@ void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
   // draw children
   // TODO: REDUCE DRAW CALL.........
   for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_draw(&mesh->children.entries[c], draw_method, render_pass, camera,
+    mesh_draw(mesh->children.entries[c], draw_method, render_pass, camera,
               viewport);
 }
 
@@ -270,17 +272,29 @@ void mesh_rotate_quat(mesh *mesh, versor rotation) {
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
 }
 
-mesh *mesh_new_child(mesh *parent) {
+/**
+   Check if children list is already created.
+   If not init a new list
+ */
+mesh *mesh_children_list_check_init(mesh *parent) {
 
-  // init list
   if (parent->children.entries == NULL) {
     parent->children.capacity = MESH_CHILD_LENGTH;
     parent->children.entries = calloc(parent->children.capacity, sizeof(mesh));
     parent->children.index = calloc(parent->children.capacity, sizeof(size_t));
   }
 
-  // expand parent mesh list
+  return *parent->children.entries;
+}
+
+/**
+   Check if children list has reached max capacity and reallocate or not
+   accordingly
+ */
+mesh *mesh_children_list_check_capacity(mesh *parent) {
+
   if (parent->children.length == parent->children.capacity) {
+
     size_t new_capacity = parent->children.capacity * 2;
     mesh *new_list = realloc(parent->children.entries,
                              sizeof(mesh) * parent->children.capacity);
@@ -289,15 +303,27 @@ mesh *mesh_new_child(mesh *parent) {
 
     if (new_list == NULL || new_index == NULL) {
       perror("Failed to expand mesh list\n"), exit(1);
+      return NULL;
     }
 
-    parent->children.entries = new_list;
+    parent->children.entries = &new_list;
     parent->children.index = new_index;
     parent->children.capacity = new_capacity;
   }
 
+  return *parent->children.entries;
+}
+
+mesh *mesh_new_child(mesh *parent) {
+
+  // init list
+  mesh_children_list_check_init(parent);
+
+  // expand parent mesh list
+  mesh_children_list_check_capacity(parent);
+
   size_t id = parent->children.length;
-  mesh *child = &parent->children.entries[id];
+  mesh *child = parent->children.entries[id];
 
   // assing child id
   parent->children.index[id] = id;
@@ -329,11 +355,32 @@ mesh *mesh_new_child_empty(mesh *mesh) {
 }
 
 /**
+Add a new child pointer to the destination mesh children list
+ */
+mesh *mesh_add_child(mesh *child, mesh *parent) {
+
+  // init list (?)
+  mesh_children_list_check_init(parent);
+
+  // expand parent mesh list (?)
+  mesh_children_list_check_capacity(parent);
+
+  // append pointer to the mesh list latest index
+  parent->children.entries[parent->children.length++] = child;
+
+  // assign parent pointer to child
+  mesh_set_parent(child, parent);
+
+  // return this same pointer
+  return parent->children.entries[parent->children.length];
+}
+
+/**
    Retireve the mesh children address at the given index from the mesh children
    list
  */
 mesh *mesh_get_child(mesh *mesh, size_t index) {
-  return &mesh->children.entries[index];
+  return mesh->children.entries[index];
 }
 
 /**
@@ -388,7 +435,7 @@ void mesh_init_shadow_shader(mesh *mesh) {
                          });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_init_shadow_shader(&mesh->children.entries[c]);
+    mesh_init_shadow_shader(mesh->children.entries[c]);
 }
 
 /**

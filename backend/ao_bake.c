@@ -130,7 +130,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
   for (int s = 0; s < desc->mesh_list->length; s++) {
 
-    mesh *source_mesh = &desc->mesh_list->entries[s];
+    mesh *source_mesh = desc->mesh_list->entries[s];
     printf("Baking mesh: %s\n", source_mesh->name);
 
     texture ao_texture;
@@ -177,7 +177,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
         for (size_t c = 0; c < desc->mesh_list->length; c++) {
 
-          mesh *compare_mesh = &desc->mesh_list->entries[c];
+          mesh *compare_mesh = desc->mesh_list->entries[c];
           // TODO: once the index system is properly setup, replace m == s by
           // src id == compare id
           if (strcmp(source_mesh->name, compare_mesh->name) == 0)
@@ -188,7 +188,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
           // check children
           for (size_t m = 0; m < compare_mesh->children.length; m++)
             ao_bake_raycast(rays[ray], ray_direction,
-                            &compare_mesh->children.entries[m], &ao_texture);
+                            compare_mesh->children.entries[m], &ao_texture);
         }
       }
     }
