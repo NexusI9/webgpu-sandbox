@@ -1,6 +1,6 @@
 #include "ao_bake.h"
-#include "../resources/geometry/triangle.h"
 #include "../resources/debug/line.h"
+#include "../resources/geometry/triangle.h"
 #include "../runtime/material.h"
 #include "../runtime/texture.h"
 #include "../utils/system.h"
@@ -76,9 +76,9 @@ void ao_bake_raycast(vec3 ray_origin, vec3 ray_direction, mesh *compare,
       // transpose hit point to triangle UV space
       vec2 uv;
       triangle_point_to_uv(&compare_triangle, hit, uv);
-
       // scale to the texture coordinates
       glm_vec2_scale(uv, AO_TEXTURE_SIZE, uv);
+      print_vec2(uv);
 
       // write pixel to texture
       texture_write_pixel(texture, 0, uv);
@@ -143,9 +143,9 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
     /*for (int y = 0; y < 64; y++) {
       for (int x = 0; x < 64; x++) {
-      texture_write_pixel(&ao_texture, 0, (vec2){x, y});
+        texture_write_pixel(&ao_texture, 0, (vec2){x, y});
       }
-      }*/
+    }*/
 
     // go through the mesh triangles and check if it's occluded
     for (size_t i = 0; i < source_mesh->index.length; i += 3) {
@@ -155,7 +155,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
       vec3 ray_normal;
       triangle_normal(&source_triangle, ray_normal);
       glm_vec3_scale(ray_normal, AO_RAY_MAX_DISTANCE, ray_normal);
-      
+
       triangle_random_points(&source_triangle, AO_RAY_AMOUNT, rays);
 
       // create a ray on the triangle surface, projects it and check if it
@@ -166,6 +166,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
         triangle_point_to_uv(&source_triangle, rays[ray], ray_uv);
         texture_write_pixel(&ao_texture, 0, ray_uv);
 
+        // print_vec3(rays[ray]);
         vec3 ray_direction;
         glm_vec3_add(rays[ray], ray_normal, ray_direction);
 
@@ -174,14 +175,14 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
           line_add_point(line, rays[ray], ray_direction, ray_normal);
 #endif
 
-        for (int c = 0; c < desc->mesh_list->length; c++) {
-          continue;
-          // TODO: once the index system is properly setup, replace m == s by
-          // src id == compare id
-          if (c == s)
-            continue;
+        for (size_t c = 0; c < desc->mesh_list->length; c++) {
 
           mesh *compare_mesh = &desc->mesh_list->items[c];
+          // TODO: once the index system is properly setup, replace m == s by
+          // src id == compare id
+          if (strcmp(source_mesh->name, compare_mesh->name) == 0)
+            continue;
+
           ao_bake_raycast(rays[ray], ray_direction, compare_mesh, &ao_texture);
 
           // check children
