@@ -152,7 +152,7 @@ void shadow_pass_init(scene *scene, WGPUDevice device, WGPUQueue queue) {
 
   // Transfer depth texture array to each meshes default shader
   for (size_t m = 0; m < scene->meshes.lit.length; m++) {
-    mesh *current_mesh = &scene->meshes.lit.items[m];
+    mesh *current_mesh = &scene->meshes.lit.entries[m];
 
     // bind point & spot light texture view + sampler to Textue Shader
 #ifdef RENDER_SHADOW_AS_COLOR
@@ -383,7 +383,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
   for (size_t p = 0; p < point_length; p++) {
 
-    PointLight *light = &desc->scene->lights.point.items[p];
+    PointLight *light = &desc->scene->lights.point.entries[p];
     // retrieve 6 views of point cube
     LightViews light_views =
         light_point_views(light->position, light->near, light->far);
@@ -394,7 +394,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
       // 1. Bind meshes
       for (int m = 0; m < target_mesh_list->length; m++) {
-        mesh *current_mesh = &target_mesh_list->items[m];
+        mesh *current_mesh = &target_mesh_list->entries[m];
         material_shadow_bind_views(current_mesh, current_view);
         mesh_build(current_mesh, MESH_SHADER_SHADOW);
       }
@@ -412,7 +412,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
       // 3. Clear meshes bind group
       for (int m = 0; m < desc->scene->meshes.lit.length; m++) {
-        mesh *current_mesh = &target_mesh_list->items[m];
+        mesh *current_mesh = &target_mesh_list->entries[m];
         material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
       }
     }
@@ -437,7 +437,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
   for (size_t p = 0; p < spot_length; p++) {
 
-    SpotLight *light = &desc->scene->lights.spot.items[p];
+    SpotLight *light = &desc->scene->lights.spot.entries[p];
 
     // get each light orthographic view depending on target
     LightViews light_views =
@@ -445,7 +445,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
     // 1. Bind meshes
     for (int m = 0; m < target_mesh_list->length; m++) {
-      mesh *current_mesh = &target_mesh_list->items[m];
+      mesh *current_mesh = &target_mesh_list->entries[m];
       material_shadow_bind_views(current_mesh, &light_views.views[0]);
 
       /*
@@ -473,7 +473,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
     // 3. Clear meshes bind group
     for (int m = 0; m < desc->scene->meshes.lit.length; m++) {
-      mesh *current_mesh = &target_mesh_list->items[m];
+      mesh *current_mesh = &target_mesh_list->entries[m];
       material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
     }
   }
@@ -488,14 +488,14 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
   for (size_t p = 0; p < sun_length; p++) {
 
-    SunLight *light = &desc->scene->lights.sun.items[p];
+    SunLight *light = &desc->scene->lights.sun.entries[p];
 
     // get each light orthographic view depending on target
     LightViews light_views = light_sun_view(light->position, light->size);
 
     // 1. Bind meshes
     for (int m = 0; m < target_mesh_list->length; m++) {
-      mesh *current_mesh = &target_mesh_list->items[m];
+      mesh *current_mesh = &target_mesh_list->entries[m];
       material_shadow_bind_views(current_mesh, &light_views.views[0]);
 
       // update cull mode due to point light using front (see Spot light pass
@@ -516,7 +516,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
     // 3. Clear meshes bind group
     for (int m = 0; m < desc->scene->meshes.lit.length; m++) {
-      mesh *current_mesh = &target_mesh_list->items[m];
+      mesh *current_mesh = &target_mesh_list->entries[m];
       material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
     }
   }

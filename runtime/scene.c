@@ -87,7 +87,7 @@ void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
                            MeshIndexedList *mesh_list) {
 
   for (int i = 0; i < mesh_list->length; i++) {
-    mesh *current_mesh = &mesh_list->items[i];
+    mesh *current_mesh = &mesh_list->entries[i];
     mesh_build(current_mesh, draw_method);
     shader_module_release(mesh_shader_texture(current_mesh));
   }
@@ -105,7 +105,7 @@ mesh *scene_new_mesh(MeshIndexedList *mesh_list) {
     return NULL;
   }
 
-  return &mesh_list->items[mesh_list->length++];
+  return &mesh_list->entries[mesh_list->length++];
 }
 
 void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,
@@ -114,7 +114,7 @@ void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
-    mesh *current_mesh = &mesh_list->items[i];
+    mesh *current_mesh = &mesh_list->entries[i];
     mesh_draw(current_mesh, draw_method, render_pass, &scene->camera,
               &scene->viewport);
   }
@@ -122,7 +122,7 @@ void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,
 
 void scene_init_mesh_list(MeshIndexedList *mesh_list) {
 
-  mesh_list->items = malloc(SCENE_MESH_LIST_DEFAULT_CAPACITY * sizeof(mesh));
+  mesh_list->entries = malloc(SCENE_MESH_LIST_DEFAULT_CAPACITY * sizeof(mesh));
   mesh_list->length = 0;
   mesh_list->capacity = SCENE_MESH_LIST_DEFAULT_CAPACITY;
 }
@@ -154,7 +154,7 @@ size_t scene_add_point_light(scene *scene, PointLightDescriptor *desc) {
     return 0;
   }
 
-  PointLight *new_light = &list->items[list->length++];
+  PointLight *new_light = &list->entries[list->length++];
   light_create_point(new_light, desc);
 
   return list->length;
@@ -168,7 +168,7 @@ size_t scene_add_spot_light(scene *scene, SpotLightDescriptor *desc) {
     return 0;
   }
 
-  SpotLight *new_light = &list->items[list->length++];
+  SpotLight *new_light = &list->entries[list->length++];
   light_create_spot(new_light, desc);
 
   return list->length;
@@ -182,7 +182,7 @@ size_t scene_add_ambient_light(scene *scene, AmbientLightDescriptor *desc) {
     return 0;
   }
 
-  AmbientLight *new_light = &list->items[list->length++];
+  AmbientLight *new_light = &list->entries[list->length++];
   light_create_ambient(new_light, desc);
 
   return list->length;
@@ -196,7 +196,7 @@ size_t scene_add_sun_light(scene *scene, SunLightDescriptor *desc) {
     return 0;
   }
 
-  SunLight *new_light = &list->items[list->length++];
+  SunLight *new_light = &list->entries[list->length++];
   light_create_sun(new_light, desc);
 
   return list->length;

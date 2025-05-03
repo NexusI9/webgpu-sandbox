@@ -61,5 +61,5 @@ void print_mesh_tree(mesh *mesh, uint16_t level) {
   level++;
 
   for (int i = 0; i < mesh->children.length; i++)
-    print_mesh_tree(&mesh->children.items[i], level);
+    print_mesh_tree(&mesh->children.entries[i], level);
 }

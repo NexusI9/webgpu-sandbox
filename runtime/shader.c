@@ -197,7 +197,7 @@ WGPUBindGroupLayout *shader_build_layout(shader *shader) {
   // go through shader bind groups and combine entries
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
-    ShaderBindGroup *current_group = &shader->bind_groups.items[i];
+    ShaderBindGroup *current_group = &shader->bind_groups.entries[i];
     WGPUBindGroupLayout *current_layout = &layout_list[i];
 
     // combine all bind group entries in one array
@@ -241,7 +241,7 @@ void shader_layout_uniforms(shader *shader, ShaderBindGroup *bindgroup,
   for (int j = 0; j < uniform_entries->length; j++) {
     entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         // assign stored binding index
-        .binding = uniform_entries->items[j].binding,
+        .binding = uniform_entries->entries[j].binding,
         // buffer binding layout
         .buffer = {.type = WGPUBufferBindingType_Uniform},
         // set visibility to vertex
@@ -258,7 +258,7 @@ void shader_layout_textures(shader *shader, ShaderBindGroup *bindgroup,
 
   // go through each entries
   for (int j = 0; j < texture_entries->length; j++) {
-    ShaderBindGroupTextureEntry *current_entry = &texture_entries->items[j];
+    ShaderBindGroupTextureEntry *current_entry = &texture_entries->entries[j];
     entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         .texture =
             {
@@ -279,10 +279,10 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
 
   // go through each entries
   for (int j = 0; j < sampler_entries->length; j++) {
-    ShaderBindGroupSamplerEntry *current_entry = &sampler_entries->items[j];
+    ShaderBindGroupSamplerEntry *current_entry = &sampler_entries->entries[j];
     entries[(*length)++] = (WGPUBindGroupLayoutEntry){
         .sampler = {.type = current_entry->type},
-        .binding = sampler_entries->items[j].binding,
+        .binding = sampler_entries->entries[j].binding,
         .visibility = bindgroup->visibility,
     };
   }
@@ -306,7 +306,7 @@ void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
 
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
-    ShaderBindGroup *current_group = &shader->bind_groups.items[i];
+    ShaderBindGroup *current_group = &shader->bind_groups.entries[i];
     WGPUBindGroupLayout *current_layout = &layouts[i];
     uint16_t total_length = current_group->uniforms.length +
                             current_group->textures.length +
@@ -344,7 +344,7 @@ void shader_bind_uniforms(shader *shader, ShaderBindGroup *bindgroup,
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
   for (int j = 0; j < bindgroup->uniforms.length; j++) {
-    ShaderBindGroupUniformEntry *current_entry = &bindgroup->uniforms.items[j];
+    ShaderBindGroupUniformEntry *current_entry = &bindgroup->uniforms.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .buffer = current_entry->buffer,
@@ -360,7 +360,7 @@ void shader_bind_textures(shader *shader, ShaderBindGroup *bindgroup,
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
   for (int j = 0; j < bindgroup->textures.length; j++) {
-    ShaderBindGroupTextureEntry *current_entry = &bindgroup->textures.items[j];
+    ShaderBindGroupTextureEntry *current_entry = &bindgroup->textures.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .textureView = current_entry->texture_view,
@@ -372,7 +372,7 @@ void shader_bind_samplers(shader *shader, ShaderBindGroup *bindgroup,
                           WGPUBindGroupEntry *entries, uint16_t *index) {
 
   for (int j = 0; j < bindgroup->samplers.length; j++) {
-    ShaderBindGroupSamplerEntry *current_entry = &bindgroup->samplers.items[j];
+    ShaderBindGroupSamplerEntry *current_entry = &bindgroup->samplers.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .sampler = current_entry->sampler,
@@ -395,13 +395,13 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
   // update bind group (uniforms, projection/view matrix...)
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
-    ShaderBindGroup *current_bind_group = &shader->bind_groups.items[i];
+    ShaderBindGroup *current_bind_group = &shader->bind_groups.entries[i];
 
     // update bindgroup entries (callback)
     for (int j = 0; j < current_bind_group->uniforms.length; j++) {
 
       ShaderBindGroupUniformEntry *current_entry =
-          &current_bind_group->uniforms.items[j];
+          &current_bind_group->uniforms.entries[j];
 
       // TODO: separate dynamic (callback) from static (non callback) shader
       // in two arrays so no last minute decision
@@ -492,7 +492,7 @@ void shader_add_uniform(shader *shader,
 
       // transfer entry to shader bind group list
       current_bind_group->uniforms
-          .items[current_bind_group->uniforms.length++] = *current_entry;
+          .entries[current_bind_group->uniforms.length++] = *current_entry;
     }
   }
 }
@@ -536,7 +536,7 @@ void shader_add_texture(shader *shader,
                             });
 
       current_bind_group->textures
-          .items[current_bind_group->textures.length++] = *current_entry;
+          .entries[current_bind_group->textures.length++] = *current_entry;
     }
   }
 }
@@ -571,7 +571,7 @@ void shader_add_texture_view(shader *shader,
       // map the entry to bind group
       ShaderBindGroupTextureViewEntry *current_entry = &desc->entries[i];
       current_bind_group->textures
-          .items[current_bind_group->textures.length++] =
+          .entries[current_bind_group->textures.length++] =
           (ShaderBindGroupTextureEntry){
               .texture_view = current_entry->texture_view,
               .binding = current_entry->binding,
@@ -619,7 +619,7 @@ void shader_add_sampler(shader *shader,
                            });
 
       current_bind_group->samplers
-          .items[current_bind_group->samplers.length++] = *current_entry;
+          .entries[current_bind_group->samplers.length++] = *current_entry;
     }
   }
 }
@@ -640,7 +640,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
   size_t index = shader->bind_groups.length;
   for (i = 0; i < shader->bind_groups.length; i++) {
     // check if group index is already in shader bind group index
-    if (group_index == shader->bind_groups.items[i].index) {
+    if (group_index == shader->bind_groups.entries[i].index) {
       in = 1;    // true
       index = i; // override group
       break;
@@ -654,7 +654,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
     index = shader->bind_groups.length;
 
     // Increment bind_groupd length (push new bind group)
-    shader->bind_groups.items[shader->bind_groups.length].index = group_index;
+    shader->bind_groups.entries[shader->bind_groups.length].index = group_index;
 
     // create new bind group
     shader_bind_group_init(shader);
@@ -662,7 +662,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
     shader->bind_groups.length++;
   }
 
-  return &shader->bind_groups.items[index];
+  return &shader->bind_groups.entries[index];
 }
 
 /**
@@ -695,13 +695,13 @@ void shader_bind_group_init(shader *shader) {
 
   // printf("init bind groups for %s\n", shader->name);
   ShaderBindGroupUniforms *uniform_group =
-      &shader->bind_groups.items[shader->bind_groups.length].uniforms;
+      &shader->bind_groups.entries[shader->bind_groups.length].uniforms;
 
   ShaderBindGroupTextures *texture_group =
-      &shader->bind_groups.items[shader->bind_groups.length].textures;
+      &shader->bind_groups.entries[shader->bind_groups.length].textures;
 
   ShaderBindGroupSamplers *sampler_group =
-      &shader->bind_groups.items[shader->bind_groups.length].samplers;
+      &shader->bind_groups.entries[shader->bind_groups.length].samplers;
 
   /*NOTE:
     Max stack allocation easily reached with static allocation for
@@ -711,21 +711,21 @@ void shader_bind_group_init(shader *shader) {
   // init Uniforms dynamic array
   uniform_group->length = 0;
   uniform_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
-  uniform_group->items = (ShaderBindGroupUniformEntry *)aligned_alloc(
+  uniform_group->entries = (ShaderBindGroupUniformEntry *)aligned_alloc(
       16,
       SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupUniformEntry));
 
   // init Texture dynamic array
   texture_group->length = 0;
   texture_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
-  texture_group->items = (ShaderBindGroupTextureEntry *)aligned_alloc(
+  texture_group->entries = (ShaderBindGroupTextureEntry *)aligned_alloc(
       16,
       SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupTextureEntry));
 
   // init Sampler dynamic array
   sampler_group->length = 0;
   sampler_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
-  sampler_group->items = (ShaderBindGroupSamplerEntry *)aligned_alloc(
+  sampler_group->entries = (ShaderBindGroupSamplerEntry *)aligned_alloc(
       16,
       SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupSamplerEntry));
 }
@@ -736,7 +736,7 @@ void shader_bind_group_init(shader *shader) {
 void shader_bind_group_clear(shader *shader) {
 
   for (size_t b = 0; b < shader->bind_groups.length; b++) {
-    ShaderBindGroup *current_group = &shader->bind_groups.items[b];
+    ShaderBindGroup *current_group = &shader->bind_groups.entries[b];
     current_group->bind_group = NULL;
     current_group->index = 0;
 
@@ -744,18 +744,18 @@ void shader_bind_group_clear(shader *shader) {
     current_group->uniforms.length = 0;
 
     // reseting textures
-    if (current_group->textures.items)
-      free(current_group->textures.items);
+    if (current_group->textures.entries)
+      free(current_group->textures.entries);
 
-    current_group->textures.items = NULL;
+    current_group->textures.entries = NULL;
     current_group->textures.length = 0;
     current_group->textures.capacity = 0;
 
     // reseting samplers
-    if (current_group->samplers.items)
-      free(current_group->samplers.items);
+    if (current_group->samplers.entries)
+      free(current_group->samplers.entries);
 
-    current_group->samplers.items = NULL;
+    current_group->samplers.entries = NULL;
     current_group->samplers.length = 0;
     current_group->samplers.capacity = 0;
   }

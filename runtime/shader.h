@@ -87,19 +87,19 @@ typedef struct {
 
 // uniform / texture / sampler array
 typedef struct {
-  ShaderBindGroupUniformEntry *items;
+  ShaderBindGroupUniformEntry *entries;
   size_t length;
   size_t capacity;
 } ShaderBindGroupUniforms;
 
 typedef struct {
-  ShaderBindGroupTextureEntry *items;
+  ShaderBindGroupTextureEntry *entries;
   size_t capacity;
   size_t length;
 } ShaderBindGroupTextures;
 
 typedef struct {
-  ShaderBindGroupSamplerEntry *items;
+  ShaderBindGroupSamplerEntry *entries;
   size_t capacity;
   size_t length;
 } ShaderBindGroupSamplers;
@@ -183,7 +183,7 @@ typedef struct {
   // TODO: separate statics from dynamics
   // registered bind group unique indexes
   struct {
-    ShaderBindGroup items[SHADER_MAX_BIND_GROUP];
+    ShaderBindGroup entries[SHADER_MAX_BIND_GROUP];
     size_t length;
   } bind_groups;
 

@@ -727,19 +727,19 @@ struct SunLight {
 };
 
 struct AmbientLightStorage {
-  length : u32, items : array<AmbientLight, MAX_LIGHT>,
+  length : u32, entries : array<AmbientLight, MAX_LIGHT>,
 };
 
 struct PointLightStorage {
-  length : u32, items : array<PointLight, MAX_LIGHT>,
+  length : u32, entries : array<PointLight, MAX_LIGHT>,
 };
 
 struct SpotLightStorage {
-  length : u32, items : array<SpotLight, MAX_LIGHT>,
+  length : u32, entries : array<SpotLight, MAX_LIGHT>,
 };
 
 struct SunLightStorage {
-  length : u32, items : array<SunLight, MAX_LIGHT>,
+  length : u32, entries : array<SunLight, MAX_LIGHT>,
 };
 
 // material pbr
@@ -939,7 +939,7 @@ fn point_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   for (var l : u32 = 0u; l < point_light_list.length; l++) {
 
-    let light = point_light_list.items[l];
+    let light = point_light_list.entries[l];
     let light_position = light.position;
 
     var frag_to_light = frag_position - light_position.xyz;
@@ -1028,7 +1028,7 @@ fn spot_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   for (var l : u32 = 0u; l < spot_light_list.length; l++) {
 
-    let light = spot_light_list.items[l];
+    let light = spot_light_list.entries[l];
     let shadow_position =
         directional_shadow_position(frag_position, light.view);
 
@@ -1092,7 +1092,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>) -> f32 {
   for (var l : u32 = 0u; l < sun_light_list.length; l++) {
 
     let layer = spot_light_list.length + l;
-    let light = sun_light_list.items[l];
+    let light = sun_light_list.entries[l];
     let shadow_position =
         directional_shadow_position(frag_position, light.view);
 
@@ -1157,7 +1157,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   // calculate point lights
   for (var i = 0u; i < point_light_list.length; i++) {
-    let light = point_light_list.items[i];
+    let light = point_light_list.entries[i];
     Lo += compute_point_light(material, vFrag, vNormal, uCamera.position.xyz,
                               light.position, light.color, light.intensity);
   }
@@ -1166,7 +1166,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>) -> f32 {
   // basically the same a point light, but use a fixed light direction instead
   // of a one per fragment like a point light
   for (var i = 0u; i < spot_light_list.length; i = i + 1u) {
-    let light = spot_light_list.items[i];
+    let light = spot_light_list.entries[i];
     let light_direction = -1.0f * light.lookat - light.position;
     Lo += compute_point_light(material, vFrag, vNormal, uCamera.position.xyz,
                               light_direction, light.color, light.intensity);
@@ -1174,7 +1174,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>) -> f32 {
 
   // calculate sun lights
   for (var i = 0u; i < sun_light_list.length; i = i + 1u) {
-    let light = sun_light_list.items[i];
+    let light = sun_light_list.entries[i];
     Lo += compute_point_light(material, vFrag, vNormal, uCamera.position.xyz,
                               light.position, light.color, light.intensity);
   }
@@ -1182,7 +1182,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>) -> f32 {
   // calulate ambient lights
   var ambient_intensity = 0.0f;
   for (var i = 0u; i < ambient_light_list.length; i = i + 1u) {
-    let light = ambient_light_list.items[i];
+    let light = ambient_light_list.entries[i];
     ambient += compute_ambient_light(material, light.color, light.intensity);
     ambient_intensity += light.intensity;
   }

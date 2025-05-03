@@ -59,7 +59,7 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_texture_bind_views(&mesh->children.items[c], camera, viewport,
+    material_texture_bind_views(&mesh->children.entries[c], camera, viewport,
                                 group_index);
 }
 
@@ -86,8 +86,8 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
     ambient_uniform.length = ambient_list->length;
     // update entries
     for (size_t i = 0; i < ambient_uniform.length; i++) {
-      AmbientLight *light = &ambient_list->items[i];
-      AmbientLightUniform *uniform = &ambient_uniform.items[i];
+      AmbientLight *light = &ambient_list->entries[i];
+      AmbientLightUniform *uniform = &ambient_uniform.entries[i];
 
       // map light to light uniform (including paddings...)
       *uniform = (AmbientLightUniform){0};
@@ -101,8 +101,8 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
     spot_uniform.length = spot_list->length;
     // update entries
     for (size_t i = 0; i < spot_uniform.length; i++) {
-      SpotLight *light = &spot_list->items[i];
-      SpotLightUniform *uniform = &spot_uniform.items[i];
+      SpotLight *light = &spot_list->entries[i];
+      SpotLightUniform *uniform = &spot_uniform.entries[i];
 
       // TODO: create a light method "light_spot_uniform"
       *uniform = (SpotLightUniform){0};
@@ -126,8 +126,8 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
     point_uniform.length = point_list->length;
     // update entries
     for (size_t i = 0; i < point_uniform.length; i++) {
-      PointLight *light = &point_list->items[i];
-      PointLightUniform *uniform = &point_uniform.items[i];
+      PointLight *light = &point_list->entries[i];
+      PointLightUniform *uniform = &point_uniform.entries[i];
 
       *uniform = (PointLightUniform){0};
       uniform->intensity = light->intensity;
@@ -153,8 +153,8 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
 
     for (size_t i = 0; i < sun_uniform.length; i++) {
 
-      SunLight *light = &sun_list->items[i];
-      SunLightUniform *uniform = &sun_uniform.items[i];
+      SunLight *light = &sun_list->entries[i];
+      SunLightUniform *uniform = &sun_uniform.entries[i];
 
       *uniform = (SunLightUniform){0};
       uniform->intensity = light->intensity;
@@ -208,7 +208,7 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_texture_bind_lights(&mesh->children.items[c], viewport,
+    material_texture_bind_lights(&mesh->children.entries[c], viewport,
                                  ambient_list, spot_list, point_list, sun_list,
                                  group_index);
 }
@@ -222,7 +222,7 @@ void material_clear_bindings(mesh *mesh, MeshDrawMethod method) {
   shader_bind_group_clear(mesh_select_shader(mesh, method));
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_clear_bindings(&mesh->children.items[c], method);
+    material_clear_bindings(&mesh->children.entries[c], method);
 }
 
 /**
@@ -263,7 +263,7 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_shadow_bind_views(&mesh->children.items[c], view);
+    material_shadow_bind_views(&mesh->children.entries[c], view);
 }
 
 /**
@@ -347,7 +347,7 @@ void material_texure_bind_shadow_maps(mesh *mesh,
       });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_texure_bind_shadow_maps(&mesh->children.items[c],
+    material_texure_bind_shadow_maps(&mesh->children.entries[c],
                                      point_texture_view, spot_texture_view);
 }
 
@@ -394,5 +394,5 @@ void material_shadow_set_cullmode(mesh *mesh, WGPUCullMode mode) {
                          });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    material_shadow_set_cullmode(&mesh->children.items[c], mode);
+    material_shadow_set_cullmode(&mesh->children.entries[c], mode);
 }

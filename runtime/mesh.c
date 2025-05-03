@@ -41,7 +41,7 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
   // init child list
   mesh->children.length = 0;
   mesh->children.capacity = MESH_CHILD_LENGTH;
-  mesh->children.items = NULL;
+  mesh->children.entries = NULL;
 
   // set wgpu
   mesh->device = md->device;
@@ -186,7 +186,7 @@ void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
 
   // build children
   for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_build(&mesh->children.items[c], draw_method);
+    mesh_build(&mesh->children.entries[c], draw_method);
 }
 
 /**
@@ -213,7 +213,7 @@ void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
   // draw children
   // TODO: REDUCE DRAW CALL.........
   for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_draw(&mesh->children.items[c], draw_method, render_pass, camera,
+    mesh_draw(&mesh->children.entries[c], draw_method, render_pass, camera,
               viewport);
 }
 
@@ -273,16 +273,16 @@ void mesh_rotate_quat(mesh *mesh, versor rotation) {
 mesh *mesh_new_child(mesh *parent) {
 
   // init list
-  if (parent->children.items == NULL) {
+  if (parent->children.entries == NULL) {
     parent->children.capacity = MESH_CHILD_LENGTH;
-    parent->children.items = calloc(parent->children.capacity, sizeof(mesh));
+    parent->children.entries = calloc(parent->children.capacity, sizeof(mesh));
     parent->children.index = calloc(parent->children.capacity, sizeof(size_t));
   }
 
   // expand parent mesh list
   if (parent->children.length == parent->children.capacity) {
     size_t new_capacity = parent->children.capacity * 2;
-    mesh *new_list = realloc(parent->children.items,
+    mesh *new_list = realloc(parent->children.entries,
                              sizeof(mesh) * parent->children.capacity);
     size_t *new_index = realloc(parent->children.index,
                                 sizeof(size_t) * parent->children.capacity);
@@ -291,13 +291,13 @@ mesh *mesh_new_child(mesh *parent) {
       perror("Failed to expand mesh list\n"), exit(1);
     }
 
-    parent->children.items = new_list;
+    parent->children.entries = new_list;
     parent->children.index = new_index;
     parent->children.capacity = new_capacity;
   }
 
   size_t id = parent->children.length;
-  mesh *child = &parent->children.items[id];
+  mesh *child = &parent->children.entries[id];
 
   // assing child id
   parent->children.index[id] = id;
@@ -333,7 +333,7 @@ mesh *mesh_new_child_empty(mesh *mesh) {
    list
  */
 mesh *mesh_get_child(mesh *mesh, size_t index) {
-  return &mesh->children.items[index];
+  return &mesh->children.entries[index];
 }
 
 /**
@@ -388,7 +388,7 @@ void mesh_init_shadow_shader(mesh *mesh) {
                          });
 
   for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_init_shadow_shader(&mesh->children.items[c]);
+    mesh_init_shadow_shader(&mesh->children.entries[c]);
 }
 
 /**

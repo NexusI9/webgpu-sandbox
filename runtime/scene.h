@@ -1,3 +1,4 @@
+
 #ifndef _SCENE_H_
 #define _SCENE_H_
 
@@ -8,6 +9,7 @@
 #include "webgpu/webgpu.h"
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
+#define SCENE_MESH_MAX_MESH 64
 
 // due to depth test, need to write fully solid mesh first and then
 // transparent meshes
@@ -15,6 +17,10 @@ typedef struct {
   MeshIndexedList lit;
   MeshIndexedList unlit;
 } SceneMeshList;
+
+typedef struct {
+    
+} SceneMeshPool;
 
 typedef struct {
   PointLightList point;

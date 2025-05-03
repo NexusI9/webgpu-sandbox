@@ -49,14 +49,14 @@ typedef struct {
 
 // TODO: make it a linked list
 typedef struct {
-  struct mesh *items;
+  struct mesh *entries;
   size_t *index;
   size_t capacity;
   size_t length;
 } MeshIndexedList;
 
 typedef struct {
-  struct mesh *items;
+  struct mesh *entries;
   size_t capacity;
   size_t length;
 } MeshList;

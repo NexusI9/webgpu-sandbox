@@ -78,8 +78,8 @@ typedef struct {
 } SunLightDescriptor;
 
 // light type
-// NOTE: use __attribute__ on list AS WELL AS items (pointlights...) else wrong
-// alignment in list items (i.e. _padding takes color.r value)
+// NOTE: use __attribute__ on list AS WELL AS entries (pointlights...) else wrong
+// alignment in list entries (i.e. _padding takes color.r value)
 typedef struct {
   vec3 position;
   float cutoff;
@@ -118,22 +118,22 @@ typedef struct {
 // light uniforms
 typedef struct {
   uint32_t length;
-  PointLightUniform items[LIGHT_MAX_CAPACITY];
+  PointLightUniform entries[LIGHT_MAX_CAPACITY];
 } __attribute__((aligned(16))) PointLightListUniform;
 
 typedef struct {
   uint32_t length;
-  AmbientLightUniform items[LIGHT_MAX_CAPACITY];
+  AmbientLightUniform entries[LIGHT_MAX_CAPACITY];
 } __attribute__((aligned(16))) AmbientLightListUniform;
 
 typedef struct {
   uint32_t length;
-  SpotLightUniform items[LIGHT_MAX_CAPACITY];
+  SpotLightUniform entries[LIGHT_MAX_CAPACITY];
 } __attribute__((aligned(16))) SpotLightListUniform;
 
 typedef struct {
   uint32_t length;
-  SunLightUniform items[LIGHT_MAX_CAPACITY];
+  SunLightUniform entries[LIGHT_MAX_CAPACITY];
 } __attribute__((aligned(16))) SunLightListUniform;
 
 typedef struct {
@@ -150,7 +150,7 @@ typedef struct {
 typedef struct {
   size_t length;
   size_t capacity;
-  PointLight items[LIGHT_MAX_CAPACITY];
+  PointLight entries[LIGHT_MAX_CAPACITY];
   WGPUTextureView color_map;
   WGPUTextureView depth_map;
 } PointLightList;
@@ -158,7 +158,7 @@ typedef struct {
 typedef struct {
   size_t length;
   size_t capacity;
-  SpotLight items[LIGHT_MAX_CAPACITY];
+  SpotLight entries[LIGHT_MAX_CAPACITY];
   WGPUTextureView color_map;
   WGPUTextureView depth_map;
 } SpotLightList;
@@ -166,13 +166,13 @@ typedef struct {
 typedef struct {
   size_t length;
   size_t capacity;
-  AmbientLight items[LIGHT_MAX_CAPACITY];
+  AmbientLight entries[LIGHT_MAX_CAPACITY];
 } AmbientLightList;
 
 typedef struct {
   size_t length;
   size_t capacity;
-  SunLight items[LIGHT_MAX_CAPACITY];
+  SunLight entries[LIGHT_MAX_CAPACITY];
 } SunLightList;
 
 void light_create_point(PointLight *, PointLightDescriptor *);
