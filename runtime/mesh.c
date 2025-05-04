@@ -40,6 +40,8 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
   // set name
   mesh_set_name(mesh, md->name);
 
+  printf("mesh name: %s\n", mesh->name);
+
   // init child list
   mesh->children.length = 0;
   mesh->children.capacity = MESH_CHILD_LENGTH;
@@ -170,7 +172,7 @@ void mesh_create_index_buffer(mesh *mesh,
 }
 
 /**
-   Build mesh and children shaders pipeline
+   Build mesh shaders pipeline
    If given shader is NULL, it will choose the default shader as fallback
  */
 void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
@@ -183,12 +185,8 @@ void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
 
   // check if mesh has correct buffer before drawing
   if (mesh->buffer.index == NULL || mesh->buffer.vertex == NULL) {
-    perror("Mesh doesn't have the right buffers, further error may occurs.\n");
+    perror("Mesh has no device or queue, further error may occurs.\n");
   }
-
-  // build children
-  for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_build(mesh->children.entries[c], draw_method);
 }
 
 /**
@@ -211,12 +209,6 @@ void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
                                       WGPU_WHOLE_SIZE);
   wgpuRenderPassEncoderDrawIndexed(*render_pass, mesh->index.length, 1, 0, 0,
                                    0);
-
-  // draw children
-  // TODO: REDUCE DRAW CALL.........
-  for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_draw(mesh->children.entries[c], draw_method, render_pass, camera,
-              viewport);
 }
 
 /**

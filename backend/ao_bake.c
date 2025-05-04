@@ -78,7 +78,7 @@ void ao_bake_raycast(vec3 ray_origin, vec3 ray_direction, mesh *compare,
       triangle_point_to_uv(&compare_triangle, hit, uv);
       // scale to the texture coordinates
       glm_vec2_scale(uv, AO_TEXTURE_SIZE, uv);
-      print_vec2(uv);
+      // print_vec2(uv);
 
       // write pixel to texture
       texture_write_pixel(texture, 0, uv);
@@ -145,7 +145,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
       for (int x = 0; x < 64; x++) {
         texture_write_pixel(&ao_texture, 0, (vec2){x, y});
       }
-    }*/
+      }*/
 
     // go through the mesh triangles and check if it's occluded
     for (size_t i = 0; i < source_mesh->index.length; i += 3) {
@@ -178,31 +178,18 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
         for (size_t c = 0; c < desc->mesh_list->length; c++) {
 
           mesh *compare_mesh = desc->mesh_list->entries[c];
-          // TODO: once the index system is properly setup, replace m == s by
+          // TODO: once the index system is properly setup, replace m == s
+
           // src id == compare id
           if (strcmp(source_mesh->name, compare_mesh->name) == 0)
             continue;
 
           ao_bake_raycast(rays[ray], ray_direction, compare_mesh, &ao_texture);
-
-          // check children
-          for (size_t m = 0; m < compare_mesh->children.length; m++)
-            ao_bake_raycast(rays[ray], ray_direction,
-                            compare_mesh->children.entries[m], &ao_texture);
         }
       }
     }
 
     ao_bake_bind(source_mesh, &ao_texture);
-
-    if (source_mesh->children.length > 0) {
-      ao_bake_init(&(AOBakeInitDescriptor){
-          .mesh_list = &source_mesh->children,
-          .scene = desc->scene,
-          .device = desc->device,
-          .queue = desc->queue,
-      });
-    }
   }
 
 #ifdef AO_BAKE_DISPLAY_RAY

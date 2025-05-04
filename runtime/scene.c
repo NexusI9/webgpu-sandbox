@@ -96,7 +96,7 @@ void scene_build(scene *scene, MeshDrawMethod draw_method) {
 
 void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
                            MeshIndexedList *mesh_list) {
-   
+
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = mesh_list->entries[i];
     mesh_build(current_mesh, draw_method);

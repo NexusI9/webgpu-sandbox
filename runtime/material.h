@@ -49,7 +49,7 @@ void material_clear_bindings(mesh *, MeshDrawMethod);
 // bind model, camera and viewport to bind group
 void material_texture_bind_views(mesh *, camera *, viewport *, uint8_t);
 // bind light scene
-void material_texture_bind_lights(mesh *, viewport *, AmbientLightList *,
+void material_texture_bind_lights(mesh *, AmbientLightList *,
                                   SpotLightList *, PointLightList *,
                                   SunLightList *, uint8_t);
 

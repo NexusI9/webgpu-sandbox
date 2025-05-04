@@ -208,24 +208,16 @@ void add_line() {
 
 void import_cube() {
 
-  mesh *cube = scene_new_mesh_lit(&main_scene);
-  mesh_create(cube, &(MeshCreateDescriptor){
-                        .name = "master_cube",
-                        .device = &main_renderer.wgpu.device,
-                        .queue = &main_renderer.wgpu.queue,
-                    });
 
-  loader_gltf_load(&main_scene, "./resources/assets/gltf/cube.gltf",
-                   &(cgltf_options){0});
+  loader_gltf_load(&(GLTFLoadDescriptor){
+      .scene = &main_scene,
+      .path = "./resources/assets/gltf/cube.gltf",
+      .device = &main_renderer.wgpu.device,
+      .queue = &main_renderer.wgpu.queue,
+      .cgltf_options = &(cgltf_options){0},
+  });
 
-  // TODO: handle child bind
-  material_texture_bind_views(cube, &main_scene.camera, &main_scene.viewport,
-                              1);
 
-  material_texture_bind_lights(
-      cube, &main_scene.viewport, &main_scene.lights.ambient,
-      &main_scene.lights.spot, &main_scene.lights.point, &main_scene.lights.sun,
-      2);
 }
 
 void draw() {

@@ -58,9 +58,6 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
               },
       });
 
-  for (size_t c = 0; c < mesh->children.length; c++)
-    material_texture_bind_views(mesh->children.entries[c], camera, viewport,
-                                group_index);
 }
 
 /**
@@ -70,7 +67,7 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
    by default we will upload all the lights (point, ambient, spot)
    within a defined group
   */
-void material_texture_bind_lights(mesh *mesh, viewport *viewport,
+void material_texture_bind_lights(mesh *mesh,
                                   AmbientLightList *ambient_list,
                                   SpotLightList *spot_list,
                                   PointLightList *point_list,
@@ -198,6 +195,7 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
       },
   };
 
+  printf("adding to group index: %u\n", group_index);
   shader_add_uniform(
       &mesh->shader.texture,
       &(ShaderCreateUniformDescriptor){
@@ -207,10 +205,6 @@ void material_texture_bind_lights(mesh *mesh, viewport *viewport,
           .entries = entries,
       });
 
-  for (size_t c = 0; c < mesh->children.length; c++)
-    material_texture_bind_lights(mesh->children.entries[c], viewport,
-                                 ambient_list, spot_list, point_list, sun_list,
-                                 group_index);
 }
 
 /**
@@ -221,8 +215,6 @@ void material_clear_bindings(mesh *mesh, MeshDrawMethod method) {
 
   shader_bind_group_clear(mesh_select_shader(mesh, method));
 
-  for (size_t c = 0; c < mesh->children.length; c++)
-    material_clear_bindings(mesh->children.entries[c], method);
 }
 
 /**
@@ -262,8 +254,6 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
               },
       });
 
-  for (size_t c = 0; c < mesh->children.length; c++)
-    material_shadow_bind_views(mesh->children.entries[c], view);
 }
 
 /**
@@ -346,9 +336,6 @@ void material_texure_bind_shadow_maps(mesh *mesh,
               },
       });
 
-  for (size_t c = 0; c < mesh->children.length; c++)
-    material_texure_bind_shadow_maps(mesh->children.entries[c],
-                                     point_texture_view, spot_texture_view);
 }
 
 /**
@@ -393,6 +380,4 @@ void material_shadow_set_cullmode(mesh *mesh, WGPUCullMode mode) {
                              .stripIndexFormat = WGPUIndexFormat_Undefined,
                          });
 
-  for (size_t c = 0; c < mesh->children.length; c++)
-    material_shadow_set_cullmode(mesh->children.entries[c], mode);
 }

@@ -27,7 +27,7 @@ typedef struct {
 } texture;
 
 void texture_create(texture *, const TextureCreateDescriptor *);
-void texture_create_by_ref(unsigned char *, size_t *,
+void texture_create_by_ref(unsigned char **, size_t *,
                         const TextureCreateDescriptor *);
 
 void texture_fill(texture *, int);

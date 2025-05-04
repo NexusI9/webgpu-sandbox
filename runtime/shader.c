@@ -313,6 +313,12 @@ void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
                             current_group->samplers.length;
     uint16_t length = 0;
 
+    VERBOSE_PRINT("    └ Bindgroup %d\n\t\t└ Uniforms: %lu\n\t\t└ Textures: "
+                  "%lu\n\t\t└ Samplers: %lu\n",
+                  current_group->index, current_group->uniforms.length,
+                  current_group->textures.length,
+                  current_group->samplers.length);
+
     WGPUBindGroupEntry *converted_entries =
         (WGPUBindGroupEntry *)malloc(total_length * sizeof(WGPUBindGroupEntry));
 
@@ -344,7 +350,8 @@ void shader_bind_uniforms(shader *shader, ShaderBindGroup *bindgroup,
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
   for (int j = 0; j < bindgroup->uniforms.length; j++) {
-    ShaderBindGroupUniformEntry *current_entry = &bindgroup->uniforms.entries[j];
+    ShaderBindGroupUniformEntry *current_entry =
+        &bindgroup->uniforms.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .buffer = current_entry->buffer,
@@ -360,7 +367,8 @@ void shader_bind_textures(shader *shader, ShaderBindGroup *bindgroup,
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
   for (int j = 0; j < bindgroup->textures.length; j++) {
-    ShaderBindGroupTextureEntry *current_entry = &bindgroup->textures.entries[j];
+    ShaderBindGroupTextureEntry *current_entry =
+        &bindgroup->textures.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .textureView = current_entry->texture_view,
@@ -372,7 +380,8 @@ void shader_bind_samplers(shader *shader, ShaderBindGroup *bindgroup,
                           WGPUBindGroupEntry *entries, uint16_t *index) {
 
   for (int j = 0; j < bindgroup->samplers.length; j++) {
-    ShaderBindGroupSamplerEntry *current_entry = &bindgroup->samplers.entries[j];
+    ShaderBindGroupSamplerEntry *current_entry =
+        &bindgroup->samplers.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .sampler = current_entry->sampler,
@@ -508,6 +517,7 @@ void shader_add_uniform(shader *shader,
 void shader_add_texture(shader *shader,
                         const ShaderCreateTextureDescriptor *desc) {
 
+  // printf("inner shader %p\n", shader);
   if (shader_validate_binding(shader)) {
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, desc->group_index);

@@ -23,11 +23,11 @@ void texture_create(texture *texture, const TextureCreateDescriptor *desc) {
     memset(texture->data, desc->value, texture->size);
 }
 
-void texture_create_by_ref(unsigned char *data, size_t *size,
+void texture_create_by_ref(unsigned char **data, size_t *size,
                            const TextureCreateDescriptor *desc) {
 
   *size = desc->width * desc->height * desc->channels;
-  data = (void *)calloc(desc->width * desc->height, desc->channels);
+  *data = (unsigned char *)calloc(desc->width * desc->height, desc->channels);
 
   if (data == NULL) {
     perror("Could not create texture");
@@ -35,7 +35,8 @@ void texture_create_by_ref(unsigned char *data, size_t *size,
   }
 
   if (desc->value != 0)
-    memset(data, desc->value, *size);
+    memset(*data, desc->value, *size);
+
 }
 
 void texture_fill(texture *texture, int value) {

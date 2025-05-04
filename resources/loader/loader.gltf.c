@@ -13,10 +13,12 @@
 #include <string.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "../backend/buffer.h"
+#include "../runtime/material.h"
 #include "../runtime/texture.h"
 #include "stb/stb_image.h"
 
-static void loader_gltf_create_mesh(scene *, cgltf_data *);
+static void loader_gltf_create_mesh(scene *, WGPUDevice *, WGPUQueue *,
+                                    cgltf_data *);
 static void loader_gltf_create_shader(shader *, WGPUDevice *, WGPUQueue *,
                                       cgltf_primitive *);
 
@@ -34,15 +36,15 @@ static uint8_t loader_gltf_extract_texture(cgltf_texture_view *,
 static void loader_gltf_load_fallback_texture(ShaderBindGroupTextureEntry *);
 static void loader_gltf_mesh_position(mesh *, const char *, cgltf_data *);
 
-void loader_gltf_load(scene *scene, const char *path,
-                      const cgltf_options *options) {
+void loader_gltf_load(const GLTFLoadDescriptor *desc) {
 
   cgltf_data *data = NULL;
   // load json structure
-  cgltf_result result = cgltf_parse_file(options, path, &data);
+  cgltf_result result =
+      cgltf_parse_file(desc->cgltf_options, desc->path, &data);
 
   // load actual gltf buffer data
-  result = cgltf_load_buffers(options, data, path);
+  result = cgltf_load_buffers(desc->cgltf_options, data, desc->path);
 
   switch (result) {
 
@@ -51,7 +53,7 @@ void loader_gltf_load(scene *scene, const char *path,
     break;
 
   case cgltf_result_success:
-    loader_gltf_create_mesh(scene, data);
+    loader_gltf_create_mesh(desc->scene, desc->device, desc->queue, data);
     break;
 
   case cgltf_result_file_not_found:
@@ -135,7 +137,8 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   return (VertexIndex){.data = index_data, .length = index_accessor->count};
 }
 
-void loader_gltf_create_mesh(scene *scene, cgltf_data *data) {
+void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
+                             cgltf_data *data) {
 
   printf("====== ENTER GLTF =====\n");
 
@@ -143,7 +146,16 @@ void loader_gltf_create_mesh(scene *scene, cgltf_data *data) {
   for (size_t m = 0; m < data->meshes_count; m++) {
 
     cgltf_mesh gl_mesh = data->meshes[m];
+    printf("Mesh name: %s\n", gl_mesh.name);
+
     struct mesh *scene_mesh = scene_new_mesh_lit(scene);
+    mesh_create(scene_mesh, &(MeshCreateDescriptor){
+                                .device = device,
+                                .queue = queue,
+                                .name = gl_mesh.name,
+                                .vertex = (VertexAttribute){0},
+                                .index = (VertexIndex){0},
+                            });
 
     // set mesh position
     loader_gltf_mesh_position(scene_mesh, gl_mesh.name, data);
@@ -225,31 +237,46 @@ void loader_gltf_create_mesh(scene *scene, cgltf_data *data) {
       // add child to parent mesh if current primitive > 0
       // and set it as target mesh
       if (p > 0) {
+        printf("inner primitive\n");
         target_mesh = scene_new_mesh_lit(scene);
-	// add target mesh pointer to parent mesh children list
+
+        // add target mesh pointer to parent mesh children list
         mesh_add_child(target_mesh, scene_mesh);
 
-        // need to dynamically allocate name
-        // iteration use same frame stack
-        // meaning addresses will be reused throughout the loop
-        // this leads the latest mesh name (pointer) -
-        // to be shared accross all children mesh
-        // (same issue with shader)
+        /*
+          need to dynamically allocate name
+           iteration use same frame stack
+           meaning addresses will be reused throughout the loop
+           this leads the latest mesh name (pointer) -
+           to be shared accross all children mesh
+           (same issue with shader)
+        */
 
-        asprintf(&target_mesh->name, "%s %lu", gl_mesh.name, p);
-      } else {
-        asprintf(&target_mesh->name, "%s", gl_mesh.name);
+        char *mesh_name;
+        asprintf(&mesh_name, "%s %lu", gl_mesh.name, p);
+        mesh_create(target_mesh, &(MeshCreateDescriptor){
+                                     .device = device,
+                                     .queue = queue,
+                                     .name = mesh_name,
+                                     .vertex = (VertexAttribute){0},
+                                     .index = (VertexIndex){0},
+                                 });
       }
 
       // load shader
-      loader_gltf_create_shader(mesh_shader_texture(target_mesh),
-                                target_mesh->device, target_mesh->queue,
+      printf("target mesh: %p \n", target_mesh);
+      loader_gltf_create_shader(mesh_shader_texture(target_mesh), device, queue,
                                 &current_primitive);
 
       // dynamically define mesh attribute
       mesh_set_vertex_attribute(target_mesh, &vert_attr);
       mesh_set_vertex_index(target_mesh, &vert_index);
 
+      material_texture_bind_views(target_mesh, &scene->camera, &scene->viewport, 1);
+      // TODO: put the texture bind lights to the scene itself
+      material_texture_bind_lights(target_mesh,
+                                   &scene->lights.ambient, &scene->lights.spot,
+                                   &scene->lights.point, &scene->lights.sun, 2);
     }
   }
 }
@@ -259,6 +286,8 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
 
   // Use default pbr shader as default
   // TODO: Add a custom path for different shader in loader configuration
+
+  printf("shader: %p\n", shader);
 
   cgltf_material *material = primitive->material;
   shader_create(shader, &(ShaderCreateDescriptor){
@@ -272,36 +301,39 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
   loader_gltf_bind_uniforms(shader, material);
 }
 
+/**
+  Bind PBR textures
+  store the texture_views (hold pointer to actual texture + other data)
+ */
 void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
 
-  // bind pbdr textures
-  // store the texture_views (hold pointer to actual texture + other data)
-
   uint8_t texture_length = 4;
+
+  // TODO: check how to handle if object already has a AO Texture imported ?
+  // overwrite ?
+  //&material->occlusion_texture : baked separately in the AO pass,
   cgltf_texture_view *texture_view_list[] = {
       &material->pbr_metallic_roughness.base_color_texture,
       &material->pbr_metallic_roughness.metallic_roughness_texture,
-      &material->normal_texture, &material->emissive_texture,
-      // TODO: check how to handle if object already has a AO Texture imported ?
-      // overwrite ?
-      //&material->occlusion_texture : baked separately in the AO pass,
+      &material->normal_texture,
+      &material->emissive_texture,
   };
-  ShaderBindGroupTextureEntry texture_list[texture_length];
+
   ShaderBindGroupTextureEntry texture_entries[texture_length];
   ShaderBindGroupSamplerEntry sampler_entries[texture_length];
 
   uint8_t binding = 0;
   for (int t = 0; t < texture_length; t++) {
 
-    loader_gltf_extract_texture(texture_view_list[t], &texture_list[t]);
+    loader_gltf_extract_texture(texture_view_list[t], &texture_entries[t]);
 
     // create texture entries
     texture_entries[t] = (ShaderBindGroupTextureEntry){
         .binding = binding,
-        .data = texture_list[t].data,
-        .size = texture_list[t].size,
-        .width = texture_list[t].width,
-        .height = texture_list[t].height,
+        .data = texture_entries[t].data,
+        .size = texture_entries[t].size,
+        .width = texture_entries[t].width,
+        .height = texture_entries[t].height,
         .dimension = WGPUTextureViewDimension_2D,
         .format = WGPUTextureFormat_BGRA8Unorm,
         .sample_type = WGPUTextureSampleType_Float,
@@ -393,7 +425,7 @@ void loader_gltf_load_fallback_texture(
   shader_entry->width = TEXTURE_MIN_SIZE;
   shader_entry->height = TEXTURE_MIN_SIZE;
 
-  texture_create_by_ref(shader_entry->data, &shader_entry->size,
+  texture_create_by_ref(&shader_entry->data, &shader_entry->size,
                         &(TextureCreateDescriptor){
                             .width = shader_entry->width,
                             .height = shader_entry->height,
