@@ -49,10 +49,10 @@ void texture_write_pixel(texture *texture, int value, vec2 coordinate) {
   int y = (int)coordinate[1];
 
   if (x >= 0 && x < texture->width && y >= 0 && y < texture->height) {
-    int offset = (y * texture->width + x) * texture->channels;
-    texture->data[offset] = value;     // R
-    texture->data[offset + 1] = value; // G
-    texture->data[offset + 2] = value; // B
+    for (int c = 0; c < texture->channels; c++) {
+      int offset = (y * texture->width + x) * texture->channels + c;
+      texture->data[offset] = value;
+    }
   } else {
     // perror("Pixel coordinate is out of bound");
   }
@@ -67,7 +67,8 @@ void texture_free(texture *texture) { free(texture->data); }
    https://stackoverflow.com/questions/21418892/understanding-super-fast-blur-algorithm
    https://developer.apple.com/documentation/accelerate/blurring-an-image
  */
-void texture_blur(const texture *src, int kernel_size, float sigma, unsigned char **dest) {
+void texture_blur(const texture *src, int kernel_size, float sigma,
+                  unsigned char **dest) {
 
   // texture attributes
   int w = src->width;

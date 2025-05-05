@@ -75,11 +75,11 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
     if (hit[0] || hit[1] || hit[2]) {
       // transpose hit point to triangle UV space
       vec2 compare_uv, source_uv;
-
+      // 1. retrieve hit position and translate it to uv space
+      // 2. scale to the texture coordinates
+      // 3.write pixel to texture
       triangle_point_to_uv(desc->source_triangle, *desc->ray_origin, source_uv);
-      // scale to the texture coordinates
       glm_vec2_scale(source_uv, AO_TEXTURE_SIZE, source_uv);
-      // write pixel to texture
       texture_write_pixel(desc->source_texture, 0, source_uv);
 
       // do the same for compare mesh
@@ -163,11 +163,6 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
       // collides with another mesh in the scene within a certain distance
       for (uint16_t ray = 0; ray < AO_RAY_AMOUNT; ray++) {
 
-        // vec2 ray_uv;
-        // triangle_point_to_uv(&source_triangle, rays[ray], ray_uv);
-        // glm_vec2_scale(ray_uv, AO_TEXTURE_SIZE, ray_uv);
-        // texture_write_pixel(&ao_texture[s], 0, ray_uv);
-
         vec3 ray_direction;
         glm_vec3_add(rays[ray], ray_normal, ray_direction);
 
@@ -196,8 +191,12 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
         }
       }
     }
+  }
 
-    texture_blur(&ao_texture[s], 3, 2.0f, &ao_texture[s].data);
+  // bind textures once baking is done
+  for (int s = 0; s < desc->mesh_list->length; s++) {
+    mesh *source_mesh = desc->mesh_list->entries[s];
+    texture_blur(&ao_texture[s], 3, 1.0f, &ao_texture[s].data);
     ao_bake_bind(source_mesh, &ao_texture[s]);
   }
 

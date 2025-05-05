@@ -131,13 +131,13 @@ void init_scene() {
       &main_scene, &(SunLightDescriptor){
                        .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
                        .color = {1.0f, 1.0f, 1.0f},
-                       .intensity = 2.0f,
+                       .intensity = 4.0f,
                        .size = 10.0f,
                    });
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
-                                           .intensity = 0.4f,
+                                           .intensity = 0.2f,
                                        });
 }
 

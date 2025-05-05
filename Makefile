@@ -9,7 +9,7 @@ C_FILES := $(shell find . -type f -name "*.c")
 #   - CGLM_FORCE_DEPTH_ZERO_TO_ONE
 #   - VERBOSE_BINDING_PHASE : print shader binding structure
 #   - VERBOSE_BUILDING_PHASE : print mesh building phase
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DAO_BAKE_DISPLAY_RAY
 
 # Preprocess cwgsl shader to wgsl Shader files
 SHADER_DIR := ./runtime/assets/shader
