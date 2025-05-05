@@ -1,4 +1,5 @@
 #include "triangle.h"
+#include "../utils/system.h"
 #include <float.h>
 #include <math.h>
 #include <stdint.h>
@@ -32,7 +33,6 @@ void triangle_rand_dist_trilinear(float x1, float y1, float z1, vec3 p1,
   float x = triangle_rand_dist_trilinear_dimension(x1, y1, z1, p1, p2, p3, 0);
   float y = triangle_rand_dist_trilinear_dimension(x1, y1, z1, p1, p2, p3, 1);
   float z = triangle_rand_dist_trilinear_dimension(x1, y1, z1, p1, p2, p3, 2);
-
   glm_vec3_copy((vec3){x, y, z}, dest);
 }
 
@@ -106,8 +106,7 @@ void triangle_normal(triangle *surface, vec3 dest) {
 void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
                       float max_distance, vec3 hit) {
 
-  // glm_vec3_copy(ray_origin, hit);
-  // return;
+
   float epsilon = FLT_EPSILON;
 
   vec3 edge1, edge2, ray_cross_e2;
@@ -138,15 +137,16 @@ void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
   glm_vec3_cross(s, edge1, s_cross_e1);
   float v = inv_det * glm_vec3_dot(ray_direction, s_cross_e1);
 
-  if (v < 0.0f || u + v > 1.0f) {
+  if (v < 0.0f|| u + v > 1.0f) {
     glm_vec3_zero(hit);
     return;
   }
 
-  // compute t to find where interesction is on the line
+
+  // compute to find where interesction is on the line
   float t = inv_det * glm_vec3_dot(edge2, s_cross_e1);
-  //&&t < max_distance
-  if (t > epsilon) {
+
+  if (t > epsilon && t < max_distance) {
     // intersection
     vec3 distance;
     glm_vec3_scale(ray_direction, t, distance);
@@ -189,4 +189,11 @@ void triangle_point_to_uv(triangle *surface, vec3 point, vec2 dest) {
   vec2 uv01;
   glm_vec2_add(uv0, uv1, uv01);
   glm_vec2_add(uv01, uv2, dest);
+}
+
+void triangle_center(triangle *surface, vec3 dest) {
+  glm_vec3_zero(dest);
+  glm_vec3_add(surface->a.position, surface->b.position, dest);
+  glm_vec3_add(dest, surface->c.position, dest);
+  glm_vec3_scale(dest, 1.0f / 3.0f, dest);
 }

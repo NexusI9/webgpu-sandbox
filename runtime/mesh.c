@@ -40,8 +40,6 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
   // set name
   mesh_set_name(mesh, md->name);
 
-  printf("mesh name: %s\n", mesh->name);
-
   // init child list
   mesh->children.length = 0;
   mesh->children.capacity = MESH_CHILD_LENGTH;
@@ -177,7 +175,10 @@ void mesh_create_index_buffer(mesh *mesh,
  */
 void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
 
+#ifdef VERBOSE_BUILDING_PHASE
   VERBOSE_PRINT("Build mesh: %s\n", mesh->name);
+#endif
+  
   shader *shader = mesh_select_shader(mesh, draw_method);
 
   // reccursively build shader

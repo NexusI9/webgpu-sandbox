@@ -54,7 +54,7 @@ static vec3 LIGHT_TARGET = {0.0f, 0.0f, 0.0f};
 static vec3 POINT_LIGHT = {0.0f, 2.4f, 2.3f};
 
 // sun light
-static vec3 SUN_LIGHT = {0.0f, 2.0f, 2.0f};
+static vec3 SUN_LIGHT = {-2.0f, 2.0f, 2.0f};
 
 void init_scene() {
 
@@ -105,7 +105,7 @@ void init_scene() {
                                                  POINT_LIGHT[1],
                                                  POINT_LIGHT[2],
                                              },
-                                             });*/
+					     });*/
 
   /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
                                         .color = {1.0f, 1.0f, 1.0f},
@@ -137,7 +137,7 @@ void init_scene() {
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
-                                           .intensity = 0.1f,
+                                           .intensity = 0.4f,
                                        });
 }
 
@@ -208,7 +208,6 @@ void add_line() {
 
 void import_cube() {
 
-
   loader_gltf_load(&(GLTFLoadDescriptor){
       .scene = &main_scene,
       .path = "./resources/assets/gltf/cube.gltf",
@@ -216,8 +215,6 @@ void import_cube() {
       .queue = &main_renderer.wgpu.queue,
       .cgltf_options = &(cgltf_options){0},
   });
-
-
 }
 
 void draw() {

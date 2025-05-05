@@ -205,10 +205,10 @@ fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
 
   var material : Material;
   material.albedo = diffuse.rgb;
-  material.metallic = metallic.b;
+  material.metallic = metallic.g;
   material.roughness = metallic.g;                     // roughness in G channel
   material.normal = normalize(normal.rgb * 2.0 - 1.0); // convert to [-1,+1]
-  material.occlusion = occlusion.b;
+  material.occlusion = occlusion.r;
   material.emissive = emissive.rgb;
 
   return material;
@@ -264,6 +264,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   kD *= 1.0f - material.metallic;
 
   var diffuse : vec3<f32> = (material.albedo / PI);
+
   var Lo : vec3<f32> = (kD * diffuse + specular) * light_color *
                        light_intensity * NdotL;
 
@@ -585,7 +586,8 @@ fn sun_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                             point_shadow + directional_shadow + sun_shadow);
 
+  // return vec4<f32>(combined_shadow, 1.0f);
   // return vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
-
-  return vec4<f32>(occlusion.rgb, 1.0f);
+  // return vec4<f32>(metallic.ggg, 1.0f);
+  return vec4<f32>(occlusion.rrr, 1.0f);
 }

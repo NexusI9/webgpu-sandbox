@@ -162,7 +162,9 @@ static void shader_pipeline_release_layout(shader *shader) {
 void shader_build(shader *shader) {
 
   // clear pipeline if existing
+#ifdef VERBOSE_BUILDING_PHASE
   VERBOSE_PRINT("  └ Building Shader: %s\n", shader->name);
+#endif
 
   // build bind group entries for each individual group index
   WGPUBindGroupLayout *bindgroup_layouts = shader_build_layout(shader);
@@ -313,11 +315,13 @@ void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
                             current_group->samplers.length;
     uint16_t length = 0;
 
+#ifdef VERBOSE_BINDING_PHASE
     VERBOSE_PRINT("    └ Bindgroup %d\n\t\t└ Uniforms: %lu\n\t\t└ Textures: "
                   "%lu\n\t\t└ Samplers: %lu\n",
                   current_group->index, current_group->uniforms.length,
                   current_group->textures.length,
                   current_group->samplers.length);
+#endif
 
     WGPUBindGroupEntry *converted_entries =
         (WGPUBindGroupEntry *)malloc(total_length * sizeof(WGPUBindGroupEntry));
@@ -543,6 +547,8 @@ void shader_add_texture(shader *shader,
                                 .size = current_entry->size,
                                 .device = shader->device,
                                 .queue = shader->queue,
+                                .format = current_entry->format,
+                                .channels = current_entry->channels,
                             });
 
       current_bind_group->textures

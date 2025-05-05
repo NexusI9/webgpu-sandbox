@@ -6,11 +6,11 @@
 #include <string.h>
 
 // static DebugView debug_view_light;
-static void shadow_pass_create_textures(const ShadowPassTextureDescriptor *);
-static void shadow_pass_to_texture(const ShadowPassToTextureDescriptor *);
-static void
+static inline void shadow_pass_create_textures(const ShadowPassTextureDescriptor *);
+static inline void shadow_pass_to_texture(const ShadowPassToTextureDescriptor *);
+static inline void
 shadow_pass_fallback_to_texture(const ShadowPassFallbackToTextureDescriptor *);
-static void shadow_pass_create_map(const ShadowPassMapDescriptor *);
+static inline void shadow_pass_create_map(const ShadowPassMapDescriptor *);
 
 void shadow_pass_init(scene *scene, WGPUDevice device, WGPUQueue queue) {
 
@@ -105,7 +105,7 @@ void shadow_pass_init(scene *scene, WGPUDevice device, WGPUQueue queue) {
     |   Layer 5    |       >----|  Sun Lights  |----'
     |--------------|      |     '--------------'
     |   Layer 6    |      |
-    '--------------' _____'
+    '--------------' -----'
 
 
   */

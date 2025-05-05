@@ -91,7 +91,7 @@ void renderer_end_frame(const renderer *renderer) {
   wgpuInstanceRelease(renderer->wgpu.instance);
 }
 
-static void renderer_create_texture_view(const renderer *renderer,
+void renderer_create_texture_view(const renderer *renderer,
                                          WGPUTextureView *texture_view) {
 
   // Need to create a texture view for Z buffer stencil

@@ -146,7 +146,7 @@ void line_add_point(mesh *mesh, vec3 p1, vec3 p2, vec3 color) {
 
   if (mesh->vertex.length / VERTEX_STRIDE / LINE_VERTEX_COUNT ==
       LINE_MAX_POINTS - LINE_VERTEX_COUNT - 1) {
-    perror("Lines reached maximum, cannot add more point\n");
+      //perror("Lines reached maximum, cannot add more point\n");
     return;
   }
 

@@ -195,7 +195,6 @@ void material_texture_bind_lights(mesh *mesh,
       },
   };
 
-  printf("adding to group index: %u\n", group_index);
   shader_add_uniform(
       &mesh->shader.texture,
       &(ShaderCreateUniformDescriptor){

@@ -75,9 +75,8 @@ void buffer_create_texture(WGPUTextureView *texture_view,
                   .height = tx->height,
                   .depthOrArrayLayers = 1,
               },
-          .format =
-              WGPUTextureFormat_RGBA8Unorm, // normalize from 0-255 ->
-                                            // 0.0-1.0, since use f32 in shader
+          .format = tx->format, // normalize from 0-255 ->
+                                // 0.0-1.0, since use f32 in shader
           .mipLevelCount = 1,
           .sampleCount = 1,
           .dimension = WGPUTextureDimension_2D,
@@ -95,7 +94,7 @@ void buffer_create_texture(WGPUTextureView *texture_view,
                         tx->data, tx->size,
                         &(WGPUTextureDataLayout){
                             .offset = 0,
-                            .bytesPerRow = tx->width * TEXTURE_CHANNELS_RGBA,
+                            .bytesPerRow = tx->width * tx->channels,
                             .rowsPerImage = tx->height,
                         },
                         &(WGPUExtent3D){tx->width, tx->height, 1});

@@ -57,6 +57,7 @@ typedef struct {
   int height;
   unsigned char *data;
   size_t size;
+  uint8_t channels;
   WGPUTextureViewDimension dimension;
   WGPUTextureFormat format;
   WGPUTextureSampleType sample_type;

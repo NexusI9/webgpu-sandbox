@@ -7,6 +7,8 @@ C_FILES := $(shell find . -type f -name "*.c")
 #   - RENDER_SHADOW_AS_COLOR : render shadow maps as color texture in the shader
 #   - AO_BAKE_DISPLAY_RAY : display raycast during AO Bake pass
 #   - CGLM_FORCE_DEPTH_ZERO_TO_ONE
+#   - VERBOSE_BINDING_PHASE : print shader binding structure
+#   - VERBOSE_BUILDING_PHASE : print mesh building phase
 MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE
 
 # Preprocess cwgsl shader to wgsl Shader files

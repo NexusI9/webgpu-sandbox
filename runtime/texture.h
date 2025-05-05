@@ -8,6 +8,7 @@
 
 #define TEXTURE_CHANNELS_RGBA 4
 #define TEXTURE_CHANNELS_RGB 3
+#define TEXTURE_CHANNELS_R 1
 #define TEXTURE_MIN_SIZE 64
 
 typedef struct {
@@ -28,11 +29,12 @@ typedef struct {
 
 void texture_create(texture *, const TextureCreateDescriptor *);
 void texture_create_by_ref(unsigned char **, size_t *,
-                        const TextureCreateDescriptor *);
+                           const TextureCreateDescriptor *);
 
 void texture_fill(texture *, int);
 void texture_write_pixel(texture *, int, vec2);
 void texture_save(texture *, const char *);
 void texture_free(texture *);
+void texture_blur(const texture *, int, float, unsigned char **);
 
 #endif

@@ -20,6 +20,8 @@ typedef struct {
   uint32_t width;
   uint32_t height;
   unsigned char *data;
+  uint8_t channels;
+  WGPUTextureFormat format;
   size_t size;
 } CreateTextureDescriptor;
 

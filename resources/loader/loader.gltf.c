@@ -237,7 +237,7 @@ void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
       // add child to parent mesh if current primitive > 0
       // and set it as target mesh
       if (p > 0) {
-        printf("inner primitive\n");
+        printf("primitive %lu\n", p);
         target_mesh = scene_new_mesh_lit(scene);
 
         // add target mesh pointer to parent mesh children list
@@ -264,7 +264,6 @@ void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
       }
 
       // load shader
-      printf("target mesh: %p \n", target_mesh);
       loader_gltf_create_shader(mesh_shader_texture(target_mesh), device, queue,
                                 &current_primitive);
 
@@ -272,11 +271,12 @@ void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
       mesh_set_vertex_attribute(target_mesh, &vert_attr);
       mesh_set_vertex_index(target_mesh, &vert_index);
 
-      material_texture_bind_views(target_mesh, &scene->camera, &scene->viewport, 1);
+      material_texture_bind_views(target_mesh, &scene->camera, &scene->viewport,
+                                  1);
       // TODO: put the texture bind lights to the scene itself
-      material_texture_bind_lights(target_mesh,
-                                   &scene->lights.ambient, &scene->lights.spot,
-                                   &scene->lights.point, &scene->lights.sun, 2);
+      material_texture_bind_lights(target_mesh, &scene->lights.ambient,
+                                   &scene->lights.spot, &scene->lights.point,
+                                   &scene->lights.sun, 2);
     }
   }
 }
@@ -286,8 +286,6 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
 
   // Use default pbr shader as default
   // TODO: Add a custom path for different shader in loader configuration
-
-  printf("shader: %p\n", shader);
 
   cgltf_material *material = primitive->material;
   shader_create(shader, &(ShaderCreateDescriptor){
@@ -336,6 +334,7 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
         .height = texture_entries[t].height,
         .dimension = WGPUTextureViewDimension_2D,
         .format = WGPUTextureFormat_BGRA8Unorm,
+        .channels = TEXTURE_CHANNELS_RGBA,
         .sample_type = WGPUTextureSampleType_Float,
     };
 
