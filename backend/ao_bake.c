@@ -9,7 +9,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static inline void ao_bake_global(mesh *, MeshList *);
+static inline void ao_bake_global(const AOBakeInitDescriptor *desc);
 static inline void ao_bake_local(mesh *, MeshList *);
 static inline void ao_bake_raycast(const AOBakeRaycastDescriptor *);
 static inline void ao_bake_bind(mesh *, texture *);
@@ -119,9 +119,11 @@ triangle ao_bake_mesh_triangle(mesh *mesh, size_t index) {
   };
 }
 
-void ao_bake_init(const AOBakeInitDescriptor *desc) {
+void ao_bake_init(const AOBakeInitDescriptor *desc) { ao_bake_global(desc); }
 
-  printf("===== BAKING AO =====\n");
+void ao_bake_global(const AOBakeInitDescriptor *desc) {
+
+  printf("===== BAKING GLOBAL AO =====\n");
 
 #ifdef AO_BAKE_DISPLAY_RAY
   mesh *line = scene_new_mesh_unlit(desc->scene);
