@@ -4,11 +4,7 @@
 #include <cglm/cglm.h>
 #include "../runtime/mesh.h"
 
-#ifndef VERBOSE_MODE
-#define VERBOSE_MODE 1
-#endif
-
-#if VERBOSE_MODE
+#ifdef VERBOSE
 #define VERBOSE_PRINT(...) printf(__VA_ARGS__)
 #else
 #define VERBOSE_PRINT(...) // no-op

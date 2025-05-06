@@ -1,10 +1,10 @@
 #include "triangle.h"
+#include "../utils/math.h"
 #include "../utils/system.h"
 #include <float.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
-
 static void triangle_rand_dist_trilinear(float, float, float, vec3, vec3, vec3,
                                          vec3);
 
@@ -43,12 +43,9 @@ void triangle_rand_list_div(float *list, int length, float k) {
 
 void triangle_rand_gen_list(int length, float *dest) {
 
-  for (int i = 0; i < length; i++) {
-    float r = rand();
-    while (r == 0)
-      r = rand();
-    dest[i] = log((float)r / (float)RAND_MAX);
-  }
+  for (int i = 0; i < length; i++) 
+      dest[i] = log(randf());
+  
 }
 
 /**
@@ -106,7 +103,6 @@ void triangle_normal(triangle *surface, vec3 dest) {
 void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
                       float max_distance, vec3 hit) {
 
-
   float epsilon = FLT_EPSILON;
 
   vec3 edge1, edge2, ray_cross_e2;
@@ -137,11 +133,10 @@ void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
   glm_vec3_cross(s, edge1, s_cross_e1);
   float v = inv_det * glm_vec3_dot(ray_direction, s_cross_e1);
 
-  if (v < 0.0f|| u + v > 1.0f) {
+  if (v < 0.0f || u + v > 1.0f) {
     glm_vec3_zero(hit);
     return;
   }
-
 
   // compute to find where interesction is on the line
   float t = inv_det * glm_vec3_dot(edge2, s_cross_e1);

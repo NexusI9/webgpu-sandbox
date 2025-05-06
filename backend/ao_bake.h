@@ -7,12 +7,20 @@
 #include "../runtime/texture.h"
 #include "webgpu/webgpu.h"
 
+// AO Texture
 #define AO_TEXTURE_SIZE 128
 #define AO_TEXTURE_FORMAT WGPUTextureFormat_R8Unorm
-//  WGPUTextureFormat_RGBA8Unorm
 #define AO_TEXTURE_CHANNELS TEXTURE_CHANNELS_R
-#define AO_RAY_AMOUNT 1024
-#define AO_RAY_MAX_DISTANCE 0.05f
+
+// Global AO Baking
+#define AO_GLOBAL_RAY_AMOUNT 1024
+#define AO_GLOBAL_RAY_MAX_DISTANCE 0.05f
+
+// Local AO Baking
+#define AO_LOCAL_RAY_AMOUNT 512
+#define AO_LOCAL_RAY_MAX_DISTANCE 0.5f
+
+// Debug
 #define AO_RAY_MAX_COUNT 10
 
 typedef struct {
@@ -21,6 +29,14 @@ typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;
 } AOBakeInitDescriptor;
+
+typedef struct {
+  MeshIndexedList *mesh_list;
+  texture *texture;
+  scene *scene;
+  WGPUDevice *device;
+  WGPUQueue *queue;
+} AOBakeDescriptor;
 
 typedef struct {
   vec3 *ray_origin;
