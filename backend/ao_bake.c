@@ -1,7 +1,7 @@
 #include "ao_bake.h"
 #include "../resources/debug/line.h"
 #include "../runtime/material.h"
-#include "../utils/math.h"
+#include "../utils/point.h"
 #include "../utils/system.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
@@ -13,8 +13,48 @@
 static inline void ao_bake_global(const AOBakeDescriptor *desc);
 static inline void ao_bake_local(const AOBakeDescriptor *desc);
 static inline void ao_bake_raycast(const AOBakeRaycastDescriptor *);
+static inline float ao_bake_vertex(vertex *, mesh *, mesh *);
 static inline void ao_bake_bind(mesh *, texture *);
 static triangle ao_bake_mesh_triangle(mesh *, size_t);
+
+float ao_bake_vertex(vertex *vertex, mesh *source, mesh *line) {
+
+  int vertex_hit = 0;
+  vec3 rays[AO_LOCAL_RAY_AMOUNT];
+  // Generate random ray in an hemisphere oriented on vertex normal
+  hemisphere_random_points(vertex->normal, AO_LOCAL_RAY_AMOUNT, rays);
+
+  vec3 world_position;
+  glm_mat4_mulv3(source->model, vertex->position, 1.0f, world_position);
+
+  for (int ray = 0; ray < AO_LOCAL_RAY_AMOUNT; ray++) {
+
+    vec3 ray_direction;
+    glm_vec3_scale(rays[ray], AO_LOCAL_RAY_MAX_DISTANCE, ray_direction);
+    glm_vec3_add(world_position, ray_direction, ray_direction);
+
+#ifdef AO_BAKE_DISPLAY_RAY
+    if (line && ray < AO_RAY_MAX_COUNT)
+      line_add_point(line, world_position, ray_direction,
+                     (vec3){0.0f, 1.0f, 0.0f});
+#endif
+
+    // traverse mesh triangles
+    for (size_t t = 0; t < source->index.length; t += 3) {
+      triangle triangle = ao_bake_mesh_triangle(source, t);
+      vec3 hit;
+      triangle_raycast(&triangle, world_position, ray_direction,
+                       AO_LOCAL_RAY_MAX_DISTANCE, hit);
+
+      // is occluded
+      if (hit[0] || hit[1] || hit[2])
+        vertex_hit++;
+    }
+  }
+
+  // accumulated AO
+  return 1 - ((float)vertex_hit / AO_LOCAL_RAY_AMOUNT);
+}
 
 /**
    Bind the texture to the shader
@@ -72,12 +112,12 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
                      AO_GLOBAL_RAY_MAX_DISTANCE, hit);
 
     // is occluded
+    // transpose hit point to triangle UV space
+    // 1. retrieve hit position and translate it to uv space
+    // 2. scale to the texture coordinates
+    // 3.write pixel to texture
     if (hit[0] || hit[1] || hit[2]) {
-      // transpose hit point to triangle UV space
       vec2 compare_uv, source_uv;
-      // 1. retrieve hit position and translate it to uv space
-      // 2. scale to the texture coordinates
-      // 3.write pixel to texture
       triangle_point_to_uv(desc->source_triangle, *desc->ray_origin, source_uv);
       glm_vec2_scale(source_uv, AO_TEXTURE_SIZE, source_uv);
       texture_write_pixel(desc->source_texture, 0, source_uv);
@@ -153,6 +193,8 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
   // blur and bind textures once baking is done
   for (int s = 0; s < desc->mesh_list->length; s++) {
     mesh *source_mesh = desc->mesh_list->entries[s];
+    texture_remap(&ao_textures[s], 0, 1, &ao_textures[s].data);
+    texture_contrast(&ao_textures[s], 20.0f, &ao_textures[s].data);
     texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
     ao_bake_bind(source_mesh, &ao_textures[s]);
   }
@@ -161,13 +203,16 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 /**
    Bake local ambient occlusion to texture, meaning occlusion based on mesh own
    vertices occlusion.
+   Compared to the global baking, the local use a vertex
+   based approach and act as a cavity map rather than a standard AO map.
  */
 void ao_bake_local(const AOBakeDescriptor *desc) {
 
   VERBOSE_PRINT("===== BAKING LOCAL AO =====\n");
 
+  mesh *line = NULL;
 #ifdef AO_BAKE_DISPLAY_RAY
-  mesh *line = scene_new_mesh_unlit(desc->scene);
+  line = scene_new_mesh_unlit(desc->scene);
   line_create(line, &(LineCreateDescriptor){
                         .device = desc->device,
                         .queue = desc->queue,
@@ -183,50 +228,118 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
 
     VertexAttribute *mesh_vertex = &current_mesh->vertex;
     VertexIndex *mesh_index = &current_mesh->index;
-    // go through each vertex
-    for (size_t v = 0; v < mesh_vertex->length; v += VERTEX_STRIDE) {
+    texture *mesh_texture = &desc->texture[m];
+    /*
+      Go through each indexes
+      since indexes are drawn sequentially we can compare 2 by 2 and interpolate
+      the result between these two as to draw the cavity on the texture:
 
-      vertex vertex = vertex_from_array(&mesh_vertex->data[v]);
-      int vertex_hit = 0;
-      vec3 rays[AO_LOCAL_RAY_AMOUNT];
-      // Generate random ray in an hemisphere oriented on vertex normal
-      hemisphere_random_points(vertex.normal, AO_LOCAL_RAY_AMOUNT, rays);
+             AO(n) = 1.0       Interpolate
+              x          <-------- 0.95
+               '.         <------- 0.75
+                 '.        <------ 0.50
+                   '.       <----- 0.25
+                     x
+                      AO(n+1) = 0.0
 
-      vec3 world_position;
-      glm_mat4_mulv3(current_mesh->model, vertex.position, 1.0f,
-                     world_position);
+       UPDATE: It kinda sucks as it clearly highlights the triangles too much
+     */
+    for (size_t i = 0; i < mesh_index->length; i += 2) {
 
-      for (int ray = 0; ray < AO_LOCAL_RAY_AMOUNT; ray++) {
+      // calculate AO for vertex A
+      size_t offset_a = mesh_index->data[i] * VERTEX_STRIDE;
+      vertex vertex_a = vertex_from_array(&mesh_vertex->data[offset_a]);
+      float ao_a = ao_bake_vertex(&vertex_a, current_mesh, line);
 
-        vec3 ray_direction;
-        glm_vec3_scale(rays[ray], AO_LOCAL_RAY_MAX_DISTANCE, ray_direction);
-        glm_vec3_add(world_position, ray_direction, ray_direction);
+      // calculate AO for vertex B
+      size_t offset_b = mesh_index->data[i + 1] * VERTEX_STRIDE;
+      vertex vertex_b = vertex_from_array(&mesh_vertex->data[offset_b]);
+      float ao_b = ao_bake_vertex(&vertex_a, current_mesh, line);
 
-#ifdef AO_BAKE_DISPLAY_RAY
-        if (ray < AO_RAY_MAX_COUNT)
-          line_add_point(line, world_position, ray_direction,
-                         (vec3){0.0f, 1.0f, 0.0f});
-#endif
+      //  apply scaled value to texture
+      vec2 start, end;
+      glm_vec2_scale(vertex_a.uv, AO_TEXTURE_SIZE, start);
+      glm_vec2_scale(vertex_b.uv, AO_TEXTURE_SIZE, end);
 
-        // traverse mesh triangles
-        for (size_t t = 0; t < mesh_index->length; t += 3) {
-          triangle triangle = ao_bake_mesh_triangle(current_mesh, t);
-          vec3 hit;
-          triangle_raycast(&triangle, world_position, ray_direction,
-                           AO_LOCAL_RAY_MAX_DISTANCE, hit);
+      // if both vertex are occluded
+      if (ao_a < 1 || ao_b < 1) {
 
-          // is occluded
-          if (hit[0] || hit[1] || hit[2])
-            vertex_hit++;
-        }
+        /* Draw line on each vertex and bridges due to UV seams
+
+           3D View:
+                     '-.  A,C  .-'
+                     |  '-.o.-'  |
+                     |     x     |
+                     |	   x <--------- UV seam of AB/CD
+                     ',    x    ,'
+                       '-._o_.-'
+                          B,D
+           UV View:
+
+          0                                     +1
+           +------------------------------------>
+           |    A                          C
+           |     o._                    _.o
+           |	 x  '-.______________.-'  x
+           |     x    |              |    x
+           |     x    |              |    x
+           |     x    |              |    x
+           |     x    |              |    x
+           |     x    |              |    x
+           |     x    |              |    x
+           |     x _.-+--------------+-._ x
+           |     o'                      'o
+           |    B                           D
+           v
+         +1
+
+             Need to draw line on both AB and CD
+        */
+
+	  
+        size_t similar_length = 5;
+        float similar_vertex_a[similar_length * VERTEX_STRIDE];
+        float similar_vertex_b[similar_length * VERTEX_STRIDE];
+
+        VertexAttribute bridge_vertex_a = {
+            .data = similar_vertex_a,
+            .length = 0,
+            .capacity = similar_length * VERTEX_STRIDE,
+        };
+
+        VertexAttribute bridge_vertex_b = {
+            .data = similar_vertex_b,
+            .length = 0,
+            .capacity = similar_length * VERTEX_STRIDE,
+        };
+
+        vertex_find_equal_attr(&vertex_a, mesh_vertex,
+                               VertexAttributeName_Position, &bridge_vertex_a);
+
+        vertex_find_equal_attr(&vertex_b, mesh_vertex,
+                               VertexAttributeName_Position, &bridge_vertex_b);
+
+	// draw line for bridges and 
+
+        texture_write_line(&(TextureWriteLineDescriptor){
+            .source = mesh_texture,
+            .destination = &mesh_texture->data,
+            .thickness = 3.0f,
+            .diffusion = 2.0f,
+            .start =
+                {
+                    .x = start[0],
+                    .y = start[1],
+                    .value = &(float){ao_a},
+                },
+            .end =
+                {
+                    .x = end[0],
+                    .y = end[1],
+                    .value = &(float){ao_b},
+                },
+        });
       }
-
-      // accumulated AO
-      float vertex_ao = 1 - ((float)vertex_hit / AO_LOCAL_RAY_AMOUNT);
-      vec2 tex_space;
-      glm_vec2_scale(vertex.uv, AO_TEXTURE_SIZE, tex_space);
-      // apply scaled value to texture
-      texture_write_pixel(&desc->texture[m], vertex_ao * 255, tex_space);
     }
   }
 
@@ -285,9 +398,9 @@ void ao_bake_global(const AOBakeDescriptor *desc) {
         for (size_t c = 0; c < desc->mesh_list->length; c++) {
 
           mesh *compare_mesh = desc->mesh_list->entries[c];
-          // TODO: once the index system is properly setup, replace m == s
 
-#ifndef AO_GLOBAL_ENABLE_SELF
+#ifndef AO_GLOBAL_SELF
+          // TODO: once the index system is properly setup, replace m == s
           // src id == compare id
           if (strcmp(source_mesh->name, compare_mesh->name) == 0)
             continue;

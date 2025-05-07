@@ -1,4 +1,5 @@
 #include "vertex.h"
+#include "../utils/vector.h"
 
 void vertex_create(vertex *vertex) {
 
@@ -53,3 +54,87 @@ vertex vertex_from_array(float *data) {
   };
 }
 
+/**
+   Find a vertex with the same given attributes in a vertex attribute array
+   Output null if no equivalent found or a list of matching vertex
+ */
+void vertex_find_equal_attr(vertex *source,
+                            VertexAttribute *vertex_attribute,
+                            VertexAttributeName attribute,
+                            VertexAttribute *destination) {
+
+  for (size_t i = 0; i < vertex_attribute->length; i += VERTEX_STRIDE) {
+
+    if (destination->length == destination->capacity)
+      return;
+
+    vertex compare = vertex_from_array(&vertex_attribute->data[i]);
+    float *v_src = &vertex_attribute->data[i];
+    float *v_dest = &destination->data[destination->length];
+
+    // position match
+    if (attribute & VertexAttributeName_Position &&
+        vec3_equal(source->position, compare.position)) {
+      vertex_copy(v_src, v_dest);
+      destination->length += VERTEX_STRIDE;
+      continue;
+    }
+
+    // normal match
+    if (attribute & VertexAttributeName_Normal &&
+        vec3_equal(source->normal, compare.normal)) {
+      vertex_copy(v_src, v_dest);
+      destination->length += VERTEX_STRIDE;
+      continue;
+    }
+
+    // color match
+    if (attribute & VertexAttributeName_Color &&
+        vec3_equal(source->color, compare.color)) {
+      vertex_copy(v_src, v_dest);
+      destination->length += VERTEX_STRIDE;
+      continue;
+    }
+
+    // uv match
+    if (attribute & VertexAttributeName_Uv &&
+        vec2_equal(source->uv, compare.uv)) {
+      vertex_copy(v_src, v_dest);
+      destination->length += VERTEX_STRIDE;
+      continue;
+    }
+  }
+}
+
+/**
+   Transform vertex into an array
+ */
+void vertex_to_array(vertex *vertex, float *array) {
+
+  // copy position
+  array[0] = vertex->position[0];
+  array[1] = vertex->position[1];
+  array[2] = vertex->position[2];
+
+  // copy normal
+  array[3] = vertex->normal[0];
+  array[4] = vertex->normal[1];
+  array[5] = vertex->normal[2];
+
+  // copy normal
+  array[6] = vertex->color[0];
+  array[7] = vertex->color[1];
+  array[8] = vertex->color[2];
+
+  // copy uv
+  array[9] = vertex->uv[0];
+  array[10] = vertex->uv[1];
+}
+
+/**
+   Copy a vertex array to another array
+ */
+void vertex_copy(float *src, float *dest) {
+  for (int i = 0; i < VERTEX_STRIDE; i++)
+    dest[i] = src[i];
+}

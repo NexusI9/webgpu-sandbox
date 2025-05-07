@@ -89,6 +89,7 @@ void mesh_set_vertex_attribute(mesh *mesh, const VertexAttribute *attributes) {
 
   mesh->vertex.data = attributes->data;
   mesh->vertex.length = attributes->length;
+  mesh->vertex.capacity = attributes->length;
 
   if (mesh->vertex.length) {
     // store vertex in buffer
@@ -110,6 +111,7 @@ void mesh_set_vertex_index(mesh *mesh, const VertexIndex *indexes) {
 
   mesh->index.data = indexes->data;
   mesh->index.length = indexes->length;
+  mesh->index.capacity = indexes->length;
 
   if (mesh->index.length) {
     // store index in buffer
@@ -178,7 +180,7 @@ void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
 #ifdef VERBOSE_BUILDING_PHASE
   VERBOSE_PRINT("Build mesh: %s\n", mesh->name);
 #endif
-  
+
   shader *shader = mesh_select_shader(mesh, draw_method);
 
   // reccursively build shader

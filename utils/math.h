@@ -9,5 +9,5 @@
 #define PI 3.14159265359
 
 float randf();
-void hemisphere_random_points(vec3, int, vec3 *);
+
 #endif

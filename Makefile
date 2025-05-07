@@ -10,7 +10,7 @@ C_FILES := $(shell find . -type f -name "*.c")
 #
 # AO BAKING: 
 #   - AO_BAKE_DISPLAY_RAY : display raycast during AO Bake pass
-#   - AO_GLOBAL_ENABLE_SELF : enable comparison with source mesh itself during global phase
+#   - AO_GLOBAL_SELF : enable comparison with source mesh itself during global phase
 #
 # COORDINATES:
 #   - CGLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -20,7 +20,7 @@ C_FILES := $(shell find . -type f -name "*.c")
 #   - VERBOSE_BINDING_PHASE : print shader binding structure
 #   - VERBOSE_BUILDING_PHASE : print mesh building phase
 #
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE -DAO_BAKE_DISPLAY_RAY
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE
 
 # Preprocess cwgsl shader to wgsl Shader files
 SHADER_DIR := ./runtime/assets/shader

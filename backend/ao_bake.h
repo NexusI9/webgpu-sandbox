@@ -17,8 +17,8 @@
 #define AO_GLOBAL_RAY_MAX_DISTANCE 0.05f
 
 // Local AO Baking
-#define AO_LOCAL_RAY_AMOUNT 512
-#define AO_LOCAL_RAY_MAX_DISTANCE 0.5f
+#define AO_LOCAL_RAY_AMOUNT 32
+#define AO_LOCAL_RAY_MAX_DISTANCE 0.3f
 
 // Debug
 #define AO_RAY_MAX_COUNT 10

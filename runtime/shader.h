@@ -13,6 +13,8 @@
 #define SHADER_MAX_UNIFORMS 12
 #define SHADER_UNIFORMS_DEFAULT_CAPACITY 8
 
+#define SHADER_UNIFORM_STRUCT __attribute__((aligned(16)))
+
 #include "camera.h"
 #include "pipeline.h"
 #include "viewport.h"

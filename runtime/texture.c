@@ -151,3 +151,126 @@ void texture_blur(const texture *src, int kernel_size, float sigma,
     }
   }
 }
+
+/**
+
+ */
+void texture_write_line(const TextureWriteLineDescriptor *desc) {
+
+  uint8_t channels = desc->source->channels;
+  int thickness = desc->thickness;
+  int w = desc->source->width;
+  int h = desc->source->height;
+  float sigma = desc->diffusion;
+  unsigned char **out = desc->destination;
+
+  float x0 = desc->start.x;
+  float y0 = desc->start.y;
+  float *c0 = desc->start.value;
+
+  float x1 = desc->end.x;
+  float y1 = desc->end.y;
+  float *c1 = desc->end.value;
+
+  float dx = x1 - x0;
+  float dy = y1 - y0;
+
+  // TODO: check Bresenham approach (altough faster, harder to interpolate color
+  // with it though)
+
+  int steps = (int)(sqrt(dx * dx + dy * dy));
+
+  for (int s = 0; s <= steps; ++s) {
+
+    float t = (float)s / steps;
+    float x = x0 + t * dx;
+    float y = y0 + t * dy;
+
+    float color[3];
+    for (int c = 0; c < channels; c++)
+      color[c] = (1 - t) * c0[c] + t * c1[c];
+
+    int r = (int)(thickness / 2);
+    for (int i = -r; i <= r; ++i) {
+      for (int j = -r; j <= r; ++j) {
+        int xi = (int)(x + i);
+        int yj = (int)(y + j);
+
+        if (xi < 0 || xi >= w || yj < 0 || yj >= h)
+          continue;
+
+        float dist = sqrt(i * i + j * j);
+        float weight = expf(-(dist * dist) / (2 * sigma * sigma));
+        unsigned char *pixel = *out + (yj * w + xi) * channels;
+        for (int c = 0; c < channels; c++) {
+          float orig = (float)pixel[c] / 255.0f;
+          float blended = (1 - weight) * orig + weight * color[c];
+          pixel[c] = (unsigned char)(blended * 255.0f);
+        }
+      }
+    }
+  }
+}
+
+void texture_contrast(const texture *source, float contrast,
+                      TextureData *destination) {
+
+  int w = source->width;
+  int h = source->height;
+  int channels = source->channels;
+
+  for (int i = 0; i < w * h; ++i) {
+    TextureData pixel = *destination + i * channels;
+
+    for (int c = 0; c < MIN(channels, 3); c++) {
+      float v = pixel[c] / 255.0f;
+      // v = (v - 0.5f) * contrast + 0.5f;
+      // v = fminf(fmaxf(v, 0.0f), 1.0f);
+      v = 1.0f / (1.0f + expf(-contrast * (v - 0.5f)));
+      pixel[c] = (unsigned char)(v * 255.0f);
+    }
+  }
+}
+/**
+ */
+void texture_remap(const texture *source, int min, int max,
+                   TextureData *destination) {
+
+  int w = source->width;
+  int h = source->height;
+  int channels = source->channels;
+
+  float old_min = FLT_MAX;
+  float old_max = -FLT_MAX;
+
+  // get min / max value
+  for (int i = 0; i < w * h; ++i) {
+    TextureData pixel = source->data + i * channels;
+    for (int c = 0; c < MIN(channels, 3); c++) {
+      float v = pixel[c] / 255.0f;
+      old_min = MIN(old_min, v);
+      old_max = MAX(old_max, v);
+    }
+  }
+
+  float old_range = old_max - old_min;
+
+  if (old_range == 0.0f)
+    old_range = 1.0f;
+
+  float new_range = max - min;
+
+  // remap
+  for (int i = 0; i < w * h; ++i) {
+    TextureData source_pixel = source->data + i * channels;
+    TextureData dst_pixel = *destination + i * channels;
+
+    for (int c = 0; c < MIN(channels, 3); ++c) {
+      float v = source_pixel[c] / 255.0f;
+      float old_v = v;
+      v = ((v - old_min) / old_range) * new_range + min;
+      v = fminf(fmaxf(v, 0.0f), 1.0f);
+      dst_pixel[c] = (unsigned char)(v * 255.0f);
+    }
+  }
+}

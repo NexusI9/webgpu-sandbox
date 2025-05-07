@@ -18,12 +18,23 @@ typedef struct {
 typedef struct {
   float *data;
   size_t length;
+  size_t capacity;
 } VertexAttribute;
 
 typedef struct {
   uint16_t *data;
   size_t length;
+  size_t capacity;
 } VertexIndex;
+
+typedef enum {
+  VertexAttributeName_Undefined = 0,
+  VertexAttributeName_Position = 1 << 0,
+  VertexAttributeName_Normal = 1 << 1,
+  VertexAttributeName_Color = 1 << 2,
+  VertexAttributeName_Uv = 1 << 3,
+  VertexAttributeName_All = 1 << 4,
+} VertexAttributeName;
 
 /*
   List of mesh vertex attributes and index
@@ -43,5 +54,8 @@ typedef struct {
 void vertex_create(vertex *);
 void vertex_list_create(VertexList *, size_t);
 vertex vertex_from_array(float *);
-
+void vertex_find_equal_attr(vertex *, VertexAttribute *, VertexAttributeName,
+                            VertexAttribute *);
+void vertex_to_array(vertex *, float *);
+void vertex_copy(float *, float *);
 #endif
