@@ -193,9 +193,9 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
   // blur and bind textures once baking is done
   for (int s = 0; s < desc->mesh_list->length; s++) {
     mesh *source_mesh = desc->mesh_list->entries[s];
-    // texture_remap(&ao_textures[s], 0, 1, &ao_textures[s].data);
-    // texture_contrast(&ao_textures[s], 20.0f, &ao_textures[s].data);
-    // texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
+    texture_remap(&ao_textures[s], 0, 1, &ao_textures[s].data);
+    //texture_contrast(&ao_textures[s], 20.0f, &ao_textures[s].data);
+    texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
     ao_bake_bind(source_mesh, &ao_textures[s]);
   }
 }
@@ -329,50 +329,6 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
                         },
                     },
             });
-
-        /*size_t similar_length = 5;
-        float similar_vertex_a[similar_length * VERTEX_STRIDE];
-        float similar_vertex_b[similar_length * VERTEX_STRIDE];
-
-        VertexAttribute bridge_vertex_a = {
-            .data = similar_vertex_a,
-            .length = 0,
-            .capacity = similar_length * VERTEX_STRIDE,
-        };
-
-        VertexAttribute bridge_vertex_b = {
-            .data = similar_vertex_b,
-            .length = 0,
-            .capacity = similar_length * VERTEX_STRIDE,
-        };
-
-        vertex_find_equal_attr(&vertex_a, mesh_vertex,
-                               VertexAttributeName_Position, &bridge_vertex_a);
-
-        vertex_find_equal_attr(&vertex_b, mesh_vertex,
-                               VertexAttributeName_Position,
-        &bridge_vertex_b);*/
-
-        // draw line for bridges and
-
-        /*texture_write_line(&(TextureWriteLineDescriptor){
-          .source = mesh_texture,
-          .destination = &mesh_texture->data,
-          .thickness = 3.0f,
-          .diffusion = 2.0f,
-          .start =
-              {
-                  .x = uv_a[0],
-                  .y = uv_a[1],
-                  .value = &(float){ao_a},
-              },
-          .end =
-              {
-                  .x = uv_b[0],
-                  .y = uv_b[1],
-                  .value = &(float){ao_b},
-              },
-              });*/
       }
     }
   }
