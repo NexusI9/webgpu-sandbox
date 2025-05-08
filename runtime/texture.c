@@ -1,5 +1,6 @@
 #include "texture.h"
 #include "../utils/math.h"
+#include "../utils/system.h"
 #include "../utils/vector.h"
 #include <stdlib.h>
 #include <string.h>
@@ -282,58 +283,66 @@ void texture_remap(const texture *source, int min, int max,
 void texture_write_triangle_gradient(
     const TextureWriteTriangleGradientDescriptor *desc) {
 
-  unsigned int w = desc->source->width;
-  unsigned int h = desc->source->height;
+  unsigned int width = desc->source->width;
+  unsigned int height = desc->source->height;
   unsigned int channels = desc->source->channels;
   TextureData *out = desc->destination;
-  const ivec2 *A = &desc->start;
 
-  for (size_t e = 0; e < desc->ends_length; e++) {
+  for (size_t e = 0; e < desc->length; e++) {
 
-    const ivec2 *B = &desc->ends[e].a;
-    const ivec2 *C = &desc->ends[e].b;
+    const ivec2 A = {
+        desc->points[e].a.position[0],
+        desc->points[e].a.position[1],
+    };
+    const float *value_a = desc->points[e].a.value;
 
-    // get color values
-    float *B_value, *C_value;
-    texture_read_pixel(desc->source, *B, B_value);
-    texture_read_pixel(desc->source, *C, C_value);
+    const ivec2 B = {
+        desc->points[e].b.position[0],
+        desc->points[e].b.position[1],
+    };
+    const float *value_b = desc->points[e].b.value;
+
+    const ivec2 C = {
+        desc->points[e].c.position[0],
+        desc->points[e].c.position[1],
+    };
+    const float *value_c = desc->points[e].c.value;
 
     // triangle bounding box
-    int minX = (int)fminf(fminf(*A[0], *B[0]), *C[0]);
-    int minY = (int)fminf(fminf(*A[1], *B[1]), *C[1]);
-    int maxX = (int)fmaxf(fmaxf(*A[0], *B[0]), *C[0]);
-    int maxY = (int)fmaxf(fmaxf(*A[1], *B[1]), *C[1]);
+    int minX = MIN(MIN(A[0], B[0]), C[0]);
+    int minY = MIN(MIN(A[1], B[1]), C[1]);
+    int maxX = MAX(MAX(A[0], B[0]), C[0]);
+    int maxY = MAX(MAX(A[1], B[1]), C[1]);
 
+    // scan global bounding box
     for (int y = minY; y < maxY; y++) {
       for (int x = minX; x < maxX; x++) {
         vec2 P = {(float)x + 0.5f, (float)y + 0.5f};
 
         // convert to float to get baycentric coordinates
         vec2 fA, fB, fC;
-        ivec_to_vec(*A, VectorLength_2, fA);
-        ivec_to_vec(*B, VectorLength_2, fB);
-        ivec_to_vec(*C, VectorLength_2, fC);
+        ivec_to_vec(A, VectorLength_2, fA);
+        ivec_to_vec(B, VectorLength_2, fB);
+        ivec_to_vec(C, VectorLength_2, fC);
 
         // get baycentric coorindates
         float u, v, w;
         vec_baycentric(fA, fB, fC, P, VectorLength_2, &u, &v, &w);
 
+        // narrow down to baycentric area
         if (u > 0 || v > 0 || w > 0) {
-          if (x < 0 || x >= w || y < 0 || y >= h)
+          // safe zone (within texture bound)
+          if (x < 0 || x >= width || y < 0 || y >= height)
             continue;
 
-          TextureData *pixel = out + (unsigned int)((y * w + x) * channels);
+          TextureData pixel = *desc->destination + (y * width + x) * channels;
+
+          // printf("%p\n", pixel);
+
           for (int c = 0; c < channels; c++) {
-
-            // retrieve each channels value
-            float va = desc->value[c];
-            float vb = B_value[c] / 255.0f;
-            float vc = C_value[c] / 255.0f;
-
-            float v = va * u + vb * v + vc * w;
+            float v = value_a[c] * u + value_b[c] * v + value_c[c] * w;
             v = fminf(fmax(v, 0.0f), 1.0f);
-
-            *pixel[c] = (unsigned char)(v * 255.0f);
+            pixel[c] = (unsigned char)(v * 255.0f);
           }
         }
       }

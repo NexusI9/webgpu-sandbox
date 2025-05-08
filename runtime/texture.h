@@ -49,12 +49,28 @@ typedef struct {
 } TextureWriteLineDescriptor;
 
 typedef struct {
+  struct {
+    ivec2 position;
+    float *value;
+  } a;
+
+  struct {
+    ivec2 position;
+    float *value;
+  } b;
+
+  struct {
+    ivec2 position;
+    float *value;
+  } c;
+
+} TextureTriangleGradientDescriptor;
+
+typedef struct {
   const texture *source;
   TextureData *destination;
-  ivec2 start;
-  ivec2_pair *ends;
-  size_t ends_length;
-  float *value;
+  TextureTriangleGradientDescriptor *points;
+  size_t length;
 } TextureWriteTriangleGradientDescriptor;
 
 void texture_create(texture *, const TextureCreateDescriptor *);

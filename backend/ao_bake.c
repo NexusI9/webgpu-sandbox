@@ -193,9 +193,9 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
   // blur and bind textures once baking is done
   for (int s = 0; s < desc->mesh_list->length; s++) {
     mesh *source_mesh = desc->mesh_list->entries[s];
-    texture_remap(&ao_textures[s], 0, 1, &ao_textures[s].data);
-    texture_contrast(&ao_textures[s], 20.0f, &ao_textures[s].data);
-    texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
+    // texture_remap(&ao_textures[s], 0, 1, &ao_textures[s].data);
+    // texture_contrast(&ao_textures[s], 20.0f, &ao_textures[s].data);
+    // texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
     ao_bake_bind(source_mesh, &ao_textures[s]);
   }
 }
@@ -245,25 +245,31 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
        UPDATE: It kinda sucks as it clearly highlights the triangles too much
      */
 
-    for (size_t i = 0; i < mesh_index->length; i += 2) {
+    for (size_t i = 0; i < mesh_index->length; i += 3) {
 
       // calculate AO for vertex A
       size_t offset_a = mesh_index->data[i] * VERTEX_STRIDE;
       vertex vertex_a = vertex_from_array(&mesh_vertex->data[offset_a]);
       float ao_a = ao_bake_vertex(&vertex_a, current_mesh, line);
+      vec2 uv_a;
+      glm_vec2_scale(vertex_a.uv, AO_TEXTURE_SIZE, uv_a);
 
       // calculate AO for vertex B
       size_t offset_b = mesh_index->data[i + 1] * VERTEX_STRIDE;
       vertex vertex_b = vertex_from_array(&mesh_vertex->data[offset_b]);
-      float ao_b = ao_bake_vertex(&vertex_a, current_mesh, line);
+      float ao_b = ao_bake_vertex(&vertex_b, current_mesh, line);
+      vec2 uv_b;
+      glm_vec2_scale(vertex_b.uv, AO_TEXTURE_SIZE, uv_b);
 
-      //  apply scaled value to texture
-      vec2 start, end;
-      glm_vec2_scale(vertex_a.uv, AO_TEXTURE_SIZE, start);
-      glm_vec2_scale(vertex_b.uv, AO_TEXTURE_SIZE, end);
+      // calculate AO for vertex C
+      size_t offset_c = mesh_index->data[i + 2] * VERTEX_STRIDE;
+      vertex vertex_c = vertex_from_array(&mesh_vertex->data[offset_c]);
+      float ao_c = ao_bake_vertex(&vertex_c, current_mesh, line);
+      vec2 uv_c;
+      glm_vec2_scale(vertex_c.uv, AO_TEXTURE_SIZE, uv_c);
 
-      // if both vertex are occluded
-      if (ao_a < 1 || ao_b < 1) {
+      // if at least on vertex is occluded
+      if (ao_a + ao_b + ao_c > 0) {
 
         /* Draw line on each vertex and bridges due to UV seams
 
@@ -297,8 +303,34 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
              Need to draw line on both AB and CD
         */
 
-	  
-        size_t similar_length = 5;
+        texture_write_triangle_gradient(
+            &(TextureWriteTriangleGradientDescriptor){
+                .source = mesh_texture,
+                .destination = &mesh_texture->data,
+                .length = 1,
+                .points =
+                    (TextureTriangleGradientDescriptor[]){
+                        {
+                            .a =
+                                {
+                                    .position = {uv_a[0], uv_a[1]},
+                                    .value = &(float){ao_a},
+                                },
+                            .b =
+                                {
+                                    .position = {uv_b[0], uv_b[1]},
+                                    .value = &(float){ao_b},
+                                },
+                            .c =
+                                {
+                                    .position = {uv_c[0], uv_c[1]},
+                                    .value = &(float){ao_c},
+                                },
+                        },
+                    },
+            });
+
+        /*size_t similar_length = 5;
         float similar_vertex_a[similar_length * VERTEX_STRIDE];
         float similar_vertex_b[similar_length * VERTEX_STRIDE];
 
@@ -318,28 +350,29 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
                                VertexAttributeName_Position, &bridge_vertex_a);
 
         vertex_find_equal_attr(&vertex_b, mesh_vertex,
-                               VertexAttributeName_Position, &bridge_vertex_b);
+                               VertexAttributeName_Position,
+        &bridge_vertex_b);*/
 
-	// draw line for bridges and 
+        // draw line for bridges and
 
-        texture_write_line(&(TextureWriteLineDescriptor){
-            .source = mesh_texture,
-            .destination = &mesh_texture->data,
-            .thickness = 3.0f,
-            .diffusion = 2.0f,
-            .start =
-                {
-                    .x = start[0],
-                    .y = start[1],
-                    .value = &(float){ao_a},
-                },
-            .end =
-                {
-                    .x = end[0],
-                    .y = end[1],
-                    .value = &(float){ao_b},
-                },
-        });
+        /*texture_write_line(&(TextureWriteLineDescriptor){
+          .source = mesh_texture,
+          .destination = &mesh_texture->data,
+          .thickness = 3.0f,
+          .diffusion = 2.0f,
+          .start =
+              {
+                  .x = uv_a[0],
+                  .y = uv_a[1],
+                  .value = &(float){ao_a},
+              },
+          .end =
+              {
+                  .x = uv_b[0],
+                  .y = uv_b[1],
+                  .value = &(float){ao_b},
+              },
+              });*/
       }
     }
   }

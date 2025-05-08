@@ -3,17 +3,27 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void print_vec3(vec3 vector) {
+void print_ivec3(const ivec3 vector) {
+  printf("%d\t%d\t%d\n", vector[0], vector[1], vector[2]);
+}
+
+void print_ivec2(const ivec2 vector) { printf("%d\t%d\n", vector[0], vector[1]); }
+
+void print_ivec4(const ivec4 vector) {
+  printf("%d\t%d\t%d\t%d\n", vector[0], vector[1], vector[2], vector[3]);
+}
+
+void print_vec3(const vec3 vector) {
   printf("%f\t%f\t%f\n", vector[0], vector[1], vector[2]);
 }
 
-void print_vec2(vec2 vector) { printf("%f\t%f\n", vector[0], vector[1]); }
+void print_vec2(const vec2 vector) { printf("%f\t%f\n", vector[0], vector[1]); }
 
-void print_vec4(vec4 vector) {
+void print_vec4(const vec4 vector) {
   printf("%f\t%f\t%f\t%f\n", vector[0], vector[1], vector[2], vector[3]);
 }
 
-void print_mat4(mat4 matrix) {
+void print_mat4(const mat4 matrix) {
   for (int i = 0; i < 4; i++) {
     print_vec4(matrix[i]);
   }
