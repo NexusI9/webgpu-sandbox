@@ -244,6 +244,7 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
 
        UPDATE: It kinda sucks as it clearly highlights the triangles too much
      */
+
     for (size_t i = 0; i < mesh_index->length; i += 2) {
 
       // calculate AO for vertex A

@@ -43,9 +43,8 @@ void triangle_rand_list_div(float *list, int length, float k) {
 
 void triangle_rand_gen_list(int length, float *dest) {
 
-  for (int i = 0; i < length; i++) 
-      dest[i] = log(randf());
-  
+  for (int i = 0; i < length; i++)
+    dest[i] = log(randf());
 }
 
 /**
@@ -160,6 +159,7 @@ void triangle_point_to_uv(triangle *surface, vec3 point, vec2 dest) {
 
   vec3 p0, p1, p2;
 
+  //TODO replace by vec_baycentric function
   glm_vec3_sub(surface->b.position, surface->a.position, p0);
   glm_vec3_sub(surface->c.position, surface->a.position, p1);
   glm_vec3_sub(point, surface->a.position, p2);

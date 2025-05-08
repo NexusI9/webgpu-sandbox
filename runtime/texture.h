@@ -2,6 +2,7 @@
 #ifndef _TEXTURE_H_
 #define _TEXTURE_H_
 
+#include "../utils/vector.h"
 #include <cglm/cglm.h>
 #include <stdint.h>
 #include <webgpu/webgpu.h>
@@ -47,6 +48,15 @@ typedef struct {
 
 } TextureWriteLineDescriptor;
 
+typedef struct {
+  const texture *source;
+  TextureData *destination;
+  ivec2 start;
+  ivec2_pair *ends;
+  size_t ends_length;
+  float *value;
+} TextureWriteTriangleGradientDescriptor;
+
 void texture_create(texture *, const TextureCreateDescriptor *);
 void texture_create_by_ref(unsigned char **, size_t *,
                            const TextureCreateDescriptor *);
@@ -59,4 +69,9 @@ void texture_blur(const texture *, int, float, TextureData *);
 void texture_write_line(const TextureWriteLineDescriptor *);
 void texture_contrast(const texture *, float, TextureData *);
 void texture_remap(const texture *, int, int, TextureData *);
+void texture_write_triangle_gradient(
+    const TextureWriteTriangleGradientDescriptor *);
+
+void texture_read_pixel(const texture *, const ivec2, float *);
+
 #endif
