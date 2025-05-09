@@ -9,5 +9,7 @@
 #define PI 3.14159265359
 
 float randf();
+int clamp(const int, const int min, const int max);
+float clampf(const float, const float, const float max);
 
 #endif

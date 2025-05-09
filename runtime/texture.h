@@ -1,4 +1,3 @@
-
 #ifndef _TEXTURE_H_
 #define _TEXTURE_H_
 
@@ -13,6 +12,14 @@
 #define TEXTURE_MIN_SIZE 64
 
 typedef unsigned char *TextureData;
+
+typedef enum {
+  TextureWriteMethod_Replace,
+  TextureWriteMethod_Add,
+  TextureWriteMethod_Mul,
+  TextureWriteMethod_Sub,
+  TextureWriteMethod_Div,
+} TextureWriteMethod;
 
 typedef struct {
   int width;
@@ -35,6 +42,7 @@ typedef struct {
   TextureData *destination;
   float thickness;
   float diffusion;
+  TextureWriteMethod write_method;
 
   struct {
     float x, y;
@@ -71,6 +79,7 @@ typedef struct {
   TextureData *destination;
   TextureTriangleGradientDescriptor *points;
   size_t length;
+  TextureWriteMethod write_method;
 } TextureWriteTriangleGradientDescriptor;
 
 void texture_create(texture *, const TextureCreateDescriptor *);
@@ -78,15 +87,16 @@ void texture_create_by_ref(unsigned char **, size_t *,
                            const TextureCreateDescriptor *);
 
 void texture_fill(texture *, int);
-void texture_write_pixel(texture *, int, vec2);
 void texture_save(texture *, const char *);
 void texture_free(texture *);
 void texture_blur(const texture *, int, float, TextureData *);
-void texture_write_line(const TextureWriteLineDescriptor *);
 void texture_contrast(const texture *, float, TextureData *);
 void texture_remap(const texture *, int, int, TextureData *);
+
 void texture_write_triangle_gradient(
     const TextureWriteTriangleGradientDescriptor *);
+void texture_write_line(const TextureWriteLineDescriptor *);
+void texture_write_pixel(texture *, int, vec2, TextureWriteMethod);
 
 void texture_read_pixel(const texture *, const ivec2, float *);
 

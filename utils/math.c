@@ -10,3 +10,11 @@ float randf() {
     r = rand();
   return (float)r / (float)RAND_MAX;
 }
+
+int clamp(const int v, const int min, const int max) {
+  return MIN(MAX(v, min), max);
+}
+
+float clampf(const float v, const float min, const float max) {
+  return MIN(MAX(v, min), max);
+}

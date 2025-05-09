@@ -5,6 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+static inline void texture_write(unsigned char, TextureData,
+                                 TextureWriteMethod);
+
 void texture_create(texture *texture, const TextureCreateDescriptor *desc) {
 
   // if (texture->data)
@@ -45,7 +48,8 @@ void texture_fill(texture *texture, int value) {
   memset(texture->data, value, texture->size);
 }
 
-void texture_write_pixel(texture *texture, int value, vec2 coordinate) {
+void texture_write_pixel(texture *texture, int value, vec2 coordinate,
+                         TextureWriteMethod write_method) {
 
   int x = (int)coordinate[0];
   int y = (int)coordinate[1];
@@ -53,7 +57,7 @@ void texture_write_pixel(texture *texture, int value, vec2 coordinate) {
   if (x >= 0 && x < texture->width && y >= 0 && y < texture->height) {
     for (int c = 0; c < texture->channels; c++) {
       int offset = (y * texture->width + x) * texture->channels + c;
-      texture->data[offset] = value;
+      texture_write(value, &texture->data[offset], write_method);
     }
   } else {
     // perror("Pixel coordinate is out of bound");
@@ -207,7 +211,8 @@ void texture_write_line(const TextureWriteLineDescriptor *desc) {
         for (int c = 0; c < channels; c++) {
           float orig = (float)pixel[c] / 255.0f;
           float blended = (1 - weight) * orig + weight * color[c];
-          pixel[c] = (unsigned char)(blended * 255.0f);
+          texture_write((unsigned char)(blended * 255.0f), &pixel[c],
+                        desc->write_method);
         }
       }
     }
@@ -342,7 +347,8 @@ void texture_write_triangle_gradient(
           for (int c = 0; c < channels; c++) {
             float v = value_a[c] * u + value_b[c] * v + value_c[c] * w;
             v = fminf(fmax(v, 0.0f), 1.0f);
-            pixel[c] = (unsigned char)(v * 255.0f);
+            texture_write((unsigned char)(v * 255.0f), &pixel[c],
+                          desc->write_method);
           }
         }
       }
@@ -354,4 +360,33 @@ void texture_read_pixel(const texture *source, const ivec2 coordinate,
                         float *pixel) {
   *pixel = source->data[(coordinate[1] * source->width + coordinate[0]) *
                         source->channels];
+}
+
+/**
+   Provide different operators to write value into a texture data
+ */
+void texture_write(unsigned char value, TextureData data,
+                   TextureWriteMethod method) {
+
+  switch (method) {
+  case TextureWriteMethod_Replace:
+    *data = clamp(value, 0, 255);
+    break;
+
+  case TextureWriteMethod_Add:
+    *data = clamp(*data + value, 0, 255);
+    break;
+
+  case TextureWriteMethod_Mul:
+    *data = clamp(*data * value, 0, 255);
+    break;
+
+  case TextureWriteMethod_Sub:
+    *data = clamp(*data - value, 0, 255);
+    break;
+
+  case TextureWriteMethod_Div:
+    *data = clamp(*data / value, 0, 255);
+    break;
+  };
 }

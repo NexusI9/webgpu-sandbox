@@ -120,12 +120,14 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
       vec2 compare_uv, source_uv;
       triangle_point_to_uv(desc->source_triangle, *desc->ray_origin, source_uv);
       glm_vec2_scale(source_uv, AO_TEXTURE_SIZE, source_uv);
-      texture_write_pixel(desc->source_texture, 0, source_uv);
+      texture_write_pixel(desc->source_texture, 0, source_uv,
+                          TextureWriteMethod_Replace);
 
       // do the same for compare mesh
       triangle_point_to_uv(&compare_triangle, hit, compare_uv);
       glm_vec2_scale(compare_uv, AO_TEXTURE_SIZE, compare_uv);
-      texture_write_pixel(desc->compare_texture, 0, compare_uv);
+      texture_write_pixel(desc->compare_texture, 0, compare_uv,
+                          TextureWriteMethod_Replace);
     }
   }
 }
@@ -194,8 +196,12 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
   for (int s = 0; s < desc->mesh_list->length; s++) {
     mesh *source_mesh = desc->mesh_list->entries[s];
     texture_remap(&ao_textures[s], 0, 1, &ao_textures[s].data);
-    //texture_contrast(&ao_textures[s], 20.0f, &ao_textures[s].data);
+    
+    // 1st pass blur
     texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
+    // 2nd pass blur
+    texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
+    
     ao_bake_bind(source_mesh, &ao_textures[s]);
   }
 }
@@ -303,11 +309,16 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
              Need to draw line on both AB and CD
         */
 
+        // create a temporary texture to add it to the already baked texture
+        // or create an WriteMethod enum like:
+        // replace | add | multiply
+        // and ajdjust the pixel[c] = ... accordignly
         texture_write_triangle_gradient(
             &(TextureWriteTriangleGradientDescriptor){
                 .source = mesh_texture,
                 .destination = &mesh_texture->data,
                 .length = 1,
+                .write_method = TextureWriteMethod_Mul,
                 .points =
                     (TextureTriangleGradientDescriptor[]){
                         {
