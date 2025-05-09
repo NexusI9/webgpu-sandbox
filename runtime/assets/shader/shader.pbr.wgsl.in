@@ -587,5 +587,4 @@ fn sun_shadow_factor(frag_position : vec3<f32>) -> f32 {
                             point_shadow + directional_shadow + sun_shadow);
 
   return vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
-  //return vec4<f32>(occlusion.rrr, 1.0f);
 }
