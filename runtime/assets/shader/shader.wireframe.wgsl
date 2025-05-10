@@ -1,10 +1,10 @@
 // attribute/uniform decls
 struct VertexIn {
-  @location(0) aPosA : vec3<f32>,
-                       @location(1) aPosB : vec3<f32>,
-                                            @location(2) aCol
-      : vec3<f32>,
-        @location(3) aSide : vec2<f32>,
+  @location(0) aPos : vec3<f32>,
+                      @location(1) aNorm : vec3<f32>,
+                                           @location(2) aCol : vec3<f32>,
+                                                               @location(3) aUv
+      : vec2<f32>,
 };
 
 struct VertexOut {
@@ -40,27 +40,9 @@ struct Viewport {
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
 
-  let thickness = input.aSide.y;
-  let side = input.aSide.x;
-  let a = input.aPosA;
-  let b = input.aPosB;
-
-  let dir = normalize(b - a);
-
-  let midpoint = (a + b) * 0.5f;
-
-  let camPos = uCamera.position.xyz;
-  let camDir = normalize(camPos - midpoint);
-
-  // get extrusion
-  var right : vec3<f32> = normalize(cross(dir, camDir));
-
-  // offset
-  let extrude_pos = a + (right * side * thickness);
-
   var output : VertexOut;
-  output.Position = cam * vec4<f32>(extrude_pos, 1.0f);
-  output.vCol = vec3<f32>(input.aCol);
+  output.Position = cam * uMesh.model * vec4<f32>(input.aPos, 1.0);
+  output.vCol = input.aCol;
 
   return output;
 }

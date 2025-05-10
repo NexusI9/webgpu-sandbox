@@ -184,7 +184,6 @@ void line_add_point(mesh *mesh, vec3 p1, vec3 p2, vec3 color) {
   for (int p = 0; p < vertex_count; p++) {
     float *base = (p % 2 == 0) ? p1 : p2;
     float *opposite = (p % 2 == 0) ? p2 : p1;
-    printf("%i %i\n", p, p % 2);
     float side = (p <= 1) ? -1.0f : 1.0f;
 
     line_push_vertex(base, opposite, color, (vec2){side, LINE_THICKNESS},

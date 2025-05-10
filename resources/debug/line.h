@@ -5,7 +5,7 @@
 #include <cglm/cglm.h>
 
 #define LINE_MAX_POINTS 1024
-#define LINE_THICKNESS 0.05
+#define LINE_THICKNESS 0.005
 #define LINE_VERTEX_COUNT 4 // generate 8 (2*4) vertex per line
 #define LINE_INDEX_COUNT 6 // generate 12 (2*6) index per line
 

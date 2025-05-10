@@ -913,25 +913,14 @@ struct Viewport {
   let camDir = normalize(camPos - midpoint);
 
   // get extrusion
-  var right : vec3<f32>;
-  let dp = abs(dot(dir, camDir));
-  if (dp > 0.99f) {
-    var up = vec3<f32>(0.0f, 1.0f, 0.0f);
-    if (abs(dot(dir, up)) > 0.99f) {
-      up = vec3<f32>(1.0f, 0.0f, 0.0f);
-    }
-    right = normalize(cross(dir, up));
-  } else {
-    right = normalize(cross(dir, camDir));
-  }
+  var right : vec3<f32> = normalize(cross(dir, camDir));
 
   // offset
-  // let extrude_pos = a + (right * side * thickness);
   let extrude_pos = a + (right * side * thickness);
 
   var output : VertexOut;
   output.Position = cam * vec4<f32>(extrude_pos, 1.0f);
-  output.vCol = vec3<f32>(b);
+  output.vCol = vec3<f32>(input.aCol);
 
   return output;
 }

@@ -199,8 +199,8 @@ void add_line() {
   line_add_point(line, (vec3){-2.0f, -4.0f, -2.0f}, (vec3){2.0f, 4.0f, 2.0f},
                  (vec3){1.0f, 1.0f, 1.0f});
 
-  /*line_add_point(line, (vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
-                 (vec3){0.0f, 1.0f, 0.0f});*/
+  line_add_point(line, (vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
+                 (vec3){0.0f, 1.0f, 0.0f});
 
   material_texture_bind_views(line, &main_scene.camera, &main_scene.viewport,
                               0);
@@ -259,15 +259,14 @@ int main(int argc, const char *argv[]) {
       POINT_LIGHT[2],
   });
   */
-  // import_cube();
+  import_cube();
 
   // Bake AO textures for static scenes elements
   renderer_bake_ao(&main_renderer, &main_scene);
 
   // Setup drawing pass may need to move it else where
   renderer_compute_shadow(&main_renderer, &main_scene);
-
-  add_line();
+  // add_line();
   add_grid();
 
   scene_build(&main_scene, MESH_SHADER_DEFAULT);
