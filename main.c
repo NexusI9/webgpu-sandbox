@@ -1,4 +1,3 @@
-
 //  RESOURCES
 //  https://github.com/seyhajin/webgpu-wasm-c
 //  https://developer.chrome.com/docs/web-platform/webgpu/build-app?hl=en
@@ -105,7 +104,7 @@ void init_scene() {
                                                  POINT_LIGHT[1],
                                                  POINT_LIGHT[2],
                                              },
-					     });*/
+                                             });*/
 
   /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
                                         .color = {1.0f, 1.0f, 1.0f},
@@ -190,17 +189,18 @@ void add_grid() {
 void add_line() {
 
   mesh *line = scene_new_mesh_unlit(&main_scene);
+  printf("%p\n", line);
   line_create(line, &(LineCreateDescriptor){
                         .device = &main_renderer.wgpu.device,
                         .queue = &main_renderer.wgpu.queue,
-                        .name = "line mesh",
+                        .name = "line mesh a",
                     });
 
   line_add_point(line, (vec3){-2.0f, -4.0f, -2.0f}, (vec3){2.0f, 4.0f, 2.0f},
                  (vec3){1.0f, 1.0f, 1.0f});
 
-  line_add_point(line, (vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
-                 (vec3){0.0f, 1.0f, 0.0f});
+  /*line_add_point(line, (vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
+                 (vec3){0.0f, 1.0f, 0.0f});*/
 
   material_texture_bind_views(line, &main_scene.camera, &main_scene.viewport,
                               0);
@@ -253,13 +253,13 @@ int main(int argc, const char *argv[]) {
   */
   //  add_cube((vec3){1.0f, 0.0f, 0.0f});
 
-  add_cube((vec3){
+  /* add_cube((vec3){
       POINT_LIGHT[0],
       POINT_LIGHT[1],
       POINT_LIGHT[2],
   });
-
-  import_cube();
+  */
+  // import_cube();
 
   // Bake AO textures for static scenes elements
   renderer_bake_ao(&main_renderer, &main_scene);
@@ -267,7 +267,9 @@ int main(int argc, const char *argv[]) {
   // Setup drawing pass may need to move it else where
   renderer_compute_shadow(&main_renderer, &main_scene);
 
+  add_line();
   add_grid();
+
   scene_build(&main_scene, MESH_SHADER_DEFAULT);
 
   // Update Loop

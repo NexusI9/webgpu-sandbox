@@ -5,7 +5,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-static void line_push_vertex(const vec3, const vec3, const size_t, float *);
+static void line_push_vertex(const vec3, const vec3, const vec3, const vec2,
+                             const size_t, float *);
 static void line_create_plane(const LineCreatePlaneDescriptor *);
 
 void line_create(mesh *mesh, const LineCreateDescriptor *desc) {
@@ -33,14 +34,13 @@ void line_create(mesh *mesh, const LineCreateDescriptor *desc) {
           .length = 0,
       });
 
-  mesh_set_shader(mesh,
-                  &(ShaderCreateDescriptor){
-                      .path = "./runtime/assets/shader/shader.default.wgsl",
-                      .label = "line",
-                      .name = "line",
-                      .device = desc->device,
-                      .queue = desc->queue,
-                  });
+  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
+                            .path = "./runtime/assets/shader/shader.line.wgsl",
+                            .label = "line",
+                            .name = "line",
+                            .device = desc->device,
+                            .queue = desc->queue,
+                        });
 
   pipeline_set_primitive(shader_pipeline(mesh_shader_texture(mesh)),
                          (WGPUPrimitiveState){
@@ -51,8 +51,8 @@ void line_create(mesh *mesh, const LineCreateDescriptor *desc) {
                          });
 }
 
-void line_push_vertex(const vec3 position, const vec4 color,
-                      const size_t offset, float *data) {
+void line_push_vertex(const vec3 position, const vec3 normal, const vec4 color,
+                      const vec2 uv, const size_t offset, float *data) {
 
   // build up a new vertex with null normals and uv, but valid colors and
   // position
@@ -63,9 +63,9 @@ void line_push_vertex(const vec3 position, const vec4 color,
   data[offset + 2] = position[2];
 
   // set normal
-  data[offset + 3] = 0.0f;
-  data[offset + 4] = 1.0f;
-  data[offset + 5] = 0.0f;
+  data[offset + 3] = normal[0];
+  data[offset + 4] = normal[1];
+  data[offset + 5] = normal[2];
 
   // set color
   data[offset + 6] = color[0];
@@ -73,8 +73,8 @@ void line_push_vertex(const vec3 position, const vec4 color,
   data[offset + 8] = color[2];
 
   // set UV
-  data[offset + 9] = 0.0f;
-  data[offset + 10] = 0.0f;
+  data[offset + 9] = uv[0];
+  data[offset + 10] = uv[1];
 }
 
 void line_create_plane(const LineCreatePlaneDescriptor *desc) {
@@ -100,23 +100,24 @@ void line_create_plane(const LineCreatePlaneDescriptor *desc) {
 
   size_t vertex_offset = desc->vertex->length;
   size_t vertex_count = 4;
-
+  vec3 normal = {0.0f, 1.0f, 0.0f};
+  vec2 uv = {0.0f, 0.0f};
   // add points to the array contiguously
 
   // A (p1)
-  line_push_vertex(desc->points[0], desc->color, vertex_offset,
+  line_push_vertex(desc->points[0], normal, desc->color, uv, vertex_offset,
                    desc->vertex->data);
 
   // B (p1 thickness)
-  line_push_vertex(desc->points[1], desc->color, vertex_offset + VERTEX_STRIDE,
-                   desc->vertex->data);
+  line_push_vertex(desc->points[1], normal, desc->color, uv,
+                   vertex_offset + VERTEX_STRIDE, desc->vertex->data);
 
   // C (p2 thickness)
-  line_push_vertex(desc->points[2], desc->color,
+  line_push_vertex(desc->points[2], normal, desc->color, uv,
                    vertex_offset + 2 * VERTEX_STRIDE, desc->vertex->data);
 
   // D (p2)
-  line_push_vertex(desc->points[3], desc->color,
+  line_push_vertex(desc->points[3], normal, desc->color, uv,
                    vertex_offset + 3 * VERTEX_STRIDE, desc->vertex->data);
 
   // add indices (A-B-C & A-C-D)
@@ -146,7 +147,7 @@ void line_add_point(mesh *mesh, vec3 p1, vec3 p2, vec3 color) {
 
   if (mesh->vertex.length / VERTEX_STRIDE / LINE_VERTEX_COUNT ==
       LINE_MAX_POINTS - LINE_VERTEX_COUNT - 1) {
-      //perror("Lines reached maximum, cannot add more point\n");
+    // perror("Lines reached maximum, cannot add more point\n");
     return;
   }
 
@@ -164,39 +165,46 @@ void line_add_point(mesh *mesh, vec3 p1, vec3 p2, vec3 color) {
   glm_normalize(normal);
   glm_vec3_scale(normal, LINE_THICKNESS, normal);
 
-  vec3 points_base[4];
-  glm_vec3_add(p1, normal, points_base[3]);
-  glm_vec3_add(p2, normal, points_base[2]);
-  glm_vec3_sub(p1, normal, points_base[0]);
-  glm_vec3_sub(p2, normal, points_base[1]);
+  const int vertex_count = 4;
+  vec3 points_base[vertex_count];
+  glm_vec3_copy((vec3){1.0f, 0.0f, 1.0f}, points_base[0]);
+  glm_vec3_copy((vec3){-1.0f, 0.0f, 1.0f}, points_base[1]);
+  glm_vec3_copy((vec3){-1.0f, 0.0f, -1.0f}, points_base[2]);
+  glm_vec3_copy((vec3){1.0f, 0.0f, -1.0f}, points_base[3]);
 
-  // add points to mesh vertex + index array
-  line_create_plane(&(LineCreatePlaneDescriptor){
-      .color = {color[0], color[1], color[2]},
-      .index = &mesh->index,
-      .vertex = &mesh->vertex,
-      .points = points_base,
-  });
+  /*update vertex array
+    Use different structure as casual vertex:
 
-  // create cross segment
-  vec3 cross_normal;
-  glm_vec3_cross(p1, normal, cross_normal);
-  glm_normalize(cross_normal);
-  glm_vec3_scale(cross_normal, LINE_THICKNESS, cross_normal);
+    Position => Position A
+    Normal   => Position Ā
+    Color    => Color
+    UV       => [0] Extrude Direction, [1] Thickness
 
-  vec3 points_cross[4];
-  glm_vec3_add(p1, cross_normal, points_cross[3]);
-  glm_vec3_add(p2, cross_normal, points_cross[2]);
-  glm_vec3_sub(p1, cross_normal, points_cross[0]);
-  glm_vec3_sub(p2, cross_normal, points_cross[1]);
+  */
+  for (int p = 0; p < vertex_count; p++) {
+    float *base = (p % 2 == 0) ? p1 : p2;
+    float *opposite = (p % 2 == 0) ? p2 : p1;
+    printf("%i %i\n", p, p % 2);
+    float side = (p <= 1) ? -1.0f : 1.0f;
 
-  // add points to mesh vertex + index array
-  line_create_plane(&(LineCreatePlaneDescriptor){
-      .color = {color[0], color[1], color[2]},
-      .index = &mesh->index,
-      .vertex = &mesh->vertex,
-      .points = points_cross,
-  });
+    line_push_vertex(base, opposite, color, (vec2){side, LINE_THICKNESS},
+                     mesh->vertex.length, mesh->vertex.data);
+
+    mesh->vertex.length += VERTEX_STRIDE;
+  }
+
+  // updat index array
+  size_t vertex_length =
+      (mesh->vertex.length / VERTEX_STRIDE) - LINE_VERTEX_COUNT;
+
+  mesh->index.data[mesh->index.length] = (uint16_t)vertex_length;
+  mesh->index.data[mesh->index.length + 1] = (uint16_t)vertex_length + 1;
+  mesh->index.data[mesh->index.length + 2] = (uint16_t)vertex_length + 2;
+  mesh->index.data[mesh->index.length + 3] = (uint16_t)vertex_length + 2;
+  mesh->index.data[mesh->index.length + 4] = (uint16_t)vertex_length + 3;
+  mesh->index.data[mesh->index.length + 5] = (uint16_t)vertex_length + 1;
+
+  mesh->index.length += 6;
 
   // update mesh vertex + index buffers
   mesh_set_vertex_attribute(mesh, &mesh->vertex);
