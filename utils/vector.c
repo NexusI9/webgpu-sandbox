@@ -3,7 +3,8 @@
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
-static bool vec_equal(float *, float *, uint8_t);
+static inline bool vec_equal(float *, float *, VectorLength_t);
+static inline bool ivec_equal(int *, int *, VectorLength_t);
 
 bool vec_equal(float *a, float *b, uint8_t length) {
   for (int i = 0; i < length; i++) {
@@ -14,11 +15,26 @@ bool vec_equal(float *a, float *b, uint8_t length) {
   return true;
 }
 
-bool vec2_equal(vec2 a, vec2 b) { return vec_equal(a, b, 2); }
+bool ivec_equal(int *a, int *b, uint8_t length) {
+  for (int i = 0; i < length; i++) {
+    if (a[i] != b[i])
+      return false;
+  }
 
-bool vec3_equal(vec3 a, vec3 b) { return vec_equal(a, b, 3); }
+  return true;
+}
 
-bool vec4_equal(vec4 a, vec4 b) { return vec_equal(a, b, 4); }
+bool vec2_equal(vec2 a, vec2 b) { return vec_equal(a, b, VectorLength_2); }
+
+bool vec3_equal(vec3 a, vec3 b) { return vec_equal(a, b, VectorLength_3); }
+
+bool vec4_equal(vec4 a, vec4 b) { return vec_equal(a, b, VectorLength_4); }
+
+bool ivec2_equal(ivec2 a, ivec2 b) { return ivec_equal(a, b, VectorLength_2); }
+
+bool ivec3_equal(ivec3 a, ivec3 b) { return ivec_equal(a, b, VectorLength_3); }
+
+bool ivec4_equal(ivec4 a, ivec4 b) { return ivec_equal(a, b, VectorLength_4); }
 
 /**
    Compute baycentric weights {u,v,w} of a point between 3 others
@@ -47,7 +63,7 @@ void vec_baycentric(const vec2 A, const vec2 B, const vec2 C, const vec2 P,
   if (denom == 0.0f)
     // TODO: error handling
     denom = 1.0f;
-  
+
   *v = (d11 - d20 - d01 * d21) / denom;
   *w = (d00 * d21 - d01 * d20) / denom;
   *u = 1.0f - *v - *w;

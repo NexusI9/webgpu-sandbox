@@ -107,27 +107,42 @@ void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
 /**
    Add a mesh pointer from the global array to the indexed list (scene layer)
  */
-static mesh *scene_layer_add_mesh(MeshIndexedList *mesh_list, mesh *mesh) {
+static mesh *scene_layer_add_mesh(MeshIndexedList *mesh_list, mesh *new_mesh) {
   // ADD MESH TO LIST
-  // eventually expand mesh array if overflow
-
+  // eventually expand mesh vector if overflow
   if (mesh_list->length == mesh_list->capacity) {
-    // mesh_list->capacity *= 2;
-    // mesh_list = realloc(mesh_list, mesh_list->capacity);
-    perror("Scene mesh list reached full capacity"), exit(0);
-    return 0;
+    size_t new_capacity = mesh_list->capacity * 2;
+    mesh **temp = realloc(mesh_list->entries, sizeof(mesh *) * new_capacity);
+
+    if (temp) {
+      mesh_list->entries = temp;
+      mesh_list->capacity = new_capacity;
+    } else {
+      VERBOSE_PRINT("Scene mesh list reached full capacity, could not "
+                    "reallocate new space\n");
+      return 0;
+    }
   }
 
-  mesh_list->entries[mesh_list->length] = mesh;
+  mesh_list->entries[mesh_list->length] = new_mesh;
   mesh_list->length++;
-  return mesh;
+  return new_mesh;
 }
 
 mesh *scene_new_mesh(scene *scene) {
 
   if (scene->meshes.length == scene->meshes.capacity) {
-    VERBOSE_PRINT("Scene mesh list reached max capacity\n");
-    return 0;
+    size_t new_capacity = scene->meshes.capacity * 2;
+    mesh *temp = realloc(scene->meshes.entries, sizeof(mesh) * new_capacity);
+
+    if (temp) {
+      scene->meshes.entries = temp;
+      scene->meshes.capacity = new_capacity;
+    } else {
+      VERBOSE_PRINT("Scene mesh list reached full capacity, could not "
+                    "reallocate new space\n");
+      return 0;
+    }
   }
 
   return &scene->meshes.entries[scene->meshes.length++];

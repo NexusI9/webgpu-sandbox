@@ -26,6 +26,11 @@ typedef struct {
 bool vec2_equal(vec2, vec2);
 bool vec3_equal(vec3, vec3);
 bool vec4_equal(vec4, vec4);
+
+bool ivec2_equal(ivec2, ivec2);
+bool ivec3_equal(ivec3, ivec3);
+bool ivec4_equal(ivec4, ivec4);
+
 void vec_baycentric(const vec2, const vec2, const vec2, const vec2,
                     const VectorLength, float *, float *, float *);
 

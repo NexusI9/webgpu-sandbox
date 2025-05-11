@@ -196,12 +196,12 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
   for (int s = 0; s < desc->mesh_list->length; s++) {
     mesh *source_mesh = desc->mesh_list->entries[s];
     texture_remap(&ao_textures[s], 0, 1, &ao_textures[s].data);
-    
+
     // 1st pass blur
     texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
     // 2nd pass blur
     texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
-    
+
     ao_bake_bind(source_mesh, &ao_textures[s]);
   }
 }
@@ -345,6 +345,7 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
   }
 
 #ifdef AO_BAKE_DISPLAY_RAY
+  line_update_buffer(line);
   material_texture_bind_views(line, &desc->scene->camera,
                               &desc->scene->viewport, 0);
 #endif
@@ -421,6 +422,7 @@ void ao_bake_global(const AOBakeDescriptor *desc) {
   }
 
 #ifdef AO_BAKE_DISPLAY_RAY
+  line_update_buffer(line);
   material_texture_bind_views(line, &desc->scene->camera,
                               &desc->scene->viewport, 0);
 #endif

@@ -1,6 +1,8 @@
 #include "mesh.h"
 #include "../backend/buffer.h"
 #include "../backend/shadow_pass.h"
+#include "../resources/geometry/edge.h"
+#include "../utils/math.h"
 #include "../utils/system.h"
 #include "light.h"
 #include "pipeline.h"
@@ -15,6 +17,7 @@
 
 // Shadow map is implicitely handled withing mesh
 static void mesh_init_shadow_shader(mesh *);
+static void mesh_init_wireframe_shader(mesh *);
 static mesh *mesh_children_list_check_init(mesh *);
 static mesh *mesh_children_list_check_capacity(mesh *);
 
@@ -65,6 +68,10 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
 
   // init shadow shader by default
   mesh_init_shadow_shader(mesh);
+
+  // init wireframe shader by default
+  // TODO: maybe only enable wireframe on "edit" mode and not on "production"
+  mesh_init_wireframe_shader(mesh);
 }
 
 void mesh_create_primitive(mesh *mesh,
@@ -98,6 +105,9 @@ void mesh_set_vertex_attribute(mesh *mesh, const VertexAttribute *attributes) {
                   .data = (void *)mesh->vertex.data,
                   .size = mesh->vertex.length * sizeof(mesh->vertex.data[0]),
               });
+
+    // update wireframe shader as it requires mesh vertex & index
+    mesh_init_wireframe_shader(mesh);
   }
 }
 
@@ -120,6 +130,9 @@ void mesh_set_vertex_index(mesh *mesh, const VertexIndex *indexes) {
                   .data = (void *)mesh->index.data,
                   .size = mesh->index.length * sizeof(mesh->index.data[0]),
               });
+
+    // update wireframe shader as it requires mesh vertex & index
+    mesh_init_wireframe_shader(mesh);
   }
 }
 
@@ -394,7 +407,7 @@ shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader.shadow; }
    during the bind light process we will generate the depth map since that's
    where we get out scene lights.
 
-   The init shadow shadow doesn't belong to the material API as it is a
+   The init shadow shader doesn't belong to the material API as it is a
    necessary component set by default on mesh creation.
  */
 void mesh_init_shadow_shader(mesh *mesh) {
@@ -429,8 +442,57 @@ void mesh_init_shadow_shader(mesh *mesh) {
                              .stripIndexFormat = WGPUIndexFormat_Undefined,
                          });
 
-  for (size_t c = 0; c < mesh->children.length; c++)
-    mesh_init_shadow_shader(mesh->children.entries[c]);
+  //DELETEME: for (size_t c = 0; c < mesh->children.length; c++)
+  //mesh_init_shadow_shader(mesh->children.entries[c]);
+}
+
+/**
+   Initialize Wireframe shader.
+   Wireframe use a second vertex and index buffer (buffer.wireframe), since
+   wireframe require to draw lines for each edges, however lines are basically
+   rendered as very thin quads, which requires to duplicate each vertex once.
+
+   The init wireframe shader doesn't belong to the material API as it is a
+   necessary component set by default on mesh creation.
+ */
+void mesh_init_wireframe_shader(mesh *mesh) {
+
+  WGPUBuffer vertex_buffer = mesh->buffer.wireframe.vertex;
+  WGPUBuffer index_buffer = mesh->buffer.wireframe.index;
+
+  // reset existing wireframe buffer if exists
+  if (vertex_buffer) {
+    wgpuBufferRelease(vertex_buffer);
+    vertex_buffer = NULL;
+  }
+
+  if (index_buffer) {
+    wgpuBufferRelease(index_buffer);
+    index_buffer = NULL;
+  }
+
+  // create a edge hash set to store unique edges
+  EdgeHashSet edges;
+  edge_hash_set_create(&edges, 40);
+
+  for (int i = 0; i < mesh->index.length; i += 3) {
+    unsigned int a = mesh->index.data[i];
+    unsigned int b = mesh->index.data[i + 1];
+    unsigned int c = mesh->index.data[i + 2];
+
+    EdgeKey ab = {MIN(a, b), MAX(a, b)};
+    EdgeKey bc = {MIN(b, c), MAX(b, c)};
+    EdgeKey ca = {MIN(a, c), MAX(a, c)};
+
+    //continue;
+    edge_hash_set_insert(&edges, ab);
+    edge_hash_set_insert(&edges, bc);
+    edge_hash_set_insert(&edges, ca);
+  }
+
+  // temp arrays from edges
+  VertexAttribute wireframe_vertex_attribute;
+  VertexIndex wireframe_index_attribute;
 }
 
 /**

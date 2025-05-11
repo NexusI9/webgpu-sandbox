@@ -24,5 +24,6 @@ typedef struct {
 
 void line_create(mesh *, const LineCreateDescriptor *);
 void line_add_point(mesh *, vec3, vec3, vec3);
+void line_update_buffer(mesh*);
 
 #endif

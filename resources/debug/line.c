@@ -204,7 +204,9 @@ void line_add_point(mesh *mesh, vec3 p1, vec3 p2, vec3 color) {
   mesh->index.data[mesh->index.length + 5] = (uint16_t)vertex_length + 1;
 
   mesh->index.length += 6;
+}
 
+void line_update_buffer(mesh *mesh) {
   // update mesh vertex + index buffers
   mesh_set_vertex_attribute(mesh, &mesh->vertex);
   mesh_set_vertex_index(mesh, &mesh->index);

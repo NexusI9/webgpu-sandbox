@@ -1,4 +1,5 @@
 // attribute/uniform decls
+// https://github.com/m-schuetz/webgpu_wireframe_thicklines/blob/master/renderWireframe.js
 struct VertexIn {
   @location(0) aPos : vec3<f32>,
                       @location(1) aNorm : vec3<f32>,

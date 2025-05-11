@@ -84,7 +84,13 @@ typedef struct mesh {
   VertexIndex index;
 
   struct {
+      
     WGPUBuffer vertex, index;
+      
+    struct {
+      WGPUBuffer vertex, index;
+    } wireframe;
+      
   } buffer;
 
   // shader
