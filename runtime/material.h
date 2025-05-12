@@ -67,6 +67,12 @@ void material_texture_add_sampler(mesh *,
                                   const ShaderCreateSamplerDescriptor *);
 void material_texure_bind_shadow_maps(mesh *, WGPUTextureView, WGPUTextureView);
 
+// === WIREFRAME SHADER ===
+void material_wireframe_bind_views(mesh *, camera *, viewport *, uint8_t);
+
+// === SOLID SHADER ===
+void material_solid_bind_views(mesh *, camera *, viewport *, uint8_t);
+
 // === SHADOW SHADER ===
 
 typedef struct {

@@ -106,6 +106,23 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
                   });
 }
 
+void shader_destroy(shader *shader) {
+
+  // clearing module
+  wgpuShaderModuleRelease(shader->module);
+
+  // clearing name
+  free(shader->name);
+  shader->name = NULL;
+
+  // clearing pipeline
+  if(shader->pipeline.handle)
+      pipeline_destroy(shader_pipeline(shader));
+
+  // clearing bind groups
+  shader_bind_group_clear(shader);
+}
+
 /**
    Define standard vertex layout to be used in pipeline
    1. Position (vec3)

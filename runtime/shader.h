@@ -1,24 +1,29 @@
 #ifndef _SHADER_H_
 #define _SHADER_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
-#define SHADER_GROUP_CAMERA 0
-#define SHADER_GROUP_VIEWPORT 0
-#define SHADER_BIND_CAMERA 0
-#define SHADER_BIND_VIEWPORT 1
-#define SHADER_MAX_BIND_GROUP 12
-
-#define SHADER_MAX_UNIFORMS 12
-#define SHADER_UNIFORMS_DEFAULT_CAPACITY 8
-
-#define SHADER_UNIFORM_STRUCT __attribute__((aligned(16)))
-
 #include "camera.h"
 #include "pipeline.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
+#include <stddef.h>
+#include <stdint.h>
+
+// commons
+#define SHADER_MAX_BIND_GROUP 12
+#define SHADER_MAX_UNIFORMS 12
+#define SHADER_UNIFORMS_DEFAULT_CAPACITY 8
+#define SHADER_UNIFORM_STRUCT __attribute__((aligned(16)))
+
+// texture shader
+#define SHADER_TEXTURE_BINDGROUP_TEXTURES 0
+#define SHADER_TEXTURE_BINDGROUP_VIEWS 1
+#define SHADER_TEXTURE_BINDGROUP_LIGHTS 2
+
+// wireframe shader
+#define SHADER_WIREFRAME_BINDGROUP_VIEWS 0
+
+// solid shader
+#define SHADER_SOLID_BINDGROUP_VIEWS 0
 
 // descriptors
 typedef struct {
@@ -33,7 +38,8 @@ typedef struct {
 
 /* Takes in some data useful for the uniform update as well as the entry data
  * that will be overriden and uploaded to the GPU*/
-typedef void (*UpdateCallback)(void *callback_data, void *entry_data);
+typedef void (*shader_uniform_update_callback)(void *callback_data,
+                                               void *entry_data);
 
 typedef struct {
   int8_t *textures;
@@ -47,7 +53,7 @@ typedef struct {
   uint64_t size;
   uint64_t offset;
   void *data;
-  UpdateCallback update_callback;
+  shader_uniform_update_callback update_callback;
   void *update_data;
   // private
   WGPUBuffer buffer;
@@ -196,7 +202,7 @@ typedef struct {
 
 // methods
 void shader_create(shader *, const ShaderCreateDescriptor *);
-
+void shader_destroy(shader *);
 void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
 void shader_add_texture(shader *, const ShaderCreateTextureDescriptor *);
 void shader_add_texture_view(shader *,

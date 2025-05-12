@@ -271,12 +271,20 @@ void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
       mesh_set_vertex_attribute(target_mesh, &vert_attr);
       mesh_set_vertex_index(target_mesh, &vert_index);
 
+      // bind texture shader
       material_texture_bind_views(target_mesh, &scene->camera, &scene->viewport,
-                                  1);
+                                  SHADER_TEXTURE_BINDGROUP_VIEWS);
+
       // TODO: put the texture bind lights to the scene itself
       material_texture_bind_lights(target_mesh, &scene->lights.ambient,
                                    &scene->lights.spot, &scene->lights.point,
-                                   &scene->lights.sun, 2);
+                                   &scene->lights.sun,
+                                   SHADER_TEXTURE_BINDGROUP_LIGHTS);
+
+      // bind wireframe shader
+      material_wireframe_bind_views(target_mesh, &scene->camera,
+                                    &scene->viewport,
+                                    SHADER_WIREFRAME_BINDGROUP_VIEWS);
     }
   }
 }
@@ -354,19 +362,21 @@ void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
   }
 
   // send texture + sampler to shader
-  shader_add_texture(shader, &(ShaderCreateTextureDescriptor){
-                                 .group_index = 0,
-                                 .entry_count = texture_length,
-                                 .entries = texture_entries,
-                                 .visibility = WGPUShaderStage_Fragment,
-                             });
+  shader_add_texture(shader,
+                     &(ShaderCreateTextureDescriptor){
+                         .group_index = SHADER_TEXTURE_BINDGROUP_TEXTURES,
+                         .entry_count = texture_length,
+                         .entries = texture_entries,
+                         .visibility = WGPUShaderStage_Fragment,
+                     });
 
-  shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){
-                                 .group_index = 0,
-                                 .entry_count = texture_length,
-                                 .entries = sampler_entries,
-                                 .visibility = WGPUShaderStage_Fragment,
-                             });
+  shader_add_sampler(shader,
+                     &(ShaderCreateSamplerDescriptor){
+                         .group_index = SHADER_TEXTURE_BINDGROUP_TEXTURES,
+                         .entry_count = texture_length,
+                         .entries = sampler_entries,
+                         .visibility = WGPUShaderStage_Fragment,
+                     });
 }
 
 uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,

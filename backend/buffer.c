@@ -22,6 +22,7 @@ void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice *device,
                });
 
   free(code);
+  code = NULL;
 }
 
 void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {

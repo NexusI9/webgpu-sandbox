@@ -159,7 +159,7 @@ void pipeline_build(pipeline *pipeline, const WGPUPipelineLayout *layout) {
     pipeline->descriptor.depthStencil = &pipeline->stencil_state;
 
   if (pipeline->handle)
-    pipeline_clear(pipeline);
+    pipeline_destroy(pipeline);
 
   // update bind group layout
   pipeline->layout = *layout;
@@ -171,10 +171,10 @@ void pipeline_build(pipeline *pipeline, const WGPUPipelineLayout *layout) {
 /**
    Release pipeline and set back the handle to null
  */
-void pipeline_clear(pipeline *pipeline) {
+void pipeline_destroy(pipeline *pipeline) {
   wgpuRenderPipelineRelease(pipeline->handle);
   pipeline->handle = NULL;
 
-  // wgpuPipelineLayoutRelease(pipeline->layout);
+  wgpuPipelineLayoutRelease(pipeline->layout);
   pipeline->layout = NULL;
 }

@@ -112,9 +112,7 @@ void scene_draw_solid(scene *scene, WGPURenderPassEncoder *render_pass) {
    Establish pipeline from previously set bind groups
  */
 void scene_build_texture(scene *scene) {
-
   VERBOSE_PRINT("======= BUILD TEXTURE SCENE ======\n");
-
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_texture, &scene->layer.lit);
   // draw transparent meshes then

@@ -94,6 +94,6 @@ void pipeline_set_stencil(pipeline *, const WGPUDepthStencilState);
 void pipeline_build(pipeline *, const WGPUPipelineLayout *);
 
 // 4. destroyer
-void pipeline_clear(pipeline *);
+void pipeline_destroy(pipeline *);
 
 #endif

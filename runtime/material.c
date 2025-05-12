@@ -5,9 +5,14 @@
 #include "light.h"
 #include "mesh.h"
 #include "shader.h"
+#include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 #include <stdlib.h>
+
+static void material_bind_views(mesh *, mesh_get_shader_callback, camera *,
+                                viewport *, uint8_t);
+
 /**
    Bind Mesh, Camera and Projection matrix to a given mesh shader
    Note that the binding process follows a fixed convention of order, meaning
@@ -16,8 +21,9 @@
    - Binding 1: Camera matrix
    - Binding 2: Model matrix
  */
-void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
-                                 uint8_t group_index) {
+void material_bind_views(mesh *mesh, mesh_get_shader_callback target_shader,
+                         camera *camera, viewport *viewport,
+                         uint8_t group_index) {
 
   ShaderViewProjectionUniform proj_view_data;
   CameraUniform uCamera = camera_uniform(camera);
@@ -25,7 +31,7 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
   MeshUniform uMesh = mesh_model_uniform(mesh);
 
   shader_add_uniform(
-      &mesh->shader.texture,
+      target_shader(mesh),
       &(ShaderCreateUniformDescriptor){
           .group_index = group_index,
           .entry_count = 3,
@@ -57,6 +63,22 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
                   },
               },
       });
+}
+
+void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
+                                 uint8_t group_index) {
+  material_bind_views(mesh, mesh_shader_texture, camera, viewport, group_index);
+}
+
+void material_wireframe_bind_views(mesh *mesh, camera *camera,
+                                   viewport *viewport, uint8_t group_index) {
+  material_bind_views(mesh, mesh_shader_wireframe, camera, viewport,
+                      group_index);
+}
+
+void material_solid_bind_views(mesh *mesh, camera *camera, viewport *viewport,
+                               uint8_t group_index) {
+  material_bind_views(mesh, mesh_shader_solid, camera, viewport, group_index);
 }
 
 /**

@@ -312,10 +312,6 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
              Need to draw line on both AB and CD
         */
 
-        // create a temporary texture to add it to the already baked texture
-        // or create an WriteMethod enum like:
-        // replace | add | multiply
-        // and ajdjust the pixel[c] = ... accordignly
         texture_write_triangle_gradient(
             &(TextureWriteTriangleGradientDescriptor){
                 .source = mesh_texture,

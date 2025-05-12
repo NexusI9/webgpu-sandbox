@@ -75,7 +75,6 @@ void init_scene() {
   });
 
   main_scene = scene_create(camera, viewport);
-  // TODO: check if possible to set the mode in the descriptor
 
   // init camera position
   camera_look_at(&main_scene.camera,
@@ -258,10 +257,10 @@ int main(int argc, const char *argv[]) {
   import_cube();
 
   // add_line();
-  add_grid();
+  //add_grid();
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Wireframe);
 
   // Quit
   renderer_close(&main_renderer);
