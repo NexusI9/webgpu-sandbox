@@ -22,10 +22,10 @@ typedef struct {
 
 typedef struct {
   EdgeBucket *entries;
+  size_t *occupied;
   size_t length;
   size_t capacity;
 } EdgeHashSet;
-
 
 void edge_hash_set_create(EdgeHashSet *, size_t);
 void edge_hash_set_destroy(EdgeHashSet *);

@@ -23,6 +23,7 @@ static bool edge_key_equal(EdgeKey a, EdgeKey b) {
 void edge_hash_set_create(EdgeHashSet *set, size_t capacity) {
 
   set->entries = calloc(capacity, sizeof(EdgeBucket));
+  set->occupied = calloc(capacity, sizeof(size_t));
   set->length = 0;
 
   if (set->entries == NULL) {
@@ -36,6 +37,8 @@ void edge_hash_set_create(EdgeHashSet *set, size_t capacity) {
 
 void edge_hash_set_destroy(EdgeHashSet *set) {
   free(set->entries);
+  free(set->occupied);
+  set->occupied = NULL;
   set->entries = NULL;
   set->capacity = 0;
   set->length = 0;
@@ -55,12 +58,19 @@ bool edge_hash_set_insert(EdgeHashSet *set, EdgeKey key) {
      */
     size_t new_capacity = set->capacity * 2;
     EdgeBucket *temp = realloc(set->entries, new_capacity * sizeof(EdgeBucket));
-    if (temp) {
+    size_t *temp_occupied =
+        realloc(set->occupied, new_capacity * sizeof(size_t));
+
+    if (temp && temp_occupied) {
       set->entries = temp;
+      set->occupied = temp_occupied;
 
       // set new entries to 0
       memset(&set->entries[set->capacity], 0,
              (new_capacity - set->capacity) * sizeof(EdgeBucket));
+
+      memset(&set->occupied[set->capacity], 0,
+             (new_capacity - set->capacity) * sizeof(size_t));
 
       set->capacity = new_capacity;
     } else {
@@ -80,6 +90,9 @@ bool edge_hash_set_insert(EdgeHashSet *set, EdgeKey key) {
   EdgeBucket *new_bucket = &set->entries[index];
   glm_ivec2_copy(key, new_bucket->key);
   new_bucket->occupied = true;
+
+  // insert new occupied index
+  set->occupied[set->length] = index;
 
   // update length
   set->length++;

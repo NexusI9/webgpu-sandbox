@@ -140,7 +140,7 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
 void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
                              cgltf_data *data) {
 
-  printf("====== ENTER GLTF =====\n");
+  printf("====== LOAD GLTF =====\n");
 
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {

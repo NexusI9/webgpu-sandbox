@@ -84,13 +84,13 @@ typedef struct mesh {
   VertexIndex index;
 
   struct {
-      
+
     WGPUBuffer vertex, index;
-      
+
     struct {
       WGPUBuffer vertex, index;
     } wireframe;
-      
+
   } buffer;
 
   // shader
@@ -136,6 +136,7 @@ MeshUniform mesh_model_uniform(mesh *);
 
 shader *mesh_shader_texture(mesh *);
 shader *mesh_shader_shadow(mesh *);
+shader *mesh_shader_wireframe(mesh *);
 shader *mesh_select_shader(mesh *, MeshDrawMethod);
 
 #endif

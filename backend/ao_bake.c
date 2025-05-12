@@ -35,8 +35,8 @@ float ao_bake_vertex(vertex *vertex, mesh *source, mesh *line) {
 
 #ifdef AO_BAKE_DISPLAY_RAY
     if (line && ray < AO_RAY_MAX_COUNT)
-      line_add_point(line, world_position, ray_direction,
-                     (vec3){0.0f, 1.0f, 0.0f});
+      line_add_point(world_position, ray_direction, (vec3){0.0f, 1.0f, 0.0f},
+                     &line->vertex, &line->index);
 #endif
 
     // traverse mesh triangles
@@ -393,8 +393,8 @@ void ao_bake_global(const AOBakeDescriptor *desc) {
 
 #ifdef AO_BAKE_DISPLAY_RAY
         if (ray < AO_RAY_MAX_COUNT)
-          line_add_point(line, rays[ray], ray_direction,
-                         (vec3){0.0f, 1.0f, 0.0f});
+          line_add_point(rays[ray], ray_direction, (vec3){0.0f, 1.0f, 0.0f},
+                         &line->vertex, &line->index);
 #endif
 
         for (size_t c = 0; c < desc->mesh_list->length; c++) {

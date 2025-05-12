@@ -189,18 +189,17 @@ void add_grid() {
 void add_line() {
 
   mesh *line = scene_new_mesh_unlit(&main_scene);
-  printf("%p\n", line);
   line_create(line, &(LineCreateDescriptor){
                         .device = &main_renderer.wgpu.device,
                         .queue = &main_renderer.wgpu.queue,
-                        .name = "line mesh a",
+                        .name = "line mesh",
                     });
 
-  line_add_point(line, (vec3){-2.0f, -4.0f, -2.0f}, (vec3){2.0f, 4.0f, 2.0f},
-                 (vec3){1.0f, 1.0f, 1.0f});
+  line_add_point((vec3){-2.0f, -4.0f, -2.0f}, (vec3){2.0f, 4.0f, 2.0f},
+                 (vec3){1.0f, 1.0f, 1.0f}, &line->vertex, &line->index);
 
-  line_add_point(line, (vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
-                 (vec3){0.0f, 1.0f, 0.0f});
+  line_add_point((vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
+                 (vec3){0.0f, 1.0f, 0.0f}, &line->vertex, &line->index);
 
   material_texture_bind_views(line, &main_scene.camera, &main_scene.viewport,
                               0);
