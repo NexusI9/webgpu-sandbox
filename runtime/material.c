@@ -57,7 +57,6 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
                   },
               },
       });
-
 }
 
 /**
@@ -67,8 +66,7 @@ void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
    by default we will upload all the lights (point, ambient, spot)
    within a defined group
   */
-void material_texture_bind_lights(mesh *mesh,
-                                  AmbientLightList *ambient_list,
+void material_texture_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
                                   SpotLightList *spot_list,
                                   PointLightList *point_list,
                                   SunLightList *sun_list, uint8_t group_index) {
@@ -203,17 +201,20 @@ void material_texture_bind_lights(mesh *mesh,
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entries = entries,
       });
-
 }
 
 /**
-   Clear the bind groups of mesh and children
-   Basically an alias of shader method but include the reccursion for childrens
+   Clear the texture shader bind groups of mesh
  */
-void material_clear_bindings(mesh *mesh, MeshDrawMethod method) {
+void material_clear_bindings_texture(mesh *mesh) {
+  shader_bind_group_clear(mesh_shader_texture(mesh));
+}
 
-  shader_bind_group_clear(mesh_select_shader(mesh, method));
-
+/**
+   Clear the shadow shader bind groups of mesh
+ */
+void material_clear_bindings_shadow(mesh *mesh) {
+  shader_bind_group_clear(mesh_shader_shadow(mesh));
 }
 
 /**
@@ -252,7 +253,6 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
                   },
               },
       });
-
 }
 
 /**
@@ -334,7 +334,6 @@ void material_texure_bind_shadow_maps(mesh *mesh,
                   spot_sampler,
               },
       });
-
 }
 
 /**
@@ -378,5 +377,4 @@ void material_shadow_set_cullmode(mesh *mesh, WGPUCullMode mode) {
                              .topology = WGPUPrimitiveTopology_TriangleList,
                              .stripIndexFormat = WGPUIndexFormat_Undefined,
                          });
-
 }

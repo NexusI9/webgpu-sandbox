@@ -216,11 +216,6 @@ void import_cube() {
   });
 }
 
-void draw() {
-  renderer_draw(&main_renderer, &main_scene);
-  return;
-}
-
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused
 
@@ -260,21 +255,15 @@ int main(int argc, const char *argv[]) {
   */
   import_cube();
 
-  // Bake AO textures for static scenes elements
-  renderer_bake_ao(&main_renderer, &main_scene);
-
-  // Setup drawing pass may need to move it else where
-  renderer_compute_shadow(&main_renderer, &main_scene);
   // add_line();
   add_grid();
-
-  scene_build(&main_scene, MESH_SHADER_DEFAULT);
+  
 
   // Update Loop
-  renderer_set_draw(draw);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);
 
   // Quit
-  renderer_end_frame(&main_renderer);
+  renderer_close(&main_renderer);
 
   return 0;
 }

@@ -3,6 +3,8 @@
 #include "../utils/system.h"
 #include "ao_bake.h"
 #include "clock.h"
+#include "emscripten/em_types.h"
+#include "emscripten/emscripten.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "shadow_pass.h"
@@ -14,6 +16,7 @@
 static int renderer_resize(renderer *, int, const EmscriptenUiEvent *, void *);
 static WGPUSwapChain renderer_create_swapchain(const renderer *);
 static void renderer_create_texture_view(const renderer *, WGPUTextureView *);
+static void renderer_render(void *);
 
 renderer renderer_create(const RendererCreateDescriptor *rd) {
 
@@ -83,7 +86,7 @@ WGPUSwapChain renderer_create_swapchain(const renderer *renderer) {
       });
 }
 
-void renderer_end_frame(const renderer *renderer) {
+void renderer_close(const renderer *renderer) {
   wgpuRenderPipelineRelease(renderer->wgpu.pipeline);
   wgpuSwapChainRelease(renderer->wgpu.swapchain);
   wgpuQueueRelease(renderer->wgpu.queue);
@@ -92,7 +95,7 @@ void renderer_end_frame(const renderer *renderer) {
 }
 
 void renderer_create_texture_view(const renderer *renderer,
-                                         WGPUTextureView *texture_view) {
+                                  WGPUTextureView *texture_view) {
 
   // Need to create a texture view for Z buffer stencil
   // by default set depth based on draw call order (first ones in
@@ -129,24 +132,26 @@ void renderer_create_texture_view(const renderer *renderer,
       });
 }
 
-void renderer_draw(const renderer *renderer, scene *scene) {
+void renderer_render(void *desc) {
 
+  RendererRenderDescriptor *config = (RendererRenderDescriptor *)desc;
   // create texture view
   WGPUTextureView back_buffer =
-      wgpuSwapChainGetCurrentTextureView(renderer->wgpu.swapchain);
+      wgpuSwapChainGetCurrentTextureView(config->renderer->wgpu.swapchain);
 
   // create command encoder
-  // encoder records GPU operations:
-  // - Texture upload
-  // - Buffer upload
-  // - Render passes
-  // - Compute passes
+  /* NOTE: Encoder records GPU operations such as:
+     - Texture upload
+     - Buffer upload
+     - Render passes
+     - Compute passes
+  */
 
   WGPUCommandEncoder render_encoder =
-      wgpuDeviceCreateCommandEncoder(renderer->wgpu.device, NULL);
+      wgpuDeviceCreateCommandEncoder(config->renderer->wgpu.device, NULL);
 
   WGPUTextureView depth_texture_view;
-  renderer_create_texture_view(renderer, &depth_texture_view);
+  renderer_create_texture_view(config->renderer, &depth_texture_view);
 
   // begin render pass
   WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(
@@ -175,7 +180,7 @@ void renderer_draw(const renderer *renderer, scene *scene) {
           }});
 
   // draw mesh scene
-  scene_draw(scene, MESH_SHADER_DEFAULT, &render_pass);
+  config->draw_callback(config->scene, &render_pass);
 
   // end render pass
   wgpuRenderPassEncoderEnd(render_pass);
@@ -185,7 +190,7 @@ void renderer_draw(const renderer *renderer, scene *scene) {
       wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
 
   // submit commands
-  wgpuQueueSubmit(renderer->wgpu.queue, 1, &render_buffer);
+  wgpuQueueSubmit(config->renderer->wgpu.queue, 1, &render_buffer);
 
   // release all
   wgpuRenderPassEncoderRelease(render_pass);
@@ -194,11 +199,44 @@ void renderer_draw(const renderer *renderer, scene *scene) {
   wgpuTextureViewRelease(back_buffer);
 
   // update clock delta
-  clock_update_delta(renderer->clock);
+  clock_update_delta(config->renderer->clock);
 }
 
-void renderer_set_draw(const void *callback) {
-  emscripten_set_main_loop(callback, 0, 1);
+void renderer_draw(renderer *renderer, scene *scene,
+                   const RendererDrawMode draw_mode) {
+
+  scene_draw_callback draw_callback;
+  switch (draw_mode) {
+
+  case RendererDrawMode_Solid:
+    scene_build_solid(scene);
+    break;
+
+  case RendererDrawMode_Wireframe:
+    scene_build_wireframe(scene);
+    break;
+
+  case RendererDrawMode_Texture:
+
+    // Bake AO textures for static scenes elements
+    renderer_bake_ao(renderer, scene);
+
+    // Setup drawing pass may need to move it else where
+    renderer_compute_shadow(renderer, scene);
+
+    scene_build_texture(scene);
+    
+    draw_callback = scene_draw_texture;
+    break;
+  }
+
+  emscripten_set_main_loop_arg(renderer_render,
+                               &(RendererRenderDescriptor){
+                                   .renderer = renderer,
+                                   .scene = scene,
+                                   .draw_callback = draw_callback,
+                               },
+                               0, 1);
 }
 
 void renderer_lock_mouse(const renderer *renderer) {

@@ -13,14 +13,6 @@
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
 
-typedef enum {
-  MESH_SHADER_DEFAULT,
-  MESH_SHADER_SHADOW,
-  MESH_SHADER_SOLID,
-  MESH_SHADER_WIREFRAME,
-  MESH_SHADER_CUSTOM
-} MeshDrawMethod;
-
 // Builder Pattern | Descriptor Pattern
 typedef struct {
   WGPUDevice *device;
@@ -106,6 +98,8 @@ typedef struct mesh {
 
 } mesh;
 
+typedef shader *(*mesh_get_shader_callback)(mesh *);
+
 void mesh_create(mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(mesh *, const MeshCreatePrimitiveDescriptor *);
 
@@ -118,9 +112,9 @@ void mesh_set_shader(mesh *, const ShaderCreateDescriptor *);
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);
 
-void mesh_draw(mesh *, MeshDrawMethod, WGPURenderPassEncoder *, const camera *,
+void mesh_draw(mesh *, shader *, WGPURenderPassEncoder *, const camera *,
                const viewport *);
-void mesh_build(mesh *, MeshDrawMethod);
+void mesh_build(mesh *, shader *);
 
 void mesh_scale(mesh *, vec3);
 void mesh_position(mesh *, vec3);
@@ -137,6 +131,6 @@ MeshUniform mesh_model_uniform(mesh *);
 shader *mesh_shader_texture(mesh *);
 shader *mesh_shader_shadow(mesh *);
 shader *mesh_shader_wireframe(mesh *);
-shader *mesh_select_shader(mesh *, MeshDrawMethod);
+shader *mesh_shader_solid(mesh *);
 
 #endif

@@ -332,7 +332,7 @@ void shadow_pass_to_texture(const ShadowPassToTextureDescriptor *desc) {
                              },
                      });
 
-  scene_draw(desc->scene, MESH_SHADER_SHADOW, &shadow_pass);
+  scene_draw_shadow(desc->scene, &shadow_pass);
 
   wgpuRenderPassEncoderEnd(shadow_pass);
 
@@ -396,7 +396,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
       for (int m = 0; m < target_mesh_list->length; m++) {
         mesh *current_mesh = target_mesh_list->entries[m];
         material_shadow_bind_views(current_mesh, current_view);
-        mesh_build(current_mesh, MESH_SHADER_SHADOW);
+        mesh_build(current_mesh, mesh_shader_shadow(current_mesh));
       }
 
       // 2. Render scene (create shadow render pass to texture layer)
@@ -413,7 +413,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
       // 3. Clear meshes bind group
       for (int m = 0; m < desc->scene->layer.lit.length; m++) {
         mesh *current_mesh = target_mesh_list->entries[m];
-        material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
+        material_clear_bindings_shadow(current_mesh);
       }
     }
   }
@@ -458,7 +458,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
       */
 
       material_shadow_set_cullmode(current_mesh, WGPUCullMode_Back);
-      mesh_build(current_mesh, MESH_SHADER_SHADOW);
+      mesh_build(current_mesh, mesh_shader_shadow(current_mesh));
     }
 
     // 2. Render scene (create shadow render pass to texture layer)
@@ -474,7 +474,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
     // 3. Clear meshes bind group
     for (int m = 0; m < desc->scene->layer.lit.length; m++) {
       mesh *current_mesh = target_mesh_list->entries[m];
-      material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
+      material_clear_bindings_shadow(current_mesh);
     }
   }
 
@@ -501,7 +501,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
       // update cull mode due to point light using front (see Spot light pass
       // above for more detail)
       material_shadow_set_cullmode(current_mesh, WGPUCullMode_Back);
-      mesh_build(current_mesh, MESH_SHADER_SHADOW);
+      mesh_build(current_mesh, mesh_shader_shadow(current_mesh));
     }
 
     // 2. Render scene (create shadow render pass to texture layer)
@@ -517,7 +517,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
     // 3. Clear meshes bind group
     for (int m = 0; m < desc->scene->layer.lit.length; m++) {
       mesh *current_mesh = target_mesh_list->entries[m];
-      material_clear_bindings(current_mesh, MESH_SHADER_SHADOW);
+      material_clear_bindings_shadow(current_mesh);
     }
   }
 

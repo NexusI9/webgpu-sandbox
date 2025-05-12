@@ -13,9 +13,10 @@ static void scene_init_mesh_layer(MeshIndexedList *);
 static void scene_init_light_list(scene *);
 static mesh *scene_new_mesh(scene *);
 static mesh *scene_layer_add_mesh(MeshIndexedList *, mesh *);
-static void scene_draw_mesh_list(scene *, MeshDrawMethod,
+static void scene_draw_mesh_list(scene *, mesh_get_shader_callback,
                                  WGPURenderPassEncoder *, MeshIndexedList *);
-static void scene_build_mesh_list(scene *, MeshDrawMethod, MeshIndexedList *);
+static void scene_build_mesh_list(scene *, mesh_get_shader_callback,
+                                  MeshIndexedList *);
 
 scene scene_create(camera camera, viewport viewport) {
 
@@ -54,53 +55,88 @@ mesh *scene_new_mesh_unlit(scene *scene) {
   return scene_layer_add_mesh(&scene->layer.unlit, new_mesh);
 }
 
-void scene_draw(scene *scene, MeshDrawMethod draw_method,
-                WGPURenderPassEncoder *render_pass) {
+void scene_draw_texture(scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
   camera_draw(&scene->camera);
 
-  // draw different scene mesh list depending on defined draw method
-  switch (draw_method) {
+  // draw solid meshes first
+  scene_draw_mesh_list(scene, mesh_shader_texture, render_pass,
+                       &scene->layer.lit);
+  // draw transparent meshes then
+  scene_draw_mesh_list(scene, mesh_shader_texture, render_pass,
+                       &scene->layer.unlit);
+}
 
-    // only draw lit mesh if draw method is Shadow
-  case MESH_SHADER_SHADOW:
-    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->layer.lit);
-    break;
 
-  case MESH_SHADER_DEFAULT:
-  case MESH_SHADER_SOLID:
-  case MESH_SHADER_WIREFRAME:
-  case MESH_SHADER_CUSTOM:
-  default:
-    // draw solid meshes first
-    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->layer.lit);
-    // draw transparent meshes then
-    scene_draw_mesh_list(scene, draw_method, render_pass, &scene->layer.unlit);
-  }
+void scene_draw_shadow(scene *scene, WGPURenderPassEncoder *render_pass) {
+
+  // update camera
+  camera_draw(&scene->camera);
+
+  // onlid draw solid/lit meshes
+  scene_draw_mesh_list(scene, mesh_shader_shadow, render_pass,
+                       &scene->layer.lit);
 }
 
 /**
-   Build meshes shader in each scene list
+   Build meshes Texture shader in each scene list
+   Establish pipeline from previously set bind groups
  */
-void scene_build(scene *scene, MeshDrawMethod draw_method) {
+void scene_build_texture(scene *scene) {
 
-  printf("======= BUILD SCENE ======\n");
-  // Build shader (establish pipeline from previously set bind groups)
+  printf("======= BUILD TEXTURE SCENE ======\n");
 
   // draw solid meshes first
-  scene_build_mesh_list(scene, draw_method, &scene->layer.lit);
+  scene_build_mesh_list(scene, mesh_shader_texture, &scene->layer.lit);
   // draw transparent meshes then
-  scene_build_mesh_list(scene, draw_method, &scene->layer.unlit);
+  scene_build_mesh_list(scene, mesh_shader_texture, &scene->layer.unlit);
 }
 
-void scene_build_mesh_list(scene *scene, MeshDrawMethod draw_method,
-                           MeshIndexedList *mesh_list) {
+/**
+   Build meshes Solid shader in each scene list
+   Establish pipeline from previously set bind groups
+ */
+void scene_build_solid(scene *scene) {
+  printf("======= BUILD SOLID SCENE ======\n");
+  // draw solid meshes first
+  scene_build_mesh_list(scene, mesh_shader_solid, &scene->layer.lit);
+  // draw transparent meshes then
+  scene_build_mesh_list(scene, mesh_shader_solid, &scene->layer.unlit);
+}
 
+
+/**
+   Build meshes Wireframe shader in each scene list
+   Establish pipeline from previously set bind groups
+ */
+void scene_build_wireframe(scene *scene) {
+  printf("======= BUILD WIREFRAME SCENE ======\n");
+  // draw solid meshes first
+  scene_build_mesh_list(scene, mesh_shader_wireframe, &scene->layer.lit);
+  // draw transparent meshes then
+  scene_build_mesh_list(scene, mesh_shader_wireframe, &scene->layer.unlit);
+}
+
+
+/**
+   Build meshes Shadow shader in each scene list
+   Establish pipeline from previously set bind groups
+ */
+void scene_build_shadow(scene *scene) {
+  printf("======= BUILD SHADOW SCENE ======\n");
+  // draw solid meshes first
+  scene_build_mesh_list(scene, mesh_shader_shadow, &scene->layer.lit);
+  // draw transparent meshes then
+  scene_build_mesh_list(scene, mesh_shader_shadow, &scene->layer.unlit);
+}
+
+void scene_build_mesh_list(scene *scene, mesh_get_shader_callback target_shader,
+                           MeshIndexedList *mesh_list) {
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = mesh_list->entries[i];
-    mesh_build(current_mesh, draw_method);
-    shader_module_release(mesh_shader_texture(current_mesh));
+    mesh_build(current_mesh, target_shader(current_mesh));
+    shader_module_release(target_shader(current_mesh));
   }
 }
 
@@ -148,15 +184,15 @@ mesh *scene_new_mesh(scene *scene) {
   return &scene->meshes.entries[scene->meshes.length++];
 }
 
-void scene_draw_mesh_list(scene *scene, MeshDrawMethod draw_method,
+void scene_draw_mesh_list(scene *scene, mesh_get_shader_callback target_shader,
                           WGPURenderPassEncoder *render_pass,
                           MeshIndexedList *mesh_list) {
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = mesh_list->entries[i];
-    mesh_draw(current_mesh, draw_method, render_pass, &scene->camera,
-              &scene->viewport);
+    mesh_draw(current_mesh, target_shader(current_mesh), render_pass,
+              &scene->camera, &scene->viewport);
   }
 }
 

@@ -42,7 +42,8 @@
 void material_init_shader_texture(mesh *);
 void material_init_shader_shadow(mesh *);
 
-void material_clear_bindings(mesh *, MeshDrawMethod);
+void material_clear_bindings_texture(mesh *);
+void material_clear_bindings_shadow(mesh *);
 
 // === TEXTURE SHADER ===
 

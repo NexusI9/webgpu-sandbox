@@ -189,33 +189,29 @@ void mesh_create_index_buffer(mesh *mesh,
    Build mesh shaders pipeline
    If given shader is NULL, it will choose the default shader as fallback
  */
-void mesh_build(mesh *mesh, MeshDrawMethod draw_method) {
+void mesh_build(mesh *mesh, shader *shader) {
 
 #ifdef VERBOSE_BUILDING_PHASE
   VERBOSE_PRINT("Build mesh: %s\n", mesh->name);
 #endif
 
-  shader *shader = mesh_select_shader(mesh, draw_method);
-
-  // reccursively build shader
-  shader_build(shader);
-
   // check if mesh has correct buffer before drawing
   if (mesh->buffer.index == NULL || mesh->buffer.vertex == NULL) {
     perror("Mesh has no device or queue, further error may occurs.\n");
   }
+
+  // build shader
+  shader_build(shader);
 }
 
 /**
    Mesh main draw function
  */
-void mesh_draw(mesh *mesh, MeshDrawMethod draw_method,
-               WGPURenderPassEncoder *render_pass, const camera *camera,
-               const viewport *viewport) {
+void mesh_draw(mesh *mesh, shader *shader, WGPURenderPassEncoder *render_pass,
+               const camera *camera, const viewport *viewport) {
 
   // draw shader
   // if shader is null, use default shader
-  shader *shader = mesh_select_shader(mesh, draw_method);
   shader_draw(shader, render_pass, camera, viewport);
 
   // draw indexes from buffer
@@ -407,6 +403,13 @@ shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader.shadow; }
  */
 shader *mesh_shader_wireframe(mesh *mesh) { return &mesh->shader.wireframe; }
 
+
+/**
+   Return mesh solid shader
+ */
+shader *mesh_shader_solid(mesh *mesh) { return &mesh->shader.texture; }
+
+
 /**
    Init mesh shadow shader.
    By default all mesh have a shadow shader to generate shadow map
@@ -582,29 +585,4 @@ void mesh_init_wireframe_shader(mesh *mesh) {
                     .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
                 });
-}
-
-/**
-Select the right mesh method call depending of the defined draw method
- */
-shader *mesh_select_shader(mesh *mesh, MeshDrawMethod method) {
-
-  switch (method) {
-
-  case MESH_SHADER_SHADOW:
-    return mesh_shader_shadow(mesh);
-    break;
-
-    // TODO: Implement other shader presets
-  case MESH_SHADER_WIREFRAME:
-    return mesh_shader_wireframe(mesh);
-    break;
-
-  case MESH_SHADER_CUSTOM:
-  case MESH_SHADER_SOLID:
-  case MESH_SHADER_DEFAULT:
-  default:
-    return mesh_shader_texture(mesh);
-    break;
-  }
 }

@@ -11,6 +11,18 @@ typedef struct {
   bool lock_mouse;
 } RendererCreateDescriptor;
 
+typedef struct {
+  struct renderer *renderer;
+  scene *scene;
+  scene_draw_callback draw_callback;
+} RendererRenderDescriptor;
+
+typedef enum {
+  RendererDrawMode_Texture,
+  RendererDrawMode_Solid,
+  RendererDrawMode_Wireframe,
+} RendererDrawMode;
+
 typedef struct renderer {
 
   cclock *clock; // update clock delta on draw
@@ -34,12 +46,11 @@ typedef struct renderer {
 
 renderer renderer_create(const RendererCreateDescriptor *);
 void renderer_init(renderer *);
-void renderer_draw(const renderer *, scene *);
 void renderer_bake_ao(renderer *, scene *);
 void renderer_compute_shadow(renderer *, scene *);
 
-void renderer_end_frame(const renderer *);
-void renderer_set_draw(const void *);
+void renderer_close(const renderer *);
+void renderer_draw(renderer *, scene *, const RendererDrawMode);
 void renderer_lock_mouse(const renderer *);
 
 #endif

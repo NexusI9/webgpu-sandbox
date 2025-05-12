@@ -82,11 +82,22 @@ typedef struct {
 
 } scene;
 
+typedef void (*scene_draw_callback)(scene *, WGPURenderPassEncoder *);
+typedef void (*scene_build_callback)(scene *);
+
 scene scene_create(camera, viewport);
 mesh *scene_new_mesh_lit(scene *);
 mesh *scene_new_mesh_unlit(scene *);
-void scene_draw(scene *, MeshDrawMethod, WGPURenderPassEncoder *);
-void scene_build(scene *, MeshDrawMethod);
+
+void scene_draw_texture(scene *, WGPURenderPassEncoder *);
+void scene_draw_shadow(scene *, WGPURenderPassEncoder *);
+void scene_draw_solid(scene *, WGPURenderPassEncoder *);
+void scene_draw_wireframe(scene *, WGPURenderPassEncoder *);
+
+void scene_build_texture(scene *);
+void scene_build_shadow(scene *);
+void scene_build_solid(scene *);
+void scene_build_wireframe(scene *);
 
 size_t scene_add_point_light(scene *, PointLightDescriptor *);
 size_t scene_add_spot_light(scene *, SpotLightDescriptor *);
