@@ -53,6 +53,19 @@ typedef struct {
   size_t length;
 } MeshList;
 
+typedef struct {
+  struct {
+    WGPUBuffer buffer;
+    VertexAttribute data;
+  } attribute; // vertex list + buffer
+
+  struct {
+    WGPUBuffer buffer;
+    VertexIndex data;
+  } index; // index list + buffer
+
+} MeshVertex;
+
 // Core
 typedef struct mesh {
 
@@ -69,26 +82,17 @@ typedef struct mesh {
   WGPUDevice *device;
   WGPUQueue *queue;
 
-  // vertex list
-  VertexAttribute vertex;
-
-  // index list
-  VertexIndex index;
-
+  // vertex
   struct {
-
-    WGPUBuffer vertex, index;
-
-    struct {
-      WGPUBuffer vertex, index;
-    } wireframe;
-
-  } buffer;
+    MeshVertex base;
+    MeshVertex wireframe;
+  } vertex;
 
   // shader
   struct {
     shader texture;
     shader shadow;
+    shader solid;
     shader wireframe;
   } shader;
 
@@ -112,8 +116,12 @@ void mesh_set_shader(mesh *, const ShaderCreateDescriptor *);
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);
 
-void mesh_draw(mesh *, shader *, WGPURenderPassEncoder *, const camera *,
-               const viewport *);
+void mesh_draw_default_buffer(mesh *, shader *, WGPURenderPassEncoder *,
+                              const camera *, const viewport *);
+
+void mesh_draw_wireframe_buffer(mesh *, shader *, WGPURenderPassEncoder *,
+                                const camera *, const viewport *);
+
 void mesh_build(mesh *, shader *);
 
 void mesh_scale(mesh *, vec3);

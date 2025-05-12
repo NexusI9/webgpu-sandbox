@@ -38,14 +38,14 @@ primitive primitive_cube() {
       // vertex data
       .vertex =
           {
-              .data = cube_vertex_data,
+              .entries = cube_vertex_data,
               .length = sizeof(cube_vertex_data) / sizeof(cube_vertex_data[0]),
           },
 
       // index data
       .index =
           {
-              .data = cube_index_data,
+              .entries = cube_index_data,
               .length = sizeof(cube_index_data) / sizeof(cube_index_data[0]),
           },
   };

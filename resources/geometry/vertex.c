@@ -68,9 +68,9 @@ void vertex_find_equal_attr(vertex *source,
     if (destination->length == destination->capacity)
       return;
 
-    vertex compare = vertex_from_array(&vertex_attribute->data[i]);
-    float *v_src = &vertex_attribute->data[i];
-    float *v_dest = &destination->data[destination->length];
+    vertex compare = vertex_from_array(&vertex_attribute->entries[i]);
+    float *v_src = &vertex_attribute->entries[i];
+    float *v_dest = &destination->entries[destination->length];
 
     // position match
     if (attribute & VertexAttributeName_Position &&

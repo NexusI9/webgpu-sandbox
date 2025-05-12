@@ -202,6 +202,10 @@ void renderer_render(void *desc) {
   clock_update_delta(config->renderer->clock);
 }
 
+/**
+   Draw a scene with a specified draw mode along with the render pass that comes
+   with it (ao, shadow mapping...). Also call the main loop.
+ */
 void renderer_draw(renderer *renderer, scene *scene,
                    const RendererDrawMode draw_mode) {
 
@@ -210,10 +214,12 @@ void renderer_draw(renderer *renderer, scene *scene,
 
   case RendererDrawMode_Solid:
     scene_build_solid(scene);
+    draw_callback = scene_draw_solid;
     break;
 
   case RendererDrawMode_Wireframe:
     scene_build_wireframe(scene);
+    draw_callback = scene_draw_wireframe;
     break;
 
   case RendererDrawMode_Texture:
@@ -225,7 +231,6 @@ void renderer_draw(renderer *renderer, scene *scene,
     renderer_compute_shadow(renderer, scene);
 
     scene_build_texture(scene);
-    
     draw_callback = scene_draw_texture;
     break;
   }

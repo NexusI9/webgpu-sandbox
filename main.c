@@ -196,10 +196,12 @@ void add_line() {
                     });
 
   line_add_point((vec3){-2.0f, -4.0f, -2.0f}, (vec3){2.0f, 4.0f, 2.0f},
-                 (vec3){1.0f, 1.0f, 1.0f}, &line->vertex, &line->index);
+                 (vec3){1.0f, 1.0f, 1.0f}, &line->vertex.base.attribute.data,
+                 &line->vertex.base.index.data);
 
   line_add_point((vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
-                 (vec3){0.0f, 1.0f, 0.0f}, &line->vertex, &line->index);
+                 (vec3){0.0f, 1.0f, 0.0f}, &line->vertex.base.attribute.data,
+                 &line->vertex.base.index.data);
 
   material_texture_bind_views(line, &main_scene.camera, &main_scene.viewport,
                               0);
@@ -257,7 +259,6 @@ int main(int argc, const char *argv[]) {
 
   // add_line();
   add_grid();
-  
 
   // Update Loop
   renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);

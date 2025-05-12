@@ -48,6 +48,7 @@
 typedef struct {
   MeshIndexedList lit;
   MeshIndexedList unlit;
+  MeshIndexedList gizmo;
 } SceneLayerList;
 
 typedef struct {
@@ -88,6 +89,7 @@ typedef void (*scene_build_callback)(scene *);
 scene scene_create(camera, viewport);
 mesh *scene_new_mesh_lit(scene *);
 mesh *scene_new_mesh_unlit(scene *);
+mesh *scene_new_mesh_gizmo(scene *);
 
 void scene_draw_texture(scene *, WGPURenderPassEncoder *);
 void scene_draw_shadow(scene *, WGPURenderPassEncoder *);

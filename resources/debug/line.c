@@ -20,17 +20,17 @@ void line_create(mesh *mesh, const LineCreateDescriptor *desc) {
   mesh_set_vertex_attribute(
       mesh,
       &(VertexAttribute){
-          .data = calloc(LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX_COUNT,
-                         sizeof(float)),
+          .entries = calloc(LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX_COUNT,
+                            sizeof(float)),
           .length = 0,
       });
 
   mesh_set_vertex_index(
-      mesh,
-      &(VertexIndex){
-          .data = calloc(LINE_MAX_POINTS * LINE_INDEX_COUNT, sizeof(uint16_t)),
-          .length = 0,
-      });
+      mesh, &(VertexIndex){
+                .entries = calloc(LINE_MAX_POINTS * LINE_INDEX_COUNT,
+                                  sizeof(uint16_t)),
+                .length = 0,
+            });
 
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
                             .path = "./runtime/assets/shader/shader.line.wgsl",
@@ -112,29 +112,29 @@ void line_create_plane(const LineCreatePlaneDescriptor *desc) {
 
   // A (p1)
   line_set_vertex(desc->points[0], normal, desc->color, uv, vertex_offset,
-                  desc->vertex->data);
+                  desc->vertex->entries);
 
   // B (p1 thickness)
   line_set_vertex(desc->points[1], normal, desc->color, uv,
-                  vertex_offset + VERTEX_STRIDE, desc->vertex->data);
+                  vertex_offset + VERTEX_STRIDE, desc->vertex->entries);
 
   // C (p2 thickness)
   line_set_vertex(desc->points[2], normal, desc->color, uv,
-                  vertex_offset + 2 * VERTEX_STRIDE, desc->vertex->data);
+                  vertex_offset + 2 * VERTEX_STRIDE, desc->vertex->entries);
 
   // D (p2)
   line_set_vertex(desc->points[3], normal, desc->color, uv,
-                  vertex_offset + 3 * VERTEX_STRIDE, desc->vertex->data);
+                  vertex_offset + 3 * VERTEX_STRIDE, desc->vertex->entries);
 
   // add indices (A-B-C & A-C-D)
   size_t vertex_length = desc->vertex->length / VERTEX_STRIDE;
 
-  desc->index->data[desc->index->length] = (uint16_t)vertex_length;
-  desc->index->data[desc->index->length + 1] = (uint16_t)vertex_length + 1;
-  desc->index->data[desc->index->length + 2] = (uint16_t)vertex_length + 2;
-  desc->index->data[desc->index->length + 3] = (uint16_t)vertex_length + 2;
-  desc->index->data[desc->index->length + 4] = (uint16_t)vertex_length + 3;
-  desc->index->data[desc->index->length + 5] = (uint16_t)vertex_length;
+  desc->index->entries[desc->index->length] = (uint16_t)vertex_length;
+  desc->index->entries[desc->index->length + 1] = (uint16_t)vertex_length + 1;
+  desc->index->entries[desc->index->length + 2] = (uint16_t)vertex_length + 2;
+  desc->index->entries[desc->index->length + 3] = (uint16_t)vertex_length + 2;
+  desc->index->entries[desc->index->length + 4] = (uint16_t)vertex_length + 3;
+  desc->index->entries[desc->index->length + 5] = (uint16_t)vertex_length;
 
   // update index length
   desc->index->length += 6;
@@ -166,7 +166,7 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
     float side = (p <= 1) ? -1.0f : 1.0f;
 
     line_set_vertex(base, opposite, color, (vec2){side, LINE_THICKNESS},
-                    vertex_attribute->length, vertex_attribute->data);
+                    vertex_attribute->length, vertex_attribute->entries);
 
     vertex_attribute->length += VERTEX_STRIDE;
   }
@@ -175,18 +175,18 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
   size_t vertex_length =
       (vertex_attribute->length / VERTEX_STRIDE) - LINE_VERTEX_COUNT;
 
-  vertex_index->data[vertex_index->length] = (uint16_t)vertex_length;
-  vertex_index->data[vertex_index->length + 1] = (uint16_t)vertex_length + 1;
-  vertex_index->data[vertex_index->length + 2] = (uint16_t)vertex_length + 2;
-  vertex_index->data[vertex_index->length + 3] = (uint16_t)vertex_length + 2;
-  vertex_index->data[vertex_index->length + 4] = (uint16_t)vertex_length + 3;
-  vertex_index->data[vertex_index->length + 5] = (uint16_t)vertex_length + 1;
+  vertex_index->entries[vertex_index->length] = (uint16_t)vertex_length;
+  vertex_index->entries[vertex_index->length + 1] = (uint16_t)vertex_length + 1;
+  vertex_index->entries[vertex_index->length + 2] = (uint16_t)vertex_length + 2;
+  vertex_index->entries[vertex_index->length + 3] = (uint16_t)vertex_length + 2;
+  vertex_index->entries[vertex_index->length + 4] = (uint16_t)vertex_length + 3;
+  vertex_index->entries[vertex_index->length + 5] = (uint16_t)vertex_length + 1;
 
   vertex_index->length += 6;
 }
 
 void line_update_buffer(mesh *mesh) {
   // update mesh vertex + index buffers
-  mesh_set_vertex_attribute(mesh, &mesh->vertex);
-  mesh_set_vertex_index(mesh, &mesh->index);
+  mesh_set_vertex_attribute(mesh, &mesh->vertex.base.attribute.data);
+  mesh_set_vertex_index(mesh, &mesh->vertex.base.index.data);
 }

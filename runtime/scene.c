@@ -34,7 +34,8 @@ scene scene_create(camera camera, viewport viewport) {
   // init mesh layers
   scene_init_mesh_layer(&scene.layer.lit);
   scene_init_mesh_layer(&scene.layer.unlit);
-
+  scene_init_mesh_layer(&scene.layer.gizmo);
+  
   // init lights
   scene_init_light_list(&scene);
 
@@ -55,6 +56,12 @@ mesh *scene_new_mesh_unlit(scene *scene) {
   return scene_layer_add_mesh(&scene->layer.unlit, new_mesh);
 }
 
+
+mesh *scene_new_mesh_gizmo(scene *scene) {
+  mesh *new_mesh = scene_new_mesh(scene);
+  return scene_layer_add_mesh(&scene->layer.gizmo, new_mesh);
+}
+
 void scene_draw_texture(scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
@@ -68,15 +75,38 @@ void scene_draw_texture(scene *scene, WGPURenderPassEncoder *render_pass) {
                        &scene->layer.unlit);
 }
 
-
 void scene_draw_shadow(scene *scene, WGPURenderPassEncoder *render_pass) {
+  // onlid draw solid/lit meshes
+  scene_draw_mesh_list(scene, mesh_shader_shadow, render_pass,
+                       &scene->layer.lit);
+}
+
+void scene_draw_wireframe(scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
   camera_draw(&scene->camera);
 
-  // onlid draw solid/lit meshes
-  scene_draw_mesh_list(scene, mesh_shader_shadow, render_pass,
+  // draw solid meshes first
+  scene_draw_mesh_list(scene, mesh_shader_wireframe, render_pass,
                        &scene->layer.lit);
+  // draw solid meshes then
+  scene_draw_mesh_list(scene, mesh_shader_wireframe, render_pass,
+                       &scene->layer.unlit);
+
+}
+
+void scene_draw_solid(scene *scene, WGPURenderPassEncoder *render_pass) {
+
+  // update camera
+  camera_draw(&scene->camera);
+
+  // draw solid meshes first
+  scene_draw_mesh_list(scene, mesh_shader_solid, render_pass,
+                       &scene->layer.lit);
+  // draw solid meshes then
+  scene_draw_mesh_list(scene, mesh_shader_solid, render_pass,
+                       &scene->layer.unlit);
+
 }
 
 /**
@@ -85,7 +115,7 @@ void scene_draw_shadow(scene *scene, WGPURenderPassEncoder *render_pass) {
  */
 void scene_build_texture(scene *scene) {
 
-  printf("======= BUILD TEXTURE SCENE ======\n");
+  VERBOSE_PRINT("======= BUILD TEXTURE SCENE ======\n");
 
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_texture, &scene->layer.lit);
@@ -98,33 +128,31 @@ void scene_build_texture(scene *scene) {
    Establish pipeline from previously set bind groups
  */
 void scene_build_solid(scene *scene) {
-  printf("======= BUILD SOLID SCENE ======\n");
+  VERBOSE_PRINT("======= BUILD SOLID SCENE ======\n");
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_solid, &scene->layer.lit);
   // draw transparent meshes then
   scene_build_mesh_list(scene, mesh_shader_solid, &scene->layer.unlit);
 }
 
-
 /**
    Build meshes Wireframe shader in each scene list
    Establish pipeline from previously set bind groups
  */
 void scene_build_wireframe(scene *scene) {
-  printf("======= BUILD WIREFRAME SCENE ======\n");
+  VERBOSE_PRINT("======= BUILD WIREFRAME SCENE ======\n");
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_wireframe, &scene->layer.lit);
   // draw transparent meshes then
   scene_build_mesh_list(scene, mesh_shader_wireframe, &scene->layer.unlit);
 }
 
-
 /**
    Build meshes Shadow shader in each scene list
    Establish pipeline from previously set bind groups
  */
 void scene_build_shadow(scene *scene) {
-  printf("======= BUILD SHADOW SCENE ======\n");
+  VERBOSE_PRINT("======= BUILD SHADOW SCENE ======\n");
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_shadow, &scene->layer.lit);
   // draw transparent meshes then
@@ -191,7 +219,7 @@ void scene_draw_mesh_list(scene *scene, mesh_get_shader_callback target_shader,
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = mesh_list->entries[i];
-    mesh_draw(current_mesh, target_shader(current_mesh), render_pass,
+    mesh_draw_default_buffer(current_mesh, target_shader(current_mesh), render_pass,
               &scene->camera, &scene->viewport);
   }
 }

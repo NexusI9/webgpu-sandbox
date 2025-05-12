@@ -16,13 +16,13 @@ typedef struct {
 } vertex;
 
 typedef struct {
-  float *data;
+  float *entries;
   size_t length;
   size_t capacity;
 } VertexAttribute;
 
 typedef struct {
-  uint16_t *data;
+  uint16_t *entries;
   size_t length;
   size_t capacity;
 } VertexIndex;

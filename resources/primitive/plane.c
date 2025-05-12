@@ -19,7 +19,7 @@ primitive primitive_plane() {
       // vertex data
       .vertex =
           {
-              .data = plane_vertex_data,
+              .entries = plane_vertex_data,
               .length =
                   sizeof(plane_vertex_data) / sizeof(plane_vertex_data[0]),
           },
@@ -27,7 +27,7 @@ primitive primitive_plane() {
       // index data
       .index =
           {
-              .data = plane_index_data,
+              .entries = plane_index_data,
               .length = sizeof(plane_index_data) / sizeof(plane_index_data[0]),
           },
   };

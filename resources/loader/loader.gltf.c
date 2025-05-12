@@ -82,7 +82,7 @@ void loader_gltf_add_vertex_attribute(VertexAttribute *vert_attribute,
       size_t index = x + i;
       // prevent overflow
       if (row_offset + x < vert_attribute->length)
-        vert_attribute->data[row_offset + x] = data[index];
+        vert_attribute->entries[row_offset + x] = data[index];
     }
     row++;
   }
@@ -107,7 +107,7 @@ void loader_gltf_init_vertex_lists(VertexAttribute *attributes,
   // list->count is the number of vertex used by index array
   // need to multiply by 3
   attributes->length = list->count * VERTEX_STRIDE;
-  attributes->data = (float *)calloc(attributes->length, sizeof(float));
+  attributes->entries = (float *)calloc(attributes->length, sizeof(float));
 }
 
 static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
@@ -134,7 +134,7 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
 
   // DELETEME: print_list_uint16(index_data, index_accessor->count, 1);
 
-  return (VertexIndex){.data = index_data, .length = index_accessor->count};
+  return (VertexIndex){.entries = index_data, .length = index_accessor->count};
 }
 
 void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,

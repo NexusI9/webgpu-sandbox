@@ -89,22 +89,23 @@ void mesh_create_primitive(mesh *mesh,
 
 void mesh_set_vertex_attribute(mesh *mesh, const VertexAttribute *attributes) {
 
+  MeshVertex *base_vertex = &mesh->vertex.base;
   // reset buffer
-  if (mesh->buffer.vertex) {
-    wgpuBufferRelease(mesh->buffer.vertex);
-    mesh->buffer.vertex = NULL;
+  if (base_vertex->attribute.buffer) {
+    wgpuBufferRelease(base_vertex->attribute.buffer);
+    base_vertex->attribute.buffer = NULL;
   }
 
-  mesh->vertex.data = attributes->data;
-  mesh->vertex.length = attributes->length;
-  mesh->vertex.capacity = attributes->length;
+  mesh->vertex.base.attribute.data.entries = attributes->entries;
+  mesh->vertex.base.attribute.data.length = attributes->length;
+  mesh->vertex.base.attribute.data.capacity = attributes->length;
 
-  if (mesh->vertex.length) {
+  if (base_vertex->attribute.data.length) {
     // store vertex in buffer
     mesh_create_vertex_buffer(
         mesh, &(MeshCreateBufferDescriptor){
-                  .data = (void *)mesh->vertex.data,
-                  .size = mesh->vertex.length * sizeof(mesh->vertex.data[0]),
+                  .data = (void *)base_vertex->attribute.data.entries,
+                  .size = base_vertex->attribute.data.length * sizeof(float),
               });
 
     // update wireframe shader as it requires mesh vertex & index
@@ -114,22 +115,23 @@ void mesh_set_vertex_attribute(mesh *mesh, const VertexAttribute *attributes) {
 
 void mesh_set_vertex_index(mesh *mesh, const VertexIndex *indexes) {
 
+  MeshVertex *base_vertex = &mesh->vertex.base;
   // reset buffer
-  if (mesh->buffer.index) {
-    wgpuBufferRelease(mesh->buffer.index);
-    mesh->buffer.index = NULL;
+  if (base_vertex->index.buffer) {
+    wgpuBufferRelease(base_vertex->index.buffer);
+    base_vertex->index.buffer = NULL;
   }
 
-  mesh->index.data = indexes->data;
-  mesh->index.length = indexes->length;
-  mesh->index.capacity = indexes->length;
+  mesh->vertex.base.index.data.entries = indexes->entries;
+  mesh->vertex.base.index.data.length = indexes->length;
+  mesh->vertex.base.index.data.capacity = indexes->length;
 
-  if (mesh->index.length) {
+  if (base_vertex->index.data.length) {
     // store index in buffer
     mesh_create_index_buffer(
         mesh, &(MeshCreateBufferDescriptor){
-                  .data = (void *)mesh->index.data,
-                  .size = mesh->index.length * sizeof(mesh->index.data[0]),
+                  .data = (void *)base_vertex->index.data.entries,
+                  .size = base_vertex->attribute.data.length * sizeof(uint16_t),
               });
 
     // update wireframe shader as it requires mesh vertex & index
@@ -156,7 +158,7 @@ void mesh_create_vertex_buffer(mesh *mesh,
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue "), exit(0);
 
-  buffer_create(&mesh->buffer.vertex,
+  buffer_create(&mesh->vertex.base.attribute.buffer,
                 &(CreateBufferDescriptor){
                     .queue = mesh->queue,
                     .device = mesh->device,
@@ -174,7 +176,7 @@ void mesh_create_index_buffer(mesh *mesh,
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue"), exit(0);
 
-  buffer_create(&mesh->buffer.index,
+  buffer_create(&mesh->vertex.base.index.buffer,
                 &(CreateBufferDescriptor){
                     .queue = mesh->queue,
                     .device = mesh->device,
@@ -196,7 +198,8 @@ void mesh_build(mesh *mesh, shader *shader) {
 #endif
 
   // check if mesh has correct buffer before drawing
-  if (mesh->buffer.index == NULL || mesh->buffer.vertex == NULL) {
+  if (mesh->vertex.base.index.buffer == NULL ||
+      mesh->vertex.base.attribute.buffer == NULL) {
     perror("Mesh has no device or queue, further error may occurs.\n");
   }
 
@@ -205,23 +208,50 @@ void mesh_build(mesh *mesh, shader *shader) {
 }
 
 /**
-   Mesh main draw function
+   Mesh main draw from default vertex and index buffer
  */
-void mesh_draw(mesh *mesh, shader *shader, WGPURenderPassEncoder *render_pass,
-               const camera *camera, const viewport *viewport) {
+void mesh_draw_default_buffer(mesh *mesh, shader *shader,
+                              WGPURenderPassEncoder *render_pass,
+                              const camera *camera, const viewport *viewport) {
 
   // draw shader
   // if shader is null, use default shader
   shader_draw(shader, render_pass, camera, viewport);
 
+  WGPUBuffer attribute_buffer = mesh->vertex.base.attribute.buffer;
+  WGPUBuffer index_buffer = mesh->vertex.base.index.buffer;
+  size_t index_length = mesh->vertex.base.index.data.length;
+
   // draw indexes from buffer
-  wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, mesh->buffer.vertex, 0,
+  wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
                                        WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderSetIndexBuffer(*render_pass, mesh->buffer.index,
-                                      WGPUIndexFormat_Uint16, 0,
-                                      WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderDrawIndexed(*render_pass, mesh->index.length, 1, 0, 0,
-                                   0);
+  wgpuRenderPassEncoderSetIndexBuffer(
+      *render_pass, index_buffer, WGPUIndexFormat_Uint16, 0, WGPU_WHOLE_SIZE);
+  wgpuRenderPassEncoderDrawIndexed(*render_pass, index_length, 1, 0, 0, 0);
+}
+
+/**
+   Mesh main draw from default vertex and index buffer
+ */
+void mesh_draw_wireframe_buffer(mesh *mesh, shader *shader,
+                                WGPURenderPassEncoder *render_pass,
+                                const camera *camera,
+                                const viewport *viewport) {
+
+  // draw shader
+  // if shader is null, use default shader
+  shader_draw(shader, render_pass, camera, viewport);
+
+  WGPUBuffer attribute_buffer = mesh->vertex.wireframe.attribute.buffer;
+  WGPUBuffer index_buffer = mesh->vertex.wireframe.index.buffer;
+  size_t index_length = mesh->vertex.wireframe.index.data.length;
+
+  // draw indexes from buffer
+  wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
+                                       WGPU_WHOLE_SIZE);
+  wgpuRenderPassEncoderSetIndexBuffer(
+      *render_pass, index_buffer, WGPUIndexFormat_Uint16, 0, WGPU_WHOLE_SIZE);
+  wgpuRenderPassEncoderDrawIndexed(*render_pass, index_length, 1, 0, 0, 0);
 }
 
 /**
@@ -403,12 +433,10 @@ shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader.shadow; }
  */
 shader *mesh_shader_wireframe(mesh *mesh) { return &mesh->shader.wireframe; }
 
-
 /**
    Return mesh solid shader
  */
 shader *mesh_shader_solid(mesh *mesh) { return &mesh->shader.texture; }
-
 
 /**
    Init mesh shadow shader.
@@ -469,8 +497,8 @@ void mesh_init_shadow_shader(mesh *mesh) {
  */
 void mesh_init_wireframe_shader(mesh *mesh) {
 
-  WGPUBuffer vertex_buffer = mesh->buffer.wireframe.vertex;
-  WGPUBuffer index_buffer = mesh->buffer.wireframe.index;
+  WGPUBuffer vertex_buffer = mesh->vertex.wireframe.attribute.buffer;
+  WGPUBuffer index_buffer = mesh->vertex.wireframe.index.buffer;
 
   // reset existing wireframe buffer if exists
   if (vertex_buffer) {
@@ -507,10 +535,13 @@ void mesh_init_wireframe_shader(mesh *mesh) {
   EdgeHashSet edges;
   edge_hash_set_create(&edges, 40);
 
-  for (int i = 0; i < mesh->index.length; i += 3) {
-    unsigned int a = mesh->index.data[i];
-    unsigned int b = mesh->index.data[i + 1];
-    unsigned int c = mesh->index.data[i + 2];
+  VertexIndex *base_index = &mesh->vertex.base.index.data;
+  VertexAttribute *base_attribute = &mesh->vertex.base.attribute.data;
+
+  for (int i = 0; i < base_index->length; i += 3) {
+    unsigned int a = base_index->entries[i];
+    unsigned int b = base_index->entries[i + 1];
+    unsigned int c = base_index->entries[i + 2];
 
     EdgeKey ab = {MIN(a, b), MAX(a, b)};
     EdgeKey bc = {MIN(b, c), MAX(b, c)};
@@ -525,7 +556,7 @@ void mesh_init_wireframe_shader(mesh *mesh) {
   size_t vertex_capacity = edges.length * LINE_VERTEX_COUNT * VERTEX_STRIDE;
   float wireframe_vertex_attribute[vertex_capacity];
   VertexAttribute temp_vertex_attribute = {
-      .data = wireframe_vertex_attribute,
+      .entries = wireframe_vertex_attribute,
       .capacity = vertex_capacity,
       .length = 0,
   };
@@ -533,7 +564,7 @@ void mesh_init_wireframe_shader(mesh *mesh) {
   size_t index_capacity = edges.length * LINE_INDEX_COUNT;
   uint16_t wireframe_index_attribute[index_capacity];
   VertexIndex temp_vertex_index = {
-      .data = wireframe_index_attribute,
+      .entries = wireframe_index_attribute,
       .capacity = index_capacity,
       .length = 0,
   };
@@ -546,12 +577,13 @@ void mesh_init_wireframe_shader(mesh *mesh) {
 
     // base vertex
     int base_index = current_edge->key[0];
-    float *base_attributes = &mesh->vertex.data[base_index * VERTEX_STRIDE];
+    float *base_attributes =
+        &base_attribute->entries[base_index * VERTEX_STRIDE];
     vertex base_vertex = vertex_from_array(base_attributes);
 
     // opposite vertex
     int opp_index = current_edge->key[1];
-    float *opp_attributes = &mesh->vertex.data[opp_index * VERTEX_STRIDE];
+    float *opp_attributes = &base_attribute->entries[opp_index * VERTEX_STRIDE];
     vertex opp_vertex = vertex_from_array(opp_attributes);
 
     // TODO: make dynamic wireframe color
@@ -565,24 +597,35 @@ void mesh_init_wireframe_shader(mesh *mesh) {
   // upload vertex attribute and index to wireframe buffer
 
   // upload vertex attributes
-  buffer_create(&mesh->buffer.wireframe.vertex,
+  buffer_create(&mesh->vertex.wireframe.attribute.buffer,
                 &(CreateBufferDescriptor){
                     .queue = mesh->queue,
                     .device = mesh->device,
-                    .data = (void *)temp_vertex_attribute.data,
+                    .data = (void *)temp_vertex_attribute.entries,
                     .size = temp_vertex_attribute.length * sizeof(float),
                     .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
                 });
 
   // upload vertex index
-  buffer_create(&mesh->buffer.wireframe.index,
+  buffer_create(&mesh->vertex.wireframe.attribute.buffer,
                 &(CreateBufferDescriptor){
                     .queue = mesh->queue,
                     .device = mesh->device,
-                    .data = (void *)temp_vertex_index.data,
+                    .data = (void *)temp_vertex_index.entries,
                     .size = temp_vertex_index.length * sizeof(uint16_t),
                     .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
+                });
+
+  // create shader
+  shader *wireframe_shader = mesh_shader_wireframe(mesh);
+  shader_create(wireframe_shader,
+                &(ShaderCreateDescriptor){
+                    .path = "./runtime/assets/shader/shader.wireframe.wgsl",
+                    .label = "wireframe",
+                    .device = mesh->device,
+                    .queue = mesh->queue,
+                    .name = "wireframe",
                 });
 }
