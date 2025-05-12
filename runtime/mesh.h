@@ -54,16 +54,8 @@ typedef struct {
 } MeshList;
 
 typedef struct {
-  struct {
-    WGPUBuffer buffer;
-    VertexAttribute data;
-  } attribute; // vertex list + buffer
-
-  struct {
-    WGPUBuffer buffer;
-    VertexIndex data;
-  } index; // index list + buffer
-
+    VertexAttribute attribute;
+    VertexIndex index;
 } MeshVertex;
 
 // Core
@@ -82,7 +74,7 @@ typedef struct mesh {
   WGPUDevice *device;
   WGPUQueue *queue;
 
-  // vertex
+  // vertex data & buffer
   struct {
     MeshVertex base;
     MeshVertex wireframe;

@@ -96,16 +96,16 @@ void mesh_set_vertex_attribute(mesh *mesh, const VertexAttribute *attributes) {
     base_vertex->attribute.buffer = NULL;
   }
 
-  mesh->vertex.base.attribute.data.entries = attributes->entries;
-  mesh->vertex.base.attribute.data.length = attributes->length;
-  mesh->vertex.base.attribute.data.capacity = attributes->length;
+  mesh->vertex.base.attribute.entries = attributes->entries;
+  mesh->vertex.base.attribute.length = attributes->length;
+  mesh->vertex.base.attribute.capacity = attributes->length;
 
-  if (base_vertex->attribute.data.length) {
+  if (base_vertex->attribute.length) {
     // store vertex in buffer
     mesh_create_vertex_buffer(
         mesh, &(MeshCreateBufferDescriptor){
-                  .data = (void *)base_vertex->attribute.data.entries,
-                  .size = base_vertex->attribute.data.length * sizeof(float),
+                  .data = (void *)base_vertex->attribute.entries,
+                  .size = base_vertex->attribute.length * sizeof(float),
               });
 
     // update wireframe shader as it requires mesh vertex & index
@@ -122,16 +122,16 @@ void mesh_set_vertex_index(mesh *mesh, const VertexIndex *indexes) {
     base_vertex->index.buffer = NULL;
   }
 
-  mesh->vertex.base.index.data.entries = indexes->entries;
-  mesh->vertex.base.index.data.length = indexes->length;
-  mesh->vertex.base.index.data.capacity = indexes->length;
+  mesh->vertex.base.index.entries = indexes->entries;
+  mesh->vertex.base.index.length = indexes->length;
+  mesh->vertex.base.index.capacity = indexes->length;
 
-  if (base_vertex->index.data.length) {
+  if (base_vertex->index.length) {
     // store index in buffer
     mesh_create_index_buffer(
         mesh, &(MeshCreateBufferDescriptor){
-                  .data = (void *)base_vertex->index.data.entries,
-                  .size = base_vertex->attribute.data.length * sizeof(uint16_t),
+                  .data = (void *)base_vertex->index.entries,
+                  .size = base_vertex->attribute.length * sizeof(uint16_t),
               });
 
     // update wireframe shader as it requires mesh vertex & index
@@ -220,7 +220,7 @@ void mesh_draw_default_buffer(mesh *mesh, shader *shader,
 
   WGPUBuffer attribute_buffer = mesh->vertex.base.attribute.buffer;
   WGPUBuffer index_buffer = mesh->vertex.base.index.buffer;
-  size_t index_length = mesh->vertex.base.index.data.length;
+  size_t index_length = mesh->vertex.base.index.length;
 
   // draw indexes from buffer
   wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
@@ -244,7 +244,7 @@ void mesh_draw_wireframe_buffer(mesh *mesh, shader *shader,
 
   WGPUBuffer attribute_buffer = mesh->vertex.wireframe.attribute.buffer;
   WGPUBuffer index_buffer = mesh->vertex.wireframe.index.buffer;
-  size_t index_length = mesh->vertex.wireframe.index.data.length;
+  size_t index_length = mesh->vertex.wireframe.index.length;
 
   // draw indexes from buffer
   wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
@@ -535,8 +535,8 @@ void mesh_init_wireframe_shader(mesh *mesh) {
   EdgeHashSet edges;
   edge_hash_set_create(&edges, 40);
 
-  VertexIndex *base_index = &mesh->vertex.base.index.data;
-  VertexAttribute *base_attribute = &mesh->vertex.base.attribute.data;
+  VertexIndex *base_index = &mesh->vertex.base.index;
+  VertexAttribute *base_attribute = &mesh->vertex.base.attribute;
 
   for (int i = 0; i < base_index->length; i += 3) {
     unsigned int a = base_index->entries[i];

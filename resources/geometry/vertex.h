@@ -3,6 +3,7 @@
 
 #include <cglm/cglm.h>
 #include <stddef.h>
+#include <webgpu/webgpu.h>
 
 #define VERTEX_STRIDE 11
 /*
@@ -19,12 +20,14 @@ typedef struct {
   float *entries;
   size_t length;
   size_t capacity;
+  WGPUBuffer buffer;
 } VertexAttribute;
 
 typedef struct {
   uint16_t *entries;
   size_t length;
   size_t capacity;
+  WGPUBuffer buffer;
 } VertexIndex;
 
 typedef enum {
@@ -50,7 +53,6 @@ typedef struct {
   size_t count;
 
 } VertexList; // TODO: unsure about the naming..
-
 
 void vertex_create(vertex *);
 void vertex_list_create(VertexList *, size_t);

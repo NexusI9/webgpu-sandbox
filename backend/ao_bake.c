@@ -40,7 +40,7 @@ float ao_bake_vertex(vertex *vertex, mesh *source, mesh *line) {
 #endif
 
     // traverse mesh triangles
-    for (size_t t = 0; t < source->vertex.base.index.data.length; t += 3) {
+    for (size_t t = 0; t < source->vertex.base.index.length; t += 3) {
       triangle triangle = ao_bake_mesh_triangle(source, t);
       vec3 hit;
       triangle_raycast(&triangle, world_position, ray_direction,
@@ -105,7 +105,7 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
 
   // Raycast from ray origin (source surface) towards each compare mesh
   // triangles
-  for (size_t i = 0; i < desc->compare_mesh->vertex.base.index.data.length; i += 3) {
+  for (size_t i = 0; i < desc->compare_mesh->vertex.base.index.length; i += 3) {
     triangle compare_triangle = ao_bake_mesh_triangle(desc->compare_mesh, i);
     vec3 hit;
     triangle_raycast(&compare_triangle, *desc->ray_origin, *desc->ray_direction,
@@ -137,8 +137,8 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
  */
 triangle ao_bake_mesh_triangle(mesh *mesh, size_t index) {
 
-  float *base_attribute = mesh->vertex.base.attribute.data.entries;
-  uint16_t *base_index = mesh->vertex.base.index.data.entries;
+  float *base_attribute = mesh->vertex.base.attribute.entries;
+  uint16_t *base_index = mesh->vertex.base.index.entries;
 
   vertex source_vertex_a =
       vertex_from_array(&base_attribute[base_index[index] * VERTEX_STRIDE]);
@@ -235,8 +235,8 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
 
     VERBOSE_PRINT("Baking mesh: %s\n", current_mesh->name);
 
-    VertexAttribute *mesh_vertex = &current_mesh->vertex.base.attribute.data;
-    VertexIndex *mesh_index = &current_mesh->vertex.base.index.data;
+    VertexAttribute *mesh_vertex = &current_mesh->vertex.base.attribute;
+    VertexIndex *mesh_index = &current_mesh->vertex.base.index;
     texture *mesh_texture = &desc->texture[m];
     /*
       Go through each indexes
@@ -378,7 +378,7 @@ void ao_bake_global(const AOBakeDescriptor *desc) {
     VERBOSE_PRINT("Baking mesh: %s\n", source_mesh->name);
 
     // go through the mesh triangles and check if it's occluded
-    for (size_t i = 0; i < source_mesh->vertex.base.index.data.length; i += 3) {
+    for (size_t i = 0; i < source_mesh->vertex.base.index.length; i += 3) {
       triangle source_triangle = ao_bake_mesh_triangle(source_mesh, i);
       vec3 rays[AO_GLOBAL_RAY_AMOUNT];
       vec3 ray_normal;
