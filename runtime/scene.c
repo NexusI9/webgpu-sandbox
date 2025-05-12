@@ -35,7 +35,7 @@ scene scene_create(camera camera, viewport viewport) {
   // init mesh layers
   scene_init_mesh_layer(&scene.layer.lit);
   scene_init_mesh_layer(&scene.layer.unlit);
-  scene_init_mesh_layer(&scene.layer.gizmo);
+  scene_init_mesh_layer(&scene.layer.fixed);
 
   // init lights
   scene_init_light_list(&scene);
@@ -57,11 +57,12 @@ mesh *scene_new_mesh_unlit(scene *scene) {
   return scene_layer_add_mesh(&scene->layer.unlit, new_mesh);
 }
 
-mesh *scene_new_mesh_gizmo(scene *scene) {
+mesh *scene_new_mesh_fixed(scene *scene) {
   mesh *new_mesh = scene_new_mesh(scene);
-  return scene_layer_add_mesh(&scene->layer.gizmo, new_mesh);
+  return scene_layer_add_mesh(&scene->layer.fixed, new_mesh);
 }
 
+// TODO: Simplify the overall scene draw/build process
 void scene_draw_texture(scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
@@ -73,6 +74,16 @@ void scene_draw_texture(scene *scene, WGPURenderPassEncoder *render_pass) {
   // draw transparent meshes then
   scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_texture,
                        render_pass, &scene->layer.unlit);
+}
+
+void scene_draw_fixed(scene *scene, WGPURenderPassEncoder *render_pass) {
+
+  // update camera
+  camera_draw(&scene->camera);
+
+  // draw fixed mesh
+  scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_texture,
+                       render_pass, &scene->layer.fixed);
 }
 
 void scene_draw_shadow(scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -153,6 +164,16 @@ void scene_build_shadow(scene *scene) {
   scene_build_mesh_list(scene, mesh_shader_shadow, &scene->layer.lit);
   // draw transparent meshes then
   scene_build_mesh_list(scene, mesh_shader_shadow, &scene->layer.unlit);
+}
+
+/**
+   Build Fixed mesh layer.
+   Fixed layer use the Texture shader as default shader (preventing creating an
+   additional persisten unsued Fixed Shader in Mesh).
+ */
+void scene_build_fixed(scene *scene) {
+  VERBOSE_PRINT("======= BUILD FIXED SCENE ======\n");
+  scene_build_mesh_list(scene, mesh_shader_texture, &scene->layer.fixed);
 }
 
 void scene_build_mesh_list(scene *scene, mesh_get_shader_callback target_shader,

@@ -179,8 +179,11 @@ void renderer_render(void *desc) {
               .depthReadOnly = false,            // Allow depth write
           }});
 
-  // draw mesh scene
+  // draw dynamic mesh
   config->draw_callback(config->scene, &render_pass);
+
+  // draw fixed mesh
+  scene_draw_fixed(config->scene, &render_pass);
 
   // end render pass
   wgpuRenderPassEncoderEnd(render_pass);
@@ -209,6 +212,10 @@ void renderer_render(void *desc) {
 void renderer_draw(renderer *renderer, scene *scene,
                    const RendererDrawMode draw_mode) {
 
+  // Fixed (static) rendering
+  scene_build_fixed(scene);
+
+  // Dynamic rendering
   scene_draw_callback draw_callback;
   switch (draw_mode) {
 

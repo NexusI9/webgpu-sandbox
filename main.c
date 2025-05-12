@@ -175,7 +175,7 @@ void add_grid() {
 
   glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
 
-  mesh *grid = scene_new_mesh_unlit(&main_scene);
+  mesh *grid = scene_new_mesh_fixed(&main_scene);
   grid_create(grid, &(GridCreateDescriptor){
                         .uniform = grid_uniform,
                         .camera = &main_scene.camera,
@@ -257,7 +257,7 @@ int main(int argc, const char *argv[]) {
   import_cube();
 
   // add_line();
-  //add_grid();
+  add_grid();
 
   // Update Loop
   renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Wireframe);

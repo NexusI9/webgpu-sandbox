@@ -48,7 +48,7 @@
 typedef struct {
   MeshIndexedList lit;
   MeshIndexedList unlit;
-  MeshIndexedList gizmo;
+  MeshIndexedList fixed;
 } SceneLayerList;
 
 typedef struct {
@@ -87,20 +87,30 @@ typedef void (*scene_draw_callback)(scene *, WGPURenderPassEncoder *);
 typedef void (*scene_build_callback)(scene *);
 
 scene scene_create(camera, viewport);
+
+// dynamic rendering
 mesh *scene_new_mesh_lit(scene *);
 mesh *scene_new_mesh_unlit(scene *);
-mesh *scene_new_mesh_gizmo(scene *);
-
-void scene_draw_texture(scene *, WGPURenderPassEncoder *);
-void scene_draw_shadow(scene *, WGPURenderPassEncoder *);
-void scene_draw_solid(scene *, WGPURenderPassEncoder *);
-void scene_draw_wireframe(scene *, WGPURenderPassEncoder *);
 
 void scene_build_texture(scene *);
 void scene_build_shadow(scene *);
 void scene_build_solid(scene *);
 void scene_build_wireframe(scene *);
 
+void scene_draw_texture(scene *, WGPURenderPassEncoder *);
+void scene_draw_shadow(scene *, WGPURenderPassEncoder *);
+void scene_draw_solid(scene *, WGPURenderPassEncoder *);
+void scene_draw_wireframe(scene *, WGPURenderPassEncoder *);
+
+// fixed rendering
+mesh *scene_new_mesh_fixed(scene *);
+
+void scene_build_fixed(scene *);
+
+void scene_draw_fixed(scene *, WGPURenderPassEncoder *);
+
+
+// light
 size_t scene_add_point_light(scene *, PointLightDescriptor *);
 size_t scene_add_spot_light(scene *, SpotLightDescriptor *);
 size_t scene_add_ambient_light(scene *, AmbientLightDescriptor *);
