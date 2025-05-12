@@ -54,8 +54,8 @@ typedef struct {
 } MeshList;
 
 typedef struct {
-    VertexAttribute attribute;
-    VertexIndex index;
+  VertexAttribute attribute;
+  VertexIndex index;
 } MeshVertex;
 
 // Core
@@ -95,6 +95,7 @@ typedef struct mesh {
 } mesh;
 
 typedef shader *(*mesh_get_shader_callback)(mesh *);
+typedef MeshVertex *(*mesh_get_vertex_callback)(mesh *);
 
 void mesh_create(mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(mesh *, const MeshCreatePrimitiveDescriptor *);
@@ -108,11 +109,8 @@ void mesh_set_shader(mesh *, const ShaderCreateDescriptor *);
 void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);
 
-void mesh_draw_default_buffer(mesh *, shader *, WGPURenderPassEncoder *,
-                              const camera *, const viewport *);
-
-void mesh_draw_wireframe_buffer(mesh *, shader *, WGPURenderPassEncoder *,
-                                const camera *, const viewport *);
+void mesh_draw(MeshVertex *, shader *, WGPURenderPassEncoder *, const camera *,
+               const viewport *);
 
 void mesh_build(mesh *, shader *);
 
@@ -127,6 +125,9 @@ mesh *mesh_new_child_empty(mesh *);
 mesh *mesh_get_child_by_id(mesh *, size_t);
 
 MeshUniform mesh_model_uniform(mesh *);
+
+MeshVertex *mesh_vertex_base(mesh *);
+MeshVertex *mesh_vertex_wireframe(mesh *);
 
 shader *mesh_shader_texture(mesh *);
 shader *mesh_shader_shadow(mesh *);

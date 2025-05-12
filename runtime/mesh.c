@@ -210,41 +210,17 @@ void mesh_build(mesh *mesh, shader *shader) {
 /**
    Mesh main draw from default vertex and index buffer
  */
-void mesh_draw_default_buffer(mesh *mesh, shader *shader,
-                              WGPURenderPassEncoder *render_pass,
-                              const camera *camera, const viewport *viewport) {
+void mesh_draw(MeshVertex *vertex, shader *shader,
+               WGPURenderPassEncoder *render_pass, const camera *camera,
+               const viewport *viewport) {
 
   // draw shader
   // if shader is null, use default shader
   shader_draw(shader, render_pass, camera, viewport);
 
-  WGPUBuffer attribute_buffer = mesh->vertex.base.attribute.buffer;
-  WGPUBuffer index_buffer = mesh->vertex.base.index.buffer;
-  size_t index_length = mesh->vertex.base.index.length;
-
-  // draw indexes from buffer
-  wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
-                                       WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderSetIndexBuffer(
-      *render_pass, index_buffer, WGPUIndexFormat_Uint16, 0, WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderDrawIndexed(*render_pass, index_length, 1, 0, 0, 0);
-}
-
-/**
-   Mesh main draw from default vertex and index buffer
- */
-void mesh_draw_wireframe_buffer(mesh *mesh, shader *shader,
-                                WGPURenderPassEncoder *render_pass,
-                                const camera *camera,
-                                const viewport *viewport) {
-
-  // draw shader
-  // if shader is null, use default shader
-  shader_draw(shader, render_pass, camera, viewport);
-
-  WGPUBuffer attribute_buffer = mesh->vertex.wireframe.attribute.buffer;
-  WGPUBuffer index_buffer = mesh->vertex.wireframe.index.buffer;
-  size_t index_length = mesh->vertex.wireframe.index.length;
+  WGPUBuffer attribute_buffer = vertex->attribute.buffer;
+  WGPUBuffer index_buffer = vertex->index.buffer;
+  size_t index_length = vertex->index.length;
 
   // draw indexes from buffer
   wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
@@ -437,6 +413,18 @@ shader *mesh_shader_wireframe(mesh *mesh) { return &mesh->shader.wireframe; }
    Return mesh solid shader
  */
 shader *mesh_shader_solid(mesh *mesh) { return &mesh->shader.texture; }
+
+/**
+   Return Mesh Base Vertex 
+ */
+MeshVertex *mesh_vertex_base(mesh *mesh) { return &mesh->vertex.base; }
+
+/**
+   Return Mesh Wireframe Vertex 
+ */
+MeshVertex *mesh_vertex_wireframe(mesh *mesh) {
+  return &mesh->vertex.wireframe;
+}
 
 /**
    Init mesh shadow shader.

@@ -13,7 +13,8 @@ static void scene_init_mesh_layer(MeshIndexedList *);
 static void scene_init_light_list(scene *);
 static mesh *scene_new_mesh(scene *);
 static mesh *scene_layer_add_mesh(MeshIndexedList *, mesh *);
-static void scene_draw_mesh_list(scene *, mesh_get_shader_callback,
+static void scene_draw_mesh_list(scene *, mesh_get_vertex_callback,
+                                 mesh_get_shader_callback,
                                  WGPURenderPassEncoder *, MeshIndexedList *);
 static void scene_build_mesh_list(scene *, mesh_get_shader_callback,
                                   MeshIndexedList *);
@@ -35,7 +36,7 @@ scene scene_create(camera camera, viewport viewport) {
   scene_init_mesh_layer(&scene.layer.lit);
   scene_init_mesh_layer(&scene.layer.unlit);
   scene_init_mesh_layer(&scene.layer.gizmo);
-  
+
   // init lights
   scene_init_light_list(&scene);
 
@@ -56,7 +57,6 @@ mesh *scene_new_mesh_unlit(scene *scene) {
   return scene_layer_add_mesh(&scene->layer.unlit, new_mesh);
 }
 
-
 mesh *scene_new_mesh_gizmo(scene *scene) {
   mesh *new_mesh = scene_new_mesh(scene);
   return scene_layer_add_mesh(&scene->layer.gizmo, new_mesh);
@@ -68,16 +68,16 @@ void scene_draw_texture(scene *scene, WGPURenderPassEncoder *render_pass) {
   camera_draw(&scene->camera);
 
   // draw solid meshes first
-  scene_draw_mesh_list(scene, mesh_shader_texture, render_pass,
-                       &scene->layer.lit);
+  scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_texture,
+                       render_pass, &scene->layer.lit);
   // draw transparent meshes then
-  scene_draw_mesh_list(scene, mesh_shader_texture, render_pass,
-                       &scene->layer.unlit);
+  scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_texture,
+                       render_pass, &scene->layer.unlit);
 }
 
 void scene_draw_shadow(scene *scene, WGPURenderPassEncoder *render_pass) {
   // onlid draw solid/lit meshes
-  scene_draw_mesh_list(scene, mesh_shader_shadow, render_pass,
+  scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_shadow, render_pass,
                        &scene->layer.lit);
 }
 
@@ -87,12 +87,11 @@ void scene_draw_wireframe(scene *scene, WGPURenderPassEncoder *render_pass) {
   camera_draw(&scene->camera);
 
   // draw solid meshes first
-  scene_draw_mesh_list(scene, mesh_shader_wireframe, render_pass,
-                       &scene->layer.lit);
+  scene_draw_mesh_list(scene, mesh_vertex_wireframe, mesh_shader_wireframe,
+                       render_pass, &scene->layer.lit);
   // draw solid meshes then
-  scene_draw_mesh_list(scene, mesh_shader_wireframe, render_pass,
-                       &scene->layer.unlit);
-
+  scene_draw_mesh_list(scene, mesh_vertex_wireframe, mesh_shader_wireframe,
+                       render_pass, &scene->layer.unlit);
 }
 
 void scene_draw_solid(scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -101,12 +100,11 @@ void scene_draw_solid(scene *scene, WGPURenderPassEncoder *render_pass) {
   camera_draw(&scene->camera);
 
   // draw solid meshes first
-  scene_draw_mesh_list(scene, mesh_shader_solid, render_pass,
+  scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_solid, render_pass,
                        &scene->layer.lit);
   // draw solid meshes then
-  scene_draw_mesh_list(scene, mesh_shader_solid, render_pass,
+  scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_solid, render_pass,
                        &scene->layer.unlit);
-
 }
 
 /**
@@ -212,15 +210,16 @@ mesh *scene_new_mesh(scene *scene) {
   return &scene->meshes.entries[scene->meshes.length++];
 }
 
-void scene_draw_mesh_list(scene *scene, mesh_get_shader_callback target_shader,
+void scene_draw_mesh_list(scene *scene, mesh_get_vertex_callback target_vertex,
+                          mesh_get_shader_callback target_shader,
                           WGPURenderPassEncoder *render_pass,
                           MeshIndexedList *mesh_list) {
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
     mesh *current_mesh = mesh_list->entries[i];
-    mesh_draw_default_buffer(current_mesh, target_shader(current_mesh), render_pass,
-              &scene->camera, &scene->viewport);
+    mesh_draw(target_vertex(current_mesh), target_shader(current_mesh),
+              render_pass, &scene->camera, &scene->viewport);
   }
 }
 
