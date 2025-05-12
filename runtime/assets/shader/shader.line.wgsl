@@ -59,7 +59,7 @@ struct Viewport {
   let extrude_pos = a + (right * side * thickness);
 
   var output : VertexOut;
-  output.Position = cam * vec4<f32>(extrude_pos, 1.0f);
+  output.Position = cam * uMesh.model * vec4<f32>(extrude_pos, 1.0f);
   output.vCol = vec3<f32>(input.aCol);
 
   return output;

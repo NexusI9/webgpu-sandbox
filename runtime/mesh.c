@@ -210,7 +210,6 @@ void mesh_build(mesh *mesh, shader *shader) {
 /**
    Mesh main draw from default vertex and index buffer
  */
-static int temp = 0;
 void mesh_draw(MeshVertex *vertex, shader *shader,
                WGPURenderPassEncoder *render_pass, const camera *camera,
                const viewport *viewport) {
@@ -222,11 +221,6 @@ void mesh_draw(MeshVertex *vertex, shader *shader,
   WGPUBuffer attribute_buffer = vertex->attribute.buffer;
   WGPUBuffer index_buffer = vertex->index.buffer;
   size_t index_length = vertex->index.length;
-
-  if (temp < 20) {
-    printf("length: %lu\n", vertex->index.length);
-    temp++;
-  }
 
   // draw indexes from buffer
   wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
