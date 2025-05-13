@@ -13,7 +13,7 @@ all:
 
 compile:
 	@echo "Compiling"
-	gcc $(FLAGS) -o $(TARGET) main.c
+	@gcc $(FLAGS) -o $(TARGET) main.c
 
 run:
 	@echo "Converting"
@@ -25,5 +25,6 @@ run:
 
 clean:
 	@echo "Cleaning"
-	rm -f $(TARGET)
+	@rm -f $(TARGET)
+	@echo "done"
 

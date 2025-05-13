@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # C files
-C_FILES := $(shell find . -type f -name "*.c")
+C_EXCLUDE := ./resources/tool
+PRUNE_ARGS := $(foreach dir,$(C_EXCLUDE),-path $(dir) -prune -o)
+C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 
 # Macros:
 #
@@ -47,18 +49,21 @@ all:
 	@echo "=== COMPILING TO WASM ==="
 	@make wasm
 	@echo	
-	@echo "=== CLEANING SHADERS =="
+	@echo "=== CLEANING SHADERS ==="
 	@make clean_shader
 
+
+mbin:
+	$(MAKE) -C resources/tool/obj2mbin
 
 compile_shader: $(COMPILE_WGSL) 
 
 clean_shader:
-	rm -f $(COMPILE_WGSL)
-	@echo
+	@rm -f $(COMPILE_WGSL)
+	@echo "done"
 
 wasm:
-	emcc $(MACROS) $(C_FILES) -o $(OUTPUT) \
+	@emcc $(MACROS) $(C_FILES) -o $(OUTPUT) \
 		-I include \
 		-s NO_EXIT_RUNTIME=1 \
 		-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
