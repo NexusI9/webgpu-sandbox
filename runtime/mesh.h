@@ -25,7 +25,7 @@ typedef struct {
 typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;
-  primitive primitive;
+  Primitive primitive;
   const char *name;
 } MeshCreatePrimitiveDescriptor;
 

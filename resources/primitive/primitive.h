@@ -9,6 +9,6 @@ typedef struct {
   VertexAttribute vertex;
   VertexIndex index;
 
-} primitive;
+} Primitive;
 
 #endif

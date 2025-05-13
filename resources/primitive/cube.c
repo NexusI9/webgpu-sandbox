@@ -32,9 +32,9 @@ static vindex_t cube_index_data[] = { // Front face
     // Bottom face
     4, 5, 1, 4, 1, 0};
 
-primitive primitive_cube() {
+Primitive primitive_cube() {
 
-  return (primitive){
+  return (Primitive){
       // vertex data
       .vertex =
           {

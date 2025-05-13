@@ -3,6 +3,6 @@
 
 #include "primitive.h"
 
-primitive primitive_plane();
+Primitive primitive_plane();
 
 #endif

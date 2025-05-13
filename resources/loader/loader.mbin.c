@@ -18,6 +18,8 @@ static void *loader_mbin_read(const char *, size_t *);
 void loader_mbin_load(MBINLoadDescriptor *desc) {
 
   // directly map data into memory for unix environments
+  // open: directly communicate with linux kernel
+  // fopen: provide FILE, does not depend on OS kernel
 #ifdef __unix__
   desc->vertex_data = (MBINVertex *)loader_mbin_mmap(desc->vertex_path, NULL);
   desc->index_data = (MBINIndex *)loader_mbin_mmap(desc->index_path, NULL);
@@ -27,7 +29,6 @@ void loader_mbin_load(MBINLoadDescriptor *desc) {
   desc->vertex_data = (MBINVertex *)loader_mbin_read(desc->vertex_path, NULL);
   desc->index_data = (MBINIndex *)loader_mbin_read(desc->index_path, NULL);
 }
-
 
 #ifdef __unix__
 /**
@@ -73,7 +74,7 @@ static void *loader_mbin_read(const char *path, size_t *size) {
   FILE *f = fopen(path, "rb");
 
   if (!f) {
-    VERBOSE_ERROR("Could not load file %s\n", path);
+    VERBOSE_ERROR("Could not load file\n");
     return NULL;
   }
 

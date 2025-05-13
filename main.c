@@ -139,9 +139,15 @@ void init_scene() {
                                        });
 }
 
+void add_gizmo(){
+
+   
+    
+}
+
 void add_cube(vec3 position) {
 
-  primitive cube_prim = primitive_cube();
+  Primitive cube_prim = primitive_cube();
   Mesh *cube = scene_new_mesh_unlit(&main_scene);
   mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = cube_prim,
@@ -256,6 +262,7 @@ int main(int argc, const char *argv[]) {
   */
   import_cube();
 
+  add_gizmo();
   // add_line();
   add_grid();
 

@@ -25,7 +25,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   // create view mesh
   Mesh *new_view = &debug_view->mesh[debug_view->length++];
-  primitive plane = primitive_plane();
+  Primitive plane = primitive_plane();
 
   mesh_create_primitive(new_view, &(MeshCreatePrimitiveDescriptor){
                                       .primitive = plane,

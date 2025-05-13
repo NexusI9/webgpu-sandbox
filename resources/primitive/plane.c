@@ -13,9 +13,9 @@ static vindex_t plane_index_data[] = {
     2, 3, 0   // Second triangle (Top-right → Top-left → Bottom-left)
 };
 
-primitive primitive_plane() {
+Primitive primitive_plane() {
 
-  return (primitive){
+  return (Primitive){
       // vertex data
       .vertex =
           {

@@ -3,6 +3,6 @@
 
 #include "primitive.h"
 
-primitive primitive_cube();
+Primitive primitive_cube();
 
 #endif

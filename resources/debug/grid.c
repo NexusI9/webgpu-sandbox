@@ -5,7 +5,7 @@
 
 void grid_create(Mesh *mesh, GridCreateDescriptor *gd) {
 
-  primitive plane = primitive_plane();
+  Primitive plane = primitive_plane();
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .name = "grid",
