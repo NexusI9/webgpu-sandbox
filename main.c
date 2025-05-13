@@ -141,6 +141,8 @@ void init_scene() {
 
 void add_gizmo(){
 
+    Mesh* gizmo = scene_new_mesh_fixed(&main_scene);
+    
    
     
 }
