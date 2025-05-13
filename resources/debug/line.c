@@ -21,14 +21,14 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
       mesh,
       &(VertexAttribute){
           .entries = calloc(LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX_COUNT,
-                            sizeof(float)),
+                            sizeof(vattr_t)),
           .length = 0,
       });
 
   mesh_set_vertex_index(
       mesh, &(VertexIndex){
                 .entries = calloc(LINE_MAX_POINTS * LINE_INDEX_COUNT,
-                                  sizeof(uint16_t)),
+                                  sizeof(vindex_t)),
                 .length = 0,
             });
 
@@ -129,12 +129,12 @@ void line_create_plane(const LineCreatePlaneDescriptor *desc) {
   // add indices (A-B-C & A-C-D)
   size_t vertex_length = desc->vertex->length / VERTEX_STRIDE;
 
-  desc->index->entries[desc->index->length] = (uint16_t)vertex_length;
-  desc->index->entries[desc->index->length + 1] = (uint16_t)vertex_length + 1;
-  desc->index->entries[desc->index->length + 2] = (uint16_t)vertex_length + 2;
-  desc->index->entries[desc->index->length + 3] = (uint16_t)vertex_length + 2;
-  desc->index->entries[desc->index->length + 4] = (uint16_t)vertex_length + 3;
-  desc->index->entries[desc->index->length + 5] = (uint16_t)vertex_length;
+  desc->index->entries[desc->index->length] = (vindex_t)vertex_length;
+  desc->index->entries[desc->index->length + 1] = (vindex_t)vertex_length + 1;
+  desc->index->entries[desc->index->length + 2] = (vindex_t)vertex_length + 2;
+  desc->index->entries[desc->index->length + 3] = (vindex_t)vertex_length + 2;
+  desc->index->entries[desc->index->length + 4] = (vindex_t)vertex_length + 3;
+  desc->index->entries[desc->index->length + 5] = (vindex_t)vertex_length;
 
   // update index length
   desc->index->length += 6;
@@ -175,12 +175,12 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
   size_t vertex_length =
       (vertex_attribute->length / VERTEX_STRIDE) - LINE_VERTEX_COUNT;
 
-  vertex_index->entries[vertex_index->length] = (uint16_t)vertex_length;
-  vertex_index->entries[vertex_index->length + 1] = (uint16_t)vertex_length + 1;
-  vertex_index->entries[vertex_index->length + 2] = (uint16_t)vertex_length + 2;
-  vertex_index->entries[vertex_index->length + 3] = (uint16_t)vertex_length + 2;
-  vertex_index->entries[vertex_index->length + 4] = (uint16_t)vertex_length + 3;
-  vertex_index->entries[vertex_index->length + 5] = (uint16_t)vertex_length + 1;
+  vertex_index->entries[vertex_index->length] = (vindex_t)vertex_length;
+  vertex_index->entries[vertex_index->length + 1] = (vindex_t)vertex_length + 1;
+  vertex_index->entries[vertex_index->length + 2] = (vindex_t)vertex_length + 2;
+  vertex_index->entries[vertex_index->length + 3] = (vindex_t)vertex_length + 2;
+  vertex_index->entries[vertex_index->length + 4] = (vindex_t)vertex_length + 3;
+  vertex_index->entries[vertex_index->length + 5] = (vindex_t)vertex_length + 1;
 
   vertex_index->length += 6;
 }

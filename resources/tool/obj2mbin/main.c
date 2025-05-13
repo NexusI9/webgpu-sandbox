@@ -6,11 +6,12 @@
 
 /**
    Convert OBJ file to Mesh binary files (vertex + index).
-   Using binary files helps for faster memory mapping/ embed.
+   Using binary files helps for faster memory mapping/ embedding as it directly
+   match the respective struct data layout.
  */
 
 typedef float mbin_vertex_t;
-typedef uint32_t mbin_index_t;
+typedef uint16_t mbin_index_t;
 
 typedef struct {
   mbin_vertex_t *data;
@@ -129,7 +130,6 @@ int main(int argc, char **argv) {
 
     free(vb.data);
     free(ib.data);
-    fprintf(stdout, "done\n");
   }
 
   return 0;

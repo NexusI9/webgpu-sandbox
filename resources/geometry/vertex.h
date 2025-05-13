@@ -6,6 +6,15 @@
 #include <webgpu/webgpu.h>
 
 #define VERTEX_STRIDE 11
+
+/*
+  WARNING: Changing vertex index type (ex to uint32_t) will create conflict with
+  GLTF loader indices (using uint_16).
+  Also if change is required, make sure to adjust the meshbin file indexes as
+  they are u16 based as well.
+ */
+typedef uint16_t vindex_t;
+typedef float vattr_t;
 /*
   Cannonical structure of a vertex
  */
@@ -17,14 +26,14 @@ typedef struct {
 } Vertex;
 
 typedef struct {
-  float *entries;
+  vattr_t *entries;
   size_t length;
   size_t capacity;
   WGPUBuffer buffer;
 } VertexAttribute;
 
 typedef struct {
-  uint16_t *entries;
+  vindex_t *entries;
   size_t length;
   size_t capacity;
   WGPUBuffer buffer;
@@ -49,7 +58,7 @@ typedef struct {
   float *color;
   float *uv;
 
-  uint16_t *index;
+  vindex_t *index;
   size_t count;
 
 } VertexList; // TODO: unsure about the naming..

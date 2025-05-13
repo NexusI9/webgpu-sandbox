@@ -137,8 +137,8 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
  */
 Triangle ao_bake_mesh_triangle(Mesh *mesh, size_t index) {
 
-  float *base_attribute = mesh->vertex.base.attribute.entries;
-  uint16_t *base_index = mesh->vertex.base.index.entries;
+  vattr_t *base_attribute = mesh->vertex.base.attribute.entries;
+  vindex_t *base_index = mesh->vertex.base.index.entries;
 
   Vertex source_vertex_a =
       vertex_from_array(&base_attribute[base_index[index] * VERTEX_STRIDE]);

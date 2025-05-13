@@ -1,6 +1,6 @@
 #include "plane.h"
 
-static float plane_vertex_data[] = {
+static vattr_t plane_vertex_data[] = {
     // Positions          // Normals            // Colors          // UVs
     -0.5f, 0.0f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
      0.5f, 0.0f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
@@ -8,7 +8,7 @@ static float plane_vertex_data[] = {
     -0.5f, 0.0f,  0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 0.0f,  0.0f, 1.0f  // Top-left
 };
 
-static uint16_t plane_index_data[] = {
+static vindex_t plane_index_data[] = {
     0, 1, 2,  // First triangle (Bottom-left → Bottom-right → Top-right)
     2, 3, 0   // Second triangle (Top-right → Top-left → Bottom-left)
 };

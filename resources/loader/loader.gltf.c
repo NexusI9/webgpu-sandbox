@@ -129,9 +129,9 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   cgltf_buffer_view *index_buffer_view = index_accessor->buffer_view;
   size_t index_offset = index_buffer_view->offset + index_accessor->offset;
 
-  uint16_t *index_data =
-      (uint16_t *)((uint8_t *)index_buffer_view->buffer->data + index_offset);
-
+  vindex_t *index_data =
+      (vindex_t *)((uint8_t *)index_buffer_view->buffer->data + index_offset);
+  
   // DELETEME: print_list_uint16(index_data, index_accessor->count, 1);
 
   return (VertexIndex){.entries = index_data, .length = index_accessor->count};

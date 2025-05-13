@@ -105,7 +105,7 @@ void mesh_set_vertex_attribute(Mesh *mesh, const VertexAttribute *attributes) {
     mesh_create_vertex_buffer(
         mesh, &(MeshCreateBufferDescriptor){
                   .data = (void *)base_vertex->attribute.entries,
-                  .size = base_vertex->attribute.length * sizeof(float),
+                  .size = base_vertex->attribute.length * sizeof(vattr_t),
               });
 
     // update wireframe shader as it requires mesh vertex & index
@@ -131,7 +131,7 @@ void mesh_set_vertex_index(Mesh *mesh, const VertexIndex *indexes) {
     mesh_create_index_buffer(
         mesh, &(MeshCreateBufferDescriptor){
                   .data = (void *)base_vertex->index.entries,
-                  .size = base_vertex->attribute.length * sizeof(uint16_t),
+                  .size = base_vertex->attribute.length * sizeof(vindex_t),
               });
 
     // update wireframe shader as it requires mesh vertex & index
@@ -546,9 +546,9 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
     edge_hash_set_insert(&edges, ca);
   }
 
-  //arrays from edges
+  // arrays from edges
   size_t vertex_capacity = edges.length * LINE_VERTEX_COUNT * VERTEX_STRIDE;
-  float wireframe_vertex_attribute[vertex_capacity];
+  vattr_t wireframe_vertex_attribute[vertex_capacity];
   wireframe_vertex->attribute = (VertexAttribute){
       .entries = wireframe_vertex_attribute,
       .capacity = vertex_capacity,
@@ -557,7 +557,7 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
   };
 
   size_t index_capacity = edges.length * LINE_INDEX_COUNT;
-  uint16_t wireframe_index_attribute[index_capacity];
+  vindex_t wireframe_index_attribute[index_capacity];
   wireframe_vertex->index = (VertexIndex){
       .entries = wireframe_index_attribute,
       .capacity = index_capacity,
@@ -566,7 +566,7 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
   };
 
   // go through unique edges set add populate temp vertex & index array
-  for (int l = 0; l < edges.length; l++) {
+  for (size_t l = 0; l < edges.length; l++) {
 
     size_t index = edges.occupied[l];
     EdgeBucket *current_edge = &edges.entries[index];
@@ -593,15 +593,16 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
   // upload vertex attribute and index to wireframe buffer
 
   // upload vertex attributes
-  buffer_create(&wireframe_vertex->attribute.buffer,
-                &(CreateBufferDescriptor){
-                    .queue = mesh->queue,
-                    .device = mesh->device,
-                    .data = (void *)wireframe_vertex->attribute.entries,
-                    .size = wireframe_vertex->attribute.length * sizeof(float),
-                    .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
-                    .mappedAtCreation = false,
-                });
+  buffer_create(
+      &wireframe_vertex->attribute.buffer,
+      &(CreateBufferDescriptor){
+          .queue = mesh->queue,
+          .device = mesh->device,
+          .data = (void *)wireframe_vertex->attribute.entries,
+          .size = wireframe_vertex->attribute.length * sizeof(vattr_t),
+          .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
+          .mappedAtCreation = false,
+      });
 
   // upload vertex index
   buffer_create(&wireframe_vertex->index.buffer,
@@ -609,7 +610,7 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
                     .queue = mesh->queue,
                     .device = mesh->device,
                     .data = (void *)wireframe_vertex->index.entries,
-                    .size = wireframe_vertex->index.length * sizeof(uint16_t),
+                    .size = wireframe_vertex->index.length * sizeof(vindex_t),
                     .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
                 });
@@ -636,4 +637,5 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
   // freeing wireframe data entries
   wireframe_vertex->attribute.entries = 0;
   wireframe_vertex->index.entries = 0;
+
 }
