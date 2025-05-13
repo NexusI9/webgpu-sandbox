@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string.h>
 
-input g_input = {0};
+Input g_input = {0};
 
 static bool input_key_down(int eventType,
                            const EmscriptenKeyboardEvent *keyEvent,

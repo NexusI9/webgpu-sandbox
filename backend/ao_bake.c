@@ -13,11 +13,11 @@
 static inline void ao_bake_global(const AOBakeDescriptor *desc);
 static inline void ao_bake_local(const AOBakeDescriptor *desc);
 static inline void ao_bake_raycast(const AOBakeRaycastDescriptor *);
-static inline float ao_bake_vertex(vertex *, mesh *, mesh *);
-static inline void ao_bake_bind(mesh *, texture *);
-static triangle ao_bake_mesh_triangle(mesh *, size_t);
+static inline float ao_bake_vertex(Vertex *, Mesh *, Mesh *);
+static inline void ao_bake_bind(Mesh *, Texture *);
+static Triangle ao_bake_mesh_triangle(Mesh *, size_t);
 
-float ao_bake_vertex(vertex *vertex, mesh *source, mesh *line) {
+float ao_bake_vertex(Vertex *vertex, Mesh *source, Mesh *line) {
 
   int vertex_hit = 0;
   vec3 rays[AO_LOCAL_RAY_AMOUNT];
@@ -41,7 +41,7 @@ float ao_bake_vertex(vertex *vertex, mesh *source, mesh *line) {
 
     // traverse mesh triangles
     for (size_t t = 0; t < source->vertex.base.index.length; t += 3) {
-      triangle triangle = ao_bake_mesh_triangle(source, t);
+      Triangle triangle = ao_bake_mesh_triangle(source, t);
       vec3 hit;
       triangle_raycast(&triangle, world_position, ray_direction,
                        AO_LOCAL_RAY_MAX_DISTANCE, hit);
@@ -59,7 +59,7 @@ float ao_bake_vertex(vertex *vertex, mesh *source, mesh *line) {
 /**
    Bind the texture to the shader
  */
-void ao_bake_bind(mesh *mesh, texture *texture) {
+void ao_bake_bind(Mesh *mesh, Texture *texture) {
 
   shader_add_texture(mesh_shader_texture(mesh),
                      &(ShaderCreateTextureDescriptor){
@@ -106,7 +106,7 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
   // Raycast from ray origin (source surface) towards each compare mesh
   // triangles
   for (size_t i = 0; i < desc->compare_mesh->vertex.base.index.length; i += 3) {
-    triangle compare_triangle = ao_bake_mesh_triangle(desc->compare_mesh, i);
+    Triangle compare_triangle = ao_bake_mesh_triangle(desc->compare_mesh, i);
     vec3 hit;
     triangle_raycast(&compare_triangle, *desc->ray_origin, *desc->ray_direction,
                      AO_GLOBAL_RAY_MAX_DISTANCE, hit);
@@ -135,18 +135,18 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
 /**
    Return a triangle of a mesh starting at a certain index
  */
-triangle ao_bake_mesh_triangle(mesh *mesh, size_t index) {
+Triangle ao_bake_mesh_triangle(Mesh *mesh, size_t index) {
 
   float *base_attribute = mesh->vertex.base.attribute.entries;
   uint16_t *base_index = mesh->vertex.base.index.entries;
 
-  vertex source_vertex_a =
+  Vertex source_vertex_a =
       vertex_from_array(&base_attribute[base_index[index] * VERTEX_STRIDE]);
 
-  vertex source_vertex_b =
+  Vertex source_vertex_b =
       vertex_from_array(&base_attribute[base_index[index + 1] * VERTEX_STRIDE]);
 
-  vertex source_vertex_c =
+  Vertex source_vertex_c =
       vertex_from_array(&base_attribute[base_index[index + 2] * VERTEX_STRIDE]);
 
   // put vertex to worldspace
@@ -157,7 +157,7 @@ triangle ao_bake_mesh_triangle(mesh *mesh, size_t index) {
   glm_mat4_mulv3(mesh->model, source_vertex_c.position, 1.0f,
                  source_vertex_c.position);
 
-  return (triangle){
+  return (Triangle){
       .a = source_vertex_a,
       .b = source_vertex_b,
       .c = source_vertex_c,
@@ -167,7 +167,7 @@ triangle ao_bake_mesh_triangle(mesh *mesh, size_t index) {
 void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
   // init textures
-  texture ao_textures[desc->mesh_list->length];
+  Texture ao_textures[desc->mesh_list->length];
   for (int t = 0; t < desc->mesh_list->length; t++) {
     texture_create(&ao_textures[t], &(TextureCreateDescriptor){
                                         .width = AO_TEXTURE_SIZE,
@@ -197,7 +197,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
   // blur and bind textures once baking is done
   for (int s = 0; s < desc->mesh_list->length; s++) {
-    mesh *source_mesh = desc->mesh_list->entries[s];
+    Mesh *source_mesh = desc->mesh_list->entries[s];
     texture_remap(&ao_textures[s], 0, 1, &ao_textures[s].data);
 
     // 1st pass blur
@@ -219,7 +219,7 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
 
   VERBOSE_PRINT("===== BAKING LOCAL AO =====\n");
 
-  mesh *line = NULL;
+  Mesh *line = NULL;
 #ifdef AO_BAKE_DISPLAY_RAY
   line = scene_new_mesh_unlit(desc->scene);
   line_create(line, &(LineCreateDescriptor){
@@ -231,13 +231,13 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
 
   for (size_t m = 0; m < desc->mesh_list->length; m++) {
 
-    mesh *current_mesh = desc->mesh_list->entries[m];
+    Mesh *current_mesh = desc->mesh_list->entries[m];
 
     VERBOSE_PRINT("Baking mesh: %s\n", current_mesh->name);
 
     VertexAttribute *mesh_vertex = &current_mesh->vertex.base.attribute;
     VertexIndex *mesh_index = &current_mesh->vertex.base.index;
-    texture *mesh_texture = &desc->texture[m];
+    Texture *mesh_texture = &desc->texture[m];
     /*
       Go through each indexes
       since indexes are drawn sequentially we can compare 2 by 2 and interpolate
@@ -258,21 +258,21 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
 
       // calculate AO for vertex A
       size_t offset_a = mesh_index->entries[i] * VERTEX_STRIDE;
-      vertex vertex_a = vertex_from_array(&mesh_vertex->entries[offset_a]);
+      Vertex vertex_a = vertex_from_array(&mesh_vertex->entries[offset_a]);
       float ao_a = ao_bake_vertex(&vertex_a, current_mesh, line);
       vec2 uv_a;
       glm_vec2_scale(vertex_a.uv, AO_TEXTURE_SIZE, uv_a);
 
       // calculate AO for vertex B
       size_t offset_b = mesh_index->entries[i + 1] * VERTEX_STRIDE;
-      vertex vertex_b = vertex_from_array(&mesh_vertex->entries[offset_b]);
+      Vertex vertex_b = vertex_from_array(&mesh_vertex->entries[offset_b]);
       float ao_b = ao_bake_vertex(&vertex_b, current_mesh, line);
       vec2 uv_b;
       glm_vec2_scale(vertex_b.uv, AO_TEXTURE_SIZE, uv_b);
 
       // calculate AO for vertex C
       size_t offset_c = mesh_index->entries[i + 2] * VERTEX_STRIDE;
-      vertex vertex_c = vertex_from_array(&mesh_vertex->entries[offset_c]);
+      Vertex vertex_c = vertex_from_array(&mesh_vertex->entries[offset_c]);
       float ao_c = ao_bake_vertex(&vertex_c, current_mesh, line);
       vec2 uv_c;
       glm_vec2_scale(vertex_c.uv, AO_TEXTURE_SIZE, uv_c);
@@ -370,12 +370,12 @@ void ao_bake_global(const AOBakeDescriptor *desc) {
   // traverse list
   for (size_t s = 0; s < desc->mesh_list->length; s++) {
 
-    mesh *source_mesh = desc->mesh_list->entries[s];
+    Mesh *source_mesh = desc->mesh_list->entries[s];
     VERBOSE_PRINT("Baking mesh: %s\n", source_mesh->name);
 
     // go through the mesh triangles and check if it's occluded
     for (size_t i = 0; i < source_mesh->vertex.base.index.length; i += 3) {
-      triangle source_triangle = ao_bake_mesh_triangle(source_mesh, i);
+      Triangle source_triangle = ao_bake_mesh_triangle(source_mesh, i);
       vec3 rays[AO_GLOBAL_RAY_AMOUNT];
       vec3 ray_normal;
       triangle_normal(&source_triangle, ray_normal);
@@ -398,7 +398,7 @@ void ao_bake_global(const AOBakeDescriptor *desc) {
 
         for (size_t c = 0; c < desc->mesh_list->length; c++) {
 
-          mesh *compare_mesh = desc->mesh_list->entries[c];
+          Mesh *compare_mesh = desc->mesh_list->entries[c];
 
 #ifndef AO_GLOBAL_SELF
           // TODO: once the index system is properly setup, replace m == s

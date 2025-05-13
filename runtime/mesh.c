@@ -17,12 +17,12 @@
 #include <string.h>
 
 // Shadow map is implicitely handled withing mesh
-static void mesh_init_shadow_shader(mesh *);
-static void mesh_init_wireframe_shader(mesh *);
-static mesh *mesh_children_list_check_init(mesh *);
-static mesh *mesh_children_list_check_capacity(mesh *);
+static void mesh_init_shadow_shader(Mesh *);
+static void mesh_init_wireframe_shader(Mesh *);
+static Mesh *mesh_children_list_check_init(Mesh *);
+static Mesh *mesh_children_list_check_capacity(Mesh *);
 
-MeshUniform mesh_model_uniform(mesh *mesh) {
+MeshUniform mesh_model_uniform(Mesh *mesh) {
 
   MeshUniform uModel;
 
@@ -39,7 +39,7 @@ MeshUniform mesh_model_uniform(mesh *mesh) {
   return uModel;
 }
 
-void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
+void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
   mesh_set_name(mesh, md->name);
@@ -75,7 +75,7 @@ void mesh_create(mesh *mesh, const MeshCreateDescriptor *md) {
   mesh_init_wireframe_shader(mesh);
 }
 
-void mesh_create_primitive(mesh *mesh,
+void mesh_create_primitive(Mesh *mesh,
                            const MeshCreatePrimitiveDescriptor *md) {
 
   mesh_create(mesh, &(MeshCreateDescriptor){
@@ -87,7 +87,7 @@ void mesh_create_primitive(mesh *mesh,
                     });
 }
 
-void mesh_set_vertex_attribute(mesh *mesh, const VertexAttribute *attributes) {
+void mesh_set_vertex_attribute(Mesh *mesh, const VertexAttribute *attributes) {
 
   MeshVertex *base_vertex = &mesh->vertex.base;
   // reset buffer
@@ -113,7 +113,7 @@ void mesh_set_vertex_attribute(mesh *mesh, const VertexAttribute *attributes) {
   }
 }
 
-void mesh_set_vertex_index(mesh *mesh, const VertexIndex *indexes) {
+void mesh_set_vertex_index(Mesh *mesh, const VertexIndex *indexes) {
 
   MeshVertex *base_vertex = &mesh->vertex.base;
   // reset buffer
@@ -139,20 +139,20 @@ void mesh_set_vertex_index(mesh *mesh, const VertexIndex *indexes) {
   }
 }
 
-void mesh_set_parent(mesh *child, mesh *parent) { child->parent = parent; }
+void mesh_set_parent(Mesh *child, Mesh *parent) { child->parent = parent; }
 
-void mesh_set_name(mesh *mesh, const char *name) {
+void mesh_set_name(Mesh *mesh, const char *name) {
   free(mesh->name);
   mesh->name = strdup(name);
 }
 
-void mesh_set_shader(mesh *mesh, const ShaderCreateDescriptor *desc) {
+void mesh_set_shader(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // alias to shader_create
   shader_create(&mesh->shader.texture, desc);
 }
 
 // send vertex data to GPU
-void mesh_create_vertex_buffer(mesh *mesh,
+void mesh_create_vertex_buffer(Mesh *mesh,
                                const MeshCreateBufferDescriptor *bd) {
 
   if (mesh->device == NULL || mesh->queue == NULL)
@@ -170,7 +170,7 @@ void mesh_create_vertex_buffer(mesh *mesh,
 }
 
 // send index data to GPU
-void mesh_create_index_buffer(mesh *mesh,
+void mesh_create_index_buffer(Mesh *mesh,
                               const MeshCreateBufferDescriptor *bd) {
 
   if (mesh->device == NULL || mesh->queue == NULL)
@@ -191,7 +191,7 @@ void mesh_create_index_buffer(mesh *mesh,
    Build mesh shaders pipeline
    If given shader is NULL, it will choose the default shader as fallback
  */
-void mesh_build(mesh *mesh, shader *shader) {
+void mesh_build(Mesh *mesh, Shader *shader) {
 
 #ifdef VERBOSE_BUILDING_PHASE
   VERBOSE_PRINT("Build mesh: %s\n", mesh->name);
@@ -210,9 +210,9 @@ void mesh_build(mesh *mesh, shader *shader) {
 /**
    Mesh main draw from default vertex and index buffer
  */
-void mesh_draw(MeshVertex *vertex, shader *shader,
-               WGPURenderPassEncoder *render_pass, const camera *camera,
-               const viewport *viewport) {
+void mesh_draw(MeshVertex *vertex, Shader *shader,
+               WGPURenderPassEncoder *render_pass, const Camera *camera,
+               const Viewport *viewport) {
 
   // draw shader
   // if shader is null, use default shader
@@ -233,7 +233,7 @@ void mesh_draw(MeshVertex *vertex, shader *shader,
 /**
    Apply scale to mesh transform matrix
  */
-void mesh_scale(mesh *mesh, vec3 scale) {
+void mesh_scale(Mesh *mesh, vec3 scale) {
   glm_vec3_copy(scale, mesh->scale);
 
   mat4 transform_matrix = {
@@ -249,7 +249,7 @@ void mesh_scale(mesh *mesh, vec3 scale) {
 /**
    Apply translation to mesh transform matrix
  */
-void mesh_position(mesh *mesh, vec3 position) {
+void mesh_position(Mesh *mesh, vec3 position) {
   glm_vec3_copy(position, mesh->position);
 
   mat4 transform_matrix = {
@@ -266,7 +266,7 @@ void mesh_position(mesh *mesh, vec3 position) {
    Converts a vec3 rotation to quaternion and
    apply rotation to mesh transform matrix
  */
-void mesh_rotate(mesh *mesh, vec3 rotation) {
+void mesh_rotate(Mesh *mesh, vec3 rotation) {
   glm_vec3_copy(rotation, mesh->rotation);
 
   versor q;
@@ -277,7 +277,7 @@ void mesh_rotate(mesh *mesh, vec3 rotation) {
 /**
    Apply rotation to mesh transform matrix
  */
-void mesh_rotate_quat(mesh *mesh, versor rotation) {
+void mesh_rotate_quat(Mesh *mesh, versor rotation) {
   mat4 transform_matrix;
   glm_quat_mat4(rotation, transform_matrix);
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
@@ -287,11 +287,11 @@ void mesh_rotate_quat(mesh *mesh, versor rotation) {
    Check if children list is already created.
    If not init a new list
  */
-mesh *mesh_children_list_check_init(mesh *parent) {
+Mesh *mesh_children_list_check_init(Mesh *parent) {
 
   if (parent->children.entries == NULL) {
     parent->children.capacity = MESH_CHILD_LENGTH;
-    parent->children.entries = calloc(parent->children.capacity, sizeof(mesh));
+    parent->children.entries = calloc(parent->children.capacity, sizeof(Mesh));
     parent->children.index = calloc(parent->children.capacity, sizeof(size_t));
   }
 
@@ -302,13 +302,13 @@ mesh *mesh_children_list_check_init(mesh *parent) {
    Check if children list has reached max capacity and reallocate or not
    accordingly
  */
-mesh *mesh_children_list_check_capacity(mesh *parent) {
+Mesh *mesh_children_list_check_capacity(Mesh *parent) {
 
   if (parent->children.length == parent->children.capacity) {
 
     size_t new_capacity = parent->children.capacity * 2;
-    mesh *new_list = realloc(parent->children.entries,
-                             sizeof(mesh) * parent->children.capacity);
+    Mesh *new_list = realloc(parent->children.entries,
+                             sizeof(Mesh) * parent->children.capacity);
     size_t *new_index = realloc(parent->children.index,
                                 sizeof(size_t) * parent->children.capacity);
 
@@ -325,7 +325,7 @@ mesh *mesh_children_list_check_capacity(mesh *parent) {
   return *parent->children.entries;
 }
 
-mesh *mesh_new_child(mesh *parent) {
+Mesh *mesh_new_child(Mesh *parent) {
 
   // init list
   mesh_children_list_check_init(parent);
@@ -334,7 +334,7 @@ mesh *mesh_new_child(mesh *parent) {
   mesh_children_list_check_capacity(parent);
 
   size_t id = parent->children.length;
-  mesh *child = parent->children.entries[id];
+  Mesh *child = parent->children.entries[id];
 
   // assing child id
   parent->children.index[id] = id;
@@ -350,9 +350,9 @@ mesh *mesh_new_child(mesh *parent) {
 /**
    Add and initialize an empty child to the given mesh
  */
-mesh *mesh_new_child_empty(mesh *mesh) {
+Mesh *mesh_new_child_empty(Mesh *mesh) {
 
-  struct mesh *temp_mesh = mesh_new_child(mesh);
+  struct Mesh *temp_mesh = mesh_new_child(mesh);
 
   // still need to initialize it before adding
   // this ensure proper init array
@@ -368,7 +368,7 @@ mesh *mesh_new_child_empty(mesh *mesh) {
 /**
 Add a new child pointer to the destination mesh children list
  */
-mesh *mesh_add_child(mesh *child, mesh *parent) {
+Mesh *mesh_add_child(Mesh *child, Mesh *parent) {
 
   // init list (?)
   mesh_children_list_check_init(parent);
@@ -390,39 +390,39 @@ mesh *mesh_add_child(mesh *child, mesh *parent) {
    Retireve the mesh children address at the given index from the mesh children
    list
  */
-mesh *mesh_get_child(mesh *mesh, size_t index) {
+Mesh *mesh_get_child(Mesh *mesh, size_t index) {
   return mesh->children.entries[index];
 }
 
 /**
    Return mesh default shader
  */
-shader *mesh_shader_texture(mesh *mesh) { return &mesh->shader.texture; }
+Shader *mesh_shader_texture(Mesh *mesh) { return &mesh->shader.texture; }
 
 /**
    Return mesh shadow shader
  */
-shader *mesh_shader_shadow(mesh *mesh) { return &mesh->shader.shadow; }
+Shader *mesh_shader_shadow(Mesh *mesh) { return &mesh->shader.shadow; }
 
 /**
    Return mesh wireframe shader
  */
-shader *mesh_shader_wireframe(mesh *mesh) { return &mesh->shader.wireframe; }
+Shader *mesh_shader_wireframe(Mesh *mesh) { return &mesh->shader.wireframe; }
 
 /**
    Return mesh solid shader
  */
-shader *mesh_shader_solid(mesh *mesh) { return &mesh->shader.texture; }
+Shader *mesh_shader_solid(Mesh *mesh) { return &mesh->shader.texture; }
 
 /**
    Return Mesh Base Vertex
  */
-MeshVertex *mesh_vertex_base(mesh *mesh) { return &mesh->vertex.base; }
+MeshVertex *mesh_vertex_base(Mesh *mesh) { return &mesh->vertex.base; }
 
 /**
    Return Mesh Wireframe Vertex
  */
-MeshVertex *mesh_vertex_wireframe(mesh *mesh) {
+MeshVertex *mesh_vertex_wireframe(Mesh *mesh) {
   return &mesh->vertex.wireframe;
 }
 
@@ -435,10 +435,10 @@ MeshVertex *mesh_vertex_wireframe(mesh *mesh) {
    The init shadow shader doesn't belong to the material API as it is a
    necessary component set by default on mesh creation.
  */
-void mesh_init_shadow_shader(mesh *mesh) {
+void mesh_init_shadow_shader(Mesh *mesh) {
 
   // import shadow shader
-  shader *shadow_shader = mesh_shader_shadow(mesh);
+  Shader *shadow_shader = mesh_shader_shadow(mesh);
   shader_create(shadow_shader,
                 &(ShaderCreateDescriptor){
                     .path = "./runtime/assets/shader/shader.shadow.wgsl",
@@ -483,9 +483,9 @@ void mesh_init_shadow_shader(mesh *mesh) {
      3. Upload data to GPU buffer
      4. Create wireframe shader
  */
-void mesh_init_wireframe_shader(mesh *mesh) {
+void mesh_init_wireframe_shader(Mesh *mesh) {
 
-  shader *wireframe_shader = mesh_shader_wireframe(mesh);
+  Shader *wireframe_shader = mesh_shader_wireframe(mesh);
   MeshVertex *wireframe_vertex = &mesh->vertex.wireframe;
   WGPUBuffer vertex_buffer = wireframe_vertex->attribute.buffer;
   WGPUBuffer index_buffer = wireframe_vertex->index.buffer;
@@ -575,12 +575,12 @@ void mesh_init_wireframe_shader(mesh *mesh) {
     int base_index = current_edge->key[0];
     float *base_attributes =
         &base_attribute->entries[base_index * VERTEX_STRIDE];
-    vertex base_vertex = vertex_from_array(base_attributes);
+    Vertex base_vertex = vertex_from_array(base_attributes);
 
     // opposite vertex
     int opp_index = current_edge->key[1];
     float *opp_attributes = &base_attribute->entries[opp_index * VERTEX_STRIDE];
-    vertex opp_vertex = vertex_from_array(opp_attributes);
+    Vertex opp_vertex = vertex_from_array(opp_attributes);
 
     // TODO: make dynamic wireframe color
     vec3 color = {0.0f, 1.0f, 0.0f};

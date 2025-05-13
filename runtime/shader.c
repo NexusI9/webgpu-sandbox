@@ -52,32 +52,32 @@
 
  */
 
-static void shader_set_vertex_layout(shader *);
+static void shader_set_vertex_layout(Shader *);
 
 // build related methods
-static ShaderBindGroup *shader_get_bind_group(shader *, size_t);
-static bool shader_validate_binding(shader *);
-static void shader_build_pipeline(shader *, WGPUBindGroupLayout *);
+static ShaderBindGroup *shader_get_bind_group(Shader *, size_t);
+static bool shader_validate_binding(Shader *);
+static void shader_build_pipeline(Shader *, WGPUBindGroupLayout *);
 
 // layout methods
-static WGPUBindGroupLayout *shader_build_layout(shader *);
-static void shader_layout_uniforms(shader *, ShaderBindGroup *,
+static WGPUBindGroupLayout *shader_build_layout(Shader *);
+static void shader_layout_uniforms(Shader *, ShaderBindGroup *,
                                    WGPUBindGroupLayoutEntry *, uint16_t *);
-static void shader_layout_textures(shader *, ShaderBindGroup *,
+static void shader_layout_textures(Shader *, ShaderBindGroup *,
                                    WGPUBindGroupLayoutEntry *, uint16_t *);
-static void shader_layout_samplers(shader *, ShaderBindGroup *,
+static void shader_layout_samplers(Shader *, ShaderBindGroup *,
                                    WGPUBindGroupLayoutEntry *, uint16_t *);
 
 // build methods
-static void shader_build_bind(shader *, WGPUBindGroupLayout *);
-static void shader_bind_uniforms(shader *, ShaderBindGroup *,
+static void shader_build_bind(Shader *, WGPUBindGroupLayout *);
+static void shader_bind_uniforms(Shader *, ShaderBindGroup *,
                                  WGPUBindGroupEntry *, uint16_t *);
-static void shader_bind_textures(shader *, ShaderBindGroup *,
+static void shader_bind_textures(Shader *, ShaderBindGroup *,
                                  WGPUBindGroupEntry *, uint16_t *);
-static void shader_bind_samplers(shader *, ShaderBindGroup *,
+static void shader_bind_samplers(Shader *, ShaderBindGroup *,
                                  WGPUBindGroupEntry *, uint16_t *);
 
-void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
+void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 
   // set name
   shader->name = strdup(sd->name);
@@ -106,7 +106,7 @@ void shader_create(shader *shader, const ShaderCreateDescriptor *sd) {
                   });
 }
 
-void shader_destroy(shader *shader) {
+void shader_destroy(Shader *shader) {
 
   // clearing module
   wgpuShaderModuleRelease(shader->module);
@@ -130,7 +130,7 @@ void shader_destroy(shader *shader) {
    3. Color (vec3)
    4. Texture Coordinate (vec2)
  */
-void shader_set_vertex_layout(shader *shader) {
+void shader_set_vertex_layout(Shader *shader) {
 
   // set x,y,z
   shader->vertex.attribute[0] = (WGPUVertexAttribute){
@@ -168,7 +168,7 @@ void shader_set_vertex_layout(shader *shader) {
   };
 }
 
-static void shader_pipeline_release_layout(shader *shader) {
+static void shader_pipeline_release_layout(Shader *shader) {
   // Release pipeline
   wgpuPipelineLayoutRelease(shader->pipeline.layout);
 }
@@ -176,7 +176,7 @@ static void shader_pipeline_release_layout(shader *shader) {
 /**
    Build pipeline based on previously set bind groups
  */
-void shader_build(shader *shader) {
+void shader_build(Shader *shader) {
 
   // clear pipeline if existing
 #ifdef VERBOSE_BUILDING_PHASE
@@ -193,7 +193,7 @@ void shader_build(shader *shader) {
   free(bindgroup_layouts);
 }
 
-WGPUBindGroupLayout *shader_build_layout(shader *shader) {
+WGPUBindGroupLayout *shader_build_layout(Shader *shader) {
 
   /*
     need to first define bind group layout before actually pushing values in it
@@ -250,7 +250,7 @@ WGPUBindGroupLayout *shader_build_layout(shader *shader) {
   return layout_list;
 }
 
-void shader_layout_uniforms(shader *shader, ShaderBindGroup *bindgroup,
+void shader_layout_uniforms(Shader *shader, ShaderBindGroup *bindgroup,
                             WGPUBindGroupLayoutEntry *entries,
                             uint16_t *length) {
 
@@ -269,7 +269,7 @@ void shader_layout_uniforms(shader *shader, ShaderBindGroup *bindgroup,
   }
 }
 
-void shader_layout_textures(shader *shader, ShaderBindGroup *bindgroup,
+void shader_layout_textures(Shader *shader, ShaderBindGroup *bindgroup,
                             WGPUBindGroupLayoutEntry *entries,
                             uint16_t *length) {
 
@@ -290,7 +290,7 @@ void shader_layout_textures(shader *shader, ShaderBindGroup *bindgroup,
   }
 }
 
-void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
+void shader_layout_samplers(Shader *shader, ShaderBindGroup *bindgroup,
                             WGPUBindGroupLayoutEntry *entries,
                             uint16_t *length) {
 
@@ -307,7 +307,7 @@ void shader_layout_samplers(shader *shader, ShaderBindGroup *bindgroup,
   }
 }
 
-void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
+void shader_build_pipeline(Shader *shader, WGPUBindGroupLayout *layout) {
 
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
       *shader->device, &(WGPUPipelineLayoutDescriptor){
@@ -321,7 +321,7 @@ void shader_build_pipeline(shader *shader, WGPUBindGroupLayout *layout) {
   pipeline_build(&shader->pipeline, &pipeline_layout);
 }
 
-void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
+void shader_build_bind(Shader *shader, WGPUBindGroupLayout *layouts) {
 
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
@@ -365,7 +365,7 @@ void shader_build_bind(shader *shader, WGPUBindGroupLayout *layouts) {
   }
 }
 
-void shader_bind_uniforms(shader *shader, ShaderBindGroup *bindgroup,
+void shader_bind_uniforms(Shader *shader, ShaderBindGroup *bindgroup,
                           WGPUBindGroupEntry *entries, uint16_t *index) {
 
   // map shader bind group entry to WGPU bind group entry
@@ -382,7 +382,7 @@ void shader_bind_uniforms(shader *shader, ShaderBindGroup *bindgroup,
   }
 }
 
-void shader_bind_textures(shader *shader, ShaderBindGroup *bindgroup,
+void shader_bind_textures(Shader *shader, ShaderBindGroup *bindgroup,
                           WGPUBindGroupEntry *entries, uint16_t *index) {
 
   // map shader bind group entry to WGPU bind group entry
@@ -397,7 +397,7 @@ void shader_bind_textures(shader *shader, ShaderBindGroup *bindgroup,
   }
 }
 
-void shader_bind_samplers(shader *shader, ShaderBindGroup *bindgroup,
+void shader_bind_samplers(Shader *shader, ShaderBindGroup *bindgroup,
                           WGPUBindGroupEntry *entries, uint16_t *index) {
 
   for (int j = 0; j < bindgroup->samplers.length; j++) {
@@ -413,8 +413,8 @@ void shader_bind_samplers(shader *shader, ShaderBindGroup *bindgroup,
 /**
    Update method called as such: scene update => mesh update => shader update
  */
-void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
-                 const camera *camera, const viewport *viewport) {
+void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass,
+                 const Camera *camera, const Viewport *viewport) {
 
   if (shader->pipeline.handle == NULL)
     return perror("Shader pipeline not defined for shader, skip drawing");
@@ -455,7 +455,7 @@ void shader_draw(shader *shader, WGPURenderPassEncoder *render_pass,
 /**
    Add uniform of type Default (vec3, float...) into the shader
  */
-void shader_add_uniform(shader *shader,
+void shader_add_uniform(Shader *shader,
                         const ShaderCreateUniformDescriptor *bd) {
 
   /*
@@ -535,7 +535,7 @@ void shader_add_uniform(shader *shader,
    This function is usefull in case one want to upload and bind
    a texture from "raw data" when reading a file from disk (stbi, gltf...)
  */
-void shader_add_texture(shader *shader,
+void shader_add_texture(Shader *shader,
                         const ShaderCreateTextureDescriptor *desc) {
 
   // printf("inner shader %p\n", shader);
@@ -583,7 +583,7 @@ void shader_add_texture(shader *shader,
    one shall use the shader_add_texture() function that automatically
    handles the texture and texture view creation from the data.
  */
-void shader_add_texture_view(shader *shader,
+void shader_add_texture_view(Shader *shader,
                              const ShaderCreateTextureViewDescriptor *desc) {
 
   if (shader_validate_binding(shader)) {
@@ -619,7 +619,7 @@ void shader_add_texture_view(shader *shader,
 /**
    Add uniform of type Sampler into the shader
  */
-void shader_add_sampler(shader *shader,
+void shader_add_sampler(Shader *shader,
                         const ShaderCreateSamplerDescriptor *desc) {
 
   if (shader_validate_binding(shader)) {
@@ -657,7 +657,7 @@ void shader_add_sampler(shader *shader,
   }
 }
 
-void shader_module_release(shader *shader) {
+void shader_module_release(Shader *shader) {
   // releasing shader module before drawing
   // invoked when adding the shader to the mesh (mesh_create)
   wgpuShaderModuleRelease(shader->module);
@@ -667,7 +667,7 @@ void shader_module_release(shader *shader) {
    Check if a bind group in the shader isn't already registered
    if not, it creates a new bind group entry to the list
  */
-ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
+ShaderBindGroup *shader_get_bind_group(Shader *shader, size_t group_index) {
 
   int in = 0, i = 0;
   size_t index = shader->bind_groups.length;
@@ -705,7 +705,7 @@ ShaderBindGroup *shader_get_bind_group(shader *shader, size_t group_index) {
 
 // TODO add more validation by uniforms type (UNIFORM/ TEX/ SAMPLER...) check
 // if it doesn't overflow with max accepted length
-bool shader_validate_binding(shader *shader) {
+bool shader_validate_binding(Shader *shader) {
 
   if (shader->device == NULL || shader->queue == NULL) {
     perror("Shader has no device or queue");
@@ -724,7 +724,7 @@ bool shader_validate_binding(shader *shader) {
    Initialise shader bind group lists and eventually free/reset the existing
    ones if already existing
  */
-void shader_bind_group_init(shader *shader) {
+void shader_bind_group_init(Shader *shader) {
 
   // printf("init bind groups for %s\n", shader->name);
   ShaderBindGroupUniforms *uniform_group =
@@ -766,7 +766,7 @@ void shader_bind_group_init(shader *shader) {
 /**
    Freeing all shader's bind groups allocation and reseting the length
  */
-void shader_bind_group_clear(shader *shader) {
+void shader_bind_group_clear(Shader *shader) {
 
   for (size_t b = 0; b < shader->bind_groups.length; b++) {
     ShaderBindGroup *current_group = &shader->bind_groups.entries[b];
@@ -796,4 +796,4 @@ void shader_bind_group_clear(shader *shader) {
   shader->bind_groups.length = 0;
 }
 
-pipeline *shader_pipeline(shader *shader) { return &shader->pipeline; }
+Pipeline *shader_pipeline(Shader *shader) { return &shader->pipeline; }

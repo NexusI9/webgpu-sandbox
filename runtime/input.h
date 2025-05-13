@@ -27,9 +27,9 @@ typedef struct {
 
   } mouse;
 
-} input;
+} Input;
 
-extern input g_input;
+extern Input g_input;
 
 void input_set_key(unsigned int, bool);
 void input_disable_all_keys();

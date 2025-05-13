@@ -20,5 +20,5 @@ void print_vec2(const vec2);
 void print_mat4(const mat4);
 void print_list_float(float *, size_t, size_t);
 void print_list_uint16(uint16_t *, size_t, size_t);
-void print_mesh_tree(mesh *, uint16_t);
+void print_mesh_tree(Mesh *, uint16_t);
 #endif

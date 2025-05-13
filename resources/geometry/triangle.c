@@ -52,7 +52,7 @@ void triangle_rand_gen_list(int length, float *dest) {
    baycentric coodinates:
    https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/barycentric-coordinates.html
  */
-void triangle_random_points(triangle *surface, uint16_t amount, vec3 *dest) {
+void triangle_random_points(Triangle *surface, uint16_t amount, vec3 *dest) {
 
   // store points
   vec3 p1;
@@ -84,7 +84,7 @@ void triangle_random_points(triangle *surface, uint16_t amount, vec3 *dest) {
 /**
    Retrieve the face surface from the triangle.
  */
-void triangle_normal(triangle *surface, vec3 dest) {
+void triangle_normal(Triangle *surface, vec3 dest) {
   vec3 edge1, edge2;
 
   glm_vec3_sub(surface->b.position, surface->a.position, edge1);
@@ -99,7 +99,7 @@ void triangle_normal(triangle *surface, vec3 dest) {
    triangle.
    https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
  */
-void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
+void triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
                       float max_distance, vec3 hit) {
 
   float epsilon = FLT_EPSILON;
@@ -155,7 +155,7 @@ void triangle_raycast(triangle *surface, vec3 ray_origin, vec3 ray_direction,
    Read a point position in the vertex 3D space and return the equivalent
    in the UV space
  */
-void triangle_point_to_uv(triangle *surface, vec3 point, vec2 dest) {
+void triangle_point_to_uv(Triangle *surface, vec3 point, vec2 dest) {
 
   vec3 p0, p1, p2;
 
@@ -186,7 +186,7 @@ void triangle_point_to_uv(triangle *surface, vec3 point, vec2 dest) {
   glm_vec2_add(uv01, uv2, dest);
 }
 
-void triangle_center(triangle *surface, vec3 dest) {
+void triangle_center(Triangle *surface, vec3 dest) {
   glm_vec3_zero(dest);
   glm_vec3_add(surface->a.position, surface->b.position, dest);
   glm_vec3_add(dest, surface->c.position, dest);

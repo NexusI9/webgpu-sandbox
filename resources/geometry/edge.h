@@ -5,12 +5,12 @@
 typedef struct {
   ivec3 a;
   ivec3 b;
-} edge;
+} Edge;
 
 typedef ivec2 EdgeKey;
 
 typedef struct {
-  edge *entries;
+  Edge *entries;
   size_t length;
   size_t capacity;
 } EdgeList;

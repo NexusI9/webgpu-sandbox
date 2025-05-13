@@ -14,7 +14,7 @@ typedef struct {
 } GLTFTextureViews;
 
 typedef struct {
-  scene *scene;
+  Scene *scene;
   const char *path;
   WGPUDevice *device;
   WGPUQueue *queue;

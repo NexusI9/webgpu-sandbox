@@ -4,14 +4,14 @@
 #include <stdint.h>
 
 typedef struct {
-  vertex a;
-  vertex b;
-  vertex c;
-} triangle;
+  Vertex a;
+  Vertex b;
+  Vertex c;
+} Triangle;
 
-void triangle_random_points(triangle *, uint16_t, vec3 *);
-void triangle_normal(triangle *, vec3);
-void triangle_raycast(triangle *, vec3, vec3, float, vec3);
-void triangle_point_to_uv(triangle *, vec3, vec2);
-void triangle_center(triangle *, vec3);
+void triangle_random_points(Triangle *, uint16_t, vec3 *);
+void triangle_normal(Triangle *, vec3);
+void triangle_raycast(Triangle *, vec3, vec3, float, vec3);
+void triangle_point_to_uv(Triangle *, vec3, vec2);
+void triangle_center(Triangle *, vec3);
 #endif

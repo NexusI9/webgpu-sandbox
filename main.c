@@ -34,8 +34,8 @@
 #include "runtime/viewport.h"
 #include "utils/system.h"
 
-static scene main_scene;
-static mesh tri_mesh;
+static Scene main_scene;
+static Mesh tri_mesh;
 static float rot = 0.0f;
 static renderer main_renderer;
 static cclock main_clock;
@@ -58,7 +58,7 @@ static vec3 SUN_LIGHT = {-2.0f, 2.0f, 2.0f};
 void init_scene() {
 
   // set viewport
-  viewport viewport = viewport_create(&(ViewportCreateDescriptor){
+  Viewport viewport = viewport_create(&(ViewportCreateDescriptor){
       .fov = 32.0f,
       .near_clip = 0.1f,
       .far_clip = 100.0f,
@@ -66,7 +66,7 @@ void init_scene() {
   });
 
   // set camera
-  camera camera = camera_create(&(CameraCreateDescriptor){
+  Camera camera = camera_create(&(CameraCreateDescriptor){
       .speed = 20.0f,
       .clock = &main_clock,
       .mode = FLYING,
@@ -142,7 +142,7 @@ void init_scene() {
 void add_cube(vec3 position) {
 
   primitive cube_prim = primitive_cube();
-  mesh *cube = scene_new_mesh_unlit(&main_scene);
+  Mesh *cube = scene_new_mesh_unlit(&main_scene);
   mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = cube_prim,
                                   .name = "cube",
@@ -175,7 +175,7 @@ void add_grid() {
 
   glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
 
-  mesh *grid = scene_new_mesh_fixed(&main_scene);
+  Mesh *grid = scene_new_mesh_fixed(&main_scene);
   grid_create(grid, &(GridCreateDescriptor){
                         .uniform = grid_uniform,
                         .camera = &main_scene.camera,
@@ -187,7 +187,7 @@ void add_grid() {
 
 void add_line() {
 
-  mesh *line = scene_new_mesh_unlit(&main_scene);
+  Mesh *line = scene_new_mesh_unlit(&main_scene);
   line_create(line, &(LineCreateDescriptor){
                         .device = &main_renderer.wgpu.device,
                         .queue = &main_renderer.wgpu.queue,

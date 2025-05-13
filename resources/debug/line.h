@@ -22,9 +22,9 @@ typedef struct {
   vec3 color;
 } LineCreatePlaneDescriptor;
 
-void line_create(mesh *, const LineCreateDescriptor *);
+void line_create(Mesh *, const LineCreateDescriptor *);
 void line_add_point(vec3, vec3, vec3, VertexAttribute *, VertexIndex *);
-void line_update_buffer(mesh *);
+void line_update_buffer(Mesh *);
 void line_set_vertex(const vec3, const vec3, const vec3, const vec2,
                      const size_t, float *);
 

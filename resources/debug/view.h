@@ -23,7 +23,7 @@ typedef struct {
 } DebugViewCreateDescriptor;
 
 typedef struct {
-  mesh mesh[VIEW_MAX_CAPACITY];
+  Mesh mesh[VIEW_MAX_CAPACITY];
   size_t length;
   size_t capacity;
   WGPUDevice *device;

@@ -13,7 +13,7 @@ typedef struct {
 
 typedef struct {
   struct renderer *renderer;
-  scene *scene;
+  Scene *scene;
   scene_draw_callback draw_callback;
 } RendererRenderDescriptor;
 
@@ -46,11 +46,11 @@ typedef struct renderer {
 
 renderer renderer_create(const RendererCreateDescriptor *);
 void renderer_init(renderer *);
-void renderer_bake_ao(renderer *, scene *);
-void renderer_compute_shadow(renderer *, scene *);
+void renderer_bake_ao(renderer *, Scene *);
+void renderer_compute_shadow(renderer *, Scene *);
 
 void renderer_close(const renderer *);
-void renderer_draw(renderer *, scene *, const RendererDrawMode);
+void renderer_draw(renderer *, Scene *, const RendererDrawMode);
 void renderer_lock_mouse(const renderer *);
 
 #endif

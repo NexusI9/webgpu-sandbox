@@ -79,21 +79,21 @@ typedef struct {
   WGPURenderPipeline handle;
   WGPUPipelineLayout layout;
 
-} pipeline;
+} Pipeline;
 
 // 1. init pipeline
-void pipeline_create(pipeline *, const PipelineCreateDescriptor *);
+void pipeline_create(Pipeline *, const PipelineCreateDescriptor *);
 
 // 2. set custom attributes (optional)
-void pipeline_set_vertex(pipeline *, const WGPUVertexState);
-void pipeline_set_fragment(pipeline *, const PipelineFragmentDescriptor *);
-void pipeline_set_primitive(pipeline *, const WGPUPrimitiveState);
-void pipeline_set_stencil(pipeline *, const WGPUDepthStencilState);
+void pipeline_set_vertex(Pipeline *, const WGPUVertexState);
+void pipeline_set_fragment(Pipeline *, const PipelineFragmentDescriptor *);
+void pipeline_set_primitive(Pipeline *, const WGPUPrimitiveState);
+void pipeline_set_stencil(Pipeline *, const WGPUDepthStencilState);
 
 // 3. build pipeline layout
-void pipeline_build(pipeline *, const WGPUPipelineLayout *);
+void pipeline_build(Pipeline *, const WGPUPipelineLayout *);
 
 // 4. destroyer
-void pipeline_destroy(pipeline *);
+void pipeline_destroy(Pipeline *);
 
 #endif

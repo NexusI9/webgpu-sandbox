@@ -25,15 +25,15 @@
 
 typedef struct {
   MeshIndexedList *mesh_list;
-  scene *scene;
+  Scene *scene;
   WGPUDevice *device;
   WGPUQueue *queue;
 } AOBakeInitDescriptor;
 
 typedef struct {
   MeshIndexedList *mesh_list;
-  texture *texture;
-  scene *scene;
+  Texture *texture;
+  Scene *scene;
   WGPUDevice *device;
   WGPUQueue *queue;
 } AOBakeDescriptor;
@@ -41,10 +41,10 @@ typedef struct {
 typedef struct {
   vec3 *ray_origin;
   vec3 *ray_direction;
-  triangle *source_triangle;
-  texture *source_texture;
-  texture *compare_texture;
-  mesh *compare_mesh;
+  Triangle *source_triangle;
+  Texture *source_texture;
+  Texture *compare_texture;
+  Mesh *compare_mesh;
 } AOBakeRaycastDescriptor;
 
 void ao_bake_init(const AOBakeInitDescriptor *);

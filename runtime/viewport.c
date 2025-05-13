@@ -2,9 +2,9 @@
 #include "../utils/system.h"
 #include <cglm/cglm.h>
 
-viewport viewport_create(const ViewportCreateDescriptor *view_desc) {
+Viewport viewport_create(const ViewportCreateDescriptor *view_desc) {
   // set viewport default values
-  viewport v = (viewport){
+  Viewport v = {
       .fov = view_desc->fov,
       .near_clip = view_desc->near_clip,
       .far_clip = view_desc->far_clip,
@@ -18,7 +18,7 @@ viewport viewport_create(const ViewportCreateDescriptor *view_desc) {
   return v;
 }
 
-void viewport_update_projection(viewport *viewport) {
+void viewport_update_projection(Viewport *viewport) {
 
   // update projection matrix
   float fov = glm_rad(viewport->fov);
@@ -30,10 +30,10 @@ void viewport_update_projection(viewport *viewport) {
   glm_perspective(fov, aspect, near, far, viewport->projection);
 }
 
-ViewportUniform viewport_uniform(viewport *viewport) {
+ViewportUniform viewport_uniform(Viewport *viewport) {
   ViewportUniform uViewport;
   glm_mat4_copy(viewport->projection, uViewport.projection);
   return uViewport;
 }
 
-mat4 *viewport_projection(viewport *vp) { return &vp->projection; }
+mat4 *viewport_projection(Viewport *vp) { return &vp->projection; }

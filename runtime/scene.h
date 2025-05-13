@@ -1,4 +1,3 @@
-
 #ifndef _SCENE_H_
 #define _SCENE_H_
 
@@ -52,7 +51,7 @@ typedef struct {
 } SceneLayerList;
 
 typedef struct {
-  mesh *entries;
+  Mesh *entries;
   size_t capacity;
   size_t length;
 } SceneMeshList;
@@ -67,10 +66,10 @@ typedef struct {
 typedef struct {
 
   // camera
-  camera camera;
+  Camera camera;
 
   // viewport
-  viewport viewport;
+  Viewport viewport;
 
   // meshes global list
   SceneMeshList meshes;
@@ -81,39 +80,39 @@ typedef struct {
   // light type
   SceneLightList lights;
 
-} scene;
+} Scene;
 
-typedef void (*scene_draw_callback)(scene *, WGPURenderPassEncoder *);
-typedef void (*scene_build_callback)(scene *);
+typedef void (*scene_draw_callback)(Scene *, WGPURenderPassEncoder *);
+typedef void (*scene_build_callback)(Scene *);
 
-scene scene_create(camera, viewport);
+Scene scene_create(Camera, Viewport);
 
 // dynamic rendering
-mesh *scene_new_mesh_lit(scene *);
-mesh *scene_new_mesh_unlit(scene *);
+Mesh *scene_new_mesh_lit(Scene *);
+Mesh *scene_new_mesh_unlit(Scene *);
 
-void scene_build_texture(scene *);
-void scene_build_shadow(scene *);
-void scene_build_solid(scene *);
-void scene_build_wireframe(scene *);
+void scene_build_texture(Scene *);
+void scene_build_shadow(Scene *);
+void scene_build_solid(Scene *);
+void scene_build_wireframe(Scene *);
 
-void scene_draw_texture(scene *, WGPURenderPassEncoder *);
-void scene_draw_shadow(scene *, WGPURenderPassEncoder *);
-void scene_draw_solid(scene *, WGPURenderPassEncoder *);
-void scene_draw_wireframe(scene *, WGPURenderPassEncoder *);
+void scene_draw_texture(Scene *, WGPURenderPassEncoder *);
+void scene_draw_shadow(Scene *, WGPURenderPassEncoder *);
+void scene_draw_solid(Scene *, WGPURenderPassEncoder *);
+void scene_draw_wireframe(Scene *, WGPURenderPassEncoder *);
 
 // fixed rendering
-mesh *scene_new_mesh_fixed(scene *);
+Mesh *scene_new_mesh_fixed(Scene *);
 
-void scene_build_fixed(scene *);
+void scene_build_fixed(Scene *);
 
-void scene_draw_fixed(scene *, WGPURenderPassEncoder *);
+void scene_draw_fixed(Scene *, WGPURenderPassEncoder *);
 
 
 // light
-size_t scene_add_point_light(scene *, PointLightDescriptor *);
-size_t scene_add_spot_light(scene *, SpotLightDescriptor *);
-size_t scene_add_ambient_light(scene *, AmbientLightDescriptor *);
-size_t scene_add_sun_light(scene *, SunLightDescriptor *);
+size_t scene_add_point_light(Scene *, PointLightDescriptor *);
+size_t scene_add_spot_light(Scene *, SpotLightDescriptor *);
+size_t scene_add_ambient_light(Scene *, AmbientLightDescriptor *);
+size_t scene_add_sun_light(Scene *, SunLightDescriptor *);
 
 #endif

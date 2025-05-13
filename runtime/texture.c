@@ -5,10 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-static inline void texture_write(unsigned char, TextureData,
+static inline void texture_write(unsigned char, texture_data,
                                  TextureWriteMethod);
 
-void texture_create(texture *texture, const TextureCreateDescriptor *desc) {
+void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
 
   // if (texture->data)
   // texture_free(texture);
@@ -44,11 +44,11 @@ void texture_create_by_ref(unsigned char **data, size_t *size,
     memset(*data, desc->value, *size);
 }
 
-void texture_fill(texture *texture, int value) {
+void texture_fill(Texture *texture, int value) {
   memset(texture->data, value, texture->size);
 }
 
-void texture_write_pixel(texture *texture, int value, vec2 coordinate,
+void texture_write_pixel(Texture *texture, int value, vec2 coordinate,
                          TextureWriteMethod write_method) {
 
   int x = (int)coordinate[0];
@@ -64,16 +64,16 @@ void texture_write_pixel(texture *texture, int value, vec2 coordinate,
   }
 }
 
-void texture_save(texture *texture, const char *path) {}
+void texture_save(Texture *texture, const char *path) {}
 
-void texture_free(texture *texture) { free(texture->data); }
+void texture_free(Texture *texture) { free(texture->data); }
 
 /**
    Blur algorithm
    https://stackoverflow.com/questions/21418892/understanding-super-fast-blur-algorithm
    https://developer.apple.com/documentation/accelerate/blurring-an-image
  */
-void texture_blur(const texture *src, int kernel_size, float sigma,
+void texture_blur(const Texture *src, int kernel_size, float sigma,
                   unsigned char **dest) {
 
   // texture attributes
@@ -219,15 +219,15 @@ void texture_write_line(const TextureWriteLineDescriptor *desc) {
   }
 }
 
-void texture_contrast(const texture *source, float contrast,
-                      TextureData *destination) {
+void texture_contrast(const Texture *source, float contrast,
+                      texture_data *destination) {
 
   unsigned int w = source->width;
   unsigned int h = source->height;
   unsigned int channels = source->channels;
 
   for (int i = 0; i < w * h; ++i) {
-    TextureData pixel = *destination + i * channels;
+    texture_data pixel = *destination + i * channels;
 
     for (int c = 0; c < MIN(channels, 3); c++) {
       float v = pixel[c] / 255.0f;
@@ -240,8 +240,8 @@ void texture_contrast(const texture *source, float contrast,
 }
 /**
  */
-void texture_remap(const texture *source, int min, int max,
-                   TextureData *destination) {
+void texture_remap(const Texture *source, int min, int max,
+                   texture_data *destination) {
 
   unsigned int w = source->width;
   unsigned int h = source->height;
@@ -252,7 +252,7 @@ void texture_remap(const texture *source, int min, int max,
 
   // get min / max value
   for (int i = 0; i < w * h; ++i) {
-    TextureData pixel = source->data + i * channels;
+    texture_data pixel = source->data + i * channels;
     for (int c = 0; c < MIN(channels, 3); c++) {
       float v = pixel[c] / 255.0f;
       old_min = MIN(old_min, v);
@@ -269,8 +269,8 @@ void texture_remap(const texture *source, int min, int max,
 
   // remap
   for (int i = 0; i < w * h; ++i) {
-    TextureData source_pixel = source->data + i * channels;
-    TextureData dst_pixel = *destination + i * channels;
+    texture_data source_pixel = source->data + i * channels;
+    texture_data dst_pixel = *destination + i * channels;
 
     for (int c = 0; c < MIN(channels, 3); ++c) {
       float v = source_pixel[c] / 255.0f;
@@ -291,7 +291,7 @@ void texture_write_triangle_gradient(
   unsigned int width = desc->source->width;
   unsigned int height = desc->source->height;
   unsigned int channels = desc->source->channels;
-  TextureData *out = desc->destination;
+  texture_data *out = desc->destination;
 
   for (size_t e = 0; e < desc->length; e++) {
 
@@ -340,7 +340,7 @@ void texture_write_triangle_gradient(
           if (x < 0 || x >= width || y < 0 || y >= height)
             continue;
 
-          TextureData pixel = *desc->destination + (y * width + x) * channels;
+          texture_data pixel = *desc->destination + (y * width + x) * channels;
 
           // printf("%p\n", pixel);
 
@@ -356,7 +356,7 @@ void texture_write_triangle_gradient(
   }
 }
 
-void texture_read_pixel(const texture *source, const ivec2 coordinate,
+void texture_read_pixel(const Texture *source, const ivec2 coordinate,
                         float *pixel) {
   *pixel = source->data[(coordinate[1] * source->width + coordinate[0]) *
                         source->channels];
@@ -365,7 +365,7 @@ void texture_read_pixel(const texture *source, const ivec2 coordinate,
 /**
    Provide different operators to write value into a texture data
  */
-void texture_write(unsigned char value, TextureData data,
+void texture_write(unsigned char value, texture_data data,
                    TextureWriteMethod method) {
 
   switch (method) {

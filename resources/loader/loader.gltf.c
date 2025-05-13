@@ -17,9 +17,9 @@
 #include "../runtime/texture.h"
 #include "stb/stb_image.h"
 
-static void loader_gltf_create_mesh(scene *, WGPUDevice *, WGPUQueue *,
+static void loader_gltf_create_mesh(Scene *, WGPUDevice *, WGPUQueue *,
                                     cgltf_data *);
-static void loader_gltf_create_shader(shader *, WGPUDevice *, WGPUQueue *,
+static void loader_gltf_create_shader(Shader *, WGPUDevice *, WGPUQueue *,
                                       cgltf_primitive *);
 
 static void loader_gltf_add_vertex_attribute(VertexAttribute *, float *, size_t,
@@ -30,11 +30,11 @@ static void loader_gltf_init_vertex_lists(VertexAttribute *, VertexList *,
 static float *loader_gltf_attributes(cgltf_accessor *);
 static void loader_gltf_accessor_to_array(cgltf_accessor *, float *, uint8_t);
 static VertexIndex loader_gltf_index(cgltf_primitive *);
-static void loader_gltf_bind_uniforms(shader *, cgltf_material *);
+static void loader_gltf_bind_uniforms(Shader *, cgltf_material *);
 static uint8_t loader_gltf_extract_texture(cgltf_texture_view *,
                                            ShaderBindGroupTextureEntry *);
 static void loader_gltf_load_fallback_texture(ShaderBindGroupTextureEntry *);
-static void loader_gltf_mesh_position(mesh *, const char *, cgltf_data *);
+static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
 
 void loader_gltf_load(const GLTFLoadDescriptor *desc) {
 
@@ -137,7 +137,7 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   return (VertexIndex){.entries = index_data, .length = index_accessor->count};
 }
 
-void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
+void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
                              cgltf_data *data) {
 
   printf("====== LOAD GLTF =====\n");
@@ -148,7 +148,7 @@ void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
     cgltf_mesh gl_mesh = data->meshes[m];
     printf("Mesh name: %s\n", gl_mesh.name);
 
-    struct mesh *scene_mesh = scene_new_mesh_lit(scene);
+    struct Mesh *scene_mesh = scene_new_mesh_lit(scene);
     mesh_create(scene_mesh, &(MeshCreateDescriptor){
                                 .device = device,
                                 .queue = queue,
@@ -232,7 +232,7 @@ void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
       vert_index = loader_gltf_index(&current_primitive);
 
       // target current mesh itself if primitive == 0
-      struct mesh *target_mesh = scene_mesh;
+      struct Mesh *target_mesh = scene_mesh;
 
       // add child to parent mesh if current primitive > 0
       // and set it as target mesh
@@ -289,7 +289,7 @@ void loader_gltf_create_mesh(scene *scene, WGPUDevice *device, WGPUQueue *queue,
   }
 }
 
-void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
+void loader_gltf_create_shader(Shader *shader, WGPUDevice *device,
                                WGPUQueue *queue, cgltf_primitive *primitive) {
 
   // Use default pbr shader as default
@@ -311,7 +311,7 @@ void loader_gltf_create_shader(shader *shader, WGPUDevice *device,
   Bind PBR textures
   store the texture_views (hold pointer to actual texture + other data)
  */
-void loader_gltf_bind_uniforms(shader *shader, cgltf_material *material) {
+void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
 
   uint8_t texture_length = 4;
 
@@ -443,7 +443,7 @@ void loader_gltf_load_fallback_texture(
                         });
 }
 
-void loader_gltf_mesh_position(mesh *mesh, const char *name, cgltf_data *data) {
+void loader_gltf_mesh_position(Mesh *mesh, const char *name, cgltf_data *data) {
 
   // Apply transformation to mesh
   // Transformation attributes are stored in the nodes

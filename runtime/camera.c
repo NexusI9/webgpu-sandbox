@@ -10,8 +10,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
-camera camera_create(const CameraCreateDescriptor *cd) {
-  camera c;
+Camera camera_create(const CameraCreateDescriptor *cd) {
+  Camera c;
 
   // set matrix and position to 0
   camera_reset(&c);
@@ -25,7 +25,7 @@ camera camera_create(const CameraCreateDescriptor *cd) {
   return c;
 }
 
-void camera_reset(camera *c) {
+void camera_reset(Camera *c) {
   if (c) {
     glm_vec3_zero(c->position);
     glm_vec3_zero(c->euler_rotation);
@@ -45,7 +45,7 @@ void camera_reset(camera *c) {
   }
 }
 
-static void camera_target_from_yaw_pitch(camera *camera, float yaw,
+static void camera_target_from_yaw_pitch(Camera *camera, float yaw,
                                          float pitch) {
 
   /*
@@ -71,7 +71,7 @@ static void camera_target_from_yaw_pitch(camera *camera, float yaw,
   glm_vec3_add(camera->position, *forward, camera->target);
 }
 
-static void camera_flying_mode_controller(camera *camera) {
+static void camera_flying_mode_controller(Camera *camera) {
 
   // Define new position
   uint8_t boost = input_key(KEY_CAP) ? 3 : 1;
@@ -110,7 +110,7 @@ static void camera_flying_mode_controller(camera *camera) {
   camera_look_at(camera, camera->position, camera->target);
 }
 
-static void camera_orbit_mode_controler(camera *camera) {
+static void camera_orbit_mode_controler(Camera *camera) {
 
   float yaw = -g_input.mouse.x * camera->sensitivity;
   float pitch = g_input.mouse.y * camera->sensitivity;
@@ -146,7 +146,7 @@ static void camera_orbit_mode_controler(camera *camera) {
   camera_look_at(camera, camera->position, camera->target);
 }
 
-void camera_draw(camera *camera) {
+void camera_draw(Camera *camera) {
 
   switch (camera->mode) {
 
@@ -167,9 +167,9 @@ void camera_draw(camera *camera) {
   camera_update_view(camera);
 }
 
-void camera_set_mode(camera *camera, CameraMode mode) { camera->mode = mode; }
+void camera_set_mode(Camera *camera, CameraMode mode) { camera->mode = mode; }
 
-CameraUniform camera_uniform(camera *c) {
+CameraUniform camera_uniform(Camera *c) {
   // Combine directly view matrix and camera position so faster to upload into
   // buffer
 
@@ -189,7 +189,7 @@ CameraUniform camera_uniform(camera *c) {
 
 void camera_update_matrix_uniform(void *callback_camera, void *data) {
 
-  camera *cast_cam = (camera *)callback_camera;
+  Camera *cast_cam = (Camera *)callback_camera;
   CameraUniform *new_data = (CameraUniform *)data;
 
   //  transfer updated camera values (position and view)
@@ -203,7 +203,7 @@ void camera_update_matrix_uniform(void *callback_camera, void *data) {
   //printf("Alignment check: %lu\n", ((uintptr_t)new_data) % 16);
 }
 
-void camera_translate(camera *camera, vec3 new_position) {
+void camera_translate(Camera *camera, vec3 new_position) {
   // get the absolute value, need to transfom the new position into
   // the camera coordinate system (relative)
   // https://www.ogldev.org/www/tutorial13/tutorial13.html
@@ -215,12 +215,12 @@ void camera_translate(camera *camera, vec3 new_position) {
   // camera_update_view(camera);
 }
 
-void camera_rotate(camera *camera, vec3 new_rotation) {
+void camera_rotate(Camera *camera, vec3 new_rotation) {
   glm_vec3_copy(new_rotation, camera->euler_rotation);
   // camera_update_view(camera);
 }
 
-void camera_update_view(camera *camera) {
+void camera_update_view(Camera *camera) {
   // Yaw-pitch-roll camera (1st approach)
   // Depends on camera_rotate/translate => update_view
 
@@ -261,7 +261,7 @@ void camera_update_view(camera *camera) {
   glm_mat4_copy(new_view, camera->view);
 }
 
-void camera_look_at(camera *camera, vec3 position, vec3 target) {
+void camera_look_at(Camera *camera, vec3 position, vec3 target) {
 
   // update camera view
   // TODO : look like glm_..._copy is flawed
@@ -290,4 +290,4 @@ void camera_look_at(camera *camera, vec3 position, vec3 target) {
   glm_lookat(camera->position, target, adjusted_up, camera->view);
 }
 
-mat4 *camera_view(camera *camera) { return &camera->view; }
+mat4 *camera_view(Camera *camera) { return &camera->view; }

@@ -209,7 +209,7 @@ void renderer_render(void *desc) {
    Draw a scene with a specified draw mode along with the render pass that comes
    with it (ao, shadow mapping...). Also call the main loop.
  */
-void renderer_draw(renderer *renderer, scene *scene,
+void renderer_draw(renderer *renderer, Scene *scene,
                    const RendererDrawMode draw_mode) {
 
   // Fixed (static) rendering
@@ -255,7 +255,7 @@ void renderer_lock_mouse(const renderer *renderer) {
   emscripten_request_pointerlock(renderer->context.name, true);
 }
 
-void renderer_bake_ao(renderer *renderer, scene *scene) {
+void renderer_bake_ao(renderer *renderer, Scene *scene) {
 
   ao_bake_init(&(AOBakeInitDescriptor){
       .mesh_list = &scene->layer.lit,
@@ -268,6 +268,6 @@ void renderer_bake_ao(renderer *renderer, scene *scene) {
 /**
    Main entry point of the shadow computing pass
  */
-void renderer_compute_shadow(renderer *renderer, scene *scene) {
+void renderer_compute_shadow(renderer *renderer, Scene *scene) {
   shadow_pass_init(scene, renderer->wgpu.device, renderer->wgpu.queue);
 }

@@ -47,24 +47,24 @@ typedef struct {
   float wheel_sensitivity;
   CameraMode mode;
 
-} camera;
+} Camera;
 
-camera camera_create(const CameraCreateDescriptor *);
-void camera_reset(camera *);
-void camera_set_mode(camera *, CameraMode);
+Camera camera_create(const CameraCreateDescriptor *);
+void camera_reset(Camera *);
+void camera_set_mode(Camera *, CameraMode);
 void camera_update_matrix_uniform(void *, void *);
-void camera_draw(camera *);
-void camera_look_at(camera *, vec3, vec3);
+void camera_draw(Camera *);
+void camera_look_at(Camera *, vec3, vec3);
 
 // get
-float camera_position(const camera *);
-float camera_euler_rotation(const camera *);
-mat4 *camera_view(camera *);
-CameraUniform camera_uniform(camera *);
+float camera_position(const Camera *);
+float camera_euler_rotation(const Camera *);
+mat4 *camera_view(Camera *);
+CameraUniform camera_uniform(Camera *);
 
 // set
-void camera_translate(camera *, vec3);
-void camera_rotate(camera *, vec3);
-void camera_update_view(camera *);
+void camera_translate(Camera *, vec3);
+void camera_rotate(Camera *, vec3);
+void camera_update_view(Camera *);
 
 #endif

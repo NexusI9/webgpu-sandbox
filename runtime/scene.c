@@ -10,25 +10,25 @@
 #include <stdio.h>
 
 static void scene_init_mesh_layer(MeshIndexedList *);
-static void scene_init_light_list(scene *);
-static mesh *scene_new_mesh(scene *);
-static mesh *scene_layer_add_mesh(MeshIndexedList *, mesh *);
-static void scene_draw_mesh_list(scene *, mesh_get_vertex_callback,
+static void scene_init_light_list(Scene *);
+static Mesh *scene_new_mesh(Scene *);
+static Mesh *scene_layer_add_mesh(MeshIndexedList *, Mesh *);
+static void scene_draw_mesh_list(Scene *, mesh_get_vertex_callback,
                                  mesh_get_shader_callback,
                                  WGPURenderPassEncoder *, MeshIndexedList *);
-static void scene_build_mesh_list(scene *, mesh_get_shader_callback,
+static void scene_build_mesh_list(Scene *, mesh_get_shader_callback,
                                   MeshIndexedList *);
 
-scene scene_create(camera camera, viewport viewport) {
+Scene scene_create(Camera camera, Viewport viewport) {
 
-  scene scene;
+  Scene scene;
 
   // set camera
   scene.camera = camera;
   scene.viewport = viewport;
 
   // init global mesh list
-  scene.meshes.entries = malloc(SCENE_MESH_MAX_MESH_CAPACITY * sizeof(mesh));
+  scene.meshes.entries = malloc(SCENE_MESH_MAX_MESH_CAPACITY * sizeof(Mesh));
   scene.meshes.length = 0;
   scene.meshes.capacity = SCENE_MESH_MAX_MESH_CAPACITY;
 
@@ -47,23 +47,23 @@ scene scene_create(camera camera, viewport viewport) {
  Return the new mesh pointer from the global array and push the new pointer to
  the right scene layer
  */
-mesh *scene_new_mesh_lit(scene *scene) {
-  mesh *new_mesh = scene_new_mesh(scene);
+Mesh *scene_new_mesh_lit(Scene *scene) {
+  Mesh *new_mesh = scene_new_mesh(scene);
   return scene_layer_add_mesh(&scene->layer.lit, new_mesh);
 }
 
-mesh *scene_new_mesh_unlit(scene *scene) {
-  mesh *new_mesh = scene_new_mesh(scene);
+Mesh *scene_new_mesh_unlit(Scene *scene) {
+  Mesh *new_mesh = scene_new_mesh(scene);
   return scene_layer_add_mesh(&scene->layer.unlit, new_mesh);
 }
 
-mesh *scene_new_mesh_fixed(scene *scene) {
-  mesh *new_mesh = scene_new_mesh(scene);
+Mesh *scene_new_mesh_fixed(Scene *scene) {
+  Mesh *new_mesh = scene_new_mesh(scene);
   return scene_layer_add_mesh(&scene->layer.fixed, new_mesh);
 }
 
 // TODO: Simplify the overall scene draw/build process
-void scene_draw_texture(scene *scene, WGPURenderPassEncoder *render_pass) {
+void scene_draw_texture(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
   camera_draw(&scene->camera);
@@ -76,7 +76,7 @@ void scene_draw_texture(scene *scene, WGPURenderPassEncoder *render_pass) {
                        render_pass, &scene->layer.unlit);
 }
 
-void scene_draw_fixed(scene *scene, WGPURenderPassEncoder *render_pass) {
+void scene_draw_fixed(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
   camera_draw(&scene->camera);
@@ -86,13 +86,13 @@ void scene_draw_fixed(scene *scene, WGPURenderPassEncoder *render_pass) {
                        render_pass, &scene->layer.fixed);
 }
 
-void scene_draw_shadow(scene *scene, WGPURenderPassEncoder *render_pass) {
+void scene_draw_shadow(Scene *scene, WGPURenderPassEncoder *render_pass) {
   // onlid draw solid/lit meshes
   scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_shadow, render_pass,
                        &scene->layer.lit);
 }
 
-void scene_draw_wireframe(scene *scene, WGPURenderPassEncoder *render_pass) {
+void scene_draw_wireframe(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
   camera_draw(&scene->camera);
@@ -105,7 +105,7 @@ void scene_draw_wireframe(scene *scene, WGPURenderPassEncoder *render_pass) {
                        render_pass, &scene->layer.unlit);
 }
 
-void scene_draw_solid(scene *scene, WGPURenderPassEncoder *render_pass) {
+void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
   camera_draw(&scene->camera);
@@ -122,7 +122,7 @@ void scene_draw_solid(scene *scene, WGPURenderPassEncoder *render_pass) {
    Build meshes Texture shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_texture(scene *scene) {
+void scene_build_texture(Scene *scene) {
   VERBOSE_PRINT("======= BUILD TEXTURE SCENE ======\n");
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_texture, &scene->layer.lit);
@@ -134,7 +134,7 @@ void scene_build_texture(scene *scene) {
    Build meshes Solid shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_solid(scene *scene) {
+void scene_build_solid(Scene *scene) {
   VERBOSE_PRINT("======= BUILD SOLID SCENE ======\n");
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_solid, &scene->layer.lit);
@@ -146,7 +146,7 @@ void scene_build_solid(scene *scene) {
    Build meshes Wireframe shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_wireframe(scene *scene) {
+void scene_build_wireframe(Scene *scene) {
   VERBOSE_PRINT("======= BUILD WIREFRAME SCENE ======\n");
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_wireframe, &scene->layer.lit);
@@ -158,7 +158,7 @@ void scene_build_wireframe(scene *scene) {
    Build meshes Shadow shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_shadow(scene *scene) {
+void scene_build_shadow(Scene *scene) {
   VERBOSE_PRINT("======= BUILD SHADOW SCENE ======\n");
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_shadow, &scene->layer.lit);
@@ -171,15 +171,15 @@ void scene_build_shadow(scene *scene) {
    Fixed layer use the Texture shader as default shader (preventing creating an
    additional persisten unsued Fixed Shader in Mesh).
  */
-void scene_build_fixed(scene *scene) {
+void scene_build_fixed(Scene *scene) {
   VERBOSE_PRINT("======= BUILD FIXED SCENE ======\n");
   scene_build_mesh_list(scene, mesh_shader_texture, &scene->layer.fixed);
 }
 
-void scene_build_mesh_list(scene *scene, mesh_get_shader_callback target_shader,
+void scene_build_mesh_list(Scene *scene, mesh_get_shader_callback target_shader,
                            MeshIndexedList *mesh_list) {
   for (int i = 0; i < mesh_list->length; i++) {
-    mesh *current_mesh = mesh_list->entries[i];
+    Mesh *current_mesh = mesh_list->entries[i];
     mesh_build(current_mesh, target_shader(current_mesh));
     shader_module_release(target_shader(current_mesh));
   }
@@ -188,12 +188,12 @@ void scene_build_mesh_list(scene *scene, mesh_get_shader_callback target_shader,
 /**
    Add a mesh pointer from the global array to the indexed list (scene layer)
  */
-static mesh *scene_layer_add_mesh(MeshIndexedList *mesh_list, mesh *new_mesh) {
+static Mesh *scene_layer_add_mesh(MeshIndexedList *mesh_list, Mesh *new_mesh) {
   // ADD MESH TO LIST
   // eventually expand mesh vector if overflow
   if (mesh_list->length == mesh_list->capacity) {
     size_t new_capacity = mesh_list->capacity * 2;
-    mesh **temp = realloc(mesh_list->entries, sizeof(mesh *) * new_capacity);
+    Mesh **temp = realloc(mesh_list->entries, sizeof(Mesh *) * new_capacity);
 
     if (temp) {
       mesh_list->entries = temp;
@@ -210,11 +210,11 @@ static mesh *scene_layer_add_mesh(MeshIndexedList *mesh_list, mesh *new_mesh) {
   return new_mesh;
 }
 
-mesh *scene_new_mesh(scene *scene) {
+Mesh *scene_new_mesh(Scene *scene) {
 
   if (scene->meshes.length == scene->meshes.capacity) {
     size_t new_capacity = scene->meshes.capacity * 2;
-    mesh *temp = realloc(scene->meshes.entries, sizeof(mesh) * new_capacity);
+    Mesh *temp = realloc(scene->meshes.entries, sizeof(Mesh) * new_capacity);
 
     if (temp) {
       scene->meshes.entries = temp;
@@ -229,14 +229,14 @@ mesh *scene_new_mesh(scene *scene) {
   return &scene->meshes.entries[scene->meshes.length++];
 }
 
-void scene_draw_mesh_list(scene *scene, mesh_get_vertex_callback target_vertex,
+void scene_draw_mesh_list(Scene *scene, mesh_get_vertex_callback target_vertex,
                           mesh_get_shader_callback target_shader,
                           WGPURenderPassEncoder *render_pass,
                           MeshIndexedList *mesh_list) {
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
-    mesh *current_mesh = mesh_list->entries[i];
+    Mesh *current_mesh = mesh_list->entries[i];
     mesh_draw(target_vertex(current_mesh), target_shader(current_mesh),
               render_pass, &scene->camera, &scene->viewport);
   }
@@ -244,12 +244,12 @@ void scene_draw_mesh_list(scene *scene, mesh_get_vertex_callback target_vertex,
 
 void scene_init_mesh_layer(MeshIndexedList *mesh_list) {
 
-  mesh_list->entries = malloc(SCENE_MESH_LIST_DEFAULT_CAPACITY * sizeof(mesh));
+  mesh_list->entries = malloc(SCENE_MESH_LIST_DEFAULT_CAPACITY * sizeof(Mesh));
   mesh_list->length = 0;
   mesh_list->capacity = SCENE_MESH_LIST_DEFAULT_CAPACITY;
 }
 
-void scene_init_light_list(scene *scene) {
+void scene_init_light_list(Scene *scene) {
 
   // init point light list
   scene->lights.point.capacity = LIGHT_MAX_CAPACITY;
@@ -268,7 +268,7 @@ void scene_init_light_list(scene *scene) {
   scene->lights.sun.length = 0;
 }
 
-size_t scene_add_point_light(scene *scene, PointLightDescriptor *desc) {
+size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc) {
 
   PointLightList *list = &scene->lights.point;
   if (list->length == list->capacity) {
@@ -282,7 +282,7 @@ size_t scene_add_point_light(scene *scene, PointLightDescriptor *desc) {
   return list->length;
 }
 
-size_t scene_add_spot_light(scene *scene, SpotLightDescriptor *desc) {
+size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc) {
 
   SpotLightList *list = &scene->lights.spot;
   if (list->length == list->capacity) {
@@ -296,7 +296,7 @@ size_t scene_add_spot_light(scene *scene, SpotLightDescriptor *desc) {
   return list->length;
 }
 
-size_t scene_add_ambient_light(scene *scene, AmbientLightDescriptor *desc) {
+size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc) {
 
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
@@ -310,7 +310,7 @@ size_t scene_add_ambient_light(scene *scene, AmbientLightDescriptor *desc) {
   return list->length;
 }
 
-size_t scene_add_sun_light(scene *scene, SunLightDescriptor *desc) {
+size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
 
   SunLightList *list = &scene->lights.sun;
   if (list->length == list->capacity) {

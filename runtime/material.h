@@ -39,39 +39,39 @@
 // ====== COMMONS ======
 
 // create related pipelines
-void material_init_shader_texture(mesh *);
-void material_init_shader_shadow(mesh *);
+void material_init_shader_texture(Mesh *);
+void material_init_shader_shadow(Mesh *);
 
-void material_clear_bindings_texture(mesh *);
-void material_clear_bindings_shadow(mesh *);
+void material_clear_bindings_texture(Mesh *);
+void material_clear_bindings_shadow(Mesh *);
 
 // === TEXTURE SHADER ===
 
 // bind model, camera and viewport to bind group
-void material_texture_bind_views(mesh *, camera *, viewport *, uint8_t);
+void material_texture_bind_views(Mesh *, Camera *, Viewport *, uint8_t);
 // bind light scene
-void material_texture_bind_lights(mesh *, AmbientLightList *,
+void material_texture_bind_lights(Mesh *, AmbientLightList *,
                                   SpotLightList *, PointLightList *,
                                   SunLightList *, uint8_t);
 
-void material_texture_add_uniform(mesh *,
+void material_texture_add_uniform(Mesh *,
                                   const ShaderCreateUniformDescriptor *);
 
-void material_texture_add_texture(mesh *,
+void material_texture_add_texture(Mesh *,
                                   const ShaderCreateTextureDescriptor *);
 
 void material_texture_add_texture_view(
-    mesh *, const ShaderCreateTextureViewDescriptor *);
+    Mesh *, const ShaderCreateTextureViewDescriptor *);
 
-void material_texture_add_sampler(mesh *,
+void material_texture_add_sampler(Mesh *,
                                   const ShaderCreateSamplerDescriptor *);
-void material_texure_bind_shadow_maps(mesh *, WGPUTextureView, WGPUTextureView);
+void material_texure_bind_shadow_maps(Mesh *, WGPUTextureView, WGPUTextureView);
 
 // === WIREFRAME SHADER ===
-void material_wireframe_bind_views(mesh *, camera *, viewport *, uint8_t);
+void material_wireframe_bind_views(Mesh *, Camera *, Viewport *, uint8_t);
 
 // === SOLID SHADER ===
-void material_solid_bind_views(mesh *, camera *, viewport *, uint8_t);
+void material_solid_bind_views(Mesh *, Camera *, Viewport *, uint8_t);
 
 // === SHADOW SHADER ===
 
@@ -82,8 +82,8 @@ typedef struct {
 } MaterialShadowBindMapsDescriptor;
 
 // bind shadow specicif view
-void material_shadow_bind_views(mesh *, mat4 *);
+void material_shadow_bind_views(Mesh *, mat4 *);
 
-void material_shadow_set_cullmode(mesh *, const WGPUCullMode);
+void material_shadow_set_cullmode(Mesh *, const WGPUCullMode);
 
 #endif

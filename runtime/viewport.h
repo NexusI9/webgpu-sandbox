@@ -23,10 +23,10 @@ typedef struct {
   float aspect;
   mat4 projection;
   cclock *clock;
-} viewport;
+} Viewport;
 
-viewport viewport_create(const ViewportCreateDescriptor *);
-void viewport_update_projection(viewport *);
-ViewportUniform viewport_uniform(viewport *);
-mat4 *viewport_projection(viewport *);
+Viewport viewport_create(const ViewportCreateDescriptor *);
+void viewport_update_projection(Viewport *);
+ViewportUniform viewport_uniform(Viewport *);
+mat4 *viewport_projection(Viewport *);
 #endif

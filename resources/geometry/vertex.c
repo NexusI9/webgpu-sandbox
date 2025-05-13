@@ -1,7 +1,7 @@
 #include "vertex.h"
 #include "../utils/vector.h"
 
-void vertex_create(vertex *vertex) {
+void vertex_create(Vertex *vertex) {
 
   glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, vertex->position);
   glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, vertex->normal);
@@ -25,9 +25,9 @@ void vertex_list_create(VertexList *list, size_t count) {
    Useful when going through a mesh vertex and analyse
    its vertex array.
  */
-vertex vertex_from_array(float *data) {
+Vertex vertex_from_array(float *data) {
 
-  return (vertex){
+  return (Vertex){
       .position =
           {
               *data,
@@ -58,7 +58,7 @@ vertex vertex_from_array(float *data) {
    Find a vertex with the same given attributes in a vertex attribute array
    Output null if no equivalent found or a list of matching vertex
  */
-void vertex_find_equal_attr(vertex *source,
+void vertex_find_equal_attr(Vertex *source,
                             VertexAttribute *vertex_attribute,
                             VertexAttributeName attribute,
                             VertexAttribute *destination) {
@@ -68,7 +68,7 @@ void vertex_find_equal_attr(vertex *source,
     if (destination->length == destination->capacity)
       return;
 
-    vertex compare = vertex_from_array(&vertex_attribute->entries[i]);
+    Vertex compare = vertex_from_array(&vertex_attribute->entries[i]);
     float *v_src = &vertex_attribute->entries[i];
     float *v_dest = &destination->entries[destination->length];
 
@@ -109,7 +109,7 @@ void vertex_find_equal_attr(vertex *source,
 /**
    Transform vertex into an array
  */
-void vertex_to_array(vertex *vertex, float *array) {
+void vertex_to_array(Vertex *vertex, float *array) {
 
   // copy position
   array[0] = vertex->position[0];

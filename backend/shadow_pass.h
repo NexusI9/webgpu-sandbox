@@ -11,7 +11,7 @@
 typedef struct {
   WGPUDevice device;
   WGPUQueue queue;
-  scene *scene;
+  Scene *scene;
 
   struct {
     WGPUTexture *color_texture;
@@ -26,7 +26,7 @@ typedef struct {
 } ShadowPassMapDescriptor;
 
 typedef struct {
-  scene *scene;
+  Scene *scene;
   WGPUTexture color_texture;
   WGPUTexture depth_texture;
   uint32_t layer;
@@ -60,6 +60,6 @@ typedef struct {
   WGPUTextureViewDimension dimension;
 } ShadowPassTextureDescriptor;
 
-void shadow_pass_init(scene *, WGPUDevice, WGPUQueue);
+void shadow_pass_init(Scene *, WGPUDevice, WGPUQueue);
 
 #endif

@@ -18,8 +18,8 @@ typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;
 
-  camera *camera;
-  viewport *viewport;
+  Camera *camera;
+  Viewport *viewport;
 
 } GridCreateDescriptor;
 
@@ -30,11 +30,11 @@ typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;
 
-  camera *camera;
-  viewport *viewport;
+  Camera *camera;
+  Viewport *viewport;
 
-} grid;
+} Grid;
 
-void grid_create(mesh *, GridCreateDescriptor *);
+void grid_create(Mesh *, GridCreateDescriptor *);
 
 #endif

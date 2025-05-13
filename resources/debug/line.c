@@ -7,7 +7,7 @@
 
 static void line_create_plane(const LineCreatePlaneDescriptor *);
 
-void line_create(mesh *mesh, const LineCreateDescriptor *desc) {
+void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
 
   mesh_create(mesh, &(MeshCreateDescriptor){
                         .device = desc->device,
@@ -185,7 +185,7 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
   vertex_index->length += 6;
 }
 
-void line_update_buffer(mesh *mesh) {
+void line_update_buffer(Mesh *mesh) {
   // update mesh vertex + index buffers
   mesh_set_vertex_attribute(mesh, &mesh->vertex.base.attribute);
   mesh_set_vertex_index(mesh, &mesh->vertex.base.index);

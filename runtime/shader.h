@@ -180,7 +180,7 @@ typedef struct {
   WGPUQueue *queue;
 
   // pipelines
-  pipeline pipeline;
+  Pipeline pipeline;
 
   // vertex data
   struct {
@@ -198,26 +198,26 @@ typedef struct {
 
   int8_t projection_view_bindgroup;
 
-} shader;
+} Shader;
 
 // methods
-void shader_create(shader *, const ShaderCreateDescriptor *);
-void shader_destroy(shader *);
-void shader_add_uniform(shader *, const ShaderCreateUniformDescriptor *);
-void shader_add_texture(shader *, const ShaderCreateTextureDescriptor *);
-void shader_add_texture_view(shader *,
+void shader_create(Shader *, const ShaderCreateDescriptor *);
+void shader_destroy(Shader *);
+void shader_add_uniform(Shader *, const ShaderCreateUniformDescriptor *);
+void shader_add_texture(Shader *, const ShaderCreateTextureDescriptor *);
+void shader_add_texture_view(Shader *,
                              const ShaderCreateTextureViewDescriptor *);
-void shader_add_sampler(shader *, const ShaderCreateSamplerDescriptor *);
+void shader_add_sampler(Shader *, const ShaderCreateSamplerDescriptor *);
 
 // on update
-void shader_draw(shader *, WGPURenderPassEncoder *, const camera *,
-                 const viewport *);
+void shader_draw(Shader *, WGPURenderPassEncoder *, const Camera *,
+                 const Viewport *);
 
 // build up the whole pipeline
-void shader_build(shader *);
-void shader_module_release(shader *);
-void shader_bind_group_init(shader *);
-void shader_bind_group_clear(shader *);
+void shader_build(Shader *);
+void shader_module_release(Shader *);
+void shader_bind_group_init(Shader *);
+void shader_bind_group_clear(Shader *);
 
-pipeline *shader_pipeline(shader *);
+Pipeline *shader_pipeline(Shader *);
 #endif

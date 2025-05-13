@@ -41,14 +41,14 @@ typedef struct {
 
 // TODO: make it a linked list
 typedef struct {
-  struct mesh **entries;
+  struct Mesh **entries;
   size_t *index;
   size_t capacity;
   size_t length;
 } MeshIndexedList;
 
 typedef struct {
-  struct mesh *entries;
+  struct Mesh *entries;
   size_t capacity;
   size_t length;
 } MeshList;
@@ -59,7 +59,7 @@ typedef struct {
 } MeshVertex;
 
 // Core
-typedef struct mesh {
+typedef struct Mesh {
 
   size_t id;
   char *name;
@@ -82,56 +82,56 @@ typedef struct mesh {
 
   // shader
   struct {
-    shader texture;
-    shader shadow;
-    shader solid;
-    shader wireframe;
+    Shader texture;
+    Shader shadow;
+    Shader solid;
+    Shader wireframe;
   } shader;
 
   // hierarchy
-  struct mesh *parent;
+  struct Mesh *parent;
   MeshIndexedList children;
 
-} mesh;
+} Mesh;
 
-typedef shader *(*mesh_get_shader_callback)(mesh *);
-typedef MeshVertex *(*mesh_get_vertex_callback)(mesh *);
+typedef Shader *(*mesh_get_shader_callback)(Mesh *);
+typedef MeshVertex *(*mesh_get_vertex_callback)(Mesh *);
 
-void mesh_create(mesh *, const MeshCreateDescriptor *);
-void mesh_create_primitive(mesh *, const MeshCreatePrimitiveDescriptor *);
+void mesh_create(Mesh *, const MeshCreateDescriptor *);
+void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
 
-void mesh_set_vertex_attribute(mesh *, const VertexAttribute *);
-void mesh_set_vertex_index(mesh *, const VertexIndex *);
-void mesh_set_parent(mesh *, mesh *);
-void mesh_set_name(mesh *, const char *);
-void mesh_set_shader(mesh *, const ShaderCreateDescriptor *);
+void mesh_set_vertex_attribute(Mesh *, const VertexAttribute *);
+void mesh_set_vertex_index(Mesh *, const VertexIndex *);
+void mesh_set_parent(Mesh *, Mesh *);
+void mesh_set_name(Mesh *, const char *);
+void mesh_set_shader(Mesh *, const ShaderCreateDescriptor *);
 
-void mesh_create_vertex_buffer(mesh *, const MeshCreateBufferDescriptor *);
-void mesh_create_index_buffer(mesh *, const MeshCreateBufferDescriptor *);
+void mesh_create_vertex_buffer(Mesh *, const MeshCreateBufferDescriptor *);
+void mesh_create_index_buffer(Mesh *, const MeshCreateBufferDescriptor *);
 
-void mesh_draw(MeshVertex *, shader *, WGPURenderPassEncoder *, const camera *,
-               const viewport *);
+void mesh_draw(MeshVertex *, Shader *, WGPURenderPassEncoder *, const Camera *,
+               const Viewport *);
 
-void mesh_build(mesh *, shader *);
+void mesh_build(Mesh *, Shader *);
 
-void mesh_scale(mesh *, vec3);
-void mesh_position(mesh *, vec3);
-void mesh_rotate(mesh *, vec3);
-void mesh_rotate_quat(mesh *, versor);
+void mesh_scale(Mesh *, vec3);
+void mesh_position(Mesh *, vec3);
+void mesh_rotate(Mesh *, vec3);
+void mesh_rotate_quat(Mesh *, versor);
 
-mesh *mesh_add_child(mesh *, mesh *);
-mesh *mesh_new_child(mesh *);
-mesh *mesh_new_child_empty(mesh *);
-mesh *mesh_get_child_by_id(mesh *, size_t);
+Mesh *mesh_add_child(Mesh *, Mesh *);
+Mesh *mesh_new_child(Mesh *);
+Mesh *mesh_new_child_empty(Mesh *);
+Mesh *mesh_get_child_by_id(Mesh *, size_t);
 
-MeshUniform mesh_model_uniform(mesh *);
+MeshUniform mesh_model_uniform(Mesh *);
 
-MeshVertex *mesh_vertex_base(mesh *);
-MeshVertex *mesh_vertex_wireframe(mesh *);
+MeshVertex *mesh_vertex_base(Mesh *);
+MeshVertex *mesh_vertex_wireframe(Mesh *);
 
-shader *mesh_shader_texture(mesh *);
-shader *mesh_shader_shadow(mesh *);
-shader *mesh_shader_wireframe(mesh *);
-shader *mesh_shader_solid(mesh *);
+Shader *mesh_shader_texture(Mesh *);
+Shader *mesh_shader_shadow(Mesh *);
+Shader *mesh_shader_wireframe(Mesh *);
+Shader *mesh_shader_solid(Mesh *);
 
 #endif

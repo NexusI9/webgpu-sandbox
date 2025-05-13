@@ -14,7 +14,7 @@ typedef struct {
   vec3 normal;
   vec3 color;
   vec2 uv;
-} vertex;
+} Vertex;
 
 typedef struct {
   float *entries;
@@ -54,11 +54,11 @@ typedef struct {
 
 } VertexList; // TODO: unsure about the naming..
 
-void vertex_create(vertex *);
+void vertex_create(Vertex *);
 void vertex_list_create(VertexList *, size_t);
-vertex vertex_from_array(float *);
-void vertex_find_equal_attr(vertex *, VertexAttribute *, VertexAttributeName,
+Vertex vertex_from_array(float *);
+void vertex_find_equal_attr(Vertex *, VertexAttribute *, VertexAttributeName,
                             VertexAttribute *);
-void vertex_to_array(vertex *, float *);
+void vertex_to_array(Vertex *, float *);
 void vertex_copy(float *, float *);
 #endif

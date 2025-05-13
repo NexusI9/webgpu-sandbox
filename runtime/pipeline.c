@@ -8,7 +8,7 @@
 /**
   Initialize the default pipeline with a preset descriptor
  */
-void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
+void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 
   // Define core data
   pipeline->vertex_layout = desc->vertex_layout;
@@ -75,14 +75,14 @@ void pipeline_create(pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 /**
    Define custom vertex state for pipeline prior building it
  */
-void pipeline_set_vertex(pipeline *pipeline, const WGPUVertexState state) {
+void pipeline_set_vertex(Pipeline *pipeline, const WGPUVertexState state) {
   pipeline->vertex_state = state;
 }
 
 /**
    Define custom fragment state for pipeline prior building it
  */
-void pipeline_set_fragment(pipeline *pipeline,
+void pipeline_set_fragment(Pipeline *pipeline,
                            const PipelineFragmentDescriptor *state) {
 
   // cache attributes
@@ -116,7 +116,7 @@ void pipeline_set_fragment(pipeline *pipeline,
 /**
    Define custom primitive state for pipeline prior building it
  */
-void pipeline_set_primitive(pipeline *pipeline,
+void pipeline_set_primitive(Pipeline *pipeline,
                             const WGPUPrimitiveState state) {
   pipeline->primitive_state = state;
 }
@@ -124,7 +124,7 @@ void pipeline_set_primitive(pipeline *pipeline,
 /**
    Define custom stencil state for pipeline prior building it
  */
-void pipeline_set_stencil(pipeline *pipeline,
+void pipeline_set_stencil(Pipeline *pipeline,
                           const WGPUDepthStencilState state) {
   pipeline->stencil_state = state;
 }
@@ -132,7 +132,7 @@ void pipeline_set_stencil(pipeline *pipeline,
 /**
    Release pipeline if exists and create i new one
  */
-void pipeline_build(pipeline *pipeline, const WGPUPipelineLayout *layout) {
+void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
 
   // cache bind group layout
   pipeline->layout = *layout;
@@ -171,7 +171,7 @@ void pipeline_build(pipeline *pipeline, const WGPUPipelineLayout *layout) {
 /**
    Release pipeline and set back the handle to null
  */
-void pipeline_destroy(pipeline *pipeline) {
+void pipeline_destroy(Pipeline *pipeline) {
   wgpuRenderPipelineRelease(pipeline->handle);
   pipeline->handle = NULL;
 

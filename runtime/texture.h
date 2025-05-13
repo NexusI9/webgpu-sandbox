@@ -11,7 +11,7 @@
 #define TEXTURE_CHANNELS_R 1
 #define TEXTURE_MIN_SIZE 64
 
-typedef unsigned char *TextureData;
+typedef unsigned char *texture_data;
 
 typedef enum {
   TextureWriteMethod_Replace,
@@ -32,14 +32,14 @@ typedef struct {
   int width;
   int height;
   size_t size;
-  TextureData data;
+  texture_data data;
   uint8_t channels;
   uint8_t value;
-} texture;
+} Texture;
 
 typedef struct {
-  const texture *source;
-  TextureData *destination;
+  const Texture *source;
+  texture_data *destination;
   float thickness;
   float diffusion;
   TextureWriteMethod write_method;
@@ -75,29 +75,29 @@ typedef struct {
 } TextureTriangleGradientDescriptor;
 
 typedef struct {
-  const texture *source;
-  TextureData *destination;
+  const Texture *source;
+  texture_data *destination;
   TextureTriangleGradientDescriptor *points;
   size_t length;
   TextureWriteMethod write_method;
 } TextureWriteTriangleGradientDescriptor;
 
-void texture_create(texture *, const TextureCreateDescriptor *);
+void texture_create(Texture *, const TextureCreateDescriptor *);
 void texture_create_by_ref(unsigned char **, size_t *,
                            const TextureCreateDescriptor *);
 
-void texture_fill(texture *, int);
-void texture_save(texture *, const char *);
-void texture_free(texture *);
-void texture_blur(const texture *, int, float, TextureData *);
-void texture_contrast(const texture *, float, TextureData *);
-void texture_remap(const texture *, int, int, TextureData *);
+void texture_fill(Texture *, int);
+void texture_save(Texture *, const char *);
+void texture_free(Texture *);
+void texture_blur(const Texture *, int, float, texture_data *);
+void texture_contrast(const Texture *, float, texture_data *);
+void texture_remap(const Texture *, int, int, texture_data *);
 
 void texture_write_triangle_gradient(
     const TextureWriteTriangleGradientDescriptor *);
 void texture_write_line(const TextureWriteLineDescriptor *);
-void texture_write_pixel(texture *, int, vec2, TextureWriteMethod);
+void texture_write_pixel(Texture *, int, vec2, TextureWriteMethod);
 
-void texture_read_pixel(const texture *, const ivec2, float *);
+void texture_read_pixel(const Texture *, const ivec2, float *);
 
 #endif

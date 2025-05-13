@@ -10,8 +10,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-static void material_bind_views(mesh *, mesh_get_shader_callback, camera *,
-                                viewport *, uint8_t);
+static void material_bind_views(Mesh *, mesh_get_shader_callback, Camera *,
+                                Viewport *, uint8_t);
 
 /**
    Bind Mesh, Camera and Projection matrix to a given mesh shader
@@ -21,8 +21,8 @@ static void material_bind_views(mesh *, mesh_get_shader_callback, camera *,
    - Binding 1: Camera matrix
    - Binding 2: Model matrix
  */
-void material_bind_views(mesh *mesh, mesh_get_shader_callback target_shader,
-                         camera *camera, viewport *viewport,
+void material_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
+                         Camera *camera, Viewport *viewport,
                          uint8_t group_index) {
 
   ShaderViewProjectionUniform proj_view_data;
@@ -65,18 +65,18 @@ void material_bind_views(mesh *mesh, mesh_get_shader_callback target_shader,
       });
 }
 
-void material_texture_bind_views(mesh *mesh, camera *camera, viewport *viewport,
+void material_texture_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport,
                                  uint8_t group_index) {
   material_bind_views(mesh, mesh_shader_texture, camera, viewport, group_index);
 }
 
-void material_wireframe_bind_views(mesh *mesh, camera *camera,
-                                   viewport *viewport, uint8_t group_index) {
+void material_wireframe_bind_views(Mesh *mesh, Camera *camera,
+                                   Viewport *viewport, uint8_t group_index) {
   material_bind_views(mesh, mesh_shader_wireframe, camera, viewport,
                       group_index);
 }
 
-void material_solid_bind_views(mesh *mesh, camera *camera, viewport *viewport,
+void material_solid_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport,
                                uint8_t group_index) {
   material_bind_views(mesh, mesh_shader_solid, camera, viewport, group_index);
 }
@@ -88,7 +88,7 @@ void material_solid_bind_views(mesh *mesh, camera *camera, viewport *viewport,
    by default we will upload all the lights (point, ambient, spot)
    within a defined group
   */
-void material_texture_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
+void material_texture_bind_lights(Mesh *mesh, AmbientLightList *ambient_list,
                                   SpotLightList *spot_list,
                                   PointLightList *point_list,
                                   SunLightList *sun_list, uint8_t group_index) {
@@ -228,14 +228,14 @@ void material_texture_bind_lights(mesh *mesh, AmbientLightList *ambient_list,
 /**
    Clear the texture shader bind groups of mesh
  */
-void material_clear_bindings_texture(mesh *mesh) {
+void material_clear_bindings_texture(Mesh *mesh) {
   shader_bind_group_clear(mesh_shader_texture(mesh));
 }
 
 /**
    Clear the shadow shader bind groups of mesh
  */
-void material_clear_bindings_shadow(mesh *mesh) {
+void material_clear_bindings_shadow(Mesh *mesh) {
   shader_bind_group_clear(mesh_shader_shadow(mesh));
 }
 
@@ -249,7 +249,7 @@ void material_clear_bindings_shadow(mesh *mesh) {
    upload separate views in the shader.
  */
 
-void material_shadow_bind_views(mesh *mesh, mat4 *view) {
+void material_shadow_bind_views(Mesh *mesh, mat4 *view) {
 
   MeshUniform uModel = mesh_model_uniform(mesh);
 
@@ -280,7 +280,7 @@ void material_shadow_bind_views(mesh *mesh, mat4 *view) {
 /**
    Bind the shadow maps and sampler to the default shader
  */
-void material_texure_bind_shadow_maps(mesh *mesh,
+void material_texure_bind_shadow_maps(Mesh *mesh,
                                       WGPUTextureView point_texture_view,
                                       WGPUTextureView spot_texture_view) {
 
@@ -361,7 +361,7 @@ void material_texure_bind_shadow_maps(mesh *mesh,
 /**
    Transfer Uniform to the right mesh shader (texture)
  */
-void material_texture_add_uniform(mesh *mesh,
+void material_texture_add_uniform(Mesh *mesh,
                                   const ShaderCreateUniformDescriptor *desc) {
   shader_add_uniform(mesh_shader_texture(mesh), desc);
 }
@@ -369,7 +369,7 @@ void material_texture_add_uniform(mesh *mesh,
 /**
    Transfer Texture to the right mesh shader (texture)
  */
-void material_texture_add_texture(mesh *mesh,
+void material_texture_add_texture(Mesh *mesh,
                                   const ShaderCreateTextureDescriptor *desc) {
   shader_add_texture(mesh_shader_texture(mesh), desc);
 }
@@ -378,19 +378,19 @@ void material_texture_add_texture(mesh *mesh,
    Transfer Texture View to the right mesh shader (texture)
  */
 void material_texture_add_texture_view(
-    mesh *mesh, const ShaderCreateTextureViewDescriptor *desc) {
+    Mesh *mesh, const ShaderCreateTextureViewDescriptor *desc) {
   shader_add_texture_view(mesh_shader_texture(mesh), desc);
 }
 
 /**
    Transfer Sampler to the right mesh shader (texture)
  */
-void material_texture_add_sampler(mesh *mesh,
+void material_texture_add_sampler(Mesh *mesh,
                                   const ShaderCreateSamplerDescriptor *desc) {
   shader_add_sampler(mesh_shader_texture(mesh), desc);
 }
 
-void material_shadow_set_cullmode(mesh *mesh, WGPUCullMode mode) {
+void material_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
 
   pipeline_set_primitive(shader_pipeline(mesh_shader_shadow(mesh)),
                          (WGPUPrimitiveState){
