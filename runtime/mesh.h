@@ -134,4 +134,6 @@ Shader *mesh_shader_shadow(Mesh *);
 Shader *mesh_shader_wireframe(Mesh *);
 Shader *mesh_shader_solid(Mesh *);
 
+int mesh_list_create(MeshList *, size_t);
+Mesh *mesh_list_insert(MeshList *);
 #endif

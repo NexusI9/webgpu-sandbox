@@ -1,13 +1,15 @@
 #include "shadow_pass.h"
-#include "../resources/debug/view.h"
+#include "../resources/prefab/debug/view.h"
 #include "../runtime/material.h"
 #include "../runtime/texture.h"
 #include "../utils/math.h"
 #include <string.h>
 
 // static DebugView debug_view_light;
-static inline void shadow_pass_create_textures(const ShadowPassTextureDescriptor *);
-static inline void shadow_pass_to_texture(const ShadowPassToTextureDescriptor *);
+static inline void
+shadow_pass_create_textures(const ShadowPassTextureDescriptor *);
+static inline void
+shadow_pass_to_texture(const ShadowPassToTextureDescriptor *);
 static inline void
 shadow_pass_fallback_to_texture(const ShadowPassFallbackToTextureDescriptor *);
 static inline void shadow_pass_create_map(const ShadowPassMapDescriptor *);
@@ -207,7 +209,6 @@ void shadow_pass_fallback_to_texture(
       .height = height,
       .depthOrArrayLayers = 1,
   };
-
 
   // write to color texture
   wgpuQueueWriteTexture(desc->queue,

@@ -1,64 +1,23 @@
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "lib/mbin.h"
+#include "lib/file.h"
+#include "lib/vattr.h"
+#include "lib/vindex.h"
+
+#define VERTEX_LIST_CAPACITY 64
+#define VERTEX_COLOR {0.0f, 0.0f, 0.0f}
+
 /**
    Convert OBJ file to Mesh binary files (vertex + index).
    Using binary files helps for faster memory mapping/ embedding as it directly
    match the respective struct data layout.
  */
-
-typedef float mbin_vertex_t;
-typedef uint16_t mbin_index_t;
-
-typedef struct {
-  mbin_vertex_t *data;
-  size_t count;
-} VertexBuffer;
-
-typedef struct {
-  mbin_index_t *data;
-  size_t count;
-} IndexBuffer;
-
-int write_buffer(const char *path, void *data, size_t count, size_t type_size) {
-
-  FILE *f = fopen(path, "wb");
-
-  if (!f) {
-    fprintf(stderr, "Failed to open file: %s\n", path);
-    return 1;
-  }
-
-  fwrite(&type_size, sizeof(uint32_t), 1, f);
-  fwrite(&count, sizeof(uint32_t), 1, f);
-  fwrite(data, type_size, count, f);
-
-  fclose(f);
-
-  return 0;
-}
-
-void namefile_from_path(const char *path, char *dest, size_t max_length) {
-
-  const char *base = strrchr(path, '/');
-  base = base ? base + 1 : path;
-
-  // check if name contain "." (.obj)
-  const char *dot = strchr(base, '.');
-
-  // get length on filename before the dot
-  size_t length = dot ? (size_t)(dot - base) : strlen(base);
-
-  // trim name
-  if (length > max_length)
-    length = max_length - 1;
-
-  strncpy(dest, base, length);
-  dest[length] = '\0';
-}
 
 int convert_obj_to_mbin(const char *in_path, const char *out_dir,
                         VertexBuffer *vb, IndexBuffer *ib) {
@@ -70,26 +29,44 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
     return 1;
   }
 
-  char line[512];
-  while (fgets(line, sizeof(line), f)) {
+  VertexAttributeList vertex_positions = {
+      .capacity = VERTEX_LIST_CAPACITY,
+      .dimension = 3,
+      .prefix = "v ",
+  };
 
-    // vertex line
-    if (line[0] == 'v' && line[1] == ' ') {
-      float x, y, z;
-      sscanf(line, "v %f %f %f", &x, &y, &z);
-      vb->data[vb->count++] = x;
-      vb->data[vb->count++] = y;
-      vb->data[vb->count++] = z;
-    }
-    // index line
-    else if (line[0] == 'f') {
-      uint32_t i1, i2, i3;
-      sscanf(line, "f %u %u %u", &i1, &i2, &i3);
-      ib->data[ib->count++] = i1;
-      ib->data[ib->count++] = i2;
-      ib->data[ib->count++] = i3;
-    }
+  VertexAttributeList vertex_normals = {
+      .capacity = VERTEX_LIST_CAPACITY,
+      .dimension = 3,
+      .prefix = "vn ",
+  };
+
+  VertexAttributeList vertex_uvs = {
+      .capacity = VERTEX_LIST_CAPACITY,
+      .dimension = 2,
+      .prefix = "vt ",
+  };
+
+  VertexAttributeList *attributes[3] = {
+      &vertex_positions,
+      &vertex_normals,
+      &vertex_uvs,
+  };
+
+  // cache attributes in their respective array
+  for (int v = 0; v < 3; v++) {
+    VertexAttributeList *list = attributes[v];
+    file_read_line_prefix(f, list->prefix, vertex_attribute_from_line,
+                          &(VertexAttributeCallbackDescriptor){.list = list});
+#ifdef VERBOSE
+    vertex_attribute_list_print(attributes[v]);
+#endif
   }
+
+  // read index
+  // trianglify
+
+  // build vertex atrtibute
 
   fclose(f);
 
@@ -110,7 +87,7 @@ int main(int argc, char **argv) {
     char in_filename[256], vertex_out_file[512], index_out_file[512];
 
     namefile_from_path(argv[i], in_filename, 256);
-    fprintf(stdout, "%s.obj... ", in_filename);
+    fprintf(stdout, "%s.obj...\n", in_filename);
 
     // define vertex filename
     snprintf(vertex_out_file, sizeof(vertex_out_file), "%s/%s.vertex.mbin",
@@ -121,15 +98,17 @@ int main(int argc, char **argv) {
              out_dir, in_filename);
 
     const char *path = argv[i];
-    VertexBuffer vb = {malloc(sizeof(mbin_vertex_t) * 1024), 0};
-    IndexBuffer ib = {malloc(sizeof(mbin_index_t) * 1024), 0};
+    VertexBuffer vb = {0, malloc(sizeof(mbin_vertex_t) * 1024)};
+    IndexBuffer ib = {0, malloc(sizeof(mbin_index_t) * 1024)};
 
     convert_obj_to_mbin(path, out_dir, &vb, &ib);
-    write_buffer(vertex_out_file, vb.data, vb.count, sizeof(mbin_vertex_t));
-    write_buffer(index_out_file, ib.data, ib.count, sizeof(mbin_index_t));
+    // write_buffer(vertex_out_file, vb.data, vb.count, sizeof(mbin_vertex_t));
+    // write_buffer(index_out_file, ib.data, ib.count, sizeof(mbin_index_t));
 
     free(vb.data);
     free(ib.data);
+
+    printf("done\n");
   }
 
   return 0;

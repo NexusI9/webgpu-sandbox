@@ -2,7 +2,8 @@ INPUT ?= ../../assets/obj
 OUTPUT ?= ../../assets/mbin
 
 TARGET := obj2min
-FLAGS := -O
+C_FILES := $(shell find . -type f -name "*.c")
+FLAGS := -O2 -DVERBOSE
 
 .PHONY: all run clean
 
@@ -13,7 +14,7 @@ all:
 
 compile:
 	@echo "Compiling"
-	@gcc $(FLAGS) -o $(TARGET) main.c
+	@gcc $(FLAGS) -o $(TARGET) $(C_FILES)
 
 run:
 	@echo "Converting"

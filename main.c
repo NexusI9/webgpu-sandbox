@@ -13,26 +13,34 @@
 #include "emscripten/html5_webgpu.h"
 #include <webgpu/webgpu.h>
 
-#include "resources/debug/grid.h"
-#include "resources/debug/line.h"
-#include "runtime/light.h"
+#include "resources/prefab/debug/line.h"
+#include "resources/prefab/gizmo/grid.h"
+
+// utils
+#include "resources/primitive/primitive.h"
 #include "utils/file.h"
+#include "utils/system.h"
 
 #include "backend/buffer.h"
 #include "backend/clock.h"
 #include "backend/renderer.h"
 
+// resources
 #include "resources/loader/loader.gltf.h"
+#include "resources/loader/loader.mbin.h"
+
 #include "resources/primitive/cube.h"
 #include "resources/primitive/plane.h"
+
+// runtime
 #include "runtime/camera.h"
 #include "runtime/input.h"
+#include "runtime/light.h"
 #include "runtime/material.h"
 #include "runtime/mesh.h"
 #include "runtime/scene.h"
 #include "runtime/shader.h"
 #include "runtime/viewport.h"
-#include "utils/system.h"
 
 static Scene main_scene;
 static Mesh tri_mesh;
@@ -139,12 +147,17 @@ void init_scene() {
                                        });
 }
 
-void add_gizmo(){
+void add_gizmo() {
 
-    //Mesh* gizmo = scene_new_mesh_fixed(&main_scene);
-    
-   
-    
+  // Mesh* gizmo = scene_new_mesh_fixed(&main_scene);
+  Primitive mbin_primitive;
+  loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
+      .primitive = &mbin_primitive,
+      .index_path = "./resources/assets/mbin/cube.index.mbin",
+      .vertex_path = "./resources/assets/mbin/cube.vertex.mbin"});
+
+  printf("vertex length: %lu\n", mbin_primitive.vertex.length);
+  printf("index length: %lu\n", mbin_primitive.index.length);
 }
 
 void add_cube(vec3 position) {

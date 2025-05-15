@@ -50,11 +50,6 @@ typedef struct {
   MeshIndexedList fixed;
 } SceneLayerList;
 
-typedef struct {
-  Mesh *entries;
-  size_t capacity;
-  size_t length;
-} SceneMeshList;
 
 typedef struct {
   PointLightList point;
@@ -72,7 +67,7 @@ typedef struct {
   Viewport viewport;
 
   // meshes global list
-  SceneMeshList meshes;
+  MeshList meshes;
 
   // meshes layers
   SceneLayerList layer;

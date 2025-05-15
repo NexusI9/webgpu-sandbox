@@ -28,9 +28,7 @@ Scene scene_create(Camera camera, Viewport viewport) {
   scene.viewport = viewport;
 
   // init global mesh list
-  scene.meshes.entries = malloc(SCENE_MESH_MAX_MESH_CAPACITY * sizeof(Mesh));
-  scene.meshes.length = 0;
-  scene.meshes.capacity = SCENE_MESH_MAX_MESH_CAPACITY;
+  mesh_list_create(&scene.meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
   // init mesh layers
   scene_init_mesh_layer(&scene.layer.lit);
@@ -211,22 +209,7 @@ static Mesh *scene_layer_add_mesh(MeshIndexedList *mesh_list, Mesh *new_mesh) {
 }
 
 Mesh *scene_new_mesh(Scene *scene) {
-
-  if (scene->meshes.length == scene->meshes.capacity) {
-    size_t new_capacity = scene->meshes.capacity * 2;
-    Mesh *temp = realloc(scene->meshes.entries, sizeof(Mesh) * new_capacity);
-
-    if (temp) {
-      scene->meshes.entries = temp;
-      scene->meshes.capacity = new_capacity;
-    } else {
-      VERBOSE_PRINT("Scene mesh list reached full capacity, could not "
-                    "reallocate new space\n");
-      return 0;
-    }
-  }
-
-  return &scene->meshes.entries[scene->meshes.length++];
+    return mesh_list_insert(&scene->meshes);
 }
 
 void scene_draw_mesh_list(Scene *scene, mesh_get_vertex_callback target_vertex,

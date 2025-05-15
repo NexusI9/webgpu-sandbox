@@ -2,6 +2,7 @@
 #define _LOADER_MBIN_H_
 
 #include "../geometry/vertex.h"
+#include "../primitive/primitive.h"
 #include <stdint.h>
 
 typedef uint32_t mbin_length_t;
@@ -35,9 +36,15 @@ typedef struct {
   const char *index_path;
   MBINVertex *vertex_data;
   MBINIndex *index_data;
-
 } MBINLoadDescriptor;
 
-void loader_mbin_load(MBINLoadDescriptor *);
+typedef struct {
+  const char *vertex_path;
+  const char *index_path;
+  Primitive *primitive;
+} MBINLoadPrimitiveDescriptor;
+
+int loader_mbin_load(MBINLoadDescriptor *);
+int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *);
 
 #endif

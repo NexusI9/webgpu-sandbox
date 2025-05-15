@@ -36,8 +36,11 @@ WGSL_FILES := $(shell find $(SHADER_DIR) -type f -name "*.wgsl")
 # Shader wgsl files
 SHADER_FILES := $(addprefix --preload-file , $(COMPILE_WGSL) $(WGSL_FILES))  
 
-# Gltf meshes
+# GLTF files
 GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 's/^/--preload-file /')
+
+#MBIN files
+MBIN_FILES := $(shell find ./resources/assets/mbin -type f -name "*.mbin" | sed 's/^/--preload-file /')
 
 # Main output build script
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
@@ -71,7 +74,8 @@ wasm:
 		-s USE_WEBGPU=1 \
 		-s SINGLE_FILE \
 		$(SHADER_FILES) \
-		$(GLTF_FILES)
+		$(GLTF_FILES) \
+		$(MBIN_FILES)
 
 	@echo "Compilation completed: $(OUTPUT)"
 

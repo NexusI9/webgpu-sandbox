@@ -1,5 +1,5 @@
 #include "ao_bake.h"
-#include "../resources/debug/line.h"
+#include "../resources/prefab/debug/line.h"
 #include "../runtime/material.h"
 #include "../utils/point.h"
 #include "../utils/system.h"
