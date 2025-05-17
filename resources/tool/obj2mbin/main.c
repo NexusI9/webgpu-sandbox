@@ -5,13 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lib/mbin.h"
 #include "lib/file.h"
+#include "lib/mbin.h"
 #include "lib/vattr.h"
 #include "lib/vindex.h"
-
-#define VERTEX_LIST_CAPACITY 64
-#define VERTEX_COLOR {0.0f, 0.0f, 0.0f}
 
 /**
    Convert OBJ file to Mesh binary files (vertex + index).
@@ -29,43 +26,14 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
     return 1;
   }
 
-  VertexAttributeList vertex_positions = {
-      .capacity = VERTEX_LIST_CAPACITY,
-      .dimension = 3,
-      .prefix = "v ",
-  };
-
-  VertexAttributeList vertex_normals = {
-      .capacity = VERTEX_LIST_CAPACITY,
-      .dimension = 3,
-      .prefix = "vn ",
-  };
-
-  VertexAttributeList vertex_uvs = {
-      .capacity = VERTEX_LIST_CAPACITY,
-      .dimension = 2,
-      .prefix = "vt ",
-  };
-
-  VertexAttributeList *attributes[3] = {
-      &vertex_positions,
-      &vertex_normals,
-      &vertex_uvs,
-  };
-
-  // cache attributes in their respective array
-  for (int v = 0; v < 3; v++) {
-    VertexAttributeList *list = attributes[v];
-    file_read_line_prefix(f, list->prefix, vertex_attribute_from_line,
-                          &(VertexAttributeCallbackDescriptor){.list = list});
-#ifdef VERBOSE
-    vertex_attribute_list_print(attributes[v]);
-#endif
-  }
+  // traverse obj file and cache vertex attributes
+  VertexAttributeList *cached_attributes[3];
+  IndexAttributeList cached_index;
+  vertex_attribute_cache(f, cached_attributes);
+  index_attribute_cache(f, &cached_index);
 
   // read index
   // trianglify
-
   // build vertex atrtibute
 
   fclose(f);
@@ -101,6 +69,7 @@ int main(int argc, char **argv) {
     VertexBuffer vb = {0, malloc(sizeof(mbin_vertex_t) * 1024)};
     IndexBuffer ib = {0, malloc(sizeof(mbin_index_t) * 1024)};
 
+    // convert OBJ to Mesh Binary format
     convert_obj_to_mbin(path, out_dir, &vb, &ib);
     // write_buffer(vertex_out_file, vb.data, vb.count, sizeof(mbin_vertex_t));
     // write_buffer(index_out_file, ib.data, ib.count, sizeof(mbin_index_t));

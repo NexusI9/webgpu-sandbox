@@ -1,8 +1,16 @@
 #ifndef _VATTR_H_
 #define _VATTR_H_
 
+#define VERTEX_LIST_CAPACITY 64
+#define VERTEX_COLOR {0.0f, 0.0f, 0.0f}
+#define VERTEX_POSITION_LINE_PREFIX "v "
+#define VERTEX_NORMAL_LINE_PREFIX "vn "
+#define VERTEX_UV_LINE_PREFIX "vt "
+#define VERTEX_SEPARATOR " "
+
 #include "mbin.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef struct {
   size_t capacity;
@@ -20,5 +28,5 @@ typedef struct {
 void vertex_attribute_list_print(VertexAttributeList *);
 int vertex_attribute_list_insert(mbin_vertex_t, VertexAttributeList *);
 void vertex_attribute_from_line(const char *, void *);
-
+void vertex_attribute_cache(FILE *, VertexAttributeList**);
 #endif
