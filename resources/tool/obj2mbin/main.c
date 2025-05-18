@@ -28,12 +28,21 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
 
   // traverse obj file and cache vertex attributes
   VertexAttributeList *cached_attributes[3];
-  IndexAttributeList cached_index;
   vertex_attribute_cache(f, cached_attributes);
+
+  // cache index
+  IndexAttributeList cached_index = {
+      .entries = NULL,
+      .capacity = 0,
+      .length = 0,
+  };
+
   index_attribute_cache(f, &cached_index);
 
-  // read index
-  // trianglify
+  // trianglify index list
+  for (size_t i = 0; i < cached_index.length; i++)
+    index_group_triangulate(&cached_index.entries[i]);
+
   // build vertex atrtibute
 
   fclose(f);

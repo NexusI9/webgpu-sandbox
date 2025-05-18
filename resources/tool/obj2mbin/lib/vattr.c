@@ -48,7 +48,7 @@ int vertex_attribute_list_insert(mbin_vertex_t value,
 /**
    Split a line into float values and insert it in the given list.
  */
-void vertex_attribute_from_line(const char *line, void *data) {
+ void vertex_attribute_from_line(const char *line, void *data) {
 
   VertexAttributeCallbackDescriptor *desc =
       (VertexAttributeCallbackDescriptor *)data;

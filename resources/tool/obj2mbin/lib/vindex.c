@@ -66,17 +66,19 @@ IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *list) {
   if (list->entries == NULL) {
     list->capacity = INDEX_DEFAULT_CAPACITY;
     list->length = 0;
-    list->entries = malloc(sizeof(IndexAttributeGroup *) * list->capacity);
+    list->entries = malloc(sizeof(IndexAttributeGroup) * list->capacity);
     if (list->entries == NULL) {
       perror("Couldn't create list\n");
       return NULL;
     }
   }
 
+
   // check length
   if (list->length == list->capacity) {
     size_t new_capacity = 2 * list->capacity;
-    void *temp = realloc(list->entries, sizeof(IndexAttributeGroup *));
+    void *temp =
+        realloc(list->entries, sizeof(IndexAttributeGroup) * new_capacity);
     if (temp) {
       list->entries = temp;
       list->capacity = new_capacity;
@@ -95,7 +97,7 @@ IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
   if (list->entries == NULL) {
     list->capacity = INDEX_DEFAULT_CAPACITY;
     list->length = 0;
-    list->entries = malloc(sizeof(IndexAttribute *) * list->capacity);
+    list->entries = malloc(sizeof(IndexAttribute) * list->capacity);
     if (list->entries == NULL) {
       perror("Couldn't create list\n");
       return NULL;
@@ -105,7 +107,7 @@ IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
   // check length
   if (list->length == list->capacity) {
     size_t new_capacity = 2 * list->capacity;
-    void *temp = realloc(list->entries, sizeof(IndexAttribute *));
+    void *temp = realloc(list->entries, sizeof(IndexAttribute) * new_capacity);
     if (temp) {
       list->entries = temp;
       list->capacity = new_capacity;
@@ -148,8 +150,9 @@ void index_attribute_from_line(const char *line, void *data) {
 void index_attribute_cache(FILE *file, IndexAttributeList *list) {
 
   file_read_line_prefix(file, "f ", index_attribute_from_line,
-                        &(VertexIndexCallbackDescriptor){.list = list});
-
+                        &(VertexIndexCallbackDescriptor){
+                            .list = list,
+                        });
 #ifdef VERBOSE
   index_attribute_print(list);
 #endif
@@ -165,14 +168,30 @@ void index_attribute_cache(FILE *file, IndexAttributeList *list) {
    (i.e.NGons could create unwanted topology)
  */
 void index_group_triangulate(IndexAttributeGroup *group) {
-  if (group->length < 4)
-    return;
+
+  /*if (group->length < 4)
+    return;*/
+
+  /*for (size_t a = 0; a < group->length; a++) {
+
+    IndexAttribute *attributes = &group->entries[a];
+
+
+    }*/
 }
 
+/**
+   Retrieve the index position in each group entries and output it in the
+   destination;
+
+ */
 void index_attribute_position_list(IndexAttributeGroup *list,
                                    mbin_index_t *dest, size_t *length,
                                    size_t *typesize) {}
 
+/**
+   Read each index group from the list,
+ */
 void index_attribute_compose_from_vertex(IndexAttributeGroup *index_list,
                                          VertexAttributeList *attr_list,
                                          mbin_vertex_t *dest, size_t *length,
