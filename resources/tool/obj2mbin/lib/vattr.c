@@ -1,9 +1,10 @@
 #include "vattr.h"
 #include "file.h"
+#include "mbin.h"
 #include <stdio.h>
 #include <string.h>
 
-void vertex_attribute_list_print(VertexAttributeList *list) {
+void vertex_attribute_print(VertexAttributeList *list) {
   printf("Attributes: \n");
   for (size_t l = 0; l < list->length; l++) {
     printf("%f\t", list->entries[l]);
@@ -48,7 +49,7 @@ int vertex_attribute_list_insert(mbin_vertex_t value,
 /**
    Split a line into float values and insert it in the given list.
  */
- void vertex_attribute_from_line(const char *line, void *data) {
+void vertex_attribute_from_line(const char *line, void *data) {
 
   VertexAttributeCallbackDescriptor *desc =
       (VertexAttributeCallbackDescriptor *)data;
@@ -70,38 +71,25 @@ int vertex_attribute_list_insert(mbin_vertex_t value,
 
 void vertex_attribute_cache(FILE *file, VertexAttributeList **list) {
 
-  VertexAttributeList vertex_positions = {
-      .capacity = VERTEX_LIST_CAPACITY,
-      .prefix = VERTEX_POSITION_LINE_PREFIX,
-      .dimension = 3,
-  };
-
-  VertexAttributeList vertex_normals = {
-      .capacity = VERTEX_LIST_CAPACITY,
-      .prefix = VERTEX_NORMAL_LINE_PREFIX,
-      .dimension = 3,
-  };
-
-  VertexAttributeList vertex_uvs = {
-      .capacity = VERTEX_LIST_CAPACITY,
-      .prefix = VERTEX_UV_LINE_PREFIX,
-      .dimension = 2,
-  };
-
-  VertexAttributeList *attributes[3] = {
-      &vertex_positions,
-      &vertex_normals,
-      &vertex_uvs,
-  };
-
   // cache attributes in their respective array
   for (int v = 0; v < 3; v++) {
-    list[v] = attributes[v];
-    VertexAttributeList *list = attributes[v];
-    file_read_line_prefix(file, list->prefix, vertex_attribute_from_line,
-                          &(VertexAttributeCallbackDescriptor){.list = list});
-#ifdef VERBOSE
-    vertex_attribute_list_print(list);
-#endif
+    VertexAttributeList *list_attr = list[v];
+    file_read_line_prefix(file, list_attr->prefix, vertex_attribute_from_line,
+                          &(VertexAttributeCallbackDescriptor){
+                              .list = list_attr,
+                          });
+  }
+}
+
+void vertex_attribute_free(VertexAttributeList *list) {
+
+  if (list->entries) {
+    free(list->entries);
+    list->entries = NULL;
+  }
+
+  if (list->prefix) {
+    free(list->prefix);
+    list->prefix = NULL;
   }
 }

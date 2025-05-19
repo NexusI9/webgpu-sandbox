@@ -26,9 +26,39 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
     return 1;
   }
 
+  VertexAttributeList cached_position = {
+      .entries = NULL,
+      .capacity = VERTEX_LIST_CAPACITY,
+      .prefix = VERTEX_POSITION_LINE_PREFIX,
+      .dimension = 3,
+  };
+
+  VertexAttributeList cached_normal = {
+      .entries = NULL,
+      .capacity = VERTEX_LIST_CAPACITY,
+      .prefix = VERTEX_NORMAL_LINE_PREFIX,
+      .dimension = 3,
+  };
+
+  VertexAttributeList cached_uv = {
+      .entries = NULL,
+      .capacity = VERTEX_LIST_CAPACITY,
+      .prefix = VERTEX_UV_LINE_PREFIX,
+      .dimension = 2,
+  };
   // traverse obj file and cache vertex attributes
-  VertexAttributeList *cached_attributes[3];
+  VertexAttributeList *cached_attributes[3] = {
+      &cached_position,
+      &cached_normal,
+      &cached_uv,
+  };
+
   vertex_attribute_cache(f, cached_attributes);
+
+#ifdef VERBOSE
+  for (int v = 0; v < 3; v++)
+    vertex_attribute_print(cached_attributes[v]);
+#endif
 
   // cache index
   IndexAttributeList cached_index = {
@@ -40,10 +70,15 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
   index_attribute_cache(f, &cached_index);
 
   // trianglify index list
-  for (size_t i = 0; i < cached_index.length; i++)
-    index_group_triangulate(&cached_index.entries[i]);
+  mbin_vertex_t *dest;
+  index_attribute_triangulate(&cached_index);
+  index_attribute_compose_from_vertex(&cached_index, cached_attributes, dest);
 
-  // build vertex atrtibute
+#ifdef VERBOSE
+  index_attribute_print(&cached_index);
+#endif
+
+  // build vertex attribute
 
   fclose(f);
 

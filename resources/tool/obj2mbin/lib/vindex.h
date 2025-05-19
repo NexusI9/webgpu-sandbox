@@ -13,6 +13,9 @@
 
 #define INDEX_DEFAULT_CAPACITY 64
 
+/* Structure list
+  List > Group > Attribute
+ */
 typedef struct {
   mbin_index_t position;
   mbin_index_t uv;
@@ -36,14 +39,14 @@ typedef struct {
 } VertexIndexCallbackDescriptor;
 
 void index_attribute_cache(FILE *, IndexAttributeList *);
-void index_group_triangulate(IndexAttributeGroup *);
+int index_attribute_triangulate(IndexAttributeList *);
 void index_attribute_position_list(IndexAttributeGroup *, mbin_index_t *,
                                    size_t *, size_t *);
 
-void index_attribute_compose_from_vertex(IndexAttributeGroup *,
-                                         VertexAttributeList *, mbin_vertex_t *,
-                                         size_t *, size_t *);
+int index_attribute_compose_from_vertex(IndexAttributeList *,
+                                        VertexAttributeList **,
+                                        mbin_vertex_t *);
 
-void index_attribute_print(const IndexAttributeList*);
+void index_attribute_print(const IndexAttributeList *);
 
 #endif

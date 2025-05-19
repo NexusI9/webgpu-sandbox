@@ -84,6 +84,7 @@ bool edge_hash_set_insert(EdgeHashSet *set, EdgeKey key) {
   // generate index from hash
   size_t index = edge_key_hash(key, set->capacity);
   while (set->entries[index].occupied)
+    // TODO: Check for value equal as well
     index = (index + 1) % set->capacity;
 
   // insert new bucket
