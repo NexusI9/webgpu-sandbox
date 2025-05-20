@@ -1,5 +1,6 @@
 
 #include "vindex.h"
+#include "buffer.h"
 #include "file.h"
 #include "mbin.h"
 #include "vattr.h"
@@ -26,8 +27,10 @@ static IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *);
 static IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *);
 static int index_attribute_insert_group(char *, IndexAttributeGroup *);
 static void index_attribute_from_line(const char *, void *);
-static void index_attribute_create_vertex_set(IndexAttributeList *index_list,
-                                              VertexAttributeList **attr_list);
+static void index_attribute_create_vertex_set(IndexAttributeList *,
+                                              VertexAttributeList **,
+                                              VertexHashTable *, VertexBuffer *,
+                                              IndexBuffer *);
 
 void index_attribute_print(const IndexAttributeList *list) {
   printf("Index: \n");
@@ -44,7 +47,7 @@ int index_attribute_insert_group(char *line, IndexAttributeGroup *list) {
 
   // split values and push them into the current list
   // "1/3/4 1/9/4 3/2/1" => [ [1/3/4] , [1/9/4] , [3/2/1] ]
-  char *index_group = strtok(line, INDEX_GROUP_SEPARATOR);
+  char *index_group = strtok(line, VINDEX_GROUP_SEPARATOR);
 
   while (index_group) {
 
@@ -59,7 +62,7 @@ int index_attribute_insert_group(char *line, IndexAttributeGroup *list) {
       new_attribute->uv = iUv;
     }
 
-    index_group = strtok(0, INDEX_GROUP_SEPARATOR);
+    index_group = strtok(0, VINDEX_GROUP_SEPARATOR);
   }
 
   return 0;
@@ -69,7 +72,7 @@ IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *list) {
 
   // check entries existence
   if (list->entries == NULL) {
-    list->capacity = INDEX_DEFAULT_CAPACITY;
+    list->capacity = VINDEX_DEFAULT_CAPACITY;
     list->length = 0;
     list->entries = malloc(sizeof(IndexAttributeGroup) * list->capacity);
     if (list->entries == NULL) {
@@ -99,7 +102,7 @@ IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
 
   // check entries existence
   if (list->entries == NULL) {
-    list->capacity = INDEX_DEFAULT_CAPACITY;
+    list->capacity = VINDEX_DEFAULT_CAPACITY;
     list->length = 0;
     list->entries = malloc(sizeof(IndexAttribute) * list->capacity);
     if (list->entries == NULL) {
@@ -128,7 +131,7 @@ void index_attribute_from_line(const char *line, void *data) {
   VertexIndexCallbackDescriptor *cast_data =
       (VertexIndexCallbackDescriptor *)data;
 
-  size_t prefix_len = strlen(INDEX_ATTRIBUTE_LINE_PREFIX);
+  size_t prefix_len = strlen(VINDEX_ATTRIBUTE_LINE_PREFIX);
   size_t line_len = strlen(line);
   // retrieve values from line
   char values[line_len];
@@ -186,7 +189,7 @@ int index_attribute_triangulate(IndexAttributeList *list) {
 
     if (!new_group.entries) {
       perror("Couldn't create new group attrubute\n");
-      return 1;
+      return VINDEX_ALLOC_FAILURE;
     }
 
     // fan triangle
@@ -205,7 +208,7 @@ int index_attribute_triangulate(IndexAttributeList *list) {
     group->length = new_group.length;
     group->capacity = new_group.capacity;
   }
-  return 0;
+  return VINDEX_SUCCESS;
 }
 
 /**
@@ -221,7 +224,7 @@ void index_attribute_position_list(IndexAttributeGroup *list,
    Use the hash insert return value to determine if the vertex array shall be
    added to the destination.
 
-   Index:
+   Index (1 / 3 / 0)
       '- position = 1
       '- uv = 3
       '- normal = 0
@@ -238,23 +241,39 @@ void index_attribute_position_list(IndexAttributeGroup *list,
 
 
    Set:
-   v[hash]     =    2.0f 2.0f 4.0f   0.1f 1.0f 0.4f   0.0f 0.0f 0.0f   1.0f 0.4f
-                       position          normal            color           UV
+   .--------------------------------------------------------------------------.
+   |  Key |                            Value                            |  Id |
+   |------+-------------------------------------------------------------+-----|
+   |      |  2.0f 2.0f 4.0f  0.1f 1.0f 0.4f  0.0f 0.0f 0.0f  1.0f 0.4f  |     |
+   | hash | '------.-------''-------.------''-------.------''----.----' | len |
+   |      |     position          normal          color         UV      |     |
+   '------'-------------------------------------------------------------'-----'
 
+   Those unique vertex composition will then be narrowed and clamped between the
+   max(index_count) as to obtain an linear list.
+   To easily traverse the occupied index, the hash set has a occupied list that
+   direnctly points to the occupied entries.
 
-   Since Position is the first attribute of the vertex list, it is used
+   On top of storing the vertex attribtues, the Id (index) is stored as well and
+   corressponds to the hash table length at the moment T when the value is
+   added.
+  This ensures a unique id for each entries and will make it
+   easier to directly create the index list (0 , 3, 7, 3, 2, 3) by mapping from
+  the hash:
 
-
+                  .------  Values
+   hash(values) -<            8
+                  '------  Index
  */
 void index_attribute_create_vertex_set(IndexAttributeList *index_list,
-                                       VertexAttributeList **attr_list) {
+                                       VertexAttributeList **attr_list,
+                                       VertexHashTable *table, VertexBuffer *vb,
+                                       IndexBuffer *ib) {
 
   // Store unique index combination in hash list along with their vertex
   for (size_t i = 0; i < index_list->length; i++) {
 
     IndexAttributeGroup *group = &index_list->entries[i];
-    VertexHashTable table;
-    vhash_create(&table, group->length * 10);
 
     // attributes
     for (size_t g = 0; g < group->length; g++) {
@@ -290,22 +309,36 @@ void index_attribute_create_vertex_set(IndexAttributeList *index_list,
       memcpy(vertices + offset, &u_list->entries[u],
              u_list->dimension * sizeof(mbin_vertex_t));
 
-      printf("%lu, %lu, %lu\n", p, n, u);
-      // for (size_t i = 0; i < VERTEX_STRIDE; i++)
-      // printf("%f  ", vertices[i]);
-      // printf("\n");
-      // insert vertices to hash table
-      vhash_insert(&table, vertices);
+      mbin_index_t index;
+      int insert_result = vhash_insert(table, vertices, &index);
+      if (insert_result == VHASH_SUCCESS) {
+        // if inserted, push values in the buffers
+        vertex_buffer_insert(vb, vertices, VERTEX_STRIDE);
+        index_buffer_insert(ib, index);
+      } else if (insert_result == VHASH_EXIST) {
+        // else if already exist and could find it, add the index
+        VertexHashKey *search_result = vhash_search(table, vertices);
+        if (search_result)
+          index_buffer_insert(ib, search_result->index);
+      }
     }
   }
-};
+}
 
 /**
    Read each index group from the list,
  */
 int index_attribute_compose_from_vertex(IndexAttributeList *index_list,
                                         VertexAttributeList **attr_list,
-                                        mbin_vertex_t *dest) {
-  index_attribute_create_vertex_set(index_list, attr_list);
-  return 0;
+                                        VertexBuffer *vb, IndexBuffer *ib) {
+
+  VertexHashTable table;
+  if (vhash_create(&table, VHASH_BASE_CAPACITY) == 0) {
+    index_attribute_create_vertex_set(index_list, attr_list, &table, vb, ib);
+  } else {
+    perror("Couldn't create hash table for index composing\n");
+    return VINDEX_ALLOC_FAILURE;
+  }
+
+  return VINDEX_SUCCESS;
 }

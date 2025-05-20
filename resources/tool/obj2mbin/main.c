@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "lib/buffer.h"
 #include "lib/file.h"
 #include "lib/mbin.h"
 #include "lib/vattr.h"
@@ -72,7 +73,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
   // trianglify index list
   mbin_vertex_t *dest;
   index_attribute_triangulate(&cached_index);
-  index_attribute_compose_from_vertex(&cached_index, cached_attributes, dest);
+  index_attribute_compose_from_vertex(&cached_index, cached_attributes, vb, ib);
 
 #ifdef VERBOSE
   index_attribute_print(&cached_index);
@@ -110,16 +111,26 @@ int main(int argc, char **argv) {
              out_dir, in_filename);
 
     const char *path = argv[i];
-    VertexBuffer vb = {0, malloc(sizeof(mbin_vertex_t) * 1024)};
-    IndexBuffer ib = {0, malloc(sizeof(mbin_index_t) * 1024)};
+
+    VertexBuffer vb = {
+        .capacity = MBIN_BUFFER_DEFAULT_CAPACITY,
+        .length = 0,
+        .entries = malloc(sizeof(mbin_vertex_t) * MBIN_BUFFER_DEFAULT_CAPACITY),
+    };
+
+    IndexBuffer ib = {
+        .capacity = MBIN_BUFFER_DEFAULT_CAPACITY,
+        .length = 0,
+        .entries = malloc(sizeof(mbin_vertex_t) * MBIN_BUFFER_DEFAULT_CAPACITY),
+    };
 
     // convert OBJ to Mesh Binary format
     convert_obj_to_mbin(path, out_dir, &vb, &ib);
     // write_buffer(vertex_out_file, vb.data, vb.count, sizeof(mbin_vertex_t));
     // write_buffer(index_out_file, ib.data, ib.count, sizeof(mbin_index_t));
 
-    free(vb.data);
-    free(ib.data);
+    vertex_buffer_free(&vb);
+    index_buffer_free(&ib);
 
     printf("done\n");
   }

@@ -1,17 +1,20 @@
 #ifndef _VINDEX_H_
 #define _VINDEX_H_
 
+#include "buffer.h"
 #include "mbin.h"
 #include "vattr.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INDEX_ATTRIBUTE_LINE_PREFIX "f "
-#define INDEX_SEPARATOR "/"
-#define INDEX_GROUP_SEPARATOR " "
+#define VINDEX_ATTRIBUTE_LINE_PREFIX "f "
+#define VINDEX_SEPARATOR "/"
+#define VINDEX_GROUP_SEPARATOR " "
 
-#define INDEX_DEFAULT_CAPACITY 64
+#define VINDEX_DEFAULT_CAPACITY 64
+#define VINDEX_SUCCESS 0
+#define VINDEX_ALLOC_FAILURE 1
 
 /* Structure list
   List > Group > Attribute
@@ -44,8 +47,8 @@ void index_attribute_position_list(IndexAttributeGroup *, mbin_index_t *,
                                    size_t *, size_t *);
 
 int index_attribute_compose_from_vertex(IndexAttributeList *,
-                                        VertexAttributeList **,
-                                        mbin_vertex_t *);
+                                        VertexAttributeList **, VertexBuffer *,
+                                        IndexBuffer *);
 
 void index_attribute_print(const IndexAttributeList *);
 

@@ -21,24 +21,28 @@ size_t vhash_hash(const vhash_value_t key, size_t capacity) {
   return hash % capacity;
 }
 
-int vhash_insert(VertexHashTable *list, vhash_value_t key) {
+int vhash_insert(VertexHashTable *list, vhash_value_t key, mbin_index_t *idx) {
 
   if (vhash_search(list, key))
     // already exist
-    return 2;
+    return VHASH_EXIST;
 
   // expand if length reach 75% capacity
   if (list->length == list->capacity * 0.75) {
 
     size_t new_capacity = 2 * list->capacity;
-    void *temp = realloc(list->entries, new_capacity);
+    void *temp_entries =
+        realloc(list->entries, new_capacity * sizeof(VertexHashKey));
+    void *temp_occup =
+        realloc(list->entries, new_capacity * sizeof(VertexHashKey *));
 
-    if (temp) {
-      list->entries = temp;
+    if (temp_entries && temp_occup) {
+      list->entries = temp_entries;
+      list->occupied_entries = temp_occup;
       list->capacity = new_capacity;
     } else {
       perror("Couldn't expand list\n");
-      return 1;
+      return VHASH_ALLOC_FAILURE;
     }
   }
 
@@ -49,25 +53,35 @@ int vhash_insert(VertexHashTable *list, vhash_value_t key) {
     index = (index + 1) % list->capacity;
 
   VertexHashKey *new_entry = &list->entries[index];
+  // set vertex floats
   memcpy(new_entry->entries, key, sizeof(mbin_vertex_t) * VERTEX_STRIDE);
+
+  // set bucket cached index
+  new_entry->index = list->length;
+  // update renferences index
+  *idx = new_entry->index;
+
+  // set bucked occupied state
   new_entry->occupied = true;
 
-  list->length++;
+  // update occupied entry
+  list->occupied_entries[list->length++] = new_entry;
 
-  return 0;
+  return VHASH_SUCCESS;
 }
 
 int vhash_create(VertexHashTable *list, size_t capacity) {
-  list->entries = calloc(capacity, sizeof(vhash_value_t));
+  list->entries = calloc(capacity, sizeof(VertexHashKey));
+  list->occupied_entries = calloc(capacity, sizeof(VertexHashKey *));
 
-  if (list->entries == NULL) {
+  if (list->entries == NULL || list->occupied_entries == NULL) {
     perror("Couldn't create vertex hash table");
-    return 1;
+    return VHASH_ALLOC_FAILURE;
   }
 
   list->length = 0;
   list->capacity = capacity;
-  return 0;
+  return VHASH_SUCCESS;
 }
 
 VertexHashKey *vhash_search(VertexHashTable *list, vhash_value_t key) {
