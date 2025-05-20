@@ -26,6 +26,8 @@ static IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *);
 static IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *);
 static int index_attribute_insert_group(char *, IndexAttributeGroup *);
 static void index_attribute_from_line(const char *, void *);
+static void index_attribute_create_vertex_set(IndexAttributeList *index_list,
+                                              VertexAttributeList **attr_list);
 
 void index_attribute_print(const IndexAttributeList *list) {
   printf("Index: \n");
@@ -208,19 +210,44 @@ int index_attribute_triangulate(IndexAttributeList *list) {
 
 /**
    Retrieve the index position in each group entries and output it in the
-   destination;
-
+   destination.
  */
 void index_attribute_position_list(IndexAttributeGroup *list,
                                    mbin_index_t *dest, size_t *length,
                                    size_t *typesize) {}
 
 /**
-   Read each index group from the list,
+   Combine and store each unique vertex list into a set.
+   Use the hash insert return value to determine if the vertex array shall be
+   added to the destination.
+
+   Index:
+      '- position = 1
+      '- uv = 3
+      '- normal = 0
+
+   Vertex:
+      '- position   0.0f 1.0f 0.0f 2.0f 2.0f 4.0f 1.0f 0.0f 0.3f...
+                                 '-----[1]------'
+
+      '- UV:        0.3f 0.2f 1.0f 0.4f 0.3f 4.0f 1.0f 0.4f 0.2f...
+                                                 '---[3]---'
+
+      '- normal:    0.1f 1.0f 0.4f 0.1f 0.3f 0.2f 1.0f 0.4f 1.3f...
+                   '-----[0]-----'
+
+
+   Set:
+   v[hash]     =    2.0f 2.0f 4.0f   0.1f 1.0f 0.4f   0.0f 0.0f 0.0f   1.0f 0.4f
+                       position          normal            color           UV
+
+
+   Since Position is the first attribute of the vertex list, it is used
+
+
  */
-int index_attribute_compose_from_vertex(IndexAttributeList *index_list,
-                                        VertexAttributeList **attr_list,
-                                        mbin_vertex_t *dest) {
+void index_attribute_create_vertex_set(IndexAttributeList *index_list,
+                                       VertexAttributeList **attr_list) {
 
   // Store unique index combination in hash list along with their vertex
   for (size_t i = 0; i < index_list->length; i++) {
@@ -263,10 +290,22 @@ int index_attribute_compose_from_vertex(IndexAttributeList *index_list,
       memcpy(vertices + offset, &u_list->entries[u],
              u_list->dimension * sizeof(mbin_vertex_t));
 
+      printf("%lu, %lu, %lu\n", p, n, u);
+      // for (size_t i = 0; i < VERTEX_STRIDE; i++)
+      // printf("%f  ", vertices[i]);
+      // printf("\n");
       // insert vertices to hash table
       vhash_insert(&table, vertices);
     }
   }
+};
 
+/**
+   Read each index group from the list,
+ */
+int index_attribute_compose_from_vertex(IndexAttributeList *index_list,
+                                        VertexAttributeList **attr_list,
+                                        mbin_vertex_t *dest) {
+  index_attribute_create_vertex_set(index_list, attr_list);
   return 0;
 }
