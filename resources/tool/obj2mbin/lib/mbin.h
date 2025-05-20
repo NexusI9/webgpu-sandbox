@@ -27,6 +27,6 @@ typedef struct {
   MBINBody body;
 } MBINFile;
 
-int write_buffer(const char *, void *, size_t, size_t);
+int write_buffer(const char *, MBINFile *);
 
 #endif

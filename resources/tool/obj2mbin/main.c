@@ -97,18 +97,13 @@ int main(int argc, char **argv) {
   const char *out_dir = argv[argc - 1];
 
   for (int i = 1; i < argc - 1; ++i) {
-    char in_filename[256], vertex_out_file[512], index_out_file[512];
+    char in_filename[256], out_file[512];
 
     namefile_from_path(argv[i], in_filename, 256);
     fprintf(stdout, "%s.obj...\n", in_filename);
 
     // define vertex filename
-    snprintf(vertex_out_file, sizeof(vertex_out_file), "%s/%s.vertex.mbin",
-             out_dir, in_filename);
-
-    // define index filename
-    snprintf(index_out_file, sizeof(index_out_file), "%s/%s.index.mbin",
-             out_dir, in_filename);
+    snprintf(out_file, sizeof(out_file), "%s/%s.mbin", out_dir, in_filename);
 
     const char *path = argv[i];
 
@@ -126,8 +121,24 @@ int main(int argc, char **argv) {
 
     // convert OBJ to Mesh Binary format
     convert_obj_to_mbin(path, out_dir, &vb, &ib);
-    // write_buffer(vertex_out_file, vb.data, vb.count, sizeof(mbin_vertex_t));
-    // write_buffer(index_out_file, ib.data, ib.count, sizeof(mbin_index_t));
+
+    // build mbin
+    MBINFile mbin_file = {
+        .header =
+            {
+                .vertex_length = vb.length,
+                .vertex_size_type = sizeof(mbin_vertex_t),
+                .index_length = ib.length,
+                .index_size_type = sizeof(mbin_vertex_t),
+            },
+        .body =
+            {
+                .vertex = vb.entries,
+                .index = ib.entries,
+            },
+    };
+
+    write_buffer(out_file, &mbin_file);
 
     vertex_buffer_free(&vb);
     index_buffer_free(&ib);

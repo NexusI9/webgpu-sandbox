@@ -2,6 +2,7 @@
 #define _MBIN_BUFFER_H_
 
 #include "mbin.h"
+#include <stddef.h>
 
 #define MBIN_BUFFER_DEFAULT_CAPACITY 1024
 #define MBIN_BUFFER_SUCCESS 0

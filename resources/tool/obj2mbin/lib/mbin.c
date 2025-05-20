@@ -1,7 +1,7 @@
 #include "mbin.h"
 #include <stdio.h>
 
-int write_buffer(const char *path, void *data, size_t count, size_t type_size) {
+int write_buffer(const char *path, MBINFile *mbin) {
 
   FILE *f = fopen(path, "wb");
 
@@ -10,9 +10,20 @@ int write_buffer(const char *path, void *data, size_t count, size_t type_size) {
     return 1;
   }
 
-  fwrite(&type_size, sizeof(uint32_t), 1, f);
-  fwrite(&count, sizeof(uint32_t), 1, f);
-  fwrite(data, type_size, count, f);
+  // header
+  fwrite(&mbin->header.vertex_length, sizeof(mbin_int), 1, f);
+  fwrite(&mbin->header.vertex_size_type, sizeof(mbin_int), 1, f);
+
+  fwrite(&mbin->header.index_length, sizeof(mbin_int), 1, f);
+  fwrite(&mbin->header.index_size_type, sizeof(mbin_int), 1, f);
+
+  // body data
+  fwrite(&mbin->body.vertex, sizeof(mbin_vertex_t), mbin->header.vertex_length,
+         f);
+  fwrite(&mbin->body.index, sizeof(mbin_index_t), mbin->header.index_length, f);
+
+  // fwrite(&count, sizeof(uint32_t), 1, f);
+  // fwrite(data, type_size, count, f);
 
   fclose(f);
 
