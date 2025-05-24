@@ -41,6 +41,9 @@ typedef struct {
 typedef void (*shader_uniform_update_callback)(void *callback_data,
                                                void *entry_data);
 
+typedef uint32_t shader_binding_t;
+typedef uint8_t shader_bindgroup_t;
+
 typedef struct {
   int8_t *textures;
   int8_t *views;
@@ -60,7 +63,7 @@ typedef struct {
 } ShaderBindGroupUniformEntry;
 
 typedef struct {
-  uint32_t binding;
+  shader_binding_t binding;
   int width;
   int height;
   unsigned char *data;
@@ -74,7 +77,7 @@ typedef struct {
 } ShaderBindGroupTextureEntry;
 
 typedef struct {
-  uint32_t binding;
+  shader_binding_t binding;
   WGPUTextureViewDimension dimension;
   WGPUTextureView texture_view;
   WGPUTextureFormat format;
@@ -82,7 +85,7 @@ typedef struct {
 } ShaderBindGroupTextureViewEntry;
 
 typedef struct {
-  uint32_t binding;
+  shader_binding_t binding;
   WGPUAddressMode addressModeU;
   WGPUAddressMode addressModeV;
   WGPUAddressMode addressModeW;
@@ -116,7 +119,7 @@ typedef struct {
 // Bind group main
 typedef struct {
   WGPUBindGroup bind_group;         // bind group
-  uint8_t index;                    // bind group id
+  shader_bindgroup_t index;                    // bind group id
   WGPUShaderStageFlags visibility;  // visibility (frag | vert)
                                     // ELEMENTS:
   ShaderBindGroupUniforms uniforms; // uniforms
@@ -131,29 +134,29 @@ typedef struct {
 } ShaderViewProjectionUniform;
 
 typedef struct {
-  uint8_t group_index;
-  uint8_t entry_count;
+  shader_bindgroup_t group_index;
+  shader_bindgroup_t entry_count;
   ShaderBindGroupUniformEntry *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateUniformDescriptor;
 
 typedef struct {
-  uint8_t group_index;
-  uint8_t entry_count;
+  shader_bindgroup_t group_index;
+  shader_bindgroup_t entry_count;
   ShaderBindGroupTextureEntry *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateTextureDescriptor;
 
 typedef struct {
-  uint8_t group_index;
-  uint8_t entry_count;
+  shader_bindgroup_t group_index;
+  shader_bindgroup_t entry_count;
   ShaderBindGroupTextureViewEntry *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateTextureViewDescriptor;
 
 typedef struct {
-  uint8_t group_index;
-  uint8_t entry_count;
+  shader_bindgroup_t group_index;
+  shader_bindgroup_t entry_count;
   ShaderBindGroupSamplerEntry *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateSamplerDescriptor;

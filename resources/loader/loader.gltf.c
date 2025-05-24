@@ -134,6 +134,7 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
 
   // gltf provide index a uint16, however the engine sur uint32, need to
   // manually cast it
+  // alloc on heap cause VLA throws stack overflow
   vindex_t *index_data = malloc(sizeof(vindex_t) * index_count);
   for (size_t i = 0; i < index_count; i++)
     index_data[i] = (vindex_t)raw_index_data[i];
@@ -242,7 +243,6 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
       // add child to parent mesh if current primitive > 0
       // and set it as target mesh
       if (p > 0) {
-        printf("primitive %lu\n", p);
         target_mesh = scene_new_mesh_lit(scene);
 
         // add target mesh pointer to parent mesh children list

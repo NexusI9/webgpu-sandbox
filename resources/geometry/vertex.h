@@ -8,10 +8,8 @@
 #define VERTEX_STRIDE 11
 
 /*
-  WARNING: Changing vertex index type (ex to uint32_t) will create conflict with
-  GLTF loader indices (using uint_16).
-  Also if change is required, make sure to adjust the meshbin file indexes as
-  they are u16 based as well.
+  If change is required, make sure to adjust the meshbin file indexes as
+  they are u32 based as well.
  */
 typedef uint32_t vindex_t;
 typedef float vattr_t;
@@ -70,4 +68,7 @@ void vertex_find_equal_attr(Vertex *, VertexAttribute *, VertexAttributeName,
                             VertexAttribute *);
 void vertex_to_array(Vertex *, float *);
 void vertex_copy(float *, float *);
+
+void vertex_index_print(VertexIndex *);
+void vertex_attribute_print(VertexAttribute *);
 #endif

@@ -1,5 +1,6 @@
 #include "vertex.h"
 #include "../utils/vector.h"
+#include <stddef.h>
 
 void vertex_create(Vertex *vertex) {
 
@@ -58,8 +59,7 @@ Vertex vertex_from_array(float *data) {
    Find a vertex with the same given attributes in a vertex attribute array
    Output null if no equivalent found or a list of matching vertex
  */
-void vertex_find_equal_attr(Vertex *source,
-                            VertexAttribute *vertex_attribute,
+void vertex_find_equal_attr(Vertex *source, VertexAttribute *vertex_attribute,
                             VertexAttributeName attribute,
                             VertexAttribute *destination) {
 
@@ -137,4 +137,18 @@ void vertex_to_array(Vertex *vertex, float *array) {
 void vertex_copy(float *src, float *dest) {
   for (int i = 0; i < VERTEX_STRIDE; i++)
     dest[i] = src[i];
+}
+
+void vertex_index_print(VertexIndex *vi) {
+  for (size_t i = 0; i < vi->length; i++)
+    printf("%u ", vi->entries[i]);
+  printf("\n");
+}
+
+void vertex_attribute_print(VertexAttribute *va) {
+  for (size_t i = 0; i < va->length; i++) {
+    printf("%f ", va->entries[i]);
+    if (i % VERTEX_STRIDE == VERTEX_STRIDE - 1)
+      printf("\n");
+  }
 }

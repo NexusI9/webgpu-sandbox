@@ -28,7 +28,7 @@ typedef struct {
   Primitive *primitive;
 } MBINLoadPrimitiveDescriptor;
 
-int loader_mbin_load(MBINFile *, const char *);
+int loader_mbin_load(MBINFile **, const char *);
 int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *);
 
 #endif

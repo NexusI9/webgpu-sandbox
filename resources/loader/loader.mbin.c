@@ -16,7 +16,7 @@ static void *loader_mbin_mmap(const char *, size_t *);
 #endif
 static void *loader_mbin_read(const char *, size_t *);
 
-int loader_mbin_load(MBINFile *file, const char *path) {
+int loader_mbin_load(MBINFile **file, const char *path) {
 
   // directly map data into memory for unix environments
   // open: directly communicate with linux kernel
@@ -24,9 +24,9 @@ int loader_mbin_load(MBINFile *file, const char *path) {
   size_t size;
 
 #ifdef __unix__
-  file = (MBINFile *)loader_mbin_mmap(path, &size);
+  *file = (MBINFile *)loader_mbin_mmap(path, &size);
 #else
-  file = (MBINFile *)loader_mbin_read(path, &size);
+  *file = (MBINFile *)loader_mbin_read(path, &size);
 #endif
 
   if (file == NULL) {
@@ -67,7 +67,8 @@ static void *loader_mbin_mmap(const char *path, size_t *size) {
 
   if (size)
     *size = st.st_size;
-  return data;
+
+  return (MBINFile *)data;
 }
 
 #endif
@@ -111,7 +112,7 @@ static void *loader_mbin_read(const char *path, size_t *size) {
   if (size)
     *size = file_size;
 
-  return data;
+  return (MBINFile *)data;
 }
 
 /**
@@ -120,7 +121,7 @@ static void *loader_mbin_read(const char *path, size_t *size) {
  */
 int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
 
-  MBINFile mbin;
+  MBINFile *mbin;
 
   if (loader_mbin_load(&mbin, desc->path)) {
     VERBOSE_ERROR("Error while loading Mesh Binary file to Primitive\n");
@@ -129,34 +130,35 @@ int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
 
   // map referenced primitive vertex attribuets
   VertexAttribute *vert_attr = &desc->primitive->vertex;
-  vert_attr->capacity = mbin.vertex_length;
-  vert_attr->length = mbin.vertex_length;
-  vert_attr->entries = malloc(sizeof(vattr_t) * mbin.vertex_length);
+  vert_attr->capacity = mbin->vertex_length;
+  vert_attr->length = mbin->vertex_length;
+  vert_attr->entries = malloc(sizeof(vattr_t) * mbin->vertex_length);
 
   if (vert_attr->entries == NULL) {
     VERBOSE_ERROR("Couldn't allocate memory for vertex attribute\n");
     return MBIN_LOADER_ALLOC_FAIL;
   }
 
-  printf("vert: %lu, index: %lu, data: %lu\n", sizeof(vattr_t),
-         sizeof(vindex_t), sizeof(mbin_data_t));
+  MBIN_U32Float converter;
 
-  // memcpy(vert_attr->entries, mbin.data,
-  //        sizeof(mbin_data_t) * mbin.vertex_length);
+  for (size_t v = 0; v < mbin->vertex_length; v++) {
+    converter.u = mbin->data[v];
+    vert_attr->entries[v] = converter.f;
+  }
 
   // map referenced primitive index attributes
   VertexIndex *index_attr = &desc->primitive->index;
-  index_attr->capacity = mbin.index_length;
-  index_attr->length = mbin.index_length;
-  index_attr->entries = malloc(sizeof(vindex_t) * mbin.vertex_length);
+  index_attr->capacity = mbin->index_length;
+  index_attr->length = mbin->index_length;
+  index_attr->entries = malloc(sizeof(vindex_t) * mbin->vertex_length);
 
   if (index_attr->entries == NULL) {
     VERBOSE_ERROR("Couldn't allocate memory for vertex attribute\n");
     return MBIN_LOADER_ALLOC_FAIL;
   }
 
-  // memcpy(index_attr->entries, mbin.data + mbin.vertex_length,
-  //        sizeof(mbin_data_t) * mbin.index_length);
+  memcpy(index_attr->entries, mbin->data + mbin->vertex_length,
+         sizeof(mbin_data_t) * mbin->index_length);
 
   return MBIN_LOADER_SUCCESS;
 }
