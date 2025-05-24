@@ -128,13 +128,18 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   cgltf_accessor *index_accessor = source->indices;
   cgltf_buffer_view *index_buffer_view = index_accessor->buffer_view;
   size_t index_offset = index_buffer_view->offset + index_accessor->offset;
+  size_t index_count = index_accessor->count;
+  uint16_t *raw_index_data =
+      (uint16_t *)((uint8_t *)index_buffer_view->buffer->data + index_offset);
 
-  vindex_t *index_data =
-      (vindex_t *)((uint8_t *)index_buffer_view->buffer->data + index_offset);
-  
-  // DELETEME: print_list_uint16(index_data, index_accessor->count, 1);
+  // gltf provide index a uint16, however the engine sur uint32, need to
+  // manually cast it
+  vindex_t *index_data = malloc(sizeof(vindex_t) * index_count);
+  for (size_t i = 0; i < index_count; i++)
+    index_data[i] = (vindex_t)raw_index_data[i];
 
-  return (VertexIndex){.entries = index_data, .length = index_accessor->count};
+  // DELETEME: print_list_uint32(index_data, index_count, 1);
+  return (VertexIndex){index_data, index_count};
 }
 
 void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,

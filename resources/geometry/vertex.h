@@ -13,7 +13,7 @@
   Also if change is required, make sure to adjust the meshbin file indexes as
   they are u16 based as well.
  */
-typedef uint16_t vindex_t;
+typedef uint32_t vindex_t;
 typedef float vattr_t;
 /*
   Cannonical structure of a vertex

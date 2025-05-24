@@ -12,6 +12,7 @@
 
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
+#define MESH_INDEX_FORMAT WGPUIndexFormat_Uint32
 
 // Builder Pattern | Descriptor Pattern
 typedef struct {

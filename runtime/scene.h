@@ -11,6 +11,8 @@
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 
+typedef uint8_t shader_bind_t;
+
 // due to depth test, need to write fully solid mesh first and then
 // transparent meshes
 
