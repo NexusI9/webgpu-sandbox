@@ -7,9 +7,6 @@
 #include <stdint.h>
 
 typedef uint32_t mbin_length_t;
-typedef uint32_t mbin_size_t;
-typedef vindex_t mbin_index_t;
-typedef vattr_t mbin_vertex_t;
 
 /* TODO: unify mesh loading system:
    1. either directly push mesh in scene list
@@ -31,7 +28,7 @@ typedef struct {
   Primitive *primitive;
 } MBINLoadPrimitiveDescriptor;
 
-int loader_mbin_load(MBINLoadDescriptor *);
+int loader_mbin_load(MBINFile *, const char *);
 int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *);
 
 #endif

@@ -155,7 +155,6 @@ void add_gizmo() {
       .primitive = &mbin_primitive,
       .path = "./resources/assets/mbin/cube.mbin",
   });
-
 }
 
 void add_cube(vec3 position) {
