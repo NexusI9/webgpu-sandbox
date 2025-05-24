@@ -3,7 +3,7 @@ OUTPUT ?= ../../assets/mbin
 
 TARGET := obj2min
 C_FILES := $(shell find . -type f -name "*.c")
-FLAGS := -O2 
+FLAGS := -O2 -DVERBOSE
 
 .PHONY: all run clean
 

@@ -153,15 +153,12 @@ void add_gizmo() {
   Primitive mbin_primitive;
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
       .primitive = &mbin_primitive,
-      .index_path = "./resources/assets/mbin/cube.index.mbin",
-      .vertex_path = "./resources/assets/mbin/cube.vertex.mbin"});
+      .path = "./resources/assets/mbin/cube.mbin",
+  });
 
-  printf("vertex length: %lu\n", mbin_primitive.vertex.length);
-  printf("index length: %lu\n", mbin_primitive.index.length);
 }
 
 void add_cube(vec3 position) {
-
   Primitive cube_prim = primitive_cube();
   Mesh *cube = scene_new_mesh_unlit(&main_scene);
   mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
@@ -187,7 +184,6 @@ void add_cube(vec3 position) {
 }
 
 void add_grid() {
-
   GridUniform grid_uniform = {
       .size = 100.0f,
       .cell_size = 100.0f,
@@ -207,7 +203,6 @@ void add_grid() {
 }
 
 void add_line() {
-
   Mesh *line = scene_new_mesh_unlit(&main_scene);
   line_create(line, &(LineCreateDescriptor){
                         .device = &main_renderer.wgpu.device,
@@ -228,7 +223,6 @@ void add_line() {
 }
 
 void import_cube() {
-
   loader_gltf_load(&(GLTFLoadDescriptor){
       .scene = &main_scene,
       .path = "./resources/assets/gltf/cube.gltf",

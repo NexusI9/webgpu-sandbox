@@ -20,20 +20,20 @@ int loader_mbin_load(MBINLoadDescriptor *desc) {
   // directly map data into memory for unix environments
   // open: directly communicate with linux kernel
   // fopen: provide FILE, does not depend on OS kernel
+  size_t size;
 #ifdef __unix__
-  desc->vertex_data = (MBINVertex *)loader_mbin_mmap(desc->vertex_path, NULL);
-  desc->index_data = (MBINIndex *)loader_mbin_mmap(desc->index_path, NULL);
+  void *file = loader_mbin_mmap(desc->path, &size);
 #else
-  desc->vertex_data = (MBINVertex *)loader_mbin_read(desc->vertex_path, NULL);
-  desc->index_data = (MBINIndex *)loader_mbin_read(desc->index_path, NULL);
+  void *file = loader_mbin_read(desc->path, &size);
 #endif
 
-  if (desc->vertex_data == NULL || desc->index_data == NULL) {
-    VERBOSE_ERROR("Error while loading Mesh Binary file\n");
-    return 1;
-  }
+  
+  // if (desc->vertex_data == NULL || desc->index_data == NULL) {
+  // VERBOSE_ERROR("Error while loading Mesh Binary file\n");
+  // return 1;
+  // }
 
-  return 0;
+  return MBIN_LOADER_SUCCESS;
 }
 
 #ifdef __unix__
@@ -119,21 +119,20 @@ static void *loader_mbin_read(const char *path, size_t *size) {
  */
 int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
 
-  MBINIndex temp_index;
-  MBINVertex temp_vertex;
+  VertexIndex temp_index;
+  VertexAttribute temp_vertex;
 
   if (loader_mbin_load(&(MBINLoadDescriptor){
-          .index_data = &temp_index,
-          .index_path = desc->index_path,
-          .vertex_data = &temp_vertex,
-          .vertex_path = desc->vertex_path,
+          .path = desc->path,
+          .vertex = &temp_vertex,
+          .index = &temp_index,
       })) {
     VERBOSE_ERROR("Error while loading Mesh Binary file to Primitive\n");
-    return 1;
+    return MBIN_LOADER_LOAD_ERROR;
   }
-  
+
   // map referenced primitive vertex attribuets
-  VertexAttribute *vert_attr = &desc->primitive->vertex;
+  /*VertexAttribute *vert_attr = &desc->primitive->vertex;
   vert_attr->capacity = temp_vertex.length;
   vert_attr->length = temp_vertex.length;
   vert_attr->entries = temp_vertex.data;
@@ -143,6 +142,7 @@ int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
   index_attr->capacity = temp_index.length;
   index_attr->length = temp_index.length;
   index_attr->entries = temp_index.data;
+  */
 
-  return 0;
+  return MBIN_LOADER_SUCCESS;
 }

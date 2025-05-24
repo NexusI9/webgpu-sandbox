@@ -25,5 +25,6 @@ int index_buffer_insert(IndexBuffer *, mbin_index_t);
 
 void vertex_buffer_free(VertexBuffer *);
 void index_buffer_free(IndexBuffer *);
+int buffer_merge_data(VertexBuffer *, IndexBuffer *, mbin_data_t *);
 
 #endif

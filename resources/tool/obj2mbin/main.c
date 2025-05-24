@@ -24,7 +24,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
 
   if (!f) {
     fprintf(stderr, "Failed to open file: %s\n", in_path);
-    return 1;
+    return FILE_OPEN_FAIL;
   }
 
   VertexAttributeList cached_position = {
@@ -71,9 +71,10 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
   index_attribute_cache(f, &cached_index);
 
   // trianglify index list
-  mbin_vertex_t *dest;
   index_attribute_triangulate(&cached_index);
   index_attribute_compose_from_vertex(&cached_index, cached_attributes, vb, ib);
+
+  mbin_int dest[vb->length + ib->length];
 
 #ifdef VERBOSE
   index_attribute_print(&cached_index);
@@ -123,25 +124,21 @@ int main(int argc, char **argv) {
     convert_obj_to_mbin(path, out_dir, &vb, &ib);
 
     // build mbin
-    MBINFile mbin_file = {
-        .header =
-            {
-                .vertex_length = vb.length,
-                .vertex_size_type = sizeof(mbin_vertex_t),
-                .index_length = ib.length,
-                .index_size_type = sizeof(mbin_vertex_t),
-            },
-        .body =
-            {
-                .vertex = vb.entries,
-                .index = ib.entries,
-            },
-    };
+    MBINFile *mbin_file;
 
-    write_buffer(out_file, &mbin_file);
+    mbin_create(&mbin_file, &(MBINFileCreateDescriptor){
+                                .index_length = ib.length,
+                                .vertex_length = vb.length,
+                                .index_size_type = sizeof(mbin_index_t),
+                                .vertex_size_type = sizeof(mbin_vertex_t),
+                            });
+
+    buffer_merge_data(&vb, &ib, mbin_file->data);
+    mbin_write_buffer(out_file, mbin_file);
 
     vertex_buffer_free(&vb);
     index_buffer_free(&ib);
+    mbin_free(&mbin_file);
 
     printf("done\n");
   }
