@@ -45,13 +45,34 @@ typedef uint8_t shader_bind_t;
                       |         |----------|
                       '-------> | 0x3e2baf |
                                 '----------'
+
+
+   Render pass and Scene Mesh Lists work hand in hand.
+   Meaning by pushing a mesh in a certain Scene Mesh List it will go through a
+   predefined Renderer pipeline.
+
+   The render passes are segmented in 2 global classes:
+   - Dynamic: Will change depending on Render mode (wireframe/solid/textured).
+   - Fixed: Is independant from Render mode.
+
+   Currently the scene offers the following Mesh List depending on requirements:
+
+   .----------.---------------.-----------.----------------.-------------------.
+   |   Name   |  Shadow Pass  |  AO Pass  |  Fixed/Dynamic | Common use case   |
+   |----------+---------------+-----------+----------------+-------------------|
+   |   Lit    |       Y       |     Y     |     Dynamic    | Physical objects  |
+   |----------+---------------+-----------+----------------+-------------------|
+   |  UnLit   |        -      |     -     |     Dynamic    | Flat objects/ UI  |
+   |----------+---------------+-----------+----------------+-------------------|
+   |  Fixed   |        -      |     -     |      Fixed     | Gizmo/ Debug      |
+   '----------'---------------'-----------'----------------'-------------------'
+
  */
 typedef struct {
   MeshIndexedList lit;
   MeshIndexedList unlit;
   MeshIndexedList fixed;
 } SceneLayerList;
-
 
 typedef struct {
   PointLightList point;
@@ -104,7 +125,6 @@ Mesh *scene_new_mesh_fixed(Scene *);
 void scene_build_fixed(Scene *);
 
 void scene_draw_fixed(Scene *, WGPURenderPassEncoder *);
-
 
 // light
 size_t scene_add_point_light(Scene *, PointLightDescriptor *);

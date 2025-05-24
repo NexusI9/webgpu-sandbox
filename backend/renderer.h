@@ -53,4 +53,6 @@ void renderer_close(const renderer *);
 void renderer_draw(renderer *, Scene *, const RendererDrawMode);
 void renderer_lock_mouse(const renderer *);
 
+WGPUDevice *renderer_device(renderer *);
+WGPUQueue *renderer_queue(renderer *);
 #endif

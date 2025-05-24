@@ -149,12 +149,33 @@ void init_scene() {
 
 void add_gizmo() {
 
-  // Mesh* gizmo = scene_new_mesh_fixed(&main_scene);
+  Mesh *gizmo = scene_new_mesh_fixed(&main_scene);
   Primitive mbin_primitive;
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
-      .primitive = &mbin_primitive,
       .path = "./resources/assets/mbin/cube.mbin",
+      .primitive = &mbin_primitive,
   });
+
+  mesh_create_primitive(gizmo, &(MeshCreatePrimitiveDescriptor){
+                                   .primitive = mbin_primitive,
+                                   .device = renderer_device(&main_renderer),
+                                   .queue = renderer_queue(&main_renderer),
+                                   .name = "gizmo",
+                               });
+
+  mesh_set_shader(gizmo,
+                  &(ShaderCreateDescriptor){
+                      .path = "./runtime/assets/shader/shader.default.wgsl",
+                      .device = renderer_device(&main_renderer),
+                      .queue = renderer_queue(&main_renderer),
+                      .label = "gizmo shader",
+                      .name = "gizmo shader",
+                  });
+
+  mesh_position(gizmo, (vec3){2.0f, 3.3f, 2.0f});
+
+  material_texture_bind_views(gizmo, &main_scene.camera, &main_scene.viewport,
+                              0);
 }
 
 void add_cube(vec3 position) {
@@ -163,8 +184,8 @@ void add_cube(vec3 position) {
   mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = cube_prim,
                                   .name = "cube",
-                                  .device = &main_renderer.wgpu.device,
-                                  .queue = &main_renderer.wgpu.queue,
+                                  .device = renderer_device(&main_renderer),
+                                  .queue = renderer_queue(&main_renderer),
                               });
 
   mesh_set_shader(cube,
@@ -172,8 +193,8 @@ void add_cube(vec3 position) {
                       .path = "./runtime/assets/shader/shader.default.wgsl",
                       .label = "cube",
                       .name = "cube",
-                      .device = &main_renderer.wgpu.device,
-                      .queue = &main_renderer.wgpu.queue,
+                      .device = renderer_device(&main_renderer),
+                      .queue = renderer_queue(&main_renderer),
                   });
 
   mesh_position(cube, position);
@@ -196,16 +217,16 @@ void add_grid() {
                         .uniform = grid_uniform,
                         .camera = &main_scene.camera,
                         .viewport = &main_scene.viewport,
-                        .device = &main_renderer.wgpu.device,
-                        .queue = &main_renderer.wgpu.queue,
+                        .device = renderer_device(&main_renderer),
+                        .queue = renderer_queue(&main_renderer),
                     });
 }
 
 void add_line() {
   Mesh *line = scene_new_mesh_unlit(&main_scene);
   line_create(line, &(LineCreateDescriptor){
-                        .device = &main_renderer.wgpu.device,
-                        .queue = &main_renderer.wgpu.queue,
+                        .device = renderer_device(&main_renderer),
+                        .queue = renderer_queue(&main_renderer),
                         .name = "line mesh",
                     });
 
@@ -225,8 +246,8 @@ void import_cube() {
   loader_gltf_load(&(GLTFLoadDescriptor){
       .scene = &main_scene,
       .path = "./resources/assets/gltf/cube.gltf",
-      .device = &main_renderer.wgpu.device,
-      .queue = &main_renderer.wgpu.queue,
+      .device = renderer_device(&main_renderer),
+      .queue = renderer_queue(&main_renderer),
       .cgltf_options = &(cgltf_options){0},
   });
 }

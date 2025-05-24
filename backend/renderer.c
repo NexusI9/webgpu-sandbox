@@ -271,3 +271,6 @@ void renderer_bake_ao(renderer *renderer, Scene *scene) {
 void renderer_compute_shadow(renderer *renderer, Scene *scene) {
   shadow_pass_init(scene, renderer->wgpu.device, renderer->wgpu.queue);
 }
+
+WGPUDevice *renderer_device(renderer *rd) { return &rd->wgpu.device; }
+WGPUQueue *renderer_queue(renderer *rd) { return &rd->wgpu.queue; }

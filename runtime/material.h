@@ -2,6 +2,7 @@
 #define _MATERIAL_H_
 #include "light.h"
 #include "mesh.h"
+#include "shader.h"
 #include "webgpu/webgpu.h"
 
 /**
@@ -48,11 +49,11 @@ void material_clear_bindings_shadow(Mesh *);
 // === TEXTURE SHADER ===
 
 // bind model, camera and viewport to bind group
-void material_texture_bind_views(Mesh *, Camera *, Viewport *, uint8_t);
+void material_texture_bind_views(Mesh *, Camera *, Viewport *,
+                                 shader_bindgroup_t);
 // bind light scene
-void material_texture_bind_lights(Mesh *, AmbientLightList *,
-                                  SpotLightList *, PointLightList *,
-                                  SunLightList *, uint8_t);
+void material_texture_bind_lights(Mesh *, AmbientLightList *, SpotLightList *,
+                                  PointLightList *, SunLightList *, uint8_t);
 
 void material_texture_add_uniform(Mesh *,
                                   const ShaderCreateUniformDescriptor *);
