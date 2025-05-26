@@ -314,14 +314,12 @@ void index_attribute_create_vertex_set(IndexAttributeList *index_list,
       int insert_result = vhash_insert(table, vertices, &index);
 
       if (insert_result == VHASH_SUCCESS) {
-        printf("insert: %lu,%lu,%lu => %u\n", p, u, n, index);
         // if inserted, push values in the buffers
         vertex_buffer_insert(vb, vertices, VERTEX_STRIDE);
         index_buffer_insert(ib, index);
       } else if (insert_result == VHASH_EXIST) {
         // else if already exist and could find it, add the index
         VertexHashKey *search_result = vhash_search(table, vertices);
-        printf("(exist: %lu,%lu,%lu => %u)\n", p, u, n, search_result->index);
         if (search_result)
           index_buffer_insert(ib, search_result->index);
       }

@@ -40,14 +40,6 @@ int vertex_buffer_insert(VertexBuffer *vb, mbin_vertex_t *list, size_t count) {
     }
   }
 
-  /*DELETEME:
-    printf("inserting vertex list:\n");
-    for (size_t v = 0; v < count; v++) {
-      printf("%f ", list[v]);
-    }
-    printf("\n");
-  */
-
   memcpy(&vb->entries[vb->length], list, sizeof(mbin_vertex_t) * count);
   vb->length += count;
 
@@ -110,7 +102,6 @@ int buffer_merge_data(VertexBuffer *vb, IndexBuffer *ib, mbin_data_t *dest) {
   index_buffer_print(ib);
 #endif
 
-  printf("dest: %p\n", dest);
   memcpy(dest, vb->entries, vert_size);
   /*NOTE: for pointer arithmetic:
     dest is uint32_t*
