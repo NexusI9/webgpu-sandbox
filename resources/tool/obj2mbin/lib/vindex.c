@@ -57,9 +57,10 @@ int index_attribute_insert_group(char *line, IndexAttributeGroup *list) {
     // get new entry pointer
     IndexAttribute *new_attribute = index_attribute_new_attribute(list);
     if (new_attribute) {
-      new_attribute->position = iPosition;
-      new_attribute->normal = iNormal;
-      new_attribute->uv = iUv;
+      // -1 cause obj index starts at 1, but array c 0
+      new_attribute->position = iPosition - 1;
+      new_attribute->normal = iNormal - 1;
+      new_attribute->uv = iUv - 1;
     }
 
     index_group = strtok(0, VINDEX_GROUP_SEPARATOR);
@@ -287,14 +288,14 @@ void index_attribute_create_vertex_set(IndexAttributeList *index_list,
       // define position
       size_t p = attributes->position;
       VertexAttributeList *p_list = attr_list[0];
-      memcpy(vertices + offset, &p_list->entries[p],
+      memcpy(vertices + offset, &p_list->entries[p * p_list->dimension],
              p_list->dimension * sizeof(mbin_vertex_t));
       offset += p_list->dimension;
 
       // define normal
       size_t n = attributes->normal;
       VertexAttributeList *n_list = attr_list[1];
-      memcpy(vertices + offset, &n_list->entries[n],
+      memcpy(vertices + offset, &n_list->entries[n * n_list->dimension],
              n_list->dimension * sizeof(mbin_vertex_t));
       offset += n_list->dimension;
 
@@ -306,18 +307,21 @@ void index_attribute_create_vertex_set(IndexAttributeList *index_list,
       // define uv
       size_t u = attributes->uv;
       VertexAttributeList *u_list = attr_list[2];
-      memcpy(vertices + offset, &u_list->entries[u],
+      memcpy(vertices + offset, &u_list->entries[u * u_list->dimension],
              u_list->dimension * sizeof(mbin_vertex_t));
 
       mbin_index_t index;
       int insert_result = vhash_insert(table, vertices, &index);
+
       if (insert_result == VHASH_SUCCESS) {
+        printf("insert: %lu,%lu,%lu => %u\n", p, u, n, index);
         // if inserted, push values in the buffers
         vertex_buffer_insert(vb, vertices, VERTEX_STRIDE);
         index_buffer_insert(ib, index);
       } else if (insert_result == VHASH_EXIST) {
         // else if already exist and could find it, add the index
         VertexHashKey *search_result = vhash_search(table, vertices);
+        printf("(exist: %lu,%lu,%lu => %u)\n", p, u, n, search_result->index);
         if (search_result)
           index_buffer_insert(ib, search_result->index);
       }

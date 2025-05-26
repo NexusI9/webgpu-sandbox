@@ -1,5 +1,6 @@
 #include "vhash.h"
 #include "mbin.h"
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -8,13 +9,13 @@ static size_t vhash_hash(const vhash_value_t, size_t);
 // Dj2B Polynomial rolling hash function
 size_t vhash_hash(const vhash_value_t key, size_t capacity) {
 
-  size_t hash = 2166136261u; // FNV offset basis
+  size_t hash = 2166136261ull; // FNV offset basis
 
   for (size_t i = 0; i < VERTEX_STRIDE; i++) {
     uint32_t bits;
     // bytes of key
     memcpy(&bits, &key[i], sizeof(bits));
-    hash = hash * 16777619u; // FNNV prime
+    hash = hash * 16777619ull; // FNNV prime
     hash ^= bits;
   }
 
