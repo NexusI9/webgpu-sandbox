@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 static void scene_init_light_list(Scene *);
+static MeshIndexedList *scene_layer_gizmo(Scene *);
 static Mesh *scene_new_mesh(Scene *);
 static void scene_draw_mesh_list(Scene *, mesh_get_vertex_callback,
                                  mesh_get_shader_callback,
@@ -230,7 +231,7 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc) {
   light_create_point(new_light, desc);
 
   // create mesh/gizmo
-  light_point_create_mesh(new_light, &scene->layer.fixed);
+  //light_point_create_mesh(new_light, scene_layer_gizmo(scene));
 
   return list->length;
 }
@@ -277,3 +278,5 @@ size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
 
   return list->length;
 }
+
+MeshIndexedList *scene_layer_gizmo(Scene *scene) { return &scene->layer.fixed; }

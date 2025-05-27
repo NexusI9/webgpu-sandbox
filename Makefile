@@ -22,7 +22,7 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 #   - VERBOSE_BINDING_PHASE : print shader binding structure
 #   - VERBOSE_BUILDING_PHASE : print mesh building phase
 #
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE -DVERBOSE_BUILDING_PHASE
 
 # Preprocess cwgsl shader to wgsl Shader files
 SHADER_DIR := ./runtime/assets/shader

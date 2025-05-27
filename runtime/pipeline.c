@@ -134,12 +134,13 @@ void pipeline_set_stencil(Pipeline *pipeline,
  */
 void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
 
-  // cache bind group layout
+  printf("pipeline layout: %p\n", pipeline->layout);
+  // update bind group layout
   pipeline->layout = *layout;
 
   // transfert cached states to pipeline
   pipeline->descriptor = (WGPURenderPipelineDescriptor){
-      .layout = *layout,
+      .layout = pipeline->layout,
       .label = "Shader",
       .vertex = pipeline->vertex_state,
       .primitive = pipeline->primitive_state,
@@ -161,9 +162,6 @@ void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
   if (pipeline->handle)
     pipeline_destroy(pipeline);
 
-  // update bind group layout
-  pipeline->layout = *layout;
-
   pipeline->handle =
       wgpuDeviceCreateRenderPipeline(*pipeline->device, &pipeline->descriptor);
 }
@@ -175,6 +173,8 @@ void pipeline_destroy(Pipeline *pipeline) {
   wgpuRenderPipelineRelease(pipeline->handle);
   pipeline->handle = NULL;
 
-  wgpuPipelineLayoutRelease(pipeline->layout);
+  // DO NOT uncomment, it causes crashes,
+  // probably cause the layout is still in use
+  // wgpuPipelineLayoutRelease(pipeline->layout);
   pipeline->layout = NULL;
 }

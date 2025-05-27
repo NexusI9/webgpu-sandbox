@@ -116,8 +116,8 @@ void shader_destroy(Shader *shader) {
   shader->name = NULL;
 
   // clearing pipeline
-  if(shader->pipeline.handle)
-      pipeline_destroy(shader_pipeline(shader));
+  if (shader->pipeline.handle)
+    pipeline_destroy(shader_pipeline(shader));
 
   // clearing bind groups
   shader_bind_group_clear(shader);

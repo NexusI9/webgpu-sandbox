@@ -27,7 +27,6 @@ void shadow_pass_init(Scene *scene, WGPUDevice device, WGPUQueue queue) {
   size_t point_light_length = scene->lights.point.length;
   size_t spot_light_length = scene->lights.spot.length;
   size_t sun_light_length = scene->lights.sun.length;
-
   /*
                                For each shadow light:
 
@@ -397,6 +396,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
       for (int m = 0; m < target_mesh_list->length; m++) {
         Mesh *current_mesh = target_mesh_list->entries[m];
         material_shadow_bind_views(current_mesh, current_view);
+        printf("view: %lu/%d\n", v, light_views.length);
         mesh_build(current_mesh, mesh_shader_shadow(current_mesh));
       }
 
@@ -412,9 +412,11 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
       });
 
       // 3. Clear meshes bind group
-      for (int m = 0; m < desc->scene->layer.lit.length; m++) {
+      for (int m = 0; m < target_mesh_list->length; m++) {
         Mesh *current_mesh = target_mesh_list->entries[m];
         material_clear_bindings_shadow(current_mesh);
+        // destroy previous pipeline for next views
+        pipeline_destroy(shader_pipeline(mesh_shader_shadow(current_mesh)));
       }
     }
   }
@@ -473,7 +475,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
     });
 
     // 3. Clear meshes bind group
-    for (int m = 0; m < desc->scene->layer.lit.length; m++) {
+    for (int m = 0; m < target_mesh_list->length; m++) {
       Mesh *current_mesh = target_mesh_list->entries[m];
       material_clear_bindings_shadow(current_mesh);
     }

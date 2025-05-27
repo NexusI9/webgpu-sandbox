@@ -97,8 +97,16 @@ void init_scene() {
                      0.0f,
                  });
 
+  /*scene_add_sun_light(
+      &main_scene, &(SunLightDescriptor){
+                       .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
+                       .color = {1.0f, 1.0f, 1.0f},
+                       .intensity = 4.0f,
+                       .size = 10.0f,
+                   });*/
+
   // set light
-  /*scene_add_point_light(&main_scene, &(PointLightDescriptor){
+  scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 1.0f, 1.0f},
                                          .intensity = 4.0f,
                                          .cutoff = 20.0f,
@@ -111,7 +119,7 @@ void init_scene() {
                                                  POINT_LIGHT[1],
                                                  POINT_LIGHT[2],
                                              },
-                                             });*/
+					     });
 
   /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
                                         .color = {1.0f, 1.0f, 1.0f},
@@ -131,15 +139,7 @@ void init_scene() {
                                                 LIGHT_POSITION[1],
                                                 LIGHT_POSITION[2],
                                             },
-                                    });*/
-
-  scene_add_sun_light(
-      &main_scene, &(SunLightDescriptor){
-                       .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
-                       .color = {1.0f, 1.0f, 1.0f},
-                       .intensity = 4.0f,
-                       .size = 10.0f,
-                   });
+                                            });*/
 
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
@@ -291,7 +291,6 @@ int main(int argc, const char *argv[]) {
   */
   import_cube();
 
-  
   // add_line();
   add_grid();
 
