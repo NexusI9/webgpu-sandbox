@@ -9,10 +9,8 @@
 #include <assert.h>
 #include <stdio.h>
 
-static void scene_init_mesh_layer(MeshIndexedList *);
 static void scene_init_light_list(Scene *);
 static Mesh *scene_new_mesh(Scene *);
-static Mesh *scene_layer_add_mesh(MeshIndexedList *, Mesh *);
 static void scene_draw_mesh_list(Scene *, mesh_get_vertex_callback,
                                  mesh_get_shader_callback,
                                  WGPURenderPassEncoder *, MeshIndexedList *);
@@ -31,9 +29,11 @@ Scene scene_create(Camera camera, Viewport viewport) {
   mesh_list_create(&scene.meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
   // init mesh layers
-  scene_init_mesh_layer(&scene.layer.lit);
-  scene_init_mesh_layer(&scene.layer.unlit);
-  scene_init_mesh_layer(&scene.layer.fixed);
+  mesh_indexed_list_create(&scene.layer.lit, SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  mesh_indexed_list_create(&scene.layer.unlit,
+                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  mesh_indexed_list_create(&scene.layer.fixed,
+                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init lights
   scene_init_light_list(&scene);
@@ -47,17 +47,17 @@ Scene scene_create(Camera camera, Viewport viewport) {
  */
 Mesh *scene_new_mesh_lit(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
-  return scene_layer_add_mesh(&scene->layer.lit, new_mesh);
+  return mesh_indexed_list_insert(&scene->layer.lit, new_mesh);
 }
 
 Mesh *scene_new_mesh_unlit(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
-  return scene_layer_add_mesh(&scene->layer.unlit, new_mesh);
+  return mesh_indexed_list_insert(&scene->layer.unlit, new_mesh);
 }
 
 Mesh *scene_new_mesh_fixed(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
-  return scene_layer_add_mesh(&scene->layer.fixed, new_mesh);
+  return mesh_indexed_list_insert(&scene->layer.fixed, new_mesh);
 }
 
 // TODO: Simplify the overall scene draw/build process
@@ -183,34 +183,7 @@ void scene_build_mesh_list(Scene *scene, mesh_get_shader_callback target_shader,
   }
 }
 
-/**
-   Add a mesh pointer from the global array to the indexed list (scene layer)
- */
-static Mesh *scene_layer_add_mesh(MeshIndexedList *mesh_list, Mesh *new_mesh) {
-  // ADD MESH TO LIST
-  // eventually expand mesh vector if overflow
-  if (mesh_list->length == mesh_list->capacity) {
-    size_t new_capacity = mesh_list->capacity * 2;
-    Mesh **temp = realloc(mesh_list->entries, sizeof(Mesh *) * new_capacity);
-
-    if (temp) {
-      mesh_list->entries = temp;
-      mesh_list->capacity = new_capacity;
-    } else {
-      VERBOSE_PRINT("Scene mesh list reached full capacity, could not "
-                    "reallocate new space\n");
-      return 0;
-    }
-  }
-
-  mesh_list->entries[mesh_list->length] = new_mesh;
-  mesh_list->length++;
-  return new_mesh;
-}
-
-Mesh *scene_new_mesh(Scene *scene) {
-    return mesh_list_insert(&scene->meshes);
-}
+Mesh *scene_new_mesh(Scene *scene) { return mesh_list_insert(&scene->meshes); }
 
 void scene_draw_mesh_list(Scene *scene, mesh_get_vertex_callback target_vertex,
                           mesh_get_shader_callback target_shader,
@@ -223,13 +196,6 @@ void scene_draw_mesh_list(Scene *scene, mesh_get_vertex_callback target_vertex,
     mesh_draw(target_vertex(current_mesh), target_shader(current_mesh),
               render_pass, &scene->camera, &scene->viewport);
   }
-}
-
-void scene_init_mesh_layer(MeshIndexedList *mesh_list) {
-
-  mesh_list->entries = malloc(SCENE_MESH_LIST_DEFAULT_CAPACITY * sizeof(Mesh));
-  mesh_list->length = 0;
-  mesh_list->capacity = SCENE_MESH_LIST_DEFAULT_CAPACITY;
 }
 
 void scene_init_light_list(Scene *scene) {
@@ -259,8 +225,12 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc) {
     return 0;
   }
 
+  // create point light
   PointLight *new_light = &list->entries[list->length++];
   light_create_point(new_light, desc);
+
+  // create mesh/gizmo
+  light_point_create_mesh(new_light, &scene->layer.fixed);
 
   return list->length;
 }
@@ -273,6 +243,7 @@ size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc) {
     return 0;
   }
 
+  // add light to scene
   SpotLight *new_light = &list->entries[list->length++];
   light_create_spot(new_light, desc);
 

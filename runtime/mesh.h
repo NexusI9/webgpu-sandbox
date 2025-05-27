@@ -4,7 +4,6 @@
 #include "../resources/geometry/vertex.h"
 #include "../resources/primitive/primitive.h"
 #include "camera.h"
-#include "light.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
@@ -13,6 +12,9 @@
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
 #define MESH_INDEX_FORMAT WGPUIndexFormat_Uint32
+
+#define MESH_SUCCESS 0
+#define MESH_ALLOC_FAILURE 1
 
 // Builder Pattern | Descriptor Pattern
 typedef struct {
@@ -137,4 +139,8 @@ Shader *mesh_shader_solid(Mesh *);
 
 int mesh_list_create(MeshList *, size_t);
 Mesh *mesh_list_insert(MeshList *);
+
+int mesh_indexed_list_create(MeshIndexedList *, size_t);
+Mesh *mesh_indexed_list_insert(MeshIndexedList *, Mesh *);
+
 #endif

@@ -11,6 +11,10 @@
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 
+#define SCENE_SUCCESS 0
+#define SCENE_MAX_CAPACITY_REACH 1
+#define SCENE_ALLOC_FAILURE 2
+
 typedef uint8_t shader_bind_t;
 
 // due to depth test, need to write fully solid mesh first and then

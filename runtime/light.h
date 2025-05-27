@@ -1,6 +1,7 @@
 #ifndef _LIGHT_H_
 #define _LIGHT_H_
 
+#include "mesh.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
@@ -20,11 +21,13 @@ typedef struct {
   float inner_cutoff;
   float near;
   float far;
+  struct mesh *mesh;
 } PointLight;
 
 typedef struct {
   vec3 color;
   float intensity;
+  struct mesh *mesh;
 } AmbientLight;
 
 typedef struct {
@@ -35,6 +38,7 @@ typedef struct {
   float angle;
   float inner_cutoff;
   float intensity;
+  struct mesh *mesh;
 } SpotLight;
 
 typedef struct {
@@ -42,6 +46,7 @@ typedef struct {
   vec3 color;
   float size;
   float intensity;
+  struct mesh *mesh;
 } SunLight;
 
 // descriptor type
@@ -78,8 +83,8 @@ typedef struct {
 } SunLightDescriptor;
 
 // light type
-// NOTE: use __attribute__ on list AS WELL AS entries (pointlights...) else wrong
-// alignment in list entries (i.e. _padding takes color.r value)
+// NOTE: use __attribute__ on list AS WELL AS entries (pointlights...) else
+// wrong alignment in list entries (i.e. _padding takes color.r value)
 typedef struct {
   vec3 position;
   float cutoff;
@@ -175,11 +180,19 @@ typedef struct {
   SunLight entries[LIGHT_MAX_CAPACITY];
 } SunLightList;
 
+// constructors
 void light_create_point(PointLight *, PointLightDescriptor *);
 void light_create_spot(SpotLight *, SpotLightDescriptor *);
 void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
 void light_create_sun(SunLight *, SunLightDescriptor *);
 
+// gizmo generation
+void light_point_create_mesh(PointLight *, MeshIndexedList *);
+void light_spot_create_mesh(SpotLight *, MeshIndexedList *);
+void light_ambient_create_mesh(AmbientLight *, MeshIndexedList *);
+void light_sun_create_mesh(SunLight *, MeshIndexedList *);
+
+// projections/view computing
 LightViews light_point_views(vec3, float, float);
 LightViews light_spot_view(vec3, vec3, float);
 LightViews light_sun_view(vec3, float);

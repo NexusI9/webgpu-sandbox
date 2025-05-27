@@ -291,7 +291,7 @@ int main(int argc, const char *argv[]) {
   */
   import_cube();
 
-  add_gizmo();
+  
   // add_line();
   add_grid();
 

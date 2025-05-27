@@ -83,6 +83,9 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
 
   // copy color
   glm_vec3_copy(desc->color, light->color);
+
+  // init mesh (gizmo)
+  light->mesh = NULL;
 }
 
 void light_create_spot(SpotLight *light, SpotLightDescriptor *desc) {
@@ -108,6 +111,9 @@ void light_create_spot(SpotLight *light, SpotLightDescriptor *desc) {
 
   // copy angle
   light->angle = desc->angle;
+
+  // init mesh (gizmo)
+  light->mesh = NULL;
 }
 
 void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
@@ -120,6 +126,9 @@ void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
 
   // copy color
   glm_vec3_copy(desc->color, light->color);
+
+  // init mesh (gizmo)
+  light->mesh = NULL;
 }
 
 void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
@@ -143,6 +152,9 @@ void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
 
   // copy color
   glm_vec3_copy(desc->color, light->color);
+
+  // init mesh (gizmo)
+  light->mesh = NULL;
 }
 
 /**
@@ -247,3 +259,9 @@ LightViews light_sun_view(vec3 light_position, float size) {
 
   return new_views;
 }
+
+void light_point_create_mesh(PointLight *light, MeshIndexedList *mesh_list) {}
+void light_spot_create_mesh(SpotLight *light, MeshIndexedList *mesh_list) {}
+void light_ambient_create_mesh(AmbientLight *light,
+                               MeshIndexedList *mesh_list) {}
+void light_sun_create_mesh(SunLight *light, MeshIndexedList *mesh_list) {}

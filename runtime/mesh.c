@@ -671,3 +671,40 @@ Mesh *mesh_list_insert(MeshList *list) {
 
   return &list->entries[list->length++];
 }
+
+int mesh_indexed_list_create(MeshIndexedList *list, size_t capacity) {
+
+  list->entries = malloc(capacity * sizeof(Mesh));
+  list->length = 0;
+  list->capacity = capacity;
+
+  if (list->entries == NULL) {
+    perror("Couldn't allocate memory for mesh indexed list\n");
+    return MESH_ALLOC_FAILURE;
+  }
+
+  return MESH_SUCCESS;
+}
+
+Mesh *mesh_indexed_list_insert(MeshIndexedList *list, Mesh *mesh) {
+
+  // ADD MESH TO LIST
+  // eventually expand mesh vector if overflow
+  if (list->length == list->capacity) {
+    size_t new_capacity = list->capacity * 2;
+    Mesh **temp = realloc(list->entries, sizeof(Mesh *) * new_capacity);
+
+    if (temp) {
+      list->entries = temp;
+      list->capacity = new_capacity;
+    } else {
+      VERBOSE_PRINT("Scene mesh list reached full capacity, could not "
+                    "reallocate new space\n");
+      return NULL;
+    }
+  }
+
+  list->entries[list->length] = mesh;
+  list->length++;
+  return mesh;
+}
