@@ -149,6 +149,7 @@ void init_scene() {
                           &(AmbientLightDescriptor){
                               .color = {1.0f, 1.0f, 1.0f},
                               .intensity = 0.2f,
+                              .position = {2.0f, 4.0f, -5.0f},
                           },
                           renderer_device(&main_renderer),
                           renderer_queue(&main_renderer));

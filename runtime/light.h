@@ -26,6 +26,7 @@ typedef struct {
 } PointLight;
 
 typedef struct {
+  vec3 position; // abstract, for UI purpose only
   vec3 color;
   float intensity;
   struct mesh *mesh;
@@ -62,6 +63,7 @@ typedef struct {
 } PointLightDescriptor;
 
 typedef struct {
+  vec3 position;
   vec3 color;
   float intensity;
 } AmbientLightDescriptor;
@@ -182,8 +184,8 @@ typedef struct {
 } SunLightList;
 
 typedef struct {
-  WGPUDevice* device;
-  WGPUQueue* queue;
+  WGPUDevice *device;
+  WGPUQueue *queue;
   Camera *camera;
   Viewport *viewport;
   MeshList *list;

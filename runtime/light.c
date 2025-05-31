@@ -63,6 +63,9 @@
 
  */
 
+static void light_create_mesh(Mesh *, vec3, const char *,
+                              const LightCreateMeshDescriptor *);
+
 void light_create_point(PointLight *light, PointLightDescriptor *desc) {
 
   // init to 0
@@ -131,6 +134,9 @@ void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
 
   // copy color
   glm_vec3_copy(desc->color, light->color);
+
+  // copy position
+  glm_vec3_copy(desc->position, light->position);
 
   // init mesh (gizmo)
   light->mesh = NULL;
@@ -266,42 +272,38 @@ LightViews light_sun_view(vec3 light_position, float size) {
 }
 
 /**
-   Insert Point light gizmo mesh to the list
+   Static/global function to generate light gizmo
  */
-void light_point_create_mesh(PointLight *light,
-                             const LightCreateMeshDescriptor *desc) {
+static void light_create_mesh(Mesh *mesh, vec3 light_position, const char *path,
+                              const LightCreateMeshDescriptor *desc) {
 
   // create plane
   Primitive plane = primitive_plane();
-  Mesh *light_mesh = mesh_list_insert(desc->list);
 
-  mesh_create_primitive(light_mesh, &(MeshCreatePrimitiveDescriptor){
-                                        .primitive = plane,
-                                        .device = desc->device,
-                                        .queue = desc->queue,
-                                        .name = "point light",
-                                    });
-
-  // set mesh position to light position
-  mesh_position(light_mesh, (vec3){
-                                light->position[0],
-                                light->position[1],
-                                light->position[2],
-                            });
-
-  mesh_scale(light_mesh, (vec3){0.8f, 0.8f, 0.8f});
-
-  // assign billboard shader
-  mesh_set_shader(light_mesh, &(ShaderCreateDescriptor){
+  mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
+                                  .primitive = plane,
                                   .device = desc->device,
                                   .queue = desc->queue,
-                                  .label = "point light shader",
-                                  .name = "point light shader",
-                                  .path = SHADER_PATH_BILLBOARD,
+                                  .name = "light",
                               });
 
+  // set mesh position to light position
+  mesh_position(mesh, light_position);
+
+  // scale down gizmo
+  mesh_scale(mesh, (vec3){0.8f, 0.8f, 0.8f});
+
+  // assign billboard shader
+  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
+                            .device = desc->device,
+                            .queue = desc->queue,
+                            .label = "light shader",
+                            .name = "light shader",
+                            .path = SHADER_PATH_BILLBOARD,
+                        });
+
   // set double side rendering
-  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(light_mesh)),
+  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(mesh)),
                          (WGPUPrimitiveState){
                              .frontFace = WGPUFrontFace_CCW,
                              .cullMode = WGPUCullMode_None,
@@ -310,33 +312,32 @@ void light_point_create_mesh(PointLight *light,
                          });
 
   // bind view matrices
-  material_texture_bind_views(light_mesh, desc->camera, desc->viewport, 0);
+  material_texture_bind_views(mesh, desc->camera, desc->viewport, 0);
 
   // TODO: create UI Atlas
   Texture light_texture;
-  texture_create_from_file(
-      &light_texture, "./resources/assets/texture/ui/light/light-point.png");
+  texture_create_from_file(&light_texture, path);
 
   // bind texture + sampler
   material_texture_add_texture(
-      light_mesh, &(ShaderCreateTextureDescriptor){
-                      .group_index = 1,
-                      .entry_count = 1,
-                      .visibility = WGPUShaderStage_Fragment,
-                      .entries = (ShaderBindGroupTextureEntry[]){{
-                          .binding = 0,
-                          .width = light_texture.width,
-                          .height = light_texture.height,
-                          .data = light_texture.data,
-                          .size = light_texture.size,
-                          .channels = light_texture.channels,
-                          .dimension = WGPUTextureViewDimension_2D,
-                          .format = WGPUTextureFormat_RGBA8Unorm,
-                          .sample_type = WGPUTextureSampleType_Float,
-                      }},
-                  });
+      mesh, &(ShaderCreateTextureDescriptor){
+                .group_index = 1,
+                .entry_count = 1,
+                .visibility = WGPUShaderStage_Fragment,
+                .entries = (ShaderBindGroupTextureEntry[]){{
+                    .binding = 0,
+                    .width = light_texture.width,
+                    .height = light_texture.height,
+                    .data = light_texture.data,
+                    .size = light_texture.size,
+                    .channels = light_texture.channels,
+                    .dimension = WGPUTextureViewDimension_2D,
+                    .format = WGPUTextureFormat_RGBA8Unorm,
+                    .sample_type = WGPUTextureSampleType_Float,
+                }},
+            });
 
-  material_texture_add_sampler(light_mesh,
+  material_texture_add_sampler(mesh,
                                &(ShaderCreateSamplerDescriptor){
                                    .group_index = 1,
                                    .entry_count = 1,
@@ -352,6 +353,20 @@ void light_point_create_mesh(PointLight *light,
                                        .compare = WGPUCompareFunction_Undefined,
                                    }},
                                });
+}
+
+/**
+   Insert Point light gizmo mesh to the list
+ */
+void light_point_create_mesh(PointLight *light,
+                             const LightCreateMeshDescriptor *desc) {
+
+  Mesh *light_mesh = mesh_list_insert(desc->list);
+  const char *texture_path =
+      "./resources/assets/texture/ui/light/light-point.png";
+
+  // create gizmo mesh
+  light_create_mesh(light_mesh, light->position, texture_path, desc);
 
   // cache poitner in destination
   mesh_indexed_list_insert(desc->destination, light_mesh);
@@ -361,16 +376,48 @@ void light_point_create_mesh(PointLight *light,
    Insert Spot light gizmo mesh to the list
  */
 void light_spot_create_mesh(SpotLight *light,
-                            const LightCreateMeshDescriptor *desc) {}
+                            const LightCreateMeshDescriptor *desc) {
+
+  Mesh *light_mesh = mesh_list_insert(desc->list);
+  const char *texture_path =
+      "./resources/assets/texture/ui/light/light-spot.png";
+
+  // create gizmo mesh
+  light_create_mesh(light_mesh, light->position, texture_path, desc);
+
+  // cache poitner in destination
+  mesh_indexed_list_insert(desc->destination, light_mesh);
+}
 
 /**
    Insert Ambient light gizmo mesh to the list
  */
 void light_ambient_create_mesh(AmbientLight *light,
-                               const LightCreateMeshDescriptor *desc) {}
+                               const LightCreateMeshDescriptor *desc) {
+
+  Mesh *light_mesh = mesh_list_insert(desc->list);
+  const char *texture_path =
+      "./resources/assets/texture/ui/light/light-ambient.png";
+
+  // create gizmo mesh
+  light_create_mesh(light_mesh, light->position, texture_path, desc);
+
+  // cache poitner in destination
+  mesh_indexed_list_insert(desc->destination, light_mesh);
+}
 
 /**
    Insert Sun light gizmo mesh to the list
  */
 void light_sun_create_mesh(SunLight *light,
-                           const LightCreateMeshDescriptor *desc) {}
+                           const LightCreateMeshDescriptor *desc) {
+  Mesh *light_mesh = mesh_list_insert(desc->list);
+  const char *texture_path =
+      "./resources/assets/texture/ui/light/light-sun.png";
+
+  // create gizmo mesh
+  light_create_mesh(light_mesh, light->position, texture_path, desc);
+
+  // cache poitner in destination
+  mesh_indexed_list_insert(desc->destination, light_mesh);
+}

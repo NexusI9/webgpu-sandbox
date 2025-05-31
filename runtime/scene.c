@@ -219,7 +219,7 @@ void scene_init_light_list(Scene *scene) {
 }
 
 size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
-                             WGPUDevice* device, WGPUQueue* queue) {
+                             WGPUDevice *device, WGPUQueue *queue) {
 
   PointLightList *list = &scene->lights.point;
   if (list->length == list->capacity) {
@@ -231,13 +231,12 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
   PointLight *new_light = &list->entries[list->length++];
   light_create_point(new_light, desc);
 
+  // create mesh/gizmo
   MeshList *mesh_list = scene_mesh_list(scene);
   MeshIndexedList cache_list;
   mesh_indexed_list_create(&cache_list, 1);
-
   MeshIndexedList *render_list = scene_layer_gizmo(scene);
 
-  // create mesh/gizmo
   light_point_create_mesh(new_light, &(LightCreateMeshDescriptor){
                                          .camera = &scene->camera,
                                          .viewport = &scene->viewport,
@@ -247,14 +246,14 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
                                          .destination = &cache_list,
                                      });
 
-  // transfert destination/ result mesh pointers to render_list
+  // transfert gizmo mesh pointers to render_list
   mesh_indexed_list_transfert(&cache_list, render_list);
 
   return list->length;
 }
 
 size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
-                            WGPUDevice* device, WGPUQueue* queue) {
+                            WGPUDevice *device, WGPUQueue *queue) {
 
   SpotLightList *list = &scene->lights.spot;
   if (list->length == list->capacity) {
@@ -262,15 +261,33 @@ size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
     return 0;
   }
 
-  // add light to scene
+  // create spot light
   SpotLight *new_light = &list->entries[list->length++];
   light_create_spot(new_light, desc);
+
+  // create mesh/gizmo
+  MeshList *mesh_list = scene_mesh_list(scene);
+  MeshIndexedList cache_list;
+  mesh_indexed_list_create(&cache_list, 1);
+  MeshIndexedList *render_list = scene_layer_gizmo(scene);
+
+  light_spot_create_mesh(new_light, &(LightCreateMeshDescriptor){
+                                        .camera = &scene->camera,
+                                        .viewport = &scene->viewport,
+                                        .device = device,
+                                        .queue = queue,
+                                        .list = mesh_list,
+                                        .destination = &cache_list,
+                                    });
+
+  // transfert gizmo mesh pointers to render_list
+  mesh_indexed_list_transfert(&cache_list, render_list);
 
   return list->length;
 }
 
 size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc,
-                               WGPUDevice* device, WGPUQueue* queue) {
+                               WGPUDevice *device, WGPUQueue *queue) {
 
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
@@ -278,14 +295,33 @@ size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc,
     return 0;
   }
 
+  // create ambient light
   AmbientLight *new_light = &list->entries[list->length++];
   light_create_ambient(new_light, desc);
+
+  // create mesh/gizmo
+  MeshList *mesh_list = scene_mesh_list(scene);
+  MeshIndexedList cache_list;
+  mesh_indexed_list_create(&cache_list, 1);
+  MeshIndexedList *render_list = scene_layer_gizmo(scene);
+
+  light_ambient_create_mesh(new_light, &(LightCreateMeshDescriptor){
+                                           .camera = &scene->camera,
+                                           .viewport = &scene->viewport,
+                                           .device = device,
+                                           .queue = queue,
+                                           .list = mesh_list,
+                                           .destination = &cache_list,
+                                       });
+
+  // transfert gizmo mesh pointers to render_list
+  mesh_indexed_list_transfert(&cache_list, render_list);
 
   return list->length;
 }
 
 size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
-                           WGPUDevice* device, WGPUQueue* queue) {
+                           WGPUDevice *device, WGPUQueue *queue) {
 
   SunLightList *list = &scene->lights.sun;
   if (list->length == list->capacity) {
@@ -293,8 +329,27 @@ size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
     return 0;
   }
 
+  // create sun light
   SunLight *new_light = &list->entries[list->length++];
   light_create_sun(new_light, desc);
+
+  // create mesh/gizmo
+  MeshList *mesh_list = scene_mesh_list(scene);
+  MeshIndexedList cache_list;
+  mesh_indexed_list_create(&cache_list, 1);
+  MeshIndexedList *render_list = scene_layer_gizmo(scene);
+
+  light_sun_create_mesh(new_light, &(LightCreateMeshDescriptor){
+                                       .camera = &scene->camera,
+                                       .viewport = &scene->viewport,
+                                       .device = device,
+                                       .queue = queue,
+                                       .list = mesh_list,
+                                       .destination = &cache_list,
+                                   });
+
+  // transfert gizmo mesh pointers to render_list
+  mesh_indexed_list_transfert(&cache_list, render_list);
 
   return list->length;
 }
