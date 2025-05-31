@@ -1,7 +1,7 @@
 #ifndef _GIZMO_CAMERA_H_
 #define _GIZMO_CAMERA_H_
 
-#include "../gizmo.h"
+#include "../runtime/gizmo.h"
 #include "../runtime/camera.h"
 #include "../runtime/mesh.h"
 

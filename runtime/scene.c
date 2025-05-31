@@ -1,6 +1,7 @@
 #include "scene.h"
 #include "../utils/system.h"
 #include "camera.h"
+#include "gizmo.h"
 #include "light.h"
 #include "mesh.h"
 #include "shader.h"
@@ -38,6 +39,9 @@ Scene scene_create(Camera camera, Viewport viewport) {
                            SCENE_MESH_LIST_DEFAULT_CAPACITY);
   mesh_indexed_list_create(&scene.layer.fixed,
                            SCENE_MESH_LIST_DEFAULT_CAPACITY);
+
+  // init gizmo list
+  gizmo_list_create(&scene.gizmo, GIZMO_LIST_CAPACITY_DEFAULT);
 
   // init lights
   scene_init_light_list(&scene);
@@ -202,6 +206,7 @@ void scene_draw_mesh_list(Scene *scene, mesh_get_vertex_callback target_vertex,
   }
 }
 
+// TODO: move light list in Light not Scene anymore
 void scene_init_light_list(Scene *scene) {
 
   // init point light list
@@ -251,6 +256,9 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
 
   // transfert gizmo mesh pointers to render_list
   mesh_indexed_list_transfert(&cache_list, render_list);
+
+  // add gizmo to gizmo list
+  //gizmo_list_insert_point_light(&scene->gizmo, new_light, );
 
   return list->length;
 }
@@ -357,6 +365,20 @@ size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   return list->length;
 }
 
+/**
+   Return pointer to mesh gizmo layer ("Fixed" layer)
+ */
 MeshIndexedList *scene_layer_gizmo(Scene *scene) { return &scene->layer.fixed; }
 
+/**
+   Return pointer to scene mesh pool
+ */
 MeshList *scene_mesh_list(Scene *scene) { return &scene->meshes; }
+
+/**
+   "Create" a new uninitialized camera in the scene camera list and return the
+   newly created item's pointer.
+ */
+Camera *scene_new_camera(Scene *scene) {
+  return camera_list_new_camera(&scene->cameras);
+}

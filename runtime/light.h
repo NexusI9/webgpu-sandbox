@@ -22,14 +22,12 @@ typedef struct {
   float inner_cutoff;
   float near;
   float far;
-  struct mesh *mesh;
 } PointLight;
 
 typedef struct {
   vec3 position; // abstract, for UI purpose only
   vec3 color;
   float intensity;
-  struct mesh *mesh;
 } AmbientLight;
 
 typedef struct {
@@ -40,7 +38,6 @@ typedef struct {
   float angle;
   float inner_cutoff;
   float intensity;
-  struct mesh *mesh;
 } SpotLight;
 
 typedef struct {
@@ -48,7 +45,6 @@ typedef struct {
   vec3 color;
   float size;
   float intensity;
-  struct mesh *mesh;
 } SunLight;
 
 // descriptor type

@@ -1,7 +1,7 @@
 #include "light.h"
-#include "../resources/prefab/gizmo/gizmo.h"
 #include "../resources/primitive/plane.h"
 #include "../utils/system.h"
+#include "./gizmo.h"
 #include "./texture.h"
 #include "camera.h"
 #include "emscripten/emscripten.h"
@@ -90,8 +90,6 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
   // copy color
   glm_vec3_copy(desc->color, light->color);
 
-  // init mesh (gizmo)
-  light->mesh = NULL;
 }
 
 void light_create_spot(SpotLight *light, SpotLightDescriptor *desc) {
@@ -118,8 +116,6 @@ void light_create_spot(SpotLight *light, SpotLightDescriptor *desc) {
   // copy angle
   light->angle = desc->angle;
 
-  // init mesh (gizmo)
-  light->mesh = NULL;
 }
 
 void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
@@ -136,8 +132,6 @@ void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
   // copy position
   glm_vec3_copy(desc->position, light->position);
 
-  // init mesh (gizmo)
-  light->mesh = NULL;
 }
 
 void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
@@ -162,8 +156,6 @@ void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
   // copy color
   glm_vec3_copy(desc->color, light->color);
 
-  // init mesh (gizmo)
-  light->mesh = NULL;
 }
 
 /**

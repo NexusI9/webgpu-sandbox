@@ -153,15 +153,15 @@ void camera_draw(Camera *camera) {
 
   switch (camera->mode) {
 
-  case FLYING:
+  case CameraMode_Flying:
     camera_flying_mode_controller(camera);
     return;
 
-  case ORBIT:
+  case CameraMode_Orbit:
     camera_orbit_mode_controler(camera);
     return;
 
-  case FIXED:
+  case CameraMode_Fixed:
     // remove event listeners
   default:
     return;

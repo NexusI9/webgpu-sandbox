@@ -12,9 +12,9 @@
 #include <stdint.h>
 
 typedef enum {
-  FIXED = 1 << 0,
-  FLYING = 1 << 1,
-  ORBIT = 1 << 2,
+  CameraMode_Fixed = 1 << 0,
+  CameraMode_Flying = 1 << 1,
+  CameraMode_Orbit = 1 << 2,
 } CameraMode;
 
 typedef struct {

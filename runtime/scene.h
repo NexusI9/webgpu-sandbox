@@ -2,6 +2,7 @@
 #define _SCENE_H_
 
 #include "camera.h"
+#include "gizmo.h"
 #include "light.h"
 #include "mesh.h"
 #include "viewport.h"
@@ -86,24 +87,47 @@ typedef struct {
   SunLightList sun;
 } SceneLightList;
 
+/*
+  GIZMO LIST
+  Gizmos' scene entities (meshes) are spearated from their data (primary
+  struct). As a result gizmos meshes and data are gathered under the
+  GizmoList struct.
+
+
+      Mesh Pool
+     .----------.
+     |  Mesh 1  | -----------.
+     |----------|            |      Gizmo List
+     |  Mesh 2  | -----------|   .-------------.
+     |----------|            '-> |  meshes [*] |
+     |  Mesh n  |                |  length 2   |
+     '----------'                |  -          |
+                             .-> |  target *   |
+      Gizmo Pool            |    '-------------'
+     .-----------.          |
+     | Camera 1  | ---------'
+     |-----------|
+     | Camera n  |
+     '-----------'
+
+*/
+
 typedef struct {
 
   // camera
-  CameraList cameras;
   Camera *active_camera;
 
   // viewport
   Viewport viewport;
 
-  // meshes global list
-  MeshList meshes;
+  // VALUES LISTS
+  MeshList meshes;       // meshes global list
+  SceneLightList lights; // light list
+  CameraList cameras;    // camera list
 
-  // meshes render layers
-  SceneLayerList layer;
-
-  // light type
-  SceneLightList lights;
-
+  // REFERENCES LISTS (PTR)
+  SceneLayerList layer; // meshes render layers
+  GizmoList gizmo;      // gizmo
 
 } Scene;
 
@@ -111,6 +135,9 @@ typedef void (*scene_draw_callback)(Scene *, WGPURenderPassEncoder *);
 typedef void (*scene_build_callback)(Scene *);
 
 Scene scene_create(Camera, Viewport);
+
+// mesh pool
+MeshList *scene_mesh_list(Scene *);
 
 // dynamic rendering
 Mesh *scene_new_mesh_lit(Scene *);
@@ -143,6 +170,7 @@ size_t scene_add_ambient_light(Scene *, AmbientLightDescriptor *, WGPUDevice *,
 size_t scene_add_sun_light(Scene *, SunLightDescriptor *, WGPUDevice *,
                            WGPUQueue *);
 
-MeshList *scene_mesh_list(Scene *);
+// camera
+Camera *scene_new_camera(Scene *);
 
 #endif

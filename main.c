@@ -77,7 +77,7 @@ void init_scene() {
   Camera camera = camera_create(&(CameraCreateDescriptor){
       .speed = 20.0f,
       .clock = &main_clock,
-      .mode = FLYING,
+      .mode = CameraMode_Flying,
       .sensitivity = 0.2f,
       .wheel_sensitivity = 0.01f,
   });
@@ -183,8 +183,8 @@ void add_gizmo() {
 
   mesh_position(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 
-  material_texture_bind_views(gizmo, main_scene.active_camera, &main_scene.viewport,
-                              0);
+  material_texture_bind_views(gizmo, main_scene.active_camera,
+                              &main_scene.viewport, 0);
 }
 
 void add_cube(vec3 position) {
@@ -208,8 +208,8 @@ void add_cube(vec3 position) {
 
   mesh_position(cube, position);
 
-  material_texture_bind_views(cube, main_scene.active_camera, &main_scene.viewport,
-                              0);
+  material_texture_bind_views(cube, main_scene.active_camera,
+                              &main_scene.viewport, 0);
 }
 
 void add_grid() {
@@ -247,8 +247,8 @@ void add_line() {
                  (vec3){0.0f, 1.0f, 0.0f}, &line->vertex.base.attribute,
                  &line->vertex.base.index);
 
-  material_texture_bind_views(line, main_scene.active_camera, &main_scene.viewport,
-                              0);
+  material_texture_bind_views(line, main_scene.active_camera,
+                              &main_scene.viewport, 0);
 }
 
 void import_cube() {
@@ -280,6 +280,15 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
+
+  Camera *new_cam = scene_new_camera(&main_scene);
+  *new_cam = camera_create(&(CameraCreateDescriptor){
+      .speed = 20.0f,
+      .clock = &main_clock,
+      .mode = CameraMode_Fixed,
+      .sensitivity = 0.2f,
+      .wheel_sensitivity = 0.01f,
+  });
 
   /*mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
