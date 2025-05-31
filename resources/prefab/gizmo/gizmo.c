@@ -3,12 +3,13 @@
 #include "../runtime/material.h"
 #include "../runtime/texture.h"
 
-void gizmo_create_billboard(const GizmoCreateBillboardDescriptor *desc) {
+void gizmo_create_billboard(Gizmo *mesh,
+                            const GizmoCreateBillboardDescriptor *desc) {
 
   // create plane
   Primitive plane = primitive_plane();
 
-  mesh_create_primitive(desc->mesh, &(MeshCreatePrimitiveDescriptor){
+  mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                         .primitive = plane,
                                         .device = desc->device,
                                         .queue = desc->queue,
@@ -16,13 +17,13 @@ void gizmo_create_billboard(const GizmoCreateBillboardDescriptor *desc) {
                                     });
 
   // set mesh position to light position
-  mesh_position(desc->mesh, *desc->position);
+  mesh_position(mesh, *desc->position);
 
   // scale down gizmo
-  mesh_scale(desc->mesh, *desc->scale);
+  mesh_scale(mesh, *desc->scale);
 
   // assign billboard shader
-  mesh_set_shader(desc->mesh, &(ShaderCreateDescriptor){
+  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
                                   .device = desc->device,
                                   .queue = desc->queue,
                                   .label = "shader",
@@ -31,7 +32,7 @@ void gizmo_create_billboard(const GizmoCreateBillboardDescriptor *desc) {
                               });
 
   // set double side rendering
-  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(desc->mesh)),
+  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(mesh)),
                          (WGPUPrimitiveState){
                              .frontFace = WGPUFrontFace_CCW,
                              .cullMode = WGPUCullMode_None,
@@ -40,7 +41,7 @@ void gizmo_create_billboard(const GizmoCreateBillboardDescriptor *desc) {
                          });
 
   // bind view matrices
-  material_texture_bind_views(desc->mesh, desc->camera, desc->viewport, 0);
+  material_texture_bind_views(mesh, desc->camera, desc->viewport, 0);
 
   // TODO: create UI Atlas
   Texture light_texture;
@@ -48,7 +49,7 @@ void gizmo_create_billboard(const GizmoCreateBillboardDescriptor *desc) {
 
   // bind texture + sampler
   material_texture_add_texture(
-      desc->mesh, &(ShaderCreateTextureDescriptor){
+      mesh, &(ShaderCreateTextureDescriptor){
                       .group_index = 1,
                       .entry_count = 1,
                       .visibility = WGPUShaderStage_Fragment,
@@ -65,7 +66,7 @@ void gizmo_create_billboard(const GizmoCreateBillboardDescriptor *desc) {
                       }},
                   });
 
-  material_texture_add_sampler(desc->mesh,
+  material_texture_add_sampler(mesh,
                                &(ShaderCreateSamplerDescriptor){
                                    .group_index = 1,
                                    .entry_count = 1,

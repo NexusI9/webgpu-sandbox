@@ -276,7 +276,7 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
       mesh_set_vertex_index(target_mesh, &vert_index);
 
       // bind texture shader
-      material_texture_bind_views(target_mesh, &scene->camera, &scene->viewport,
+      material_texture_bind_views(target_mesh, scene->active_camera, &scene->viewport,
                                   SHADER_TEXTURE_BINDGROUP_VIEWS);
 
       // TODO: put the texture bind lights to the scene itself
@@ -286,7 +286,7 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
                                    SHADER_TEXTURE_BINDGROUP_LIGHTS);
 
       // bind wireframe shader
-      material_wireframe_bind_views(target_mesh, &scene->camera,
+      material_wireframe_bind_views(target_mesh, scene->active_camera,
                                     &scene->viewport,
                                     SHADER_WIREFRAME_BINDGROUP_VIEWS);
     }

@@ -1,9 +1,14 @@
 #ifndef _CAMERA_H_
 #define _CAMERA_H_
 
+#define CAMERA_SUCCESS 0
+#define CAMERA_ALLOC_FAIL 1
+#define CAMERA_ERROR 2
+
 #include "../backend/clock.h"
 
 #include <cglm/cglm.h>
+#include <stddef.h>
 #include <stdint.h>
 
 typedef enum {
@@ -11,6 +16,12 @@ typedef enum {
   FLYING = 1 << 1,
   ORBIT = 1 << 2,
 } CameraMode;
+
+typedef struct {
+  struct Camera *entries;
+  size_t length;
+  size_t capacity;
+} CameraList;
 
 typedef struct {
   mat4 view;
@@ -28,7 +39,7 @@ typedef struct {
   float wheel_sensitivity;
 } CameraCreateDescriptor;
 
-typedef struct {
+typedef struct Camera {
 
   cclock *clock;
 
@@ -67,4 +78,8 @@ void camera_translate(Camera *, vec3);
 void camera_rotate(Camera *, vec3);
 void camera_update_view(Camera *);
 
+// camera list
+int camera_list_create(CameraList *, size_t);
+Camera *camera_list_insert(CameraList *, Camera *);
+Camera *camera_list_new_camera(CameraList *);
 #endif

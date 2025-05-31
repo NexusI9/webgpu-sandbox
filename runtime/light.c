@@ -269,7 +269,6 @@ LightViews light_sun_view(vec3 light_position, float size) {
   return new_views;
 }
 
-
 /**
    Insert Point light gizmo mesh to the list
  */
@@ -280,16 +279,15 @@ void light_point_create_mesh(PointLight *light,
   const char *texture_path = "./resources/assets/texture/ui/light-point.png";
 
   // create gizmo mesh
-  gizmo_create_billboard(&(GizmoCreateBillboardDescriptor){
-      .mesh = light_mesh,
-      .texture_path = texture_path,
-      .camera = desc->camera,
-      .viewport = desc->viewport,
-      .device = desc->device,
-      .queue = desc->queue,
-      .position = &light->position,
-      .scale = &(vec3){0.8f, 0.8f, 0.8f},
-  });
+  gizmo_create_billboard(light_mesh, &(GizmoCreateBillboardDescriptor){
+                                         .texture_path = texture_path,
+                                         .camera = desc->camera,
+                                         .viewport = desc->viewport,
+                                         .device = desc->device,
+                                         .queue = desc->queue,
+                                         .position = &light->position,
+                                         .scale = &(vec3){0.8f, 0.8f, 0.8f},
+                                     });
 
   // cache pointer in destination
   mesh_indexed_list_insert(desc->destination, light_mesh);
@@ -305,16 +303,15 @@ void light_spot_create_mesh(SpotLight *light,
   const char *texture_path = "./resources/assets/texture/ui/light-spot.png";
 
   // create gizmo mesh
-  gizmo_create_billboard(&(GizmoCreateBillboardDescriptor){
-      .mesh = light_mesh,
-      .texture_path = texture_path,
-      .camera = desc->camera,
-      .viewport = desc->viewport,
-      .device = desc->device,
-      .queue = desc->queue,
-      .position = &light->position,
-      .scale = &(vec3){0.8f, 0.8f, 0.8f},
-  });
+  gizmo_create_billboard(light_mesh, &(GizmoCreateBillboardDescriptor){
+                                         .texture_path = texture_path,
+                                         .camera = desc->camera,
+                                         .viewport = desc->viewport,
+                                         .device = desc->device,
+                                         .queue = desc->queue,
+                                         .position = &light->position,
+                                         .scale = &(vec3){0.8f, 0.8f, 0.8f},
+                                     });
 
   // cache pointer in destination
   mesh_indexed_list_insert(desc->destination, light_mesh);
@@ -330,16 +327,15 @@ void light_ambient_create_mesh(AmbientLight *light,
   const char *texture_path = "./resources/assets/texture/ui/light-ambient.png";
 
   // create gizmo mesh
-  gizmo_create_billboard(&(GizmoCreateBillboardDescriptor){
-      .mesh = light_mesh,
-      .texture_path = texture_path,
-      .camera = desc->camera,
-      .viewport = desc->viewport,
-      .device = desc->device,
-      .queue = desc->queue,
-      .position = &light->position,
-      .scale = &(vec3){0.8f, 0.8f, 0.8f},
-  });
+  gizmo_create_billboard(light_mesh, &(GizmoCreateBillboardDescriptor){
+                                         .texture_path = texture_path,
+                                         .camera = desc->camera,
+                                         .viewport = desc->viewport,
+                                         .device = desc->device,
+                                         .queue = desc->queue,
+                                         .position = &light->position,
+                                         .scale = &(vec3){0.8f, 0.8f, 0.8f},
+                                     });
 
   // cache pointer in destination
   mesh_indexed_list_insert(desc->destination, light_mesh);
@@ -354,16 +350,15 @@ void light_sun_create_mesh(SunLight *light,
   const char *texture_path = "./resources/assets/texture/ui/light-sun.png";
 
   // create gizmo mesh
-  gizmo_create_billboard(&(GizmoCreateBillboardDescriptor){
-      .mesh = light_mesh,
-      .texture_path = texture_path,
-      .camera = desc->camera,
-      .viewport = desc->viewport,
-      .device = desc->device,
-      .queue = desc->queue,
-      .position = &light->position,
-      .scale = &(vec3){0.8f, 0.8f, 0.8f},
-  });
+  gizmo_create_billboard(light_mesh, &(GizmoCreateBillboardDescriptor){
+                                         .texture_path = texture_path,
+                                         .camera = desc->camera,
+                                         .viewport = desc->viewport,
+                                         .device = desc->device,
+                                         .queue = desc->queue,
+                                         .position = &light->position,
+                                         .scale = &(vec3){0.8f, 0.8f, 0.8f},
+                                     });
 
   // cache poitner in destination
   mesh_indexed_list_insert(desc->destination, light_mesh);

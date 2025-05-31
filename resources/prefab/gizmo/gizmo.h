@@ -5,8 +5,9 @@
 #include <cglm/cglm.h>
 #include <webgpu/webgpu.h>
 
+typedef Mesh Gizmo;
+
 typedef struct {
-  Mesh *mesh;
   vec3 *position;
   vec3 *scale;
   WGPUDevice *device;
@@ -17,6 +18,6 @@ typedef struct {
   Viewport *viewport;
 } GizmoCreateBillboardDescriptor;
 
-void gizmo_create_billboard(const GizmoCreateBillboardDescriptor *);
+void gizmo_create_billboard(Gizmo *, const GizmoCreateBillboardDescriptor *);
 
 #endif

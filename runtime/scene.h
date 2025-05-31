@@ -10,6 +10,7 @@
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
+#define SCENE_CAMERA_LIST_CAPACITY 16
 
 #define SCENE_SUCCESS 0
 #define SCENE_MAX_CAPACITY_REACH 1
@@ -88,7 +89,8 @@ typedef struct {
 typedef struct {
 
   // camera
-  Camera camera;
+  CameraList cameras;
+  Camera *active_camera;
 
   // viewport
   Viewport viewport;
@@ -96,11 +98,12 @@ typedef struct {
   // meshes global list
   MeshList meshes;
 
-  // meshes layers
+  // meshes render layers
   SceneLayerList layer;
 
   // light type
   SceneLightList lights;
+
 
 } Scene;
 
@@ -131,14 +134,14 @@ void scene_build_fixed(Scene *);
 void scene_draw_fixed(Scene *, WGPURenderPassEncoder *);
 
 // light
-size_t scene_add_point_light(Scene *, PointLightDescriptor *, WGPUDevice*,
-                             WGPUQueue*);
-size_t scene_add_spot_light(Scene *, SpotLightDescriptor *, WGPUDevice*,
-                            WGPUQueue*);
-size_t scene_add_ambient_light(Scene *, AmbientLightDescriptor *, WGPUDevice*,
-                               WGPUQueue*);
-size_t scene_add_sun_light(Scene *, SunLightDescriptor *, WGPUDevice*,
-                           WGPUQueue*);
+size_t scene_add_point_light(Scene *, PointLightDescriptor *, WGPUDevice *,
+                             WGPUQueue *);
+size_t scene_add_spot_light(Scene *, SpotLightDescriptor *, WGPUDevice *,
+                            WGPUQueue *);
+size_t scene_add_ambient_light(Scene *, AmbientLightDescriptor *, WGPUDevice *,
+                               WGPUQueue *);
+size_t scene_add_sun_light(Scene *, SunLightDescriptor *, WGPUDevice *,
+                           WGPUQueue *);
 
 MeshList *scene_mesh_list(Scene *);
 

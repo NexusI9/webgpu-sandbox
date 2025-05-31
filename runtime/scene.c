@@ -22,8 +22,11 @@ Scene scene_create(Camera camera, Viewport viewport) {
 
   Scene scene;
 
-  // set camera
-  scene.camera = camera;
+  // create camera list, and set active camera
+  camera_list_create(&scene.cameras, SCENE_CAMERA_LIST_CAPACITY);
+  scene.active_camera = camera_list_insert(&scene.cameras, &camera);
+
+  // set viewport
   scene.viewport = viewport;
 
   // init global mesh list
@@ -65,7 +68,7 @@ Mesh *scene_new_mesh_fixed(Scene *scene) {
 void scene_draw_texture(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
-  camera_draw(&scene->camera);
+  camera_draw(scene->active_camera);
 
   // draw solid meshes first
   scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_texture,
@@ -78,7 +81,7 @@ void scene_draw_texture(Scene *scene, WGPURenderPassEncoder *render_pass) {
 void scene_draw_fixed(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
-  camera_draw(&scene->camera);
+  camera_draw(scene->active_camera);
 
   // draw fixed mesh
   scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_texture,
@@ -94,7 +97,7 @@ void scene_draw_shadow(Scene *scene, WGPURenderPassEncoder *render_pass) {
 void scene_draw_wireframe(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
-  camera_draw(&scene->camera);
+  camera_draw(scene->active_camera);
 
   // draw solid meshes first
   scene_draw_mesh_list(scene, mesh_vertex_wireframe, mesh_shader_wireframe,
@@ -107,7 +110,7 @@ void scene_draw_wireframe(Scene *scene, WGPURenderPassEncoder *render_pass) {
 void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // update camera
-  camera_draw(&scene->camera);
+  camera_draw(scene->active_camera);
 
   // draw solid meshes first
   scene_draw_mesh_list(scene, mesh_vertex_base, mesh_shader_solid, render_pass,
@@ -195,7 +198,7 @@ void scene_draw_mesh_list(Scene *scene, mesh_get_vertex_callback target_vertex,
   for (int i = 0; i < mesh_list->length; i++) {
     Mesh *current_mesh = mesh_list->entries[i];
     mesh_draw(target_vertex(current_mesh), target_shader(current_mesh),
-              render_pass, &scene->camera, &scene->viewport);
+              render_pass, scene->active_camera, &scene->viewport);
   }
 }
 
@@ -238,7 +241,7 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
   MeshIndexedList *render_list = scene_layer_gizmo(scene);
 
   light_point_create_mesh(new_light, &(LightCreateMeshDescriptor){
-                                         .camera = &scene->camera,
+                                         .camera = scene->active_camera,
                                          .viewport = &scene->viewport,
                                          .device = device,
                                          .queue = queue,
@@ -272,7 +275,7 @@ size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
   MeshIndexedList *render_list = scene_layer_gizmo(scene);
 
   light_spot_create_mesh(new_light, &(LightCreateMeshDescriptor){
-                                        .camera = &scene->camera,
+                                        .camera = scene->active_camera,
                                         .viewport = &scene->viewport,
                                         .device = device,
                                         .queue = queue,
@@ -306,7 +309,7 @@ size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc,
   MeshIndexedList *render_list = scene_layer_gizmo(scene);
 
   light_ambient_create_mesh(new_light, &(LightCreateMeshDescriptor){
-                                           .camera = &scene->camera,
+                                           .camera = scene->active_camera,
                                            .viewport = &scene->viewport,
                                            .device = device,
                                            .queue = queue,
@@ -340,7 +343,7 @@ size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   MeshIndexedList *render_list = scene_layer_gizmo(scene);
 
   light_sun_create_mesh(new_light, &(LightCreateMeshDescriptor){
-                                       .camera = &scene->camera,
+                                       .camera = scene->active_camera,
                                        .viewport = &scene->viewport,
                                        .device = device,
                                        .queue = queue,

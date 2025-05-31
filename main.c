@@ -85,7 +85,7 @@ void init_scene() {
   main_scene = scene_create(camera, viewport);
 
   // init camera position
-  camera_look_at(&main_scene.camera,
+  camera_look_at(main_scene.active_camera,
                  (vec3){
                      20.0f,
                      20.0f,
@@ -183,7 +183,7 @@ void add_gizmo() {
 
   mesh_position(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 
-  material_texture_bind_views(gizmo, &main_scene.camera, &main_scene.viewport,
+  material_texture_bind_views(gizmo, main_scene.active_camera, &main_scene.viewport,
                               0);
 }
 
@@ -208,7 +208,7 @@ void add_cube(vec3 position) {
 
   mesh_position(cube, position);
 
-  material_texture_bind_views(cube, &main_scene.camera, &main_scene.viewport,
+  material_texture_bind_views(cube, main_scene.active_camera, &main_scene.viewport,
                               0);
 }
 
@@ -224,7 +224,7 @@ void add_grid() {
   Mesh *grid = scene_new_mesh_fixed(&main_scene);
   prefab_grid_create(grid, &(GridCreateDescriptor){
                                .uniform = grid_uniform,
-                               .camera = &main_scene.camera,
+                               .camera = main_scene.active_camera,
                                .viewport = &main_scene.viewport,
                                .device = renderer_device(&main_renderer),
                                .queue = renderer_queue(&main_renderer),
@@ -247,7 +247,7 @@ void add_line() {
                  (vec3){0.0f, 1.0f, 0.0f}, &line->vertex.base.attribute,
                  &line->vertex.base.index);
 
-  material_texture_bind_views(line, &main_scene.camera, &main_scene.viewport,
+  material_texture_bind_views(line, main_scene.active_camera, &main_scene.viewport,
                               0);
 }
 
