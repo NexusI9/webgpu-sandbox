@@ -1,3 +1,4 @@
+
 #ifndef _TEXTURE_H_
 #define _TEXTURE_H_
 
@@ -10,6 +11,10 @@
 #define TEXTURE_CHANNELS_RGB 3
 #define TEXTURE_CHANNELS_R 1
 #define TEXTURE_MIN_SIZE 64
+
+#define TEXTURE_SUCCESS 0
+#define TEXTURE_ALLOC_FAIL 1
+#define TEXTURE_FILE_ERROR 2
 
 typedef unsigned char *texture_data;
 
@@ -83,7 +88,8 @@ typedef struct {
 } TextureWriteTriangleGradientDescriptor;
 
 void texture_create(Texture *, const TextureCreateDescriptor *);
-void texture_create_by_ref(unsigned char **, size_t *,
+int texture_create_from_file(Texture *, const char *);
+void texture_create_from_ref(unsigned char **, size_t *,
                            const TextureCreateDescriptor *);
 
 void texture_fill(Texture *, int);

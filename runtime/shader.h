@@ -25,12 +25,20 @@
 // solid shader
 #define SHADER_SOLID_BINDGROUP_VIEWS 0
 
+// path
+#define SHADER_PATH_DEFAULT "./runtime/assets/shader/shader.default.wgsl"
+#define SHADER_PATH_PBR "./runtime/assets/shader/shader.pbr.wgsl"
+#define SHADER_PATH_SHADOW "./runtime/assets/shader/shader.shadow.wgsl"
+#define SHADER_PATH_SCREEN "./runtime/assets/shader/shader.screen.wgsl"
+#define SHADER_PATH_BILLBOARD "./runtime/assets/shader/shader.billboard.wgsl"
+#define SHADER_PATH_LINE "./runtime/assets/shader/shader.line.wgsl"
+
 // descriptors
 typedef struct {
   char *path;
   char *label;
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice *device;
+  const WGPUQueue *queue;
   char *name;
 } ShaderCreateDescriptor;
 
@@ -119,7 +127,7 @@ typedef struct {
 // Bind group main
 typedef struct {
   WGPUBindGroup bind_group;         // bind group
-  shader_bindgroup_t index;                    // bind group id
+  shader_bindgroup_t index;         // bind group id
   WGPUShaderStageFlags visibility;  // visibility (frag | vert)
                                     // ELEMENTS:
   ShaderBindGroupUniforms uniforms; // uniforms
@@ -179,8 +187,8 @@ typedef struct {
   char *name;
 
   // wgpu
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice *device;
+  const WGPUQueue *queue;
 
   // pipelines
   Pipeline pipeline;

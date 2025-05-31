@@ -48,7 +48,7 @@
  */
 
 typedef struct {
-  WGPUDevice *device;
+  const WGPUDevice *device;
   WGPUShaderModule *module;
   WGPUVertexBufferLayout *vertex_layout;
 } PipelineCreateDescriptor;
@@ -62,7 +62,7 @@ typedef struct {
 typedef struct {
 
   // core
-  WGPUDevice *device;
+  const WGPUDevice *device;
   WGPUShaderModule *module;
   WGPUVertexBufferLayout *vertex_layout;
 

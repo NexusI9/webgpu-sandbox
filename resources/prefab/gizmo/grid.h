@@ -35,6 +35,6 @@ typedef struct {
 
 } Grid;
 
-void grid_create(Mesh *, GridCreateDescriptor *);
+void prefab_grid_create(Mesh *, GridCreateDescriptor *);
 
 #endif

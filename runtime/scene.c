@@ -218,7 +218,8 @@ void scene_init_light_list(Scene *scene) {
   scene->lights.sun.length = 0;
 }
 
-size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc) {
+size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
+                             WGPUDevice* device, WGPUQueue* queue) {
 
   PointLightList *list = &scene->lights.point;
   if (list->length == list->capacity) {
@@ -230,13 +231,30 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc) {
   PointLight *new_light = &list->entries[list->length++];
   light_create_point(new_light, desc);
 
+  MeshList *mesh_list = scene_mesh_list(scene);
+  MeshIndexedList cache_list;
+  mesh_indexed_list_create(&cache_list, 1);
+
+  MeshIndexedList *render_list = scene_layer_gizmo(scene);
+
   // create mesh/gizmo
-  //light_point_create_mesh(new_light, scene_layer_gizmo(scene));
+  light_point_create_mesh(new_light, &(LightCreateMeshDescriptor){
+                                         .camera = &scene->camera,
+                                         .viewport = &scene->viewport,
+                                         .device = device,
+                                         .queue = queue,
+                                         .list = mesh_list,
+                                         .destination = &cache_list,
+                                     });
+
+  // transfert destination/ result mesh pointers to render_list
+  mesh_indexed_list_transfert(&cache_list, render_list);
 
   return list->length;
 }
 
-size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc) {
+size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
+                            WGPUDevice* device, WGPUQueue* queue) {
 
   SpotLightList *list = &scene->lights.spot;
   if (list->length == list->capacity) {
@@ -251,7 +269,8 @@ size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc) {
   return list->length;
 }
 
-size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc) {
+size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc,
+                               WGPUDevice* device, WGPUQueue* queue) {
 
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
@@ -265,7 +284,8 @@ size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc) {
   return list->length;
 }
 
-size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
+size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
+                           WGPUDevice* device, WGPUQueue* queue) {
 
   SunLightList *list = &scene->lights.sun;
   if (list->length == list->capacity) {
@@ -280,3 +300,5 @@ size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
 }
 
 MeshIndexedList *scene_layer_gizmo(Scene *scene) { return &scene->layer.fixed; }
+
+MeshList *scene_mesh_list(Scene *scene) { return &scene->meshes; }

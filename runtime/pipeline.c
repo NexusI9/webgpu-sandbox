@@ -134,7 +134,6 @@ void pipeline_set_stencil(Pipeline *pipeline,
  */
 void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
 
-  printf("pipeline layout: %p\n", pipeline->layout);
   // update bind group layout
   pipeline->layout = *layout;
 

@@ -1,9 +1,14 @@
 #include "light.h"
+#include "../resources/primitive/plane.h"
 #include "../utils/system.h"
+#include "./texture.h"
 #include "camera.h"
 #include "emscripten/emscripten.h"
+#include "material.h"
+#include "mesh.h"
 #include "shader.h"
 #include "viewport.h"
+#include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <stdio.h>
 
@@ -260,8 +265,112 @@ LightViews light_sun_view(vec3 light_position, float size) {
   return new_views;
 }
 
-void light_point_create_mesh(PointLight *light, MeshIndexedList *mesh_list) {}
-void light_spot_create_mesh(SpotLight *light, MeshIndexedList *mesh_list) {}
+/**
+   Insert Point light gizmo mesh to the list
+ */
+void light_point_create_mesh(PointLight *light,
+                             const LightCreateMeshDescriptor *desc) {
+
+  // create plane
+  Primitive plane = primitive_plane();
+  Mesh *light_mesh = mesh_list_insert(desc->list);
+
+  mesh_create_primitive(light_mesh, &(MeshCreatePrimitiveDescriptor){
+                                        .primitive = plane,
+                                        .device = desc->device,
+                                        .queue = desc->queue,
+                                        .name = "point light",
+                                    });
+
+  // set mesh position to light position
+  mesh_position(light_mesh, (vec3){
+                                light->position[0],
+                                light->position[1],
+                                light->position[2],
+                            });
+
+  mesh_scale(light_mesh, (vec3){0.8f, 0.8f, 0.8f});
+
+  // assign billboard shader
+  mesh_set_shader(light_mesh, &(ShaderCreateDescriptor){
+                                  .device = desc->device,
+                                  .queue = desc->queue,
+                                  .label = "point light shader",
+                                  .name = "point light shader",
+                                  .path = SHADER_PATH_BILLBOARD,
+                              });
+
+  // set double side rendering
+  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(light_mesh)),
+                         (WGPUPrimitiveState){
+                             .frontFace = WGPUFrontFace_CCW,
+                             .cullMode = WGPUCullMode_None,
+                             .topology = WGPUPrimitiveTopology_TriangleList,
+                             .stripIndexFormat = WGPUIndexFormat_Undefined,
+                         });
+
+  // bind view matrices
+  material_texture_bind_views(light_mesh, desc->camera, desc->viewport, 0);
+
+  // TODO: create UI Atlas
+  Texture light_texture;
+  texture_create_from_file(
+      &light_texture, "./resources/assets/texture/ui/light/light-point.png");
+
+  // bind texture + sampler
+  material_texture_add_texture(
+      light_mesh, &(ShaderCreateTextureDescriptor){
+                      .group_index = 1,
+                      .entry_count = 1,
+                      .visibility = WGPUShaderStage_Fragment,
+                      .entries = (ShaderBindGroupTextureEntry[]){{
+                          .binding = 0,
+                          .width = light_texture.width,
+                          .height = light_texture.height,
+                          .data = light_texture.data,
+                          .size = light_texture.size,
+                          .channels = light_texture.channels,
+                          .dimension = WGPUTextureViewDimension_2D,
+                          .format = WGPUTextureFormat_RGBA8Unorm,
+                          .sample_type = WGPUTextureSampleType_Float,
+                      }},
+                  });
+
+  material_texture_add_sampler(light_mesh,
+                               &(ShaderCreateSamplerDescriptor){
+                                   .group_index = 1,
+                                   .entry_count = 1,
+                                   .visibility = WGPUShaderStage_Fragment,
+                                   .entries = (ShaderBindGroupSamplerEntry[]){{
+                                       .binding = 1,
+                                       .addressModeU = WGPUAddressMode_Repeat,
+                                       .addressModeV = WGPUAddressMode_Repeat,
+                                       .addressModeW = WGPUAddressMode_Repeat,
+                                       .minFilter = WGPUFilterMode_Linear,
+                                       .magFilter = WGPUFilterMode_Linear,
+                                       .type = WGPUSamplerBindingType_Filtering,
+                                       .compare = WGPUCompareFunction_Undefined,
+                                   }},
+                               });
+
+  // cache poitner in destination
+  mesh_indexed_list_insert(desc->destination, light_mesh);
+}
+
+/**
+   Insert Spot light gizmo mesh to the list
+ */
+void light_spot_create_mesh(SpotLight *light,
+                            const LightCreateMeshDescriptor *desc) {}
+
+/**
+   Insert Ambient light gizmo mesh to the list
+ */
 void light_ambient_create_mesh(AmbientLight *light,
-                               MeshIndexedList *mesh_list) {}
-void light_sun_create_mesh(SunLight *light, MeshIndexedList *mesh_list) {}
+                               const LightCreateMeshDescriptor *desc) {}
+
+/**
+   Insert Sun light gizmo mesh to the list
+ */
+void light_sun_create_mesh(SunLight *light,
+                           const LightCreateMeshDescriptor *desc) {}

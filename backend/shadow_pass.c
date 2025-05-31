@@ -396,7 +396,6 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
       for (int m = 0; m < target_mesh_list->length; m++) {
         Mesh *current_mesh = target_mesh_list->entries[m];
         material_shadow_bind_views(current_mesh, current_view);
-        printf("view: %lu/%d\n", v, light_views.length);
         mesh_build(current_mesh, mesh_shader_shadow(current_mesh));
       }
 

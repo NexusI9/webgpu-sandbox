@@ -3,7 +3,7 @@
 #include "../runtime/material.h"
 #include "webgpu/webgpu.h"
 
-void grid_create(Mesh *mesh, GridCreateDescriptor *gd) {
+void prefab_grid_create(Mesh *mesh, GridCreateDescriptor *gd) {
 
   Primitive plane = primitive_plane();
 

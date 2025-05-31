@@ -22,7 +22,7 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 #   - VERBOSE_BINDING_PHASE : print shader binding structure
 #   - VERBOSE_BUILDING_PHASE : print mesh building phase
 #
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE -DVERBOSE_BUILDING_PHASE
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE
 
 # Preprocess cwgsl shader to wgsl Shader files
 SHADER_DIR := ./runtime/assets/shader
@@ -41,6 +41,10 @@ GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 
 
 #MBIN files
 MBIN_FILES := $(shell find ./resources/assets/mbin -type f -name "*.mbin" | sed 's/^/--preload-file /')
+
+#Textures files
+TEXTURE_FILES := $(shell find ./resources/assets/texture -type f -name "*.png" | sed 's/^/--preload-file /')
+
 
 # Main output build script
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
@@ -75,7 +79,8 @@ wasm:
 		-s SINGLE_FILE \
 		$(SHADER_FILES) \
 		$(GLTF_FILES) \
-		$(MBIN_FILES)
+		$(MBIN_FILES) \
+		$(TEXTURE_FILES)
 
 	@echo "Compilation completed: $(OUTPUT)"
 

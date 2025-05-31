@@ -2,18 +2,29 @@
 
 static vattr_t plane_vertex_data[] = {
     // Positions          // Normals            // Colors          // UVs
-    -0.5f, 0.0f, -0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
-     0.5f, 0.0f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
-     0.5f, 0.0f,  0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 0.0f, 1.0f,  1.0f, 1.0f, // Top-right
-    -0.5f, 0.0f,  0.5f,   0.0f, 1.0f, 0.0f,   1.0f, 1.0f, 0.0f,  0.0f, 1.0f  // Top-left
+    -0.5f, 0.0f, -0.5f, 0.0f, 1.0f, 0.0f,  1.0f,  0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
+    0.5f,  0.0f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,  1.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
+    0.5f,  0.0f, 0.5f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 1.0f,  1.0f, 1.0f, // Top-right
+    -0.5f, 0.0f, 0.5f,  0.0f, 1.0f, 0.0f, 1.0f,  1.0f, 0.0f,  0.0f, 1.0f // Top-left
+};
+
+
+static vattr_t plane_vertex_data_y[] = {
+    // Positions          // Normals            // Colors          // UVs
+    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,  1.0f,  0.0f, 0.0f,  0.0f, 0.0f, // Bottom-left
+    0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,  1.0f, 0.0f,  1.0f, 0.0f, // Bottom-right
+    0.5f,  0.5f, 0.0f,  0.0f, 1.0f, 0.0f, 0.0f,  0.0f, 1.0f,  1.0f, 1.0f, // Top-right
+    -0.5f, 0.5f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f,  1.0f, 0.0f,  0.0f, 1.0f // Top-left
 };
 
 static vindex_t plane_index_data[] = {
-    0, 1, 2,  // First triangle (Bottom-left → Bottom-right → Top-right)
-    2, 3, 0   // Second triangle (Top-right → Top-left → Bottom-left)
+    0, 1, 2, // First triangle (Bottom-left → Bottom-right → Top-right)
+    2, 3, 0  // Second triangle (Top-right → Top-left → Bottom-left)
 };
 
 Primitive primitive_plane() {
+
+  // directly orient plane based on up
 
   return (Primitive){
       // vertex data

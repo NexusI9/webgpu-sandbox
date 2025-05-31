@@ -1,4 +1,5 @@
 #include "texture.h"
+#include "../include/stb/stb_image.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
 #include "../utils/vector.h"
@@ -29,8 +30,11 @@ void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
     memset(texture->data, desc->value, texture->size);
 }
 
-void texture_create_by_ref(unsigned char **data, size_t *size,
-                           const TextureCreateDescriptor *desc) {
+/**
+   Create a texture from refenreced data
+ */
+void texture_create_from_ref(unsigned char **data, size_t *size,
+                             const TextureCreateDescriptor *desc) {
 
   *size = desc->width * desc->height * desc->channels;
   *data = (unsigned char *)calloc(desc->width * desc->height, desc->channels);
@@ -62,6 +66,35 @@ void texture_write_pixel(Texture *texture, int value, vec2 coordinate,
   } else {
     // perror("Pixel coordinate is out of bound");
   }
+}
+
+/**
+   load picture from file
+ */
+int texture_create_from_file(Texture *texture, const char *path) {
+  // flip vertically so match wgpu coordinates
+  stbi_set_flip_vertically_on_load(true);
+
+  int width, height, channels;
+  texture_data data = stbi_load(path, &width, &height, &channels, 4);
+
+  if (data == NULL) {
+    perror("Couldn't load texture from file\n");
+    texture->data = NULL;
+    texture->width = 0;
+    texture->height = 0;
+    texture->channels = 0;
+    texture->size = 0;
+    return TEXTURE_FILE_ERROR;
+  }
+
+  texture->size = width * height * channels;
+  texture->data = data;
+  texture->width = width;
+  texture->height = height;
+  texture->channels = channels;
+
+  return TEXTURE_SUCCESS;
 }
 
 void texture_save(Texture *texture, const char *path) {}

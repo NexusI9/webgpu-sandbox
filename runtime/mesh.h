@@ -18,16 +18,16 @@
 
 // Builder Pattern | Descriptor Pattern
 typedef struct {
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice *device;
+  const WGPUQueue *queue;
   VertexAttribute vertex;
   VertexIndex index;
   const char *name;
 } MeshCreateDescriptor;
 
 typedef struct {
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice *device;
+  const WGPUQueue *queue;
   Primitive primitive;
   const char *name;
 } MeshCreatePrimitiveDescriptor;
@@ -74,8 +74,8 @@ typedef struct Mesh {
   vec3 rotation;
 
   // wgpu
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice *device;
+  const WGPUQueue *queue;
 
   // vertex data & buffer
   struct {
@@ -142,5 +142,6 @@ Mesh *mesh_list_insert(MeshList *);
 
 int mesh_indexed_list_create(MeshIndexedList *, size_t);
 Mesh *mesh_indexed_list_insert(MeshIndexedList *, Mesh *);
+int mesh_indexed_list_transfert(MeshIndexedList *, MeshIndexedList *);
 
 #endif

@@ -15,7 +15,7 @@
 #include "../backend/buffer.h"
 #include "../runtime/material.h"
 #include "../runtime/texture.h"
-#include "stb/stb_image.h"
+#include "stb/stb_image.h" 
 
 static void loader_gltf_create_mesh(Scene *, WGPUDevice *, WGPUQueue *,
                                     cgltf_data *);
@@ -439,7 +439,7 @@ void loader_gltf_load_fallback_texture(
   shader_entry->width = TEXTURE_MIN_SIZE;
   shader_entry->height = TEXTURE_MIN_SIZE;
 
-  texture_create_by_ref(&shader_entry->data, &shader_entry->size,
+  texture_create_from_ref(&shader_entry->data, &shader_entry->size,
                         &(TextureCreateDescriptor){
                             .width = shader_entry->width,
                             .height = shader_entry->height,

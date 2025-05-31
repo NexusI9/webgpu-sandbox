@@ -6,8 +6,8 @@
 #include <stddef.h>
 
 typedef struct {
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice *device;
+  const WGPUQueue *queue;
   void *data;
   size_t size;
   WGPUBufferUsage usage;
@@ -15,8 +15,8 @@ typedef struct {
 } CreateBufferDescriptor;
 
 typedef struct {
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice *device;
+  const WGPUQueue *queue;
   uint32_t width;
   uint32_t height;
   unsigned char *data;

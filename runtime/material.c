@@ -25,7 +25,6 @@ void material_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
                          Camera *camera, Viewport *viewport,
                          uint8_t group_index) {
 
-  ShaderViewProjectionUniform proj_view_data;
   CameraUniform uCamera = camera_uniform(camera);
   ViewportUniform uViewport = viewport_uniform(viewport);
   MeshUniform uMesh = mesh_model_uniform(mesh);

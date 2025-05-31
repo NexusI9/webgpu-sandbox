@@ -106,20 +106,24 @@ void init_scene() {
                    });*/
 
   // set light
-  scene_add_point_light(&main_scene, &(PointLightDescriptor){
-                                         .color = {1.0f, 1.0f, 1.0f},
-                                         .intensity = 4.0f,
-                                         .cutoff = 20.0f,
-                                         .inner_cutoff = 50.0f,
-                                         .near = 0.1,
-                                         .far = 20.0f,
-                                         .position =
-                                             {
-                                                 POINT_LIGHT[0],
-                                                 POINT_LIGHT[1],
-                                                 POINT_LIGHT[2],
-                                             },
-					     });
+  // TODO: uniformise WGPUDevice/WGPUQueue opaque pointer passing (& || * ? )
+  scene_add_point_light(&main_scene,
+                        &(PointLightDescriptor){
+                            .color = {1.0f, 1.0f, 1.0f},
+                            .intensity = 4.0f,
+                            .cutoff = 20.0f,
+                            .inner_cutoff = 50.0f,
+                            .near = 0.1,
+                            .far = 20.0f,
+                            .position =
+                                {
+                                    POINT_LIGHT[0],
+                                    POINT_LIGHT[1],
+                                    POINT_LIGHT[2],
+                                },
+                        },
+                        renderer_device(&main_renderer),
+                        renderer_queue(&main_renderer));
 
   /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
                                         .color = {1.0f, 1.0f, 1.0f},
@@ -141,10 +145,13 @@ void init_scene() {
                                             },
                                             });*/
 
-  scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
-                                           .color = {1.0f, 1.0f, 1.0f},
-                                           .intensity = 0.2f,
-                                       });
+  scene_add_ambient_light(&main_scene,
+                          &(AmbientLightDescriptor){
+                              .color = {1.0f, 1.0f, 1.0f},
+                              .intensity = 0.2f,
+                          },
+                          renderer_device(&main_renderer),
+                          renderer_queue(&main_renderer));
 }
 
 void add_gizmo() {
@@ -163,14 +170,13 @@ void add_gizmo() {
                                    .name = "gizmo",
                                });
 
-  mesh_set_shader(gizmo,
-                  &(ShaderCreateDescriptor){
-                      .path = "./runtime/assets/shader/shader.default.wgsl",
-                      .device = renderer_device(&main_renderer),
-                      .queue = renderer_queue(&main_renderer),
-                      .label = "gizmo shader",
-                      .name = "gizmo shader",
-                  });
+  mesh_set_shader(gizmo, &(ShaderCreateDescriptor){
+                             .path = SHADER_PATH_DEFAULT,
+                             .device = renderer_device(&main_renderer),
+                             .queue = renderer_queue(&main_renderer),
+                             .label = "gizmo shader",
+                             .name = "gizmo shader",
+                         });
 
   mesh_position(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 
@@ -213,13 +219,13 @@ void add_grid() {
   glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
 
   Mesh *grid = scene_new_mesh_fixed(&main_scene);
-  grid_create(grid, &(GridCreateDescriptor){
-                        .uniform = grid_uniform,
-                        .camera = &main_scene.camera,
-                        .viewport = &main_scene.viewport,
-                        .device = renderer_device(&main_renderer),
-                        .queue = renderer_queue(&main_renderer),
-                    });
+  prefab_grid_create(grid, &(GridCreateDescriptor){
+                               .uniform = grid_uniform,
+                               .camera = &main_scene.camera,
+                               .viewport = &main_scene.viewport,
+                               .device = renderer_device(&main_renderer),
+                               .queue = renderer_queue(&main_renderer),
+                           });
 }
 
 void add_line() {

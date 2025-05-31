@@ -131,9 +131,15 @@ void scene_build_fixed(Scene *);
 void scene_draw_fixed(Scene *, WGPURenderPassEncoder *);
 
 // light
-size_t scene_add_point_light(Scene *, PointLightDescriptor *);
-size_t scene_add_spot_light(Scene *, SpotLightDescriptor *);
-size_t scene_add_ambient_light(Scene *, AmbientLightDescriptor *);
-size_t scene_add_sun_light(Scene *, SunLightDescriptor *);
+size_t scene_add_point_light(Scene *, PointLightDescriptor *, WGPUDevice*,
+                             WGPUQueue*);
+size_t scene_add_spot_light(Scene *, SpotLightDescriptor *, WGPUDevice*,
+                            WGPUQueue*);
+size_t scene_add_ambient_light(Scene *, AmbientLightDescriptor *, WGPUDevice*,
+                               WGPUQueue*);
+size_t scene_add_sun_light(Scene *, SunLightDescriptor *, WGPUDevice*,
+                           WGPUQueue*);
+
+MeshList *scene_mesh_list(Scene *);
 
 #endif

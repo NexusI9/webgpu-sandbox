@@ -538,7 +538,6 @@ void shader_add_uniform(Shader *shader,
 void shader_add_texture(Shader *shader,
                         const ShaderCreateTextureDescriptor *desc) {
 
-  // printf("inner shader %p\n", shader);
   if (shader_validate_binding(shader)) {
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, desc->group_index);

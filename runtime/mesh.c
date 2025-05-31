@@ -63,6 +63,7 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
   // init model matrix and transforms
   glm_mat4_identity(mesh->model);
+
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->position);
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
@@ -90,6 +91,7 @@ void mesh_create_primitive(Mesh *mesh,
 void mesh_set_vertex_attribute(Mesh *mesh, const VertexAttribute *attributes) {
 
   MeshVertex *base_vertex = &mesh->vertex.base;
+
   // reset buffer
   if (base_vertex->attribute.buffer) {
     wgpuBufferRelease(base_vertex->attribute.buffer);
@@ -200,7 +202,8 @@ void mesh_build(Mesh *mesh, Shader *shader) {
   // check if mesh has correct buffer before drawing
   if (mesh->vertex.base.index.buffer == NULL ||
       mesh->vertex.base.attribute.buffer == NULL) {
-    perror("Mesh has no device or queue, further error may occurs.\n");
+    printf("[%p]\n", mesh);
+    perror("Mesh has no vertex index or attribute buffer.\n");
   }
 
   // build shader
@@ -270,8 +273,8 @@ void mesh_rotate(Mesh *mesh, vec3 rotation) {
   glm_vec3_copy(rotation, mesh->rotation);
 
   versor q;
-  glm_euler_xyz(rotation, &q);
-  mesh_rotate(mesh, q);
+  glm_euler_xyz_quat(mesh->rotation, q);
+  mesh_rotate_quat(mesh, q);
 }
 
 /**
@@ -279,6 +282,9 @@ void mesh_rotate(Mesh *mesh, vec3 rotation) {
  */
 void mesh_rotate_quat(Mesh *mesh, versor rotation) {
   mat4 transform_matrix;
+  mat4 dest;
+
+  // printf("%f\n", mesh->model[0][0]);
   glm_quat_mat4(rotation, transform_matrix);
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
 }
@@ -707,4 +713,39 @@ Mesh *mesh_indexed_list_insert(MeshIndexedList *list, Mesh *mesh) {
   list->entries[list->length] = mesh;
   list->length++;
   return mesh;
+}
+
+/**
+   Copy mesh pointers from one list to another
+ */
+int mesh_indexed_list_transfert(MeshIndexedList *src, MeshIndexedList *dest) {
+
+  // expand if destination is too small
+  if (dest->capacity < dest->length + src->length) {
+    size_t new_capacity = dest->length + src->length;
+    Mesh **temp_entries =
+        (Mesh **)realloc(dest->entries, new_capacity * sizeof(Mesh *));
+    size_t *temp_index =
+        (size_t *)realloc(dest->index, new_capacity * sizeof(size_t));
+
+    if (temp_entries && temp_index) {
+      dest->capacity = new_capacity;
+      dest->entries = temp_entries;
+      dest->index = temp_index;
+
+    } else {
+      perror("Couldn't reallocate and expand mesh indexed list\n");
+
+      return MESH_ALLOC_FAILURE;
+    }
+  }
+
+  // TODO: handle ID reallocation, if duplicate, or even remove it, IDK if willx
+  // actually need it
+  memcpy(&dest->entries[dest->length], src->entries,
+         src->length * sizeof(Mesh *));
+
+  dest->length += src->length;
+
+  return MESH_SUCCESS;
 }
