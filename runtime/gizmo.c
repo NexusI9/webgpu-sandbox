@@ -3,13 +3,13 @@
 #include "../runtime/material.h"
 #include "../runtime/texture.h"
 #include "light.h"
+#include "mesh.h"
 #include "string.h"
 
 static void *gizmo_list_expand(void **, size_t, size_t, size_t *);
 static void *gizmo_list_alloc(void **, size_t, size_t, size_t *, size_t *);
 static int gizmo_list_insert(const GizmoListInsertDescriptor *);
 static void *gizmo_list_new(const GizmoListNewDescriptor *);
-static int gizmo_mesh_list_copy(const GizmoMeshList *, GizmoMeshList *);
 
 /**
    Create a plane mesh with a billboard shader
@@ -212,36 +212,16 @@ void *gizmo_list_new(const GizmoListNewDescriptor *desc) {
 }
 
 /**
-   Copy a Gizmo Mesh list from a source to a given desination
- */
-int gizmo_mesh_list_copy(const GizmoMeshList *src, GizmoMeshList *dest) {
-
-  // copy length
-  dest->length = src->length;
-  dest->entries = malloc(dest->length * sizeof(Mesh *));
-
-  if (dest->entries) {
-    perror("Couldn't allocate memory for gizmo mesh list\n");
-    dest->length = 0;
-    return GIZMO_ALLOC_FAIL;
-  }
-
-  // copy meshes pointer
-  memcpy(dest->entries, src->entries, dest->length * sizeof(Mesh *));
-  return GIZMO_SUCCESS;
-}
-
-/**
    Insert given light to the point light gizmo
  */
 int gizmo_list_insert_point_light(GizmoList *list, PointLight *light,
-                                  GizmoMeshList *mesh_list) {
+                                  MeshRefList *mesh_list) {
 
   // init new entry
   GizmoPointLight new_entry = {light};
 
   // copy mesh list
-  if (gizmo_mesh_list_copy(mesh_list, &new_entry.meshes) != GIZMO_SUCCESS)
+  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
     return GIZMO_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)
@@ -264,13 +244,13 @@ PointLight *gizmo_list_new_point_light(GizmoList *list) {
 
 // ambient light gizmo
 int gizmo_list_insert_ambient_light(GizmoList *list, AmbientLight *light,
-                                    GizmoMeshList *mesh_list) {
+                                    MeshRefList *mesh_list) {
 
   // init new entry
   GizmoAmbientLight new_entry = {light};
 
   // copy mesh list
-  if (gizmo_mesh_list_copy(mesh_list, &new_entry.meshes) != GIZMO_SUCCESS)
+  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
     return GIZMO_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)
@@ -293,13 +273,13 @@ AmbientLight *gizmo_list_new_ambient_light(GizmoList *list) {
 
 // sun light gizmo
 int gizmo_list_insert_sun_light(GizmoList *list, SunLight *light,
-                                GizmoMeshList *mesh_list) {
+                                MeshRefList *mesh_list) {
 
   // init new entry
   GizmoSunLight new_entry = {light};
 
   // copy mesh list
-  if (gizmo_mesh_list_copy(mesh_list, &new_entry.meshes) != GIZMO_SUCCESS)
+  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
     return GIZMO_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)
@@ -322,13 +302,13 @@ SunLight *gizmo_list_new_sun_light(GizmoList *list) {
 
 // spot light gizmo
 int gizmo_list_insert_spot_light(GizmoList *list, SpotLight *light,
-                                 GizmoMeshList *mesh_list) {
+                                 MeshRefList *mesh_list) {
 
   // init new entry
   GizmoSpotLight new_entry = {light};
 
   // copy mesh list
-  if (gizmo_mesh_list_copy(mesh_list, &new_entry.meshes) != GIZMO_SUCCESS)
+  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
     return GIZMO_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)
@@ -351,13 +331,13 @@ SpotLight *gizmo_list_new_spot_light(GizmoList *list) {
 
 // camera gizmo
 int gizmo_list_insert_camera(GizmoList *list, Camera *camera,
-                             GizmoMeshList *mesh_list) {
+                             MeshRefList *mesh_list) {
 
   // init new entry
   GizmoCamera new_entry = {camera};
 
   // copy mesh list
-  if (gizmo_mesh_list_copy(mesh_list, &new_entry.meshes) != GIZMO_SUCCESS)
+  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
     return GIZMO_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)

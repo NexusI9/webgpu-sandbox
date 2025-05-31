@@ -11,13 +11,13 @@
 #include <stdio.h>
 
 static void scene_init_light_list(Scene *);
-static MeshIndexedList *scene_layer_gizmo(Scene *);
+static MeshRefList *scene_layer_gizmo(Scene *);
 static Mesh *scene_new_mesh(Scene *);
 static void scene_draw_mesh_list(Scene *, mesh_get_vertex_callback,
                                  mesh_get_shader_callback,
-                                 WGPURenderPassEncoder *, MeshIndexedList *);
+                                 WGPURenderPassEncoder *, MeshRefList *);
 static void scene_build_mesh_list(Scene *, mesh_get_shader_callback,
-                                  MeshIndexedList *);
+                                  MeshRefList *);
 
 Scene scene_create(Camera camera, Viewport viewport) {
 
@@ -34,10 +34,10 @@ Scene scene_create(Camera camera, Viewport viewport) {
   mesh_list_create(&scene.meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
   // init mesh layers
-  mesh_indexed_list_create(&scene.layer.lit, SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  mesh_indexed_list_create(&scene.layer.unlit,
+  mesh_reference_list_create(&scene.layer.lit, SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  mesh_reference_list_create(&scene.layer.unlit,
                            SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  mesh_indexed_list_create(&scene.layer.fixed,
+  mesh_reference_list_create(&scene.layer.fixed,
                            SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init gizmo list
@@ -55,17 +55,17 @@ Scene scene_create(Camera camera, Viewport viewport) {
  */
 Mesh *scene_new_mesh_lit(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
-  return mesh_indexed_list_insert(&scene->layer.lit, new_mesh);
+  return mesh_reference_list_insert(&scene->layer.lit, new_mesh);
 }
 
 Mesh *scene_new_mesh_unlit(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
-  return mesh_indexed_list_insert(&scene->layer.unlit, new_mesh);
+  return mesh_reference_list_insert(&scene->layer.unlit, new_mesh);
 }
 
 Mesh *scene_new_mesh_fixed(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
-  return mesh_indexed_list_insert(&scene->layer.fixed, new_mesh);
+  return mesh_reference_list_insert(&scene->layer.fixed, new_mesh);
 }
 
 // TODO: Simplify the overall scene draw/build process
@@ -183,7 +183,7 @@ void scene_build_fixed(Scene *scene) {
 }
 
 void scene_build_mesh_list(Scene *scene, mesh_get_shader_callback target_shader,
-                           MeshIndexedList *mesh_list) {
+                           MeshRefList *mesh_list) {
   for (int i = 0; i < mesh_list->length; i++) {
     Mesh *current_mesh = mesh_list->entries[i];
     mesh_build(current_mesh, target_shader(current_mesh));
@@ -196,7 +196,7 @@ Mesh *scene_new_mesh(Scene *scene) { return mesh_list_insert(&scene->meshes); }
 void scene_draw_mesh_list(Scene *scene, mesh_get_vertex_callback target_vertex,
                           mesh_get_shader_callback target_shader,
                           WGPURenderPassEncoder *render_pass,
-                          MeshIndexedList *mesh_list) {
+                          MeshRefList *mesh_list) {
 
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
@@ -241,9 +241,9 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
 
   // create mesh/gizmo
   MeshList *mesh_list = scene_mesh_list(scene);
-  MeshIndexedList cache_list;
-  mesh_indexed_list_create(&cache_list, 1);
-  MeshIndexedList *render_list = scene_layer_gizmo(scene);
+  MeshRefList cache_list;
+  mesh_reference_list_create(&cache_list, 1);
+  MeshRefList *render_list = scene_layer_gizmo(scene);
 
   light_point_create_mesh(new_light, &(LightCreateMeshDescriptor){
                                          .camera = scene->active_camera,
@@ -255,7 +255,7 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
                                      });
 
   // transfert gizmo mesh pointers to render_list
-  mesh_indexed_list_transfert(&cache_list, render_list);
+  mesh_reference_list_transfert(&cache_list, render_list);
 
   // add gizmo to gizmo list
   //gizmo_list_insert_point_light(&scene->gizmo, new_light, );
@@ -278,9 +278,9 @@ size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 
   // create mesh/gizmo
   MeshList *mesh_list = scene_mesh_list(scene);
-  MeshIndexedList cache_list;
-  mesh_indexed_list_create(&cache_list, 1);
-  MeshIndexedList *render_list = scene_layer_gizmo(scene);
+  MeshRefList cache_list;
+  mesh_reference_list_create(&cache_list, 1);
+  MeshRefList *render_list = scene_layer_gizmo(scene);
 
   light_spot_create_mesh(new_light, &(LightCreateMeshDescriptor){
                                         .camera = scene->active_camera,
@@ -292,7 +292,7 @@ size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
                                     });
 
   // transfert gizmo mesh pointers to render_list
-  mesh_indexed_list_transfert(&cache_list, render_list);
+  mesh_reference_list_transfert(&cache_list, render_list);
 
   return list->length;
 }
@@ -312,9 +312,9 @@ size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc,
 
   // create mesh/gizmo
   MeshList *mesh_list = scene_mesh_list(scene);
-  MeshIndexedList cache_list;
-  mesh_indexed_list_create(&cache_list, 1);
-  MeshIndexedList *render_list = scene_layer_gizmo(scene);
+  MeshRefList cache_list;
+  mesh_reference_list_create(&cache_list, 1);
+  MeshRefList *render_list = scene_layer_gizmo(scene);
 
   light_ambient_create_mesh(new_light, &(LightCreateMeshDescriptor){
                                            .camera = scene->active_camera,
@@ -326,7 +326,7 @@ size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc,
                                        });
 
   // transfert gizmo mesh pointers to render_list
-  mesh_indexed_list_transfert(&cache_list, render_list);
+  mesh_reference_list_transfert(&cache_list, render_list);
 
   return list->length;
 }
@@ -346,9 +346,9 @@ size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
   // create mesh/gizmo
   MeshList *mesh_list = scene_mesh_list(scene);
-  MeshIndexedList cache_list;
-  mesh_indexed_list_create(&cache_list, 1);
-  MeshIndexedList *render_list = scene_layer_gizmo(scene);
+  MeshRefList cache_list;
+  mesh_reference_list_create(&cache_list, 1);
+  MeshRefList *render_list = scene_layer_gizmo(scene);
 
   light_sun_create_mesh(new_light, &(LightCreateMeshDescriptor){
                                        .camera = scene->active_camera,
@@ -360,7 +360,7 @@ size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
                                    });
 
   // transfert gizmo mesh pointers to render_list
-  mesh_indexed_list_transfert(&cache_list, render_list);
+  mesh_reference_list_transfert(&cache_list, render_list);
 
   return list->length;
 }
@@ -368,7 +368,7 @@ size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 /**
    Return pointer to mesh gizmo layer ("Fixed" layer)
  */
-MeshIndexedList *scene_layer_gizmo(Scene *scene) { return &scene->layer.fixed; }
+MeshRefList *scene_layer_gizmo(Scene *scene) { return &scene->layer.fixed; }
 
 /**
    Return pointer to scene mesh pool

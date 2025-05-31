@@ -17,33 +17,28 @@
 typedef Mesh Gizmo;
 
 typedef struct {
-  size_t length;
-  Mesh **entries;
-} GizmoMeshList;
-
-typedef struct {
   PointLight *target;
-  GizmoMeshList meshes;
+  MeshRefList meshes;
 } GizmoPointLight;
 
 typedef struct {
   AmbientLight *target;
-  GizmoMeshList meshes;
+  MeshRefList meshes;
 } GizmoAmbientLight;
 
 typedef struct {
   SunLight *target;
-  GizmoMeshList meshes;
+  MeshRefList meshes;
 } GizmoSunLight;
 
 typedef struct {
   SpotLight *target;
-  GizmoMeshList meshes;
+  MeshRefList meshes;
 } GizmoSpotLight;
 
 typedef struct {
   Camera *target;
-  GizmoMeshList meshes;
+  MeshRefList meshes;
 } GizmoCamera;
 
 typedef struct {
@@ -110,23 +105,22 @@ void gizmo_create_billboard(Gizmo *, const GizmoCreateBillboardDescriptor *);
 int gizmo_list_create(GizmoList *, size_t capacity);
 
 // point light gizmo
-int gizmo_list_insert_point_light(GizmoList *, PointLight *, GizmoMeshList *);
+int gizmo_list_insert_point_light(GizmoList *, PointLight *, MeshRefList *);
 PointLight *gizmo_list_new_point_light(GizmoList *);
 
 // ambient light gizmo
-int gizmo_list_insert_ambient_light(GizmoList *, AmbientLight *,
-                                    GizmoMeshList *);
+int gizmo_list_insert_ambient_light(GizmoList *, AmbientLight *, MeshRefList *);
 AmbientLight *gizmo_list_new_ambient_light(GizmoList *);
 
 // sun light gizmo
-int gizmo_list_insert_sun_light(GizmoList *, SunLight *, GizmoMeshList *);
+int gizmo_list_insert_sun_light(GizmoList *, SunLight *, MeshRefList *);
 SunLight *gizmo_list_new_sun_light(GizmoList *);
 
 // spot light gizmo
-int gizmo_list_insert_spot_light(GizmoList *, SpotLight *, GizmoMeshList *);
+int gizmo_list_insert_spot_light(GizmoList *, SpotLight *, MeshRefList *);
 SpotLight *gizmo_list_new_spot_light(GizmoList *);
 
 // camera gizmo
-int gizmo_list_insert_camera(GizmoList *, Camera *, GizmoMeshList *);
+int gizmo_list_insert_camera(GizmoList *, Camera *, MeshRefList *);
 Camera *gizmo_list_new_camera(GizmoList *);
 #endif

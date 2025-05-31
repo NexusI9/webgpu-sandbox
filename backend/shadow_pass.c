@@ -355,7 +355,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
   WGPUCommandEncoder shadow_encoder =
       wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
-  MeshIndexedList *target_mesh_list = &desc->scene->layer.lit;
+  MeshRefList *target_mesh_list = &desc->scene->layer.lit;
 
   const size_t point_length = desc->scene->lights.point.length;
   const size_t spot_length = desc->scene->lights.spot.length;

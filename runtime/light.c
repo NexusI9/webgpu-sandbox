@@ -6,7 +6,6 @@
 #include "camera.h"
 #include "emscripten/emscripten.h"
 #include "material.h"
-#include "mesh.h"
 #include "shader.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
@@ -282,7 +281,7 @@ void light_point_create_mesh(PointLight *light,
                                      });
 
   // cache pointer in destination
-  mesh_indexed_list_insert(desc->destination, light_mesh);
+  mesh_reference_list_insert(desc->destination, light_mesh);
 }
 
 /**
@@ -306,7 +305,7 @@ void light_spot_create_mesh(SpotLight *light,
                                      });
 
   // cache pointer in destination
-  mesh_indexed_list_insert(desc->destination, light_mesh);
+  mesh_reference_list_insert(desc->destination, light_mesh);
 }
 
 /**
@@ -330,7 +329,7 @@ void light_ambient_create_mesh(AmbientLight *light,
                                      });
 
   // cache pointer in destination
-  mesh_indexed_list_insert(desc->destination, light_mesh);
+  mesh_reference_list_insert(desc->destination, light_mesh);
 }
 
 /**
@@ -353,5 +352,5 @@ void light_sun_create_mesh(SunLight *light,
                                      });
 
   // cache poitner in destination
-  mesh_indexed_list_insert(desc->destination, light_mesh);
+  mesh_reference_list_insert(desc->destination, light_mesh);
 }

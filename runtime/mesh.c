@@ -298,7 +298,6 @@ Mesh *mesh_children_list_check_init(Mesh *parent) {
   if (parent->children.entries == NULL) {
     parent->children.capacity = MESH_CHILD_LENGTH;
     parent->children.entries = calloc(parent->children.capacity, sizeof(Mesh));
-    parent->children.index = calloc(parent->children.capacity, sizeof(size_t));
   }
 
   return *parent->children.entries;
@@ -315,16 +314,13 @@ Mesh *mesh_children_list_check_capacity(Mesh *parent) {
     size_t new_capacity = parent->children.capacity * 2;
     Mesh *new_list = realloc(parent->children.entries,
                              sizeof(Mesh) * parent->children.capacity);
-    size_t *new_index = realloc(parent->children.index,
-                                sizeof(size_t) * parent->children.capacity);
 
-    if (new_list == NULL || new_index == NULL) {
+    if (new_list == NULL) {
       perror("Failed to expand mesh list\n"), exit(1);
       return NULL;
     }
 
     parent->children.entries = &new_list;
-    parent->children.index = new_index;
     parent->children.capacity = new_capacity;
   }
 
@@ -343,7 +339,6 @@ Mesh *mesh_new_child(Mesh *parent) {
   Mesh *child = parent->children.entries[id];
 
   // assing child id
-  parent->children.index[id] = id;
   child->id = id;
   child->parent = parent; // assign parent to child
 
@@ -678,7 +673,7 @@ Mesh *mesh_list_insert(MeshList *list) {
   return &list->entries[list->length++];
 }
 
-int mesh_indexed_list_create(MeshIndexedList *list, size_t capacity) {
+int mesh_reference_list_create(MeshRefList *list, size_t capacity) {
 
   list->entries = malloc(capacity * sizeof(Mesh));
   list->length = 0;
@@ -692,7 +687,7 @@ int mesh_indexed_list_create(MeshIndexedList *list, size_t capacity) {
   return MESH_SUCCESS;
 }
 
-Mesh *mesh_indexed_list_insert(MeshIndexedList *list, Mesh *mesh) {
+Mesh *mesh_reference_list_insert(MeshRefList *list, Mesh *mesh) {
 
   // ADD MESH TO LIST
   // eventually expand mesh vector if overflow
@@ -718,20 +713,17 @@ Mesh *mesh_indexed_list_insert(MeshIndexedList *list, Mesh *mesh) {
 /**
    Copy mesh pointers from one list to another
  */
-int mesh_indexed_list_transfert(MeshIndexedList *src, MeshIndexedList *dest) {
+int mesh_reference_list_transfert(MeshRefList *src, MeshRefList *dest) {
 
   // expand if destination is too small
   if (dest->capacity < dest->length + src->length) {
     size_t new_capacity = dest->length + src->length;
     Mesh **temp_entries =
         (Mesh **)realloc(dest->entries, new_capacity * sizeof(Mesh *));
-    size_t *temp_index =
-        (size_t *)realloc(dest->index, new_capacity * sizeof(size_t));
 
-    if (temp_entries && temp_index) {
+    if (temp_entries) {
       dest->capacity = new_capacity;
       dest->entries = temp_entries;
-      dest->index = temp_index;
 
     } else {
       perror("Couldn't reallocate and expand mesh indexed list\n");
@@ -740,12 +732,31 @@ int mesh_indexed_list_transfert(MeshIndexedList *src, MeshIndexedList *dest) {
     }
   }
 
-  // TODO: handle ID reallocation, if duplicate, or even remove it, IDK if willx
-  // actually need it
   memcpy(&dest->entries[dest->length], src->entries,
          src->length * sizeof(Mesh *));
 
   dest->length += src->length;
 
+  return MESH_SUCCESS;
+}
+
+
+/**
+   Copy a Gizmo Mesh list from a source to a given desination
+ */
+int mesh_reference_list_copy(const MeshRefList *src, MeshRefList *dest) {
+
+  // copy length
+  dest->length = src->length;
+  dest->entries = malloc(dest->length * sizeof(Mesh *));
+
+  if (dest->entries) {
+    perror("Couldn't allocate memory for mesh reference list copy\n");
+    dest->length = 0;
+    return MESH_ALLOC_FAILURE;
+  }
+
+  // copy meshes pointer
+  memcpy(dest->entries, src->entries, dest->length * sizeof(Mesh *));
   return MESH_SUCCESS;
 }

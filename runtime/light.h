@@ -185,7 +185,7 @@ typedef struct {
   Camera *camera;
   Viewport *viewport;
   MeshList *list;
-  MeshIndexedList *destination;
+  MeshRefList *destination;
 } LightCreateMeshDescriptor;
 
 // constructors

@@ -45,10 +45,9 @@ typedef struct {
 // TODO: make it a linked list
 typedef struct {
   struct Mesh **entries;
-  size_t *index;
   size_t capacity;
   size_t length;
-} MeshIndexedList;
+} MeshRefList;
 
 typedef struct {
   struct Mesh *entries;
@@ -93,7 +92,7 @@ typedef struct Mesh {
 
   // hierarchy
   struct Mesh *parent;
-  MeshIndexedList children;
+  MeshRefList children;
 
 } Mesh;
 
@@ -140,8 +139,8 @@ Shader *mesh_shader_solid(Mesh *);
 int mesh_list_create(MeshList *, size_t);
 Mesh *mesh_list_insert(MeshList *);
 
-int mesh_indexed_list_create(MeshIndexedList *, size_t);
-Mesh *mesh_indexed_list_insert(MeshIndexedList *, Mesh *);
-int mesh_indexed_list_transfert(MeshIndexedList *, MeshIndexedList *);
-
+int mesh_reference_list_create(MeshRefList *, size_t);
+Mesh *mesh_reference_list_insert(MeshRefList *, Mesh *);
+int mesh_reference_list_transfert(MeshRefList *, MeshRefList *);
+int mesh_reference_list_copy(const MeshRefList *, MeshRefList *);
 #endif

@@ -24,14 +24,14 @@
 #define AO_RAY_MAX_COUNT 10
 
 typedef struct {
-  MeshIndexedList *mesh_list;
+  MeshRefList *mesh_list;
   Scene *scene;
   WGPUDevice *device;
   WGPUQueue *queue;
 } AOBakeInitDescriptor;
 
 typedef struct {
-  MeshIndexedList *mesh_list;
+  MeshRefList *mesh_list;
   Texture *texture;
   Scene *scene;
   WGPUDevice *device;

@@ -75,9 +75,9 @@ typedef uint8_t shader_bind_t;
 
  */
 typedef struct {
-  MeshIndexedList lit;
-  MeshIndexedList unlit;
-  MeshIndexedList fixed;
+  MeshRefList lit;
+  MeshRefList unlit;
+  MeshRefList fixed;
 } SceneLayerList;
 
 typedef struct {
