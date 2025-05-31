@@ -14,7 +14,7 @@
 #include <webgpu/webgpu.h>
 
 #include "resources/prefab/debug/line.h"
-#include "resources/prefab/gizmo/grid.h"
+#include "resources/prefab/gizmo/grid/grid.h"
 
 // utils
 #include "resources/primitive/primitive.h"

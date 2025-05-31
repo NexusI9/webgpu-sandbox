@@ -1,5 +1,5 @@
 #include "grid.h"
-#include "../../primitive/plane.h"
+#include "../../../primitive/plane.h"
 #include "../runtime/material.h"
 #include "webgpu/webgpu.h"
 

@@ -152,7 +152,6 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
   for (size_t m = 0; m < data->meshes_count; m++) {
 
     cgltf_mesh gl_mesh = data->meshes[m];
-    printf("Mesh name: %s\n", gl_mesh.name);
 
     struct Mesh *scene_mesh = scene_new_mesh_lit(scene);
     mesh_create(scene_mesh, &(MeshCreateDescriptor){
