@@ -362,8 +362,7 @@ void light_point_create_mesh(PointLight *light,
                              const LightCreateMeshDescriptor *desc) {
 
   Mesh *light_mesh = mesh_list_insert(desc->list);
-  const char *texture_path =
-      "./resources/assets/texture/ui/light/light-point.png";
+  const char *texture_path = "./resources/assets/texture/ui/light-point.png";
 
   // create gizmo mesh
   light_create_mesh(light_mesh, light->position, texture_path, desc);
@@ -379,8 +378,7 @@ void light_spot_create_mesh(SpotLight *light,
                             const LightCreateMeshDescriptor *desc) {
 
   Mesh *light_mesh = mesh_list_insert(desc->list);
-  const char *texture_path =
-      "./resources/assets/texture/ui/light/light-spot.png";
+  const char *texture_path = "./resources/assets/texture/ui/light-spot.png";
 
   // create gizmo mesh
   light_create_mesh(light_mesh, light->position, texture_path, desc);
@@ -396,8 +394,7 @@ void light_ambient_create_mesh(AmbientLight *light,
                                const LightCreateMeshDescriptor *desc) {
 
   Mesh *light_mesh = mesh_list_insert(desc->list);
-  const char *texture_path =
-      "./resources/assets/texture/ui/light/light-ambient.png";
+  const char *texture_path = "./resources/assets/texture/ui/light-ambient.png";
 
   // create gizmo mesh
   light_create_mesh(light_mesh, light->position, texture_path, desc);
@@ -412,8 +409,7 @@ void light_ambient_create_mesh(AmbientLight *light,
 void light_sun_create_mesh(SunLight *light,
                            const LightCreateMeshDescriptor *desc) {
   Mesh *light_mesh = mesh_list_insert(desc->list);
-  const char *texture_path =
-      "./resources/assets/texture/ui/light/light-sun.png";
+  const char *texture_path = "./resources/assets/texture/ui/light-sun.png";
 
   // create gizmo mesh
   light_create_mesh(light_mesh, light->position, texture_path, desc);

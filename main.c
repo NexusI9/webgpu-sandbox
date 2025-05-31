@@ -97,19 +97,21 @@ void init_scene() {
                      0.0f,
                  });
 
-  /*scene_add_sun_light(
-      &main_scene, &(SunLightDescriptor){
-                       .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
-                       .color = {1.0f, 1.0f, 1.0f},
-                       .intensity = 4.0f,
-                       .size = 10.0f,
-                   });*/
+  scene_add_sun_light(
+      &main_scene,
+      &(SunLightDescriptor){
+          .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
+          .color = {1.0f, 1.0f, 1.0f},
+          .intensity = 1.0f,
+          .size = 10.0f,
+      },
+      renderer_device(&main_renderer), renderer_queue(&main_renderer));
 
   // set light
   // TODO: uniformise WGPUDevice/WGPUQueue opaque pointer passing (& || * ? )
   scene_add_point_light(&main_scene,
                         &(PointLightDescriptor){
-                            .color = {1.0f, 1.0f, 1.0f},
+                            .color = {1.0f, 0.0f, 0.3f},
                             .intensity = 4.0f,
                             .cutoff = 20.0f,
                             .inner_cutoff = 50.0f,
