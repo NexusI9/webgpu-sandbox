@@ -3,18 +3,18 @@
 
 #include "../runtime/camera.h"
 #include "../runtime/mesh.h"
+#include "./gizmo.h"
 
 typedef struct {
   Camera *target;
   MeshRefList meshes;
 } GizmoCamera;
 
-typedef struct {
-  Camera *camera;
-  WGPUDevice *device;
-  WGPUQueue *queue;
-} GizmoCameraCreateDescriptor;
-
-void gizmo_camera_create(Mesh *, Mesh *, const GizmoCameraCreateDescriptor *);
+void gizmo_camera_create(GizmoCamera *, Camera *,
+                         const GizmoCreateDescriptor *);
+void gizmo_camera_translate(GizmoCamera *, vec3);
+void gizmo_camera_rotate(GizmoCamera *, vec3);
+void gizmo_camera_scale(GizmoCamera *, vec3);
+void gizmo_camera_lookat(GizmoCamera *, vec3);
 
 #endif

@@ -1,4 +1,9 @@
 #include "list.h"
+#include "camera.h"
+#include "light_ambient.h"
+#include "light_point.h"
+#include "light_spot.h"
+#include "light_sun.h"
 #include "string.h"
 
 static void *gizmo_list_expand(void **, size_t, size_t, size_t *);
@@ -125,27 +130,19 @@ void *gizmo_list_new(const GizmoListNewDescriptor *desc) {
 /**
    Insert given light to the point light gizmo
  */
-int gizmo_list_insert_point_light(GizmoList *list, PointLight *light,
-                                  MeshRefList *mesh_list) {
-
-  // init new entry
-  GizmoPointLight new_entry = {light};
-
-  // copy mesh list
-  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_LIST_ALLOC_FAIL;
+int gizmo_list_insert_point_light(GizmoList *list, GizmoPointLight *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
       .type_size = sizeof(GizmoPointLight),
-      .new_entry = &new_entry,
+      .new_entry = gizmo,
       .capacity = &list->point_light.capacity,
       .length = &list->point_light.length,
       .entries = (void **)&list->point_light.entries,
   });
 }
-PointLight *gizmo_list_new_point_light(GizmoList *list) {
-  return (PointLight *)gizmo_list_new(&(GizmoListNewDescriptor){
+GizmoPointLight *gizmo_list_new_point_light(GizmoList *list) {
+  return (GizmoPointLight *)gizmo_list_new(&(GizmoListNewDescriptor){
       .type_size = sizeof(GizmoPointLight),
       .capacity = &list->point_light.capacity,
       .length = &list->point_light.length,
@@ -154,27 +151,19 @@ PointLight *gizmo_list_new_point_light(GizmoList *list) {
 }
 
 // ambient light gizmo
-int gizmo_list_insert_ambient_light(GizmoList *list, AmbientLight *light,
-                                    MeshRefList *mesh_list) {
-
-  // init new entry
-  GizmoAmbientLight new_entry = {light};
-
-  // copy mesh list
-  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_LIST_ALLOC_FAIL;
+int gizmo_list_insert_ambient_light(GizmoList *list, GizmoAmbientLight *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
       .type_size = sizeof(GizmoAmbientLight),
-      .new_entry = &new_entry,
+      .new_entry = gizmo,
       .capacity = &list->ambient_light.capacity,
       .length = &list->ambient_light.length,
       .entries = (void **)&list->ambient_light.entries,
   });
 }
-AmbientLight *gizmo_list_new_ambient_light(GizmoList *list) {
-  return (AmbientLight *)gizmo_list_new(&(GizmoListNewDescriptor){
+GizmoAmbientLight *gizmo_list_new_ambient_light(GizmoList *list) {
+  return (GizmoAmbientLight *)gizmo_list_new(&(GizmoListNewDescriptor){
       .type_size = sizeof(GizmoAmbientLight),
       .capacity = &list->ambient_light.capacity,
       .length = &list->ambient_light.length,
@@ -183,27 +172,19 @@ AmbientLight *gizmo_list_new_ambient_light(GizmoList *list) {
 }
 
 // sun light gizmo
-int gizmo_list_insert_sun_light(GizmoList *list, SunLight *light,
-                                MeshRefList *mesh_list) {
-
-  // init new entry
-  GizmoSunLight new_entry = {light};
-
-  // copy mesh list
-  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_LIST_ALLOC_FAIL;
+int gizmo_list_insert_sun_light(GizmoList *list, GizmoSunLight *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
       .type_size = sizeof(GizmoSunLight),
-      .new_entry = &new_entry,
+      .new_entry = gizmo,
       .capacity = &list->sun_light.capacity,
       .length = &list->sun_light.length,
       .entries = (void **)&list->sun_light.entries,
   });
 }
-SunLight *gizmo_list_new_sun_light(GizmoList *list) {
-  return (SunLight *)gizmo_list_new(&(GizmoListNewDescriptor){
+GizmoSunLight *gizmo_list_new_sun_light(GizmoList *list) {
+  return (GizmoSunLight *)gizmo_list_new(&(GizmoListNewDescriptor){
       .type_size = sizeof(GizmoSunLight),
       .capacity = &list->sun_light.capacity,
       .length = &list->sun_light.length,
@@ -212,27 +193,20 @@ SunLight *gizmo_list_new_sun_light(GizmoList *list) {
 }
 
 // spot light gizmo
-int gizmo_list_insert_spot_light(GizmoList *list, SpotLight *light,
-                                 MeshRefList *mesh_list) {
-
-  // init new entry
-  GizmoSpotLight new_entry = {light};
-
-  // copy mesh list
-  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_LIST_ALLOC_FAIL;
+int gizmo_list_insert_spot_light(GizmoList *list, GizmoSpotLight *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
       .type_size = sizeof(GizmoSpotLight),
-      .new_entry = &new_entry,
+      .new_entry = gizmo,
       .capacity = &list->spot_light.capacity,
       .length = &list->spot_light.length,
       .entries = (void **)&list->spot_light.entries,
   });
 }
-SpotLight *gizmo_list_new_spot_light(GizmoList *list) {
-  return (SpotLight *)gizmo_list_new(&(GizmoListNewDescriptor){
+
+GizmoSpotLight *gizmo_list_new_spot_light(GizmoList *list) {
+  return (GizmoSpotLight *)gizmo_list_new(&(GizmoListNewDescriptor){
       .type_size = sizeof(GizmoSpotLight),
       .capacity = &list->spot_light.capacity,
       .length = &list->spot_light.length,
@@ -241,28 +215,20 @@ SpotLight *gizmo_list_new_spot_light(GizmoList *list) {
 }
 
 // camera gizmo
-int gizmo_list_insert_camera(GizmoList *list, Camera *camera,
-                             MeshRefList *mesh_list) {
-
-  // init new entry
-  GizmoCamera new_entry = {camera};
-
-  // copy mesh list
-  if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_LIST_ALLOC_FAIL;
+int gizmo_list_insert_camera(GizmoList *list, GizmoCamera *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
       .type_size = sizeof(GizmoCamera),
-      .new_entry = &new_entry,
+      .new_entry = gizmo,
       .capacity = &list->camera.capacity,
       .length = &list->camera.length,
       .entries = (void **)&list->camera.entries,
   });
 }
 
-Camera *gizmo_list_new_camera(GizmoList *list) {
-  return (Camera *)gizmo_list_new(&(GizmoListNewDescriptor){
+GizmoCamera *gizmo_list_new_camera(GizmoList *list) {
+  return (GizmoCamera *)gizmo_list_new(&(GizmoListNewDescriptor){
       .type_size = sizeof(GizmoCamera),
       .capacity = &list->camera.capacity,
       .length = &list->camera.length,

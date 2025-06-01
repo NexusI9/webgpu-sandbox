@@ -3,13 +3,13 @@
 
 #include "../light.h"
 #include "../mesh.h"
-#include "./light.h"
+#include "./gizmo.h"
 
 typedef struct {
   AmbientLight *target;
   MeshRefList meshes;
 } GizmoAmbientLight;
 
-void gizmo_light_ambient_create(AmbientLight *,
-                                const GizmoLightCreateDescriptor *);
+void gizmo_light_ambient_create(GizmoAmbientLight *, AmbientLight *,
+                                const GizmoCreateDescriptor *);
 #endif

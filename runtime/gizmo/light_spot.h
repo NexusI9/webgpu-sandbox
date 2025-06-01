@@ -3,13 +3,13 @@
 
 #include "../light.h"
 #include "../mesh.h"
-#include "./light.h"
+#include "./gizmo.h"
 
 typedef struct {
   SpotLight *target;
   MeshRefList meshes;
 } GizmoSpotLight;
 
-void gizmo_light_spot_create(SpotLight *, const GizmoLightCreateDescriptor *);
+void gizmo_light_spot_create(GizmoSpotLight*, SpotLight *, const GizmoCreateDescriptor *);
 
 #endif

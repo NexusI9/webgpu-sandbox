@@ -1,7 +1,7 @@
 #ifndef _SCENE_H_
 #define _SCENE_H_
 
-#include "gizmo/gizmo.h"
+#include "gizmo/list.h"
 #include "camera.h"
 #include "light.h"
 #include "mesh.h"
@@ -161,17 +161,17 @@ void scene_build_fixed(Scene *);
 void scene_draw_fixed(Scene *, WGPURenderPassEncoder *);
 
 // light
-PointLight *scene_add_point_light(Scene *, PointLightDescriptor *, WGPUDevice *,
+GizmoPointLight *scene_add_point_light(Scene *, PointLightDescriptor *, WGPUDevice *,
                                   WGPUQueue *);
-SpotLight *scene_add_spot_light(Scene *, SpotLightDescriptor *, WGPUDevice *,
+GizmoSpotLight *scene_add_spot_light(Scene *, SpotLightDescriptor *, WGPUDevice *,
                                 WGPUQueue *);
-AmbientLight *scene_add_ambient_light(Scene *, AmbientLightDescriptor *,
+GizmoAmbientLight *scene_add_ambient_light(Scene *, AmbientLightDescriptor *,
                                       WGPUDevice *, WGPUQueue *);
-SunLight *scene_add_sun_light(Scene *, SunLightDescriptor *, WGPUDevice *,
+GizmoSunLight *scene_add_sun_light(Scene *, SunLightDescriptor *, WGPUDevice *,
                               WGPUQueue *);
 
 // camera
-Camera *scene_add_camera(Scene *, const CameraCreateDescriptor *, WGPUDevice *,
+GizmoCamera *scene_add_camera(Scene *, const CameraCreateDescriptor *, WGPUDevice *,
                          WGPUQueue *);
 
 #endif
