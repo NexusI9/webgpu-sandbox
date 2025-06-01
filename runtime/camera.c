@@ -1,7 +1,6 @@
 #include "camera.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
-#include "constants.h"
 #include "emscripten/html5.h"
 #include "input.h"
 #include "math.h"
@@ -75,7 +74,7 @@ static void camera_target_from_yaw_pitch(Camera *camera, float yaw,
 static void camera_flying_mode_controller(Camera *camera) {
 
   // Define new position
-  uint8_t boost = input_key(KEY_CAP) ? 3 : 1;
+  uint8_t boost = input_key(INPUT_KEY_CAP) ? 3 : 1;
 
   float velocity = camera->speed * boost * camera->clock->delta;
   vec3 velo_vector = {velocity, velocity, velocity};
@@ -86,16 +85,16 @@ static void camera_flying_mode_controller(Camera *camera) {
   vec3 velo_side;
   glm_vec3_mul(velo_vector, camera->right, velo_side);
 
-  if (input_key(KEY_FORWARD_FR)) // Forward
+  if (input_key(INPUT_KEY_FORWARD_FR)) // Forward
     glm_vec3_add(camera->position, velo_forward, camera->position);
 
-  if (input_key(KEY_BACKWARD_FR)) // Backward
+  if (input_key(INPUT_KEY_BACKWARD_FR)) // Backward
     glm_vec3_sub(camera->position, velo_forward, camera->position);
 
-  if (input_key(KEY_LEFT_FR)) // Left
+  if (input_key(INPUT_KEY_LEFT_FR)) // Left
     glm_vec3_add(camera->position, velo_side, camera->position);
 
-  if (input_key(KEY_RIGHT_FR)) // Right
+  if (input_key(INPUT_KEY_RIGHT_FR)) // Right
     glm_vec3_sub(camera->position, velo_side, camera->position);
 
   // Define new target from yaw and pitch
