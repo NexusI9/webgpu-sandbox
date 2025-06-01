@@ -3,7 +3,7 @@
 
 #include "../camera.h"
 #include "../light.h"
-#include "../mesh.h"
+#include "../mesh/mesh.h"
 #include "./camera.h"
 #include "./light_ambient.h"
 #include "./light_point.h"

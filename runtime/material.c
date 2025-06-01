@@ -1,14 +1,5 @@
 #include "material.h"
 #include "../backend/shadow_pass.h"
-#include "../utils/system.h"
-#include "camera.h"
-#include "light.h"
-#include "mesh.h"
-#include "shader.h"
-#include "viewport.h"
-#include "webgpu/webgpu.h"
-#include <stdint.h>
-#include <stdlib.h>
 
 static void material_bind_views(Mesh *, mesh_get_shader_callback, Camera *,
                                 Viewport *, uint8_t);

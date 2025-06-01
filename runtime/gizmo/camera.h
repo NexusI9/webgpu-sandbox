@@ -2,8 +2,8 @@
 #define _GIZMO_CAMERA_H_
 
 #include "../runtime/camera.h"
-#include "../runtime/mesh.h"
-#include "./gizmo.h"
+#include "../runtime/mesh/mesh.h"
+#include "./core.h"
 
 typedef struct {
   Camera *target;

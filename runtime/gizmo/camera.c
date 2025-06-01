@@ -32,7 +32,15 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   gizmo->meshes.length = gizmo_mesh_count;
 }
 
-void gizmo_camera_translate(GizmoCamera *gizmo, vec3 position) {}
+void gizmo_camera_translate(GizmoCamera *gizmo, vec3 position) {
+
+  // transform target
+  //camera_translate(gizmo->target, position);
+
+  // transform mesh
+  
+  
+}
 void gizmo_camera_rotate(GizmoCamera *gizmo, vec3 rotation) {}
 void gizmo_camera_scale(GizmoCamera *gizmo, vec3 scale) {}
 void gizmo_camera_lookat(GizmoCamera *gizmo, vec3 position) {}

@@ -1,7 +1,7 @@
 #ifndef _SYSTEM_UTILS_H_
 #define _SYSTEM_UTILS_H_
 
-#include "../runtime/mesh.h"
+#include "../runtime/mesh/mesh.h"
 #include <cglm/cglm.h>
 
 #ifdef VERBOSE

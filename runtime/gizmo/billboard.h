@@ -6,7 +6,7 @@
 #include <webgpu/webgpu.h>
 
 #include "../camera.h"
-#include "../mesh.h"
+#include "../mesh/mesh.h"
 
 typedef struct {
   vec3 *position;

@@ -1,8 +1,9 @@
 #ifndef _LINE_H_
 #define _LINE_H_
 
-#include "../runtime/mesh.h"
+#include "../runtime/mesh/mesh.h"
 #include <cglm/cglm.h>
+#include <webgpu/webgpu.h>
 
 #define LINE_MAX_POINTS 1024
 #define LINE_THICKNESS 0.005

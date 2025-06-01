@@ -4,7 +4,7 @@
 #include "gizmo/list.h"
 #include "camera.h"
 #include "light.h"
-#include "mesh.h"
+#include "mesh/mesh.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>

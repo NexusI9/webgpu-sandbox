@@ -2,8 +2,8 @@
 #define _GIZMO_AMBIENT_LIGHT_H_
 
 #include "../light.h"
-#include "../mesh.h"
-#include "./gizmo.h"
+#include "../mesh/mesh.h"
+#include "./core.h"
 
 typedef struct {
   AmbientLight *target;

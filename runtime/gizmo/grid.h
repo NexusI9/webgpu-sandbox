@@ -1,7 +1,7 @@
 #ifndef _GIZMO_GRID_H_
 #define _GIZMO_GRID_H_
 
-#include "../mesh.h"
+#include "../mesh/mesh.h"
 #include <webgpu/webgpu.h>
 
 typedef struct {

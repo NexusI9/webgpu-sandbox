@@ -1,7 +1,7 @@
 #ifndef _LIGHT_H_
 #define _LIGHT_H_
 
-#include "mesh.h"
+#include "mesh/mesh.h"
 #include "shader.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
@@ -178,7 +178,6 @@ typedef struct {
   size_t capacity;
   SunLight entries[LIGHT_MAX_CAPACITY];
 } SunLightList;
-
 
 // constructors
 void light_create_point(PointLight *, PointLightDescriptor *);

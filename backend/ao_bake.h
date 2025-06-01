@@ -2,10 +2,8 @@
 #define _AO_BAKE_H_
 
 #include "../resources/geometry/triangle.h"
-#include "../runtime/mesh.h"
 #include "../runtime/scene.h"
 #include "../runtime/texture.h"
-#include "webgpu/webgpu.h"
 
 // AO Texture
 #define AO_TEXTURE_SIZE 128

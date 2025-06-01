@@ -39,7 +39,7 @@
 #include "runtime/input.h"
 #include "runtime/light.h"
 #include "runtime/material.h"
-#include "runtime/mesh.h"
+#include "runtime/mesh/mesh.h"
 #include "runtime/scene.h"
 #include "runtime/shader.h"
 #include "runtime/viewport.h"
@@ -285,18 +285,17 @@ int main(int argc, const char *argv[]) {
   init_scene();
 
   GizmoCamera *new_cam = scene_add_camera(&main_scene,
-                                     &(CameraCreateDescriptor){
-                                         .speed = 20.0f,
-                                         .clock = &main_clock,
-                                         .mode = CameraMode_Fixed,
-                                         .sensitivity = 0.2f,
-                                         .wheel_sensitivity = 0.01f,
-                                     },
-                                     renderer_device(&main_renderer),
-                                     renderer_queue(&main_renderer));
+                                          &(CameraCreateDescriptor){
+                                              .speed = 20.0f,
+                                              .clock = &main_clock,
+                                              .mode = CameraMode_Fixed,
+                                              .sensitivity = 0.2f,
+                                              .wheel_sensitivity = 0.01f,
+                                          },
+                                          renderer_device(&main_renderer),
+                                          renderer_queue(&main_renderer));
 
   gizmo_camera_translate(new_cam, (vec3){10.0f, 10.f, 2.0f});
-  
 
   /*mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});

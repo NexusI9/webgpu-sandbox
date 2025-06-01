@@ -1,10 +1,10 @@
-#ifndef _MESH_H_
-#define _MESH_H_
+#ifndef _MESH_CORE_H_
+#define _MESH_CORE_H_
 
+#include "../camera.h"
 #include "../resources/geometry/vertex.h"
 #include "../resources/primitive/primitive.h"
-#include "camera.h"
-#include "shader.h"
+#include "../shader.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -15,6 +15,12 @@
 
 #define MESH_SUCCESS 0
 #define MESH_ALLOC_FAILURE 1
+
+typedef struct {
+  struct Mesh **entries;
+  size_t capacity;
+  size_t length;
+} MeshRefList;
 
 // Builder Pattern | Descriptor Pattern
 typedef struct {
@@ -41,19 +47,6 @@ typedef struct {
   mat4 model;
   vec4 position;
 } __attribute__((aligned(16))) MeshUniform;
-
-// TODO: make it a linked list
-typedef struct {
-  struct Mesh **entries;
-  size_t capacity;
-  size_t length;
-} MeshRefList;
-
-typedef struct {
-  struct Mesh *entries;
-  size_t capacity;
-  size_t length;
-} MeshList;
 
 typedef struct {
   VertexAttribute attribute;
@@ -131,16 +124,5 @@ MeshUniform mesh_model_uniform(Mesh *);
 MeshVertex *mesh_vertex_base(Mesh *);
 MeshVertex *mesh_vertex_wireframe(Mesh *);
 
-Shader *mesh_shader_texture(Mesh *);
-Shader *mesh_shader_shadow(Mesh *);
-Shader *mesh_shader_wireframe(Mesh *);
-Shader *mesh_shader_solid(Mesh *);
 
-int mesh_list_create(MeshList *, size_t);
-Mesh *mesh_list_insert(MeshList *);
-
-int mesh_reference_list_create(MeshRefList *, size_t);
-Mesh *mesh_reference_list_insert(MeshRefList *, Mesh *);
-int mesh_reference_list_transfert(MeshRefList *, MeshRefList *);
-int mesh_reference_list_copy(const MeshRefList *, MeshRefList *);
 #endif

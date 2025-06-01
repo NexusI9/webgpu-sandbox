@@ -1,6 +1,6 @@
 #ifndef _DEBUG_VIEWS_H_
 #define _DEBUG_VIEWS_H_
-#include "../runtime/mesh.h"
+#include "../runtime/mesh/mesh.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
 #include <webgpu/webgpu.h>
