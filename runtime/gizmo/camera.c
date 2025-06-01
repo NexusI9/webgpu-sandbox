@@ -35,11 +35,10 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
 void gizmo_camera_translate(GizmoCamera *gizmo, vec3 position) {
 
   // transform target
-  //camera_translate(gizmo->target, position);
+  camera_translate(gizmo->target, position);
 
   // transform mesh
-  
-  
+  mesh_reference_list_translate(&gizmo->meshes, position);
 }
 void gizmo_camera_rotate(GizmoCamera *gizmo, vec3 rotation) {}
 void gizmo_camera_scale(GizmoCamera *gizmo, vec3 scale) {}

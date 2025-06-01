@@ -110,7 +110,7 @@ void mesh_draw(MeshVertex *, Shader *, WGPURenderPassEncoder *, const Camera *,
 void mesh_build(Mesh *, Shader *);
 
 void mesh_scale(Mesh *, vec3);
-void mesh_position(Mesh *, vec3);
+void mesh_translate(Mesh *, vec3);
 void mesh_rotate(Mesh *, vec3);
 void mesh_rotate_quat(Mesh *, versor);
 

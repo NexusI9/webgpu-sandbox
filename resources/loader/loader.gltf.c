@@ -462,7 +462,7 @@ void loader_gltf_mesh_position(Mesh *mesh, const char *name, cgltf_data *data) {
 
       // set translation
       if (node->has_translation)
-        mesh_position(mesh, (vec3){
+        mesh_translate(mesh, (vec3){
                                 node->translation[0],
                                 node->translation[1],
                                 node->translation[2],

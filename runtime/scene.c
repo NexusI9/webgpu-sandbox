@@ -1,5 +1,6 @@
 #include "scene.h"
 #include "../utils/system.h"
+#include "material.h"
 
 static void scene_init_light_list(Scene *);
 static MeshRefList *scene_layer_gizmo(Scene *);
@@ -386,6 +387,18 @@ GizmoCamera *scene_add_camera(Scene *scene, const CameraCreateDescriptor *desc,
   // transfert gizmo mesh pointers to render_list
   MeshRefList *render_list = scene_layer_gizmo(scene);
   mesh_reference_list_transfert(&gizmo_cam->meshes, render_list);
+
+  /*DELETEME:
+  printf("gizmo list:\n");
+  for (size_t i = 0; i < gizmo_cam->meshes.length; i++)
+    printf("%p\n", gizmo_cam->meshes.entries[i]);
+  printf("\n");
+
+  printf("scene list:\n");
+  for (size_t i = 0; i < scene->meshes.length; i++)
+    printf("%p\n", &scene->meshes.entries[i]);
+  printf("\n");
+  */
 
   return gizmo_cam;
 }

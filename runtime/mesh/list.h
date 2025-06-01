@@ -11,4 +11,9 @@ typedef struct {
 int mesh_list_create(MeshList *, size_t);
 Mesh *mesh_list_insert(MeshList *);
 
+void mesh_list_translate(MeshList *, vec3);
+void mesh_list_rotate(MeshList *, vec3);
+void mesh_list_rotate_quat(MeshList *, versor);
+void mesh_list_scale(MeshList *, vec3);
+
 #endif

@@ -184,7 +184,7 @@ void add_gizmo() {
                              .name = "gizmo shader",
                          });
 
-  mesh_position(gizmo, (vec3){2.0f, 3.3f, 2.0f});
+  mesh_translate(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 
   material_texture_bind_views(gizmo, main_scene.active_camera,
                               &main_scene.viewport, 0);
@@ -209,7 +209,7 @@ void add_cube(vec3 position) {
                       .queue = renderer_queue(&main_renderer),
                   });
 
-  mesh_position(cube, position);
+  mesh_translate(cube, position);
 
   material_texture_bind_views(cube, main_scene.active_camera,
                               &main_scene.viewport, 0);

@@ -1,6 +1,6 @@
 #include "list.h"
 #include "../../utils/system.h"
-
+#include "core.h"
 
 int mesh_list_create(MeshList *list, size_t capacity) {
 
@@ -35,3 +35,19 @@ Mesh *mesh_list_insert(MeshList *list) {
   return &list->entries[list->length++];
 }
 
+void mesh_list_translate(MeshList *list, vec3 position) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_translate(&list->entries[i], position);
+}
+void mesh_list_rotate(MeshList *list, vec3 rotation) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_rotate(&list->entries[i], rotation);
+}
+void mesh_list_rotate_quat(MeshList *list, versor quat) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_rotate_quat(&list->entries[i], quat);
+}
+void mesh_list_scale(MeshList *list, vec3 scale) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_scale(&list->entries[i], scale);
+}

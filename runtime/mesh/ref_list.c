@@ -1,5 +1,6 @@
 #include "ref_list.h"
 #include "../utils/system.h"
+#include "core.h"
 #include <string.h>
 
 int mesh_reference_list_create(MeshRefList *list, size_t capacity) {
@@ -88,4 +89,21 @@ int mesh_reference_list_copy(const MeshRefList *src, MeshRefList *dest) {
   // copy meshes pointer
   memcpy(dest->entries, src->entries, dest->length * sizeof(Mesh *));
   return MESH_SUCCESS;
+}
+
+void mesh_reference_list_translate(MeshRefList *list, vec3 position) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_translate(list->entries[i], position);
+}
+void mesh_reference_list_rotate(MeshRefList *list, vec3 rotation) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_rotate(list->entries[i], rotation);
+}
+void mesh_reference_list_rotate_quat(MeshRefList *list, versor quat) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_rotate_quat(list->entries[i], quat);
+}
+void mesh_reference_list_scale(MeshRefList *list, vec3 scale) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_scale(list->entries[i], scale);
 }

@@ -49,7 +49,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
   // compute view new position
   vec3 new_position;
   debug_view_compute_position(debug_view, new_position);
-  mesh_position(new_view, new_position);
+  mesh_translate(new_view, new_position);
 
   pipeline_set_primitive(&mesh_shader_texture(new_view)->pipeline,
                          (WGPUPrimitiveState){

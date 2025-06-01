@@ -1,12 +1,12 @@
 #include "./core.h"
 #include "../backend/buffer.h"
 #include "../backend/shadow_pass.h"
+#include "../light.h"
+#include "../pipeline.h"
 #include "../resources/geometry/edge.h"
 #include "../resources/prefab/debug/line.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
-#include "../light.h"
-#include "../pipeline.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
@@ -250,7 +250,7 @@ void mesh_scale(Mesh *mesh, vec3 scale) {
 /**
    Apply translation to mesh transform matrix
  */
-void mesh_position(Mesh *mesh, vec3 position) {
+void mesh_translate(Mesh *mesh, vec3 position) {
   glm_vec3_copy(position, mesh->position);
 
   mat4 transform_matrix = {

@@ -20,7 +20,7 @@ void gizmo_create_billboard(Mesh *mesh,
                               });
 
   // set mesh position to light position
-  mesh_position(mesh, *desc->position);
+  mesh_translate(mesh, *desc->position);
 
   // scale down gizmo
   mesh_scale(mesh, *desc->scale);
