@@ -1,7 +1,7 @@
 #ifndef _LOADER_GLTF_H_
 #define _LOADER_GLTF_H_
 
-#include "../runtime/scene.h"
+#include "../runtime/scene/scene.h"
 #include "cgltf/cgltf.h"
 #include <webgpu/webgpu.h>
 

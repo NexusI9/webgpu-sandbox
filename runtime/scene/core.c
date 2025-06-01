@@ -1,0 +1,81 @@
+#include "core.h"
+#include "../utils/system.h"
+#include "../material.h" 
+
+static void scene_init_light_list(Scene *);
+static Mesh *scene_new_mesh(Scene *);
+
+void scene_create(Scene *scene, Camera camera, Viewport viewport) {
+
+  // create camera list, and set active camera
+  camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
+  scene->active_camera = camera_list_insert(&scene->cameras, &camera);
+
+  // set viewport
+  scene->viewport = viewport;
+
+  // init global mesh list
+  mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
+
+  // init mesh layers
+  mesh_reference_list_create(&scene->layer.lit,
+                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  mesh_reference_list_create(&scene->layer.unlit,
+                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  mesh_reference_list_create(&scene->layer.fixed,
+                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+
+  // init gizmo list
+  gizmo_list_create(&scene->gizmo, GIZMO_LIST_CAPACITY_DEFAULT);
+
+  // init lights
+  scene_init_light_list(scene);
+}
+
+/**
+ Return the new mesh pointer from the global array and push the new pointer to
+ the right scene layer
+ */
+Mesh *scene_new_mesh_lit(Scene *scene) {
+  Mesh *new_mesh = scene_new_mesh(scene);
+  return mesh_reference_list_insert(&scene->layer.lit, new_mesh);
+}
+
+Mesh *scene_new_mesh_unlit(Scene *scene) {
+  Mesh *new_mesh = scene_new_mesh(scene);
+  return mesh_reference_list_insert(&scene->layer.unlit, new_mesh);
+}
+
+Mesh *scene_new_mesh_fixed(Scene *scene) {
+  Mesh *new_mesh = scene_new_mesh(scene);
+  return mesh_reference_list_insert(&scene->layer.fixed, new_mesh);
+}
+
+
+Mesh *scene_new_mesh(Scene *scene) { return mesh_list_insert(&scene->meshes); }
+
+// TODO: move light list in Light not Scene anymore
+void scene_init_light_list(Scene *scene) {
+
+  // init point light list
+  scene->lights.point.capacity = LIGHT_MAX_CAPACITY;
+  scene->lights.point.length = 0;
+
+  // init spot light list
+  scene->lights.spot.capacity = LIGHT_MAX_CAPACITY;
+  scene->lights.spot.length = 0;
+
+  // init ambient light list
+  scene->lights.ambient.capacity = LIGHT_MAX_CAPACITY;
+  scene->lights.ambient.length = 0;
+
+  // init ambient light list
+  scene->lights.sun.capacity = LIGHT_MAX_CAPACITY;
+  scene->lights.sun.length = 0;
+}
+
+/**
+   Return pointer to scene mesh pool
+ */
+MeshList *scene_mesh_list(Scene *scene) { return &scene->meshes; }
+

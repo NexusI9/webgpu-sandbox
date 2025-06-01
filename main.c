@@ -40,7 +40,7 @@
 #include "runtime/light.h"
 #include "runtime/material.h"
 #include "runtime/mesh/mesh.h"
-#include "runtime/scene.h"
+#include "runtime/scene/scene.h"
 #include "runtime/shader.h"
 #include "runtime/viewport.h"
 

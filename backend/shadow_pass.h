@@ -1,7 +1,7 @@
 #ifndef _SHADOW_PASS_H_
 #define _SHADOW_PASS_H_
 
-#include "../runtime/scene.h"
+#include "../runtime/scene/scene.h"
 #include <webgpu/webgpu.h>
 
 #define SHADOW_DEPTH_FORMAT WGPUTextureFormat_Depth32Float

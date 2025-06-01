@@ -1,11 +1,11 @@
-#ifndef _SCENE_H_
-#define _SCENE_H_
+#ifndef _SCENE_CORE_H_
+#define _SCENE_CORE_H_
 
-#include "gizmo/list.h"
-#include "camera.h"
-#include "light.h"
-#include "mesh/mesh.h"
-#include "viewport.h"
+#include "../camera.h"
+#include "../gizmo/list.h"
+#include "../light.h"
+#include "../mesh/mesh.h"
+#include "../viewport.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 
@@ -142,36 +142,6 @@ MeshList *scene_mesh_list(Scene *);
 // dynamic rendering
 Mesh *scene_new_mesh_lit(Scene *);
 Mesh *scene_new_mesh_unlit(Scene *);
-
-void scene_build_texture(Scene *);
-void scene_build_shadow(Scene *);
-void scene_build_solid(Scene *);
-void scene_build_wireframe(Scene *);
-
-void scene_draw_texture(Scene *, WGPURenderPassEncoder *);
-void scene_draw_shadow(Scene *, WGPURenderPassEncoder *);
-void scene_draw_solid(Scene *, WGPURenderPassEncoder *);
-void scene_draw_wireframe(Scene *, WGPURenderPassEncoder *);
-
-// fixed rendering
 Mesh *scene_new_mesh_fixed(Scene *);
-
-void scene_build_fixed(Scene *);
-
-void scene_draw_fixed(Scene *, WGPURenderPassEncoder *);
-
-// light
-GizmoPointLight *scene_add_point_light(Scene *, PointLightDescriptor *, WGPUDevice *,
-                                  WGPUQueue *);
-GizmoSpotLight *scene_add_spot_light(Scene *, SpotLightDescriptor *, WGPUDevice *,
-                                WGPUQueue *);
-GizmoAmbientLight *scene_add_ambient_light(Scene *, AmbientLightDescriptor *,
-                                      WGPUDevice *, WGPUQueue *);
-GizmoSunLight *scene_add_sun_light(Scene *, SunLightDescriptor *, WGPUDevice *,
-                              WGPUQueue *);
-
-// camera
-GizmoCamera *scene_add_camera(Scene *, const CameraCreateDescriptor *, WGPUDevice *,
-                         WGPUQueue *);
 
 #endif

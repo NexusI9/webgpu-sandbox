@@ -1,7 +1,7 @@
 #ifndef _RENDERER_H_
 #define _RENDERER_H_
 
-#include "../runtime/scene.h"
+#include "../runtime/scene/scene.h"
 #include "clock.h"
 #include "webgpu/webgpu.h"
 

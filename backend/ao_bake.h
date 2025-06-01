@@ -2,7 +2,7 @@
 #define _AO_BAKE_H_
 
 #include "../resources/geometry/triangle.h"
-#include "../runtime/scene.h"
+#include "../runtime/scene/scene.h"
 #include "../runtime/texture.h"
 
 // AO Texture
