@@ -1,7 +1,7 @@
 #ifndef _GIZMO_AMBIENT_LIGHT_H_
 #define _GIZMO_AMBIENT_LIGHT_H_
 
-#include "../light.h"
+#include "../light/light.h"
 #include "../mesh/mesh.h"
 #include "./core.h"
 

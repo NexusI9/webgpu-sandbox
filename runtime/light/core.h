@@ -1,16 +1,16 @@
-#ifndef _LIGHT_H_
-#define _LIGHT_H_
+#ifndef _LIGHT_CORE_H_
+#define _LIGHT_CORE_H_
 
-#include "mesh/mesh.h"
-#include "shader.h"
-#include "viewport.h"
+#include "../mesh/mesh.h"
+#include "../shader.h"
+#include "../viewport.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <stdint.h>
 
-#define LIGHT_MAX_CAPACITY 16
 #define LIGHT_POINT_VIEWS 6
 #define LIGHT_SPOT_VIEW 1
+#define LIGHT_MAX_CAPACITY 16
 #define LIGHT_SUN_DISTANCE 10
 
 // core type
@@ -141,11 +141,6 @@ typedef struct {
 } __attribute__((aligned(16))) SunLightListUniform;
 
 typedef struct {
-  mat4 views[LIGHT_POINT_VIEWS];
-  uint8_t length;
-} LightViews;
-
-typedef struct {
   WGPUTextureView texture;
   WGPUSampler sampler;
 } LightTexture;
@@ -179,14 +174,4 @@ typedef struct {
   SunLight entries[LIGHT_MAX_CAPACITY];
 } SunLightList;
 
-// constructors
-void light_create_point(PointLight *, PointLightDescriptor *);
-void light_create_spot(SpotLight *, SpotLightDescriptor *);
-void light_create_ambient(AmbientLight *, AmbientLightDescriptor *);
-void light_create_sun(SunLight *, SunLightDescriptor *);
-
-// projections/view computing
-LightViews light_point_views(vec3, float, float);
-LightViews light_spot_view(vec3, vec3, float);
-LightViews light_sun_view(vec3, float);
 #endif

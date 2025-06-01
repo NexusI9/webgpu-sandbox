@@ -1,6 +1,6 @@
 #ifndef _MATERIAL_H_
 #define _MATERIAL_H_
-#include "light.h"
+#include "light/light.h"
 #include "mesh/mesh.h"
 #include "shader.h"
 #include "webgpu/webgpu.h"

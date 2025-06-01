@@ -3,7 +3,7 @@
 
 #include "../camera.h"
 #include "../gizmo/list.h"
-#include "../light.h"
+#include "../light/light.h"
 #include "../mesh/mesh.h"
 #include "../viewport.h"
 #include "webgpu/webgpu.h"
@@ -80,13 +80,6 @@ typedef struct {
   MeshRefList fixed;
 } SceneLayerList;
 
-typedef struct {
-  PointLightList point;
-  SpotLightList spot;
-  AmbientLightList ambient;
-  SunLightList sun;
-} SceneLightList;
-
 /*
   GIZMO LIST
   Gizmos' scene entities (meshes) are spearated from their data (primary
@@ -121,9 +114,9 @@ typedef struct {
   Viewport viewport;
 
   // VALUES LISTS
-  MeshList meshes;       // meshes global list
-  SceneLightList lights; // light list
-  CameraList cameras;    // camera list
+  MeshList meshes;    // meshes global list
+  LightList lights;   // light list
+  CameraList cameras; // camera list
 
   // REFERENCES LISTS (PTR)
   SceneLayerList layer; // meshes render layers

@@ -2,7 +2,7 @@
 #define _GIZMO_LIST_H_
 
 #include "../camera.h"
-#include "../light.h"
+#include "../light/light.h"
 #include "../mesh/mesh.h"
 #include "./camera.h"
 #include "./light_ambient.h"

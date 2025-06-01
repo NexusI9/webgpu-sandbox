@@ -1,7 +1,7 @@
 #include "./core.h"
 #include "../backend/buffer.h"
 #include "../backend/shadow_pass.h"
-#include "../light.h"
+#include "../light/light.h"
 #include "../pipeline.h"
 #include "../resources/geometry/edge.h"
 #include "../resources/prefab/debug/line.h"
