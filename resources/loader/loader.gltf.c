@@ -13,7 +13,7 @@
 #include <string.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include "../backend/buffer.h"
-#include "../runtime/material.h"
+#include "../runtime/material/material.h"
 #include "../runtime/texture.h"
 #include "stb/stb_image.h" 
 

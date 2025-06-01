@@ -1,6 +1,6 @@
 #include "billboard.h"
 #include "../resources/primitive/plane.h"
-#include "../runtime/material.h"
+#include "../runtime/material/material.h"
 #include "../runtime/texture.h"
 
 /**

@@ -1,6 +1,6 @@
 #include "shadow_pass.h"
 #include "../resources/prefab/debug/view.h"
-#include "../runtime/material.h"
+#include "../runtime/material/material.h"
 #include "../runtime/texture.h"
 #include "../utils/math.h"
 #include <string.h>
@@ -413,7 +413,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
       // 3. Clear meshes bind group
       for (int m = 0; m < target_mesh_list->length; m++) {
         Mesh *current_mesh = target_mesh_list->entries[m];
-        material_clear_bindings_shadow(current_mesh);
+        material_shadow_clear_bindings(current_mesh);
         // destroy previous pipeline for next views
         pipeline_destroy(shader_pipeline(mesh_shader_shadow(current_mesh)));
       }
@@ -476,7 +476,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
     // 3. Clear meshes bind group
     for (int m = 0; m < target_mesh_list->length; m++) {
       Mesh *current_mesh = target_mesh_list->entries[m];
-      material_clear_bindings_shadow(current_mesh);
+      material_shadow_clear_bindings(current_mesh);
     }
   }
 
@@ -519,7 +519,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
     // 3. Clear meshes bind group
     for (int m = 0; m < desc->scene->layer.lit.length; m++) {
       Mesh *current_mesh = target_mesh_list->entries[m];
-      material_clear_bindings_shadow(current_mesh);
+      material_shadow_clear_bindings(current_mesh);
     }
   }
 

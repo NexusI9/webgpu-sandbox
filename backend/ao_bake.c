@@ -1,14 +1,8 @@
 #include "ao_bake.h"
-#include "../resources/prefab/debug/line.h"
-#include "../runtime/material.h"
 #include "../utils/point.h"
 #include "../utils/system.h"
 #include "string.h"
-#include "webgpu/webgpu.h"
-#include <cglm/cglm.h>
-#include <emscripten/emscripten.h>
-#include <math.h>
-#include <stdint.h>
+
 
 static inline void ao_bake_global(const AOBakeDescriptor *desc);
 static inline void ao_bake_local(const AOBakeDescriptor *desc);

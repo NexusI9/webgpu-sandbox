@@ -1,19 +1,5 @@
 #include "core.h"
 
-#include "light.h"
-#include "../resources/primitive/plane.h"
-#include "../utils/system.h"
-#include "../gizmo/gizmo.h"
-#include "../texture.h"
-#include "../camera.h"
-#include "emscripten/emscripten.h"
-#include "../material.h"
-#include "../shader.h"
-#include "../viewport.h"
-#include "webgpu/webgpu.h"
-#include <cglm/cglm.h>
-#include <stdio.h>
-
 /* =============================== SHADOW PROCESS ==============================
   Shadows use a Shadow Map approach. Meaning that they render multiple
   time the scene but under various view angles (each lights angles) to generate

@@ -1,74 +1,17 @@
-#include "material.h"
-#include "../backend/shadow_pass.h"
+#include "texture.h"
+#include "../../backend/shadow_pass.h"
 
-static void material_bind_views(Mesh *, mesh_get_shader_callback, Camera *,
-                                Viewport *, uint8_t);
 
 /**
-   Bind Mesh, Camera and Projection matrix to a given mesh shader
-   Note that the binding process follows a fixed convention of order, meaning
-   one shall ensure the shader actually fits the bellow binding order:
-   - Binding 0: Viewport projection matrix
-   - Binding 1: Camera matrix
-   - Binding 2: Model matrix
+   Clear the texture shader bind groups of mesh
  */
-void material_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
-                         Camera *camera, Viewport *viewport,
-                         uint8_t group_index) {
-
-  CameraUniform uCamera = camera_uniform(camera);
-  ViewportUniform uViewport = viewport_uniform(viewport);
-  MeshUniform uMesh = mesh_model_uniform(mesh);
-
-  shader_add_uniform(
-      target_shader(mesh),
-      &(ShaderCreateUniformDescriptor){
-          .group_index = group_index,
-          .entry_count = 3,
-          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-          .entries =
-              (ShaderBindGroupUniformEntry[]){
-                  // viewport
-                  {
-                      .binding = 0,
-                      .data = &uViewport,
-                      .size = sizeof(ViewportUniform),
-                      .offset = 0,
-                  },
-                  // camera
-                  {
-                      .binding = 1,
-                      .data = &uCamera,
-                      .size = sizeof(CameraUniform),
-                      .offset = 0,
-                      .update_callback = camera_update_matrix_uniform,
-                      .update_data = camera,
-                  },
-                  // model
-                  {
-                      .binding = 2,
-                      .data = &uMesh,
-                      .size = sizeof(MeshUniform),
-                      .offset = 0,
-                  },
-              },
-      });
+void material_texture_clear_bindings(Mesh *mesh) {
+  shader_bind_group_clear(mesh_shader_texture(mesh));
 }
 
 void material_texture_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport,
                                  uint8_t group_index) {
   material_bind_views(mesh, mesh_shader_texture, camera, viewport, group_index);
-}
-
-void material_wireframe_bind_views(Mesh *mesh, Camera *camera,
-                                   Viewport *viewport, uint8_t group_index) {
-  material_bind_views(mesh, mesh_shader_wireframe, camera, viewport,
-                      group_index);
-}
-
-void material_solid_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport,
-                               uint8_t group_index) {
-  material_bind_views(mesh, mesh_shader_solid, camera, viewport, group_index);
 }
 
 /**
@@ -215,57 +158,7 @@ void material_texture_bind_lights(Mesh *mesh, AmbientLightList *ambient_list,
       });
 }
 
-/**
-   Clear the texture shader bind groups of mesh
- */
-void material_clear_bindings_texture(Mesh *mesh) {
-  shader_bind_group_clear(mesh_shader_texture(mesh));
-}
 
-/**
-   Clear the shadow shader bind groups of mesh
- */
-void material_clear_bindings_shadow(Mesh *mesh) {
-  shader_bind_group_clear(mesh_shader_shadow(mesh));
-}
-
-/**
-   Bind a specific point light view to the mesh's shadow shader
-   The function is called during the scene shadow updating process
-   As to provide to the shadow shader each lights views.
-
-   Note that the view matrix shall be combination of the [projection view] *
-   [light view] already multiplied together as there is currently no need to
-   upload separate views in the shader.
- */
-
-void material_shadow_bind_views(Mesh *mesh, mat4 *view) {
-
-  MeshUniform uModel = mesh_model_uniform(mesh);
-
-  shader_add_uniform(
-      mesh_shader_shadow(mesh),
-      &(ShaderCreateUniformDescriptor){
-          .group_index = 0,
-          .entry_count = 2,
-          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-          .entries =
-              (ShaderBindGroupUniformEntry[]){
-                  {
-                      .binding = 0,
-                      .data = view,
-                      .size = sizeof(mat4),
-                      .offset = 0,
-                  },
-                  {
-                      .binding = 1,
-                      .data = &uModel,
-                      .size = sizeof(MeshUniform),
-                      .offset = 0,
-                  },
-              },
-      });
-}
 
 /**
    Bind the shadow maps and sampler to the default shader
@@ -380,13 +273,3 @@ void material_texture_add_sampler(Mesh *mesh,
   shader_add_sampler(mesh_shader_texture(mesh), desc);
 }
 
-void material_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
-
-  pipeline_set_primitive(shader_pipeline(mesh_shader_shadow(mesh)),
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_Back,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
-}

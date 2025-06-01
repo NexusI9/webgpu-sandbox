@@ -1,6 +1,6 @@
 #include "grid.h"
 #include "../resources/primitive/plane.h"
-#include "../runtime/material.h"
+#include "../runtime/material/material.h"
 #include "webgpu/webgpu.h"
 
 void gizmo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {

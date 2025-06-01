@@ -1,17 +1,8 @@
 #include "renderer.h"
-#include "../runtime/material.h"
-#include "../utils/system.h"
 #include "ao_bake.h"
-#include "clock.h"
-#include "emscripten/em_types.h"
-#include "emscripten/emscripten.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "shadow_pass.h"
-#include "string.h"
-#include "webgpu/webgpu.h"
-#include <stddef.h>
-#include <stdint.h>
 
 static int renderer_resize(renderer *, int, const EmscriptenUiEvent *, void *);
 static WGPUSwapChain renderer_create_swapchain(const renderer *);

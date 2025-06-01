@@ -1,6 +1,4 @@
 #include "core.h"
-#include "../utils/system.h"
-#include "../material.h" 
 
 static void scene_init_light_list(Scene *);
 static Mesh *scene_new_mesh(Scene *);

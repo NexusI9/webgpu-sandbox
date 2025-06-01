@@ -1,13 +1,7 @@
 #ifndef _SCENE_CORE_H_
 #define _SCENE_CORE_H_
 
-#include "../camera.h"
 #include "../gizmo/list.h"
-#include "../light/light.h"
-#include "../mesh/mesh.h"
-#include "../viewport.h"
-#include "webgpu/webgpu.h"
-#include <stddef.h>
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
