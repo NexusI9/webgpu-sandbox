@@ -11,10 +11,11 @@
 // HEADERS
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
+#include <stdlib.h>
 #include <webgpu/webgpu.h>
 
 #include "resources/prefab/debug/line.h"
-#include "resources/prefab/gizmo/grid/grid.h"
+#include "runtime/gizmo/grid.h"
 
 // utils
 #include "resources/primitive/primitive.h"
@@ -74,15 +75,16 @@ void init_scene() {
   });
 
   // set camera
-  Camera camera = camera_create(&(CameraCreateDescriptor){
-      .speed = 20.0f,
-      .clock = &main_clock,
-      .mode = CameraMode_Flying,
-      .sensitivity = 0.2f,
-      .wheel_sensitivity = 0.01f,
-  });
+  Camera camera;
+  camera_create(&camera, &(CameraCreateDescriptor){
+                             .speed = 20.0f,
+                             .clock = &main_clock,
+                             .mode = CameraMode_Flying,
+                             .sensitivity = 0.2f,
+                             .wheel_sensitivity = 0.01f,
+                         });
 
-  main_scene = scene_create(camera, viewport);
+  scene_create(&main_scene, camera, viewport);
 
   // init camera position
   camera_look_at(main_scene.active_camera,
@@ -222,7 +224,7 @@ void add_grid() {
   glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
 
   Mesh *grid = scene_new_mesh_fixed(&main_scene);
-  prefab_grid_create(grid, &(GridCreateDescriptor){
+  gizmo_grid_create(grid, &(GizmoGridCreateDescriptor){
                                .uniform = grid_uniform,
                                .camera = main_scene.active_camera,
                                .viewport = &main_scene.viewport,
@@ -267,11 +269,11 @@ int main(int argc, const char *argv[]) {
   printf("WASM INIT\n");
 
   // init renderer
-  main_renderer = renderer_create(&(RendererCreateDescriptor){
-      .name = "canvas",
-      .clock = &main_clock,
-      .lock_mouse = true,
-  });
+  renderer_create(&main_renderer, &(RendererCreateDescriptor){
+                                      .name = "canvas",
+                                      .clock = &main_clock,
+                                      .lock_mouse = true,
+                                  });
 
   renderer_init(&main_renderer);
 
@@ -281,14 +283,16 @@ int main(int argc, const char *argv[]) {
   // set scene
   init_scene();
 
-  Camera *new_cam = scene_new_camera(&main_scene);
-  *new_cam = camera_create(&(CameraCreateDescriptor){
-      .speed = 20.0f,
-      .clock = &main_clock,
-      .mode = CameraMode_Fixed,
-      .sensitivity = 0.2f,
-      .wheel_sensitivity = 0.01f,
-  });
+  scene_add_camera(&main_scene,
+                   &(CameraCreateDescriptor){
+                       .speed = 20.0f,
+                       .clock = &main_clock,
+                       .mode = CameraMode_Fixed,
+                       .sensitivity = 0.2f,
+                       .wheel_sensitivity = 0.01f,
+                   },
+                   renderer_device(&main_renderer),
+                   renderer_queue(&main_renderer));
 
   /*mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});

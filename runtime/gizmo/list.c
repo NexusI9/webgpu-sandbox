@@ -1,99 +1,10 @@
-#include "gizmo.h"
-#include "../resources/primitive/plane.h"
-#include "../runtime/material.h"
-#include "../runtime/texture.h"
-#include "light.h"
-#include "mesh.h"
+#include "list.h"
 #include "string.h"
 
 static void *gizmo_list_expand(void **, size_t, size_t, size_t *);
 static void *gizmo_list_alloc(void **, size_t, size_t, size_t *, size_t *);
 static int gizmo_list_insert(const GizmoListInsertDescriptor *);
 static void *gizmo_list_new(const GizmoListNewDescriptor *);
-
-/**
-   Create a plane mesh with a billboard shader
- */
-void gizmo_create_billboard(Gizmo *mesh,
-                            const GizmoCreateBillboardDescriptor *desc) {
-
-  // create plane
-  Primitive plane = primitive_plane();
-
-  mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
-                                  .primitive = plane,
-                                  .device = desc->device,
-                                  .queue = desc->queue,
-                                  .name = "light",
-                              });
-
-  // set mesh position to light position
-  mesh_position(mesh, *desc->position);
-
-  // scale down gizmo
-  mesh_scale(mesh, *desc->scale);
-
-  // assign billboard shader
-  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
-                            .device = desc->device,
-                            .queue = desc->queue,
-                            .label = "shader",
-                            .name = "shader",
-                            .path = SHADER_PATH_BILLBOARD,
-                        });
-
-  // set double side rendering
-  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(mesh)),
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_None,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
-
-  // bind view matrices
-  material_texture_bind_views(mesh, desc->camera, desc->viewport, 0);
-
-  // TODO: create UI Atlas
-  Texture light_texture;
-  texture_create_from_file(&light_texture, desc->texture_path);
-
-  // bind texture + sampler
-  material_texture_add_texture(
-      mesh, &(ShaderCreateTextureDescriptor){
-                .group_index = 1,
-                .entry_count = 1,
-                .visibility = WGPUShaderStage_Fragment,
-                .entries = (ShaderBindGroupTextureEntry[]){{
-                    .binding = 0,
-                    .width = light_texture.width,
-                    .height = light_texture.height,
-                    .data = light_texture.data,
-                    .size = light_texture.size,
-                    .channels = light_texture.channels,
-                    .dimension = WGPUTextureViewDimension_2D,
-                    .format = WGPUTextureFormat_RGBA8Unorm,
-                    .sample_type = WGPUTextureSampleType_Float,
-                }},
-            });
-
-  material_texture_add_sampler(mesh,
-                               &(ShaderCreateSamplerDescriptor){
-                                   .group_index = 1,
-                                   .entry_count = 1,
-                                   .visibility = WGPUShaderStage_Fragment,
-                                   .entries = (ShaderBindGroupSamplerEntry[]){{
-                                       .binding = 1,
-                                       .addressModeU = WGPUAddressMode_Repeat,
-                                       .addressModeV = WGPUAddressMode_Repeat,
-                                       .addressModeW = WGPUAddressMode_Repeat,
-                                       .minFilter = WGPUFilterMode_Linear,
-                                       .magFilter = WGPUFilterMode_Linear,
-                                       .type = WGPUSamplerBindingType_Filtering,
-                                       .compare = WGPUCompareFunction_Undefined,
-                                   }},
-                               });
-}
 
 void *gizmo_list_expand(void **dest, size_t capacity, size_t type_size,
                         size_t *new_capacity) {
@@ -160,7 +71,7 @@ int gizmo_list_create(GizmoList *list, size_t capacity) {
                    sizeof(GizmoCamera), &list->camera.capacity,
                    &list->camera.length);
 
-  return GIZMO_SUCCESS;
+  return GIZMO_LIST_SUCCESS;
 }
 
 /**
@@ -172,21 +83,21 @@ int gizmo_list_insert(const GizmoListInsertDescriptor *desc) {
   // check if list is init
   if (desc->entries == NULL) {
     perror("Gizmo list not initialized\n");
-    return GIZMO_ERROR;
+    return GIZMO_LIST_ERROR;
   }
 
   size_t new_capacity = 2 * (*desc->capacity);
   // check list capacity
   if (*desc->length == *desc->capacity &&
       gizmo_list_expand(desc->entries, new_capacity, sizeof(desc->type_size),
-                        desc->capacity) != GIZMO_SUCCESS)
-    return GIZMO_ERROR;
+                        desc->capacity) != GIZMO_LIST_SUCCESS)
+    return GIZMO_LIST_ERROR;
 
   // copy item to list memory
   memcpy(&desc->entries[(*desc->length)++], desc->new_entry,
          sizeof(desc->type_size));
 
-  return GIZMO_SUCCESS;
+  return GIZMO_LIST_SUCCESS;
 }
 
 /**
@@ -205,7 +116,7 @@ void *gizmo_list_new(const GizmoListNewDescriptor *desc) {
   // check list capacity
   if (*desc->length == *desc->capacity &&
       gizmo_list_expand(desc->entries, new_capacity, sizeof(desc->type_size),
-                        desc->capacity) != GIZMO_SUCCESS)
+                        desc->capacity) != GIZMO_LIST_SUCCESS)
     return NULL;
 
   return desc->entries[(*desc->length)++];
@@ -222,7 +133,7 @@ int gizmo_list_insert_point_light(GizmoList *list, PointLight *light,
 
   // copy mesh list
   if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_ALLOC_FAIL;
+    return GIZMO_LIST_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
@@ -251,7 +162,7 @@ int gizmo_list_insert_ambient_light(GizmoList *list, AmbientLight *light,
 
   // copy mesh list
   if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_ALLOC_FAIL;
+    return GIZMO_LIST_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
@@ -280,7 +191,7 @@ int gizmo_list_insert_sun_light(GizmoList *list, SunLight *light,
 
   // copy mesh list
   if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_ALLOC_FAIL;
+    return GIZMO_LIST_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
@@ -309,7 +220,7 @@ int gizmo_list_insert_spot_light(GizmoList *list, SpotLight *light,
 
   // copy mesh list
   if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_ALLOC_FAIL;
+    return GIZMO_LIST_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
@@ -338,7 +249,7 @@ int gizmo_list_insert_camera(GizmoList *list, Camera *camera,
 
   // copy mesh list
   if (mesh_reference_list_copy(mesh_list, &new_entry.meshes) != MESH_SUCCESS)
-    return GIZMO_ALLOC_FAIL;
+    return GIZMO_LIST_ALLOC_FAIL;
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
@@ -349,4 +260,12 @@ int gizmo_list_insert_camera(GizmoList *list, Camera *camera,
       .entries = (void **)&list->camera.entries,
   });
 }
-Camera *gizmo_list_new_camera(GizmoList *list) { return NULL; }
+
+Camera *gizmo_list_new_camera(GizmoList *list) {
+  return (Camera *)gizmo_list_new(&(GizmoListNewDescriptor){
+      .type_size = sizeof(GizmoCamera),
+      .capacity = &list->camera.capacity,
+      .length = &list->camera.length,
+      .entries = (void **)&list->camera.entries,
+  });
+}

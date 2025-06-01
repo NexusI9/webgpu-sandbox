@@ -18,19 +18,17 @@ static WGPUSwapChain renderer_create_swapchain(const renderer *);
 static void renderer_create_texture_view(const renderer *, WGPUTextureView *);
 static void renderer_render(void *);
 
-renderer renderer_create(const RendererCreateDescriptor *rd) {
+void renderer_create(renderer *new_renderer,
+                     const RendererCreateDescriptor *rd) {
 
-  renderer new_renderer;
-  new_renderer.context.name = rd->name;
-  new_renderer.clock = rd->clock;
-  new_renderer.wgpu.instance = wgpuCreateInstance(NULL);
-  new_renderer.wgpu.device = emscripten_webgpu_get_device();
-  new_renderer.wgpu.queue = wgpuDeviceGetQueue(new_renderer.wgpu.device);
+  new_renderer->context.name = rd->name;
+  new_renderer->clock = rd->clock;
+  new_renderer->wgpu.instance = wgpuCreateInstance(NULL);
+  new_renderer->wgpu.device = emscripten_webgpu_get_device();
+  new_renderer->wgpu.queue = wgpuDeviceGetQueue(new_renderer->wgpu.device);
 
   if (rd->lock_mouse)
-    renderer_lock_mouse(&new_renderer);
-
-  return new_renderer;
+    renderer_lock_mouse(new_renderer);
 }
 
 int renderer_resize(renderer *renderer, int event_type,

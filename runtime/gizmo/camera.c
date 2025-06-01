@@ -1,6 +1,6 @@
 #include "camera.h"
 
-void gizmo_camera_create(Gizmo *billboard, Gizmo *mesh,
+void gizmo_camera_create(Mesh *billboard, Mesh *mesh,
                          const GizmoCameraCreateDescriptor *desc) {
 
   // create billboard camera icon

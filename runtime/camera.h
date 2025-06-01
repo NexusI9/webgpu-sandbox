@@ -60,7 +60,7 @@ typedef struct Camera {
 
 } Camera;
 
-Camera camera_create(const CameraCreateDescriptor *);
+void camera_create(Camera*, const CameraCreateDescriptor *);
 void camera_reset(Camera *);
 void camera_set_mode(Camera *, CameraMode);
 void camera_update_matrix_uniform(void *, void *);

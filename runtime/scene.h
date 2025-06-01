@@ -1,8 +1,8 @@
 #ifndef _SCENE_H_
 #define _SCENE_H_
 
+#include "gizmo/gizmo.h"
 #include "camera.h"
-#include "gizmo.h"
 #include "light.h"
 #include "mesh.h"
 #include "viewport.h"
@@ -134,7 +134,7 @@ typedef struct {
 typedef void (*scene_draw_callback)(Scene *, WGPURenderPassEncoder *);
 typedef void (*scene_build_callback)(Scene *);
 
-Scene scene_create(Camera, Viewport);
+void scene_create(Scene *, Camera, Viewport);
 
 // mesh pool
 MeshList *scene_mesh_list(Scene *);
@@ -161,16 +161,17 @@ void scene_build_fixed(Scene *);
 void scene_draw_fixed(Scene *, WGPURenderPassEncoder *);
 
 // light
-size_t scene_add_point_light(Scene *, PointLightDescriptor *, WGPUDevice *,
-                             WGPUQueue *);
-size_t scene_add_spot_light(Scene *, SpotLightDescriptor *, WGPUDevice *,
-                            WGPUQueue *);
-size_t scene_add_ambient_light(Scene *, AmbientLightDescriptor *, WGPUDevice *,
-                               WGPUQueue *);
-size_t scene_add_sun_light(Scene *, SunLightDescriptor *, WGPUDevice *,
-                           WGPUQueue *);
+PointLight *scene_add_point_light(Scene *, PointLightDescriptor *, WGPUDevice *,
+                                  WGPUQueue *);
+SpotLight *scene_add_spot_light(Scene *, SpotLightDescriptor *, WGPUDevice *,
+                                WGPUQueue *);
+AmbientLight *scene_add_ambient_light(Scene *, AmbientLightDescriptor *,
+                                      WGPUDevice *, WGPUQueue *);
+SunLight *scene_add_sun_light(Scene *, SunLightDescriptor *, WGPUDevice *,
+                              WGPUQueue *);
 
 // camera
-Camera *scene_new_camera(Scene *);
+Camera *scene_add_camera(Scene *, const CameraCreateDescriptor *, WGPUDevice *,
+                         WGPUQueue *);
 
 #endif

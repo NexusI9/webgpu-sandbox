@@ -1,13 +1,14 @@
 #include "scene.h"
 #include "../utils/system.h"
 #include "camera.h"
-#include "gizmo.h"
+#include "gizmo/gizmo.h"
 #include "light.h"
 #include "mesh.h"
 #include "shader.h"
 #include "viewport.h"
 #include "webgpu/webgpu.h"
 #include <assert.h>
+#include <stddef.h>
 #include <stdio.h>
 
 static void scene_init_light_list(Scene *);
@@ -19,34 +20,31 @@ static void scene_draw_mesh_list(Scene *, mesh_get_vertex_callback,
 static void scene_build_mesh_list(Scene *, mesh_get_shader_callback,
                                   MeshRefList *);
 
-Scene scene_create(Camera camera, Viewport viewport) {
-
-  Scene scene;
+void scene_create(Scene *scene, Camera camera, Viewport viewport) {
 
   // create camera list, and set active camera
-  camera_list_create(&scene.cameras, SCENE_CAMERA_LIST_CAPACITY);
-  scene.active_camera = camera_list_insert(&scene.cameras, &camera);
+  camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
+  scene->active_camera = camera_list_insert(&scene->cameras, &camera);
 
   // set viewport
-  scene.viewport = viewport;
+  scene->viewport = viewport;
 
   // init global mesh list
-  mesh_list_create(&scene.meshes, SCENE_MESH_MAX_MESH_CAPACITY);
+  mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
   // init mesh layers
-  mesh_reference_list_create(&scene.layer.lit, SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  mesh_reference_list_create(&scene.layer.unlit,
-                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  mesh_reference_list_create(&scene.layer.fixed,
-                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  mesh_reference_list_create(&scene->layer.lit,
+                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  mesh_reference_list_create(&scene->layer.unlit,
+                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  mesh_reference_list_create(&scene->layer.fixed,
+                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init gizmo list
-  gizmo_list_create(&scene.gizmo, GIZMO_LIST_CAPACITY_DEFAULT);
+  gizmo_list_create(&scene->gizmo, GIZMO_LIST_CAPACITY_DEFAULT);
 
   // init lights
-  scene_init_light_list(&scene);
-
-  return scene;
+  scene_init_light_list(scene);
 }
 
 /**
@@ -226,8 +224,8 @@ void scene_init_light_list(Scene *scene) {
   scene->lights.sun.length = 0;
 }
 
-size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
-                             WGPUDevice *device, WGPUQueue *queue) {
+PointLight *scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
+                                  WGPUDevice *device, WGPUQueue *queue) {
 
   PointLightList *list = &scene->lights.point;
   if (list->length == list->capacity) {
@@ -245,26 +243,30 @@ size_t scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
   mesh_reference_list_create(&cache_list, 1);
   MeshRefList *render_list = scene_layer_gizmo(scene);
 
-  light_point_create_mesh(new_light, &(LightCreateMeshDescriptor){
-                                         .camera = scene->active_camera,
-                                         .viewport = &scene->viewport,
-                                         .device = device,
-                                         .queue = queue,
-                                         .list = mesh_list,
-                                         .destination = &cache_list,
-                                     });
+  gizmo_light_point_create(new_light, &(GizmoLightCreateDescriptor){
+                                          .camera = scene->active_camera,
+                                          .viewport = &scene->viewport,
+                                          .device = device,
+                                          .queue = queue,
+                                          .list = mesh_list,
+                                          .used_pointers = &cache_list,
+                                      });
 
-  // transfert gizmo mesh pointers to render_list
+  // dispatch mesh and data REFERENCES into scene layer and gizmo list
+  // TODO: Think about if gizmo shall still be included in layer or if scene
+  // should draw gizmo based on gizmo list
+
+  // transfert mesh pointers to render_list
   mesh_reference_list_transfert(&cache_list, render_list);
 
-  // add gizmo to gizmo list
-  //gizmo_list_insert_point_light(&scene->gizmo, new_light, );
+  // add meshes pointers to gizmo list
+  gizmo_list_insert_point_light(&scene->gizmo, new_light, &cache_list);
 
-  return list->length;
+  return new_light;
 }
 
-size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
-                            WGPUDevice *device, WGPUQueue *queue) {
+SpotLight *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
+                                WGPUDevice *device, WGPUQueue *queue) {
 
   SpotLightList *list = &scene->lights.spot;
   if (list->length == list->capacity) {
@@ -282,23 +284,27 @@ size_t scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
   mesh_reference_list_create(&cache_list, 1);
   MeshRefList *render_list = scene_layer_gizmo(scene);
 
-  light_spot_create_mesh(new_light, &(LightCreateMeshDescriptor){
+  gizmo_light_spot_create(new_light, &(GizmoLightCreateDescriptor){
                                         .camera = scene->active_camera,
                                         .viewport = &scene->viewport,
                                         .device = device,
                                         .queue = queue,
                                         .list = mesh_list,
-                                        .destination = &cache_list,
+                                        .used_pointers = &cache_list,
                                     });
 
   // transfert gizmo mesh pointers to render_list
   mesh_reference_list_transfert(&cache_list, render_list);
 
-  return list->length;
+  // add meshes pointers to gizmo list
+  gizmo_list_insert_spot_light(&scene->gizmo, new_light, &cache_list);
+
+  return new_light;
 }
 
-size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc,
-                               WGPUDevice *device, WGPUQueue *queue) {
+AmbientLight *scene_add_ambient_light(Scene *scene,
+                                      AmbientLightDescriptor *desc,
+                                      WGPUDevice *device, WGPUQueue *queue) {
 
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
@@ -316,23 +322,26 @@ size_t scene_add_ambient_light(Scene *scene, AmbientLightDescriptor *desc,
   mesh_reference_list_create(&cache_list, 1);
   MeshRefList *render_list = scene_layer_gizmo(scene);
 
-  light_ambient_create_mesh(new_light, &(LightCreateMeshDescriptor){
+  gizmo_light_ambient_create(new_light, &(GizmoLightCreateDescriptor){
                                            .camera = scene->active_camera,
                                            .viewport = &scene->viewport,
                                            .device = device,
                                            .queue = queue,
                                            .list = mesh_list,
-                                           .destination = &cache_list,
+                                           .used_pointers = &cache_list,
                                        });
 
   // transfert gizmo mesh pointers to render_list
   mesh_reference_list_transfert(&cache_list, render_list);
 
-  return list->length;
+  // add meshes pointers to gizmo list
+  gizmo_list_insert_ambient_light(&scene->gizmo, new_light, &cache_list);
+
+  return new_light;
 }
 
-size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
-                           WGPUDevice *device, WGPUQueue *queue) {
+SunLight *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
+                              WGPUDevice *device, WGPUQueue *queue) {
 
   SunLightList *list = &scene->lights.sun;
   if (list->length == list->capacity) {
@@ -350,19 +359,58 @@ size_t scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   mesh_reference_list_create(&cache_list, 1);
   MeshRefList *render_list = scene_layer_gizmo(scene);
 
-  light_sun_create_mesh(new_light, &(LightCreateMeshDescriptor){
+  gizmo_light_sun_create(new_light, &(GizmoLightCreateDescriptor){
                                        .camera = scene->active_camera,
                                        .viewport = &scene->viewport,
                                        .device = device,
                                        .queue = queue,
                                        .list = mesh_list,
-                                       .destination = &cache_list,
+                                       .used_pointers = &cache_list,
                                    });
 
   // transfert gizmo mesh pointers to render_list
   mesh_reference_list_transfert(&cache_list, render_list);
 
-  return list->length;
+  // add meshes pointers to gizmo list
+  gizmo_list_insert_sun_light(&scene->gizmo, new_light, &cache_list);
+
+  return new_light;
+}
+
+/**
+   "Create" a new uninitialized camera in the scene camera list and return the
+   newly created item's pointer.
+ */
+Camera *scene_add_camera(Scene *scene, const CameraCreateDescriptor *desc,
+                         WGPUDevice *device, WGPUQueue *queue) {
+
+  // create camera
+  Camera *new_cam = camera_list_new_camera(&scene->cameras);
+  camera_create(new_cam, desc);
+
+  // create mesh/gizmo
+  /*MeshList *mesh_list = scene_mesh_list(scene);
+  MeshRefList cache_list;
+  mesh_reference_list_create(&cache_list, 1);
+
+  MeshRefList *render_list = scene_layer_gizmo(scene);
+
+  camera_create_mesh(new_cam, &(LightCreateMeshDescriptor){
+                                  .camera = scene->active_camera,
+                                  .viewport = &scene->viewport,
+                                  .device = device,
+                                  .queue = queue,
+                                  .list = mesh_list,
+                                  .used_pointers = &cache_list,
+                              });
+
+  // transfert gizmo mesh pointers to render_list
+  mesh_reference_list_transfert(&cache_list, render_list);
+
+  // add meshes pointers to gizmo list
+  gizmo_list_insert_camera(&scene->gizmo, new_cam, &cache_list);*/
+
+  return new_cam;
 }
 
 /**
@@ -374,11 +422,3 @@ MeshRefList *scene_layer_gizmo(Scene *scene) { return &scene->layer.fixed; }
    Return pointer to scene mesh pool
  */
 MeshList *scene_mesh_list(Scene *scene) { return &scene->meshes; }
-
-/**
-   "Create" a new uninitialized camera in the scene camera list and return the
-   newly created item's pointer.
- */
-Camera *scene_new_camera(Scene *scene) {
-  return camera_list_new_camera(&scene->cameras);
-}

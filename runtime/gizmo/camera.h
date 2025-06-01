@@ -1,9 +1,13 @@
 #ifndef _GIZMO_CAMERA_H_
 #define _GIZMO_CAMERA_H_
 
-#include "../runtime/gizmo.h"
 #include "../runtime/camera.h"
 #include "../runtime/mesh.h"
+
+typedef struct {
+  Camera *target;
+  MeshRefList meshes;
+} GizmoCamera;
 
 typedef struct {
   Camera *camera;
@@ -11,6 +15,6 @@ typedef struct {
   WGPUQueue *queue;
 } GizmoCameraCreateDescriptor;
 
-void gizmo_camera_create(Gizmo *, Gizmo *, const GizmoCameraCreateDescriptor *);
+void gizmo_camera_create(Mesh *, Mesh *, const GizmoCameraCreateDescriptor *);
 
 #endif

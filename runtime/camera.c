@@ -13,19 +13,17 @@
 
 static int camera_list_expand(CameraList *);
 
-Camera camera_create(const CameraCreateDescriptor *cd) {
-  Camera c;
+void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
   // set matrix and position to 0
-  camera_reset(&c);
+  camera_reset(cam);
 
   // assign additional attributes
-  c.speed = cd->speed;
-  c.clock = cd->clock;
-  c.mode = cd->mode;
-  c.sensitivity = cd->sensitivity;
-  c.wheel_sensitivity = cd->wheel_sensitivity;
-  return c;
+  cam->speed = cd->speed;
+  cam->clock = cd->clock;
+  cam->mode = cd->mode;
+  cam->sensitivity = cd->sensitivity;
+  cam->wheel_sensitivity = cd->wheel_sensitivity;
 }
 
 void camera_reset(Camera *c) {

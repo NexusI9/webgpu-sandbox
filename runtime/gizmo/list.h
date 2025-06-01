@@ -1,45 +1,22 @@
-#ifndef _GIZMO_H_
-#define _GIZMO_H_
+#ifndef _GIZMO_LIST_H_
+#define _GIZMO_LIST_H_
 
+#include "../camera.h"
+#include "../light.h"
+#include "../mesh.h"
+#include "./camera.h"
+#include "./light_ambient.h"
+#include "./light_point.h"
+#include "./light_spot.h"
+#include "./light_sun.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
 #include <webgpu/webgpu.h>
 
-#include "./camera.h"
-#include "./light.h"
-#include "./mesh.h"
-
 #define GIZMO_LIST_CAPACITY_DEFAULT 16
-#define GIZMO_SUCCESS 0
-#define GIZMO_ALLOC_FAIL 1
-#define GIZMO_ERROR 2
-
-typedef Mesh Gizmo;
-
-typedef struct {
-  PointLight *target;
-  MeshRefList meshes;
-} GizmoPointLight;
-
-typedef struct {
-  AmbientLight *target;
-  MeshRefList meshes;
-} GizmoAmbientLight;
-
-typedef struct {
-  SunLight *target;
-  MeshRefList meshes;
-} GizmoSunLight;
-
-typedef struct {
-  SpotLight *target;
-  MeshRefList meshes;
-} GizmoSpotLight;
-
-typedef struct {
-  Camera *target;
-  MeshRefList meshes;
-} GizmoCamera;
+#define GIZMO_LIST_SUCCESS 0
+#define GIZMO_LIST_ALLOC_FAIL 1
+#define GIZMO_LIST_ERROR 2
 
 typedef struct {
 
@@ -76,17 +53,6 @@ typedef struct {
 } GizmoList;
 
 typedef struct {
-  vec3 *position;
-  vec3 *scale;
-  WGPUDevice *device;
-  WGPUQueue *queue;
-  const char *label;
-  const char *texture_path;
-  Camera *camera;
-  Viewport *viewport;
-} GizmoCreateBillboardDescriptor;
-
-typedef struct {
   void **entries;
   size_t *capacity;
   size_t *length;
@@ -101,7 +67,6 @@ typedef struct {
   size_t type_size;
 } GizmoListNewDescriptor;
 
-void gizmo_create_billboard(Gizmo *, const GizmoCreateBillboardDescriptor *);
 int gizmo_list_create(GizmoList *, size_t capacity);
 
 // point light gizmo
@@ -123,4 +88,5 @@ SpotLight *gizmo_list_new_spot_light(GizmoList *);
 // camera gizmo
 int gizmo_list_insert_camera(GizmoList *, Camera *, MeshRefList *);
 Camera *gizmo_list_new_camera(GizmoList *);
+
 #endif

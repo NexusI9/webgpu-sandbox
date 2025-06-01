@@ -1,9 +1,9 @@
 #include "grid.h"
-#include "../../../primitive/plane.h"
+#include "../resources/primitive/plane.h"
 #include "../runtime/material.h"
 #include "webgpu/webgpu.h"
 
-void prefab_grid_create(Mesh *mesh, GridCreateDescriptor *gd) {
+void gizmo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
 
   Primitive plane = primitive_plane();
 

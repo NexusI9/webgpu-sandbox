@@ -740,7 +740,6 @@ int mesh_reference_list_transfert(MeshRefList *src, MeshRefList *dest) {
   return MESH_SUCCESS;
 }
 
-
 /**
    Copy a Gizmo Mesh list from a source to a given desination
  */
@@ -748,9 +747,10 @@ int mesh_reference_list_copy(const MeshRefList *src, MeshRefList *dest) {
 
   // copy length
   dest->length = src->length;
+  dest->capacity = src->capacity;
   dest->entries = malloc(dest->length * sizeof(Mesh *));
 
-  if (dest->entries) {
+  if (dest->entries == NULL) {
     perror("Couldn't allocate memory for mesh reference list copy\n");
     dest->length = 0;
     return MESH_ALLOC_FAILURE;

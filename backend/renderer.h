@@ -44,7 +44,7 @@ typedef struct renderer {
 
 } renderer;
 
-renderer renderer_create(const RendererCreateDescriptor *);
+void renderer_create(renderer *, const RendererCreateDescriptor *);
 void renderer_init(renderer *);
 void renderer_bake_ao(renderer *, Scene *);
 void renderer_compute_shadow(renderer *, Scene *);

@@ -1,7 +1,7 @@
 #ifndef _GIZMO_GRID_H_
 #define _GIZMO_GRID_H_
 
-#include "../../../../runtime/mesh.h"
+#include "../mesh.h"
 #include <webgpu/webgpu.h>
 
 typedef struct {
@@ -21,7 +21,7 @@ typedef struct {
   Camera *camera;
   Viewport *viewport;
 
-} GridCreateDescriptor;
+} GizmoGridCreateDescriptor;
 
 typedef struct {
 
@@ -35,6 +35,6 @@ typedef struct {
 
 } Grid;
 
-void prefab_grid_create(Mesh *, GridCreateDescriptor *);
+void gizmo_grid_create(Mesh *, GizmoGridCreateDescriptor *);
 
 #endif
