@@ -1,5 +1,5 @@
 #include "buffer.h"
-#include "../runtime/texture.h"
+#include "../runtime/texture/texture.h"
 #include "stb/stb_image.h"
 #include "webgpu/webgpu.h"
 

@@ -1,7 +1,7 @@
 #include "billboard.h"
 #include "../resources/primitive/plane.h"
 #include "../runtime/material/material.h"
-#include "../runtime/texture.h"
+#include "../runtime/texture/texture.h"
 
 /**
    Create a plane mesh with a billboard shader

@@ -14,7 +14,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../backend/buffer.h"
 #include "../runtime/material/material.h"
-#include "../runtime/texture.h"
+#include "../runtime/texture/texture.h"
 #include "stb/stb_image.h" 
 
 static void loader_gltf_create_mesh(Scene *, WGPUDevice *, WGPUQueue *,

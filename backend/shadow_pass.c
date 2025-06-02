@@ -1,7 +1,7 @@
 #include "shadow_pass.h"
 #include "../resources/prefab/debug/view.h"
 #include "../runtime/material/material.h"
-#include "../runtime/texture.h"
+#include "../runtime/texture/texture.h"
 #include "../utils/math.h"
 #include <string.h>
 

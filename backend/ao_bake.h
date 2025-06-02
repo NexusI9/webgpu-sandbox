@@ -3,7 +3,7 @@
 
 #include "../resources/geometry/triangle.h"
 #include "../runtime/scene/scene.h"
-#include "../runtime/texture.h"
+#include "../runtime/texture/texture.h"
 
 // AO Texture
 #define AO_TEXTURE_SIZE 128
