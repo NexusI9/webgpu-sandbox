@@ -1,7 +1,6 @@
 #include "texture.h"
 #include "../../backend/shadow_pass.h"
 
-
 /**
    Clear the texture shader bind groups of mesh
  */
@@ -158,8 +157,6 @@ void material_texture_bind_lights(Mesh *mesh, AmbientLightList *ambient_list,
       });
 }
 
-
-
 /**
    Bind the shadow maps and sampler to the default shader
  */
@@ -273,3 +270,13 @@ void material_texture_add_sampler(Mesh *mesh,
   shader_add_sampler(mesh_shader_texture(mesh), desc);
 }
 
+void material_texture_double_sided(Mesh *mesh) {
+  // update pipeline for double-sided
+  pipeline_set_primitive(shader_pipeline(mesh_shader_wireframe(mesh)),
+                         (WGPUPrimitiveState){
+                             .frontFace = WGPUFrontFace_CCW,
+                             .cullMode = WGPUCullMode_None,
+                             .topology = WGPUPrimitiveTopology_TriangleList,
+                             .stripIndexFormat = WGPUIndexFormat_Undefined,
+                         });
+}

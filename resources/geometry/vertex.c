@@ -1,6 +1,10 @@
 #include "vertex.h"
 #include "../utils/vector.h"
 #include <stddef.h>
+#include <string.h>
+
+static void vertex_attribute_replace(VertexAttribute *, float *, VertexOffset,
+                                     size_t);
 
 void vertex_create(Vertex *vertex) {
 
@@ -151,4 +155,92 @@ void vertex_attribute_print(VertexAttribute *va) {
     if (i % VERTEX_STRIDE == VERTEX_STRIDE - 1)
       printf("\n");
   }
+}
+
+/**
+   Replace the attributes of a vertex attribute list starting at a certain index
+ */
+void vertex_attribute_replace(VertexAttribute *va, float *val,
+                              VertexOffset offset, size_t type_size) {
+  for (size_t i = offset; i < va->length; i += VertexOffset_End)
+    memcpy(&va->entries[i], val, type_size);
+}
+
+/**
+   Replace the color attributes of a vertex attribute list
+ */
+void vertex_attribute_set_color(VertexAttribute *va, vertex_color *color) {
+  vertex_attribute_replace(va, *color, VertexOffset_Color,
+                           sizeof(vertex_color));
+}
+
+/**
+   Replace the uv attributes of a vertex attribute list
+ */
+void vertex_attribute_set_uv(VertexAttribute *va, vertex_uv *uv) {
+  vertex_attribute_replace(va, *uv, VertexOffset_Uv, sizeof(vertex_uv));
+}
+
+int vertex_attribute_copy(VertexAttribute *src, VertexAttribute *dest) {
+
+  if (dest->entries)
+      vertex_attribute_destroy(dest);
+
+  dest->capacity = src->capacity;
+  dest->buffer = src->buffer;
+  dest->length = src->length;
+
+  size_t length = dest->length * sizeof(vattr_t);
+  dest->entries = malloc(length);
+  if (dest->entries == NULL) {
+    perror("Couldn't allocate memory for vertex attribute\n");
+    dest->buffer = NULL;
+    dest->capacity = 0;
+    dest->length = 0;
+    return VERTEX_ALLOC_FAIL;
+  }
+
+  memcpy(dest->entries, src->entries, length);
+
+  return VERTEX_SUCCESS;
+}
+
+int vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
+
+  if (dest->entries)
+      vertex_index_destroy(dest);
+
+  printf("src buffer: %p\n", src->buffer);
+  dest->capacity = src->capacity;
+  dest->buffer = src->buffer;
+  dest->length = src->length;
+
+  size_t length = dest->length * sizeof(vindex_t);
+  dest->entries = malloc(length);
+  if (dest->entries == NULL) {
+    perror("Couldn't allocate memory for vertex index\n");
+    dest->buffer = NULL;
+    dest->capacity = 0;
+    dest->length = 0;
+    return VERTEX_ALLOC_FAIL;
+  }
+
+  memcpy(dest->entries, src->entries, length);
+
+  return VERTEX_SUCCESS;
+}
+
+void vertex_index_destroy(VertexIndex *vi) {
+    //free(vi->entries);
+    vi->entries = NULL;
+    vi->length = 0;
+    vi->capacity = 0;
+}
+
+
+void vertex_attribute_destroy(VertexAttribute *va) {
+    //free(va->entries);
+    va->entries = NULL;
+    va->length = 0;
+    va->capacity = 0;
 }

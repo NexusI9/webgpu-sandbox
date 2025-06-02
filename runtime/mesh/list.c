@@ -16,7 +16,7 @@ int mesh_list_create(MeshList *list, size_t capacity) {
   return 0;
 }
 
-Mesh *mesh_list_insert(MeshList *list) {
+Mesh *mesh_list_new_mesh(MeshList *list) {
 
   if (list->length == list->capacity) {
     size_t new_capacity = list->capacity * 2;

@@ -50,7 +50,7 @@ Mesh *scene_new_mesh_fixed(Scene *scene) {
 }
 
 
-Mesh *scene_new_mesh(Scene *scene) { return mesh_list_insert(&scene->meshes); }
+Mesh *scene_new_mesh(Scene *scene) { return mesh_list_new_mesh(&scene->meshes); }
 
 // TODO: move light list in Light not Scene anymore
 void scene_init_light_list(Scene *scene) {

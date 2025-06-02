@@ -15,7 +15,7 @@ void gizmo_light_sun_create(GizmoSunLight *gizmo, SunLight *light,
   mesh_reference_list_create(&gizmo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
-  Mesh *icon = mesh_list_insert(desc->list);
+  Mesh *icon = mesh_list_new_mesh(desc->list);
   const char *texture_path = "./resources/assets/texture/ui/light-sun.png";
 
   // create gizmo mesh

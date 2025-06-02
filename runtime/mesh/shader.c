@@ -1,9 +1,11 @@
 #include "shader.h"
+#include "../backend/buffer.h"
+#include "../backend/shadow_pass.h"
 #include "../resources/geometry/edge.h"
 #include "../resources/prefab/debug/line.h"
-#include "../backend/shadow_pass.h"
-#include "../backend/buffer.h"
 #include "../utils/math.h"
+#include "../material/material.h"
+
 /**
    Return mesh default shader
  */
@@ -23,7 +25,6 @@ Shader *mesh_shader_wireframe(Mesh *mesh) { return &mesh->shader.wireframe; }
    Return mesh solid shader
  */
 Shader *mesh_shader_solid(Mesh *mesh) { return &mesh->shader.texture; }
-
 
 /**
    Init mesh shadow shader.
@@ -225,16 +226,9 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
                 });
 
   // update pipeline for double-sided
-  pipeline_set_primitive(shader_pipeline(mesh_shader_wireframe(mesh)),
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_None,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
+  material_texture_double_sided(mesh);
 
   // freeing wireframe data entries
   wireframe_vertex->attribute.entries = 0;
   wireframe_vertex->index.entries = 0;
 }
-

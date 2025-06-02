@@ -183,7 +183,6 @@ void mesh_build(Mesh *mesh, Shader *shader) {
   // check if mesh has correct buffer before drawing
   if (mesh->vertex.base.index.buffer == NULL ||
       mesh->vertex.base.attribute.buffer == NULL) {
-    printf("[%p]\n", mesh);
     perror("Mesh has no vertex index or attribute buffer.\n");
   }
 

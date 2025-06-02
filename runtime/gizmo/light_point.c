@@ -15,7 +15,7 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
   mesh_reference_list_create(&gizmo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
-  Mesh *icon = mesh_list_insert(desc->list);
+  Mesh *icon = mesh_list_new_mesh(desc->list);
   const char *texture_path = "./resources/assets/texture/ui/light-point.png";
 
   // create gizmo mesh

@@ -29,6 +29,7 @@ void gizmo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                              .topology = WGPUPrimitiveTopology_TriangleList,
                              .stripIndexFormat = WGPUIndexFormat_Undefined,
                          });
+  material_texture_double_sided(mesh);
 
   mesh_scale(mesh, (vec3){
                        gd->uniform.size,

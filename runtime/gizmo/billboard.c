@@ -29,19 +29,13 @@ void gizmo_create_billboard(Mesh *mesh,
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
                             .device = desc->device,
                             .queue = desc->queue,
-                            .label = "Billboard shader",
-                            .name = "Billboard shader",
+                            .label = "Gizmo billboard shader",
+                            .name = "Gizmo billboard shader",
                             .path = SHADER_PATH_BILLBOARD,
                         });
 
   // set double side rendering
-  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(mesh)),
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_None,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
+  material_texture_double_sided(mesh);
 
   // bind view matrices
   material_texture_bind_views(mesh, desc->camera, desc->viewport, 0);

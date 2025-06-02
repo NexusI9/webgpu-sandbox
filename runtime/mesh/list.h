@@ -9,7 +9,7 @@ typedef struct {
 } MeshList;
 
 int mesh_list_create(MeshList *, size_t);
-Mesh *mesh_list_insert(MeshList *);
+Mesh *mesh_list_new_mesh(MeshList *);
 
 void mesh_list_translate(MeshList *, vec3);
 void mesh_list_rotate(MeshList *, vec3);

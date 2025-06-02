@@ -7,12 +7,29 @@
 
 #define VERTEX_STRIDE 11
 
+#define VERTEX_SUCCESS 0
+#define VERTEX_ALLOC_FAIL 1
+
+typedef vec2 vertex_uv;
+typedef vec3 vertex_color;
+typedef vec3 vertex_position;
+typedef vec3 vertex_normal;
+
+typedef enum {
+  VertexOffset_Position = 0,
+  VertexOffset_Normal = 3,
+  VertexOffset_Color = 6,
+  VertexOffset_Uv = 9,
+  VertexOffset_End = VERTEX_STRIDE,
+} VertexOffset;
+
 /*
   If change is required, make sure to adjust the meshbin file indexes as
   they are u32 based as well.
  */
 typedef uint32_t vindex_t;
 typedef float vattr_t;
+
 /*
   Cannonical structure of a vertex
  */
@@ -70,5 +87,13 @@ void vertex_to_array(Vertex *, float *);
 void vertex_copy(float *, float *);
 
 void vertex_index_print(VertexIndex *);
+int vertex_index_copy(VertexIndex *, VertexIndex *);
+void vertex_index_destroy(VertexIndex *);
+
 void vertex_attribute_print(VertexAttribute *);
+void vertex_attribute_set_color(VertexAttribute *, vertex_color *);
+void vertex_attribute_set_uv(VertexAttribute *, vertex_uv *);
+int vertex_attribute_copy(VertexAttribute *, VertexAttribute *);
+void vertex_attribute_destroy(VertexAttribute *);
+
 #endif

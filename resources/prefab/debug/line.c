@@ -1,4 +1,5 @@
 #include "line.h"
+#include "../runtime/material/material.h"
 #include "../utils/system.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
@@ -40,13 +41,7 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
                             .queue = desc->queue,
                         });
 
-  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(mesh)),
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_None,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
+  material_texture_double_sided(mesh);
 }
 
 /** Define vertex data from a vertex array.
