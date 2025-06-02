@@ -1,7 +1,7 @@
 #ifndef _MESH_CORE_H_
 #define _MESH_CORE_H_
 
-#include "../camera.h"
+#include "../camera/camera.h"
 #include "../resources/geometry/vertex.h"
 #include "../resources/primitive/primitive.h"
 #include "../shader/shader.h"

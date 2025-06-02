@@ -1,4 +1,4 @@
-#include "input.h"
+#include "core.h"
 #include "../utils/math.h"
 #include "emscripten/html5.h"
 #include <math.h>

@@ -2,7 +2,7 @@
 #include "../backend/buffer.h"
 #include "../backend/shadow_pass.h"
 #include "../light/light.h"
-#include "../pipeline.h"
+#include "../pipeline/pipeline.h"
 #include "../resources/geometry/edge.h"
 #include "../resources/prefab/debug/line.h"
 #include "../utils/math.h"

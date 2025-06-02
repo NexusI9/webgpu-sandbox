@@ -1,5 +1,5 @@
-#ifndef _INPUT_H_
-#define _INPUT_H_
+#ifndef _INPUT_CORE_H_
+#define _INPUT_CORE_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -48,5 +48,6 @@ void input_disable_all_keys();
 void input_listen();
 
 bool input_key(unsigned int);
+
 
 #endif

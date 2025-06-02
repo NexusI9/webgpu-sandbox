@@ -1,5 +1,5 @@
-#ifndef _CAMERA_H_
-#define _CAMERA_H_
+#ifndef _CAMERA_CORE_H_
+#define _CAMERA_CORE_H_
 
 #define CAMERA_SUCCESS 0
 #define CAMERA_ALLOC_FAIL 1
@@ -78,8 +78,5 @@ void camera_translate(Camera *, vec3);
 void camera_rotate(Camera *, vec3);
 void camera_update_view(Camera *);
 
-// camera list
-int camera_list_create(CameraList *, size_t);
-Camera *camera_list_insert(CameraList *, Camera *);
-Camera *camera_list_new_camera(CameraList *);
+
 #endif

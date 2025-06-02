@@ -35,14 +35,14 @@
 #include "resources/primitive/plane.h"
 
 // runtime
-#include "runtime/camera.h"
-#include "runtime/input.h"
+#include "runtime/camera/camera.h"
+#include "runtime/input/input.h"
 #include "runtime/light/light.h"
 #include "runtime/material/material.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/scene/scene.h"
 #include "runtime/shader/shader.h"
-#include "runtime/viewport.h"
+#include "runtime/viewport/viewport.h"
 
 static Scene main_scene;
 static Mesh tri_mesh;

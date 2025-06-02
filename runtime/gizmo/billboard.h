@@ -5,7 +5,6 @@
 #include <stddef.h>
 #include <webgpu/webgpu.h>
 
-#include "../camera.h"
 #include "../mesh/mesh.h"
 
 typedef struct {

@@ -1,5 +1,5 @@
-#ifndef _PIPELINE_H_
-#define _PIPELINE_H_
+#ifndef _PIPELINE_CORE_H_
+#define _PIPELINE_CORE_H_
 
 #include "webgpu/webgpu.h"
 
@@ -54,12 +54,6 @@ typedef struct {
 } PipelineCreateDescriptor;
 
 typedef struct {
-  WGPUFragmentState fragment_state;
-  WGPUColorTargetState color_state;
-  WGPUBlendState blend_state;
-} PipelineFragmentDescriptor;
-
-typedef struct {
 
   // core
   const WGPUDevice *device;
@@ -81,19 +75,13 @@ typedef struct {
 
 } Pipeline;
 
-// 1. init pipeline
+// init pipeline
 void pipeline_create(Pipeline *, const PipelineCreateDescriptor *);
 
-// 2. set custom attributes (optional)
-void pipeline_set_vertex(Pipeline *, const WGPUVertexState);
-void pipeline_set_fragment(Pipeline *, const PipelineFragmentDescriptor *);
-void pipeline_set_primitive(Pipeline *, const WGPUPrimitiveState);
-void pipeline_set_stencil(Pipeline *, const WGPUDepthStencilState);
-
-// 3. build pipeline layout
+// build pipeline layout
 void pipeline_build(Pipeline *, const WGPUPipelineLayout *);
 
-// 4. destroyer
+// destroyer
 void pipeline_destroy(Pipeline *);
 
 #endif

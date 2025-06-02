@@ -1,19 +1,9 @@
 #include "core.h"
 
 #include "../backend/buffer.h"
-#include "../camera.h"
-#include "../pipeline.h"
-#include "../resources/geometry/vertex.h"
 #include "../utils/file.h"
 #include "../utils/system.h"
-#include "../viewport.h"
 #include "string.h"
-#include "webgpu/webgpu.h"
-#include <math.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 /*
 

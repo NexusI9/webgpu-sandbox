@@ -1,9 +1,9 @@
 #ifndef _SHADER_CORE_H_
 #define _SHADER_CORE_H_
 
-#include "../camera.h"
-#include "../pipeline.h"
-#include "../viewport.h"
+#include "../camera/camera.h"
+#include "../pipeline/pipeline.h"
+#include "../viewport/viewport.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>

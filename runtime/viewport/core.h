@@ -1,5 +1,5 @@
-#ifndef _VIEWPORT_H_
-#define _VIEWPORT_H_
+#ifndef _VIEWPORT_CORE_H_
+#define _VIEWPORT_CORE_H_
 
 #include "../backend/clock.h"
 #include <cglm/cglm.h>
@@ -29,4 +29,5 @@ Viewport viewport_create(const ViewportCreateDescriptor *);
 void viewport_update_projection(Viewport *);
 ViewportUniform viewport_uniform(Viewport *);
 mat4 *viewport_projection(Viewport *);
+
 #endif

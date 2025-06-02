@@ -1,7 +1,7 @@
 #ifndef _GIZMO_LIST_H_
 #define _GIZMO_LIST_H_
 
-#include "../camera.h"
+#include "../camera/camera.h"
 #include "../light/light.h"
 #include "../mesh/mesh.h"
 #include "./camera.h"
