@@ -270,9 +270,11 @@ void material_texture_add_sampler(Mesh *mesh,
   shader_add_sampler(mesh_shader_texture(mesh), desc);
 }
 
+/**
+  update pipeline for double-sided
+ */
 void material_texture_double_sided(Mesh *mesh) {
-  // update pipeline for double-sided
-  pipeline_set_primitive(shader_pipeline(mesh_shader_wireframe(mesh)),
+  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(mesh)),
                          (WGPUPrimitiveState){
                              .frontFace = WGPUFrontFace_CCW,
                              .cullMode = WGPUCullMode_None,
