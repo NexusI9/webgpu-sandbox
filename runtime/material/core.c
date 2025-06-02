@@ -1,7 +1,6 @@
 #include "core.h"
 #include "../backend/shadow_pass.h"
 
-
 /**
    Bind Mesh, Camera and Projection matrix to a given mesh shader
    Note that the binding process follows a fixed convention of order, meaning
@@ -34,13 +33,16 @@ void material_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
                       .offset = 0,
                   },
                   // camera
-                  {
-                      .binding = 1,
-                      .data = &uCamera,
-                      .size = sizeof(CameraUniform),
-                      .offset = 0,
-                      .update_callback = camera_update_matrix_uniform,
-                      .update_data = camera,
+                  {.binding = 1,
+                   .data = &uCamera,
+                   .size = sizeof(CameraUniform),
+                   .offset = 0,
+                   .update =
+                       {
+                           .callback = camera_uniform_update_matrix,
+                           .trigger = camera_uniform_compare_views,
+                           .data = camera,
+                       }
                   },
                   // model
                   {
@@ -52,7 +54,3 @@ void material_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
               },
       });
 }
-
-
-
-

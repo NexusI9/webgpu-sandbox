@@ -30,7 +30,7 @@ void camera_reset(Camera *c) {
     glm_vec3_zero(c->position);
     glm_vec3_zero(c->euler_rotation);
     glm_mat4_identity(c->view);
-
+    
     vec3 target = {0.0f, 0.0f, 0.0f};
     glm_vec3_copy(target, c->target);
 
@@ -168,40 +168,6 @@ void camera_draw(Camera *camera) {
 }
 
 void camera_set_mode(Camera *camera, CameraMode mode) { camera->mode = mode; }
-
-CameraUniform camera_uniform(Camera *c) {
-  // Combine directly view matrix and camera position so faster to upload into
-  // buffer
-
-  CameraUniform cam_uni = (CameraUniform){0};
-
-  // transform vec3 to vec4 for alignment sake
-  vec4 pos_uniform = {c->position[0], c->position[1], c->position[2], 1.0f};
-  vec4 lookat_uniform = {c->target[0], c->target[1], c->target[2], 1.0f};
-
-  glm_vec4_copy(pos_uniform, cam_uni.position);
-  glm_vec4_copy(lookat_uniform, cam_uni.lookat);
-  glm_mat4_copy(c->view, cam_uni.view);
-  cam_uni.mode = c->mode;
-
-  return cam_uni;
-}
-
-void camera_update_matrix_uniform(void *callback_camera, void *data) {
-
-  Camera *cast_cam = (Camera *)callback_camera;
-  CameraUniform *new_data = (CameraUniform *)data;
-
-  //  transfer updated camera values (position and view)
-  CameraUniform uCamera = camera_uniform(cast_cam);
-  glm_mat4_copy(uCamera.view, new_data->view);
-  glm_vec4_copy(uCamera.position, new_data->position);
-  glm_vec4_copy(uCamera.lookat, new_data->lookat);
-  new_data->mode = uCamera.mode;
-
-  // printf("new_data addr: %p\n", new_data);
-  // printf("Alignment check: %lu\n", ((uintptr_t)new_data) % 16);
-}
 
 void camera_translate(Camera *camera, vec3 new_position) {
   // get the absolute value, need to transfom the new position into

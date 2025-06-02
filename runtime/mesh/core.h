@@ -124,5 +124,4 @@ MeshUniform mesh_model_uniform(Mesh *);
 MeshVertex *mesh_vertex_base(Mesh *);
 MeshVertex *mesh_vertex_wireframe(Mesh *);
 
-
 #endif

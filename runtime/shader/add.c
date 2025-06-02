@@ -1,6 +1,7 @@
 #include "add.h"
 #include "../../backend/buffer.h"
 #include "../../utils/system.h"
+#include "core.h"
 #include "string.h"
 
 /**
@@ -64,8 +65,7 @@ void shader_add_uniform(Shader *shader,
         [mesh_2] uCamera => 0x48fd23
 
       */
-
-      if (current_entry->update_callback) {
+      if (current_entry->update.callback) {
         void *temp_data = current_entry->data;
         current_entry->data = malloc(current_entry->size);
         memcpy(current_entry->data, temp_data, current_entry->size);
@@ -206,4 +206,3 @@ void shader_add_sampler(Shader *shader,
     }
   }
 }
-

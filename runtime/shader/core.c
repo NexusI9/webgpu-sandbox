@@ -164,14 +164,21 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass,
       ShaderBindGroupUniformEntry *current_entry =
           &current_bind_group->uniforms.entries[j];
 
+      ShaderUniformUpdate *uniform_update = &current_entry->update;
       // TODO: separate dynamic (callback) from static (non callback) shader
       // in two arrays so no last minute decision
-      // TODO 2: maybe add a "requires udpate" flag so more efficient update
-      // !! issue here
-      if (current_entry->update_callback) {
 
-        current_entry->update_callback(current_entry->update_data,
-                                       current_entry->data);
+      // if no trigger (no gatekeep) or if trigger is true, then rewrite uniform
+      // with callback
+      if (uniform_update->callback &&
+          (!uniform_update->trigger ||
+           uniform_update->trigger(uniform_update->data,
+                                   current_entry->data))) {
+
+        // update uniform data
+        uniform_update->callback(uniform_update->data, current_entry->data);
+
+        // rewrite uniform to GPU
         wgpuQueueWriteBuffer(*shader->queue, current_entry->buffer, 0,
                              current_entry->data, current_entry->size);
       }

@@ -1,5 +1,5 @@
 #include "bind.h"
-
+#include <string.h>
 
 /**
    Initialise shader bind group lists and eventually free/reset the existing
@@ -29,6 +29,10 @@ void shader_bind_group_init(Shader *shader) {
       16,
       SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupUniformEntry));
 
+  /*memset(uniform_group->entries, 0,
+         SHADER_UNIFORMS_DEFAULT_CAPACITY *
+	 sizeof(ShaderBindGroupUniformEntry));*/
+  
   // init Texture dynamic array
   texture_group->length = 0;
   texture_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
@@ -77,7 +81,6 @@ void shader_bind_group_clear(Shader *shader) {
   shader->bind_groups.length = 0;
 }
 
-
 void shader_bind_uniforms(Shader *shader, ShaderBindGroup *bindgroup,
                           WGPUBindGroupEntry *entries, uint16_t *index) {
 
@@ -122,8 +125,6 @@ void shader_bind_samplers(Shader *shader, ShaderBindGroup *bindgroup,
     };
   }
 }
-
-
 
 /**
    Check if a bind group in the shader isn't already registered
@@ -181,6 +182,3 @@ bool shader_validate_binding(Shader *shader) {
 
   return 1;
 }
-
-
-

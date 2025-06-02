@@ -3,5 +3,6 @@
 
 #include "core.h"
 #include "list.h"
+#include "uniform.h"
 
 #endif

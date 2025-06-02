@@ -49,6 +49,8 @@ typedef struct {
 typedef void (*shader_uniform_update_callback)(void *callback_data,
                                                void *entry_data);
 
+typedef bool (*shader_uniform_update_trigger)(void * callback_data, const void* entry_data);
+
 typedef uint32_t shader_binding_t;
 typedef uint8_t shader_bindgroup_t;
 
@@ -60,12 +62,17 @@ typedef struct {
 } ShaderBindGroupIndexes;
 
 typedef struct {
+  shader_uniform_update_callback callback;
+  shader_uniform_update_trigger trigger;
+  void *data;
+} ShaderUniformUpdate;
+
+typedef struct {
   uint32_t binding;
   uint64_t size;
   uint64_t offset;
   void *data;
-  shader_uniform_update_callback update_callback;
-  void *update_data;
+  ShaderUniformUpdate update;
   // private
   WGPUBuffer buffer;
 } ShaderBindGroupUniformEntry;
@@ -224,6 +231,5 @@ void shader_draw(Shader *, WGPURenderPassEncoder *, const Camera *,
 void shader_module_release(Shader *);
 Pipeline *shader_pipeline(Shader *);
 void shader_pipeline_release_layout(Shader *);
-
 
 #endif
