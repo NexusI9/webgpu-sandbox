@@ -60,7 +60,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
                          });
 
   // bind model & viewport matrix
-  MeshUniform uModel = mesh_model_uniform(new_view);
+  MeshUniform uModel = mesh_uniform_model(new_view);
   ViewportUniform uViewport = {0};
   CameraUniform uCamera = {0};
 

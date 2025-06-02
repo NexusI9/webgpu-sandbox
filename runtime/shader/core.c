@@ -158,31 +158,8 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass,
 
     ShaderBindGroup *current_bind_group = &shader->bind_groups.entries[i];
 
-    // update bindgroup entries (callback)
-    for (int j = 0; j < current_bind_group->uniforms.length; j++) {
-
-      ShaderBindGroupUniformEntry *current_entry =
-          &current_bind_group->uniforms.entries[j];
-
-      ShaderUniformUpdate *uniform_update = &current_entry->update;
-      // TODO: separate dynamic (callback) from static (non callback) shader
-      // in two arrays so no last minute decision
-
-      // if no trigger (no gatekeep) or if trigger is true, then rewrite uniform
-      // with callback
-      if (uniform_update->callback &&
-          (!uniform_update->trigger ||
-           uniform_update->trigger(uniform_update->data,
-                                   current_entry->data))) {
-
-        // update uniform data
-        uniform_update->callback(uniform_update->data, current_entry->data);
-
-        // rewrite uniform to GPU
-        wgpuQueueWriteBuffer(*shader->queue, current_entry->buffer, 0,
-                             current_entry->data, current_entry->size);
-      }
-    }
+    // update bindgroup uniforms data
+    shader_uniform_update(current_bind_group, shader->queue);
 
     // link bind group
     wgpuRenderPassEncoderSetBindGroup(*render_pass, current_bind_group->index,
@@ -197,3 +174,36 @@ void shader_module_release(Shader *shader) {
 }
 
 Pipeline *shader_pipeline(Shader *shader) { return &shader->pipeline; }
+
+/**
+   Access all uniforms from a bind group and check if it requires any update.
+   If the trigger returns true, then it update the gpu buffer with the new data
+   output from the callback
+ */
+void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue *queue) {
+
+  // update bindgroup entries (callback)
+  for (int j = 0; j < group->uniforms.length; j++) {
+
+    ShaderBindGroupUniformEntry *current_entry = &group->uniforms.entries[j];
+
+    ShaderUniformUpdate *uniform_update = &current_entry->update;
+    // TODO: separate dynamic (callback) from static (non callback) shader
+    // in two arrays so no last minute decision
+
+    // if no trigger (no gatekeep) or if trigger is true, then rewrite uniform
+    // with callback
+    // TODO: no update if out of frustrum ?
+    if (uniform_update->callback &&
+        (!uniform_update->trigger ||
+         uniform_update->trigger(uniform_update->data, current_entry->data))) {
+
+      // update uniform data
+      uniform_update->callback(uniform_update->data, current_entry->data);
+
+      // rewrite uniform to GPU
+      wgpuQueueWriteBuffer(*queue, current_entry->buffer, 0,
+                           current_entry->data, current_entry->size);
+    }
+  }
+}

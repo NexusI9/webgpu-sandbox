@@ -29,8 +29,8 @@ void gizmo_create_billboard(Mesh *mesh,
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
                             .device = desc->device,
                             .queue = desc->queue,
-                            .label = "shader",
-                            .name = "shader",
+                            .label = "Billboard shader",
+                            .name = "Billboard shader",
                             .path = SHADER_PATH_BILLBOARD,
                         });
 

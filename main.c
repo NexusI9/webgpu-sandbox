@@ -297,6 +297,11 @@ int main(int argc, const char *argv[]) {
 
   gizmo_camera_translate(new_cam, (vec3){10.0f, 10.f, 2.0f});
 
+  /*DELETEME:for (int i = 0; i < main_scene.meshes.length; i++) {
+    printf("gizmo:\n");
+    print_mat4(main_scene.meshes.entries[i].model);
+  }*/
+
   /*mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
   mesh child_cube_A;

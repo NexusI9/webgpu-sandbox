@@ -15,7 +15,7 @@ void material_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
 
   CameraUniform uCamera = camera_uniform(camera);
   ViewportUniform uViewport = viewport_uniform(viewport);
-  MeshUniform uMesh = mesh_model_uniform(mesh);
+  MeshUniform uMesh = mesh_uniform_model(mesh);
 
   shader_add_uniform(
       target_shader(mesh),
@@ -33,16 +33,17 @@ void material_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
                       .offset = 0,
                   },
                   // camera
-                  {.binding = 1,
-                   .data = &uCamera,
-                   .size = sizeof(CameraUniform),
-                   .offset = 0,
-                   .update =
-                       {
-                           .callback = camera_uniform_update_matrix,
-                           .trigger = camera_uniform_compare_views,
-                           .data = camera,
-                       }
+                  {
+                      .binding = 1,
+                      .data = &uCamera,
+                      .size = sizeof(CameraUniform),
+                      .offset = 0,
+                      .update =
+                          {
+                              .callback = camera_uniform_update_matrix,
+                              .trigger = camera_uniform_compare_views,
+                              .data = camera,
+                          },
                   },
                   // model
                   {
@@ -50,6 +51,12 @@ void material_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
                       .data = &uMesh,
                       .size = sizeof(MeshUniform),
                       .offset = 0,
+                      .update =
+                          {
+                              .callback = mesh_uniform_model_update,
+                              .trigger = mesh_uniform_model_compare,
+                              .data = mesh,
+                          },
                   },
               },
       });

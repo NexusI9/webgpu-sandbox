@@ -5,5 +5,6 @@
 #include "list.h"
 #include "ref_list.h"
 #include "shader.h"
+#include "uniform.h"
 
 #endif

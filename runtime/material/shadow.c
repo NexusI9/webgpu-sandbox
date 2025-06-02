@@ -13,7 +13,7 @@
 
 void material_shadow_bind_views(Mesh *mesh, mat4 *view) {
 
-  MeshUniform uModel = mesh_model_uniform(mesh);
+  MeshUniform uModel = mesh_uniform_model(mesh);
 
   shader_add_uniform(
       mesh_shader_shadow(mesh),

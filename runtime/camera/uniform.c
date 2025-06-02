@@ -48,8 +48,5 @@ bool camera_uniform_compare_views(void *callback_camera,
   CameraUniform *cast_uni = (CameraUniform *)entry_data;
 
   // compare two views
-  bool should_update =
-      memcmp(cast_cam->view, cast_uni->view, sizeof(mat4));
-
-  return should_update;
+  return memcmp(cast_cam->view, cast_uni->view, sizeof(mat4)) != 0;
 }

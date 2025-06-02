@@ -238,4 +238,3 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
   wireframe_vertex->index.entries = 0;
 }
 
-

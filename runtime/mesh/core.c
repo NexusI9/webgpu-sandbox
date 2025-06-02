@@ -20,23 +20,6 @@
 static Mesh *mesh_children_list_check_init(Mesh *);
 static Mesh *mesh_children_list_check_capacity(Mesh *);
 
-MeshUniform mesh_model_uniform(Mesh *mesh) {
-
-  MeshUniform uModel;
-
-  vec4 position = {
-      mesh->position[0],
-      mesh->position[1],
-      mesh->position[2],
-      1.0f,
-  };
-
-  glm_mat4_copy(mesh->model, uModel.model);
-  glm_vec4_copy(position, uModel.position);
-
-  return uModel;
-}
-
 void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
@@ -282,7 +265,6 @@ void mesh_rotate_quat(Mesh *mesh, versor rotation) {
   mat4 transform_matrix;
   mat4 dest;
 
-  // printf("%f\n", mesh->model[0][0]);
   glm_quat_mat4(rotation, transform_matrix);
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
 }

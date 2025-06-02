@@ -44,11 +44,6 @@ typedef struct {
 } MeshCreateBufferDescriptor;
 
 typedef struct {
-  mat4 model;
-  vec4 position;
-} __attribute__((aligned(16))) MeshUniform;
-
-typedef struct {
   VertexAttribute attribute;
   VertexIndex index;
 } MeshVertex;
@@ -118,8 +113,6 @@ Mesh *mesh_add_child(Mesh *, Mesh *);
 Mesh *mesh_new_child(Mesh *);
 Mesh *mesh_new_child_empty(Mesh *);
 Mesh *mesh_get_child_by_id(Mesh *, size_t);
-
-MeshUniform mesh_model_uniform(Mesh *);
 
 MeshVertex *mesh_vertex_base(Mesh *);
 MeshVertex *mesh_vertex_wireframe(Mesh *);

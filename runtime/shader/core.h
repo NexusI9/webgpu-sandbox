@@ -49,7 +49,8 @@ typedef struct {
 typedef void (*shader_uniform_update_callback)(void *callback_data,
                                                void *entry_data);
 
-typedef bool (*shader_uniform_update_trigger)(void * callback_data, const void* entry_data);
+typedef bool (*shader_uniform_update_trigger)(void *callback_data,
+                                              const void *entry_data);
 
 typedef uint32_t shader_binding_t;
 typedef uint8_t shader_bindgroup_t;
@@ -225,8 +226,7 @@ void shader_destroy(Shader *);
 // on update
 void shader_draw(Shader *, WGPURenderPassEncoder *, const Camera *,
                  const Viewport *);
-
-// build up the whole pipeline
+void shader_uniform_update(ShaderBindGroup*, const WGPUQueue*);
 
 void shader_module_release(Shader *);
 Pipeline *shader_pipeline(Shader *);

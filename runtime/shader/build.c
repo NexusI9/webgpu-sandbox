@@ -20,6 +20,9 @@ void shader_build(Shader *shader) {
   // shader_module_release(shader);
   shader_pipeline_release_layout(shader);
   free(bindgroup_layouts);
+
+  // update uniforms first
+
 }
 
 WGPUBindGroupLayout *shader_build_layout(Shader *shader) {
