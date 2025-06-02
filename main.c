@@ -41,7 +41,7 @@
 #include "runtime/material/material.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/scene/scene.h"
-#include "runtime/shader.h"
+#include "runtime/shader/shader.h"
 #include "runtime/viewport.h"
 
 static Scene main_scene;

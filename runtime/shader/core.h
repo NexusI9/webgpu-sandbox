@@ -1,9 +1,9 @@
-#ifndef _SHADER_H_
-#define _SHADER_H_
+#ifndef _SHADER_CORE_H_
+#define _SHADER_CORE_H_
 
-#include "camera.h"
-#include "pipeline.h"
-#include "viewport.h"
+#include "../camera.h"
+#include "../pipeline.h"
+#include "../viewport.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -214,21 +214,16 @@ typedef struct {
 // methods
 void shader_create(Shader *, const ShaderCreateDescriptor *);
 void shader_destroy(Shader *);
-void shader_add_uniform(Shader *, const ShaderCreateUniformDescriptor *);
-void shader_add_texture(Shader *, const ShaderCreateTextureDescriptor *);
-void shader_add_texture_view(Shader *,
-                             const ShaderCreateTextureViewDescriptor *);
-void shader_add_sampler(Shader *, const ShaderCreateSamplerDescriptor *);
 
 // on update
 void shader_draw(Shader *, WGPURenderPassEncoder *, const Camera *,
                  const Viewport *);
 
 // build up the whole pipeline
-void shader_build(Shader *);
-void shader_module_release(Shader *);
-void shader_bind_group_init(Shader *);
-void shader_bind_group_clear(Shader *);
 
+void shader_module_release(Shader *);
 Pipeline *shader_pipeline(Shader *);
+void shader_pipeline_release_layout(Shader *);
+
+
 #endif

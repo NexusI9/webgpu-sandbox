@@ -4,7 +4,7 @@
 #include "../camera.h"
 #include "../resources/geometry/vertex.h"
 #include "../resources/primitive/primitive.h"
-#include "../shader.h"
+#include "../shader/shader.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>

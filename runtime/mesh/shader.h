@@ -1,7 +1,7 @@
 #ifndef _MESH_SHADER_C_
 #define _MESH_SHADER_C_
 
-#include "../shader.h"
+#include "../shader/shader.h"
 #include "./core.h"
 
 void mesh_init_shadow_shader(Mesh *);
