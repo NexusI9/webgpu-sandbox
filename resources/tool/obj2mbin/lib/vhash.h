@@ -33,7 +33,6 @@ typedef struct {
 
 typedef struct {
   VertexHashKey *entries;
-  VertexHashKey **occupied_entries;
   size_t capacity;
   size_t length;
 } VertexHashTable;

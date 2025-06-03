@@ -24,28 +24,25 @@ size_t vhash_hash(const vhash_value_t key, size_t capacity) {
 
 int vhash_insert(VertexHashTable *list, vhash_value_t key, mbin_index_t *idx) {
 
-  if (vhash_search(list, key))
-    // already exist
-    return VHASH_EXIST;
-
   // expand if length reach 75% capacity
-  if (list->length == list->capacity * 0.75) {
+  if (list->length >= list->capacity * 0.75) {
 
     size_t new_capacity = 2 * list->capacity;
     void *temp_entries =
         realloc(list->entries, new_capacity * sizeof(VertexHashKey));
-    void *temp_occup =
-        realloc(list->entries, new_capacity * sizeof(VertexHashKey *));
 
-    if (temp_entries && temp_occup) {
+    if (temp_entries) {
       list->entries = temp_entries;
-      list->occupied_entries = temp_occup;
       list->capacity = new_capacity;
     } else {
       perror("Couldn't expand list\n");
       return VHASH_ALLOC_FAILURE;
     }
   }
+
+  if (vhash_search(list, key))
+    // already exist
+    return VHASH_EXIST;
 
   size_t index = vhash_hash(key, list->capacity);
 
@@ -65,17 +62,15 @@ int vhash_insert(VertexHashTable *list, vhash_value_t key, mbin_index_t *idx) {
   // set bucked occupied state
   new_entry->occupied = true;
 
-  // update occupied entry
-  list->occupied_entries[list->length++] = new_entry;
+  list->length++;
 
   return VHASH_SUCCESS;
 }
 
 int vhash_create(VertexHashTable *list, size_t capacity) {
   list->entries = calloc(capacity, sizeof(VertexHashKey));
-  list->occupied_entries = calloc(capacity, sizeof(VertexHashKey *));
 
-  if (list->entries == NULL || list->occupied_entries == NULL) {
+  if (list->entries == NULL) {
     perror("Couldn't create vertex hash table");
     return VHASH_ALLOC_FAILURE;
   }
@@ -92,6 +87,7 @@ VertexHashKey *vhash_search(VertexHashTable *list, vhash_value_t key) {
 
   // check if values are equal
   while (list->entries[index].occupied) {
+
     if (memcmp(list->entries[index].entries, key,
                sizeof(mbin_vertex_t) * VERTEX_STRIDE) == 0)
       return &list->entries[index];

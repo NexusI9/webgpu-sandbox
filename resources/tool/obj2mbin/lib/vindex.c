@@ -25,7 +25,8 @@
 
 static IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *);
 static IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *);
-static int index_attribute_insert_group(char *, IndexAttributeGroup *);
+static int index_attribute_insert_group(char *, IndexAttributeGroup *,
+                                        const char *);
 static void index_attribute_from_line(const char *, void *);
 static void index_attribute_create_vertex_set(IndexAttributeList *,
                                               VertexAttributeList **,
@@ -33,6 +34,8 @@ static void index_attribute_create_vertex_set(IndexAttributeList *,
                                               IndexBuffer *);
 
 void index_attribute_print(const IndexAttributeList *list) {
+  if (list->length == 0)
+    return;
   printf("Index: \n");
   for (size_t g = 0; g < list->length; g++) {
     for (size_t i = 0; i < list->entries[g].length; i++) {
@@ -43,7 +46,8 @@ void index_attribute_print(const IndexAttributeList *list) {
   }
 }
 
-int index_attribute_insert_group(char *line, IndexAttributeGroup *list) {
+int index_attribute_insert_group(char *line, IndexAttributeGroup *list,
+                                 const char *pattern) {
 
   // split values and push them into the current list
   // "1/3/4 1/9/4 3/2/1" => [ [1/3/4] , [1/9/4] , [3/2/1] ]
@@ -51,16 +55,29 @@ int index_attribute_insert_group(char *line, IndexAttributeGroup *list) {
 
   while (index_group) {
 
-    int iPosition, iUv, iNormal;
-    sscanf(index_group, "%d/%d/%d", &iPosition, &iUv, &iNormal);
+    // store attributes in an array since pattern may no necessarily match 3,
+    // need 0 as initial value
+    const size_t attr_count = 3;
+    mbin_index_t idx_attr[attr_count] = {0, 0, 0}; // position/ uv / normal
+    mbin_index_t *iPos = &idx_attr[0];
+    mbin_index_t *iUv = &idx_attr[1];
+    mbin_index_t *iNrm = &idx_attr[2];
+
+    int scan_length = sscanf(index_group, pattern, iPos, iUv, iNrm);
 
     // get new entry pointer
     IndexAttribute *new_attribute = index_attribute_new_attribute(list);
     if (new_attribute) {
-      // -1 cause obj index starts at 1, but array c 0
-      new_attribute->position = iPosition - 1;
-      new_attribute->normal = iNormal - 1;
-      new_attribute->uv = iUv - 1;
+      mbin_index_t *new_attr_idx[3] = {
+          &new_attribute->position,
+          &new_attribute->uv,
+          &new_attribute->normal,
+      };
+
+      // parallel assign idx_attr to new_attr_idx
+      for (size_t i = 0; i < scan_length; i++)
+        // -1 cause obj index starts at 1, but array c 0
+        *new_attr_idx[i] = idx_attr[i] - 1;
     }
 
     index_group = strtok(0, VINDEX_GROUP_SEPARATOR);
@@ -112,7 +129,7 @@ IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
     }
   }
 
-  // check length
+  // check capacity reach
   if (list->length == list->capacity) {
     size_t new_capacity = 2 * list->capacity;
     void *temp = realloc(list->entries, sizeof(IndexAttribute) * new_capacity);
@@ -142,7 +159,7 @@ void index_attribute_from_line(const char *line, void *data) {
   IndexAttributeGroup *new_group = index_attribute_new_group(cast_data->list);
 
   if (new_group)
-    index_attribute_insert_group(values, new_group);
+    index_attribute_insert_group(values, new_group, cast_data->pattern);
 }
 
 /**
@@ -155,12 +172,13 @@ void index_attribute_from_line(const char *line, void *data) {
             '- Index Attribute 1
             '- Index Attribute n (= position && uv && normal)
  */
-void index_attribute_cache(FILE *file, IndexAttributeList *list) {
+void index_attribute_cache(FILE *file, IndexAttributeList *list,
+                           const char *prefix, const char *pattern) {
 
-  file_read_line_prefix(file, "f ", index_attribute_from_line,
-                        &(VertexIndexCallbackDescriptor){
-                            .list = list,
-                        });
+  // read faces
+  file_read_line_prefix(
+      file, prefix, index_attribute_from_line,
+      &(VertexIndexCallbackDescriptor){.list = list, .pattern = pattern});
 }
 
 /**
@@ -179,7 +197,7 @@ int index_attribute_triangulate(IndexAttributeList *list) {
     IndexAttributeGroup *group = &list->entries[i];
     // already triangle
     if (group->length < 4)
-      return 2;
+      return VINDEX_SUCCESS;
 
     size_t capacity = (group->length - 2) * 3;
     IndexAttributeGroup new_group = {
@@ -343,4 +361,75 @@ int index_attribute_compose_from_vertex(IndexAttributeList *index_list,
   }
 
   return VINDEX_SUCCESS;
+}
+
+/**
+   Lines index list follow this specific pattern:
+
+   .----------------.----------------.
+   |     group 0    |     group 1    |
+   |----------------+----------------|
+   |  pA / nA / tA  |  pB / nB / tB  |
+   '----------------'----------------'
+   For lines vertex the normal (n) gets replace by the opposition point
+   position. Hence this function replace the normal index by the respective
+   opposite position value:
+
+   pA / pB / tA   pB / pA / tB
+
+   We simply override the normals index because we previously copied the
+   vertex positions list into the normal list for our cached *lines* vertex
+   attributes.
+   Copying the postion into the normal and by replacing the
+   normal index by the position index allows to reference to the same
+   "position space" during the mapping phase without creating dedicating
+   functions:
+
+       pX     |      nX                pX       |      pY
+       |      |      |                 |        |      |
+   p1 p2 p3   |  n1 n2 n3          p1 p2 p3     |   p1 p2 p3
+   p4 p5 p6   |  n4 n5 n6   ====>  p4 p5 p6     |   p4 p5 p6
+   p7 p8 ..   |  n7 n8 ..          p7 p8 ..     |   p7 p8 ..
+
+ */
+void index_attribute_line_set_opposite(IndexAttributeList *list) {
+
+  for (size_t i = 0; i < list->length; i++) {
+
+    IndexAttribute *p1 = &list->entries[i].entries[0];
+    IndexAttribute *p2 = &list->entries[i].entries[1];
+
+    p1->normal = p2->position;
+    p2->normal = p1->position;
+  }
+}
+
+void index_attribute_copy(IndexAttribute *src, IndexAttribute *dest) {
+  memcpy(dest, src, sizeof(IndexAttribute));
+}
+
+/**
+   Initially, OBJ lines only have 2 points, however the engine's line take 4
+   points as to create a wireframe illusion (i.e. a very thin quad).
+   The difference is that the last two points' side attribute are the
+   inverse of the two first ones (1 vs -1), "side" data allows to give hints to
+   the shader on which direction the vertex shall move.
+
+   The below function create two attributes copy and assign a uv index to 1
+ */
+void index_attribute_line_set_doublon(IndexAttributeList *list) {
+  for (size_t i = 0; i < list->length; i++) {
+
+    IndexAttributeGroup *current_group = &list->entries[i];
+
+    for (size_t c = 0; c < 2; c++) {
+      IndexAttribute *src_attribute = &current_group->entries[c];
+      IndexAttribute *new_attribute =
+          index_attribute_new_attribute(current_group);
+      // copy source (0 & 1) to new attribute
+      index_attribute_copy(src_attribute, new_attribute);
+      // set uv to 1 (i.e. opposite side)
+      new_attribute->uv = 1;
+    }
+  }
 }

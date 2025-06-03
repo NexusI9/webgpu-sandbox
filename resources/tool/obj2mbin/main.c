@@ -12,6 +12,105 @@
 #include "lib/vindex.h"
 
 /**
+   For faces:
+   1. cache attributes
+   2. create triangles
+   3. compose
+ */
+void cache_faces(IndexAttributeList *cached_faces_index,
+                 VertexAttributeList **cached_attributes, VertexBuffer *vb,
+                 IndexBuffer *ib, FILE *file) {
+
+  index_attribute_cache(file, cached_faces_index, "f ", "%d/%d/%d");
+
+  // trianglify face index list
+  index_attribute_triangulate(cached_faces_index);
+
+  // compose faces
+  index_attribute_compose_from_vertex(cached_faces_index, cached_attributes, vb,
+                                      ib);
+
+#ifdef VERBOSE
+  index_attribute_print(cached_faces_index);
+#endif
+}
+
+/**
+   For lines, the idea is to manipulate a copy of the initial vertex list as to
+   make it fit the face method, by:
+   1. copying the positions into the normals
+   2. create a mock uv  { sides, thickness, -side, thickness }
+   3. for each index group set the normal as the opposite position
+   4. duplicate each group attributes (doublon) and assign uv to 1 so it has
+   opposite sides
+
+   By doing so we can simply reuse the same trigangulatio and composition
+   functions (initially used for the faces)
+ */
+void cache_lines(IndexAttributeList *cached_lines_index,
+                 VertexAttributeList **cached_attributes, VertexBuffer *vb,
+                 IndexBuffer *ib, FILE *file) {
+
+  index_attribute_cache(file, cached_lines_index, "l ", "%d");
+
+  if (cached_lines_index->length) {
+
+    // copy vertex position attribute to line normal
+    VertexAttributeList cached_line_normal;
+    VertexAttributeList *cached_position =
+        cached_attributes[VertexAttributeListIndex_Position];
+
+    vertex_attribute_copy(cached_position, &cached_line_normal);
+
+    // create uv attributes
+    const size_t new_uv_length = 4;
+    VertexAttributeList cached_line_uv = {
+        .capacity = new_uv_length,
+        .length = 0,
+        .entries = NULL,
+        .dimension = 2,
+    };
+
+    const float thickness = 0.005f;
+    mbin_vertex_t new_uv[new_uv_length] = {
+        // 0 (p1)
+        1.0f,
+        thickness,
+        // 1 (p2)
+        -1.0f,
+        thickness,
+    };
+
+    vertex_attribute_list_insert(&cached_line_uv, new_uv, new_uv_length);
+
+    // set line opposite vertex
+    index_attribute_line_set_opposite(cached_lines_index);
+
+    // set doublon
+    index_attribute_line_set_doublon(cached_lines_index);
+
+    // compose
+    // create a dedicated new vertex attribute list for the lines with the
+    // replaced "normals" as well a mock uv
+    VertexAttributeList *cached_lines_attributes[3] = {
+        cached_attributes[VertexAttributeListIndex_Position],
+        &cached_line_normal, // replace normal list with new one (position)
+        &cached_line_uv,
+    };
+
+    // trianglify face index list
+    index_attribute_triangulate(cached_lines_index);
+
+    index_attribute_compose_from_vertex(cached_lines_index,
+                                        cached_lines_attributes, vb, ib);
+  }
+
+#ifdef VERBOSE
+  index_attribute_print(cached_lines_index);
+#endif
+}
+
+/**
    Convert OBJ file to Mesh binary files (vertex + index).
    Using binary files helps for faster memory mapping/ embedding as it directly
    match the respective struct data layout.
@@ -47,12 +146,12 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
       .prefix = VERTEX_UV_LINE_PREFIX,
       .dimension = 2,
   };
+
   // traverse obj file and cache vertex attributes
-  VertexAttributeList *cached_attributes[3] = {
-      &cached_position,
-      &cached_normal,
-      &cached_uv,
-  };
+  VertexAttributeList *cached_attributes[3];
+  cached_attributes[VertexAttributeListIndex_Position] = &cached_position;
+  cached_attributes[VertexAttributeListIndex_Normal] = &cached_normal;
+  cached_attributes[VertexAttributeListIndex_Uv] = &cached_uv;
 
   vertex_attribute_cache(f, cached_attributes);
 
@@ -61,26 +160,23 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
     vertex_attribute_print(cached_attributes[v]);
 #endif
 
-  // cache index
-  IndexAttributeList cached_index = {
+  // cache faces index
+  IndexAttributeList cached_faces_index = {
       .entries = NULL,
       .capacity = 0,
       .length = 0,
   };
 
-  index_attribute_cache(f, &cached_index);
+  cache_faces(&cached_faces_index, cached_attributes, vb, ib, f);
 
-  // trianglify index list
-  index_attribute_triangulate(&cached_index);
-  index_attribute_compose_from_vertex(&cached_index, cached_attributes, vb, ib);
+  // case line index
+  IndexAttributeList cached_lines_index = {
+      .entries = NULL,
+      .capacity = 0,
+      .length = 0,
+  };
 
-  mbin_int dest[vb->length + ib->length];
-
-#ifdef VERBOSE
-  index_attribute_print(&cached_index);
-#endif
-
-  // build vertex attribute
+  cache_lines(&cached_lines_index, cached_attributes, vb, ib, f);
 
   fclose(f);
 

@@ -177,7 +177,7 @@ void add_gizmo() {
                                });
 
   mesh_set_shader(gizmo, &(ShaderCreateDescriptor){
-                             .path = SHADER_PATH_DEFAULT,
+                             .path = SHADER_PATH_LINE,
                              .device = renderer_device(&main_renderer),
                              .queue = renderer_queue(&main_renderer),
                              .label = "gizmo shader",
@@ -319,8 +319,9 @@ int main(int argc, const char *argv[]) {
       POINT_LIGHT[2],
   });
   */
-  import_cube();
+  // import_cube();
 
+  add_gizmo();
   // add_line();
   add_grid();
 

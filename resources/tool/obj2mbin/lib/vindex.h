@@ -39,9 +39,11 @@ typedef struct {
 
 typedef struct {
   IndexAttributeList *list;
+  const char *pattern;
 } VertexIndexCallbackDescriptor;
 
-void index_attribute_cache(FILE *, IndexAttributeList *);
+void index_attribute_cache(FILE *, IndexAttributeList *, const char *,
+                           const char *);
 int index_attribute_triangulate(IndexAttributeList *);
 void index_attribute_position_list(IndexAttributeGroup *, mbin_index_t *,
                                    size_t *, size_t *);
@@ -51,5 +53,9 @@ int index_attribute_compose_from_vertex(IndexAttributeList *,
                                         IndexBuffer *);
 
 void index_attribute_print(const IndexAttributeList *);
+void index_attribute_copy(IndexAttribute *, IndexAttribute *);
+
+void index_attribute_line_set_opposite(IndexAttributeList *);
+void index_attribute_line_set_doublon(IndexAttributeList *);
 
 #endif

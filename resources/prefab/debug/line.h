@@ -1,5 +1,5 @@
-#ifndef _LINE_H_
-#define _LINE_H_
+#ifndef _PREFAB_LINE_H_
+#define _PREFAB_LINE_H_
 
 #include "../runtime/mesh/mesh.h"
 #include <cglm/cglm.h>
