@@ -184,7 +184,7 @@ void index_attribute_cache(FILE *file, IndexAttributeList *list,
 /**
    OBJ only provide index per face but doesn't build triangle.
    The function adjust Index Group entries to constitute valid triangles:
-   0 1 2 3  ===> 0 1 2 2 3 0
+   0 1 2 3  ===> 0 1 2 2 3 1
    As the Mesh Binary primarly used for simple and lowpoly mesh, the function
    use a dummy Fan method to triangulate the polygon, it's thus the modeler
    responsibility to ensure the model has valid polygons count per faces
@@ -195,6 +195,7 @@ int index_attribute_triangulate(IndexAttributeList *list) {
   for (size_t i = 0; i < list->length; i++) {
 
     IndexAttributeGroup *group = &list->entries[i];
+
     // already triangle
     if (group->length < 4)
       return VINDEX_SUCCESS;
@@ -214,7 +215,6 @@ int index_attribute_triangulate(IndexAttributeList *list) {
     // fan triangle
     IndexAttribute *A = &group->entries[0];
     for (size_t a = 1; a < group->length - 1; a++) {
-      IndexAttribute *attributes = &group->entries[a];
       IndexAttribute *B = &group->entries[a];
       IndexAttribute *C = &group->entries[a + 1];
       memcpy(&new_group.entries[new_group.length++], A, sizeof(IndexAttribute));
@@ -240,8 +240,8 @@ void index_attribute_position_list(IndexAttributeGroup *list,
 
 /**
    Combine and store each unique vertex list into a set.
-   Use the hash insert return value to determine if the vertex array shall be
-   added to the destination.
+   Use the hash insert return value to determine if the vertex array shall
+  be added to the destination.
 
    Index (1 / 3 / 0)
       '- position = 1
@@ -261,24 +261,24 @@ void index_attribute_position_list(IndexAttributeGroup *list,
 
    Set:
    .--------------------------------------------------------------------------.
-   |  Key |                            Value                            |  Id |
+   |  Key |                            Value                            | Id
+  |
    |------+-------------------------------------------------------------+-----|
-   |      |  2.0f 2.0f 4.0f  0.1f 1.0f 0.4f  0.0f 0.0f 0.0f  1.0f 0.4f  |     |
-   | hash | '------.-------''-------.------''-------.------''----.----' | len |
-   |      |     position          normal          color         UV      |     |
+   |      |  2.0f 2.0f 4.0f  0.1f 1.0f 0.4f  0.0f 0.0f 0.0f  1.0f 0.4f  | |
+  | hash | '------.-------''-------.------''-------.------''----.----' | len
+  | |      |     position          normal          color         UV      | |
    '------'-------------------------------------------------------------'-----'
 
-   Those unique vertex composition will then be narrowed and clamped between the
-   max(index_count) as to obtain an linear list.
-   To easily traverse the occupied index, the hash set has a occupied list that
-   direnctly points to the occupied entries.
+   Those unique vertex composition will then be narrowed and clamped between
+  the max(index_count) as to obtain an linear list. To easily traverse the
+  occupied index, the hash set has a occupied list that direnctly points to
+  the occupied entries.
 
-   On top of storing the vertex attribtues, the Id (index) is stored as well and
-   corressponds to the hash table length at the moment T when the value is
-   added.
-  This ensures a unique id for each entries and will make it
-   easier to directly create the index list (0 , 3, 7, 3, 2, 3) by mapping from
-  the hash:
+   On top of storing the vertex attribtues, the Id (index) is stored as well
+  and corressponds to the hash table length at the moment T when the value
+  is added. This ensures a unique id for each entries and will make it
+   easier to directly create the index list (0 , 3, 7, 3, 2, 3) by mapping
+  from the hash:
 
                   .------  Values
    hash(values) -<            8
@@ -412,8 +412,8 @@ void index_attribute_copy(IndexAttribute *src, IndexAttribute *dest) {
    Initially, OBJ lines only have 2 points, however the engine's line take 4
    points as to create a wireframe illusion (i.e. a very thin quad).
    The difference is that the last two points' side attribute are the
-   inverse of the two first ones (1 vs -1), "side" data allows to give hints to
-   the shader on which direction the vertex shall move.
+   inverse of the two first ones (1 vs -1), "side" data allows to give hints
+   to the shader on which direction the vertex shall move.
 
    The below function create two attributes copy and assign a uv index to 1
  */
@@ -422,14 +422,25 @@ void index_attribute_line_set_doublon(IndexAttributeList *list) {
 
     IndexAttributeGroup *current_group = &list->entries[i];
 
+    IndexAttribute new_attributes[2];
     for (size_t c = 0; c < 2; c++) {
       IndexAttribute *src_attribute = &current_group->entries[c];
-      IndexAttribute *new_attribute =
-          index_attribute_new_attribute(current_group);
-      // copy source (0 & 1) to new attribute
+      // IndexAttribute *new_attribute =
+      //     index_attribute_new_attribute(current_group);
+      //  copy source (0 & 1) to new attribute
+      IndexAttribute *new_attribute = &new_attributes[c];
+
       index_attribute_copy(src_attribute, new_attribute);
       // set uv to 1 (i.e. opposite side)
       new_attribute->uv = 1;
     }
+
+    IndexAttribute *new_attribute_a =
+        index_attribute_new_attribute(current_group);
+    index_attribute_copy(&new_attributes[1], new_attribute_a);
+
+    IndexAttribute *new_attribute_b =
+        index_attribute_new_attribute(current_group);
+    index_attribute_copy(&new_attributes[0], new_attribute_b);
   }
 }

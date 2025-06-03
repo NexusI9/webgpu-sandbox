@@ -101,13 +101,13 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     // trianglify face index list
     index_attribute_triangulate(cached_lines_index);
 
+#ifdef VERBOSE
+    index_attribute_print(cached_lines_index);
+#endif
+
     index_attribute_compose_from_vertex(cached_lines_index,
                                         cached_lines_attributes, vb, ib);
   }
-
-#ifdef VERBOSE
-  index_attribute_print(cached_lines_index);
-#endif
 }
 
 /**

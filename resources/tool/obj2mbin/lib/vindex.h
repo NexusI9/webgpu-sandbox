@@ -19,6 +19,7 @@
 /* Structure list
   List > Group > Attribute
  */
+
 typedef struct {
   mbin_index_t position;
   mbin_index_t uv;

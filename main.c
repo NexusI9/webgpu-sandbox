@@ -20,6 +20,7 @@
 
 // utils
 #include "resources/primitive/primitive.h"
+#include "runtime/material/texture.h"
 #include "utils/file.h"
 #include "utils/system.h"
 
@@ -183,6 +184,8 @@ void add_gizmo() {
                              .label = "gizmo shader",
                              .name = "gizmo shader",
                          });
+
+  material_texture_double_sided(gizmo);
 
   mesh_translate(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 

@@ -210,7 +210,6 @@ int vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
   if (dest->entries)
       vertex_index_destroy(dest);
 
-  printf("src buffer: %p\n", src->buffer);
   dest->capacity = src->capacity;
   dest->buffer = src->buffer;
   dest->length = src->length;
