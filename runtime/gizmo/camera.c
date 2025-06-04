@@ -19,8 +19,6 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   // create icon mesh
   gizmo_create_billboard(icon, &(GizmoCreateBillboardDescriptor){
                                    .texture_path = texture_path,
-                                   .camera = desc->camera,
-                                   .viewport = desc->viewport,
                                    .device = desc->device,
                                    .queue = desc->queue,
                                    .position = &camera->position,
@@ -40,13 +38,10 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   Mesh *cube = mesh_list_new_mesh(desc->list);
 
   gizmo_create_wireframe(cube, &(GizmoCreateWireframeDescriptor){
-                                   .camera = desc->camera,
-                                   .viewport = desc->viewport,
                                    .device = desc->device,
                                    .queue = desc->queue,
                                    .color = &(vec3){0.0f, 1.0f, 0.0f},
                                    .thickness = GIZMO_WIREFRAME_LINE_THICKNESS,
-                                   .side = 1.0f,
                                    .vertex = &cube_primitive.vertex,
                                    .index = &cube_primitive.index,
                                    .name = "gizmo camera",

@@ -9,7 +9,6 @@ void gizmo_create_wireframe(Mesh *mesh,
 
   // set wireframe color from the vertex attributes
   vertex_attribute_set_color(desc->vertex, desc->color);
-  //vertex_attribute_set_uv(desc->vertex, &(vec2){desc->thickness, desc->side});
 
   // create mesh from vertex/index attributes
   mesh_create(mesh, &(MeshCreateDescriptor){

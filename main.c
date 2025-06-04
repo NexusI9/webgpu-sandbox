@@ -10,33 +10,7 @@
 
 #include "resources/example/example.h"
 
-// HEADERS
-#include "emscripten/html5.h"
-#include "emscripten/html5_webgpu.h"
-#include <stdlib.h>
-#include <webgpu/webgpu.h>
-
-#include "resources/example/gltf.h"
-#include "resources/prefab/debug/line.h"
-#include "runtime/gizmo/camera.h"
-#include "runtime/gizmo/grid.h"
-
-// utils
-#include "resources/primitive/primitive.h"
-#include "runtime/material/texture.h"
-#include "utils/file.h"
-#include "utils/system.h"
-
-#include "backend/buffer.h"
-#include "backend/clock.h"
 #include "backend/renderer.h"
-
-// resources
-#include "resources/loader/loader.gltf.h"
-#include "resources/loader/loader.mbin.h"
-
-#include "resources/primitive/cube.h"
-#include "resources/primitive/plane.h"
 
 // runtime
 #include "runtime/camera/camera.h"
@@ -164,7 +138,6 @@ void init_scene() {
                           renderer_queue(&main_renderer));
 }
 
-
 void add_grid() {
   GridUniform grid_uniform = {
       .size = 100.0f,
@@ -219,7 +192,6 @@ int main(int argc, const char *argv[]) {
 
   example_gltf(&main_scene, &main_renderer);
 
-  example_gizmo(&main_scene, &main_renderer);
   add_grid();
 
   // Update Loop

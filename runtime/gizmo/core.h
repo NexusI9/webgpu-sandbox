@@ -6,7 +6,8 @@
 #include "../viewport/viewport.h"
 #include <webgpu/webgpu.h>
 
-#define GIZMO_LIGHT_SCALE 0.8;
+#define GIZMO_LIGHT_SCALE 0.8
+
 
 typedef struct {
   WGPUDevice *device;

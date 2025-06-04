@@ -21,8 +21,6 @@ void gizmo_light_sun_create(GizmoSunLight *gizmo, SunLight *light,
   // create gizmo mesh
   gizmo_create_billboard(icon, &(GizmoCreateBillboardDescriptor){
                                    .texture_path = texture_path,
-                                   .camera = desc->camera,
-                                   .viewport = desc->viewport,
                                    .device = desc->device,
                                    .queue = desc->queue,
                                    .position = &light->position,

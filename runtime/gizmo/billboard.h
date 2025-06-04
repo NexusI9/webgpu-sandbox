@@ -14,8 +14,6 @@ typedef struct {
   WGPUQueue *queue;
   const char *label;
   const char *texture_path;
-  Camera *camera;
-  Viewport *viewport;
 } GizmoCreateBillboardDescriptor;
 
 
