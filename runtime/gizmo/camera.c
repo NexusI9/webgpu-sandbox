@@ -1,5 +1,5 @@
 #include "camera.h"
-#include "../resources/primitive/cube.h"
+#include "../resources/loader/loader.mbin.h"
 #include "billboard.h"
 #include "wireframe.h"
 
@@ -31,7 +31,12 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   mesh_reference_list_insert(&gizmo->meshes, icon);
 
   // create box mesh
-  Primitive cube_primitive = primitive_cube();
+  Primitive cube_primitive;
+  loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
+      .path = "./resources/assets/mbin/cube.mbin",
+      .primitive = &cube_primitive,
+  });
+  
   Mesh *cube = mesh_list_new_mesh(desc->list);
 
   gizmo_create_wireframe(cube, &(GizmoCreateWireframeDescriptor){

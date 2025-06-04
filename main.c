@@ -188,7 +188,6 @@ void add_gizmo() {
   material_texture_double_sided(gizmo);
 
   mesh_translate(gizmo, (vec3){2.0f, 3.3f, 2.0f});
-
 }
 
 void add_cube(vec3 position) {
@@ -211,7 +210,6 @@ void add_cube(vec3 position) {
                   });
 
   mesh_translate(cube, position);
-
 }
 
 void add_grid() {
@@ -248,7 +246,6 @@ void add_line() {
   line_add_point((vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
                  (vec3){0.0f, 1.0f, 0.0f}, &line->vertex.base.attribute,
                  &line->vertex.base.index);
-
 }
 
 void import_cube() {
@@ -281,7 +278,7 @@ int main(int argc, const char *argv[]) {
   // set scene
   init_scene();
 
-  /*GizmoCamera *new_cam = scene_add_camera(&main_scene,
+  GizmoCamera *new_cam = scene_add_camera(&main_scene,
                                           &(CameraCreateDescriptor){
                                               .speed = 20.0f,
                                               .clock = &main_clock,
@@ -292,13 +289,8 @@ int main(int argc, const char *argv[]) {
                                           renderer_device(&main_renderer),
                                           renderer_queue(&main_renderer));
 
-                                          gizmo_camera_translate(new_cam,
-     (vec3){10.0f, 10.f, 2.0f});*/
+  gizmo_camera_translate(new_cam, (vec3){10.0f, 10.f, 2.0f});
 
-  /*DELETEME:for (int i = 0; i < main_scene.meshes.length; i++) {
-    printf("gizmo:\n");
-    print_mat4(main_scene.meshes.entries[i].model);
-  }*/
 
   /*mesh child_cube;
   add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
