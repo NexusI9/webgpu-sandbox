@@ -35,17 +35,17 @@ Shader *mesh_shader_solid(Mesh *mesh) { return &mesh->shader.texture; }
    The init shadow shader doesn't belong to the material API as it is a
    necessary component set by default on mesh creation.
  */
-void mesh_init_shadow_shader(Mesh *mesh) {
+void mesh_create_shadow_shader(Mesh *mesh) {
 
   // import shadow shader
   Shader *shadow_shader = mesh_shader_shadow(mesh);
   shader_create(shadow_shader,
                 &(ShaderCreateDescriptor){
                     .path = "./runtime/assets/shader/shader.shadow.wgsl",
-                    .label = "shadow",
+                    .label = "Mesh shadow shader",
                     .device = mesh->device,
                     .queue = mesh->queue,
-                    .name = "shadow",
+                    .name = "Mesh shadow shader",
                 });
 
   // edit shader pipeline (vertex only)
@@ -83,7 +83,7 @@ void mesh_init_shadow_shader(Mesh *mesh) {
      3. Upload data to GPU buffer
      4. Create wireframe shader
  */
-void mesh_init_wireframe_shader(Mesh *mesh) {
+void mesh_create_wireframe_shader(Mesh *mesh) {
 
   Shader *wireframe_shader = mesh_shader_wireframe(mesh);
   MeshVertex *wireframe_vertex = &mesh->vertex.wireframe;
@@ -190,8 +190,6 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
                    &wireframe_vertex->attribute, &wireframe_vertex->index);
   }
 
-  // upload vertex attribute and index to wireframe buffer
-
   // upload vertex attributes
   buffer_create(
       &wireframe_vertex->attribute.buffer,
@@ -219,10 +217,10 @@ void mesh_init_wireframe_shader(Mesh *mesh) {
   shader_create(wireframe_shader,
                 &(ShaderCreateDescriptor){
                     .path = "./runtime/assets/shader/shader.line.wgsl",
-                    .label = "wireframe",
+                    .label = "Mesh wireframe shader",
                     .device = mesh->device,
                     .queue = mesh->queue,
-                    .name = "wireframe",
+                    .name = "Mesh wireframe shader",
                 });
 
   // update pipeline for double-sided

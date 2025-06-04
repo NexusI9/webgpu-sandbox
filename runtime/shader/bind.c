@@ -5,17 +5,22 @@
    Initialise shader bind group lists and eventually free/reset the existing
    ones if already existing
  */
-void shader_bind_group_init(Shader *shader) {
+void shader_bind_group_init(Shader *shader, size_t index) {
+
+  if (index > SHADER_MAX_BIND_GROUP) {
+    perror("Cannot initialize a group index > 4\n");
+    return;
+  }
 
   // printf("init bind groups for %s\n", shader->name);
   ShaderBindGroupUniforms *uniform_group =
-      &shader->bind_groups.entries[shader->bind_groups.length].uniforms;
+      &shader->bind_groups.entries[index].uniforms;
 
   ShaderBindGroupTextures *texture_group =
-      &shader->bind_groups.entries[shader->bind_groups.length].textures;
+      &shader->bind_groups.entries[index].textures;
 
   ShaderBindGroupSamplers *sampler_group =
-      &shader->bind_groups.entries[shader->bind_groups.length].samplers;
+      &shader->bind_groups.entries[index].samplers;
 
   /*NOTE:
     Max stack allocation easily reached with static allocation for
@@ -31,8 +36,8 @@ void shader_bind_group_init(Shader *shader) {
 
   /*memset(uniform_group->entries, 0,
          SHADER_UNIFORMS_DEFAULT_CAPACITY *
-	 sizeof(ShaderBindGroupUniformEntry));*/
-  
+         sizeof(ShaderBindGroupUniformEntry));*/
+
   // init Texture dynamic array
   texture_group->length = 0;
   texture_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
@@ -46,6 +51,8 @@ void shader_bind_group_init(Shader *shader) {
   sampler_group->entries = (ShaderBindGroupSamplerEntry *)aligned_alloc(
       16,
       SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupSamplerEntry));
+
+  shader->bind_groups.length++;
 }
 
 /**
@@ -56,7 +63,6 @@ void shader_bind_group_clear(Shader *shader) {
   for (size_t b = 0; b < shader->bind_groups.length; b++) {
     ShaderBindGroup *current_group = &shader->bind_groups.entries[b];
     current_group->bind_group = NULL;
-    current_group->index = 0;
 
     // reseting uniforms
     current_group->uniforms.length = 0;
@@ -132,33 +138,19 @@ void shader_bind_samplers(Shader *shader, ShaderBindGroup *bindgroup,
  */
 ShaderBindGroup *shader_get_bind_group(Shader *shader, size_t group_index) {
 
-  int in = 0, i = 0;
-  size_t index = shader->bind_groups.length;
-  for (i = 0; i < shader->bind_groups.length; i++) {
-    // check if group index is already in shader bind group index
-    if (group_index == shader->bind_groups.entries[i].index) {
-      in = 1;    // true
-      index = i; // override group
-      break;
-    }
+  // check if group within acceptable range
+  if (group_index >= SHADER_MAX_BIND_GROUP) {
+    perror("WebGPU is unable to create more than 4 bind groups\n");
+    return NULL;
   }
 
-  // init new bind group
-  if (in == 0) {
-
-    // set index for further references
-    index = shader->bind_groups.length;
-
-    // Increment bind_groupd length (push new bind group)
-    shader->bind_groups.entries[shader->bind_groups.length].index = group_index;
-
+  // check if group index already exists
+  if (shader->bind_groups.entries[group_index].textures.entries == NULL) {
     // create new bind group
-    shader_bind_group_init(shader);
-
-    shader->bind_groups.length++;
+    shader_bind_group_init(shader, group_index);
   }
 
-  return &shader->bind_groups.entries[index];
+  return &shader->bind_groups.entries[group_index];
 }
 
 /**

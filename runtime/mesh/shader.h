@@ -4,8 +4,11 @@
 #include "../shader/shader.h"
 #include "./core.h"
 
-void mesh_init_shadow_shader(Mesh *);
-void mesh_init_wireframe_shader(Mesh *);
+typedef Shader *(*mesh_get_shader_callback)(Mesh *);
+typedef void (*mesh_create_dynamic_shader_callback)(Mesh *);
+
+void mesh_create_shadow_shader(Mesh *);
+void mesh_create_wireframe_shader(Mesh *);
 
 Shader *mesh_shader_texture(Mesh *);
 Shader *mesh_shader_shadow(Mesh *);

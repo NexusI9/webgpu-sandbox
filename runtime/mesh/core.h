@@ -84,7 +84,6 @@ typedef struct Mesh {
 
 } Mesh;
 
-typedef Shader *(*mesh_get_shader_callback)(Mesh *);
 typedef MeshVertex *(*mesh_get_vertex_callback)(Mesh *);
 
 void mesh_create(Mesh *, const MeshCreateDescriptor *);

@@ -20,10 +20,13 @@ void material_texture_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport,
    by default we will upload all the lights (point, ambient, spot)
    within a defined group
   */
-void material_texture_bind_lights(Mesh *mesh, AmbientLightList *ambient_list,
-                                  SpotLightList *spot_list,
-                                  PointLightList *point_list,
-                                  SunLightList *sun_list, uint8_t group_index) {
+void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
+                                  uint8_t group_index) {
+
+  AmbientLightList *ambient_list = &light_list->ambient;
+  SpotLightList *spot_list = &light_list->spot;
+  SunLightList *sun_list = &light_list->sun;
+  PointLightList *point_list = &light_list->point;
 
   AmbientLightListUniform ambient_uniform;
   SpotLightListUniform spot_uniform;

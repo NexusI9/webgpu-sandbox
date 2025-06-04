@@ -153,6 +153,7 @@ void shadow_pass_init(Scene *scene, WGPUDevice device, WGPUQueue queue) {
 
   // Transfer depth texture array to each meshes default shader
   for (size_t m = 0; m < scene->layer.lit.length; m++) {
+
     Mesh *current_mesh = scene->layer.lit.entries[m];
 
     // bind point & spot light texture view + sampler to Textue Shader
@@ -381,6 +382,13 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
     }
   }
 
+  // create shadow shader
+  for (int m = 0; m < target_mesh_list->length; m++) {
+    Mesh *current_mesh = target_mesh_list->entries[m];
+    // create mesh shadow shader
+    mesh_create_shadow_shader(current_mesh);
+  }
+
   for (size_t p = 0; p < point_length; p++) {
 
     PointLight *light = &desc->scene->lights.point.entries[p];
@@ -392,10 +400,12 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
     for (size_t v = 0; v < light_views.length; v++) {
       mat4 *current_view = &light_views.views[v];
 
-      // 1. Bind meshes
       for (int m = 0; m < target_mesh_list->length; m++) {
+        // 1. Bind meshes
         Mesh *current_mesh = target_mesh_list->entries[m];
+        // bind light respective views
         material_shadow_bind_views(current_mesh, current_view);
+        // build shadow shader layout
         mesh_build(current_mesh, mesh_shader_shadow(current_mesh));
       }
 

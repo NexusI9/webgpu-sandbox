@@ -22,6 +22,8 @@ static Mesh *mesh_children_list_check_capacity(Mesh *);
 
 void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
+  // init mesh
+
   // set name
   mesh_set_name(mesh, md->name);
 
@@ -49,14 +51,11 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
-  // init shadow shader by default
-  mesh_init_shadow_shader(mesh);
-
-  // init wireframe shader by default
-  // TODO: maybe only enable wireframe on "edit" mode and not on "production"
-  mesh_init_wireframe_shader(mesh);
 }
 
+/**
+   Create mesh from primitive index and vertex attributes
+ */
 void mesh_create_primitive(Mesh *mesh,
                            const MeshCreatePrimitiveDescriptor *md) {
 
@@ -92,7 +91,7 @@ void mesh_set_vertex_attribute(Mesh *mesh, const VertexAttribute *attributes) {
               });
 
     // update wireframe shader as it requires mesh vertex & index
-    mesh_init_wireframe_shader(mesh);
+    // mesh_create_wireframe_shader(mesh);
   }
 }
 
@@ -118,7 +117,7 @@ void mesh_set_vertex_index(Mesh *mesh, const VertexIndex *indexes) {
               });
 
     // update wireframe shader as it requires mesh vertex & index
-    mesh_init_wireframe_shader(mesh);
+    // mesh_create_wireframe_shader(mesh);
   }
 }
 
@@ -179,7 +178,7 @@ void mesh_build(Mesh *mesh, Shader *shader) {
 #ifdef VERBOSE_BUILDING_PHASE
   VERBOSE_PRINT("Build mesh: %s\n", mesh->name);
 #endif
-
+  
   // check if mesh has correct buffer before drawing
   if (mesh->vertex.base.index.buffer == NULL ||
       mesh->vertex.base.attribute.buffer == NULL) {

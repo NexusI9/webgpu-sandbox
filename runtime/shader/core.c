@@ -162,7 +162,7 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass,
     shader_uniform_update(current_bind_group, shader->queue);
 
     // link bind group
-    wgpuRenderPassEncoderSetBindGroup(*render_pass, current_bind_group->index,
+    wgpuRenderPassEncoderSetBindGroup(*render_pass, i,
                                       current_bind_group->bind_group, 0, NULL);
   }
 }

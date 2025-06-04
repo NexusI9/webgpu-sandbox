@@ -9,8 +9,7 @@ void material_texture_clear_bindings(Mesh *);
 void material_texture_bind_views(Mesh *, Camera *, Viewport *,
                                  shader_bindgroup_t);
 // bind light scene
-void material_texture_bind_lights(Mesh *, AmbientLightList *, SpotLightList *,
-                                  PointLightList *, SunLightList *, uint8_t);
+void material_texture_bind_lights(Mesh *, LightList *, uint8_t);
 
 void material_texture_add_uniform(Mesh *,
                                   const ShaderCreateUniformDescriptor *);

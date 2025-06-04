@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 // commons
-#define SHADER_MAX_BIND_GROUP 12
+#define SHADER_MAX_BIND_GROUP 4
 #define SHADER_MAX_UNIFORMS 12
 #define SHADER_UNIFORMS_DEFAULT_CAPACITY 8
 #define SHADER_UNIFORM_STRUCT __attribute__((aligned(16)))
@@ -25,6 +25,9 @@
 // solid shader
 #define SHADER_SOLID_BINDGROUP_VIEWS 0
 
+// fixed shader
+#define SHADER_FIXED_BINDGROUP_VIEWS 0
+
 // path
 #define SHADER_PATH_DEFAULT "./runtime/assets/shader/shader.default.wgsl"
 #define SHADER_PATH_PBR "./runtime/assets/shader/shader.pbr.wgsl"
@@ -32,6 +35,7 @@
 #define SHADER_PATH_SCREEN "./runtime/assets/shader/shader.screen.wgsl"
 #define SHADER_PATH_BILLBOARD "./runtime/assets/shader/shader.billboard.wgsl"
 #define SHADER_PATH_LINE "./runtime/assets/shader/shader.line.wgsl"
+
 
 // descriptors
 typedef struct {
@@ -135,7 +139,6 @@ typedef struct {
 // Bind group main
 typedef struct {
   WGPUBindGroup bind_group;         // bind group
-  shader_bindgroup_t index;         // bind group id
   WGPUShaderStageFlags visibility;  // visibility (frag | vert)
                                     // ELEMENTS:
   ShaderBindGroupUniforms uniforms; // uniforms
@@ -226,7 +229,7 @@ void shader_destroy(Shader *);
 // on update
 void shader_draw(Shader *, WGPURenderPassEncoder *, const Camera *,
                  const Viewport *);
-void shader_uniform_update(ShaderBindGroup*, const WGPUQueue*);
+void shader_uniform_update(ShaderBindGroup *, const WGPUQueue *);
 
 void shader_module_release(Shader *);
 Pipeline *shader_pipeline(Shader *);

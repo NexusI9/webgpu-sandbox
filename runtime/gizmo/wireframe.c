@@ -55,6 +55,4 @@ void gizmo_create_wireframe(Mesh *mesh,
   // set double sided
   material_texture_double_sided(mesh);
 
-  // bind views
-  material_texture_bind_views(mesh, desc->camera, desc->viewport, 0);
 }

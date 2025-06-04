@@ -37,9 +37,6 @@ void gizmo_create_billboard(Mesh *mesh,
   // set double side rendering
   material_texture_double_sided(mesh);
 
-  // bind view matrices
-  material_texture_bind_views(mesh, desc->camera, desc->viewport, 0);
-
   // TODO: create UI Atlas
   Texture light_texture;
   texture_create_from_file(&light_texture, desc->texture_path);

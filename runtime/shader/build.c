@@ -21,8 +21,6 @@ void shader_build(Shader *shader) {
   shader_pipeline_release_layout(shader);
   free(bindgroup_layouts);
 
-  // update uniforms first
-
 }
 
 WGPUBindGroupLayout *shader_build_layout(Shader *shader) {
@@ -129,7 +127,7 @@ void shader_build_bind(Shader *shader, WGPUBindGroupLayout *layouts) {
     current_group->bind_group = wgpuDeviceCreateBindGroup(
         *shader->device, &(WGPUBindGroupDescriptor){
                              .layout = wgpuRenderPipelineGetBindGroupLayout(
-                                 shader->pipeline.handle, current_group->index),
+                                 shader->pipeline.handle, i),
                              .entryCount = total_length,
                              .entries = converted_entries,
                          });

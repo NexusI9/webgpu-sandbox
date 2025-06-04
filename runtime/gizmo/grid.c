@@ -37,9 +37,6 @@ void gizmo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                        gd->uniform.size,
                    });
 
-  // bind camera and viewport
-  // NOTE: binding groups shall be created in order (0 first, then 1)
-  material_texture_bind_views(mesh, gd->camera, gd->viewport, 0);
 
   material_texture_add_uniform(
       mesh, &(ShaderCreateUniformDescriptor){

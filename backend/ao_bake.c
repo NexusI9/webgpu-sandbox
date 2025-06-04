@@ -3,7 +3,6 @@
 #include "../utils/system.h"
 #include "string.h"
 
-
 static inline void ao_bake_global(const AOBakeDescriptor *desc);
 static inline void ao_bake_local(const AOBakeDescriptor *desc);
 static inline void ao_bake_raycast(const AOBakeRaycastDescriptor *);
@@ -339,8 +338,6 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
 
 #ifdef AO_BAKE_DISPLAY_RAY
   line_update_buffer(line);
-  material_texture_bind_views(line, &desc->scene->camera,
-                              &desc->scene->viewport, 0);
 #endif
 }
 
@@ -416,7 +413,5 @@ void ao_bake_global(const AOBakeDescriptor *desc) {
 
 #ifdef AO_BAKE_DISPLAY_RAY
   line_update_buffer(line);
-  material_texture_bind_views(line, &desc->scene->camera,
-                              &desc->scene->viewport, 0);
 #endif
 }

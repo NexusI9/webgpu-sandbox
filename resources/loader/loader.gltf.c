@@ -15,7 +15,7 @@
 #include "../backend/buffer.h"
 #include "../runtime/material/material.h"
 #include "../runtime/texture/texture.h"
-#include "stb/stb_image.h" 
+#include "stb/stb_image.h"
 
 static void loader_gltf_create_mesh(Scene *, WGPUDevice *, WGPUQueue *,
                                     cgltf_data *);
@@ -274,21 +274,6 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
       // dynamically define mesh attribute
       mesh_set_vertex_attribute(target_mesh, &vert_attr);
       mesh_set_vertex_index(target_mesh, &vert_index);
-
-      // bind texture shader
-      material_texture_bind_views(target_mesh, scene->active_camera, &scene->viewport,
-                                  SHADER_TEXTURE_BINDGROUP_VIEWS);
-
-      // TODO: put the texture bind lights to the scene itself
-      material_texture_bind_lights(target_mesh, &scene->lights.ambient,
-                                   &scene->lights.spot, &scene->lights.point,
-                                   &scene->lights.sun,
-                                   SHADER_TEXTURE_BINDGROUP_LIGHTS);
-
-      // bind wireframe shader
-      material_wireframe_bind_views(target_mesh, scene->active_camera,
-                                    &scene->viewport,
-                                    SHADER_WIREFRAME_BINDGROUP_VIEWS);
     }
   }
 }
@@ -439,12 +424,12 @@ void loader_gltf_load_fallback_texture(
   shader_entry->height = TEXTURE_MIN_SIZE;
 
   texture_create_from_ref(&shader_entry->data, &shader_entry->size,
-                        &(TextureCreateDescriptor){
-                            .width = shader_entry->width,
-                            .height = shader_entry->height,
-                            .value = 255,
-                            .channels = TEXTURE_CHANNELS_RGBA,
-                        });
+                          &(TextureCreateDescriptor){
+                              .width = shader_entry->width,
+                              .height = shader_entry->height,
+                              .value = 255,
+                              .channels = TEXTURE_CHANNELS_RGBA,
+                          });
 }
 
 void loader_gltf_mesh_position(Mesh *mesh, const char *name, cgltf_data *data) {
@@ -463,10 +448,10 @@ void loader_gltf_mesh_position(Mesh *mesh, const char *name, cgltf_data *data) {
       // set translation
       if (node->has_translation)
         mesh_translate(mesh, (vec3){
-                                node->translation[0],
-                                node->translation[1],
-                                node->translation[2],
-                            });
+                                 node->translation[0],
+                                 node->translation[1],
+                                 node->translation[2],
+                             });
 
       // set scale
       if (node->has_scale)
