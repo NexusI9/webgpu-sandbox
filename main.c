@@ -8,12 +8,15 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "resources/example/example.h"
+
 // HEADERS
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include <stdlib.h>
 #include <webgpu/webgpu.h>
 
+#include "resources/example/gltf.h"
 #include "resources/prefab/debug/line.h"
 #include "runtime/gizmo/camera.h"
 #include "runtime/gizmo/grid.h"
@@ -161,56 +164,6 @@ void init_scene() {
                           renderer_queue(&main_renderer));
 }
 
-void add_gizmo() {
-
-  Mesh *gizmo = scene_new_mesh_fixed(&main_scene);
-  Primitive mbin_primitive;
-  loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
-      .path = "./resources/assets/mbin/cube.mbin",
-      .primitive = &mbin_primitive,
-  });
-
-  mesh_create_primitive(gizmo, &(MeshCreatePrimitiveDescriptor){
-                                   .primitive = mbin_primitive,
-                                   .device = renderer_device(&main_renderer),
-                                   .queue = renderer_queue(&main_renderer),
-                                   .name = "gizmo",
-                               });
-
-  mesh_set_shader(gizmo, &(ShaderCreateDescriptor){
-                             .path = SHADER_PATH_LINE,
-                             .device = renderer_device(&main_renderer),
-                             .queue = renderer_queue(&main_renderer),
-                             .label = "gizmo shader",
-                             .name = "gizmo shader",
-                         });
-
-  material_texture_double_sided(gizmo);
-
-  mesh_translate(gizmo, (vec3){2.0f, 3.3f, 2.0f});
-}
-
-void add_cube(vec3 position) {
-  Primitive cube_prim = primitive_cube();
-  Mesh *cube = scene_new_mesh_unlit(&main_scene);
-  mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
-                                  .primitive = cube_prim,
-                                  .name = "cube",
-                                  .device = renderer_device(&main_renderer),
-                                  .queue = renderer_queue(&main_renderer),
-                              });
-
-  mesh_set_shader(cube,
-                  &(ShaderCreateDescriptor){
-                      .path = "./runtime/assets/shader/shader.default.wgsl",
-                      .label = "cube",
-                      .name = "cube",
-                      .device = renderer_device(&main_renderer),
-                      .queue = renderer_queue(&main_renderer),
-                  });
-
-  mesh_translate(cube, position);
-}
 
 void add_grid() {
   GridUniform grid_uniform = {
@@ -229,33 +182,6 @@ void add_grid() {
                               .device = renderer_device(&main_renderer),
                               .queue = renderer_queue(&main_renderer),
                           });
-}
-
-void add_line() {
-  Mesh *line = scene_new_mesh_unlit(&main_scene);
-  line_create(line, &(LineCreateDescriptor){
-                        .device = renderer_device(&main_renderer),
-                        .queue = renderer_queue(&main_renderer),
-                        .name = "line mesh",
-                    });
-
-  line_add_point((vec3){-2.0f, -4.0f, -2.0f}, (vec3){2.0f, 4.0f, 2.0f},
-                 (vec3){1.0f, 1.0f, 1.0f}, &line->vertex.base.attribute,
-                 &line->vertex.base.index);
-
-  line_add_point((vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
-                 (vec3){0.0f, 1.0f, 0.0f}, &line->vertex.base.attribute,
-                 &line->vertex.base.index);
-}
-
-void import_cube() {
-  loader_gltf_load(&(GLTFLoadDescriptor){
-      .scene = &main_scene,
-      .path = "./resources/assets/gltf/cube.gltf",
-      .device = renderer_device(&main_renderer),
-      .queue = renderer_queue(&main_renderer),
-      .cgltf_options = &(cgltf_options){0},
-  });
 }
 
 int main(int argc, const char *argv[]) {
@@ -291,28 +217,9 @@ int main(int argc, const char *argv[]) {
 
   gizmo_camera_translate(new_cam, (vec3){10.0f, 10.f, 2.0f});
 
+  example_gltf(&main_scene, &main_renderer);
 
-  /*mesh child_cube;
-  add_cube(&child_cube, (vec3){3.0f, 2.0f, 1.0f});
-  mesh child_cube_A;
-  add_cube(&child_cube_A, (vec3){-4.0f, -2.0f, -1.0f});
-  add_cube(&child_cube_B, (vec3){-3.0f, -9.0f, 1.0f});
-  // mesh_add_child(&child_cube, &parent_cube);
-  // mesh_add_child(&child_cube_A, &parent_cube);
-  // mesh_add_child(&child_cube_B, &parent_cube);
-  */
-  //  add_cube((vec3){1.0f, 0.0f, 0.0f});
-
-  /* add_cube((vec3){
-      POINT_LIGHT[0],
-      POINT_LIGHT[1],
-      POINT_LIGHT[2],
-  });
-  */
-  import_cube();
-
-  // add_gizmo();
-  //  add_line();
+  example_gizmo(&main_scene, &main_renderer);
   add_grid();
 
   // Update Loop
