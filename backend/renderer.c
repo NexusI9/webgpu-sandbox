@@ -20,6 +20,8 @@ void renderer_create(renderer *new_renderer,
 
   if (rd->lock_mouse)
     renderer_lock_mouse(new_renderer);
+
+  renderer_resize(new_renderer, 0, NULL, NULL);
 }
 
 int renderer_resize(renderer *renderer, int event_type,
@@ -263,3 +265,6 @@ void renderer_compute_shadow(renderer *renderer, Scene *scene) {
 
 WGPUDevice *renderer_device(renderer *rd) { return &rd->wgpu.device; }
 WGPUQueue *renderer_queue(renderer *rd) { return &rd->wgpu.queue; }
+
+int renderer_width(renderer *rd) { return rd->context.width; }
+int renderer_height(renderer *rd) { return rd->context.height; }

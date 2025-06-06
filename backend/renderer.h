@@ -56,4 +56,6 @@ void renderer_lock_mouse(const renderer *);
 
 WGPUDevice *renderer_device(renderer *);
 WGPUQueue *renderer_queue(renderer *);
+int renderer_width(renderer *);
+int renderer_height(renderer *);
 #endif

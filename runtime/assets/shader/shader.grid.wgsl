@@ -31,7 +31,7 @@ const CAMERA_MODE_FLYING : u32 = 1u << 1u;
 const CAMERA_MODE_ORBIT : u32 = 1u << 2u;
 
 struct Viewport {
-  projection : mat4x4<f32>,
+  projection : mat4x4<f32>, width : u32, height : u32,
 }
 
 // NOTE:

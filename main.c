@@ -46,12 +46,15 @@ static vec3 SUN_LIGHT = {-2.0f, 2.0f, 2.0f};
 void init_scene() {
 
   // set viewport
-  Viewport viewport = viewport_create(&(ViewportCreateDescriptor){
-      .fov = 32.0f,
-      .near_clip = 0.1f,
-      .far_clip = 100.0f,
-      .aspect = 16.0f / 9.0f,
-  });
+  Viewport viewport;
+  viewport_create(&viewport, &(ViewportCreateDescriptor){
+                                 .fov = 32.0f,
+                                 .near_clip = 0.1f,
+                                 .far_clip = 100.0f,
+                                 .aspect = 16.0f / 9.0f,
+                                 .width = renderer_width(&main_renderer),
+                                 .height = renderer_height(&main_renderer),
+                             });
 
   // set camera
   Camera camera;

@@ -18,7 +18,7 @@ struct Mesh {
 }
 
 struct Viewport {
-  projection : mat4x4<f32>,
+  projection : mat4x4<f32>, width : u32, height : u32,
 };
 
 struct Camera {
