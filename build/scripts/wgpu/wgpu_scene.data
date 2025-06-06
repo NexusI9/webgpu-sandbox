@@ -1496,11 +1496,11 @@ struct Viewport {
 
   let a = input.aPosA;
   let b = input.aPosB;
-  let thickness = 0.005f;
+  let thickness = input.aSide.y;
   let side = input.aSide.x;
 
   let midpoint = (a + b) * 0.5f;
-  var model_dir = normalize(b - a);
+  var model_dir = abs(normalize(b - a));
 
   // offset
   let world_pos = uMesh.model * vec4<f32>(a, 1.0f);
