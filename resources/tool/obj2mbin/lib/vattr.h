@@ -2,6 +2,7 @@
 #define _VATTR_H_
 
 #include "mbin.h"
+#include "vindex.h"
 #include <stdio.h>
 #include <stdlib.h>
 

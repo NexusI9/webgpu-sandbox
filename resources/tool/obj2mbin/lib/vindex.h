@@ -49,10 +49,6 @@ int index_attribute_triangulate(IndexAttributeList *);
 void index_attribute_position_list(IndexAttributeGroup *, mbin_index_t *,
                                    size_t *, size_t *);
 
-int index_attribute_compose_from_vertex(IndexAttributeList *,
-                                        VertexAttributeList **, VertexBuffer *,
-                                        IndexBuffer *);
-
 void index_attribute_print(const IndexAttributeList *);
 void index_attribute_copy(IndexAttribute *, IndexAttribute *);
 

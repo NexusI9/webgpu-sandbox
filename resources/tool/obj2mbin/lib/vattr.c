@@ -8,7 +8,7 @@ void vertex_attribute_print(VertexAttributeList *list) {
 
   if (list->length == 0)
     return;
-  
+
   printf("Attributes: \n");
   for (size_t l = 0; l < list->length; l++) {
     printf("%f\t", list->entries[l]);

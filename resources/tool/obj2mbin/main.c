@@ -10,6 +10,7 @@
 #include "lib/mbin.h"
 #include "lib/vattr.h"
 #include "lib/vindex.h"
+#include "lib/vmixer.h"
 
 /**
    For faces:
@@ -27,8 +28,8 @@ void cache_faces(IndexAttributeList *cached_faces_index,
   index_attribute_triangulate(cached_faces_index);
 
   // compose faces
-  index_attribute_compose_from_vertex(cached_faces_index, cached_attributes, vb,
-                                      ib);
+  vmixer_index_compose_from_vertex(cached_faces_index, cached_attributes, vb,
+                                   ib);
 
 #ifdef VERBOSE
   index_attribute_print(cached_faces_index);
@@ -55,7 +56,7 @@ void cache_lines(IndexAttributeList *cached_lines_index,
 
   if (cached_lines_index->length) {
 
-    // copy vertex position attribute to line normal
+    // copy vertex  attribute to line normal
     VertexAttributeList cached_line_normal;
     VertexAttributeList *cached_position =
         cached_attributes[VertexAttributeListIndex_Position];
@@ -105,8 +106,8 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     index_attribute_print(cached_lines_index);
 #endif
 
-    index_attribute_compose_from_vertex(cached_lines_index,
-                                        cached_lines_attributes, vb, ib);
+    vmixer_index_compose_from_vertex(cached_lines_index,
+                                     cached_lines_attributes, vb, ib);
   }
 }
 
