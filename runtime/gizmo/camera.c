@@ -1,6 +1,7 @@
 #include "camera.h"
 #include "../geometry/vertex/vertex.h"
 #include "../resources/loader/loader.mbin.h"
+#include "../runtime/geometry/line/line.h"
 #include "billboard.h"
 #include "wireframe.h"
 
@@ -90,6 +91,13 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
 
    */
 
-  VertexIndex *cube_index = &mesh_vertex_base(gizmo->meshes.entries[0])->index;
-  vertex_index_print(cube_index);
+  size_t cube_mesh_id = 1;
+
+  // get vertex attributes + index for line mesh composition
+  VertexIndex *cube_index =
+      &mesh_vertex_base(gizmo->meshes.entries[cube_mesh_id])->index;
+  VertexAttribute *cube_attribute =
+      &mesh_vertex_base(gizmo->meshes.entries[cube_mesh_id])->attribute;
+  
+
 }
