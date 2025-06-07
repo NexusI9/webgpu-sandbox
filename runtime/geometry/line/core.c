@@ -144,6 +144,7 @@ void line_create_plane(const LineCreatePlaneDescriptor *desc) {
    1. allocate 2n * vertex_stride in the vertex data
    2. 2n in the index
  */
+static int p = 0;
 void line_add_point(vec3 p1, vec3 p2, vec3 color,
                     VertexAttribute *vertex_attribute,
                     VertexIndex *vertex_index) {
@@ -156,16 +157,25 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
 
   // update vertex array
   for (int p = 0; p < LINE_VERTEX_COUNT; p++) {
-    float *base = (p % 2 == 0) ? p1 : p2;
-    float *opposite = (p % 2 == 0) ? p2 : p1;
-    float side = (p <= 1) ? -1.0f : 1.0f;
+    bool isB = p > 0 && p < 3;
 
-    line_set_vertex(base, opposite, color, (vec2){side, LINE_THICKNESS},
+    float *base = isB ? p2 : p1;
+    float *opposite = isB ? p1 : p2;
+    float dir_mul = isB ? 1.0f : -1.0f;
+    
+    float side = (p < 2) ? 1.0f : -1.0f;
+
+    line_set_vertex(base, opposite, color, (vec2){side, dir_mul},
                     vertex_attribute->length, vertex_attribute->entries);
 
     vertex_attribute->length += VERTEX_STRIDE;
   }
 
+  if (p < 10)
+    print_list_float(vertex_attribute->entries, vertex_attribute->length,
+                     VERTEX_STRIDE);
+
+  p++;
   // updat index array
   size_t vertex_length =
       (vertex_attribute->length / VERTEX_STRIDE) - LINE_VERTEX_COUNT;
@@ -173,9 +183,9 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
   vertex_index->entries[vertex_index->length] = (vindex_t)vertex_length;
   vertex_index->entries[vertex_index->length + 1] = (vindex_t)vertex_length + 1;
   vertex_index->entries[vertex_index->length + 2] = (vindex_t)vertex_length + 2;
-  vertex_index->entries[vertex_index->length + 3] = (vindex_t)vertex_length + 2;
-  vertex_index->entries[vertex_index->length + 4] = (vindex_t)vertex_length + 3;
-  vertex_index->entries[vertex_index->length + 5] = (vindex_t)vertex_length + 1;
+  vertex_index->entries[vertex_index->length + 3] = (vindex_t)vertex_length;
+  vertex_index->entries[vertex_index->length + 4] = (vindex_t)vertex_length + 2;
+  vertex_index->entries[vertex_index->length + 5] = (vindex_t)vertex_length + 3;
 
   vertex_index->length += 6;
 }

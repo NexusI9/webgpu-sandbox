@@ -29,22 +29,6 @@ void gizmo_create_wireframe(Mesh *mesh,
                             .path = SHADER_PATH_LINE,
                         });
 
-  // add wireframe thickness
-  float thickness = GIZMO_WIREFRAME_LINE_THICKNESS;
-  shader_add_uniform(
-      mesh_shader_texture(mesh),
-      &(ShaderCreateUniformDescriptor){
-          .entry_count = 1,
-          .group_index = 1,
-          .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
-          .entries = (ShaderBindGroupUniformEntry[]){{
-              .binding = 0,
-              .size = sizeof(float),
-              .data = &thickness,
-              .offset = 0,
-          }},
-      });
-
   // set double sided
   material_texture_double_sided(mesh);
 }
