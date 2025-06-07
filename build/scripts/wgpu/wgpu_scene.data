@@ -1494,32 +1494,41 @@ struct Viewport {
   // Final Matrix (Projection * View)
   // var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
 
-  let a = input.aPosA;
-  let b = input.aPosB;
-  let thickness = input.aSide.y;
+  let a = input.aPosA; // anchor
+  let b = input.aPosB; // opposite
   let side = input.aSide.x;
+  let thickness = 0.3f; // input.aSide.y;
 
   let midpoint = (a + b) * 0.5f;
-  var model_dir = abs(normalize(b - a));
+  var model_dir = normalize(b - a);
 
   // offset
   let world_pos = uMesh.model * vec4<f32>(a, 1.0f);
   let view_pos = uCamera.view * world_pos;
 
   // model space -> world space
-  let world_dir = normalize((uMesh.model * vec4<f32>(model_dir, 0.0f)).xyz);
+  let world_dir : vec3<f32> =
+                      normalize((uMesh.model * vec4<f32>(model_dir, 0.0f)).xyz);
   // world space -> view space
-  let view_dir = normalize((uCamera.view * vec4<f32>(world_dir, 0.0f)).xyz);
+  let view_dir : vec3<f32> =
+                     normalize((uCamera.view * vec4<f32>(world_dir, 0.0f)).xyz);
 
-  var perp_view_2D_raw = vec2<f32>(-view_dir.y, view_dir.x);
+  let view_2_cam = normalize(-view_pos.xyz);
+  var world_view_raw = cross(view_dir, view_2_cam);
   let epsilon = 0.0001;
 
-  var perp_view_2D : vec2<f32>;
-  if (length(perp_view_2D_raw) < epsilon) {
-    perp_view_2D = vec2<f32>(1.0f, 0.0f);
+  var world_view : vec3<f32>;
+
+  if (length(world_view_raw) < epsilon) {
+
+    let view_fwd = vec3<f32>(0.0f, 0.0f, -1.0f);
+    world_view = normalize(cross(view_dir, view_fwd));
+
   } else {
-    perp_view_2D = normalize(perp_view_2D_raw);
+    world_view = normalize(world_view_raw);
   }
+
+  let perp_view_2D : vec2<f32> = world_view.xy;
 
   let abs_view_z = abs(view_pos.z);
 
