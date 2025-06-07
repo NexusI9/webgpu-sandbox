@@ -5,6 +5,7 @@
 #include "../runtime/geometry/edge/edge.h"
 #include "../runtime/geometry/line/line.h"
 #include "../utils/math.h"
+#include "topology/wireframe.h"
 
 /**
    Return mesh default shader
@@ -86,7 +87,7 @@ void mesh_create_shadow_shader(Mesh *mesh) {
 void mesh_create_wireframe_shader(Mesh *mesh) {
 
   Shader *wireframe_shader = mesh_shader_wireframe(mesh);
-  MeshVertex *wireframe_vertex = &mesh->vertex.wireframe;
+  MeshTopologyWireframe *wireframe_vertex = &mesh->topology.wireframe;
   WGPUBuffer vertex_buffer = wireframe_vertex->attribute.buffer;
   WGPUBuffer index_buffer = wireframe_vertex->index.buffer;
 
@@ -105,116 +106,14 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   if (wireframe_shader->name)
     shader_destroy(wireframe_shader);
 
-  /*
-    Create a edge hash set to store unique edges
-    To store unique data, hash tables are more efficient since we can directly
-    check if the hash exist via the hashing function instead of every time
-    traverse the array and compate the data.
+  VertexIndex *base_index = &mesh->topology.base.index;
+  VertexAttribute *base_attribute = &mesh->topology.base.attribute;
 
-      Object                                  Hash Table
-    .--------.                              .-------------.
-    | attr a | --.   .-------------.        |     ..      |
-    |--------|   '-- |   Hashing   | --.    |-------------|
-    | attr b | --'   '-------------'   |    |     ..      |
-    '--------'                         |    |-------------|
-                                       '--> |     34      |
-                                            |-------------|
-                                            |     ..      |
-                                            '-------------'
-
-               Data Attributes + Hash = Index
-
-   */
-
-  EdgeHashSet edges;
-  edge_hash_set_create(&edges, 40);
-
-  VertexIndex *base_index = &mesh->vertex.base.index;
-  VertexAttribute *base_attribute = &mesh->vertex.base.attribute;
-
-  for (int i = 0; i < base_index->length; i += 3) {
-    unsigned int a = base_index->entries[i];
-    unsigned int b = base_index->entries[i + 1];
-    unsigned int c = base_index->entries[i + 2];
-
-    EdgeKey ab = {MIN(a, b), MAX(a, b)};
-    EdgeKey bc = {MIN(b, c), MAX(b, c)};
-    EdgeKey ca = {MIN(a, c), MAX(a, c)};
-
-    edge_hash_set_insert(&edges, ab);
-    edge_hash_set_insert(&edges, bc);
-    edge_hash_set_insert(&edges, ca);
-  }
-
-  // arrays from edges
-  size_t vertex_capacity = edges.length * LINE_VERTEX_COUNT * VERTEX_STRIDE;
-  vattr_t wireframe_vertex_attribute[vertex_capacity];
-  wireframe_vertex->attribute = (VertexAttribute){
-      .entries = wireframe_vertex_attribute,
-      .capacity = vertex_capacity,
-      .length = 0,
-      .buffer = NULL,
-  };
-
-  size_t index_capacity = edges.length * LINE_INDEX_COUNT;
-  vindex_t wireframe_index_attribute[index_capacity];
-  wireframe_vertex->index = (VertexIndex){
-      .entries = wireframe_index_attribute,
-      .capacity = index_capacity,
-      .length = 0,
-      .buffer = NULL,
-  };
-
-  // go through unique edges set add populate temp vertex & index array
-  for (size_t l = 0; l < edges.length; l++) {
-
-    size_t index = edges.occupied[l];
-    EdgeBucket *current_edge = &edges.entries[index];
-
-    // base vertex
-    int base_index = current_edge->key[0];
-    float *base_attributes =
-        &base_attribute->entries[base_index * VERTEX_STRIDE];
-    Vertex base_vertex = vertex_from_array(base_attributes);
-
-    // opposite vertex
-    int opp_index = current_edge->key[1];
-    float *opp_attributes = &base_attribute->entries[opp_index * VERTEX_STRIDE];
-    Vertex opp_vertex = vertex_from_array(opp_attributes);
-
-    // TODO: make dynamic wireframe color
-    vec3 color = {0.0f, 1.0f, 0.0f};
-
-    // add points to vertex attributes and index
-    line_add_point(base_vertex.position, opp_vertex.position, color,
-                   &wireframe_vertex->attribute, &wireframe_vertex->index);
-  }
-
-  // upload vertex attributes
-  buffer_create(
-      &wireframe_vertex->attribute.buffer,
-      &(CreateBufferDescriptor){
-          .queue = mesh->queue,
-          .device = mesh->device,
-          .data = (void *)wireframe_vertex->attribute.entries,
-          .size = wireframe_vertex->attribute.length * sizeof(vattr_t),
-          .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
-          .mappedAtCreation = false,
-      });
-
-  // upload vertex index
-  buffer_create(&wireframe_vertex->index.buffer,
-                &(CreateBufferDescriptor){
-                    .queue = mesh->queue,
-                    .device = mesh->device,
-                    .data = (void *)wireframe_vertex->index.entries,
-                    .size = wireframe_vertex->index.length * sizeof(vindex_t),
-                    .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
-                    .mappedAtCreation = false,
-                });
+  mesh_topology_wireframe_create(wireframe_vertex, base_index, base_attribute,
+                                 mesh->device, mesh->queue);
 
   // create shader
-  shader_create(wireframe_shader,
+  shader_create(mesh_shader_wireframe(mesh),
                 &(ShaderCreateDescriptor){
                     .path = "./runtime/assets/shader/shader.line.wgsl",
                     .label = "Mesh wireframe shader",
@@ -226,7 +125,7 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   // update pipeline for double-sided
   material_texture_double_sided(mesh);
 
-  // freeing wireframe data entries
+  // freeing wireframe data entries after GPU upload
   wireframe_vertex->attribute.entries = 0;
   wireframe_vertex->index.entries = 0;
 }

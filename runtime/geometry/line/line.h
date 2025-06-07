@@ -74,6 +74,5 @@
  */
 
 #include "core.h"
-#include "mesh.h"
 
 #endif

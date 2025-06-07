@@ -95,9 +95,9 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
 
   // get vertex attributes + index for line mesh composition
   VertexIndex *cube_index =
-      &mesh_vertex_base(gizmo->meshes.entries[cube_mesh_id])->index;
+      mesh_topology_base(gizmo->meshes.entries[cube_mesh_id]).index;
   VertexAttribute *cube_attribute =
-      &mesh_vertex_base(gizmo->meshes.entries[cube_mesh_id])->attribute;
+      mesh_topology_base(gizmo->meshes.entries[cube_mesh_id]).attribute;
   
 
 }

@@ -5,6 +5,8 @@
 #include "../geometry/vertex/vertex.h"
 #include "../primitive/primitive.h"
 #include "../shader/shader.h"
+#include "./topology/topology.h"
+#include "topology/core.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -43,11 +45,6 @@ typedef struct {
   size_t size;
 } MeshCreateBufferDescriptor;
 
-typedef struct {
-  VertexAttribute attribute;
-  VertexIndex index;
-} MeshVertex;
-
 // Core
 typedef struct Mesh {
 
@@ -64,11 +61,11 @@ typedef struct Mesh {
   const WGPUDevice *device;
   const WGPUQueue *queue;
 
-  // vertex data & buffer
+  // vertex data & buffer topology
   struct {
-    MeshVertex base;
-    MeshVertex wireframe;
-  } vertex;
+    MeshTopologyBase base;
+    MeshTopologyWireframe wireframe;
+  } topology;
 
   // shader
   struct {
@@ -84,7 +81,7 @@ typedef struct Mesh {
 
 } Mesh;
 
-typedef MeshVertex *(*mesh_get_vertex_callback)(Mesh *);
+typedef MeshTopology (*mesh_get_vertex_callback)(Mesh *);
 
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
@@ -98,7 +95,7 @@ void mesh_set_shader(Mesh *, const ShaderCreateDescriptor *);
 void mesh_create_vertex_buffer(Mesh *, const MeshCreateBufferDescriptor *);
 void mesh_create_index_buffer(Mesh *, const MeshCreateBufferDescriptor *);
 
-void mesh_draw(MeshVertex *, Shader *, WGPURenderPassEncoder *, const Camera *,
+void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *, const Camera *,
                const Viewport *);
 
 void mesh_build(Mesh *, Shader *);
@@ -113,7 +110,7 @@ Mesh *mesh_new_child(Mesh *);
 Mesh *mesh_new_child_empty(Mesh *);
 Mesh *mesh_get_child_by_id(Mesh *, size_t);
 
-MeshVertex *mesh_vertex_base(Mesh *);
-MeshVertex *mesh_vertex_wireframe(Mesh *);
+MeshTopology mesh_topology_base(Mesh *);
+MeshTopology mesh_topology_wireframe(Mesh *);
 
 #endif

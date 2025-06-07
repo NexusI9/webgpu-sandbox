@@ -182,6 +182,6 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
 
 void line_update_buffer(Mesh *mesh) {
   // update mesh vertex + index buffers
-  mesh_set_vertex_attribute(mesh, &mesh->vertex.base.attribute);
-  mesh_set_vertex_index(mesh, &mesh->vertex.base.index);
+  mesh_set_vertex_attribute(mesh, &mesh->topology.base.attribute);
+  mesh_set_vertex_index(mesh, &mesh->topology.base.index);
 }

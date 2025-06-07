@@ -8,6 +8,8 @@
 #include "../utils/math.h"
 #include "../utils/system.h"
 #include "shader.h"
+#include "topology/base.h"
+#include "topology/core.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
@@ -69,7 +71,7 @@ void mesh_create_primitive(Mesh *mesh,
 
 void mesh_set_vertex_attribute(Mesh *mesh, const VertexAttribute *attributes) {
 
-  MeshVertex *base_vertex = &mesh->vertex.base;
+  MeshTopologyBase *base_vertex = &mesh->topology.base;
 
   // reset buffer
   if (base_vertex->attribute.buffer) {
@@ -77,9 +79,9 @@ void mesh_set_vertex_attribute(Mesh *mesh, const VertexAttribute *attributes) {
     base_vertex->attribute.buffer = NULL;
   }
 
-  mesh->vertex.base.attribute.entries = attributes->entries;
-  mesh->vertex.base.attribute.length = attributes->length;
-  mesh->vertex.base.attribute.capacity = attributes->length;
+  mesh->topology.base.attribute.entries = attributes->entries;
+  mesh->topology.base.attribute.length = attributes->length;
+  mesh->topology.base.attribute.capacity = attributes->length;
 
   if (base_vertex->attribute.length) {
     // store vertex in buffer
@@ -96,16 +98,16 @@ void mesh_set_vertex_attribute(Mesh *mesh, const VertexAttribute *attributes) {
 
 void mesh_set_vertex_index(Mesh *mesh, const VertexIndex *indexes) {
 
-  MeshVertex *base_vertex = &mesh->vertex.base;
+  MeshTopologyBase *base_vertex = &mesh->topology.base;
   // reset buffer
   if (base_vertex->index.buffer) {
     wgpuBufferRelease(base_vertex->index.buffer);
     base_vertex->index.buffer = NULL;
   }
 
-  mesh->vertex.base.index.entries = indexes->entries;
-  mesh->vertex.base.index.length = indexes->length;
-  mesh->vertex.base.index.capacity = indexes->length;
+  mesh->topology.base.index.entries = indexes->entries;
+  mesh->topology.base.index.length = indexes->length;
+  mesh->topology.base.index.capacity = indexes->length;
 
   if (base_vertex->index.length) {
     // store index in buffer
@@ -139,7 +141,7 @@ void mesh_create_vertex_buffer(Mesh *mesh,
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue "), exit(0);
 
-  buffer_create(&mesh->vertex.base.attribute.buffer,
+  buffer_create(&mesh->topology.base.attribute.buffer,
                 &(CreateBufferDescriptor){
                     .queue = mesh->queue,
                     .device = mesh->device,
@@ -157,7 +159,7 @@ void mesh_create_index_buffer(Mesh *mesh,
   if (mesh->device == NULL || mesh->queue == NULL)
     perror("Mesh has no device or queue"), exit(0);
 
-  buffer_create(&mesh->vertex.base.index.buffer,
+  buffer_create(&mesh->topology.base.index.buffer,
                 &(CreateBufferDescriptor){
                     .queue = mesh->queue,
                     .device = mesh->device,
@@ -179,8 +181,8 @@ void mesh_build(Mesh *mesh, Shader *shader) {
 #endif
 
   // check if mesh has correct buffer before drawing
-  if (mesh->vertex.base.index.buffer == NULL ||
-      mesh->vertex.base.attribute.buffer == NULL) {
+  if (mesh->topology.base.index.buffer == NULL ||
+      mesh->topology.base.attribute.buffer == NULL) {
     perror("Mesh has no vertex index or attribute buffer.\n");
   }
 
@@ -191,7 +193,7 @@ void mesh_build(Mesh *mesh, Shader *shader) {
 /**
    Mesh main draw from default vertex and index buffer
  */
-void mesh_draw(MeshVertex *vertex, Shader *shader,
+void mesh_draw(MeshTopology topology, Shader *shader,
                WGPURenderPassEncoder *render_pass, const Camera *camera,
                const Viewport *viewport) {
 
@@ -199,9 +201,9 @@ void mesh_draw(MeshVertex *vertex, Shader *shader,
   // if shader is null, use default shader
   shader_draw(shader, render_pass, camera, viewport);
 
-  WGPUBuffer attribute_buffer = vertex->attribute.buffer;
-  WGPUBuffer index_buffer = vertex->index.buffer;
-  size_t index_length = vertex->index.length;
+  WGPUBuffer attribute_buffer = topology.attribute->buffer;
+  WGPUBuffer index_buffer = topology.index->buffer;
+  size_t index_length = topology.index->length;
 
   // draw indexes from buffer
   wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
@@ -375,11 +377,13 @@ Mesh *mesh_get_child(Mesh *mesh, size_t index) {
 /**
    Return Mesh Base Vertex
  */
-MeshVertex *mesh_vertex_base(Mesh *mesh) { return &mesh->vertex.base; }
+MeshTopology mesh_topology_base(Mesh *mesh) {
+  return mesh_topology_base_vertex(&mesh->topology.base);
+}
 
 /**
    Return Mesh Wireframe Vertex
  */
-MeshVertex *mesh_vertex_wireframe(Mesh *mesh) {
-  return &mesh->vertex.wireframe;
+MeshTopology mesh_topology_wireframe(Mesh *mesh) {
+  return mesh_topology_wireframe_vertex(&mesh->topology.wireframe);
 }
