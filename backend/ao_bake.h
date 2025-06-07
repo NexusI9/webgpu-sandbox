@@ -1,7 +1,7 @@
 #ifndef _AO_BAKE_H_
 #define _AO_BAKE_H_
 
-#include "../resources/geometry/triangle.h"
+#include "../runtime/geometry/triangle/triangle.h"
 #include "../runtime/scene/scene.h"
 #include "../runtime/texture/texture.h"
 

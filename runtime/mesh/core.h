@@ -2,8 +2,8 @@
 #define _MESH_CORE_H_
 
 #include "../camera/camera.h"
-#include "../resources/geometry/vertex.h"
-#include "../resources/primitive/primitive.h"
+#include "../geometry/vertex/vertex.h"
+#include "../primitive/primitive.h"
 #include "../shader/shader.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>

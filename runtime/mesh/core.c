@@ -3,8 +3,8 @@
 #include "../backend/shadow_pass.h"
 #include "../light/light.h"
 #include "../pipeline/pipeline.h"
-#include "../resources/geometry/edge.h"
-#include "../resources/prefab/debug/line.h"
+#include "../runtime/geometry/edge/edge.h"
+#include "../runtime/geometry/line/line.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
 #include "shader.h"
@@ -50,7 +50,6 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->position);
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
-
 }
 
 /**
@@ -178,7 +177,7 @@ void mesh_build(Mesh *mesh, Shader *shader) {
 #ifdef VERBOSE_BUILDING_PHASE
   VERBOSE_PRINT("Build mesh: %s\n", mesh->name);
 #endif
-  
+
   // check if mesh has correct buffer before drawing
   if (mesh->vertex.base.index.buffer == NULL ||
       mesh->vertex.base.attribute.buffer == NULL) {

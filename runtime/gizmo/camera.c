@@ -1,4 +1,5 @@
 #include "camera.h"
+#include "../geometry/vertex/vertex.h"
 #include "../resources/loader/loader.mbin.h"
 #include "billboard.h"
 #include "wireframe.h"
@@ -34,13 +35,13 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
       .path = "./resources/assets/mbin/cube.mbin",
       .primitive = &cube_primitive,
   });
-  
+
   Mesh *cube = mesh_list_new_mesh(desc->list);
 
   gizmo_create_wireframe(cube, &(GizmoCreateWireframeDescriptor){
                                    .device = desc->device,
                                    .queue = desc->queue,
-                                   .color = &(vec3){0.0f, 1.0f, 0.0f},
+                                   .color = &(vec3){1.0f, 0.7f, 0.4f},
                                    .thickness = GIZMO_WIREFRAME_LINE_THICKNESS,
                                    .vertex = &cube_primitive.vertex,
                                    .index = &cube_primitive.index,
@@ -50,6 +51,9 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   mesh_reference_list_insert(&gizmo->meshes, cube);
   // update pointer list length
   gizmo->meshes.length = gizmo_mesh_count;
+
+  // set fov deformation
+  gizmo_camera_fov(gizmo, 90.0f);
 }
 
 void gizmo_camera_translate(GizmoCamera *gizmo, vec3 position) {
@@ -64,3 +68,28 @@ void gizmo_camera_translate(GizmoCamera *gizmo, vec3 position) {
 void gizmo_camera_rotate(GizmoCamera *gizmo, vec3 rotation) {}
 void gizmo_camera_scale(GizmoCamera *gizmo, vec3 scale) {}
 void gizmo_camera_lookat(GizmoCamera *gizmo, vec3 position) {}
+
+/**
+   Deform camera gizmo mesh according to fov
+   Goes from cube to prims
+ */
+void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
+
+  /**
+        checked on blender to get faces vertex indices:
+
+             4.-----------.0     Back (CW):  4, 0, 1, 5
+             /|          /|      Front (CW): 6, 2, 3, 7
+            / |         / |
+          6'--+--------'2 |
+           |  |        |  |
+           | 5'--------|--'1
+           | /         | /
+           |/          |/
+          7'-----------'3
+
+   */
+
+  VertexIndex *cube_index = &mesh_vertex_base(gizmo->meshes.entries[0])->index;
+  vertex_index_print(cube_index);
+}

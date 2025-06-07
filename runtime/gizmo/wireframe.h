@@ -2,7 +2,7 @@
 #define _GIZMO_WIREFRAME_H_
 #include "core.h"
 
-#define GIZMO_WIREFRAME_LINE_THICKNESS 0.005f
+#define GIZMO_WIREFRAME_LINE_THICKNESS 0.001f
 
 typedef struct {
   WGPUDevice *device;

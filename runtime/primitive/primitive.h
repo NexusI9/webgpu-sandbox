@@ -1,7 +1,7 @@
 #ifndef _PRIMITIVE_H_
 #define _PRIMITIVE_H_
 
-#include "../geometry/vertex.h"
+#include "../geometry/vertex/vertex.h"
 #include <webgpu/webgpu.h>
 
 typedef struct {

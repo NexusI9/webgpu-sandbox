@@ -1,7 +1,8 @@
-#ifndef _PREFAB_LINE_H_
-#define _PREFAB_LINE_H_
+#ifndef _LINE_H_
+#define _LINE_H_
 
 #include "../runtime/mesh/mesh.h"
+#include "../vertex/vertex.h"
 #include <cglm/cglm.h>
 #include <webgpu/webgpu.h>
 
@@ -23,10 +24,12 @@ typedef struct {
   vec3 color;
 } LineCreatePlaneDescriptor;
 
+
 void line_create(Mesh *, const LineCreateDescriptor *);
 void line_add_point(vec3, vec3, vec3, VertexAttribute *, VertexIndex *);
 void line_update_buffer(Mesh *);
 void line_set_vertex(const vec3, const vec3, const vec3, const vec2,
                      const size_t, float *);
+
 
 #endif

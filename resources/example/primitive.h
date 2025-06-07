@@ -3,7 +3,7 @@
 
 
 #include "../../backend/renderer.h"
-#include "../../resources/primitive/cube.h"
+#include "../../runtime/primitive/cube.h"
 #include "../../runtime/scene/scene.h"
 #include "../../runtime/material/material.h"
 

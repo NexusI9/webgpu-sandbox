@@ -1,10 +1,10 @@
 #include "shader.h"
 #include "../backend/buffer.h"
 #include "../backend/shadow_pass.h"
-#include "../resources/geometry/edge.h"
-#include "../resources/prefab/debug/line.h"
-#include "../utils/math.h"
 #include "../material/material.h"
+#include "../runtime/geometry/edge/edge.h"
+#include "../runtime/geometry/line/line.h"
+#include "../utils/math.h"
 
 /**
    Return mesh default shader

@@ -1,6 +1,5 @@
 #include "view.h"
-#include "../resources/primitive/cube.h"
-#include "../resources/primitive/plane.h"
+#include "../runtime/primitive/plane.h"
 #include "../utils/system.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
