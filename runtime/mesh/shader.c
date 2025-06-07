@@ -125,6 +125,22 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   // update pipeline for double-sided
   material_texture_double_sided(mesh);
 
+  // add wireframe thickness
+  float thickness = 0.001f;
+  shader_add_uniform(
+      mesh_shader_wireframe(mesh),
+      &(ShaderCreateUniformDescriptor){
+          .entry_count = 1,
+          .group_index = 1,
+          .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
+          .entries = (ShaderBindGroupUniformEntry[]){{
+              .binding = 0,
+              .size = sizeof(float),
+              .data = &thickness,
+              .offset = 0,
+          }},
+      });
+
   // freeing wireframe data entries after GPU upload
   wireframe_vertex->attribute.entries = 0;
   wireframe_vertex->index.entries = 0;

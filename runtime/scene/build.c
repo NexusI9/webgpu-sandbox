@@ -17,7 +17,7 @@ void scene_build_texture(Scene *scene) {
 
   // bind unlit views
   for (int i = 0; i < scene->layer.unlit.length; i++)
-    material_texture_bind_views(scene->layer.lit.entries[i],
+    material_texture_bind_views(scene->layer.unlit.entries[i],
                                 scene->active_camera, &scene->viewport,
                                 SHADER_TEXTURE_BINDGROUP_VIEWS);
 
@@ -73,6 +73,18 @@ void scene_build_wireframe(Scene *scene) {
 
   // bind views
 
+  // unlit
+  for (int i = 0; i < scene->layer.unlit.length; i++)
+    material_wireframe_bind_views(scene->layer.unlit.entries[i],
+                                  scene->active_camera, &scene->viewport,
+                                  SHADER_WIREFRAME_BINDGROUP_VIEWS);
+
+  // lit
+  for (int i = 0; i < scene->layer.lit.length; i++)
+    material_wireframe_bind_views(scene->layer.lit.entries[i],
+                                  scene->active_camera, &scene->viewport,
+                                  SHADER_WIREFRAME_BINDGROUP_VIEWS);
+
   // draw solid meshes first
   scene_build_mesh_list(scene, mesh_shader_wireframe, &scene->layer.lit);
 
@@ -104,7 +116,7 @@ void scene_build_shadow(Scene *scene) {
 /**
    Build Fixed mesh layer.
    Fixed layer use the Texture shader as default shader (preventing creating an
-   additional persisten unsued Fixed Shader in Mesh).
+   additional persistent unsued Fixed Shader in Mesh).
  */
 void scene_build_fixed(Scene *scene) {
   VERBOSE_PRINT("======= BUILD FIXED SCENE ======\n");
