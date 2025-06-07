@@ -144,7 +144,6 @@ void line_create_plane(const LineCreatePlaneDescriptor *desc) {
    1. allocate 2n * vertex_stride in the vertex data
    2. 2n in the index
  */
-static int p = 0;
 void line_add_point(vec3 p1, vec3 p2, vec3 color,
                     VertexAttribute *vertex_attribute,
                     VertexIndex *vertex_index) {
@@ -171,12 +170,8 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
     vertex_attribute->length += VERTEX_STRIDE;
   }
 
-  if (p < 10)
-    print_list_float(vertex_attribute->entries, vertex_attribute->length,
-                     VERTEX_STRIDE);
-
-  p++;
-  // updat index array
+  
+  // update index array
   size_t vertex_length =
       (vertex_attribute->length / VERTEX_STRIDE) - LINE_VERTEX_COUNT;
 
