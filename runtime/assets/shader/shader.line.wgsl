@@ -34,19 +34,18 @@ struct Viewport {
 @group(0) @binding(1) var<uniform> uCamera : Camera;
 @group(0) @binding(2) var<uniform> uMesh : Mesh;
 
+@group(1) @binding(0) var<uniform> uThickness : f32;
+
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
-
-  // Final Matrix (Projection * View)
-  // var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
 
   let a = input.aPosA; // anchor
   let b = input.aPosB; // opposite
   let side = input.aSide.x;
-  let thickness = 0.3f; // input.aSide.y;
+  let dir_mul = input.aSide.y;
 
   let midpoint = (a + b) * 0.5f;
-  var model_dir = normalize(a - b);
+  var model_dir = dir_mul * normalize(a - b); // invert direction on B endpoint
 
   // offset
   let world_pos = uMesh.model * vec4<f32>(a, 1.0f);
@@ -79,9 +78,9 @@ struct Viewport {
   let abs_view_z = abs(view_pos.z);
 
   let view_space_offset_x =
-      thickness * 0.5f * abs_view_z / uViewport.projection[0][0];
+      uThickness * 0.5f * abs_view_z / uViewport.projection[0][0];
   let view_space_offset_y =
-      thickness * 0.5f * abs_view_z / uViewport.projection[1][1];
+      uThickness * 0.5f * abs_view_z / uViewport.projection[1][1];
 
   let offset_view_space = vec3<f32>(perp_view_2D.x * view_space_offset_x,
                                     perp_view_2D.y * view_space_offset_y, 0.0f);

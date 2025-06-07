@@ -29,7 +29,6 @@ static int index_attribute_insert_group(char *, IndexAttributeGroup *,
                                         const char *);
 static void index_attribute_from_line(const char *, void *);
 
-
 void index_attribute_print(const IndexAttributeList *list) {
   if (list->length == 0)
     return;
@@ -235,7 +234,6 @@ void index_attribute_position_list(IndexAttributeGroup *list,
                                    mbin_index_t *dest, size_t *length,
                                    size_t *typesize) {}
 
-
 /**
    Lines index list follow this specific pattern:
 
@@ -305,9 +303,12 @@ void index_attribute_line_set_doublon(IndexAttributeList *list) {
 
       index_attribute_copy(src_attribute, new_attribute);
       // set uv to 1 (i.e. opposite side)
-      new_attribute->uv = 1;
+      // patter A / B/ A / B
+      src_attribute->uv = c * 2;
+      new_attribute->uv = c * 2 + 1;
     }
 
+    // swap
     IndexAttribute *new_attribute_a =
         index_attribute_new_attribute(current_group);
     index_attribute_copy(&new_attributes[1], new_attribute_a);
@@ -316,4 +317,5 @@ void index_attribute_line_set_doublon(IndexAttributeList *list) {
         index_attribute_new_attribute(current_group);
     index_attribute_copy(&new_attributes[0], new_attribute_b);
   }
+
 }

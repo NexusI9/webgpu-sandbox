@@ -64,7 +64,7 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     vertex_attribute_copy(cached_position, &cached_line_normal);
 
     // create uv attributes
-    const size_t new_uv_length = 4;
+    const size_t new_uv_length = 8;
     VertexAttributeList cached_line_uv = {
         .capacity = new_uv_length,
         .length = 0,
@@ -73,13 +73,26 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     };
 
     const float thickness = 0.005f;
+    const float A_mul = 1.0f;
+    const float B_mul = -1.0f;
     mbin_vertex_t new_uv[new_uv_length] = {
-        // 0 (p1)
-        1.0f,
-        thickness,
-        // 1 (p2)
-        -1.0f,
-        thickness,
+
+        // A +1
+        1.0f,  // side
+        A_mul, // direction mul
+	
+        // A -1
+        -1.0f, // side
+        A_mul, // direction mul
+	
+        // B +1
+        1.0f,  // side
+        B_mul, // direction mul
+
+        // B -1
+        -1.0f, // side
+        B_mul, // direction mul
+
     };
 
     vertex_attribute_list_insert(&cached_line_uv, new_uv, new_uv_length);

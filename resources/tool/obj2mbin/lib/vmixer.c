@@ -137,4 +137,7 @@ int vmixer_index_compose_from_vertex(IndexAttributeList *index_list,
  */
 void vmixer_attribute_line_direction(const VertexAttributeList *src,
                                      const IndexAttributeList *index,
-                                     VertexAttributeList *dest) {}
+                                     VertexAttributeList *dest) {
+
+    
+}
