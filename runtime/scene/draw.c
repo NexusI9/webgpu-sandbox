@@ -38,7 +38,7 @@ void scene_draw_fixed(Scene *scene, WGPURenderPassEncoder *render_pass) {
   camera_draw(scene->active_camera);
 
   // draw fixed mesh
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
+  scene_draw_mesh_list(scene, mesh_topology_override, mesh_shader_override,
                        render_pass, &scene->layer.fixed);
 }
 

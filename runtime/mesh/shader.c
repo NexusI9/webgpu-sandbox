@@ -28,6 +28,12 @@ Shader *mesh_shader_wireframe(Mesh *mesh) { return &mesh->shader.wireframe; }
 Shader *mesh_shader_solid(Mesh *mesh) { return &mesh->shader.texture; }
 
 /**
+   Return mesh override shader
+   Primarily used for fixed layer during the scene build/draw process.
+ */
+Shader *mesh_shader_override(Mesh *mesh) { return mesh->shader.override; }
+
+/**
    Init mesh shadow shader.
    By default all mesh have a shadow shader to generate shadow map
    during the bind light process we will generate the depth map since that's
@@ -128,4 +134,8 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   // freeing wireframe data entries after GPU upload
   wireframe_vertex->attribute.entries = 0;
   wireframe_vertex->index.entries = 0;
+}
+
+void mesh_shader_set_override(Mesh *mesh, Shader *shader) {
+  mesh->shader.override = shader;
 }

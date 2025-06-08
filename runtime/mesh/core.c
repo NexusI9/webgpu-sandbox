@@ -52,6 +52,13 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->position);
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
+
+  mesh_shader_set_override(mesh, mesh_shader_texture(mesh));
+  mesh_topology_set_override(mesh,
+                             (MeshTopology){
+                                 .attribute = &mesh->topology.base.attribute,
+                                 .index = &mesh->topology.base.index,
+                             });
 }
 
 /**
@@ -386,4 +393,20 @@ MeshTopology mesh_topology_base(Mesh *mesh) {
  */
 MeshTopology mesh_topology_wireframe(Mesh *mesh) {
   return mesh_topology_wireframe_vertex(&mesh->topology.wireframe);
+}
+
+/**
+   Override topology is primarily used for fixed mesh during the scene build and
+   draw phase and will be the targeted topology for whatever render mode
+   (solid/wireframe/texture)
+ */
+MeshTopology mesh_topology_override(Mesh *mesh) {
+  return mesh->topology.override;
+}
+
+/**
+   Define the override topology.
+ */
+void mesh_topology_set_override(Mesh *mesh, const MeshTopology topology) {
+  mesh->topology.override = topology;
 }

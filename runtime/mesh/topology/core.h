@@ -3,9 +3,16 @@
 
 #include "../../geometry/vertex/vertex.h"
 
-typedef struct{
-    VertexIndex* index;
-    VertexAttribute* attribute;
+typedef struct {
+  VertexIndex *index;
+  VertexAttribute *attribute;
 } MeshTopology;
+
+typedef enum {
+  MeshTopologyType_Base,
+  MeshTopologyType_Wireframe,
+  MeshTopologyType_BoundingBox,
+} MeshTopologyType;
+
 
 #endif

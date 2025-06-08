@@ -115,8 +115,7 @@ void scene_build_shadow(Scene *scene) {
 
 /**
    Build Fixed mesh layer.
-   Fixed layer use the Texture shader as default shader (preventing creating an
-   additional persistent unsued Fixed Shader in Mesh).
+   Fixed layer use the Override shader* as default shader.
  */
 void scene_build_fixed(Scene *scene) {
   VERBOSE_PRINT("======= BUILD FIXED SCENE ======\n");
@@ -128,7 +127,7 @@ void scene_build_fixed(Scene *scene) {
                                 SHADER_FIXED_BINDGROUP_VIEWS);
 
   // build fixed
-  scene_build_mesh_list(scene, mesh_shader_texture, &scene->layer.fixed);
+  scene_build_mesh_list(scene, mesh_shader_override, &scene->layer.fixed);
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }

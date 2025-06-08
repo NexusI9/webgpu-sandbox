@@ -65,6 +65,7 @@ typedef struct Mesh {
   struct {
     MeshTopologyBase base;
     MeshTopologyWireframe wireframe;
+    MeshTopology override;
   } topology;
 
   // shader
@@ -73,6 +74,7 @@ typedef struct Mesh {
     Shader shadow;
     Shader solid;
     Shader wireframe;
+    Shader *override;
   } shader;
 
   // hierarchy
@@ -112,5 +114,7 @@ Mesh *mesh_get_child_by_id(Mesh *, size_t);
 
 MeshTopology mesh_topology_base(Mesh *);
 MeshTopology mesh_topology_wireframe(Mesh *);
+MeshTopology mesh_topology_override(Mesh *); // for fixed mesh only
+void mesh_topology_set_override(Mesh *, const MeshTopology topology);
 
 #endif

@@ -10,9 +10,12 @@ typedef void (*mesh_create_dynamic_shader_callback)(Mesh *);
 void mesh_create_shadow_shader(Mesh *);
 void mesh_create_wireframe_shader(Mesh *);
 
+void mesh_shader_set_override(Mesh *, Shader *);
+
 Shader *mesh_shader_texture(Mesh *);
 Shader *mesh_shader_shadow(Mesh *);
 Shader *mesh_shader_wireframe(Mesh *);
 Shader *mesh_shader_solid(Mesh *);
+Shader *mesh_shader_override(Mesh *); // for fixed mesh only
 
 #endif
