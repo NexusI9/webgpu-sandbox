@@ -53,14 +53,6 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
-  // init wireframe topology & shader by default
-  /*if (md->vertex.length > 0 && md->index.length > 0) {
-    VertexIndex *base_index = &mesh->topology.base.index;
-    VertexAttribute *base_attribute = &mesh->topology.base.attribute;
-    mesh_topology_wireframe_create(&mesh->topology.wireframe, base_index,
-                                   base_attribute, mesh->device, mesh->queue);
-  }*/
-
   // defines default override
   mesh_shader_set_override(mesh, mesh_shader_texture(mesh));
   mesh_topology_set_override(mesh,
@@ -106,9 +98,6 @@ void mesh_set_vertex_attribute(Mesh *mesh, const VertexAttribute *attributes) {
                   .data = (void *)base_vertex->attribute.entries,
                   .size = base_vertex->attribute.length * sizeof(vattr_t),
               });
-
-    // update wireframe shader as it requires mesh vertex & index
-    // mesh_create_wireframe_shader(mesh);
   }
 }
 
@@ -132,9 +121,6 @@ void mesh_set_vertex_index(Mesh *mesh, const VertexIndex *indexes) {
                   .data = (void *)base_vertex->index.entries,
                   .size = base_vertex->attribute.length * sizeof(vindex_t),
               });
-
-    // update wireframe shader as it requires mesh vertex & index
-    // mesh_create_wireframe_shader(mesh);
   }
 }
 
@@ -220,7 +206,7 @@ void mesh_draw(MeshTopology topology, Shader *shader,
   WGPUBuffer attribute_buffer = topology.attribute->buffer;
   WGPUBuffer index_buffer = topology.index->buffer;
   size_t index_length = topology.index->length;
-
+  
   // draw indexes from buffer
   wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
                                        WGPU_WHOLE_SIZE);

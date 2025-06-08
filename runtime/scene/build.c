@@ -26,10 +26,6 @@ void scene_build_texture(Scene *scene) {
 
   MeshRefList *unlit = &scene->layer.unlit;
 
-  // create wireframe topology
-  scene_build_mesh_create_topology(scene, mesh_topology_wireframe_create,
-                                   mesh_topology_wireframe, unlit);
-
   // process unlit
   scene_build_mesh_bind_views(scene, material_texture_bind_views,
                               SHADER_TEXTURE_BINDGROUP_VIEWS, unlit);
@@ -85,30 +81,37 @@ void scene_build_solid(Scene *scene) {
 void scene_build_wireframe(Scene *scene) {
   VERBOSE_PRINT("======= BUILD WIREFRAME SCENE ======\n");
 
+  MeshRefList *lit = &scene->layer.lit;
+
+  // create wireframe topology
+  scene_build_mesh_create_topology(scene, mesh_topology_wireframe_create,
+                                   mesh_topology_wireframe, lit);
+
   // create meshes' wireframe shader
   scene_build_mesh_create_dynamic_shader(scene, mesh_create_wireframe_shader,
-                                         &scene->layer.lit);
+                                         lit);
 
   // bind views
-  // unlit
-  for (int i = 0; i < scene->layer.unlit.length; i++)
-    material_wireframe_bind_views(scene->layer.unlit.entries[i],
-                                  scene->active_camera, &scene->viewport,
-                                  SHADER_WIREFRAME_BINDGROUP_VIEWS);
+  scene_build_mesh_bind_views(scene, material_wireframe_bind_views,
+                              SHADER_WIREFRAME_BINDGROUP_VIEWS, lit);
 
-  // lit
-  for (int i = 0; i < scene->layer.lit.length; i++)
-    material_wireframe_bind_views(scene->layer.lit.entries[i],
-                                  scene->active_camera, &scene->viewport,
-                                  SHADER_WIREFRAME_BINDGROUP_VIEWS);
-
-  // draw solid meshes first
+  // build "solid" meshes first
   scene_build_mesh_list(scene, mesh_shader_wireframe, &scene->layer.lit);
 
-  // draw transparent meshes then
+  MeshRefList *unlit = &scene->layer.unlit;
+
+  // create wireframe topology
+  scene_build_mesh_create_topology(scene, mesh_topology_wireframe_create,
+                                   mesh_topology_wireframe, unlit);
+
   scene_build_mesh_create_dynamic_shader(scene, mesh_create_wireframe_shader,
-                                         &scene->layer.unlit);
-  scene_build_mesh_list(scene, mesh_shader_wireframe, &scene->layer.unlit);
+                                         unlit);
+  // bine views
+  scene_build_mesh_bind_views(scene, material_wireframe_bind_views,
+                              SHADER_WIREFRAME_BINDGROUP_VIEWS, unlit);
+
+  // draw transparent meshes then
+  scene_build_mesh_list(scene, mesh_shader_wireframe, unlit);
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
@@ -139,8 +142,8 @@ void scene_build_fixed(Scene *scene) {
   MeshRefList *fixed = &scene->layer.fixed;
 
   // create wireframe topology
-  scene_build_mesh_create_topology(scene, mesh_topology_wireframe_create,
-                                   mesh_topology_wireframe, fixed);
+  // scene_build_mesh_create_topology(scene, mesh_topology_wireframe_create,
+  //                                mesh_topology_wireframe, fixed);
 
   // bind views
   scene_build_mesh_bind_views(scene, material_override_bind_views,
@@ -184,10 +187,9 @@ void scene_build_mesh_create_topology(
     mesh_get_topology_callback topo_getter_callback, MeshRefList *mesh_list) {
   for (int i = 0; i < mesh_list->length; i++) {
     Mesh *mesh = mesh_list->entries[i];
-
     MeshTopology src_topo = mesh_topology_base_vertex(&mesh->topology.base);
     MeshTopology dest_topo = topo_getter_callback(mesh);
-
+    
     topo_creator_callback(&src_topo, &dest_topo, mesh->device, mesh->queue);
   }
 }

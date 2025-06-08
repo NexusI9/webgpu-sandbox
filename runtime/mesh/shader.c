@@ -98,7 +98,7 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   WGPUBuffer index_buffer = wireframe_vertex->index.buffer;
 
   // reset existing wireframe buffer if exists
-  if (vertex_buffer) {
+  /*if (vertex_buffer) {
     wgpuBufferRelease(vertex_buffer);
     vertex_buffer = NULL;
   }
@@ -106,7 +106,7 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   if (index_buffer) {
     wgpuBufferRelease(index_buffer);
     index_buffer = NULL;
-  }
+  }*/
 
   // TODO: replace with opaque pointer implementation (shader == null)
   if (wireframe_shader->name)

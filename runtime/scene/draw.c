@@ -4,8 +4,8 @@ static void scene_draw_mesh_list(Scene *, mesh_get_topology_callback,
                                  mesh_get_shader_callback,
                                  WGPURenderPassEncoder *, MeshRefList *);
 
-
-void scene_draw_mesh_list(Scene *scene, mesh_get_topology_callback target_topology,
+void scene_draw_mesh_list(Scene *scene,
+                          mesh_get_topology_callback target_topology,
                           mesh_get_shader_callback target_shader,
                           WGPURenderPassEncoder *render_pass,
                           MeshRefList *mesh_list) {
@@ -44,8 +44,8 @@ void scene_draw_fixed(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
 void scene_draw_shadow(Scene *scene, WGPURenderPassEncoder *render_pass) {
   // onlid draw solid/lit meshes
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_shadow, render_pass,
-                       &scene->layer.lit);
+  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_shadow,
+                       render_pass, &scene->layer.lit);
 }
 
 void scene_draw_wireframe(Scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -67,10 +67,9 @@ void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
   camera_draw(scene->active_camera);
 
   // draw solid meshes first
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid, render_pass,
-                       &scene->layer.lit);
+  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
+                       render_pass, &scene->layer.lit);
   // draw solid meshes then
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid, render_pass,
-                       &scene->layer.unlit);
+  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
+                       render_pass, &scene->layer.unlit);
 }
-
