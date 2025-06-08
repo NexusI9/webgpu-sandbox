@@ -30,7 +30,6 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   // store mesh pointer in gizmo mesh ref list
   mesh_reference_list_insert(&gizmo->meshes, icon);
 
-  /*DEBUG: 
   // create box mesh
   Primitive cube_primitive;
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
@@ -50,12 +49,9 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
                                    .name = "gizmo camera",
                                });
 
-			       mesh_reference_list_insert(&gizmo->meshes, cube);
+  mesh_reference_list_insert(&gizmo->meshes, cube);
   // update pointer list length
   gizmo->meshes.length = gizmo_mesh_count;
-  */
-
-  gizmo->meshes.length = 1;
 
   // set fov deformation
   gizmo_camera_fov(gizmo, 90.0f);
@@ -102,6 +98,4 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
       mesh_topology_base(gizmo->meshes.entries[cube_mesh_id]).index;
   VertexAttribute *cube_attribute =
       mesh_topology_base(gizmo->meshes.entries[cube_mesh_id]).attribute;
-  
-
 }
