@@ -87,9 +87,8 @@ int mesh_topology_wireframe_anchor_create(MeshTopologyWireframeAnchor *anchor,
   return MESH_TOPOLOGY_WIREFRAME_SUCCESS;
 }
 
-int mesh_topology_wireframe_create(MeshTopologyWireframe *topology,
-                                   VertexIndex *base_index,
-                                   VertexAttribute *base_attribute,
+int mesh_topology_wireframe_create(MeshTopology *src_topo,
+                                   MeshTopology *dest_topo,
                                    const WGPUDevice *device,
                                    const WGPUQueue *queue) {
 
@@ -117,10 +116,10 @@ int mesh_topology_wireframe_create(MeshTopologyWireframe *topology,
   EdgeHashSet edges;
   edge_hash_set_create(&edges, 40);
 
-  for (int i = 0; i < base_index->length; i += 3) {
-    unsigned int a = base_index->entries[i];
-    unsigned int b = base_index->entries[i + 1];
-    unsigned int c = base_index->entries[i + 2];
+  for (int i = 0; i < src_topo->index->length; i += 3) {
+    unsigned int a = src_topo->index->entries[i];
+    unsigned int b = src_topo->index->entries[i + 1];
+    unsigned int c = src_topo->index->entries[i + 2];
 
     EdgeKey ab = {MIN(a, b), MAX(a, b)};
     EdgeKey bc = {MIN(b, c), MAX(b, c)};
@@ -134,7 +133,7 @@ int mesh_topology_wireframe_create(MeshTopologyWireframe *topology,
   // arrays from edges
   size_t vertex_capacity = edges.length * LINE_VERTEX_COUNT * VERTEX_STRIDE;
   vattr_t wireframe_vertex_attribute[vertex_capacity];
-  topology->attribute = (VertexAttribute){
+  *dest_topo->attribute = (VertexAttribute){
       .entries = wireframe_vertex_attribute,
       .capacity = vertex_capacity,
       .length = 0,
@@ -143,7 +142,7 @@ int mesh_topology_wireframe_create(MeshTopologyWireframe *topology,
 
   size_t index_capacity = edges.length * LINE_INDEX_COUNT;
   vindex_t wireframe_index_attribute[index_capacity];
-  topology->index = (VertexIndex){
+  *dest_topo->index = (VertexIndex){
       .entries = wireframe_index_attribute,
       .capacity = index_capacity,
       .length = 0,
@@ -159,12 +158,13 @@ int mesh_topology_wireframe_create(MeshTopologyWireframe *topology,
     // base vertex
     int base_index = current_edge->key[0];
     float *base_attributes =
-        &base_attribute->entries[base_index * VERTEX_STRIDE];
+        &src_topo->attribute->entries[base_index * VERTEX_STRIDE];
     Vertex base_vertex = vertex_from_array(base_attributes);
 
     // opposite vertex
     int opp_index = current_edge->key[1];
-    float *opp_attributes = &base_attribute->entries[opp_index * VERTEX_STRIDE];
+    float *opp_attributes =
+        &src_topo->attribute->entries[opp_index * VERTEX_STRIDE];
     Vertex opp_vertex = vertex_from_array(opp_attributes);
 
     // TODO: make dynamic wireframe color
@@ -172,34 +172,35 @@ int mesh_topology_wireframe_create(MeshTopologyWireframe *topology,
 
     // add points to vertex attributes and index
     line_add_point(base_vertex.position, opp_vertex.position, color,
-                   &topology->attribute, &topology->index);
+                   dest_topo->attribute, dest_topo->index);
   }
 
   // upload vertex attributes
-  buffer_create(&topology->attribute.buffer,
+  buffer_create(&dest_topo->attribute->buffer,
                 &(CreateBufferDescriptor){
                     .queue = queue,
                     .device = device,
-                    .data = (void *)topology->attribute.entries,
-                    .size = topology->attribute.length * sizeof(vattr_t),
+                    .data = (void *)dest_topo->attribute->entries,
+                    .size = dest_topo->attribute->length * sizeof(vattr_t),
                     .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
                 });
 
   // upload vertex index
-  buffer_create(&topology->index.buffer,
+  buffer_create(&dest_topo->index->buffer,
                 &(CreateBufferDescriptor){
                     .queue = queue,
                     .device = device,
-                    .data = (void *)topology->index.entries,
-                    .size = topology->index.length * sizeof(vindex_t),
+                    .data = (void *)dest_topo->index->entries,
+                    .size = dest_topo->index->length * sizeof(vindex_t),
                     .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
                 });
 
   // create anchor list
-  mesh_topology_wireframe_anchor_list_create(
-      &topology->anchors, MESH_TOPOLOGY_WIREFRAME_ANCHOR_LIST_DEFAULT_CAPACITY);
+  // mesh_topology_wireframe_anchor_list_create(
+  //    topology->anchors,
+  //    MESH_TOPOLOGY_WIREFRAME_ANCHOR_LIST_DEFAULT_CAPACITY);
 
   return MESH_TOPOLOGY_WIREFRAME_SUCCESS;
 }

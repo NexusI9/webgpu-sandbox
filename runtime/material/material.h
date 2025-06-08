@@ -38,5 +38,6 @@
 #include "solid.h"
 #include "texture.h"
 #include "wireframe.h"
+#include "override.h"
 
 #endif

@@ -29,9 +29,8 @@ typedef struct {
   MeshTopologyWireframeAnchorList anchors;
 } MeshTopologyWireframe;
 
-int mesh_topology_wireframe_create(MeshTopologyWireframe *, VertexIndex *,
-                                   VertexAttribute *, const WGPUDevice *,
-                                   const WGPUQueue *);
+int mesh_topology_wireframe_create(MeshTopology *, MeshTopology *,
+                                   const WGPUDevice *, const WGPUQueue *);
 
 MeshTopologyWireframeAnchor *
 mesh_topology_wireframe_anchor(MeshTopologyWireframe *, const vindex_t);

@@ -112,12 +112,6 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   if (wireframe_shader->name)
     shader_destroy(wireframe_shader);
 
-  VertexIndex *base_index = &mesh->topology.base.index;
-  VertexAttribute *base_attribute = &mesh->topology.base.attribute;
-
-  mesh_topology_wireframe_create(wireframe_vertex, base_index, base_attribute,
-                                 mesh->device, mesh->queue);
-
   // create shader
   shader_create(mesh_shader_wireframe(mesh),
                 &(ShaderCreateDescriptor){

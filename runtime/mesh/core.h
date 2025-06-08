@@ -83,8 +83,6 @@ typedef struct Mesh {
 
 } Mesh;
 
-typedef MeshTopology (*mesh_get_vertex_callback)(Mesh *);
-
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
 
@@ -111,6 +109,11 @@ Mesh *mesh_add_child(Mesh *, Mesh *);
 Mesh *mesh_new_child(Mesh *);
 Mesh *mesh_new_child_empty(Mesh *);
 Mesh *mesh_get_child_by_id(Mesh *, size_t);
+
+typedef MeshTopology (*mesh_get_topology_callback)(Mesh *);
+typedef int (*mesh_topology_create_callback)(MeshTopology *, MeshTopology *,
+                                              const WGPUDevice *,
+                                              const WGPUQueue *);
 
 MeshTopology mesh_topology_base(Mesh *);
 MeshTopology mesh_topology_wireframe(Mesh *);

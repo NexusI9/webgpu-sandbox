@@ -1,11 +1,11 @@
 #include "draw.h"
 
-static void scene_draw_mesh_list(Scene *, mesh_get_vertex_callback,
+static void scene_draw_mesh_list(Scene *, mesh_get_topology_callback,
                                  mesh_get_shader_callback,
                                  WGPURenderPassEncoder *, MeshRefList *);
 
 
-void scene_draw_mesh_list(Scene *scene, mesh_get_vertex_callback target_vertex,
+void scene_draw_mesh_list(Scene *scene, mesh_get_topology_callback target_topology,
                           mesh_get_shader_callback target_shader,
                           WGPURenderPassEncoder *render_pass,
                           MeshRefList *mesh_list) {
@@ -13,7 +13,7 @@ void scene_draw_mesh_list(Scene *scene, mesh_get_vertex_callback target_vertex,
   // loop through mesh list and draw meshes
   for (int i = 0; i < mesh_list->length; i++) {
     Mesh *current_mesh = mesh_list->entries[i];
-    mesh_draw(target_vertex(current_mesh), target_shader(current_mesh),
+    mesh_draw(target_topology(current_mesh), target_shader(current_mesh),
               render_pass, scene->active_camera, &scene->viewport);
   }
 }

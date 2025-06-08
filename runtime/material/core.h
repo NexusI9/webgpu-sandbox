@@ -7,4 +7,6 @@
 void material_bind_views(Mesh *, mesh_get_shader_callback, Camera *, Viewport *,
                          uint8_t);
 
+typedef void (*material_bind_views_callback)(Mesh *, Camera *, Viewport *,
+                                             uint8_t);
 #endif

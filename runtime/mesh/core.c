@@ -53,6 +53,15 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
+  // init wireframe topology & shader by default
+  /*if (md->vertex.length > 0 && md->index.length > 0) {
+    VertexIndex *base_index = &mesh->topology.base.index;
+    VertexAttribute *base_attribute = &mesh->topology.base.attribute;
+    mesh_topology_wireframe_create(&mesh->topology.wireframe, base_index,
+                                   base_attribute, mesh->device, mesh->queue);
+  }*/
+
+  // defines default override
   mesh_shader_set_override(mesh, mesh_shader_texture(mesh));
   mesh_topology_set_override(mesh,
                              (MeshTopology){
