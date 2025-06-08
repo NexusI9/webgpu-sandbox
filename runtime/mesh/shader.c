@@ -98,7 +98,8 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   WGPUBuffer index_buffer = wireframe_vertex->index.buffer;
 
   // reset existing wireframe buffer if exists
-  /*if (vertex_buffer) {
+  /*DELETE ME:
+    if (vertex_buffer) {
     wgpuBufferRelease(vertex_buffer);
     vertex_buffer = NULL;
   }

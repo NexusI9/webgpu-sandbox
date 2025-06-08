@@ -150,6 +150,9 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
   };
 
   // go through unique edges set add populate temp vertex & index array
+  // TODO: make dynamic wireframe color
+  vec3 color = {randf(), randf(), randf()};
+
   for (size_t l = 0; l < edges.length; l++) {
 
     size_t index = edges.occupied[l];
@@ -166,9 +169,6 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
     float *opp_attributes =
         &src_topo->attribute->entries[opp_index * VERTEX_STRIDE];
     Vertex opp_vertex = vertex_from_array(opp_attributes);
-
-    // TODO: make dynamic wireframe color
-    vec3 color = {0.0f, 1.0f, 0.0f};
 
     // add points to vertex attributes and index
     line_add_point(base_vertex.position, opp_vertex.position, color,
