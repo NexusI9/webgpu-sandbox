@@ -22,6 +22,7 @@
 #define VHASH_SUCCESS 0
 #define VHASH_ALLOC_FAILURE 1
 #define VHASH_EXIST 2
+#define VERTEX_STRIDE 11
 
 typedef mbin_vertex_t *vhash_value_t;
 

@@ -3,7 +3,6 @@
 
 #include "buffer.h"
 #include "mbin.h"
-#include "vattr.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,6 +41,7 @@ typedef struct {
   IndexAttributeList *list;
   const char *pattern;
 } VertexIndexCallbackDescriptor;
+
 
 void index_attribute_cache(FILE *, IndexAttributeList *, const char *,
                            const char *);

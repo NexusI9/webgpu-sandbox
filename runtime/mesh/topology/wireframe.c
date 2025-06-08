@@ -12,12 +12,31 @@ static int mesh_topology_wireframe_anchor_create(MeshTopologyWireframeAnchor *,
                                                  size_t, vindex_t);
 static int mesh_topology_wireframe_anchor_expand(MeshTopologyWireframeAnchor *);
 
+static bool mesh_topology_wireframe_is_face(VertexIndex *);
+
 // anchor list
 static int
 mesh_topology_wireframe_anchor_list_expand(MeshTopologyWireframeAnchorList *);
 static int
 mesh_topology_wireframe_anchor_list_create(MeshTopologyWireframeAnchorList *,
                                            size_t);
+
+/**
+   Detect if a index list is Face or Line type.
+   However this method is not robust shall be replaced with a more explicit way.
+   (TODO)
+ */
+bool mesh_topology_wireframe_is_face(VertexIndex *index) {
+
+  vindex_t *id = index->entries;
+
+  for (size_t i = 1; i < MIN(6, index->length); i++) {
+    if (id[i] != id[i - 1] + 1)
+      return true;
+  }
+
+  return false;
+}
 
 int mesh_topology_wireframe_anchor_list_expand(
     MeshTopologyWireframeAnchorList *list) {
@@ -113,21 +132,37 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
 
    */
 
+  /* Check if source topology is a 'line' of 'face' type structure
+     Line type have an even index length ( len(i) % 2 == 0)
+     Whereas Face type have an odd index length as they are composed of
+     triangles.
+     If the source topology is a Line type, then we need to triangulate first
+     before.
+   */
+
   EdgeHashSet edges;
   edge_hash_set_create(&edges, 40);
 
-  for (int i = 0; i < src_topo->index->length; i += 3) {
+  // store edges
+  bool is_face = mesh_topology_wireframe_is_face(src_topo->index);
+  int stride = is_face ? 3 : 2;
+  for (int i = 0; i < src_topo->index->length; i += stride) {
+
     unsigned int a = src_topo->index->entries[i];
     unsigned int b = src_topo->index->entries[i + 1];
-    unsigned int c = src_topo->index->entries[i + 2];
 
     EdgeKey ab = {MIN(a, b), MAX(a, b)};
-    EdgeKey bc = {MIN(b, c), MAX(b, c)};
-    EdgeKey ca = {MIN(a, c), MAX(a, c)};
 
     edge_hash_set_insert(&edges, ab);
-    edge_hash_set_insert(&edges, bc);
-    edge_hash_set_insert(&edges, ca);
+
+    if (stride == 3) {
+      unsigned int c = src_topo->index->entries[i + 2];
+      EdgeKey bc = {MIN(b, c), MAX(b, c)};
+      EdgeKey ca = {MIN(a, c), MAX(a, c)};
+
+      edge_hash_set_insert(&edges, bc);
+      edge_hash_set_insert(&edges, ca);
+    }
   }
 
   // arrays from edges

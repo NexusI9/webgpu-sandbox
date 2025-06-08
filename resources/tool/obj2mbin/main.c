@@ -50,7 +50,7 @@ void cache_faces(IndexAttributeList *cached_faces_index,
  */
 void cache_lines(IndexAttributeList *cached_lines_index,
                  VertexAttributeList **cached_attributes, VertexBuffer *vb,
-                 IndexBuffer *ib, FILE *file) {
+                 IndexBuffer *ib, FILE *file, MBINIndexCacheMethod method) {
 
   index_attribute_cache(file, cached_lines_index, "l ", "%d");
 
@@ -80,11 +80,11 @@ void cache_lines(IndexAttributeList *cached_lines_index,
         // A +1
         1.0f,  // side
         A_mul, // direction mul
-	
+
         // A -1
         -1.0f, // side
         A_mul, // direction mul
-	
+
         // B +1
         1.0f,  // side
         B_mul, // direction mul
@@ -101,7 +101,8 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     index_attribute_line_set_opposite(cached_lines_index);
 
     // set doublon
-    index_attribute_line_set_doublon(cached_lines_index);
+    if (method == MBINIndexCacheMethod_Wireframe)
+      index_attribute_line_set_doublon(cached_lines_index);
 
     // compose
     // create a dedicated new vertex attribute list for the lines with the
@@ -113,7 +114,8 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     };
 
     // trianglify face index list
-    index_attribute_triangulate(cached_lines_index);
+    if (method == MBINIndexCacheMethod_Wireframe)
+      index_attribute_triangulate(cached_lines_index);
 
 #ifdef VERBOSE
     index_attribute_print(cached_lines_index);
@@ -126,8 +128,8 @@ void cache_lines(IndexAttributeList *cached_lines_index,
 
 /**
    Convert OBJ file to Mesh binary files (vertex + index).
-   Using binary files helps for faster memory mapping/ embedding as it directly
-   match the respective struct data layout.
+   Using binary files helps for faster memory mapping/ embedding as it
+   directly match the respective struct data layout.
  */
 
 int convert_obj_to_mbin(const char *in_path, const char *out_dir,
@@ -190,7 +192,8 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
       .length = 0,
   };
 
-  cache_lines(&cached_lines_index, cached_attributes, vb, ib, f);
+  cache_lines(&cached_lines_index, cached_attributes, vb, ib, f,
+              MBINIndexCacheMethod_Default);
 
   fclose(f);
 

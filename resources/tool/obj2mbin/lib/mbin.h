@@ -19,6 +19,12 @@ typedef union {
   mbin_vertex_t f;
 } MBIN_U32Float;
 
+//  Cache method "wireframe" automatically build triangles from the line
+typedef enum {
+  MBINIndexCacheMethod_Default,
+  MBINIndexCacheMethod_Wireframe,
+} MBINIndexCacheMethod;
+
 /**
  Pramga pack 1 ensure no padding between the structure member.
  Tell compiler the structure members shouldn't be padded to fit memory
