@@ -9,10 +9,7 @@ static void scene_build_mesh_list(Scene *, mesh_get_shader_callback,
 static void scene_build_mesh_create_dynamic_shader(
     Scene *, mesh_create_dynamic_shader_callback, MeshRefList *);
 
-static void scene_build_mesh_create_topology(Scene *,
-                                             mesh_topology_create_callback,
-                                             mesh_get_topology_callback,
-                                             MeshRefList *);
+static void scene_build_mesh_create_topology_wireframe(Scene *, MeshRefList *);
 
 static void scene_build_mesh_bind_views(Scene *, material_bind_views_callback,
                                         uint8_t, MeshRefList *);
@@ -33,8 +30,7 @@ void scene_build_texture(Scene *scene) {
   MeshRefList *lit = &scene->layer.lit;
 
   // create wireframe topology
-  scene_build_mesh_create_topology(scene, mesh_topology_wireframe_create,
-                                   mesh_topology_wireframe, lit);
+  scene_build_mesh_create_topology_wireframe(scene, lit);
 
   // bind views
   scene_build_mesh_bind_views(scene, material_texture_bind_views,
@@ -84,8 +80,7 @@ void scene_build_wireframe(Scene *scene) {
   MeshRefList *lit = &scene->layer.lit;
 
   // create wireframe topology
-  scene_build_mesh_create_topology(scene, mesh_topology_wireframe_create,
-                                   mesh_topology_wireframe, lit);
+  scene_build_mesh_create_topology_wireframe(scene, lit);
 
   // create meshes' wireframe shader
   scene_build_mesh_create_dynamic_shader(scene, mesh_create_wireframe_shader,
@@ -101,8 +96,7 @@ void scene_build_wireframe(Scene *scene) {
   MeshRefList *unlit = &scene->layer.unlit;
 
   // create wireframe topology
-  scene_build_mesh_create_topology(scene, mesh_topology_wireframe_create,
-                                   mesh_topology_wireframe, unlit);
+  scene_build_mesh_create_topology_wireframe(scene, unlit);
 
   scene_build_mesh_create_dynamic_shader(scene, mesh_create_wireframe_shader,
                                          unlit);
@@ -182,15 +176,15 @@ void scene_build_mesh_create_dynamic_shader(
    All extra topology are derived from the mesh's base topology and manipulate
    it accordingly to create the new topology.
  */
-void scene_build_mesh_create_topology(
-    Scene *scene, mesh_topology_create_callback topo_creator_callback,
-    mesh_get_topology_callback topo_getter_callback, MeshRefList *mesh_list) {
+void scene_build_mesh_create_topology_wireframe(Scene *scene,
+                                                MeshRefList *mesh_list) {
   for (int i = 0; i < mesh_list->length; i++) {
     Mesh *mesh = mesh_list->entries[i];
     MeshTopology src_topo = mesh_topology_base_vertex(&mesh->topology.base);
-    MeshTopology dest_topo = topo_getter_callback(mesh);
-    
-    topo_creator_callback(&src_topo, &dest_topo, mesh->device, mesh->queue);
+    MeshTopologyWireframe *dest_topo = &mesh->topology.wireframe;
+
+    mesh_topology_wireframe_create(&src_topo, dest_topo, mesh->device,
+                                   mesh->queue);
   }
 }
 

@@ -14,12 +14,75 @@ static int mesh_topology_wireframe_anchor_expand(MeshTopologyWireframeAnchor *);
 
 static bool mesh_topology_wireframe_is_face(VertexIndex *);
 
+static void mesh_topology_wireframe_store_unique_edges(EdgeHashSet *,
+                                                       MeshTopology *);
+static void mesh_topology_wireframe_create_points(EdgeHashSet *, MeshTopology *,
+                                                  MeshTopologyWireframe *);
+
 // anchor list
 static int
 mesh_topology_wireframe_anchor_list_expand(MeshTopologyWireframeAnchorList *);
 static int
 mesh_topology_wireframe_anchor_list_create(MeshTopologyWireframeAnchorList *,
                                            size_t);
+
+/**
+ Go through unique edges set add populate temp vertex & index array
+ */
+void mesh_topology_wireframe_create_points(EdgeHashSet *edges,
+                                           MeshTopology *src_topo,
+                                           MeshTopologyWireframe *dest_topo) {
+  // TODO: make dynamic wireframe color
+  vec3 color = {randf(), randf(), randf()};
+
+  for (size_t l = 0; l < edges->length; l++) {
+
+    size_t index = edges->occupied[l];
+    EdgeBucket *current_edge = &edges->entries[index];
+
+    // base vertex
+    int base_index = current_edge->key[0];
+    float *base_attributes =
+        &src_topo->attribute->entries[base_index * VERTEX_STRIDE];
+    Vertex base_vertex = vertex_from_array(base_attributes);
+
+    // opposite vertex
+    int opp_index = current_edge->key[1];
+    float *opp_attributes =
+        &src_topo->attribute->entries[opp_index * VERTEX_STRIDE];
+    Vertex opp_vertex = vertex_from_array(opp_attributes);
+
+    // add points to vertex attributes and index
+    line_add_point(base_vertex.position, opp_vertex.position, color,
+                   &dest_topo->attribute, &dest_topo->index);
+  }
+}
+
+void mesh_topology_wireframe_store_unique_edges(EdgeHashSet *edges,
+                                                MeshTopology *src_topo) {
+
+  // store edges
+  bool is_face = mesh_topology_wireframe_is_face(src_topo->index);
+  int stride = is_face ? 3 : 2;
+  for (int i = 0; i < src_topo->index->length; i += stride) {
+
+    unsigned int a = src_topo->index->entries[i];
+    unsigned int b = src_topo->index->entries[i + 1];
+
+    EdgeKey ab = {MIN(a, b), MAX(a, b)};
+
+    edge_hash_set_insert(edges, ab);
+
+    if (is_face) {
+      unsigned int c = src_topo->index->entries[i + 2];
+      EdgeKey bc = {MIN(b, c), MAX(b, c)};
+      EdgeKey ca = {MIN(a, c), MAX(a, c)};
+
+      edge_hash_set_insert(edges, bc);
+      edge_hash_set_insert(edges, ca);
+    }
+  }
+}
 
 /**
    Detect if a index list is Face or Line type.
@@ -107,7 +170,7 @@ int mesh_topology_wireframe_anchor_create(MeshTopologyWireframeAnchor *anchor,
 }
 
 int mesh_topology_wireframe_create(MeshTopology *src_topo,
-                                   MeshTopology *dest_topo,
+                                   MeshTopologyWireframe *dest_topo,
                                    const WGPUDevice *device,
                                    const WGPUQueue *queue) {
 
@@ -143,32 +206,13 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
   EdgeHashSet edges;
   edge_hash_set_create(&edges, 40);
 
-  // store edges
-  bool is_face = mesh_topology_wireframe_is_face(src_topo->index);
-  int stride = is_face ? 3 : 2;
-  for (int i = 0; i < src_topo->index->length; i += stride) {
-
-    unsigned int a = src_topo->index->entries[i];
-    unsigned int b = src_topo->index->entries[i + 1];
-
-    EdgeKey ab = {MIN(a, b), MAX(a, b)};
-
-    edge_hash_set_insert(&edges, ab);
-
-    if (is_face) {
-      unsigned int c = src_topo->index->entries[i + 2];
-      EdgeKey bc = {MIN(b, c), MAX(b, c)};
-      EdgeKey ca = {MIN(a, c), MAX(a, c)};
-
-      edge_hash_set_insert(&edges, bc);
-      edge_hash_set_insert(&edges, ca);
-    }
-  }
+  // store unique edges
+  mesh_topology_wireframe_store_unique_edges(&edges, src_topo);
 
   // arrays from edges
   size_t vertex_capacity = edges.length * LINE_VERTEX_COUNT * VERTEX_STRIDE;
   vattr_t wireframe_vertex_attribute[vertex_capacity];
-  *dest_topo->attribute = (VertexAttribute){
+  dest_topo->attribute = (VertexAttribute){
       .entries = wireframe_vertex_attribute,
       .capacity = vertex_capacity,
       .length = 0,
@@ -177,64 +221,41 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
 
   size_t index_capacity = edges.length * LINE_INDEX_COUNT;
   vindex_t wireframe_index_attribute[index_capacity];
-  *dest_topo->index = (VertexIndex){
+  dest_topo->index = (VertexIndex){
       .entries = wireframe_index_attribute,
       .capacity = index_capacity,
       .length = 0,
       .buffer = NULL,
   };
 
-  // go through unique edges set add populate temp vertex & index array
-  // TODO: make dynamic wireframe color
-  vec3 color = {randf(), randf(), randf()};
-
-  for (size_t l = 0; l < edges.length; l++) {
-
-    size_t index = edges.occupied[l];
-    EdgeBucket *current_edge = &edges.entries[index];
-
-    // base vertex
-    int base_index = current_edge->key[0];
-    float *base_attributes =
-        &src_topo->attribute->entries[base_index * VERTEX_STRIDE];
-    Vertex base_vertex = vertex_from_array(base_attributes);
-
-    // opposite vertex
-    int opp_index = current_edge->key[1];
-    float *opp_attributes =
-        &src_topo->attribute->entries[opp_index * VERTEX_STRIDE];
-    Vertex opp_vertex = vertex_from_array(opp_attributes);
-
-    // add points to vertex attributes and index
-    line_add_point(base_vertex.position, opp_vertex.position, color,
-                   dest_topo->attribute, dest_topo->index);
-  }
+  // create points from unique edges
+  mesh_topology_wireframe_create_points(&edges, src_topo, dest_topo);
 
   // upload vertex attributes
-  buffer_create(&dest_topo->attribute->buffer,
+  buffer_create(&dest_topo->attribute.buffer,
                 &(CreateBufferDescriptor){
                     .queue = queue,
                     .device = device,
-                    .data = (void *)dest_topo->attribute->entries,
-                    .size = dest_topo->attribute->length * sizeof(vattr_t),
+                    .data = (void *)dest_topo->attribute.entries,
+                    .size = dest_topo->attribute.length * sizeof(vattr_t),
                     .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
                 });
 
   // upload vertex index
-  buffer_create(&dest_topo->index->buffer,
+  buffer_create(&dest_topo->index.buffer,
                 &(CreateBufferDescriptor){
                     .queue = queue,
                     .device = device,
-                    .data = (void *)dest_topo->index->entries,
-                    .size = dest_topo->index->length * sizeof(vindex_t),
+                    .data = (void *)dest_topo->index.entries,
+                    .size = dest_topo->index.length * sizeof(vindex_t),
                     .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
                 });
 
   // create anchor list
   // mesh_topology_wireframe_anchor_list_create(
-  //    topology->anchors,
+  //    src_topo->anchors,
   //    MESH_TOPOLOGY_WIREFRAME_ANCHOR_LIST_DEFAULT_CAPACITY);
 
   return MESH_TOPOLOGY_WIREFRAME_SUCCESS;

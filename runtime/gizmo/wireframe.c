@@ -31,8 +31,8 @@ void gizmo_create_wireframe(Mesh *mesh,
 
   // generate wirerfame topology
   MeshTopology base_topo = mesh_topology_base(mesh);
-  MeshTopology wireframe_topo = mesh_topology_wireframe(mesh);
-  mesh_topology_wireframe_create(&base_topo, &wireframe_topo, desc->device,
+  MeshTopologyWireframe *wireframe_topo = &mesh->topology.wireframe;
+  mesh_topology_wireframe_create(&base_topo, wireframe_topo, desc->device,
                                  desc->queue);
 
   // set wireframe shader
@@ -45,7 +45,7 @@ void gizmo_create_wireframe(Mesh *mesh,
                         });
 
   // set override topology and shader as wireframe
-  mesh_topology_set_override(mesh, wireframe_topo);
+  mesh_topology_set_override(mesh, mesh_topology_wireframe(mesh));
 
   // set double sided
   material_texture_double_sided(mesh);
