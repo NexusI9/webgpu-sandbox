@@ -31,34 +31,30 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
 
   // store mesh pointer in gizmo ref list
   mesh_reference_list_insert(&gizmo->meshes, icon);
-  /* DEBUG:
-    // create sphere
-    Mesh *sphere = mesh_list_new_mesh(desc->list);
-    Primitive sphere_primitive;
-    loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
-        .primitive = &sphere_primitive,
-        .path = "./resources/assets/mbin/sphere.mbin",
-    });
 
-    gizmo_create_wireframe(sphere, &(GizmoCreateWireframeDescriptor){
-                                       .color = &(vec3){0.4f, 0.8f, 1.0f},
-                                       .device = desc->device,
-                                       .queue = desc->queue,
-                                       .name = "Gizmo spot light sphere",
-                                       .index = &sphere_primitive.index,
-                                       .vertex = &sphere_primitive.vertex,
-                                       .thickness = 0.005f,
-                                   });
+  // create sphere
+  Mesh *sphere = mesh_list_new_mesh(desc->list);
+  Primitive sphere_primitive;
+  loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
+      .primitive = &sphere_primitive,
+      .path = "./resources/assets/mbin/sphere.mbin",
+  });
 
-    // scale sphere to point far point
-    mesh_scale(sphere, (vec3){light->far, light->far, light->far});
+  gizmo_create_wireframe(sphere, &(GizmoCreateWireframeDescriptor){
+                                     .color = &(vec3){0.4f, 0.8f, 1.0f},
+                                     .device = desc->device,
+                                     .queue = desc->queue,
+                                     .name = "Gizmo spot light sphere",
+                                     .index = &sphere_primitive.index,
+                                     .vertex = &sphere_primitive.vertex,
+                                     .thickness = 0.005f,
+                                 });
 
-    mesh_reference_list_insert(&gizmo->meshes, sphere);
+  // scale sphere to point far point
+  mesh_scale(sphere, (vec3){light->far, light->far, light->far});
+
+  mesh_reference_list_insert(&gizmo->meshes, sphere);
 
   // update pointer list length
   gizmo->meshes.length = gizmo_mesh_count;
-  */
-
-  // update pointer list length
-  gizmo->meshes.length = 1;
 }

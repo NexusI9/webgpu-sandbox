@@ -155,7 +155,7 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
 
     edge_hash_set_insert(&edges, ab);
 
-    if (stride == 3) {
+    if (is_face) {
       unsigned int c = src_topo->index->entries[i + 2];
       EdgeKey bc = {MIN(b, c), MAX(b, c)};
       EdgeKey ca = {MIN(a, c), MAX(a, c)};
