@@ -39,6 +39,8 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
 
   Mesh *cube = mesh_list_new_mesh(desc->list);
 
+  // create manually wirerfame since gizmo is part of fixed rendering, so the
+  // mesh topology generation isn't automatically handled.
   gizmo_create_wireframe(cube, &(GizmoCreateWireframeDescriptor){
                                    .device = desc->device,
                                    .queue = desc->queue,
@@ -93,9 +95,15 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
 
   size_t cube_mesh_id = 1;
 
+  Mesh *cube = gizmo->meshes.entries[cube_mesh_id];
   // get vertex attributes + index for line mesh composition
-  VertexIndex *cube_index =
-      mesh_topology_base(gizmo->meshes.entries[cube_mesh_id]).index;
-  VertexAttribute *cube_attribute =
-      mesh_topology_base(gizmo->meshes.entries[cube_mesh_id]).attribute;
+  VertexIndex *cube_index = mesh_topology_base(cube).index;
+  VertexAttribute *cube_attribute = mesh_topology_base(cube).attribute;
+
+  // modify base topology
+  
+
+  // update wireframe topology according to base
+  mesh_topology_wireframe_update(&cube->topology.base,
+                                 &cube->topology.wireframe);
 }

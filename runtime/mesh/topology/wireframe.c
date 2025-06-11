@@ -231,6 +231,7 @@ int mesh_topology_wireframe_anchor_list_insert(
   if (existing_anchor) {
     mesh_topology_wireframe_anchor_insert(existing_anchor, anchor->entries,
                                           anchor->length);
+
   } else {
     // create a new anchor and insert values
     MeshTopologyWireframeAnchor *new_anchor =
@@ -245,6 +246,7 @@ int mesh_topology_wireframe_anchor_list_insert(
       // insert index in new anchor
       mesh_topology_wireframe_anchor_insert(new_anchor, anchor->entries,
                                             anchor->length);
+
     } else {
       perror("Couldn't add new anchor in wireframe anchor list.\n");
       return MESH_TOPOLOGY_WIREFRAME_ERROR;
@@ -408,6 +410,9 @@ void mesh_topology_wireframe_anchor_set_attribute(MeshTopologyWireframe *mesh,
                                                   const vindex_t anchor_index,
                                                   const VertexAttribute *va) {}
 
+/**
+   Insert new index in a given anchor.
+ */
 int mesh_topology_wireframe_anchor_insert(MeshTopologyWireframeAnchor *anchor,
                                           vindex_t *index, size_t length) {
 
@@ -443,6 +448,10 @@ mesh_topology_wireframe_anchor_list_new(MeshTopologyWireframeAnchorList *list) {
   return &list->entries[list->length++];
 }
 
+/**
+   Traverse Anchor List and compare anchor's to check if the anchor already
+   exist.
+ */
 MeshTopologyWireframeAnchor *
 mesh_topology_wireframe_anchor_list_find(MeshTopologyWireframeAnchorList *list,
                                          vindex_t anchor) {
@@ -454,9 +463,47 @@ mesh_topology_wireframe_anchor_list_find(MeshTopologyWireframeAnchorList *list,
   return NULL;
 }
 
+/**
+   Convert MeshTopology Wireframe to a simple Mesh Topology
+ */
 MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *topo) {
   return (MeshTopology){
       .attribute = &topo->attribute,
       .index = &topo->index,
   };
+}
+
+/**
+   Travert the base topology index, retrieve the position and update relative
+   wireframe vertex attribute based on achor's index.
+ */
+int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
+                                   MeshTopologyWireframe *dest_topo) {
+
+  for (size_t b = 0; b < base_topo->index.length; b++) {
+
+    vindex_t base_index = base_topo->index.entries[b];
+    vattr_t *base_vertex = &base_topo->attribute.entries[base_index];
+
+    // look up base index in anchor list
+    MeshTopologyWireframeAnchor *anchor =
+        mesh_topology_wireframe_anchor_list_find(&dest_topo->anchors,
+                                                 base_index);
+
+    // adjust anchor's linked index attributes
+    if (anchor) {
+      for (size_t w = 0; w < anchor->length; w++) {
+        vindex_t wireframe_index = anchor->entries[w];
+        vattr_t *wireframe_vertex =
+            &dest_topo->attribute.entries[wireframe_index];
+
+        // update wireframe vertex position
+        memcpy(wireframe_vertex, base_vertex, 3 * sizeof(vattr_t));
+      }
+    } else {
+      return MESH_TOPOLOGY_WIREFRAME_ANCHOR_UNSET;
+    }
+  }
+
+  return MESH_TOPOLOGY_WIREFRAME_SUCCESS;
 }
