@@ -32,25 +32,6 @@ typedef struct {
 int mesh_topology_wireframe_create(MeshTopology *, MeshTopologyWireframe *,
                                    const WGPUDevice *, const WGPUQueue *);
 
-MeshTopologyWireframeAnchor *
-mesh_topology_wireframe_anchor(MeshTopologyWireframe *, const vindex_t);
-
-VertexAttribute *
-mesh_topology_wireframe_anchor_attribute(MeshTopologyWireframe *,
-                                         const vindex_t);
-
-void mesh_topology_wireframe_anchor_set_attribute(MeshTopologyWireframe *,
-                                                  const vindex_t,
-                                                  const VertexAttribute *);
-
-int mesh_topology_wireframe_anchor_insert(MeshTopologyWireframeAnchor *,
-                                          vindex_t);
-int mesh_topology_wireframe_anchor_list_insert(
-    MeshTopologyWireframeAnchorList *, MeshTopologyWireframeAnchor *);
-
-MeshTopologyWireframeAnchor *
-mesh_topology_wireframe_anchor_list_new(MeshTopologyWireframeAnchorList *);
-
 MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *);
 
 #endif
