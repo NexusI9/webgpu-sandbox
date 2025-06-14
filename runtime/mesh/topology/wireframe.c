@@ -56,8 +56,9 @@ static void mesh_topology_wireframe_anchor_set_attribute(
   anchor list
 
  */
-static uint32_t mesh_topology_wireframe_anchor_list_hash(vertex_position,
-                                                         size_t);
+
+static uint32_t mesh_topology_wireframe_anchor_list_hash_float(float);
+static uint32_t mesh_topology_wireframe_anchor_list_hash(vertex_position);
 static int
 mesh_topology_wireframe_anchor_list_expand(MeshTopologyWireframeAnchorList *);
 static int
@@ -80,10 +81,6 @@ static MeshTopologyWireframeAnchor *
 mesh_topology_wireframe_anchor_list_new_index(MeshTopologyWireframeAnchorList *,
                                               vindex_t);
 
-static MeshTopologyWireframeAnchor *
-mesh_topology_wireframe_anchor_list_find_index(
-    MeshTopologyWireframeAnchorList *, vertex_position *);
-
 /**
      ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖     ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
     ▐▌ ▐▌▐▛▚▖▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌    ▐▌     █  ▐▌     █
@@ -92,18 +89,31 @@ mesh_topology_wireframe_anchor_list_find_index(
 
  */
 
-uint32_t mesh_topology_wireframe_anchor_list_hash(vertex_position key,
-                                                  size_t capacity) {
+uint32_t mesh_topology_wireframe_anchor_list_hash_float(float f) {
 
-  MeshTopologyWireframeAnchorKey fx = {key[0]};
-  MeshTopologyWireframeAnchorKey fy = {key[1]};
-  MeshTopologyWireframeAnchorKey fz = {key[2]};
+  MeshTopologyWireframeAnchorKey conv = {f};
+  uint32_t x = conv.u;
 
-  uint32_t hx = fx.u * 73856093u;
-  uint32_t hy = fy.u * 19349663u;
-  uint32_t hz = fz.u * 83492791u;
+  // Murmur3
+  x ^= x >> 16;
+  x *= 0x85ebca6b;
+  x ^= x >> 13;
+  x *= 0xc2b2ae35;
+  x ^= x >> 16;
+  return x;
+}
 
-  return (hx ^ hy ^ hz) % capacity;
+uint32_t mesh_topology_wireframe_anchor_list_hash(vertex_position key) {
+
+  uint32_t hx = mesh_topology_wireframe_anchor_list_hash_float(key[0]);
+  uint32_t hy = mesh_topology_wireframe_anchor_list_hash_float(key[1]);
+  uint32_t hz = mesh_topology_wireframe_anchor_list_hash_float(key[2]);
+
+  uint32_t h = hx;
+  h ^= hy + 0x9e3779b9 + (h << 6) + (h >> 2); // Boost::hash_combine
+  h ^= hz + 0x9e3779b9 + (h << 6) + (h >> 2);
+
+  return h;
 }
 
 int mesh_topology_wireframe_anchor_list_expand(
@@ -207,8 +217,7 @@ MeshTopologyWireframeAnchor *mesh_topology_wireframe_anchor_list_new_hash(
     return NULL;
   }
 
-  uint32_t hash =
-      mesh_topology_wireframe_anchor_list_hash(*key, list->capacity);
+  size_t hash = mesh_topology_wireframe_anchor_list_hash(*key) % list->capacity;
   list->length++;
 
   return &list->entries[hash];
@@ -238,19 +247,12 @@ MeshTopologyWireframeAnchor *mesh_topology_wireframe_anchor_list_new_index(
 MeshTopologyWireframeAnchor *mesh_topology_wireframe_anchor_list_find_hash(
     MeshTopologyWireframeAnchorList *list, vertex_position *position) {
 
-  uint32_t hash =
-      mesh_topology_wireframe_anchor_list_hash(*position, list->capacity);
+  size_t hash =
+      mesh_topology_wireframe_anchor_list_hash(*position) % list->capacity;
+
   if (list->entries[hash].entries != NULL)
     return &list->entries[hash];
 
-  return NULL;
-}
-
-/**
-
- */
-MeshTopologyWireframeAnchor *mesh_topology_wireframe_anchor_list_find_index(
-    MeshTopologyWireframeAnchorList *list, vertex_position *position) {
   return NULL;
 }
 
@@ -423,6 +425,9 @@ int mesh_topology_wireframe_anchor_create(MeshTopologyWireframeAnchor *anchor,
 
      The mapped version will help to directly target the cluster based on the
      base index.
+
+     This extra step is due to the fact that out cluster list is created based
+   on unique edges, which doesn't include all the base index topology.
 */
 int mesh_topology_wireframe_create(MeshTopology *src_topo,
                                    MeshTopologyWireframe *dest_topo,
@@ -453,7 +458,7 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
 
   // create cluster anchor list
   mesh_topology_wireframe_anchor_list_create(
-      &dest_topo->anchors.cluster,
+      &dest_topo->anchors.hashed,
       MESH_TOPOLOGY_WIREFRAME_ANCHOR_LIST_DEFAULT_CAPACITY);
 
   // create mapped anchor list
@@ -461,11 +466,11 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
                                              src_topo->index->length);
 
   // create points from unique edges
-  mesh_topology_wireframe_create_points(&edges, &dest_topo->anchors.cluster,
+  mesh_topology_wireframe_create_points(&edges, &dest_topo->anchors.hashed,
                                         src_topo, dest_topo);
 
   // map wireframe index cluster based on base topology index
-  mesh_topology_wireframe_map_cluster(&dest_topo->anchors.cluster, src_topo,
+  mesh_topology_wireframe_map_cluster(&dest_topo->anchors.hashed, src_topo,
                                       &dest_topo->anchors.mapped);
 
   // upload vertex attributes
@@ -519,14 +524,9 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
 
     // look up base index in anchor list
     MeshTopologyWireframeAnchor *anchor =
-        mesh_topology_wireframe_anchor_list_find_hash(
-            &dest_topo->anchors.mapped, &(vec3){
-                                            base_vertex[0],
-                                            base_vertex[1],
-                                            base_vertex[2],
-                                        });
+        &dest_topo->anchors.mapped.entries[base_index];
 
-    printf("index: %u\n", base_index);
+    printf("base index: %u \n", base_index);
     // adjust anchor's linked index attributes
     if (anchor != NULL) {
       for (size_t w = 0; w < anchor->length; w++) {
@@ -543,11 +543,15 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
         printf("%f %f %f\n", wireframe_vertex[0], wireframe_vertex[1],
                wireframe_vertex[2]);
       }
+
+      printf("\n");
     } else {
       return MESH_TOPOLOGY_WIREFRAME_ANCHOR_UNSET;
     }
   }
 
+  print_list_float(dest_topo->attribute.entries, dest_topo->attribute.length,
+                   VERTEX_STRIDE);
   // update buffer or use map_write for direct link with CPU
   wgpuQueueWriteBuffer(*queue, dest_topo->attribute.buffer, 0,
                        dest_topo->attribute.entries,
@@ -561,7 +565,7 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
  Also add the newly creater index to the anchor array.
  */
 void mesh_topology_wireframe_create_points(
-    EdgeHashSet *edges, MeshTopologyWireframeAnchorList *anchor_list,
+    EdgeHashSet *edges, MeshTopologyWireframeAnchorList *hashed_list,
     MeshTopology *src_topo, MeshTopologyWireframe *dest_topo) {
   // TODO: make dynamic wireframe color
   vec3 color = {randf(), randf(), randf()};
@@ -614,7 +618,7 @@ void mesh_topology_wireframe_create_points(
     };
 
     mesh_topology_wireframe_anchor_list_insert(
-        &dest_topo->anchors.cluster, &base_vertex.position, temp_base_index, 2);
+        hashed_list, &base_vertex.position, temp_base_index, 2);
 
     // append opp anchor
     vindex_t temp_opp_index[] = {
@@ -623,7 +627,7 @@ void mesh_topology_wireframe_create_points(
     };
 
     mesh_topology_wireframe_anchor_list_insert(
-        &dest_topo->anchors.cluster, &opp_vertex.position, temp_opp_index, 2);
+        hashed_list, &opp_vertex.position, temp_opp_index, 2);
   }
 }
 
@@ -631,10 +635,29 @@ void mesh_topology_wireframe_create_points(
    Insert each cluster in the mapped anchor list based on the base index
  */
 void mesh_topology_wireframe_map_cluster(
-    MeshTopologyWireframeAnchorList *cluster, MeshTopology *base,
+    MeshTopologyWireframeAnchorList *hashed, MeshTopology *base,
     MeshTopologyWireframeAnchorList *mapped) {
 
-    
+  // get each base index position
+  for (size_t i = 0; i < base->index->length; i++) {
+
+    // get index position
+    vindex_t base_index = base->index->entries[i];
+    Vertex base_vertex = vertex_from_array(
+        &base->attribute->entries[base_index * VERTEX_STRIDE]);
+
+    // get wireframe anchors
+    MeshTopologyWireframeAnchor *hashed_anchor =
+        mesh_topology_wireframe_anchor_list_find_hash(hashed,
+                                                      &base_vertex.position);
+
+    if (hashed_anchor && mapped->entries[base_index].length == 0) {
+      // share cluster anchor with mapped (shared ptr)
+      memcpy(&mapped->entries[base_index], hashed_anchor,
+             sizeof(MeshTopologyWireframeAnchor));
+      mapped->length++;
+    }
+  }
 }
 
 void mesh_topology_wireframe_store_unique_edges(EdgeHashSet *edges,

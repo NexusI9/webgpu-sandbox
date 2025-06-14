@@ -32,10 +32,12 @@ typedef struct {
 typedef struct {
   VertexIndex index;
   VertexAttribute attribute;
+
   struct {
-    MeshTopologyWireframeAnchorList cluster;
+    MeshTopologyWireframeAnchorList hashed;
     MeshTopologyWireframeAnchorList mapped;
   } anchors;
+
 } MeshTopologyWireframe;
 
 int mesh_topology_wireframe_create(MeshTopology *, MeshTopologyWireframe *,
