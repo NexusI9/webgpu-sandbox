@@ -23,12 +23,6 @@ typedef enum {
   VertexOffset_End = VERTEX_STRIDE,
 } VertexOffset;
 
-/*
-  If change is required, make sure to adjust the meshbin file indexes as
-  they are u32 based as well.
- */
-typedef uint32_t vindex_t;
-typedef float vattr_t;
 
 /*
   Cannonical structure of a vertex
@@ -40,20 +34,6 @@ typedef struct {
   vec2 uv;
 } Vertex;
 
-typedef struct {
-  vattr_t *entries;
-  size_t length;
-  size_t capacity;
-  WGPUBuffer buffer;
-} VertexAttribute;
-
-typedef struct {
-  vindex_t *entries;
-  size_t length;
-  size_t capacity;
-  WGPUBuffer buffer;
-} VertexIndex;
-
 typedef enum {
   VertexAttributeName_Undefined = 0,
   VertexAttributeName_Position = 1 << 0,
@@ -63,38 +43,12 @@ typedef enum {
   VertexAttributeName_All = 1 << 4,
 } VertexAttributeName;
 
-/*
-  List of mesh vertex attributes and index
- */
-typedef struct {
-
-  float *position;
-  float *normal;
-  float *color;
-  float *uv;
-
-  vindex_t *index;
-  size_t count;
-
-} VertexList; // TODO: unsure about the naming..
-
 void vertex_create(Vertex *);
-void vertex_list_create(VertexList *, size_t);
 Vertex vertex_from_array(float *);
-void vertex_find_equal_attr(Vertex *, VertexAttribute *, VertexAttributeName,
-                            VertexAttribute *);
+
 void vertex_to_array(Vertex *, float *);
 void vertex_copy(float *, float *);
 
-void vertex_index_print(VertexIndex *);
-int vertex_index_copy(VertexIndex *, VertexIndex *);
-void vertex_index_destroy(VertexIndex *);
-
-void vertex_attribute_print(VertexAttribute *);
-void vertex_attribute_set_color(VertexAttribute *, vertex_color *);
-void vertex_attribute_set_uv(VertexAttribute *, vertex_uv *);
-int vertex_attribute_copy(VertexAttribute *, VertexAttribute *);
-void vertex_attribute_destroy(VertexAttribute *);
 
 
 #endif

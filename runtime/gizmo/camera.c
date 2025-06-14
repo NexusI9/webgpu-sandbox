@@ -74,7 +74,7 @@ void gizmo_camera_lookat(GizmoCamera *gizmo, vec3 position) {}
 
 /**
    Deform camera gizmo mesh according to fov
-   Goes from cube to prims
+   (Goes from cube to prism)
  */
 void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
 
@@ -97,13 +97,25 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
 
   Mesh *cube = gizmo->meshes.entries[cube_mesh_id];
   // get vertex attributes + index for line mesh composition
-  VertexIndex *cube_index = mesh_topology_base(cube).index;
-  VertexAttribute *cube_attribute = mesh_topology_base(cube).attribute;
+  VertexAttribute *cube_base_attribute = mesh_topology_base(cube).attribute;
 
   // modify base topology
-  
+  VertexIndex front_face = {
+      .entries = (vindex_t[]){0, 2, 4, 6},
+      .capacity = 4,
+      .length = 4,
+  };
+
+  VertexIndex back_face = {
+      .entries = (vindex_t[]){4, 0, 1, 5},
+      .capacity = 4,
+      .length = 4,
+  };
+
+  vertex_transform_scale(&front_face, cube_base_attribute,
+                         &(vec3){2.0f, 2.0f, 2.0f});
 
   // update wireframe topology according to base
-  mesh_topology_wireframe_update(&cube->topology.base,
-                                 &cube->topology.wireframe);
+  printf("update status: %d\n", mesh_topology_wireframe_update(&cube->topology.base,
+                                                &cube->topology.wireframe));
 }

@@ -228,16 +228,18 @@ int mesh_topology_wireframe_anchor_list_insert(
   MeshTopologyWireframeAnchor *existing_anchor =
       mesh_topology_wireframe_anchor_list_find(list, anchor->anchor);
 
-  if (existing_anchor) {
+  if (existing_anchor != NULL) {
     mesh_topology_wireframe_anchor_insert(existing_anchor, anchor->entries,
                                           anchor->length);
+
+    // mesh_topology_wireframe_anchor_print(existing_anchor);
 
   } else {
     // create a new anchor and insert values
     MeshTopologyWireframeAnchor *new_anchor =
         mesh_topology_wireframe_anchor_list_new(list);
 
-    if (new_anchor) {
+    if (new_anchor != NULL) {
       // create anchor with given anchor
       mesh_topology_wireframe_anchor_create(
           new_anchor, MESH_TOPOLOGY_WIREFRAME_ANCHOR_DEFAULT_CAPACITY,
@@ -246,6 +248,8 @@ int mesh_topology_wireframe_anchor_list_insert(
       // insert index in new anchor
       mesh_topology_wireframe_anchor_insert(new_anchor, anchor->entries,
                                             anchor->length);
+
+      mesh_topology_wireframe_anchor_print(new_anchor);
 
     } else {
       perror("Couldn't add new anchor in wireframe anchor list.\n");
@@ -490,19 +494,22 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
         mesh_topology_wireframe_anchor_list_find(&dest_topo->anchors,
                                                  base_index);
 
+    printf("base index: %u\n", base_index);
     // adjust anchor's linked index attributes
-    if (anchor) {
+    if (anchor != NULL) {
       for (size_t w = 0; w < anchor->length; w++) {
+
         vindex_t wireframe_index = anchor->entries[w];
         vattr_t *wireframe_vertex =
             &dest_topo->attribute.entries[wireframe_index];
 
         // update wireframe vertex position
         memcpy(wireframe_vertex, base_vertex, 3 * sizeof(vattr_t));
+
+        // update buffer or use map_write for direct link with CPU
       }
-    } else {
-      return MESH_TOPOLOGY_WIREFRAME_ANCHOR_UNSET;
     }
+    
   }
 
   return MESH_TOPOLOGY_WIREFRAME_SUCCESS;
