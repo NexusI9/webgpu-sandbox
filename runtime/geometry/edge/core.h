@@ -35,5 +35,4 @@ bool edge_hash_set_find(const EdgeHashSet *, EdgeKey);
 
 bool edge_key_is_null(EdgeKey);
 
-
 #endif

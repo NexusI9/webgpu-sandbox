@@ -4,6 +4,7 @@
 #include "../runtime/geometry/edge/edge.h"
 #include "../runtime/geometry/line/line.h"
 #include "../utils/math.h"
+#include "../utils/system.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
@@ -108,24 +109,25 @@ void mesh_topology_wireframe_create_points(
      */
 
     // append base anchor
+    size_t index_len = dest_topo->index.length;
     MeshTopologyWireframeAnchor temp_base_anchor = {
         .anchor = base_index,
         .capacity = 2,
         .length = 2,
         .entries = (vindex_t[]){
-            dest_topo->index.length - 6,
-            dest_topo->index.length - 1,
+            dest_topo->index.entries[index_len - 6],
+            dest_topo->index.entries[index_len - 1],
         }};
     mesh_topology_wireframe_anchor_list_insert(anchor_list, &temp_base_anchor);
 
     // append opp anchor
     MeshTopologyWireframeAnchor temp_opp_anchor = {
-        .anchor = base_index,
+        .anchor = opp_index,
         .capacity = 2,
         .length = 2,
         .entries = (vindex_t[]){
-            dest_topo->index.length - 5,
-            dest_topo->index.length - 4,
+            dest_topo->index.entries[index_len - 5],
+            dest_topo->index.entries[index_len - 4],
         }};
     mesh_topology_wireframe_anchor_list_insert(anchor_list, &temp_opp_anchor);
   }
@@ -249,7 +251,9 @@ int mesh_topology_wireframe_anchor_list_insert(
       mesh_topology_wireframe_anchor_insert(new_anchor, anchor->entries,
                                             anchor->length);
 
+      /*DELETEME:
       mesh_topology_wireframe_anchor_print(new_anchor);
+      */
 
     } else {
       perror("Couldn't add new anchor in wireframe anchor list.\n");
@@ -336,18 +340,16 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
 
   // arrays from edges
   size_t vertex_capacity = edges.length * LINE_VERTEX_COUNT * VERTEX_STRIDE;
-  vattr_t wireframe_vertex_attribute[vertex_capacity];
   dest_topo->attribute = (VertexAttribute){
-      .entries = wireframe_vertex_attribute,
+      .entries = malloc(vertex_capacity * sizeof(vattr_t)),
       .capacity = vertex_capacity,
       .length = 0,
       .buffer = NULL,
   };
 
   size_t index_capacity = edges.length * LINE_INDEX_COUNT;
-  vindex_t wireframe_index_attribute[index_capacity];
   dest_topo->index = (VertexIndex){
-      .entries = wireframe_index_attribute,
+      .entries = malloc(index_capacity * sizeof(vindex_t)),
       .capacity = index_capacity,
       .length = 0,
       .buffer = NULL,
@@ -482,35 +484,45 @@ MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *topo) {
    wireframe vertex attribute based on achor's index.
  */
 int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
-                                   MeshTopologyWireframe *dest_topo) {
+                                   MeshTopologyWireframe *dest_topo,
+                                   const WGPUQueue *queue) {
 
   for (size_t b = 0; b < base_topo->index.length; b++) {
 
     vindex_t base_index = base_topo->index.entries[b];
-    vattr_t *base_vertex = &base_topo->attribute.entries[base_index];
+    vattr_t *base_vertex =
+        &base_topo->attribute.entries[base_index * VERTEX_STRIDE];
 
     // look up base index in anchor list
     MeshTopologyWireframeAnchor *anchor =
         mesh_topology_wireframe_anchor_list_find(&dest_topo->anchors,
                                                  base_index);
 
-    printf("base index: %u\n", base_index);
     // adjust anchor's linked index attributes
     if (anchor != NULL) {
       for (size_t w = 0; w < anchor->length; w++) {
-
         vindex_t wireframe_index = anchor->entries[w];
         vattr_t *wireframe_vertex =
-            &dest_topo->attribute.entries[wireframe_index];
+            &dest_topo->attribute.entries[wireframe_index * VERTEX_STRIDE];
+
+        printf("[%u] %f %f %f > ", wireframe_index, wireframe_vertex[0],
+               wireframe_vertex[1], wireframe_vertex[2]);
 
         // update wireframe vertex position
-        memcpy(wireframe_vertex, base_vertex, 3 * sizeof(vattr_t));
+        memcpy(wireframe_vertex, base_vertex, sizeof(vertex_position));
 
-        // update buffer or use map_write for direct link with CPU
+        printf("%f %f %f\n", wireframe_vertex[0], wireframe_vertex[1],
+               wireframe_vertex[2]);
       }
+    } else {
+      return MESH_TOPOLOGY_WIREFRAME_ANCHOR_UNSET;
     }
-    
   }
+
+  // update buffer or use map_write for direct link with CPU
+  wgpuQueueWriteBuffer(*queue, dest_topo->attribute.buffer, 0,
+                       dest_topo->attribute.entries,
+                       dest_topo->attribute.length * sizeof(vattr_t));
 
   return MESH_TOPOLOGY_WIREFRAME_SUCCESS;
 }

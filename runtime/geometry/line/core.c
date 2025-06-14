@@ -161,7 +161,7 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
     float *base = isB ? p2 : p1;
     float *opposite = isB ? p1 : p2;
     float dir_mul = isB ? 1.0f : -1.0f;
-    
+
     float side = (p < 2) ? 1.0f : -1.0f;
 
     line_set_vertex(base, opposite, color, (vec2){side, dir_mul},
@@ -170,7 +170,6 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
     vertex_attribute->length += VERTEX_STRIDE;
   }
 
-  
   // update index array
   size_t vertex_length =
       (vertex_attribute->length / VERTEX_STRIDE) - LINE_VERTEX_COUNT;

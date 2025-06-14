@@ -101,7 +101,7 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
 
   // modify base topology
   VertexIndex front_face = {
-      .entries = (vindex_t[]){0, 2, 4, 6},
+      .entries = (vindex_t[]){6, 2, 3, 7},
       .capacity = 4,
       .length = 4,
   };
@@ -116,6 +116,7 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
                          &(vec3){2.0f, 2.0f, 2.0f});
 
   // update wireframe topology according to base
-  printf("update status: %d\n", mesh_topology_wireframe_update(&cube->topology.base,
-                                                &cube->topology.wireframe));
+  printf("update status: %d\n",
+         mesh_topology_wireframe_update(
+             &cube->topology.base, &cube->topology.wireframe, cube->queue));
 }

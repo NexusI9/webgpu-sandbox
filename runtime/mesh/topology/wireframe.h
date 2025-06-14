@@ -36,6 +36,7 @@ int mesh_topology_wireframe_create(MeshTopology *, MeshTopologyWireframe *,
 
 MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *);
 
-int mesh_topology_wireframe_update(const MeshTopologyBase *, MeshTopologyWireframe *);
+int mesh_topology_wireframe_update(const MeshTopologyBase *,
+                                   MeshTopologyWireframe *, const WGPUQueue *);
 
 #endif

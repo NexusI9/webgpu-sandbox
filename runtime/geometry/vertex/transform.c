@@ -29,8 +29,9 @@ void vertex_transform_scale(const VertexIndex *index,
     float *position =
         vertex_transform_attribute(id, attribute, VertexOffset_Position);
 
-    /*DELETEME: printf("[%u] before: ", id);
-      print_vec3(position);*/
+    /*DELETEME:*/
+    printf("[%u] before: ", id);
+    print_vec3(position);
 
     // get direction
     vec3 direction;
@@ -42,8 +43,9 @@ void vertex_transform_scale(const VertexIndex *index,
     glm_vec3_muladd(direction, *scale, origin);
     glm_vec3_copy(origin, position);
 
-    /*DELETEME:printf("[%u] after: ", id);
-      print_vec3(position);*/
+    /*DELETEME:*/
+    printf("[%u] after: ", id);
+    print_vec3(position);
   }
 }
 
@@ -52,6 +54,10 @@ void vertex_transform_scale(const VertexIndex *index,
  */
 void vertex_transform_translate(const VertexIndex *index,
                                 VertexAttribute *attribute, vec3 *translation) {
+
+  // get origin
+  vec3 origin;
+  vertex_transform_origin(index, attribute, &origin);
 }
 
 /**
