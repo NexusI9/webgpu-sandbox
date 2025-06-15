@@ -21,12 +21,10 @@ static void mesh_topology_wireframe_create_points(EdgeHashSet *,
                                                   MeshTopology *,
                                                   MeshTopologyWireframe *);
 
-static void mesh_topology_wireframe_map_cluster(MeshTopologyAnchorList *,
-                                                MeshTopology *,
-                                                MeshTopologyAnchorList *);
-
 /**
-   ================ 1. EDGE CREATION PHASE ================
+   Create lines and anchors from base topology
+
+    ================ 1. EDGE CREATION PHASE ================
 
    Create a edge hash set to store unique edges.
    To store unique data, hash tables are more efficient since we can directly
@@ -102,7 +100,9 @@ static void mesh_topology_wireframe_map_cluster(MeshTopologyAnchorList *,
 
      This extra step is due to the fact that out cluster list is created based
    on unique edges, which doesn't include all the base index topology.
-*/
+
+
+ */
 int mesh_topology_wireframe_create(MeshTopology *src_topo,
                                    MeshTopologyWireframe *dest_topo,
                                    const WGPUDevice *device,
@@ -140,12 +140,11 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
                                    src_topo->index->length);
 
   // create points from unique edges
-  mesh_topology_wireframe_create_points(&edges, &hashed_anchors,
-                                        src_topo, dest_topo);
+  mesh_topology_wireframe_create_points(&edges, &hashed_anchors, src_topo,
+                                        dest_topo);
 
   // map wireframe index cluster based on base topology index
-  mesh_topology_wireframe_map_cluster(&hashed_anchors, src_topo,
-                                      &dest_topo->anchors);
+  mesh_topology_anchor_list_map(&hashed_anchors, src_topo, &dest_topo->anchors);
 
   // upload vertex attributes
   buffer_create(&dest_topo->attribute.buffer,
@@ -304,34 +303,6 @@ void mesh_topology_wireframe_create_points(EdgeHashSet *edges,
 
     mesh_topology_anchor_list_insert(hashed_list, &opp_vertex.position,
                                      temp_opp_index, 2);
-  }
-}
-
-/**
-   Insert each cluster in the mapped anchor list based on the base index
- */
-void mesh_topology_wireframe_map_cluster(MeshTopologyAnchorList *hashed,
-                                         MeshTopology *base,
-                                         MeshTopologyAnchorList *mapped) {
-
-  // get each base index position
-  for (size_t i = 0; i < base->index->length; i++) {
-
-    // get index position
-    vindex_t base_index = base->index->entries[i];
-    Vertex base_vertex = vertex_from_array(
-        &base->attribute->entries[base_index * VERTEX_STRIDE]);
-
-    // get wireframe anchors
-    MeshTopologyAnchor *hashed_anchor =
-        mesh_topology_anchor_list_find_hash(hashed, &base_vertex.position);
-
-    if (hashed_anchor && mapped->entries[base_index].length == 0) {
-      // share cluster anchor with mapped (shared ptr)
-      memcpy(&mapped->entries[base_index], hashed_anchor,
-             sizeof(MeshTopologyAnchor));
-      mapped->length++;
-    }
   }
 }
 

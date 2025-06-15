@@ -19,8 +19,8 @@ typedef struct {
 
 MeshTopology mesh_topology_base_vertex(MeshTopologyBase *);
 
-void mesh_topology_base_create(MeshTopologyBase *, VertexAttribute *,
-                               VertexIndex *, const WGPUDevice *,
+void mesh_topology_base_create(MeshTopologyBase *, const VertexAttribute *,
+                               const VertexIndex *, const WGPUDevice *,
                                const WGPUQueue *);
 
 int mesh_topology_base_create_vertex_attribute(MeshTopologyBase *,

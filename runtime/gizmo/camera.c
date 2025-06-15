@@ -100,20 +100,18 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
   VertexAttribute *cube_base_attribute = mesh_topology_base(cube).attribute;
 
   // modify base topology
-  VertexIndex front_face = {
+  VertexIndexSelection front_face = {
       .entries = (vindex_t[]){6, 2, 3, 7},
-      .capacity = 4,
       .length = 4,
   };
 
-  VertexIndex back_face = {
+  VertexIndexSelection back_face = {
       .entries = (vindex_t[]){4, 0, 1, 5},
-      .capacity = 4,
       .length = 4,
   };
 
-  // vertex_transform_scale(&front_face, cube_base_attribute,
-  //                        &(vec3){2.0f, 2.0f, 2.0f});
+  mesh_topology_base_scale(&cube->topology.base, &front_face,
+                           &(vec3){2.0f, 2.0f, 2.0f});
 
   // update wireframe topology according to base
   printf("update status: %d\n",

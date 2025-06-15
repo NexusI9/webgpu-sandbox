@@ -27,9 +27,10 @@ void mesh_topology_anchor_set_attribute(MeshTopology *mesh,
 int mesh_topology_anchor_insert(MeshTopologyAnchor *anchor, vindex_t *index,
                                 size_t length) {
 
+    
   // TODO: create global list grow/create functions
   // check anchor entries capacity
-  if (anchor->capacity < anchor->length + length &&
+  if (anchor->capacity <= anchor->length + length &&
       mesh_topology_anchor_expand(anchor) != MESH_TOPOLOGY_ANCHOR_SUCCESS) {
     perror("Couldn't allocate memory for wireframe anchor.\n");
     return MESH_TOPOLOGY_ANCHOR_ALLOC_FAIL;
@@ -83,24 +84,85 @@ int mesh_topology_anchor_create(MeshTopologyAnchor *anchor, size_t capacity) {
   return MESH_TOPOLOGY_ANCHOR_SUCCESS;
 }
 
-void mesh_topology_anchor_merge(MeshTopologyAnchorList * list,
-                                const VertexIndexSelection * index,
-                                MeshTopologyAnchor * dest){
-    
-    //retrieve anchor's indexes
-    for(size_t i = 0; i < index->length; i++){
-	MeshTopologyAnchor* anchor = &list->entries[i];
-	if(anchor){
-	    
-	}
-    }
+/**
+   Combine the selection's index in one group based on the given anchor list.
+   Usefull to target all index for transformations.
+ */
+void mesh_topology_anchor_merge(const MeshTopologyAnchorList *list,
+                                const vindex_t *indexes, const size_t length,
+                                MeshTopologyAnchor *dest) {
+
+  // retrieve anchor's indexes
+  for (size_t i = 0; i < length; i++) {
+    vindex_t base_index = indexes[i];
+    MeshTopologyAnchor *anchor = &list->entries[base_index];
+
+    // insert new index in destination
+    if (anchor)
+      mesh_topology_anchor_insert(dest, anchor->entries, anchor->length);
+  }
 }
 
 /**
-     ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖     ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
-    ▐▌ ▐▌▐▛▚▖▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌    ▐▌     █  ▐▌     █
-    ▐▛▀▜▌▐▌ ▝▜▌▐▌   ▐▛▀▜▌▐▌ ▐▌▐▛▀▚▖    ▐▌     █   ▝▀▚▖  █
-    ▐▌ ▐▌▐▌  ▐▌▝▚▄▄▖▐▌ ▐▌▝▚▄▞▘▐▌ ▐▌    ▐▙▄▄▖▗▄█▄▖▗▄▄▞▘  █
+    ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖     ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
+   ▐▌ ▐▌▐▛▚▖▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌    ▐▌     █  ▐▌     █
+   ▐▛▀▜▌▐▌ ▝▜▌▐▌   ▐▛▀▜▌▐▌ ▐▌▐▛▀▚▖    ▐▌     █   ▝▀▚▖  █
+   ▐▌ ▐▌▐▌  ▐▌▝▚▄▄▖▐▌ ▐▌▝▚▄▞▘▐▌ ▐▌    ▐▙▄▄▖▗▄█▄▖▗▄▄▞▘  █
+
+    =================== 1. CLUSTER PHASE ==================
+
+    Create anchors hash set with base position as key:
+    If positions a, b, c are equals:
+
+        Positions                     Wireframe Index (Cluster)
+
+                                           .-----------.
+     [0] Xa Ya Za ... ----------.          | Hash(abc) |
+     [1] Xb Yb Zb ... -------------------> |---.---.---|
+     [2] Xc Yc Zc ... ----------'          | 0 | 1 | 2 |
+                                           '---'---'---'
+
+
+
+     ================== 2. MAPPING PHASE ==================
+
+     Now that base indexes are clustered based on their positions
+     we create a new anchor list where we map each base index to a wireframe
+     cluster based on the base position.
+
+     .-----------------------.---------------------.---------------------.
+     |         Step          |        Input        |       Output        |
+     |-----------------------+---------------------+---------------------|
+     |     .------------.    |                     |                     |
+     |     | Base Index |    |  0                  |                     |
+     |     '------------'    |                     |                     |
+     |           v           |---------------------+---------------------|
+     |   .---------------.   |                     |                     |
+     |   | Base Position |   |  0                  |  [1.0, -1.0, 1.0]   |
+     |   '---------------'   |                     |                     |
+     |           v           |---------------------+---------------------|
+     |      .----------.     |                     |                     |
+     |      |   Hash   |     |  [1.0, -1.0, 1.0]   |  348                |
+     |      '----------'     |                     |                     |
+     |           v           |---------------------|---------------------|
+     |     .------------.    |                     |                     |
+     |     |   Cluster  |    |  348                |  [2,3,4,1]          |
+     |     '------------'    |                     |                     |
+     |           v           |---------------------|---------------------|
+     |     .-------------.   |                     |                     |
+     |     |     Map     |   |  0                  |  [2,3,4,1]          |
+     |     '-------------'   |                     |                     |
+     '-----------------------'---------------------'---------------------'
+
+     The point of remapping the clusters (initially ordered by hash) is to have
+     an easier access to them afterward when we need to update the wireframe
+     vertex based on the base topology.
+
+     The mapped version will help to directly target the cluster based on the
+     base index.
+
+     This extra step is due to the fact that out cluster list is created based
+   on unique edges, which doesn't include all the base index topology.
 
  */
 
@@ -187,9 +249,6 @@ int mesh_topology_anchor_list_insert(MeshTopologyAnchorList *list,
   if (existing_anchor != NULL) {
     mesh_topology_anchor_insert(existing_anchor, index, 2);
 
-    // printf("existing:\n");
-    // mesh_topology_anchor_print(existing_anchor);
-
   } else {
 
     // create a new anchor and insert values based on hashed position
@@ -203,10 +262,6 @@ int mesh_topology_anchor_list_insert(MeshTopologyAnchorList *list,
 
       // insert index in new anchor
       mesh_topology_anchor_insert(new_anchor, index, length);
-
-      /*DELETEME:*/
-      // printf("new:\n");
-      // mesh_topology_anchor_print(new_anchor);
 
     } else {
       perror("Couldn't add new anchor in wireframe anchor list.\n");
@@ -287,4 +342,45 @@ void mesh_topology_anchor_list_destroy(MeshTopologyAnchorList *list) {
   list->entries = NULL;
   list->entries = 0;
   list->capacity = 0;
+}
+
+/**
+   Remap each cluster in the mapped anchor list based on the base index
+   Example:
+
+   If index 0 and 2 and 7 share the same position:
+
+   Before:
+     hash(0|2|7) => [a,b,c,d,e,f]
+
+   After:
+     [0] => [a,b,c,d,e,f]
+     [2] => [a,b,c,d,e,f]
+     [7] => [a,b,c,d,e,f]
+
+     Basically dispatch individually each index cluster to relative index.
+ */
+void mesh_topology_anchor_list_map(MeshTopologyAnchorList *hashed,
+                                   MeshTopology *base,
+                                   MeshTopologyAnchorList *mapped) {
+
+  // get each base index position
+  for (size_t i = 0; i < base->index->length; i++) {
+
+    // get index position
+    vindex_t base_index = base->index->entries[i];
+    Vertex base_vertex = vertex_from_array(
+        &base->attribute->entries[base_index * VERTEX_STRIDE]);
+
+    // get wireframe anchors
+    MeshTopologyAnchor *hashed_anchor =
+        mesh_topology_anchor_list_find_hash(hashed, &base_vertex.position);
+
+    if (hashed_anchor && mapped->entries[base_index].length == 0) {
+      // share cluster anchor with mapped (shared ptr)
+      memcpy(&mapped->entries[base_index], hashed_anchor,
+             sizeof(MeshTopologyAnchor));
+      mapped->length++;
+    }
+  }
 }

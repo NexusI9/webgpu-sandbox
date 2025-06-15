@@ -9,8 +9,9 @@ static void mesh_topology_base_create_anchor(MeshTopologyBase *);
 /**
    Handle the base topology creation as well as anchor generation
  */
-void mesh_topology_base_create(MeshTopologyBase *base, VertexAttribute *va,
-                               VertexIndex *vi, const WGPUDevice *device,
+void mesh_topology_base_create(MeshTopologyBase *base,
+                               const VertexAttribute *va, const VertexIndex *vi,
+                               const WGPUDevice *device,
                                const WGPUQueue *queue) {
 
   // create vertex attributes
@@ -110,21 +111,18 @@ int mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
 }
 
 /**
-   Cache siblings anchor for each vertex
+   Cache siblings anchor for each vertex.
  */
 void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
 
-  MeshTopologyAnchorList *list = &base->siblings;
-
-  // destroy if already exists
-  if (list->entries != NULL)
-    mesh_topology_anchor_list_destroy(list);
+  printf("create base anchor\n");
+  MeshTopologyAnchorList hashed_list; // temp
 
   // init new list
-  mesh_topology_anchor_list_create(list,
+  mesh_topology_anchor_list_create(&hashed_list,
                                    MESH_TOPOLOGY_ANCHOR_LIST_DEFAULT_CAPACITY);
 
-  // store based on position
+  // 1. store based on position (hash)
   for (size_t i = 0; i < base->index.length; i++) {
 
     vindex_t base_index = base->index.entries[i];
@@ -132,27 +130,46 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
     vec3 position;
     memcpy(&position, base_vertex, sizeof(vertex_position));
 
-    mesh_topology_anchor_list_insert(list, &position, &base_index, 1);
-
-    MeshTopologyAnchor *new_anchor =
-        mesh_topology_anchor_list_find_hash(list, &position);
-
-    // DELETEME if (new_anchor != NULL)
-    // DELETME printf("%u | ", base_index),
-    // mesh_topology_anchor_print(new_anchor);
+    mesh_topology_anchor_list_insert(&hashed_list, &position, &base_index, 1);
   }
 
-  // remmap based on index
+  // 2. remmap based on index (linear)
+  MeshTopologyAnchorList *mapped_list = &base->siblings;
+
+  // destroy if already exists
+  if (mapped_list->entries != NULL)
+    mesh_topology_anchor_list_destroy(mapped_list);
+
+  // create mapped list
+  mesh_topology_anchor_list_create(mapped_list,
+                                   MESH_TOPOLOGY_ANCHOR_LIST_DEFAULT_CAPACITY);
+  // remap
+  MeshTopology base_topo = mesh_topology_base_vertex(base);
+  mesh_topology_anchor_list_map(&hashed_list, &base_topo, mapped_list);
 }
 
-void mesh_topology_base_scale(MeshTopologyBase * base,
-                              const VertexIndexSelection * select, vec3 * scale){
+void mesh_topology_base_scale(MeshTopologyBase *base,
+                              const VertexIndexSelection *select, vec3 *scale) {
 
-    // combine all anchors
-    
-    // retrieve anchors of each index and apply transform to them
-    for(size_t i = 0; i < select->length; i++){
-	
-	
-    }
+  // combine all anchors
+  MeshTopologyAnchor combined_anchor;
+  mesh_topology_anchor_create(&combined_anchor,
+                              MESH_TOPOLOGY_ANCHOR_DEFAULT_CAPACITY);
+
+  MeshTopologyAnchorList *anchors = &base->siblings;
+
+  for (size_t i = 0; i < select->length; i++) {
+    vindex_t index = select->entries[i];
+    MeshTopologyAnchor *index_anchor = &anchors->entries[index];
+    mesh_topology_anchor_merge(anchors, index_anchor->entries,
+                               index_anchor->length, &combined_anchor);
+  }
+
+  // apply transform with all combined anchors
+  vertex_transform_scale(
+      &(VertexIndexSelection){
+          .entries = combined_anchor.entries,
+          .length = combined_anchor.length,
+      },
+      &base->attribute, scale);
 }

@@ -38,15 +38,11 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   mesh->device = md->device;
   mesh->queue = md->queue;
 
-  // set vertices
-  if (md->vertex.length > 0)
-    mesh_topology_base_create_vertex_attribute(
-        &mesh->topology.base, &md->vertex, mesh->device, mesh->queue);
+  // set vertices & index for base topology
+  if (md->vertex.length >0 && md->index.length){
+      mesh_topology_base_create(&mesh->topology.base, &md->vertex, &md->index, mesh->device, mesh->queue);
+  }
 
-  // set indexes
-  if (md->index.length > 0)
-    mesh_topology_base_create_vertex_index(&mesh->topology.base, &md->index,
-                                              mesh->device, mesh->queue);
 
   // init model matrix and transforms
   glm_mat4_identity(mesh->model);
