@@ -1,5 +1,8 @@
 #include "base.h"
 #include "../backend/buffer.h"
+#include "../utils/system.h"
+#include "anchor.h"
+#include <string.h>
 
 static void mesh_topology_base_create_anchor(MeshTopologyBase *);
 
@@ -17,6 +20,7 @@ void mesh_topology_base_create(MeshTopologyBase *base, VertexAttribute *va,
   mesh_topology_base_create_vertex_index(base, vi, device, queue);
 
   // create anchors
+  mesh_topology_base_create_anchor(base);
 }
 
 /**
@@ -70,9 +74,9 @@ int mesh_topology_base_create_vertex_attribute(MeshTopologyBase *base,
    Create the base index attributes and upload data to buffer
  */
 int mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
-                                              const VertexIndex *vi,
-                                              const WGPUDevice *device,
-                                              const WGPUQueue *queue) {
+                                           const VertexIndex *vi,
+                                           const WGPUDevice *device,
+                                           const WGPUQueue *queue) {
 
   // reset buffer
   if (base->index.buffer) {
@@ -108,4 +112,33 @@ int mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
 /**
    Cache siblings anchor for each vertex
  */
-void mesh_topology_base_create_anchor(MeshTopologyBase *base) {}
+void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
+
+  MeshTopologyAnchorList *list = &base->siblings;
+
+  // destroy if already exists
+  if (list->entries != NULL)
+    mesh_topology_anchor_list_destroy(list);
+
+  // init new list
+  mesh_topology_anchor_list_create(list,
+                                   MESH_TOPOLOGY_ANCHOR_LIST_DEFAULT_CAPACITY);
+
+  // store based on position
+  for (size_t i = 0; i < base->index.length; i++) {
+
+    vindex_t base_index = base->index.entries[i];
+    vattr_t *base_vertex = &base->attribute.entries[base_index * VERTEX_STRIDE];
+    vec3 position;
+    memcpy(&position, base_vertex, sizeof(vertex_position));
+
+    mesh_topology_anchor_list_insert(list, &position, &base_index, 1);
+
+    MeshTopologyAnchor *new_anchor =
+        mesh_topology_anchor_list_find_hash(list, &position);
+
+    // DELETEME if (new_anchor != NULL)
+    // DELETME printf("%u | ", base_index),
+    // mesh_topology_anchor_print(new_anchor);
+  }
+}

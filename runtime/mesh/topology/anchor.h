@@ -74,4 +74,6 @@ mesh_topology_anchor_list_find_hash(MeshTopologyAnchorList *,
 MeshTopologyAnchor *
 mesh_topology_anchor_list_new_index(MeshTopologyAnchorList *, vindex_t);
 
+void mesh_topology_anchor_list_destroy(MeshTopologyAnchorList*);
+
 #endif

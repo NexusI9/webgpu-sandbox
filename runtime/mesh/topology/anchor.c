@@ -1,8 +1,6 @@
 #include "anchor.h"
 #include "string.h"
 
-
-
 /**
      ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖
     ▐▌ ▐▌▐▛▚▖▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌
@@ -20,26 +18,35 @@ void mesh_topology_anchor_print(MeshTopologyAnchor *anchor) {
 }
 
 void mesh_topology_anchor_set_attribute(MeshTopology *mesh,
-                                                  const vindex_t anchor_index,
-                                                  const VertexAttribute *va) {}
+                                        const vindex_t anchor_index,
+                                        const VertexAttribute *va) {}
 
 /**
    Insert new index in a given anchor.
  */
-int mesh_topology_anchor_insert(MeshTopologyAnchor *anchor,
-                                          vindex_t *index, size_t length) {
+int mesh_topology_anchor_insert(MeshTopologyAnchor *anchor, vindex_t *index,
+                                size_t length) {
 
   // TODO: create global list grow/create functions
   // check anchor entries capacity
   if (anchor->capacity < anchor->length + length &&
-      mesh_topology_anchor_expand(anchor) !=
-          MESH_TOPOLOGY_ANCHOR_SUCCESS) {
+      mesh_topology_anchor_expand(anchor) != MESH_TOPOLOGY_ANCHOR_SUCCESS) {
     perror("Couldn't allocate memory for wireframe anchor.\n");
     return MESH_TOPOLOGY_ANCHOR_ALLOC_FAIL;
   }
 
-  memcpy(&anchor->entries[anchor->length], index, sizeof(vindex_t) * length);
-  anchor->length += length;
+  // check if index doesn't already exists
+  for (int i = 0; i < length; i++) {
+    bool exists = false;
+    for (size_t j = 0; j < anchor->length; j++)
+      if (index[i] == anchor->entries[j]) {
+        exists = true;
+        break;
+      }
+
+    if (exists == false)
+      anchor->entries[anchor->length++] = index[i];
+  }
 
   return MESH_TOPOLOGY_ANCHOR_SUCCESS;
 }
@@ -61,8 +68,7 @@ int mesh_topology_anchor_expand(MeshTopologyAnchor *anchor) {
   return MESH_TOPOLOGY_ANCHOR_SUCCESS;
 }
 
-int mesh_topology_anchor_create(MeshTopologyAnchor *anchor,
-                                          size_t capacity) {
+int mesh_topology_anchor_create(MeshTopologyAnchor *anchor, size_t capacity) {
 
   anchor->capacity = capacity;
   anchor->length = 0;
@@ -76,7 +82,6 @@ int mesh_topology_anchor_create(MeshTopologyAnchor *anchor,
 
   return MESH_TOPOLOGY_ANCHOR_SUCCESS;
 }
-
 
 /**
      ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖     ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
@@ -113,8 +118,7 @@ uint32_t mesh_topology_anchor_list_hash(vertex_position key) {
   return h;
 }
 
-int mesh_topology_anchor_list_expand(
-    MeshTopologyAnchorList *list) {
+int mesh_topology_anchor_list_expand(MeshTopologyAnchorList *list) {
 
   size_t new_capacity = 2 * list->capacity;
   MeshTopologyAnchor *temp = (MeshTopologyAnchor *)realloc(
@@ -131,8 +135,8 @@ int mesh_topology_anchor_list_expand(
   return MESH_TOPOLOGY_ANCHOR_SUCCESS;
 }
 
-int mesh_topology_anchor_list_create(
-    MeshTopologyAnchorList *list, size_t capacity) {
+int mesh_topology_anchor_list_create(MeshTopologyAnchorList *list,
+                                     size_t capacity) {
 
   list->capacity = capacity;
   list->length = 0;
@@ -152,9 +156,9 @@ int mesh_topology_anchor_list_create(
    If the anchor already exists it appends the anchor's indexes int he existing
    item.
  */
-int mesh_topology_anchor_list_insert(
-    MeshTopologyAnchorList *list, vertex_position *position,
-    vindex_t *index, size_t length) {
+int mesh_topology_anchor_list_insert(MeshTopologyAnchorList *list,
+                                     vertex_position *position, vindex_t *index,
+                                     size_t length) {
 
   // create list if no entries
   if (list->entries == NULL) {
@@ -181,8 +185,8 @@ int mesh_topology_anchor_list_insert(
 
     if (new_anchor != NULL) {
       // create anchor with given anchor
-      mesh_topology_anchor_create(
-          new_anchor, MESH_TOPOLOGY_ANCHOR_DEFAULT_CAPACITY);
+      mesh_topology_anchor_create(new_anchor,
+                                  MESH_TOPOLOGY_ANCHOR_DEFAULT_CAPACITY);
 
       // insert index in new anchor
       mesh_topology_anchor_insert(new_anchor, index, length);
@@ -203,13 +207,13 @@ int mesh_topology_anchor_list_insert(
 /**
    Create a new anchor at the given key hash
  */
-MeshTopologyAnchor *mesh_topology_anchor_list_new_hash(
-    MeshTopologyAnchorList *list, vertex_position *key) {
+MeshTopologyAnchor *
+mesh_topology_anchor_list_new_hash(MeshTopologyAnchorList *list,
+                                   vertex_position *key) {
 
   // check capacity
   if (list->length >= list->capacity * 0.75 &&
-      mesh_topology_anchor_list_expand(list) !=
-          MESH_TOPOLOGY_ANCHOR_SUCCESS) {
+      mesh_topology_anchor_list_expand(list) != MESH_TOPOLOGY_ANCHOR_SUCCESS) {
     perror("Couldn't expand wireframe anchor list.\n");
     return NULL;
   }
@@ -223,12 +227,13 @@ MeshTopologyAnchor *mesh_topology_anchor_list_new_hash(
 /**
    Create a new anchor at the given index
  */
-MeshTopologyAnchor *mesh_topology_anchor_list_new_index(
-    MeshTopologyAnchorList *list, vindex_t index) {
+MeshTopologyAnchor *
+mesh_topology_anchor_list_new_index(MeshTopologyAnchorList *list,
+                                    vindex_t index) {
 
   // check capacity
-  if (list->capacity < index && mesh_topology_anchor_list_expand(
-                                    list) != MESH_TOPOLOGY_ANCHOR_SUCCESS) {
+  if (list->capacity < index &&
+      mesh_topology_anchor_list_expand(list) != MESH_TOPOLOGY_ANCHOR_SUCCESS) {
     perror("Couldn't expand wireframe anchor list.\n");
     return NULL;
   }
@@ -241,14 +246,32 @@ MeshTopologyAnchor *mesh_topology_anchor_list_new_index(
 /**
    Get hash position and output relative entry or null if not initialised
  */
-MeshTopologyAnchor *mesh_topology_anchor_list_find_hash(
-    MeshTopologyAnchorList *list, vertex_position *position) {
+MeshTopologyAnchor *
+mesh_topology_anchor_list_find_hash(MeshTopologyAnchorList *list,
+                                    vertex_position *position) {
 
-  size_t hash =
-      mesh_topology_anchor_list_hash(*position) % list->capacity;
+  size_t hash = mesh_topology_anchor_list_hash(*position) % list->capacity;
 
   if (list->entries[hash].entries != NULL)
     return &list->entries[hash];
 
   return NULL;
+}
+
+void mesh_topology_anchor_list_destroy(MeshTopologyAnchorList *list) {
+
+  // clear anchors
+  for (size_t i = 0; i < list->length; i++) {
+    MeshTopologyAnchor *anchor = &list->entries[i];
+    free(anchor->entries);
+    anchor->entries = NULL;
+    anchor->length = 0;
+    anchor->capacity = 0;
+  }
+
+  // clear list
+  free(list->entries);
+  list->entries = NULL;
+  list->entries = 0;
+  list->capacity = 0;
 }
