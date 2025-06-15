@@ -16,6 +16,11 @@ typedef struct {
   WGPUBuffer buffer;
 } VertexIndex;
 
+typedef struct {
+  vindex_t *entries;
+  size_t length;
+} VertexIndexSelection;
+
 void vertex_index_print(VertexIndex *);
 int vertex_index_copy(VertexIndex *, VertexIndex *);
 void vertex_index_destroy(VertexIndex *);

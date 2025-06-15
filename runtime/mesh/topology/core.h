@@ -14,5 +14,4 @@ typedef enum {
   MeshTopologyType_BoundingBox,
 } MeshTopologyType;
 
-
 #endif

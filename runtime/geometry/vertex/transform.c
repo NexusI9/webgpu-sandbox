@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static void vertex_transform_origin(const VertexIndex *,
+static void vertex_transform_origin(const VertexIndexSelection *,
                                     const VertexAttribute *, vec3 *);
 
 static float *vertex_transform_attribute(const vindex_t,
@@ -15,7 +15,7 @@ static float *vertex_transform_attribute(const vindex_t,
 /**
    Adjust the vertex attribute properties depending on given indexes.
 */
-void vertex_transform_scale(const VertexIndex *index,
+void vertex_transform_scale(const VertexIndexSelection *index,
                             VertexAttribute *attribute, vec3 *scale) {
 
   // get origin
@@ -53,7 +53,7 @@ void vertex_transform_scale(const VertexIndex *index,
 /**
    Adjust the vertex attribute properties depending on given indexes.
  */
-void vertex_transform_translate(const VertexIndex *index,
+void vertex_transform_translate(const VertexIndexSelection *index,
                                 VertexAttribute *attribute, vec3 *translation) {
 
   // get origin
@@ -64,7 +64,7 @@ void vertex_transform_translate(const VertexIndex *index,
 /**
    Adjust the vertex attribute properties depending on given indexes.
  */
-void vertex_transform_rotate(const VertexIndex *index,
+void vertex_transform_rotate(const VertexIndexSelection *index,
                              VertexAttribute *attribute, vec3 *rotation) {}
 
 /**
@@ -79,7 +79,7 @@ float *vertex_transform_attribute(const vindex_t index,
 /**
    Get the origin of the given vertex index
  */
-static void vertex_transform_origin(const VertexIndex *index,
+static void vertex_transform_origin(const VertexIndexSelection *index,
                                     const VertexAttribute *attribute,
                                     vec3 *dest) {
   // init
@@ -102,44 +102,3 @@ static void vertex_transform_origin(const VertexIndex *index,
                *dest);
 }
 
-/**
-   Get all the index that share the same position
- */
-void vertex_transform_alike_by_position(const VertexIndex *index_list,
-                                        const VertexAttribute *attribute_list,
-                                        vertex_position *position,
-                                        VertexIndex *dest) {
-
-  // init dest list
-  if (vertex_index_create(dest, 32, NULL) != VERTEX_SUCCESS) {
-    printf("Vertex index creation fail");
-    return;
-  }
-
-  // traverse compare
-  for (size_t i = 0; i < index_list->length; i++) {
-
-    vindex_t index = index_list->entries[i];
-    vattr_t *vertex = &attribute_list->entries[index * VERTEX_STRIDE];
-    if (memcmp(position, vertex, sizeof(vertex_position)) == 0) {
-      // add to dest
-      vertex_index_insert(dest, &index, 1);
-    }
-  }
-}
-
-/**
-   Get all the index that share the same position with the given index
- */
-void vertex_transform_alike_by_index(const VertexIndex *index_list,
-                                     const VertexAttribute *attribute_list,
-                                     vindex_t index, VertexIndex *dest) {
-
-  // retrieve position from index
-  vattr_t *v = &attribute_list->entries[index * VERTEX_STRIDE];
-  vertex_position position = {v[0], v[1], v[2]};
-
-  // get alike from above position
-  vertex_transform_alike_by_position(index_list, attribute_list, &position,
-                                     dest);
-}

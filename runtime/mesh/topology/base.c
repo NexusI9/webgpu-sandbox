@@ -141,4 +141,18 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
     // DELETME printf("%u | ", base_index),
     // mesh_topology_anchor_print(new_anchor);
   }
+
+  // remmap based on index
+}
+
+void mesh_topology_base_scale(MeshTopologyBase * base,
+                              const VertexIndexSelection * select, vec3 * scale){
+
+    // combine all anchors
+    
+    // retrieve anchors of each index and apply transform to them
+    for(size_t i = 0; i < select->length; i++){
+	
+	
+    }
 }

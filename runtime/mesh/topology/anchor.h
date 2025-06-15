@@ -28,6 +28,7 @@ typedef struct {
   size_t capacity;
 } MeshTopologyAnchorList;
 
+
 /**
    Anchors provide implementation to help with topology manipulation.
    An anchor is simply a index list that is linked to an index.
@@ -47,6 +48,9 @@ int mesh_topology_anchor_create(MeshTopologyAnchor *, size_t);
 int mesh_topology_anchor_expand(MeshTopologyAnchor *);
 int mesh_topology_anchor_insert(MeshTopologyAnchor *, vindex_t *, size_t);
 void mesh_topology_anchor_print(MeshTopologyAnchor *);
+void mesh_topology_anchor_merge(MeshTopologyAnchorList *,
+                                const VertexIndexSelection *,
+                                MeshTopologyAnchor *);
 
 /**
      ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖     ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
@@ -74,6 +78,6 @@ mesh_topology_anchor_list_find_hash(MeshTopologyAnchorList *,
 MeshTopologyAnchor *
 mesh_topology_anchor_list_new_index(MeshTopologyAnchorList *, vindex_t);
 
-void mesh_topology_anchor_list_destroy(MeshTopologyAnchorList*);
+void mesh_topology_anchor_list_destroy(MeshTopologyAnchorList *);
 
 #endif

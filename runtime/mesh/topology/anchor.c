@@ -83,6 +83,19 @@ int mesh_topology_anchor_create(MeshTopologyAnchor *anchor, size_t capacity) {
   return MESH_TOPOLOGY_ANCHOR_SUCCESS;
 }
 
+void mesh_topology_anchor_merge(MeshTopologyAnchorList * list,
+                                const VertexIndexSelection * index,
+                                MeshTopologyAnchor * dest){
+    
+    //retrieve anchor's indexes
+    for(size_t i = 0; i < index->length; i++){
+	MeshTopologyAnchor* anchor = &list->entries[i];
+	if(anchor){
+	    
+	}
+    }
+}
+
 /**
      ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖     ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
     ▐▌ ▐▌▐▛▚▖▐▌▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌    ▐▌     █  ▐▌     █
