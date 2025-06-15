@@ -2,6 +2,7 @@
 #include "../utils/system.h"
 #include "attribute.h"
 #include "core.h"
+#include "index.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -99,4 +100,46 @@ static void vertex_transform_origin(const VertexIndex *index,
   // divide
   glm_vec3_div(*dest, (vec3){index->length, index->length, index->length},
                *dest);
+}
+
+/**
+   Get all the index that share the same position
+ */
+void vertex_transform_alike_by_position(const VertexIndex *index_list,
+                                        const VertexAttribute *attribute_list,
+                                        vertex_position *position,
+                                        VertexIndex *dest) {
+
+  // init dest list
+  if (vertex_index_create(dest, 32, NULL) != VERTEX_SUCCESS) {
+    printf("Vertex index creation fail");
+    return;
+  }
+
+  // traverse compare
+  for (size_t i = 0; i < index_list->length; i++) {
+
+    vindex_t index = index_list->entries[i];
+    vattr_t *vertex = &attribute_list->entries[index * VERTEX_STRIDE];
+    if (memcmp(position, vertex, sizeof(vertex_position)) == 0) {
+      // add to dest
+      vertex_index_insert(dest, &index, 1);
+    }
+  }
+}
+
+/**
+   Get all the index that share the same position with the given index
+ */
+void vertex_transform_alike_by_index(const VertexIndex *index_list,
+                                     const VertexAttribute *attribute_list,
+                                     vindex_t index, VertexIndex *dest) {
+
+  // retrieve position from index
+  vattr_t *v = &attribute_list->entries[index * VERTEX_STRIDE];
+  vertex_position position = {v[0], v[1], v[2]};
+
+  // get alike from above position
+  vertex_transform_alike_by_position(index_list, attribute_list, &position,
+                                     dest);
 }

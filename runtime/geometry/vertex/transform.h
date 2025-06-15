@@ -10,9 +10,11 @@ void vertex_transform_scale(const VertexIndex *, VertexAttribute *, vec3 *);
 void vertex_transform_translate(const VertexIndex *, VertexAttribute *, vec3 *);
 void vertex_transform_rotate(const VertexIndex *, VertexAttribute *, vec3 *);
 
-void vertex_transform_get_by_position(const VertexIndex *, vertex_position *,
-                                      VertexIndex *);
-void vertex_transform_get_by_index(const VertexIndex *, vertex_position *,
-                                   VertexIndex *);
+void vertex_transform_alike_by_position(const VertexIndex *,
+                                        const VertexAttribute *,
+                                        vertex_position *, VertexIndex *);
+void vertex_transform_alike_by_index(const VertexIndex *,
+                                     const VertexAttribute *, vindex_t,
+                                     VertexIndex *);
 
 #endif
