@@ -112,8 +112,8 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
       .length = 4,
   };
 
-  vertex_transform_scale(&front_face, cube_base_attribute,
-                         &(vec3){2.0f, 2.0f, 2.0f});
+  // vertex_transform_scale(&front_face, cube_base_attribute,
+  //                        &(vec3){2.0f, 2.0f, 2.0f});
 
   // update wireframe topology according to base
   printf("update status: %d\n",

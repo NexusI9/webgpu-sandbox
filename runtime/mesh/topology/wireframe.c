@@ -130,21 +130,22 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
       .buffer = NULL,
   };
 
+  MeshTopologyAnchorList hashed_anchors;
   // create cluster anchor list
-  mesh_topology_anchor_list_create(&dest_topo->anchors.hashed,
+  mesh_topology_anchor_list_create(&hashed_anchors,
                                    MESH_TOPOLOGY_ANCHOR_LIST_DEFAULT_CAPACITY);
 
   // create mapped anchor list
-  mesh_topology_anchor_list_create(&dest_topo->anchors.mapped,
+  mesh_topology_anchor_list_create(&dest_topo->anchors,
                                    src_topo->index->length);
 
   // create points from unique edges
-  mesh_topology_wireframe_create_points(&edges, &dest_topo->anchors.hashed,
+  mesh_topology_wireframe_create_points(&edges, &hashed_anchors,
                                         src_topo, dest_topo);
 
   // map wireframe index cluster based on base topology index
-  mesh_topology_wireframe_map_cluster(&dest_topo->anchors.hashed, src_topo,
-                                      &dest_topo->anchors.mapped);
+  mesh_topology_wireframe_map_cluster(&hashed_anchors, src_topo,
+                                      &dest_topo->anchors);
 
   // upload vertex attributes
   buffer_create(&dest_topo->attribute.buffer,
@@ -196,7 +197,7 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
         &base_topo->attribute.entries[base_index * VERTEX_STRIDE];
 
     // look up base index in anchor list
-    MeshTopologyAnchor *anchor = &dest_topo->anchors.mapped.entries[base_index];
+    MeshTopologyAnchor *anchor = &dest_topo->anchors.entries[base_index];
 
     // DELETEME printf("base index: %u \n", base_index);
     //  adjust anchor's linked index attributes

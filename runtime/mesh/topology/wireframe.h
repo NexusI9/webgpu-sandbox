@@ -14,10 +14,7 @@ typedef struct {
   VertexIndex index;
   VertexAttribute attribute;
 
-  struct {
-    MeshTopologyAnchorList hashed;
-    MeshTopologyAnchorList mapped;
-  } anchors;
+  MeshTopologyAnchorList anchors;
 
 } MeshTopologyWireframe;
 
