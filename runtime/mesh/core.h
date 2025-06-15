@@ -40,11 +40,6 @@ typedef struct {
   const char *name;
 } MeshCreatePrimitiveDescriptor;
 
-typedef struct {
-  void *data;
-  size_t size;
-} MeshCreateBufferDescriptor;
-
 // Core
 typedef struct Mesh {
 
@@ -86,14 +81,9 @@ typedef struct Mesh {
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
 
-void mesh_set_vertex_attribute(Mesh *, const VertexAttribute *);
-void mesh_set_vertex_index(Mesh *, const VertexIndex *);
 void mesh_set_parent(Mesh *, Mesh *);
 void mesh_set_name(Mesh *, const char *);
 void mesh_set_shader(Mesh *, const ShaderCreateDescriptor *);
-
-void mesh_create_vertex_buffer(Mesh *, const MeshCreateBufferDescriptor *);
-void mesh_create_index_buffer(Mesh *, const MeshCreateBufferDescriptor *);
 
 void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *, const Camera *,
                const Viewport *);

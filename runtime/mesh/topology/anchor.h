@@ -28,6 +28,13 @@ typedef struct {
   size_t capacity;
 } MeshTopologyAnchorList;
 
+/**
+   Anchors provide implementation to help with topology manipulation.
+   An anchor is simply a index list that is linked to an index.
+   The anchor system basically helps to copy one vertex transform to it's
+   children. As instance with anchors, by editing the vertex 0 on base topology
+   we can also affect all the linked wireframe instance.
+ */
 
 /**
      ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖
@@ -50,25 +57,21 @@ void mesh_topology_anchor_print(MeshTopologyAnchor *);
  */
 uint32_t mesh_topology_anchor_list_hash_float(float);
 uint32_t mesh_topology_anchor_list_hash(vertex_position);
-int mesh_topology_anchor_list_expand(
-    MeshTopologyAnchorList *);
-int mesh_topology_anchor_list_create(
-    MeshTopologyAnchorList *, size_t);
+int mesh_topology_anchor_list_expand(MeshTopologyAnchorList *);
+int mesh_topology_anchor_list_create(MeshTopologyAnchorList *, size_t);
 
-int mesh_topology_anchor_list_insert(
-    MeshTopologyAnchorList *, vertex_position *, vindex_t *, size_t);
+int mesh_topology_anchor_list_insert(MeshTopologyAnchorList *,
+                                     vertex_position *, vindex_t *, size_t);
 
 // hash based query
-MeshTopologyAnchor *
-mesh_topology_anchor_list_new_hash(MeshTopologyAnchorList *,
-                                             vertex_position *);
+MeshTopologyAnchor *mesh_topology_anchor_list_new_hash(MeshTopologyAnchorList *,
+                                                       vertex_position *);
 
 MeshTopologyAnchor *
 mesh_topology_anchor_list_find_hash(MeshTopologyAnchorList *,
-                                              vertex_position *);
+                                    vertex_position *);
 // index based query
 MeshTopologyAnchor *
-mesh_topology_anchor_list_new_index(MeshTopologyAnchorList *,
-                                              vindex_t);
+mesh_topology_anchor_list_new_index(MeshTopologyAnchorList *, vindex_t);
 
 #endif

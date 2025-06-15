@@ -26,12 +26,6 @@ mesh_topology_wireframe_map_cluster(MeshTopologyAnchorList *,
                                     MeshTopology *,
                                     MeshTopologyAnchorList *);
 
-/**
-    ▗▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄▖
-   ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌
-   ▐▌   ▐▌ ▐▌▐▛▀▚▖▐▛▀▀▘
-   ▝▚▄▄▖▝▚▄▞▘▐▌ ▐▌▐▙▄▄▖
- */
 
 /**
    ================ 1. EDGE CREATION PHASE ================

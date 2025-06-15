@@ -18,20 +18,27 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
                         .name = desc->name,
                     });
 
-  mesh_set_vertex_attribute(
-      mesh,
-      &(VertexAttribute){
-          .entries = calloc(LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX_COUNT,
-                            sizeof(vattr_t)),
-          .length = 0,
-      });
+  // create vertex attributes
+  vattr_t *vertex_attributes = calloc(
+      LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX_COUNT, sizeof(vattr_t));
 
-  mesh_set_vertex_index(
-      mesh, &(VertexIndex){
-                .entries = calloc(LINE_MAX_POINTS * LINE_INDEX_COUNT,
-                                  sizeof(vindex_t)),
-                .length = 0,
-            });
+  mesh_topology_base_create_vertex_attribute(&mesh->topology.base,
+                                             &(VertexAttribute){
+                                                 .entries = vertex_attributes,
+                                                 .length = 0,
+                                             },
+                                             desc->device, desc->queue);
+
+  // crate vertex index
+  vindex_t *vertex_index =
+      calloc(LINE_MAX_POINTS * LINE_INDEX_COUNT, sizeof(vindex_t));
+
+  mesh_topology_base_create_vertex_index(&mesh->topology.base,
+                                         &(VertexIndex){
+                                             .entries = vertex_index,
+                                             .length = 0,
+                                         },
+                                         desc->device, desc->queue);
 
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
                             .path = "./runtime/assets/shader/shader.line.wgsl",
@@ -186,6 +193,11 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
 
 void line_update_buffer(Mesh *mesh) {
   // update mesh vertex + index buffers
-  mesh_set_vertex_attribute(mesh, &mesh->topology.base.attribute);
-  mesh_set_vertex_index(mesh, &mesh->topology.base.index);
+  mesh_topology_base_create_vertex_attribute(&mesh->topology.base,
+                                             &mesh->topology.base.attribute,
+                                             mesh->device, mesh->queue);
+
+  mesh_topology_base_create_vertex_index(&mesh->topology.base,
+                                         &mesh->topology.base.index,
+                                         mesh->device, mesh->queue);
 }

@@ -40,11 +40,13 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set vertices
   if (md->vertex.length > 0)
-    mesh_set_vertex_attribute(mesh, &md->vertex);
+    mesh_topology_base_create_vertex_attribute(
+        &mesh->topology.base, &md->vertex, mesh->device, mesh->queue);
 
   // set indexes
   if (md->index.length > 0)
-    mesh_set_vertex_index(mesh, &md->index);
+    mesh_topology_base_create_vertex_index(&mesh->topology.base, &md->index,
+                                              mesh->device, mesh->queue);
 
   // init model matrix and transforms
   glm_mat4_identity(mesh->model);
@@ -77,53 +79,6 @@ void mesh_create_primitive(Mesh *mesh,
                     });
 }
 
-void mesh_set_vertex_attribute(Mesh *mesh, const VertexAttribute *attributes) {
-
-  MeshTopologyBase *base_vertex = &mesh->topology.base;
-
-  // reset buffer
-  if (base_vertex->attribute.buffer) {
-    wgpuBufferRelease(base_vertex->attribute.buffer);
-    base_vertex->attribute.buffer = NULL;
-  }
-
-  mesh->topology.base.attribute.entries = attributes->entries;
-  mesh->topology.base.attribute.length = attributes->length;
-  mesh->topology.base.attribute.capacity = attributes->length;
-
-  if (base_vertex->attribute.length) {
-    // store vertex in buffer
-    mesh_create_vertex_buffer(
-        mesh, &(MeshCreateBufferDescriptor){
-                  .data = (void *)base_vertex->attribute.entries,
-                  .size = base_vertex->attribute.length * sizeof(vattr_t),
-              });
-  }
-}
-
-void mesh_set_vertex_index(Mesh *mesh, const VertexIndex *indexes) {
-
-  MeshTopologyBase *base_vertex = &mesh->topology.base;
-  // reset buffer
-  if (base_vertex->index.buffer) {
-    wgpuBufferRelease(base_vertex->index.buffer);
-    base_vertex->index.buffer = NULL;
-  }
-
-  mesh->topology.base.index.entries = indexes->entries;
-  mesh->topology.base.index.length = indexes->length;
-  mesh->topology.base.index.capacity = indexes->length;
-
-  if (base_vertex->index.length) {
-    // store index in buffer
-    mesh_create_index_buffer(
-        mesh, &(MeshCreateBufferDescriptor){
-                  .data = (void *)base_vertex->index.entries,
-                  .size = base_vertex->attribute.length * sizeof(vindex_t),
-              });
-  }
-}
-
 void mesh_set_parent(Mesh *child, Mesh *parent) { child->parent = parent; }
 
 void mesh_set_name(Mesh *mesh, const char *name) {
@@ -134,42 +89,6 @@ void mesh_set_name(Mesh *mesh, const char *name) {
 void mesh_set_shader(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // alias to shader_create
   shader_create(&mesh->shader.texture, desc);
-}
-
-// send vertex data to GPU
-void mesh_create_vertex_buffer(Mesh *mesh,
-                               const MeshCreateBufferDescriptor *bd) {
-
-  if (mesh->device == NULL || mesh->queue == NULL)
-    perror("Mesh has no device or queue "), exit(0);
-
-  buffer_create(&mesh->topology.base.attribute.buffer,
-                &(CreateBufferDescriptor){
-                    .queue = mesh->queue,
-                    .device = mesh->device,
-                    .data = (void *)bd->data,
-                    .size = bd->size,
-                    .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
-                    .mappedAtCreation = false,
-                });
-}
-
-// send index data to GPU
-void mesh_create_index_buffer(Mesh *mesh,
-                              const MeshCreateBufferDescriptor *bd) {
-
-  if (mesh->device == NULL || mesh->queue == NULL)
-    perror("Mesh has no device or queue"), exit(0);
-
-  buffer_create(&mesh->topology.base.index.buffer,
-                &(CreateBufferDescriptor){
-                    .queue = mesh->queue,
-                    .device = mesh->device,
-                    .data = (void *)bd->data,
-                    .size = bd->size,
-                    .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
-                    .mappedAtCreation = false,
-                });
 }
 
 /**
@@ -206,7 +125,7 @@ void mesh_draw(MeshTopology topology, Shader *shader,
   WGPUBuffer attribute_buffer = topology.attribute->buffer;
   WGPUBuffer index_buffer = topology.index->buffer;
   size_t index_length = topology.index->length;
-  
+
   // draw indexes from buffer
   wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
                                        WGPU_WHOLE_SIZE);

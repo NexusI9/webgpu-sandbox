@@ -271,9 +271,10 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
       loader_gltf_create_shader(mesh_shader_texture(target_mesh), device, queue,
                                 &current_primitive);
 
-      // dynamically define mesh attribute
-      mesh_set_vertex_attribute(target_mesh, &vert_attr);
-      mesh_set_vertex_index(target_mesh, &vert_index);
+      // define mesh vertex attribute
+      mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
+                                &vert_index, target_mesh->device,
+                                target_mesh->queue);
     }
   }
 }
