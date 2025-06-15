@@ -6,6 +6,8 @@
 typedef struct {
   VertexAttribute attribute;
   VertexIndex index;
+
+    
 } MeshTopologyBase;
 
 MeshTopology mesh_topology_base_vertex(MeshTopologyBase *);
