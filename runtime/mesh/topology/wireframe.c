@@ -198,7 +198,6 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
     // look up base index in anchor list
     MeshTopologyAnchor *anchor = &dest_topo->anchors.entries[base_index];
 
-    // DELETEME printf("base index: %u \n", base_index);
     //  adjust anchor's linked index attributes
     if (anchor != NULL) {
       for (size_t w = 0; w < anchor->length; w++) {
@@ -206,26 +205,15 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
         vattr_t *wireframe_vertex =
             &dest_topo->attribute.entries[wireframe_index * VERTEX_STRIDE];
 
-        // DELETE ME
-        // printf("[%u] %f %f %f > ", wireframe_index, wireframe_vertex[0],
-        //       wireframe_vertex[1], wireframe_vertex[2]);
-
         // update wireframe vertex position
         memcpy(wireframe_vertex, base_vertex, sizeof(vertex_position));
-
-        // DELETEME
-        // printf("%f %f %f\n", wireframe_vertex[0], wireframe_vertex[1],
-        //        wireframe_vertex[2]);
       }
 
-      printf("\n");
     } else {
       return MESH_TOPOLOGY_ANCHOR_UNSET;
     }
   }
 
-  print_list_float(dest_topo->attribute.entries, dest_topo->attribute.length,
-                   VERTEX_STRIDE);
   // update buffer or use map_write for direct link with CPU
   wgpuQueueWriteBuffer(*queue, dest_topo->attribute.buffer, 0,
                        dest_topo->attribute.entries,

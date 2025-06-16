@@ -31,9 +31,6 @@ void camera_uniform_update_matrix(void *callback_camera, void *data) {
   glm_vec4_copy(uCamera.lookat, new_data->lookat);
   new_data->mode = uCamera.mode;
 
-  // DELETEME
-  //  printf("new_data addr: %p\n", new_data);
-  //  printf("Alignment check: %lu\n", ((uintptr_t)new_data) % 16);
 }
 
 /**

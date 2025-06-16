@@ -15,7 +15,7 @@ void gizmo_camera_create(GizmoCamera *, Camera *,
 void gizmo_camera_translate(GizmoCamera *, vec3);
 void gizmo_camera_rotate(GizmoCamera *, vec3);
 void gizmo_camera_scale(GizmoCamera *, vec3);
-void gizmo_camera_lookat(GizmoCamera *, vec3);
+void gizmo_camera_lookat(GizmoCamera *, vec3, vec3);
 void gizmo_camera_fov(GizmoCamera*, float fov);
 
 #endif

@@ -6,6 +6,7 @@
 #include "../runtime/geometry/edge/edge.h"
 #include "../runtime/geometry/line/line.h"
 #include "../utils/math.h"
+#include "../utils/matrix.h"
 #include "../utils/system.h"
 #include "shader.h"
 #include "topology/base.h"
@@ -39,10 +40,10 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   mesh->queue = md->queue;
 
   // set vertices & index for base topology
-  if (md->vertex.length >0 && md->index.length){
-      mesh_topology_base_create(&mesh->topology.base, &md->vertex, &md->index, mesh->device, mesh->queue);
+  if (md->vertex.length > 0 && md->index.length) {
+    mesh_topology_base_create(&mesh->topology.base, &md->vertex, &md->index,
+                              mesh->device, mesh->queue);
   }
-
 
   // init model matrix and transforms
   glm_mat4_identity(mesh->model);
@@ -183,6 +184,24 @@ void mesh_rotate_quat(Mesh *mesh, versor rotation) {
 
   glm_quat_mat4(rotation, transform_matrix);
   glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
+}
+
+/**
+   Apply look at transformation to mesh
+ */
+void mesh_lookat(Mesh *mesh, vec3 position, vec3 target) {
+
+  glm_mat4_identity(mesh->model);
+
+  matrix_mesh_lookat(&(UtilsMatrixLookatDescriptor){
+      .dest_position = &mesh->position,
+      .dest_matrix = &mesh->model,
+      .position = position,
+      .target = target,
+      .up = NULL,
+      .forward = NULL,
+      .right = NULL,
+  });
 }
 
 /**

@@ -92,6 +92,7 @@ void mesh_build(Mesh *, Shader *);
 
 void mesh_scale(Mesh *, vec3);
 void mesh_translate(Mesh *, vec3);
+void mesh_lookat(Mesh *, vec3, vec3);
 void mesh_rotate(Mesh *, vec3);
 void mesh_rotate_quat(Mesh *, versor);
 

@@ -56,7 +56,7 @@ void camera_create(Camera *, const CameraCreateDescriptor *);
 void camera_reset(Camera *);
 void camera_set_mode(Camera *, CameraMode);
 void camera_draw(Camera *);
-void camera_look_at(Camera *, vec3, vec3);
+void camera_lookat(Camera *, vec3, vec3);
 
 // get
 float camera_position(const Camera *);

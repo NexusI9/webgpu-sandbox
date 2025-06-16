@@ -14,6 +14,7 @@
 
 // runtime
 #include "runtime/camera/camera.h"
+#include "runtime/camera/core.h"
 #include "runtime/input/input.h"
 #include "runtime/light/light.h"
 #include "runtime/material/material.h"
@@ -69,7 +70,7 @@ void init_scene() {
   scene_create(&main_scene, camera, viewport);
 
   // init camera position
-  camera_look_at(main_scene.active_camera,
+  camera_lookat(main_scene.active_camera,
                  (vec3){
                      20.0f,
                      20.0f,
@@ -191,7 +192,7 @@ int main(int argc, const char *argv[]) {
                                           renderer_device(&main_renderer),
                                           renderer_queue(&main_renderer));
 
-  gizmo_camera_translate(new_cam, (vec3){10.0f, 10.f, 2.0f});
+  gizmo_camera_lookat(new_cam, (vec3){10.0f, 2.0f, 0.0f}, (vec3){0.0f, 0.0f, 0.0f});
 
   example_gltf(&main_scene, &main_renderer);
 

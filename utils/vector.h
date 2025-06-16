@@ -35,4 +35,5 @@ void vec_baycentric(const vec2, const vec2, const vec2, const vec2,
                     const VectorLength, float *, float *, float *);
 
 void ivec_to_vec(const int *, const VectorLength, float *);
+
 #endif

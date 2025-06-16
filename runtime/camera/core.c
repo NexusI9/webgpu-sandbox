@@ -1,8 +1,9 @@
 #include "core.h"
 #include "../../utils/math.h"
+#include "../../utils/matrix.h"
 #include "../../utils/system.h"
-#include "emscripten/html5.h"
 #include "../input/input.h"
+#include "emscripten/html5.h"
 #include "math.h"
 #include "string.h"
 #include <cglm/cglm.h>
@@ -30,7 +31,7 @@ void camera_reset(Camera *c) {
     glm_vec3_zero(c->position);
     glm_vec3_zero(c->euler_rotation);
     glm_mat4_identity(c->view);
-    
+
     vec3 target = {0.0f, 0.0f, 0.0f};
     glm_vec3_copy(target, c->target);
 
@@ -107,7 +108,7 @@ static void camera_flying_mode_controller(Camera *camera) {
   camera_target_from_yaw_pitch(camera, yaw, pitch);
 
   // Update view matrix depending on new position and new target;
-  camera_look_at(camera, camera->position, camera->target);
+  camera_lookat(camera, camera->position, camera->target);
 }
 
 static void camera_orbit_mode_controler(Camera *camera) {
@@ -143,7 +144,7 @@ static void camera_orbit_mode_controler(Camera *camera) {
   glm_vec3_add(new_pos, camera->target, camera->position);
 
   // glm_vec3_copy(new_pos, camera->position);
-  camera_look_at(camera, camera->position, camera->target);
+  camera_lookat(camera, camera->position, camera->target);
 }
 
 void camera_draw(Camera *camera) {
@@ -227,33 +228,17 @@ void camera_update_view(Camera *camera) {
   glm_mat4_copy(new_view, camera->view);
 }
 
-void camera_look_at(Camera *camera, vec3 position, vec3 target) {
+void camera_lookat(Camera *camera, vec3 position, vec3 target) {
 
-  // update camera view
-  // TODO : look like glm_..._copy is flawed
-  // Can be related to alignment issue
-  // Try with : alignas(16) mat4 view;
-  memcpy(camera->position, position, sizeof(vec3));
-
-  vec3 *forward = &camera->forward;
-  vec3 *up = &camera->up;
-  vec3 *right = &camera->right;
-
-  vec3 adjusted_up = (vec3){0.0f, 1.0f, 0.0f};
-
-  glm_vec3_sub(target, position, *forward);
-  glm_normalize(*forward);
-
-  // need to avoid forward being parallel to world_up
-  // use x axis as up instead
-  if (fabs(glm_vec3_dot(*forward, *up)) > 0.99f)
-    glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, adjusted_up);
-
-  // calculate right vector
-  glm_vec3_cross(*up, *forward, *right);
-  glm_normalize(*right);
-
-  glm_lookat(camera->position, target, adjusted_up, camera->view);
+  matrix_lookat(&(UtilsMatrixLookatDescriptor){
+      .dest_position = &camera->position,
+      .dest_matrix = &camera->view,
+      .forward = &camera->forward,
+      .right = &camera->right,
+      .up = &camera->up,
+      .position = position,
+      .target = target,
+  });
 }
 
 mat4 *camera_view(Camera *camera) { return &camera->view; }

@@ -30,10 +30,6 @@ void vertex_transform_scale(const VertexIndexSelection *index,
     float *position =
         vertex_transform_attribute(id, attribute, VertexOffset_Position);
 
-    /*DELETEME:*/
-    printf("[%u] before: ", id);
-    print_vec3(position);
-
     // get direction
     vec3 direction;
     glm_vec3_sub(position, origin, direction);
@@ -41,12 +37,9 @@ void vertex_transform_scale(const VertexIndexSelection *index,
     // start from Origin, move along PO direction * scale
     // Scaled P = O + AO * scale
 
-    glm_vec3_muladd(direction, *scale, origin);
-    glm_vec3_copy(origin, position);
+    glm_vec3_mul(direction, *scale, direction);
+    glm_vec3_add(origin, direction, position);
 
-    /*DELETEME:*/
-    printf("[%u] after: ", id);
-    print_vec3(position);
   }
 }
 
@@ -59,6 +52,7 @@ void vertex_transform_translate(const VertexIndexSelection *index,
   // get origin
   vec3 origin;
   vertex_transform_origin(index, attribute, &origin);
+  
 }
 
 /**
