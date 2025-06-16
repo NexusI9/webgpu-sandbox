@@ -3,6 +3,7 @@
 
 #include "attribute.h"
 #include "core.h"
+#include "group.h"
 #include "index.h"
 #include "list.h"
 #include "transform.h"

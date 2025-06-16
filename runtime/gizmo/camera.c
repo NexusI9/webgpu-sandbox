@@ -119,15 +119,20 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
   VertexAttribute *cube_base_attribute = mesh_topology_base(cube).attribute;
 
   // modify base topology
-  VertexIndexSelection front_face = {
+  VertexGroup front_face = {
       .entries = (vindex_t[]){0, 2, 4, 10},
       .length = 4,
+      .capacity = 4,
   };
 
-  VertexIndexSelection back_face = {
+  VertexGroup back_face = {
       .entries = (vindex_t[]){1, 9, 7, 8},
       .length = 4,
+      .capacity = 4,
   };
+
+  mesh_topology_base_translate(&cube->topology.base, &back_face,
+                               &(vec3){0.0f, 0.0f, -1.0f});
 
   mesh_topology_base_scale(&cube->topology.base, &back_face,
                            &(vec3){0.5f, 0.5f, 0.5f});

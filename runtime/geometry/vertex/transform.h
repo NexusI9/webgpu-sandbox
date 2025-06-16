@@ -5,14 +5,15 @@
 #include "core.h"
 #include "index.h"
 #include <cglm/cglm.h>
+#include "group.h"
 
-void vertex_transform_scale(const VertexIndexSelection *, VertexAttribute *,
+void vertex_transform_scale(const VertexGroup *, VertexAttribute *,
                             vec3 *);
 
-void vertex_transform_translate(const VertexIndexSelection *, VertexAttribute *,
+void vertex_transform_translate(const VertexGroup *, VertexAttribute *,
                                 vec3 *);
 
-void vertex_transform_rotate(const VertexIndexSelection *, VertexAttribute *,
+void vertex_transform_rotate(const VertexGroup *, VertexAttribute *,
                              vec3 *);
 
 #endif

@@ -149,7 +149,7 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
 }
 
 void mesh_topology_base_scale(MeshTopologyBase *base,
-                              const VertexIndexSelection *select, vec3 *scale) {
+                              const VertexGroup *select, vec3 *scale) {
 
   // combine all anchors
   MeshTopologyAnchor combined_anchor;
@@ -167,9 +167,36 @@ void mesh_topology_base_scale(MeshTopologyBase *base,
 
   // apply transform with all combined anchors
   vertex_transform_scale(
-      &(VertexIndexSelection){
+      &(VertexGroup){
           .entries = combined_anchor.entries,
           .length = combined_anchor.length,
       },
       &base->attribute, scale);
+}
+
+void mesh_topology_base_translate(MeshTopologyBase *base,
+                                  const VertexGroup *select,
+                                  vec3 *translate) {
+
+  // combine all anchors
+  MeshTopologyAnchor combined_anchor;
+  mesh_topology_anchor_create(&combined_anchor,
+                              MESH_TOPOLOGY_ANCHOR_DEFAULT_CAPACITY);
+
+  MeshTopologyAnchorList *anchors = &base->siblings;
+
+  for (size_t i = 0; i < select->length; i++) {
+    vindex_t index = select->entries[i];
+    MeshTopologyAnchor *index_anchor = &anchors->entries[index];
+    mesh_topology_anchor_merge(anchors, index_anchor->entries,
+                               index_anchor->length, &combined_anchor);
+  }
+
+  // apply transform with all combined anchors
+  vertex_transform_translate(
+      &(VertexGroup){
+          .entries = combined_anchor.entries,
+          .length = combined_anchor.length,
+      },
+      &base->attribute, translate);
 }

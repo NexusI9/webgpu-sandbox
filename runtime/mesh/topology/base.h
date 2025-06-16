@@ -34,6 +34,9 @@ int mesh_topology_base_create_vertex_index(MeshTopologyBase *,
                                            const WGPUQueue *);
 
 void mesh_topology_base_scale(MeshTopologyBase *,
-                              const VertexIndexSelection *, vec3 *);
+                              const VertexGroup *, vec3 *);
+
+void mesh_topology_base_translate(MeshTopologyBase *,
+                              const VertexGroup *, vec3 *);
 
 #endif

@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
-static void vertex_transform_origin(const VertexIndexSelection *,
+static void vertex_transform_origin(const VertexGroup *,
                                     const VertexAttribute *, vec3 *);
 
 static float *vertex_transform_attribute(const vindex_t,
@@ -15,7 +15,7 @@ static float *vertex_transform_attribute(const vindex_t,
 /**
    Adjust the vertex attribute properties depending on given indexes.
 */
-void vertex_transform_scale(const VertexIndexSelection *index,
+void vertex_transform_scale(const VertexGroup *index,
                             VertexAttribute *attribute, vec3 *scale) {
 
   // get origin
@@ -46,19 +46,26 @@ void vertex_transform_scale(const VertexIndexSelection *index,
 /**
    Adjust the vertex attribute properties depending on given indexes.
  */
-void vertex_transform_translate(const VertexIndexSelection *index,
+void vertex_transform_translate(const VertexGroup *index,
                                 VertexAttribute *attribute, vec3 *translation) {
 
-  // get origin
-  vec3 origin;
-  vertex_transform_origin(index, attribute, &origin);
+  for (size_t i = 0; i < index->length; i++) {
+
+    vindex_t id = index->entries[i];
+
+    // get position pointer according to index
+    float *position =
+        vertex_transform_attribute(id, attribute, VertexOffset_Position);
+
+    glm_vec3_add(position, *translation, position);
+  }
   
 }
 
 /**
    Adjust the vertex attribute properties depending on given indexes.
  */
-void vertex_transform_rotate(const VertexIndexSelection *index,
+void vertex_transform_rotate(const VertexGroup *index,
                              VertexAttribute *attribute, vec3 *rotation) {}
 
 /**
@@ -73,7 +80,7 @@ float *vertex_transform_attribute(const vindex_t index,
 /**
    Get the origin of the given vertex index
  */
-static void vertex_transform_origin(const VertexIndexSelection *index,
+static void vertex_transform_origin(const VertexGroup *index,
                                     const VertexAttribute *attribute,
                                     vec3 *dest) {
   // init
