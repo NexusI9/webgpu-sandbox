@@ -71,7 +71,7 @@ typedef struct Mesh {
     Shader wireframe;
     Shader *override;
   } shader;
-
+    
   // hierarchy
   struct Mesh *parent;
   MeshRefList children;

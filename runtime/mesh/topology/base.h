@@ -12,9 +12,8 @@
 typedef struct {
   VertexAttribute attribute;
   VertexIndex index;
-
+  VertexGroupSet group;
   MeshTopologyAnchorList siblings;
-
 } MeshTopologyBase;
 
 MeshTopology mesh_topology_base_vertex(MeshTopologyBase *);
@@ -33,10 +32,9 @@ int mesh_topology_base_create_vertex_index(MeshTopologyBase *,
                                            const WGPUDevice *,
                                            const WGPUQueue *);
 
-void mesh_topology_base_scale(MeshTopologyBase *,
-                              const VertexGroup *, vec3 *);
+void mesh_topology_base_scale(MeshTopologyBase *, const VertexGroup *, vec3 *);
 
-void mesh_topology_base_translate(MeshTopologyBase *,
-                              const VertexGroup *, vec3 *);
+void mesh_topology_base_translate(MeshTopologyBase *, const VertexGroup *,
+                                  vec3 *);
 
 #endif
