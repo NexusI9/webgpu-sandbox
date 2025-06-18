@@ -34,8 +34,7 @@ void vertex_group_free(VertexGroup *);
 
 /*Vertex Group Set*/
 int vertex_group_set_create(VertexGroupSet *, size_t);
-VertexGroup *vertex_group_set_insert(VertexGroupSet *, vgroup_key,
-                                     VertexGroup *);
+VertexGroup *vertex_group_set_insert(VertexGroupSet *, VertexGroup *);
 VertexGroup *vertex_group_set_find(VertexGroupSet *, vgroup_key);
 int vertex_group_set_delete(VertexGroupSet *, vgroup_key);
 void vertex_group_set_free(VertexGroupSet *);

@@ -31,7 +31,7 @@ int vertex_group_expand(VertexGroup *group) {
 
 int vertex_group_create(VertexGroup *group, size_t capacity, const char *name) {
 
-  group->entries = malloc(capacity * sizeof(vindex_t));
+  group->entries = calloc(capacity, sizeof(vindex_t));
   group->length = 0;
   group->capacity = capacity;
   group->name = strdup(name);
@@ -119,7 +119,7 @@ int vertex_group_set_expand(VertexGroupSet *set) {
 
 int vertex_group_set_create(VertexGroupSet *set, size_t capacity) {
 
-  set->entries = malloc(capacity * sizeof(VertexGroup));
+  set->entries = calloc(capacity, sizeof(VertexGroup));
   set->length = 0;
   set->capacity = capacity;
 
@@ -132,7 +132,7 @@ int vertex_group_set_create(VertexGroupSet *set, size_t capacity) {
   return VERTEX_GROUP_SUCCESS;
 }
 
-VertexGroup *vertex_group_set_insert(VertexGroupSet *set, vgroup_key key,
+VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
                                      VertexGroup *new_group) {
 
   if (set->length >= set->capacity * 0.75 &&
@@ -140,12 +140,13 @@ VertexGroup *vertex_group_set_insert(VertexGroupSet *set, vgroup_key key,
     return NULL;
   }
 
-  vgroup_hash hash = vertex_group_set_hash(key) % set->capacity;
+  vgroup_hash hash = vertex_group_set_hash(new_group->name) % set->capacity;
 
   // init new vertex group
   VertexGroup *vgroup = &set->entries[hash];
 
   vgroup_hash init_hash = hash;
+
   while (true) {
     // if not occupied or names don't match(collision)
     if (vgroup->entries == NULL || strcmp(vgroup->name, new_group->name) == 0)
@@ -198,7 +199,7 @@ int vertex_group_set_delete(VertexGroupSet *set, vgroup_key key) {
   vgroup_hash hash = vertex_group_set_hash(key) % set->capacity;
 
   // init new vertex group
-  VertexGroup *vgroup = vertex_group_set_find(key);
+  VertexGroup *vgroup = vertex_group_set_find(set, key);
 
   if (vgroup->entries) {
     vertex_group_free(vgroup);

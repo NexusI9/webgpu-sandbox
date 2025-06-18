@@ -53,6 +53,27 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
                                    .name = "gizmo camera",
                                });
 
+  // init vertex groups
+  VertexGroupSet *cube_group = &cube->topology.base.group;
+  if (vertex_group_set_create(cube_group, VERTEX_GROUP_CAPACITY_DEFAULT) ==
+      VERTEX_SUCCESS) {
+
+    vertex_group_set_insert(cube_group,
+                            &(VertexGroup){
+                                .name = "front",
+                                .entries = (vindex_t[]){0, 2, 4, 10},
+                                .length = 4,
+                                .capacity = 4,
+                            });
+
+    vertex_group_set_insert(cube_group, &(VertexGroup){
+                                            .name = "back",
+                                            .entries = (vindex_t[]){1, 9, 7, 8},
+                                            .length = 4,
+                                            .capacity = 4,
+                                        });
+  }
+
   // translate cube upward
   mesh_translate(cube, (vec3){0.0f, 1.0f, 0.0f});
 
@@ -118,23 +139,13 @@ void gizmo_camera_fov(GizmoCamera *gizmo, float fov) {
   // get vertex attributes + index for line mesh composition
   VertexAttribute *cube_base_attribute = mesh_topology_base(cube).attribute;
 
-  // modify base topology
-  VertexGroup front_face = {
-      .entries = (vindex_t[]){0, 2, 4, 10},
-      .length = 4,
-      .capacity = 4,
-  };
+  VertexGroupSet *cube_group = &cube->topology.base.group;
+  VertexGroup *back_face = vertex_group_set_find(cube_group, "back");
 
-  VertexGroup back_face = {
-      .entries = (vindex_t[]){1, 9, 7, 8},
-      .length = 4,
-      .capacity = 4,
-  };
-
-  mesh_topology_base_translate(&cube->topology.base, &back_face,
+  mesh_topology_base_translate(&cube->topology.base, back_face,
                                &(vec3){0.0f, 0.0f, -1.0f});
 
-  mesh_topology_base_scale(&cube->topology.base, &back_face,
+  mesh_topology_base_scale(&cube->topology.base, back_face,
                            &(vec3){0.5f, 0.5f, 0.5f});
 
   // update wireframe topology according to base
