@@ -191,6 +191,8 @@ void camera_mode_edit_controller(Camera *camera) {
     glm_vec3_add(camera->target, dir, camera->position);
   }
 
+  input_wheel_reset();
+
   camera_lookat(camera, camera->position, camera->target);
 }
 

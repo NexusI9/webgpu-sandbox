@@ -60,10 +60,12 @@ void input_disable_all_keys() { memset(g_input.keys, 0, sizeof(g_input.keys)); }
 void input_listen(const char *target) {
 
   // key down event listener
-  emscripten_set_keydown_callback(INPUT_EVENT_DEFAULT_TARGET, NULL, false, input_key_down);
+  emscripten_set_keydown_callback(INPUT_EVENT_DEFAULT_TARGET, NULL, false,
+                                  input_key_down);
 
   // key up event listener
-  emscripten_set_keyup_callback(INPUT_EVENT_DEFAULT_TARGET, NULL, false, input_key_up);
+  emscripten_set_keyup_callback(INPUT_EVENT_DEFAULT_TARGET, NULL, false,
+                                input_key_up);
 
   // mouse move event listener
   emscripten_set_mousemove_callback(target, NULL, false, input_mouse_move);
@@ -78,4 +80,12 @@ bool input_key(unsigned int key) {
     return g_input.keys[key];
 
   return false;
+}
+
+/**
+   Reset input wheel due to delta lingering
+ */
+void input_wheel_reset() {
+  g_input.mouse.wheel.deltaX = 0.0f;
+  g_input.mouse.wheel.deltaY = 0.0f;
 }

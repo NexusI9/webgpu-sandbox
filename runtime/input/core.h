@@ -49,5 +49,7 @@ void input_listen(const char*);
 
 bool input_key(unsigned int);
 
+void input_wheel_reset();
+
 
 #endif
