@@ -6,10 +6,7 @@
 #define CAMERA_ERROR 2
 
 #include "../backend/clock.h"
-
 #include <cglm/cglm.h>
-#include <stddef.h>
-#include <stdint.h>
 
 typedef enum {
   CameraMode_Fixed = 1 << 0,

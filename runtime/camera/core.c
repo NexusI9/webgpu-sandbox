@@ -1,15 +1,6 @@
 #include "core.h"
-#include "../../utils/math.h"
 #include "../../utils/matrix.h"
-#include "../../utils/system.h"
-#include "../input/input.h"
-#include "emscripten/html5.h"
-#include "math.h"
-#include "string.h"
-#include <cglm/cglm.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
+#include "./mode.h"
 
 static int camera_list_expand(CameraList *);
 
@@ -46,11 +37,10 @@ void camera_reset(Camera *c) {
   }
 }
 
-
-void camera_draw(Camera *camera) {    
+void camera_draw(Camera *camera) {
+  camera_mode_draw(camera);
   camera_update_view(camera);
 }
-
 
 void camera_translate(Camera *camera, vec3 new_position) {
   // get the absolute value, need to transfom the new position into

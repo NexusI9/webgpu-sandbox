@@ -3,6 +3,7 @@
 
 #include "core.h"
 #include "list.h"
+#include "mode.h"
 #include "uniform.h"
 
 #endif
