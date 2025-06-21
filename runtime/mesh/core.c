@@ -164,15 +164,22 @@ void mesh_translate(Mesh *mesh, vec3 position) {
 }
 
 /**
-   Converts a vec3 rotation to quaternion and
-   apply rotation to mesh transform matrix
+   Set Euler rotation
  */
 void mesh_rotate(Mesh *mesh, vec3 rotation) {
   glm_vec3_copy(rotation, mesh->rotation);
 
-  versor q;
-  glm_euler_xyz_quat(mesh->rotation, q);
-  mesh_rotate_quat(mesh, q);
+  vec3 rad_rotation;
+  glm_vec3_scale(rotation, GLM_PI / 180.0f, rad_rotation);
+
+  mat4 rot_matrix;
+  glm_mat4_identity(rot_matrix);
+
+  glm_rotate_x(rot_matrix, rad_rotation[0], rot_matrix);
+  glm_rotate_y(rot_matrix, rad_rotation[1], rot_matrix);
+  glm_rotate_z(rot_matrix, rad_rotation[2], rot_matrix);
+
+  glm_mat4_mul(mesh->model, rot_matrix, mesh->model);
 }
 
 /**

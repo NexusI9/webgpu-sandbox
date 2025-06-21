@@ -55,6 +55,4 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
 
   mesh_reference_list_insert(&gizmo->meshes, sphere);
 
-  // update pointer list length
-  gizmo->meshes.length = gizmo_mesh_count;
 }

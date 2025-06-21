@@ -29,6 +29,4 @@ void gizmo_light_sun_create(GizmoSunLight *gizmo, SunLight *light,
 
   // store mesh pointer in gizmo ref list
   mesh_reference_list_insert(&gizmo->meshes, icon);
-  // update pointer list length
-  gizmo->meshes.length = gizmo_mesh_count;
 }

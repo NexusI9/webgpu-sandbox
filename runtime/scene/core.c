@@ -49,8 +49,9 @@ Mesh *scene_new_mesh_fixed(Scene *scene) {
   return mesh_reference_list_insert(&scene->layer.fixed, new_mesh);
 }
 
-
-Mesh *scene_new_mesh(Scene *scene) { return mesh_list_new_mesh(&scene->meshes); }
+Mesh *scene_new_mesh(Scene *scene) {
+  return mesh_list_new_mesh(&scene->meshes);
+}
 
 // TODO: move light list in Light not Scene anymore
 void scene_init_light_list(Scene *scene) {
@@ -76,4 +77,3 @@ void scene_init_light_list(Scene *scene) {
    Return pointer to scene mesh pool
  */
 MeshList *scene_mesh_list(Scene *scene) { return &scene->meshes; }
-

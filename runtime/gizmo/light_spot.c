@@ -29,6 +29,5 @@ void gizmo_light_spot_create(GizmoSpotLight *gizmo, SpotLight *light,
 
   // store mesh pointer in gizmo ref list
   mesh_reference_list_insert(&gizmo->meshes, icon);
-  // update pointer list length
-  gizmo->meshes.length = gizmo_mesh_count;
+
 }

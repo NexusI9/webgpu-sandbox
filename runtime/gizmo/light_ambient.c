@@ -29,7 +29,4 @@ void gizmo_light_ambient_create(GizmoAmbientLight *gizmo, AmbientLight *light,
 
   // store mesh pointer in gizmo ref list
   mesh_reference_list_insert(&gizmo->meshes, icon);
-  // update pointer list length
-  gizmo->meshes.length = gizmo_mesh_count;
-  
 }

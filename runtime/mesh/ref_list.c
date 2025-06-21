@@ -45,9 +45,10 @@ Mesh *mesh_reference_list_insert(MeshRefList *list, Mesh *mesh) {
  */
 int mesh_reference_list_transfert(MeshRefList *src, MeshRefList *dest) {
 
+  printf("length: %lu\n", dest->length);
   // expand if destination is too small
-  if (dest->capacity < dest->length + src->length) {
-    size_t new_capacity = dest->length + src->length;
+  while (dest->length + src->length >= dest->capacity) {
+    size_t new_capacity = 2 * dest->capacity;
     Mesh **temp_entries =
         (Mesh **)realloc(dest->entries, new_capacity * sizeof(Mesh *));
 
@@ -57,7 +58,6 @@ int mesh_reference_list_transfert(MeshRefList *src, MeshRefList *dest) {
 
     } else {
       perror("Couldn't reallocate and expand mesh indexed list\n");
-
       return MESH_ALLOC_FAILURE;
     }
   }
@@ -106,4 +106,10 @@ void mesh_reference_list_rotate_quat(MeshRefList *list, versor quat) {
 void mesh_reference_list_scale(MeshRefList *list, vec3 scale) {
   for (size_t i = 0; i < list->length; i++)
     mesh_scale(list->entries[i], scale);
+}
+
+void mesh_reference_list_print(MeshRefList *list) {
+
+  for (size_t i = 0; i < list->length; i++)
+    printf("%p\n", list->entries[i]);
 }

@@ -15,10 +15,14 @@
 // runtime
 #include "runtime/camera/camera.h"
 #include "runtime/camera/core.h"
+#include "runtime/gizmo/core.h"
+#include "runtime/gizmo/transform_translate.h"
 #include "runtime/input/input.h"
 #include "runtime/light/light.h"
 #include "runtime/material/material.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/scene/core.h"
 #include "runtime/scene/scene.h"
 #include "runtime/shader/shader.h"
 #include "runtime/viewport/viewport.h"
@@ -71,16 +75,16 @@ void init_scene() {
 
   // init camera position
   camera_lookat(main_scene.active_camera,
-                 (vec3){
-                     20.0f,
-                     20.0f,
-                     20.0f,
-                 },
-                 (vec3){
-                     0.0f,
-                     0.0f,
-                     0.0f,
-                 });
+                (vec3){
+                    20.0f,
+                    20.0f,
+                    20.0f,
+                },
+                (vec3){
+                    0.0f,
+                    0.0f,
+                    0.0f,
+                });
 
   scene_add_sun_light(
       &main_scene,
@@ -181,6 +185,7 @@ int main(int argc, const char *argv[]) {
   // set scene
   init_scene();
 
+  // add gizmo camera
   GizmoCamera *new_cam = scene_add_camera(&main_scene,
                                           &(CameraCreateDescriptor){
                                               .speed = 20.0f,
@@ -192,14 +197,28 @@ int main(int argc, const char *argv[]) {
                                           renderer_device(&main_renderer),
                                           renderer_queue(&main_renderer));
 
-  gizmo_camera_lookat(new_cam, (vec3){10.0f, 2.0f, 0.0f}, (vec3){0.0f, 0.0f, 0.0f});
+  gizmo_camera_lookat(new_cam, (vec3){10.0f, 2.0f, 0.0f},
+                      (vec3){0.0f, 0.0f, 0.0f});
+
+  // add transform gizmo
+  GizmoTransformTranslate translate;
+  gizmo_transform_translate_create(
+      &translate, &(GizmoCreateDescriptor){
+                      .camera = main_scene.active_camera,
+                      .device = renderer_device(&main_renderer),
+                      .queue = renderer_queue(&main_renderer),
+                      .viewport = &main_scene.viewport,
+                      .list = &main_scene.meshes,
+                  });
+
+  mesh_reference_list_transfert(&translate.meshes, &main_scene.layer.fixed);
 
   example_gltf(&main_scene, &main_renderer);
 
   add_grid();
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Wireframe);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);
 
   // Quit
   renderer_close(&main_renderer);

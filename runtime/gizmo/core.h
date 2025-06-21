@@ -8,7 +8,6 @@
 
 #define GIZMO_LIGHT_SCALE 0.8
 
-
 typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;

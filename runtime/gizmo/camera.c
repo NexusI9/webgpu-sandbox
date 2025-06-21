@@ -13,7 +13,7 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   // define target
   gizmo->target = camera;
 
-  size_t gizmo_mesh_count = 2;
+  const size_t gizmo_mesh_count = 2;
   mesh_reference_list_create(&gizmo->meshes, gizmo_mesh_count);
 
   // create new mesh in the mesh list
@@ -78,8 +78,6 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   mesh_translate(cube, (vec3){0.0f, 1.0f, 0.0f});
 
   mesh_reference_list_insert(&gizmo->meshes, cube);
-  // update pointer list length
-  gizmo->meshes.length = gizmo_mesh_count;
 
   // set fov deformation
   gizmo_camera_fov(gizmo, 90.0f);
