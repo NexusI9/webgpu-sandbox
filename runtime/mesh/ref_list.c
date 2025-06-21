@@ -45,7 +45,6 @@ Mesh *mesh_reference_list_insert(MeshRefList *list, Mesh *mesh) {
  */
 int mesh_reference_list_transfert(MeshRefList *src, MeshRefList *dest) {
 
-  printf("length: %lu\n", dest->length);
   // expand if destination is too small
   while (dest->length + src->length >= dest->capacity) {
     size_t new_capacity = 2 * dest->capacity;
