@@ -156,7 +156,7 @@ void camera_mode_edit_controller(Camera *camera) {
     glm_vec3_scale(right, x, move);
 
     vec3 up_move = {0};
-    glm_vec3_scale(up_move, y, up_move);
+    glm_vec3_scale(up, y, up_move);
     glm_vec3_add(move, up_move, move);
 
     glm_vec3_add(camera->position, move, camera->position);
