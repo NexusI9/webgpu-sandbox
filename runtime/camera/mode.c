@@ -135,7 +135,7 @@ void camera_mode_edit_controller(Camera *camera) {
   else if (input_key(INPUT_KEY_CAP)) {
 
     float x = g_input.mouse.wheel.deltaX * camera->sensitivity.move;
-    float y = g_input.mouse.wheel.deltaY * camera->sensitivity.move;
+    float y = -g_input.mouse.wheel.deltaY * camera->sensitivity.move;
 
 #ifdef CAMERA_MODE_EDIT_INVERT_X
     x *= -1;
