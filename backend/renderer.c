@@ -18,9 +18,6 @@ void renderer_create(renderer *new_renderer,
   new_renderer->wgpu.device = emscripten_webgpu_get_device();
   new_renderer->wgpu.queue = wgpuDeviceGetQueue(new_renderer->wgpu.device);
 
-  if (rd->lock_mouse)
-    renderer_lock_mouse(new_renderer);
-
   renderer_resize(new_renderer, 0, NULL, NULL);
 }
 
@@ -126,8 +123,10 @@ void renderer_create_texture_view(const renderer *renderer,
 void renderer_render(void *desc) {
 
   RendererRenderDescriptor *config = (RendererRenderDescriptor *)desc;
+
+  
   // create texture view
-  WGPUTextureView back_buffer =
+  WGPUTextureView swapchain_view =
       wgpuSwapChainGetCurrentTextureView(config->renderer->wgpu.swapchain);
 
   // create command encoder
@@ -153,7 +152,7 @@ void renderer_render(void *desc) {
           .colorAttachmentCount = 1,
           .colorAttachments =
               &(WGPURenderPassColorAttachment){
-                  .view = back_buffer,
+                  .view = swapchain_view,
                   .loadOp = WGPULoadOp_Clear,
                   .storeOp = WGPUStoreOp_Store,
                   .clearValue = (WGPUColor){0.15f, 0.15f, 0.18f, 1.0f},
@@ -190,7 +189,7 @@ void renderer_render(void *desc) {
   wgpuRenderPassEncoderRelease(render_pass);
   wgpuCommandEncoderRelease(render_encoder);
   wgpuCommandBufferRelease(render_buffer);
-  wgpuTextureViewRelease(back_buffer);
+  wgpuTextureViewRelease(swapchain_view);
 
   // update clock delta
   clock_update_delta(config->renderer->clock);
@@ -242,9 +241,6 @@ void renderer_draw(renderer *renderer, Scene *scene,
                                0, 1);
 }
 
-void renderer_lock_mouse(const renderer *renderer) {
-  emscripten_request_pointerlock(renderer->context.name, true);
-}
 
 void renderer_bake_ao(renderer *renderer, Scene *scene) {
 

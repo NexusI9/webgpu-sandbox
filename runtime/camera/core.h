@@ -25,11 +25,16 @@ typedef struct {
 } CameraList;
 
 typedef struct {
+  float move;
+  float rotate;
+  float zoom;
+} CameraSensitivity;
+
+typedef struct {
   cclock *clock;
   float speed;
   CameraMode mode;
-  float sensitivity;
-  float wheel_sensitivity;
+  CameraSensitivity sensitivity;
 } CameraCreateDescriptor;
 
 typedef struct Camera {
@@ -47,8 +52,8 @@ typedef struct Camera {
   mat4 view;
 
   float speed;
-  float sensitivity;
-  float wheel_sensitivity;
+  CameraSensitivity sensitivity;
+
   CameraMode mode;
 
 } Camera;

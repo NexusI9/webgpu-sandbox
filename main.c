@@ -67,8 +67,13 @@ void init_scene() {
                              .speed = 20.0f,
                              .clock = &main_clock,
                              .mode = CameraMode_Edit,
-                             .sensitivity = 0.007f,
-                             .wheel_sensitivity = 0.001f,
+                             .sensitivity =
+                                 {
+                                     .move = 0.02f,
+                                     .rotate = 0.002f,
+                                     .zoom = 0.02f,
+                                 },
+
                          });
 
   scene_create(&main_scene, camera, viewport);
@@ -174,7 +179,6 @@ int main(int argc, const char *argv[]) {
   renderer_create(&main_renderer, &(RendererCreateDescriptor){
                                       .name = "canvas",
                                       .clock = &main_clock,
-                                      .lock_mouse = true,
                                   });
 
   renderer_init(&main_renderer);
@@ -191,8 +195,7 @@ int main(int argc, const char *argv[]) {
                                               .speed = 20.0f,
                                               .clock = &main_clock,
                                               .mode = CameraMode_Fixed,
-                                              .sensitivity = 0.2f,
-                                              .wheel_sensitivity = 0.01f,
+                                              .sensitivity = {0},
                                           },
                                           renderer_device(&main_renderer),
                                           renderer_queue(&main_renderer));

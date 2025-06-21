@@ -59,10 +59,10 @@ void camera_mode_flying_controller(Camera *camera) {
 
   // Define new target from yaw and pitch
   // mouse movement > yaw pitch > forward vector > target vector
-  float yaw =
-      -g_input.mouse.movement.x * camera->sensitivity * camera->clock->delta;
-  float pitch =
-      g_input.mouse.movement.y * camera->sensitivity * camera->clock->delta;
+  float yaw = -g_input.mouse.movement.x * camera->sensitivity.rotate *
+              camera->clock->delta;
+  float pitch = g_input.mouse.movement.y * camera->sensitivity.rotate *
+                camera->clock->delta;
 
   camera_target_from_yaw_pitch(camera, yaw, pitch);
 
@@ -75,12 +75,12 @@ void camera_mode_flying_controller(Camera *camera) {
  */
 void camera_mode_orbit_controller(Camera *camera) {
 
-  float yaw = -g_input.mouse.x * camera->sensitivity;
-  float pitch = g_input.mouse.y * camera->sensitivity;
+  float yaw = -g_input.mouse.x * camera->sensitivity.rotate;
+  float pitch = g_input.mouse.y * camera->sensitivity.rotate;
 
   // TODO: dynamic radius based on mouse zoom or keyboard?
   float radius = glm_vec3_distance(camera->position, camera->target) +
-                 g_input.mouse.wheel.deltaY * camera->wheel_sensitivity;
+                 g_input.mouse.wheel.deltaY * camera->sensitivity.zoom;
 
   // 1. Create Picth & Yaw Quaternions
 
@@ -120,7 +120,7 @@ void camera_mode_edit_controller(Camera *camera) {
   if (input_key(INPUT_KEY_CMD)) {
     // TODO: dynamic radius based on mouse zoom or keyboard?
     float radius = glm_vec3_distance(camera->position, camera->target) +
-                   g_input.mouse.wheel.deltaY * camera->wheel_sensitivity;
+                   g_input.mouse.wheel.deltaY * camera->sensitivity.zoom;
 
     if (radius < 0.1f)
       radius = 1.0f;
@@ -131,11 +131,11 @@ void camera_mode_edit_controller(Camera *camera) {
     glm_vec3_scale(dir, radius, dir);
     glm_vec3_add(camera->target, dir, camera->position);
   }
-  // CAP+ WHEEL = Move
+  // CAP + WHEEL = Move
   else if (input_key(INPUT_KEY_CAP)) {
 
-    float x = g_input.mouse.wheel.deltaX * camera->wheel_sensitivity;
-    float y = g_input.mouse.wheel.deltaY * camera->wheel_sensitivity;
+    float x = g_input.mouse.wheel.deltaX * camera->sensitivity.move;
+    float y = g_input.mouse.wheel.deltaY * camera->sensitivity.move;
 
 #ifdef CAMERA_MODE_EDIT_INVERT_X
     x *= -1;
@@ -156,7 +156,7 @@ void camera_mode_edit_controller(Camera *camera) {
     glm_vec3_scale(right, x, move);
 
     vec3 up_move = {0};
-    glm_vec3_scale(up, y, up_move);
+    glm_vec3_scale(up_move, y, up_move);
     glm_vec3_add(move, up_move, move);
 
     glm_vec3_add(camera->position, move, camera->position);
@@ -165,8 +165,8 @@ void camera_mode_edit_controller(Camera *camera) {
   // WHEEL = Orbit
   else {
 
-    float yaw = -g_input.mouse.wheel.deltaX * camera->wheel_sensitivity;
-    float pitch = g_input.mouse.wheel.deltaY * camera->wheel_sensitivity;
+    float yaw = -g_input.mouse.wheel.deltaX * camera->sensitivity.rotate;
+    float pitch = g_input.mouse.wheel.deltaY * camera->sensitivity.rotate;
 
     vec3 dir;
     glm_vec3_sub(camera->position, camera->target, dir);

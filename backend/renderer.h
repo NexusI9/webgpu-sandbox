@@ -9,7 +9,6 @@
 typedef struct {
   const char *name;
   cclock *clock;
-  bool lock_mouse;
 } RendererCreateDescriptor;
 
 typedef struct {
@@ -52,7 +51,6 @@ void renderer_compute_shadow(renderer *, Scene *);
 
 void renderer_close(const renderer *);
 void renderer_draw(renderer *, Scene *, const RendererDrawMode);
-void renderer_lock_mouse(const renderer *);
 
 WGPUDevice *renderer_device(renderer *);
 WGPUQueue *renderer_queue(renderer *);

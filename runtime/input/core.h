@@ -45,11 +45,11 @@ extern Input g_input;
 void input_set_key(unsigned int, bool);
 void input_disable_all_keys();
 
-void input_listen(const char*);
+void input_listen(const char *);
+void input_lock_mouse(const char *);
 
 bool input_key(unsigned int);
 
 void input_wheel_reset();
-
 
 #endif

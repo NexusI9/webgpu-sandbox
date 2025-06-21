@@ -89,3 +89,7 @@ void input_wheel_reset() {
   g_input.mouse.wheel.deltaX = 0.0f;
   g_input.mouse.wheel.deltaY = 0.0f;
 }
+
+void input_lock_mouse(const char *target) {
+  emscripten_request_pointerlock(target, true);
+}

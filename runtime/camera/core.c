@@ -22,7 +22,6 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->clock = cd->clock;
   cam->mode = cd->mode;
   cam->sensitivity = cd->sensitivity;
-  cam->wheel_sensitivity = cd->wheel_sensitivity;
 }
 
 void camera_reset(Camera *c) {
