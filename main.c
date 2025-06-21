@@ -22,6 +22,7 @@
 #include "runtime/material/material.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/mesh/ref_list.h"
+#include "runtime/pipeline/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/scene.h"
 #include "runtime/shader/shader.h"
@@ -30,7 +31,7 @@
 static Scene main_scene;
 static Mesh tri_mesh;
 static float rot = 0.0f;
-static renderer main_renderer;
+static Renderer main_renderer;
 static cclock main_clock;
 
 // callback
@@ -176,10 +177,13 @@ int main(int argc, const char *argv[]) {
   printf("WASM INIT\n");
 
   // init renderer
-  renderer_create(&main_renderer, &(RendererCreateDescriptor){
-                                      .name = "canvas",
-                                      .clock = &main_clock,
-                                  });
+  renderer_create(&main_renderer,
+                  &(RendererCreateDescriptor){
+                      .name = "canvas",
+                      .clock = &main_clock,
+                      .multisampling_count = PipelineMultisampleCount_4x,
+		      .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f}
+                  });
 
   renderer_init(&main_renderer);
 

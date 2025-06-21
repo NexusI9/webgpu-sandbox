@@ -1,7 +1,7 @@
 #include "child.h"
 #include "primitive.h"
 
-void example_child(Scene *scene, renderer *renderer) {
+void example_child(Scene *scene, Renderer *renderer) {
 
   Mesh *parent_cube;
   example_primitive(parent_cube, (vec3){3.0f, 2.0f, 1.0f}, scene, renderer);

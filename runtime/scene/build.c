@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 static void scene_build_mesh_list(Scene *, mesh_get_shader_callback,
-                                  MeshRefList *);
+                                  PipelineMultisampleCount, MeshRefList *);
 
 static void scene_build_mesh_create_dynamic_shader(
     Scene *, mesh_create_dynamic_shader_callback, MeshRefList *);
@@ -18,7 +18,7 @@ static void scene_build_mesh_bind_views(Scene *, material_bind_views_callback,
    Build meshes Texture shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_texture(Scene *scene) {
+void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD TEXTURE SCENE ======\n");
 
   MeshRefList *unlit = &scene->layer.unlit;
@@ -43,10 +43,10 @@ void scene_build_texture(Scene *scene) {
   }
 
   // draw solid meshes first
-  scene_build_mesh_list(scene, mesh_shader_texture, lit);
+  scene_build_mesh_list(scene, mesh_shader_texture, sample, lit);
 
   // draw transparent meshes then
-  scene_build_mesh_list(scene, mesh_shader_texture, unlit);
+  scene_build_mesh_list(scene, mesh_shader_texture, sample, unlit);
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
@@ -55,7 +55,7 @@ void scene_build_texture(Scene *scene) {
    Build meshes Solid shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_solid(Scene *scene) {
+void scene_build_solid(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD SOLID SCENE ======\n");
 
   // create meshes' solid shader
@@ -63,9 +63,9 @@ void scene_build_solid(Scene *scene) {
   // bind views
 
   // draw solid meshes first
-  scene_build_mesh_list(scene, mesh_shader_solid, &scene->layer.lit);
+  scene_build_mesh_list(scene, mesh_shader_solid, sample, &scene->layer.lit);
   // draw transparent meshes then
-  scene_build_mesh_list(scene, mesh_shader_solid, &scene->layer.unlit);
+  scene_build_mesh_list(scene, mesh_shader_solid, sample, &scene->layer.unlit);
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
@@ -74,7 +74,7 @@ void scene_build_solid(Scene *scene) {
    Build meshes Wireframe shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_wireframe(Scene *scene) {
+void scene_build_wireframe(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD WIREFRAME SCENE ======\n");
 
   MeshRefList *lit = &scene->layer.lit;
@@ -91,7 +91,8 @@ void scene_build_wireframe(Scene *scene) {
                               SHADER_WIREFRAME_BINDGROUP_VIEWS, lit);
 
   // build "solid" meshes first
-  scene_build_mesh_list(scene, mesh_shader_wireframe, &scene->layer.lit);
+  scene_build_mesh_list(scene, mesh_shader_wireframe, sample,
+                        &scene->layer.lit);
 
   MeshRefList *unlit = &scene->layer.unlit;
 
@@ -105,7 +106,7 @@ void scene_build_wireframe(Scene *scene) {
                               SHADER_WIREFRAME_BINDGROUP_VIEWS, unlit);
 
   // draw transparent meshes then
-  scene_build_mesh_list(scene, mesh_shader_wireframe, unlit);
+  scene_build_mesh_list(scene, mesh_shader_wireframe, sample, unlit);
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
@@ -114,14 +115,14 @@ void scene_build_wireframe(Scene *scene) {
    Build meshes Shadow shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_shadow(Scene *scene) {
+void scene_build_shadow(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD SHADOW SCENE ======\n");
 
   // (shadow is bind process already during the renderer shadow pass)
   // draw solid meshes first
-  scene_build_mesh_list(scene, mesh_shader_shadow, &scene->layer.lit);
+  scene_build_mesh_list(scene, mesh_shader_shadow, sample, &scene->layer.lit);
   // draw transparent meshes then
-  scene_build_mesh_list(scene, mesh_shader_shadow, &scene->layer.unlit);
+  scene_build_mesh_list(scene, mesh_shader_shadow, sample, &scene->layer.unlit);
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
@@ -130,7 +131,7 @@ void scene_build_shadow(Scene *scene) {
    Build Fixed mesh layer.
    Fixed layer use the Override shader* as default shader.
  */
-void scene_build_fixed(Scene *scene) {
+void scene_build_fixed(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD FIXED SCENE ======\n");
 
   MeshRefList *fixed = &scene->layer.fixed;
@@ -144,16 +145,24 @@ void scene_build_fixed(Scene *scene) {
                               SHADER_FIXED_BINDGROUP_VIEWS, fixed);
 
   // build fixed
-  scene_build_mesh_list(scene, mesh_shader_override, &scene->layer.fixed);
+  scene_build_mesh_list(scene, mesh_shader_override, sample, &scene->layer.fixed);
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
 
 void scene_build_mesh_list(Scene *scene, mesh_get_shader_callback target_shader,
+                           PipelineMultisampleCount sample,
                            MeshRefList *mesh_list) {
   for (int i = 0; i < mesh_list->length; i++) {
     Mesh *current_mesh = mesh_list->entries[i];
+
+    // updating meshes shader's pipeline sampling (dirty)
+    pipeline_set_sampling(shader_pipeline(target_shader(current_mesh)), sample);
+
+    // build shader pipeline
     mesh_build(current_mesh, target_shader(current_mesh));
+
+    // release shader module
     shader_module_release(target_shader(current_mesh));
   }
 }

@@ -1,7 +1,7 @@
 #include "primitive.h"
 
 void example_primitive(Mesh *cube, vec3 position, Scene *scene,
-                       renderer *renderer) {
+                       Renderer *renderer) {
 
   Primitive cube_prim = primitive_cube();
   cube = scene_new_mesh_unlit(scene);

@@ -4,6 +4,6 @@
 #include "../../runtime/mesh/mesh.h"
 #include "./primitive.h"
 
-void example_child(Scene*, renderer*);
+void example_child(Scene*, Renderer*);
 
 #endif

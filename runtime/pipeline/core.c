@@ -14,6 +14,7 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
   pipeline->vertex_layout = desc->vertex_layout;
   pipeline->module = desc->module;
   pipeline->device = desc->device;
+  pipeline->sampling = 1;
   pipeline->handle = NULL;
 
   /*
@@ -40,12 +41,18 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 
   // Blend State
   pipeline->blend_state = (WGPUBlendState){
-      .color = {.operation = WGPUBlendOperation_Add,
-                .srcFactor = WGPUBlendFactor_SrcAlpha,
-                .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha},
-      .alpha = {.operation = WGPUBlendOperation_Add,
-                .srcFactor = WGPUBlendFactor_One,
-                .dstFactor = WGPUBlendFactor_Zero},
+      .color =
+          {
+              .operation = WGPUBlendOperation_Add,
+              .srcFactor = WGPUBlendFactor_SrcAlpha,
+              .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha,
+          },
+      .alpha =
+          {
+              .operation = WGPUBlendOperation_Add,
+              .srcFactor = WGPUBlendFactor_One,
+              .dstFactor = WGPUBlendFactor_Zero,
+          },
   };
 
   // Color State
@@ -88,7 +95,7 @@ void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
       .primitive = pipeline->primitive_state,
       .multisample =
           {
-              .count = 1,
+              .count = pipeline->sampling,
               .mask = 0xFFFFFFFF,
               .alphaToCoverageEnabled = false,
           },
@@ -119,4 +126,9 @@ void pipeline_destroy(Pipeline *pipeline) {
   // probably cause the layout is still in use
   // wgpuPipelineLayoutRelease(pipeline->layout);
   pipeline->layout = NULL;
+}
+
+void pipeline_set_sampling(Pipeline *pipeline,
+                           PipelineMultisampleCount sampling) {
+  pipeline->sampling = sampling;
 }

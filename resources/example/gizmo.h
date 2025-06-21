@@ -2,11 +2,11 @@
 #define _EXAMPLE_GIZMO_H_
 
 #include "../../backend/renderer.h"
-#include "../../runtime/primitive/primitive.h"
-#include "../../runtime/scene/scene.h"
 #include "../../resources/loader/loader.mbin.h"
 #include "../../runtime/material/material.h"
+#include "../../runtime/primitive/primitive.h"
+#include "../../runtime/scene/scene.h"
 
-void example_gizmo(Scene*, renderer*);
+void example_gizmo(Scene *, Renderer *);
 
 #endif

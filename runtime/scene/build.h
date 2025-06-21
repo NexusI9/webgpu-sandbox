@@ -17,10 +17,10 @@
 
  */
 
-void scene_build_texture(Scene *);
-void scene_build_shadow(Scene *);
-void scene_build_solid(Scene *);
-void scene_build_wireframe(Scene *);
-void scene_build_fixed(Scene *);
+void scene_build_texture(Scene *, PipelineMultisampleCount);
+void scene_build_shadow(Scene *, PipelineMultisampleCount);
+void scene_build_solid(Scene *, PipelineMultisampleCount);
+void scene_build_wireframe(Scene *, PipelineMultisampleCount);
+void scene_build_fixed(Scene *, PipelineMultisampleCount);
 
 #endif

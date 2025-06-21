@@ -1,6 +1,6 @@
 #include "gizmo.h"
 
-void example_gizmo(Scene* scene, renderer* renderer) {
+void example_gizmo(Scene* scene, Renderer* renderer) {
 
   Mesh *gizmo = scene_new_mesh_fixed(scene);
   Primitive mbin_primitive;

@@ -1,6 +1,6 @@
 #include "line.h"
 
-void example_line(Scene *scene, renderer *renderer) {
+void example_line(Scene *scene, Renderer *renderer) {
   Mesh *line = scene_new_mesh_unlit(scene);
   line_create(line, &(LineCreateDescriptor){
                         .device = renderer_device(renderer),

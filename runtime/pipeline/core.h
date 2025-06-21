@@ -47,6 +47,11 @@
                          '-------------------'      '--------------------'
  */
 
+typedef enum {
+  PipelineMultisampleCount_1x = 1,
+  PipelineMultisampleCount_4x = 4
+} PipelineMultisampleCount;
+
 typedef struct {
   const WGPUDevice *device;
   WGPUShaderModule *module;
@@ -67,6 +72,7 @@ typedef struct {
   WGPUDepthStencilState stencil_state;
   WGPUColorTargetState color_state;
   WGPUBlendState blend_state;
+  PipelineMultisampleCount sampling;
 
   // layout
   WGPURenderPipelineDescriptor descriptor;
@@ -83,5 +89,7 @@ void pipeline_build(Pipeline *, const WGPUPipelineLayout *);
 
 // destroyer
 void pipeline_destroy(Pipeline *);
+
+void pipeline_set_sampling(Pipeline *, PipelineMultisampleCount);
 
 #endif

@@ -4,6 +4,6 @@
 #include "../../backend/renderer.h"
 #include "../../resources/loader/loader.gltf.h"
 
-void example_gltf(Scene *, renderer *);
+void example_gltf(Scene *, Renderer *);
 
 #endif

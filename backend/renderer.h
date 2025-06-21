@@ -4,18 +4,14 @@
 #include "../runtime/scene/scene.h"
 #include "clock.h"
 #include "webgpu/webgpu.h"
-
+#include <stdint.h>
 
 typedef struct {
   const char *name;
   cclock *clock;
+  PipelineMultisampleCount multisampling_count;
+  WGPUColor background;
 } RendererCreateDescriptor;
-
-typedef struct {
-  struct renderer *renderer;
-  Scene *scene;
-  scene_draw_callback draw_callback;
-} RendererRenderDescriptor;
 
 typedef enum {
   RendererDrawMode_Texture,
@@ -23,9 +19,10 @@ typedef enum {
   RendererDrawMode_Wireframe,
 } RendererDrawMode;
 
-typedef struct renderer {
+typedef struct Renderer {
 
   cclock *clock; // update clock delta on draw
+  WGPUColor background;
 
   struct {
     const char *name;
@@ -42,18 +39,33 @@ typedef struct renderer {
     WGPURenderPipeline pipeline;
   } wgpu;
 
-} renderer;
+  struct {
+    PipelineMultisampleCount count;
+    WGPUTextureView view;
+  } multisampling;
 
-void renderer_create(renderer *, const RendererCreateDescriptor *);
-void renderer_init(renderer *);
-void renderer_bake_ao(renderer *, Scene *);
-void renderer_compute_shadow(renderer *, Scene *);
+} Renderer;
 
-void renderer_close(const renderer *);
-void renderer_draw(renderer *, Scene *, const RendererDrawMode);
+typedef WGPURenderPassColorAttachment (*renderer_color_attachment_callback)(
+    Renderer *, WGPUTextureView);
 
-WGPUDevice *renderer_device(renderer *);
-WGPUQueue *renderer_queue(renderer *);
-int renderer_width(renderer *);
-int renderer_height(renderer *);
+typedef struct {
+  Renderer *renderer;
+  Scene *scene;
+  scene_draw_callback draw_callback;
+  renderer_color_attachment_callback color_attachment_callback;
+} RendererRenderDescriptor;
+
+void renderer_create(Renderer *, const RendererCreateDescriptor *);
+void renderer_init(Renderer *);
+void renderer_bake_ao(Renderer *, Scene *);
+void renderer_compute_shadow(Renderer *, Scene *);
+
+void renderer_close(const Renderer *);
+void renderer_draw(Renderer *, Scene *, const RendererDrawMode);
+
+WGPUDevice *renderer_device(Renderer *);
+WGPUQueue *renderer_queue(Renderer *);
+int renderer_width(Renderer *);
+int renderer_height(Renderer *);
 #endif

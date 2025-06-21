@@ -1,6 +1,6 @@
 #include "gltf.h"
 
-void example_gltf(Scene *scene, renderer *renderer) {
+void example_gltf(Scene *scene, Renderer *renderer) {
   loader_gltf_load(&(GLTFLoadDescriptor){
       .scene = scene,
       .path = "./resources/assets/gltf/cube.gltf",

@@ -3,25 +3,74 @@
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "shadow_pass.h"
+#include "webgpu/webgpu.h"
 
-static int renderer_resize(renderer *, int, const EmscriptenUiEvent *, void *);
-static WGPUSwapChain renderer_create_swapchain(const renderer *);
-static void renderer_create_texture_view(const renderer *, WGPUTextureView *);
+static int renderer_resize(Renderer *, int, const EmscriptenUiEvent *, void *);
+static WGPUSwapChain renderer_create_swapchain(const Renderer *);
+static void renderer_create_texture_view(const Renderer *, WGPUTextureView *);
+static void renderer_create_multisampling_view(Renderer *);
 static void renderer_render(void *);
 
-void renderer_create(renderer *new_renderer,
-                     const RendererCreateDescriptor *rd) {
+static WGPURenderPassColorAttachment
+renderer_color_attachment_multisample(Renderer *, WGPUTextureView);
+static WGPURenderPassColorAttachment
+renderer_color_attachment_monosample(Renderer *, WGPUTextureView);
 
-  new_renderer->context.name = rd->name;
-  new_renderer->clock = rd->clock;
-  new_renderer->wgpu.instance = wgpuCreateInstance(NULL);
-  new_renderer->wgpu.device = emscripten_webgpu_get_device();
-  new_renderer->wgpu.queue = wgpuDeviceGetQueue(new_renderer->wgpu.device);
+/**
+   Depending on mono sampling or multi sampling, the pass color attachment of
+   renderer will be different (i.e. no resolveTarget for monosampling). As to
+   avoid branching during the draw function, we set those callback as parameters
+   before calling the draw.
 
-  renderer_resize(new_renderer, 0, NULL, NULL);
+   MSAA Texture (Nx) ===> resolved ===> Swapchain texture (1x)
+ */
+static WGPURenderPassColorAttachment
+renderer_color_attachment_multisample(Renderer *renderer,
+                                      WGPUTextureView swapchain_view) {
+  return (WGPURenderPassColorAttachment){
+      .view = renderer->multisampling.view, // pass 4x sample as view
+      .resolveTarget = swapchain_view,      // 1x sampled
+      .loadOp = WGPULoadOp_Clear,
+      .storeOp = WGPUStoreOp_Store,
+      .clearValue = renderer->background,
+      .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+  };
 }
 
-int renderer_resize(renderer *renderer, int event_type,
+static WGPURenderPassColorAttachment
+renderer_color_attachment_monosample(Renderer *renderer,
+                                     WGPUTextureView swapchain_view) {
+  return (WGPURenderPassColorAttachment){
+      .view = swapchain_view, // 1x sampled
+      .loadOp = WGPULoadOp_Clear,
+      .storeOp = WGPUStoreOp_Store,
+      .clearValue = renderer->background,
+      .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+  };
+}
+
+void renderer_create(Renderer *renderer, const RendererCreateDescriptor *rd) {
+
+  renderer->context.name = rd->name;
+  renderer->clock = rd->clock;
+  renderer->background = rd->background;
+
+  // set wgpu data
+  renderer->wgpu.instance = wgpuCreateInstance(NULL);
+  renderer->wgpu.device = emscripten_webgpu_get_device();
+  renderer->wgpu.queue = wgpuDeviceGetQueue(renderer->wgpu.device);
+
+  // define context size
+  renderer_resize(renderer, 0, NULL, NULL);
+
+  // set multisampling
+  renderer->multisampling.count = rd->multisampling_count;
+  renderer->multisampling.view = NULL;
+  if (renderer->multisampling.count > 1)
+    renderer_create_multisampling_view(renderer);
+}
+
+int renderer_resize(Renderer *renderer, int event_type,
                     const EmscriptenUiEvent *ui_event, void *user_data) {
 
   double w, h;
@@ -47,13 +96,13 @@ int renderer_resize(renderer *renderer, int event_type,
   return 1;
 }
 
-void renderer_init(renderer *renderer) {
+void renderer_init(Renderer *renderer) {
   renderer_resize(renderer, 0, NULL, NULL);
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, false,
                                  (em_ui_callback_func)renderer_resize);
 }
 
-WGPUSwapChain renderer_create_swapchain(const renderer *renderer) {
+WGPUSwapChain renderer_create_swapchain(const Renderer *renderer) {
   WGPUSurface surface = wgpuInstanceCreateSurface(
       renderer->wgpu.instance,
       &(WGPUSurfaceDescriptor){
@@ -74,7 +123,7 @@ WGPUSwapChain renderer_create_swapchain(const renderer *renderer) {
       });
 }
 
-void renderer_close(const renderer *renderer) {
+void renderer_close(const Renderer *renderer) {
   wgpuRenderPipelineRelease(renderer->wgpu.pipeline);
   wgpuSwapChainRelease(renderer->wgpu.swapchain);
   wgpuQueueRelease(renderer->wgpu.queue);
@@ -82,7 +131,7 @@ void renderer_close(const renderer *renderer) {
   wgpuInstanceRelease(renderer->wgpu.instance);
 }
 
-void renderer_create_texture_view(const renderer *renderer,
+void renderer_create_texture_view(const Renderer *renderer,
                                   WGPUTextureView *texture_view) {
 
   // Need to create a texture view for Z buffer stencil
@@ -103,7 +152,7 @@ void renderer_create_texture_view(const renderer *renderer,
           .format =
               WGPUTextureFormat_Depth24Plus, // texture with 24bit-depth format
           .mipLevelCount = 1,
-          .sampleCount = 1,
+          .sampleCount = renderer->multisampling.count,
           .dimension = WGPUTextureDimension_2D,
       });
 
@@ -120,17 +169,39 @@ void renderer_create_texture_view(const renderer *renderer,
       });
 }
 
+/**
+   Create the texture and texture view for the multisampling rendering
+ */
+void renderer_create_multisampling_view(Renderer *renderer) {
+
+  WGPUTexture msaa_texture = wgpuDeviceCreateTexture(
+      renderer->wgpu.device,
+      &(WGPUTextureDescriptor){
+          .usage = WGPUTextureUsage_RenderAttachment,
+          .size =
+              (WGPUExtent3D){
+                  .width = renderer->context.width,
+                  .height = renderer->context.height,
+                  .depthOrArrayLayers = 1,
+              },
+          .format = WGPUTextureFormat_BGRA8Unorm, // swapchain format
+          .sampleCount = renderer->multisampling.count,
+          .mipLevelCount = 1,
+      });
+
+  renderer->multisampling.view = wgpuTextureCreateView(msaa_texture, NULL);
+}
+
 void renderer_render(void *desc) {
 
   RendererRenderDescriptor *config = (RendererRenderDescriptor *)desc;
 
-  
-  // create texture view
+  // create swapchain texture view (1x sampled)
   WGPUTextureView swapchain_view =
       wgpuSwapChainGetCurrentTextureView(config->renderer->wgpu.swapchain);
 
-  // create command encoder
-  /* NOTE: Encoder records GPU operations such as:
+  /* Create command encoder
+     NOTE: Encoder records GPU operations such as:
      - Texture upload
      - Buffer upload
      - Render passes
@@ -143,31 +214,30 @@ void renderer_render(void *desc) {
   WGPUTextureView depth_texture_view;
   renderer_create_texture_view(config->renderer, &depth_texture_view);
 
+  WGPURenderPassColorAttachment color_attachments =
+      config->color_attachment_callback(config->renderer, swapchain_view);
+
+  // attach depth texture to render pass to WGPU knows where to
+  // write depth values
+  WGPURenderPassDepthStencilAttachment depth_attachments =
+      (WGPURenderPassDepthStencilAttachment){
+          .view = depth_texture_view,
+          .depthClearValue = 1.0f, // far plane
+          .depthLoadOp =
+              WGPULoadOp_Clear, // Clear depth at start of render pass
+          .depthStoreOp = WGPUStoreOp_Store, // Keep depth for later use
+          .depthReadOnly = false,            // Allow depth write
+      };
+
   // begin render pass
   WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(
-      render_encoder,
-      &(WGPURenderPassDescriptor){
-          .label = "Final Render Pass",
-          // color attachments
-          .colorAttachmentCount = 1,
-          .colorAttachments =
-              &(WGPURenderPassColorAttachment){
-                  .view = swapchain_view,
-                  .loadOp = WGPULoadOp_Clear,
-                  .storeOp = WGPUStoreOp_Store,
-                  .clearValue = (WGPUColor){0.15f, 0.15f, 0.18f, 1.0f},
-                  .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-              },
-          .depthStencilAttachment = &(WGPURenderPassDepthStencilAttachment){
-              // attach depth texture to render pass to WGPU knows where to
-              // write depth values
-              .view = depth_texture_view,
-              .depthClearValue = 1.0f, // far plane
-              .depthLoadOp =
-                  WGPULoadOp_Clear, // Clear depth at start of render pass
-              .depthStoreOp = WGPUStoreOp_Store, // Keep depth for later use
-              .depthReadOnly = false,            // Allow depth write
-          }});
+      render_encoder, &(WGPURenderPassDescriptor){
+                          .label = "Final Render Pass",
+                          // color attachments
+                          .colorAttachmentCount = 1,
+                          .colorAttachments = &color_attachments,
+                          .depthStencilAttachment = &depth_attachments,
+                      });
 
   // draw dynamic mesh
   config->draw_callback(config->scene, &render_pass);
@@ -199,23 +269,26 @@ void renderer_render(void *desc) {
    Draw a scene with a specified draw mode along with the render pass that comes
    with it (ao, shadow mapping...). Also call the main loop.
  */
-void renderer_draw(renderer *renderer, Scene *scene,
+void renderer_draw(Renderer *renderer, Scene *scene,
                    const RendererDrawMode draw_mode) {
 
+  PipelineMultisampleCount sample_count = renderer->multisampling.count;
+
   // Fixed (static) rendering
-  scene_build_fixed(scene);
+  scene_build_fixed(scene, sample_count);
 
   // Dynamic rendering
   scene_draw_callback draw_callback;
+
   switch (draw_mode) {
 
   case RendererDrawMode_Solid:
-    scene_build_solid(scene);
+    scene_build_solid(scene, sample_count);
     draw_callback = scene_draw_solid;
     break;
 
   case RendererDrawMode_Wireframe:
-    scene_build_wireframe(scene);
+    scene_build_wireframe(scene, sample_count);
     draw_callback = scene_draw_wireframe;
     break;
 
@@ -227,22 +300,30 @@ void renderer_draw(renderer *renderer, Scene *scene,
     // Setup drawing pass may need to move it else where
     renderer_compute_shadow(renderer, scene);
 
-    scene_build_texture(scene);
+    scene_build_texture(scene, sample_count);
     draw_callback = scene_draw_texture;
     break;
   }
 
+  /* Define render color attachment callback based on multisample count.
+     Using callback prevents branching within the main loop
+   */
+  renderer_color_attachment_callback color_cbk =
+      renderer->multisampling.count > 1 ? renderer_color_attachment_multisample
+                                        : renderer_color_attachment_monosample;
+
+  // call main loop
   emscripten_set_main_loop_arg(renderer_render,
                                &(RendererRenderDescriptor){
                                    .renderer = renderer,
                                    .scene = scene,
                                    .draw_callback = draw_callback,
+                                   .color_attachment_callback = color_cbk,
                                },
                                0, 1);
 }
 
-
-void renderer_bake_ao(renderer *renderer, Scene *scene) {
+void renderer_bake_ao(Renderer *renderer, Scene *scene) {
 
   ao_bake_init(&(AOBakeInitDescriptor){
       .mesh_list = &scene->layer.lit,
@@ -255,12 +336,12 @@ void renderer_bake_ao(renderer *renderer, Scene *scene) {
 /**
    Main entry point of the shadow computing pass
  */
-void renderer_compute_shadow(renderer *renderer, Scene *scene) {
+void renderer_compute_shadow(Renderer *renderer, Scene *scene) {
   shadow_pass_init(scene, renderer->wgpu.device, renderer->wgpu.queue);
 }
 
-WGPUDevice *renderer_device(renderer *rd) { return &rd->wgpu.device; }
-WGPUQueue *renderer_queue(renderer *rd) { return &rd->wgpu.queue; }
+WGPUDevice *renderer_device(Renderer *rd) { return &rd->wgpu.device; }
+WGPUQueue *renderer_queue(Renderer *rd) { return &rd->wgpu.queue; }
 
-int renderer_width(renderer *rd) { return rd->context.width; }
-int renderer_height(renderer *rd) { return rd->context.height; }
+int renderer_width(Renderer *rd) { return rd->context.width; }
+int renderer_height(Renderer *rd) { return rd->context.height; }
