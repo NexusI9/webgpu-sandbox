@@ -62,22 +62,7 @@ void init_scene() {
                                  .height = renderer_height(&main_renderer),
                              });
 
-  // set camera
-  Camera camera;
-  camera_create(&camera, &(CameraCreateDescriptor){
-                             .speed = 20.0f,
-                             .clock = &main_clock,
-                             .mode = CameraMode_Edit,
-                             .sensitivity =
-                                 {
-                                     .move = 0.02f,
-                                     .rotate = 0.002f,
-                                     .zoom = 0.02f,
-                                 },
-
-                         });
-
-  scene_create(&main_scene, camera, viewport);
+  scene_create(&main_scene, &main_clock, viewport);
 
   // init camera position
   camera_lookat(main_scene.active_camera,
@@ -182,8 +167,7 @@ int main(int argc, const char *argv[]) {
                       .name = "canvas",
                       .clock = &main_clock,
                       .multisampling_count = PipelineMultisampleCount_4x,
-		      .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f}
-                  });
+                      .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f}});
 
   renderer_init(&main_renderer);
 

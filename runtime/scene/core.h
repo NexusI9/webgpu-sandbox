@@ -1,6 +1,7 @@
 #ifndef _SCENE_CORE_H_
 #define _SCENE_CORE_H_
 
+#include "../backend/clock.h"
 #include "../gizmo/list.h"
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
@@ -102,6 +103,7 @@ typedef struct {
 typedef struct {
 
   // camera
+  Camera *camera;
   Camera *active_camera;
 
   // viewport
@@ -121,7 +123,7 @@ typedef struct {
 typedef void (*scene_draw_callback)(Scene *, WGPURenderPassEncoder *);
 typedef void (*scene_build_callback)(Scene *);
 
-void scene_create(Scene *, Camera, Viewport);
+void scene_create(Scene *, cclock *, Viewport);
 
 // mesh pool
 MeshList *scene_mesh_list(Scene *);

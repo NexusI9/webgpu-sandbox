@@ -2,12 +2,14 @@
 
 static void scene_init_light_list(Scene *);
 static Mesh *scene_new_mesh(Scene *);
+static Camera *scene_init_main_camera(Scene *, cclock *);
 
-void scene_create(Scene *scene, Camera camera, Viewport viewport) {
+void scene_create(Scene *scene, cclock *clock, Viewport viewport) {
 
   // create camera list, and set active camera
   camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
-  scene->active_camera = camera_list_insert(&scene->cameras, &camera);
+  scene->camera = scene_init_main_camera(scene, clock);
+  scene->active_camera = scene->camera;
 
   // set viewport
   scene->viewport = viewport;
@@ -28,6 +30,28 @@ void scene_create(Scene *scene, Camera camera, Viewport viewport) {
 
   // init lights
   scene_init_light_list(scene);
+}
+
+/**
+   Define scene main edit camera
+ */
+Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
+
+  Camera camera;
+  camera_create(&camera, &(CameraCreateDescriptor){
+                             .speed = 20.0f,
+                             .clock = clock,
+                             .mode = CameraMode_Edit,
+                             .sensitivity =
+                                 {
+                                     .move = 0.02f,
+                                     .rotate = 0.002f,
+                                     .zoom = 0.02f,
+                                 },
+
+                         });
+
+  return camera_list_insert(&scene->cameras, &camera);
 }
 
 /**
