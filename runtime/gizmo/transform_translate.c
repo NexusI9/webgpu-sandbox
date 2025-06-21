@@ -69,7 +69,11 @@ void gizmo_transform_translate_create(GizmoTransformTranslate *gizmo,
 }
 
 void gizmo_transform_translate_translate(GizmoTransformTranslate *gizmo,
-                                         vec3 translation) {}
+                                         vec3 translation) {
+  mesh_reference_list_translate(&gizmo->meshes, translation);
+}
 
 void gizmo_transform_translate_rotate(GizmoTransformTranslate *gizmo,
-                                      vec3 rotation) {}
+                                      vec3 rotation) {
+  mesh_reference_list_rotate(&gizmo->meshes, rotation);
+}

@@ -15,6 +15,7 @@ typedef enum {
   CameraMode_Fixed = 1 << 0,
   CameraMode_Flying = 1 << 1,
   CameraMode_Orbit = 1 << 2,
+  CameraMode_Edit = 1 << 3,
 } CameraMode;
 
 typedef struct {
@@ -54,7 +55,6 @@ typedef struct Camera {
 
 void camera_create(Camera *, const CameraCreateDescriptor *);
 void camera_reset(Camera *);
-void camera_set_mode(Camera *, CameraMode);
 void camera_draw(Camera *);
 void camera_lookat(Camera *, vec3, vec3);
 
