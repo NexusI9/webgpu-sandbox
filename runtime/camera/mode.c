@@ -112,7 +112,86 @@ void camera_mode_orbit_controller(Camera *camera) {
 /**
    Define camera edit mode
  */
-void camera_mode_edit_controller(Camera *camera) {}
+void camera_mode_edit_controller(Camera *camera) {
+
+  vec3 up = {0.0f, 1.0f, 0.0f};
+
+  // CMD + WHEEL = Zoom
+  if (input_key(INPUT_KEY_CMD)) {
+    // TODO: dynamic radius based on mouse zoom or keyboard?
+    float radius = glm_vec3_distance(camera->position, camera->target) +
+                   g_input.mouse.wheel.deltaY * camera->wheel_sensitivity;
+
+    if (radius < 0.1f)
+      radius = 1.0f;
+
+    vec3 dir;
+    glm_vec3_sub(camera->position, camera->target, dir);
+    glm_vec3_normalize(dir);
+    glm_vec3_scale(dir, radius, dir);
+    glm_vec3_add(camera->target, dir, camera->position);
+  }
+  // CAP+ WHEEL = Move
+  else if (input_key(INPUT_KEY_CAP)) {
+
+    float x = g_input.mouse.wheel.deltaX * camera->wheel_sensitivity;
+    float y = g_input.mouse.wheel.deltaY * camera->wheel_sensitivity;
+
+#ifdef CAMERA_MODE_EDIT_INVERT_X
+    x *= -1;
+#endif
+
+#ifdef CAMERA_MODE_EDIT_INVERT_Y
+    y *= -1;
+#endif
+
+    vec3 fwd;
+    glm_vec3_sub(camera->target, camera->position, fwd);
+    glm_vec3_normalize(fwd);
+
+    vec3 right;
+    glm_vec3_crossn(fwd, up, right);
+
+    vec3 move = {0};
+    glm_vec3_scale(right, x, move);
+
+    vec3 up_move = {0};
+    glm_vec3_scale(up, y, up_move);
+    glm_vec3_add(move, up_move, move);
+
+    glm_vec3_add(camera->position, move, camera->position);
+    glm_vec3_add(camera->target, move, camera->target);
+  }
+  // WHEEL = Orbit
+  else {
+
+    float yaw = -g_input.mouse.wheel.deltaX * camera->wheel_sensitivity;
+    float pitch = g_input.mouse.wheel.deltaY * camera->wheel_sensitivity;
+
+    vec3 dir;
+    glm_vec3_sub(camera->position, camera->target, dir);
+
+    vec3 right;
+    glm_vec3_crossn(dir, up, right);
+
+    // 1. Create Picth & Yaw Quaternions
+
+    // create quaternions
+    versor q_pitch, q_yaw;
+
+    // Pitch: x axis rotation quaternions
+    glm_quatv(q_pitch, pitch, right);
+    glm_quat_rotatev(q_pitch, dir, dir);
+
+    // Yaw: y axis rotation quaternions
+    glm_quatv(q_yaw, yaw, up);
+    glm_quat_rotatev(q_yaw, dir, dir);
+
+    // 3. Offset position relative to target
+    glm_vec3_add(camera->target, dir, camera->position);
+  }
+
+  camera_lookat(camera, camera->position, camera->target);
+}
 
 void camera_set_mode(Camera *camera, CameraMode mode) { camera->mode = mode; }
-

@@ -49,22 +49,21 @@ static bool input_wheel(int eventType, const EmscriptenWheelEvent *wheelEvent,
   g_input.mouse.wheel.deltaX = wheelEvent->deltaX;
   g_input.mouse.wheel.deltaY = wheelEvent->deltaY;
 
-  return false;
+  // returning true call preventDefault
+  return EM_TRUE;
 }
 
 void input_set_key(unsigned int key, bool state) { g_input.keys[key] = state; }
 
 void input_disable_all_keys() { memset(g_input.keys, 0, sizeof(g_input.keys)); }
 
-void input_listen() {
+void input_listen(const char *target) {
 
-  const char *target =
-      EMSCRIPTEN_EVENT_TARGET_DOCUMENT; // EVENT_DEFAULT_TARGET;
   // key down event listener
-  emscripten_set_keydown_callback(target, NULL, false, input_key_down);
+  emscripten_set_keydown_callback(INPUT_EVENT_DEFAULT_TARGET, NULL, false, input_key_down);
 
   // key up event listener
-  emscripten_set_keyup_callback(target, NULL, false, input_key_up);
+  emscripten_set_keyup_callback(INPUT_EVENT_DEFAULT_TARGET, NULL, false, input_key_up);
 
   // mouse move event listener
   emscripten_set_mousemove_callback(target, NULL, false, input_mouse_move);

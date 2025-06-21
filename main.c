@@ -67,8 +67,8 @@ void init_scene() {
                              .speed = 20.0f,
                              .clock = &main_clock,
                              .mode = CameraMode_Edit,
-                             .sensitivity = 0.2f,
-                             .wheel_sensitivity = 0.01f,
+                             .sensitivity = 0.007f,
+                             .wheel_sensitivity = 0.001f,
                          });
 
   scene_create(&main_scene, camera, viewport);
@@ -180,7 +180,7 @@ int main(int argc, const char *argv[]) {
   renderer_init(&main_renderer);
 
   // poll inputs
-  input_listen();
+  input_listen(main_renderer.context.name);
 
   // set scene
   init_scene();
@@ -213,7 +213,7 @@ int main(int argc, const char *argv[]) {
 
   mesh_reference_list_transfert(&translate.meshes, &main_scene.layer.fixed);
 
-  //example_gltf(&main_scene, &main_renderer);
+  // example_gltf(&main_scene, &main_renderer);
 
   add_grid();
 

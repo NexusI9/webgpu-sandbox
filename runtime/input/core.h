@@ -45,7 +45,7 @@ extern Input g_input;
 void input_set_key(unsigned int, bool);
 void input_disable_all_keys();
 
-void input_listen();
+void input_listen(const char*);
 
 bool input_key(unsigned int);
 

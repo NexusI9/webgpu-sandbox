@@ -3,6 +3,7 @@
 #include "../../utils/matrix.h"
 #include "../../utils/system.h"
 #include "../input/input.h"
+#include "./mode.h"
 #include "emscripten/html5.h"
 #include "math.h"
 #include "string.h"
@@ -10,7 +11,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include "./mode.h"
 
 void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
@@ -45,7 +45,6 @@ void camera_reset(Camera *c) {
   }
 }
 
-
 void camera_draw(Camera *camera) {
 
   switch (camera->mode) {
@@ -56,6 +55,10 @@ void camera_draw(Camera *camera) {
 
   case CameraMode_Orbit:
     camera_mode_orbit_controller(camera);
+    return;
+
+  case CameraMode_Edit:
+    camera_mode_edit_controller(camera);
     return;
 
   case CameraMode_Fixed:
