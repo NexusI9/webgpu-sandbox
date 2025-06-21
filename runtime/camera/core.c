@@ -1,8 +1,16 @@
 #include "core.h"
+#include "../../utils/math.h"
 #include "../../utils/matrix.h"
+#include "../../utils/system.h"
+#include "../input/input.h"
+#include "emscripten/html5.h"
+#include "math.h"
+#include "string.h"
+#include <cglm/cglm.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 #include "./mode.h"
-
-static int camera_list_expand(CameraList *);
 
 void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
@@ -37,8 +45,25 @@ void camera_reset(Camera *c) {
   }
 }
 
+
 void camera_draw(Camera *camera) {
-  camera_mode_draw(camera);
+
+  switch (camera->mode) {
+
+  case CameraMode_Flying:
+    camera_mode_flying_controller(camera);
+    return;
+
+  case CameraMode_Orbit:
+    camera_mode_orbit_controller(camera);
+    return;
+
+  case CameraMode_Fixed:
+    // remove event listeners
+  default:
+    return;
+  }
+
   camera_update_view(camera);
 }
 

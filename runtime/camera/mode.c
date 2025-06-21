@@ -116,24 +116,3 @@ void camera_mode_edit_controller(Camera *camera) {}
 
 void camera_set_mode(Camera *camera, CameraMode mode) { camera->mode = mode; }
 
-/**
-   Define camera controllers based on camera mode
- */
-void camera_mode_draw(Camera *camera) {
-
-  switch (camera->mode) {
-
-  case CameraMode_Flying:
-    camera_mode_flying_controller(camera);
-    return;
-
-  case CameraMode_Orbit:
-    camera_mode_orbit_controller(camera);
-    return;
-
-  case CameraMode_Fixed:
-    // remove event listeners
-  default:
-    return;
-  }
-}

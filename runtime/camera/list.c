@@ -1,6 +1,8 @@
 #include "list.h"
 #include "string.h"
 
+static int camera_list_expand(CameraList *);
+
 /**
    Init camera list
  */
