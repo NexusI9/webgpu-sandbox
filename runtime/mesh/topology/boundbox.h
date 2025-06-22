@@ -20,11 +20,12 @@ typedef struct {
   AABB bound;
 } MeshTopologyBoundbox;
 
-void mesh_topology_boundbox_compute_bound(MeshTopologyBase *,
-                                         MeshTopologyBoundbox *);
+void mesh_topology_boundbox_compute_bound(MeshTopologyBase *, mat4,
+                                          MeshTopologyBoundbox *);
 
-int mesh_topology_boundbox_create(MeshTopologyBase *, MeshTopologyBoundbox *,
-                                  const WGPUDevice *, const WGPUQueue *);
+int mesh_topology_boundbox_create(MeshTopologyBase *, mat4,
+                                  MeshTopologyBoundbox *, const WGPUDevice *,
+                                  const WGPUQueue *);
 
 MeshTopology mesh_topology_boundbox_vertex(MeshTopologyBoundbox *);
 

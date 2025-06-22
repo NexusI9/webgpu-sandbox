@@ -35,6 +35,9 @@ void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
   for (size_t l = 0; l < 2; l++) {
     MeshRefList *layer = layers[l];
 
+    // compute boundbox bounds for collisions (lightweight)
+    scene_build_mesh_create_topology_boundbox_bound(scene, layer);
+
     // bind views
     scene_build_mesh_bind_views(scene, material_texture_bind_views,
                                 SHADER_TEXTURE_BINDGROUP_VIEWS, layer);
@@ -68,6 +71,10 @@ void scene_build_solid(Scene *scene, PipelineMultisampleCount sample) {
 
   for (size_t l = 0; l < 2; l++) {
     MeshRefList *layer = layers[l];
+
+    // compute boundbox bounds for collisions (lightweight)
+    scene_build_mesh_create_topology_boundbox_bound(scene, layer);
+
     // create meshes' solid shader
     scene_build_mesh_create_dynamic_shader(scene, mesh_create_solid_shader,
                                            layer);
@@ -97,6 +104,10 @@ void scene_build_wireframe(Scene *scene, PipelineMultisampleCount sample) {
 
   for (size_t l = 0; l < 2; l++) {
     MeshRefList *layer = layers[l];
+
+    // compute boundbox bounds for collisions (lightweight)
+    scene_build_mesh_create_topology_boundbox_bound(scene, layer);
+
     // create wireframe topology
     scene_build_mesh_create_topology_wireframe(scene, layer);
 
@@ -129,6 +140,7 @@ void scene_build_boundbox(Scene *scene, PipelineMultisampleCount sample) {
 
   for (size_t l = 0; l < 2; l++) {
     MeshRefList *layer = layers[l];
+
     // create full boundbox topology
     scene_build_mesh_create_topology_boundbox_full(scene, layer);
 
@@ -172,29 +184,28 @@ void scene_build_shadow(Scene *scene, PipelineMultisampleCount sample) {
 void scene_build_fixed(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD FIXED SCENE ======\n");
 
-  MeshRefList *fixed = &scene->layer.fixed;
+  MeshRefList *layer = &scene->layer.fixed;
+
+  // compute boundbox bounds for collisions (lightweight)
+  scene_build_mesh_create_topology_boundbox_bound(scene, layer);
 
   // bind views
   scene_build_mesh_bind_views(scene, material_override_bind_views,
-                              SHADER_FIXED_BINDGROUP_VIEWS, fixed);
+                              SHADER_FIXED_BINDGROUP_VIEWS, layer);
 
   // build fixed
-  scene_build_mesh_list(scene, mesh_shader_override, sample,
-                        &scene->layer.fixed);
+  scene_build_mesh_list(scene, mesh_shader_override, sample, layer);
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
 
-
 /**
     ▗▖ ▗▖▗▄▄▄▖▗▄▄▄▖▗▖    ▗▄▄▖
-    ▐▌ ▐▌  █    █  ▐▌   ▐▌   
+    ▐▌ ▐▌  █    █  ▐▌   ▐▌
     ▐▌ ▐▌  █    █  ▐▌    ▝▀▚▖
     ▝▚▄▞▘  █  ▗▄█▄▖▐▙▄▄▖▗▄▄▞▘
-               
+
  */
-
-
 
 void scene_build_mesh_list(Scene *scene, mesh_get_shader_callback target_shader,
                            PipelineMultisampleCount sample,
@@ -251,8 +262,8 @@ void scene_build_mesh_create_topology_boundbox_full(Scene *scene,
   for (int i = 0; i < mesh_list->length; i++) {
     Mesh *mesh = mesh_list->entries[i];
     MeshTopologyBoundbox *dest_topo = &mesh->topology.boundbox;
-    mesh_topology_boundbox_create(&mesh->topology.base, dest_topo, mesh->device,
-                                  mesh->queue);
+    mesh_topology_boundbox_create(&mesh->topology.base, mesh->model, dest_topo,
+                                  mesh->device, mesh->queue);
   }
 }
 
@@ -265,7 +276,8 @@ void scene_build_mesh_create_topology_boundbox_bound(Scene *scene,
   for (int i = 0; i < mesh_list->length; i++) {
     Mesh *mesh = mesh_list->entries[i];
     MeshTopologyBoundbox *dest_topo = &mesh->topology.boundbox;
-    mesh_topology_boundbox_compute_bound(&mesh->topology.base, dest_topo);
+    mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
+                                         dest_topo);
   }
 }
 

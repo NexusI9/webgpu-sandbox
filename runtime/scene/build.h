@@ -9,11 +9,11 @@
    creation or binding process( view matrix...).
 
    Currently the renderer handles different passes such as :
-   - Texture: PBR shader
-   - Shadow: Shadow shader
-   - Solid : Solid shader
-   - Wireframe : Wireframe Shader + new vertex armature creation
-   - Fixed : custom fixed shader
+   - Topology Creation
+   - Shader creation
+   - Shader bind views
+   - Shader bind lights
+   - Shader build pipeline layout
 
  */
 

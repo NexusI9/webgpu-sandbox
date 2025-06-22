@@ -1,8 +1,12 @@
 #include "boundbox.h"
 #include "../backend/buffer.h"
+#include "../utils/system.h"
 #include "core.h"
 
 static void mesh_topology_boundbox_cube(MeshTopologyBoundbox *);
+
+static void mesh_topology_boundbox_worldspace(AABB *, mat4);
+static void mesh_topology_boundbox_corners(AABB *, vec3[8]);
 
 /**
    Boundbox topology has a double process:
@@ -51,8 +55,10 @@ static void mesh_topology_boundbox_cube(MeshTopologyBoundbox *);
 
  */
 void mesh_topology_boundbox_compute_bound(MeshTopologyBase *base,
+                                          mat4 model_matrix,
                                           MeshTopologyBoundbox *bound) {
 
+  // calculate local space bound
   VertexAttribute *base_attr = &base->attribute;
   glm_vec3_copy((vec3){0}, bound->bound.min);
   glm_vec3_copy((vec3){0}, bound->bound.max);
@@ -62,9 +68,69 @@ void mesh_topology_boundbox_compute_bound(MeshTopologyBase *base,
     glm_vec3_minv(bound->bound.min, current, bound->bound.min);
     glm_vec3_maxv(bound->bound.max, current, bound->bound.max);
   }
+
+  // transform bound to world space
+  mesh_topology_boundbox_worldspace(&bound->bound, model_matrix);
 }
 
-int mesh_topology_boundbox_create(MeshTopologyBase *base,
+/**
+  Compute 8 corners of bound
+
+        6---------7
+       /|        /|
+      / |       / |
+     2--+------3  |
+     |  |      |  |
+     |  4------+--5
+     | /       | /
+     0---------1'
+
+ */
+static void mesh_topology_boundbox_corners(AABB *bound, vec3 corners[8]) {
+
+  glm_vec3_copy((vec3){bound->min[0], bound->min[1], bound->min[2]},
+                corners[0]);
+  glm_vec3_copy((vec3){bound->max[0], bound->min[1], bound->min[2]},
+                corners[1]);
+  glm_vec3_copy((vec3){bound->min[0], bound->max[1], bound->min[2]},
+                corners[2]);
+  glm_vec3_copy((vec3){bound->max[0], bound->max[1], bound->min[2]},
+                corners[3]);
+
+  glm_vec3_copy((vec3){bound->min[0], bound->min[1], bound->max[2]},
+                corners[4]);
+  glm_vec3_copy((vec3){bound->max[0], bound->min[1], bound->max[2]},
+                corners[5]);
+  glm_vec3_copy((vec3){bound->min[0], bound->max[1], bound->max[2]},
+                corners[6]);
+  glm_vec3_copy((vec3){bound->max[0], bound->max[1], bound->max[2]},
+                corners[7]);
+}
+
+/**
+   Transform the local space bound to world space based on model matrix
+ */
+void mesh_topology_boundbox_worldspace(AABB *bound, mat4 model_matrix) {
+
+  // compute corners
+  vec3 corners[8];
+  mesh_topology_boundbox_corners(bound, corners);
+
+  // transforms corners with model matrix
+  glm_mat4_mulv3(model_matrix, corners[0], 1.0f, bound->min); // init min
+  glm_vec3_copy(bound->min, bound->max);                      // init max
+
+  // compare
+  vec3 transformed;
+  for (int i = 0; i < 8; i++) {
+    glm_mat4_mulv3(model_matrix, corners[i], 1.0f, transformed);
+    glm_vec3_minv(bound->min, transformed, bound->min);
+    glm_vec3_minv(bound->max, transformed, bound->max);
+  }
+
+}
+
+int mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
                                   MeshTopologyBoundbox *bound,
                                   const WGPUDevice *device,
                                   const WGPUQueue *queue) {
@@ -84,7 +150,7 @@ int mesh_topology_boundbox_create(MeshTopologyBase *base,
   bound->index.length = 0;
 
   // compute bounds
-  mesh_topology_boundbox_compute_bound(base, bound);
+  mesh_topology_boundbox_compute_bound(base, model_matrix, bound);
 
   // create cube based on bounds
   mesh_topology_boundbox_cube(bound);
