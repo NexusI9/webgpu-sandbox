@@ -5,6 +5,7 @@
 #include "core.h"
 
 typedef struct {
+  MeshRefList target;
   MeshRefList meshes;
 } GizmoTransformTranslate;
 
