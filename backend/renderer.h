@@ -20,6 +20,7 @@ typedef enum {
   RendererDrawMode_Texture,
   RendererDrawMode_Solid,
   RendererDrawMode_Wireframe,
+  RendererDrawMode_Boundbox,
 } RendererDrawMode;
 
 typedef struct Renderer {

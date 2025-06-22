@@ -73,3 +73,17 @@ void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
   scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
                        render_pass, &scene->layer.unlit);
 }
+
+
+void scene_draw_boundbox(Scene *scene, WGPURenderPassEncoder *render_pass) {
+
+  // update camera
+  camera_draw(scene->active_camera);
+
+  // draw solid meshes first
+  scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
+                       render_pass, &scene->layer.lit);
+  // draw solid meshes then
+  scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
+                       render_pass, &scene->layer.unlit);
+}

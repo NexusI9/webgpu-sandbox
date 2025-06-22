@@ -3,16 +3,22 @@
 #include "../utils/system.h"
 #include <stdint.h>
 
-static void scene_build_mesh_list(Scene *, mesh_get_shader_callback,
-                                  PipelineMultisampleCount, MeshRefList *);
+// topology methods
+static void scene_build_mesh_create_topology_wireframe(Scene *, MeshRefList *);
+static void scene_build_mesh_create_topology_boundbox_bound(Scene *,
+                                                            MeshRefList *);
+static void scene_build_mesh_create_topology_boundbox_full(Scene *,
+                                                           MeshRefList *);
 
+// shader methods
 static void scene_build_mesh_create_dynamic_shader(
     Scene *, mesh_create_dynamic_shader_callback, MeshRefList *);
 
-static void scene_build_mesh_create_topology_wireframe(Scene *, MeshRefList *);
-
 static void scene_build_mesh_bind_views(Scene *, material_bind_views_callback,
                                         uint8_t, MeshRefList *);
+// pipeline methods
+static void scene_build_mesh_list(Scene *, mesh_get_shader_callback,
+                                  PipelineMultisampleCount, MeshRefList *);
 
 /**
    Build meshes Texture shader in each scene list
@@ -21,32 +27,29 @@ static void scene_build_mesh_bind_views(Scene *, material_bind_views_callback,
 void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD TEXTURE SCENE ======\n");
 
-  MeshRefList *unlit = &scene->layer.unlit;
+  MeshRefList *layers[2] = {
+      &scene->layer.lit,
+      &scene->layer.unlit,
+  };
 
-  // process unlit
-  scene_build_mesh_bind_views(scene, material_texture_bind_views,
-                              SHADER_TEXTURE_BINDGROUP_VIEWS, unlit);
+  for (size_t l = 0; l < 2; l++) {
+    MeshRefList *layer = layers[l];
 
-  MeshRefList *lit = &scene->layer.lit;
+    // bind views
+    scene_build_mesh_bind_views(scene, material_texture_bind_views,
+                                SHADER_TEXTURE_BINDGROUP_VIEWS, layer);
 
-  // create wireframe topology
-  scene_build_mesh_create_topology_wireframe(scene, lit);
+    // bind lights (lit only)
+    if (l == 0) {
+      for (int i = 0; i < layer->length; i++) {
+        material_texture_bind_lights(layer->entries[i], &scene->lights,
+                                     SHADER_TEXTURE_BINDGROUP_LIGHTS);
+      }
+    }
 
-  // bind views
-  scene_build_mesh_bind_views(scene, material_texture_bind_views,
-                              SHADER_TEXTURE_BINDGROUP_VIEWS, lit);
-
-  // bind lights
-  for (int i = 0; i < lit->length; i++) {
-    material_texture_bind_lights(lit->entries[i], &scene->lights,
-                                 SHADER_TEXTURE_BINDGROUP_LIGHTS);
+    // build layer
+    scene_build_mesh_list(scene, mesh_shader_texture, sample, layer);
   }
-
-  // draw solid meshes first
-  scene_build_mesh_list(scene, mesh_shader_texture, sample, lit);
-
-  // draw transparent meshes then
-  scene_build_mesh_list(scene, mesh_shader_texture, sample, unlit);
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
@@ -58,37 +61,24 @@ void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
 void scene_build_solid(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD SOLID SCENE ======\n");
 
-  /*
-    LIT MESHES
-   */
-  MeshRefList *lit = &scene->layer.lit;
-  // create meshes' solid shader
-  scene_build_mesh_create_dynamic_shader(scene, mesh_create_solid_shader,
-                                         lit);
+  MeshRefList *layers[2] = {
+      &scene->layer.lit,
+      &scene->layer.unlit,
+  };
 
-  // bind views
-  scene_build_mesh_bind_views(scene, material_solid_bind_views,
-                              SHADER_SOLID_BINDGROUP_VIEWS, lit);
+  for (size_t l = 0; l < 2; l++) {
+    MeshRefList *layer = layers[l];
+    // create meshes' solid shader
+    scene_build_mesh_create_dynamic_shader(scene, mesh_create_solid_shader,
+                                           layer);
 
-  // build solid meshes first
-  scene_build_mesh_list(scene, mesh_shader_solid, sample, &scene->layer.lit);
+    // bind views
+    scene_build_mesh_bind_views(scene, material_solid_bind_views,
+                                SHADER_SOLID_BINDGROUP_VIEWS, layer);
 
-  /*
-    UNLIT MESHES
-   */
-
-  // bind views
-  MeshRefList *unlit = &scene->layer.unlit;
-  // create meshes' solid shader
-  scene_build_mesh_create_dynamic_shader(scene, mesh_create_solid_shader,
-                                         unlit);
-
-  // bind views
-  scene_build_mesh_bind_views(scene, material_solid_bind_views,
-                              SHADER_SOLID_BINDGROUP_VIEWS, unlit);
-
-  // build transparent meshes then
-  scene_build_mesh_list(scene, mesh_shader_solid, sample, unlit);
+    // build solid meshes first
+    scene_build_mesh_list(scene, mesh_shader_solid, sample, layer);
+  }
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
@@ -100,36 +90,55 @@ void scene_build_solid(Scene *scene, PipelineMultisampleCount sample) {
 void scene_build_wireframe(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD WIREFRAME SCENE ======\n");
 
-  MeshRefList *lit = &scene->layer.lit;
+  MeshRefList *layers[2] = {
+      &scene->layer.lit,
+      &scene->layer.unlit,
+  };
 
-  // create wireframe topology
-  scene_build_mesh_create_topology_wireframe(scene, lit);
+  for (size_t l = 0; l < 2; l++) {
+    MeshRefList *layer = layers[l];
+    // create wireframe topology
+    scene_build_mesh_create_topology_wireframe(scene, layer);
 
-  // create meshes' wireframe shader
-  scene_build_mesh_create_dynamic_shader(scene, mesh_create_wireframe_shader,
-                                         lit);
+    // create meshes' wireframe shader
+    scene_build_mesh_create_dynamic_shader(scene, mesh_create_wireframe_shader,
+                                           layer);
 
-  // bind views
-  scene_build_mesh_bind_views(scene, material_wireframe_bind_views,
-                              SHADER_WIREFRAME_BINDGROUP_VIEWS, lit);
+    // bind views
+    scene_build_mesh_bind_views(scene, material_wireframe_bind_views,
+                                SHADER_WIREFRAME_BINDGROUP_VIEWS, layer);
 
-  // build "solid" meshes first
-  scene_build_mesh_list(scene, mesh_shader_wireframe, sample,
-                        &scene->layer.lit);
+    // build "solid" meshes first
+    scene_build_mesh_list(scene, mesh_shader_wireframe, sample, layer);
+  }
 
-  MeshRefList *unlit = &scene->layer.unlit;
+  VERBOSE_PRINT("=======       DONE       ======\n");
+}
 
-  // create wireframe topology
-  scene_build_mesh_create_topology_wireframe(scene, unlit);
+/**
+   Build meshes Boundbox shader in each scene list
+   Establish pipeline from previously set bind groups
+ */
+void scene_build_boundbox(Scene *scene, PipelineMultisampleCount sample) {
+  VERBOSE_PRINT("======= BUILD WIREFRAME SCENE ======\n");
 
-  scene_build_mesh_create_dynamic_shader(scene, mesh_create_wireframe_shader,
-                                         unlit);
-  // bine views
-  scene_build_mesh_bind_views(scene, material_wireframe_bind_views,
-                              SHADER_WIREFRAME_BINDGROUP_VIEWS, unlit);
+  MeshRefList *layers[2] = {
+      &scene->layer.lit,
+      &scene->layer.unlit,
+  };
 
-  // draw transparent meshes then
-  scene_build_mesh_list(scene, mesh_shader_wireframe, sample, unlit);
+  for (size_t l = 0; l < 2; l++) {
+    MeshRefList *layer = layers[l];
+    // create full boundbox topology
+    scene_build_mesh_create_topology_boundbox_full(scene, layer);
+
+    // bind views
+    scene_build_mesh_bind_views(scene, material_wireframe_bind_views,
+                                SHADER_WIREFRAME_BINDGROUP_VIEWS, layer);
+
+    // build "solid" meshes first
+    scene_build_mesh_list(scene, mesh_shader_wireframe, sample, layer);
+  }
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
@@ -142,10 +151,16 @@ void scene_build_shadow(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD SHADOW SCENE ======\n");
 
   // (shadow is bind process already during the renderer shadow pass)
-  // draw solid meshes first
-  scene_build_mesh_list(scene, mesh_shader_shadow, sample, &scene->layer.lit);
-  // draw transparent meshes then
-  scene_build_mesh_list(scene, mesh_shader_shadow, sample, &scene->layer.unlit);
+
+  MeshRefList *layers[2] = {
+      &scene->layer.lit,
+      &scene->layer.unlit,
+  };
+
+  for (size_t l = 0; l < 2; l++) {
+    MeshRefList *layer = layers[l];
+    scene_build_mesh_list(scene, mesh_shader_shadow, sample, layer);
+  }
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
@@ -159,10 +174,6 @@ void scene_build_fixed(Scene *scene, PipelineMultisampleCount sample) {
 
   MeshRefList *fixed = &scene->layer.fixed;
 
-  // create wireframe topology
-  // scene_build_mesh_create_topology(scene, mesh_topology_wireframe_create,
-  //                                mesh_topology_wireframe, fixed);
-
   // bind views
   scene_build_mesh_bind_views(scene, material_override_bind_views,
                               SHADER_FIXED_BINDGROUP_VIEWS, fixed);
@@ -173,6 +184,17 @@ void scene_build_fixed(Scene *scene, PipelineMultisampleCount sample) {
 
   VERBOSE_PRINT("=======       DONE       ======\n");
 }
+
+
+/**
+    ▗▖ ▗▖▗▄▄▄▖▗▄▄▄▖▗▖    ▗▄▄▖
+    ▐▌ ▐▌  █    █  ▐▌   ▐▌   
+    ▐▌ ▐▌  █    █  ▐▌    ▝▀▚▖
+    ▝▚▄▞▘  █  ▗▄█▄▖▐▙▄▄▖▗▄▄▞▘
+               
+ */
+
+
 
 void scene_build_mesh_list(Scene *scene, mesh_get_shader_callback target_shader,
                            PipelineMultisampleCount sample,
@@ -218,6 +240,32 @@ void scene_build_mesh_create_topology_wireframe(Scene *scene,
 
     mesh_topology_wireframe_create(&src_topo, dest_topo, mesh->device,
                                    mesh->queue);
+  }
+}
+
+/**
+   Create whole meshes topology (bound + cube wireframe)
+ */
+void scene_build_mesh_create_topology_boundbox_full(Scene *scene,
+                                                    MeshRefList *mesh_list) {
+  for (int i = 0; i < mesh_list->length; i++) {
+    Mesh *mesh = mesh_list->entries[i];
+    MeshTopologyBoundbox *dest_topo = &mesh->topology.boundbox;
+    mesh_topology_boundbox_create(&mesh->topology.base, dest_topo, mesh->device,
+                                  mesh->queue);
+  }
+}
+
+/**
+   Compute meshes boundbox min and max, doesn't create the whole cube
+   topology.
+ */
+void scene_build_mesh_create_topology_boundbox_bound(Scene *scene,
+                                                     MeshRefList *mesh_list) {
+  for (int i = 0; i < mesh_list->length; i++) {
+    Mesh *mesh = mesh_list->entries[i];
+    MeshTopologyBoundbox *dest_topo = &mesh->topology.boundbox;
+    mesh_topology_boundbox_compute_bound(&mesh->topology.base, dest_topo);
   }
 }
 

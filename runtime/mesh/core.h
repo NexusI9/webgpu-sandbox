@@ -6,6 +6,7 @@
 #include "../primitive/primitive.h"
 #include "../shader/shader.h"
 #include "./topology/topology.h"
+#include "topology/boundbox.h"
 #include "topology/core.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
@@ -60,6 +61,7 @@ typedef struct Mesh {
   struct {
     MeshTopologyBase base;
     MeshTopologyWireframe wireframe;
+    MeshTopologyBoundbox boundbox;
     MeshTopology override;
   } topology;
 
@@ -71,7 +73,7 @@ typedef struct Mesh {
     Shader wireframe;
     Shader *override;
   } shader;
-    
+
   // hierarchy
   struct Mesh *parent;
   MeshRefList children;
@@ -103,11 +105,12 @@ Mesh *mesh_get_child_by_id(Mesh *, size_t);
 
 typedef MeshTopology (*mesh_get_topology_callback)(Mesh *);
 typedef int (*mesh_topology_create_callback)(MeshTopology *, MeshTopology *,
-                                              const WGPUDevice *,
-                                              const WGPUQueue *);
+                                             const WGPUDevice *,
+                                             const WGPUQueue *);
 
 MeshTopology mesh_topology_base(Mesh *);
 MeshTopology mesh_topology_wireframe(Mesh *);
+MeshTopology mesh_topology_boundbox(Mesh *);
 MeshTopology mesh_topology_override(Mesh *); // for fixed mesh only
 void mesh_topology_set_override(Mesh *, const MeshTopology topology);
 

@@ -22,5 +22,6 @@ void scene_build_shadow(Scene *, PipelineMultisampleCount);
 void scene_build_solid(Scene *, PipelineMultisampleCount);
 void scene_build_wireframe(Scene *, PipelineMultisampleCount);
 void scene_build_fixed(Scene *, PipelineMultisampleCount);
+void scene_build_boundbox(Scene *, PipelineMultisampleCount);
 
 #endif

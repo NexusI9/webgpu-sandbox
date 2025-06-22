@@ -314,6 +314,10 @@ void renderer_draw(Renderer *renderer, Scene *scene,
     scene_build_texture(scene, sample_count); // build texture
     draw_callback = scene_draw_texture;       // build wireframe callback
     break;
+
+  case RendererDrawMode_Boundbox:
+    scene_build_boundbox(scene, sample_count);
+    break;
   }
 
   /* Define render color attachment callback based on multisample count.

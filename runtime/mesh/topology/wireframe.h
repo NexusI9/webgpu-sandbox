@@ -13,9 +13,7 @@
 typedef struct {
   VertexIndex index;
   VertexAttribute attribute;
-
   MeshTopologyAnchorList anchors;
-
 } MeshTopologyWireframe;
 
 int mesh_topology_wireframe_create(MeshTopology *, MeshTopologyWireframe *,
