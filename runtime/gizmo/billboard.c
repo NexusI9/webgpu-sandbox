@@ -2,6 +2,8 @@
 #include "../primitive/plane.h"
 #include "../runtime/material/material.h"
 #include "../runtime/texture/texture.h"
+#include "webgpu/webgpu.h"
+#include <stdint.h>
 
 /**
    Create a plane mesh with a billboard shader
@@ -16,7 +18,7 @@ void gizmo_create_billboard(Mesh *mesh,
                                   .primitive = plane,
                                   .device = desc->device,
                                   .queue = desc->queue,
-                                  .name = "light",
+                                  .name = "Gizmo Billboard",
                               });
 
   // set mesh position to light position
@@ -76,4 +78,18 @@ void gizmo_create_billboard(Mesh *mesh,
                                        .compare = WGPUCompareFunction_Undefined,
                                    }},
                                });
+
+  const uint32_t size = 0;
+  material_texture_add_uniform(
+      mesh, &(ShaderCreateUniformDescriptor){
+                .group_index = 1,
+                .entry_count = 1,
+                .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
+                .entries = (ShaderBindGroupUniformEntry[]){{
+                    .binding = 2,
+                    .data = (void *)&size,
+                    .size = sizeof(uint32_t),
+                    .offset = 0,
+                }},
+            });
 }

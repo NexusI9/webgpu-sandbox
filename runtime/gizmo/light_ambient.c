@@ -24,7 +24,7 @@ void gizmo_light_ambient_create(GizmoAmbientLight *gizmo, AmbientLight *light,
                                    .device = desc->device,
                                    .queue = desc->queue,
                                    .position = &light->position,
-                                   .scale = &(vec3){0.8f, 0.8f, 0.8f},
+                                   .scale = &GIZMO_BILLBOARD_SCALE,
                                });
 
   // store mesh pointer in gizmo ref list

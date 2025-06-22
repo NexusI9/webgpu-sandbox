@@ -6,7 +6,7 @@
 #include "../viewport/viewport.h"
 #include <webgpu/webgpu.h>
 
-#define GIZMO_LIGHT_SCALE 0.8
+#define GIZMO_BILLBOARD_SCALE ((vec3){0.85f, 0.85f, 0.85f})
 
 typedef struct {
   WGPUDevice *device;

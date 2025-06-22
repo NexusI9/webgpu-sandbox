@@ -1,4 +1,3 @@
-// attribute/uniform decls
 struct VertexIn {
   @location(0) aPos : vec3<f32>,
                       @location(1) aNorm : vec3<f32>,
@@ -35,6 +34,7 @@ struct Camera {
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;
+@group(1) @binding(2) var<uniform> uScale : u32;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
@@ -48,13 +48,32 @@ struct Camera {
   let scale_x = length(vec3<f32>(uMesh.model[0].xyz));
   let scale_y = length(vec3<f32>(uMesh.model[1].xyz));
   let scale_z = length(vec3<f32>(uMesh.model[2].xyz));
+  var scale_factor = 1.0f;
+
+  if (uScale == 0u) {
+
+    let target_pixel = 10.0f;
+    let view_pos = uCamera.view * vec4<f32>(uMesh.position.xyz, 1.0f);
+    let proj_pos = uViewport.projection * view_pos;
+
+    let ndc_position = proj_pos.xyz / proj_pos.w;
+
+    let pixel_size_ndc =
+        2.0f / vec2<f32>(f32(uViewport.width), f32(uViewport.height));
+
+    let ndc_size = pixel_size_ndc * target_pixel;
+
+    // convert ndc -> world space scale
+    scale_factor = view_pos.z * -ndc_size.y;
+  }
 
   let flatToCamera = normalize(vec3<f32>(look.x, 0.0f, look.z));
   let right = normalize(cross(worldUp, flatToCamera));
   let up = cross(look, right);
 
-  let local_position =
-      input.aPos.x * right * scale_x + input.aPos.z * up * scale_z;
+  let local_position = input.aPos.x * right * scale_x * scale_factor +
+                       input.aPos.z * up * scale_z * scale_factor;
+
   let world_position = uMesh.position.xyz + local_position;
 
   output.Position =

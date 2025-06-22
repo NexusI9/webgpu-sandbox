@@ -26,7 +26,7 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
                                    .device = desc->device,
                                    .queue = desc->queue,
                                    .position = &light->position,
-                                   .scale = &(vec3){0.8f, 0.8f, 0.8f},
+                                   .scale = &GIZMO_BILLBOARD_SCALE,
                                });
 
   // store mesh pointer in gizmo ref list
@@ -54,5 +54,4 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
   mesh_scale(sphere, (vec3){light->far, light->far, light->far});
 
   mesh_reference_list_insert(&gizmo->meshes, sphere);
-
 }

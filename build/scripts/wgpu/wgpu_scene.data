@@ -782,8 +782,7 @@ Xâ¼öLVmoƒóà=ŒÉ²QJ¢Q†¶6	ˆ3MH÷-àÙÖtÿ¹½.	2ø>Ã'ûôíİ¤¬BˆéN§¦h÷" ñ+>¡öäÚoĞ
 8xÆü¨…]u†ÔS¢ñ–û¬ÑBÏ'´ä[<öqN?¡Ê.˜^÷ÖŸîFÙD*”œ]Y'îû ¶äñCĞ½
 ‚€„ÔÌ²>êz/ÈŠ=Ñó@ç\	M‚P^â1Ót@4% 	ƒœ¢;àc™ƒ²§T)cºZ~Â¥ €µ^Æ#”¶¶IA•|‰AÍ÷ı•5H˜½ã$’NTN&ä0š\K&It×èˆCÀ*„J vƒk‘6½PåB37Q²d½L²zeu„º%e–Ø6H]ÎAÃuC+øLL3¢hkÒMLÖ)¬qITYB°"ioY«{ÊØH²’0ãù×6)ŞPşdš¼I71(†¼ÓR 5&÷¡Ã´ÁTd“*³HÙœãC¨;ÍÒ¸eÙÈ:)–X
 à±4Í]€Ã>#_·Q	©ù~ÕÒœÍ‘§!…¹EĞ†‚~…®FÑŠMò
-Î‰ éÄÎÙº‚M¹$à‘Í‘ñ„8?‰ÙAõó®¹9‡"Ìó3Åa:ûcéCâ&¡{óÒå¡(Ö– bnç¾Eƒ;Râ[h¥ğÍ±“€!MR!ˆ}öóHŒäÿ¥n•Il¿“" R¸!µ_…DIÀ@—ˆñGšhFp¬¢_†T€Ö7LHƒ¾!šéà§¦gsªHÀĞC%Cjf¾ˆT’€êãiÒJ,ep!£v}Ù’äšï‡T“€]*Êl²˜bÆa*òíK´_´.ò†4­”#D$Dµñ›óeàyä	Dds+º”º¤KcR*Ù ï¡•¿©[çM÷$*– Ã@J~ôo‚` !Ú1ÀøÁëƒiÒêC!äöæ¿ñ2?¸    IEND®B`‚// attribute/uniform decls
-struct VertexIn {
+Î‰ éÄÎÙº‚M¹$à‘Í‘ñ„8?‰ÙAõó®¹9‡"Ìó3Åa:ûcéCâ&¡{óÒå¡(Ö– bnç¾Eƒ;Râ[h¥ğÍ±“€!MR!ˆ}öóHŒäÿ¥n•Il¿“" R¸!µ_…DIÀ@—ˆñGšhFp¬¢_†T€Ö7LHƒ¾!šéà§¦gsªHÀĞC%Cjf¾ˆT’€êãiÒJ,ep!£v}Ù’äšï‡T“€]*Êl²˜bÆa*òíK´_´.ò†4­”#D$Dµñ›óeàyä	Dds+º”º¤KcR*Ù ï¡•¿©[çM÷$*– Ã@J~ôo‚` !Ú1ÀøÁëƒiÒêC!äöæ¿ñ2?¸    IEND®B`‚struct VertexIn {
   @location(0) aPos : vec3<f32>,
                       @location(1) aNorm : vec3<f32>,
                                            @location(2) aCol : vec3<f32>,
@@ -819,6 +818,7 @@ struct Camera {
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;
+@group(1) @binding(2) var<uniform> uScale : u32;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
@@ -832,13 +832,32 @@ struct Camera {
   let scale_x = length(vec3<f32>(uMesh.model[0].xyz));
   let scale_y = length(vec3<f32>(uMesh.model[1].xyz));
   let scale_z = length(vec3<f32>(uMesh.model[2].xyz));
+  var scale_factor = 1.0f;
+
+  if (uScale == 0u) {
+
+    let target_pixel = 10.0f;
+    let view_pos = uCamera.view * vec4<f32>(uMesh.position.xyz, 1.0f);
+    let proj_pos = uViewport.projection * view_pos;
+
+    let ndc_position = proj_pos.xyz / proj_pos.w;
+
+    let pixel_size_ndc =
+        2.0f / vec2<f32>(f32(uViewport.width), f32(uViewport.height));
+
+    let ndc_size = pixel_size_ndc * target_pixel;
+
+    // convert ndc -> world space scale
+    scale_factor = view_pos.z * -ndc_size.y;
+  }
 
   let flatToCamera = normalize(vec3<f32>(look.x, 0.0f, look.z));
   let right = normalize(cross(worldUp, flatToCamera));
   let up = cross(look, right);
 
-  let local_position =
-      input.aPos.x * right * scale_x + input.aPos.z * up * scale_z;
+  let local_position = input.aPos.x * right * scale_x * scale_factor +
+                       input.aPos.z * up * scale_z * scale_factor;
+
   let world_position = uMesh.position.xyz + local_position;
 
   output.Position =

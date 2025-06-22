@@ -26,7 +26,7 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
                                    .device = desc->device,
                                    .queue = desc->queue,
                                    .position = &camera->position,
-                                   .scale = &(vec3){0.8f, 0.8f, 0.8f},
+                                   .scale = &GIZMO_BILLBOARD_SCALE,
                                });
 
   // store mesh pointer in gizmo mesh ref list
