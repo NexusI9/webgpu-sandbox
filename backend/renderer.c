@@ -10,6 +10,7 @@ static WGPUSwapChain renderer_create_swapchain(const Renderer *);
 static void renderer_create_texture_view(const Renderer *, WGPUTextureView *);
 static void renderer_create_multisampling_view(Renderer *);
 static void renderer_render(void *);
+static double renderer_dpi(double);
 
 static WGPURenderPassColorAttachment
 renderer_color_attachment_multisample(Renderer *, WGPUTextureView);
@@ -54,6 +55,7 @@ void renderer_create(Renderer *renderer, const RendererCreateDescriptor *rd) {
   renderer->context.name = rd->name;
   renderer->clock = rd->clock;
   renderer->background = rd->background;
+  renderer->context.dpi = renderer_dpi(rd->dpi);
 
   // set wgpu data
   renderer->wgpu.instance = wgpuCreateInstance(NULL);
@@ -77,13 +79,13 @@ int renderer_resize(Renderer *renderer, int event_type,
 
   // retrieve canvas dimension
   emscripten_get_element_css_size(renderer->context.name, &w, &h);
-  renderer->context.width = (int)w;
-  renderer->context.height = (int)h;
+
+  // define render resolution
+  renderer->context.width = (int)w * renderer->context.dpi;
+  renderer->context.height = (int)h * renderer->context.dpi;
 
   // set canvas size
-  emscripten_set_element_css_size(renderer->context.name,
-                                  renderer->context.width,
-                                  renderer->context.height);
+  emscripten_set_element_css_size(renderer->context.name, w, h);
 
   // reset swap chain on resize
   if (renderer->wgpu.swapchain) {
@@ -94,6 +96,15 @@ int renderer_resize(Renderer *renderer, int event_type,
   renderer->wgpu.swapchain = renderer_create_swapchain(renderer);
 
   return 1;
+}
+
+static double renderer_dpi(double value) {
+
+  // request dpi
+  if (value == RENDERER_DPI_AUTO)
+    return emscripten_get_device_pixel_ratio();
+
+  return value;
 }
 
 void renderer_init(Renderer *renderer) {

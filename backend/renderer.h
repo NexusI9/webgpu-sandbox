@@ -6,11 +6,14 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
+#define RENDERER_DPI_AUTO 0
+
 typedef struct {
   const char *name;
   cclock *clock;
   PipelineMultisampleCount multisampling_count;
   WGPUColor background;
+  double dpi;
 } RendererCreateDescriptor;
 
 typedef enum {
@@ -28,7 +31,7 @@ typedef struct Renderer {
     const char *name;
     int width;
     int height;
-    int dpi;
+    double dpi;
   } context;
 
   struct {

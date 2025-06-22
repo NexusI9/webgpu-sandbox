@@ -107,6 +107,21 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
                                    MeshTopologyWireframe *dest_topo,
                                    const WGPUDevice *device,
                                    const WGPUQueue *queue) {
+
+  // reset existing wireframe buffer if exists
+  // DELETEME:
+  /*WGPUBuffer vertex_buffer = dest_topo->attribute.buffer;
+  WGPUBuffer index_buffer = dest_topo->index.buffer;
+  if (vertex_buffer) {
+    wgpuBufferRelease(vertex_buffer);
+    vertex_buffer = NULL;
+  }
+
+  if (index_buffer) {
+    wgpuBufferRelease(index_buffer);
+    index_buffer = NULL;
+  }*/
+
   EdgeHashSet edges;
   edge_hash_set_create(&edges, 40);
 

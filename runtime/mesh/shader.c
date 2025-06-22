@@ -93,23 +93,7 @@ void mesh_create_shadow_shader(Mesh *mesh) {
 void mesh_create_wireframe_shader(Mesh *mesh) {
 
   Shader *wireframe_shader = mesh_shader_wireframe(mesh);
-  MeshTopologyWireframe *wireframe_vertex = &mesh->topology.wireframe;
-  WGPUBuffer vertex_buffer = wireframe_vertex->attribute.buffer;
-  WGPUBuffer index_buffer = wireframe_vertex->index.buffer;
 
-  // reset existing wireframe buffer if exists
-  /*DELETEME:
-    if (vertex_buffer) {
-    wgpuBufferRelease(vertex_buffer);
-    vertex_buffer = NULL;
-  }
-
-  if (index_buffer) {
-    wgpuBufferRelease(index_buffer);
-    index_buffer = NULL;
-  }*/
-
-  // TODO: replace with opaque pointer implementation (shader == null)
   if (wireframe_shader->name)
     shader_destroy(wireframe_shader);
 
@@ -126,9 +110,6 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   // update pipeline for double-sided
   material_texture_double_sided(mesh);
 
-  // freeing wireframe data entries after GPU upload
-  wireframe_vertex->attribute.entries = 0;
-  wireframe_vertex->index.entries = 0;
 }
 
 /**

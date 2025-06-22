@@ -167,7 +167,9 @@ int main(int argc, const char *argv[]) {
                       .name = "canvas",
                       .clock = &main_clock,
                       .multisampling_count = PipelineMultisampleCount_4x,
-                      .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f}});
+                      .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f},
+                      .dpi = 1.0,
+                  });
 
   renderer_init(&main_renderer);
 
@@ -209,7 +211,7 @@ int main(int argc, const char *argv[]) {
   add_grid();
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Wireframe);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Solid);
 
   // Quit
   renderer_close(&main_renderer);

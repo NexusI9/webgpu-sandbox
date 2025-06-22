@@ -1933,10 +1933,6 @@ struct Material {
 };
 
 // Lights
-struct AmbientLight {
-  color : vec3<f32>, intensity : f32,
-};
-
 struct SunLight {
   position : vec3<f32>,
              intensity : f32,
@@ -1944,13 +1940,6 @@ struct SunLight {
                                  _padding : f32,
                                             view : mat4x4<f32>,
 };
-
-// material pbr
-// 1. texture : The actual image data stored in VRAM (pixel colors, normal maps,
-// etc.)
-// 2. sampler : Defines how the GPU reads the texture (filtering, wrapping,
-// mipmaps, etc.)
-// TODO: combine textures in a texture_2d_array + only use 1 sampler ?
 
 // camera viewport
 @group(0) @binding(0) var<uniform> uViewport : Viewport;
@@ -1977,57 +1966,10 @@ struct SunLight {
   return output;
 }
 
-// Fresnel usin Schlick Approximation
-fn f_schlick(F0 : vec3<f32>, HdotV : f32) -> vec3<f32> {
-  // Metallic surface : F0 = albedo
-  // Dielectric surface : F0 = vec3(0.4) (plastic/ wood...)
-  return F0 + (1.0f - F0) * pow(1.0f - HdotV, 5.0);
-}
-
-fn distribution_GGX(NdotH : f32, roughness : f32) -> f32 {
-  var a = roughness * roughness;
-  var a2 = a * a;
-  var NdotH2 = NdotH * NdotH;
-
-  var num = a2;
-  var denom = (NdotH2 * (a2 - 1.0f) + 1.0f);
-  denom = PI * denom * denom;
-  return num / denom;
-}
-
-fn geo_schlick_ggx(NdotV : f32, roughness : f32) -> f32 {
-  var r = (roughness + 1.0f);
-  var k = (r * r) / 8.0f;
-  return NdotV / (NdotV * (1.0f - k) + k);
-}
-
-fn geo_smith(NdotV : f32, NdotL : f32, roughness : f32) -> f32 {
-  return geo_schlick_ggx(NdotV, roughness) * geo_schlick_ggx(NdotL, roughness);
-}
-
-fn dot_max(A : vec3<f32>, B : vec3<f32>) -> f32 { return max(dot(A, B), 0.0f); }
-
-fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
-                   normal : vec4<f32>, occlusion : vec4<f32>,
-                   emissive : vec4<f32>) -> Material {
-
-  var material : Material;
-  material.albedo = diffuse.rgb;
-  material.metallic = metallic.g;
-  material.roughness = metallic.g;                     // roughness in G channel
-  material.normal = normalize(normal.rgb * 2.0 - 1.0); // convert to [-1,+1]
-  material.occlusion = occlusion.r;
-  material.emissive = emissive.rgb;
-
-  return material;
-}
-
 fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
                        camera_position : vec3<f32>, light_position : vec3<f32>,
                        light_color : vec3<f32>, light_intensity : f32)
     -> vec3<f32> {
-
-  // compute light base on Cook-Torrance BRDF Model
 
   // 1. Normalize key vectors
   var V : vec3<f32> =
@@ -2044,7 +1986,6 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
   return vec3<f32>(L);
 }
 
-
 // fragment shader
 @fragment fn fs_main(@location(0) vNormal : vec3<f32>,
                      @location(1) vCol : vec3<f32>,
@@ -2054,13 +1995,9 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
   let coord = vec2<i32>(vUv);
   var Lo : vec3<f32> = vec3<f32>(0.0f);
 
-  var ambient_light : AmbientLight;
-  ambient_light.color = vec3<f32>(1.0f, 1.0f, 1.0f);
-  ambient_light.intensity = 0.3f;
-
   var sun_light : SunLight;
   sun_light.position = vec3<f32>(20.0f, 20.0f, 20.0f);
-  sun_light.intensity = 1.0f;
+  sun_light.intensity = 0.2f;
   sun_light.color = vec3<f32>(1.0f, 1.0f, 1.0f);
 
   // calculate sun lights
@@ -2069,7 +2006,9 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
                             sun_light.intensity);
 
   // calulate ambient lights
-  Lo += ambient_light.intensity;
+  let shadow = 0.4;
+  let light = 0.7;
+  Lo = mix(vec3<f32>(shadow), vec3<f32>(light), Lo);
 
   return vec4<f32>(Lo, 1.0f);
 }
