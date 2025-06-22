@@ -204,12 +204,12 @@ int main(int argc, const char *argv[]) {
 
   mesh_reference_list_transfert(&translate.meshes, &main_scene.layer.fixed);
 
-  // example_gltf(&main_scene, &main_renderer);
+  example_gltf(&main_scene, &main_renderer);
 
   add_grid();
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Wireframe);
 
   // Quit
   renderer_close(&main_renderer);

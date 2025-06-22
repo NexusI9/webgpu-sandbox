@@ -36,6 +36,7 @@
 #define SHADER_PATH_BILLBOARD "./runtime/assets/shader/shader.billboard.wgsl"
 #define SHADER_PATH_LINE "./runtime/assets/shader/shader.line.wgsl"
 #define SHADER_PATH_SOLID "./runtime/assets/shader/shader.solid.wgsl"
+#define SHADER_PATH_FLAT "./runtime/assets/shader/shader.flat.wgsl"
 
 // descriptors
 typedef struct {

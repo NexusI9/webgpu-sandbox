@@ -30,7 +30,7 @@ void gizmo_transform_translate_create(GizmoTransformTranslate *gizmo,
                                  });
     // add shader
     mesh_set_shader(arrow, &(ShaderCreateDescriptor){
-                               .path = SHADER_PATH_SOLID,
+                               .path = SHADER_PATH_FLAT,
                                .device = desc->device,
                                .queue = desc->queue,
                                .label = "Gizmo transform translate shader",

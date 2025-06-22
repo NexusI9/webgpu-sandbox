@@ -275,7 +275,7 @@ void renderer_draw(Renderer *renderer, Scene *scene,
   PipelineMultisampleCount sample_count = renderer->multisampling.count;
 
   // Fixed (static) rendering
-  scene_build_fixed(scene, sample_count);
+  scene_build_fixed(scene, sample_count); // build fixed (by default)
 
   // Dynamic rendering
   scene_draw_callback draw_callback;
@@ -283,13 +283,13 @@ void renderer_draw(Renderer *renderer, Scene *scene,
   switch (draw_mode) {
 
   case RendererDrawMode_Solid:
-    scene_build_solid(scene, sample_count);
-    draw_callback = scene_draw_solid;
+    scene_build_solid(scene, sample_count); // build solid
+    draw_callback = scene_draw_solid;       // draw solid callback
     break;
 
   case RendererDrawMode_Wireframe:
-    scene_build_wireframe(scene, sample_count);
-    draw_callback = scene_draw_wireframe;
+    scene_build_wireframe(scene, sample_count); // build wireframe
+    draw_callback = scene_draw_wireframe;       // draw wireframe callback
     break;
 
   case RendererDrawMode_Texture:
@@ -300,8 +300,8 @@ void renderer_draw(Renderer *renderer, Scene *scene,
     // Setup drawing pass may need to move it else where
     renderer_compute_shadow(renderer, scene);
 
-    scene_build_texture(scene, sample_count);
-    draw_callback = scene_draw_texture;
+    scene_build_texture(scene, sample_count); // build texture
+    draw_callback = scene_draw_texture;       // build wireframe callback
     break;
   }
 

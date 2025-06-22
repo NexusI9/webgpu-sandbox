@@ -25,7 +25,7 @@ Shader *mesh_shader_wireframe(Mesh *mesh) { return &mesh->shader.wireframe; }
 /**
    Return mesh solid shader
  */
-Shader *mesh_shader_solid(Mesh *mesh) { return &mesh->shader.texture; }
+Shader *mesh_shader_solid(Mesh *mesh) { return &mesh->shader.solid; }
 
 /**
    Return mesh override shader
@@ -114,7 +114,7 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
     shader_destroy(wireframe_shader);
 
   // create shader
-  shader_create(mesh_shader_wireframe(mesh),
+  shader_create(wireframe_shader,
                 &(ShaderCreateDescriptor){
                     .path = "./runtime/assets/shader/shader.line.wgsl",
                     .label = "Mesh wireframe shader",
@@ -131,6 +131,30 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
   wireframe_vertex->index.entries = 0;
 }
 
+/**
+   Initialize solid shader
+ */
+void mesh_create_solid_shader(Mesh *mesh) {}
+
+/**
+   Override shader allow to direct toward another shader for any rendering type.
+   This can become handy for gizmo if they need to appear as "wireframe" instead
+   of solid. Shader Override often comes hand in hand with Topology Override.
+   Override basically means:
+   "I want you to use this topology and shader no matter the rendering mode"
+   (wireframe/ solid/ textured..)
+ */
 void mesh_shader_set_override(Mesh *mesh, Shader *shader) {
   mesh->shader.override = shader;
+
+  Shader *solid_shader = mesh_shader_solid(mesh);
+
+  // create shader
+  shader_create(solid_shader, &(ShaderCreateDescriptor){
+                                  .path = SHADER_PATH_SOLID,
+                                  .label = "Mesh solid shader",
+                                  .device = mesh->device,
+                                  .queue = mesh->queue,
+                                  .name = "Mesh solid shader",
+                              });
 }
