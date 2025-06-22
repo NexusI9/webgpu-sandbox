@@ -211,7 +211,7 @@ int main(int argc, const char *argv[]) {
   add_grid();
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Solid);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Wireframe);
 
   // Quit
   renderer_close(&main_renderer);
