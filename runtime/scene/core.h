@@ -115,8 +115,9 @@ typedef struct {
   CameraList cameras; // camera list
 
   // REFERENCES LISTS (PTR)
-  SceneLayerList layer; // meshes render layers
-  GizmoList gizmo;      // gizmo
+  SceneLayerList layer;  // meshes render layers
+  GizmoList gizmo;       // gizmo
+  MeshRefList selection; // selected mesh
 
 } Scene;
 
