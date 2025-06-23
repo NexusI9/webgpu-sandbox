@@ -16,7 +16,7 @@ typedef struct {
 typedef struct {
   VertexIndex index;
   VertexAttribute attribute;
-  MeshTopologyAnchorList anchors;
+  vec3 corners[8];
   AABB bound;
 } MeshTopologyBoundbox;
 

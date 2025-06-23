@@ -338,7 +338,6 @@ MeshTopology mesh_topology_boundbox(Mesh *mesh) {
   return mesh_topology_boundbox_vertex(&mesh->topology.boundbox);
 }
 
-
 /**
    Override topology is primarily used for fixed mesh during the scene build and
    draw phase and will be the targeted topology for whatever render mode

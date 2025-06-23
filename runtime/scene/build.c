@@ -131,7 +131,7 @@ void scene_build_wireframe(Scene *scene, PipelineMultisampleCount sample) {
    Establish pipeline from previously set bind groups
  */
 void scene_build_boundbox(Scene *scene, PipelineMultisampleCount sample) {
-  VERBOSE_PRINT("======= BUILD WIREFRAME SCENE ======\n");
+  VERBOSE_PRINT("======= BUILD BOUNDBOX SCENE ======\n");
 
   MeshRefList *layers[2] = {
       &scene->layer.lit,
@@ -143,6 +143,10 @@ void scene_build_boundbox(Scene *scene, PipelineMultisampleCount sample) {
 
     // create full boundbox topology
     scene_build_mesh_create_topology_boundbox_full(scene, layer);
+
+    // create meshes' wireframe shader
+    scene_build_mesh_create_dynamic_shader(scene, mesh_create_wireframe_shader,
+                                           layer);
 
     // bind views
     scene_build_mesh_bind_views(scene, material_wireframe_bind_views,

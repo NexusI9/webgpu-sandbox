@@ -303,6 +303,11 @@ void renderer_draw(Renderer *renderer, Scene *scene,
     draw_callback = scene_draw_wireframe;       // draw wireframe callback
     break;
 
+  case RendererDrawMode_Boundbox:
+    scene_build_boundbox(scene, sample_count); // build boundbox
+    draw_callback = scene_draw_boundbox;        // build boundbox callback
+    break;
+
   case RendererDrawMode_Texture:
 
     // Bake AO textures for static scenes elements
@@ -313,10 +318,6 @@ void renderer_draw(Renderer *renderer, Scene *scene,
 
     scene_build_texture(scene, sample_count); // build texture
     draw_callback = scene_draw_texture;       // build wireframe callback
-    break;
-
-  case RendererDrawMode_Boundbox:
-    scene_build_boundbox(scene, sample_count);
     break;
   }
 

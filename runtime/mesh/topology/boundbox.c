@@ -1,11 +1,13 @@
 #include "boundbox.h"
+#include "../../geometry/line/line.h"
 #include "../backend/buffer.h"
 #include "../utils/system.h"
 #include "core.h"
+#include "webgpu/webgpu.h"
 
 static void mesh_topology_boundbox_cube(MeshTopologyBoundbox *);
 
-static void mesh_topology_boundbox_worldspace(AABB *, mat4);
+static void mesh_topology_boundbox_worldspace(AABB *, vec3[8], mat4);
 static void mesh_topology_boundbox_corners(AABB *, vec3[8]);
 
 /**
@@ -69,8 +71,12 @@ void mesh_topology_boundbox_compute_bound(MeshTopologyBase *base,
     glm_vec3_maxv(bound->bound.max, current, bound->bound.max);
   }
 
+  // compute corners
+  mesh_topology_boundbox_corners(&bound->bound, bound->corners);
+
   // transform bound to world space
-  mesh_topology_boundbox_worldspace(&bound->bound, model_matrix);
+  mesh_topology_boundbox_worldspace(&bound->bound, bound->corners,
+                                    model_matrix);
 }
 
 /**
@@ -110,11 +116,8 @@ static void mesh_topology_boundbox_corners(AABB *bound, vec3 corners[8]) {
 /**
    Transform the local space bound to world space based on model matrix
  */
-void mesh_topology_boundbox_worldspace(AABB *bound, mat4 model_matrix) {
-
-  // compute corners
-  vec3 corners[8];
-  mesh_topology_boundbox_corners(bound, corners);
+void mesh_topology_boundbox_worldspace(AABB *bound, vec3 corners[8],
+                                       mat4 model_matrix) {
 
   // transforms corners with model matrix
   glm_mat4_mulv3(model_matrix, corners[0], 1.0f, bound->min); // init min
@@ -127,7 +130,6 @@ void mesh_topology_boundbox_worldspace(AABB *bound, mat4 model_matrix) {
     glm_vec3_minv(bound->min, transformed, bound->min);
     glm_vec3_minv(bound->max, transformed, bound->max);
   }
-
 }
 
 int mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
@@ -136,18 +138,24 @@ int mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
                                   const WGPUQueue *queue) {
 
   // allocate vertex + index attribute
-  // 12 edges * 2 vertex (/edges)
+  // 12 edges * 4 vertex (/edges)
   size_t edge_count = 12;
-  size_t attr_len = edge_count * 2 * VERTEX_STRIDE;
-  bound->attribute.entries = calloc(attr_len, sizeof(vattr_t));
-  bound->attribute.capacity = attr_len;
-  bound->attribute.length = 0;
+  size_t attr_len = edge_count * 4 * VERTEX_STRIDE;
+  bound->attribute = (VertexAttribute){
+      .entries = calloc(attr_len, sizeof(vattr_t)),
+      .capacity = attr_len,
+      .length = 0,
+      .buffer = NULL,
+  };
 
   // 12 edges * 6 indices per edges
-  size_t index_len = edge_count * 6;
-  bound->index.entries = calloc(index_len, sizeof(vindex_t));
-  bound->index.capacity = index_len;
-  bound->index.length = 0;
+  size_t index_len = 2 * edge_count * 6;
+  bound->index = (VertexIndex){
+      .entries = calloc(index_len, sizeof(vindex_t)),
+      .capacity = index_len,
+      .length = 0,
+      .buffer = NULL,
+  };
 
   // compute bounds
   mesh_topology_boundbox_compute_bound(base, model_matrix, bound);
@@ -162,7 +170,7 @@ int mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
                     .device = device,
                     .data = (void *)bound->index.entries,
                     .size = bound->index.length * sizeof(vindex_t),
-                    .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
+                    .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
                 });
 
@@ -179,7 +187,31 @@ int mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
   return MESH_TOPOLOGY_BOUNDBOX_SUCCESS;
 }
 
-void mesh_topology_boundbox_cube(MeshTopologyBoundbox *bound) {}
+/**
+   Create a cube edge based on bound corners.
+
+        6---------7
+       /|        /|
+      / |       / |
+     2--+------3  |
+     |  |      |  |
+     |  4------+--5
+     | /       | /
+     0---------1'
+
+ */
+void mesh_topology_boundbox_cube(MeshTopologyBoundbox *bound) {
+
+  vec3 *corners = bound->corners;
+  ivec2 edges[12] = {
+      {0, 1}, {1, 3}, {3, 2}, {2, 0}, {6, 2}, {3, 7},
+      {0, 4}, {1, 5}, {4, 5}, {5, 7}, {7, 6}, {6, 4},
+  };
+
+  for (size_t i = 0; i < 12; i++)
+    line_add_point(bound->corners[edges[i][0]], bound->corners[edges[i][1]],
+                   (vec3){1.0f, 1.0f, 1.0f}, &bound->attribute, &bound->index);
+}
 
 MeshTopology mesh_topology_boundbox_vertex(MeshTopologyBoundbox *bound) {
   return (MeshTopology){

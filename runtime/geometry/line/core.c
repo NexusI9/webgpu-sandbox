@@ -157,7 +157,7 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
 
   if (vertex_attribute->length / VERTEX_STRIDE / LINE_VERTEX_COUNT ==
       LINE_MAX_POINTS - LINE_VERTEX_COUNT - 1) {
-    // perror("Lines reached maximum, cannot add more point\n");
+    VERBOSE_PRINT("Lines reached maximum, cannot add more point\n");
     return;
   }
 
@@ -189,6 +189,7 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
   vertex_index->entries[vertex_index->length + 5] = (vindex_t)vertex_length + 3;
 
   vertex_index->length += 6;
+
 }
 
 void line_update_buffer(Mesh *mesh) {
