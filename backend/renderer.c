@@ -70,6 +70,9 @@ void renderer_create(Renderer *renderer, const RendererCreateDescriptor *rd) {
   renderer->multisampling.view = NULL;
   if (renderer->multisampling.count > 1)
     renderer_create_multisampling_view(renderer);
+
+  // set depth texture view
+  renderer_create_texture_view(renderer, &renderer->depth.view);
 }
 
 int renderer_resize(Renderer *renderer, int event_type,
@@ -222,9 +225,6 @@ void renderer_render(void *desc) {
   WGPUCommandEncoder render_encoder =
       wgpuDeviceCreateCommandEncoder(config->renderer->wgpu.device, NULL);
 
-  WGPUTextureView depth_texture_view;
-  renderer_create_texture_view(config->renderer, &depth_texture_view);
-
   WGPURenderPassColorAttachment color_attachments =
       config->color_attachment_callback(config->renderer, swapchain_view);
 
@@ -232,7 +232,7 @@ void renderer_render(void *desc) {
   // write depth values
   WGPURenderPassDepthStencilAttachment depth_attachments =
       (WGPURenderPassDepthStencilAttachment){
-          .view = depth_texture_view,
+          .view = config->renderer->depth.view,
           .depthClearValue = 1.0f, // far plane
           .depthLoadOp =
               WGPULoadOp_Clear, // Clear depth at start of render pass
@@ -305,7 +305,7 @@ void renderer_draw(Renderer *renderer, Scene *scene,
 
   case RendererDrawMode_Boundbox:
     scene_build_boundbox(scene, sample_count); // build boundbox
-    draw_callback = scene_draw_boundbox;        // build boundbox callback
+    draw_callback = scene_draw_boundbox;       // build boundbox callback
     break;
 
   case RendererDrawMode_Texture:

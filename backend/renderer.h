@@ -48,6 +48,10 @@ typedef struct Renderer {
     WGPUTextureView view;
   } multisampling;
 
+  struct {
+    WGPUTextureView view;
+  } depth;
+
 } Renderer;
 
 typedef WGPURenderPassColorAttachment (*renderer_color_attachment_callback)(

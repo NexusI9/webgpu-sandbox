@@ -26,6 +26,7 @@ void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice *device,
 }
 
 void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
+
   // prepare buffer object
   *buffer = wgpuDeviceCreateBuffer(*bf->device,
                                    &(WGPUBufferDescriptor){
@@ -59,6 +60,7 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
 
 void buffer_create_texture(WGPUTextureView *texture_view,
                            const CreateTextureDescriptor *tx) {
+
 
   // sample + texture (ShaderTexture will be used later in the shader binding
   // process)

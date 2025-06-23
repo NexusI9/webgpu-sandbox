@@ -211,7 +211,7 @@ int main(int argc, const char *argv[]) {
   add_grid();
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Boundbox);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);
 
   // Quit
   renderer_close(&main_renderer);
