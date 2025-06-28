@@ -15,11 +15,13 @@
 // runtime
 #include "runtime/camera/camera.h"
 #include "runtime/camera/core.h"
+#include "runtime/camera/raycast.h"
 #include "runtime/gizmo/core.h"
 #include "runtime/gizmo/transform_translate.h"
 #include "runtime/input/input.h"
 #include "runtime/light/light.h"
 #include "runtime/material/material.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/pipeline/core.h"
@@ -34,7 +36,7 @@ static float rot = 0.0f;
 static Renderer main_renderer;
 static cclock main_clock;
 
-// callback 
+// callback
 static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
@@ -178,6 +180,19 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
+
+  // raycast camera
+  camera_raycast_mouse_hover(
+      main_scene.active_camera,
+      &(CameraRaycastDescriptor){
+          .target = renderer_target(&main_renderer),
+          .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.fixed},
+          .length = 1,
+          .viewport = &main_scene.viewport,
+          .callback = NULL,
+          .data = NULL,
+          .size = 0,
+      });
 
   // add gizmo camera
   GizmoCamera *new_cam = scene_add_camera(&main_scene,

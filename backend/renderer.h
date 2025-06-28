@@ -76,4 +76,6 @@ WGPUDevice *renderer_device(Renderer *);
 WGPUQueue *renderer_queue(Renderer *);
 int renderer_width(Renderer *);
 int renderer_height(Renderer *);
+
+const char* renderer_target(Renderer*);
 #endif

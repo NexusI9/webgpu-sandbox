@@ -361,3 +361,5 @@ WGPUQueue *renderer_queue(Renderer *rd) { return &rd->wgpu.queue; }
 
 int renderer_width(Renderer *rd) { return rd->context.width; }
 int renderer_height(Renderer *rd) { return rd->context.height; }
+
+const char *renderer_target(Renderer *rd) { return rd->context.name; }
