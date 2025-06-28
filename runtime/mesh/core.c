@@ -112,12 +112,11 @@ void mesh_build(Mesh *mesh, Shader *shader) {
    Mesh main draw from default vertex and index buffer
  */
 void mesh_draw(MeshTopology topology, Shader *shader,
-               WGPURenderPassEncoder *render_pass, const Camera *camera,
-               const Viewport *viewport) {
+               WGPURenderPassEncoder *render_pass) {
 
   // draw shader
   // if shader is null, use default shader
-  shader_draw(shader, render_pass, camera, viewport);
+  shader_draw(shader, render_pass);
 
   WGPUBuffer attribute_buffer = topology.attribute->buffer;
   WGPUBuffer index_buffer = topology.index->buffer;

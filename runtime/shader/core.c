@@ -144,8 +144,7 @@ void shader_pipeline_release_layout(Shader *shader) {
 /**
    Update method called as such: scene update => mesh update => shader update
  */
-void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass,
-                 const Camera *camera, const Viewport *viewport) {
+void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
 
   if (shader->pipeline.handle == NULL)
     return perror("Shader pipeline not defined for shader, skip drawing");

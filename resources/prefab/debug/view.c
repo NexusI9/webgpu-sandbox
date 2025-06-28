@@ -3,6 +3,8 @@
 #include "../utils/system.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
+#include "../../../runtime/camera/camera.h"
+#include "../../../runtime/viewport/viewport.h"
 
 static void debug_view_compute_position(DebugView *, vec3);
 

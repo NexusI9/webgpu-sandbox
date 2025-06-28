@@ -1,12 +1,11 @@
 #ifndef _SHADER_CORE_H_
 #define _SHADER_CORE_H_
 
-#include "../camera/camera.h"
 #include "../pipeline/pipeline.h"
-#include "../viewport/viewport.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <cglm/cglm.h>
 
 // commons
 #define SHADER_MAX_BIND_GROUP 4
@@ -148,10 +147,6 @@ typedef struct {
 } ShaderBindGroup;
 
 // Descriptors
-typedef struct {
-  CameraUniform uCamera;
-  ViewportUniform uViewport;
-} ShaderViewProjectionUniform;
 
 typedef struct {
   shader_bindgroup_t group_index;
@@ -228,8 +223,7 @@ void shader_create(Shader *, const ShaderCreateDescriptor *);
 void shader_destroy(Shader *);
 
 // on update
-void shader_draw(Shader *, WGPURenderPassEncoder *, const Camera *,
-                 const Viewport *);
+void shader_draw(Shader *, WGPURenderPassEncoder *);
 void shader_uniform_update(ShaderBindGroup *, const WGPUQueue *);
 
 void shader_module_release(Shader *);

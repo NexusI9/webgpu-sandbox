@@ -6,6 +6,7 @@
 #define CAMERA_ERROR 2
 
 #include "../backend/clock.h"
+#include <emscripten/html5.h>
 
 #include <cglm/cglm.h>
 #include <stddef.h>
@@ -72,5 +73,6 @@ mat4 *camera_view(Camera *);
 void camera_translate(Camera *, vec3);
 void camera_rotate(Camera *, vec3);
 void camera_update_view(Camera *);
+
 
 #endif

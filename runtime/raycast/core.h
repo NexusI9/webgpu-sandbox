@@ -20,8 +20,8 @@ typedef struct {
   float distance;
 } RaycastCreateDescriptor;
 
-void raycast_create(const RaycastCreateDescriptor *);
-void raycast_from_camera(Raycast *, const Camera *);
-void raycast_cast_mesh(Raycast *, MeshRefList *);
+void raycast_camera_cursor(Raycast *, Camera *, Viewport *);
+void raycast_camera_center(Raycast *, Camera *, Viewport *);
+Mesh *raycast_check_mesh_list(Raycast *, const MeshRefList *);
 
 #endif

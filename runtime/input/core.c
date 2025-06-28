@@ -57,6 +57,11 @@ void input_set_key(unsigned int key, bool state) { g_input.keys[key] = state; }
 
 void input_disable_all_keys() { memset(g_input.keys, 0, sizeof(g_input.keys)); }
 
+/**
+   Add events listeners.
+   Update input global attributes. Useful to retrieves
+   those attributes during the draw.
+ */
 void input_listen(const char *target) {
 
   // key down event listener

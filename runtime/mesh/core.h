@@ -1,7 +1,6 @@
 #ifndef _MESH_CORE_H_
 #define _MESH_CORE_H_
 
-#include "../camera/camera.h"
 #include "../geometry/vertex/vertex.h"
 #include "../primitive/primitive.h"
 #include "../shader/shader.h"
@@ -87,8 +86,7 @@ void mesh_set_parent(Mesh *, Mesh *);
 void mesh_set_name(Mesh *, const char *);
 void mesh_set_shader(Mesh *, const ShaderCreateDescriptor *);
 
-void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *, const Camera *,
-               const Viewport *);
+void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *);
 
 void mesh_build(Mesh *, Shader *);
 

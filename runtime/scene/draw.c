@@ -14,7 +14,7 @@ void scene_draw_mesh_list(Scene *scene,
   for (int i = 0; i < mesh_list->length; i++) {
     Mesh *current_mesh = mesh_list->entries[i];
     mesh_draw(target_topology(current_mesh), target_shader(current_mesh),
-              render_pass, scene->active_camera, &scene->viewport);
+              render_pass);
   }
 }
 

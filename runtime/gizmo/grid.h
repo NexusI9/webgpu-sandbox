@@ -2,6 +2,8 @@
 #define _GIZMO_GRID_H_
 
 #include "../mesh/mesh.h"
+#include "../camera/camera.h"
+#include "../viewport/viewport.h"
 #include <webgpu/webgpu.h>
 
 typedef struct {

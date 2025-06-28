@@ -34,7 +34,7 @@ static float rot = 0.0f;
 static Renderer main_renderer;
 static cclock main_clock;
 
-// callback
+// callback 
 static void init_pipeline();
 static void setup_triangle();
 static void init_scene();
