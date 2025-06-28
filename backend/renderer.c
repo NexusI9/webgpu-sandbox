@@ -342,7 +342,7 @@ void renderer_draw(Renderer *renderer, Scene *scene,
 void renderer_bake_ao(Renderer *renderer, Scene *scene) {
 
   ao_bake_init(&(AOBakeInitDescriptor){
-      .mesh_list = &scene->layer.lit,
+      .mesh_list = &scene->pipelines.lit,
       .scene = scene,
       .queue = &renderer->wgpu.queue,
       .device = &renderer->wgpu.device,

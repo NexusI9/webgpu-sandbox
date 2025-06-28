@@ -18,11 +18,11 @@ void scene_create(Scene *scene, cclock *clock, Viewport viewport) {
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
   // init mesh layers
-  mesh_reference_list_create(&scene->layer.lit,
+  mesh_reference_list_create(&scene->pipelines.lit,
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  mesh_reference_list_create(&scene->layer.unlit,
+  mesh_reference_list_create(&scene->pipelines.unlit,
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  mesh_reference_list_create(&scene->layer.fixed,
+  mesh_reference_list_create(&scene->pipelines.fixed,
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init gizmo list
@@ -60,17 +60,17 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
  */
 Mesh *scene_new_mesh_lit(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
-  return mesh_reference_list_insert(&scene->layer.lit, new_mesh);
+  return mesh_reference_list_insert(&scene->pipelines.lit, new_mesh);
 }
 
 Mesh *scene_new_mesh_unlit(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
-  return mesh_reference_list_insert(&scene->layer.unlit, new_mesh);
+  return mesh_reference_list_insert(&scene->pipelines.unlit, new_mesh);
 }
 
 Mesh *scene_new_mesh_fixed(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
-  return mesh_reference_list_insert(&scene->layer.fixed, new_mesh);
+  return mesh_reference_list_insert(&scene->pipelines.fixed, new_mesh);
 }
 
 Mesh *scene_new_mesh(Scene *scene) {

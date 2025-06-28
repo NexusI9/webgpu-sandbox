@@ -152,9 +152,9 @@ void shadow_pass_init(Scene *scene, WGPUDevice device, WGPUQueue queue) {
   });
 
   // Transfer depth texture array to each meshes default shader
-  for (size_t m = 0; m < scene->layer.lit.length; m++) {
+  for (size_t m = 0; m < scene->pipelines.lit.length; m++) {
 
-    Mesh *current_mesh = scene->layer.lit.entries[m];
+    Mesh *current_mesh = scene->pipelines.lit.entries[m];
 
     // bind point & spot light texture view + sampler to Textue Shader
 #ifdef RENDER_SHADOW_AS_COLOR
@@ -356,7 +356,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
   WGPUCommandEncoder shadow_encoder =
       wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
-  MeshRefList *target_mesh_list = &desc->scene->layer.lit;
+  MeshRefList *target_mesh_list = &desc->scene->pipelines.lit;
 
   const size_t point_length = desc->scene->lights.point.length;
   const size_t spot_length = desc->scene->lights.spot.length;
@@ -527,7 +527,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
     });
 
     // 3. Clear meshes bind group
-    for (int m = 0; m < desc->scene->layer.lit.length; m++) {
+    for (int m = 0; m < desc->scene->pipelines.lit.length; m++) {
       Mesh *current_mesh = target_mesh_list->entries[m];
       material_shadow_clear_bindings(current_mesh);
     }

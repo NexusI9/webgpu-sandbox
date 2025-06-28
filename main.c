@@ -204,7 +204,7 @@ int main(int argc, const char *argv[]) {
                       .list = &main_scene.meshes,
                   });
 
-  mesh_reference_list_transfert(&translate.meshes, &main_scene.layer.fixed);
+  mesh_reference_list_transfert(&translate.meshes, &main_scene.pipelines.fixed);
 
   example_gltf(&main_scene, &main_renderer);
 

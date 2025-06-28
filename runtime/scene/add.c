@@ -182,4 +182,4 @@ GizmoCamera *scene_add_camera(Scene *scene, const CameraCreateDescriptor *desc,
 /**
    Return pointer to mesh gizmo layer ("Fixed" layer)
  */
-MeshRefList *scene_layer_gizmo(Scene *scene) { return &scene->layer.fixed; }
+MeshRefList *scene_layer_gizmo(Scene *scene) { return &scene->pipelines.fixed; }

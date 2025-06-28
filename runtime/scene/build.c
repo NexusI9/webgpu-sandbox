@@ -28,8 +28,8 @@ void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD TEXTURE SCENE ======\n");
 
   MeshRefList *layers[2] = {
-      &scene->layer.lit,
-      &scene->layer.unlit,
+      &scene->pipelines.lit,
+      &scene->pipelines.unlit,
   };
 
   for (size_t l = 0; l < 2; l++) {
@@ -65,8 +65,8 @@ void scene_build_solid(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD SOLID SCENE ======\n");
 
   MeshRefList *layers[2] = {
-      &scene->layer.lit,
-      &scene->layer.unlit,
+      &scene->pipelines.lit,
+      &scene->pipelines.unlit,
   };
 
   for (size_t l = 0; l < 2; l++) {
@@ -98,8 +98,8 @@ void scene_build_wireframe(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD WIREFRAME SCENE ======\n");
 
   MeshRefList *layers[2] = {
-      &scene->layer.lit,
-      &scene->layer.unlit,
+      &scene->pipelines.lit,
+      &scene->pipelines.unlit,
   };
 
   for (size_t l = 0; l < 2; l++) {
@@ -134,8 +134,8 @@ void scene_build_boundbox(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD BOUNDBOX SCENE ======\n");
 
   MeshRefList *layers[2] = {
-      &scene->layer.lit,
-      &scene->layer.unlit,
+      &scene->pipelines.lit,
+      &scene->pipelines.unlit,
   };
 
   for (size_t l = 0; l < 2; l++) {
@@ -169,8 +169,8 @@ void scene_build_shadow(Scene *scene, PipelineMultisampleCount sample) {
   // (shadow is bind process already during the renderer shadow pass)
 
   MeshRefList *layers[2] = {
-      &scene->layer.lit,
-      &scene->layer.unlit,
+      &scene->pipelines.lit,
+      &scene->pipelines.unlit,
   };
 
   for (size_t l = 0; l < 2; l++) {
@@ -188,7 +188,7 @@ void scene_build_shadow(Scene *scene, PipelineMultisampleCount sample) {
 void scene_build_fixed(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD FIXED SCENE ======\n");
 
-  MeshRefList *layer = &scene->layer.fixed;
+  MeshRefList *layer = &scene->pipelines.fixed;
 
   // compute boundbox bounds for collisions (lightweight)
   scene_build_mesh_create_topology_boundbox_bound(scene, layer);

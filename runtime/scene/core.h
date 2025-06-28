@@ -24,7 +24,7 @@ typedef uint8_t shader_bind_t;
   it's necessary to take care to handle them accordingly if a mesh is added or
   removed from the global list.
 
-       Global List (Pool)        Pass Lists
+       Global List (Pool)        Pipeline Lists
 
                                  [Lit/ Physical Meshes]
                                  .----------.
@@ -73,7 +73,7 @@ typedef struct {
   MeshRefList lit;
   MeshRefList unlit;
   MeshRefList fixed;
-} SceneLayerList;
+} ScenePipelineList;
 
 /*
   GIZMO LIST
@@ -115,7 +115,7 @@ typedef struct {
   CameraList cameras; // camera list
 
   // REFERENCES LISTS (PTR)
-  SceneLayerList layer;  // meshes render layers
+  ScenePipelineList pipelines;  // meshes render layers
   GizmoList gizmo;       // gizmo
   MeshRefList selection; // selected mesh
 

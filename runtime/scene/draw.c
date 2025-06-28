@@ -26,10 +26,10 @@ void scene_draw_texture(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // draw solid meshes first
   scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
-                       render_pass, &scene->layer.lit);
+                       render_pass, &scene->pipelines.lit);
   // draw transparent meshes then
   scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
-                       render_pass, &scene->layer.unlit);
+                       render_pass, &scene->pipelines.unlit);
 }
 
 void scene_draw_fixed(Scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -39,13 +39,13 @@ void scene_draw_fixed(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // draw fixed mesh
   scene_draw_mesh_list(scene, mesh_topology_override, mesh_shader_override,
-                       render_pass, &scene->layer.fixed);
+                       render_pass, &scene->pipelines.fixed);
 }
 
 void scene_draw_shadow(Scene *scene, WGPURenderPassEncoder *render_pass) {
   // onlid draw solid/lit meshes
   scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_shadow,
-                       render_pass, &scene->layer.lit);
+                       render_pass, &scene->pipelines.lit);
 }
 
 void scene_draw_wireframe(Scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -55,10 +55,10 @@ void scene_draw_wireframe(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // draw solid meshes first
   scene_draw_mesh_list(scene, mesh_topology_wireframe, mesh_shader_wireframe,
-                       render_pass, &scene->layer.lit);
+                       render_pass, &scene->pipelines.lit);
   // draw solid meshes then
   scene_draw_mesh_list(scene, mesh_topology_wireframe, mesh_shader_wireframe,
-                       render_pass, &scene->layer.unlit);
+                       render_pass, &scene->pipelines.unlit);
 }
 
 void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -68,10 +68,10 @@ void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // draw solid meshes first
   scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
-                       render_pass, &scene->layer.lit);
+                       render_pass, &scene->pipelines.lit);
   // draw solid meshes then
   scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
-                       render_pass, &scene->layer.unlit);
+                       render_pass, &scene->pipelines.unlit);
 }
 
 
@@ -82,8 +82,8 @@ void scene_draw_boundbox(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // draw solid meshes first
   scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
-                       render_pass, &scene->layer.lit);
+                       render_pass, &scene->pipelines.lit);
   // draw solid meshes then
   scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
-                       render_pass, &scene->layer.unlit);
+                       render_pass, &scene->pipelines.unlit);
 }
