@@ -4,6 +4,7 @@
 #include "emscripten/html5_webgpu.h"
 #include "shadow_pass.h"
 #include "webgpu/webgpu.h"
+#include "../runtime/html_event/html_event.h"
 
 static int renderer_resize(Renderer *, int, const EmscriptenUiEvent *, void *);
 static WGPUSwapChain renderer_create_swapchain(const Renderer *);
@@ -73,6 +74,9 @@ void renderer_create(Renderer *renderer, const RendererCreateDescriptor *rd) {
 
   // set depth texture view
   renderer_create_texture_view(renderer, &renderer->depth.view);
+
+  // init global HTML event manager with context name (implicit)
+  html_event_init(rd->name);
 }
 
 int renderer_resize(Renderer *renderer, int event_type,

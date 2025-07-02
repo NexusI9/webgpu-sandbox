@@ -2,6 +2,7 @@
 #define _CAMERA_RAYCAST_H_
 
 #include "../mesh/mesh.h"
+#include "../raycast/raycast.h"
 #include "../viewport/viewport.h"
 
 #include "core.h"
@@ -46,16 +47,21 @@
   cast unless the mouse is moving.
 
  */
-typedef void (*camera_raycast_callback)();
 
 typedef struct {
-  Camera *camera;
-  Viewport *viewport;
+  Raycast *raycast;
+  Mesh *mesh;
+} CameraRaycastCallback;
+
+typedef void (*camera_raycast_callback)(CameraRaycastCallback*, void*);
+
+typedef struct {
+  const Camera *camera;
+  const Viewport *viewport;
   MeshRefList **mesh_lists;
   size_t length;
   camera_raycast_callback callback;
   void *data;
-  size_t size;
 } CameraRaycastCallbackData;
 
 typedef struct {
@@ -64,7 +70,6 @@ typedef struct {
   size_t length;
   camera_raycast_callback callback;
   void *data;
-  size_t size;
   const Viewport *viewport;
 } CameraRaycastDescriptor;
 

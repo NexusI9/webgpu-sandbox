@@ -1,6 +1,5 @@
 #include "raycast.h"
 #include "../input/input.h"
-#include "../raycast/raycast.h"
 #include "emscripten/html5.h"
 
 /**
@@ -21,8 +20,8 @@ static void camera_raycast_cast_method_screen(Raycast *, Camera *, Viewport *,
 typedef struct {
 
   // raycast attribute and cast method (from center or mouse position)
-  Camera *camera;
-  Viewport *viewport;
+  const Camera *camera;
+  const Viewport *viewport;
   camera_raycast_cast_method cast_method;
 
   // mesh list raycast is tested against
@@ -103,8 +102,16 @@ void camera_raycast_cast_method_center(Raycast *ray, Camera *cam,
 void camera_raycast_check_bounds(
     const CameraRaycastCheckBoundsDescriptor *desc) {
 
-  printf("raycast\n");
-  /*Raycast raycast;
+  Raycast raycast;
+
+  desc->callback(
+      &(CameraRaycastCallback){
+          .raycast = &raycast,
+          .mesh = NULL,
+      },
+      desc->data);
+
+  /*
   // go though each meshes of each ref lists and check bound
   for (size_t l = 0; l < desc->length; l++) {
 
@@ -150,7 +157,6 @@ bool camera_raycast_event_callback_center(
       .length = cast_data->length,
       .data = cast_data->data,
       .mesh_lists = cast_data->mesh_lists,
-      .size = cast_data->size,
   });
 
   return false;
@@ -175,7 +181,6 @@ bool camera_raycast_event_callback_mouse(int eventType,
       .length = cast_data->length,
       .data = cast_data->data,
       .mesh_lists = cast_data->mesh_lists,
-      .size = cast_data->size,
   });
 
   return false;
@@ -195,19 +200,45 @@ bool camera_raycast_event_callback_mouse(int eventType,
  */
 void camera_raycast_center_hover(const Camera *cam,
                                  const CameraRaycastDescriptor *desc) {
+  // convert data (add camera)
+  const CameraRaycastCallbackData data = {
+      // cb attributes
+      .callback = desc->callback,
+      .data = desc->data,
+      // cast attributes
+      .camera = cam,
+      .viewport = desc->viewport,
+      // bound attributes
+      .length = desc->length,
+      .mesh_lists = desc->mesh_lists,
+  };
+
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_center;
   // add listener
-  input_on_mouse_move(desc->target, event_callback, desc->data);
+  input_on_mouse_move(desc->target, event_callback, (void *)&data);
 }
 
 void camera_raycast_center_click(const Camera *cam,
                                  const CameraRaycastDescriptor *desc) {
 
+  // convert data (add camera)
+  const CameraRaycastCallbackData data = {
+      // cb attributes
+      .callback = desc->callback,
+      .data = desc->data,
+      // cast attributes
+      .camera = cam,
+      .viewport = desc->viewport,
+      // bound attributes
+      .length = desc->length,
+      .mesh_lists = desc->mesh_lists,
+  };
+
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_center;
   // add listener
-  input_on_mouse_down(desc->target, event_callback, desc->data);
+  input_on_mouse_down(desc->target, event_callback, (void *)&data);
 }
 
 /**
@@ -217,17 +248,44 @@ void camera_raycast_center_click(const Camera *cam,
 void camera_raycast_mouse_hover(const Camera *cam,
                                 const CameraRaycastDescriptor *desc) {
 
+  // convert data (add camera)
+  CameraRaycastCallbackData *data = malloc(sizeof(CameraRaycastCallbackData));
+  *data = (CameraRaycastCallbackData){
+      // cb attributes
+      .callback = desc->callback,
+      .data = desc->data,
+      // cast attributes
+      .camera = cam,
+      .viewport = desc->viewport,
+      // bound attributes
+      .length = desc->length,
+      .mesh_lists = desc->mesh_lists,
+  };
+
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_mouse;
   // add listener
-  input_on_mouse_move(desc->target, event_callback, desc->data);
+  input_on_mouse_move(desc->target, event_callback, (void *)data);
 }
 
 void camera_raycast_mouse_click(const Camera *cam,
                                 const CameraRaycastDescriptor *desc) {
 
+  // convert data (add camera)
+  const CameraRaycastCallbackData data = {
+      // cb attributes
+      .callback = desc->callback,
+      .data = desc->data,
+      // cast attributes
+      .camera = cam,
+      .viewport = desc->viewport,
+      // bound attributes
+      .length = desc->length,
+      .mesh_lists = desc->mesh_lists,
+  };
+
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_mouse;
   // add listener
-  input_on_mouse_down(desc->target, event_callback, desc->data);
+  input_on_mouse_down(desc->target, event_callback, (void *)&data);
 }

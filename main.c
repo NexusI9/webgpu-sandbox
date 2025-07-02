@@ -158,6 +158,10 @@ void add_grid() {
                           });
 }
 
+void on_camera_raycast(CameraRaycastCallback* cast_data, void* user_data){
+  printf("raycast\n");
+}
+
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused
 
@@ -189,9 +193,8 @@ int main(int argc, const char *argv[]) {
           .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.fixed},
           .length = 1,
           .viewport = &main_scene.viewport,
-          .callback = NULL,
+          .callback = on_camera_raycast, 
           .data = NULL,
-          .size = 0,
       });
 
   // add gizmo camera

@@ -45,7 +45,6 @@ typedef struct Camera {
   vec3 position;
   vec3 euler_rotation;
   vec3 target;
-
   vec3 forward;
   vec3 up;
   vec3 right;
@@ -54,7 +53,7 @@ typedef struct Camera {
 
   float speed;
   CameraSensitivity sensitivity;
-
+  
   CameraMode mode;
 
 } Camera;
