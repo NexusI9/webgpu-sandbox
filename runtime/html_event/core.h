@@ -1,5 +1,6 @@
 #ifndef _HTML_EVENT_CORE_H_
 #define _HTML_EVENT_CORE_H_
+#include "emscripten/em_types.h"
 #include "emscripten/html5.h"
 
 #define HTML_EVENT_SUCCESS 0
@@ -8,7 +9,18 @@
 #define HTML_EVENT_DEFAULT_CAPACITY 64
 
 typedef const char *html_event_target;
-typedef bool (*emscripten_event_listener)(const char *, void *, bool, void *);
+typedef EMSCRIPTEN_RESULT (*emscripten_event_listener)(const char *, void *,
+                                                       bool,
+                                                       em_mouse_callback_func);
+
+typedef enum {
+  HTMLEventType_MouseMove,
+  HTMLEventType_Click,
+  HTMLEventType_KeyDown,
+  HTMLEventType_KeyUp,
+  HTMLEventType_Wheel,
+  HTMLEventType_Void,
+} HTMLEventType;
 
 // anonymous event
 typedef struct {
