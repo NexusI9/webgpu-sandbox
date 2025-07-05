@@ -26,7 +26,7 @@ id_t reg_register(void *ptr, RegEntryType type) {
 }
 
 void *reg_lookup(id_t id) {
-  if (id > REG_MAX_OBJECTS) {
+  if (id >= REG_MAX_OBJECTS) {
     perror("id out of registry bounds\n");
     return NULL;
   }
