@@ -7,22 +7,22 @@
 
 Input g_input = {0};
 
-bool input_keyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent,
+bool input_key_down(int eventType, const EmscriptenKeyboardEvent *keyEvent,
                     void *userData) {
 
   unsigned int keyCode = keyEvent->keyCode;
-  switch (eventType) {
+  if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == false)
+    g_input.keys[keyCode] = true;
 
-  case EMSCRIPTEN_EVENT_KEYDOWN:
-    if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == false)
-      g_input.keys[keyCode] = true;
-    break;
+  return false;
+}
 
-  case EMSCRIPTEN_EVENT_KEYUP:
-    if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == true)
-      g_input.keys[keyCode] = false;
-    break;
-  }
+bool input_key_up(int eventType, const EmscriptenKeyboardEvent *keyEvent,
+                  void *userData) {
+
+  unsigned int keyCode = keyEvent->keyCode;
+  if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == true)
+    g_input.keys[keyCode] = false;
 
   return false;
 }
@@ -64,13 +64,13 @@ void input_listen() {
 
   // key down/up event listener
   html_event_add_key_down(&(HTMLEventKey){
-      .callback = input_keyboard,
+      .callback = input_key_down,
       .data = NULL,
       .size = 0,
-  }); 
+  });
 
   html_event_add_key_up(&(HTMLEventKey){
-      .callback = input_keyboard,
+      .callback = input_key_up,
       .data = NULL,
       .size = 0,
   });

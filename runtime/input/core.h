@@ -52,7 +52,8 @@ bool input_key(unsigned int);
 
 void input_wheel_reset();
 
-bool input_keyboard(int, const EmscriptenKeyboardEvent *, void *);
+bool input_key_down(int, const EmscriptenKeyboardEvent *, void *);
+bool input_key_up(int, const EmscriptenKeyboardEvent *, void *);
 bool input_mouse_move(int, const EmscriptenMouseEvent *, void *);
 bool input_wheel(int, const EmscriptenWheelEvent *, void *);
 

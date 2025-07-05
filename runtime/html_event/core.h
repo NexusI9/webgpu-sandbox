@@ -71,9 +71,11 @@ typedef struct {
 
   html_event_target target;
 
-  HTMLEventKeyList key;
+  HTMLEventMouseList mouse_move;
+  HTMLEventMouseList mouse_down;
+  HTMLEventKeyList key_up;
+  HTMLEventKeyList key_down;
   HTMLEventWheelList wheel;
-  HTMLEventMouseList mouse;
 
   unsigned int listener_flags;
 
