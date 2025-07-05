@@ -1,4 +1,5 @@
 #include "raycast.h"
+#include "../html_event/html_event.h"
 #include "../input/input.h"
 #include "emscripten/html5.h"
 
@@ -216,7 +217,11 @@ void camera_raycast_center_hover(const Camera *cam,
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_center;
   // add listener
-  input_on_mouse_move(desc->target, event_callback, (void *)&data);
+  html_event_add_mouse_down(&(HTMLEventMouse){
+      .callback = event_callback,
+      .data = (void *)&data,
+      .size = sizeof(CameraRaycastCallbackData),
+  });
 }
 
 void camera_raycast_center_click(const Camera *cam,
@@ -238,7 +243,11 @@ void camera_raycast_center_click(const Camera *cam,
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_center;
   // add listener
-  input_on_mouse_down(desc->target, event_callback, (void *)&data);
+  html_event_add_mouse_down(&(HTMLEventMouse){
+      .callback = event_callback,
+      .data = (void *)&data,
+      .size = sizeof(CameraRaycastCallbackData),
+  });
 }
 
 /**
@@ -249,8 +258,7 @@ void camera_raycast_mouse_hover(const Camera *cam,
                                 const CameraRaycastDescriptor *desc) {
 
   // convert data (add camera)
-  CameraRaycastCallbackData *data = malloc(sizeof(CameraRaycastCallbackData));
-  *data = (CameraRaycastCallbackData){
+  CameraRaycastCallbackData data = (CameraRaycastCallbackData){
       // cb attributes
       .callback = desc->callback,
       .data = desc->data,
@@ -265,7 +273,11 @@ void camera_raycast_mouse_hover(const Camera *cam,
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_mouse;
   // add listener
-  input_on_mouse_move(desc->target, event_callback, (void *)data);
+  html_event_add_mouse_move(&(HTMLEventMouse){
+      .callback = event_callback,
+      .data = (void *)&data,
+      .size = sizeof(CameraRaycastCallbackData),
+  });
 }
 
 void camera_raycast_mouse_click(const Camera *cam,
@@ -287,5 +299,9 @@ void camera_raycast_mouse_click(const Camera *cam,
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_mouse;
   // add listener
-  input_on_mouse_down(desc->target, event_callback, (void *)&data);
+  html_event_add_mouse_down(&(HTMLEventMouse){
+      .callback = event_callback,
+      .data = (void *)&data,
+      .size = sizeof(CameraRaycastCallbackData),
+  });
 }

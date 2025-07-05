@@ -1,6 +1,7 @@
 #ifndef _INPUT_CORE_H_
 #define _INPUT_CORE_H_
 
+#include "emscripten/html5.h"
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -45,12 +46,15 @@ extern Input g_input;
 void input_set_key(unsigned int, bool);
 void input_disable_all_keys();
 
-void input_listen(const char *);
-void input_lock_mouse(const char *);
+void input_listen();
 
 bool input_key(unsigned int);
 
 void input_wheel_reset();
 
+bool input_keyboard(int, const EmscriptenKeyboardEvent *, void *);
+bool input_mouse_move(int, const EmscriptenMouseEvent *, void *);
+bool input_wheel(int, const EmscriptenWheelEvent *, void *);
 
 #endif
+

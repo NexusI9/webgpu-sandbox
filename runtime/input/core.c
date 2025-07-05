@@ -1,36 +1,34 @@
 #include "core.h"
+#include "../html_event/html_event.h"
 #include "../utils/math.h"
-#include "emscripten/html5.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
 
 Input g_input = {0};
 
-static bool input_key_down(int eventType,
-                           const EmscriptenKeyboardEvent *keyEvent,
-                           void *userData) {
+bool input_keyboard(int eventType, const EmscriptenKeyboardEvent *keyEvent,
+                    void *userData) {
 
   unsigned int keyCode = keyEvent->keyCode;
-  if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == false)
-    g_input.keys[keyCode] = true;
+  switch (eventType) {
+
+  case EMSCRIPTEN_EVENT_KEYDOWN:
+    if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == false)
+      g_input.keys[keyCode] = true;
+    break;
+
+  case EMSCRIPTEN_EVENT_KEYUP:
+    if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == true)
+      g_input.keys[keyCode] = false;
+    break;
+  }
 
   return false;
 }
 
-static bool input_key_up(int eventType, const EmscriptenKeyboardEvent *keyEvent,
-                         void *userData) {
-
-  unsigned int keyCode = keyEvent->keyCode;
-  if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == true)
-    g_input.keys[keyCode] = false;
-
-  return false;
-}
-
-static bool input_mouse_move(int eventType,
-                             const EmscriptenMouseEvent *mouseEvent,
-                             void *userData) {
+bool input_mouse_move(int eventType, const EmscriptenMouseEvent *mouseEvent,
+                      void *userData) {
 
   // movement
   g_input.mouse.movement.x = MIN(mouseEvent->movementX, INPUT_MAX_MOVEMENT);
@@ -43,8 +41,8 @@ static bool input_mouse_move(int eventType,
   return false;
 }
 
-static bool input_wheel(int eventType, const EmscriptenWheelEvent *wheelEvent,
-                        void *userData) {
+bool input_wheel(int eventType, const EmscriptenWheelEvent *wheelEvent,
+                 void *userData) {
 
   g_input.mouse.wheel.deltaX = wheelEvent->deltaX;
   g_input.mouse.wheel.deltaY = wheelEvent->deltaY;
@@ -62,21 +60,35 @@ void input_disable_all_keys() { memset(g_input.keys, 0, sizeof(g_input.keys)); }
    Update input global attributes. Useful to retrieves
    those attributes during the draw.
  */
-void input_listen(const char *target) {
+void input_listen() {
 
-  // key down event listener
-  emscripten_set_keydown_callback(INPUT_EVENT_DEFAULT_TARGET, NULL, false,
-                                  input_key_down);
+  // key down/up event listener
+  html_event_add_key_down(&(HTMLEventKey){
+      .callback = input_keyboard,
+      .data = NULL,
+      .size = 0,
+  }); 
 
-  // key up event listener
-  emscripten_set_keyup_callback(INPUT_EVENT_DEFAULT_TARGET, NULL, false,
-                                input_key_up);
+  html_event_add_key_up(&(HTMLEventKey){
+      .callback = input_keyboard,
+      .data = NULL,
+      .size = 0,
+  });
 
   // mouse move event listener
-  emscripten_set_mousemove_callback(target, NULL, false, input_mouse_move);
+  html_event_add_mouse_move(&(HTMLEventMouse){
+      .callback = input_mouse_move,
+      .data = NULL,
+      .size = 0,
+  });
 
   // scroll event listener
-  emscripten_set_wheel_callback(target, NULL, false, input_wheel);
+  // emscripten_set_wheel_callback(target, NULL, false, input_wheel);
+  html_event_add_wheel(&(HTMLEventWheel){
+      .callback = input_wheel,
+      .data = NULL,
+      .size = 0,
+  });
 }
 
 bool input_key(unsigned int key) {
@@ -93,8 +105,4 @@ bool input_key(unsigned int key) {
 void input_wheel_reset() {
   g_input.mouse.wheel.deltaX = 0.0f;
   g_input.mouse.wheel.deltaY = 0.0f;
-}
-
-void input_lock_mouse(const char *target) {
-  emscripten_request_pointerlock(target, true);
 }

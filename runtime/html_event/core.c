@@ -13,6 +13,12 @@ static bool html_event_wheel_listener(int, const EmscriptenWheelEvent *,
 static bool html_event_key_listener(int, const EmscriptenKeyboardEvent *,
                                     void *);
 
+// Listener Flags
+static inline unsigned int html_event_listener_flag(HTMLEventType);
+static inline void html_event_listener_flag_set(HTMLEventType);
+static inline bool html_event_has_listener(HTMLEventType);
+static inline void html_event_check_callback(HTMLEventType, void *);
+
 // Event lists inserts
 static int html_event_insert(HTMLEventVoid *event, void **entries,
                              size_t *length, size_t *capacity, size_t type_size,
@@ -31,6 +37,22 @@ HTMLEvent g_html_event = {0};
 
 void html_event_init(html_event_target target) {
   g_html_event.target = strdup(target);
+
+  // reset lists
+  g_html_event.key = (HTMLEventKeyList){0};
+  g_html_event.wheel = (HTMLEventWheelList){0};
+  g_html_event.mouse = (HTMLEventMouseList){0};
+
+  g_html_event.listener_flags = 0;
+}
+
+unsigned int html_event_listener_flag(HTMLEventType type) { return 1u << type; }
+bool html_event_has_listener(HTMLEventType type) {
+  return (g_html_event.listener_flags & html_event_listener_flag(type)) != 0;
+}
+
+void html_event_listener_flag_set(HTMLEventType type) {
+  g_html_event.listener_flags |= html_event_listener_flag(type);
 }
 
 /**
@@ -42,9 +64,62 @@ void html_event_init(html_event_target target) {
   Dispatch the events callbacks to the global lists
  */
 
+void html_event_check_callback(HTMLEventType type, void *event_callback) {
+
+  // init event listener according to event type
+  // (struggle to set the event listener dynamically so use a "type based"
+  // approach instead)
+
+  bool has_listener = html_event_has_listener(type);
+
+  printf("[%d] HTML flags: %d : %d\n", type, g_html_event.listener_flags,
+         has_listener);
+  // return if event listener already set
+  if (has_listener)
+    return;
+
+  // else set listener flag as active
+  html_event_listener_flag_set(type);
+
+  printf("set new listener callback\n");
+  // define HTML listener callback based on type
+  switch (type) {
+
+  case HTMLEventType_KeyDown:
+    emscripten_set_keydown_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL,
+                                    false, event_callback);
+    break;
+
+  case HTMLEventType_KeyUp:
+    emscripten_set_keyup_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, false,
+                                  event_callback);
+    break;
+
+  case HTMLEventType_MouseMove:
+    emscripten_set_mousemove_callback(g_html_event.target, NULL, false,
+                                      event_callback);
+    break;
+
+  case HTMLEventType_MouseDown:
+    emscripten_set_mousedown_callback(g_html_event.target, NULL, false,
+                                      event_callback);
+    break;
+
+  case HTMLEventType_Wheel:
+    emscripten_set_wheel_callback(g_html_event.target, NULL, false,
+                                  event_callback);
+    break;
+
+  default:
+    break;
+  }
+}
+
 int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
                       size_t *capacity, size_t type_size,
                       HTMLEventType event_type, void *event_callback) {
+
+  html_event_check_callback(event_type, event_callback);
 
   // check initialized
   if (*entries == NULL) {
@@ -54,45 +129,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
     *length = 0;
     *entries = malloc(type_size * (*capacity));
 
-    if (*entries != NULL) {
-
-      // init event listener according to event type
-      // struggle to set the event listener dynamically so use a type based
-      // approach instead
-
-      switch (event_type) {
-
-      case HTMLEventType_KeyDown:
-        emscripten_set_keydown_callback(g_html_event.target, NULL, false,
-                                        event_callback);
-        break;
-
-      case HTMLEventType_KeyUp:
-        emscripten_set_keyup_callback(g_html_event.target, NULL, false,
-                                      event_callback);
-        break;
-
-      case HTMLEventType_MouseMove:
-        emscripten_set_mousemove_callback(g_html_event.target, NULL, false,
-                                          event_callback);
-        break;
-
-      case HTMLEventType_Click:
-        emscripten_set_mousedown_callback(g_html_event.target, NULL, false,
-                                          event_callback);
-        break;
-
-      case HTMLEventType_Wheel:
-        emscripten_set_wheel_callback(g_html_event.target, NULL, false,
-                                      event_callback);
-        break;
-
-      case HTMLEventType_Void:
-      default:
-        break;
-      }
-
-    } else {
+    if (*entries == NULL) {
       perror("Coudln't allocate html event.\n");
       *capacity = 0;
       return HTML_EVENT_ALLOC_FAIL;
@@ -114,8 +151,29 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
     }
   }
 
+  // once we've checked if event list can store new event, we dynamically
+
+  // retrieve entry pointer position
+  HTMLEventVoid *cast_entry =
+      (HTMLEventVoid *)((char *)(*entries) + (*length) * type_size);
+
   // append new event object to list
-  memcpy((char *)(*entries) + (*length) * type_size, event, type_size);
+  memcpy(cast_entry, event, type_size);
+
+  // allocate data on stack if any
+  if (event->data != NULL) {
+
+    html_event_data stored_data = malloc(event->size);
+
+    if (stored_data != NULL) {
+      cast_entry->data = stored_data;
+      memcpy(cast_entry->data, event->data, event->size);
+    } else {
+      perror("Coudln't allocate memory for html event data.\n");
+      return HTML_EVENT_ALLOC_FAIL;
+    }
+  }
+
   (*length)++;
 
   return HTML_EVENT_SUCCESS;
@@ -124,9 +182,9 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
 /**
    Add a mouse click event to the relative list.
  */
-int html_event_add_mouse_click(HTMLEventMouse *event) {
+int html_event_add_mouse_down(HTMLEventMouse *event) {
 
-  void *entries = g_html_event.mouse.entries;
+  void *entries = &g_html_event.mouse.entries;
   size_t *length = &g_html_event.mouse.length;
   size_t *capacity = &g_html_event.mouse.capacity;
   size_t type_size = sizeof(HTMLEventMouse);
@@ -137,8 +195,9 @@ int html_event_add_mouse_click(HTMLEventMouse *event) {
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
           .data = (void *)event->data,
+          .size = event->size,
       },
-      &entries, length, capacity, type_size, event_type, event_callback);
+      entries, length, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -146,7 +205,7 @@ int html_event_add_mouse_click(HTMLEventMouse *event) {
  */
 int html_event_add_mouse_move(HTMLEventMouse *event) {
 
-  void *entries = g_html_event.mouse.entries;
+  void *entries = &g_html_event.mouse.entries;
   size_t *length = &g_html_event.mouse.length;
   size_t *capacity = &g_html_event.mouse.capacity;
   size_t type_size = sizeof(HTMLEventMouse);
@@ -157,8 +216,9 @@ int html_event_add_mouse_move(HTMLEventMouse *event) {
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
           .data = (void *)event->data,
+          .size = event->size,
       },
-      &entries, length, capacity, type_size, event_type, event_callback);
+      entries, length, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -166,7 +226,7 @@ int html_event_add_mouse_move(HTMLEventMouse *event) {
  */
 int html_event_add_wheel(HTMLEventWheel *event) {
 
-  void *entries = g_html_event.wheel.entries;
+  void *entries = &g_html_event.wheel.entries;
   size_t *length = &g_html_event.wheel.length;
   size_t *capacity = &g_html_event.wheel.capacity;
   size_t type_size = sizeof(HTMLEventWheel);
@@ -177,8 +237,9 @@ int html_event_add_wheel(HTMLEventWheel *event) {
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
           .data = (void *)event->data,
+          .size = event->size,
       },
-      &entries, length, capacity, type_size, event_type, event_callback);
+      entries, length, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -186,7 +247,7 @@ int html_event_add_wheel(HTMLEventWheel *event) {
  */
 int html_event_add_key_down(HTMLEventKey *event) {
 
-  void *entries = g_html_event.key.entries;
+  void *entries = &g_html_event.key.entries;
   size_t *length = &g_html_event.key.length;
   size_t *capacity = &g_html_event.key.capacity;
   size_t type_size = sizeof(HTMLEventKey);
@@ -197,8 +258,9 @@ int html_event_add_key_down(HTMLEventKey *event) {
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
           .data = (void *)event->data,
+          .size = event->size,
       },
-      &entries, length, capacity, type_size, event_type, event_callback);
+      entries, length, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -206,7 +268,7 @@ int html_event_add_key_down(HTMLEventKey *event) {
  */
 int html_event_add_key_up(HTMLEventKey *event) {
 
-  void *entries = g_html_event.key.entries;
+  void *entries = &g_html_event.key.entries;
   size_t *length = &g_html_event.key.length;
   size_t *capacity = &g_html_event.key.capacity;
   size_t type_size = sizeof(HTMLEventKey);
@@ -217,8 +279,9 @@ int html_event_add_key_up(HTMLEventKey *event) {
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
           .data = (void *)event->data,
+          .size = event->size,
       },
-      &entries, length, capacity, type_size, event_type, event_callback);
+      entries, length, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -248,6 +311,7 @@ bool html_event_mouse_listener(int eventType,
 
   return EM_FALSE;
 }
+
 bool html_event_wheel_listener(int eventType,
                                const EmscriptenWheelEvent *wheelEvent,
                                void *userData) {
@@ -262,7 +326,7 @@ bool html_event_wheel_listener(int eventType,
     callback(eventType, wheelEvent, data);
   }
 
-  return EM_FALSE;
+  return EM_TRUE;
 }
 
 bool html_event_key_listener(int eventType,
@@ -280,4 +344,8 @@ bool html_event_key_listener(int eventType,
   }
 
   return EM_FALSE;
+}
+
+void html_event_lock_mouse() {
+  emscripten_request_pointerlock(g_html_event.target, true);
 }

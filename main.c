@@ -18,7 +18,6 @@
 #include "runtime/camera/raycast.h"
 #include "runtime/gizmo/core.h"
 #include "runtime/gizmo/transform_translate.h"
-#include "runtime/input/input.h"
 #include "runtime/light/light.h"
 #include "runtime/material/material.h"
 #include "runtime/mesh/core.h"
@@ -178,9 +177,6 @@ int main(int argc, const char *argv[]) {
                   });
 
   renderer_init(&main_renderer);
-
-  // poll inputs
-  input_listen(main_renderer.context.name);
 
   // set scene
   init_scene();

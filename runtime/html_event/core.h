@@ -9,29 +9,30 @@
 #define HTML_EVENT_DEFAULT_CAPACITY 64
 
 typedef const char *html_event_target;
-typedef EMSCRIPTEN_RESULT (*emscripten_event_listener)(const char *, void *,
-                                                       bool,
-                                                       em_mouse_callback_func);
+typedef void *html_event_data;
+typedef bool (*emscripten_event_listener)(const char *, void *, bool,
+                                          em_mouse_callback_func);
 
 typedef enum {
   HTMLEventType_MouseMove,
-  HTMLEventType_Click,
+  HTMLEventType_MouseDown,
   HTMLEventType_KeyDown,
   HTMLEventType_KeyUp,
-  HTMLEventType_Wheel,
-  HTMLEventType_Void,
+  HTMLEventType_Wheel
 } HTMLEventType;
 
 // anonymous event
 typedef struct {
   void *callback;
-  void *data;
+  html_event_data data;
+  size_t size;
 } HTMLEventVoid;
 
 // mouse events
 typedef struct {
   em_mouse_callback_func callback;
-  void *data;
+  html_event_data data;
+  size_t size;
 } HTMLEventMouse;
 
 typedef struct {
@@ -43,7 +44,8 @@ typedef struct {
 // wheel events
 typedef struct {
   em_wheel_callback_func callback;
-  void *data;
+  html_event_data data;
+  size_t size;
 } HTMLEventWheel;
 
 typedef struct {
@@ -55,7 +57,8 @@ typedef struct {
 // key events
 typedef struct {
   em_key_callback_func callback;
-  void *data;
+  html_event_data data;
+  size_t size;
 } HTMLEventKey;
 
 typedef struct {
@@ -72,6 +75,8 @@ typedef struct {
   HTMLEventWheelList wheel;
   HTMLEventMouseList mouse;
 
+  unsigned int listener_flags;
+
 } HTMLEvent;
 
 extern HTMLEvent g_html_event;
@@ -79,7 +84,7 @@ extern HTMLEvent g_html_event;
 void html_event_init(html_event_target);
 
 // mouse events
-int html_event_add_mouse_click(HTMLEventMouse *);
+int html_event_add_mouse_down(HTMLEventMouse *);
 int html_event_add_mouse_move(HTMLEventMouse *);
 
 // wheel events
@@ -88,5 +93,9 @@ int html_event_add_wheel(HTMLEventWheel *);
 // key events
 int html_event_add_key_down(HTMLEventKey *);
 int html_event_add_key_up(HTMLEventKey *);
+
+// other events
+
+void html_event_lock_mouse();
 
 #endif
