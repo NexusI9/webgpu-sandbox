@@ -27,7 +27,7 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
   glm_vec3_copy(desc->color, light->color);
 
   // set id
-  light->id = gen_id();
+  light->id = reg_register((void *)light, RegEntryType_PointLight);
 }
 
 void light_create_spot(SpotLight *light, SpotLightDescriptor *desc) {
@@ -55,7 +55,7 @@ void light_create_spot(SpotLight *light, SpotLightDescriptor *desc) {
   light->angle = desc->angle;
 
   // set id
-  light->id = gen_id();
+  light->id = reg_register((void *)light, RegEntryType_SpotLight);
 }
 
 void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
@@ -73,7 +73,7 @@ void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
   glm_vec3_copy(desc->position, light->position);
 
   // set id
-  light->id = gen_id();
+  light->id = reg_register((void *)light, RegEntryType_AmbientLight);
 }
 
 void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
@@ -99,5 +99,5 @@ void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
   glm_vec3_copy(desc->color, light->color);
 
   // set id
-  light->id = gen_id();
+  light->id = reg_register((void *)light, RegEntryType_SunLight);
 }

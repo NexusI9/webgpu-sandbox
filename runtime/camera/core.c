@@ -23,7 +23,7 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->mode = cd->mode;
   cam->sensitivity = cd->sensitivity;
 
-  cam->id = gen_id();
+  cam->id = reg_register((void *)cam, RegEntryType_Camera);
 }
 
 void camera_reset(Camera *c) {

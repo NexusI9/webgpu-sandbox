@@ -1,5 +1,6 @@
 #ifndef _HTML_EVENT_CORE_H_
 #define _HTML_EVENT_CORE_H_
+#include "../backend/registry.h"
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
 #include <stdint.h>
@@ -27,6 +28,7 @@ typedef struct {
   void *callback;
   html_event_data data;
   size_t size;
+  id_t owner;
 } HTMLEventVoid;
 
 // mouse events
@@ -34,6 +36,7 @@ typedef struct {
   em_mouse_callback_func callback;
   html_event_data data;
   size_t size;
+  id_t owner;
 } HTMLEventMouse;
 
 typedef struct {
@@ -47,6 +50,7 @@ typedef struct {
   em_wheel_callback_func callback;
   html_event_data data;
   size_t size;
+  id_t owner;
 } HTMLEventWheel;
 
 typedef struct {
@@ -60,6 +64,7 @@ typedef struct {
   em_key_callback_func callback;
   html_event_data data;
   size_t size;
+  id_t owner;
 } HTMLEventKey;
 
 typedef struct {
@@ -89,20 +94,6 @@ typedef struct {
 extern HTMLEvent g_html_event;
 
 void html_event_init(html_event_target);
-
-// mouse events
-int html_event_add_mouse_down(HTMLEventMouse *);
-int html_event_add_mouse_move(HTMLEventMouse *);
-
-// wheel events
-int html_event_add_wheel(HTMLEventWheel *);
-
-// key events
-int html_event_add_key_down(HTMLEventKey *);
-int html_event_add_key_up(HTMLEventKey *);
-
-// other events
-
 void html_event_lock_mouse();
 
 #endif

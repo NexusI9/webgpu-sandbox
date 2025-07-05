@@ -3,6 +3,7 @@
 
 #include "../backend/clock.h"
 #include "../gizmo/list.h"
+#include "../backend/registry.h"
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
@@ -102,6 +103,8 @@ typedef struct {
 
 typedef struct {
 
+  id_t id;
+
   // camera
   Camera *camera;
   Camera *active_camera;
@@ -115,9 +118,9 @@ typedef struct {
   CameraList cameras; // camera list
 
   // REFERENCES LISTS (PTR)
-  ScenePipelineList pipelines;  // meshes render layers
-  GizmoList gizmo;       // gizmo
-  MeshRefList selection; // selected mesh
+  ScenePipelineList pipelines; // meshes render layers
+  GizmoList gizmo;             // gizmo
+  MeshRefList selection;       // selected mesh
 
 } Scene;
 

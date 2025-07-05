@@ -30,6 +30,8 @@ void scene_create(Scene *scene, cclock *clock, Viewport viewport) {
 
   // init lights
   scene_init_light_list(scene);
+
+  scene->id = reg_register((void *)scene, RegEntryType_Scene);
 }
 
 /**

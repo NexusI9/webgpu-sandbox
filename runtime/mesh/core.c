@@ -30,7 +30,7 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   // set name
   mesh_set_name(mesh, md->name);
 
-  mesh->id = gen_id();
+  mesh->id = reg_register((void *)mesh, RegEntryType_Mesh);
 
   // init child list
   mesh->children.length = 0;

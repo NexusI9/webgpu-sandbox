@@ -6,7 +6,7 @@
 #define CAMERA_ERROR 2
 
 #include "../backend/clock.h"
-#include "../utils/id.h"
+#include "../backend/registry.h"
 #include <emscripten/html5.h>
 
 #include <cglm/cglm.h>

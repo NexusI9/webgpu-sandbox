@@ -221,6 +221,7 @@ void camera_raycast_center_hover(const Camera *cam,
       .callback = event_callback,
       .data = (void *)&data,
       .size = sizeof(CameraRaycastCallbackData),
+      .owner = cam->id,
   });
 }
 
@@ -247,6 +248,7 @@ void camera_raycast_center_click(const Camera *cam,
       .callback = event_callback,
       .data = (void *)&data,
       .size = sizeof(CameraRaycastCallbackData),
+      .owner = cam->id,
   });
 }
 
@@ -277,6 +279,7 @@ void camera_raycast_mouse_hover(const Camera *cam,
       .callback = event_callback,
       .data = (void *)&data,
       .size = sizeof(CameraRaycastCallbackData),
+      .owner = cam->id,
   });
 }
 
@@ -299,9 +302,9 @@ void camera_raycast_mouse_click(const Camera *cam,
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_mouse;
   // add listener
-  html_event_add_mouse_down(&(HTMLEventMouse){
-      .callback = event_callback,
-      .data = (void *)&data,
-      .size = sizeof(CameraRaycastCallbackData),
-  });
+  html_event_add_mouse_down(
+      &(HTMLEventMouse){.callback = event_callback,
+                        .data = (void *)&data,
+                        .size = sizeof(CameraRaycastCallbackData),
+                        .owner = cam->id});
 }
