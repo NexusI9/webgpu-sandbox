@@ -2,6 +2,7 @@
 #define _HTML_EVENT_CORE_H_
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
+#include <stdint.h>
 
 #define HTML_EVENT_SUCCESS 0
 #define HTML_EVENT_ALLOC_FAIL 1
@@ -70,14 +71,18 @@ typedef struct {
 typedef struct {
 
   html_event_target target;
+  uint8_t listener_flags;
 
+  // mouse
   HTMLEventMouseList mouse_move;
   HTMLEventMouseList mouse_down;
+
+  // key
   HTMLEventKeyList key_up;
   HTMLEventKeyList key_down;
-  HTMLEventWheelList wheel;
 
-  unsigned int listener_flags;
+  // wheel
+  HTMLEventWheelList wheel;
 
 } HTMLEvent;
 

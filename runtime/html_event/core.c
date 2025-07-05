@@ -18,7 +18,7 @@ static bool html_event_listener_key_up(int, const EmscriptenKeyboardEvent *,
                                        void *);
 
 // Listener Flags
-static inline unsigned int html_event_listener_flag(HTMLEventType);
+static inline uint8_t html_event_listener_flag(HTMLEventType);
 static inline void html_event_listener_flag_set(HTMLEventType);
 static inline bool html_event_has_listener(HTMLEventType);
 static inline void html_event_check_callback(HTMLEventType, void *);
@@ -41,6 +41,7 @@ HTMLEvent g_html_event = {0};
 
 void html_event_init(html_event_target target) {
   g_html_event.target = strdup(target);
+  g_html_event.listener_flags = 0;
 
   // reset lists
   g_html_event.mouse_move = (HTMLEventMouseList){0};
@@ -48,11 +49,9 @@ void html_event_init(html_event_target target) {
   g_html_event.key_down = (HTMLEventKeyList){0};
   g_html_event.key_up = (HTMLEventKeyList){0};
   g_html_event.wheel = (HTMLEventWheelList){0};
-
-  g_html_event.listener_flags = 0;
 }
 
-unsigned int html_event_listener_flag(HTMLEventType type) { return 1u << type; }
+uint8_t html_event_listener_flag(HTMLEventType type) { return 1u << type; }
 bool html_event_has_listener(HTMLEventType type) {
   return (g_html_event.listener_flags & html_event_listener_flag(type)) != 0;
 }
@@ -78,8 +77,6 @@ void html_event_check_callback(HTMLEventType type, void *event_callback) {
 
   bool has_listener = html_event_has_listener(type);
 
-  printf("[%d] HTML flags: %d : %d\n", type, g_html_event.listener_flags,
-         has_listener);
   // return if event listener already set
   if (has_listener)
     return;
@@ -87,7 +84,6 @@ void html_event_check_callback(HTMLEventType type, void *event_callback) {
   // else set listener flag as active
   html_event_listener_flag_set(type);
 
-  printf("set new listener callback\n");
   // define HTML listener callback based on type
   switch (type) {
 
