@@ -30,6 +30,8 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   // set name
   mesh_set_name(mesh, md->name);
 
+  mesh->id = gen_id();
+
   // init child list
   mesh->children.length = 0;
   mesh->children.capacity = MESH_CHILD_LENGTH;

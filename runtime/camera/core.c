@@ -22,6 +22,8 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->clock = cd->clock;
   cam->mode = cd->mode;
   cam->sensitivity = cd->sensitivity;
+
+  cam->id = gen_id();
 }
 
 void camera_reset(Camera *c) {

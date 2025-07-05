@@ -2,6 +2,7 @@
 #define _LIGHT_CORE_H_
 
 #include "../mesh/mesh.h"
+#include "../utils/id.h"
 #include "../viewport/viewport.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
@@ -14,6 +15,7 @@
 
 // core type
 typedef struct {
+  id_t id;
   vec3 position;
   vec3 color;
   float intensity;
@@ -24,12 +26,14 @@ typedef struct {
 } PointLight;
 
 typedef struct {
+  id_t id;
   vec3 position; // abstract, for UI purpose only
   vec3 color;
   float intensity;
 } AmbientLight;
 
 typedef struct {
+  id_t id;
   vec3 position;
   vec3 target;
   vec3 color;
@@ -40,6 +44,7 @@ typedef struct {
 } SpotLight;
 
 typedef struct {
+  id_t id;
   vec3 position;
   vec3 color;
   float size;

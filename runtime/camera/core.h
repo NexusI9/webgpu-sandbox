@@ -6,6 +6,7 @@
 #define CAMERA_ERROR 2
 
 #include "../backend/clock.h"
+#include "../utils/id.h"
 #include <emscripten/html5.h>
 
 #include <cglm/cglm.h>
@@ -41,7 +42,8 @@ typedef struct {
 typedef struct Camera {
 
   cclock *clock;
-
+  id_t id;
+  
   vec3 position;
   vec3 euler_rotation;
   vec3 target;
@@ -53,7 +55,7 @@ typedef struct Camera {
 
   float speed;
   CameraSensitivity sensitivity;
-  
+
   CameraMode mode;
 
 } Camera;
@@ -72,6 +74,5 @@ mat4 *camera_view(Camera *);
 void camera_translate(Camera *, vec3);
 void camera_rotate(Camera *, vec3);
 void camera_update_view(Camera *);
-
 
 #endif

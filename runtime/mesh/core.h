@@ -4,6 +4,7 @@
 #include "../geometry/vertex/vertex.h"
 #include "../primitive/primitive.h"
 #include "../shader/shader.h"
+#include "../utils/id.h"
 #include "./topology/topology.h"
 #include "topology/boundbox.h"
 #include "topology/core.h"
@@ -43,7 +44,7 @@ typedef struct {
 // Core
 typedef struct Mesh {
 
-  size_t id;
+  id_t id;
   char *name;
 
   // transforms

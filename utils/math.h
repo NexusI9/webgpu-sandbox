@@ -1,5 +1,5 @@
-#ifndef _MATH_UTILS_H_
-#define _MATH_UTILS_H_
+#ifndef _UTILS_MATH_H_
+#define _UTILS_MATH_H_
 
 #include "../runtime/geometry/vertex/vertex.h"
 #include <cglm/cglm.h>
