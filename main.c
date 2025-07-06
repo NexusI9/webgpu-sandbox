@@ -182,10 +182,10 @@ int main(int argc, const char *argv[]) {
   init_scene();
 
   // raycast camera
-  camera_raycast_center_hover(
+  camera_raycast_mouse_hover(
       main_scene.active_camera,
       &(CameraRaycastDescriptor){
-          .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.lit},
+          .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.fixed},
           .length = 1,
           .viewport = &main_scene.viewport,
           .callback = on_camera_raycast, 
