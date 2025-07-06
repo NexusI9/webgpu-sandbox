@@ -45,6 +45,7 @@ camera_raycast_check_bounds(const CameraRaycastCheckBoundsDescriptor *);
 void camera_raycast_cast_method_screen(Raycast *ray, Camera *cam, Viewport *vp,
                                        float x, float y) {
 
+  // printf("x: %f, y: %f\n", x, y);
   // near plane point in clip space
   vec4 ray_clip = {x, y, -1.0f, 1.0f};
 
@@ -85,6 +86,8 @@ void camera_raycast_cast_method_mouse(Raycast *ray, Camera *cam, Viewport *vp) {
   float x = (2.0f * g_input.mouse.x) / vp->width - 1.0f;
   float y = 1.0f - (2.0f * g_input.mouse.y) / vp->height;
 
+  // printf("mouse x: %f\n", x);
+  // printf("mouse y: %f\n", y);
   camera_raycast_cast_method_screen(ray, cam, vp, x, y);
 }
 
@@ -107,19 +110,17 @@ void camera_raycast_check_bounds(
   Raycast ray;
 
   // cast from camera pov
-  // desc->cast_method(&ray, desc->camera, desc->viewport);
+  desc->cast_method(&ray, desc->camera, desc->viewport);
 
-  glm_vec3_copy((vec3){0.0f, 10.0f, 0.0f}, ray.origin);
-  glm_vec3_copy((vec3){0.0f, -1.0f, 0.0f}, ray.direction);
-  glm_vec3_normalize(ray.direction);
-
-  AABB box;
-  glm_vec3_copy((vec3){-1.0f, 0.0f, -1.0f}, box.min);
-  glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, box.max);
-
+  // glm_vec3_copy((vec3){0.0f, 10.0f, 0.0f}, ray.origin);
+  // glm_vec3_copy((vec3){0.0f, -1.0f, 0.0f}, ray.direction);
+  // glm_vec3_normalize(ray.direction);
   ray.distance = 100.0f;
 
-  print_vec3(ray.direction);
+  // print_vec3(ray.direction);
+  AABB box;
+  glm_vec3_copy((vec3){-10.0f, -10.0f, -10.0f}, box.min);
+  glm_vec3_copy((vec3){10.0f, 10.0f, 10.0f}, box.max);
 
   // go though each meshes of each ref lists and check bound
   for (size_t l = 0; l < desc->length; l++) {
@@ -130,17 +131,8 @@ void camera_raycast_check_bounds(
       Mesh *mesh = ref_list->entries[m];
 
       // check if raycast within mesh bound
-      bool hit = raycast_hit_aabb(&ray, &mesh->topology.boundbox.bound, NULL);
-
-      printf("mesh name: %s\n", mesh->name);
-      printf("min: ");
-      print_vec3(mesh->topology.boundbox.bound.min);
-      printf("max: ");
-      print_vec3(mesh->topology.boundbox.bound.max);
-      printf("raycast hit: %d\n", hit);
-
-      if (hit) {
-        // printf("raycast hit: %s\n", mesh->name);
+      if (raycast_hit_aabb(&ray, &mesh->topology.boundbox.bound, NULL)) {
+        printf("raycast hit: %s\n", mesh->name);
         /*desc->callback(
             &(CameraRaycastCallback){.raycast = &raycast, .mesh = mesh},
             desc->data);*/

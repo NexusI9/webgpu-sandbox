@@ -75,8 +75,8 @@ void camera_mode_flying_controller(Camera *camera) {
  */
 void camera_mode_orbit_controller(Camera *camera) {
 
-  float yaw = -g_input.mouse.x * camera->sensitivity.rotate;
-  float pitch = g_input.mouse.y * camera->sensitivity.rotate;
+  float yaw = -g_input.mouse.delta.x * camera->sensitivity.rotate;
+  float pitch = g_input.mouse.delta.y * camera->sensitivity.rotate;
 
   // TODO: dynamic radius based on mouse zoom or keyboard?
   float radius = glm_vec3_distance(camera->position, camera->target) +

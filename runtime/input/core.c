@@ -35,9 +35,11 @@ bool input_mouse_move(int eventType, const EmscriptenMouseEvent *mouseEvent,
   g_input.mouse.movement.y = MIN(mouseEvent->movementY, INPUT_MAX_MOVEMENT);
 
   // position (use movement cause of pointer lock)
-  g_input.mouse.x += mouseEvent->movementX;
-  g_input.mouse.y += mouseEvent->movementY;
+  g_input.mouse.delta.x += mouseEvent->movementX;
+  g_input.mouse.delta.y += mouseEvent->movementY;
 
+  g_input.mouse.x = mouseEvent->clientX;
+  g_input.mouse.y = mouseEvent->clientY;
   return false;
 }
 

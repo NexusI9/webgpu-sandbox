@@ -31,6 +31,10 @@ typedef struct {
 
     struct {
       int x, y;
+    } delta;
+
+    struct {
+      int x, y;
     } movement;
 
     struct {
@@ -58,4 +62,3 @@ bool input_mouse_move(int, const EmscriptenMouseEvent *, void *);
 bool input_wheel(int, const EmscriptenWheelEvent *, void *);
 
 #endif
-
