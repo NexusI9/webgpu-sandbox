@@ -1,17 +1,12 @@
 #ifndef _MESH_TOPOLOGY_BOUNDBOX_H_
 #define _MESH_TOPOLOGY_BOUNDBOX_H_
+#include "../../geometry/aabb/aabb.h"
 #include "anchor.h"
 #include "base.h"
 
 #define MESH_TOPOLOGY_BOUNDBOX_SUCCESS 0
 #define MESH_TOPOLOGY_BOUNDBOX_ALLOC_FAIL 1
 #define MESH_TOPOLOGY_BOUNDBOX_ERROR 2
-
-// Axis-Aligned Bounding Box
-typedef struct {
-  vec3 min;
-  vec3 max;
-} AABB;
 
 typedef struct {
   VertexIndex index;

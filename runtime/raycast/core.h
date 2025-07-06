@@ -1,6 +1,7 @@
 #ifndef _RAYCAST_CORE_H_
 #define _RAYCAST_CORE_H_
 
+#include "../geometry/aabb/aabb.h"
 #include "../mesh/mesh.h"
 #include <cglm/cglm.h>
 
@@ -19,6 +20,7 @@ typedef struct {
   float distance;
 } RaycastCreateDescriptor;
 
-Mesh *raycast_check_mesh_list(Raycast *, const MeshRefList *);
+
+bool raycast_hit_aabb(Raycast *, const AABB *, float*);
 
 #endif

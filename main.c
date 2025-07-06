@@ -185,8 +185,7 @@ int main(int argc, const char *argv[]) {
   camera_raycast_mouse_hover(
       main_scene.active_camera,
       &(CameraRaycastDescriptor){
-          .target = renderer_target(&main_renderer),
-          .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.fixed},
+          .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.lit},
           .length = 1,
           .viewport = &main_scene.viewport,
           .callback = on_camera_raycast, 
@@ -225,7 +224,7 @@ int main(int argc, const char *argv[]) {
   add_grid();
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Solid);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Boundbox);
 
   // Quit
   renderer_close(&main_renderer);

@@ -53,11 +53,11 @@ typedef struct {
   Mesh *mesh;
 } CameraRaycastCallback;
 
-typedef void (*camera_raycast_callback)(CameraRaycastCallback*, void*);
+typedef void (*camera_raycast_callback)(CameraRaycastCallback *, void *);
 
 typedef struct {
-  const Camera *camera;
-  const Viewport *viewport;
+  Camera *camera;
+  Viewport *viewport;
   MeshRefList **mesh_lists;
   size_t length;
   camera_raycast_callback callback;
@@ -65,23 +65,19 @@ typedef struct {
 } CameraRaycastCallbackData;
 
 typedef struct {
-  const char *target;
   MeshRefList **mesh_lists;
   size_t length;
   camera_raycast_callback callback;
   void *data;
-  const Viewport *viewport;
+  Viewport *viewport;
 } CameraRaycastDescriptor;
 
-void camera_raycast_center_hover(const Camera *,
-                                 const CameraRaycastDescriptor *);
+// raycast to screen center
+void camera_raycast_center_hover(Camera *, const CameraRaycastDescriptor *);
+void camera_raycast_center_click(Camera *, const CameraRaycastDescriptor *);
 
-void camera_raycast_center_click(const Camera *,
-                                 const CameraRaycastDescriptor *);
-
-void camera_raycast_mouse_hover(const Camera *,
-                                const CameraRaycastDescriptor *);
-void camera_raycast_mouse_click(const Camera *,
-                                const CameraRaycastDescriptor *);
+// raycast to mouse position
+void camera_raycast_mouse_hover(Camera *, const CameraRaycastDescriptor *);
+void camera_raycast_mouse_click(Camera *, const CameraRaycastDescriptor *);
 
 #endif

@@ -1,7 +1,10 @@
 #include "raycast.h"
 #include "../html_event/html_event.h"
 #include "../input/input.h"
+#include "../utils/system.h"
+#include "emscripten/em_types.h"
 #include "emscripten/html5.h"
+#include <string.h>
 
 /**
    ▗▄▄▖ ▗▄▖  ▗▄▄▖▗▄▄▄▖    ▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▄▖
@@ -11,18 +14,16 @@
 
  */
 typedef void (*camera_raycast_cast_method)(Raycast *, Camera *, Viewport *);
-static void camera_raycast_cast_method_center(Raycast *ray, Camera *cam,
-                                              Viewport *vp);
-static void camera_raycast_cast_method_mouse(Raycast *ray, Camera *cam,
-                                             Viewport *vp);
+static void camera_raycast_cast_method_center(Raycast *, Camera *, Viewport *);
+static void camera_raycast_cast_method_mouse(Raycast *, Camera *, Viewport *);
 static void camera_raycast_cast_method_screen(Raycast *, Camera *, Viewport *,
                                               float, float);
 
 typedef struct {
 
   // raycast attribute and cast method (from center or mouse position)
-  const Camera *camera;
-  const Viewport *viewport;
+  Camera *camera;
+  Viewport *viewport;
   camera_raycast_cast_method cast_method;
 
   // mesh list raycast is tested against
@@ -39,7 +40,7 @@ static void
 camera_raycast_check_bounds(const CameraRaycastCheckBoundsDescriptor *);
 
 /**
-   Cast ray at a given
+   Cast ray at a given mouse position
  */
 void camera_raycast_cast_method_screen(Raycast *ray, Camera *cam, Viewport *vp,
                                        float x, float y) {
@@ -103,16 +104,23 @@ void camera_raycast_cast_method_center(Raycast *ray, Camera *cam,
 void camera_raycast_check_bounds(
     const CameraRaycastCheckBoundsDescriptor *desc) {
 
-  Raycast raycast;
+  Raycast ray;
 
-  desc->callback(
-      &(CameraRaycastCallback){
-          .raycast = &raycast,
-          .mesh = NULL,
-      },
-      desc->data);
+  // cast from camera pov
+  // desc->cast_method(&ray, desc->camera, desc->viewport);
 
-  /*
+  glm_vec3_copy((vec3){0.0f, 10.0f, 0.0f}, ray.origin);
+  glm_vec3_copy((vec3){0.0f, -1.0f, 0.0f}, ray.direction);
+  glm_vec3_normalize(ray.direction);
+
+  AABB box;
+  glm_vec3_copy((vec3){-1.0f, 0.0f, -1.0f}, box.min);
+  glm_vec3_copy((vec3){1.0f, 1.0f, 1.0f}, box.max);
+
+  ray.distance = 100.0f;
+
+  print_vec3(ray.direction);
+
   // go though each meshes of each ref lists and check bound
   for (size_t l = 0; l < desc->length; l++) {
 
@@ -122,9 +130,23 @@ void camera_raycast_check_bounds(
       Mesh *mesh = ref_list->entries[m];
 
       // check if raycast within mesh bound
-      desc->cast_method(&raycast, desc->camera, desc->viewport);
+      bool hit = raycast_hit_aabb(&ray, &mesh->topology.boundbox.bound, NULL);
+
+      printf("mesh name: %s\n", mesh->name);
+      printf("min: ");
+      print_vec3(mesh->topology.boundbox.bound.min);
+      printf("max: ");
+      print_vec3(mesh->topology.boundbox.bound.max);
+      printf("raycast hit: %d\n", hit);
+
+      if (hit) {
+        // printf("raycast hit: %s\n", mesh->name);
+        /*desc->callback(
+            &(CameraRaycastCallback){.raycast = &raycast, .mesh = mesh},
+            desc->data);*/
+      }
     }
-  }*/
+  }
 };
 
 /**
@@ -160,7 +182,7 @@ bool camera_raycast_event_callback_center(
       .mesh_lists = cast_data->mesh_lists,
   });
 
-  return false;
+  return EM_FALSE;
 }
 
 bool camera_raycast_event_callback_mouse(int eventType,
@@ -184,7 +206,7 @@ bool camera_raycast_event_callback_mouse(int eventType,
       .mesh_lists = cast_data->mesh_lists,
   });
 
-  return false;
+  return EM_FALSE;
 }
 
 /**
@@ -199,7 +221,7 @@ bool camera_raycast_event_callback_mouse(int eventType,
    Link to the camera a raycast system with the center of screen as raycast
    target. Useful for Flying or orbit mode in which cursor is usually hidden.
  */
-void camera_raycast_center_hover(const Camera *cam,
+void camera_raycast_center_hover(Camera *cam,
                                  const CameraRaycastDescriptor *desc) {
   // convert data (add camera)
   const CameraRaycastCallbackData data = {
@@ -225,7 +247,7 @@ void camera_raycast_center_hover(const Camera *cam,
   });
 }
 
-void camera_raycast_center_click(const Camera *cam,
+void camera_raycast_center_click(Camera *cam,
                                  const CameraRaycastDescriptor *desc) {
 
   // convert data (add camera)
@@ -256,7 +278,7 @@ void camera_raycast_center_click(const Camera *cam,
    Link to the camera a raycast system with the mouse position as raycast
    target. Useful for Edit mode.
  */
-void camera_raycast_mouse_hover(const Camera *cam,
+void camera_raycast_mouse_hover(Camera *cam,
                                 const CameraRaycastDescriptor *desc) {
 
   // convert data (add camera)
@@ -283,7 +305,7 @@ void camera_raycast_mouse_hover(const Camera *cam,
   });
 }
 
-void camera_raycast_mouse_click(const Camera *cam,
+void camera_raycast_mouse_click(Camera *cam,
                                 const CameraRaycastDescriptor *desc) {
 
   // convert data (add camera)

@@ -62,8 +62,8 @@ void mesh_topology_boundbox_compute_bound(MeshTopologyBase *base,
 
   // calculate local space bound
   VertexAttribute *base_attr = &base->attribute;
-  glm_vec3_copy((vec3){0}, bound->bound.min);
-  glm_vec3_copy((vec3){0}, bound->bound.max);
+  glm_vec3_copy((vec3){FLT_MAX, FLT_MAX, FLT_MAX}, bound->bound.min);
+  glm_vec3_copy((vec3){-FLT_MAX, -FLT_MAX, -FLT_MAX}, bound->bound.max);
 
   for (size_t i = 0; i < base->attribute.length; i += VERTEX_STRIDE) {
     vattr_t *current = &base_attr->entries[i];
@@ -128,7 +128,7 @@ void mesh_topology_boundbox_worldspace(AABB *bound, vec3 corners[8],
   for (int i = 0; i < 8; i++) {
     glm_mat4_mulv3(model_matrix, corners[i], 1.0f, transformed);
     glm_vec3_minv(bound->min, transformed, bound->min);
-    glm_vec3_minv(bound->max, transformed, bound->max);
+    glm_vec3_maxv(bound->max, transformed, bound->max);
   }
 }
 
