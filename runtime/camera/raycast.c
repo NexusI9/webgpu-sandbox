@@ -45,7 +45,6 @@ camera_raycast_check_bounds(const CameraRaycastCheckBoundsDescriptor *);
 void camera_raycast_cast_method_screen(Raycast *ray, Camera *cam, Viewport *vp,
                                        float x, float y) {
 
-  // printf("x: %f, y: %f\n", x, y);
   // near plane point in clip space
   vec4 ray_clip = {x, y, -1.0f, 1.0f};
 
@@ -86,8 +85,6 @@ void camera_raycast_cast_method_mouse(Raycast *ray, Camera *cam, Viewport *vp) {
   float x = (2.0f * g_input.mouse.x) / vp->width - 1.0f;
   float y = 1.0f - (2.0f * g_input.mouse.y) / vp->height;
 
-  // printf("mouse x: %f\n", x);
-  // printf("mouse y: %f\n", y);
   camera_raycast_cast_method_screen(ray, cam, vp, x, y);
 }
 
@@ -112,12 +109,6 @@ void camera_raycast_check_bounds(
   // cast from camera pov
   desc->cast_method(&ray, desc->camera, desc->viewport);
 
-  // glm_vec3_copy((vec3){0.0f, 10.0f, 0.0f}, ray.origin);
-  // glm_vec3_copy((vec3){0.0f, -1.0f, 0.0f}, ray.direction);
-  // glm_vec3_normalize(ray.direction);
-  ray.distance = 100.0f;
-
-  // print_vec3(ray.direction);
   AABB box;
   glm_vec3_copy((vec3){-10.0f, -10.0f, -10.0f}, box.min);
   glm_vec3_copy((vec3){10.0f, 10.0f, 10.0f}, box.max);
@@ -131,12 +122,9 @@ void camera_raycast_check_bounds(
       Mesh *mesh = ref_list->entries[m];
 
       // check if raycast within mesh bound
-      if (raycast_hit_aabb(&ray, &mesh->topology.boundbox.bound, NULL)) {
-        printf("raycast hit: %s\n", mesh->name);
-        /*desc->callback(
-            &(CameraRaycastCallback){.raycast = &raycast, .mesh = mesh},
-            desc->data);*/
-      }
+      if (raycast_hit_aabb(&ray, &mesh->topology.boundbox.bound, &ray.distance))
+        desc->callback(&(CameraRaycastCallback){.raycast = &ray, .mesh = mesh},
+                       desc->data);
     }
   }
 };
@@ -231,7 +219,7 @@ void camera_raycast_center_hover(Camera *cam,
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_center;
   // add listener
-  html_event_add_mouse_down(&(HTMLEventMouse){
+  html_event_add_mouse_move(&(HTMLEventMouse){
       .callback = event_callback,
       .data = (void *)&data,
       .size = sizeof(CameraRaycastCallbackData),
@@ -274,7 +262,7 @@ void camera_raycast_mouse_hover(Camera *cam,
                                 const CameraRaycastDescriptor *desc) {
 
   // convert data (add camera)
-  CameraRaycastCallbackData data = (CameraRaycastCallbackData){
+  CameraRaycastCallbackData data = {
       // cb attributes
       .callback = desc->callback,
       .data = desc->data,
@@ -316,9 +304,10 @@ void camera_raycast_mouse_click(Camera *cam,
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_mouse;
   // add listener
-  html_event_add_mouse_down(
-      &(HTMLEventMouse){.callback = event_callback,
-                        .data = (void *)&data,
-                        .size = sizeof(CameraRaycastCallbackData),
-                        .owner = cam->id});
+  html_event_add_mouse_down(&(HTMLEventMouse){
+      .callback = event_callback,
+      .data = (void *)&data,
+      .size = sizeof(CameraRaycastCallbackData),
+      .owner = cam->id,
+  });
 }

@@ -153,7 +153,7 @@ int html_event_add_mouse_down(HTMLEventMouse *event) {
   size_t *length = &g_html_event.mouse_down.length;
   size_t *capacity = &g_html_event.mouse_down.capacity;
   size_t type_size = sizeof(HTMLEventMouse);
-  HTMLEventType event_type = HTMLEventType_MouseMove;
+  HTMLEventType event_type = HTMLEventType_MouseDown;
   void *event_callback = html_event_listener_mouse_down;
 
   return html_event_insert(

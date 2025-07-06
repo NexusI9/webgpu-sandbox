@@ -158,7 +158,7 @@ void add_grid() {
 }
 
 void on_camera_raycast(CameraRaycastCallback* cast_data, void* user_data){
-  printf("raycast\n");
+  printf("hit: %s\n", cast_data->mesh->name);
 }
 
 int main(int argc, const char *argv[]) {
@@ -182,7 +182,7 @@ int main(int argc, const char *argv[]) {
   init_scene();
 
   // raycast camera
-  camera_raycast_mouse_hover(
+  camera_raycast_center_hover(
       main_scene.active_camera,
       &(CameraRaycastDescriptor){
           .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.lit},
