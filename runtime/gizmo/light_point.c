@@ -13,7 +13,7 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
   gizmo->target = light;
 
   // define mesh
-  size_t gizmo_mesh_count = 2;
+  size_t gizmo_mesh_count = 1;
   mesh_reference_list_create(&gizmo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
@@ -33,7 +33,7 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
   mesh_reference_list_insert(&gizmo->meshes, icon);
 
   // create sphere
-  Mesh *sphere = mesh_list_new_mesh(desc->list);
+  /*DELELTEME: Mesh *sphere = mesh_list_new_mesh(desc->list);
   Primitive sphere_primitive;
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
       .primitive = &sphere_primitive,
@@ -53,5 +53,5 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
   // scale sphere to point far point
   mesh_scale(sphere, (vec3){light->far, light->far, light->far});
 
-  mesh_reference_list_insert(&gizmo->meshes, sphere);
+  mesh_reference_list_insert(&gizmo->meshes, sphere);*/
 }

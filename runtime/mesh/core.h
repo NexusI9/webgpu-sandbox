@@ -1,10 +1,10 @@
 #ifndef _MESH_CORE_H_
 #define _MESH_CORE_H_
 
+#include "../backend/registry.h"
 #include "../geometry/vertex/vertex.h"
 #include "../primitive/primitive.h"
 #include "../shader/shader.h"
-#include "../backend/registry.h"
 #include "./topology/topology.h"
 #include "topology/boundbox.h"
 #include "topology/core.h"
@@ -80,28 +80,31 @@ typedef struct Mesh {
 
 } Mesh;
 
+// constructor
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
-
-void mesh_set_parent(Mesh *, Mesh *);
 void mesh_set_name(Mesh *, const char *);
+
+// shader
 void mesh_set_shader(Mesh *, const ShaderCreateDescriptor *);
-
 void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *);
-
 void mesh_build(Mesh *, Shader *);
 
+// transforms
 void mesh_scale(Mesh *, vec3);
 void mesh_translate(Mesh *, vec3);
 void mesh_lookat(Mesh *, vec3, vec3);
 void mesh_rotate(Mesh *, vec3);
 void mesh_rotate_quat(Mesh *, versor);
 
+// hierarchy
+void mesh_set_parent(Mesh *, Mesh *);
 Mesh *mesh_add_child(Mesh *, Mesh *);
 Mesh *mesh_new_child(Mesh *);
 Mesh *mesh_new_child_empty(Mesh *);
 Mesh *mesh_get_child_by_id(Mesh *, size_t);
 
+// topology
 typedef MeshTopology (*mesh_get_topology_callback)(Mesh *);
 typedef int (*mesh_topology_create_callback)(MeshTopology *, MeshTopology *,
                                              const WGPUDevice *,
@@ -112,5 +115,8 @@ MeshTopology mesh_topology_wireframe(Mesh *);
 MeshTopology mesh_topology_boundbox(Mesh *);
 MeshTopology mesh_topology_override(Mesh *); // for fixed mesh only
 void mesh_topology_set_override(Mesh *, const MeshTopology topology);
+
+// events
+
 
 #endif

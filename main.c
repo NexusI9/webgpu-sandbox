@@ -158,7 +158,7 @@ void add_grid() {
 }
 
 void on_camera_raycast(CameraRaycastCallback* cast_data, void* user_data){
-  printf("hit: %s\n", cast_data->mesh->name);
+
 }
 
 int main(int argc, const char *argv[]) {
