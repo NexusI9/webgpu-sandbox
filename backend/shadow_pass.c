@@ -1,5 +1,5 @@
 #include "shadow_pass.h"
-#include "../resources/prefab/debug/view.h"
+#include "../runtime/prefab/debug/view.h"
 #include "../runtime/material/material.h"
 #include "../runtime/texture/texture.h"
 #include "../utils/math.h"
@@ -575,7 +575,7 @@ void shadow_pass_create_textures(const ShadowPassTextureDescriptor *desc) {
   texture_descriptor_depth.label = "Light shadow texture - Depth";
   texture_descriptor_depth.format = SHADOW_DEPTH_FORMAT;
 
-  // setup texture view
+  // setup global texture view
   WGPUTextureViewDescriptor texture_view_descriptor_base = {
       .label = "Light Shadow: global texture view - Depth",
       .format = SHADOW_DEPTH_FORMAT,

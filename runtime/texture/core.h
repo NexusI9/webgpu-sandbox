@@ -20,13 +20,6 @@ typedef unsigned char *texture_data;
 typedef struct {
   int width;
   int height;
-  uint8_t channels;
-  uint8_t value;
-} TextureCreateDescriptor;
-
-typedef struct {
-  int width;
-  int height;
   size_t size;
   texture_data data;
   uint8_t channels;

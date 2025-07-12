@@ -41,7 +41,7 @@ void gizmo_create_billboard(Mesh *mesh,
 
   // TODO: create UI Atlas
   Texture light_texture;
-  texture_create_from_file(&light_texture, desc->texture_path);
+  texture_create_from_file(&light_texture, desc->texture_path, true);
 
   // bind texture + sampler
   material_texture_add_texture(

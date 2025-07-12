@@ -1,5 +1,7 @@
 #include "write.h"
 #include "../utils/math.h"
+#include "core.h"
+#include <stdint.h>
 
 /**
    Provide different operators to write value into a texture data
@@ -177,6 +179,22 @@ void texture_write_triangle_gradient(
           }
         }
       }
+    }
+  }
+}
+
+/**
+   Change the alpha value
+ */
+void texture_write_alpha(Texture *texture, uint8_t value) {
+
+  if (texture->channels < 4)
+    return;
+  
+  for (size_t y = 0; y < texture->height; ++y) {
+    for (size_t x = 0; x < texture->width; ++x) {
+      int i = (y * texture->width + x) * texture->channels;
+      texture->data[i + 3] = value;
     }
   }
 }

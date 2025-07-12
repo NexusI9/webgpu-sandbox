@@ -43,7 +43,8 @@ GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 
 MBIN_FILES := $(shell find ./resources/assets/mbin -type f -name "*.mbin" | sed 's/^/--preload-file /')
 
 #Textures files
-TEXTURE_FILES := $(shell find ./resources/assets/texture -type f -name "*.png" | sed 's/^/--preload-file /')
+TEXTURE_FILES := $(shell find ./resources/assets/texture \( -name "*.png" -o -name "*.jpg" \) -type f | sed 's/^/--preload-file /')
+
 
 
 # Main output build script

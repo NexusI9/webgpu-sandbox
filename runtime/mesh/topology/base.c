@@ -115,7 +115,6 @@ int mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
  */
 void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
 
-  printf("create base anchor\n");
   MeshTopologyAnchorList hashed_list; // temp
 
   // init new list

@@ -2,6 +2,7 @@
 #define _TEXTURE_WRITE_H_
 
 #include "core.h"
+#include <stdint.h>
 
 typedef enum {
   TextureWriteMethod_Replace,
@@ -57,6 +58,8 @@ typedef struct {
 } TextureWriteTriangleGradientDescriptor;
 
 void texture_write(unsigned char, texture_data, TextureWriteMethod);
+
+void texture_write_alpha(Texture *, uint8_t);
 
 void texture_write_triangle_gradient(
     const TextureWriteTriangleGradientDescriptor *);

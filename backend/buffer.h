@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
+#include <stdint.h>
 
 typedef struct {
   const WGPUDevice *device;
@@ -25,8 +26,22 @@ typedef struct {
   size_t size;
 } CreateTextureDescriptor;
 
+typedef struct {
+  const WGPUQueue *queue;
+  const WGPUTexture *texture;
+  unsigned char *data;
+  uint32_t width;
+  uint32_t height;
+  uint32_t layer;
+  uint8_t channels;
+  WGPUTextureFormat format;
+  size_t size;
+} CreateTextureCubeDescriptor;
+
 void buffer_create_shader(WGPUShaderModule *, const WGPUDevice *, char *,
                           const char *);
 void buffer_create(WGPUBuffer *, const CreateBufferDescriptor *);
 void buffer_create_texture(WGPUTextureView *, const CreateTextureDescriptor *);
+void buffer_create_texture_cube(WGPUTextureView *,
+                                const CreateTextureCubeDescriptor *);
 #endif

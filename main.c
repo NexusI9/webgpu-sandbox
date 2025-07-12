@@ -24,6 +24,8 @@
 #include "runtime/mesh/mesh.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/pipeline/core.h"
+#include "runtime/prefab/environment/skybox.h"
+#include "runtime/prefab/prefab.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/scene.h"
 #include "runtime/shader/shader.h"
@@ -65,6 +67,11 @@ void init_scene() {
 
   scene_create(&main_scene, &main_clock, viewport);
 
+  /*
+
+  =============        CAMERA       ==============
+
+ */
   // init camera position
   camera_lookat(main_scene.active_camera,
                 (vec3){
@@ -78,6 +85,11 @@ void init_scene() {
                     0.0f,
                 });
 
+  /*
+
+    =============        LIGHTS       ==============
+
+   */
   scene_add_sun_light(
       &main_scene,
       &(SunLightDescriptor){
@@ -89,7 +101,6 @@ void init_scene() {
       renderer_device(&main_renderer), renderer_queue(&main_renderer));
 
   // set light
-  // TODO: uniformise WGPUDevice/WGPUQueue opaque pointer passing (& || * ? )
   scene_add_point_light(&main_scene,
                         &(PointLightDescriptor){
                             .color = {1.0f, 0.0f, 0.3f},
@@ -136,6 +147,32 @@ void init_scene() {
                           },
                           renderer_device(&main_renderer),
                           renderer_queue(&main_renderer));
+
+  /*
+
+  =============        SKYBOX       ==============
+
+   */
+
+  prefab_skybox_create(
+      &(PrefabCreateDescriptor){
+          .device = renderer_device(&main_renderer),
+          .queue = renderer_queue(&main_renderer),
+          .scene = &main_scene,
+      },
+      &(PrefabSkyboxCreateDescriptor){
+          .blur = 0.0f,
+          .resolution = 1024,
+          .path =
+              {
+                  .right = "./resources/assets/texture/skybox/lake/right.png",
+                  .left = "./resources/assets/texture/skybox/lake/left.png",
+                  .top = "./resources/assets/texture/skybox/lake/top.png",
+                  .bottom = "./resources/assets/texture/skybox/lake/bottom.png",
+                  .front = "./resources/assets/texture/skybox/lake/front.png",
+                  .back = "./resources/assets/texture/skybox/lake/back.png",
+              },
+      });
 }
 
 void add_grid() {
@@ -157,9 +194,7 @@ void add_grid() {
                           });
 }
 
-void on_camera_raycast(CameraRaycastCallback* cast_data, void* user_data){
-
-}
+void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {}
 
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused
@@ -188,7 +223,7 @@ int main(int argc, const char *argv[]) {
           .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.fixed},
           .length = 1,
           .viewport = &main_scene.viewport,
-          .callback = on_camera_raycast, 
+          .callback = on_camera_raycast,
           .data = NULL,
       });
 
@@ -224,7 +259,7 @@ int main(int argc, const char *argv[]) {
   add_grid();
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Boundbox);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);
 
   // Quit
   renderer_close(&main_renderer);

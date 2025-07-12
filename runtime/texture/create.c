@@ -1,6 +1,7 @@
 #include "create.h"
 #include "string.h"
 #include "../../include/stb/stb_image.h"
+#include "webgpu/webgpu.h"
 
 void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
 
@@ -22,6 +23,7 @@ void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
   if (desc->value != 0)
     memset(texture->data, desc->value, texture->size);
 }
+
 
 /**
    Create a texture from refenreced data
@@ -45,9 +47,9 @@ void texture_create_from_ref(unsigned char **data, size_t *size,
 /**
    load picture from file
  */
-int texture_create_from_file(Texture *texture, const char *path) {
+int texture_create_from_file(Texture *texture, const char *path, bool flip) {
   // flip vertically so match wgpu coordinates
-  stbi_set_flip_vertically_on_load(true);
+  stbi_set_flip_vertically_on_load(flip);
 
   int width, height, channels;
   texture_data data = stbi_load(path, &width, &height, &channels, 4);
@@ -62,11 +64,11 @@ int texture_create_from_file(Texture *texture, const char *path) {
     return TEXTURE_FILE_ERROR;
   }
 
-  texture->size = width * height * channels;
+  texture->size = width * height * 4;
   texture->data = data;
   texture->width = width;
   texture->height = height;
-  texture->channels = channels;
+  texture->channels = 4;
 
   return TEXTURE_SUCCESS;
 }

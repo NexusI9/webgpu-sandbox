@@ -24,12 +24,13 @@ void scene_draw_texture(Scene *scene, WGPURenderPassEncoder *render_pass) {
   // update camera
   camera_draw(scene->active_camera);
 
-  // draw solid meshes first
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
-                       render_pass, &scene->pipelines.lit);
   // draw transparent meshes then
   scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
                        render_pass, &scene->pipelines.unlit);
+  
+  // draw solid meshes first
+  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
+                       render_pass, &scene->pipelines.lit);
 }
 
 void scene_draw_fixed(Scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -73,7 +74,6 @@ void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
   scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
                        render_pass, &scene->pipelines.unlit);
 }
-
 
 void scene_draw_boundbox(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
