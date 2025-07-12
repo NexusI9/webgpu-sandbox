@@ -263,9 +263,6 @@ void renderer_render(void *desc) {
   // draw dynamic mesh
   config->draw_callback(config->scene, &render_pass);
 
-  // draw fixed mesh
-  scene_draw_fixed(config->scene, &render_pass);
-
   // end render pass
   wgpuRenderPassEncoderEnd(render_pass);
 

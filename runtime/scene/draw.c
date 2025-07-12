@@ -24,13 +24,20 @@ void scene_draw_texture(Scene *scene, WGPURenderPassEncoder *render_pass) {
   // update camera
   camera_draw(scene->active_camera);
 
-  // draw transparent meshes then
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
-                       render_pass, &scene->pipelines.unlit);
-  
-  // draw solid meshes first
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
-                       render_pass, &scene->pipelines.lit);
+  // set pipelines order
+  MeshRefList *pipelines[2] = {
+      &scene->pipelines.unlit,
+      &scene->pipelines.lit,
+  };
+
+  for (size_t l = 0; l < 2; l++) {
+    MeshRefList *pipeline = pipelines[l];
+    scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
+                         render_pass, pipeline);
+  }
+
+  // draw fixed mesh
+  scene_draw_fixed(scene, render_pass);
 }
 
 void scene_draw_fixed(Scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -54,12 +61,20 @@ void scene_draw_wireframe(Scene *scene, WGPURenderPassEncoder *render_pass) {
   // update camera
   camera_draw(scene->active_camera);
 
-  // draw solid meshes first
-  scene_draw_mesh_list(scene, mesh_topology_wireframe, mesh_shader_wireframe,
-                       render_pass, &scene->pipelines.lit);
-  // draw solid meshes then
-  scene_draw_mesh_list(scene, mesh_topology_wireframe, mesh_shader_wireframe,
-                       render_pass, &scene->pipelines.unlit);
+  // set pipelines order
+  MeshRefList *pipelines[2] = {
+      &scene->pipelines.unlit,
+      &scene->pipelines.lit,
+  };
+
+  for (size_t l = 0; l < 2; l++) {
+    MeshRefList *pipeline = pipelines[l];
+    scene_draw_mesh_list(scene, mesh_topology_wireframe, mesh_shader_wireframe,
+                         render_pass, pipeline);
+  }
+
+  // draw fixed mesh
+  scene_draw_fixed(scene, render_pass);
 }
 
 void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -67,12 +82,20 @@ void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
   // update camera
   camera_draw(scene->active_camera);
 
-  // draw solid meshes first
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
-                       render_pass, &scene->pipelines.lit);
-  // draw solid meshes then
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
-                       render_pass, &scene->pipelines.unlit);
+  // set pipelines order
+  MeshRefList *pipelines[2] = {
+      &scene->pipelines.unlit,
+      &scene->pipelines.lit,
+  };
+
+  for (size_t l = 0; l < 2; l++) {
+    MeshRefList *pipeline = pipelines[l];
+    scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
+                         render_pass, pipeline);
+  }
+
+  // draw fixed mesh
+  scene_draw_fixed(scene, render_pass);
 }
 
 void scene_draw_boundbox(Scene *scene, WGPURenderPassEncoder *render_pass) {
@@ -80,10 +103,18 @@ void scene_draw_boundbox(Scene *scene, WGPURenderPassEncoder *render_pass) {
   // update camera
   camera_draw(scene->active_camera);
 
-  // draw solid meshes first
-  scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
-                       render_pass, &scene->pipelines.lit);
-  // draw solid meshes then
-  scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
-                       render_pass, &scene->pipelines.unlit);
+  // set pipelines order
+  MeshRefList *pipelines[2] = {
+      &scene->pipelines.unlit,
+      &scene->pipelines.lit,
+  };
+
+  for (size_t l = 0; l < 2; l++) {
+    MeshRefList *pipeline = pipelines[l];
+    scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
+                         render_pass, pipeline);
+  }
+
+  // draw fixed mesh
+  scene_draw_fixed(scene, render_pass);
 }
