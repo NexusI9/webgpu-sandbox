@@ -92,7 +92,7 @@ void prefab_skybox_create(const PrefabCreateDescriptor *prefab,
    * normal/uv/color, but we actually only need position for the skybox, so
    * maybe can use a "position-only" version to save a bit of memory */
   Primitive box_primitive = primitive_cube();
-  Mesh *skybox_mesh = scene_new_mesh_unlit(prefab->scene);
+  Mesh *skybox_mesh = scene_new_mesh_background(prefab->scene);
 
   mesh_create_primitive(skybox_mesh, &(MeshCreatePrimitiveDescriptor){
                                          .device = prefab->device,

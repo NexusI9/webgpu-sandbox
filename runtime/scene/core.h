@@ -2,8 +2,8 @@
 #define _SCENE_CORE_H_
 
 #include "../backend/clock.h"
-#include "../gizmo/list.h"
 #include "../backend/registry.h"
+#include "../gizmo/list.h"
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
@@ -71,6 +71,7 @@ typedef uint8_t shader_bind_t;
 
  */
 typedef struct {
+  MeshRefList background;
   MeshRefList lit;
   MeshRefList unlit;
   MeshRefList fixed;
@@ -136,5 +137,6 @@ MeshList *scene_mesh_list(Scene *);
 Mesh *scene_new_mesh_lit(Scene *);
 Mesh *scene_new_mesh_unlit(Scene *);
 Mesh *scene_new_mesh_fixed(Scene *);
+Mesh *scene_new_mesh_background(Scene *);
 
 #endif

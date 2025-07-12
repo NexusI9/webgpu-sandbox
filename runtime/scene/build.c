@@ -27,12 +27,15 @@ static void scene_build_mesh_list(Scene *, mesh_get_shader_callback,
 void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
   VERBOSE_PRINT("======= BUILD TEXTURE SCENE ======\n");
 
-  MeshRefList *layers[2] = {
+  MeshRefList *layers[3] = {
+      &scene->pipelines.background,
       &scene->pipelines.lit,
       &scene->pipelines.unlit,
   };
 
-  for (size_t l = 0; l < 2; l++) {
+  const int lit_pipeline_index = 1;
+
+  for (size_t l = 0; l < 3; l++) {
     MeshRefList *layer = layers[l];
 
     // compute boundbox bounds for collisions (lightweight)
@@ -43,7 +46,7 @@ void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
                                 SHADER_TEXTURE_BINDGROUP_VIEWS, layer);
 
     // bind lights (lit only)
-    if (l == 0) {
+    if (l == lit_pipeline_index) {
       for (int i = 0; i < layer->length; i++) {
         material_texture_bind_lights(layer->entries[i], &scene->lights,
                                      SHADER_TEXTURE_BINDGROUP_LIGHTS);

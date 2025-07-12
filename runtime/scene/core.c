@@ -17,7 +17,9 @@ void scene_create(Scene *scene, cclock *clock, Viewport viewport) {
   // init global mesh list
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
-  // init mesh layers
+  // init mesh pipelines
+  mesh_reference_list_create(&scene->pipelines.background,
+                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
   mesh_reference_list_create(&scene->pipelines.lit,
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
   mesh_reference_list_create(&scene->pipelines.unlit,
@@ -58,7 +60,9 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 
 /**
  Return the new mesh pointer from the global array and push the new pointer to
- the right scene layer
+ the right scene layer.
+  1. first create new mesh in the scene pool
+  2. add the reference to the relative mesh ref list
  */
 Mesh *scene_new_mesh_lit(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
@@ -73,6 +77,11 @@ Mesh *scene_new_mesh_unlit(Scene *scene) {
 Mesh *scene_new_mesh_fixed(Scene *scene) {
   Mesh *new_mesh = scene_new_mesh(scene);
   return mesh_reference_list_insert(&scene->pipelines.fixed, new_mesh);
+}
+
+Mesh *scene_new_mesh_background(Scene *scene) {
+  Mesh *new_mesh = scene_new_mesh(scene);
+  return mesh_reference_list_insert(&scene->pipelines.background, new_mesh);
 }
 
 Mesh *scene_new_mesh(Scene *scene) {

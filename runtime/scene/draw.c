@@ -25,12 +25,13 @@ void scene_draw_texture(Scene *scene, WGPURenderPassEncoder *render_pass) {
   camera_draw(scene->active_camera);
 
   // set pipelines order
-  MeshRefList *pipelines[2] = {
-      &scene->pipelines.unlit,
+  MeshRefList *pipelines[3] = {
+      &scene->pipelines.background,
       &scene->pipelines.lit,
+      &scene->pipelines.unlit,
   };
 
-  for (size_t l = 0; l < 2; l++) {
+  for (size_t l = 0; l < 3; l++) {
     MeshRefList *pipeline = pipelines[l];
     scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
                          render_pass, pipeline);
@@ -63,8 +64,8 @@ void scene_draw_wireframe(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // set pipelines order
   MeshRefList *pipelines[2] = {
-      &scene->pipelines.unlit,
       &scene->pipelines.lit,
+      &scene->pipelines.unlit,
   };
 
   for (size_t l = 0; l < 2; l++) {
@@ -84,8 +85,8 @@ void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // set pipelines order
   MeshRefList *pipelines[2] = {
-      &scene->pipelines.unlit,
       &scene->pipelines.lit,
+      &scene->pipelines.unlit,
   };
 
   for (size_t l = 0; l < 2; l++) {
@@ -105,8 +106,8 @@ void scene_draw_boundbox(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   // set pipelines order
   MeshRefList *pipelines[2] = {
-      &scene->pipelines.unlit,
       &scene->pipelines.lit,
+      &scene->pipelines.unlit,
   };
 
   for (size_t l = 0; l < 2; l++) {
