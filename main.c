@@ -183,7 +183,7 @@ void init_scene() {
           .scene = &main_scene,
       },
       &(PrefabSkyboxGradientCreateDescriptor){
-          .resolution = 512,
+          .resolution = 128,
           .stops =
               {
                   .length = 2,
@@ -191,11 +191,11 @@ void init_scene() {
                   .entries =
                       (TextureGradientStop[]){
                           {
-                              .color = (uint8_t[]){255, 255, 0, 255},
+                              .color = (uint8_t[]){240, 245, 255, 255},
                               .position = 1.0f,
                           },
                           {
-                              .color = (uint8_t[]){0, 0, 255, 255},
+                              .color = (uint8_t[]){51, 153, 255, 255},
                               .position = 0.0f,
                           },
                       },
