@@ -7,7 +7,7 @@ typedef struct {
   int width;
   int height;
   uint8_t channels;
-  uint8_t value;
+  uint8_t* value;
 } TextureCreateDescriptor;
 
 void texture_create(Texture *, const TextureCreateDescriptor *);

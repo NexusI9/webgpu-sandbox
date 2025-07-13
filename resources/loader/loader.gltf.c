@@ -424,11 +424,13 @@ void loader_gltf_load_fallback_texture(
   shader_entry->width = TEXTURE_MIN_SIZE;
   shader_entry->height = TEXTURE_MIN_SIZE;
 
+  // TODO: make it more texture friendly (use texture* as first parameter),
+  // current function is hardly reusable within the texture ecosystem
   texture_create_from_ref(&shader_entry->data, &shader_entry->size,
                           &(TextureCreateDescriptor){
                               .width = shader_entry->width,
                               .height = shader_entry->height,
-                              .value = 255,
+                              .value = (uint8_t[]){255, 255, 255, 255},
                               .channels = TEXTURE_CHANNELS_RGBA,
                           });
 }

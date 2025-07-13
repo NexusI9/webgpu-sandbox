@@ -1,6 +1,7 @@
 #ifndef _PREFAB_SKYBOX_H_
 #define _PREFAB_SKYBOX_H_
 
+#include "../../texture/texture.h"
 #include "../prefab.h"
 
 typedef struct {
@@ -13,11 +14,6 @@ typedef struct {
 } CubeMapPath;
 
 typedef struct {
-  vec4 color;
-  float position;
-} GradientStop;
-
-typedef struct {
 
   float blur;
   size_t resolution;
@@ -27,8 +23,7 @@ typedef struct {
 
 typedef struct {
   size_t resolution;
-  size_t length;
-  GradientStop *stops;
+  TextureGradient stops;
 } PrefabSkyboxGradientCreateDescriptor;
 
 void prefab_skybox_create(const PrefabCreateDescriptor *,

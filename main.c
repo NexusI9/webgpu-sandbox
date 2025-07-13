@@ -29,6 +29,7 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/scene.h"
 #include "runtime/shader/shader.h"
+#include "runtime/texture/write.h"
 #include "runtime/viewport/viewport.h"
 
 static Scene main_scene;
@@ -153,24 +154,51 @@ void init_scene() {
   =============        SKYBOX       ==============
 
    */
+  /*
+    prefab_skybox_create(
+        &(PrefabCreateDescriptor){
+            .device = renderer_device(&main_renderer),
+            .queue = renderer_queue(&main_renderer),
+            .scene = &main_scene,
+        },
+        &(PrefabSkyboxCreateDescriptor){
+            .blur = 0.0f,
+            .resolution = 1024,
+            .path =
+                {
+                    .right = "./resources/assets/texture/skybox/lake/right.png",
+                    .left = "./resources/assets/texture/skybox/lake/left.png",
+                    .top = "./resources/assets/texture/skybox/lake/top.png",
+                    .bottom =
+    "./resources/assets/texture/skybox/lake/bottom.png", .front =
+    "./resources/assets/texture/skybox/lake/front.png", .back =
+    "./resources/assets/texture/skybox/lake/back.png",
+                },
+                });*/
 
-  prefab_skybox_create(
+  prefab_skybox_gradient_create(
       &(PrefabCreateDescriptor){
           .device = renderer_device(&main_renderer),
           .queue = renderer_queue(&main_renderer),
           .scene = &main_scene,
       },
-      &(PrefabSkyboxCreateDescriptor){
-          .blur = 0.0f,
-          .resolution = 1024,
-          .path =
+      &(PrefabSkyboxGradientCreateDescriptor){
+          .resolution = 512,
+          .stops =
               {
-                  .right = "./resources/assets/texture/skybox/lake/right.png",
-                  .left = "./resources/assets/texture/skybox/lake/left.png",
-                  .top = "./resources/assets/texture/skybox/lake/top.png",
-                  .bottom = "./resources/assets/texture/skybox/lake/bottom.png",
-                  .front = "./resources/assets/texture/skybox/lake/front.png",
-                  .back = "./resources/assets/texture/skybox/lake/back.png",
+                  .length = 2,
+                  .capacity = 2,
+                  .entries =
+                      (TextureGradientStop[]){
+                          {
+                              .color = (uint8_t[]){255, 255, 0, 255},
+                              .position = 1.0f,
+                          },
+                          {
+                              .color = (uint8_t[]){0, 0, 255, 255},
+                              .position = 0.0f,
+                          },
+                      },
               },
       });
 }

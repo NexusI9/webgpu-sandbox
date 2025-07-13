@@ -1,6 +1,7 @@
 #include "create.h"
-#include "string.h"
 #include "../../include/stb/stb_image.h"
+#include "./write.h"
+#include "string.h"
 #include "webgpu/webgpu.h"
 
 void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
@@ -20,10 +21,9 @@ void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
     return;
   }
 
-  if (desc->value != 0)
-    memset(texture->data, desc->value, texture->size);
+  if (desc->value != NULL)
+    texture_write_fill(texture, desc->value);
 }
-
 
 /**
    Create a texture from refenreced data
@@ -40,9 +40,8 @@ void texture_create_from_ref(unsigned char **data, size_t *size,
   }
 
   if (desc->value != 0)
-    memset(*data, desc->value, *size);
+    memset(*data, *desc->value, *size);
 }
-
 
 /**
    load picture from file

@@ -1,11 +1,6 @@
 #include "processing.h"
-#include "string.h"
 #include "../../utils/math.h"
-
-void texture_fill(Texture *texture, int value) {
-  memset(texture->data, value, texture->size);
-}
-
+#include "string.h"
 
 /**
    Blur algorithm
@@ -97,7 +92,6 @@ void texture_blur(const Texture *src, int kernel_size, float sigma,
   }
 }
 
-
 void texture_contrast(const Texture *source, float contrast,
                       texture_data *destination) {
 
@@ -160,5 +154,3 @@ void texture_remap(const Texture *source, int min, int max,
     }
   }
 }
-
-

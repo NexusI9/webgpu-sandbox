@@ -195,7 +195,7 @@ void shadow_pass_fallback_to_texture(
                                .channels = channels,
                                .width = width,
                                .height = height,
-                               .value = 0,
+                               .value = NULL,
                            });
 
   const WGPUTextureDataLayout texture_layout = {

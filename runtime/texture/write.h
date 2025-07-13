@@ -12,6 +12,19 @@ typedef enum {
   TextureWriteMethod_Div,
 } TextureWriteMethod;
 
+typedef uint8_t *gradient_color;
+
+typedef struct {
+  gradient_color color;
+  float position;
+} TextureGradientStop;
+
+typedef struct {
+  size_t length;
+  size_t capacity;
+  TextureGradientStop *entries;
+} TextureGradient;
+
 typedef struct {
   const Texture *source;
   texture_data *destination;
@@ -58,6 +71,10 @@ typedef struct {
 } TextureWriteTriangleGradientDescriptor;
 
 void texture_write(unsigned char, texture_data, TextureWriteMethod);
+
+void texture_write_gradient(Texture *, const TextureGradient *, TextureWriteMethod);
+
+void texture_write_fill(Texture *, uint8_t *);
 
 void texture_write_alpha(Texture *, uint8_t);
 

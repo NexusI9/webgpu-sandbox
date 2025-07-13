@@ -98,7 +98,8 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
 
   // Raycast from ray origin (source surface) towards each compare mesh
   // triangles
-  for (size_t i = 0; i < desc->compare_mesh->topology.base.index.length; i += 3) {
+  for (size_t i = 0; i < desc->compare_mesh->topology.base.index.length;
+       i += 3) {
     Triangle compare_triangle = ao_bake_mesh_triangle(desc->compare_mesh, i);
     vec3 hit;
     triangle_raycast(&compare_triangle, *desc->ray_origin, *desc->ray_direction,
@@ -166,7 +167,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
                                         .width = AO_TEXTURE_SIZE,
                                         .height = AO_TEXTURE_SIZE,
                                         .channels = TEXTURE_CHANNELS_R,
-                                        .value = 255,
+                                        .value = (uint8_t[]){255},
                                     });
   }
 

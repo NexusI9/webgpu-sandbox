@@ -12,9 +12,10 @@ static inline void prefab_skybox_create_layer(const WGPUTexture *,
                                               const Texture *, const size_t,
                                               WGPUQueue *);
 
-static void prefab_skybox_create_from_texture(const PrefabCreateDescriptor *,
-                                              const WGPUTexture *, const size_t,
-                                              const float);
+static inline void
+prefab_skybox_create_from_texture(const PrefabCreateDescriptor *,
+                                  const WGPUTexture *, const size_t,
+                                  const float);
 
 static const int layer_count = 6;
 static const WGPUTextureFormat format = WGPUTextureFormat_RGBA8Unorm;
@@ -239,4 +240,83 @@ void prefab_skybox_create(const PrefabCreateDescriptor *prefab,
  */
 void prefab_skybox_gradient_create(
     const PrefabCreateDescriptor *prefab,
-    const PrefabSkyboxGradientCreateDescriptor *gradient) {}
+    const PrefabSkyboxGradientCreateDescriptor *desc) {
+
+  // create global texture
+  const WGPUTexture skybox_texture =
+      prefab_skybox_texture(prefab->device, desc->resolution);
+
+  // define stops start and end (i.e. top and bottom color)
+  const TextureGradient *grad = &desc->stops;
+  TextureGradientStop *start = &grad->entries[0];
+  TextureGradientStop *end = &grad->entries[desc->stops.length - 1];
+
+  // define end/ start based on stops position
+  for (size_t i = 0; i < grad->length; i++) {
+    TextureGradientStop *stop = &grad->entries[0];
+    if (start->position < stop->position)
+      start = stop;
+
+    if (end->position > stop->position)
+      end = stop;
+  }
+
+  /* create layers, order:
+     0 - right
+     1 - left
+     2 - top
+     3 - bottom
+     4 - front
+     5 - back
+   */
+  for (size_t i = 0; i < layer_count; i++) {
+
+    Texture layer_texture;
+
+    switch (i) {
+
+    // top
+    case 2:
+      texture_create(&layer_texture, &(TextureCreateDescriptor){
+                                         .channels = 4,
+                                         .height = desc->resolution,
+                                         .width = desc->resolution,
+                                         .value = start->color,
+                                     });
+      break;
+
+    // bottom
+    case 3:
+      texture_create(&layer_texture, &(TextureCreateDescriptor){
+                                         .channels = 4,
+                                         .height = desc->resolution,
+                                         .width = desc->resolution,
+                                         .value = end->color,
+                                     });
+      break;
+
+    // sides
+    default:
+      // TODO OPTI: cannot precomput gradient (resuing same pointer seems lead
+      // to error), find a way to precompute it so just need to reuse the
+      // gradient data throughout the side layers.
+      texture_create(&layer_texture, &(TextureCreateDescriptor){
+                                         .channels = 4,
+                                         .height = desc->resolution,
+                                         .width = desc->resolution,
+                                         .value = end->color,
+                                     });
+
+      // create gradient
+      texture_write_gradient(&layer_texture, &desc->stops,
+                             TextureWriteMethod_Replace);
+    }
+
+    // upload texture
+    prefab_skybox_create_layer(&skybox_texture, &layer_texture, i,
+                               prefab->queue);
+  }
+
+  prefab_skybox_create_from_texture(prefab, &skybox_texture, desc->resolution,
+                                    0.0f);
+}

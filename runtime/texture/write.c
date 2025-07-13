@@ -1,7 +1,26 @@
 #include "write.h"
 #include "../utils/math.h"
 #include "core.h"
+#include "string.h"
 #include <stdint.h>
+
+/**
+   Replace the texture value based on a float list.
+   Note that the value will be replaced based on the texture channels;
+   as a result it's necessary to ensure that the value is the same
+   length as the texture channels.
+ */
+void texture_write_fill(Texture *texture, uint8_t *new_pixel) {
+
+  for (size_t y = 0; y < texture->height; ++y) {
+    for (size_t x = 0; x < texture->width; ++x) {
+      // get pixel (cursor)
+      int pixel = (y * texture->width + x) * texture->channels;
+      // replace with float
+      memcpy(&texture->data[pixel], new_pixel, texture->channels);
+    }
+  }
+}
 
 /**
    Provide different operators to write value into a texture data
@@ -49,7 +68,7 @@ void texture_write_pixel(Texture *texture, int value, vec2 coordinate,
 }
 
 /**
-
+   Draw a line on a texture
  */
 void texture_write_line(const TextureWriteLineDescriptor *desc) {
 
@@ -169,8 +188,6 @@ void texture_write_triangle_gradient(
 
           texture_data pixel = *desc->destination + (y * width + x) * channels;
 
-          // printf("%p\n", pixel);
-
           for (int c = 0; c < channels; c++) {
             float v = value_a[c] * u + value_b[c] * v + value_c[c] * w;
             v = fminf(fmax(v, 0.0f), 1.0f);
@@ -190,11 +207,55 @@ void texture_write_alpha(Texture *texture, uint8_t value) {
 
   if (texture->channels < 4)
     return;
-  
+
   for (size_t y = 0; y < texture->height; ++y) {
     for (size_t x = 0; x < texture->width; ++x) {
-      int i = (y * texture->width + x) * texture->channels;
+      const int i = (y * texture->width + x) * texture->channels;
       texture->data[i + 3] = value;
+    }
+  }
+}
+
+void texture_write_gradient(Texture *texture, const TextureGradient *gradient,
+                            TextureWriteMethod method) {
+
+  for (size_t g = 0; g < gradient->length; g += 2) {
+
+    // get 2 stops in chain
+    const TextureGradientStop *start =
+        (gradient->entries[g].position < gradient->entries[g + 1].position)
+            ? &gradient->entries[g]
+            : &gradient->entries[g + 1];
+
+    const TextureGradientStop *end =
+        (gradient->entries[g].position > gradient->entries[g + 1].position)
+            ? &gradient->entries[g]
+            : &gradient->entries[g + 1];
+
+    // scale positions to texture dimension (ex: 1.0 -> 1024)
+    const size_t start_pos =
+        clamp(start->position, 0.0f, 1.0f) * texture->height;
+
+    const size_t end_pos = clamp(end->position, 0.0f, 1.0f) * texture->height;
+
+    // interpolate
+    for (size_t y = start_pos; y < end_pos; ++y) {
+
+      const float weight =
+          (float)(y - start_pos) / (float)(end_pos - start_pos);
+
+      for (size_t x = 0; x < texture->width; ++x) {
+        // get pixel cursor
+        const int pixel = (y * texture->width + x) * texture->channels;
+
+        // compute & write new value
+        for (uint8_t v = 0; v < texture->channels; ++v) {
+          uint8_t new_color =
+              (1.0f - weight) * end->color[v] + weight * start->color[v];
+          texture_write((unsigned char)new_color, &texture->data[pixel + v],
+                        method);
+        }
+      }
     }
   }
 }
