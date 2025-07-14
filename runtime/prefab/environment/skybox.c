@@ -286,8 +286,8 @@ void prefab_skybox_gradient_create(
   for (size_t i = 0; i < layer_count; i++) {
 
     Texture layer_texture;
-    bool free_texture = true;
     Texture *final_texture;
+    bool free_texture = true;
 
     switch (i) {
 

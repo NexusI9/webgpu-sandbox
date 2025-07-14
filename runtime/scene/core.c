@@ -1,19 +1,24 @@
 #include "core.h"
+#include "../gizmo/grid.h"
 
 static void scene_init_light_list(Scene *);
 static Mesh *scene_new_mesh(Scene *);
 static Camera *scene_init_main_camera(Scene *, cclock *);
-static void scene_init_grid(Scene*);
+static void scene_init_grid(Scene *);
 
-void scene_create(Scene *scene, cclock *clock, Viewport viewport) {
+void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   // create camera list, and set active camera
   camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
-  scene->camera = scene_init_main_camera(scene, clock);
+  scene->camera = scene_init_main_camera(scene, desc->clock);
   scene->active_camera = scene->camera;
 
+  // set wgpu related handles
+  scene->device = desc->device;
+  scene->queue = desc->queue;
+
   // set viewport
-  scene->viewport = viewport;
+  viewport_create(&scene->viewport, desc->viewport);
 
   // init global mesh list
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
@@ -35,6 +40,9 @@ void scene_create(Scene *scene, cclock *clock, Viewport viewport) {
   scene_init_light_list(scene);
 
   scene->id = reg_register((void *)scene, RegEntryType_Scene);
+
+  // init grid
+  scene_init_grid(scene);
 }
 
 /**
@@ -59,13 +67,27 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
   return camera_list_insert(&scene->cameras, &camera);
 }
 
-
 /**
    Create scene grid
  */
-void scene_init_grid(Scene* scene){
+void scene_init_grid(Scene *scene) {
 
-  
+  GizmoGridUniform grid_uniform = {
+      .size = 100.0f,
+      .cell_size = 100.0f,
+      .thickness = 44.0f,
+  };
+
+  glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
+
+  Mesh *grid = scene_new_mesh_fixed(scene);
+  gizmo_grid_create(grid, &(GizmoGridCreateDescriptor){
+                              .uniform = grid_uniform,
+                              .camera = scene->active_camera,
+                              .viewport = &scene->viewport,
+                              .device = scene->device,
+                              .queue = scene->queue,
+                          });
 }
 
 /**

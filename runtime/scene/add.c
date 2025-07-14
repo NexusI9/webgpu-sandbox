@@ -2,8 +2,8 @@
 
 static MeshRefList *scene_layer_gizmo(Scene *);
 
-GizmoPointLight *scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
-                                       WGPUDevice *device, WGPUQueue *queue) {
+GizmoPointLight *scene_add_point_light(Scene *scene,
+                                       PointLightDescriptor *desc) {
 
   PointLightList *list = &scene->lights.point;
   if (list->length == list->capacity) {
@@ -22,8 +22,8 @@ GizmoPointLight *scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
                            &(GizmoCreateDescriptor){
                                .camera = scene->active_camera,
                                .viewport = &scene->viewport,
-                               .device = device,
-                               .queue = queue,
+                               .device = scene->device,
+                               .queue = scene->queue,
                                .list = scene_mesh_list(scene),
                            });
 
@@ -34,8 +34,7 @@ GizmoPointLight *scene_add_point_light(Scene *scene, PointLightDescriptor *desc,
   return gizmo_light;
 }
 
-GizmoSpotLight *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
-                                     WGPUDevice *device, WGPUQueue *queue) {
+GizmoSpotLight *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc) {
 
   SpotLightList *list = &scene->lights.spot;
   if (list->length == list->capacity) {
@@ -54,8 +53,8 @@ GizmoSpotLight *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
                           &(GizmoCreateDescriptor){
                               .camera = scene->active_camera,
                               .viewport = &scene->viewport,
-                              .device = device,
-                              .queue = queue,
+                              .device = scene->device,
+                              .queue = scene->queue,
                               .list = scene_mesh_list(scene),
                           });
 
@@ -67,9 +66,7 @@ GizmoSpotLight *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 }
 
 GizmoAmbientLight *scene_add_ambient_light(Scene *scene,
-                                           AmbientLightDescriptor *desc,
-                                           WGPUDevice *device,
-                                           WGPUQueue *queue) {
+                                           AmbientLightDescriptor *desc) {
 
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
@@ -88,8 +85,8 @@ GizmoAmbientLight *scene_add_ambient_light(Scene *scene,
                              &(GizmoCreateDescriptor){
                                  .camera = scene->active_camera,
                                  .viewport = &scene->viewport,
-                                 .device = device,
-                                 .queue = queue,
+                                 .device = scene->device,
+                                 .queue = scene->queue,
                                  .list = scene_mesh_list(scene),
                              });
 
@@ -100,8 +97,7 @@ GizmoAmbientLight *scene_add_ambient_light(Scene *scene,
   return gizmo_light;
 }
 
-GizmoSunLight *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
-                                   WGPUDevice *device, WGPUQueue *queue) {
+GizmoSunLight *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
 
   SunLightList *list = &scene->lights.sun;
   if (list->length == list->capacity) {
@@ -120,8 +116,8 @@ GizmoSunLight *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
                          &(GizmoCreateDescriptor){
                              .camera = scene->active_camera,
                              .viewport = &scene->viewport,
-                             .device = device,
-                             .queue = queue,
+                             .device = scene->device,
+                             .queue = scene->queue,
                              .list = scene_mesh_list(scene),
                          });
 
@@ -152,8 +148,7 @@ GizmoSunLight *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
        '----------'
 
  */
-GizmoCamera *scene_add_camera(Scene *scene, const CameraCreateDescriptor *desc,
-                              WGPUDevice *device, WGPUQueue *queue) {
+GizmoCamera *scene_add_camera(Scene *scene, const CameraCreateDescriptor *desc) {
 
   // init scene camera
   Camera *new_cam = camera_list_new_camera(&scene->cameras);
@@ -166,8 +161,8 @@ GizmoCamera *scene_add_camera(Scene *scene, const CameraCreateDescriptor *desc,
                       &(GizmoCreateDescriptor){
                           .camera = scene->active_camera,
                           .viewport = &scene->viewport,
-                          .device = device,
-                          .queue = queue,
+                          .device = scene->device,
+                          .queue = scene->queue,
                           .list = scene_mesh_list(scene),
                       });
 
@@ -177,7 +172,6 @@ GizmoCamera *scene_add_camera(Scene *scene, const CameraCreateDescriptor *desc,
 
   return gizmo_cam;
 }
-
 
 /**
    Return pointer to mesh gizmo layer ("Fixed" layer)

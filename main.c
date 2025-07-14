@@ -9,6 +9,7 @@
 
 // runtime
 #include "runtime/prefab/environment/skybox.h"
+#include "runtime/scene/core.h"
 
 static Scene main_scene;
 static Renderer main_renderer;
@@ -19,18 +20,21 @@ static void init_scene();
 
 void init_scene() {
 
-  // set viewport
-  Viewport viewport;
-  viewport_create(&viewport, &(ViewportCreateDescriptor){
-                                 .fov = 32.0f,
-                                 .near_clip = 0.1f,
-                                 .far_clip = 100.0f,
-                                 .aspect = 16.0f / 9.0f,
-                                 .width = renderer_width(&main_renderer),
-                                 .height = renderer_height(&main_renderer),
-                             });
-
-  scene_create(&main_scene, &main_clock, viewport);
+  scene_create(&main_scene,
+               &(SceneCreateDescriptor){
+                   .clock = &main_clock,
+                   .viewport =
+                       &(ViewportCreateDescriptor){
+                           .fov = 32.0f,
+                           .near_clip = 0.1f,
+                           .far_clip = 100.0f,
+                           .aspect = 16.0f / 9.0f,
+                           .width = renderer_width(&main_renderer),
+                           .height = renderer_height(&main_renderer),
+                       },
+                   .device = renderer_device(&main_renderer),
+                   .queue = renderer_queue(&main_renderer),
+               });
 
   /*
 
@@ -67,33 +71,28 @@ void init_scene() {
   static vec3 SUN_LIGHT = {-2.0f, 2.0f, 2.0f};
 
   scene_add_sun_light(
-      &main_scene,
-      &(SunLightDescriptor){
-          .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
-          .color = {1.0f, 1.0f, 1.0f},
-          .intensity = 1.0f,
-          .size = 10.0f,
-      },
-      renderer_device(&main_renderer), renderer_queue(&main_renderer));
+      &main_scene, &(SunLightDescriptor){
+                       .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
+                       .color = {1.0f, 1.0f, 1.0f},
+                       .intensity = 1.0f,
+                       .size = 10.0f,
+                   });
 
   // set light
-  scene_add_point_light(&main_scene,
-                        &(PointLightDescriptor){
-                            .color = {1.0f, 0.0f, 0.3f},
-                            .intensity = 4.0f,
-                            .cutoff = 20.0f,
-                            .inner_cutoff = 50.0f,
-                            .near = 0.1,
-                            .far = 20.0f,
-                            .position =
-                                {
-                                    POINT_LIGHT[0],
-                                    POINT_LIGHT[1],
-                                    POINT_LIGHT[2],
-                                },
-                        },
-                        renderer_device(&main_renderer),
-                        renderer_queue(&main_renderer));
+  scene_add_point_light(&main_scene, &(PointLightDescriptor){
+                                         .color = {1.0f, 0.0f, 0.3f},
+                                         .intensity = 4.0f,
+                                         .cutoff = 20.0f,
+                                         .inner_cutoff = 50.0f,
+                                         .near = 0.1,
+                                         .far = 20.0f,
+                                         .position =
+                                             {
+                                                 POINT_LIGHT[0],
+                                                 POINT_LIGHT[1],
+                                                 POINT_LIGHT[2],
+                                             },
+                                     });
 
   /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
                                         .color = {1.0f, 1.0f, 1.0f},
@@ -115,14 +114,11 @@ void init_scene() {
                                             },
                                             });*/
 
-  scene_add_ambient_light(&main_scene,
-                          &(AmbientLightDescriptor){
-                              .color = {1.0f, 1.0f, 1.0f},
-                              .intensity = 0.2f,
-                              .position = {2.0f, 4.0f, -5.0f},
-                          },
-                          renderer_device(&main_renderer),
-                          renderer_queue(&main_renderer));
+  scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
+                                           .color = {1.0f, 1.0f, 1.0f},
+                                           .intensity = 0.2f,
+                                           .position = {2.0f, 4.0f, -5.0f},
+                                       });
 
   /*
 
@@ -130,7 +126,7 @@ void init_scene() {
 
    */
 
-  /*prefab_skybox_create(
+  prefab_skybox_create(
       &(PrefabCreateDescriptor){
           .device = renderer_device(&main_renderer),
           .queue = renderer_queue(&main_renderer),
@@ -148,52 +144,33 @@ void init_scene() {
                   .front = "./resources/assets/texture/skybox/lake/front.png",
                   .back = "./resources/assets/texture/skybox/lake/back.png",
               },
-      });*/
-
-  prefab_skybox_gradient_create(
-      &(PrefabCreateDescriptor){
-          .device = renderer_device(&main_renderer),
-          .queue = renderer_queue(&main_renderer),
-          .scene = &main_scene,
-      },
-      &(PrefabSkyboxGradientCreateDescriptor){
-          .resolution = 32,
-          .stops =
-              {
-                  .length = 2,
-                  .capacity = 2,
-                  .entries =
-                      (TextureGradientStop[]){
-                          {
-                              .color = (uint8_t[]){240, 245, 255, 255},
-                              .position = 1.0f,
-                          },
-                          {
-                              .color = (uint8_t[]){51, 153, 255, 255},
-                              .position = 0.0f,
-                          },
-                      },
-              },
       });
-}
 
-void add_grid() {
-  GridUniform grid_uniform = {
-      .size = 100.0f,
-      .cell_size = 100.0f,
-      .thickness = 44.0f,
-  };
-
-  glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
-
-  Mesh *grid = scene_new_mesh_fixed(&main_scene);
-  gizmo_grid_create(grid, &(GizmoGridCreateDescriptor){
-                              .uniform = grid_uniform,
-                              .camera = main_scene.active_camera,
-                              .viewport = &main_scene.viewport,
-                              .device = renderer_device(&main_renderer),
-                              .queue = renderer_queue(&main_renderer),
-                          });
+  /* prefab_skybox_gradient_create(
+       &(PrefabCreateDescriptor){
+           .device = renderer_device(&main_renderer),
+           .queue = renderer_queue(&main_renderer),
+           .scene = &main_scene,
+       },
+       &(PrefabSkyboxGradientCreateDescriptor){
+           .resolution = 32,
+           .stops =
+               {
+                   .length = 2,
+                   .capacity = 2,
+                   .entries =
+                       (TextureGradientStop[]){
+                           {
+                               .color = (uint8_t[]){240, 245, 255, 255},
+                               .position = 1.0f,
+                           },
+                           {
+                               .color = (uint8_t[]){51, 153, 255, 255},
+                               .position = 0.0f,
+                           },
+                       },
+               },
+       });*/
 }
 
 void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {}
@@ -230,15 +207,13 @@ int main(int argc, const char *argv[]) {
       });
 
   // add gizmo camera
-  GizmoCamera *new_cam = scene_add_camera(&main_scene,
-                                          &(CameraCreateDescriptor){
-                                              .speed = 20.0f,
-                                              .clock = &main_clock,
-                                              .mode = CameraMode_Fixed,
-                                              .sensitivity = {0},
-                                          },
-                                          renderer_device(&main_renderer),
-                                          renderer_queue(&main_renderer));
+  GizmoCamera *new_cam =
+      scene_add_camera(&main_scene, &(CameraCreateDescriptor){
+                                        .speed = 20.0f,
+                                        .clock = &main_clock,
+                                        .mode = CameraMode_Fixed,
+                                        .sensitivity = {0},
+                                    });
 
   gizmo_camera_lookat(new_cam, (vec3){10.0f, 2.0f, 0.0f},
                       (vec3){0.0f, 0.0f, 0.0f});
@@ -257,8 +232,6 @@ int main(int argc, const char *argv[]) {
   mesh_reference_list_transfert(&translate.meshes, &main_scene.pipelines.fixed);
 
   example_gltf(&main_scene, &main_renderer);
-
-  add_grid();
 
   // Update Loop
   renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);

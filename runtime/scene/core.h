@@ -4,6 +4,7 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../gizmo/list.h"
+#include "webgpu/webgpu.h"
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
@@ -100,11 +101,15 @@ typedef struct {
      | Camera n  |
      '-----------'
 
-*/
+ */
 
 typedef struct {
 
   id_t id;
+
+  // WGPU
+  WGPUDevice *device;
+  WGPUQueue *queue;
 
   // camera
   Camera *camera;
@@ -125,10 +130,17 @@ typedef struct {
 
 } Scene;
 
+typedef struct {
+  cclock *clock;
+  const ViewportCreateDescriptor* viewport;
+  WGPUDevice *device;
+  WGPUQueue *queue;
+} SceneCreateDescriptor;
+
 typedef void (*scene_draw_callback)(Scene *, WGPURenderPassEncoder *);
 typedef void (*scene_build_callback)(Scene *);
 
-void scene_create(Scene *, cclock *, Viewport);
+void scene_create(Scene *, const SceneCreateDescriptor *);
 
 // mesh pool
 MeshList *scene_mesh_list(Scene *);

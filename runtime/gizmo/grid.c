@@ -47,7 +47,7 @@ void gizmo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                         {
                             .binding = 0,
                             .data = &gd->uniform,
-                            .size = sizeof(GridUniform),
+                            .size = sizeof(GizmoGridUniform),
                             .offset = 0,
                         },
                     },

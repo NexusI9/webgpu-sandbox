@@ -11,11 +11,11 @@ typedef struct {
   float size;
   float cell_size;
   float thickness;
-} GridUniform;
+} GizmoGridUniform;
 
 typedef struct {
 
-  GridUniform uniform;
+  GizmoGridUniform uniform;
 
   WGPUDevice *device;
   WGPUQueue *queue;
@@ -27,7 +27,7 @@ typedef struct {
 
 typedef struct {
 
-  GridUniform uniform;
+  GizmoGridUniform uniform;
 
   WGPUDevice *device;
   WGPUQueue *queue;
@@ -35,7 +35,7 @@ typedef struct {
   Camera *camera;
   Viewport *viewport;
 
-} Grid;
+} GizmoGrid;
 
 void gizmo_grid_create(Mesh *, GizmoGridCreateDescriptor *);
 
