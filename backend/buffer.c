@@ -59,7 +59,7 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
 }
 
 void buffer_create_texture(WGPUTextureView *texture_view,
-                           const CreateTextureDescriptor *tx) {
+                           const CreateTextureDescriptor *tx, bool free) {
 
   // sample + texture (ShaderTexture will be used later in the shader binding
   // process)
@@ -101,19 +101,20 @@ void buffer_create_texture(WGPUTextureView *texture_view,
                         },
                         &(WGPUExtent3D){tx->width, tx->height, 1});
 
-  stbi_image_free(tx->data);
+  if (free)
+    stbi_image_free(tx->data);
 
   // create texture view (used in binding process)
   // TODO: Check put texture desc instead of NULL
   *texture_view = wgpuTextureCreateView(texture, NULL);
 }
 
-
 /**
    Upload a texture cube view to the GPU.
  */
 void buffer_create_texture_cube(WGPUTextureView *texture_view,
-                                const CreateTextureCubeDescriptor *tx) {
+                                const CreateTextureCubeDescriptor *tx,
+                                bool free) {
 
   // upload texture to GPU
   wgpuQueueWriteTexture(*tx->queue,
@@ -131,5 +132,6 @@ void buffer_create_texture_cube(WGPUTextureView *texture_view,
                         },
                         &(WGPUExtent3D){tx->width, tx->height, 1});
 
-  stbi_image_free(tx->data);
+  if (free)
+    stbi_image_free(tx->data);
 }

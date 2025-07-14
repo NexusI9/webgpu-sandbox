@@ -10,7 +10,7 @@ static inline WGPUTexture prefab_skybox_texture(WGPUDevice *, const size_t);
 
 static inline void prefab_skybox_create_layer(const WGPUTexture *,
                                               const Texture *, const size_t,
-                                              WGPUQueue *);
+                                              WGPUQueue *, bool);
 
 static inline void
 prefab_skybox_create_from_texture(const PrefabCreateDescriptor *,
@@ -26,7 +26,7 @@ static const WGPUTextureFormat format = WGPUTextureFormat_RGBA8Unorm;
 static inline void prefab_skybox_create_layer(const WGPUTexture *texture,
                                               const Texture *layer_texture,
                                               const size_t layer_index,
-                                              WGPUQueue *queue) {
+                                              WGPUQueue *queue, bool free) {
   WGPUTextureView layer_texture_view = wgpuTextureCreateView(
       *texture, &(WGPUTextureViewDescriptor){
                     .format = format,
@@ -48,7 +48,8 @@ static inline void prefab_skybox_create_layer(const WGPUTexture *texture,
                                  .channels = layer_texture->channels,
                                  .format = format,
                                  .layer = layer_index,
-                             });
+                             },
+                             free);
 }
 
 /**
@@ -222,7 +223,7 @@ void prefab_skybox_create(const PrefabCreateDescriptor *prefab,
 
       // upload image to gpu and update relative layer texture view
       prefab_skybox_create_layer(&skybox_texture, &layer_texture, i,
-                                 prefab->queue);
+                                 prefab->queue, true);
 
       // TODO: free texture
     } else {
@@ -261,6 +262,19 @@ void prefab_skybox_gradient_create(
       end = stop;
   }
 
+  // precompute gradient sides to be reused for each cube sides
+  Texture gradient_texture;
+  texture_create(&gradient_texture, &(TextureCreateDescriptor){
+                                        .channels = 4,
+                                        .height = desc->resolution,
+                                        .width = desc->resolution,
+                                        .value = end->color,
+                                    });
+
+  // create gradient
+  texture_write_gradient(&gradient_texture, &desc->stops,
+                         TextureWriteMethod_Replace);
+
   /* create layers, order:
      0 - right
      1 - left
@@ -272,6 +286,8 @@ void prefab_skybox_gradient_create(
   for (size_t i = 0; i < layer_count; i++) {
 
     Texture layer_texture;
+    bool free_texture = true;
+    Texture *final_texture;
 
     switch (i) {
 
@@ -283,6 +299,7 @@ void prefab_skybox_gradient_create(
                                          .width = desc->resolution,
                                          .value = start->color,
                                      });
+      final_texture = &layer_texture;
       break;
 
     // bottom
@@ -293,29 +310,23 @@ void prefab_skybox_gradient_create(
                                          .width = desc->resolution,
                                          .value = end->color,
                                      });
+      final_texture = &layer_texture;
       break;
 
     // sides
     default:
-      // TODO OPTI: cannot precomput gradient (resuing same pointer seems lead
-      // to error), find a way to precompute it so just need to reuse the
-      // gradient data throughout the side layers.
-      texture_create(&layer_texture, &(TextureCreateDescriptor){
-                                         .channels = 4,
-                                         .height = desc->resolution,
-                                         .width = desc->resolution,
-                                         .value = end->color,
-                                     });
-
-      // create gradient
-      texture_write_gradient(&layer_texture, &desc->stops,
-                             TextureWriteMethod_Replace);
+      final_texture = &gradient_texture;
+      free_texture = false;
     }
 
     // upload texture
-    prefab_skybox_create_layer(&skybox_texture, &layer_texture, i,
-                               prefab->queue);
+    prefab_skybox_create_layer(&skybox_texture, final_texture, i, prefab->queue,
+                               free_texture);
   }
+
+  // free gradient texture
+  stbi_image_free(gradient_texture.data);
+  gradient_texture.data = NULL;
 
   prefab_skybox_create_from_texture(prefab, &skybox_texture, desc->resolution,
                                     0.0f);

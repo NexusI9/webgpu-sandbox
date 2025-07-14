@@ -3,6 +3,7 @@
 static void scene_init_light_list(Scene *);
 static Mesh *scene_new_mesh(Scene *);
 static Camera *scene_init_main_camera(Scene *, cclock *);
+static void scene_init_grid(Scene*);
 
 void scene_create(Scene *scene, cclock *clock, Viewport viewport) {
 
@@ -56,6 +57,15 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
                          });
 
   return camera_list_insert(&scene->cameras, &camera);
+}
+
+
+/**
+   Create scene grid
+ */
+void scene_init_grid(Scene* scene){
+
+  
 }
 
 /**

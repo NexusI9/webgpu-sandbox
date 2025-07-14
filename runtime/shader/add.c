@@ -116,7 +116,7 @@ void shader_add_texture(Shader *shader,
                                 .queue = shader->queue,
                                 .format = current_entry->format,
                                 .channels = current_entry->channels,
-                            });
+                            }, true);
 
       current_bind_group->textures
           .entries[current_bind_group->textures.length++] = *current_entry;
