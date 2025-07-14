@@ -4,10 +4,5 @@
 #include "../scene/scene.h"
 #include <webgpu/webgpu.h>
 
-typedef struct {
-  WGPUDevice *device;
-  WGPUQueue *queue;
-  Scene *scene;
-} PrefabCreateDescriptor;
 
 #endif

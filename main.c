@@ -8,6 +8,7 @@
 #include <emscripten/emscripten.h>
 
 // runtime
+#include "resources/example/skybox.h"
 #include "runtime/prefab/environment/skybox.h"
 #include "runtime/scene/core.h"
 
@@ -60,25 +61,13 @@ void init_scene() {
 
    */
 
-  // dir light
-  static vec3 LIGHT_POSITION = {0.0f, 4.0f, 6.0f};
-  static vec3 LIGHT_TARGET = {0.0f, 0.0f, 0.0f};
+  scene_add_sun_light(&main_scene, &(SunLightDescriptor){
+                                       .position = {-2.0f, 2.0f, 2.0f},
+                                       .color = {1.0f, 1.0f, 1.0f},
+                                       .intensity = 1.0f,
+                                       .size = 10.0f,
+                                   });
 
-  // point light
-  static vec3 POINT_LIGHT = {0.0f, 2.4f, 2.3f};
-
-  // sun light
-  static vec3 SUN_LIGHT = {-2.0f, 2.0f, 2.0f};
-
-  scene_add_sun_light(
-      &main_scene, &(SunLightDescriptor){
-                       .position = {SUN_LIGHT[0], SUN_LIGHT[1], SUN_LIGHT[2]},
-                       .color = {1.0f, 1.0f, 1.0f},
-                       .intensity = 1.0f,
-                       .size = 10.0f,
-                   });
-
-  // set light
   scene_add_point_light(&main_scene, &(PointLightDescriptor){
                                          .color = {1.0f, 0.0f, 0.3f},
                                          .intensity = 4.0f,
@@ -88,9 +77,9 @@ void init_scene() {
                                          .far = 20.0f,
                                          .position =
                                              {
-                                                 POINT_LIGHT[0],
-                                                 POINT_LIGHT[1],
-                                                 POINT_LIGHT[2],
+                                                 0.0f,
+                                                 2.4f,
+                                                 2.3f,
                                              },
                                      });
 
@@ -126,51 +115,7 @@ void init_scene() {
 
    */
 
-  prefab_skybox_create(
-      &(PrefabCreateDescriptor){
-          .device = renderer_device(&main_renderer),
-          .queue = renderer_queue(&main_renderer),
-          .scene = &main_scene,
-      },
-      &(PrefabSkyboxCreateDescriptor){
-          .blur = 0.0f,
-          .resolution = 1024,
-          .path =
-              {
-                  .right = "./resources/assets/texture/skybox/lake/right.png",
-                  .left = "./resources/assets/texture/skybox/lake/left.png",
-                  .top = "./resources/assets/texture/skybox/lake/top.png",
-                  .bottom = "./resources/assets/texture/skybox/lake/bottom.png",
-                  .front = "./resources/assets/texture/skybox/lake/front.png",
-                  .back = "./resources/assets/texture/skybox/lake/back.png",
-              },
-      });
-
-  /* prefab_skybox_gradient_create(
-       &(PrefabCreateDescriptor){
-           .device = renderer_device(&main_renderer),
-           .queue = renderer_queue(&main_renderer),
-           .scene = &main_scene,
-       },
-       &(PrefabSkyboxGradientCreateDescriptor){
-           .resolution = 32,
-           .stops =
-               {
-                   .length = 2,
-                   .capacity = 2,
-                   .entries =
-                       (TextureGradientStop[]){
-                           {
-                               .color = (uint8_t[]){240, 245, 255, 255},
-                               .position = 1.0f,
-                           },
-                           {
-                               .color = (uint8_t[]){51, 153, 255, 255},
-                               .position = 0.0f,
-                           },
-                       },
-               },
-       });*/
+  example_skybox(&main_scene);
 }
 
 void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {}
@@ -231,7 +176,7 @@ int main(int argc, const char *argv[]) {
 
   mesh_reference_list_transfert(&translate.meshes, &main_scene.pipelines.fixed);
 
-  example_gltf(&main_scene, &main_renderer);
+  example_gltf(&main_scene);
 
   // Update Loop
   renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);

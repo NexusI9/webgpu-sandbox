@@ -26,10 +26,8 @@ typedef struct {
   TextureGradient stops;
 } PrefabSkyboxGradientCreateDescriptor;
 
-void prefab_skybox_create(const PrefabCreateDescriptor *,
-                          const PrefabSkyboxCreateDescriptor *);
+void prefab_skybox_create(Scene *, const PrefabSkyboxCreateDescriptor *);
 
 void prefab_skybox_gradient_create(
-    const PrefabCreateDescriptor *,
-    const PrefabSkyboxGradientCreateDescriptor *);
+    Scene *, const PrefabSkyboxGradientCreateDescriptor *);
 #endif

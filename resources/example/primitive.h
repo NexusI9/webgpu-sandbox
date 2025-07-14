@@ -7,7 +7,7 @@
 #include "../../runtime/scene/scene.h"
 #include "../../runtime/material/material.h"
 
-void example_primitive(Mesh*, vec3, Scene*, Renderer*);
+void example_primitive(Mesh*, vec3, Scene*);
 
 
 

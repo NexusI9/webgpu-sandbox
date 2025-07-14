@@ -5,7 +5,7 @@
 #include "../../resources/loader/loader.gltf.h"
 #include "../../runtime/geometry/line/line.h"
 
-void example_line(Scene *, Renderer *);
+void example_line(Scene *);
 
 
 

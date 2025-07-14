@@ -7,6 +7,6 @@
 #include "../../runtime/primitive/primitive.h"
 #include "../../runtime/scene/scene.h"
 
-void example_gizmo(Scene *, Renderer *);
+void example_gizmo(Scene *);
 
 #endif

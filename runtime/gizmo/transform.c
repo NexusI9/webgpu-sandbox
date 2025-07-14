@@ -1,6 +1,7 @@
 #include "transform.h"
 #include "../material/material.h"
 #include "../resources/loader/loader.mbin.h"
+#include "webgpu/webgpu.h"
 
 void gizmo_transform_create_mesh(
     MeshRefList *list, const GizmoTransformCreateMeshDescriptor *desc) {
@@ -22,19 +23,19 @@ void gizmo_transform_create_mesh(
 
     // init mesh
     mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
-                                     .primitive = mesh_primitive,
-                                     .device = desc->device,
-                                     .queue = desc->queue,
-                                     .name = "translate arrow",
-                                 });
+                                    .primitive = mesh_primitive,
+                                    .device = desc->device,
+                                    .queue = desc->queue,
+                                    .name = "translate arrow",
+                                });
     // add shader
     mesh_set_shader(mesh, &(ShaderCreateDescriptor){
-                               .path = SHADER_PATH_FLAT,
-                               .device = desc->device,
-                               .queue = desc->queue,
-                               .label = "Gizmo transform translate shader",
-                               .name = "Gizmo transform translate shader",
-                           });
+                              .path = SHADER_PATH_FLAT,
+                              .device = desc->device,
+                              .queue = desc->queue,
+                              .label = "Gizmo transform translate shader",
+                              .name = "Gizmo transform translate shader",
+                          });
 
     // add color uniform
     shader_add_uniform(mesh_shader_texture(mesh),
@@ -53,14 +54,22 @@ void gizmo_transform_create_mesh(
                                },
                        });
 
+    // disable depth write
+    pipeline_set_stencil(shader_pipeline(mesh_shader_texture(mesh)),
+                         (WGPUDepthStencilState){
+                             .depthWriteEnabled = false,
+                             .depthCompare = WGPUCompareFunction_Always,
+                             .format = WGPUTextureFormat_Depth24Plus,
+                         });
+
     // set double sided culling
     material_texture_double_sided(mesh);
     // rotate
     mesh_rotate(mesh, (vec3){
-                           (i == 2) * 90.0f,
-                           0.0f,
-                           (i == 0) * 90.0f,
-                       });
+                          (i == 2) * 90.0f,
+                          0.0f,
+                          (i == 0) * 90.0f,
+                      });
 
     // update gizmo ref list
     mesh_reference_list_insert(list, mesh);

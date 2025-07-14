@@ -1,10 +1,10 @@
 #include "line.h"
 
-void example_line(Scene *scene, Renderer *renderer) {
+void example_line(Scene *scene) {
   Mesh *line = scene_new_mesh_unlit(scene);
   line_create(line, &(LineCreateDescriptor){
-                        .device = renderer_device(renderer),
-                        .queue = renderer_queue(renderer),
+                        .device = scene->device,
+                        .queue = scene->queue,
                         .name = "line mesh",
                     });
 

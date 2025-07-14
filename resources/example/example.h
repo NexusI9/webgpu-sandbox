@@ -5,5 +5,6 @@
 #include "gltf.h"
 #include "line.h"
 #include "primitive.h"
+#include "skybox.h"
 
 #endif
