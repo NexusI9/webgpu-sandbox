@@ -37,23 +37,6 @@ void init_scene() {
                    .queue = renderer_queue(&main_renderer),
                });
 
-  /*
-
-  =============        CAMERA       ==============
-
- */
-  // init camera position
-  camera_lookat(main_scene.active_camera,
-                (vec3){
-                    20.0f,
-                    20.0f,
-                    20.0f,
-                },
-                (vec3){
-                    0.0f,
-                    0.0f,
-                    0.0f,
-                });
 
   /*
 
@@ -75,12 +58,7 @@ void init_scene() {
                                          .inner_cutoff = 50.0f,
                                          .near = 0.1,
                                          .far = 20.0f,
-                                         .position =
-                                             {
-                                                 0.0f,
-                                                 2.4f,
-                                                 2.3f,
-                                             },
+                                         .position = {0.0f, 2.4f, 2.3f},
                                      });
 
   /*scene_add_spot_light(&main_scene, &(SpotLightDescriptor){
@@ -135,7 +113,6 @@ int main(int argc, const char *argv[]) {
                       .dpi = 1.0,
                   });
 
-  renderer_init(&main_renderer);
 
   // set scene
   init_scene();

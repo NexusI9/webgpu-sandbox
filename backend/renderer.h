@@ -65,7 +65,7 @@ typedef struct {
 } RendererRenderDescriptor;
 
 void renderer_create(Renderer *, const RendererCreateDescriptor *);
-void renderer_init(Renderer *);
+
 void renderer_bake_ao(Renderer *, Scene *);
 void renderer_compute_shadow(Renderer *, Scene *);
 

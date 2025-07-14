@@ -51,6 +51,8 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 
   Camera camera;
+
+  // create main camera
   camera_create(&camera, &(CameraCreateDescriptor){
                              .speed = 20.0f,
                              .clock = clock,
@@ -63,6 +65,9 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
                                  },
 
                          });
+
+  // init main camera position
+  camera_lookat(&camera, (vec3){20.0f, 20.0f, 20.0f}, (vec3){0.0f, 0.0f, 0.0f});
 
   return camera_list_insert(&scene->cameras, &camera);
 }
