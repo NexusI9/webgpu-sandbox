@@ -5,7 +5,7 @@
 
 int mesh_reference_list_create(MeshRefList *list, size_t capacity) {
 
-  list->entries = malloc(capacity * sizeof(Mesh));
+  list->entries = malloc(capacity * sizeof(Mesh *));
   list->length = 0;
   list->capacity = capacity;
 
