@@ -27,9 +27,11 @@ GizmoPointLight *scene_add_point_light(Scene *scene,
                                .list = scene_mesh_list(scene),
                            });
 
+
   // transfert gizmo mesh pointers to render_list so they get rendered
   MeshRefList *render_list = scene_layer_gizmo(scene);
   mesh_reference_list_transfert(&gizmo_light->meshes, render_list);
+
 
   return gizmo_light;
 }
@@ -148,7 +150,8 @@ GizmoSunLight *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
        '----------'
 
  */
-GizmoCamera *scene_add_camera(Scene *scene, const CameraCreateDescriptor *desc) {
+GizmoCamera *scene_add_camera(Scene *scene,
+                              const CameraCreateDescriptor *desc) {
 
   // init scene camera
   Camera *new_cam = camera_list_new_camera(&scene->cameras);

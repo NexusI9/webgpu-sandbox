@@ -37,7 +37,6 @@ void init_scene() {
                    .queue = renderer_queue(&main_renderer),
                });
 
-
   /*
 
     =============        LIGHTS       ==============
@@ -96,7 +95,9 @@ void init_scene() {
   example_skybox(&main_scene);
 }
 
-void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {}
+void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
+  printf("hover\n");
+}
 
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused
@@ -113,12 +114,11 @@ int main(int argc, const char *argv[]) {
                       .dpi = 1.0,
                   });
 
-
   // set scene
   init_scene();
 
   // raycast camera
-  camera_raycast_mouse_hover(
+  /*camera_raycast_mouse_hover(
       main_scene.active_camera,
       &(CameraRaycastDescriptor){
           .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.fixed},
@@ -126,10 +126,10 @@ int main(int argc, const char *argv[]) {
           .viewport = &main_scene.viewport,
           .callback = on_camera_raycast,
           .data = NULL,
-      });
+      });*/
 
   // add gizmo camera
-  GizmoCamera *new_cam =
+  /*GizmoCamera *new_cam =
       scene_add_camera(&main_scene, &(CameraCreateDescriptor){
                                         .speed = 20.0f,
                                         .clock = &main_clock,
@@ -139,6 +139,7 @@ int main(int argc, const char *argv[]) {
 
   gizmo_camera_lookat(new_cam, (vec3){10.0f, 2.0f, 0.0f},
                       (vec3){0.0f, 0.0f, 0.0f});
+   */
 
   // add transform gizmo
   GizmoTransformTranslate translate;

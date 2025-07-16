@@ -1,5 +1,6 @@
 #include "core.h"
 #include "../gizmo/grid.h"
+#include "./editor/selection.h"
 
 static void scene_init_light_list(Scene *);
 static Mesh *scene_new_mesh(Scene *);
@@ -7,6 +8,8 @@ static Camera *scene_init_main_camera(Scene *, cclock *);
 static void scene_init_grid(Scene *);
 
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
+
+  scene->id = reg_register((void *)scene, RegEntryType_Scene);
 
   // create camera list, and set active camera
   camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
@@ -33,16 +36,19 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   mesh_reference_list_create(&scene->pipelines.fixed,
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
-  // init gizmo list
-  gizmo_list_create(&scene->gizmo, GIZMO_LIST_CAPACITY_DEFAULT);
-
   // init lights
   scene_init_light_list(scene);
 
-  scene->id = reg_register((void *)scene, RegEntryType_Scene);
-
   // init grid
   scene_init_grid(scene);
+
+  /* ==== EDITOR ==== */
+
+  // init gizmo list
+  gizmo_list_create(&scene->gizmo, GIZMO_LIST_CAPACITY_DEFAULT);
+
+  // init selection list & related events
+  scene_selection_init(scene);
 }
 
 /**

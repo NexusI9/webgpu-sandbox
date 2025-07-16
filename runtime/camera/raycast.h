@@ -53,7 +53,9 @@ typedef struct {
   Mesh *mesh;
 } CameraRaycastCallback;
 
-typedef void (*camera_raycast_callback)(CameraRaycastCallback *, void *);
+typedef void (*camera_raycast_callback)(CameraRaycastCallback *,
+                                        const EmscriptenMouseEvent *, void *);
+typedef void (*camera_raycast_destructor)(void *);
 
 typedef struct {
   Camera *camera;

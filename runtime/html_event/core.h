@@ -14,6 +14,7 @@ typedef const char *html_event_target;
 typedef void *html_event_data;
 typedef bool (*emscripten_event_listener)(const char *, void *, bool,
                                           em_mouse_callback_func);
+typedef bool (*html_event_destructor_callback)(void *);
 
 typedef enum {
   HTMLEventType_MouseMove,
@@ -26,6 +27,7 @@ typedef enum {
 // anonymous event
 typedef struct {
   void *callback;
+  void *destructor;
   html_event_data data;
   size_t size;
   id_t owner;
@@ -34,6 +36,7 @@ typedef struct {
 // mouse events
 typedef struct {
   em_mouse_callback_func callback;
+  html_event_destructor_callback destructor;
   html_event_data data;
   size_t size;
   id_t owner;
@@ -48,6 +51,7 @@ typedef struct {
 // wheel events
 typedef struct {
   em_wheel_callback_func callback;
+  html_event_destructor_callback destructor;
   html_event_data data;
   size_t size;
   id_t owner;
@@ -62,6 +66,7 @@ typedef struct {
 // key events
 typedef struct {
   em_key_callback_func callback;
+  html_event_destructor_callback destructor;
   html_event_data data;
   size_t size;
   id_t owner;

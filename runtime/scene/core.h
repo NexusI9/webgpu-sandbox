@@ -125,14 +125,17 @@ typedef struct {
 
   // REFERENCES LISTS (PTR)
   ScenePipelineList pipelines; // meshes render layers
-  GizmoList gizmo;             // gizmo
-  MeshRefList selection;       // selected mesh
+
+  // TODO: only enable selection/gizmo related function for "Editor" mode since
+  // will be never seen or used in actually "Game" mode
+  GizmoList gizmo;       // gizmo
+  MeshRefList selection; // selected mesh
 
 } Scene;
 
 typedef struct {
   cclock *clock;
-  const ViewportCreateDescriptor* viewport;
+  const ViewportCreateDescriptor *viewport;
   WGPUDevice *device;
   WGPUQueue *queue;
 } SceneCreateDescriptor;

@@ -85,8 +85,8 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
                       HTMLEventType event_type, void *event_callback) {
 
   html_event_check_callback(event_type, event_callback);
-
-  // check initialized
+  printf("addint typesize: %lu\n", type_size);
+  // check html event list initialized
   if (*entries == NULL) {
 
     // allocate new list
@@ -101,7 +101,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
     }
   }
 
-  // check capacity
+  // check html event list capacity
   if (*length == *capacity) {
 
     size_t new_capacity = 2 * (*capacity);
@@ -117,8 +117,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
   }
 
   // once we've checked if event list can store new event, we dynamically
-
-  // retrieve entry pointer position
+  // retrieve entry pointer position at the byte level
   HTMLEventVoid *cast_entry =
       (HTMLEventVoid *)((char *)(*entries) + (*length) * type_size);
 
@@ -159,6 +158,7 @@ int html_event_add_mouse_down(HTMLEventMouse *event) {
   return html_event_insert(
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
+          .destructor = (void *)event->destructor,
           .data = (void *)event->data,
           .size = event->size,
           .owner = event->owner,
@@ -181,6 +181,7 @@ int html_event_add_mouse_move(HTMLEventMouse *event) {
   return html_event_insert(
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
+          .destructor = (void *)event->destructor,
           .data = (void *)event->data,
           .size = event->size,
           .owner = event->owner,
@@ -203,6 +204,7 @@ int html_event_add_wheel(HTMLEventWheel *event) {
   return html_event_insert(
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
+          .destructor = (void *)event->destructor,
           .data = (void *)event->data,
           .size = event->size,
           .owner = event->owner,
@@ -225,6 +227,7 @@ int html_event_add_key_down(HTMLEventKey *event) {
   return html_event_insert(
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
+          .destructor = (void *)event->destructor,
           .data = (void *)event->data,
           .size = event->size,
           .owner = event->owner,
@@ -247,6 +250,7 @@ int html_event_add_key_up(HTMLEventKey *event) {
   return html_event_insert(
       &(HTMLEventVoid){
           .callback = (void *)event->callback,
+          .destructor = (void *)event->destructor,
           .data = (void *)event->data,
           .size = event->size,
           .owner = event->owner,

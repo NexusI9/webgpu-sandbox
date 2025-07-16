@@ -7,6 +7,8 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 
 # Macros:
 #
+#   - ENGINE_EDITOR : allow editor mode related functionnalities (gizmo...)
+#
 # SHADOW PASS:
 #   - RENDER_SHADOW_AS_COLOR : render shadow maps as color texture in the shader
 #
@@ -22,7 +24,7 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 #   - VERBOSE_BINDING_PHASE : print shader binding structure
 #   - VERBOSE_BUILDING_PHASE : print mesh building phase
 #
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE
+MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE -DENGINE_EDITOR
 
 # Preprocess cwgsl shader to wgsl Shader files
 SHADER_DIR := ./runtime/assets/shader

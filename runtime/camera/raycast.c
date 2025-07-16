@@ -32,6 +32,7 @@ typedef struct {
 
   // on move attribtues
   camera_raycast_callback callback;
+  const EmscriptenMouseEvent *em_mouse_event;
   void *data;
   size_t size;
 } CameraRaycastCheckBoundsDescriptor;
@@ -124,7 +125,7 @@ void camera_raycast_check_bounds(
       // check if raycast within mesh bound
       if (raycast_hit_aabb(&ray, &mesh->topology.boundbox.bound, &ray.distance))
         desc->callback(&(CameraRaycastCallback){.raycast = &ray, .mesh = mesh},
-                       desc->data);
+                       desc->em_mouse_event, desc->data);
     }
   }
 };
@@ -157,6 +158,7 @@ bool camera_raycast_event_callback_center(
       .viewport = cast_data->viewport,
       .cast_method = method,
       .callback = cast_data->callback,
+      .em_mouse_event = mouseEvent,
       .length = cast_data->length,
       .data = cast_data->data,
       .mesh_lists = cast_data->mesh_lists,
@@ -190,6 +192,30 @@ bool camera_raycast_event_callback_mouse(int eventType,
 }
 
 /**
+   Common destructor for mouse events. Will be called when destroying the
+   camera. Since we need to allocate camera event data on the heap (mesh
+   reference list) We need to make sure to deallocate it after destroying the
+   camera.
+ */
+static bool camera_raycast_event_destructor(void *data) {
+
+  // convert data
+  CameraRaycastCallbackData *cast_data = (CameraRaycastCallbackData *)data;
+
+  // free mesh reference lists
+  free(cast_data->mesh_lists);
+  cast_data->mesh_lists = NULL;
+
+  // free user data (optional)
+  if (cast_data->data) {
+    free(cast_data->data);
+    cast_data->data = NULL;
+  }
+
+  return EM_FALSE;
+}
+
+/**
     ▗▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄▖
    ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌
    ▐▌   ▐▌ ▐▌▐▛▀▚▖▐▛▀▀▘
@@ -197,12 +223,39 @@ bool camera_raycast_event_callback_mouse(int eventType,
 
  */
 
+static inline MeshRefList **malloc_reflist(MeshRefList **, size_t);
+
+/** allocate mesh_list on the heap
+ TODO: When destroying the camera, and destroying the events, need to free
+ this allocation as well
+ Idea:
+ For each html_add_event( { callback, destructor (optional) });
+ */
+MeshRefList **malloc_ref_list(MeshRefList **data, size_t length) {
+
+  MeshRefList **alloc_list = malloc(length * sizeof(MeshRefList *));
+  if (alloc_list == NULL) {
+    perror("Couldn't allocate raycast mesh ref list.\n");
+    return NULL;
+  }
+
+  memcpy(alloc_list, data, length * sizeof(MeshRefList *));
+
+  return alloc_list;
+}
+
 /**
    Link to the camera a raycast system with the center of screen as raycast
    target. Useful for Flying or orbit mode in which cursor is usually hidden.
  */
 void camera_raycast_center_hover(Camera *cam,
                                  const CameraRaycastDescriptor *desc) {
+
+  // allocate mesh reference list for data lifetime sake
+  MeshRefList **alloc_list = malloc_ref_list(desc->mesh_lists, desc->length);
+  if (alloc_list == NULL)
+    return;
+
   // convert data (add camera)
   const CameraRaycastCallbackData data = {
       // cb attributes
@@ -213,7 +266,7 @@ void camera_raycast_center_hover(Camera *cam,
       .viewport = desc->viewport,
       // bound attributes
       .length = desc->length,
-      .mesh_lists = desc->mesh_lists,
+      .mesh_lists = alloc_list,
   };
 
   // define event callback
@@ -221,6 +274,7 @@ void camera_raycast_center_hover(Camera *cam,
   // add listener
   html_event_add_mouse_move(&(HTMLEventMouse){
       .callback = event_callback,
+      .destructor = camera_raycast_event_destructor,
       .data = (void *)&data,
       .size = sizeof(CameraRaycastCallbackData),
       .owner = cam->id,
@@ -230,24 +284,31 @@ void camera_raycast_center_hover(Camera *cam,
 void camera_raycast_center_click(Camera *cam,
                                  const CameraRaycastDescriptor *desc) {
 
+  // allocate mesh reference list for data lifetime sake
+  MeshRefList **alloc_list = malloc_ref_list(desc->mesh_lists, desc->length);
+  if (alloc_list == NULL)
+    return;
+
   // convert data (add camera)
   const CameraRaycastCallbackData data = {
       // cb attributes
-      .callback = desc->callback,
+      .callback = desc->callback, // actual raycast callback (html event -> this
+                                  // callback)
       .data = desc->data,
       // cast attributes
       .camera = cam,
       .viewport = desc->viewport,
       // bound attributes
       .length = desc->length,
-      .mesh_lists = desc->mesh_lists,
+      .mesh_lists = alloc_list,
   };
 
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_center;
   // add listener
   html_event_add_mouse_down(&(HTMLEventMouse){
-      .callback = event_callback,
+      .callback = event_callback, // html event callback
+      .destructor = camera_raycast_event_destructor,
       .data = (void *)&data,
       .size = sizeof(CameraRaycastCallbackData),
       .owner = cam->id,
@@ -261,6 +322,12 @@ void camera_raycast_center_click(Camera *cam,
 void camera_raycast_mouse_hover(Camera *cam,
                                 const CameraRaycastDescriptor *desc) {
 
+  // allocate mesh reference list for data lifetime sake
+  MeshRefList **alloc_list = malloc_ref_list(desc->mesh_lists, desc->length);
+
+  if (alloc_list == NULL)
+    return;
+
   // convert data (add camera)
   CameraRaycastCallbackData data = {
       // cb attributes
@@ -271,14 +338,16 @@ void camera_raycast_mouse_hover(Camera *cam,
       .viewport = desc->viewport,
       // bound attributes
       .length = desc->length,
-      .mesh_lists = desc->mesh_lists,
+      .mesh_lists = alloc_list,
   };
 
   // define event callback
   em_mouse_callback_func event_callback = camera_raycast_event_callback_mouse;
+
   // add listener
   html_event_add_mouse_move(&(HTMLEventMouse){
       .callback = event_callback,
+      .destructor = camera_raycast_event_destructor,
       .data = (void *)&data,
       .size = sizeof(CameraRaycastCallbackData),
       .owner = cam->id,
@@ -287,6 +356,11 @@ void camera_raycast_mouse_hover(Camera *cam,
 
 void camera_raycast_mouse_click(Camera *cam,
                                 const CameraRaycastDescriptor *desc) {
+
+  // allocate mesh reference list for data lifetime sake
+  MeshRefList **alloc_list = malloc_ref_list(desc->mesh_lists, desc->length);
+  if (alloc_list == NULL)
+    return;
 
   // convert data (add camera)
   const CameraRaycastCallbackData data = {
@@ -298,7 +372,7 @@ void camera_raycast_mouse_click(Camera *cam,
       .viewport = desc->viewport,
       // bound attributes
       .length = desc->length,
-      .mesh_lists = desc->mesh_lists,
+      .mesh_lists = alloc_list,
   };
 
   // define event callback
@@ -306,6 +380,7 @@ void camera_raycast_mouse_click(Camera *cam,
   // add listener
   html_event_add_mouse_down(&(HTMLEventMouse){
       .callback = event_callback,
+      .destructor = camera_raycast_event_destructor,
       .data = (void *)&data,
       .size = sizeof(CameraRaycastCallbackData),
       .owner = cam->id,
