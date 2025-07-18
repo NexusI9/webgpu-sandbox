@@ -7,7 +7,7 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
                                       const EmscriptenMouseEvent *mouseEvent,
                                       void *user_data) {
 
-  printf("click on: %s\n", cast_data->mesh->name);
+  printf("click on\n");
 }
 
 /**

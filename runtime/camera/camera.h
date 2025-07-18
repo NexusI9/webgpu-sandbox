@@ -4,6 +4,6 @@
 #include "core.h"
 #include "list.h"
 #include "uniform.h"
-#include "raycast.h"
+#include "./raycast/raycast.h"
 
 #endif

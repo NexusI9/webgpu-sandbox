@@ -1,11 +1,18 @@
-#ifndef _CAMERA_RAYCAST_H_
-#define _CAMERA_RAYCAST_H_
+#ifndef _CAMERA_RAYCAST_CORE_H_
+#define _CAMERA_RAYCAST_CORE_H_
 
-#include "../mesh/mesh.h"
-#include "../raycast/raycast.h"
-#include "../viewport/viewport.h"
+#include "../../mesh/mesh.h"
+#include "../../raycast/raycast.h"
+#include "../../viewport/viewport.h"
 
-#include "core.h"
+#include "../../html_event/html_event.h"
+#include "../../input/input.h"
+#include "../core.h"
+#include "../utils/system.h"
+#include "./callback.h"
+#include "emscripten/em_types.h"
+#include "emscripten/html5.h"
+#include <string.h>
 
 /**
    2 different types of raycast methods:
@@ -47,24 +54,6 @@
   cast unless the mouse is moving.
 
  */
-
-typedef struct {
-  Raycast *raycast;
-  Mesh *mesh;
-} CameraRaycastCallback;
-
-typedef void (*camera_raycast_callback)(CameraRaycastCallback *,
-                                        const EmscriptenMouseEvent *, void *);
-typedef void (*camera_raycast_destructor)(void *);
-
-typedef struct {
-  Camera *camera;
-  Viewport *viewport;
-  MeshRefList **mesh_lists;
-  size_t length;
-  camera_raycast_callback callback;
-  void *data;
-} CameraRaycastCallbackData;
 
 typedef struct {
   MeshRefList **mesh_lists;

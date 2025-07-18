@@ -85,7 +85,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
                       HTMLEventType event_type, void *event_callback) {
 
   html_event_check_callback(event_type, event_callback);
-  printf("addint typesize: %lu\n", type_size);
+
   // check html event list initialized
   if (*entries == NULL) {
 
