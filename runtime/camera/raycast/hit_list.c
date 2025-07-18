@@ -1,4 +1,19 @@
 #include "hit_list.h"
+#include "string.h"
+#include <stdlib.h>
+
+static int camera_raycast_hit_list_sort_func(const void *a, const void *b) {
+
+  const CameraRaycastHit *hit_a = (const CameraRaycastHit *)a;
+  const CameraRaycastHit *hit_b = (const CameraRaycastHit *)b;
+
+  if (hit_a->distance < hit_b->distance)
+    return -1;
+  if (hit_a->distance > hit_b->distance)
+    return 1;
+
+  return 0;
+}
 
 /**
    Allocate hit list entries and define base parameters
@@ -28,7 +43,7 @@ int camera_raycast_hit_list_create(CameraRaycastHitList *list,
 void camera_raycast_hit_list_empty(CameraRaycastHitList *list) {
 
   if (list->entries != NULL) {
-    free(list->entries);
+    memset(list->entries, 0, list->capacity * sizeof(CameraRaycastHit));
     list->length = 0;
   }
 }
@@ -45,5 +60,10 @@ void camera_raycast_hit_list_empty(CameraRaycastHitList *list) {
  */
 void camera_raycast_hit_list_sort(CameraRaycastHitList *list) {
 
-  
+  // none or only 1 entry, skip comparison
+  if (list->length < 2 || list->entries == NULL)
+    return;
+
+  qsort(list->entries, list->length, sizeof(CameraRaycastHit),
+        camera_raycast_hit_list_sort_func);
 }

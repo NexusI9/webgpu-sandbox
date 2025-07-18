@@ -7,7 +7,12 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
                                       const EmscriptenMouseEvent *mouseEvent,
                                       void *user_data) {
 
-  printf("click on\n");
+  printf("hit mesh: \n");
+  for (size_t i = 0; i < cast_data->hits->length; i++) {
+    printf("name: %s\n", cast_data->hits->entries[i].mesh->name);
+    printf("distance: %f\n", cast_data->hits->entries[i].distance);
+    printf("-----\n");
+  }
 }
 
 /**

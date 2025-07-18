@@ -8,7 +8,7 @@
 
 typedef struct {
   Raycast *raycast;
-  CameraRaycastHitList *hit;
+  CameraRaycastHitList *hits;
 } CameraRaycastCallback;
 
 typedef void (*camera_raycast_callback)(CameraRaycastCallback *,

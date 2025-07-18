@@ -1,5 +1,6 @@
 #include "callback.h"
 #include "./method.h"
+#include "hit_list.h"
 
 /**
    ▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖     ▗▄▄▖ ▗▄▖ ▗▖   ▗▖   ▗▄▄▖  ▗▄▖  ▗▄▄▖▗▖ ▗▖ ▗▄▄▖
@@ -48,6 +49,7 @@ void camera_raycast_check_bounds(
   glm_vec3_copy((vec3){10.0f, 10.0f, 10.0f}, box.max);
 
   // clear hit list
+  camera_raycast_hit_list_empty(desc->hits);
 
   // go though each meshes of each ref lists and check bound
   for (size_t l = 0; l < desc->length; l++) {
@@ -72,14 +74,16 @@ void camera_raycast_check_bounds(
         hits->length++;
 
         // sort new entry
+        camera_raycast_hit_list_sort(desc->hits);
       }
     }
   }
 
+  // dispatch to callback
   desc->callback(
       &(CameraRaycastCallback){
           .raycast = &ray,
-          .hit = hits,
+          .hits = hits,
       },
       desc->em_mouse_event, desc->data);
 };
