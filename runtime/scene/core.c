@@ -1,6 +1,7 @@
 #include "core.h"
 #include "../gizmo/grid.h"
 #include "./editor/selection.h"
+#include "layer.h"
 
 static void scene_init_light_list(Scene *);
 static Mesh *scene_new_mesh(Scene *);
@@ -36,6 +37,9 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   mesh_reference_list_create(&scene->pipelines.fixed,
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
+  // init scene layers
+  scene_layer_set_create(&scene->layers, SCENE_LAYER_SET_CAPACITY);
+  
   // init lights
   scene_init_light_list(scene);
 
@@ -44,6 +48,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   /* ==== EDITOR ==== */
 
+  //EDITORONLY
   // init gizmo list
   gizmo_list_create(&scene->gizmo, GIZMO_LIST_CAPACITY_DEFAULT);
 

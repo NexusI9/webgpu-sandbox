@@ -15,8 +15,8 @@ typedef struct {
   size_t type_size;
 } DynamicList;
 
-int dyli_create(const DynamicList *, size_t, const char *);
-int dyli_expand(const DynamicList *, size_t, const char *);
-void dyli_free(const DynamicList *);
+int dyli_create(void **, size_t *, size_t *, size_t, size_t, const char *);
+int dyli_expand(void **, size_t *, size_t *, size_t, size_t, const char *);
+void dyli_free(void **, size_t *, size_t *);
 
 #endif

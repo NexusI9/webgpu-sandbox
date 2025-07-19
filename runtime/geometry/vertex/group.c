@@ -4,7 +4,6 @@
 #include <stdint.h>
 #include <string.h>
 
-
 /**
 ▗▖  ▗▖▗▄▄▄▖▗▄▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖     ▗▄▄▖▗▄▄▖  ▗▄▖ ▗▖ ▗▖▗▄▄▖
 ▐▌  ▐▌▐▌   ▐▌ ▐▌ █  ▐▌    ▝▚▞▘     ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌▐▌ ▐▌
@@ -86,6 +85,7 @@ void vertex_group_free(VertexGroup *group) {
 static int vertex_group_set_expand(VertexGroupSet *);
 static void vertex_group_set_rehash(VertexGroupSet *);
 
+// TODO: REHASH
 void vertex_group_set_rehash(VertexGroupSet *set) {}
 
 int vertex_group_set_expand(VertexGroupSet *set) {
@@ -128,12 +128,12 @@ VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
     return NULL;
   }
 
-  vgroup_hash hash = hash_djb2(new_group->name) % set->capacity;
+  hash_djb2_t hash = hash_djb2(new_group->name) % set->capacity;
 
   // init new vertex group
   VertexGroup *vgroup = &set->entries[hash];
 
-  vgroup_hash init_hash = hash;
+  hash_djb2_t init_hash = hash;
 
   while (true) {
     // if not occupied or names don't match(collision)
@@ -189,7 +189,7 @@ int vertex_group_set_delete(VertexGroupSet *set, vgroup_key key) {
   // init new vertex group
   VertexGroup *vgroup = vertex_group_set_find(set, key);
 
-  if (vgroup->entries) {
+  if (vgroup && vgroup->entries != NULL) {
     vertex_group_free(vgroup);
     set->length--;
     return VERTEX_GROUP_SUCCESS;

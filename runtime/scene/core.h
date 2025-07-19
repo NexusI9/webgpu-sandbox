@@ -158,6 +158,6 @@ Mesh *scene_new_mesh_fixed(Scene *);
 Mesh *scene_new_mesh_background(Scene *);
 
 // scene layer quick access
-MeshRefList *scene_layer_meshes(Scene *, scene_layer_name);
+MeshRefList *scene_layer_meshes(Scene *, const char*);
 
 #endif

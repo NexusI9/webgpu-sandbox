@@ -2,11 +2,14 @@
 #define _MESH_REF_LIST_H_
 #include "core.h"
 
-// modifier
+// creators
 int mesh_reference_list_create(MeshRefList *, const size_t);
 Mesh *mesh_reference_list_insert(MeshRefList *, Mesh *);
+
+// destructors
 void mesh_reference_list_remove(MeshRefList *, Mesh *);
 void mesh_reference_list_empty(MeshRefList *);
+void mesh_reference_list_free(MeshRefList *);
 
 // transferts
 int mesh_reference_list_transfert(MeshRefList *, MeshRefList *);

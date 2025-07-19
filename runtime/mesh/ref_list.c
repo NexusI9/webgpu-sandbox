@@ -46,6 +46,13 @@ void mesh_reference_list_empty(MeshRefList *list) {
   list->length = 0;
 }
 
+void mesh_reference_list_free(MeshRefList *list) {
+  free(list->entries);
+  list->entries = NULL;
+  list->capacity = 0;
+  list->length = 0;
+}
+
 /**
    Remove mesh from the selection.
    Use linear probing with ID comparison.

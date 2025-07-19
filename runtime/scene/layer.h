@@ -11,10 +11,8 @@
 #define SCENE_LAYER_UNDEF_ERROR 2
 #define SCENE_LAYER_SET_UNFOUND 3
 
-typedef const char *scene_layer_name;
-
 typedef struct {
-  scene_layer_name name;
+  char *name;
   MeshRefList meshes;
 } SceneLayer;
 
@@ -25,15 +23,17 @@ typedef struct {
 } SceneLayerSet;
 
 /*Layer*/
-int scene_layer_create(SceneLayer *, scene_layer_name, size_t);
+int scene_layer_create(SceneLayer *, const char *, size_t);
 void scene_layer_empty(SceneLayer *);
+void scene_layer_rename(SceneLayer *, const char *);
 void scene_layer_free(SceneLayer *);
-int scene_layer_insert(SceneLayer *, Mesh *);
+Mesh *scene_layer_insert(SceneLayer *, Mesh *);
 
 /*Layer set*/
 int scene_layer_set_create(SceneLayerSet *, size_t);
-SceneLayer *scene_layer_set_create_layer(SceneLayerSet *, scene_layer_name);
-SceneLayer *scene_layer_set_find(SceneLayerSet *, scene_layer_name);
-int scene_layer_set_delete(SceneLayerSet *, scene_layer_name);
+SceneLayer *scene_layer_set_create_layer(SceneLayerSet *, const char *);
+SceneLayer *scene_layer_set_find(SceneLayerSet *, const char *);
+int scene_layer_set_delete(SceneLayerSet *, const char *);
 void scene_layer_set_free(SceneLayerSet *);
+Mesh *scene_layer_set_insert_mesh(SceneLayerSet *, const char *, Mesh *);
 #endif
