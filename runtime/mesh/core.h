@@ -118,5 +118,4 @@ void mesh_topology_set_override(Mesh *, const MeshTopology topology);
 
 // events
 
-
 #endif

@@ -3,7 +3,7 @@
 #include "core.h"
 #include <string.h>
 
-int mesh_reference_list_create(MeshRefList *list, size_t capacity) {
+int mesh_reference_list_create(MeshRefList *list, const size_t capacity) {
 
   list->entries = malloc(capacity * sizeof(Mesh *));
   list->length = 0;
@@ -38,6 +38,40 @@ Mesh *mesh_reference_list_insert(MeshRefList *list, Mesh *mesh) {
   list->entries[list->length] = mesh;
   list->length++;
   return mesh;
+}
+
+/**
+   Remove mesh from the selection.
+   Use linear probing with ID comparison.
+   TODO: Maybe for bigger selection, need a more efficient/quick way.
+ */
+void mesh_reference_list_remove(MeshRefList *list, Mesh *mesh) {
+
+  for (size_t i = 0; i < list->length; i++) {
+
+    if (list->entries[i]->id == mesh->id) {
+
+      if (i < list->length - 1) {
+        memmove(&list->entries[i], &list->entries[i + 1],
+                (list->length - i - 1) * sizeof(Mesh *));
+      }
+
+      list->length--;
+      break;
+    }
+  }
+}
+
+/**
+   Linearily traverse the list and compare mesh id to find match
+ */
+Mesh *mesh_reference_list_find(const MeshRefList *list, Mesh *mesh) {
+
+  for (size_t i = 0; i < list->length; i++)
+    if (list->entries[i]->id == mesh->id)
+      return list->entries[i];
+
+  return NULL;
 }
 
 /**
