@@ -71,6 +71,12 @@ typedef uint8_t shader_bind_t;
    '----------'---------------'-----------'----------------'-------------------'
 
  */
+
+typedef struct {
+  const char *name;
+  MeshRefList meshes;
+} SceneLayer;
+
 typedef struct {
   MeshRefList background;
   MeshRefList lit;

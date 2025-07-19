@@ -120,6 +120,12 @@ void scene_draw_boundbox(Scene *scene, WGPURenderPassEncoder *render_pass) {
   scene_draw_fixed(scene, render_pass);
 }
 
+/**
+   Draw the selection pipeline. Note that the selection pipeline use the
+   boundbox build.
+
+   Pipeline Selection  ==>  Build BoundBox  ==>  Draw Selection
+ */
 void scene_draw_selection(Scene *scene, WGPURenderPassEncoder *render_pass) {
 
   scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,

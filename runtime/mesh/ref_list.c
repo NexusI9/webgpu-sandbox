@@ -40,6 +40,12 @@ Mesh *mesh_reference_list_insert(MeshRefList *list, Mesh *mesh) {
   return mesh;
 }
 
+void mesh_reference_list_empty(MeshRefList *list) {
+
+  memset(list->entries, 0, list->capacity * sizeof(Mesh *));
+  list->length = 0;
+}
+
 /**
    Remove mesh from the selection.
    Use linear probing with ID comparison.

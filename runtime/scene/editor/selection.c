@@ -18,19 +18,27 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
 
   if (hit) {
 
-    // cap + right click : remove selection
+    // cap + right click : remove selection if exist, add if not
     if (mouseEvent->shiftKey && mouseEvent->button == 2) {
-      scene_selection_remove(cast_scene, hit->mesh);
+
+      Mesh *already_selected =
+          mesh_reference_list_find(&cast_scene->pipelines.selection, hit->mesh);
+
+      if (already_selected == NULL) {
+        scene_selection_add(cast_scene, hit->mesh);
+      } else {
+        scene_selection_remove(cast_scene, hit->mesh);
+      }
 
     }
     // right click : add to selection
     else if (mouseEvent->button == 2) {
+      // clear selection and add new one
+      mesh_reference_list_empty(&cast_scene->pipelines.selection);
       scene_selection_add(cast_scene, hit->mesh);
     }
   }
 
-  printf("Selection:\n");
-  mesh_reference_list_print(&cast_scene->pipelines.selection);
 }
 
 /**
@@ -74,5 +82,5 @@ void scene_selection_add(Scene *scene, Mesh *mesh) {
  */
 void scene_selection_remove(Scene *scene, Mesh *mesh) {
 
-    mesh_reference_list_remove(&scene->pipelines.selection, mesh);
+  mesh_reference_list_remove(&scene->pipelines.selection, mesh);
 }
