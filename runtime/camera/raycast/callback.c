@@ -44,10 +44,6 @@ void camera_raycast_check_bounds(
   // cast from camera pov
   desc->cast_method(&ray, desc->camera, desc->viewport);
 
-  AABB box;
-  glm_vec3_copy((vec3){-10.0f, -10.0f, -10.0f}, box.min);
-  glm_vec3_copy((vec3){10.0f, 10.0f, 10.0f}, box.max);
-
   // clear hit list
   camera_raycast_hit_list_empty(desc->hits);
 
@@ -122,7 +118,7 @@ bool camera_raycast_event_callback_mouse(int eventType,
 
   // select cast method
   camera_raycast_cast_method method = camera_raycast_cast_method_mouse;
-
+  
   // call common checker
   camera_raycast_check_bounds(&(CameraRaycastCheckBoundsDescriptor){
       .camera = cast_data->camera,
@@ -131,6 +127,7 @@ bool camera_raycast_event_callback_mouse(int eventType,
       .callback = cast_data->callback,
       .length = cast_data->length,
       .data = cast_data->data,
+      .em_mouse_event = mouseEvent,
       .mesh_lists = cast_data->mesh_lists,
       .hits = cast_data->hits,
   });

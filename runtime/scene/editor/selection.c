@@ -7,11 +7,27 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
                                       const EmscriptenMouseEvent *mouseEvent,
                                       void *user_data) {
 
-  printf("hit mesh: \n");
-  for (size_t i = 0; i < cast_data->hits->length; i++) {
-    printf("name: %s\n", cast_data->hits->entries[i].mesh->name);
-    printf("distance: %f\n", cast_data->hits->entries[i].distance);
-    printf("-----\n");
+  // early return if no hits
+  if (cast_data->hits->length == 0)
+    return;
+
+  // else retrieve first hit only (closest to camera)
+  CameraRaycastHit *hit = &cast_data->hits->entries[0];
+  
+  if (hit) {
+
+    // cap + right click : remove selection
+    if (mouseEvent->shiftKey && mouseEvent->button == 2) {
+      printf("remove: %s\n", hit->mesh->name);
+      return;
+    }
+
+    // right click : add to selection
+    if (mouseEvent->button == 2) {
+      printf("add %s \n", hit->mesh->name);
+      return;
+    }
+
   }
 }
 

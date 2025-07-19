@@ -43,7 +43,7 @@ bool html_event_listener_mouse_down(int eventType,
     callback(eventType, mouseEvent, data);
   }
 
-  return EM_FALSE;
+  return EM_TRUE;
 }
 
 bool html_event_listener_wheel(int eventType,

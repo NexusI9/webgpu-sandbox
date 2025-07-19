@@ -157,7 +157,7 @@ int main(int argc, const char *argv[]) {
   example_gltf(&main_scene);
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Texture);
+  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Solid);
 
   // Quit
   renderer_close(&main_renderer);

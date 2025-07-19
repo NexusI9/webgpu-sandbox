@@ -13,4 +13,5 @@ GizmoSunLight *scene_add_sun_light(Scene *, SunLightDescriptor *);
 // camera
 GizmoCamera *scene_add_camera(Scene *, const CameraCreateDescriptor *);
 
+// skybox
 #endif
