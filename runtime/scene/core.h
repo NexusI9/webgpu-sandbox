@@ -4,6 +4,7 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../gizmo/list.h"
+#include "./layer.h"
 #include "webgpu/webgpu.h"
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
@@ -73,17 +74,12 @@ typedef uint8_t shader_bind_t;
  */
 
 typedef struct {
-  const char *name;
-  MeshRefList meshes;
-} SceneLayer;
-
-typedef struct {
   MeshRefList background;
   MeshRefList lit;
   MeshRefList unlit;
   MeshRefList fixed;
   MeshRefList selection;
-} ScenePipelineList;
+} ScenePipelines;
 
 /*
   GIZMO LIST
@@ -125,13 +121,14 @@ typedef struct {
   // viewport
   Viewport viewport;
 
-  // VALUES LISTS
-  MeshList meshes;    // meshes global list
+  // Values lists
+  MeshList meshes;    // meshes pool
   LightList lights;   // light list
   CameraList cameras; // camera list
 
-  // REFERENCES LISTS (PTR)
-  ScenePipelineList pipelines; // meshes render layers
+  // References List (ptr)
+  ScenePipelines pipelines; // meshes pipelines (for render logic)
+  SceneLayerSet layers;     // meshes layer (for interaction logic)
 
   // TODO: only enable selection/gizmo related function for "Editor" mode since
   // will be never seen or used in actually "Game" mode
@@ -159,5 +156,8 @@ Mesh *scene_new_mesh_lit(Scene *);
 Mesh *scene_new_mesh_unlit(Scene *);
 Mesh *scene_new_mesh_fixed(Scene *);
 Mesh *scene_new_mesh_background(Scene *);
+
+// scene layer quick access
+MeshRefList *scene_layer_meshes(Scene *, scene_layer_name);
 
 #endif

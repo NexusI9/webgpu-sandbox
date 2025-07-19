@@ -5,9 +5,15 @@
 #include <cglm/cglm.h>
 
 #ifdef VERBOSE
-#define VERBOSE_PRINT(...) printf(__VA_ARGS__)
-#define VERBOSE_ERROR(...) perror(__VA_ARGS__)
-#define VERBOSE_WARNING(...) printf(__VA_ARGS__)
+#define VERBOSE_PRINT(...)                                                     \
+  printf("[%s:%d] ", __FILE__, __LINE__);                                      \
+  printf(__VA_ARGS__)
+#define VERBOSE_ERROR(...)                                                     \
+  fprintf(stderr, "[%s:%d] ", __FILE__, __LINE__);                             \
+  fprintf(stderr, __VA_ARGS__)
+#define VERBOSE_WARNING(...)                                                   \
+  printf("[%s:%d] ", __FILE__, __LINE__);                                      \
+  printf(__VA_ARGS__)
 #else
 #define VERBOSE_PRINT(...) // no-op
 #define VERBOSE_ERROR(...)

@@ -1,7 +1,9 @@
 #include "group.h"
+#include "../utils/hash.h"
 #include "index.h"
 #include <stdint.h>
 #include <string.h>
+
 
 /**
 ▗▖  ▗▖▗▄▄▄▖▗▄▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖     ▗▄▄▖▗▄▄▖  ▗▄▖ ▗▖ ▗▖▗▄▄▖
@@ -81,24 +83,10 @@ void vertex_group_free(VertexGroup *group) {
 
  */
 
-static vgroup_hash vertex_group_set_hash(vgroup_key);
 static int vertex_group_set_expand(VertexGroupSet *);
 static void vertex_group_set_rehash(VertexGroupSet *);
 
 void vertex_group_set_rehash(VertexGroupSet *set) {}
-
-vgroup_hash vertex_group_set_hash(vgroup_key key) {
-
-  // djb2
-  unsigned long hash = 5381;
-  int c;
-
-  while ((c = *key++)) {
-    hash = ((hash << 5) + hash) + c;
-  }
-
-  return hash;
-}
 
 int vertex_group_set_expand(VertexGroupSet *set) {
 
@@ -140,7 +128,7 @@ VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
     return NULL;
   }
 
-  vgroup_hash hash = vertex_group_set_hash(new_group->name) % set->capacity;
+  vgroup_hash hash = hash_djb2(new_group->name) % set->capacity;
 
   // init new vertex group
   VertexGroup *vgroup = &set->entries[hash];
@@ -171,7 +159,7 @@ VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
 }
 
 VertexGroup *vertex_group_set_find(VertexGroupSet *set, vgroup_key key) {
-  vgroup_hash hash = vertex_group_set_hash(key) % set->capacity;
+  vgroup_hash hash = hash_djb2(key) % set->capacity;
 
   vgroup_hash init_hash = hash;
   while (true) {
@@ -196,7 +184,7 @@ VertexGroup *vertex_group_set_find(VertexGroupSet *set, vgroup_key key) {
 
 int vertex_group_set_delete(VertexGroupSet *set, vgroup_key key) {
 
-  vgroup_hash hash = vertex_group_set_hash(key) % set->capacity;
+  vgroup_hash hash = hash_djb2(key) % set->capacity;
 
   // init new vertex group
   VertexGroup *vgroup = vertex_group_set_find(set, key);
