@@ -76,6 +76,7 @@ typedef struct {
   MeshRefList lit;
   MeshRefList unlit;
   MeshRefList fixed;
+  MeshRefList selection;
 } ScenePipelineList;
 
 /*
@@ -128,8 +129,7 @@ typedef struct {
 
   // TODO: only enable selection/gizmo related function for "Editor" mode since
   // will be never seen or used in actually "Game" mode
-  GizmoList gizmo;       // gizmo
-  MeshRefList selection; // selected mesh
+  GizmoList gizmo; // gizmo
 
 } Scene;
 

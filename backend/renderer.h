@@ -60,8 +60,13 @@ typedef WGPURenderPassColorAttachment (*renderer_color_attachment_callback)(
 typedef struct {
   Renderer *renderer;
   Scene *scene;
-  scene_draw_callback draw_callback;
   renderer_color_attachment_callback color_attachment_callback;
+
+  struct {
+    scene_draw_callback *entries;
+    size_t length;
+  } draw_list;
+
 } RendererRenderDescriptor;
 
 void renderer_create(Renderer *, const RendererCreateDescriptor *);
@@ -77,5 +82,5 @@ WGPUQueue *renderer_queue(Renderer *);
 int renderer_width(Renderer *);
 int renderer_height(Renderer *);
 
-const char* renderer_target(Renderer*);
+const char *renderer_target(Renderer *);
 #endif

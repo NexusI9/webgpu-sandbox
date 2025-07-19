@@ -119,3 +119,9 @@ void scene_draw_boundbox(Scene *scene, WGPURenderPassEncoder *render_pass) {
   // draw fixed mesh
   scene_draw_fixed(scene, render_pass);
 }
+
+void scene_draw_selection(Scene *scene, WGPURenderPassEncoder *render_pass) {
+
+  scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
+                       render_pass, &scene->pipelines.selection);
+}

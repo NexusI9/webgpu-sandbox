@@ -9,5 +9,6 @@ void scene_draw_solid(Scene *, WGPURenderPassEncoder *);
 void scene_draw_wireframe(Scene *, WGPURenderPassEncoder *);
 void scene_draw_boundbox(Scene *, WGPURenderPassEncoder *);
 void scene_draw_fixed(Scene *, WGPURenderPassEncoder *);
+void scene_draw_selection(Scene *, WGPURenderPassEncoder *);
 
 #endif

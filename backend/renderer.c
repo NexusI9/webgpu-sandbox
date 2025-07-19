@@ -264,8 +264,9 @@ void renderer_render(void *desc) {
                           .depthStencilAttachment = &depth_attachments,
                       });
 
-  // draw dynamic mesh
-  config->draw_callback(config->scene, &render_pass);
+  // draw scenes
+  for (size_t i = 0; i < config->draw_list.length; i++)
+    config->draw_list.entries[i](config->scene, &render_pass);
 
   // end render pass
   wgpuRenderPassEncoderEnd(render_pass);
@@ -299,24 +300,28 @@ void renderer_draw(Renderer *renderer, Scene *scene,
   // Fixed (static) rendering
   scene_build_fixed(scene, sample_count); // build fixed (by default)
 
+  // EDITORONLY
+  // draw boundbox by default for selection
+  scene_build_boundbox(scene, sample_count);
+
   // Dynamic rendering
-  scene_draw_callback draw_callback;
+  scene_draw_callback scene_draw_dynamic;
 
   switch (draw_mode) {
 
   case RendererDrawMode_Solid:
     scene_build_solid(scene, sample_count); // build solid
-    draw_callback = scene_draw_solid;       // draw solid callback
+    scene_draw_dynamic = scene_draw_solid;  // draw solid callback
     break;
 
   case RendererDrawMode_Wireframe:
     scene_build_wireframe(scene, sample_count); // build wireframe
-    draw_callback = scene_draw_wireframe;       // draw wireframe callback
+    scene_draw_dynamic = scene_draw_wireframe;  // draw wireframe callback
     break;
 
   case RendererDrawMode_Boundbox:
     scene_build_boundbox(scene, sample_count); // build boundbox
-    draw_callback = scene_draw_boundbox;       // build boundbox callback
+    scene_draw_dynamic = scene_draw_boundbox;  // build boundbox callback
     break;
 
   case RendererDrawMode_Texture:
@@ -328,7 +333,7 @@ void renderer_draw(Renderer *renderer, Scene *scene,
     renderer_compute_shadow(renderer, scene);
 
     scene_build_texture(scene, sample_count); // build texture
-    draw_callback = scene_draw_texture;       // build wireframe callback
+    scene_draw_dynamic = scene_draw_texture;  // build wireframe callback
     break;
   }
 
@@ -338,14 +343,23 @@ void renderer_draw(Renderer *renderer, Scene *scene,
   renderer_color_attachment_callback color_cbk =
       renderer->multisampling.count > 1 ? renderer_color_attachment_multisample
                                         : renderer_color_attachment_monosample;
-
+  
   // call main loop
   emscripten_set_main_loop_arg(renderer_render,
                                &(RendererRenderDescriptor){
                                    .renderer = renderer,
                                    .scene = scene,
-                                   .draw_callback = draw_callback,
                                    .color_attachment_callback = color_cbk,
+                                   .draw_list =
+                                       {
+                                           .length = 3,
+                                           .entries =
+                                               (scene_draw_callback[]){
+                                                   scene_draw_dynamic,
+                                                   scene_draw_fixed,
+                                                   scene_draw_selection,
+                                               },
+                                       },
                                },
                                0, 1);
 }

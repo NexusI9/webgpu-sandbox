@@ -30,7 +30,7 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
   }
 
   printf("Selection:\n");
-  mesh_reference_list_print(&cast_scene->selection);
+  mesh_reference_list_print(&cast_scene->pipelines.selection);
 }
 
 /**
@@ -40,7 +40,7 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
 void scene_selection_init(Scene *scene) {
 
   // init selection list
-  mesh_reference_list_create(&scene->selection,
+  mesh_reference_list_create(&scene->pipelines.selection,
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // raycast on scene main camera
@@ -65,8 +65,8 @@ void scene_selection_init(Scene *scene) {
 void scene_selection_add(Scene *scene, Mesh *mesh) {
 
   // only add if mesh not already exists
-  if (mesh_reference_list_find(&scene->selection, mesh) == NULL)
-    mesh_reference_list_insert(&scene->selection, mesh);
+  if (mesh_reference_list_find(&scene->pipelines.selection, mesh) == NULL)
+    mesh_reference_list_insert(&scene->pipelines.selection, mesh);
 }
 
 /**
@@ -74,5 +74,5 @@ void scene_selection_add(Scene *scene, Mesh *mesh) {
  */
 void scene_selection_remove(Scene *scene, Mesh *mesh) {
 
-    mesh_reference_list_remove(&scene->selection, mesh);
+    mesh_reference_list_remove(&scene->pipelines.selection, mesh);
 }
