@@ -4,6 +4,7 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../gizmo/list.h"
+#include "../gizmo/transform.h"
 #include "./layer.h"
 #include "webgpu/webgpu.h"
 
@@ -78,6 +79,7 @@ typedef struct {
   MeshRefList lit;
   MeshRefList unlit;
   MeshRefList fixed;
+  // EDITORONLY
   MeshRefList selection;
 } ScenePipelines;
 
@@ -108,6 +110,20 @@ typedef struct {
 
 typedef struct {
 
+  struct {
+    GizmoList list;           // gizmo lists
+    GizmoTransform transform; // transform gizmo (unique)
+    Mesh *grid;               // grid gizmo (unique)
+  } gizmo;
+
+  struct {
+
+  } ui;
+
+} SceneEditor;
+
+typedef struct {
+
   id_t id;
 
   // WGPU
@@ -132,7 +148,7 @@ typedef struct {
 
   // TODO: only enable selection/gizmo related function for "Editor" mode since
   // will be never seen or used in actually "Game" mode
-  GizmoList gizmo; // gizmo
+  SceneEditor editor;
 
 } Scene;
 

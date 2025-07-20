@@ -3,6 +3,12 @@
 #include "../mesh/mesh.h"
 
 typedef struct {
+  Mesh *translate;
+  Mesh *scale;
+  Mesh *rotate;
+} GizmoTransform;
+
+typedef struct {
   const char *mbin_path;
   const WGPUDevice *device;
   const WGPUQueue *queue;

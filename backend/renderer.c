@@ -343,7 +343,7 @@ void renderer_draw(Renderer *renderer, Scene *scene,
   renderer_color_attachment_callback color_cbk =
       renderer->multisampling.count > 1 ? renderer_color_attachment_multisample
                                         : renderer_color_attachment_monosample;
-  
+
   // call main loop
   emscripten_set_main_loop_arg(renderer_render,
                                &(RendererRenderDescriptor){
@@ -356,8 +356,8 @@ void renderer_draw(Renderer *renderer, Scene *scene,
                                            .entries =
                                                (scene_draw_callback[]){
                                                    scene_draw_dynamic,
-                                                   scene_draw_fixed,
                                                    scene_draw_selection,
+                                                   scene_draw_fixed,
                                                },
                                        },
                                },

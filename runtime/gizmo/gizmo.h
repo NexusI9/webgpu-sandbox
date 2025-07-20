@@ -9,6 +9,7 @@
 #include "light_spot.h"
 #include "light_sun.h"
 #include "list.h"
+#include "transform.h"
 #include "transform_rotate.h"
 #include "transform_scale.h"
 #include "transform_translate.h"

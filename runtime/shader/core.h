@@ -3,9 +3,9 @@
 
 #include "../pipeline/pipeline.h"
 #include "webgpu/webgpu.h"
+#include <cglm/cglm.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <cglm/cglm.h>
 
 // commons
 #define SHADER_MAX_BIND_GROUP 4
@@ -28,22 +28,37 @@
 #define SHADER_FIXED_BINDGROUP_VIEWS 0
 
 // path
-#define SHADER_PATH_DEFAULT "./runtime/assets/shader/shader.default.wgsl"
-#define SHADER_PATH_PBR "./runtime/assets/shader/shader.pbr.wgsl"
-#define SHADER_PATH_SHADOW "./runtime/assets/shader/shader.shadow.wgsl"
-#define SHADER_PATH_SCREEN "./runtime/assets/shader/shader.screen.wgsl"
-#define SHADER_PATH_BILLBOARD "./runtime/assets/shader/shader.billboard.wgsl"
-#define SHADER_PATH_LINE "./runtime/assets/shader/shader.line.wgsl"
-#define SHADER_PATH_SOLID "./runtime/assets/shader/shader.solid.wgsl"
-#define SHADER_PATH_FLAT "./runtime/assets/shader/shader.flat.wgsl"
+static const char *const SHADER_PATH_DEFAULT =
+    "./runtime/assets/shader/shader.default.wgsl";
+
+static const char *const SHADER_PATH_PBR =
+    "./runtime/assets/shader/shader.pbr.wgsl";
+
+static const char *const SHADER_PATH_SHADOW =
+    "./runtime/assets/shader/shader.shadow.wgsl";
+
+static const char *const SHADER_PATH_SCREEN =
+    "./runtime/assets/shader/shader.screen.wgsl";
+
+static const char *const SHADER_PATH_BILLBOARD =
+    "./runtime/assets/shader/shader.billboard.wgsl";
+
+static const char *const SHADER_PATH_LINE =
+    "./runtime/assets/shader/shader.line.wgsl";
+
+static const char *const SHADER_PATH_SOLID =
+    "./runtime/assets/shader/shader.solid.wgsl";
+
+static const char *const SHADER_PATH_FLAT =
+    "./runtime/assets/shader/shader.flat.wgsl";
 
 // descriptors
 typedef struct {
-  char *path;
-  char *label;
+  const char *path;
+  const char *label;
   const WGPUDevice *device;
   const WGPUQueue *queue;
-  char *name;
+  const char *name;
 } ShaderCreateDescriptor;
 
 // bind group

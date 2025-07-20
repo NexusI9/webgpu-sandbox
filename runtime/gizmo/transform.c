@@ -38,9 +38,10 @@ void gizmo_transform_create_mesh(
                           });
 
     // add color uniform
+    const float gizmo_size = 15.0f;
     shader_add_uniform(mesh_shader_texture(mesh),
                        &(ShaderCreateUniformDescriptor){
-                           .entry_count = 1,
+                           .entry_count = 2,
                            .group_index = 1,
                            .visibility = WGPUShaderStage_Fragment,
                            .entries =
@@ -49,6 +50,12 @@ void gizmo_transform_create_mesh(
                                        .binding = 0,
                                        .size = sizeof(vec3),
                                        .data = &(vec3){i == 0, i == 1, i == 2},
+                                       .offset = 0,
+                                   },
+                                   {
+                                       .binding = 1,
+                                       .size = sizeof(float),
+                                       .data = (void *)&gizmo_size,
                                        .offset = 0,
                                    },
                                },

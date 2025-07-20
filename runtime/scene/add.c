@@ -1,4 +1,5 @@
 #include "add.h"
+#include "./editor/editor.h"
 
 static MeshRefList *scene_layer_gizmo(Scene *);
 
@@ -16,7 +17,8 @@ GizmoPointLight *scene_add_point_light(Scene *scene,
   light_create_point(new_light, desc);
 
   // create mesh/gizmo
-  GizmoPointLight *gizmo_light = gizmo_list_new_point_light(&scene->gizmo);
+  GizmoPointLight *gizmo_light =
+    gizmo_list_new_point_light(scene_editor_gizmo_list(scene));
 
   gizmo_light_point_create(gizmo_light, new_light,
                            &(GizmoCreateDescriptor){
@@ -27,11 +29,9 @@ GizmoPointLight *scene_add_point_light(Scene *scene,
                                .list = scene_mesh_list(scene),
                            });
 
-
   // transfert gizmo mesh pointers to render_list so they get rendered
   MeshRefList *render_list = scene_layer_gizmo(scene);
   mesh_reference_list_transfert(&gizmo_light->meshes, render_list);
-
 
   return gizmo_light;
 }
@@ -49,7 +49,8 @@ GizmoSpotLight *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc) {
   light_create_spot(new_light, desc);
 
   // create mesh/gizmo
-  GizmoSpotLight *gizmo_light = gizmo_list_new_spot_light(&scene->gizmo);
+  GizmoSpotLight *gizmo_light =
+      gizmo_list_new_spot_light(scene_editor_gizmo_list(scene));
 
   gizmo_light_spot_create(gizmo_light, new_light,
                           &(GizmoCreateDescriptor){
@@ -81,7 +82,8 @@ GizmoAmbientLight *scene_add_ambient_light(Scene *scene,
   light_create_ambient(new_light, desc);
 
   // create mesh/gizmo
-  GizmoAmbientLight *gizmo_light = gizmo_list_new_ambient_light(&scene->gizmo);
+  GizmoAmbientLight *gizmo_light =
+      gizmo_list_new_ambient_light(scene_editor_gizmo_list(scene));
 
   gizmo_light_ambient_create(gizmo_light, new_light,
                              &(GizmoCreateDescriptor){
@@ -112,7 +114,8 @@ GizmoSunLight *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
   light_create_sun(new_light, desc);
 
   // create mesh/gizmo
-  GizmoSunLight *gizmo_light = gizmo_list_new_sun_light(&scene->gizmo);
+  GizmoSunLight *gizmo_light =
+    gizmo_list_new_sun_light(scene_editor_gizmo_list(scene));
 
   gizmo_light_sun_create(gizmo_light, new_light,
                          &(GizmoCreateDescriptor){
@@ -158,7 +161,7 @@ GizmoCamera *scene_add_camera(Scene *scene,
   camera_create(new_cam, desc);
 
   // create gizmo
-  GizmoCamera *gizmo_cam = gizmo_list_new_camera(&scene->gizmo);
+  GizmoCamera *gizmo_cam = gizmo_list_new_camera(scene_editor_gizmo_list(scene));
 
   gizmo_camera_create(gizmo_cam, new_cam,
                       &(GizmoCreateDescriptor){

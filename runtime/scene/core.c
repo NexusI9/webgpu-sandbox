@@ -1,12 +1,11 @@
 #include "core.h"
-#include "../gizmo/grid.h"
 #include "./editor/selection.h"
+#include "editor/editor.h"
 #include "layer.h"
 
 static void scene_init_light_list(Scene *);
 static Mesh *scene_new_mesh(Scene *, const char *);
 static Camera *scene_init_main_camera(Scene *, cclock *);
-static void scene_init_grid(Scene *);
 
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
@@ -43,17 +42,10 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   // init lights
   scene_init_light_list(scene);
 
-  // init grid
-  scene_init_grid(scene);
-
   /* ==== EDITOR ==== */
-
   // EDITORONLY
-  //  init gizmo list
-  gizmo_list_create(&scene->gizmo, GIZMO_LIST_CAPACITY_DEFAULT);
-
-  // init selection list & related events
-  scene_selection_init(scene);
+  scene_editor_init(scene);
+ 
 }
 
 /**
@@ -81,29 +73,6 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
   camera_lookat(&camera, (vec3){20.0f, 20.0f, 20.0f}, (vec3){0.0f, 0.0f, 0.0f});
 
   return camera_list_insert(&scene->cameras, &camera);
-}
-
-/**
-   Create scene grid
- */
-void scene_init_grid(Scene *scene) {
-
-  GizmoGridUniform grid_uniform = {
-      .size = 100.0f,
-      .cell_size = 100.0f,
-      .thickness = 44.0f,
-  };
-
-  glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
-
-  Mesh *grid = scene_new_mesh_fixed(scene, SCENE_LAYER_GIZMO_UNSELECTABLE);
-  gizmo_grid_create(grid, &(GizmoGridCreateDescriptor){
-                              .uniform = grid_uniform,
-                              .camera = scene->active_camera,
-                              .viewport = &scene->viewport,
-                              .device = scene->device,
-                              .queue = scene->queue,
-                          });
 }
 
 /**
@@ -146,7 +115,7 @@ Mesh *scene_new_mesh(Scene *scene, const char *layer) {
   // add to scene layers ('Default' layer if NULL)
   if (layer == NULL)
     layer = SCENE_LAYER_DEFAULT;
-  
+
   scene_layer_set_insert_mesh(&scene->layers, layer, new_mesh);
 
   return new_mesh;
