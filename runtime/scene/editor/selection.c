@@ -23,7 +23,10 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
   if (hit) {
 
     // check if object is not blacklist
-    printf("black list: %p, scene: %p\n", black_list, scene);
+    if(black_list != NULL){
+      
+    }
+    
     // cap + right click : remove selection if exist, add if not
     if (mouseEvent->shiftKey && mouseEvent->button == 2) {
 

@@ -25,7 +25,7 @@ static void scene_build_mesh_list(Scene *, mesh_get_shader_callback,
    Establish pipeline from previously set bind groups
  */
 void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
-  VERBOSE_PRINT("======= BUILD TEXTURE SCENE ======\n");
+  VERBOSE_HEADER("BUILD TEXTURE SCENE");
 
   MeshRefList *layers[3] = {
       &scene->pipelines.background,
@@ -57,7 +57,7 @@ void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
     scene_build_mesh_list(scene, mesh_shader_texture, sample, layer);
   }
 
-  VERBOSE_PRINT("=======       DONE       ======\n");
+  VERBOSE_HEADER("DONE");
 }
 
 /**
@@ -65,7 +65,7 @@ void scene_build_texture(Scene *scene, PipelineMultisampleCount sample) {
    Establish pipeline from previously set bind groups
  */
 void scene_build_solid(Scene *scene, PipelineMultisampleCount sample) {
-  VERBOSE_PRINT("======= BUILD SOLID SCENE ======\n");
+  VERBOSE_HEADER("BUILD SOLID SCENE");
 
   MeshRefList *layers[2] = {
       &scene->pipelines.lit,
@@ -90,7 +90,7 @@ void scene_build_solid(Scene *scene, PipelineMultisampleCount sample) {
     scene_build_mesh_list(scene, mesh_shader_solid, sample, layer);
   }
 
-  VERBOSE_PRINT("=======       DONE       ======\n");
+  VERBOSE_HEADER("DONE");
 }
 
 /**
@@ -98,7 +98,7 @@ void scene_build_solid(Scene *scene, PipelineMultisampleCount sample) {
    Establish pipeline from previously set bind groups
  */
 void scene_build_wireframe(Scene *scene, PipelineMultisampleCount sample) {
-  VERBOSE_PRINT("======= BUILD WIREFRAME SCENE ======\n");
+  VERBOSE_HEADER("BUILD WIREFRAME SCENE");
 
   MeshRefList *layers[2] = {
       &scene->pipelines.lit,
@@ -126,7 +126,7 @@ void scene_build_wireframe(Scene *scene, PipelineMultisampleCount sample) {
     scene_build_mesh_list(scene, mesh_shader_wireframe, sample, layer);
   }
 
-  VERBOSE_PRINT("=======       DONE       ======\n");
+  VERBOSE_HEADER("DONE");
 }
 
 /**
@@ -134,7 +134,7 @@ void scene_build_wireframe(Scene *scene, PipelineMultisampleCount sample) {
    Establish pipeline from previously set bind groups
  */
 void scene_build_boundbox(Scene *scene, PipelineMultisampleCount sample) {
-  VERBOSE_PRINT("======= BUILD BOUNDBOX SCENE ======\n");
+  VERBOSE_HEADER("BUILD BOUNDBOX SCENE");
 
   MeshRefList *layers[2] = {
       &scene->pipelines.lit,
@@ -159,7 +159,7 @@ void scene_build_boundbox(Scene *scene, PipelineMultisampleCount sample) {
     scene_build_mesh_list(scene, mesh_shader_wireframe, sample, layer);
   }
 
-  VERBOSE_PRINT("=======       DONE       ======\n");
+  VERBOSE_HEADER("DONE");
 }
 
 /**
@@ -167,7 +167,7 @@ void scene_build_boundbox(Scene *scene, PipelineMultisampleCount sample) {
    Establish pipeline from previously set bind groups
  */
 void scene_build_shadow(Scene *scene, PipelineMultisampleCount sample) {
-  VERBOSE_PRINT("======= BUILD SHADOW SCENE ======\n");
+  VERBOSE_HEADER("BUILD SHADOW SCENE");
 
   // (shadow is bind process already during the renderer shadow pass)
 
@@ -181,7 +181,7 @@ void scene_build_shadow(Scene *scene, PipelineMultisampleCount sample) {
     scene_build_mesh_list(scene, mesh_shader_shadow, sample, layer);
   }
 
-  VERBOSE_PRINT("=======       DONE       ======\n");
+  VERBOSE_HEADER("DONE");
 }
 
 /**
@@ -189,7 +189,7 @@ void scene_build_shadow(Scene *scene, PipelineMultisampleCount sample) {
    Fixed layer use the Override shader* as default shader.
  */
 void scene_build_fixed(Scene *scene, PipelineMultisampleCount sample) {
-  VERBOSE_PRINT("======= BUILD FIXED SCENE ======\n");
+  VERBOSE_HEADER("BUILD FIXED SCENE");
 
   MeshRefList *layer = &scene->pipelines.fixed;
 
@@ -203,7 +203,7 @@ void scene_build_fixed(Scene *scene, PipelineMultisampleCount sample) {
   // build fixed
   scene_build_mesh_list(scene, mesh_shader_override, sample, layer);
 
-  VERBOSE_PRINT("=======       DONE       ======\n");
+  VERBOSE_HEADER("DONE");
 }
 
 /**

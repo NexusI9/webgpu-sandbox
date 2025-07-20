@@ -8,11 +8,11 @@
    length.
  */
 int dyli_create(void **entries, size_t *capacity, size_t *length,
-                size_t type_size, size_t size, const char *label) {
+                size_t type_size, size_t num, const char *label) {
 
-  *entries = calloc(*capacity, type_size);
+  *entries = calloc(num, type_size);
   *length = 0;
-  *capacity = size;
+  *capacity = num;
 
   if (*entries == NULL) {
     VERBOSE_ERROR("Couldn't create new dynamic list: %s\n", label);

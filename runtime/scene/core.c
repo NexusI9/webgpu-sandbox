@@ -144,7 +144,7 @@ Mesh *scene_new_mesh(Scene *scene, const char *layer) {
   Mesh *new_mesh = mesh_list_new_mesh(&scene->meshes);
 
   // add to scene layers ('Default' layer if NULL)
-  if (layer != NULL)
+  if (layer == NULL)
     layer = SCENE_LAYER_DEFAULT;
   
   scene_layer_set_insert_mesh(&scene->layers, layer, new_mesh);

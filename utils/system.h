@@ -14,10 +14,15 @@
 #define VERBOSE_WARNING(...)                                                   \
   printf("[%s:%d] ", __FILE__, __LINE__);                                      \
   printf(__VA_ARGS__)
+#define VERBOSE_HEADER(...)                                                    \
+  printf("===== ");                                                            \
+  printf(__VA_ARGS__);                                                         \
+  printf(" =====\n")
 #else
 #define VERBOSE_PRINT(...) // no-op
 #define VERBOSE_ERROR(...)
 #define VERBOSE_WARNING(...)
+#define VERBOSE_HEADER(...)
 #endif
 
 void print_ivec4(const ivec4);

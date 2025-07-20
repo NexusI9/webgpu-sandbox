@@ -4,7 +4,7 @@
 #include "../mesh/mesh.h"
 
 #define SCENE_LAYER_CAPACITY 16
-#define SCENE_LAYER_SET_CAPACITY 16
+#define SCENE_LAYER_SET_CAPACITY 128
 
 #define SCENE_LAYER_SUCCESS 0
 #define SCENE_LAYER_ALLOC_FAIL 1
