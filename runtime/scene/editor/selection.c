@@ -1,8 +1,15 @@
 #include "selection.h"
 
-static void scene_selection_add(Scene *, Mesh *);
-static void scene_selection_remove(Scene *, Mesh *);
+static inline void scene_selection_add(Scene *, Mesh *);
+static inline void scene_selection_remove(Scene *, Mesh *);
+static inline void scene_selection_average_position(Scene *, vec3 *);
 
+/**
+   Callback called during the scene main camera raycast mouse click.
+   Define the logic for the selection process such as:
+   - Adding / Removing meshes from the selection pipeline
+   - Showing / Hidding the transform gizmo based on hit length
+ */
 void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
                                       const EmscriptenMouseEvent *mouseEvent,
                                       void *user_data) {
@@ -12,6 +19,8 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
 
   Scene *scene = cast_user_data->scene;
   SceneLayer *exclude_layer = cast_user_data->exclude_layer;
+  MeshRefList *selection_list = &scene->editor.pipelines.selection;
+  GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
   // early return if no hits
   if (cast_data->hits->length == 0)
@@ -30,13 +39,13 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
     hit = &cast_data->hits->entries[++index];
   }
 
+  // add hit to selection pipeline
   if (hit) {
-
     // cap + right click : remove selection if exist, add if not
     if (mouseEvent->shiftKey && mouseEvent->button == 2) {
 
-      Mesh *already_selected = mesh_reference_list_find(
-          &scene->editor.pipelines.selection, hit->mesh);
+      Mesh *already_selected =
+          mesh_reference_list_find(selection_list, hit->mesh);
 
       if (already_selected == NULL) {
         scene_selection_add(scene, hit->mesh);
@@ -48,10 +57,24 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
     // right click : add to selection
     else if (mouseEvent->button == 2) {
       // clear selection and add new one
-      mesh_reference_list_empty(&scene->editor.pipelines.selection);
+      mesh_reference_list_empty(selection_list);
       scene_selection_add(scene, hit->mesh);
     }
   }
+
+  // handle gizmo
+  /*if (selection_list->length > 0) {
+    gizmo_transform_update_mode(gizmo, &scene->pipelines.fixed,
+                                GizmoTransformMode_Scale);
+
+    // get average position
+    vec3 position;
+    scene_selection_average_position(scene, &position);
+    gizmo_transform_translate(gizmo, position);
+    
+  } else {
+    gizmo_transform_remove(gizmo, &scene->pipelines.fixed);
+  }*/
 }
 
 /**
@@ -87,6 +110,24 @@ void scene_selection_init(Scene *scene) {
                                      },
                                  .size = sizeof(SceneSelectionCallbackData),
                              });
+}
+
+/**
+   Get the selection average position (used to translate the gizmo)
+ */
+void scene_selection_average_position(Scene *scene, vec3 *dest) {
+
+  MeshRefList *selection = &scene->editor.pipelines.selection;
+
+  glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, *dest);
+
+  if (selection->length == 0)
+    return;
+
+  for (size_t i = 0; i < selection->length; i++)
+    glm_vec3_add(selection->entries[i]->position, *dest, *dest);
+
+  glm_vec3_scale(*dest, 1.0f / selection->length, *dest);
 }
 
 /**

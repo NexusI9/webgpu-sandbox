@@ -25,9 +25,12 @@ typedef struct {
 void gizmo_transform_create(GizmoTransform *,
                             const GizmoCreateDescriptor *desc);
 
-void gizmo_transform_update(GizmoTransform *, MeshRefList *,
-                            GizmoTransformMode);
+void gizmo_transform_update_mode(GizmoTransform *, MeshRefList *,
+                                 GizmoTransformMode);
 
+void gizmo_transform_remove(GizmoTransform *, MeshRefList *);
 
+void gizmo_transform_translate(GizmoTransform *, vec3);
+void gizmo_transform_rotate(GizmoTransform *, vec3);
 
 #endif

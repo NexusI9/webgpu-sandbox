@@ -61,9 +61,6 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
                                     .list = &scene->meshes,
                                 });
 
-  // transfer each gizmo to fixed pipeline
-  gizmo_transform_update(gizmo, &scene->pipelines.fixed,
-                         GizmoTransformMode_Scale);
 }
 
 /**

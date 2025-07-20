@@ -4,12 +4,6 @@
 #include "./translate.h"
 #include "./utils.h"
 
-static void gizmo_transform_insert(GizmoTransform *, MeshRefList *,
-                                   GizmoTransformMode);
-
-static void gizmo_transform_remove(GizmoTransform *, MeshRefList *,
-                                   GizmoTransformMode);
-
 /**
    Create the three key transform gizmo handles (translate, rotate, scale) and
    set active handle.
@@ -17,7 +11,8 @@ static void gizmo_transform_remove(GizmoTransform *, MeshRefList *,
 void gizmo_transform_create(GizmoTransform *gizmo,
                             const GizmoCreateDescriptor *desc) {
 
-  gizmo->active_handle = &gizmo->handles[GizmoTransformMode_Translate];
+  gizmo->mode = GizmoTransformMode_Translate;
+  gizmo->active_handle = &gizmo->handles[gizmo->mode];
 
   // translate
   gizmo_transform_translate_create(
@@ -25,7 +20,7 @@ void gizmo_transform_create(GizmoTransform *gizmo,
 
   // rotate
   gizmo_transform_translate_create(&gizmo->handles[GizmoTransformMode_Rotate],
-                                desc);
+                                   desc);
 
   // scale
   gizmo_transform_scale_create(&gizmo->handles[GizmoTransformMode_Scale], desc);
@@ -38,12 +33,11 @@ void gizmo_transform_create(GizmoTransform *gizmo,
    mistakes by adding multiple times the same gizmo or having two different ones
    at the same time.
  */
-void gizmo_transform_update(GizmoTransform *gizmo, MeshRefList *dest_list,
-                            GizmoTransformMode mode) {
+void gizmo_transform_update_mode(GizmoTransform *gizmo, MeshRefList *dest_list,
+                                 GizmoTransformMode mode) {
 
   // search & remove active handles from the list
-  for (size_t i = 0; i < gizmo->active_handle->length; i++)
-    mesh_reference_list_remove(dest_list, gizmo->active_handle->entries[i]);
+  gizmo_transform_remove(gizmo, dest_list);
 
   // update active handle & mode
   gizmo->active_handle = &gizmo->handles[mode];
@@ -55,16 +49,24 @@ void gizmo_transform_update(GizmoTransform *gizmo, MeshRefList *dest_list,
 }
 
 /**
-   Insert the gizmo handle from the given mode in the destination list.
-   Used to make a certain gizmo (translate, rot, scale) appear in the scene.
- */
-void gizmo_transform_insert(GizmoTransform *gizmo, MeshRefList *dest_list,
-                            GizmoTransformMode mode) {}
-
-/**
    Search and remove the gizmo handle from the given mode in the destination
    list. Used to make a certain gizmo (translate, rot, scale) disappear in the
-   scene.
+   scene (in case the selection went back to 0 as instance).
  */
-void gizmo_transform_remove(GizmoTransform *gizmo, MeshRefList *dest_list,
-                            GizmoTransformMode mode) {}
+void gizmo_transform_remove(GizmoTransform *gizmo, MeshRefList *dest_list) {
+  for (size_t i = 0; i < gizmo->active_handle->length; i++)
+    mesh_reference_list_remove(dest_list, gizmo->active_handle->entries[i]);
+}
+
+/**
+   Transform handle, used to set the handles at the center of selection.
+ */
+void gizmo_transform_translate(GizmoTransform *gizmo, vec3 position) {
+
+  mesh_reference_list_translate(gizmo->active_handle, position);
+}
+
+void gizmo_transform_rotate(GizmoTransform *gizmo, vec3 rotation) {
+
+  mesh_reference_list_rotate(gizmo->active_handle, rotation);
+}
