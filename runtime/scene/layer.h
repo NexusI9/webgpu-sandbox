@@ -11,9 +11,9 @@
 #define SCENE_LAYER_UNDEF_ERROR 2
 #define SCENE_LAYER_SET_UNFOUND 3
 
-static const char * const SCENE_LAYER_DEFAULT = "Default";
-static const char * const SCENE_LAYER_GIZMO_SELECTABLE = "Gizmo Selectable";
-static const char * const SCENE_LAYER_GIZMO_UNSELECTABLE = "Gizmo Unselectable";
+static const char *const SCENE_LAYER_DEFAULT = "Default";
+static const char *const SCENE_LAYER_GIZMO_SELECTABLE = "Gizmo Selectable";
+static const char *const SCENE_LAYER_GIZMO_UNSELECTABLE = "Gizmo Unselectable";
 
 typedef struct {
   char *name;
@@ -32,6 +32,7 @@ void scene_layer_empty(SceneLayer *);
 void scene_layer_rename(SceneLayer *, const char *);
 void scene_layer_free(SceneLayer *);
 Mesh *scene_layer_insert(SceneLayer *, Mesh *);
+Mesh *scene_layer_find(SceneLayer *, Mesh *);
 
 /*Layer set*/
 int scene_layer_set_create(SceneLayerSet *, size_t);

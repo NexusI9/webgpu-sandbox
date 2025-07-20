@@ -50,6 +50,18 @@ void scene_layer_free(SceneLayer *layer) {
 }
 
 /**
+   Search a mesh in the layer depending on the mesh id (linear search)
+ */
+Mesh *scene_layer_find(SceneLayer *layer, Mesh *mesh) {
+
+  for (size_t i = 0; i < layer->meshes.length; i++)
+    if (layer->meshes.entries[i]->id == mesh->id)
+      return mesh;
+
+  return NULL;
+}
+
+/**
    Insert a new mesh in the layer mesh reference list
  */
 Mesh *scene_layer_insert(SceneLayer *layer, Mesh *mesh) {

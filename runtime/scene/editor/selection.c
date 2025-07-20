@@ -11,22 +11,28 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
       (SceneSelectionCallbackData *)user_data;
 
   Scene *scene = cast_user_data->scene;
-  SceneLayer *black_list = cast_user_data->black_list;
+  SceneLayer *exclude_layer = cast_user_data->exclude_layer;
 
   // early return if no hits
   if (cast_data->hits->length == 0)
     return;
 
   // else retrieve first hit only (closest to camera)
-  CameraRaycastHit *hit = &cast_data->hits->entries[0];
+  size_t index = 0;
+  CameraRaycastHit *hit = &cast_data->hits->entries[index];
+
+  // check if object is blacklisted (exclude layer)
+  while (hit != NULL && exclude_layer != NULL &&
+         scene_layer_find(exclude_layer, hit->mesh) != NULL &&
+         index < cast_data->hits->length) {
+    
+    // skip to next hit mesh
+    hit = &cast_data->hits->entries[++index];
+  }
+
 
   if (hit) {
 
-    // check if object is not blacklist
-    if(black_list != NULL){
-      
-    }
-    
     // cap + right click : remove selection if exist, add if not
     if (mouseEvent->shiftKey && mouseEvent->button == 2) {
 
@@ -59,11 +65,9 @@ void scene_selection_init(Scene *scene) {
   mesh_reference_list_create(&scene->pipelines.selection,
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
-  // cache selection black list (ex: grid...)
-  SceneLayer *black_list =
+  // cache selection exclude layer (ex: grid...)
+  SceneLayer *exclude_layer =
       scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_UNSELECTABLE);
-
-  printf("before black list: %p, scene: %p\n", black_list, scene);
 
   // raycast on scene main camera
   camera_raycast_mouse_click(scene->active_camera,
@@ -80,7 +84,7 @@ void scene_selection_init(Scene *scene) {
                                  .data =
                                      (void *)&(SceneSelectionCallbackData){
                                          .scene = scene,
-                                         .black_list = black_list,
+                                         .exclude_layer = exclude_layer,
                                      },
                                  .size = sizeof(SceneSelectionCallbackData),
                              });
