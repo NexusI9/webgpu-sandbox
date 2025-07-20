@@ -1,5 +1,5 @@
-#include "light_ambient.h"
-#include "billboard.h"
+#include "./ambient.h"
+#include "../billboard.h"
 
 /**
    Insert Ambient light gizmo mesh to the list

@@ -1,9 +1,6 @@
 #include "list.h"
 #include "camera.h"
-#include "light_ambient.h"
-#include "light_point.h"
-#include "light_spot.h"
-#include "light_sun.h"
+#include "light/light.h"
 #include "string.h"
 
 static void *gizmo_list_expand(void **, size_t, size_t, size_t *);

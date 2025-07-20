@@ -139,18 +139,6 @@ int main(int argc, const char *argv[]) {
                       (vec3){0.0f, 0.0f, 0.0f});
    */
 
-  // add transform gizmo
-  GizmoTransformTranslate translate;
-  gizmo_transform_translate_create(
-      &translate, &(GizmoCreateDescriptor){
-                      .camera = main_scene.active_camera,
-                      .device = renderer_device(&main_renderer),
-                      .queue = renderer_queue(&main_renderer),
-                      .viewport = &main_scene.viewport,
-                      .list = &main_scene.meshes,
-                  });
-
-  mesh_reference_list_transfert(&translate.meshes, &main_scene.pipelines.fixed);
 
   example_gltf(&main_scene);
 

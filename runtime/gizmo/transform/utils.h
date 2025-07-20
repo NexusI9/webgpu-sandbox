@@ -1,12 +1,7 @@
-#ifndef _GIZMO_TRANSFORM_H_
-#define _GIZMO_TRANSFORM_H_
-#include "../mesh/mesh.h"
+#ifndef _GIZMO_TRANSFORM_UTILS_H_
+#define _GIZMO_TRANSFORM_UTILS_H_
 
-typedef struct {
-  Mesh *translate;
-  Mesh *scale;
-  Mesh *rotate;
-} GizmoTransform;
+#include "../../mesh/mesh.h"
 
 typedef struct {
   const char *mbin_path;
@@ -17,5 +12,6 @@ typedef struct {
 
 void gizmo_transform_create_mesh(MeshRefList *,
                                  const GizmoTransformCreateMeshDescriptor *);
+
 
 #endif

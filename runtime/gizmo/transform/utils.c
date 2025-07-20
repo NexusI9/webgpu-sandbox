@@ -1,8 +1,12 @@
-#include "transform.h"
-#include "../material/material.h"
-#include "../resources/loader/loader.mbin.h"
+#include "utils.h"
+#include "../../../resources/loader/loader.mbin.h"
+#include "../../material/material.h"
 #include "webgpu/webgpu.h"
 
+/**
+   Load the transform gizmom meshbinary and automate the shader/ color and angle
+   process.
+ */
 void gizmo_transform_create_mesh(
     MeshRefList *list, const GizmoTransformCreateMeshDescriptor *desc) {
 

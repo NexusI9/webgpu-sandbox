@@ -1,6 +1,9 @@
 #include "editor.h"
-#include "../../gizmo/grid.h"
+#include "../../gizmo/gizmo.h"
 #include "./selection.h"
+
+static inline void scene_editor_gizmo_create_grid(Scene *);
+static inline void scene_editor_gizmo_create_transform(Scene *);
 
 /**
    Initialize scene editor main elements such as: grid, gizmo list allocation,
@@ -10,6 +13,9 @@ void scene_editor_init(Scene *scene) {
 
   // init editor related gizmos
   scene_editor_gizmo_create_grid(scene);
+
+  // init transform gizmo
+  scene_editor_gizmo_create_transform(scene);
 
   //  init gizmo list
   gizmo_list_create(scene_editor_gizmo_list(scene),
@@ -46,8 +52,18 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
  */
 void scene_editor_gizmo_create_transform(Scene *scene) {
 
+  GizmoTransform *gizmo = &scene->editor.gizmo.transform;
+  gizmo_transform_create(gizmo, &(GizmoCreateDescriptor){
+                                    .camera = scene->active_camera,
+                                    .device = scene->device,
+                                    .queue = scene->queue,
+                                    .viewport = &scene->viewport,
+                                    .list = &scene->meshes,
+                                });
 
-  
+  // transfer each gizmo to fixed pipeline
+  gizmo_transform_update(gizmo, &scene->pipelines.fixed,
+                         GizmoTransformMode_Scale);
 }
 
 /**

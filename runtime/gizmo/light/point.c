@@ -1,7 +1,7 @@
-#include "light_point.h"
-#include "../../resources/loader/loader.mbin.h"
-#include "billboard.h"
-#include "wireframe.h"
+#include "./point.h"
+#include "../../../resources/loader/loader.mbin.h"
+#include "../billboard.h"
+#include "../wireframe.h"
 
 /**
    Insert Point light gizmo mesh to the list

@@ -4,7 +4,7 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../gizmo/list.h"
-#include "../gizmo/transform.h"
+#include "../gizmo/transform/transform.h"
 #include "./layer.h"
 #include "webgpu/webgpu.h"
 
@@ -79,36 +79,14 @@ typedef struct {
   MeshRefList lit;
   MeshRefList unlit;
   MeshRefList fixed;
-  // EDITORONLY
-  MeshRefList selection;
 } ScenePipelines;
 
-/*
-  GIZMO LIST
-  Gizmos' scene entities (meshes) are spearated from their data (primary
-  struct). As a result gizmos meshes and data are gathered under the
-  GizmoList struct.
-
-
-      Mesh Pool
-     .----------.
-     |  Mesh 1  | -----------.
-     |----------|            |      Gizmo List
-     |  Mesh 2  | -----------|   .-------------.
-     |----------|            '-> |  meshes [*] |
-     |  Mesh n  |                |  length 2   |
-     '----------'                |  -          |
-                             .-> |  target *   |
-      Gizmo Pool            |    '-------------'
-     .-----------.          |
-     | Camera 1  | ---------'
-     |-----------|
-     | Camera n  |
-     '-----------'
-
- */
 
 typedef struct {
+
+  struct {
+    MeshRefList selection;
+  } pipelines;
 
   struct {
     GizmoList list;           // gizmo lists

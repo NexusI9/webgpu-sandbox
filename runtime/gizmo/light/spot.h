@@ -1,9 +1,9 @@
 #ifndef _GIZMO_SPOT_LIGHT_H_
 #define _GIZMO_SPOT_LIGHT_H_
 
-#include "../light/light.h"
-#include "../mesh/mesh.h"
-#include "./core.h"
+#include "../../light/light.h"
+#include "../../mesh/mesh.h"
+#include "../core.h"
 
 typedef struct {
   SpotLight *target;

@@ -1,5 +1,5 @@
-#include "light_spot.h"
-#include "billboard.h"
+#include "spot.h"
+#include "../billboard.h"
 
 /**
    Insert Spot light gizmo mesh to the list

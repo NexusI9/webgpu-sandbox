@@ -3,9 +3,7 @@
 
 #include "../core.h"
 
-void scene_editor_init(Scene *);
-void scene_editor_gizmo_create_grid(Scene *);
-void scene_editor_gizmo_create_transform(Scene *);
+void scene_editor_init(Scene *);;
 GizmoList *scene_editor_gizmo_list(Scene *);
 
 #endif

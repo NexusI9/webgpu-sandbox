@@ -5,10 +5,7 @@
 #include "../light/light.h"
 #include "../mesh/mesh.h"
 #include "./camera.h"
-#include "./light_ambient.h"
-#include "./light_point.h"
-#include "./light_spot.h"
-#include "./light_sun.h"
+#include "./light/light.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
 #include <webgpu/webgpu.h>
@@ -17,6 +14,31 @@
 #define GIZMO_LIST_SUCCESS 0
 #define GIZMO_LIST_ALLOC_FAIL 1
 #define GIZMO_LIST_ERROR 2
+
+/*
+  GIZMO LIST
+  Gizmos' scene entities (meshes) are spearated from their data (primary
+  struct). As a result gizmos meshes and data are gathered under the
+  GizmoList struct.
+
+
+      Mesh Pool
+     .----------.
+     |  Mesh 1  | -----------.
+     |----------|            |      Gizmo List
+     |  Mesh 2  | -----------|   .-------------.
+     |----------|            '-> |  meshes [*] |
+     |  Mesh n  |                |  length 2   |
+     '----------'                |  -          |
+                             .-> |  target *   |
+      Gizmo Pool            |    '-------------'
+     .-----------.          |
+     | Camera 1  | ---------'
+     |-----------|
+     | Camera n  |
+     '-----------'
+
+ */
 
 typedef struct {
 

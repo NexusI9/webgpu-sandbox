@@ -4,14 +4,8 @@
 #include "camera.h"
 #include "core.h"
 #include "grid.h"
-#include "light_ambient.h"
-#include "light_point.h"
-#include "light_spot.h"
-#include "light_sun.h"
+#include "light/light.h"
 #include "list.h"
-#include "transform.h"
-#include "transform_rotate.h"
-#include "transform_scale.h"
-#include "transform_translate.h"
+#include "transform/transform.h"
 
 #endif

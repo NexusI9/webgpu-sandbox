@@ -1,5 +1,5 @@
-#include "light_sun.h"
-#include "billboard.h"
+#include "sun.h"
+#include "../billboard.h"
 
 /**
    Insert Sun light gizmo mesh to the list

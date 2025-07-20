@@ -13,7 +13,7 @@ typedef struct {
   WGPUQueue *queue;
   Camera *camera;
   Viewport *viewport;
-  MeshList *list;
+  MeshList *list; // mesh pool from which gizmo mesh will be created
 } GizmoCreateDescriptor;
 
 #endif
