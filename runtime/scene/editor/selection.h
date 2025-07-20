@@ -4,6 +4,10 @@
 #include "../core.h"
 #include "emscripten/html5.h"
 
+typedef struct {
+  Scene *scene;
+  SceneLayer *black_list;
+} SceneSelectionCallbackData;
 
 void scene_selection_init(Scene *);
 

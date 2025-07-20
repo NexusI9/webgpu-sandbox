@@ -56,10 +56,16 @@
  */
 
 typedef struct {
+  // targets lists
   MeshRefList **mesh_lists;
   size_t length;
+
+  // callback
   camera_raycast_callback callback;
   void *data;
+  size_t size;
+
+  // raycast
   Viewport *viewport;
 } CameraRaycastDescriptor;
 

@@ -215,7 +215,7 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
 
   Mesh *line = NULL;
 #ifdef AO_BAKE_DISPLAY_RAY
-  line = scene_new_mesh_unlit(desc->scene);
+  line = scene_new_mesh_unlit(desc->scene, NULL);
   line_create(line, &(LineCreateDescriptor){
                         .device = desc->device,
                         .queue = desc->queue,
@@ -351,7 +351,7 @@ void ao_bake_global(const AOBakeDescriptor *desc) {
   VERBOSE_PRINT("===== BAKING GLOBAL AO =====\n");
 
 #ifdef AO_BAKE_DISPLAY_RAY
-  mesh *line = scene_new_mesh_unlit(desc->scene);
+  mesh *line = scene_new_mesh_unlit(desc->scene, NULL);
   line_create(line, &(LineCreateDescriptor){
                         .device = desc->device,
                         .queue = desc->queue,

@@ -4,7 +4,7 @@
 #include "layer.h"
 
 static void scene_init_light_list(Scene *);
-static Mesh *scene_new_mesh(Scene *);
+static Mesh *scene_new_mesh(Scene *, const char *);
 static Camera *scene_init_main_camera(Scene *, cclock *);
 static void scene_init_grid(Scene *);
 
@@ -39,7 +39,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   // init scene layers
   scene_layer_set_create(&scene->layers, SCENE_LAYER_SET_CAPACITY);
-  
+
   // init lights
   scene_init_light_list(scene);
 
@@ -48,8 +48,8 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   /* ==== EDITOR ==== */
 
-  //EDITORONLY
-  // init gizmo list
+  // EDITORONLY
+  //  init gizmo list
   gizmo_list_create(&scene->gizmo, GIZMO_LIST_CAPACITY_DEFAULT);
 
   // init selection list & related events
@@ -96,7 +96,7 @@ void scene_init_grid(Scene *scene) {
 
   glm_vec4_copy((vec4){0.5f, 0.5f, 0.5f, 1.0f}, grid_uniform.color);
 
-  Mesh *grid = scene_new_mesh_fixed(scene);
+  Mesh *grid = scene_new_mesh_fixed(scene, SCENE_LAYER_GIZMO_UNSELECTABLE);
   gizmo_grid_create(grid, &(GizmoGridCreateDescriptor){
                               .uniform = grid_uniform,
                               .camera = scene->active_camera,
@@ -112,28 +112,57 @@ void scene_init_grid(Scene *scene) {
   1. first create new mesh in the scene pool
   2. add the reference to the relative mesh ref list
  */
-Mesh *scene_new_mesh_lit(Scene *scene) {
-  Mesh *new_mesh = scene_new_mesh(scene);
+Mesh *scene_new_mesh_lit(Scene *scene, const char *layer) {
+  Mesh *new_mesh = scene_new_mesh(scene, layer);
+
+  // return pipeline pointer (same as new_mesh)
   return mesh_reference_list_insert(&scene->pipelines.lit, new_mesh);
 }
 
-Mesh *scene_new_mesh_unlit(Scene *scene) {
-  Mesh *new_mesh = scene_new_mesh(scene);
+Mesh *scene_new_mesh_unlit(Scene *scene, const char *layer) {
+  Mesh *new_mesh = scene_new_mesh(scene, layer);
+
+  // return pipeline pointer (same as new_mesh)
   return mesh_reference_list_insert(&scene->pipelines.unlit, new_mesh);
 }
 
-Mesh *scene_new_mesh_fixed(Scene *scene) {
-  Mesh *new_mesh = scene_new_mesh(scene);
+Mesh *scene_new_mesh_fixed(Scene *scene, const char *layer) {
+  Mesh *new_mesh = scene_new_mesh(scene, layer);
+
+  // return pipeline pointer (same as new_mesh)
   return mesh_reference_list_insert(&scene->pipelines.fixed, new_mesh);
 }
 
-Mesh *scene_new_mesh_background(Scene *scene) {
-  Mesh *new_mesh = scene_new_mesh(scene);
+Mesh *scene_new_mesh_background(Scene *scene, const char *layer) {
+  Mesh *new_mesh = scene_new_mesh(scene, layer);
+
+  // return pipeline pointer (same as new_mesh)
   return mesh_reference_list_insert(&scene->pipelines.background, new_mesh);
 }
 
-Mesh *scene_new_mesh(Scene *scene) {
-  return mesh_list_new_mesh(&scene->meshes);
+Mesh *scene_new_mesh(Scene *scene, const char *layer) {
+  Mesh *new_mesh = mesh_list_new_mesh(&scene->meshes);
+
+  // add to scene layers ('Default' layer if NULL)
+  if (layer != NULL)
+    layer = SCENE_LAYER_DEFAULT;
+  
+  scene_layer_set_insert_mesh(&scene->layers, layer, new_mesh);
+
+  return new_mesh;
+}
+
+/**
+   Quick access to a scene layer mesh list.
+ */
+MeshRefList *scene_layer_meshes(Scene *scene, const char *name) {
+
+  SceneLayer *layer = scene_layer_set_find(&scene->layers, name);
+
+  if (layer == NULL)
+    return NULL;
+
+  return &layer->meshes;
 }
 
 // TODO: move light list in Light not Scene anymore

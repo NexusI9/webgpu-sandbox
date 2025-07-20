@@ -2,7 +2,7 @@
 
 void example_gizmo(Scene* scene) {
 
-  Mesh *gizmo = scene_new_mesh_fixed(scene);
+  Mesh *gizmo = scene_new_mesh_fixed(scene, NULL);
   Primitive mbin_primitive;
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
       .path = "./resources/assets/mbin/sphere.mbin",

@@ -1,7 +1,7 @@
 #include "line.h"
 
 void example_line(Scene *scene) {
-  Mesh *line = scene_new_mesh_unlit(scene);
+  Mesh *line = scene_new_mesh_unlit(scene, NULL);
   line_create(line, &(LineCreateDescriptor){
                         .device = scene->device,
                         .queue = scene->queue,

@@ -102,8 +102,6 @@ void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused
 
-  printf("WASM INIT\n");
-
   // init renderer
   renderer_create(&main_renderer,
                   &(RendererCreateDescriptor){

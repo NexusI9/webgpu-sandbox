@@ -11,6 +11,10 @@
 #define SCENE_LAYER_UNDEF_ERROR 2
 #define SCENE_LAYER_SET_UNFOUND 3
 
+static const char * const SCENE_LAYER_DEFAULT = "Default";
+static const char * const SCENE_LAYER_GIZMO_SELECTABLE = "Gizmo Selectable";
+static const char * const SCENE_LAYER_GIZMO_UNSELECTABLE = "Gizmo Unselectable";
+
 typedef struct {
   char *name;
   MeshRefList meshes;

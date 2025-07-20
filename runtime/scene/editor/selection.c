@@ -7,7 +7,11 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
                                       const EmscriptenMouseEvent *mouseEvent,
                                       void *user_data) {
 
-  Scene *cast_scene = (Scene *)user_data;
+  SceneSelectionCallbackData *cast_user_data =
+      (SceneSelectionCallbackData *)user_data;
+
+  Scene *scene = cast_user_data->scene;
+  SceneLayer *black_list = cast_user_data->black_list;
 
   // early return if no hits
   if (cast_data->hits->length == 0)
@@ -18,27 +22,28 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
 
   if (hit) {
 
+    // check if object is not blacklist
+    printf("black list: %p, scene: %p\n", black_list, scene);
     // cap + right click : remove selection if exist, add if not
     if (mouseEvent->shiftKey && mouseEvent->button == 2) {
 
       Mesh *already_selected =
-          mesh_reference_list_find(&cast_scene->pipelines.selection, hit->mesh);
+          mesh_reference_list_find(&scene->pipelines.selection, hit->mesh);
 
       if (already_selected == NULL) {
-        scene_selection_add(cast_scene, hit->mesh);
+        scene_selection_add(scene, hit->mesh);
       } else {
-        scene_selection_remove(cast_scene, hit->mesh);
+        scene_selection_remove(scene, hit->mesh);
       }
 
     }
     // right click : add to selection
     else if (mouseEvent->button == 2) {
       // clear selection and add new one
-      mesh_reference_list_empty(&cast_scene->pipelines.selection);
-      scene_selection_add(cast_scene, hit->mesh);
+      mesh_reference_list_empty(&scene->pipelines.selection);
+      scene_selection_add(scene, hit->mesh);
     }
   }
-
 }
 
 /**
@@ -50,6 +55,12 @@ void scene_selection_init(Scene *scene) {
   // init selection list
   mesh_reference_list_create(&scene->pipelines.selection,
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
+
+  // cache selection black list (ex: grid...)
+  SceneLayer *black_list =
+      scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_UNSELECTABLE);
+
+  printf("before black list: %p, scene: %p\n", black_list, scene);
 
   // raycast on scene main camera
   camera_raycast_mouse_click(scene->active_camera,
@@ -63,7 +74,12 @@ void scene_selection_init(Scene *scene) {
                                  .length = 3,
                                  .viewport = &scene->viewport,
                                  .callback = scene_selection_raycast_callback,
-                                 .data = (void *)scene,
+                                 .data =
+                                     (void *)&(SceneSelectionCallbackData){
+                                         .scene = scene,
+                                         .black_list = black_list,
+                                     },
+                                 .size = sizeof(SceneSelectionCallbackData),
                              });
 }
 

@@ -153,7 +153,7 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
 
     cgltf_mesh gl_mesh = data->meshes[m];
 
-    struct Mesh *scene_mesh = scene_new_mesh_lit(scene);
+    struct Mesh *scene_mesh = scene_new_mesh_lit(scene, NULL);
     mesh_create(scene_mesh, &(MeshCreateDescriptor){
                                 .device = device,
                                 .queue = queue,
@@ -242,7 +242,7 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
       // add child to parent mesh if current primitive > 0
       // and set it as target mesh
       if (p > 0) {
-        target_mesh = scene_new_mesh_lit(scene);
+        target_mesh = scene_new_mesh_lit(scene, NULL);
 
         // add target mesh pointer to parent mesh children list
         mesh_add_child(target_mesh, scene_mesh);

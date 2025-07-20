@@ -152,12 +152,12 @@ void scene_create(Scene *, const SceneCreateDescriptor *);
 MeshList *scene_mesh_list(Scene *);
 
 // dynamic rendering
-Mesh *scene_new_mesh_lit(Scene *);
-Mesh *scene_new_mesh_unlit(Scene *);
-Mesh *scene_new_mesh_fixed(Scene *);
-Mesh *scene_new_mesh_background(Scene *);
+Mesh *scene_new_mesh_lit(Scene *, const char *);
+Mesh *scene_new_mesh_unlit(Scene *, const char *);
+Mesh *scene_new_mesh_fixed(Scene *, const char *);
+Mesh *scene_new_mesh_background(Scene *, const char *);
 
 // scene layer quick access
-MeshRefList *scene_layer_meshes(Scene *, const char*);
+MeshRefList *scene_layer_meshes(Scene *, const char *);
 
 #endif

@@ -3,7 +3,7 @@
 void example_primitive(Mesh *cube, vec3 position, Scene *scene) {
 
   Primitive cube_prim = primitive_cube();
-  cube = scene_new_mesh_unlit(scene);
+  cube = scene_new_mesh_unlit(scene, NULL);
   mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = cube_prim,
                                   .name = "cube",
