@@ -1,10 +1,10 @@
 #ifndef _BUFFER_H_
 #define _BUFFER_H_
 
-#include "renderer.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef struct {
   const WGPUDevice *device;

@@ -3,7 +3,7 @@
 //  https://developer.chrome.com/docs/web-platform/webgpu/build-app?hl=en
 //  https://stackoverflow.com/questions/23997312/how-do-i-read-a-user-specified-file-in-an-emscripten-compiled-library
 
-#include "backend/renderer.h"
+#include "backend/renderer/renderer.h"
 #include "resources/example/example.h"
 #include <emscripten/emscripten.h>
 
@@ -13,7 +13,7 @@
 #include "runtime/scene/core.h"
 
 static Scene main_scene;
-static Renderer main_renderer;
+static SceneRenderer main_renderer;
 static cclock main_clock;
 
 // callback
@@ -104,7 +104,7 @@ int main(int argc, const char *argv[]) {
 
   // init renderer
   renderer_create(&main_renderer,
-                  &(RendererCreateDescriptor){
+                  &(SceneRendererCreateDescriptor){
                       .name = "canvas",
                       .clock = &main_clock,
                       .multisampling_count = PipelineMultisampleCount_4x,
@@ -143,7 +143,7 @@ int main(int argc, const char *argv[]) {
   example_gltf(&main_scene);
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, RendererDrawMode_Solid);
+  renderer_draw(&main_renderer, &main_scene, SceneRendererDrawMode_Solid);
 
   // Quit
   renderer_close(&main_renderer);

@@ -1,8 +1,7 @@
 #ifndef _EXAMPLE_GLTF_H_
 #define _EXAMPLE_GLTF_H_
 
-#include "../../backend/renderer.h"
-#include "../../resources/loader/loader.gltf.h"
+#include "../../runtime/scene/scene.h"
 
 void example_gltf(Scene *);
 

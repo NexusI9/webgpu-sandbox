@@ -1,4 +1,5 @@
 #include "gltf.h"
+#include "../../resources/loader/loader.gltf.h"
 
 void example_gltf(Scene *scene) {
   loader_gltf_load(&(GLTFLoadDescriptor){

@@ -1,4 +1,5 @@
 #include "primitive.h"
+#include "../runtime/primitive/cube.h"
 
 void example_primitive(Mesh *cube, vec3 position, Scene *scene) {
 

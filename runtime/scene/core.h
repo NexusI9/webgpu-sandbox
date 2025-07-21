@@ -8,6 +8,7 @@
 #include "./layer.h"
 #include "webgpu/webgpu.h"
 
+
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
@@ -127,6 +128,7 @@ typedef struct {
   // TODO: only enable selection/gizmo related function for "Editor" mode since
   // will be never seen or used in actually "Game" mode
   SceneEditor editor;
+
 
 } Scene;
 

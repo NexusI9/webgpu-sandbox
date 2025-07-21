@@ -1,4 +1,6 @@
 #include "gizmo.h"
+#include "../resources/loader/loader.mbin.h"
+#include "../runtime/material/material.h"
 
 void example_gizmo(Scene* scene) {
 

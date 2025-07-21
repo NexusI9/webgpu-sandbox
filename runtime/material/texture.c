@@ -1,5 +1,5 @@
 #include "texture.h"
-#include "../../backend/shadow_pass.h"
+#include "../../backend/renderer/renderer.h"
 
 /**
    Clear the texture shader bind groups of mesh

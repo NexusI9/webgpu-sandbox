@@ -1,5 +1,8 @@
 #include "line.h"
 
+#include "../../runtime/geometry/line/line.h"
+
+
 void example_line(Scene *scene) {
   Mesh *line = scene_new_mesh_unlit(scene, NULL);
   line_create(line, &(LineCreateDescriptor){

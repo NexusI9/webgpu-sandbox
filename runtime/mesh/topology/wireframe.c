@@ -1,15 +1,8 @@
 #include "wireframe.h"
 #include "../backend/buffer.h"
-#include "../backend/shadow_pass.h"
 #include "../runtime/geometry/edge/edge.h"
 #include "../runtime/geometry/line/line.h"
 #include "../utils/math.h"
-#include "../utils/system.h"
-#include "core.h"
-#include "webgpu/webgpu.h"
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
 #include <string.h>
 
 static bool mesh_topology_wireframe_is_face(VertexIndex *);

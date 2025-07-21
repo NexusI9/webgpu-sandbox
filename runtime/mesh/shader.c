@@ -1,11 +1,6 @@
 #include "shader.h"
-#include "../backend/buffer.h"
-#include "../backend/shadow_pass.h"
+#include "../backend/renderer/renderer.h"
 #include "../material/material.h"
-#include "../runtime/geometry/edge/edge.h"
-#include "../runtime/geometry/line/line.h"
-#include "../utils/math.h"
-#include "topology/wireframe.h"
 
 /**
    Return mesh default shader

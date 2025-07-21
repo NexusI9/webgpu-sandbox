@@ -12,6 +12,7 @@ typedef enum {
   RegEntryType_SpotLight,
   RegEntryType_SunLight,
   RegEntryType_Scene,
+  RegEntryType_SceneLayer,
 } RegEntryType;
 
 typedef struct {

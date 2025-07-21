@@ -1,8 +1,8 @@
-#ifndef _RENDERER_H_
-#define _RENDERER_H_
+#ifndef _SCENE_RENDERER_CORE_H_
+#define _SCENE_RENDERER_CORE_H_
 
 #include "../runtime/scene/scene.h"
-#include "clock.h"
+#include "../../clock.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
@@ -14,16 +14,16 @@ typedef struct {
   PipelineMultisampleCount multisampling_count;
   WGPUColor background;
   double dpi;
-} RendererCreateDescriptor;
+} SceneRendererCreateDescriptor;
 
 typedef enum {
-  RendererDrawMode_Texture,
-  RendererDrawMode_Solid,
-  RendererDrawMode_Wireframe,
-  RendererDrawMode_Boundbox,
-} RendererDrawMode;
+  SceneRendererDrawMode_Texture,
+  SceneRendererDrawMode_Solid,
+  SceneRendererDrawMode_Wireframe,
+  SceneRendererDrawMode_Boundbox,
+} SceneRendererDrawMode;
 
-typedef struct Renderer {
+typedef struct SceneRenderer {
 
   cclock *clock; // update clock delta on draw
   WGPUColor background;
@@ -52,13 +52,13 @@ typedef struct Renderer {
     WGPUTextureView view;
   } depth;
 
-} Renderer;
+} SceneRenderer;
 
 typedef WGPURenderPassColorAttachment (*renderer_color_attachment_callback)(
-    Renderer *, WGPUTextureView);
+    SceneRenderer *, WGPUTextureView);
 
 typedef struct {
-  Renderer *renderer;
+  SceneRenderer *renderer;
   Scene *scene;
   renderer_color_attachment_callback color_attachment_callback;
 
@@ -67,20 +67,22 @@ typedef struct {
     size_t length;
   } draw_list;
 
-} RendererRenderDescriptor;
+} SceneRendererRenderDescriptor;
 
-void renderer_create(Renderer *, const RendererCreateDescriptor *);
+void renderer_create(SceneRenderer *, const SceneRendererCreateDescriptor *);
 
-void renderer_bake_ao(Renderer *, Scene *);
-void renderer_compute_shadow(Renderer *, Scene *);
+void renderer_bake_ao(SceneRenderer *, Scene *);
+void renderer_compute_shadow(SceneRenderer *, Scene *);
 
-void renderer_close(const Renderer *);
-void renderer_draw(Renderer *, Scene *, const RendererDrawMode);
+void renderer_close(const SceneRenderer *);
+void renderer_draw(SceneRenderer *, Scene *, const SceneRendererDrawMode);
 
-WGPUDevice *renderer_device(Renderer *);
-WGPUQueue *renderer_queue(Renderer *);
-int renderer_width(Renderer *);
-int renderer_height(Renderer *);
+WGPUDevice *renderer_device(SceneRenderer *);
+WGPUQueue *renderer_queue(SceneRenderer *);
+int renderer_width(SceneRenderer *);
+int renderer_height(SceneRenderer *);
 
-const char *renderer_target(Renderer *);
+const char *renderer_target(SceneRenderer *);
+
+
 #endif

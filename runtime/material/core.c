@@ -1,6 +1,4 @@
 #include "core.h"
-#include "../backend/shadow_pass.h"
-
 #include "../utils/system.h"
 /**
    Bind Mesh, Camera and Projection matrix to a given mesh shader
