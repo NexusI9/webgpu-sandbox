@@ -83,9 +83,9 @@ void mesh_build(Mesh *mesh, Shader *shader) {
 
   // check if mesh has correct buffer before drawing
   if (mesh->topology.base.index.buffer == NULL ||
-      mesh->topology.base.attribute.buffer == NULL) {
+      mesh->topology.base.attribute.buffer == NULL) 
     VERBOSE_ERROR("Mesh has no vertex index or attribute buffer.");
-  }
+  
 
   // build shader
   shader_build(shader);

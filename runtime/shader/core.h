@@ -27,7 +27,7 @@
 // fixed shader
 #define SHADER_FIXED_BINDGROUP_VIEWS 0
 
-// path
+// native shader path
 static const char *const SHADER_PATH_DEFAULT =
     "./runtime/assets/shader/shader.default.wgsl";
 
@@ -228,8 +228,6 @@ typedef struct {
     ShaderBindGroup entries[SHADER_MAX_BIND_GROUP];
     size_t length;
   } bind_groups;
-
-  int8_t projection_view_bindgroup;
 
 } Shader;
 

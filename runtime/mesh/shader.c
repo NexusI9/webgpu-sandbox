@@ -54,14 +54,13 @@ void mesh_create_shadow_shader(Mesh *mesh) {
 
   // import shadow shader
   Shader *shadow_shader = mesh_shader_shadow(mesh);
-  shader_create(shadow_shader,
-                &(ShaderCreateDescriptor){
-                    .path = "./runtime/assets/shader/shader.shadow.wgsl",
-                    .label = "Mesh shadow shader",
-                    .device = mesh->device,
-                    .queue = mesh->queue,
-                    .name = "Mesh shadow shader",
-                });
+  shader_create(shadow_shader, &(ShaderCreateDescriptor){
+                                   .path = SHADER_PATH_SHADOW,
+                                   .label = "Mesh shadow shader",
+                                   .device = mesh->device,
+                                   .queue = mesh->queue,
+                                   .name = "Mesh shadow shader",
+                               });
 
   // edit shader pipeline (vertex only)
   pipeline_set_stencil(shader_pipeline(shadow_shader),
@@ -107,14 +106,13 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
     return;
 
   // create shader
-  shader_create(wireframe_shader,
-                &(ShaderCreateDescriptor){
-                    .path = "./runtime/assets/shader/shader.line.wgsl",
-                    .label = "Mesh wireframe shader",
-                    .device = mesh->device,
-                    .queue = mesh->queue,
-                    .name = "Mesh wireframe shader",
-                });
+  shader_create(wireframe_shader, &(ShaderCreateDescriptor){
+                                      .path = SHADER_PATH_LINE,
+                                      .label = "Mesh wireframe shader",
+                                      .device = mesh->device,
+                                      .queue = mesh->queue,
+                                      .name = "Mesh wireframe shader",
+                                  });
 
   // update pipeline for double-sided
   material_texture_double_sided(mesh);

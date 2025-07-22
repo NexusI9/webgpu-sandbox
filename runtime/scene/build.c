@@ -58,30 +58,31 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
   default:
 
     // EDITORONLY
-    // Build boundbox & wireframe by default for selection
+    // Build Boundbox & Wireframe by default for selection
+    VERBOSE_MESH_BUILD("Boundbox %s", mesh->name);
     scene_build_mesh_boundbox(mesh, camera, viewport, sample_count);
 
     // Dynamic rendering
     switch (draw_mode) {
 
+      // build boundbox
+    case SceneRendererDrawMode_Boundbox:
+    default:
+      break;
+
+      // build solid
     case SceneRendererDrawMode_Solid:
       VERBOSE_MESH_BUILD("Solid %s", mesh->name);
-      scene_build_mesh_solid(mesh, camera, viewport,
-                             sample_count); // build solid
+      scene_build_mesh_solid(mesh, camera, viewport, sample_count);
       break;
 
+      // build wireframe
     case SceneRendererDrawMode_Wireframe:
       VERBOSE_MESH_BUILD("Wireframe %s", mesh->name);
-      scene_build_mesh_wireframe(mesh, camera, viewport,
-                                 sample_count); // build wireframe
+      scene_build_mesh_wireframe(mesh, camera, viewport, sample_count);
       break;
 
-    case SceneRendererDrawMode_Boundbox:
-      VERBOSE_MESH_BUILD("Boundbox %s", mesh->name);
-      scene_build_mesh_boundbox(mesh, camera, viewport,
-                                sample_count); // build boundbox
-      break;
-
+      // build texture
     case SceneRendererDrawMode_Texture:
       VERBOSE_MESH_BUILD("Texture %s", mesh->name);
 
@@ -109,9 +110,6 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
       LightList *lights =
           (pipeline == ScenePipeline_Lit) ? &scene->lights : NULL;
       scene_build_mesh_texture(mesh, camera, viewport, sample_count, lights);
-      break;
-
-    default:
       break;
     }
     break;
@@ -143,7 +141,7 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
   if (lights != NULL)
     material_texture_bind_lights(mesh, lights, SHADER_TEXTURE_BINDGROUP_LIGHTS);
 
-  // build layer
+  // build mesh
   build_utils_bind(mesh, mesh_shader_texture, sample);
 }
 
@@ -165,7 +163,6 @@ void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport,
   material_solid_bind_views(mesh, camera, viewport,
                             SHADER_SOLID_BINDGROUP_VIEWS);
 
-  // build solid meshes first
   build_utils_bind(mesh, mesh_shader_solid, sample);
 }
 
@@ -193,7 +190,7 @@ void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera, Viewport *viewport,
   material_wireframe_bind_views(mesh, camera, viewport,
                                 SHADER_WIREFRAME_BINDGROUP_VIEWS);
 
-  // build "solid" meshes first
+  // already built during the defaut boundbox
   build_utils_bind(mesh, mesh_shader_wireframe, sample);
 }
 
@@ -216,7 +213,6 @@ void scene_build_mesh_boundbox(Mesh *mesh, Camera *camera, Viewport *viewport,
   material_wireframe_bind_views(mesh, camera, viewport,
                                 SHADER_WIREFRAME_BINDGROUP_VIEWS);
 
-  // build "solid" meshes first
   build_utils_bind(mesh, mesh_shader_wireframe, sample);
 }
 
@@ -261,6 +257,11 @@ void scene_build_mesh_fixed(Mesh *mesh, Camera *camera, Viewport *viewport,
 
 void build_utils_bind(Mesh *mesh, mesh_get_shader_callback target_shader,
                       PipelineMultisampleCount sample) {
+
+  Shader *shader = target_shader(mesh);
+  // abort build if already built
+  if (shader_is_built(shader))
+    return;
 
   // updating meshes shader's pipeline sampling (dirty)
   pipeline_set_sampling(shader_pipeline(target_shader(mesh)), sample);

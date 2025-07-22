@@ -20,7 +20,6 @@ void shader_build(Shader *shader) {
   // shader_module_release(shader);
   shader_pipeline_release_layout(shader);
   free(bindgroup_layouts);
-
 }
 
 WGPUBindGroupLayout *shader_build_layout(Shader *shader) {
@@ -137,3 +136,10 @@ void shader_build_bind(Shader *shader, WGPUBindGroupLayout *layouts) {
     free(converted_entries);
   }
 }
+
+/**
+   Check if shader is already built by checking the pipeline handle (or layout).
+   Prevent the shader "program" to be built twice while switching between
+   drawing modes.
+ */
+bool shader_is_built(Shader *shader) { return shader->pipeline.handle != NULL; }

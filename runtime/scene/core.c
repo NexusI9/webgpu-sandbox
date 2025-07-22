@@ -166,7 +166,7 @@ void scene_init_draw_layouts(Scene *scene) {
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Wireframe,
       &(SceneRendererDrawLayoutList){
-          .length = 2,
+          .length = 4,
           .entries =
               {
                   {
@@ -210,12 +210,22 @@ void scene_init_draw_layouts(Scene *scene) {
                       .topology_callback = mesh_topology_boundbox,
                   },
                   {
+                      .meshes = &scene->pipelines[ScenePipeline_Selection],
+                      .shader_callback = mesh_shader_wireframe,
+                      .topology_callback = mesh_topology_boundbox,
+                  },
+                  {
                       .meshes = &scene->pipelines[ScenePipeline_Fixed],
                       .shader_callback = mesh_shader_override,
                       .topology_callback = mesh_topology_override,
                   },
               },
       });
+
+  
+  /*
+    Below configuration won't be used in runtime out of debug purpose.
+   */
 
   // Fixed draw configuration (use override topology & shader)
   scene_renderer_set_draw_layout(
