@@ -4,6 +4,7 @@
 #include "../../../runtime/mesh/mesh.h"
 #include "../../../runtime/pipeline/pipeline.h"
 #include "../../clock.h"
+#include "../runtime/texture/texture.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
@@ -52,6 +53,16 @@ typedef struct {
   ssize_t length;
 } SceneRendererDrawCallbackList;
 
+typedef struct {
+
+  // globals textures
+  Texture texture_2d;
+  WGPUTextureView texture_2d_view;
+  WGPUTextureView depth_cube_array_view;
+  WGPUTextureView depth_2d_array_view;
+
+} SceneRendererTextureFallback;
+
 typedef struct SceneRenderer {
 
   cclock *clock; // update clock delta on draw
@@ -74,17 +85,25 @@ typedef struct SceneRenderer {
   } wgpu;
 
   struct {
-    PipelineMultisampleCount count;
-    WGPUTextureView view;
-  } multisampling;
+
+    struct {
+      WGPUTextureView view;
+    } depth;
+
+    struct {
+      PipelineMultisampleCount count;
+      WGPUTextureView view;
+    } multisampling;
+
+    SceneRendererTextureFallback fallback;
+
+  } texture;
 
   struct {
-    WGPUTextureView view;
-  } depth;
-
-  SceneRendererDrawMode draw_mode;
-  SceneRendererDrawLayoutList draw_layouts[SCENE_RENDERER_DRAW_MODE_COUNT];
-  SceneRendererDrawCallbackList draw_callbacks;
+    SceneRendererDrawMode mode;
+    SceneRendererDrawLayoutList layouts[SCENE_RENDERER_DRAW_MODE_COUNT];
+    SceneRendererDrawCallbackList callbacks;
+  } draw;
 
 } SceneRenderer;
 

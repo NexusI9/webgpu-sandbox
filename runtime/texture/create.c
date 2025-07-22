@@ -27,24 +27,6 @@ void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
 }
 
 /**
-   Create a texture from refenreced data
- */
-void texture_create_from_ref(unsigned char **data, size_t *size,
-                             const TextureCreateDescriptor *desc) {
-
-  *size = desc->width * desc->height * desc->channels;
-  *data = (unsigned char *)calloc(desc->width * desc->height, desc->channels);
-
-  if (data == NULL) {
-    VERBOSE_ERROR("Could not create texture.");
-    return;
-  }
-
-  if (desc->value != 0)
-    memset(*data, *desc->value, *size);
-}
-
-/**
    load picture from file
  */
 int texture_create_from_file(Texture *texture, const char *path, bool flip) {

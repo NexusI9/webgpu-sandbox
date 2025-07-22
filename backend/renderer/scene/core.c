@@ -2,6 +2,7 @@
 #include "../runtime/html_event/html_event.h"
 #include "../runtime/input/input.h"
 #include "../utils/system.h"
+#include "./texture.h"
 #include "ao_bake.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
@@ -24,39 +25,6 @@ scene_renderer_color_attachment_multisample(SceneRenderer *, WGPUTextureView);
 static WGPURenderPassColorAttachment
 scene_renderer_color_attachment_monosample(SceneRenderer *, WGPUTextureView);
 
-/**
-   Depending on mono sampling or multi sampling, the pass color attachment of
-   renderer will be different (i.e. no resolveTarget for monosampling). As to
-   avoid branching during the draw function, we set those callback as parameters
-   before calling the draw.
-
-   MSAA Texture (Nx) ===> resolved ===> Swapchain texture (1x)
- */
-WGPURenderPassColorAttachment
-scene_renderer_color_attachment_multisample(SceneRenderer *renderer,
-                                            WGPUTextureView swapchain_view) {
-  return (WGPURenderPassColorAttachment){
-      .view = renderer->multisampling.view, // pass 4x sample as view
-      .resolveTarget = swapchain_view,      // 1x sampled
-      .loadOp = WGPULoadOp_Clear,
-      .storeOp = WGPUStoreOp_Store,
-      .clearValue = renderer->background,
-      .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-  };
-}
-
-WGPURenderPassColorAttachment
-scene_renderer_color_attachment_monosample(SceneRenderer *renderer,
-                                           WGPUTextureView swapchain_view) {
-  return (WGPURenderPassColorAttachment){
-      .view = swapchain_view, // 1x sampled
-      .loadOp = WGPULoadOp_Clear,
-      .storeOp = WGPUStoreOp_Store,
-      .clearValue = renderer->background,
-      .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-  };
-}
-
 void scene_renderer_create(SceneRenderer *renderer,
                            const SceneRendererCreateDescriptor *rd) {
 
@@ -74,17 +42,23 @@ void scene_renderer_create(SceneRenderer *renderer,
   scene_renderer_resize(renderer, 0, NULL, NULL);
 
   // set multisampling
-  renderer->multisampling.count = rd->multisampling_count;
-  renderer->multisampling.view = NULL;
-  if (renderer->multisampling.count > 1)
+  renderer->texture.multisampling.count = rd->multisampling_count;
+  renderer->texture.multisampling.view = NULL;
+  if (renderer->texture.multisampling.count > 1)
     scene_renderer_create_multisampling_view(renderer);
 
   // set depth texture view
-  scene_renderer_create_texture_view(renderer, &renderer->depth.view);
+  scene_renderer_create_texture_view(renderer, &renderer->texture.depth.view);
+
+  // set fallback textures
+  scene_renderer_init_fallback_textures(renderer);
 
   // Global Input & Event polling
+  // TODO: Since renderer isn't high level anymore, put the below calls in a
+  // more global object ("Context" ?)
 
-  // init global HTML event manager with context name (implicit)
+  // init global HTML event manager with context
+  //  name (implicit)
   html_event_init(rd->name);
 
   // poll global input
@@ -92,6 +66,39 @@ void scene_renderer_create(SceneRenderer *renderer,
 
   // init resize event
   scene_renderer_init(renderer);
+}
+
+/**
+   Depending on mono sampling or multi sampling, the pass color attachment of
+   renderer will be different (i.e. no resolveTarget for monosampling). As to
+   avoid branching during the draw function, we set those callback as parameters
+   before calling the draw.
+
+   MSAA Texture (Nx) ===> resolved ===> Swapchain texture (1x)
+ */
+WGPURenderPassColorAttachment
+scene_renderer_color_attachment_multisample(SceneRenderer *renderer,
+                                            WGPUTextureView swapchain_view) {
+  return (WGPURenderPassColorAttachment){
+      .view = renderer->texture.multisampling.view, // pass 4x sample as view
+      .resolveTarget = swapchain_view,              // 1x sampled
+      .loadOp = WGPULoadOp_Clear,
+      .storeOp = WGPUStoreOp_Store,
+      .clearValue = renderer->background,
+      .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+  };
+}
+
+WGPURenderPassColorAttachment
+scene_renderer_color_attachment_monosample(SceneRenderer *renderer,
+                                           WGPUTextureView swapchain_view) {
+  return (WGPURenderPassColorAttachment){
+      .view = swapchain_view, // 1x sampled
+      .loadOp = WGPULoadOp_Clear,
+      .storeOp = WGPUStoreOp_Store,
+      .clearValue = renderer->background,
+      .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+  };
 }
 
 /**
@@ -120,12 +127,12 @@ void scene_renderer_set_draw_layout(SceneRenderer *renderer,
     return;
 
   // assign values
-  renderer->draw_layouts[mode] = (SceneRendererDrawLayoutList){
+  renderer->draw.layouts[mode] = (SceneRendererDrawLayoutList){
       .length = layout->length,
   };
 
   // copy mesh ref lists
-  memcpy(renderer->draw_layouts[mode].entries, layout->entries,
+  memcpy(renderer->draw.layouts[mode].entries, layout->entries,
          sizeof(SceneRendererDrawLayout) * layout->length);
 }
 
@@ -220,7 +227,7 @@ void scene_renderer_create_texture_view(const SceneRenderer *renderer,
           .format =
               WGPUTextureFormat_Depth24Plus, // texture with 24bit-depth format
           .mipLevelCount = 1,
-          .sampleCount = renderer->multisampling.count,
+          .sampleCount = renderer->texture.multisampling.count,
           .dimension = WGPUTextureDimension_2D,
       });
 
@@ -253,11 +260,12 @@ void scene_renderer_create_multisampling_view(SceneRenderer *renderer) {
                   .depthOrArrayLayers = 1,
               },
           .format = WGPUTextureFormat_BGRA8Unorm, // swapchain format
-          .sampleCount = renderer->multisampling.count,
+          .sampleCount = renderer->texture.multisampling.count,
           .mipLevelCount = 1,
       });
 
-  renderer->multisampling.view = wgpuTextureCreateView(msaa_texture, NULL);
+  renderer->texture.multisampling.view =
+      wgpuTextureCreateView(msaa_texture, NULL);
 }
 
 /**
@@ -278,13 +286,13 @@ void scene_renderer_add_draw_callback(SceneRenderer *renderer,
                                       void *data) {
 
   // do not add if max hook reached
-  if (renderer->draw_callbacks.length == SCENE_RENDERER_MAX_HOOK) {
+  if (renderer->draw.callbacks.length == SCENE_RENDERER_MAX_HOOK) {
     VERBOSE_WARNING("Max hook reached.\n");
     return;
   }
 
   // add hook
-  renderer->draw_callbacks.entries[renderer->draw_callbacks.length++] =
+  renderer->draw.callbacks.entries[renderer->draw.callbacks.length++] =
       (SceneRendererDrawCallback){
           .callback = callback,
           .data = data,
@@ -317,7 +325,7 @@ void scene_renderer_render(void *desc) {
   // write depth values
   WGPURenderPassDepthStencilAttachment depth_attachments =
       (WGPURenderPassDepthStencilAttachment){
-          .view = config->renderer->depth.view,
+          .view = config->renderer->texture.depth.view,
           .depthClearValue = 1.0f, // far plane
           .depthLoadOp =
               WGPULoadOp_Clear, // Clear depth at start of render pass
@@ -336,9 +344,9 @@ void scene_renderer_render(void *desc) {
                       });
 
   // Call draw callbacks
-  for (size_t i = 0; i < config->renderer->draw_callbacks.length; i++) {
+  for (size_t i = 0; i < config->renderer->draw.callbacks.length; i++) {
     SceneRendererDrawCallback *cb =
-        &config->renderer->draw_callbacks.entries[i];
+        &config->renderer->draw.callbacks.entries[i];
 
     // call callback, pass renderer and data
     cb->callback(cb->data);
@@ -370,13 +378,13 @@ void scene_renderer_render(void *desc) {
  */
 void scene_renderer_draw(SceneRenderer *renderer) {
 
-  PipelineMultisampleCount sample_count = renderer->multisampling.count;
+  PipelineMultisampleCount sample_count = renderer->texture.multisampling.count;
 
   /* Define render color attachment callback based on multisample count.
      Using callback prevents branching within the main loop
    */
   scene_renderer_color_attachment_callback color_cbk =
-      renderer->multisampling.count > 1
+      renderer->texture.multisampling.count > 1
           ? scene_renderer_color_attachment_multisample
           : scene_renderer_color_attachment_monosample;
 
@@ -404,5 +412,5 @@ const char *scene_renderer_target(SceneRenderer *rd) {
 
 void scene_renderer_set_draw_mode(SceneRenderer *renderer,
                                   const SceneRendererDrawMode mode) {
-  renderer->draw_mode = mode;
+  renderer->draw.mode = mode;
 }

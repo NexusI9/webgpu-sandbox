@@ -1,28 +1,36 @@
 #include "loader.gltf.h"
+#include "webgpu/webgpu.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 #define CGLTF_IMPLEMENTATION
+#include "../backend/renderer/scene/texture.h"
 #include "cgltf/cgltf.h"
 
+// gltf utils
+static float *loader_gltf_attributes(cgltf_accessor *);
+static void loader_gltf_accessor_to_array(cgltf_accessor *, float *, uint8_t);
+static VertexIndex loader_gltf_index(cgltf_primitive *);
 
-static void loader_gltf_create_mesh(Scene *, WGPUDevice *, WGPUQueue *,
-                                    cgltf_data *);
-static void loader_gltf_create_shader(Shader *, WGPUDevice *, WGPUQueue *,
-                                      cgltf_primitive *);
-
+// vertex buffer utils
 static void loader_gltf_add_vertex_attribute(VertexAttribute *, float *, size_t,
                                              size_t, uint8_t);
 
 static void loader_gltf_init_vertex_lists(VertexAttribute *, VertexList *,
                                           size_t);
-static float *loader_gltf_attributes(cgltf_accessor *);
-static void loader_gltf_accessor_to_array(cgltf_accessor *, float *, uint8_t);
-static VertexIndex loader_gltf_index(cgltf_primitive *);
-static void loader_gltf_bind_uniforms(Shader *, cgltf_material *);
-static uint8_t loader_gltf_extract_texture(cgltf_texture_view *,
-                                           ShaderBindGroupTextureEntry *);
-static void loader_gltf_load_fallback_texture(ShaderBindGroupTextureEntry *);
+// mesh utils
+static void loader_gltf_create_mesh(Scene *, WGPUDevice *, WGPUQueue *,
+                                    cgltf_data *);
 static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
+
+// shader utils
+static void loader_gltf_create_shader(Shader *, WGPUDevice *, WGPUQueue *,
+                                      cgltf_primitive *, WGPUTextureView *);
+
+static void loader_gltf_bind_uniforms(Shader *, cgltf_material *,
+                                      WGPUTextureView *);
+
+static uint8_t loader_gltf_extract_texture(cgltf_texture_view *, void **,
+                                           size_t *, int *, int *);
 
 void loader_gltf_load(const GLTFLoadDescriptor *desc) {
 
@@ -139,6 +147,10 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
                              cgltf_data *data) {
 
   VERBOSE_IMPORT("GLTF file");
+
+  // get the cached fallback texture view from renderer
+  WGPUTextureView *fallback_texture =
+      &scene->renderer.texture.fallback.texture_2d_view;
 
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
@@ -261,7 +273,7 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
 
       // load shader
       loader_gltf_create_shader(mesh_shader_texture(target_mesh), device, queue,
-                                &current_primitive);
+                                &current_primitive, fallback_texture);
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
@@ -274,7 +286,8 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
 }
 
 void loader_gltf_create_shader(Shader *shader, WGPUDevice *device,
-                               WGPUQueue *queue, cgltf_primitive *primitive) {
+                               WGPUQueue *queue, cgltf_primitive *primitive,
+                               WGPUTextureView *fallback_texture) {
 
   // Use default pbr shader as default
   // TODO: Add a custom path for different shader in loader configuration
@@ -288,16 +301,17 @@ void loader_gltf_create_shader(Shader *shader, WGPUDevice *device,
                             .queue = queue,
                         });
 
-  loader_gltf_bind_uniforms(shader, material);
+  loader_gltf_bind_uniforms(shader, material, fallback_texture);
 }
 
 /**
   Bind PBR textures
   store the texture_views (hold pointer to actual texture + other data)
  */
-void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
+void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
+                               WGPUTextureView *fallback_texture) {
 
-  uint8_t texture_length = 4;
+  const uint8_t texture_length = 5;
 
   // TODO: check how to handle if object already has a AO Texture imported ?
   // overwrite ?
@@ -307,31 +321,69 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
       &material->pbr_metallic_roughness.metallic_roughness_texture,
       &material->normal_texture,
       &material->emissive_texture,
+      &material->occlusion_texture,
   };
 
-  ShaderBindGroupTextureEntry texture_entries[texture_length];
-  ShaderBindGroupSamplerEntry sampler_entries[texture_length];
+  ShaderBindGroupSamplerEntry samplers[texture_length];
 
   uint8_t binding = 0;
   for (int t = 0; t < texture_length; t++) {
 
-    loader_gltf_extract_texture(texture_view_list[t], &texture_entries[t]);
+    void *data;
+    size_t size;
+    int width, height;
 
-    // create texture entries
-    texture_entries[t] = (ShaderBindGroupTextureEntry){
-        .binding = binding,
-        .data = texture_entries[t].data,
-        .size = texture_entries[t].size,
-        .width = texture_entries[t].width,
-        .height = texture_entries[t].height,
-        .dimension = WGPUTextureViewDimension_2D,
-        .format = WGPUTextureFormat_BGRA8Unorm,
-        .channels = TEXTURE_CHANNELS_RGBA,
-        .sample_type = WGPUTextureSampleType_Float,
-    };
+    // If find texture, upload new texture to GPU and bind to shader
+    //(before freeing it)
+    if (loader_gltf_extract_texture(texture_view_list[t], &data, &size, &width,
+                                    &height) == LOADER_GLTF_TEXTURE_FOUND) {
 
-    // create sampler entries
-    sampler_entries[t] = (ShaderBindGroupSamplerEntry){
+      // send texture + sampler to shader
+      shader_add_texture(
+          shader, &(ShaderCreateTextureDescriptor){
+                      .group_index = SHADER_TEXTURE_BINDGROUP_TEXTURES,
+                      .entry_count = 1,
+                      .entries =
+                          (ShaderBindGroupTextureEntry[]){
+                              {
+                                  .binding = binding,
+                                  .data = data,
+                                  .size = size,
+                                  .width = width,
+                                  .height = height,
+                                  .dimension = WGPUTextureViewDimension_2D,
+                                  .format = WGPUTextureFormat_BGRA8Unorm,
+                                  .channels = TEXTURE_CHANNELS_RGBA,
+                                  .sample_type = WGPUTextureSampleType_Float,
+                              },
+                          },
+                      .visibility = WGPUShaderStage_Fragment,
+                  });
+    }
+    // If texture not found or error while loading, upload cached texture view
+    // fallback from GPU instead
+    else {
+      // send fallback texture view
+      shader_add_texture_view(
+          shader, &(ShaderCreateTextureViewDescriptor){
+                      .group_index = SHADER_TEXTURE_BINDGROUP_TEXTURES,
+                      .entry_count = 1,
+                      .entries =
+                          (ShaderBindGroupTextureViewEntry[]){
+                              {
+                                  .binding = binding,
+                                  .texture_view = *fallback_texture,
+                                  .dimension = WGPUTextureViewDimension_2D,
+                                  .format = WGPUTextureFormat_BGRA8Unorm,
+                                  .sample_type = WGPUTextureSampleType_Float,
+                              },
+                          },
+                      .visibility = WGPUShaderStage_Fragment,
+                  });
+    }
+
+    // push new sampler with correct binding index
+    samplers[t] = (ShaderBindGroupSamplerEntry){
         .binding = binding + 1,
         .type = WGPUSamplerBindingType_Filtering,
         .addressModeU = WGPUAddressMode_ClampToEdge,
@@ -345,36 +397,32 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
     binding += 2;
   }
 
-  // send texture + sampler to shader
-  shader_add_texture(shader,
-                     &(ShaderCreateTextureDescriptor){
-                         .group_index = SHADER_TEXTURE_BINDGROUP_TEXTURES,
-                         .entry_count = texture_length,
-                         .entries = texture_entries,
-                         .visibility = WGPUShaderStage_Fragment,
-                     });
-
+  // create sampler entry from generated array
   shader_add_sampler(shader,
                      &(ShaderCreateSamplerDescriptor){
                          .group_index = SHADER_TEXTURE_BINDGROUP_TEXTURES,
                          .entry_count = texture_length,
-                         .entries = sampler_entries,
+                         .entries = samplers,
                          .visibility = WGPUShaderStage_Fragment,
                      });
+
 }
 
+/**
+    Extract textures from texture_view
+    1. if uri => load image (TODO)
+    2. if buffer_view => store buffer & size
+ */
 uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
-                                    ShaderBindGroupTextureEntry *shader_entry) {
+                                    void **data, size_t *size, int *width,
+                                    int *height) {
 
   if (texture_view->texture) {
-    // extract textures from texture_view
-    // 1. if uri => load image (TODO)
-    // 2. if buffer_view => store buffer & size
 
     // TODO: check why cgltf buffer->size return smaller size that w * h *
     // channels
     cgltf_image *image = texture_view->texture->image;
-    int width, height, channels;
+    int channels;
     if (image->buffer_view) {
       cgltf_decode_uri(image->uri);
 
@@ -385,48 +433,28 @@ uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
       // use stbi to convert gltf image from RGB(A) to RGBA, ensuring 4 channels
       // TODO: more flexible texture upload (RGB/RGBA, large texture
       // handling...)
-      shader_entry->data = stbi_load_from_memory(
-          gltf_data, image->buffer_view->buffer->size, &shader_entry->width,
-          &shader_entry->height, &channels, TEXTURE_CHANNELS_RGBA);
+      *data = stbi_load_from_memory(gltf_data, image->buffer_view->buffer->size,
+                                    width, height, &channels,
+                                    TEXTURE_CHANNELS_RGBA);
 
-      shader_entry->size =
-          shader_entry->width * shader_entry->height * TEXTURE_CHANNELS_RGBA;
+      *size = (*width) * (*height) * TEXTURE_CHANNELS_RGBA;
 
-      return 1;
+      return LOADER_GLTF_TEXTURE_FOUND;
 
     } else {
       VERBOSE_PRINT(
           "Loader GLTF: Texture found but couldn't be loaded, loading "
           "default texture");
-      loader_gltf_load_fallback_texture(shader_entry);
-      return 0;
+      return LOADER_GLTF_TEXTURE_UNFOUND;
     }
 
   } else {
     VERBOSE_PRINT(
         "Loader GLTF: Couldn't find texture, loading default texture");
-    loader_gltf_load_fallback_texture(shader_entry);
-    return 0;
+    return LOADER_GLTF_TEXTURE_UNFOUND;
   }
 
-  return 0;
-}
-
-void loader_gltf_load_fallback_texture(
-    ShaderBindGroupTextureEntry *shader_entry) {
-
-  shader_entry->width = TEXTURE_MIN_SIZE;
-  shader_entry->height = TEXTURE_MIN_SIZE;
-
-  // TODO: make it more texture friendly (use texture* as first parameter),
-  // current function is hardly reusable within the texture ecosystem
-  texture_create_from_ref(&shader_entry->data, &shader_entry->size,
-                          &(TextureCreateDescriptor){
-                              .width = shader_entry->width,
-                              .height = shader_entry->height,
-                              .value = (uint8_t[]){255, 255, 255, 255},
-                              .channels = TEXTURE_CHANNELS_RGBA,
-                          });
+  return LOADER_GLTF_UNDEF_ERROR;
 }
 
 void loader_gltf_mesh_position(Mesh *mesh, const char *name, cgltf_data *data) {

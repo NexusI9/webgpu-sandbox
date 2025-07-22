@@ -2,11 +2,13 @@
 #include "../material/material.h"
 #include "../utils/system.h"
 #include "core.h"
+#include "webgpu/webgpu.h"
 #include <stdint.h>
 
 // pipeline builders
 static void scene_build_mesh_texture(Mesh *, Camera *, Viewport *,
-                                     PipelineMultisampleCount, LightList *);
+                                     PipelineMultisampleCount, LightList *,
+                                     WGPUTextureView *, WGPUTextureView *);
 
 static void scene_build_mesh_shadow(Mesh *, Camera *, Viewport *,
                                     PipelineMultisampleCount);
@@ -38,8 +40,9 @@ static inline void build_utils_bind(Mesh *, mesh_get_shader_callback,
  */
 void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 
-  SceneRendererDrawMode draw_mode = scene->renderer.draw_mode;
-  PipelineMultisampleCount sample_count = scene->renderer.multisampling.count;
+  SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
+  PipelineMultisampleCount sample_count =
+      scene->renderer.texture.multisampling.count;
   Camera *camera = scene->active_camera;
   Viewport *viewport = &scene->viewport;
   WGPUQueue *queue = scene_queue(scene);
@@ -86,8 +89,23 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
     case SceneRendererDrawMode_Texture:
       VERBOSE_MESH_BUILD("Texture %s", mesh->name);
 
+      LightList *lights = NULL;
+      WGPUTextureView *fallback_point_map = NULL;
+      WGPUTextureView *fallback_spot_map = NULL;
+      
+      if (pipeline == ScenePipeline_Lit) {
+        lights = &scene->lights;
+        fallback_point_map =
+            &scene->renderer.texture.fallback.depth_cube_array_view;
+        fallback_spot_map =
+            &scene->renderer.texture.fallback.depth_2d_array_view;
+      }
+
+      scene_build_mesh_texture(mesh, camera, viewport, sample_count, lights,
+                               fallback_point_map, fallback_spot_map);
+
       // Bake AO textures for static scenes elements
-      ao_bake_init(&(AOBakeInitDescriptor){
+      /*ao_bake_init(&(AOBakeInitDescriptor){
           .queue = queue,
           .device = device,
           .mesh_list = &scene->pipelines[ScenePipeline_Lit],
@@ -105,11 +123,8 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
                   .spot = &scene->lights.spot,
               },
 
-      });
+      });*/
 
-      LightList *lights =
-          (pipeline == ScenePipeline_Lit) ? &scene->lights : NULL;
-      scene_build_mesh_texture(mesh, camera, viewport, sample_count, lights);
       break;
     }
     break;
@@ -127,7 +142,8 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
  */
 void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
                               PipelineMultisampleCount sample,
-                              LightList *lights) {
+                              LightList *lights, WGPUTextureView *point_map,
+                              WGPUTextureView *spot_map) {
 
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
@@ -136,6 +152,10 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
   // bind views
   material_texture_bind_views(mesh, camera, viewport,
                               SHADER_TEXTURE_BINDGROUP_VIEWS);
+
+  // create binding for shadow maps (using fallback texture)
+  if (point_map && spot_map)
+    material_texture_bind_shadow_maps(mesh, *point_map, *spot_map);
 
   // bind lights (only if provided)
   if (lights != NULL)

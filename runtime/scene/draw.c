@@ -30,8 +30,8 @@ void scene_layout_draw_callback(void *data) {
   SceneRenderer *cast_renderer = (SceneRenderer *)data;
 
   // retrieve mode
-  SceneRendererDrawMode mode = cast_renderer->draw_mode;
-  SceneRendererDrawLayoutList *layout_list = &cast_renderer->draw_layouts[mode];
+  SceneRendererDrawMode mode = cast_renderer->draw.mode;
+  SceneRendererDrawLayoutList *layout_list = &cast_renderer->draw.layouts[mode];
   WGPURenderPassEncoder *render_pass = &cast_renderer->wgpu.render_pass;
 
   // loop through mesh lists and draw meshes

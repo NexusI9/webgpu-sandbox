@@ -10,7 +10,7 @@
    as a result it's necessary to ensure that the value is the same
    length as the texture channels.
  */
-void texture_write_fill(Texture *texture, uint8_t *new_pixel) {
+void texture_write_fill(Texture *texture, const uint8_t *new_pixel) {
 
   for (size_t y = 0; y < texture->height; ++y) {
     for (size_t x = 0; x < texture->width; ++x) {

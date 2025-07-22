@@ -172,7 +172,7 @@ void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
     const WGPUTextureView spot_map = desc->lights.spot->depth_map;
 #endif
 
-    material_texure_bind_shadow_maps(current_mesh, point_map, spot_map);
+    material_texture_update_shadow_maps(current_mesh, point_map, spot_map);
   }
 
   // !!DEBUG: Add views to scene

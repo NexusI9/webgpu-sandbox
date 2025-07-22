@@ -72,9 +72,10 @@ typedef struct {
 
 void texture_write(unsigned char, texture_data, TextureWriteMethod);
 
-void texture_write_gradient(Texture *, const TextureGradient *, TextureWriteMethod);
+void texture_write_gradient(Texture *, const TextureGradient *,
+                            TextureWriteMethod);
 
-void texture_write_fill(Texture *, uint8_t *);
+void texture_write_fill(Texture *, const uint8_t *);
 
 void texture_write_alpha(Texture *, uint8_t);
 

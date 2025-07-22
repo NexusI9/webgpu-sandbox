@@ -1,5 +1,6 @@
 #include "texture.h"
 #include "../../backend/renderer/renderer.h"
+#include <stdint.h>
 
 /**
    Clear the texture shader bind groups of mesh
@@ -161,15 +162,24 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
 }
 
 /**
-   Bind the shadow maps and sampler to the default shader
+      Bind the ambient occlusion maps and sampler to the default shader (called
+   during shader creation)
  */
-void material_texure_bind_shadow_maps(Mesh *mesh,
+void material_texture_bind_ambient_occlusion(Mesh *mesh,
+                                             WGPUTextureView ao_texture_view) {}
+
+/**
+   Bind the shadow maps and sampler to the default shader (called during shader
+   creation)
+ */
+void material_texture_bind_shadow_maps(Mesh *mesh,
                                       WGPUTextureView point_texture_view,
                                       WGPUTextureView spot_texture_view) {
 
   const uint8_t point_map_binding = 4;
   const uint8_t directional_map_binding = 6;
   const uint8_t sampler_binding = 5;
+  const uint8_t group_index = 2;
 
 #ifdef RENDER_SHADOW_AS_COLOR
   const WGPUTextureFormat texture_format = SHADOW_COLOR_FORMAT;
@@ -189,7 +199,7 @@ void material_texure_bind_shadow_maps(Mesh *mesh,
       &(ShaderCreateTextureViewDescriptor){
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entry_count = 2,
-          .group_index = 2,
+          .group_index = group_index,
           .entries =
               (ShaderBindGroupTextureViewEntry[]){
                   {
@@ -232,7 +242,7 @@ void material_texure_bind_shadow_maps(Mesh *mesh,
       &(ShaderCreateSamplerDescriptor){
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
           .entry_count = 2,
-          .group_index = 2,
+          .group_index = group_index,
           .entries =
               (ShaderBindGroupSamplerEntry[]){
                   point_sampler,
@@ -240,6 +250,26 @@ void material_texure_bind_shadow_maps(Mesh *mesh,
               },
       });
 }
+
+/**
+   Update the Ambient Occlusion texture view map of the given mesh.
+   While the bind functions create and bind samplers + textures,
+   the Update functions simply replace the Texture view.
+
+   Replacing the texture view doesn't require to clear the whole pipeline, since
+   the pipeline only cares about:
+   - shader code
+   - bing group layout (not their content)
+   - vertex buffer layouts, formats etc.
+
+   However we do need to rebuild the shaer->bind_groups, since they are used
+   during the draw loop.
+ */
+void material_texture_update_ambient_occlusion(Mesh *mesh,
+                                               WGPUTextureView map) {}
+
+void material_texture_update_shadow_maps(Mesh *mesh, WGPUTextureView point_map,
+                                         WGPUTextureView spot_map) {}
 
 /**
    Transfer Uniform to the right mesh shader (texture)
