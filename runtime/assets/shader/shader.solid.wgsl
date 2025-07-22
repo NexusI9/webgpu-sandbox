@@ -114,7 +114,7 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
   var Lo : vec3<f32> = vec3<f32>(0.0f);
 
   var sun_light : SunLight;
-  sun_light.position = vec3<f32>(20.0f, 20.0f, 20.0f);
+  sun_light.position = vec3<f32>(20.0f, 20.0f, 10.0f);
   sun_light.intensity = 0.2f;
   sun_light.color = vec3<f32>(1.0f, 1.0f, 1.0f);
 
