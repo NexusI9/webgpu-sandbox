@@ -1,6 +1,7 @@
 #include "attribute.h"
 #include "../utils/vector.h"
 #include "string.h"
+#include "../utils/system.h"
 
 static void vertex_attribute_replace(VertexAttribute *, float *, VertexOffset,
                                      size_t);
@@ -66,7 +67,7 @@ int vertex_attribute_copy(VertexAttribute *src, VertexAttribute *dest) {
   size_t length = dest->length * sizeof(vattr_t);
   dest->entries = malloc(length);
   if (dest->entries == NULL) {
-    perror("Couldn't allocate memory for vertex attribute\n");
+    VERBOSE_ERROR("Couldn't allocate memory for vertex attribute.");
     dest->buffer = NULL;
     dest->capacity = 0;
     dest->length = 0;

@@ -176,6 +176,7 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
                     .mappedAtCreation = false,
                 });
 
+
   return MESH_TOPOLOGY_WIREFRAME_SUCCESS;
 }
 

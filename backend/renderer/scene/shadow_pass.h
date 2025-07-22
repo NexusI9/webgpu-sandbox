@@ -1,7 +1,9 @@
 #ifndef _SHADOW_PASS_H_
 #define _SHADOW_PASS_H_
 
-#include "../runtime/scene/scene.h"
+#include "../runtime/mesh/mesh.h"
+#include "../runtime/light/light.h"
+
 #include <webgpu/webgpu.h>
 
 #define SHADOW_DEPTH_FORMAT WGPUTextureFormat_Depth32Float
@@ -9,9 +11,25 @@
 #define SHADOW_MAP_SIZE 1024
 
 typedef struct {
+  WGPUDevice *device;
+  WGPUQueue *queue;
+  MeshRefList *mesh_list;
+  struct {
+    PointLightList *point;
+    SpotLightList *spot;
+    SunLightList *sun;
+  } lights;
+} ShadowMapInitDescriptor;
+
+typedef struct {
   WGPUDevice device;
   WGPUQueue queue;
-  Scene *scene;
+  MeshRefList *mesh_list;
+  struct {
+    PointLightList *point;
+    SpotLightList *spot;
+    SunLightList *sun;
+  } lights;
 
   struct {
     WGPUTexture *color_texture;
@@ -26,7 +44,7 @@ typedef struct {
 } ShadowPassMapDescriptor;
 
 typedef struct {
-  Scene *scene;
+  MeshRefList *mesh_list;
   WGPUTexture color_texture;
   WGPUTexture depth_texture;
   uint32_t layer;
@@ -60,6 +78,6 @@ typedef struct {
   WGPUTextureViewDimension dimension;
 } ShadowPassTextureDescriptor;
 
-void shadow_pass_init(Scene *, WGPUDevice, WGPUQueue);
+void shadow_pass_init(const ShadowMapInitDescriptor *);
 
 #endif

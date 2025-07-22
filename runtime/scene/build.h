@@ -1,9 +1,9 @@
-#ifndef _SCENE_BUILD_H_
-#define _SCENE_BUILD_H_
+#ifndef _SCENE_MESH_BUILD_H_
+#define _SCENE_MESH_BUILD_H_
 #include "core.h"
 
 /**
-   Scene Building process:
+   Mesh Building process:
 
    The scene building process handles each layers respective essentials shader
    creation or binding process( view matrix...).
@@ -14,14 +14,8 @@
    - Shader bind views
    - Shader bind lights
    - Shader build pipeline layout
-
  */
 
-void scene_build_texture(Scene *, PipelineMultisampleCount);
-void scene_build_shadow(Scene *, PipelineMultisampleCount);
-void scene_build_solid(Scene *, PipelineMultisampleCount);
-void scene_build_wireframe(Scene *, PipelineMultisampleCount);
-void scene_build_fixed(Scene *, PipelineMultisampleCount);
-void scene_build_boundbox(Scene *, PipelineMultisampleCount);
+void scene_build_mesh(Scene*, Mesh*, const ScenePipeline);
 
 #endif

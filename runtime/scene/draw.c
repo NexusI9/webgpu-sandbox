@@ -1,133 +1,52 @@
 #include "draw.h"
+#include "../backend/renderer/renderer.h"
+#include "../camera/camera.h"
 
-static void scene_draw_mesh_list(Scene *, mesh_get_topology_callback,
-                                 mesh_get_shader_callback,
-                                 WGPURenderPassEncoder *, MeshRefList *);
+/**
+   Draw callback added to the Scene Renderer draw callbacks.
+   Called before the scene renderer draw layouts.
 
-void scene_draw_mesh_list(Scene *scene,
-                          mesh_get_topology_callback target_topology,
-                          mesh_get_shader_callback target_shader,
-                          WGPURenderPassEncoder *render_pass,
-                          MeshRefList *mesh_list) {
+   Basically udpate the camera matrix based on its mode and user input.
+ */
+void scene_camera_draw_callback(void *data) {
 
-  // loop through mesh list and draw meshes
-  for (int i = 0; i < mesh_list->length; i++) {
-    Mesh *current_mesh = mesh_list->entries[i];
-    mesh_draw(target_topology(current_mesh), target_shader(current_mesh),
-              render_pass);
-  }
-}
-
-// TODO: Simplify the overall scene draw/build process
-void scene_draw_texture(Scene *scene, WGPURenderPassEncoder *render_pass) {
+  Camera *cast_camera = (Camera *)data;
 
   // update camera
-  camera_draw(scene->active_camera);
-
-  // set pipelines order
-  MeshRefList *pipelines[3] = {
-      &scene->pipelines.background,
-      &scene->pipelines.lit,
-      &scene->pipelines.unlit,
-  };
-
-  for (size_t l = 0; l < 3; l++) {
-    MeshRefList *pipeline = pipelines[l];
-    scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_texture,
-                         render_pass, pipeline);
-  }
-
-  // draw fixed mesh
-  scene_draw_fixed(scene, render_pass);
-}
-
-void scene_draw_fixed(Scene *scene, WGPURenderPassEncoder *render_pass) {
-
-  // update camera
-  camera_draw(scene->active_camera);
-
-  // draw fixed mesh
-  scene_draw_mesh_list(scene, mesh_topology_override, mesh_shader_override,
-                       render_pass, &scene->pipelines.fixed);
-}
-
-void scene_draw_shadow(Scene *scene, WGPURenderPassEncoder *render_pass) {
-  // onlid draw solid/lit meshes
-  scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_shadow,
-                       render_pass, &scene->pipelines.lit);
-}
-
-void scene_draw_wireframe(Scene *scene, WGPURenderPassEncoder *render_pass) {
-
-  // update camera
-  camera_draw(scene->active_camera);
-
-  // set pipelines order
-  MeshRefList *pipelines[2] = {
-      &scene->pipelines.lit,
-      &scene->pipelines.unlit,
-  };
-
-  for (size_t l = 0; l < 2; l++) {
-    MeshRefList *pipeline = pipelines[l];
-    scene_draw_mesh_list(scene, mesh_topology_wireframe, mesh_shader_wireframe,
-                         render_pass, pipeline);
-  }
-
-  // draw fixed mesh
-  scene_draw_fixed(scene, render_pass);
-}
-
-void scene_draw_solid(Scene *scene, WGPURenderPassEncoder *render_pass) {
-
-  // update camera
-  camera_draw(scene->active_camera);
-
-  // set pipelines order
-  MeshRefList *pipelines[2] = {
-      &scene->pipelines.lit,
-      &scene->pipelines.unlit,
-  };
-
-  for (size_t l = 0; l < 2; l++) {
-    MeshRefList *pipeline = pipelines[l];
-    scene_draw_mesh_list(scene, mesh_topology_base, mesh_shader_solid,
-                         render_pass, pipeline);
-  }
-
-  // draw fixed mesh
-  scene_draw_fixed(scene, render_pass);
-}
-
-void scene_draw_boundbox(Scene *scene, WGPURenderPassEncoder *render_pass) {
-
-  // update camera
-  camera_draw(scene->active_camera);
-
-  // set pipelines order
-  MeshRefList *pipelines[2] = {
-      &scene->pipelines.lit,
-      &scene->pipelines.unlit,
-  };
-
-  for (size_t l = 0; l < 2; l++) {
-    MeshRefList *pipeline = pipelines[l];
-    scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
-                         render_pass, pipeline);
-  }
-
-  // draw fixed mesh
-  scene_draw_fixed(scene, render_pass);
+  camera_draw(cast_camera);
 }
 
 /**
-   Draw the selection pipeline. Note that the selection pipeline use the
-   boundbox build.
+   Draw the meshes of a given list along with a target topology and shader.
+   The function will be call with attributes coming from the renderer
+   draw_callbacks array.
 
-   Pipeline Selection  ==>  Build BoundBox  ==>  Draw Selection
+   Using topology and shader callbacks allow greater flexibility when it comes
+   to the different display modes.
  */
-void scene_draw_selection(Scene *scene, WGPURenderPassEncoder *render_pass) {
+void scene_layout_draw_callback(void *data) {
 
-  scene_draw_mesh_list(scene, mesh_topology_boundbox, mesh_shader_wireframe,
-                       render_pass, &scene->editor.pipelines.selection);
+  // cast data to renderer
+  SceneRenderer *cast_renderer = (SceneRenderer *)data;
+
+  // retrieve mode
+  SceneRendererDrawMode mode = cast_renderer->draw_mode;
+  SceneRendererDrawLayoutList *layout_list = &cast_renderer->draw_layouts[mode];
+  WGPURenderPassEncoder *render_pass = &cast_renderer->wgpu.render_pass;
+
+  // loop through mesh lists and draw meshes
+  for (size_t i = 0; i < layout_list->length; i++) {
+
+    // retrieve layout
+    SceneRendererDrawLayout *layout = &layout_list->entries[i];
+    mesh_get_topology_callback target_topology = layout->topology_callback;
+    mesh_get_shader_callback target_shader = layout->shader_callback;
+    MeshRefList *meshes = layout->meshes;
+
+    // draw mesh with layout callbacks
+    for (size_t j = 0; j < meshes->length; j++) {
+      Mesh *mesh = meshes->entries[j];
+      mesh_draw(target_topology(mesh), target_shader(mesh), render_pass);
+    }
+  }
 }

@@ -2,8 +2,8 @@
 #define _AO_BAKE_H_
 
 #include "../runtime/geometry/triangle/triangle.h"
-#include "../runtime/scene/scene.h"
 #include "../runtime/texture/texture.h"
+#include "../runtime/mesh/mesh.h"
 
 // AO Texture
 #define AO_TEXTURE_SIZE 128
@@ -23,7 +23,6 @@
 
 typedef struct {
   MeshRefList *mesh_list;
-  Scene *scene;
   WGPUDevice *device;
   WGPUQueue *queue;
 } AOBakeInitDescriptor;
@@ -31,7 +30,6 @@ typedef struct {
 typedef struct {
   MeshRefList *mesh_list;
   Texture *texture;
-  Scene *scene;
   WGPUDevice *device;
   WGPUQueue *queue;
 } AOBakeDescriptor;

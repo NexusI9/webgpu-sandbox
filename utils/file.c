@@ -1,4 +1,5 @@
 #include "file.h"
+#include "./system.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -9,8 +10,10 @@ void store_file(char **buffer, const char *path) {
 
   fp = fopen(path, "rb");
 
-  if (!fp)
-    perror("Couldn't load file\n"), exit(1);
+  if (!fp) {
+    VERBOSE_ERROR("Couldn't load file.");
+    exit(1);
+  }
 
   fseek(fp, 0L, SEEK_END);
   l_size = ftell(fp);

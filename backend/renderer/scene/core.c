@@ -1,24 +1,28 @@
 #include "core.h"
 #include "../runtime/html_event/html_event.h"
 #include "../runtime/input/input.h"
+#include "../utils/system.h"
 #include "ao_bake.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "shadow_pass.h"
 #include "webgpu/webgpu.h"
+#include <string.h>
 
-static void renderer_init(SceneRenderer *);
-static int renderer_resize(SceneRenderer *, int, const EmscriptenUiEvent *, void *);
-static WGPUSwapChain renderer_create_swapchain(const SceneRenderer *);
-static void renderer_create_texture_view(const SceneRenderer *, WGPUTextureView *);
-static void renderer_create_multisampling_view(SceneRenderer *);
-static void renderer_render(void *);
-static double renderer_dpi(double);
+static void scene_renderer_init(SceneRenderer *);
+static int scene_renderer_resize(SceneRenderer *, int,
+                                 const EmscriptenUiEvent *, void *);
+static WGPUSwapChain scene_renderer_create_swapchain(const SceneRenderer *);
+static void scene_renderer_create_texture_view(const SceneRenderer *,
+                                               WGPUTextureView *);
+static void scene_renderer_create_multisampling_view(SceneRenderer *);
+static void scene_renderer_render(void *);
+static double scene_renderer_dpi(double);
 
 static WGPURenderPassColorAttachment
-renderer_color_attachment_multisample(SceneRenderer *, WGPUTextureView);
+scene_renderer_color_attachment_multisample(SceneRenderer *, WGPUTextureView);
 static WGPURenderPassColorAttachment
-renderer_color_attachment_monosample(SceneRenderer *, WGPUTextureView);
+scene_renderer_color_attachment_monosample(SceneRenderer *, WGPUTextureView);
 
 /**
    Depending on mono sampling or multi sampling, the pass color attachment of
@@ -28,9 +32,9 @@ renderer_color_attachment_monosample(SceneRenderer *, WGPUTextureView);
 
    MSAA Texture (Nx) ===> resolved ===> Swapchain texture (1x)
  */
-static WGPURenderPassColorAttachment
-renderer_color_attachment_multisample(SceneRenderer *renderer,
-                                      WGPUTextureView swapchain_view) {
+WGPURenderPassColorAttachment
+scene_renderer_color_attachment_multisample(SceneRenderer *renderer,
+                                            WGPUTextureView swapchain_view) {
   return (WGPURenderPassColorAttachment){
       .view = renderer->multisampling.view, // pass 4x sample as view
       .resolveTarget = swapchain_view,      // 1x sampled
@@ -41,9 +45,9 @@ renderer_color_attachment_multisample(SceneRenderer *renderer,
   };
 }
 
-static WGPURenderPassColorAttachment
-renderer_color_attachment_monosample(SceneRenderer *renderer,
-                                     WGPUTextureView swapchain_view) {
+WGPURenderPassColorAttachment
+scene_renderer_color_attachment_monosample(SceneRenderer *renderer,
+                                           WGPUTextureView swapchain_view) {
   return (WGPURenderPassColorAttachment){
       .view = swapchain_view, // 1x sampled
       .loadOp = WGPULoadOp_Clear,
@@ -53,12 +57,13 @@ renderer_color_attachment_monosample(SceneRenderer *renderer,
   };
 }
 
-void renderer_create(SceneRenderer *renderer, const SceneRendererCreateDescriptor *rd) {
+void scene_renderer_create(SceneRenderer *renderer,
+                           const SceneRendererCreateDescriptor *rd) {
 
   renderer->context.name = rd->name;
   renderer->clock = rd->clock;
   renderer->background = rd->background;
-  renderer->context.dpi = renderer_dpi(rd->dpi);
+  renderer->context.dpi = scene_renderer_dpi(rd->dpi);
 
   // set wgpu data
   renderer->wgpu.instance = wgpuCreateInstance(NULL);
@@ -66,16 +71,16 @@ void renderer_create(SceneRenderer *renderer, const SceneRendererCreateDescripto
   renderer->wgpu.queue = wgpuDeviceGetQueue(renderer->wgpu.device);
 
   // define context size
-  renderer_resize(renderer, 0, NULL, NULL);
+  scene_renderer_resize(renderer, 0, NULL, NULL);
 
   // set multisampling
   renderer->multisampling.count = rd->multisampling_count;
   renderer->multisampling.view = NULL;
   if (renderer->multisampling.count > 1)
-    renderer_create_multisampling_view(renderer);
+    scene_renderer_create_multisampling_view(renderer);
 
   // set depth texture view
-  renderer_create_texture_view(renderer, &renderer->depth.view);
+  scene_renderer_create_texture_view(renderer, &renderer->depth.view);
 
   // Global Input & Event polling
 
@@ -86,11 +91,46 @@ void renderer_create(SceneRenderer *renderer, const SceneRendererCreateDescripto
   input_listen();
 
   // init resize event
-  renderer_init(renderer);
+  scene_renderer_init(renderer);
 }
 
-int renderer_resize(SceneRenderer *renderer, int event_type,
-                    const EmscriptenUiEvent *ui_event, void *user_data) {
+/**
+   Create scene renderer draw config, which basically is an array of callback
+   functions and mesh referecences list lists that will be picked during the
+   draw loop.
+
+   Basically for each draw call we require a "topology callback" and a
+   "shader callback" to define which topology and shader we want to draw for
+   each mesh.
+
+   Note that the order of the array is relative to the SceneRendererMode:
+   0 - Texture config
+   1 - Solid config
+   2 - Wireframe config
+   3 - Boundbox config
+
+   By following this order, we can simply map the right array entry depending on
+   the scene render mode.
+ */
+void scene_renderer_set_draw_layout(SceneRenderer *renderer,
+                                    const SceneRendererDrawMode mode,
+                                    const SceneRendererDrawLayoutList *layout) {
+
+  if (mode >= SCENE_RENDERER_DRAW_MODE_COUNT)
+    return;
+
+  // assign values
+  renderer->draw_layouts[mode] = (SceneRendererDrawLayoutList){
+      .length = layout->length,
+  };
+
+  // copy mesh ref lists
+  memcpy(renderer->draw_layouts[mode].entries, layout->entries,
+         sizeof(SceneRendererDrawLayout) * layout->length);
+}
+
+int scene_renderer_resize(SceneRenderer *renderer, int event_type,
+                          const EmscriptenUiEvent *ui_event, void *user_data) {
 
   double w, h;
 
@@ -110,27 +150,27 @@ int renderer_resize(SceneRenderer *renderer, int event_type,
     renderer->wgpu.swapchain = NULL;
   }
 
-  renderer->wgpu.swapchain = renderer_create_swapchain(renderer);
+  renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
 
   return 1;
 }
 
-static double renderer_dpi(double value) {
+static double scene_renderer_dpi(double value) {
 
   // request dpi
-  if (value == RENDERER_DPI_AUTO)
+  if (value == SCENE_RENDERER_DPI_AUTO)
     return emscripten_get_device_pixel_ratio();
 
   return value;
 }
 
-void renderer_init(SceneRenderer *renderer) {
-  renderer_resize(renderer, 0, NULL, NULL);
+void scene_renderer_init(SceneRenderer *renderer) {
+  scene_renderer_resize(renderer, 0, NULL, NULL);
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, false,
-                                 (em_ui_callback_func)renderer_resize);
+                                 (em_ui_callback_func)scene_renderer_resize);
 }
 
-WGPUSwapChain renderer_create_swapchain(const SceneRenderer *renderer) {
+WGPUSwapChain scene_renderer_create_swapchain(const SceneRenderer *renderer) {
   WGPUSurface surface = wgpuInstanceCreateSurface(
       renderer->wgpu.instance,
       &(WGPUSurfaceDescriptor){
@@ -151,7 +191,7 @@ WGPUSwapChain renderer_create_swapchain(const SceneRenderer *renderer) {
       });
 }
 
-void renderer_close(const SceneRenderer *renderer) {
+void scene_renderer_close(const SceneRenderer *renderer) {
   wgpuRenderPipelineRelease(renderer->wgpu.pipeline);
   wgpuSwapChainRelease(renderer->wgpu.swapchain);
   wgpuQueueRelease(renderer->wgpu.queue);
@@ -159,8 +199,8 @@ void renderer_close(const SceneRenderer *renderer) {
   wgpuInstanceRelease(renderer->wgpu.instance);
 }
 
-void renderer_create_texture_view(const SceneRenderer *renderer,
-                                  WGPUTextureView *texture_view) {
+void scene_renderer_create_texture_view(const SceneRenderer *renderer,
+                                        WGPUTextureView *texture_view) {
 
   // Need to create a texture view for Z buffer stencil
   // by default set depth based on draw call order (first ones in
@@ -200,7 +240,7 @@ void renderer_create_texture_view(const SceneRenderer *renderer,
 /**
    Create the texture and texture view for the multisampling rendering
  */
-void renderer_create_multisampling_view(SceneRenderer *renderer) {
+void scene_renderer_create_multisampling_view(SceneRenderer *renderer) {
 
   WGPUTexture msaa_texture = wgpuDeviceCreateTexture(
       renderer->wgpu.device,
@@ -220,7 +260,38 @@ void renderer_create_multisampling_view(SceneRenderer *renderer) {
   renderer->multisampling.view = wgpuTextureCreateView(msaa_texture, NULL);
 }
 
-void renderer_render(void *desc) {
+/**
+   Draw callbackas are basically list of functions that will be called during
+   the draw loop. Those hooks accept additional user data in argument. A current
+   example of hooks are:
+   [
+     update_camera_matrix(),
+     draw_pipelines()
+     ]
+
+   Note that the user data longevity is not handled by the hook, meaning it's
+   the developper responsibility to manage the lifecycle of the data
+   (allocating, freeing...)
+ */
+void scene_renderer_add_draw_callback(SceneRenderer *renderer,
+                                      scene_renderer_draw_callback callback,
+                                      void *data) {
+
+  // do not add if max hook reached
+  if (renderer->draw_callbacks.length == SCENE_RENDERER_MAX_HOOK) {
+    VERBOSE_WARNING("Max hook reached.\n");
+    return;
+  }
+
+  // add hook
+  renderer->draw_callbacks.entries[renderer->draw_callbacks.length++] =
+      (SceneRendererDrawCallback){
+          .callback = callback,
+          .data = data,
+      };
+}
+
+void scene_renderer_render(void *desc) {
 
   SceneRendererRenderDescriptor *config = (SceneRendererRenderDescriptor *)desc;
 
@@ -255,7 +326,7 @@ void renderer_render(void *desc) {
       };
 
   // begin render pass
-  WGPURenderPassEncoder render_pass = wgpuCommandEncoderBeginRenderPass(
+  config->renderer->wgpu.render_pass = wgpuCommandEncoderBeginRenderPass(
       render_encoder, &(WGPURenderPassDescriptor){
                           .label = "Final Render Pass",
                           // color attachments
@@ -264,12 +335,17 @@ void renderer_render(void *desc) {
                           .depthStencilAttachment = &depth_attachments,
                       });
 
-  // draw scenes
-  for (size_t i = 0; i < config->draw_list.length; i++)
-    config->draw_list.entries[i](config->scene, &render_pass);
+  // Call draw callbacks
+  for (size_t i = 0; i < config->renderer->draw_callbacks.length; i++) {
+    SceneRendererDrawCallback *cb =
+        &config->renderer->draw_callbacks.entries[i];
+
+    // call callback, pass renderer and data
+    cb->callback(cb->data);
+  }
 
   // end render pass
-  wgpuRenderPassEncoderEnd(render_pass);
+  wgpuRenderPassEncoderEnd(config->renderer->wgpu.render_pass);
 
   // create command buffer
   WGPUCommandBuffer render_buffer =
@@ -279,7 +355,7 @@ void renderer_render(void *desc) {
   wgpuQueueSubmit(config->renderer->wgpu.queue, 1, &render_buffer);
 
   // release all
-  wgpuRenderPassEncoderRelease(render_pass);
+  wgpuRenderPassEncoderRelease(config->renderer->wgpu.render_pass);
   wgpuCommandEncoderRelease(render_encoder);
   wgpuCommandBufferRelease(render_buffer);
   wgpuTextureViewRelease(swapchain_view);
@@ -292,100 +368,41 @@ void renderer_render(void *desc) {
    Draw a scene with a specified draw mode along with the render pass that comes
    with it (ao, shadow mapping...). Also call the main loop.
  */
-void renderer_draw(SceneRenderer *renderer, Scene *scene,
-                   const SceneRendererDrawMode draw_mode) {
+void scene_renderer_draw(SceneRenderer *renderer) {
 
   PipelineMultisampleCount sample_count = renderer->multisampling.count;
-
-  // Fixed (static) rendering
-  scene_build_fixed(scene, sample_count); // build fixed (by default)
-
-  // EDITORONLY
-  // draw boundbox by default for selection
-  scene_build_boundbox(scene, sample_count);
-
-  // Dynamic rendering
-  scene_draw_callback scene_draw_dynamic;
-
-  switch (draw_mode) {
-
-  case SceneRendererDrawMode_Solid:
-    scene_build_solid(scene, sample_count); // build solid
-    scene_draw_dynamic = scene_draw_solid;  // draw solid callback
-    break;
-
-  case SceneRendererDrawMode_Wireframe:
-    scene_build_wireframe(scene, sample_count); // build wireframe
-    scene_draw_dynamic = scene_draw_wireframe;  // draw wireframe callback
-    break;
-
-  case SceneRendererDrawMode_Boundbox:
-    scene_build_boundbox(scene, sample_count); // build boundbox
-    scene_draw_dynamic = scene_draw_boundbox;  // build boundbox callback
-    break;
-
-  case SceneRendererDrawMode_Texture:
-
-    // Bake AO textures for static scenes elements
-    renderer_bake_ao(renderer, scene);
-
-    // Setup drawing pass may need to move it else where
-    renderer_compute_shadow(renderer, scene);
-
-    scene_build_texture(scene, sample_count); // build texture
-    scene_draw_dynamic = scene_draw_texture;  // build wireframe callback
-    break;
-  }
 
   /* Define render color attachment callback based on multisample count.
      Using callback prevents branching within the main loop
    */
-  renderer_color_attachment_callback color_cbk =
-      renderer->multisampling.count > 1 ? renderer_color_attachment_multisample
-                                        : renderer_color_attachment_monosample;
+  scene_renderer_color_attachment_callback color_cbk =
+      renderer->multisampling.count > 1
+          ? scene_renderer_color_attachment_multisample
+          : scene_renderer_color_attachment_monosample;
 
   // call main loop
-  emscripten_set_main_loop_arg(renderer_render,
+  emscripten_set_main_loop_arg(scene_renderer_render,
                                &(SceneRendererRenderDescriptor){
                                    .renderer = renderer,
-                                   .scene = scene,
                                    .color_attachment_callback = color_cbk,
-                                   .draw_list =
-                                       {
-                                           .length = 3,
-                                           .entries =
-                                               (scene_draw_callback[]){
-                                                   scene_draw_dynamic,
-                                                   scene_draw_selection,
-                                                   scene_draw_fixed,
-                                               },
-                                       },
                                },
                                0, 1);
 }
 
-void renderer_bake_ao(SceneRenderer *renderer, Scene *scene) {
-
-  ao_bake_init(&(AOBakeInitDescriptor){
-      .mesh_list = &scene->pipelines.lit,
-      .scene = scene,
-      .queue = &renderer->wgpu.queue,
-      .device = &renderer->wgpu.device,
-  });
-}
-
-/**
-   Main entry point of the shadow computing pass
- */
-void renderer_compute_shadow(SceneRenderer *renderer, Scene *scene) {
-  shadow_pass_init(scene, renderer->wgpu.device, renderer->wgpu.queue);
-}
-
 // getters
-WGPUDevice *renderer_device(SceneRenderer *rd) { return &rd->wgpu.device; }
-WGPUQueue *renderer_queue(SceneRenderer *rd) { return &rd->wgpu.queue; }
+WGPUDevice *scene_renderer_device(SceneRenderer *rd) {
+  return &rd->wgpu.device;
+}
+WGPUQueue *scene_renderer_queue(SceneRenderer *rd) { return &rd->wgpu.queue; }
 
-int renderer_width(SceneRenderer *rd) { return rd->context.width; }
-int renderer_height(SceneRenderer *rd) { return rd->context.height; }
+int scene_renderer_width(SceneRenderer *rd) { return rd->context.width; }
+int scene_renderer_height(SceneRenderer *rd) { return rd->context.height; }
 
-const char *renderer_target(SceneRenderer *rd) { return rd->context.name; }
+const char *scene_renderer_target(SceneRenderer *rd) {
+  return rd->context.name;
+}
+
+void scene_renderer_set_draw_mode(SceneRenderer *renderer,
+                                  const SceneRendererDrawMode mode) {
+  renderer->draw_mode = mode;
+}

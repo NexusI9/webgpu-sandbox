@@ -49,7 +49,7 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 
   // set name
   shader->name = strdup(sd->name);
-  VERBOSE_PRINT("Creating shader: %s\n", shader->name);
+  VERBOSE_SHADER_CREATE("%s", shader->name);
 
   // store shader string in memory
   store_file(&shader->source, sd->path);
@@ -146,8 +146,12 @@ void shader_pipeline_release_layout(Shader *shader) {
  */
 void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
 
-  if (shader->pipeline.handle == NULL)
-    return perror("Shader pipeline not defined for shader, skip drawing");
+  if (shader->pipeline.handle == NULL) {
+    VERBOSE_ERROR("Shader pipeline not defined for: %s. Make sure the "
+                  "mesh has been properly built. Skip drawing.",
+                  shader->name);
+    return;
+  }
 
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline.handle);

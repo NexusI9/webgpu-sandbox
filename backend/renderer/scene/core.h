@@ -1,12 +1,16 @@
 #ifndef _SCENE_RENDERER_CORE_H_
 #define _SCENE_RENDERER_CORE_H_
 
-#include "../runtime/scene/scene.h"
+#include "../../../runtime/mesh/mesh.h"
+#include "../../../runtime/pipeline/pipeline.h"
 #include "../../clock.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-#define RENDERER_DPI_AUTO 0
+#define SCENE_RENDERER_DPI_AUTO 0
+#define SCENE_RENDERER_DRAW_MODE_COUNT 6
+#define SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST 6
+#define SCENE_RENDERER_MAX_HOOK 6
 
 typedef struct {
   const char *name;
@@ -21,7 +25,32 @@ typedef enum {
   SceneRendererDrawMode_Solid,
   SceneRendererDrawMode_Wireframe,
   SceneRendererDrawMode_Boundbox,
+  SceneRendererDrawMode_Fixed,
+  SceneRendererDrawMode_Selection,
 } SceneRendererDrawMode;
+
+typedef struct {
+  mesh_get_shader_callback shader_callback;
+  mesh_get_topology_callback topology_callback;
+  MeshRefList *meshes;
+} SceneRendererDrawLayout;
+
+typedef struct {
+  SceneRendererDrawLayout entries[SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST];
+  size_t length;
+} SceneRendererDrawLayoutList;
+
+typedef void (*scene_renderer_draw_callback)(void *);
+
+typedef struct {
+  scene_renderer_draw_callback callback;
+  void *data;
+} SceneRendererDrawCallback;
+
+typedef struct {
+  SceneRendererDrawCallback entries[SCENE_RENDERER_MAX_HOOK];
+  ssize_t length;
+} SceneRendererDrawCallbackList;
 
 typedef struct SceneRenderer {
 
@@ -41,6 +70,7 @@ typedef struct SceneRenderer {
     WGPUQueue queue;
     WGPUSwapChain swapchain;
     WGPURenderPipeline pipeline;
+    WGPURenderPassEncoder render_pass;
   } wgpu;
 
   struct {
@@ -52,37 +82,40 @@ typedef struct SceneRenderer {
     WGPUTextureView view;
   } depth;
 
+  SceneRendererDrawMode draw_mode;
+  SceneRendererDrawLayoutList draw_layouts[SCENE_RENDERER_DRAW_MODE_COUNT];
+  SceneRendererDrawCallbackList draw_callbacks;
+
 } SceneRenderer;
 
-typedef WGPURenderPassColorAttachment (*renderer_color_attachment_callback)(
-    SceneRenderer *, WGPUTextureView);
+typedef WGPURenderPassColorAttachment (
+    *scene_renderer_color_attachment_callback)(SceneRenderer *,
+                                               WGPUTextureView);
 
 typedef struct {
   SceneRenderer *renderer;
-  Scene *scene;
-  renderer_color_attachment_callback color_attachment_callback;
-
-  struct {
-    scene_draw_callback *entries;
-    size_t length;
-  } draw_list;
-
+  scene_renderer_color_attachment_callback color_attachment_callback;
 } SceneRendererRenderDescriptor;
 
-void renderer_create(SceneRenderer *, const SceneRendererCreateDescriptor *);
+void scene_renderer_create(SceneRenderer *,
+                           const SceneRendererCreateDescriptor *);
 
-void renderer_bake_ao(SceneRenderer *, Scene *);
-void renderer_compute_shadow(SceneRenderer *, Scene *);
+void scene_renderer_set_draw_layout(SceneRenderer *,
+                                    const SceneRendererDrawMode,
+                                    const SceneRendererDrawLayoutList *);
 
-void renderer_close(const SceneRenderer *);
-void renderer_draw(SceneRenderer *, Scene *, const SceneRendererDrawMode);
+void scene_renderer_set_draw_mode(SceneRenderer *, const SceneRendererDrawMode);
+void scene_renderer_add_draw_callback(SceneRenderer *,
+                                      scene_renderer_draw_callback, void *);
+void scene_renderer_draw(SceneRenderer *);
+void scene_renderer_close(const SceneRenderer *);
 
-WGPUDevice *renderer_device(SceneRenderer *);
-WGPUQueue *renderer_queue(SceneRenderer *);
-int renderer_width(SceneRenderer *);
-int renderer_height(SceneRenderer *);
+// getters
+WGPUDevice *scene_renderer_device(SceneRenderer *);
+WGPUQueue *scene_renderer_queue(SceneRenderer *);
+int scene_renderer_width(SceneRenderer *);
+int scene_renderer_height(SceneRenderer *);
 
-const char *renderer_target(SceneRenderer *);
-
+const char *scene_renderer_target(SceneRenderer *);
 
 #endif

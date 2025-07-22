@@ -176,7 +176,6 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
       .device = desc->device,
       .queue = desc->queue,
       .mesh_list = desc->mesh_list,
-      .scene = desc->scene,
       .texture = ao_textures,
   });
 
@@ -185,7 +184,6 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
       .device = desc->device,
       .queue = desc->queue,
       .mesh_list = desc->mesh_list,
-      .scene = desc->scene,
       .texture = ao_textures,
   });
 
@@ -211,23 +209,24 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
  */
 void ao_bake_local(const AOBakeDescriptor *desc) {
 
-  VERBOSE_PRINT("===== BAKING LOCAL AO =====\n");
+  VERBOSE_PROCESS("Baking local AO...");
 
   Mesh *line = NULL;
 #ifdef AO_BAKE_DISPLAY_RAY
-  line = scene_new_mesh_unlit(desc->scene, NULL);
+  line = scene_new_mesh(desc->scene, NULL);
   line_create(line, &(LineCreateDescriptor){
                         .device = desc->device,
                         .queue = desc->queue,
                         .name = "line mesh",
                     });
+  scene_add_mesh(scene, line, ScenePipeline_Unlit, NULL);
 #endif
 
   for (size_t m = 0; m < desc->mesh_list->length; m++) {
 
     Mesh *current_mesh = desc->mesh_list->entries[m];
 
-    VERBOSE_PRINT("Baking mesh: %s\n", current_mesh->name);
+    VERBOSE_PRINT("Baking mesh: %s", current_mesh->name);
 
     VertexAttribute *mesh_vertex = &current_mesh->topology.base.attribute;
     VertexIndex *mesh_index = &current_mesh->topology.base.index;
@@ -348,7 +347,7 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
  */
 void ao_bake_global(const AOBakeDescriptor *desc) {
 
-  VERBOSE_PRINT("===== BAKING GLOBAL AO =====\n");
+  VERBOSE_PROCESS("Baking Global AO...");
 
 #ifdef AO_BAKE_DISPLAY_RAY
   mesh *line = scene_new_mesh_unlit(desc->scene, NULL);
@@ -363,7 +362,7 @@ void ao_bake_global(const AOBakeDescriptor *desc) {
   for (size_t s = 0; s < desc->mesh_list->length; s++) {
 
     Mesh *source_mesh = desc->mesh_list->entries[s];
-    VERBOSE_PRINT("Baking mesh: %s\n", source_mesh->name);
+    VERBOSE_PRINT("Baking mesh: %s", source_mesh->name);
 
     // go through the mesh triangles and check if it's occluded
     for (size_t i = 0; i < source_mesh->topology.base.index.length; i += 3) {

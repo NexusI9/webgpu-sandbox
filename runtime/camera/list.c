@@ -1,4 +1,5 @@
 #include "list.h"
+#include "../utils/system.h"
 #include "string.h"
 
 static int camera_list_expand(CameraList *);
@@ -12,7 +13,7 @@ int camera_list_create(CameraList *list, size_t capacity) {
   list->length = 0;
 
   if (list->entries == NULL) {
-    perror("Couldn't create new camera list\n");
+    VERBOSE_ERROR("Couldn't create new camera list.");
     return CAMERA_ALLOC_FAIL;
   }
 
@@ -28,7 +29,7 @@ int camera_list_expand(CameraList *list) {
       (Camera *)realloc(list->entries, new_capacity * sizeof(Camera));
 
   if (temp == NULL) {
-    perror("Couldn't expand Camera list\n");
+    VERBOSE_ERROR("Couldn't expand Camera list.");
     return CAMERA_ALLOC_FAIL;
   }
 
@@ -45,7 +46,7 @@ Camera *camera_list_insert(CameraList *list, Camera *camera) {
 
   // check if list is init
   if (list->entries == NULL) {
-    perror("Camera list not initialized yet\n");
+    VERBOSE_ERROR("Camera list not initialized yet.");
     return NULL;
   }
 
@@ -65,7 +66,7 @@ Camera *camera_list_new_camera(CameraList *list) {
 
   // check if list is init
   if (list->entries == NULL) {
-    perror("Camera list not initialized yet\n");
+    VERBOSE_ERROR("Camera list not initialized yet.");
     return NULL;
   }
 

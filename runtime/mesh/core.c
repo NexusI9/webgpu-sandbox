@@ -1,6 +1,7 @@
 #include "./core.h"
 #include "../backend/buffer.h"
 #include "../utils/matrix.h"
+#include "../utils/system.h"
 #include "shader.h"
 #include <string.h>
 
@@ -10,10 +11,9 @@ static Mesh *mesh_children_list_check_capacity(Mesh *);
 
 void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
-  // init mesh
-
   // set name
   mesh_set_name(mesh, md->name);
+  VERBOSE_MESH_CREATE("%s", mesh->name);
 
   mesh->id = reg_register((void *)mesh, RegEntryType_Mesh);
 
@@ -81,14 +81,10 @@ void mesh_set_shader(Mesh *mesh, const ShaderCreateDescriptor *desc) {
  */
 void mesh_build(Mesh *mesh, Shader *shader) {
 
-#ifdef VERBOSE_BUILDING_PHASE
-  VERBOSE_PRINT("Build mesh: %s\n", mesh->name);
-#endif
-
   // check if mesh has correct buffer before drawing
   if (mesh->topology.base.index.buffer == NULL ||
       mesh->topology.base.attribute.buffer == NULL) {
-    perror("Mesh has no vertex index or attribute buffer.\n");
+    VERBOSE_ERROR("Mesh has no vertex index or attribute buffer.");
   }
 
   // build shader
@@ -224,7 +220,7 @@ Mesh *mesh_children_list_check_capacity(Mesh *parent) {
                              sizeof(Mesh) * parent->children.capacity);
 
     if (new_list == NULL) {
-      perror("Failed to expand mesh list\n"), exit(1);
+      VERBOSE_ERROR("Failed to expand mesh list.");
       return NULL;
     }
 

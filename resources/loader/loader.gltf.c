@@ -1,21 +1,9 @@
 #include "loader.gltf.h"
-#include "../runtime/geometry/vertex/vertex.h"
-#include "../utils/system.h"
-#include "webgpu/webgpu.h"
-#include <cglm/cglm.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
 #define CGLTF_IMPLEMENTATION
 #include "cgltf/cgltf.h"
-#include "limits.h"
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#define STB_IMAGE_IMPLEMENTATION
-#include "../backend/buffer.h"
-#include "../runtime/material/material.h"
-#include "../runtime/texture/texture.h"
-#include "stb/stb_image.h"
+
 
 static void loader_gltf_create_mesh(Scene *, WGPUDevice *, WGPUQueue *,
                                     cgltf_data *);
@@ -49,7 +37,8 @@ void loader_gltf_load(const GLTFLoadDescriptor *desc) {
   switch (result) {
 
   case cgltf_result_invalid_json:
-    perror("Invalid GLTF JSON\n"), exit(1);
+    VERBOSE_ERROR("Invalid GLTF JSON.");
+    exit(1);
     break;
 
   case cgltf_result_success:
@@ -57,15 +46,18 @@ void loader_gltf_load(const GLTFLoadDescriptor *desc) {
     break;
 
   case cgltf_result_file_not_found:
-    perror("GLTF file not found\n"), exit(1);
+    VERBOSE_ERROR("GLTF file not found.");
+    exit(1);
     break;
 
   case cgltf_result_out_of_memory:
-    perror("GLTF loading aborted, out of memory\n"), exit(1);
+    VERBOSE_ERROR("GLTF loading aborted, out of memory.");
+    exit(1);
     break;
 
   default:
-    perror("GLTF loading aborted, unhanded error\n"), exit(1);
+    VERBOSE_ERROR("GLTF loading aborted, unhanded error.");
+    exit(1);
     break;
   }
 
@@ -146,14 +138,14 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
 void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
                              cgltf_data *data) {
 
-  VERBOSE_HEADER("LOAD GLTF");
+  VERBOSE_IMPORT("GLTF file");
 
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
 
     cgltf_mesh gl_mesh = data->meshes[m];
 
-    struct Mesh *scene_mesh = scene_new_mesh_lit(scene, NULL);
+    struct Mesh *scene_mesh = scene_new_mesh(scene);
     mesh_create(scene_mesh, &(MeshCreateDescriptor){
                                 .device = device,
                                 .queue = queue,
@@ -242,7 +234,7 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
       // add child to parent mesh if current primitive > 0
       // and set it as target mesh
       if (p > 0) {
-        target_mesh = scene_new_mesh_lit(scene, NULL);
+        target_mesh = scene_new_mesh(scene);
 
         // add target mesh pointer to parent mesh children list
         mesh_add_child(target_mesh, scene_mesh);
@@ -275,6 +267,8 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
                                 &vert_index, target_mesh->device,
                                 target_mesh->queue);
+
+      scene_add_mesh(scene, target_mesh, ScenePipeline_Lit, NULL);
     }
   }
 }
@@ -403,14 +397,14 @@ uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
     } else {
       VERBOSE_PRINT(
           "Loader GLTF: Texture found but couldn't be loaded, loading "
-          "default texture\n");
+          "default texture");
       loader_gltf_load_fallback_texture(shader_entry);
       return 0;
     }
 
   } else {
     VERBOSE_PRINT(
-        "Loader GLTF: Couldn't find texture, loading default texture\n");
+        "Loader GLTF: Couldn't find texture, loading default texture");
     loader_gltf_load_fallback_texture(shader_entry);
     return 0;
   }

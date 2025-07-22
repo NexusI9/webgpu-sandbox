@@ -18,6 +18,7 @@ static void *loader_mbin_read(const char *, size_t *);
 
 int loader_mbin_load(MBINFile **file, const char *path) {
 
+  VERBOSE_IMPORT("MBIN file");
   // directly map data into memory for unix environments
   // open: directly communicate with linux kernel
   // fopen: provide FILE, does not depend on OS kernel

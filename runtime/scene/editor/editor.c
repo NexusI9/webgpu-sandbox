@@ -1,5 +1,6 @@
 #include "editor.h"
 #include "../../gizmo/gizmo.h"
+#include "../scene.h"
 #include "./selection.h"
 
 static inline void scene_editor_gizmo_create_grid(Scene *);
@@ -30,13 +31,12 @@ void scene_editor_init(Scene *scene) {
  */
 void scene_editor_gizmo_create_grid(Scene *scene) {
 
-  scene->editor.gizmo.grid =
-      scene_new_mesh_fixed(scene, SCENE_LAYER_GIZMO_UNSELECTABLE);
+  scene->editor.gizmo.grid = scene_new_mesh(scene);
 
   gizmo_grid_create(scene->editor.gizmo.grid,
                     &(GizmoGridCreateDescriptor){
-                        .device = scene->device,
-                        .queue = scene->queue,
+                        .device = scene_device(scene),
+                        .queue = scene_queue(scene),
                         .uniform =
                             (GizmoGridUniform){
                                 .size = 100.0f,
@@ -45,6 +45,9 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
                                 .color = {0.5f, 0.5f, 0.5f, 1.0f},
                             },
                     });
+
+  scene_add_mesh(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
+                 SCENE_LAYER_GIZMO_UNSELECTABLE);
 }
 
 /**
@@ -55,12 +58,11 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
   gizmo_transform_create(gizmo, &(GizmoCreateDescriptor){
                                     .camera = scene->active_camera,
-                                    .device = scene->device,
-                                    .queue = scene->queue,
+                                    .device = scene_device(scene),
+                                    .queue = scene_queue(scene),
                                     .viewport = &scene->viewport,
                                     .list = &scene->meshes,
                                 });
-
 }
 
 /**

@@ -3,6 +3,7 @@
 #include "./write.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
+#include "../utils/system.h"
 
 void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
 
@@ -17,7 +18,7 @@ void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
       (void *)calloc(texture->width * texture->height, texture->channels);
 
   if (texture->data == NULL) {
-    perror("Could not create texture");
+    VERBOSE_ERROR("Could not create texture.");
     return;
   }
 
@@ -35,7 +36,7 @@ void texture_create_from_ref(unsigned char **data, size_t *size,
   *data = (unsigned char *)calloc(desc->width * desc->height, desc->channels);
 
   if (data == NULL) {
-    perror("Could not create texture");
+    VERBOSE_ERROR("Could not create texture.");
     return;
   }
 
@@ -54,7 +55,7 @@ int texture_create_from_file(Texture *texture, const char *path, bool flip) {
   texture_data data = stbi_load(path, &width, &height, &channels, 4);
 
   if (data == NULL) {
-    perror("Couldn't load texture from file\n");
+    VERBOSE_ERROR("Couldn't load texture from file.");
     texture->data = NULL;
     texture->width = 0;
     texture->height = 0;

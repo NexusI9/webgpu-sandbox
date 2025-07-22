@@ -1,5 +1,6 @@
 #include "bind.h"
 #include <string.h>
+#include "../utils/system.h"
 
 /**
    Initialise shader bind group lists and eventually free/reset the existing
@@ -8,7 +9,7 @@
 void shader_bind_group_init(Shader *shader, size_t index) {
 
   if (index > SHADER_MAX_BIND_GROUP) {
-    perror("Cannot initialize a group index > 4\n");
+    VERBOSE_ERROR("Cannot initialize a group index > 4.");
     return;
   }
 
@@ -140,7 +141,7 @@ ShaderBindGroup *shader_get_bind_group(Shader *shader, size_t group_index) {
 
   // check if group within acceptable range
   if (group_index >= SHADER_MAX_BIND_GROUP) {
-    perror("WebGPU is unable to create more than 4 bind groups\n");
+    VERBOSE_ERROR("WebGPU is unable to create more than 4 bind groups.");
     return NULL;
   }
 
@@ -163,12 +164,12 @@ ShaderBindGroup *shader_get_bind_group(Shader *shader, size_t group_index) {
 bool shader_validate_binding(Shader *shader) {
 
   if (shader->device == NULL || shader->queue == NULL) {
-    perror("Shader has no device or queue");
+    VERBOSE_ERROR("Shader has no device or queue.");
     return 0;
   }
 
   if (shader->bind_groups.length >= SHADER_MAX_BIND_GROUP) {
-    perror("Bind group list at full capacity");
+    VERBOSE_ERROR("Bind group list at full capacity.");
     return 0;
   }
 

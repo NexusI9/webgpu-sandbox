@@ -1,6 +1,7 @@
 #include "index.h"
 #include "string.h"
 #include <stddef.h>
+#include "../utils/system.h"
 
 int vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
 
@@ -14,7 +15,7 @@ int vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
   size_t length = dest->length * sizeof(vindex_t);
   dest->entries = malloc(length);
   if (dest->entries == NULL) {
-    perror("Couldn't allocate memory for vertex index\n");
+    VERBOSE_ERROR("Couldn't allocate memory for vertex index.");
     dest->buffer = NULL;
     dest->capacity = 0;
     dest->length = 0;
@@ -47,7 +48,7 @@ int vertex_index_create(VertexIndex *vi, size_t capacity, WGPUBuffer buffer) {
   vi->buffer = buffer;
 
   if (vi->entries == NULL) {
-    perror("Could't create vertex index\n");
+    VERBOSE_ERROR("Could't create vertex index.");
     vi->capacity = 0;
     vi->buffer = NULL;
     return VERTEX_ALLOC_FAIL;
@@ -68,7 +69,7 @@ int vertex_index_insert(VertexIndex *vi, vindex_t *index_list, size_t length) {
       vi->capacity = new_capacity;
       vi->entries = temp;
     } else {
-      perror("Could't reallocate vertex index\n");
+      VERBOSE_ERROR("Could't reallocate vertex index.");
       return VERTEX_ALLOC_FAIL;
     }
   }

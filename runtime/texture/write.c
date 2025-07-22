@@ -63,7 +63,7 @@ void texture_write_pixel(Texture *texture, int value, vec2 coordinate,
       texture_write(value, &texture->data[offset], write_method);
     }
   } else {
-    // perror("Pixel coordinate is out of bound");
+    // VERBOSE_WARNING("Pixel coordinate is out of bound.");
   }
 }
 

@@ -1,4 +1,5 @@
 #include "registry.h"
+#include "../utils/system.h"
 #include <stdio.h>
 
 static id_t g_reg_id = 1;
@@ -12,7 +13,7 @@ id_t gen_id() { return g_reg_id++; }
  */
 id_t reg_register(void *ptr, RegEntryType type) {
   if (g_reg_id == REG_MAX_OBJECTS) {
-    perror("Cannot add more objects to registry\n");
+    VERBOSE_ERROR("Cannot add more objects to registry.");
     return 0;
   }
 
@@ -27,7 +28,7 @@ id_t reg_register(void *ptr, RegEntryType type) {
 
 void *reg_lookup(id_t id) {
   if (id >= REG_MAX_OBJECTS) {
-    perror("id out of registry bounds\n");
+    VERBOSE_ERROR("id out of registry bounds.");
     return NULL;
   }
   return g_reg[id].ptr;

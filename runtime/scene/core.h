@@ -3,15 +3,16 @@
 
 #include "../backend/clock.h"
 #include "../backend/registry.h"
+#include "../backend/renderer/renderer.h"
 #include "../gizmo/list.h"
 #include "../gizmo/transform/transform.h"
 #include "./layer.h"
 #include "webgpu/webgpu.h"
 
-
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
+#define SCENE_PIPELINE_COUNT 5
 
 #define SCENE_SUCCESS 0
 #define SCENE_MAX_CAPACITY_REACH 1
@@ -75,19 +76,16 @@ typedef uint8_t shader_bind_t;
 
  */
 
-typedef struct {
-  MeshRefList background;
-  MeshRefList lit;
-  MeshRefList unlit;
-  MeshRefList fixed;
-} ScenePipelines;
+typedef enum {
+  ScenePipeline_Background,
+  ScenePipeline_Lit,
+  ScenePipeline_Unlit,
+  ScenePipeline_Fixed,
+  ScenePipeline_Selection,
+} ScenePipeline;
 
 
 typedef struct {
-
-  struct {
-    MeshRefList selection;
-  } pipelines;
 
   struct {
     GizmoList list;           // gizmo lists
@@ -105,10 +103,6 @@ typedef struct {
 
   id_t id;
 
-  // WGPU
-  WGPUDevice *device;
-  WGPUQueue *queue;
-
   // camera
   Camera *camera;
   Camera *active_camera;
@@ -122,21 +116,21 @@ typedef struct {
   CameraList cameras; // camera list
 
   // References List (ptr)
-  ScenePipelines pipelines; // meshes pipelines (for render logic)
-  SceneLayerSet layers;     // meshes layer (for interaction logic)
+  MeshRefList
+      pipelines[SCENE_PIPELINE_COUNT]; // meshes pipelines (for render logic)
+  SceneLayerSet layers;                // meshes layer (for interaction logic)
 
   // TODO: only enable selection/gizmo related function for "Editor" mode since
   // will be never seen or used in actually "Game" mode
   SceneEditor editor;
-
+  SceneRenderer renderer;
 
 } Scene;
 
 typedef struct {
   cclock *clock;
   const ViewportCreateDescriptor *viewport;
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const SceneRendererCreateDescriptor *renderer;
 } SceneCreateDescriptor;
 
 typedef void (*scene_draw_callback)(Scene *, WGPURenderPassEncoder *);
@@ -147,13 +141,9 @@ void scene_create(Scene *, const SceneCreateDescriptor *);
 // mesh pool
 MeshList *scene_mesh_list(Scene *);
 
-// dynamic rendering
-Mesh *scene_new_mesh_lit(Scene *, const char *);
-Mesh *scene_new_mesh_unlit(Scene *, const char *);
-Mesh *scene_new_mesh_fixed(Scene *, const char *);
-Mesh *scene_new_mesh_background(Scene *, const char *);
-
 // scene layer quick access
 MeshRefList *scene_layer_meshes(Scene *, const char *);
+WGPUQueue *scene_queue(Scene *);
+WGPUDevice *scene_device(Scene *);
 
 #endif

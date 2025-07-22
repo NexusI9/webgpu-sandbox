@@ -1,6 +1,7 @@
 #include "shadow_pass.h"
-#include "../runtime/prefab/debug/view.h"
 #include "../runtime/material/material.h"
+#include "../runtime/prefab/debug/view.h"
+#include "../runtime/scene/draw.h"
 #include "../runtime/texture/texture.h"
 #include "../utils/math.h"
 #include <string.h>
@@ -14,9 +15,9 @@ static inline void
 shadow_pass_fallback_to_texture(const ShadowPassFallbackToTextureDescriptor *);
 static inline void shadow_pass_create_map(const ShadowPassMapDescriptor *);
 
-void shadow_pass_init(Scene *scene, WGPUDevice device, WGPUQueue queue) {
+void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
 
-  printf("==== COMPUTING SHADOW ====\n");
+  VERBOSE_PROCESS("Computing shadow map...");
 
   /*debug_view_create(&debug_view_light, &(DebugViewCreateDescriptor){
                                            .device = &device,
@@ -24,9 +25,9 @@ void shadow_pass_init(Scene *scene, WGPUDevice device, WGPUQueue queue) {
                                            });*/
 
   // create multi layered light texture (passed to the renderpass)
-  size_t point_light_length = scene->lights.point.length;
-  size_t spot_light_length = scene->lights.spot.length;
-  size_t sun_light_length = scene->lights.sun.length;
+  size_t point_light_length = desc->lights.point->length;
+  size_t spot_light_length = desc->lights.spot->length;
+  size_t sun_light_length = desc->lights.spot->length;
   /*
                                For each shadow light:
 
@@ -65,18 +66,18 @@ void shadow_pass_init(Scene *scene, WGPUDevice device, WGPUQueue queue) {
   shadow_pass_create_textures(&(ShadowPassTextureDescriptor){
       .dimension = WGPUTextureViewDimension_CubeArray,
       .layer_count = MAX(point_light_length, 1) * LIGHT_POINT_VIEWS,
-      .device = device,
+      .device = *desc->device,
       .width = point_shadow_texture_size,
       .height = point_shadow_texture_size,
       .color =
           {
               .texture = &point_shadow_texture_color,
-              .texture_view = &scene->lights.point.color_map,
+              .texture_view = &desc->lights.point->color_map,
           },
       .depth =
           {
               .texture = &point_shadow_texture_depth,
-              .texture_view = &scene->lights.point.depth_map,
+              .texture_view = &desc->lights.point->depth_map,
           },
   });
 
@@ -119,26 +120,32 @@ void shadow_pass_init(Scene *scene, WGPUDevice device, WGPUQueue queue) {
   shadow_pass_create_textures(&(ShadowPassTextureDescriptor){
       .dimension = WGPUTextureViewDimension_2DArray,
       .layer_count = MAX(spot_light_length + sun_light_length, 1),
-      .device = device,
+      .device = *desc->device,
       .width = spot_shadow_texture_size,
       .height = spot_shadow_texture_size,
       .color =
           {
               .texture = &spot_shadow_texture_color,
-              .texture_view = &scene->lights.spot.color_map,
+              .texture_view = &desc->lights.spot->color_map,
           },
       .depth =
           {
               .texture = &spot_shadow_texture_depth,
-              .texture_view = &scene->lights.spot.depth_map,
+              .texture_view = &desc->lights.spot->depth_map,
           },
   });
 
   // Generate Shadow maps (both color and depth map)
   shadow_pass_create_map(&(ShadowPassMapDescriptor){
-      .scene = scene,
-      .device = device,
-      .queue = queue,
+      .device = *desc->device,
+      .queue = *desc->queue,
+      .mesh_list = desc->mesh_list,
+      .lights =
+          {
+              .point = desc->lights.point,
+              .spot = desc->lights.spot,
+              .sun = desc->lights.sun,
+          },
       .point_light =
           {
               .color_texture = &point_shadow_texture_color,
@@ -152,17 +159,17 @@ void shadow_pass_init(Scene *scene, WGPUDevice device, WGPUQueue queue) {
   });
 
   // Transfer depth texture array to each meshes default shader
-  for (size_t m = 0; m < scene->pipelines.lit.length; m++) {
+  for (size_t m = 0; m < desc->mesh_list->length; m++) {
 
-    Mesh *current_mesh = scene->pipelines.lit.entries[m];
+    Mesh *current_mesh = desc->mesh_list->entries[m];
 
     // bind point & spot light texture view + sampler to Textue Shader
 #ifdef RENDER_SHADOW_AS_COLOR
-    const WGPUTextureView point_map = scene->lights.point.color_map;
-    const WGPUTextureView spot_map = scene->lights.directional.color_map;
+    const WGPUTextureView point_map = scene->lights.point->color_map;
+    const WGPUTextureView spot_map = scene->lights.spot->color_map;
 #else
-    const WGPUTextureView point_map = scene->lights.point.depth_map;
-    const WGPUTextureView spot_map = scene->lights.spot.depth_map;
+    const WGPUTextureView point_map = desc->lights.point->depth_map;
+    const WGPUTextureView spot_map = desc->lights.spot->depth_map;
 #endif
 
     material_texure_bind_shadow_maps(current_mesh, point_map, spot_map);
@@ -170,9 +177,10 @@ void shadow_pass_init(Scene *scene, WGPUDevice device, WGPUQueue queue) {
 
   // !!DEBUG: Add views to scene
   /*for (size_t v = 0; v < debug_view_length(&debug_view_light); v++) {
-    mesh *view = scene_new_mesh_unlit(scene, NULL);
+    mesh *view = scene_new_mesh(scene, NULL);
     mesh *view_mesh = &debug_view_light.mesh[v];
     memcpy(view, view_mesh, sizeof(mesh));
+    scene_add_mesh(scene, view, ScenePipeline_Unlit, NULL);
     }*/
 }
 
@@ -333,7 +341,11 @@ void shadow_pass_to_texture(const ShadowPassToTextureDescriptor *desc) {
                              },
                      });
 
-  scene_draw_shadow(desc->scene, &shadow_pass);
+  // draw target
+  for (size_t i = 0; i < desc->mesh_list->length; i++) {
+    Mesh *mesh = desc->mesh_list->entries[i];
+    mesh_draw(mesh_topology_base(mesh), mesh_shader_shadow(mesh), &shadow_pass);
+  }
 
   wgpuRenderPassEncoderEnd(shadow_pass);
 
@@ -356,11 +368,11 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
   WGPUCommandEncoder shadow_encoder =
       wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
-  MeshRefList *target_mesh_list = &desc->scene->pipelines.lit;
+  MeshRefList *target_mesh_list = desc->mesh_list;
 
-  const size_t point_length = desc->scene->lights.point.length;
-  const size_t spot_length = desc->scene->lights.spot.length;
-  const size_t sun_length = desc->scene->lights.sun.length;
+  const size_t point_length = desc->lights.point->length;
+  const size_t spot_length = desc->lights.spot->length;
+  const size_t sun_length = desc->lights.sun->length;
 
   /*
   ==========================================
@@ -391,7 +403,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
   for (size_t p = 0; p < point_length; p++) {
 
-    PointLight *light = &desc->scene->lights.point.entries[p];
+    PointLight *light = &desc->lights.point->entries[p];
     // retrieve 6 views of point cube
     LightViews light_views =
         light_point_views(light->position, light->near, light->far);
@@ -412,7 +424,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
       // 2. Render scene (create shadow render pass to texture layer)
       size_t layer = p * light_views.length + v;
       shadow_pass_to_texture(&(ShadowPassToTextureDescriptor){
-          .scene = desc->scene,
+          .mesh_list = desc->mesh_list,
           .color_texture = *desc->point_light.color_texture,
           .depth_texture = *desc->point_light.depth_texture,
           .layer = layer,
@@ -449,7 +461,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
   for (size_t p = 0; p < spot_length; p++) {
 
-    SpotLight *light = &desc->scene->lights.spot.entries[p];
+    SpotLight *light = &desc->lights.spot->entries[p];
 
     // get each light orthographic view depending on target
     LightViews light_views =
@@ -475,7 +487,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
     // 2. Render scene (create shadow render pass to texture layer)
     shadow_pass_to_texture(&(ShadowPassToTextureDescriptor){
-        .scene = desc->scene,
+        .mesh_list = desc->mesh_list,
         .color_texture = *desc->directional_light.color_texture,
         .depth_texture = *desc->directional_light.depth_texture,
         .layer = p,
@@ -500,7 +512,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
   for (size_t p = 0; p < sun_length; p++) {
 
-    SunLight *light = &desc->scene->lights.sun.entries[p];
+    SunLight *light = &desc->lights.sun->entries[p];
 
     // get each light orthographic view depending on target
     LightViews light_views = light_sun_view(light->position, light->size);
@@ -518,7 +530,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
     // 2. Render scene (create shadow render pass to texture layer)
     shadow_pass_to_texture(&(ShadowPassToTextureDescriptor){
-        .scene = desc->scene,
+        .mesh_list = desc->mesh_list,
         .color_texture = *desc->directional_light.color_texture,
         .depth_texture = *desc->directional_light.depth_texture,
         .layer = spot_length + p,
@@ -527,7 +539,7 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
     });
 
     // 3. Clear meshes bind group
-    for (int m = 0; m < desc->scene->pipelines.lit.length; m++) {
+    for (int m = 0; m < target_mesh_list->length; m++) {
       Mesh *current_mesh = target_mesh_list->entries[m];
       material_shadow_clear_bindings(current_mesh);
     }

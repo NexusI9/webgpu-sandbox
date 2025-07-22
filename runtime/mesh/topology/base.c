@@ -53,8 +53,9 @@ int mesh_topology_base_create_vertex_attribute(MeshTopologyBase *base,
   base->attribute.capacity = va->length;
 
   if (base->attribute.length) {
-    if (device == NULL || queue == NULL)
-      perror("Mesh has no device or queue "), exit(0);
+    if (device == NULL || queue == NULL) 
+      VERBOSE_ERROR("Mesh has no device or queue.");
+    
 
     buffer_create(&base->attribute.buffer,
                   &(CreateBufferDescriptor){
@@ -91,8 +92,9 @@ int mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
 
   if (base->index.length) {
 
-    if (device == NULL || queue == NULL)
-      perror("Mesh has no device or queue"), exit(0);
+    if (device == NULL || queue == NULL) 
+      VERBOSE_ERROR("Mesh has no device or queue.");
+    
 
     buffer_create(&base->index.buffer,
                   &(CreateBufferDescriptor){
@@ -147,8 +149,8 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
   mesh_topology_anchor_list_map(&hashed_list, &base_topo, mapped_list);
 }
 
-void mesh_topology_base_scale(MeshTopologyBase *base,
-                              const VertexGroup *select, vec3 *scale) {
+void mesh_topology_base_scale(MeshTopologyBase *base, const VertexGroup *select,
+                              vec3 *scale) {
 
   // combine all anchors
   MeshTopologyAnchor combined_anchor;
@@ -174,8 +176,7 @@ void mesh_topology_base_scale(MeshTopologyBase *base,
 }
 
 void mesh_topology_base_translate(MeshTopologyBase *base,
-                                  const VertexGroup *select,
-                                  vec3 *translate) {
+                                  const VertexGroup *select, vec3 *translate) {
 
   // combine all anchors
   MeshTopologyAnchor combined_anchor;

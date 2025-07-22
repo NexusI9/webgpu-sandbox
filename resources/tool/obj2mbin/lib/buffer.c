@@ -35,7 +35,7 @@ int vertex_buffer_insert(VertexBuffer *vb, mbin_vertex_t *list, size_t count) {
       vb->entries = temp;
       vb->capacity = new_capacity;
     } else {
-      perror("Couldn't allocate new memory for vertex buffer\n");
+      perror("Couldn't allocate new memory for vertex buffer");
       return MBIN_BUFFER_ALLOC_FAILURE;
     }
   }

@@ -19,7 +19,7 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
 
   Scene *scene = cast_user_data->scene;
   SceneLayer *exclude_layer = cast_user_data->exclude_layer;
-  MeshRefList *selection_list = &scene->editor.pipelines.selection;
+  MeshRefList *selection_list = &scene->pipelines[ScenePipeline_Selection];
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
   // early return if no hits
@@ -71,7 +71,7 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
     vec3 position;
     scene_selection_average_position(scene, &position);
     gizmo_transform_translate(gizmo, position);
-    
+
   } else {
     gizmo_transform_remove(gizmo, &scene->pipelines.fixed);
   }*/
@@ -84,7 +84,7 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
 void scene_selection_init(Scene *scene) {
 
   // init selection list
-  mesh_reference_list_create(&scene->editor.pipelines.selection,
+  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Selection],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // cache selection exclude layer (ex: grid...)
@@ -96,9 +96,9 @@ void scene_selection_init(Scene *scene) {
                              &(CameraRaycastDescriptor){
                                  .mesh_lists =
                                      (MeshRefList *[]){
-                                         &scene->pipelines.lit,
-                                         &scene->pipelines.unlit,
-                                         &scene->pipelines.fixed,
+                                         &scene->pipelines[ScenePipeline_Lit],
+                                         &scene->pipelines[ScenePipeline_Unlit],
+                                         &scene->pipelines[ScenePipeline_Fixed],
                                      },
                                  .length = 3,
                                  .viewport = &scene->viewport,
@@ -117,7 +117,7 @@ void scene_selection_init(Scene *scene) {
  */
 void scene_selection_average_position(Scene *scene, vec3 *dest) {
 
-  MeshRefList *selection = &scene->editor.pipelines.selection;
+  MeshRefList *selection = &scene->pipelines[ScenePipeline_Selection];
 
   glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, *dest);
 
@@ -136,9 +136,10 @@ void scene_selection_average_position(Scene *scene, vec3 *dest) {
 void scene_selection_add(Scene *scene, Mesh *mesh) {
 
   // only add if mesh not already exists
-  if (mesh_reference_list_find(&scene->editor.pipelines.selection, mesh) ==
-      NULL)
-    mesh_reference_list_insert(&scene->editor.pipelines.selection, mesh);
+  if (mesh_reference_list_find(&scene->pipelines[ScenePipeline_Selection],
+                               mesh) == NULL)
+    mesh_reference_list_insert(&scene->pipelines[ScenePipeline_Selection],
+                               mesh);
 }
 
 /**
@@ -146,5 +147,5 @@ void scene_selection_add(Scene *scene, Mesh *mesh) {
  */
 void scene_selection_remove(Scene *scene, Mesh *mesh) {
 
-  mesh_reference_list_remove(&scene->editor.pipelines.selection, mesh);
+  mesh_reference_list_remove(&scene->pipelines[ScenePipeline_Selection], mesh);
 }

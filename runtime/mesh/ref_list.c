@@ -10,7 +10,7 @@ int mesh_reference_list_create(MeshRefList *list, const size_t capacity) {
   list->capacity = capacity;
 
   if (list->entries == NULL) {
-    perror("Couldn't allocate memory for mesh indexed list\n");
+    VERBOSE_ERROR("Couldn't allocate memory for mesh indexed list.");
     return MESH_ALLOC_FAILURE;
   }
 
@@ -103,7 +103,7 @@ int mesh_reference_list_transfert(MeshRefList *src, MeshRefList *dest) {
       dest->entries = temp_entries;
 
     } else {
-      perror("Couldn't reallocate and expand mesh indexed list\n");
+      VERBOSE_ERROR("Couldn't reallocate and expand mesh indexed list.");
       return MESH_ALLOC_FAILURE;
     }
   }
@@ -127,7 +127,7 @@ int mesh_reference_list_copy(const MeshRefList *src, MeshRefList *dest) {
   dest->entries = malloc(dest->length * sizeof(Mesh *));
 
   if (dest->entries == NULL) {
-    perror("Couldn't allocate memory for mesh reference list copy\n");
+    VERBOSE_ERROR("Couldn't allocate memory for mesh reference list copy.");
     dest->length = 0;
     return MESH_ALLOC_FAILURE;
   }

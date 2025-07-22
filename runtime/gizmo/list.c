@@ -14,7 +14,7 @@ void *gizmo_list_expand(void **dest, size_t capacity, size_t type_size,
   void *temp = realloc(dest, capacity * type_size);
 
   if (temp == NULL) {
-    perror("Couldn't expand gizmo list\n");
+    VERBOSE_ERROR("Couldn't expand gizmo list.");
     return temp;
   }
 
@@ -30,7 +30,7 @@ void *gizmo_list_alloc(void **dest, size_t capacity, size_t type_size,
   *dest = malloc(capacity * type_size);
 
   if (*dest == NULL) {
-    perror("Couldn't allocate memory for gizmo list\n");
+    VERBOSE_ERROR("Couldn't allocate memory for gizmo list.");
     *new_capacity = 0;
     *new_length = 0;
     return *dest;
@@ -84,7 +84,7 @@ int gizmo_list_insert(const GizmoListInsertDescriptor *desc) {
 
   // check if list is init
   if (desc->entries == NULL) {
-    perror("Gizmo list not initialized\n");
+    VERBOSE_ERROR("Gizmo list not initialized.");
     return GIZMO_LIST_ERROR;
   }
 
@@ -110,7 +110,7 @@ void *gizmo_list_new(const GizmoListNewDescriptor *desc) {
 
   // check if list is init
   if (desc->entries == NULL) {
-    perror("Gizmo list not initialized\n");
+    VERBOSE_ERROR("Gizmo list not initialized.");
     return NULL;
   }
 

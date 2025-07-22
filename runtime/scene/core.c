@@ -1,11 +1,13 @@
 #include "core.h"
+#include "./draw.h"
+#include "./editor/editor.h"
 #include "./editor/selection.h"
-#include "editor/editor.h"
-#include "layer.h"
+#include "./layer.h"
 
-static void scene_init_light_list(Scene *);
-static Mesh *scene_new_mesh(Scene *, const char *);
-static Camera *scene_init_main_camera(Scene *, cclock *);
+// initializers
+static inline Camera *scene_init_main_camera(Scene *, cclock *);
+static inline void scene_init_draw_layouts(Scene *);
+static inline void scene_init_light_list(Scene *);
 
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
@@ -16,24 +18,34 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   scene->camera = scene_init_main_camera(scene, desc->clock);
   scene->active_camera = scene->camera;
 
-  // set wgpu related handles
-  scene->device = desc->device;
-  scene->queue = desc->queue;
+  // set renderer
+  scene_renderer_create(&scene->renderer, desc->renderer);
 
   // set viewport
+  // TODO: currently it's kinda weird to include the width and height in the
+  // viewport descriptor by override it in the scene. Maybe remove the width and
+  // height from the create descriptor (although it seems counter intuitive to
+  // do so...)
   viewport_create(&scene->viewport, desc->viewport);
+  scene->viewport.width = scene_renderer_width(&scene->renderer);
+  scene->viewport.height = scene_renderer_height(&scene->renderer);
 
   // init global mesh list
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
   // init mesh pipelines
-  mesh_reference_list_create(&scene->pipelines.background,
+
+  // background
+  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Background],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  mesh_reference_list_create(&scene->pipelines.lit,
+  // lit
+  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Lit],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  mesh_reference_list_create(&scene->pipelines.unlit,
+  // unlit
+  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Unlit],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  mesh_reference_list_create(&scene->pipelines.fixed,
+  // fixed
+  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Fixed],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init scene layers
@@ -42,10 +54,12 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   // init lights
   scene_init_light_list(scene);
 
+  // init draw callbacks configuration
+  scene_init_draw_layouts(scene);
+
   /* ==== EDITOR ==== */
   // EDITORONLY
   scene_editor_init(scene);
- 
 }
 
 /**
@@ -76,49 +90,170 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 }
 
 /**
- Return the new mesh pointer from the global array and push the new pointer to
- the right scene layer.
-  1. first create new mesh in the scene pool
-  2. add the reference to the relative mesh ref list
+   Define the scene renderer draw configurations by providing each draw mode
+   their respective topology, shader callbacks as well a mesh list to draw
+   during the loop.
  */
-Mesh *scene_new_mesh_lit(Scene *scene, const char *layer) {
-  Mesh *new_mesh = scene_new_mesh(scene, layer);
+void scene_init_draw_layouts(Scene *scene) {
 
-  // return pipeline pointer (same as new_mesh)
-  return mesh_reference_list_insert(&scene->pipelines.lit, new_mesh);
-}
+  // Texture draw configuration
+  scene_renderer_set_draw_layout(
+      &scene->renderer, SceneRendererDrawMode_Texture,
+      &(SceneRendererDrawLayoutList){
+          .length = 4,
+          .entries =
+              {
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Background],
+                      .shader_callback = mesh_shader_texture,
+                      .topology_callback = mesh_topology_base,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Lit],
+                      .shader_callback = mesh_shader_texture,
+                      .topology_callback = mesh_topology_base,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Unlit],
+                      .shader_callback = mesh_shader_texture,
+                      .topology_callback = mesh_topology_base,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Selection],
+                      .shader_callback = mesh_shader_wireframe,
+                      .topology_callback = mesh_topology_boundbox,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
+                      .shader_callback = mesh_shader_override,
+                      .topology_callback = mesh_topology_override,
+                  },
+              },
+      });
 
-Mesh *scene_new_mesh_unlit(Scene *scene, const char *layer) {
-  Mesh *new_mesh = scene_new_mesh(scene, layer);
+  // Solid draw configuration
+  scene_renderer_set_draw_layout(
+      &scene->renderer, SceneRendererDrawMode_Solid,
+      &(SceneRendererDrawLayoutList){
+          .length = 4,
+          .entries =
+              {
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Lit],
+                      .shader_callback = mesh_shader_solid,
+                      .topology_callback = mesh_topology_base,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Unlit],
+                      .shader_callback = mesh_shader_solid,
+                      .topology_callback = mesh_topology_base,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Selection],
+                      .shader_callback = mesh_shader_wireframe,
+                      .topology_callback = mesh_topology_boundbox,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
+                      .shader_callback = mesh_shader_override,
+                      .topology_callback = mesh_topology_override,
+                  },
 
-  // return pipeline pointer (same as new_mesh)
-  return mesh_reference_list_insert(&scene->pipelines.unlit, new_mesh);
-}
+              },
+      });
 
-Mesh *scene_new_mesh_fixed(Scene *scene, const char *layer) {
-  Mesh *new_mesh = scene_new_mesh(scene, layer);
+  // Wireframe draw configuration
+  scene_renderer_set_draw_layout(
+      &scene->renderer, SceneRendererDrawMode_Wireframe,
+      &(SceneRendererDrawLayoutList){
+          .length = 2,
+          .entries =
+              {
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Lit],
+                      .shader_callback = mesh_shader_wireframe,
+                      .topology_callback = mesh_topology_wireframe,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Unlit],
+                      .shader_callback = mesh_shader_wireframe,
+                      .topology_callback = mesh_topology_wireframe,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Selection],
+                      .shader_callback = mesh_shader_wireframe,
+                      .topology_callback = mesh_topology_boundbox,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
+                      .shader_callback = mesh_shader_override,
+                      .topology_callback = mesh_topology_override,
+                  },
+              },
+      });
 
-  // return pipeline pointer (same as new_mesh)
-  return mesh_reference_list_insert(&scene->pipelines.fixed, new_mesh);
-}
+  // Boundbox draw configuration
+  scene_renderer_set_draw_layout(
+      &scene->renderer, SceneRendererDrawMode_Boundbox,
+      &(SceneRendererDrawLayoutList){
+          .length = 3,
+          .entries =
+              {
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Lit],
+                      .shader_callback = mesh_shader_wireframe,
+                      .topology_callback = mesh_topology_boundbox,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Unlit],
+                      .shader_callback = mesh_shader_wireframe,
+                      .topology_callback = mesh_topology_boundbox,
+                  },
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
+                      .shader_callback = mesh_shader_override,
+                      .topology_callback = mesh_topology_override,
+                  },
+              },
+      });
 
-Mesh *scene_new_mesh_background(Scene *scene, const char *layer) {
-  Mesh *new_mesh = scene_new_mesh(scene, layer);
+  // Fixed draw configuration (use override topology & shader)
+  scene_renderer_set_draw_layout(
+      &scene->renderer, SceneRendererDrawMode_Fixed,
+      &(SceneRendererDrawLayoutList){
+          .length = 1,
+          .entries =
+              {
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
+                      .shader_callback = mesh_shader_override,
+                      .topology_callback = mesh_topology_override,
+                  },
+              },
+      });
 
-  // return pipeline pointer (same as new_mesh)
-  return mesh_reference_list_insert(&scene->pipelines.background, new_mesh);
-}
+  // Selection draw configuration
+  scene_renderer_set_draw_layout(
+      &scene->renderer, SceneRendererDrawMode_Selection,
+      &(SceneRendererDrawLayoutList){
+          .length = 1,
+          .entries =
+              {
+                  {
+                      .meshes = &scene->pipelines[ScenePipeline_Selection],
+                      .shader_callback = mesh_shader_wireframe,
+                      .topology_callback = mesh_topology_boundbox,
+                  },
+              },
+      });
 
-Mesh *scene_new_mesh(Scene *scene, const char *layer) {
-  Mesh *new_mesh = mesh_list_new_mesh(&scene->meshes);
+  // add the camera update callback
+  scene_renderer_add_draw_callback(&scene->renderer, scene_camera_draw_callback,
+                                   (void *)scene->active_camera);
 
-  // add to scene layers ('Default' layer if NULL)
-  if (layer == NULL)
-    layer = SCENE_LAYER_DEFAULT;
-
-  scene_layer_set_insert_mesh(&scene->layers, layer, new_mesh);
-
-  return new_mesh;
+  // once defined, add layouts draw callbacks
+  scene_renderer_add_draw_callback(&scene->renderer, scene_layout_draw_callback,
+                                   (void *)&scene->renderer);
 }
 
 /**
@@ -158,3 +293,13 @@ void scene_init_light_list(Scene *scene) {
    Return pointer to scene mesh pool
  */
 MeshList *scene_mesh_list(Scene *scene) { return &scene->meshes; }
+
+/**
+   Return nested queue from the scene renderer
+ */
+WGPUQueue *scene_queue(Scene *scene) { return &scene->renderer.wgpu.queue; }
+
+/**
+   Return nested device from the scene renderer
+ */
+WGPUDevice *scene_device(Scene *scene) { return &scene->renderer.wgpu.device; }

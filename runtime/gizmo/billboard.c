@@ -92,4 +92,6 @@ void gizmo_create_billboard(Mesh *mesh,
                     .offset = 0,
                 }},
             });
+
+
 }

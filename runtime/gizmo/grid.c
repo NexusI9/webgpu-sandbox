@@ -6,7 +6,7 @@
 void gizmo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
 
   Primitive plane = primitive_plane();
-
+  
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .name = "grid",
                                   .queue = gd->queue,
@@ -36,7 +36,6 @@ void gizmo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                        gd->uniform.size,
                        gd->uniform.size,
                    });
-
 
   material_texture_add_uniform(
       mesh, &(ShaderCreateUniformDescriptor){

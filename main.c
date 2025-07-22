@@ -4,6 +4,7 @@
 //  https://stackoverflow.com/questions/23997312/how-do-i-read-a-user-specified-file-in-an-emscripten-compiled-library
 
 #include "backend/renderer/renderer.h"
+#include "backend/renderer/scene/core.h"
 #include "resources/example/example.h"
 #include <emscripten/emscripten.h>
 
@@ -13,7 +14,6 @@
 #include "runtime/scene/core.h"
 
 static Scene main_scene;
-static SceneRenderer main_renderer;
 static cclock main_clock;
 
 // callback
@@ -24,17 +24,21 @@ void init_scene() {
   scene_create(&main_scene,
                &(SceneCreateDescriptor){
                    .clock = &main_clock,
+                   .renderer =
+                       &(SceneRendererCreateDescriptor){
+                           .name = "canvas",
+                           .clock = &main_clock,
+                           .multisampling_count = PipelineMultisampleCount_4x,
+                           .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f},
+                           .dpi = 1.0,
+                       },
                    .viewport =
                        &(ViewportCreateDescriptor){
                            .fov = 32.0f,
                            .near_clip = 0.1f,
                            .far_clip = 100.0f,
                            .aspect = 16.0f / 9.0f,
-                           .width = renderer_width(&main_renderer),
-                           .height = renderer_height(&main_renderer),
                        },
-                   .device = renderer_device(&main_renderer),
-                   .queue = renderer_queue(&main_renderer),
                });
 
   /*
@@ -92,7 +96,7 @@ void init_scene() {
 
    */
 
-  example_skybox(&main_scene);
+  //example_skybox(&main_scene);
 }
 
 void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
@@ -101,16 +105,6 @@ void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
 
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused
-
-  // init renderer
-  renderer_create(&main_renderer,
-                  &(SceneRendererCreateDescriptor){
-                      .name = "canvas",
-                      .clock = &main_clock,
-                      .multisampling_count = PipelineMultisampleCount_4x,
-                      .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f},
-                      .dpi = 1.0,
-                  });
 
   // set scene
   init_scene();
@@ -139,14 +133,16 @@ int main(int argc, const char *argv[]) {
                       (vec3){0.0f, 0.0f, 0.0f});
    */
 
+  scene_renderer_set_draw_mode(&main_scene.renderer,
+                               SceneRendererDrawMode_Solid);
 
   example_gltf(&main_scene);
 
   // Update Loop
-  renderer_draw(&main_renderer, &main_scene, SceneRendererDrawMode_Solid);
+  scene_renderer_draw(&main_scene.renderer);
 
   // Quit
-  renderer_close(&main_renderer);
+  scene_renderer_close(&main_scene.renderer);
 
   return 0;
 }

@@ -3,6 +3,7 @@
 #include "index.h"
 #include <stdint.h>
 #include <string.h>
+#include "../utils/system.h"
 
 /**
 ▗▖  ▗▖▗▄▄▄▖▗▄▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖     ▗▄▄▖▗▄▄▖  ▗▄▖ ▗▖ ▗▖▗▄▄▖
@@ -20,7 +21,7 @@ int vertex_group_expand(VertexGroup *group) {
       (vindex_t *)realloc(group->entries, new_capacity * sizeof(vindex_t));
 
   if (temp == NULL) {
-    perror("Couldn't expand new vertex group\n");
+    VERBOSE_ERROR("Couldn't expand new vertex group.");
     return VERTEX_GROUP_ALLOC_FAIL;
   }
 
@@ -38,7 +39,7 @@ int vertex_group_create(VertexGroup *group, size_t capacity, const char *name) {
   group->name = strdup(name);
 
   if (group->entries == NULL || group->name == NULL) {
-    perror("Couldn't create new vertex group\n");
+    VERBOSE_ERROR("Couldn't create new vertex group.");
     group->capacity = 0;
     return VERTEX_GROUP_ALLOC_FAIL;
   }
@@ -51,7 +52,7 @@ VertexGroup *vertex_group_insert(VertexGroup *group, vindex_t *index_list,
 
   while (group->length + length > group->capacity) {
     if (vertex_group_expand(group) != VERTEX_GROUP_SUCCESS) {
-      perror("Couldn't insert new vertex group value\n");
+      VERBOSE_ERROR("Couldn't insert new vertex group value.");
       return NULL;
     }
   }
@@ -95,7 +96,7 @@ int vertex_group_set_expand(VertexGroupSet *set) {
       (VertexGroup *)realloc(set->entries, new_capacity * sizeof(VertexGroup));
 
   if (temp == NULL) {
-    perror("Couldn't expand new vertex group set\n");
+    VERBOSE_ERROR("Couldn't expand new vertex group set.");
     return VERTEX_GROUP_ALLOC_FAIL;
   }
 
@@ -112,7 +113,7 @@ int vertex_group_set_create(VertexGroupSet *set, size_t capacity) {
   set->capacity = capacity;
 
   if (set->entries == NULL) {
-    perror("Couldn't create new vertex group set\n");
+    VERBOSE_ERROR("Couldn't create new vertex group set.");
     set->capacity = 0;
     return VERTEX_GROUP_ALLOC_FAIL;
   }

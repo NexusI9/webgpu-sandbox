@@ -1,6 +1,7 @@
 #include "hit_list.h"
 #include "string.h"
 #include <stdlib.h>
+#include "../utils/system.h"
 
 static int camera_raycast_hit_list_sort_func(const void *a, const void *b) {
 
@@ -26,7 +27,7 @@ int camera_raycast_hit_list_create(CameraRaycastHitList *list,
   list->length = 0;
 
   if (list->entries == NULL) {
-    perror("Couldn't allocate camera raycast hit list entries.\n");
+    VERBOSE_ERROR("Couldn't allocate camera raycast hit list entries.");
     list->capacity = 0;
     list->length = 0;
     return CAMERA_RAYCAST_HIT_LIST_ALLOC_FAIL;

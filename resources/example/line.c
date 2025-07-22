@@ -2,12 +2,11 @@
 
 #include "../../runtime/geometry/line/line.h"
 
-
 void example_line(Scene *scene) {
-  Mesh *line = scene_new_mesh_unlit(scene, NULL);
+  Mesh *line = scene_new_mesh(scene);
   line_create(line, &(LineCreateDescriptor){
-                        .device = scene->device,
-                        .queue = scene->queue,
+                        .device = scene_device(scene),
+                        .queue = scene_queue(scene),
                         .name = "line mesh",
                     });
 
@@ -18,4 +17,6 @@ void example_line(Scene *scene) {
   line_add_point((vec3){3.0f, -2.0f, -2.0f}, (vec3){-3.0f, 7.0f, 3.0f},
                  (vec3){0.0f, 1.0f, 0.0f}, &line->topology.base.attribute,
                  &line->topology.base.index);
+
+  scene_add_mesh(scene, line, ScenePipeline_Unlit, NULL);
 }

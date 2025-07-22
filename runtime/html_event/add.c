@@ -2,6 +2,7 @@
 #include "listener.h"
 #include <stdio.h>
 #include <string.h>
+#include "../utils/system.h"
 
 // Listener Flags
 static inline uint8_t html_event_listener_flag(HTMLEventType);
@@ -95,7 +96,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
     *entries = malloc(type_size * (*capacity));
 
     if (*entries == NULL) {
-      perror("Coudln't allocate html event.\n");
+      VERBOSE_ERROR("Coudln't allocate html event.");
       *capacity = 0;
       return HTML_EVENT_ALLOC_FAIL;
     }
@@ -111,7 +112,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
       *entries = temp;
       *capacity = new_capacity;
     } else {
-      perror("Coudln't reallocate html event.\n");
+      VERBOSE_ERROR("Coudln't reallocate html event.");
       return HTML_EVENT_ALLOC_FAIL;
     }
   }
@@ -133,7 +134,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
       cast_entry->data = stored_data;
       memcpy(cast_entry->data, event->data, event->size);
     } else {
-      perror("Coudln't allocate memory for html event data.\n");
+      VERBOSE_ERROR("Coudln't allocate memory for html event data.");
       return HTML_EVENT_ALLOC_FAIL;
     }
   }

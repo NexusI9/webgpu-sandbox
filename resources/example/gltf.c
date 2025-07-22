@@ -5,8 +5,8 @@ void example_gltf(Scene *scene) {
   loader_gltf_load(&(GLTFLoadDescriptor){
       .scene = scene,
       .path = "./resources/assets/gltf/cube.gltf",
-      .device = scene->device,
-      .queue = scene->queue,
+      .device = scene_device(scene),
+      .queue = scene_queue(scene),
       .cgltf_options = &(cgltf_options){0},
   });
 }

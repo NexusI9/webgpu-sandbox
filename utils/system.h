@@ -6,49 +6,82 @@
 
 #ifdef VERBOSE
 #define VERBOSE_PRINT(...)                                                     \
-  printf("ℹ️ ");                                                                \
-  printf(__VA_ARGS__);                                                         \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("ℹ️ ");                                                              \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_ERROR(...)                                                     \
-  fprintf(stderr, "❌ ");                                                      \
-  fprintf(stderr, __VA_ARGS__);                                                \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("🛑 ");                                                             \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_WARNING(...)                                                   \
-  printf("⚠️ ");                                                                \
-  printf(__VA_ARGS__);                                                         \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("⚠️ ");                                                              \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_DEBUG(...)                                                     \
-  printf("🐞 ");                                                               \
-  printf(__VA_ARGS__);                                                         \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("🐞 ");                                                             \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_SHADER_CREATE(...)                                             \
-  printf("🎨 Creating shader: ");                                              \
-  printf(__VA_ARGS__);                                                         \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("🎨 Creating shader: ");                                            \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_MESH_BUILD(...)                                                \
-  printf("🧱 Building mesh: ");                                                \
-  printf(__VA_ARGS__);                                                         \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("🧱 Building mesh: ");                                              \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_MESH_CREATE(...)                                               \
-  printf("✨ Creating mesh: ");                                                \
-  printf(__VA_ARGS__);                                                         \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("✨ Creating mesh: ");                                              \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_IMPORT(...)                                                    \
-  printf("📦 Importing: ");                                                    \
-  printf(__VA_ARGS__);                                                         \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("📦 Importing: ");                                                  \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_SUCCESS(...)                                                   \
-  printf("☑️ ");                                                                \
-  printf(__VA_ARGS__);                                                         \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("☑️ ");                                                              \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_PROCESS(...)                                                   \
-  printf("⚙️ ");                                                                \
-  printf(__VA_ARGS__);                                                         \
-  printf(" (%s:%d)\n", __FILE__, __LINE__)
+  do {                                                                         \
+    printf("⚙️ ");                                                              \
+    printf(__VA_ARGS__);                                                       \
+    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+  } while (0)
+
 #define VERBOSE_HEADER(...)                                                    \
-  printf("===== ");                                                            \
-  printf(__VA_ARGS__);                                                         \
-  printf(" =====\n")
+  do {                                                                         \
+    printf("===== ");                                                          \
+    printf(__VA_ARGS__);                                                       \
+    printf(" =====\n");                                                        \
+  } while (0)
+
 #else
 #define VERBOSE_PRINT(...) // no-op
 #define VERBOSE_ERROR(...)

@@ -3,6 +3,19 @@
 #include "../material/material.h"
 
 /**
+   ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
+   ▐▛▚▖▐▌▐▌ ▐▌ █    █  ▐▌  ▐▌▐▌
+   ▐▌ ▝▜▌▐▛▀▜▌ █    █  ▐▌  ▐▌▐▛▀▀▘
+   ▐▌  ▐▌▐▌ ▐▌ █  ▗▄█▄▖ ▝▚▞▘ ▐▙▄▄▖
+
+    ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄ ▗▄▄▄▖▗▄▄▖  ▗▄▄▖
+   ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █▐▌   ▐▌ ▐▌▐▌
+    ▝▀▚▖▐▛▀▜▌▐▛▀▜▌▐▌  █▐▛▀▀▘▐▛▀▚▖ ▝▀▚▖
+   ▗▄▄▞▘▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀▐▙▄▄▖▐▌ ▐▌▗▄▄▞▘
+
+ */
+
+/**
    Return mesh default shader
  */
 Shader *mesh_shader_texture(Mesh *mesh) { return &mesh->shader.texture; }
@@ -89,8 +102,9 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
 
   Shader *wireframe_shader = mesh_shader_wireframe(mesh);
 
-  if (wireframe_shader->name)
-    shader_destroy(wireframe_shader);
+  // skip if already created
+  if (wireframe_shader->name != NULL)
+    return;
 
   // create shader
   shader_create(wireframe_shader,
@@ -104,24 +118,12 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
 
   // update pipeline for double-sided
   material_texture_double_sided(mesh);
-
 }
 
 /**
    Initialize solid shader
  */
-void mesh_create_solid_shader(Mesh *mesh) {}
-
-/**
-   Override shader allow to direct toward another shader for any rendering type.
-   This can become handy for gizmo if they need to appear as "wireframe" instead
-   of solid. Shader Override often comes hand in hand with Topology Override.
-   Override basically means:
-   "I want you to use this topology and shader no matter the rendering mode"
-   (wireframe/ solid/ textured..)
- */
-void mesh_shader_set_override(Mesh *mesh, Shader *shader) {
-  mesh->shader.override = shader;
+void mesh_create_solid_shader(Mesh *mesh) {
 
   Shader *solid_shader = mesh_shader_solid(mesh);
 
@@ -133,4 +135,16 @@ void mesh_shader_set_override(Mesh *mesh, Shader *shader) {
                                   .queue = mesh->queue,
                                   .name = "Mesh solid shader",
                               });
+}
+
+/**
+   Override shader allow to direct toward another shader for any rendering type.
+   This can become handy for gizmo if they need to appear as "wireframe" instead
+   of solid. Shader Override often comes hand in hand with Topology Override.
+   Override basically means:
+   "I want you to use this topology and shader no matter the rendering mode"
+   (wireframe/ solid/ textured..)
+ */
+void mesh_shader_set_override(Mesh *mesh, Shader *shader) {
+  mesh->shader.override = shader;
 }

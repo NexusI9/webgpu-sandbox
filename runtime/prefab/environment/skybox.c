@@ -95,11 +95,11 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
    * normal/uv/color, but we actually only need position for the skybox, so
    * maybe can use a "position-only" version to save a bit of memory */
   Primitive box_primitive = primitive_cube();
-  Mesh *skybox_mesh = scene_new_mesh_background(scene, NULL);
+  Mesh *skybox_mesh = scene_new_mesh(scene);
 
   mesh_create_primitive(skybox_mesh, &(MeshCreatePrimitiveDescriptor){
-                                         .device = scene->device,
-                                         .queue = scene->queue,
+                                         .device = scene_device(scene),
+                                         .queue = scene_queue(scene),
                                          .name = "skybox mesh",
                                          .primitive = box_primitive,
                                      });
@@ -107,8 +107,8 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
   // assign shader
   mesh_set_shader(skybox_mesh,
                   &(ShaderCreateDescriptor){
-                      .device = scene->device,
-                      .queue = scene->queue,
+                      .device = scene_device(scene),
+                      .queue = scene_queue(scene),
                       .label = "skybox shader",
                       .name = "skybox shader",
                       .path = "./runtime/assets/shader/shader.skybox.wgsl",
@@ -189,6 +189,8 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
                            .depthCompare = WGPUCompareFunction_LessEqual,
                            .format = WGPUTextureFormat_Depth24Plus,
                        });
+
+  scene_add_mesh(scene, skybox_mesh, ScenePipeline_Background, NULL);
 }
 
 /**
@@ -199,7 +201,7 @@ void prefab_skybox_create(Scene *scene,
 
   // create global texture
   const WGPUTexture skybox_texture =
-      prefab_skybox_texture(scene->device, desc->resolution);
+      prefab_skybox_texture(scene_device(scene), desc->resolution);
 
   // put path in order
   const char *path_sort[6] = {
@@ -221,11 +223,11 @@ void prefab_skybox_create(Scene *scene,
 
       // upload image to gpu and update relative layer texture view
       prefab_skybox_create_layer(&skybox_texture, &layer_texture, i,
-                                 scene->queue, true);
+                                 scene_queue(scene), true);
 
       // TODO: free texture
     } else {
-      perror("Couldn't read skybox texture.\n");
+      VERBOSE_ERROR("Couldn't read skybox texture.");
       return;
     }
   }
@@ -242,7 +244,7 @@ void prefab_skybox_gradient_create(
 
   // create global texture
   const WGPUTexture skybox_texture =
-      prefab_skybox_texture(scene->device, desc->resolution);
+      prefab_skybox_texture(scene_device(scene), desc->resolution);
 
   // define stops start and end (i.e. top and bottom color)
   const TextureGradient *grad = &desc->stops;
@@ -317,8 +319,8 @@ void prefab_skybox_gradient_create(
     }
 
     // upload texture
-    prefab_skybox_create_layer(&skybox_texture, final_texture, i, scene->queue,
-                               free_texture);
+    prefab_skybox_create_layer(&skybox_texture, final_texture, i,
+                               scene_queue(scene), free_texture);
   }
 
   // free gradient texture
