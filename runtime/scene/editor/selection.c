@@ -1,4 +1,5 @@
 #include "selection.h"
+#include "../show.h"
 
 static inline void scene_selection_add(Scene *, Mesh *);
 static inline void scene_selection_remove(Scene *, Mesh *);
@@ -63,18 +64,22 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
   }
 
   // handle gizmo
-  /*if (selection_list->length > 0) {
-    gizmo_transform_update_mode(gizmo, &scene->pipelines.fixed,
-                                GizmoTransformMode_Scale);
+  if (selection_list->length > 0) {
+    /*gizmo_transform_update_mode(gizmo, &scene->pipelines.fixed,
+                                GizmoTransformMode_Scale);*/
 
     // get average position
     vec3 position;
     scene_selection_average_position(scene, &position);
     gizmo_transform_translate(gizmo, position);
 
+    scene_show_mesh_reference_list(scene, gizmo->active_handle,
+                                   ScenePipeline_Fixed);
   } else {
-    gizmo_transform_remove(gizmo, &scene->pipelines.fixed);
-  }*/
+    // hide from the scene
+    scene_hide_mesh_reference_list(scene, gizmo->active_handle,
+                                   ScenePipeline_Fixed);
+  }
 }
 
 /**

@@ -1,19 +1,12 @@
-#ifndef _SCENE_MESH_BUILD_H_
-#define _SCENE_MESH_BUILD_H_
+#ifndef _SCENE_ADD_H_
+#define _SCENE_ADD_H_
+
+#include "../gizmo/gizmo.h"
 #include "core.h"
 
 /**
-   Mesh Building process:
-
-   The scene building process handles each layers respective essentials shader
-   creation or binding process( view matrix...).
-
-   Currently the renderer handles different passes such as :
-   - Topology Creation
-   - Shader creation
-   - Shader bind views
-   - Shader bind lights
-   - Shader build pipeline layout
+   Key methods to add, remove, hide or show an item in the scene. Below are some
+   key semantic precisions:
 
    .---------------------------------------------------------------------.
    |                ADD               |              REMOVE              |
@@ -37,8 +30,26 @@
    |   '----------------------------'    '----------------------------'  |
    '---------------------------------------------------------------------'
 
+   
  */
 
-void scene_build_mesh(Scene*, Mesh*, const ScenePipeline);
-void scene_build_mesh_reference_list(Scene*, MeshRefList*, const ScenePipeline);
+// light
+GizmoPointLight *scene_add_point_light(Scene *, PointLightDescriptor *);
+GizmoSpotLight *scene_add_spot_light(Scene *, SpotLightDescriptor *);
+GizmoAmbientLight *scene_add_ambient_light(Scene *, AmbientLightDescriptor *);
+GizmoSunLight *scene_add_sun_light(Scene *, SunLightDescriptor *);
+
+// camera
+GizmoCamera *scene_add_camera(Scene *, const CameraCreateDescriptor *);
+
+// mesh
+Mesh *scene_new_mesh(Scene *);
+void scene_add_mesh(Scene *, Mesh *, const ScenePipeline, const char *);
+void scene_add_mesh_reference_list(Scene *, MeshRefList *, const ScenePipeline,
+                                   const char *);
+
+void scene_remove_mesh(Scene *, Mesh *, const ScenePipeline);
+void scene_remove_mesh_reference_list(Scene *, MeshRefList *, const ScenePipeline);
+
+
 #endif

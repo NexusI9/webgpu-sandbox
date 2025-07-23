@@ -134,6 +134,17 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 }
 
 /**
+   Build a mesh reference list. Useful for gizmos or any ref list in which
+   objects fit in the same pipeline.
+ */
+void scene_build_mesh_reference_list(Scene *scene, MeshRefList *list,
+                                     const ScenePipeline pipeline) {
+
+  for (size_t i = 0; i < list->length; i++)
+    scene_build_mesh(scene, list->entries[i], pipeline);
+}
+
+/**
   ▗▄▄▖ ▗▖ ▗▖▗▄▄▄▖▗▖   ▗▄▄▄ ▗▄▄▄▖▗▄▄▖  ▗▄▄▖
   ▐▌ ▐▌▐▌ ▐▌  █  ▐▌   ▐▌  █▐▌   ▐▌ ▐▌▐▌
   ▐▛▀▚▖▐▌ ▐▌  █  ▐▌   ▐▌  █▐▛▀▀▘▐▛▀▚▖ ▝▀▚▖

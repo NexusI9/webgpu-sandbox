@@ -2,6 +2,7 @@
 #include "../../gizmo/gizmo.h"
 #include "../scene.h"
 #include "./selection.h"
+#include <stddef.h>
 
 static inline void scene_editor_gizmo_create_grid(Scene *);
 static inline void scene_editor_gizmo_create_transform(Scene *);
@@ -63,6 +64,13 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
                                     .viewport = &scene->viewport,
                                     .list = &scene->meshes,
                                 });
+
+  // build each guizmo mode mesh ref list
+  // we do not add them, only build cause we don't necessarily want to show them
+  // unless meshes have been selected.
+  for (size_t i = 0; i < 3; i++)
+    scene_build_mesh_reference_list(scene, &gizmo->handles[i],
+                                    ScenePipeline_Fixed);
 }
 
 /**

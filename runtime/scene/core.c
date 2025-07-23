@@ -100,7 +100,7 @@ void scene_init_draw_layouts(Scene *scene) {
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Texture,
       &(SceneRendererDrawLayoutList){
-          .length = 4,
+          .length = 5,
           .entries =
               {
                   {
@@ -196,7 +196,7 @@ void scene_init_draw_layouts(Scene *scene) {
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Boundbox,
       &(SceneRendererDrawLayoutList){
-          .length = 3,
+          .length = 4,
           .entries =
               {
                   {

@@ -1,19 +1,9 @@
-#ifndef _SCENE_MESH_BUILD_H_
-#define _SCENE_MESH_BUILD_H_
-#include "core.h"
+#ifndef _SCENE_SHOW_H_
+#define _SCENE_SHOW_H_
+
+#include "./core.h"
 
 /**
-   Mesh Building process:
-
-   The scene building process handles each layers respective essentials shader
-   creation or binding process( view matrix...).
-
-   Currently the renderer handles different passes such as :
-   - Topology Creation
-   - Shader creation
-   - Shader bind views
-   - Shader bind lights
-   - Shader build pipeline layout
 
    .---------------------------------------------------------------------.
    |                ADD               |              REMOVE              |
@@ -37,8 +27,13 @@
    |   '----------------------------'    '----------------------------'  |
    '---------------------------------------------------------------------'
 
+
  */
 
-void scene_build_mesh(Scene*, Mesh*, const ScenePipeline);
-void scene_build_mesh_reference_list(Scene*, MeshRefList*, const ScenePipeline);
+void scene_show_mesh(Scene *, Mesh *, const ScenePipeline);
+void scene_hide_mesh(Scene *, Mesh *, const ScenePipeline);
+void scene_show_mesh_reference_list(Scene *, MeshRefList *, const ScenePipeline);
+void scene_hide_mesh_reference_list(Scene *, MeshRefList *, const ScenePipeline);
+
+
 #endif

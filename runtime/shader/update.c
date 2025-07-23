@@ -19,6 +19,8 @@ void shader_update_texture(Shader *shader, bind_group_index group_index,
 
     // first release the current bind group
     shader_bind_group_release(bind_group);
+
+    //TODO OPTI: clear the previous textureview if they are NOT == fallback texture
     //wgpuTextureViewRelease(bound_texture->texture_view);
 
     // replace the value
