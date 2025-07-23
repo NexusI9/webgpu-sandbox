@@ -27,8 +27,10 @@ typedef struct {
 void shader_bind_group_create(Shader *, bind_group_index);
 void shader_bind_group_clear(Shader *);
 
+void shader_bind_group_build(Shader *);
 WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup*);
 void shader_bind_group_realize(WGPUBindGroup *, const ShaderBindGroupRealize *);
+void shader_bind_group_release(ShaderBindGroup *);
 
 ShaderBindGroup *shader_get_bind_group(Shader *, bind_group_index);
 
