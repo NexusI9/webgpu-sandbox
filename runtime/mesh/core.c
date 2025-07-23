@@ -144,13 +144,7 @@ void mesh_rotate(Mesh *mesh, vec3 rotation) {
   vec3 rad_rotation;
   glm_vec3_scale(mesh->rotation_euler, GLM_PI / 180.0f, rad_rotation);
 
-  versor qx, qy, qz;
-  glm_quatv(qx, rad_rotation[0], (vec3){1.0f, 0.0f, 0.0f});
-  glm_quatv(qy, rad_rotation[1], (vec3){0.0f, 1.0f, 0.0f});
-  glm_quatv(qz, rad_rotation[2], (vec3){0.0f, 0.0f, 1.0f});
-
-  glm_quat_mul(qy, qx, mesh->rotation_quat);
-  glm_quat_mul(qz, mesh->rotation_quat, mesh->rotation_quat);
+  glm_euler_xyz_quat(rad_rotation, mesh->rotation_quat);
 
   // recompute model matrix
   mesh_update_model_matrix(mesh);

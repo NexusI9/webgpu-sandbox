@@ -75,6 +75,7 @@ void gizmo_transform_create_mesh(
 
     // set double sided culling
     material_texture_double_sided(mesh);
+
     // rotate
     mesh_rotate(mesh, (vec3){
                           (i == 2) * 90.0f,
