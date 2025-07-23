@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 // black color
-static const uint8_t pixel[4] = {0, 0, 0, 255};
+static const uint8_t pixel[4] = {255, 255, 255, 255};
 
 static inline void
 scene_renderer_create_fallback_texture_2d(Texture *, WGPUDevice *, WGPUQueue *);
@@ -77,7 +77,7 @@ void scene_renderer_create_fallback_texture_2d_view(WGPUTextureView *view,
                             .data = (void *)pixel,
                             .size = sizeof(pixel),
                         },
-                        false);
+                        BufferTextureMemory_Keep);
 }
 
 void scene_renderer_create_fallback_depth_cube_array(WGPUTextureView *view,

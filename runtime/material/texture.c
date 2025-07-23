@@ -166,15 +166,48 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
    during shader creation)
  */
 void material_texture_bind_ambient_occlusion(Mesh *mesh,
-                                             WGPUTextureView ao_texture_view) {}
+                                             WGPUTextureView ao_texture_view) {
+
+  shader_add_texture_view(
+      mesh_shader_texture(mesh),
+      &(ShaderCreateTextureViewDescriptor){
+          .group_index = 0,
+          .entry_count = 1,
+          .entries = (ShaderBindGroupTextureViewEntry[]){
+              {
+                  .binding = 8,
+                  .texture_view = ao_texture_view,
+                  .dimension = WGPUTextureViewDimension_2D,
+                  .format = AO_TEXTURE_FORMAT,
+                  .sample_type = WGPUTextureSampleType_Float,
+              },
+          }});
+
+  shader_add_sampler(mesh_shader_texture(mesh),
+                     &(ShaderCreateSamplerDescriptor){
+                         .group_index = 0,
+                         .entry_count = 1,
+                         .entries = (ShaderBindGroupSamplerEntry[]){
+                             {
+                                 .binding = 9,
+                                 .type = WGPUSamplerBindingType_Filtering,
+                                 .addressModeU = WGPUAddressMode_ClampToEdge,
+                                 .addressModeV = WGPUAddressMode_ClampToEdge,
+                                 .addressModeW = WGPUAddressMode_ClampToEdge,
+                                 .minFilter = WGPUFilterMode_Linear,
+                                 .magFilter = WGPUFilterMode_Linear,
+                                 .compare = WGPUCompareFunction_Undefined,
+                             },
+                         }});
+}
 
 /**
    Bind the shadow maps and sampler to the default shader (called during shader
    creation)
  */
 void material_texture_bind_shadow_maps(Mesh *mesh,
-                                      WGPUTextureView point_texture_view,
-                                      WGPUTextureView spot_texture_view) {
+                                       WGPUTextureView point_texture_view,
+                                       WGPUTextureView spot_texture_view) {
 
   const uint8_t point_map_binding = 4;
   const uint8_t directional_map_binding = 6;
@@ -266,10 +299,24 @@ void material_texture_bind_shadow_maps(Mesh *mesh,
    during the draw loop.
  */
 void material_texture_update_ambient_occlusion(Mesh *mesh,
-                                               WGPUTextureView map) {}
+                                               WGPUTextureView map) {
+
+  printf("update AO for: %s\n", mesh->name);
+}
 
 void material_texture_update_shadow_maps(Mesh *mesh, WGPUTextureView point_map,
-                                         WGPUTextureView spot_map) {}
+                                         WGPUTextureView spot_map) {
+
+  printf("update shadow for: %s\n", mesh->name);
+  Shader *shader = mesh_shader_texture(mesh);
+
+  // update textures
+  shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS, &point_map,
+                        SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP);
+
+  shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS, &spot_map,
+                        SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP);
+}
 
 /**
    Transfer Uniform to the right mesh shader (texture)

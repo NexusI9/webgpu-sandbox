@@ -1,6 +1,9 @@
 #include "build.h"
 #include "bind.h"
 #include "layout.h"
+#include "update.h"
+#include "utils.h"
+#include "webgpu/webgpu.h"
 
 /**
    Build pipeline based on previously set bind groups
@@ -13,8 +16,14 @@ void shader_build(Shader *shader) {
 #endif
 
   // build bind group entries for each individual group index
+
+  // I. Create layout
   WGPUBindGroupLayout *bindgroup_layouts = shader_build_layout(shader);
+
+  // II. Apply layout to pipeline
   shader_build_pipeline(shader, bindgroup_layouts);
+
+  // III. Create GPU bindgroups
   shader_build_bind(shader, bindgroup_layouts);
 
   // shader_module_release(shader);
@@ -22,14 +31,17 @@ void shader_build(Shader *shader) {
   free(bindgroup_layouts);
 }
 
-WGPUBindGroupLayout *shader_build_layout(Shader *shader) {
+/**
+   I. First process of the shader building phase.
 
-  /*
-    need to first define bind group layout before actually pushing values in it
-    divide the uniforms type if different classes (uniforms/ textures/ sampler)
-    as they require dedicated layouts.
-    Layouts define in a higher level what the GPU expects in term of type and
-    structure
+   We need to first define bind group layout before actually pushing values in
+   it.
+
+   Divide the uniforms type if different classes (uniforms/ textures/
+   sampler) as they require dedicated layouts.
+
+   Layouts define in a higher level
+   what the GPU expects in term of type and structure
 
     .----------.      +===========+     .---------.     .----------.
     |  SHADER  | ==> || PIPELINE || <== | LAYOUTS | <== | UNIFORMS |
@@ -37,6 +49,7 @@ WGPUBindGroupLayout *shader_build_layout(Shader *shader) {
         GPU                                                 CPU
 
   */
+WGPUBindGroupLayout *shader_build_layout(Shader *shader) {
 
   // need to use malloc cause of VLA (variable length array)
   WGPUBindGroupLayout *layout_list = (WGPUBindGroupLayout *)malloc(
@@ -49,9 +62,7 @@ WGPUBindGroupLayout *shader_build_layout(Shader *shader) {
     WGPUBindGroupLayout *current_layout = &layout_list[i];
 
     // combine all bind group entries in one array
-    uint16_t total_length = current_group->uniforms.length +
-                            current_group->textures.length +
-                            current_group->samplers.length;
+    uint16_t total_length = shader_bind_group_entries_count(current_group);
 
     uint16_t length = 0;
 
@@ -79,6 +90,17 @@ WGPUBindGroupLayout *shader_build_layout(Shader *shader) {
   return layout_list;
 }
 
+/**
+   II. Second phase of the shader build process
+   We previously created the bindgroup layout in the phase one according to the
+   shader bindgroup entry.
+
+   In this phase we "realize" the pipeline by providing it the dynamically
+   created layout. This phase settle and define the actuall pipeline.
+
+   During this phase we apply the pipeline its different attributes (primitive,
+   fragment...)
+ */
 void shader_build_pipeline(Shader *shader, WGPUBindGroupLayout *layout) {
 
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
@@ -93,16 +115,33 @@ void shader_build_pipeline(Shader *shader, WGPUBindGroupLayout *layout) {
   pipeline_build(&shader->pipeline, &pipeline_layout);
 }
 
+/**
+   III. Last phase of the shader build process.
+   In the previous steps we:
+   1. Organise the layouts.
+   2. Apply the layouts in the pipeline.
+
+   Howerver the pipeline only own a layout/ blueprint an not the content itself.
+   Meaning we still have to upload the actual bindgroup content to use it in the
+   shader. That's the purpose of this latest phase.
+
+   Note that this binding process is used during the first instantiation of the
+   mesh. It bascially traverse the shader bindgroups and layout all the provded
+   uniforms/ textures and sampler at once.
+
+   Overall flow:
+   1. Traverse all uniforms/textures and samplers from all bind groups
+   2. Convert entries (tex/smpl/unfrm) to generic "WGPUBindGroupEntry"
+   3. Store those converted entries in an array or entry.
+   4. Create bind group based on the converted entries.
+ */
 void shader_build_bind(Shader *shader, WGPUBindGroupLayout *layouts) {
 
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
     ShaderBindGroup *current_group = &shader->bind_groups.entries[i];
     WGPUBindGroupLayout *current_layout = &layouts[i];
-    uint16_t total_length = current_group->uniforms.length +
-                            current_group->textures.length +
-                            current_group->samplers.length;
-    uint16_t length = 0;
+    uint16_t total_length = shader_bind_group_entries_count(current_group);
 
 #ifdef VERBOSE_BINDING_PHASE
     VERBOSE_PRINT("    └ Bindgroup %d\n\t\t└ Uniforms: %lu\n\t\t└ Textures: "
@@ -113,23 +152,17 @@ void shader_build_bind(Shader *shader, WGPUBindGroupLayout *layouts) {
 #endif
 
     WGPUBindGroupEntry *converted_entries =
-        (WGPUBindGroupEntry *)malloc(total_length * sizeof(WGPUBindGroupEntry));
+        shader_bind_group_convert(current_group);
 
-    // bind uniforms
-    shader_bind_uniforms(shader, current_group, converted_entries, &length);
-    // bind textures
-    shader_bind_textures(shader, current_group, converted_entries, &length);
-    // bind samplers
-    shader_bind_samplers(shader, current_group, converted_entries, &length);
-
-    // cache bind group
-    current_group->bind_group = wgpuDeviceCreateBindGroup(
-        *shader->device, &(WGPUBindGroupDescriptor){
-                             .layout = wgpuRenderPipelineGetBindGroupLayout(
-                                 shader->pipeline.handle, i),
-                             .entryCount = total_length,
-                             .entries = converted_entries,
-                         });
+    // realize bind group
+    shader_bind_group_realize(&current_group->bind_group,
+                              &(ShaderBindGroupRealize){
+                                  .group_index = i,
+                                  .device = shader->device,
+                                  .entryCount = total_length,
+                                  .entries = converted_entries,
+                                  .pipeline_handle = &shader->pipeline.handle,
+                              });
 
     // release layouts
     wgpuBindGroupLayoutRelease(*current_layout);

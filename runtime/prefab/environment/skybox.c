@@ -10,7 +10,7 @@ static inline WGPUTexture prefab_skybox_texture(WGPUDevice *, const size_t);
 
 static inline void prefab_skybox_create_layer(const WGPUTexture *,
                                               const Texture *, const size_t,
-                                              WGPUQueue *, bool);
+                                              WGPUQueue *, BufferTextureMemory);
 
 static inline void prefab_skybox_create_from_texture(Scene *,
                                                      const WGPUTexture *,
@@ -25,7 +25,7 @@ static const WGPUTextureFormat format = WGPUTextureFormat_RGBA8Unorm;
 static inline void prefab_skybox_create_layer(const WGPUTexture *texture,
                                               const Texture *layer_texture,
                                               const size_t layer_index,
-                                              WGPUQueue *queue, bool free) {
+                                              WGPUQueue *queue, BufferTextureMemory free) {
   WGPUTextureView layer_texture_view = wgpuTextureCreateView(
       *texture, &(WGPUTextureViewDescriptor){
                     .format = format,
@@ -286,7 +286,7 @@ void prefab_skybox_gradient_create(
 
     Texture layer_texture;
     Texture *final_texture;
-    bool free_texture = true;
+    BufferTextureMemory free_texture = BufferTextureMemory_Free;
 
     switch (i) {
 
@@ -315,7 +315,7 @@ void prefab_skybox_gradient_create(
     // sides
     default:
       final_texture = &gradient_texture;
-      free_texture = false;
+      free_texture = BufferTextureMemory_Keep;
     }
 
     // upload texture

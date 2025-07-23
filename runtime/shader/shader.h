@@ -2,9 +2,9 @@
 #define _SHADER_H_
 
 #include "add.h"
-#include "bind.h"
 #include "build.h"
 #include "core.h"
-#include "layout.h"
+#include "find.h"
+#include "update.h"
 
 #endif

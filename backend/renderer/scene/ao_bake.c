@@ -1,13 +1,16 @@
 #include "ao_bake.h"
+#include "../backend/buffer.h"
+#include "../runtime/material/material.h"
 #include "../utils/point.h"
 #include "../utils/system.h"
 #include "string.h"
+#include "webgpu/webgpu.h"
 
 static inline void ao_bake_global(const AOBakeDescriptor *desc);
 static inline void ao_bake_local(const AOBakeDescriptor *desc);
 static inline void ao_bake_raycast(const AOBakeRaycastDescriptor *);
 static inline float ao_bake_vertex(Vertex *, Mesh *, Mesh *);
-static inline void ao_bake_bind(Mesh *, Texture *);
+static inline void ao_bake_bind(Mesh *, Texture *); // deprecated
 static Triangle ao_bake_mesh_triangle(Mesh *, size_t);
 
 float ao_bake_vertex(Vertex *vertex, Mesh *source, Mesh *line) {
@@ -50,7 +53,7 @@ float ao_bake_vertex(Vertex *vertex, Mesh *source, Mesh *line) {
 }
 
 /**
-   Bind the texture to the shader
+   Bind the texture to the shader (deprecated)
  */
 void ao_bake_bind(Mesh *mesh, Texture *texture) {
 
@@ -189,15 +192,31 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
   // blur and bind textures once baking is done
   for (int s = 0; s < desc->mesh_list->length; s++) {
+    Texture *texture = &ao_textures[s];
     Mesh *source_mesh = desc->mesh_list->entries[s];
-    texture_remap(&ao_textures[s], 0, 1, &ao_textures[s].data);
+    texture_remap(texture, 0, 1, &texture->data);
 
     // 1st pass blur
-    texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
+    texture_blur(texture, 3, 1.0f, &texture->data);
     // 2nd pass blur
-    texture_blur(&ao_textures[s], 3, 1.0f, &ao_textures[s].data);
+    texture_blur(texture, 3, 1.0f, &texture->data);
 
-    ao_bake_bind(source_mesh, &ao_textures[s]);
+    // update texture
+    WGPUTextureView ao_texture_view;
+    buffer_create_texture(&ao_texture_view,
+                          &(CreateTextureDescriptor){
+                              .device = desc->device,
+                              .queue = desc->queue,
+                              .data = texture->data,
+                              .size = texture->size,
+                              .width = texture->width,
+                              .height = texture->height,
+                              .format = AO_TEXTURE_FORMAT,
+                              .channels = AO_TEXTURE_CHANNELS,
+                          },
+                          BufferTextureMemory_Free);
+
+    material_texture_update_ambient_occlusion(source_mesh, ao_texture_view);
   }
 }
 

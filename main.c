@@ -96,7 +96,7 @@ void init_scene() {
 
    */
 
-  //example_skybox(&main_scene);
+  // example_skybox(&main_scene);
 }
 
 void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
@@ -140,7 +140,6 @@ int main(int argc, const char *argv[]) {
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);
-
   // Quit
   scene_renderer_close(&main_scene.renderer);
 

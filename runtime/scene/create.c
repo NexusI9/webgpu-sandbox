@@ -203,7 +203,6 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   // add to scene layers ('Default' layer if NULL)
   if (layer == NULL)
     layer = SCENE_LAYER_DEFAULT;
-
   scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
 
   // add mesh pointer to the right pipeline

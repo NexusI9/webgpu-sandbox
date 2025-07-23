@@ -1,19 +1,32 @@
 #include "bind.h"
-#include <string.h>
 #include "../utils/system.h"
+#include "./utils.h"
+#include "core.h"
+#include <stdint.h>
+#include <string.h>
+
+static inline void shader_bind_uniforms(ShaderBindGroup *, WGPUBindGroupEntry *,
+                                        bind_index *);
+static inline void shader_bind_textures(ShaderBindGroup *, WGPUBindGroupEntry *,
+                                        bind_index *);
+static inline void shader_bind_samplers(ShaderBindGroup *, WGPUBindGroupEntry *,
+                                        bind_index *);
 
 /**
    Initialise shader bind group lists and eventually free/reset the existing
-   ones if already existing
+   ones if already existing.
+
+    Max stack allocation easily reached with static allocation for
+    Uniforms, Texture and Sampler arrays, so need to allocate them on the heap.
  */
-void shader_bind_group_init(Shader *shader, size_t index) {
+void shader_bind_group_create(Shader *shader, bind_group_index index) {
 
   if (index > SHADER_MAX_BIND_GROUP) {
-    VERBOSE_ERROR("Cannot initialize a group index > 4.");
+    VERBOSE_WARNING("Cannot initialize a group index > %d.",
+                    SHADER_MAX_BIND_GROUP);
     return;
   }
 
-  // printf("init bind groups for %s\n", shader->name);
   ShaderBindGroupUniforms *uniform_group =
       &shader->bind_groups.entries[index].uniforms;
 
@@ -23,21 +36,12 @@ void shader_bind_group_init(Shader *shader, size_t index) {
   ShaderBindGroupSamplers *sampler_group =
       &shader->bind_groups.entries[index].samplers;
 
-  /*NOTE:
-    Max stack allocation easily reached with static allocation for
-    Uniforms, Texture and Sampler arrays, so need to allocate them on the heap
-  */
-
   // init Uniforms dynamic array
   uniform_group->length = 0;
   uniform_group->capacity = SHADER_UNIFORMS_DEFAULT_CAPACITY;
   uniform_group->entries = (ShaderBindGroupUniformEntry *)aligned_alloc(
       16,
       SHADER_UNIFORMS_DEFAULT_CAPACITY * sizeof(ShaderBindGroupUniformEntry));
-
-  /*memset(uniform_group->entries, 0,
-         SHADER_UNIFORMS_DEFAULT_CAPACITY *
-         sizeof(ShaderBindGroupUniformEntry));*/
 
   // init Texture dynamic array
   texture_group->length = 0;
@@ -88,8 +92,8 @@ void shader_bind_group_clear(Shader *shader) {
   shader->bind_groups.length = 0;
 }
 
-void shader_bind_uniforms(Shader *shader, ShaderBindGroup *bindgroup,
-                          WGPUBindGroupEntry *entries, uint16_t *index) {
+void shader_bind_uniforms(ShaderBindGroup *bindgroup,
+                          WGPUBindGroupEntry *entries, bind_index *index) {
 
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
@@ -105,8 +109,8 @@ void shader_bind_uniforms(Shader *shader, ShaderBindGroup *bindgroup,
   }
 }
 
-void shader_bind_textures(Shader *shader, ShaderBindGroup *bindgroup,
-                          WGPUBindGroupEntry *entries, uint16_t *index) {
+void shader_bind_textures(ShaderBindGroup *bindgroup,
+                          WGPUBindGroupEntry *entries, bind_index *index) {
 
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
@@ -120,8 +124,8 @@ void shader_bind_textures(Shader *shader, ShaderBindGroup *bindgroup,
   }
 }
 
-void shader_bind_samplers(Shader *shader, ShaderBindGroup *bindgroup,
-                          WGPUBindGroupEntry *entries, uint16_t *index) {
+void shader_bind_samplers(ShaderBindGroup *bindgroup,
+                          WGPUBindGroupEntry *entries, bind_index *index) {
 
   for (int j = 0; j < bindgroup->samplers.length; j++) {
     ShaderBindGroupSamplerEntry *current_entry =
@@ -137,7 +141,8 @@ void shader_bind_samplers(Shader *shader, ShaderBindGroup *bindgroup,
    Check if a bind group in the shader isn't already registered
    if not, it creates a new bind group entry to the list
  */
-ShaderBindGroup *shader_get_bind_group(Shader *shader, size_t group_index) {
+ShaderBindGroup *shader_get_bind_group(Shader *shader,
+                                       bind_group_index group_index) {
 
   // check if group within acceptable range
   if (group_index >= SHADER_MAX_BIND_GROUP) {
@@ -148,7 +153,7 @@ ShaderBindGroup *shader_get_bind_group(Shader *shader, size_t group_index) {
   // check if group index already exists
   if (shader->bind_groups.entries[group_index].textures.entries == NULL) {
     // create new bind group
-    shader_bind_group_init(shader, group_index);
+    shader_bind_group_create(shader, group_index);
   }
 
   return &shader->bind_groups.entries[group_index];
@@ -165,13 +170,47 @@ bool shader_validate_binding(Shader *shader) {
 
   if (shader->device == NULL || shader->queue == NULL) {
     VERBOSE_ERROR("Shader has no device or queue.");
-    return 0;
+    return SHADER_BIND_UNVALID;
   }
 
   if (shader->bind_groups.length >= SHADER_MAX_BIND_GROUP) {
     VERBOSE_ERROR("Bind group list at full capacity.");
-    return 0;
+    return SHADER_BIND_UNVALID;
   }
 
-  return 1;
+  return SHADER_BIND_VALID;
+}
+
+/**
+   Convert the ShaderBindGroup into WGPUBindGroup.
+   The converted entries are then realized.
+ */
+WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *group) {
+
+  uint16_t total_length = shader_bind_group_entries_count(group);
+
+  WGPUBindGroupEntry *converted_entries =
+      (WGPUBindGroupEntry *)malloc(total_length * sizeof(WGPUBindGroupEntry));
+
+  uint16_t length = 0;
+  // bind uniforms
+  shader_bind_uniforms(group, converted_entries, &length);
+  // bind textures
+  shader_bind_textures(group, converted_entries, &length);
+  // bind samplers
+  shader_bind_samplers(group, converted_entries, &length);
+
+  return converted_entries;
+}
+
+void shader_bind_group_realize(WGPUBindGroup *bind_group,
+                               const ShaderBindGroupRealize *desc) {
+
+  *bind_group = wgpuDeviceCreateBindGroup(
+      *desc->device, &(WGPUBindGroupDescriptor){
+                         .layout = wgpuRenderPipelineGetBindGroupLayout(
+                             *desc->pipeline_handle, desc->group_index),
+                         .entryCount = desc->entryCount,
+                         .entries = desc->entries,
+                     });
 }

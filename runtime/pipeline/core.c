@@ -90,7 +90,7 @@ void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
   // transfert cached states to pipeline
   pipeline->descriptor = (WGPURenderPipelineDescriptor){
       .layout = pipeline->layout,
-      .label = "Shader",
+      .label = "Shader pipeline",
       .vertex = pipeline->vertex_state,
       .primitive = pipeline->primitive_state,
       .multisample =

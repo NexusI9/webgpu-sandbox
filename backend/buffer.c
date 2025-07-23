@@ -59,7 +59,7 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
 }
 
 void buffer_create_texture(WGPUTextureView *texture_view,
-                           const CreateTextureDescriptor *tx, bool free) {
+                           const CreateTextureDescriptor *tx, BufferTextureMemory free) {
 
   // sample + texture (ShaderTexture will be used later in the shader binding
   // process)
@@ -114,7 +114,7 @@ void buffer_create_texture(WGPUTextureView *texture_view,
  */
 void buffer_create_texture_cube(WGPUTextureView *texture_view,
                                 const CreateTextureCubeDescriptor *tx,
-                                bool free) {
+                                BufferTextureMemory free) {
 
   // upload texture to GPU
   wgpuQueueWriteTexture(*tx->queue,

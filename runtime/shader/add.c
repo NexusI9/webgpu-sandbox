@@ -17,7 +17,7 @@ void shader_add_uniform(Shader *shader,
     and handle the alignment
    */
 
-  if (shader_validate_binding(shader)) {
+  if (shader_validate_binding(shader) == SHADER_BIND_VALID) {
     /*
       Steps:
         - Increment bind group length
@@ -72,6 +72,7 @@ void shader_add_uniform(Shader *shader,
       }
 
       // transfer entry to shader bind group list
+      // current_bind_group->uniforms.length++
       current_bind_group->uniforms
           .entries[current_bind_group->uniforms.length++] = *current_entry;
     }
@@ -89,7 +90,7 @@ void shader_add_uniform(Shader *shader,
 void shader_add_texture(Shader *shader,
                         const ShaderCreateTextureDescriptor *desc) {
 
-  if (shader_validate_binding(shader)) {
+  if (shader_validate_binding(shader) == SHADER_BIND_VALID) {
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, desc->group_index);
 
@@ -116,7 +117,8 @@ void shader_add_texture(Shader *shader,
                                 .queue = shader->queue,
                                 .format = current_entry->format,
                                 .channels = current_entry->channels,
-                            }, true);
+                            },
+                            BufferTextureMemory_Free);
 
       current_bind_group->textures
           .entries[current_bind_group->textures.length++] = *current_entry;
@@ -136,7 +138,7 @@ void shader_add_texture(Shader *shader,
 void shader_add_texture_view(Shader *shader,
                              const ShaderCreateTextureViewDescriptor *desc) {
 
-  if (shader_validate_binding(shader)) {
+  if (shader_validate_binding(shader) == SHADER_BIND_VALID) {
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, desc->group_index);
 
@@ -172,7 +174,7 @@ void shader_add_texture_view(Shader *shader,
 void shader_add_sampler(Shader *shader,
                         const ShaderCreateSamplerDescriptor *desc) {
 
-  if (shader_validate_binding(shader)) {
+  if (shader_validate_binding(shader) == SHADER_BIND_VALID) {
     ShaderBindGroup *current_bind_group =
         shader_get_bind_group(shader, desc->group_index);
 

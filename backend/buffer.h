@@ -2,9 +2,14 @@
 #define _BUFFER_H_
 
 #include "webgpu/webgpu.h"
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
+
+typedef enum {
+  BufferTextureMemory_Keep,
+  BufferTextureMemory_Free,
+} BufferTextureMemory;
 
 typedef struct {
   const WGPUDevice *device;
@@ -42,8 +47,9 @@ void buffer_create_shader(WGPUShaderModule *, const WGPUDevice *, char *,
                           const char *);
 void buffer_create(WGPUBuffer *, const CreateBufferDescriptor *);
 
-void buffer_create_texture(WGPUTextureView *, const CreateTextureDescriptor *, bool);
+void buffer_create_texture(WGPUTextureView *, const CreateTextureDescriptor *,
+                           BufferTextureMemory);
 
 void buffer_create_texture_cube(WGPUTextureView *,
-                                const CreateTextureCubeDescriptor *, bool);
+                                const CreateTextureCubeDescriptor *, BufferTextureMemory);
 #endif
