@@ -7,10 +7,6 @@
 typedef uint16_t bind_index;
 typedef uint8_t bind_group_index;
 
-#define SHADER_BIND_VALID 0
-#define SHADER_BIND_UNVALID 1
-
-
 typedef struct {
   const WGPUDevice *device;
   WGPURenderPipeline *pipeline_handle;
@@ -19,7 +15,6 @@ typedef struct {
   WGPUBindGroupEntry *entries;
 } ShaderBindGroupRealize;
 
-
 /**
    Below binding functions are mostly used internally within the shader building
    process. They work cojointly with "layout" and "build"
@@ -27,12 +22,12 @@ typedef struct {
 void shader_bind_group_create(Shader *, bind_group_index);
 void shader_bind_group_clear(Shader *);
 
-void shader_bind_group_build(Shader *);
-WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup*);
+WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *);
+void shader_bind_group_build(ShaderBindGroup *, bind_group_index, const WGPUDevice *,
+                             WGPURenderPipeline *);
 void shader_bind_group_realize(WGPUBindGroup *, const ShaderBindGroupRealize *);
 void shader_bind_group_release(ShaderBindGroup *);
 
 ShaderBindGroup *shader_get_bind_group(Shader *, bind_group_index);
 
-bool shader_validate_binding(Shader *);
 #endif

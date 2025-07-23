@@ -1,6 +1,6 @@
 #include "update.h"
 #include "../utils/system.h"
-#include "bind.h"
+#include "bindgroup.h"
 #include "core.h"
 #include "find.h"
 #include "utils.h"
@@ -13,14 +13,20 @@ void shader_update_texture(Shader *shader, bind_group_index group_index,
   ShaderBindGroupTextureEntry *bound_texture =
       shader_find_texture(shader, group_index, index);
 
+  //WGPUTextureView previous_texture_view = bound_texture->texture_view;
+
   if (bound_texture != NULL) {
 
     // first release the current bind group
-    //shader_bind_group_release(bind_group);
+    shader_bind_group_release(bind_group);
+    //wgpuTextureViewRelease(bound_texture->texture_view);
 
     // replace the value
+    bound_texture->texture_view = *texture;
 
     // rebuild the bind group
+    shader_bind_group_build(bind_group, group_index, shader->device,
+                            &shader->pipeline.handle);
 
   } else {
     VERBOSE_WARNING(

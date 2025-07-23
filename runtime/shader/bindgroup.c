@@ -1,16 +1,16 @@
-#include "bind.h"
+#include "bindgroup.h"
 #include "../utils/system.h"
 #include "./utils.h"
 #include "core.h"
 #include <stdint.h>
 #include <string.h>
 
-static inline void shader_convert_uniforms(ShaderBindGroup *, WGPUBindGroupEntry *,
-                                        bind_index *);
-static inline void shader_convert_textures(ShaderBindGroup *, WGPUBindGroupEntry *,
-                                        bind_index *);
-static inline void shader_convert_samplers(ShaderBindGroup *, WGPUBindGroupEntry *,
-                                        bind_index *);
+static inline void shader_convert_uniforms(ShaderBindGroup *,
+                                           WGPUBindGroupEntry *, bind_index *);
+static inline void shader_convert_textures(ShaderBindGroup *,
+                                           WGPUBindGroupEntry *, bind_index *);
+static inline void shader_convert_samplers(ShaderBindGroup *,
+                                           WGPUBindGroupEntry *, bind_index *);
 
 /**
    Initialise shader bind group lists and eventually free/reset the existing
@@ -93,7 +93,7 @@ void shader_bind_group_clear(Shader *shader) {
 }
 
 void shader_convert_uniforms(ShaderBindGroup *bindgroup,
-                          WGPUBindGroupEntry *entries, bind_index *index) {
+                             WGPUBindGroupEntry *entries, bind_index *index) {
 
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
@@ -110,7 +110,7 @@ void shader_convert_uniforms(ShaderBindGroup *bindgroup,
 }
 
 void shader_convert_textures(ShaderBindGroup *bindgroup,
-                          WGPUBindGroupEntry *entries, bind_index *index) {
+                             WGPUBindGroupEntry *entries, bind_index *index) {
 
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
@@ -125,7 +125,7 @@ void shader_convert_textures(ShaderBindGroup *bindgroup,
 }
 
 void shader_convert_samplers(ShaderBindGroup *bindgroup,
-                          WGPUBindGroupEntry *entries, bind_index *index) {
+                             WGPUBindGroupEntry *entries, bind_index *index) {
 
   for (int j = 0; j < bindgroup->samplers.length; j++) {
     ShaderBindGroupSamplerEntry *current_entry =
@@ -157,28 +157,6 @@ ShaderBindGroup *shader_get_bind_group(Shader *shader,
   }
 
   return &shader->bind_groups.entries[group_index];
-}
-
-/**
-   Check if the shader has every requirements before binding groups
-   Also checks if the bind groups array isn't already at full capacity
- */
-
-// TODO add more validation by uniforms type (UNIFORM/ TEX/ SAMPLER...) check
-// if it doesn't overflow with max accepted length
-bool shader_validate_binding(Shader *shader) {
-
-  if (shader->device == NULL || shader->queue == NULL) {
-    VERBOSE_ERROR("Shader has no device or queue.");
-    return SHADER_BIND_UNVALID;
-  }
-
-  if (shader->bind_groups.length >= SHADER_MAX_BIND_GROUP) {
-    VERBOSE_ERROR("Bind group list at full capacity.");
-    return SHADER_BIND_UNVALID;
-  }
-
-  return SHADER_BIND_VALID;
 }
 
 /**
@@ -215,13 +193,10 @@ void shader_bind_group_realize(WGPUBindGroup *bind_group,
                      });
 }
 
-
 void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
   if (shader_bind_group->bind_group != NULL)
     wgpuBindGroupRelease(shader_bind_group->bind_group);
 }
-
-
 
 /**
    III. Last phase of the shader build process.
@@ -234,49 +209,41 @@ void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
    Meaning we still have to upload the actual bindgroup content to use it in the
    shader. That's the purpose of this latest phase.
 
-   Note that this binding process is used during the first instantiation of the
-   mesh. It bascially traverse the shader bindgroups and layout all the provded
-   uniforms/ textures and sampler at once.
-
    Overall flow:
-   1. Traverse all uniforms/textures and samplers from all bind groups
+   1. Traverse all uniforms/textures and samplers from a bind group
    2. Convert entries (tex/smpl/unfrm) to generic "WGPUBindGroupEntry"
    3. Store those converted entries in an array or entry.
    4. Create bind group based on the converted entries.
  */
-void shader_bind_group_build(Shader *shader) {
+void shader_bind_group_build(ShaderBindGroup *group,
+                             bind_group_index group_index, const WGPUDevice *device,
+                             WGPURenderPipeline *pipeline) {
 
-  for (int i = 0; i < shader->bind_groups.length; i++) {
-
-    ShaderBindGroup *current_group = &shader->bind_groups.entries[i];
-    uint16_t total_length = shader_bind_group_entries_count(current_group);
+  uint16_t total_length = shader_bind_group_entries_count(group);
 
 #ifdef VERBOSE_BINDING_PHASE
-    VERBOSE_PRINT("    └ Bindgroup %d\n\t\t└ Uniforms: %lu\n\t\t└ Textures: "
-                  "%lu\n\t\t└ Samplers: %lu\n",
-                  current_group->index, current_group->uniforms.length,
-                  current_group->textures.length,
-                  current_group->samplers.length);
+  VERBOSE_PRINT("    └ Bindgroup %d\n\t\t└ Uniforms: %lu\n\t\t└ Textures: "
+                "%lu\n\t\t└ Samplers: %lu\n",
+                group->index, group->uniforms.length, group->textures.length,
+                group->samplers.length);
 #endif
 
-    // convert shader bind group to WGPU bind group
-    WGPUBindGroupEntry *converted_entries =
-        shader_bind_group_convert(current_group);
+  // convert shader bind group to WGPU bind group
+  WGPUBindGroupEntry *converted_entries = shader_bind_group_convert(group);
 
-    // realize bind group
-    shader_bind_group_realize(&current_group->bind_group,
-                              &(ShaderBindGroupRealize){
-                                  .group_index = i,
-                                  .device = shader->device,
-                                  .entryCount = total_length,
-                                  .entries = converted_entries,
-                                  .pipeline_handle = &shader->pipeline.handle,
-                              });
+  // realize bind group
+  shader_bind_group_realize(&group->bind_group,
+                            &(ShaderBindGroupRealize){
+                                .group_index = group_index,
+                                .device = device,
+                                .entryCount = total_length,
+                                .entries = converted_entries,
+                                .pipeline_handle = pipeline,
+                            });
 
-    // release layouts
-    free(converted_entries);
-    // TODO: Clear layouts on mesh destruction
-    // WGPUBindGroupLayout *current_layout = &layouts[i];
-    // wgpuBindGroupLayoutRelease(*current_layout);
-  }
+  // release layouts
+  free(converted_entries);
+  // TODO: Clear layouts on mesh destruction
+  // WGPUBindGroupLayout *current_layout = &layouts[i];
+  // wgpuBindGroupLayoutRelease(*current_layout);
 }

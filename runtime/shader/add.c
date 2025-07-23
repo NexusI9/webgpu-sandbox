@@ -1,6 +1,7 @@
 #include "add.h"
 #include "../../backend/buffer.h"
 #include "../../utils/system.h"
+#include "./utils.h"
 #include "core.h"
 #include "string.h"
 

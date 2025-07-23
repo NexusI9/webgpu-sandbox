@@ -1,7 +1,7 @@
 #ifndef _SHADER_FIND_H_
 #define _SHADER_FIND_H_
 
-#include "bind.h"
+#include "bindgroup.h"
 #include "core.h"
 
 ShaderBindGroup *shader_find_bind_group(Shader *, bind_group_index);

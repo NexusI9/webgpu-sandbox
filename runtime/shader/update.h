@@ -1,7 +1,7 @@
 #ifndef _SHADER_UPDATE_H_
 #define _SHADER_UPDATE_H_
 
-#include "bind.h"
+#include "bindgroup.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
 

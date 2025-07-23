@@ -72,10 +72,10 @@ void scene_renderer_create_fallback_texture_2d_view(WGPUTextureView *view,
                             .queue = queue,
                             .width = 1,
                             .height = 1,
-                            .channels = 4,
-                            .format = WGPUTextureFormat_BGRA8Unorm,
-                            .data = (void *)pixel,
-                            .size = sizeof(pixel),
+                            .channels = 1,
+                            .format = WGPUTextureFormat_R8Unorm,
+                            .data = (uint8_t[]){255},
+                            .size = sizeof(uint32_t),
                         },
                         BufferTextureMemory_Keep);
 }
@@ -112,7 +112,7 @@ void scene_renderer_create_fallback_depth_cube_array(WGPUTextureView *view,
                    .mipLevelCount = 1,
                    .baseArrayLayer = 0,
                    .arrayLayerCount = 6,
-                   .aspect = WGPUTextureAspect_All,
+                   .aspect = WGPUTextureAspect_DepthOnly,
                });
 }
 
@@ -129,7 +129,7 @@ void scene_renderer_create_fallback_depth_2d_array(WGPUTextureView *view,
               (WGPUExtent3D){
                   .width = 1,
                   .height = 1,
-                  .depthOrArrayLayers = 6, // may need to update
+                  .depthOrArrayLayers = 1, // may need to update
               },
           .format = SHADOW_DEPTH_FORMAT,
           .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
@@ -147,7 +147,7 @@ void scene_renderer_create_fallback_depth_2d_array(WGPUTextureView *view,
                    .baseMipLevel = 0,
                    .mipLevelCount = 1,
                    .baseArrayLayer = 0,
-                   .arrayLayerCount = 6, // or however many layers you define
-                   .aspect = WGPUTextureAspect_All,
+                   .arrayLayerCount = 1, // or however many layers you define
+                   .aspect = WGPUTextureAspect_DepthOnly,
                });
 }

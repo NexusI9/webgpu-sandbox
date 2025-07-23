@@ -1,5 +1,5 @@
 #include "build.h"
-#include "bind.h"
+#include "bindgroup.h"
 #include "layout.h"
 #include "update.h"
 #include "utils.h"
@@ -8,7 +8,8 @@
 static inline void shader_build_pipeline(Shader *, WGPUBindGroupLayout *);
 
 /**
-   Build pipeline based on previously set bind groups
+   Build pipeline based on previously set bind groups.
+
  */
 void shader_build(Shader *shader) {
 
@@ -25,8 +26,10 @@ void shader_build(Shader *shader) {
   // II. Apply layout to pipeline
   shader_build_pipeline(shader, bindgroup_layouts);
 
-  // III. Create GPU bindgroups
-  shader_bind_group_build(shader);
+  // III. Realize all bindgroups for GPU reference
+  for (int i = 0; i < shader->bind_groups.length; i++)
+    shader_bind_group_build(&shader->bind_groups.entries[i], i, shader->device,
+                            &shader->pipeline.handle);
 
   // shader_module_release(shader);
   // TODO: properly release pipeline when deleting mesh

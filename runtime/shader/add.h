@@ -1,7 +1,7 @@
 #ifndef _SHADER_ADD_H_
 #define _SHADER_ADD_H_
 #include "core.h"
-#include "bind.h"
+#include "bindgroup.h"
 
 void shader_add_uniform(Shader *, const ShaderCreateUniformDescriptor *);
 void shader_add_texture(Shader *, const ShaderCreateTextureDescriptor *);

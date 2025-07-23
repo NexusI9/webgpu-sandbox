@@ -11,8 +11,6 @@ static inline void
 shadow_pass_create_textures(const ShadowPassTextureDescriptor *);
 static inline void
 shadow_pass_to_texture(const ShadowPassToTextureDescriptor *);
-static inline void
-shadow_pass_fallback_to_texture(const ShadowPassFallbackToTextureDescriptor *);
 static inline void shadow_pass_create_map(const ShadowPassMapDescriptor *);
 
 void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
@@ -59,16 +57,12 @@ void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
   WGPUTexture point_shadow_texture_color;
   WGPUTexture point_shadow_texture_depth;
 
-  // Switch to minimum size if no light
-  int point_shadow_texture_size =
-      point_light_length > 0 ? SHADOW_MAP_SIZE : TEXTURE_MIN_SIZE;
-
   shadow_pass_create_textures(&(ShadowPassTextureDescriptor){
       .dimension = WGPUTextureViewDimension_CubeArray,
       .layer_count = MAX(point_light_length, 1) * LIGHT_POINT_VIEWS,
       .device = *desc->device,
-      .width = point_shadow_texture_size,
-      .height = point_shadow_texture_size,
+      .width = SHADOW_MAP_SIZE,
+      .height = SHADOW_MAP_SIZE,
       .color =
           {
               .texture = &point_shadow_texture_color,
@@ -113,16 +107,13 @@ void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
   */
   WGPUTexture spot_shadow_texture_color;
   WGPUTexture spot_shadow_texture_depth;
-  int spot_shadow_texture_size = (spot_light_length + sun_light_length) > 0
-                                     ? SHADOW_MAP_SIZE
-                                     : TEXTURE_MIN_SIZE;
 
   shadow_pass_create_textures(&(ShadowPassTextureDescriptor){
       .dimension = WGPUTextureViewDimension_2DArray,
       .layer_count = MAX(spot_light_length + sun_light_length, 1),
       .device = *desc->device,
-      .width = spot_shadow_texture_size,
-      .height = spot_shadow_texture_size,
+      .width = SHADOW_MAP_SIZE,
+      .height = SHADOW_MAP_SIZE,
       .color =
           {
               .texture = &spot_shadow_texture_color,
@@ -182,54 +173,6 @@ void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
     memcpy(view, view_mesh, sizeof(mesh));
     scene_add_mesh(scene, view, ScenePipeline_Unlit, NULL);
     }*/
-}
-
-/**
-   Render a fallback texture to the color and depth shadow.
-   Used as a fallback if no light are in the scene, simply populate the textures
-   width a fallback value.
- */
-void shadow_pass_fallback_to_texture(
-    const ShadowPassFallbackToTextureDescriptor *desc) {
-
-  const int width = TEXTURE_MIN_SIZE;
-  const int height = TEXTURE_MIN_SIZE;
-  const int8_t channels = TEXTURE_CHANNELS_RGBA;
-
-  Texture texture;
-
-  // create fallback texture
-  texture_create(&texture, &(TextureCreateDescriptor){
-                               .channels = channels,
-                               .width = width,
-                               .height = height,
-                               .value = NULL,
-                           });
-
-  const WGPUTextureDataLayout texture_layout = {
-      .offset = 0,
-      .bytesPerRow = width * channels,
-      .rowsPerImage = height,
-  };
-
-  const WGPUExtent3D texture_dimension = {
-      .width = width,
-      .height = height,
-      .depthOrArrayLayers = 1,
-  };
-
-  // write to color texture
-  wgpuQueueWriteTexture(desc->queue,
-                        &(WGPUImageCopyTexture){
-                            .texture = desc->color_texture,
-                            .mipLevel = 0,
-                            .origin = {0, 0, 0},
-                            .aspect = WGPUTextureAspect_All,
-                        },
-                        texture.data, texture.size, &texture_layout,
-                        &texture_dimension);
-
-  // do not need to write to depth texture (automatically set by GPU)
 }
 
 /**
@@ -382,18 +325,6 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
   ==========================================
  */
 
-  // load fallback texture if no point light in scene
-  if (point_length == 0) {
-    for (size_t v = 0; v < LIGHT_POINT_VIEWS; v++) {
-      shadow_pass_fallback_to_texture(&(ShadowPassFallbackToTextureDescriptor){
-          .color_texture = *desc->point_light.color_texture,
-          .depth_texture = *desc->point_light.depth_texture,
-          .layer = v,
-          .queue = desc->queue,
-      });
-    }
-  }
-
   // create shadow shader
   for (int m = 0; m < target_mesh_list->length; m++) {
     Mesh *current_mesh = target_mesh_list->entries[m];
@@ -449,15 +380,6 @@ void shadow_pass_create_map(const ShadowPassMapDescriptor *desc) {
 
     ==================================================
    */
-
-  if (spot_length == 0 && sun_length == 0) {
-    shadow_pass_fallback_to_texture(&(ShadowPassFallbackToTextureDescriptor){
-        .color_texture = *desc->directional_light.color_texture,
-        .depth_texture = *desc->directional_light.depth_texture,
-        .layer = 0,
-        .queue = desc->queue,
-    });
-  }
 
   for (size_t p = 0; p < spot_length; p++) {
 
@@ -591,7 +513,7 @@ void shadow_pass_create_textures(const ShadowPassTextureDescriptor *desc) {
   WGPUTextureViewDescriptor texture_view_descriptor_base = {
       .label = "Light Shadow: global texture view - Depth",
       .format = SHADOW_DEPTH_FORMAT,
-      .dimension = desc->dimension,
+      .dimension = desc->dimension, // cube for point | array 2d for dir
       .mipLevelCount = 1,
       .baseMipLevel = 0,
       .arrayLayerCount = desc->layer_count,

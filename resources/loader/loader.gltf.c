@@ -405,7 +405,6 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
                          .entries = samplers,
                          .visibility = WGPUShaderStage_Fragment,
                      });
-
 }
 
 /**

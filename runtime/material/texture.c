@@ -1,5 +1,6 @@
 #include "texture.h"
 #include "../../backend/renderer/renderer.h"
+#include "webgpu/webgpu.h"
 #include <stdint.h>
 
 /**
@@ -162,7 +163,7 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
 }
 
 /**
-      Bind the ambient occlusion maps and sampler to the default shader (called
+   Bind the ambient occlusion maps and sampler to the default shader (called
    during shader creation)
  */
 void material_texture_bind_ambient_occlusion(Mesh *mesh,
@@ -206,11 +207,10 @@ void material_texture_bind_ambient_occlusion(Mesh *mesh,
    creation)
  */
 void material_texture_bind_shadow_maps(Mesh *mesh,
-                                       WGPUTextureView point_texture_view,
-                                       WGPUTextureView spot_texture_view) {
+                                       WGPUTextureView fallback_point_texture_view,
+                                       WGPUTextureView fallback_spot_texture_view) {
 
-  const uint8_t point_map_binding = 4;
-  const uint8_t directional_map_binding = 6;
+
   const uint8_t sampler_binding = 5;
   const uint8_t group_index = 2;
 
@@ -236,15 +236,15 @@ void material_texture_bind_shadow_maps(Mesh *mesh,
           .entries =
               (ShaderBindGroupTextureViewEntry[]){
                   {
-                      .binding = point_map_binding,
-                      .texture_view = point_texture_view,
+                      .binding = SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
+                      .texture_view = fallback_point_texture_view,
                       .dimension = WGPUTextureViewDimension_CubeArray,
                       .format = texture_format,
                       .sample_type = texture_sample_type,
                   },
                   {
-                      .binding = directional_map_binding,
-                      .texture_view = spot_texture_view,
+                      .binding = SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP,
+                      .texture_view = fallback_spot_texture_view,
                       .dimension = WGPUTextureViewDimension_2DArray,
                       .format = texture_format,
                       .sample_type = texture_sample_type,
@@ -295,19 +295,28 @@ void material_texture_bind_shadow_maps(Mesh *mesh,
    - bing group layout (not their content)
    - vertex buffer layouts, formats etc.
 
-   However we do need to rebuild the shaer->bind_groups, since they are used
+   However we do need to rebuild the shader->bind_groups, since they are used
    during the draw loop.
+
+   So the overall process is:
+
+    Build shader  => compute maps => replace bind group => build shader
+    (full layout)                                        (bind group only)
+
  */
 void material_texture_update_ambient_occlusion(Mesh *mesh,
                                                WGPUTextureView map) {
 
-  printf("update AO for: %s\n", mesh->name);
+  VERBOSE_PROCESS("Update AO map: %s", mesh->name);
+  Shader *shader = mesh_shader_texture(mesh);
+  shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES, &map,
+                        SHADER_TEXTURE_BINDING_AO);
 }
 
 void material_texture_update_shadow_maps(Mesh *mesh, WGPUTextureView point_map,
                                          WGPUTextureView spot_map) {
 
-  printf("update shadow for: %s\n", mesh->name);
+  VERBOSE_PROCESS("Update shadow map: %s", mesh->name);
   Shader *shader = mesh_shader_texture(mesh);
 
   // update textures
@@ -315,7 +324,7 @@ void material_texture_update_shadow_maps(Mesh *mesh, WGPUTextureView point_map,
                         SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP);
 
   shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS, &spot_map,
-                        SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP);
+                        SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP);
 }
 
 /**

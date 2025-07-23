@@ -10,7 +10,6 @@ static inline void ao_bake_global(const AOBakeDescriptor *desc);
 static inline void ao_bake_local(const AOBakeDescriptor *desc);
 static inline void ao_bake_raycast(const AOBakeRaycastDescriptor *);
 static inline float ao_bake_vertex(Vertex *, Mesh *, Mesh *);
-static inline void ao_bake_bind(Mesh *, Texture *); // deprecated
 static Triangle ao_bake_mesh_triangle(Mesh *, size_t);
 
 float ao_bake_vertex(Vertex *vertex, Mesh *source, Mesh *line) {
@@ -50,47 +49,6 @@ float ao_bake_vertex(Vertex *vertex, Mesh *source, Mesh *line) {
 
   // accumulated AO
   return 1 - ((float)vertex_hit / AO_LOCAL_RAY_AMOUNT);
-}
-
-/**
-   Bind the texture to the shader (deprecated)
- */
-void ao_bake_bind(Mesh *mesh, Texture *texture) {
-
-  shader_add_texture(mesh_shader_texture(mesh),
-                     &(ShaderCreateTextureDescriptor){
-                         .group_index = 0,
-                         .entry_count = 1,
-                         .entries = (ShaderBindGroupTextureEntry[]){
-                             {
-                                 .binding = 8,
-                                 .data = texture->data,
-                                 .size = texture->size,
-                                 .width = texture->width,
-                                 .height = texture->height,
-                                 .dimension = WGPUTextureViewDimension_2D,
-                                 .format = AO_TEXTURE_FORMAT,
-                                 .sample_type = WGPUTextureSampleType_Float,
-                                 .channels = AO_TEXTURE_CHANNELS,
-                             },
-                         }});
-
-  shader_add_sampler(mesh_shader_texture(mesh),
-                     &(ShaderCreateSamplerDescriptor){
-                         .group_index = 0,
-                         .entry_count = 1,
-                         .entries = (ShaderBindGroupSamplerEntry[]){
-                             {
-                                 .binding = 9,
-                                 .type = WGPUSamplerBindingType_Filtering,
-                                 .addressModeU = WGPUAddressMode_ClampToEdge,
-                                 .addressModeV = WGPUAddressMode_ClampToEdge,
-                                 .addressModeW = WGPUAddressMode_ClampToEdge,
-                                 .minFilter = WGPUFilterMode_Linear,
-                                 .magFilter = WGPUFilterMode_Linear,
-                                 .compare = WGPUCompareFunction_Undefined,
-                             },
-                         }});
 }
 
 /**
