@@ -8,6 +8,7 @@
 // Shadow map is implicitely handled withing mesh
 static Mesh *mesh_children_list_check_init(Mesh *);
 static Mesh *mesh_children_list_check_capacity(Mesh *);
+static void mesh_update_model_matrix(Mesh *);
 
 void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
@@ -35,8 +36,10 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   // init model matrix and transforms
   glm_mat4_identity(mesh->model);
 
+  glm_quat_identity(mesh->rotation_quat);
+
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->position);
-  glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation);
+  glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation_euler);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
   // defines default override
@@ -83,9 +86,8 @@ void mesh_build(Mesh *mesh, Shader *shader) {
 
   // check if mesh has correct buffer before drawing
   if (mesh->topology.base.index.buffer == NULL ||
-      mesh->topology.base.attribute.buffer == NULL) 
+      mesh->topology.base.attribute.buffer == NULL)
     VERBOSE_ERROR("Mesh has no vertex index or attribute buffer.");
-  
 
   // build shader
   shader_build(shader);
@@ -119,14 +121,7 @@ void mesh_draw(MeshTopology topology, Shader *shader,
 void mesh_scale(Mesh *mesh, vec3 scale) {
   glm_vec3_copy(scale, mesh->scale);
 
-  mat4 transform_matrix = {
-      {scale[0], 0.0f, 0.0f, 0.0f},
-      {0.0f, scale[1], 0.0f, 0.0f},
-      {0.0f, 0.0f, scale[2], 0.0f},
-      {0.0f, 0.0f, 0.0f, 1.0f},
-  };
-
-  glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
+  mesh_update_model_matrix(mesh);
 }
 
 /**
@@ -135,44 +130,50 @@ void mesh_scale(Mesh *mesh, vec3 scale) {
 void mesh_translate(Mesh *mesh, vec3 position) {
   glm_vec3_copy(position, mesh->position);
 
-  mat4 transform_matrix = {
-      {1.0f, 0.0f, 0.0f, 0.0f},
-      {0.0f, 1.0f, 0.0f, 0.0f},
-      {0.0f, 0.0f, 1.0f, 0.0f},
-      {position[0], position[1], position[2], 1.0f},
-  };
-
-  glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
+  mesh_update_model_matrix(mesh);
 }
 
 /**
    Set Euler rotation
  */
 void mesh_rotate(Mesh *mesh, vec3 rotation) {
-  glm_vec3_copy(rotation, mesh->rotation);
+  // cache euler rotation
+  glm_vec3_copy(rotation, mesh->rotation_euler);
 
+  // update quat from euler
   vec3 rad_rotation;
-  glm_vec3_scale(rotation, GLM_PI / 180.0f, rad_rotation);
+  glm_vec3_scale(mesh->rotation_euler, GLM_PI / 180.0f, rad_rotation);
 
-  mat4 rot_matrix;
-  glm_mat4_identity(rot_matrix);
+  versor qx, qy, qz;
+  glm_quatv(qx, rad_rotation[0], (vec3){1.0f, 0.0f, 0.0f});
+  glm_quatv(qy, rad_rotation[1], (vec3){0.0f, 1.0f, 0.0f});
+  glm_quatv(qz, rad_rotation[2], (vec3){0.0f, 0.0f, 1.0f});
 
-  glm_rotate_x(rot_matrix, rad_rotation[0], rot_matrix);
-  glm_rotate_y(rot_matrix, rad_rotation[1], rot_matrix);
-  glm_rotate_z(rot_matrix, rad_rotation[2], rot_matrix);
+  glm_quat_mul(qy, qx, mesh->rotation_quat);
+  glm_quat_mul(qz, mesh->rotation_quat, mesh->rotation_quat);
 
-  glm_mat4_mul(mesh->model, rot_matrix, mesh->model);
+  // recompute model matrix
+  mesh_update_model_matrix(mesh);
 }
 
 /**
    Apply rotation to mesh transform matrix
  */
 void mesh_rotate_quat(Mesh *mesh, versor rotation) {
-  mat4 transform_matrix;
-  mat4 dest;
 
-  glm_quat_mat4(rotation, transform_matrix);
-  glm_mat4_mul(mesh->model, transform_matrix, mesh->model);
+  // cache quat rotation
+  glm_quat_copy(rotation, mesh->rotation_quat);
+
+  // update mesh euler rotation
+  mat4 rot;
+  glm_quat_mat4(mesh->rotation_quat, rot);
+
+  vec3 rad_euler;
+  glm_euler_angles(rot, rad_euler);
+  glm_vec3_scale(rad_euler, 180.0f / GLM_PI, mesh->rotation_euler);
+
+  // recompute model matrix
+  mesh_update_model_matrix(mesh);
 }
 
 /**
@@ -191,6 +192,27 @@ void mesh_lookat(Mesh *mesh, vec3 position, vec3 target) {
       .forward = NULL,
       .right = NULL,
   });
+}
+
+/**
+   Update mesh model matrix on the right order based on the cached position,
+   rotation and scale.
+   This function is called everytime the mesh follows a spatial transformation.
+ */
+void mesh_update_model_matrix(Mesh *mesh) {
+
+  mat4 S, R, T, SR;
+
+  glm_mat4_identity(S);
+  glm_scale(S, mesh->scale);
+
+  glm_quat_mat4(mesh->rotation_quat, R);
+
+  glm_mat4_identity(T);
+  glm_translate(T, mesh->position);
+
+  glm_mat4_mul(R, S, SR);
+  glm_mat4_mul(T, SR, mesh->model);
 }
 
 /**

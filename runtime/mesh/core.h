@@ -51,7 +51,8 @@ typedef struct Mesh {
   mat4 model;
   vec3 position;
   vec3 scale;
-  vec3 rotation;
+  vec3 rotation_euler;
+  versor rotation_quat;
 
   // wgpu
   const WGPUDevice *device;
