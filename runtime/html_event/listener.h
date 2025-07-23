@@ -6,6 +6,7 @@
 // mouse listeners
 bool html_event_listener_mouse_move(int, const EmscriptenMouseEvent *, void *);
 bool html_event_listener_mouse_down(int, const EmscriptenMouseEvent *, void *);
+bool html_event_listener_mouse_up(int, const EmscriptenMouseEvent *, void *);
 
 // wheel listeners
 bool html_event_listener_wheel(int, const EmscriptenWheelEvent *, void *);

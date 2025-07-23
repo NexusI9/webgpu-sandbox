@@ -9,6 +9,7 @@ typedef int (*html_event_key)(HTMLEventKey *);
 
 // mouse events
 int html_event_add_mouse_down(HTMLEventMouse *);
+int html_event_add_mouse_up(HTMLEventMouse *);
 int html_event_add_mouse_move(HTMLEventMouse *);
 
 // wheel events

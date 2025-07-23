@@ -19,6 +19,7 @@ typedef bool (*html_event_destructor_callback)(void *);
 typedef enum {
   HTMLEventType_MouseMove,
   HTMLEventType_MouseDown,
+  HTMLEventType_MouseUp,
   HTMLEventType_KeyDown,
   HTMLEventType_KeyUp,
   HTMLEventType_Wheel
@@ -86,7 +87,8 @@ typedef struct {
   // mouse
   HTMLEventMouseList mouse_move;
   HTMLEventMouseList mouse_down;
-
+  HTMLEventMouseList mouse_up;
+  
   // key
   HTMLEventKeyList key_up;
   HTMLEventKeyList key_down;

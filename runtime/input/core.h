@@ -21,6 +21,11 @@
 #define INPUT_MOUSE_SENSITIVITY 0.02f
 #define INPUT_WHEEL_SENSITIVITY 0.02f
 
+typedef enum {
+  InputMouseState_Up,
+  InputMouseState_Down,
+} InputMouseState;
+
 typedef struct {
 
   bool keys[INPUT_KEY_LENGTH];
@@ -28,6 +33,7 @@ typedef struct {
   struct {
 
     int x, y;
+    InputMouseState state;
 
     struct {
       int x, y;
@@ -59,6 +65,8 @@ void input_wheel_reset();
 bool input_key_down(int, const EmscriptenKeyboardEvent *, void *);
 bool input_key_up(int, const EmscriptenKeyboardEvent *, void *);
 bool input_mouse_move(int, const EmscriptenMouseEvent *, void *);
+bool input_mouse_down(int, const EmscriptenMouseEvent *, void *);
+bool input_mouse_up(int, const EmscriptenMouseEvent *, void *);
 bool input_wheel(int, const EmscriptenWheelEvent *, void *);
 
 #endif

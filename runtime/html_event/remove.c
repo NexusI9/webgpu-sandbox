@@ -63,6 +63,16 @@ void html_event_remove_mouse_down(id_t id) {
   html_event_traverse_remove(entries, length, id, type_size);
 }
 
+
+void html_event_remove_mouse_up(id_t id) {
+
+  void *entries = g_html_event.mouse_down.entries;
+  size_t *length = &g_html_event.mouse_down.length;
+  size_t type_size = sizeof(HTMLEventMouse);
+
+  html_event_traverse_remove(entries, length, id, type_size);
+}
+
 void html_event_remove_mouse_move(id_t id) {
 
   void *entries = g_html_event.mouse_move.entries;

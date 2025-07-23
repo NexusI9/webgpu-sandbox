@@ -1,8 +1,8 @@
 #include "add.h"
+#include "../utils/system.h"
 #include "listener.h"
 #include <stdio.h>
 #include <string.h>
-#include "../utils/system.h"
 
 // Listener Flags
 static inline uint8_t html_event_listener_flag(HTMLEventType);
@@ -69,6 +69,11 @@ void html_event_check_callback(HTMLEventType type, void *event_callback) {
   case HTMLEventType_MouseDown:
     emscripten_set_mousedown_callback(g_html_event.target, NULL, false,
                                       event_callback);
+    break;
+
+  case HTMLEventType_MouseUp:
+    emscripten_set_mouseup_callback(g_html_event.target, NULL, false,
+                                    event_callback);
     break;
 
   case HTMLEventType_Wheel:
@@ -145,7 +150,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
 }
 
 /**
-   Add a mouse click event to the relative list.
+   Add a mouse down event to the relative list.
  */
 int html_event_add_mouse_down(HTMLEventMouse *event) {
 
@@ -155,6 +160,29 @@ int html_event_add_mouse_down(HTMLEventMouse *event) {
   size_t type_size = sizeof(HTMLEventMouse);
   HTMLEventType event_type = HTMLEventType_MouseDown;
   void *event_callback = html_event_listener_mouse_down;
+
+  return html_event_insert(
+      &(HTMLEventVoid){
+          .callback = (void *)event->callback,
+          .destructor = (void *)event->destructor,
+          .data = (void *)event->data,
+          .size = event->size,
+          .owner = event->owner,
+      },
+      entries, length, capacity, type_size, event_type, event_callback);
+}
+
+/**
+   Add a mouse up event to the relative list.
+ */
+int html_event_add_mouse_up(HTMLEventMouse *event) {
+
+  void *entries = &g_html_event.mouse_up.entries;
+  size_t *length = &g_html_event.mouse_up.length;
+  size_t *capacity = &g_html_event.mouse_up.capacity;
+  size_t type_size = sizeof(HTMLEventMouse);
+  HTMLEventType event_type = HTMLEventType_MouseUp;
+  void *event_callback = html_event_listener_mouse_up;
 
   return html_event_insert(
       &(HTMLEventVoid){

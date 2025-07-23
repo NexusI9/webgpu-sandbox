@@ -46,6 +46,23 @@ bool html_event_listener_mouse_down(int eventType,
   return EM_TRUE;
 }
 
+bool html_event_listener_mouse_up(int eventType,
+                                    const EmscriptenMouseEvent *mouseEvent,
+                                    void *userData) {
+
+  for (size_t i = 0; i < g_html_event.mouse_up.length; i++) {
+
+    HTMLEventMouse *event = &g_html_event.mouse_up.entries[i];
+    em_mouse_callback_func callback = event->callback;
+    void *data = event->data;
+    // pass down the parent arguments, exepct the userData get replaced by
+    // callback data
+    callback(eventType, mouseEvent, data);
+  }
+
+  return EM_TRUE;
+}
+
 bool html_event_listener_wheel(int eventType,
                                const EmscriptenWheelEvent *wheelEvent,
                                void *userData) {

@@ -5,6 +5,7 @@
 
 // mouse events
 void html_event_remove_mouse_down(id_t);
+void html_event_remove_mouse_up(id_t);
 void html_event_remove_mouse_move(id_t);
 
 // wheel events

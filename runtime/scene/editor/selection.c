@@ -11,9 +11,9 @@ static inline void scene_selection_average_position(Scene *, vec3 *);
    - Adding / Removing meshes from the selection pipeline
    - Showing / Hidding the transform gizmo based on hit length
  */
-void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
-                                      const EmscriptenMouseEvent *mouseEvent,
-                                      void *user_data) {
+void scene_selection_raycast_right_click_callback(
+    CameraRaycastCallback *cast_data, const EmscriptenMouseEvent *mouseEvent,
+    void *user_data) {
 
   SceneSelectionCallbackData *cast_user_data =
       (SceneSelectionCallbackData *)user_data;
@@ -65,8 +65,6 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
 
   // handle gizmo
   if (selection_list->length > 0) {
-    /*gizmo_transform_update_mode(gizmo, &scene->pipelines.fixed,
-                                GizmoTransformMode_Scale);*/
 
     // get average position
     vec3 position;
@@ -79,6 +77,23 @@ void scene_selection_raycast_callback(CameraRaycastCallback *cast_data,
     // hide from the scene
     scene_hide_mesh_reference_list(scene, gizmo->active_handle,
                                    ScenePipeline_Fixed);
+  }
+}
+
+/**
+   Left click raycast callback.
+   Check if one of the gizmo is clicked.
+ */
+void scene_selection_raycast_mouse_move_callback(
+    CameraRaycastCallback *cast_data, const EmscriptenMouseEvent *mouseEvent,
+    void *user_data) {
+
+  SceneSelectionCallbackData *cast_user_data =
+      (SceneSelectionCallbackData *)user_data;
+
+  if (g_input.mouse.state == InputMouseState_Down) {
+    
+    
   }
 }
 
@@ -96,25 +111,45 @@ void scene_selection_init(Scene *scene) {
   SceneLayer *exclude_layer =
       scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_UNSELECTABLE);
 
-  // raycast on scene main camera
-  camera_raycast_mouse_click(scene->active_camera,
-                             &(CameraRaycastDescriptor){
-                                 .mesh_lists =
-                                     (MeshRefList *[]){
-                                         &scene->pipelines[ScenePipeline_Lit],
-                                         &scene->pipelines[ScenePipeline_Unlit],
-                                         &scene->pipelines[ScenePipeline_Fixed],
-                                     },
-                                 .length = 3,
-                                 .viewport = &scene->viewport,
-                                 .callback = scene_selection_raycast_callback,
-                                 .data =
-                                     (void *)&(SceneSelectionCallbackData){
-                                         .scene = scene,
-                                         .exclude_layer = exclude_layer,
-                                     },
-                                 .size = sizeof(SceneSelectionCallbackData),
-                             });
+  // right click raycast on scene main camera (to select meshes)
+  camera_raycast_mouse_click(
+      scene->active_camera,
+      &(CameraRaycastDescriptor){
+          .mesh_lists =
+              (MeshRefList *[]){
+                  &scene->pipelines[ScenePipeline_Lit],
+                  &scene->pipelines[ScenePipeline_Unlit],
+                  &scene->pipelines[ScenePipeline_Fixed],
+              },
+          .length = 3,
+          .viewport = &scene->viewport,
+          .callback = scene_selection_raycast_right_click_callback,
+          .data =
+              (void *)&(SceneSelectionCallbackData){
+                  .scene = scene,
+                  .exclude_layer = exclude_layer,
+              },
+          .size = sizeof(SceneSelectionCallbackData),
+      });
+
+  // left click raycast on scene main camera (to select gizmo transform)
+  camera_raycast_mouse_hover(
+      scene->active_camera,
+      &(CameraRaycastDescriptor){
+          .mesh_lists =
+              (MeshRefList *[]){
+                  &scene->pipelines[ScenePipeline_Fixed],
+              },
+          .length = 1,
+          .viewport = &scene->viewport,
+          .callback = scene_selection_raycast_mouse_move_callback,
+          .data =
+              (void *)&(SceneSelectionCallbackData){
+                  .scene = scene,
+                  .exclude_layer = exclude_layer,
+              },
+          .size = sizeof(SceneSelectionCallbackData),
+      });
 }
 
 /**

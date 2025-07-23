@@ -43,6 +43,17 @@ bool input_mouse_move(int eventType, const EmscriptenMouseEvent *mouseEvent,
   return false;
 }
 
+bool input_mouse_down(int eventType, const EmscriptenMouseEvent *mouseEvent,
+                      void *userData) {
+  g_input.mouse.state = InputMouseState_Down;
+  return EM_FALSE;
+}
+bool input_mouse_up(int eventType, const EmscriptenMouseEvent *mouseEvent,
+                    void *usetData) {
+  g_input.mouse.state = InputMouseState_Up;
+  return EM_FALSE;
+}
+
 bool input_wheel(int eventType, const EmscriptenWheelEvent *wheelEvent,
                  void *userData) {
 
@@ -80,6 +91,20 @@ void input_listen() {
   // mouse move event listener
   html_event_add_mouse_move(&(HTMLEventMouse){
       .callback = input_mouse_move,
+      .data = NULL,
+      .size = 0,
+  });
+
+  // mouse down event listener
+  html_event_add_mouse_down(&(HTMLEventMouse){
+      .callback = input_mouse_down,
+      .data = NULL,
+      .size = 0,
+  });
+
+  // mouse move event listener
+  html_event_add_mouse_up(&(HTMLEventMouse){
+      .callback = input_mouse_up,
       .data = NULL,
       .size = 0,
   });
