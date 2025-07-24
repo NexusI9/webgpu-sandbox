@@ -1,6 +1,7 @@
 #include "utils.h"
 #include "../../../resources/loader/loader.mbin.h"
 #include "../../material/material.h"
+#include "./core.h"
 #include "webgpu/webgpu.h"
 
 /**
@@ -42,7 +43,7 @@ void gizmo_transform_create_mesh(
                           });
 
     // add color uniform
-    const float fixed_size = 15.0f;
+    const float fixed_size = GIZMO_TRANSFORM_SIZE;
     shader_add_uniform(mesh_shader_texture(mesh),
                        &(ShaderCreateUniformDescriptor){
                            .entry_count = 2,

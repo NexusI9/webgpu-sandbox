@@ -1,5 +1,7 @@
 #include "callback.h"
 #include "./method.h"
+#include "./utils.h"
+#include "core.h"
 #include "hit_list.h"
 
 /**
@@ -11,70 +13,54 @@
  */
 
 typedef struct {
-
-  // raycast attribute and cast method (from center or mouse position)
-  Camera *camera;
-  Viewport *viewport;
   camera_raycast_cast_method cast_method;
-  CameraRaycastHitList *hits;
-
-  // mesh list raycast is tested against
-  MeshRefListArray include;
-  MeshRefListArray exclude;
-
-  // on move attribtues
-  camera_raycast_callback callback;
   const EmscriptenMouseEvent *em_mouse_event;
-  void *data;
-  size_t size;
 } CameraRaycastCheckBoundsDescriptor;
 
 static void
-camera_raycast_check_bounds(const CameraRaycastCheckBoundsDescriptor *);
-
-static inline bool camera_raycast_is_excluded(const MeshRefListArray *array,
-                                              Mesh *mesh) {
-  bool is_excluded = false;
-  for (size_t i = 0; i < array->length; i++)
-    for (size_t j = 0; j < array->lists[i]->length; j++)
-      if (mesh == array->lists[i]->entries[j])
-        is_excluded = true;
-
-  return is_excluded;
-}
+camera_raycast_check_bounds(const CameraRaycastCallbackData *,
+                            const CameraRaycastCheckBoundsDescriptor *);
 
 /**
    Traverse the meshes ref lists and check if the
  */
 void camera_raycast_check_bounds(
-    const CameraRaycastCheckBoundsDescriptor *desc) {
+    const CameraRaycastCallbackData *cam_desc,
+    const CameraRaycastCheckBoundsDescriptor *bound_desc) {
 
   Raycast ray;
-  CameraRaycastHitList *hits = desc->hits;
+  CameraRaycastHitList *hits = cam_desc->hits;
 
   // cast from camera pov
-  desc->cast_method(&ray, desc->camera, desc->viewport);
+  bound_desc->cast_method(&ray, cam_desc->camera, cam_desc->viewport);
 
   // clear hit list
-  camera_raycast_hit_list_empty(desc->hits);
+  camera_raycast_hit_list_empty(cam_desc->hits);
 
   // go though each meshes of each ref lists and check bound
-  for (size_t l = 0; l < desc->include.length; l++) {
+  for (size_t l = 0; l < cam_desc->include.length; l++) {
 
-    MeshRefList *ref_list = desc->include.lists[l];
+    MeshRefList *ref_list = cam_desc->include.lists[l];
 
     for (size_t m = 0; m < ref_list->length; m++) {
       Mesh *mesh = ref_list->entries[m];
 
       // check if mesh belongs in exclude list
-      if (camera_raycast_is_excluded(&desc->exclude, mesh))
+      if (camera_raycast_is_excluded(&cam_desc->exclude, mesh))
         continue;
 
+      AABB *boundbox = &mesh->topology.boundbox.bound;
+
+      // scale boundbox if hit is on ScreenSpace (for fixed scale object as
+      // instance)
+      if (cam_desc->space == CameraRaycastSpace_ScreenSpace)
+        camera_raycast_screen_space(cam_desc->camera, mesh,
+                                    cam_desc->screen_space_size, boundbox);
+
       // check if raycast within mesh bound
-      // add mesh pointer to temp ref list and sort by hit distance (closer
-      // mesh first)
-      if (raycast_hit_aabb(&ray, &mesh->topology.boundbox.bound,
-                           &ray.distance) &&
+      // add mesh pointer to temp ref list and sort by hit distance
+      // (closer mesh first)
+      if (raycast_hit_aabb(&ray, boundbox, &ray.distance) &&
           hits->length < hits->capacity) {
 
         // add mesh and distance to hit list
@@ -85,42 +71,33 @@ void camera_raycast_check_bounds(
         hits->length++;
 
         // sort new entry
-        camera_raycast_hit_list_sort(desc->hits);
+        camera_raycast_hit_list_sort(cam_desc->hits);
       }
     }
   }
 
   // dispatch to callback if hits
-  if (desc->hits->length > 0)
-    desc->callback(
+  if (cam_desc->hits->length > 0)
+    cam_desc->callback(
         &(CameraRaycastCallback){
             .raycast = &ray,
             .hits = hits,
         },
-        desc->em_mouse_event, desc->data);
+        bound_desc->em_mouse_event, cam_desc->data);
 };
 
 bool camera_raycast_event_callback_center(
     int eventType, const EmscriptenMouseEvent *mouseEvent, void *data) {
 
-  // convert data
-  CameraRaycastCallbackData *cast_data = (CameraRaycastCallbackData *)data;
-
   // select cast method
   camera_raycast_cast_method method = camera_raycast_cast_method_center;
 
   // call common checker
-  camera_raycast_check_bounds(&(CameraRaycastCheckBoundsDescriptor){
-      .camera = cast_data->camera,
-      .viewport = cast_data->viewport,
-      .cast_method = method,
-      .callback = cast_data->callback,
-      .em_mouse_event = mouseEvent,
-      .data = cast_data->data,
-      .include = cast_data->include,
-      .exclude = cast_data->exclude,
-      .hits = cast_data->hits,
-  });
+  camera_raycast_check_bounds((CameraRaycastCallbackData *)data,
+                              &(CameraRaycastCheckBoundsDescriptor){
+                                  .cast_method = method,
+                                  .em_mouse_event = mouseEvent,
+                              });
 
   return EM_FALSE;
 }
@@ -129,24 +106,15 @@ bool camera_raycast_event_callback_mouse(int eventType,
                                          const EmscriptenMouseEvent *mouseEvent,
                                          void *data) {
 
-  // convert data
-  CameraRaycastCallbackData *cast_data = (CameraRaycastCallbackData *)data;
-
   // select cast method
   camera_raycast_cast_method method = camera_raycast_cast_method_mouse;
 
   // call common checker
-  camera_raycast_check_bounds(&(CameraRaycastCheckBoundsDescriptor){
-      .camera = cast_data->camera,
-      .viewport = cast_data->viewport,
-      .cast_method = method,
-      .callback = cast_data->callback,
-      .data = cast_data->data,
-      .em_mouse_event = mouseEvent,
-      .include = cast_data->include,
-      .exclude = cast_data->exclude,
-      .hits = cast_data->hits,
-  });
+  camera_raycast_check_bounds((CameraRaycastCallbackData *)data,
+                              &(CameraRaycastCheckBoundsDescriptor){
+                                  .cast_method = method,
+                                  .em_mouse_event = mouseEvent,
+                              });
 
   return EM_FALSE;
 }

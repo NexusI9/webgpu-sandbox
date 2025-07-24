@@ -4,6 +4,8 @@
 #include "../../mesh/mesh.h"
 #include "../core.h"
 
+#define GIZMO_TRANSFORM_SIZE 15.0f
+
 typedef struct GizmoTransform GizmoTransform;
 
 typedef void (*gizmo_transform_callback)(GizmoTransform *, Mesh *, int, int);

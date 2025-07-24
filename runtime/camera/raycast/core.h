@@ -9,10 +9,11 @@
 #include "../../input/input.h"
 #include "../core.h"
 #include "../utils/system.h"
-#include "./callback.h"
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
 #include <string.h>
+
+#include "./hit_list.h"
 
 /**
    2 different types of raycast methods:
@@ -55,7 +56,61 @@
 
  */
 
+typedef enum {
+  CameraRaycastSpace_WorldSpace,
+  CameraRaycastSpace_ScreenSpace,
+} CameraRaycastSpace;
+
+typedef enum {
+  CameraRaycastTarget_ScreenCenter,
+  CameraRaycastTarget_MousePosition,
+} CameraRaycastTarget;
+
+typedef enum {
+  CameraRaycastEvent_MouseHover,
+  CameraRaycastEvent_MouseDown,
+} CameraRaycastEvent;
+
 typedef struct {
+  Raycast *raycast;
+  CameraRaycastHitList *hits;
+} CameraRaycastCallback;
+
+typedef void (*camera_raycast_callback)(CameraRaycastCallback *,
+                                        const EmscriptenMouseEvent *, void *);
+
+typedef void (*camera_raycast_destructor)(void *);
+
+typedef struct {
+
+  // raycast relative objects
+  Camera *camera;
+  Viewport *viewport;
+  CameraRaycastSpace space;
+  float screen_space_size;
+
+  // mesh lists to check
+  MeshRefListArray include;
+  MeshRefListArray exclude;
+
+  // raycast result list
+  CameraRaycastHitList *hits;
+
+  // callback
+  camera_raycast_callback callback;
+  void *data;
+  size_t size;
+
+} CameraRaycastCallbackData;
+
+typedef struct {
+
+  // raycast
+  Viewport *viewport;
+  CameraRaycastTarget target;
+  CameraRaycastEvent event;
+  CameraRaycastSpace space;
+  float screen_space_size;
 
   // targets lists
   MeshRefListArray include;
@@ -66,16 +121,9 @@ typedef struct {
   void *data;
   size_t size;
 
-  // raycast
-  Viewport *viewport;
 } CameraRaycastDescriptor;
 
 // raycast to screen center
-void camera_raycast_center_hover(Camera *, const CameraRaycastDescriptor *);
-void camera_raycast_center_click(Camera *, const CameraRaycastDescriptor *);
-
-// raycast to mouse position
-void camera_raycast_mouse_hover(Camera *, const CameraRaycastDescriptor *);
-void camera_raycast_mouse_click(Camera *, const CameraRaycastDescriptor *);
+void camera_raycast(Camera *, const CameraRaycastDescriptor *);
 
 #endif

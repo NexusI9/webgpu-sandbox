@@ -1,4 +1,5 @@
 #include "core.h"
+#include "callback.h"
 #include "hit_list.h"
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,17 @@ static inline void camera_raycast_create_event(Camera *,
                                                const CameraRaycastDescriptor *,
                                                em_mouse_callback_func,
                                                html_event_mouse);
+
+// look up tables callbacks
+static const html_event_mouse html_event_callbacks[] = {
+  [CameraRaycastEvent_MouseDown] = html_event_add_mouse_down,
+  [CameraRaycastEvent_MouseHover] = html_event_add_mouse_move,
+};
+
+static const em_mouse_callback_func em_mouse_callbacks [] = {
+  [CameraRaycastTarget_MousePosition] = camera_raycast_event_callback_mouse,
+  [CameraRaycastTarget_ScreenCenter] = camera_raycast_event_callback_center,
+};
 
 static inline MeshRefList **malloc_reflist(MeshRefList **, size_t);
 
@@ -101,8 +113,7 @@ void camera_raycast_create_event(Camera *cam,
           }
 
   };
- 
-  
+
   // add listener
   html_event_callback(&(HTMLEventMouse){
       .callback = em_callback,
@@ -113,7 +124,21 @@ void camera_raycast_create_event(Camera *cam,
   });
 }
 
+
 /**
+
+   Dispatch the different callbacks based on raycast configuration: mouse vs
+   screen center, world vs screen space
+
+   ▗▖  ▗▖ ▗▄▖ ▗▖ ▗▖ ▗▄▄▖▗▄▄▄▖
+   ▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌
+   ▐▌  ▐▌▐▌ ▐▌▐▌ ▐▌ ▝▀▚▖▐▛▀▀▘
+   ▐▌  ▐▌▝▚▄▞▘▝▚▄▞▘▗▄▄▞▘▐▙▄▄▖
+
+   Link to the camera a raycast system with the mouse position as raycast
+   target. Useful for Edit mode.
+
+
     ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▄▄▖
    ▐▌   ▐▌   ▐▛▚▖▐▌  █  ▐▌   ▐▌ ▐▌
    ▐▌   ▐▛▀▀▘▐▌ ▝▜▌  █  ▐▛▀▀▘▐▛▀▚▖
@@ -122,39 +147,15 @@ void camera_raycast_create_event(Camera *cam,
    Link to the camera a raycast system with the center of screen as raycast
    target. Useful for Flying or orbit mode in which cursor is usually hidden.
  */
-void camera_raycast_center_hover(Camera *cam,
-                                 const CameraRaycastDescriptor *desc) {
+void camera_raycast(Camera *cam, const CameraRaycastDescriptor *desc) {
 
-  camera_raycast_create_event(cam, desc, camera_raycast_event_callback_center,
-                              html_event_add_mouse_move);
-}
+  // define event type
+  html_event_mouse html_event_callback = html_event_callbacks[desc->event];
 
-void camera_raycast_center_click(Camera *cam,
-                                 const CameraRaycastDescriptor *desc) {
-
-  camera_raycast_create_event(cam, desc, camera_raycast_event_callback_center,
-                              html_event_add_mouse_down);
-}
-
-/**
-   ▗▖  ▗▖ ▗▄▖ ▗▖ ▗▖ ▗▄▄▖▗▄▄▄▖
-   ▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌
-   ▐▌  ▐▌▐▌ ▐▌▐▌ ▐▌ ▝▀▚▖▐▛▀▀▘
-   ▐▌  ▐▌▝▚▄▞▘▝▚▄▞▘▗▄▄▞▘▐▙▄▄▖
-
-   Link to the camera a raycast system with the mouse position as raycast
-   target. Useful for Edit mode.
- */
-void camera_raycast_mouse_hover(Camera *cam,
-                                const CameraRaycastDescriptor *desc) {
-
-  camera_raycast_create_event(cam, desc, camera_raycast_event_callback_mouse,
-                              html_event_add_mouse_move);
-}
-
-void camera_raycast_mouse_click(Camera *cam,
-                                const CameraRaycastDescriptor *desc) {
+  // define target callback (mouse position | screen center)
+  em_mouse_callback_func em_callback = em_mouse_callbacks[desc->target];
 
   camera_raycast_create_event(cam, desc, camera_raycast_event_callback_mouse,
                               html_event_add_mouse_down);
 }
+

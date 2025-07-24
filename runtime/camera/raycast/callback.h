@@ -6,37 +6,6 @@
 #include "../core.h"
 #include "./hit_list.h"
 
-typedef struct {
-  Raycast *raycast;
-  CameraRaycastHitList *hits;
-} CameraRaycastCallback;
-
-typedef void (*camera_raycast_callback)(CameraRaycastCallback *,
-                                        const EmscriptenMouseEvent *, void *);
-
-typedef void (*camera_raycast_destructor)(void *);
-
-
-typedef struct {
-
-  // raycast relative objects
-  Camera *camera;
-  Viewport *viewport;
-
-  // mesh lists to check
-  MeshRefListArray include;
-  MeshRefListArray exclude;
-  
-  // raycast result list
-  CameraRaycastHitList *hits;
-
-  // callback
-  camera_raycast_callback callback;
-  void *data;
-  size_t size;
-
-} CameraRaycastCallbackData;
-
 bool camera_raycast_event_callback_center(int, const EmscriptenMouseEvent *,
                                           void *);
 bool camera_raycast_event_callback_mouse(int, const EmscriptenMouseEvent *,

@@ -106,9 +106,12 @@ void scene_selection_init(Scene *scene) {
       scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_UNSELECTABLE);
 
   // right click raycast on scene main camera (to select meshes)
-  camera_raycast_mouse_click(
+  camera_raycast(
       scene->active_camera,
       &(CameraRaycastDescriptor){
+          .target = CameraRaycastTarget_MousePosition,
+          .event = CameraRaycastEvent_MouseDown,
+          .space = CameraRaycastSpace_WorldSpace,
           .include =
               {
                   .lists =
@@ -134,9 +137,14 @@ void scene_selection_init(Scene *scene) {
   SceneLayer *gizmo_layer =
       scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_TRANSFORM);
 
-  camera_raycast_mouse_click(
+  camera_raycast(
       scene->active_camera,
       &(CameraRaycastDescriptor){
+          .target = CameraRaycastTarget_MousePosition,
+          .event = CameraRaycastEvent_MouseDown,
+          .space = CameraRaycastSpace_ScreenSpace, // use scree-space since
+                                                   // gizmo have fixed scale
+          .screen_space_size = GIZMO_TRANSFORM_SIZE,
           .include =
               {
                   .lists = (MeshRefList *[]){&gizmo_layer->meshes},
