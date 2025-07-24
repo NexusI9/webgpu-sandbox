@@ -2,6 +2,11 @@
 #define _MESH_REF_LIST_H_
 #include "core.h"
 
+typedef struct {
+  MeshRefList **lists;
+  size_t length;
+} MeshRefListArray;
+
 // creators
 int mesh_reference_list_create(MeshRefList *, const size_t);
 Mesh *mesh_reference_list_insert(MeshRefList *, Mesh *);

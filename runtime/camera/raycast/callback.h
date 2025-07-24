@@ -16,6 +16,7 @@ typedef void (*camera_raycast_callback)(CameraRaycastCallback *,
 
 typedef void (*camera_raycast_destructor)(void *);
 
+
 typedef struct {
 
   // raycast relative objects
@@ -23,9 +24,9 @@ typedef struct {
   Viewport *viewport;
 
   // mesh lists to check
-  MeshRefList **mesh_lists;
-  size_t length;
-
+  MeshRefListArray include;
+  MeshRefListArray exclude;
+  
   // raycast result list
   CameraRaycastHitList *hits;
 

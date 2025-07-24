@@ -56,9 +56,10 @@
  */
 
 typedef struct {
+
   // targets lists
-  MeshRefList **mesh_lists;
-  size_t length;
+  MeshRefListArray include;
+  MeshRefListArray exclude;
 
   // callback
   camera_raycast_callback callback;

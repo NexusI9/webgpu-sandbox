@@ -21,15 +21,13 @@ static inline MeshRefList **malloc_reflist(MeshRefList **, size_t);
 /**
    Allocate mesh_list on the heap
  */
-MeshRefList **malloc_ref_list(MeshRefList **data, size_t length) {
+MeshRefList **malloc_ref_list(const MeshRefListArray *array) {
 
-  MeshRefList **alloc_list = malloc(length * sizeof(MeshRefList *));
-  if (alloc_list == NULL) {
-    VERBOSE_ERROR("Couldn't allocate raycast mesh ref list.\n");
+  MeshRefList **alloc_list = malloc(array->length * sizeof(MeshRefList *));
+  if (alloc_list == NULL)
     return NULL;
-  }
 
-  memcpy(alloc_list, data, length * sizeof(MeshRefList *));
+  memcpy(alloc_list, array->lists, array->length * sizeof(MeshRefList *));
 
   return alloc_list;
 }
@@ -46,9 +44,20 @@ void camera_raycast_create_event(Camera *cam,
                                  html_event_mouse html_event_callback) {
 
   // === ALLOCATE MESH REFERENCES ===
-  MeshRefList **alloc_list = malloc_ref_list(desc->mesh_lists, desc->length);
-  if (alloc_list == NULL)
+  MeshRefList **alloc_include = NULL;
+  MeshRefList **alloc_exclude = NULL;
+
+  if (desc->include.length > 0)
+    alloc_include = malloc_ref_list(&desc->include);
+
+  if (desc->exclude.length > 0)
+    alloc_exclude = malloc_ref_list(&desc->exclude);
+
+  if ((desc->include.length > 0 && alloc_include == NULL) ||
+      (desc->exclude.length > 0 && alloc_exclude == NULL)) {
+    VERBOSE_WARNING("Couldn't allocate raycast mesh ref list.\n");
     return;
+  }
 
   // === ALLOCATE HIT LIST === (sorted from closest hit to further)
   CameraRaycastHitList *hits_list = malloc(sizeof(CameraRaycastHitList));
@@ -80,10 +89,20 @@ void camera_raycast_create_event(Camera *cam,
       .hits = hits_list,
 
       // bound attributes
-      .length = desc->length,
-      .mesh_lists = alloc_list,
-  };
+      .include =
+          {
+              .lists = alloc_include,
+              .length = desc->include.length,
+          },
+      .exclude =
+          {
+              .lists = alloc_exclude,
+              .length = desc->exclude.length,
+          }
 
+  };
+ 
+  
   // add listener
   html_event_callback(&(HTMLEventMouse){
       .callback = em_callback,
@@ -95,11 +114,11 @@ void camera_raycast_create_event(Camera *cam,
 }
 
 /**
-    ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▄▄▖ 
+    ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▄▄▖
    ▐▌   ▐▌   ▐▛▚▖▐▌  █  ▐▌   ▐▌ ▐▌
    ▐▌   ▐▛▀▀▘▐▌ ▝▜▌  █  ▐▛▀▀▘▐▛▀▚▖
    ▝▚▄▄▖▐▙▄▄▖▐▌  ▐▌  █  ▐▙▄▄▖▐▌ ▐▌
-           
+
    Link to the camera a raycast system with the center of screen as raycast
    target. Useful for Flying or orbit mode in which cursor is usually hidden.
  */
@@ -119,10 +138,10 @@ void camera_raycast_center_click(Camera *cam,
 
 /**
    ▗▖  ▗▖ ▗▄▖ ▗▖ ▗▖ ▗▄▄▖▗▄▄▄▖
-   ▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌   
+   ▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌
    ▐▌  ▐▌▐▌ ▐▌▐▌ ▐▌ ▝▀▚▖▐▛▀▀▘
    ▐▌  ▐▌▝▚▄▞▘▝▚▄▞▘▗▄▄▞▘▐▙▄▄▖
-                                   
+
    Link to the camera a raycast system with the mouse position as raycast
    target. Useful for Edit mode.
  */

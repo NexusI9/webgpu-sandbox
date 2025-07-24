@@ -1,9 +1,9 @@
 #include "create.h"
 #include "../../include/stb/stb_image.h"
+#include "../utils/system.h"
 #include "./write.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
-#include "../utils/system.h"
 
 void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
 
@@ -33,6 +33,8 @@ int texture_create_from_file(Texture *texture, const char *path, bool flip) {
   // flip vertically so match wgpu coordinates
   stbi_set_flip_vertically_on_load(flip);
 
+  VERBOSE_IMPORT("Importing texture: %s", path);
+  
   int width, height, channels;
   texture_data data = stbi_load(path, &width, &height, &channels, 4);
 

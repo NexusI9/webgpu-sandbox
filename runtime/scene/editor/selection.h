@@ -6,7 +6,6 @@
 
 typedef struct {
   Scene *scene;
-  SceneLayer *exclude_layer;
 } SceneSelectionCallbackData;
 
 void scene_selection_init(Scene *);

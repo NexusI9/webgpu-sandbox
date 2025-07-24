@@ -19,7 +19,6 @@ void scene_selection_raycast_right_click_callback(
       (SceneSelectionCallbackData *)user_data;
 
   Scene *scene = cast_user_data->scene;
-  SceneLayer *exclude_layer = cast_user_data->exclude_layer;
   MeshRefList *selection_list = &scene->pipelines[ScenePipeline_Selection];
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
@@ -28,17 +27,7 @@ void scene_selection_raycast_right_click_callback(
     return;
 
   // else retrieve first hit only (closest to camera)
-  size_t index = 0;
-  CameraRaycastHit *hit = &cast_data->hits->entries[index];
-
-  // check if object is blacklisted (exclude layer)
-  while (hit != NULL && exclude_layer != NULL &&
-         scene_layer_find(exclude_layer, hit->mesh) != NULL &&
-         index < cast_data->hits->length) {
-
-    // skip to next hit mesh
-    hit = &cast_data->hits->entries[++index];
-  }
+  CameraRaycastHit *hit = &cast_data->hits->entries[0];
 
   // add hit to selection pipeline
   if (hit) {
@@ -91,9 +80,9 @@ void scene_selection_raycast_mouse_move_callback(
   SceneSelectionCallbackData *cast_user_data =
       (SceneSelectionCallbackData *)user_data;
 
+  // cannot check mouse down in mouseEvent so poll the global input mouse state
   if (g_input.mouse.state == InputMouseState_Down) {
-    
-    
+    printf("move\n");
   }
 }
 
@@ -115,20 +104,24 @@ void scene_selection_init(Scene *scene) {
   camera_raycast_mouse_click(
       scene->active_camera,
       &(CameraRaycastDescriptor){
-          .mesh_lists =
-              (MeshRefList *[]){
-                  &scene->pipelines[ScenePipeline_Lit],
-                  &scene->pipelines[ScenePipeline_Unlit],
-                  &scene->pipelines[ScenePipeline_Fixed],
+          .include =
+              {
+                  .lists =
+                      (MeshRefList *[]){
+                          &scene->pipelines[ScenePipeline_Lit],
+                          &scene->pipelines[ScenePipeline_Unlit],
+                          &scene->pipelines[ScenePipeline_Fixed],
+                      },
+                  .length = 3,
               },
-          .length = 3,
+          .exclude =
+              {
+                  .lists = (MeshRefList *[]){&exclude_layer->meshes},
+                  .length = 1,
+              },
           .viewport = &scene->viewport,
           .callback = scene_selection_raycast_right_click_callback,
-          .data =
-              (void *)&(SceneSelectionCallbackData){
-                  .scene = scene,
-                  .exclude_layer = exclude_layer,
-              },
+          .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
           .size = sizeof(SceneSelectionCallbackData),
       });
 
@@ -136,18 +129,20 @@ void scene_selection_init(Scene *scene) {
   camera_raycast_mouse_hover(
       scene->active_camera,
       &(CameraRaycastDescriptor){
-          .mesh_lists =
-              (MeshRefList *[]){
-                  &scene->pipelines[ScenePipeline_Fixed],
+          .include =
+              {
+                  .lists =
+                      (MeshRefList *[]){&scene->pipelines[ScenePipeline_Fixed]},
+                  .length = 0,
               },
-          .length = 1,
+          .exclude =
+              {
+                  .lists = (MeshRefList *[]){&exclude_layer->meshes},
+                  .length = 0,
+              },
           .viewport = &scene->viewport,
           .callback = scene_selection_raycast_mouse_move_callback,
-          .data =
-              (void *)&(SceneSelectionCallbackData){
-                  .scene = scene,
-                  .exclude_layer = exclude_layer,
-              },
+          .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
           .size = sizeof(SceneSelectionCallbackData),
       });
 }

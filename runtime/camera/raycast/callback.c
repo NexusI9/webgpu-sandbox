@@ -19,8 +19,8 @@ typedef struct {
   CameraRaycastHitList *hits;
 
   // mesh list raycast is tested against
-  MeshRefList **mesh_lists;
-  size_t length;
+  MeshRefListArray include;
+  MeshRefListArray exclude;
 
   // on move attribtues
   camera_raycast_callback callback;
@@ -31,6 +31,17 @@ typedef struct {
 
 static void
 camera_raycast_check_bounds(const CameraRaycastCheckBoundsDescriptor *);
+
+static inline bool camera_raycast_is_excluded(const MeshRefListArray *array,
+                                              Mesh *mesh) {
+  bool is_excluded = false;
+  for (size_t i = 0; i < array->length; i++)
+    for (size_t j = 0; j < array->lists[i]->length; j++)
+      if (mesh == array->lists[i]->entries[j])
+        is_excluded = true;
+
+  return is_excluded;
+}
 
 /**
    Traverse the meshes ref lists and check if the
@@ -48,12 +59,16 @@ void camera_raycast_check_bounds(
   camera_raycast_hit_list_empty(desc->hits);
 
   // go though each meshes of each ref lists and check bound
-  for (size_t l = 0; l < desc->length; l++) {
+  for (size_t l = 0; l < desc->include.length; l++) {
 
-    MeshRefList *ref_list = desc->mesh_lists[l];
+    MeshRefList *ref_list = desc->include.lists[l];
 
     for (size_t m = 0; m < ref_list->length; m++) {
       Mesh *mesh = ref_list->entries[m];
+
+      // check if mesh belongs in exclude list
+      if (camera_raycast_is_excluded(&desc->exclude, mesh))
+        continue;
 
       // check if raycast within mesh bound
       // add mesh pointer to temp ref list and sort by hit distance (closer
@@ -100,9 +115,9 @@ bool camera_raycast_event_callback_center(
       .cast_method = method,
       .callback = cast_data->callback,
       .em_mouse_event = mouseEvent,
-      .length = cast_data->length,
       .data = cast_data->data,
-      .mesh_lists = cast_data->mesh_lists,
+      .include = cast_data->include,
+      .exclude = cast_data->exclude,
       .hits = cast_data->hits,
   });
 
@@ -118,17 +133,17 @@ bool camera_raycast_event_callback_mouse(int eventType,
 
   // select cast method
   camera_raycast_cast_method method = camera_raycast_cast_method_mouse;
-  
+
   // call common checker
   camera_raycast_check_bounds(&(CameraRaycastCheckBoundsDescriptor){
       .camera = cast_data->camera,
       .viewport = cast_data->viewport,
       .cast_method = method,
       .callback = cast_data->callback,
-      .length = cast_data->length,
       .data = cast_data->data,
       .em_mouse_event = mouseEvent,
-      .mesh_lists = cast_data->mesh_lists,
+      .include = cast_data->include,
+      .exclude = cast_data->exclude,
       .hits = cast_data->hits,
   });
 
@@ -147,8 +162,15 @@ bool camera_raycast_event_destructor(void *data) {
   CameraRaycastCallbackData *cast_data = (CameraRaycastCallbackData *)data;
 
   // free mesh reference lists
-  free(cast_data->mesh_lists);
-  cast_data->mesh_lists = NULL;
+  if (cast_data->include.length) {
+    free(cast_data->include.lists);
+    cast_data->include.lists = NULL;
+  }
+
+  if (cast_data->exclude.length) {
+    free(cast_data->exclude.lists);
+    cast_data->exclude.lists = NULL;
+  }
 
   // free raycast hits list
   free(cast_data->hits->entries);
