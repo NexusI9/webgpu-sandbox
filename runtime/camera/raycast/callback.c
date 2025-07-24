@@ -90,13 +90,14 @@ void camera_raycast_check_bounds(
     }
   }
 
-  // dispatch to callback
-  desc->callback(
-      &(CameraRaycastCallback){
-          .raycast = &ray,
-          .hits = hits,
-      },
-      desc->em_mouse_event, desc->data);
+  // dispatch to callback if hits
+  if (desc->hits->length > 0)
+    desc->callback(
+        &(CameraRaycastCallback){
+            .raycast = &ray,
+            .hits = hits,
+        },
+        desc->em_mouse_event, desc->data);
 };
 
 bool camera_raycast_event_callback_center(

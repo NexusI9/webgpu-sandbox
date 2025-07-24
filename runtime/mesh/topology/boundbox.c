@@ -56,12 +56,12 @@ static void mesh_topology_boundbox_corners(AABB *, vec3[8]);
    without handling the topology visual representation.
 
  */
-void mesh_topology_boundbox_compute_bound(MeshTopologyBase *base,
+void mesh_topology_boundbox_compute_bound(const MeshTopologyBase *base,
                                           mat4 model_matrix,
                                           MeshTopologyBoundbox *bound) {
 
   // calculate local space bound
-  VertexAttribute *base_attr = &base->attribute;
+  const VertexAttribute *base_attr = &base->attribute;
   glm_vec3_copy((vec3){FLT_MAX, FLT_MAX, FLT_MAX}, bound->bound.min);
   glm_vec3_copy((vec3){-FLT_MAX, -FLT_MAX, -FLT_MAX}, bound->bound.max);
 
@@ -220,20 +220,21 @@ MeshTopology mesh_topology_boundbox_vertex(MeshTopologyBoundbox *bound) {
   };
 }
 
-int mesh_topology_boundbox_update(const MeshTopologyBase *base,
+int mesh_topology_boundbox_update(const MeshTopologyBase *base, mat4 model,
                                   MeshTopologyBoundbox *bound,
                                   const WGPUQueue *queue) {
 
   // get base min max
+  mesh_topology_boundbox_compute_bound(base, model, bound);
 
   // update vertex attribute
 
   // update cube
 
   // update buffer
-  wgpuQueueWriteBuffer(*queue, bound->attribute.buffer, 0,
+  /*wgpuQueueWriteBuffer(*queue, bound->attribute.buffer, 0,
                        bound->attribute.entries,
-                       bound->attribute.length * sizeof(vattr_t));
+                       bound->attribute.length * sizeof(vattr_t));*/
 
   return MESH_TOPOLOGY_BOUNDBOX_SUCCESS;
 }

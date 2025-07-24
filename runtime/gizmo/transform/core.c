@@ -3,6 +3,7 @@
 #include "./scale.h"
 #include "./translate.h"
 #include "./utils.h"
+#include "./callback.h"
 
 /**
    Create the three key transform gizmo handles (translate, rotate, scale) and
@@ -13,6 +14,16 @@ void gizmo_transform_create(GizmoTransform *gizmo,
 
   gizmo->mode = GizmoTransformMode_Translate;
   gizmo->active_handle = &gizmo->handles[gizmo->mode];
+
+  // define callbacks
+  gizmo->transform_callback[GizmoTransformMode_Translate] =
+      gizmo_transform_callback_translate;
+
+  gizmo->transform_callback[GizmoTransformMode_Rotate] =
+      gizmo_transform_callback_rotate;
+
+  gizmo->transform_callback[GizmoTransformMode_Scale] =
+      gizmo_transform_callback_scale;
 
   // translate
   gizmo_transform_translate_create(

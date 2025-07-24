@@ -157,5 +157,5 @@ void mesh_reference_list_scale(MeshRefList *list, vec3 scale) {
 void mesh_reference_list_print(MeshRefList *list) {
 
   for (size_t i = 0; i < list->length; i++)
-    printf("%p\n", list->entries[i]);
+    VERBOSE_DEBUG("[%p] %s", list->entries[i], list->entries[i]->name);
 }

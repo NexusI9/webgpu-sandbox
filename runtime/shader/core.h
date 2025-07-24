@@ -67,9 +67,47 @@ typedef struct {
 } ShaderCreateDescriptor;
 
 // bind group
+/**
+   
+   Takes in some data useful for the uniform update as well as the entry data
+   that will be overriden and uploaded to the GPU.
 
-/* Takes in some data useful for the uniform update as well as the entry data
- * that will be overriden and uploaded to the GPU*/
+   Trigger used for the mesh model uniform. It compare the current model with
+   the newest provided and return true if it's different.
+   When a trigger returns true the uniform gets replaced by the unirofom
+   callback (function above "mesh_uniform_model_update").
+
+   Having a trigger prevent to constantly rewrite in the GPU if the values are
+   the same.
+
+   The "callback_data" corressponds to the data used in both Callback and
+   Trigger. It can be anything, but it's the reference from which the
+   "entry_data" will be compared to. The "entry_data" however represent the data
+   pass as the unifom.
+
+   A common usage is:
+   - Callback Data: object itself (Camera*, Mesh*)
+   - Entry Data: object's uniform (model view matrix...)
+
+   .--------------------------------------------------------------------------.
+   |                                                                          |
+   |   (ShaderBindGroupUniformEntry) {                                        |
+   |       ...                                                                |
+   |       .data = &uniformObjectStruct,                                      |
+   |       .update =                                                          |
+   |          {                                                               |
+   |              .callback = update_function,                                |
+   |              .trigger = trigger_function,                                |
+   |              .data = object*                                             |
+   |          }                                                               |
+   |   }                                                                      |
+   |                                                                          |
+   '--------------------------------------------------------------------------'
+
+   In this way we can compare the uniform state (stored in GPU) with the object
+   latest state (updated CPU side) and update it accordinly.
+
+ */
 typedef void (*shader_uniform_update_callback)(void *callback_data,
                                                void *entry_data);
 

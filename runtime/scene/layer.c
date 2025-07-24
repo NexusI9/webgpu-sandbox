@@ -220,3 +220,26 @@ Mesh *scene_layer_set_insert_mesh(SceneLayerSet *set, const char *name,
   // else insert mesh in layer
   return scene_layer_insert(layer, mesh);
 }
+
+void scene_layer_set_insert_mesh_reference_list(SceneLayerSet *set,
+                                                const char *name,
+                                                MeshRefList *list) {
+  for (size_t i = 0; i < list->length; i++)
+    scene_layer_set_insert_mesh(set, name, list->entries[i]);
+}
+
+/**
+  Print meshes in a layer from a layer set.
+ */
+void scene_layer_set_print_layer(SceneLayerSet *set, const char *name) {
+
+  SceneLayer *layer = scene_layer_set_find(set, name);
+
+  if (layer == NULL) {
+    VERBOSE_WARNING("Couldn't find any layer with name: %s", name);
+    return;
+  }
+
+  VERBOSE_DEBUG("Layer meshes %s:", name);
+  mesh_reference_list_print(&layer->meshes);
+}

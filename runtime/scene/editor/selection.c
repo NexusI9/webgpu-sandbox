@@ -11,7 +11,7 @@ static inline void scene_selection_average_position(Scene *, vec3 *);
    - Adding / Removing meshes from the selection pipeline
    - Showing / Hidding the transform gizmo based on hit length
  */
-void scene_selection_raycast_right_click_callback(
+void scene_selection_raycast_mesh_callback(
     CameraRaycastCallback *cast_data, const EmscriptenMouseEvent *mouseEvent,
     void *user_data) {
 
@@ -73,16 +73,21 @@ void scene_selection_raycast_right_click_callback(
    Left click raycast callback.
    Check if one of the gizmo is clicked.
  */
-void scene_selection_raycast_mouse_move_callback(
+void scene_selection_raycast_gizmo_callback(
     CameraRaycastCallback *cast_data, const EmscriptenMouseEvent *mouseEvent,
     void *user_data) {
 
   SceneSelectionCallbackData *cast_user_data =
       (SceneSelectionCallbackData *)user_data;
 
+  printf("move\n");
   // cannot check mouse down in mouseEvent so poll the global input mouse state
-  if (g_input.mouse.state == InputMouseState_Down) {
-    printf("move\n");
+  if (mouseEvent->button == 0) {
+    // move/ scale/ rotate the meshes and gizmo accordingly
+    Scene *scene = cast_user_data->scene;
+    GizmoTransform *gizmo = &scene->editor.gizmo.transform;
+
+    // call active handle transform callback to transform selection accordingly
   }
 }
 
@@ -120,28 +125,26 @@ void scene_selection_init(Scene *scene) {
                   .length = 1,
               },
           .viewport = &scene->viewport,
-          .callback = scene_selection_raycast_right_click_callback,
+          .callback = scene_selection_raycast_mesh_callback,
           .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
           .size = sizeof(SceneSelectionCallbackData),
       });
 
   // left click raycast on scene main camera (to select gizmo transform)
-  camera_raycast_mouse_hover(
+  SceneLayer *gizmo_layer =
+      scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_TRANSFORM);
+
+  camera_raycast_mouse_click(
       scene->active_camera,
       &(CameraRaycastDescriptor){
           .include =
               {
-                  .lists =
-                      (MeshRefList *[]){&scene->pipelines[ScenePipeline_Fixed]},
-                  .length = 0,
+                  .lists = (MeshRefList *[]){&gizmo_layer->meshes},
+                  .length = 1,
               },
-          .exclude =
-              {
-                  .lists = (MeshRefList *[]){&exclude_layer->meshes},
-                  .length = 0,
-              },
+          .exclude = {0},
           .viewport = &scene->viewport,
-          .callback = scene_selection_raycast_mouse_move_callback,
+          .callback = scene_selection_raycast_gizmo_callback,
           .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
           .size = sizeof(SceneSelectionCallbackData),
       });

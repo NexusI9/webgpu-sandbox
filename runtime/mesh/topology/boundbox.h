@@ -15,7 +15,7 @@ typedef struct {
   AABB bound;
 } MeshTopologyBoundbox;
 
-void mesh_topology_boundbox_compute_bound(MeshTopologyBase *, mat4,
+void mesh_topology_boundbox_compute_bound(const MeshTopologyBase *, mat4,
                                           MeshTopologyBoundbox *);
 
 int mesh_topology_boundbox_create(MeshTopologyBase *, mat4,
@@ -24,7 +24,7 @@ int mesh_topology_boundbox_create(MeshTopologyBase *, mat4,
 
 MeshTopology mesh_topology_boundbox_vertex(MeshTopologyBoundbox *);
 
-int mesh_topology_boundbox_update(const MeshTopologyBase *,
+int mesh_topology_boundbox_update(const MeshTopologyBase *, mat4,
                                   MeshTopologyBoundbox *, const WGPUQueue *);
 
 #endif

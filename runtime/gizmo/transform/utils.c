@@ -42,7 +42,7 @@ void gizmo_transform_create_mesh(
                           });
 
     // add color uniform
-    const float gizmo_size = 15.0f;
+    const float fixed_size = 15.0f;
     shader_add_uniform(mesh_shader_texture(mesh),
                        &(ShaderCreateUniformDescriptor){
                            .entry_count = 2,
@@ -59,7 +59,7 @@ void gizmo_transform_create_mesh(
                                    {
                                        .binding = 1,
                                        .size = sizeof(float),
-                                       .data = (void *)&gizmo_size,
+                                       .data = (void *)&fixed_size,
                                        .offset = 0,
                                    },
                                },
@@ -75,6 +75,10 @@ void gizmo_transform_create_mesh(
 
     // set double sided culling
     material_texture_double_sided(mesh);
+
+    // scale gizmo (cpu side as well, so the hitbox are correct dimension)
+    const float gizmo_size = 1.0f;
+    mesh_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
 
     // rotate
     mesh_rotate(mesh, (vec3){

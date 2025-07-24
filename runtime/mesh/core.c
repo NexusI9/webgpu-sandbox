@@ -3,6 +3,7 @@
 #include "../utils/matrix.h"
 #include "../utils/system.h"
 #include "shader.h"
+#include "topology/boundbox.h"
 #include <string.h>
 
 // Shadow map is implicitely handled withing mesh
@@ -207,6 +208,10 @@ void mesh_update_model_matrix(Mesh *mesh) {
 
   glm_mat4_mul(R, S, SR);
   glm_mat4_mul(T, SR, mesh->model);
+
+  // update topologies
+  mesh_topology_boundbox_update(&mesh->topology.base, mesh->model,
+                                &mesh->topology.boundbox, mesh->queue);
 }
 
 /**

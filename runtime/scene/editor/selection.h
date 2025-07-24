@@ -10,11 +10,11 @@ typedef struct {
 
 void scene_selection_init(Scene *);
 
-void scene_selection_raycast_right_click_callback(CameraRaycastCallback *,
+void scene_selection_raycast_mesh_callback(CameraRaycastCallback *,
                                                   const EmscriptenMouseEvent *,
                                                   void *);
 
-void scene_selection_raycast_mouse_move_callback(CameraRaycastCallback *,
+void scene_selection_raycast_gizmo_callback(CameraRaycastCallback *,
                                                  const EmscriptenMouseEvent *,
                                                  void *);
 #endif
