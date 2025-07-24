@@ -32,7 +32,7 @@ GizmoPointLight *scene_add_point_light(Scene *scene,
                            });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_mesh_reference_list(scene, &gizmo_light->meshes, gizmo_pipeline,
+  scene_add_mesh_ref_list(scene, &gizmo_light->meshes, gizmo_pipeline,
                                 NULL);
 
   return gizmo_light;
@@ -64,7 +64,7 @@ GizmoSpotLight *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc) {
                           });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_mesh_reference_list(scene, &gizmo_light->meshes, gizmo_pipeline,
+  scene_add_mesh_ref_list(scene, &gizmo_light->meshes, gizmo_pipeline,
                                 NULL);
 
   return gizmo_light;
@@ -97,7 +97,7 @@ GizmoAmbientLight *scene_add_ambient_light(Scene *scene,
                              });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_mesh_reference_list(scene, &gizmo_light->meshes, gizmo_pipeline,
+  scene_add_mesh_ref_list(scene, &gizmo_light->meshes, gizmo_pipeline,
                                 NULL);
 
   return gizmo_light;
@@ -129,7 +129,7 @@ GizmoSunLight *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
                          });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_mesh_reference_list(scene, &gizmo_light->meshes, gizmo_pipeline,
+  scene_add_mesh_ref_list(scene, &gizmo_light->meshes, gizmo_pipeline,
                                 NULL);
 
   return gizmo_light;
@@ -176,7 +176,7 @@ GizmoCamera *scene_add_camera(Scene *scene,
                       });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_mesh_reference_list(scene, &gizmo_cam->meshes, gizmo_pipeline,
+  scene_add_mesh_ref_list(scene, &gizmo_cam->meshes, gizmo_pipeline,
                                 NULL);
 
   return gizmo_cam;
@@ -206,7 +206,7 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
 
   // add mesh pointer to the right pipeline
-  mesh_reference_list_insert(&scene->pipelines[pipeline], mesh);
+  mesh_ref_list_insert(&scene->pipelines[pipeline], mesh);
 }
 
 /**
@@ -214,7 +214,7 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
    pipeline. Meaning each meshes are going to be build depending on the pipeline
    and the current render mode.
  */
-void scene_add_mesh_reference_list(Scene *scene, MeshRefList *list,
+void scene_add_mesh_ref_list(Scene *scene, MeshRefList *list,
                                    const ScenePipeline mode,
                                    const char *layer) {
   for (size_t i = 0; i < list->length; i++)

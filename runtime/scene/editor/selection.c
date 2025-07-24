@@ -1,5 +1,6 @@
 #include "selection.h"
 #include "../show.h"
+#include "emscripten/em_types.h"
 
 static inline void scene_selection_add(Scene *, Mesh *);
 static inline void scene_selection_remove(Scene *, Mesh *);
@@ -35,7 +36,7 @@ void scene_selection_raycast_mesh_callback(
     if (mouseEvent->shiftKey && mouseEvent->button == 2) {
 
       Mesh *already_selected =
-          mesh_reference_list_find(selection_list, hit->mesh);
+          mesh_ref_list_find(selection_list, hit->mesh);
 
       if (already_selected == NULL) {
         scene_selection_add(scene, hit->mesh);
@@ -47,7 +48,7 @@ void scene_selection_raycast_mesh_callback(
     // right click : add to selection
     else if (mouseEvent->button == 2) {
       // clear selection and add new one
-      mesh_reference_list_empty(selection_list);
+      mesh_ref_list_empty(selection_list);
       scene_selection_add(scene, hit->mesh);
     }
   }
@@ -56,22 +57,22 @@ void scene_selection_raycast_mesh_callback(
   if (selection_list->length > 0) {
 
     // get average position
-    vec3 position;
+    vec3 position; 
     scene_selection_average_position(scene, &position);
     gizmo_transform_translate(gizmo, position);
 
-    scene_show_mesh_reference_list(scene, gizmo->active_handle,
+    scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                                    ScenePipeline_Fixed);
   } else {
     // hide from the scene
-    scene_hide_mesh_reference_list(scene, gizmo->active_handle,
+    scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                                    ScenePipeline_Fixed);
   }
 }
 
 /**
    Left click raycast callback.
-   Check if one of the gizmo is clicked.
+   Check if one of the gizmo is clicked and define the axis.
  */
 void scene_selection_raycast_gizmo_callback(
     CameraRaycastCallback *cast_data, const EmscriptenMouseEvent *mouseEvent,
@@ -80,26 +81,42 @@ void scene_selection_raycast_gizmo_callback(
   SceneSelectionCallbackData *cast_user_data =
       (SceneSelectionCallbackData *)user_data;
 
-  printf("move\n");
-  // cannot check mouse down in mouseEvent so poll the global input mouse state
-  if (mouseEvent->button == 0) {
-    // move/ scale/ rotate the meshes and gizmo accordingly
+  Mesh *hit = cast_data->hits->entries[0].mesh;
+
+  if (mouseEvent->button == 0 && hit) {
     Scene *scene = cast_user_data->scene;
     GizmoTransform *gizmo = &scene->editor.gizmo.transform;
-
-    // call active handle transform callback to transform selection accordingly
+    // assign axis based of hit pointer index (0 = X, 1 = Y, 2 = Z)
+    gizmo_transform_set_axis_from_mesh(gizmo, hit);
+    // set active handle from current mode
+    gizmo_transform_set_active(gizmo);
   }
 }
 
 /**
-   Initialize the selection functionality on the scene main camera, meaning when
-   a mesh is clicked, it displays the transform gizmo.
+   Initialize the selection functionality on the scene main camera, meaning
+   when a mesh is clicked, it displays the transform gizmo.
  */
 void scene_selection_init(Scene *scene) {
 
   // init selection list
-  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Selection],
+  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Selection],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
+
+  /**
+      ===================== ADD SELECTION RELATED EVENTS ===================
+
+     1. Add a right click raycast: push/pop meshes from the selection pipeline.
+
+     2. Add a left click raycast: on gizmo transform only to define selected
+     axis.
+
+     3. Add a draw callback: to poll mouse events and loop through selection to
+     apply transform.
+
+     4. Add a html event on mouse up: reset axis to -1
+
+   */
 
   // cache selection exclude layer (ex: grid...)
   SceneLayer *exclude_layer =
@@ -156,6 +173,48 @@ void scene_selection_init(Scene *scene) {
           .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
           .size = sizeof(SceneSelectionCallbackData),
       });
+
+  // add draw callback
+  scene_renderer_add_draw_callback(&scene->renderer,
+                                   scene_selection_draw_callback, scene);
+
+  // add mouse up / reset callback
+  html_event_add_mouse_up(&(HTMLEventMouse){
+      .data = (void *)&scene->editor.gizmo.transform,
+      .size = 0, // set to 0 so no heap allocation (and use same data pointer)
+      .owner = scene->id,
+      .callback = scene_selection_reset_callback,
+      .destructor = NULL,
+  });
+}
+
+/**
+   To transform the selected meshes and gizmo we poll the mouse event and check
+   if the selection pipeline has length.
+
+   Basically our camera raycast/ html events are only used to:
+     1. push/pop mesh from the selection array (on right click)
+     2. update the gizmo transform active axis (on left click)
+
+    We then constantly through the loop:
+     1. check if the mouse is pressed
+     2. check the selection pipeline length
+     3. check which axis is good
+
+    According to those checkes we then transform the meshes.
+
+ */
+static int l = 0;
+void scene_selection_draw_callback(void *data) {
+  
+  Scene *cast_scene = (Scene *)data;
+  MeshRefList *selection_list = &cast_scene->pipelines[ScenePipeline_Selection];
+  GizmoTransform *gizmo = &cast_scene->editor.gizmo.transform;
+
+  if (g_input.mouse.state == InputMouseState_Down &&
+      gizmo->active_handle != NULL && selection_list->length > 0)
+    // look-up transform callback
+    gizmo->transform_callback[gizmo->mode](gizmo, selection_list, cast_scene->active_camera);
 }
 
 /**
@@ -182,9 +241,9 @@ void scene_selection_average_position(Scene *scene, vec3 *dest) {
 void scene_selection_add(Scene *scene, Mesh *mesh) {
 
   // only add if mesh not already exists
-  if (mesh_reference_list_find(&scene->pipelines[ScenePipeline_Selection],
+  if (mesh_ref_list_find(&scene->pipelines[ScenePipeline_Selection],
                                mesh) == NULL)
-    mesh_reference_list_insert(&scene->pipelines[ScenePipeline_Selection],
+    mesh_ref_list_insert(&scene->pipelines[ScenePipeline_Selection],
                                mesh);
 }
 
@@ -193,5 +252,20 @@ void scene_selection_add(Scene *scene, Mesh *mesh) {
  */
 void scene_selection_remove(Scene *scene, Mesh *mesh) {
 
-  mesh_reference_list_remove(&scene->pipelines[ScenePipeline_Selection], mesh);
+  mesh_ref_list_remove(&scene->pipelines[ScenePipeline_Selection], mesh);
+}
+
+/**
+   Set the gizmo active handle to NULL which acts as a trigger.
+   This wall the loop callback doesn't move the meshes anymore if the mouse is
+   down again.
+ */
+bool scene_selection_reset_callback(int eventType,
+                                    const EmscriptenMouseEvent *mouseEvent,
+                                    void *userData) {
+
+  GizmoTransform *gizmo = (GizmoTransform *)userData;
+  gizmo_transform_clear_active(gizmo);
+
+  return EM_FALSE;
 }

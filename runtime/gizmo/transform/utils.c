@@ -13,7 +13,7 @@ void gizmo_transform_create_mesh(
 
   // init gizmo reference list
   const size_t gizmo_mesh_count = 3;
-  mesh_reference_list_create(list, gizmo_mesh_count);
+  mesh_ref_list_create(list, gizmo_mesh_count);
 
   // load arrow mesh binary
   Primitive mesh_primitive;
@@ -89,6 +89,6 @@ void gizmo_transform_create_mesh(
                       });
 
     // update gizmo ref list
-    mesh_reference_list_insert(list, mesh);
+    mesh_ref_list_insert(list, mesh);
   }
 }

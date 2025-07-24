@@ -14,7 +14,7 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
 
   // define mesh
   size_t gizmo_mesh_count = 1;
-  mesh_reference_list_create(&gizmo->meshes, gizmo_mesh_count);
+  mesh_ref_list_create(&gizmo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
   Mesh *icon = mesh_list_new_mesh(desc->list);
@@ -30,7 +30,7 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
                                });
 
   // store mesh pointer in gizmo ref list
-  mesh_reference_list_insert(&gizmo->meshes, icon);
+  mesh_ref_list_insert(&gizmo->meshes, icon);
 
   // create sphere
   /*DELELTEME: Mesh *sphere = mesh_list_new_mesh(desc->list);
@@ -53,5 +53,5 @@ void gizmo_light_point_create(GizmoPointLight *gizmo, PointLight *light,
   // scale sphere to point far point
   mesh_scale(sphere, (vec3){light->far, light->far, light->far});
 
-  mesh_reference_list_insert(&gizmo->meshes, sphere);*/
+  mesh_ref_list_insert(&gizmo->meshes, sphere);*/
 }

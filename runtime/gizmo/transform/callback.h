@@ -3,9 +3,9 @@
 
 #include "core.h"
 
-void gizmo_transform_callback_translate(GizmoTransform *, Mesh *, int, int);
-void gizmo_transform_callback_rotate(GizmoTransform *, Mesh *, int, int);
-void gizmo_transform_callback_scale(GizmoTransform *, Mesh *, int, int);
-
+void gizmo_transform_callback_translate(GizmoTransform *, MeshRefList *,
+                                        Camera *);
+void gizmo_transform_callback_rotate(GizmoTransform *, MeshRefList *, Camera *);
+void gizmo_transform_callback_scale(GizmoTransform *, MeshRefList *, Camera *);
 
 #endif

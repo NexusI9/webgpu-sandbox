@@ -12,7 +12,7 @@ void gizmo_light_ambient_create(GizmoAmbientLight *gizmo, AmbientLight *light,
 
   // define mesh
   size_t gizmo_mesh_count = 1;
-  mesh_reference_list_create(&gizmo->meshes, gizmo_mesh_count);
+  mesh_ref_list_create(&gizmo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
   Mesh *icon = mesh_list_new_mesh(desc->list);
@@ -28,5 +28,5 @@ void gizmo_light_ambient_create(GizmoAmbientLight *gizmo, AmbientLight *light,
                                });
 
   // store mesh pointer in gizmo ref list
-  mesh_reference_list_insert(&gizmo->meshes, icon);
+  mesh_ref_list_insert(&gizmo->meshes, icon);
 }

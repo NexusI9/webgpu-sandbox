@@ -1,9 +1,9 @@
 #include "core.h"
+#include "./callback.h"
 #include "./rotate.h"
 #include "./scale.h"
 #include "./translate.h"
 #include "./utils.h"
-#include "./callback.h"
 
 /**
    Create the three key transform gizmo handles (translate, rotate, scale) and
@@ -13,7 +13,7 @@ void gizmo_transform_create(GizmoTransform *gizmo,
                             const GizmoCreateDescriptor *desc) {
 
   gizmo->mode = GizmoTransformMode_Translate;
-  gizmo->active_handle = &gizmo->handles[gizmo->mode];
+  gizmo->active_handle = NULL;
 
   // define callbacks
   gizmo->transform_callback[GizmoTransformMode_Translate] =
@@ -51,12 +51,11 @@ void gizmo_transform_update_mode(GizmoTransform *gizmo, MeshRefList *dest_list,
   gizmo_transform_remove(gizmo, dest_list);
 
   // update active handle & mode
-  gizmo->active_handle = &gizmo->handles[mode];
   gizmo->mode = mode;
 
   // insert new handles
-  for (size_t i = 0; i < gizmo->active_handle->length; i++)
-    mesh_reference_list_insert(dest_list, gizmo->active_handle->entries[i]);
+  for (size_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
+    mesh_ref_list_insert(dest_list, gizmo->handles[gizmo->mode].entries[i]);
 }
 
 /**
@@ -65,19 +64,47 @@ void gizmo_transform_update_mode(GizmoTransform *gizmo, MeshRefList *dest_list,
    scene (in case the selection went back to 0 as instance).
  */
 void gizmo_transform_remove(GizmoTransform *gizmo, MeshRefList *dest_list) {
-  for (size_t i = 0; i < gizmo->active_handle->length; i++)
-    mesh_reference_list_remove(dest_list, gizmo->active_handle->entries[i]);
+  for (size_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
+    mesh_ref_list_remove(dest_list, gizmo->handles[gizmo->mode].entries[i]);
 }
 
 /**
    Transform handle, used to set the handles at the center of selection.
  */
-void gizmo_transform_translate(GizmoTransform *gizmo, vec3 position) {
 
-  mesh_reference_list_translate(gizmo->active_handle, position);
+void gizmo_transform_translate(GizmoTransform *gizmo, vec3 position) {
+  mesh_ref_list_translate(&gizmo->handles[gizmo->mode], position);
 }
 
-void gizmo_transform_rotate(GizmoTransform *gizmo, vec3 rotation) {
+void gizmo_transform_translate_add(GizmoTransform *gizmo, float value,
+                                   const Axis axis) {
+  mesh_ref_list_translate_axis_add(&gizmo->handles[gizmo->mode], value, axis);
+}
 
-  mesh_reference_list_rotate(gizmo->active_handle, rotation);
+void gizmo_transform_rotate_add(GizmoTransform *gizmo, float value,
+                                const Axis axis) {
+  mesh_ref_list_rotate_axis_add(&gizmo->handles[gizmo->mode], value, axis);
+}
+
+/**
+   Search the mesh in the gizmo active handles, depending on the mesh index the
+   axis is defined (0 = X, 1 = Y, 2 = Z).
+
+   Function prmarily used in raycast selection to retrieve the axis depending on
+   the clicked gizmo arrow/ scale or rotation handle.
+ */
+void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
+                                        const Mesh *mesh) {
+
+  for (size_t j = 0; j < 3; j++) // axis
+    if (gizmo->handles[gizmo->mode].entries[j] == mesh)
+      gizmo->axis = j;
+}
+
+void gizmo_transform_set_active(GizmoTransform *gizmo) {
+  gizmo->active_handle = &gizmo->handles[gizmo->mode];
+}
+
+void gizmo_transform_clear_active(GizmoTransform *gizmo) {
+  gizmo->active_handle = NULL;
 }

@@ -14,7 +14,7 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   gizmo->target = camera;
 
   const size_t gizmo_mesh_count = 2;
-  mesh_reference_list_create(&gizmo->meshes, gizmo_mesh_count);
+  mesh_ref_list_create(&gizmo->meshes, gizmo_mesh_count);
 
   // create new mesh in the mesh list
   Mesh *icon = mesh_list_new_mesh(desc->list);
@@ -30,7 +30,7 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
                                });
 
   // store mesh pointer in gizmo mesh ref list
-  mesh_reference_list_insert(&gizmo->meshes, icon);
+  mesh_ref_list_insert(&gizmo->meshes, icon);
 
   // create box mesh
   Primitive cube_primitive;
@@ -77,7 +77,7 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   // translate cube upward
   mesh_translate(cube, (vec3){0.0f, 1.0f, 0.0f});
 
-  mesh_reference_list_insert(&gizmo->meshes, cube);
+  mesh_ref_list_insert(&gizmo->meshes, cube);
 
   // set fov deformation
   gizmo_camera_fov(gizmo, 90.0f);
@@ -89,7 +89,7 @@ void gizmo_camera_translate(GizmoCamera *gizmo, vec3 position) {
   camera_translate(gizmo->target, position);
 
   // transform mesh
-  mesh_reference_list_translate(&gizmo->meshes, position);
+  mesh_ref_list_translate(&gizmo->meshes, position);
 }
 
 void gizmo_camera_rotate(GizmoCamera *gizmo, vec3 rotation) {}

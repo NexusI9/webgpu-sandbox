@@ -91,12 +91,6 @@ void mesh_set_shader(Mesh *, const ShaderCreateDescriptor *);
 void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *);
 void mesh_build(Mesh *, Shader *);
 
-// transforms
-void mesh_scale(Mesh *, vec3);
-void mesh_translate(Mesh *, vec3);
-void mesh_lookat(Mesh *, vec3, vec3);
-void mesh_rotate(Mesh *, vec3);
-void mesh_rotate_quat(Mesh *, versor);
 
 // hierarchy
 void mesh_set_parent(Mesh *, Mesh *);

@@ -11,10 +11,14 @@ typedef struct {
 void scene_selection_init(Scene *);
 
 void scene_selection_raycast_mesh_callback(CameraRaycastCallback *,
-                                                  const EmscriptenMouseEvent *,
-                                                  void *);
+                                           const EmscriptenMouseEvent *,
+                                           void *);
 
 void scene_selection_raycast_gizmo_callback(CameraRaycastCallback *,
-                                                 const EmscriptenMouseEvent *,
-                                                 void *);
+                                            const EmscriptenMouseEvent *,
+                                            void *);
+
+void scene_selection_draw_callback(void *);
+
+bool scene_selection_reset_callback(int, const EmscriptenMouseEvent *, void *);
 #endif

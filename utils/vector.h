@@ -8,6 +8,12 @@
 typedef uint8_t VectorLength_t;
 
 typedef enum {
+  Axis_X,
+  Axis_Y,
+  Axis_Z,
+} Axis;
+
+typedef enum {
   VectorLength_2 = 2,
   VectorLength_3 = 3,
   VectorLength_4 = 4,

@@ -22,7 +22,7 @@ int scene_layer_create(SceneLayer *layer, const char *name, size_t capacity) {
   layer->name = strdup(name);
 
   // alloc mesh ref list
-  mesh_reference_list_create(&layer->meshes, capacity);
+  mesh_ref_list_create(&layer->meshes, capacity);
 
   return SCENE_LAYER_SUCCESS;
 }
@@ -32,7 +32,7 @@ int scene_layer_create(SceneLayer *layer, const char *name, size_t capacity) {
    Usually call during runtime for dynamic adjustment.
  */
 void scene_layer_empty(SceneLayer *layer) {
-  mesh_reference_list_empty(&layer->meshes);
+  mesh_ref_list_empty(&layer->meshes);
 }
 
 /**
@@ -46,7 +46,7 @@ void scene_layer_free(SceneLayer *layer) {
   layer->name = NULL;
 
   // free mesh ref list
-  mesh_reference_list_free(&layer->meshes);
+  mesh_ref_list_free(&layer->meshes);
 }
 
 /**
@@ -65,7 +65,7 @@ Mesh *scene_layer_find(SceneLayer *layer, Mesh *mesh) {
    Insert a new mesh in the layer mesh reference list
  */
 Mesh *scene_layer_insert(SceneLayer *layer, Mesh *mesh) {
-  return mesh_reference_list_insert(&layer->meshes, mesh);
+  return mesh_ref_list_insert(&layer->meshes, mesh);
 }
 
 /*
@@ -221,7 +221,7 @@ Mesh *scene_layer_set_insert_mesh(SceneLayerSet *set, const char *name,
   return scene_layer_insert(layer, mesh);
 }
 
-void scene_layer_set_insert_mesh_reference_list(SceneLayerSet *set,
+void scene_layer_set_insert_mesh_ref_list(SceneLayerSet *set,
                                                 const char *name,
                                                 MeshRefList *list) {
   for (size_t i = 0; i < list->length; i++)
@@ -241,5 +241,5 @@ void scene_layer_set_print_layer(SceneLayerSet *set, const char *name) {
   }
 
   VERBOSE_DEBUG("Layer meshes %s:", name);
-  mesh_reference_list_print(&layer->meshes);
+  mesh_ref_list_print(&layer->meshes);
 }

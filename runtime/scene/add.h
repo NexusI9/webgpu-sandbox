@@ -45,11 +45,11 @@ GizmoCamera *scene_add_camera(Scene *, const CameraCreateDescriptor *);
 // mesh
 Mesh *scene_new_mesh(Scene *);
 void scene_add_mesh(Scene *, Mesh *, const ScenePipeline, const char *);
-void scene_add_mesh_reference_list(Scene *, MeshRefList *, const ScenePipeline,
+void scene_add_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline,
                                    const char *);
 
 void scene_remove_mesh(Scene *, Mesh *, const ScenePipeline);
-void scene_remove_mesh_reference_list(Scene *, MeshRefList *, const ScenePipeline);
+void scene_remove_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);
 
 
 #endif

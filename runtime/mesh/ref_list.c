@@ -3,7 +3,7 @@
 #include "core.h"
 #include <string.h>
 
-int mesh_reference_list_create(MeshRefList *list, const size_t capacity) {
+int mesh_ref_list_create(MeshRefList *list, const size_t capacity) {
 
   list->entries = malloc(capacity * sizeof(Mesh *));
   list->length = 0;
@@ -17,7 +17,7 @@ int mesh_reference_list_create(MeshRefList *list, const size_t capacity) {
   return MESH_SUCCESS;
 }
 
-Mesh *mesh_reference_list_insert(MeshRefList *list, Mesh *mesh) {
+Mesh *mesh_ref_list_insert(MeshRefList *list, Mesh *mesh) {
 
   // ADD MESH TO LIST
   // eventually expand mesh vector if overflow
@@ -40,13 +40,13 @@ Mesh *mesh_reference_list_insert(MeshRefList *list, Mesh *mesh) {
   return mesh;
 }
 
-void mesh_reference_list_empty(MeshRefList *list) {
+void mesh_ref_list_empty(MeshRefList *list) {
 
   memset(list->entries, 0, list->capacity * sizeof(Mesh *));
   list->length = 0;
 }
 
-void mesh_reference_list_free(MeshRefList *list) {
+void mesh_ref_list_free(MeshRefList *list) {
   free(list->entries);
   list->entries = NULL;
   list->capacity = 0;
@@ -58,7 +58,7 @@ void mesh_reference_list_free(MeshRefList *list) {
    Use linear probing with ID comparison.
    TODO: Maybe for bigger selection, need a more efficient/quick way.
  */
-void mesh_reference_list_remove(MeshRefList *list, Mesh *mesh) {
+void mesh_ref_list_remove(MeshRefList *list, Mesh *mesh) {
 
   for (size_t i = 0; i < list->length; i++) {
 
@@ -78,7 +78,7 @@ void mesh_reference_list_remove(MeshRefList *list, Mesh *mesh) {
 /**
    Linearily traverse the list and compare mesh id to find match
  */
-Mesh *mesh_reference_list_find(const MeshRefList *list, Mesh *mesh) {
+Mesh *mesh_ref_list_find(const MeshRefList *list, Mesh *mesh) {
 
   for (size_t i = 0; i < list->length; i++)
     if (list->entries[i]->id == mesh->id)
@@ -90,7 +90,7 @@ Mesh *mesh_reference_list_find(const MeshRefList *list, Mesh *mesh) {
 /**
    Copy mesh pointers from one list to another
  */
-int mesh_reference_list_transfert(MeshRefList *src, MeshRefList *dest) {
+int mesh_ref_list_transfert(MeshRefList *src, MeshRefList *dest) {
 
   // expand if destination is too small
   while (dest->length + src->length >= dest->capacity) {
@@ -119,7 +119,7 @@ int mesh_reference_list_transfert(MeshRefList *src, MeshRefList *dest) {
 /**
    Copy a Gizmo Mesh list from a source to a given desination
  */
-int mesh_reference_list_copy(const MeshRefList *src, MeshRefList *dest) {
+int mesh_ref_list_copy(const MeshRefList *src, MeshRefList *dest) {
 
   // copy length
   dest->length = src->length;
@@ -137,24 +137,7 @@ int mesh_reference_list_copy(const MeshRefList *src, MeshRefList *dest) {
   return MESH_SUCCESS;
 }
 
-void mesh_reference_list_translate(MeshRefList *list, vec3 position) {
-  for (size_t i = 0; i < list->length; i++)
-    mesh_translate(list->entries[i], position);
-}
-void mesh_reference_list_rotate(MeshRefList *list, vec3 rotation) {
-  for (size_t i = 0; i < list->length; i++)
-    mesh_rotate(list->entries[i], rotation);
-}
-void mesh_reference_list_rotate_quat(MeshRefList *list, versor quat) {
-  for (size_t i = 0; i < list->length; i++)
-    mesh_rotate_quat(list->entries[i], quat);
-}
-void mesh_reference_list_scale(MeshRefList *list, vec3 scale) {
-  for (size_t i = 0; i < list->length; i++)
-    mesh_scale(list->entries[i], scale);
-}
-
-void mesh_reference_list_print(MeshRefList *list) {
+void mesh_ref_list_print(MeshRefList *list) {
 
   for (size_t i = 0; i < list->length; i++)
     VERBOSE_DEBUG("[%p] %s", list->entries[i], list->entries[i]->name);

@@ -36,16 +36,16 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   // init mesh pipelines
 
   // background
-  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Background],
+  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Background],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
   // lit
-  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Lit],
+  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Lit],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
   // unlit
-  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Unlit],
+  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Unlit],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
   // fixed
-  mesh_reference_list_create(&scene->pipelines[ScenePipeline_Fixed],
+  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Fixed],
                              SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init scene layers

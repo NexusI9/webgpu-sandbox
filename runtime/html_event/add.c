@@ -130,8 +130,9 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
   // append new event object to list
   memcpy(cast_entry, event, type_size);
 
-  // allocate data on stack if any
-  if (event->data != NULL) {
+  // allocate data on stack if any data AND size
+  // if size if 0, it won't replace the data with allocated one
+  if (event->data != NULL && event->size) {
 
     html_event_data stored_data = malloc(event->size);
 

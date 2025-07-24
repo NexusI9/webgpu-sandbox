@@ -40,5 +40,5 @@
  */
 
 void scene_build_mesh(Scene*, Mesh*, const ScenePipeline);
-void scene_build_mesh_reference_list(Scene*, MeshRefList*, const ScenePipeline);
+void scene_build_mesh_ref_list(Scene*, MeshRefList*, const ScenePipeline);
 #endif

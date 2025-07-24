@@ -32,8 +32,8 @@
 
 void scene_show_mesh(Scene *, Mesh *, const ScenePipeline);
 void scene_hide_mesh(Scene *, Mesh *, const ScenePipeline);
-void scene_show_mesh_reference_list(Scene *, MeshRefList *, const ScenePipeline);
-void scene_hide_mesh_reference_list(Scene *, MeshRefList *, const ScenePipeline);
+void scene_show_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);
+void scene_hide_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);
 
 
 #endif
