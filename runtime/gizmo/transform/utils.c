@@ -92,3 +92,7 @@ void gizmo_transform_create_mesh(
     mesh_ref_list_insert(list, mesh);
   }
 }
+
+void gizmo_transform_origin(GizmoTransform *gizmo, vec3 *position) {
+  glm_vec3_copy(gizmo->handles[gizmo->mode].entries[0]->position, *position);
+}

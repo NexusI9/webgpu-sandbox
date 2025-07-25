@@ -5,6 +5,9 @@
 #include "./translate.h"
 #include "./utils.h"
 
+static inline void gizmo_transform_set_axis_from_mesh(GizmoTransform *,
+                                                      const Mesh *);
+
 /**
    Create the three key transform gizmo handles (translate, rotate, scale) and
    set active handle.
@@ -14,6 +17,8 @@ void gizmo_transform_create(GizmoTransform *gizmo,
 
   gizmo->mode = GizmoTransformMode_Translate;
   gizmo->active_handle = NULL;
+
+  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->init_offset);
 
   // define callbacks
   gizmo->transform_callback[GizmoTransformMode_Translate] =
@@ -101,10 +106,57 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
       gizmo->axis = j;
 }
 
-void gizmo_transform_set_active(GizmoTransform *gizmo) {
+/**
+   Main "activator" for the gizmo transform. Called when user selected meshes
+   and clicked on one of the gizmo axes.
+
+   Key operations:
+   1. Define gizmo active axis based on the handle clicked on (X/Y/Z)
+
+   2. Define gizmo active handles (trans/rot/scale) based on current gizmo mode.
+   Gizmo active handles kinda acts as a trigger to tell the loop check that the
+   gizmo is ready to move object during polling.
+
+   3. Finally cache gizmo initial offset position projected on the right axis.
+
+ */
+void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *mesh,
+                                Camera *camera, Viewport *viewport) {
+
+  // define active axis
+  gizmo_transform_set_axis_from_mesh(gizmo, mesh);
+
+  // define active handle
   gizmo->active_handle = &gizmo->handles[gizmo->mode];
+
+  // compute and cache initial offset
+  vec3 target;
+  gizmo_transform_origin(gizmo, &target);
+
+  vec3 axis_dir;
+  vec_world_axis(gizmo->axis, &axis_dir);
+
+  float x = g_input.mouse.x;
+  float y = g_input.mouse.y;
+
+  raycast_project_from_screen_to_axis(
+      &(RaycastProjectScreenToAxis){
+          .origin = &camera->position,
+          .target = &target,
+          .axis_direction = &axis_dir,
+          .view = &camera->view,
+          .projection = &viewport->projection,
+          .x = x,
+          .y = y,
+          .width = viewport->width,
+          .height = viewport->height,
+      },
+      &gizmo->init_offset);
+
 }
 
 void gizmo_transform_clear_active(GizmoTransform *gizmo) {
   gizmo->active_handle = NULL;
+
+  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->init_offset);
 }

@@ -2,6 +2,7 @@
 #define _GIZMO_TRANSFORM_UTILS_H_
 
 #include "../../mesh/mesh.h"
+#include "core.h"
 
 typedef struct {
   const char *mbin_path;
@@ -13,5 +14,5 @@ typedef struct {
 void gizmo_transform_create_mesh(MeshRefList *,
                                  const GizmoTransformCreateMeshDescriptor *);
 
-
+void gizmo_transform_origin(GizmoTransform *, vec3 *);
 #endif

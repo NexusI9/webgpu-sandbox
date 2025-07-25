@@ -31,7 +31,7 @@ bool raycast_hit_aabb(Raycast *ray, const AABB *box, float *distance) {
       if (t2 < tmax)
         tmax = t2;
 
-      //printf("[%d] tmin: %f, tmax: %f\n", i, tmin, tmax);
+      // printf("[%d] tmin: %f, tmax: %f\n", i, tmin, tmax);
       if (tmin > tmax)
         return false;
     }
@@ -41,4 +41,99 @@ bool raycast_hit_aabb(Raycast *ray, const AABB *box, float *distance) {
     *distance = tmin;
 
   return true;
+}
+
+/**
+   Cast ray from a given mouse position to world space
+ */
+void raycast_from_screen(Raycast *ray, vec3 *origin, mat4 *view,
+                         mat4 *projection, float x, float y) {
+
+  // near plane point in clip space
+  vec4 ray_clip = {x, y, -1.0f, 1.0f};
+
+  // unproject to world space
+  mat4 inv_proj, inv_view;
+
+  // TODO: cache inverted matrix
+  glm_mat4_inv(*projection, inv_proj);
+  glm_mat4_inv(*view, inv_view);
+
+  // eye space (remove projection)
+  vec4 ray_eye;
+  glm_mat4_mulv(inv_proj, ray_clip, ray_eye);
+  // direction in eye space
+  ray_eye[2] = -1.0f;
+  ray_eye[3] = 0.0f;
+
+  // world space (remove view)
+  vec4 ray_world;
+  glm_mat4_mulv(inv_view, ray_eye, ray_world);
+  vec3 ray_dir = {ray_world[0], ray_world[1], ray_world[2]};
+  glm_vec3_normalize(ray_dir);
+
+  // set origin
+  glm_vec3_zero(ray->origin);
+  glm_vec3_copy(*origin, ray->origin);
+
+  // set direction
+  glm_vec3_zero(ray->direction);
+  glm_vec3_copy(ray_dir, ray->direction);
+}
+
+void raycast_project_to_axis(Raycast *ray, vec3 *position, vec3 *axis_direction,
+                             vec3 *dest) {
+  vec3 q = {0}, p = {0};
+  glm_vec3_copy(ray->origin, q);
+  glm_vec3_copy(*position, p);
+
+  vec3 d1, d2; // ray_dir, axis_dir
+  glm_vec3_copy(ray->direction, d1);
+  glm_vec3_copy(*axis_direction, d2);
+
+  vec3 r;
+  glm_vec3_sub(q, p, r);
+
+  // get closest point to axis
+  float d1_dot_d1 = glm_vec3_dot(d1, d1);
+  float d1_dot_d2 = glm_vec3_dot(d1, d2);
+  float d2_dot_d2 = glm_vec3_dot(d2, d2);
+  float r_dot_d1 = glm_vec3_dot(r, d1);
+  float r_dot_d2 = glm_vec3_dot(r, d2);
+
+  float denom = d1_dot_d1 * d2_dot_d2 - d1_dot_d2 * d1_dot_d2;
+
+  if (fabsf(denom) < 1e-6f) {
+    glm_vec3_copy(*position, *dest); // fallback
+    return;
+  }
+
+  float t = (r_dot_d1 * d1_dot_d2 - r_dot_d2 * d1_dot_d1) / denom;
+
+  vec3 move_pos;
+  glm_vec3_scale(d2, t, move_pos);
+  glm_vec3_add(*position, move_pos, *dest);
+}
+
+/**
+   Convert a mouse projection to world space and project it onto a specific
+   axis.
+
+   Destination returns the position of the closest point on the
+   axis based on the initial mouse position.
+
+   Used for gizmo transform to move the objects accordingly based on the
+   selected axis.
+ */
+void raycast_project_from_screen_to_axis(const RaycastProjectScreenToAxis *desc,
+                                         vec3 *dest) {
+  Raycast mouse_ray;
+
+  // convert mouse to ndc (-1/1)
+  float x, y;
+  input_mouse_NDC(desc->x, desc->y, desc->width, desc->height, &x, &y);
+
+  raycast_from_screen(&mouse_ray, desc->origin, desc->view, desc->projection, x,
+                      y);
+  raycast_project_to_axis(&mouse_ray, desc->target, desc->axis_direction, dest);
 }

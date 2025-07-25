@@ -42,4 +42,6 @@ void vec_baycentric(const vec2, const vec2, const vec2, const vec2,
 
 void ivec_to_vec(const int *, const VectorLength, float *);
 
+void vec_world_axis(const Axis, vec3 *);
+
 #endif

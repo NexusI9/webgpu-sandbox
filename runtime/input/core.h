@@ -69,4 +69,6 @@ bool input_mouse_down(int, const EmscriptenMouseEvent *, void *);
 bool input_mouse_up(int, const EmscriptenMouseEvent *, void *);
 bool input_wheel(int, const EmscriptenWheelEvent *, void *);
 
+void input_mouse_NDC(const float, const float, const int, const int, float *,
+                     float *);
 #endif

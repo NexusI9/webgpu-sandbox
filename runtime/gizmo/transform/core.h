@@ -11,7 +11,7 @@
 typedef struct GizmoTransform GizmoTransform;
 
 typedef void (*gizmo_transform_callback)(GizmoTransform *, MeshRefList *,
-                                         Camera *, Viewport*);
+                                         Camera *, Viewport *);
 
 typedef enum {
   GizmoTransformMode_Translate,
@@ -21,6 +21,7 @@ typedef enum {
 
 struct GizmoTransform {
   GizmoTransformMode mode;
+  vec3 init_offset;
   Axis axis;
   MeshRefList *active_handle;
   MeshRefList handles[3];
@@ -39,7 +40,6 @@ void gizmo_transform_translate(GizmoTransform *, vec3);
 void gizmo_transform_translate_add(GizmoTransform *, float, const Axis);
 void gizmo_transform_rotate_add(GizmoTransform *, float, const Axis);
 
-void gizmo_transform_set_axis_from_mesh(GizmoTransform *, const Mesh *);
 /**
    TODO: Currently we use the active handle as a switch (boolean/flag-like
    approach) to detect if the loop callback should actually move the meshes
@@ -47,7 +47,9 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *, const Mesh *);
 
    Maybe find a more data-oriented-friendly way for this approach.
  */
-void gizmo_transform_set_active(GizmoTransform *);
+void gizmo_transform_set_active(GizmoTransform *, const Mesh *, Camera *,
+                                Viewport *);
+
 void gizmo_transform_clear_active(GizmoTransform *);
 
 #endif

@@ -133,3 +133,9 @@ void input_wheel_reset() {
   g_input.mouse.wheel.deltaX = 0.0f;
   g_input.mouse.wheel.deltaY = 0.0f;
 }
+
+void input_mouse_NDC(const float x, const float y, const int width,
+                     const int height, float *dest_x, float *dest_y) {
+  *dest_x = 2.0f * x / width - 1.0f;
+  *dest_y = 1.0f - 2.0f * y / height;
+}

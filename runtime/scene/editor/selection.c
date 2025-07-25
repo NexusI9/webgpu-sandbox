@@ -85,10 +85,9 @@ void scene_selection_raycast_gizmo_callback(
   if (mouseEvent->button == 0 && hit) {
     Scene *scene = cast_user_data->scene;
     GizmoTransform *gizmo = &scene->editor.gizmo.transform;
-    // assign axis based of hit pointer index (0 = X, 1 = Y, 2 = Z)
-    gizmo_transform_set_axis_from_mesh(gizmo, hit);
-    // set active handle from current mode
-    gizmo_transform_set_active(gizmo);
+    // set active handle from current mode and initialize offset
+    gizmo_transform_set_active(gizmo, hit, scene->active_camera,
+                               &scene->viewport);
   }
 }
 

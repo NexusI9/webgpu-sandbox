@@ -73,3 +73,14 @@ void ivec_to_vec(const int *src, const VectorLength length, float *dest) {
   for (VectorLength_t l = 0; l < length; l++)
     dest[l] = (float)src[l];
 }
+
+void vec_world_axis(const Axis axis, vec3 *dest) {
+
+  vec3 axis_dir[] = {
+      [Axis_X] = {1.0f, 0.0f, 0.0f},
+      [Axis_Y] = {0.0f, 1.0f, 0.0f},
+      [Axis_Z] = {0.0f, 0.0f, 1.0f},
+  };
+
+  glm_vec3_copy(axis_dir[axis], *dest);
+}
