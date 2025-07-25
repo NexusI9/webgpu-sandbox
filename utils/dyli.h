@@ -7,7 +7,7 @@
 typedef enum {
   DynamicListStatus_Success,
   DynamicListStatus_AllocFail,
-  DynamicListStatus_UnderError,
+  DynamicListStatus_UndefError,
 } DynamicListStatus;
 
 typedef struct {
@@ -17,8 +17,14 @@ typedef struct {
   size_t type_size;
 } DynamicList;
 
-DynamicListStatus dyli_create(void **, size_t *, size_t *, size_t, size_t, const char *);
-DynamicListStatus dyli_expand(void **, size_t *, size_t *, size_t, size_t, const char *);
-void dyli_free(void **, size_t *, size_t *);
+DynamicListStatus dyli_create(void **, size_t *, size_t *, size_t, size_t,
+                              const char *);
+DynamicListStatus dyli_expand(void **, size_t *, size_t *, size_t, size_t,
+                              const char *);
+DynamicListStatus dyli_insert(void **, size_t *, size_t *, size_t, void *,
+                              size_t, const char *);
+DynamicListStatus dyli_empty(void *, size_t *, size_t);
+
+DynamicListStatus dyli_free(void **, size_t *, size_t *);
 
 #endif

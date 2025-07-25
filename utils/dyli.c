@@ -2,13 +2,14 @@
 #include "../utils/system.h"
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
    Allocate necessary resource for dynamic list and update the capacity and
    length.
  */
 DynamicListStatus dyli_create(void **entries, size_t *capacity, size_t *length,
-                size_t type_size, size_t num, const char *label) {
+                              size_t type_size, size_t num, const char *label) {
 
   *entries = calloc(num, type_size);
   *length = 0;
@@ -27,7 +28,8 @@ DynamicListStatus dyli_create(void **entries, size_t *capacity, size_t *length,
    Expand the dynamic list of 2n capacity.
  */
 DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
-                size_t type_size, size_t scale, const char *label) {
+                              size_t type_size, size_t scale,
+                              const char *label) {
 
   size_t new_capacity = scale * (*capacity);
   void *temp = (void *)realloc(*entries, new_capacity * type_size);
@@ -43,11 +45,36 @@ DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
   return DynamicListStatus_Success;
 }
 
-void dyli_free(void **entries, size_t *capacity, size_t *length) {
+DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
+                              size_t type_size, void *entry, size_t count,
+                              const char *label) {
+
+  if (*capacity < *length + count &&
+      dyli_expand(entries, capacity, length, type_size, 2, label) !=
+          DynamicListStatus_Success) {
+    return DynamicListStatus_UndefError;
+  }
+
+  void *target = (char *)(*entries) + (*length * type_size);
+  memcpy(target, entry, type_size * count);
+  *length += count;
+
+  return DynamicListStatus_Success;
+}
+
+DynamicListStatus dyli_empty(void *entries, size_t *length, size_t type_size) {
+  memset(entries, 0, (*length) * type_size);
+  *length = 0;
+  return DynamicListStatus_Success;
+}
+
+DynamicListStatus dyli_free(void **entries, size_t *capacity, size_t *length) {
 
   // free set
   free(*entries);
   *entries = NULL;
   *capacity = 0;
   *length = 0;
+
+  return DynamicListStatus_Success;
 }
