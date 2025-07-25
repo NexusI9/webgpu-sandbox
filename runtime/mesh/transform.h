@@ -1,11 +1,10 @@
 #ifndef _MESH_TRANSFORM_H_
 #define _MESH_TRANSFORM_H_
 
-#include "../utils/vector.h"
+#include "../utils/vector/vector.h"
 #include "core.h"
 
 typedef void (*mesh_transform_axis_callback)(Mesh *, const float);
-
 
 // scale
 void mesh_scale(Mesh *, vec3);

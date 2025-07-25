@@ -1,5 +1,6 @@
 #include "add.h"
 #include "../utils/system.h"
+#include "core.h"
 #include "listener.h"
 #include <stdio.h>
 #include <string.h>
@@ -11,7 +12,7 @@ static inline bool html_event_has_listener(HTMLEventType);
 static inline void html_event_check_callback(HTMLEventType, void *);
 
 // Event lists inserts
-static int html_event_insert(HTMLEventVoid *event, void **entries,
+static HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
                              size_t *length, size_t *capacity, size_t type_size,
                              HTMLEventType event_type, void *event_callback);
 
@@ -86,7 +87,7 @@ void html_event_check_callback(HTMLEventType type, void *event_callback) {
   }
 }
 
-int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
+HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
                       size_t *capacity, size_t type_size,
                       HTMLEventType event_type, void *event_callback) {
 
@@ -103,7 +104,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
     if (*entries == NULL) {
       VERBOSE_ERROR("Coudln't allocate html event.");
       *capacity = 0;
-      return HTML_EVENT_ALLOC_FAIL;
+      return HTMLEventStatus_AllocFail;
     }
   }
 
@@ -118,7 +119,7 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
       *capacity = new_capacity;
     } else {
       VERBOSE_ERROR("Coudln't reallocate html event.");
-      return HTML_EVENT_ALLOC_FAIL;
+      return HTMLEventStatus_AllocFail;
     }
   }
 
@@ -141,19 +142,19 @@ int html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
       memcpy(cast_entry->data, event->data, event->size);
     } else {
       VERBOSE_ERROR("Coudln't allocate memory for html event data.");
-      return HTML_EVENT_ALLOC_FAIL;
+      return HTMLEventStatus_AllocFail;
     }
   }
 
   (*length)++;
 
-  return HTML_EVENT_SUCCESS;
+  return HTMLEventStatus_Success;
 }
 
 /**
    Add a mouse down event to the relative list.
  */
-int html_event_add_mouse_down(HTMLEventMouse *event) {
+HTMLEventStatus html_event_add_mouse_down(HTMLEventMouse *event) {
 
   void *entries = &g_html_event.mouse_down.entries;
   size_t *length = &g_html_event.mouse_down.length;
@@ -176,7 +177,7 @@ int html_event_add_mouse_down(HTMLEventMouse *event) {
 /**
    Add a mouse up event to the relative list.
  */
-int html_event_add_mouse_up(HTMLEventMouse *event) {
+HTMLEventStatus html_event_add_mouse_up(HTMLEventMouse *event) {
 
   void *entries = &g_html_event.mouse_up.entries;
   size_t *length = &g_html_event.mouse_up.length;
@@ -199,7 +200,7 @@ int html_event_add_mouse_up(HTMLEventMouse *event) {
 /**
    Add a mouse move event to the relative list
  */
-int html_event_add_mouse_move(HTMLEventMouse *event) {
+HTMLEventStatus html_event_add_mouse_move(HTMLEventMouse *event) {
 
   void *entries = &g_html_event.mouse_move.entries;
   size_t *length = &g_html_event.mouse_move.length;
@@ -222,7 +223,7 @@ int html_event_add_mouse_move(HTMLEventMouse *event) {
 /**
    Add a mouse wheel event to the relative list
  */
-int html_event_add_wheel(HTMLEventWheel *event) {
+HTMLEventStatus html_event_add_wheel(HTMLEventWheel *event) {
 
   void *entries = &g_html_event.wheel.entries;
   size_t *length = &g_html_event.wheel.length;
@@ -245,7 +246,7 @@ int html_event_add_wheel(HTMLEventWheel *event) {
 /**
    Add a key down  event to the relative list
  */
-int html_event_add_key_down(HTMLEventKey *event) {
+HTMLEventStatus html_event_add_key_down(HTMLEventKey *event) {
 
   void *entries = &g_html_event.key_down.entries;
   size_t *length = &g_html_event.key_down.length;
@@ -268,7 +269,7 @@ int html_event_add_key_down(HTMLEventKey *event) {
 /**
    Add a key up event to the relative list
  */
-int html_event_add_key_up(HTMLEventKey *event) {
+HTMLEventStatus html_event_add_key_up(HTMLEventKey *event) {
 
   void *entries = &g_html_event.key_up.entries;
   size_t *length = &g_html_event.key_up.length;

@@ -22,7 +22,7 @@ size_t vhash_hash(const vhash_value_t key, size_t capacity) {
   return hash % capacity;
 }
 
-int vhash_insert(VertexHashTable *list, vhash_value_t key, mbin_index_t *idx) {
+VHashStatus vhash_insert(VertexHashTable *list, vhash_value_t key, mbin_index_t *idx) {
 
   // expand if length reach 75% capacity
   if (list->length >= list->capacity * 0.75) {
@@ -36,13 +36,13 @@ int vhash_insert(VertexHashTable *list, vhash_value_t key, mbin_index_t *idx) {
       list->capacity = new_capacity;
     } else {
       perror("Couldn't expand list\n");
-      return VHASH_ALLOC_FAILURE;
+      return VHashStatus_AllocFail;
     }
   }
 
   if (vhash_search(list, key))
     // already exist
-    return VHASH_EXIST;
+    return VHashStatus_Exist;
 
   size_t index = vhash_hash(key, list->capacity);
 
@@ -64,20 +64,20 @@ int vhash_insert(VertexHashTable *list, vhash_value_t key, mbin_index_t *idx) {
 
   list->length++;
 
-  return VHASH_SUCCESS;
+  return VHashStatus_Success;
 }
 
-int vhash_create(VertexHashTable *list, size_t capacity) {
+VHashStatus vhash_create(VertexHashTable *list, size_t capacity) {
   list->entries = calloc(capacity, sizeof(VertexHashKey));
 
   if (list->entries == NULL) {
     perror("Couldn't create vertex hash table");
-    return VHASH_ALLOC_FAILURE;
+    return VHashStatus_AllocFail;
   }
 
   list->length = 0;
   list->capacity = capacity;
-  return VHASH_SUCCESS;
+  return VHashStatus_Success;
 }
 
 VertexHashKey *vhash_search(VertexHashTable *list, vhash_value_t key) {

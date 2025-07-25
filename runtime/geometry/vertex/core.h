@@ -7,8 +7,10 @@
 
 #define VERTEX_STRIDE 11
 
-#define VERTEX_SUCCESS 0
-#define VERTEX_ALLOC_FAIL 1
+typedef enum{
+  VertexStatus_Success,
+  VertexStatus_AllocFail,
+}VertexStatus;
 
 typedef vec2 vertex_uv;
 typedef vec3 vertex_color;

@@ -3,8 +3,9 @@
 
 #include "../../mesh/mesh.h"
 #include "../core.h"
-#include "../utils/vector.h"
+#include "../utils/vector/vector.h"
 #include "translate.h"
+#include <stddef.h>
 
 #define GIZMO_TRANSFORM_SIZE 15.0f
 
@@ -20,12 +21,21 @@ typedef enum {
 } GizmoTransformMode;
 
 struct GizmoTransform {
+
   GizmoTransformMode mode;
-  vec3 init_offset;
+
   Axis axis;
   MeshRefList *active_handle;
   MeshRefList handles[3];
   gizmo_transform_callback transform_callback[3];
+
+  vec3 init_offset;
+
+  struct {
+    vec3 *entries;
+    size_t capacity;
+    size_t length;
+  } cached_mesh_position;
 };
 
 void gizmo_transform_create(GizmoTransform *,

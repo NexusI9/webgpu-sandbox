@@ -16,13 +16,17 @@
   define the final bucket. Which leads to imprecision since the higher bits are
   discarded.
 
-  The number of used bits is N (for 128 = 2^7, the number of used bits would be 7)
+  The number of used bits is N (for 128 = 2^7, the number of used bits would be
+  7)
  */
 #define VHASH_BASE_CAPACITY 127
-#define VHASH_SUCCESS 0
-#define VHASH_ALLOC_FAILURE 1
-#define VHASH_EXIST 2
 #define VERTEX_STRIDE 11
+
+typedef enum {
+  VHashStatus_Success,
+  VHashStatus_AllocFail,
+  VHashStatus_Exist,
+} VHashStatus;
 
 typedef mbin_vertex_t *vhash_value_t;
 
@@ -38,7 +42,7 @@ typedef struct {
   size_t length;
 } VertexHashTable;
 
-int vhash_insert(VertexHashTable *, vhash_value_t, mbin_index_t *);
-int vhash_create(VertexHashTable *, size_t);
+VHashStatus vhash_insert(VertexHashTable *, vhash_value_t, mbin_index_t *);
+VHashStatus vhash_create(VertexHashTable *, size_t);
 VertexHashKey *vhash_search(VertexHashTable *, vhash_value_t);
 #endif

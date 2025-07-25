@@ -17,10 +17,10 @@ typedef struct {
 } VertexIndex;
 
 void vertex_index_print(VertexIndex *);
-int vertex_index_copy(VertexIndex *, VertexIndex *);
+VertexStatus vertex_index_copy(VertexIndex *, VertexIndex *);
 void vertex_index_destroy(VertexIndex *);
 
-int vertex_index_create(VertexIndex *, size_t, WGPUBuffer);
-int vertex_index_insert(VertexIndex *, vindex_t *, size_t);
+VertexStatus vertex_index_create(VertexIndex *, size_t, WGPUBuffer);
+VertexStatus vertex_index_insert(VertexIndex *, vindex_t *, size_t);
 
 #endif

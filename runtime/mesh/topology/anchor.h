@@ -7,10 +7,12 @@
 #define MESH_TOPOLOGY_ANCHOR_LIST_DEFAULT_CAPACITY 1023
 #define MESH_TOPOLOGY_ANCHOR_DEFAULT_CAPACITY 32
 
-#define MESH_TOPOLOGY_ANCHOR_SUCCESS 0
-#define MESH_TOPOLOGY_ANCHOR_ALLOC_FAIL 1
-#define MESH_TOPOLOGY_ANCHOR_ERROR 2
-#define MESH_TOPOLOGY_ANCHOR_UNSET 3
+typedef enum {
+  MeshTopologyAnchorStatus_Success,
+  MeshTopologyAnchorStatus_AllocFail,
+  MeshTopologyAnchorStatus_Unset,
+  MeshTopologyAnchorStatus_UndefError,
+} MeshTopologyAnchorStatus;
 
 typedef union {
   vattr_t f;
@@ -49,7 +51,7 @@ int mesh_topology_anchor_expand(MeshTopologyAnchor *);
 int mesh_topology_anchor_insert(MeshTopologyAnchor *, vindex_t *, size_t);
 void mesh_topology_anchor_print(MeshTopologyAnchor *);
 void mesh_topology_anchor_merge(const MeshTopologyAnchorList *,
-                                const vindex_t*, const size_t,
+                                const vindex_t *, const size_t,
                                 MeshTopologyAnchor *);
 
 /**

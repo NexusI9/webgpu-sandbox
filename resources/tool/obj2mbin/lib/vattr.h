@@ -14,9 +14,11 @@
 #define VERTEX_SEPARATOR " "
 #define VERTEX_STRIDE 11
 
-#define VERTEX_ATTRIBUTE_LIST_SUCCESS 0
-#define VERTEX_ATTRIBUTE_LIST_ALLOC_FAIL 1
-#define VERTEX_ATTRIBUTE_LIST_ERROR 2
+typedef enum{
+  VertexAttributeListStatus_Success,
+  VertexAttributeListStatus_AllocFail,
+  VertexAttributeListStatus_UndefError,
+} VertexAttributeListStatus;
 
 typedef enum {
   VertexAttributeListIndex_Position = 0,
@@ -37,12 +39,12 @@ typedef struct {
 } VertexAttributeCallbackDescriptor;
 
 void vertex_attribute_print(VertexAttributeList *);
-int vertex_attribute_list_insert(VertexAttributeList *, mbin_vertex_t *,
+VertexAttributeListStatus vertex_attribute_list_insert(VertexAttributeList *, mbin_vertex_t *,
                                  size_t);
 void vertex_attribute_from_line(const char *, void *);
 void vertex_attribute_cache(FILE *, VertexAttributeList **);
 
 void vertex_attribute_free(VertexAttributeList *);
-int vertex_attribute_copy(VertexAttributeList *, VertexAttributeList *);
+VertexAttributeListStatus vertex_attribute_copy(VertexAttributeList *, VertexAttributeList *);
 
 #endif

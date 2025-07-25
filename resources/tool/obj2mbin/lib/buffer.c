@@ -24,7 +24,7 @@ static void index_buffer_print(IndexBuffer *ib) {
   printf("\n");
 }
 
-int vertex_buffer_insert(VertexBuffer *vb, mbin_vertex_t *list, size_t count) {
+MBINBufferStatus vertex_buffer_insert(VertexBuffer *vb, mbin_vertex_t *list, size_t count) {
 
   if (vb->length + count >= vb->capacity) {
 
@@ -36,17 +36,17 @@ int vertex_buffer_insert(VertexBuffer *vb, mbin_vertex_t *list, size_t count) {
       vb->capacity = new_capacity;
     } else {
       perror("Couldn't allocate new memory for vertex buffer");
-      return MBIN_BUFFER_ALLOC_FAILURE;
+      return MBINBufferStatus_AllocFail;
     }
   }
 
   memcpy(&vb->entries[vb->length], list, sizeof(mbin_vertex_t) * count);
   vb->length += count;
 
-  return MBIN_BUFFER_SUCCESS;
+  return MBINBufferStatus_Success;
 }
 
-int index_buffer_insert(IndexBuffer *ib, mbin_index_t index) {
+MBINBufferStatus index_buffer_insert(IndexBuffer *ib, mbin_index_t index) {
 
   if (ib->length == ib->capacity) {
 
@@ -58,13 +58,13 @@ int index_buffer_insert(IndexBuffer *ib, mbin_index_t index) {
       ib->capacity = new_capacity;
     } else {
       perror("Couldn't allocate new memory for index buffer\n");
-      return MBIN_BUFFER_ALLOC_FAILURE;
+      return MBINBufferStatus_AllocFail;
     }
   }
 
   ib->entries[ib->length++] = index;
 
-  return MBIN_BUFFER_SUCCESS;
+  return MBINBufferStatus_Success;
 }
 
 void vertex_buffer_free(VertexBuffer *vb) {
@@ -90,7 +90,7 @@ void index_buffer_free(IndexBuffer *ib) {
               nVertex * sizeof(vertex)      +       nIndex * sizeof(Index)
 
 */
-int buffer_merge_data(VertexBuffer *vb, IndexBuffer *ib, mbin_data_t *dest) {
+MBINBufferStatus buffer_merge_data(VertexBuffer *vb, IndexBuffer *ib, mbin_data_t *dest) {
 
   size_t vert_size = sizeof(mbin_vertex_t) * vb->length;
   size_t index_size = sizeof(mbin_index_t) * ib->length;
@@ -115,5 +115,5 @@ int buffer_merge_data(VertexBuffer *vb, IndexBuffer *ib, mbin_data_t *dest) {
    */
   memcpy(dest + vb->length, ib->entries, index_size);
 
-  return MBIN_BUFFER_SUCCESS;
+  return MBINBufferStatus_Success;
 }

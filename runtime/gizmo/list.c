@@ -5,7 +5,7 @@
 
 static void *gizmo_list_expand(void **, size_t, size_t, size_t *);
 static void *gizmo_list_alloc(void **, size_t, size_t, size_t *, size_t *);
-static int gizmo_list_insert(const GizmoListInsertDescriptor *);
+static GizmoListStatus gizmo_list_insert(const GizmoListInsertDescriptor *);
 static void *gizmo_list_new(const GizmoListNewDescriptor *);
 
 void *gizmo_list_expand(void **dest, size_t capacity, size_t type_size,
@@ -46,7 +46,7 @@ void *gizmo_list_alloc(void **dest, size_t capacity, size_t type_size,
    Dynamically allocate and initialize the gizmo lists (point, ambient,
    camera...)
  */
-int gizmo_list_create(GizmoList *list, size_t capacity) {
+GizmoListStatus gizmo_list_create(GizmoList *list, size_t capacity) {
 
   // create point light
   gizmo_list_alloc((void **)&list->point_light.entries, capacity,
@@ -73,33 +73,33 @@ int gizmo_list_create(GizmoList *list, size_t capacity) {
                    sizeof(GizmoCamera), &list->camera.capacity,
                    &list->camera.length);
 
-  return GIZMO_LIST_SUCCESS;
+  return GizmoListStatus_Success;
 }
 
 /**
    Function that abstracts the gizmo list insertion process.
    Inserts a given item in the list entries depending on its type size.
  */
-int gizmo_list_insert(const GizmoListInsertDescriptor *desc) {
+GizmoListStatus gizmo_list_insert(const GizmoListInsertDescriptor *desc) {
 
   // check if list is init
   if (desc->entries == NULL) {
     VERBOSE_ERROR("Gizmo list not initialized.");
-    return GIZMO_LIST_ERROR;
+    return GizmoListStatus_NotInit;
   }
 
   size_t new_capacity = 2 * (*desc->capacity);
   // check list capacity
   if (*desc->length == *desc->capacity &&
       gizmo_list_expand(desc->entries, new_capacity, sizeof(desc->type_size),
-                        desc->capacity) != GIZMO_LIST_SUCCESS)
-    return GIZMO_LIST_ERROR;
+                        desc->capacity) != GizmoListStatus_Success)
+    return GizmoListStatus_UndefError;
 
   // copy item to list memory
   memcpy(&desc->entries[(*desc->length)++], desc->new_entry,
          sizeof(desc->type_size));
 
-  return GIZMO_LIST_SUCCESS;
+  return GizmoListStatus_Success;
 }
 
 /**
@@ -118,7 +118,7 @@ void *gizmo_list_new(const GizmoListNewDescriptor *desc) {
   // check list capacity
   if (*desc->length == *desc->capacity &&
       gizmo_list_expand(desc->entries, new_capacity, sizeof(desc->type_size),
-                        desc->capacity) != GIZMO_LIST_SUCCESS)
+                        desc->capacity) != GizmoListStatus_Success)
     return NULL;
 
   return desc->entries[(*desc->length)++];
@@ -127,7 +127,7 @@ void *gizmo_list_new(const GizmoListNewDescriptor *desc) {
 /**
    Insert given light to the point light gizmo
  */
-int gizmo_list_insert_point_light(GizmoList *list, GizmoPointLight *gizmo) {
+GizmoListStatus gizmo_list_insert_point_light(GizmoList *list, GizmoPointLight *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
@@ -148,7 +148,7 @@ GizmoPointLight *gizmo_list_new_point_light(GizmoList *list) {
 }
 
 // ambient light gizmo
-int gizmo_list_insert_ambient_light(GizmoList *list, GizmoAmbientLight *gizmo) {
+GizmoListStatus gizmo_list_insert_ambient_light(GizmoList *list, GizmoAmbientLight *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
@@ -169,7 +169,7 @@ GizmoAmbientLight *gizmo_list_new_ambient_light(GizmoList *list) {
 }
 
 // sun light gizmo
-int gizmo_list_insert_sun_light(GizmoList *list, GizmoSunLight *gizmo) {
+GizmoListStatus gizmo_list_insert_sun_light(GizmoList *list, GizmoSunLight *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
@@ -190,7 +190,7 @@ GizmoSunLight *gizmo_list_new_sun_light(GizmoList *list) {
 }
 
 // spot light gizmo
-int gizmo_list_insert_spot_light(GizmoList *list, GizmoSpotLight *gizmo) {
+GizmoListStatus gizmo_list_insert_spot_light(GizmoList *list, GizmoSpotLight *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){
@@ -212,7 +212,7 @@ GizmoSpotLight *gizmo_list_new_spot_light(GizmoList *list) {
 }
 
 // camera gizmo
-int gizmo_list_insert_camera(GizmoList *list, GizmoCamera *gizmo) {
+GizmoListStatus gizmo_list_insert_camera(GizmoList *list, GizmoCamera *gizmo) {
 
   // insert new entry (use abstract function gizmo_list_insert)
   return gizmo_list_insert(&(GizmoListInsertDescriptor){

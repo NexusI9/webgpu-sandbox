@@ -14,9 +14,12 @@
 #define SCENE_CAMERA_LIST_CAPACITY 16
 #define SCENE_PIPELINE_COUNT 5
 
-#define SCENE_SUCCESS 0
-#define SCENE_MAX_CAPACITY_REACH 1
-#define SCENE_ALLOC_FAILURE 2
+typedef enum{
+  SceneStatus_Success,
+  SceneStatus_MaxCapacityReach,
+  SceneStatus_AllocFail,
+}SceneStatus;
+
 
 typedef uint8_t shader_bind_t;
 

@@ -132,10 +132,9 @@ void mesh_topology_boundbox_worldspace(AABB *bound, vec3 corners[8],
   }
 }
 
-int mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
-                                  MeshTopologyBoundbox *bound,
-                                  const WGPUDevice *device,
-                                  const WGPUQueue *queue) {
+MeshTopologyBoundboxStatus mesh_topology_boundbox_create(
+    MeshTopologyBase *base, mat4 model_matrix, MeshTopologyBoundbox *bound,
+    const WGPUDevice *device, const WGPUQueue *queue) {
 
   // allocate vertex + index attribute
   // 12 edges * 4 vertex (/edges)
@@ -184,7 +183,7 @@ int mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
                     .mappedAtCreation = false,
                 });
 
-  return MESH_TOPOLOGY_BOUNDBOX_SUCCESS;
+  return MeshTopologyBoundboxStatus_Success;
 }
 
 /**
@@ -220,9 +219,10 @@ MeshTopology mesh_topology_boundbox_vertex(MeshTopologyBoundbox *bound) {
   };
 }
 
-int mesh_topology_boundbox_update(const MeshTopologyBase *base, mat4 model,
-                                  MeshTopologyBoundbox *bound,
-                                  const WGPUQueue *queue) {
+MeshTopologyBoundboxStatus
+mesh_topology_boundbox_update(const MeshTopologyBase *base, mat4 model,
+                              MeshTopologyBoundbox *bound,
+                              const WGPUQueue *queue) {
 
   // get base min max
   mesh_topology_boundbox_compute_bound(base, model, bound);
@@ -236,5 +236,5 @@ int mesh_topology_boundbox_update(const MeshTopologyBase *base, mat4 model,
                        bound->attribute.entries,
                        bound->attribute.length * sizeof(vattr_t));*/
 
-  return MESH_TOPOLOGY_BOUNDBOX_SUCCESS;
+  return MeshTopologyBoundboxStatus_Success;
 }

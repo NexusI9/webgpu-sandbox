@@ -4,9 +4,11 @@
 #include "anchor.h"
 #include "base.h"
 
-#define MESH_TOPOLOGY_BOUNDBOX_SUCCESS 0
-#define MESH_TOPOLOGY_BOUNDBOX_ALLOC_FAIL 1
-#define MESH_TOPOLOGY_BOUNDBOX_ERROR 2
+typedef enum {
+  MeshTopologyBoundboxStatus_Success,
+  MeshTopologyBoundboxStatus_AllocFail,
+  MeshTopologyBoundboxStatus_UndefError,
+} MeshTopologyBoundboxStatus;
 
 typedef struct {
   VertexIndex index;
@@ -18,13 +20,14 @@ typedef struct {
 void mesh_topology_boundbox_compute_bound(const MeshTopologyBase *, mat4,
                                           MeshTopologyBoundbox *);
 
-int mesh_topology_boundbox_create(MeshTopologyBase *, mat4,
-                                  MeshTopologyBoundbox *, const WGPUDevice *,
-                                  const WGPUQueue *);
+MeshTopologyBoundboxStatus
+mesh_topology_boundbox_create(MeshTopologyBase *, mat4, MeshTopologyBoundbox *,
+                              const WGPUDevice *, const WGPUQueue *);
 
 MeshTopology mesh_topology_boundbox_vertex(MeshTopologyBoundbox *);
 
-int mesh_topology_boundbox_update(const MeshTopologyBase *, mat4,
-                                  MeshTopologyBoundbox *, const WGPUQueue *);
+MeshTopologyBoundboxStatus
+mesh_topology_boundbox_update(const MeshTopologyBase *, mat4,
+                              MeshTopologyBoundbox *, const WGPUQueue *);
 
 #endif

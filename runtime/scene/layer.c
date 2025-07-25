@@ -16,7 +16,7 @@
    Create a new layer by duplicating name and allocating room for its mesh
    reference list.
  */
-int scene_layer_create(SceneLayer *layer, const char *name, size_t capacity) {
+SceneLayerStatus scene_layer_create(SceneLayer *layer, const char *name, size_t capacity) {
 
   // assign name
   layer->name = strdup(name);
@@ -24,7 +24,7 @@ int scene_layer_create(SceneLayer *layer, const char *name, size_t capacity) {
   // alloc mesh ref list
   mesh_ref_list_create(&layer->meshes, capacity);
 
-  return SCENE_LAYER_SUCCESS;
+  return SceneLayerStatus_Success;
 }
 
 /**
@@ -81,7 +81,7 @@ static int scene_layer_set_expand(SceneLayerSet *);
 /**
    Create a new layer set with certain capacity
  */
-int scene_layer_set_create(SceneLayerSet *set, size_t capacity) {
+DynamicListStatus scene_layer_set_create(SceneLayerSet *set, size_t capacity) {
 
   return dyli_create((void *)&set->entries, &set->capacity, &set->length,
                      sizeof(SceneLayer), SCENE_LAYER_SET_CAPACITY,
@@ -106,7 +106,7 @@ SceneLayer *scene_layer_set_create_layer(SceneLayerSet *set, const char *name) {
   if (set->length >= set->capacity * 0.75 &&
       dyli_expand((void *)&set->entries, &set->capacity, &set->length,
                   sizeof(SceneLayer), 2,
-                  "Scene Layer Set") != DYNAMIC_LIST_SUCCESS) {
+                  "Scene Layer Set") != DynamicListStatus_Success) {
     return NULL;
   }
 
@@ -178,10 +178,10 @@ int scene_layer_set_delete(SceneLayerSet *set, const char *name) {
   if (layer && layer->meshes.entries != NULL) {
     scene_layer_free(layer);
     set->length--;
-    return SCENE_LAYER_SUCCESS;
+    return SceneLayerStatus_Success;
   }
 
-  return SCENE_LAYER_SET_UNFOUND;
+  return SceneLayerStatus_SetUnfound;
 }
 
 /**

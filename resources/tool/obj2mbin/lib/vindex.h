@@ -11,9 +11,13 @@
 #define VINDEX_SEPARATOR "/"
 #define VINDEX_GROUP_SEPARATOR " "
 
+typedef enum{
+  VIndexStatus_Success,
+  VIndexStatus_AllocFail,
+} VIndexStatus;
+
 #define VINDEX_DEFAULT_CAPACITY 64
-#define VINDEX_SUCCESS 0
-#define VINDEX_ALLOC_FAILURE 1
+
 
 /* Structure list
   List > Group > Attribute
@@ -45,7 +49,7 @@ typedef struct {
 
 void index_attribute_cache(FILE *, IndexAttributeList *, const char *,
                            const char *);
-int index_attribute_triangulate(IndexAttributeList *);
+VIndexStatus index_attribute_triangulate(IndexAttributeList *);
 void index_attribute_position_list(IndexAttributeGroup *, mbin_index_t *,
                                    size_t *, size_t *);
 

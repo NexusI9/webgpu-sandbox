@@ -5,9 +5,13 @@
 #include "emscripten/html5.h"
 #include <stdint.h>
 
-#define HTML_EVENT_SUCCESS 0
-#define HTML_EVENT_ALLOC_FAIL 1
-#define HTML_EVENT_UNDEF_ERROR 2
+
+typedef enum{
+  HTMLEventStatus_Success,
+  HTMLEventStatus_AllocFail,
+  HTMLEventStatus_UndefError,
+} HTMLEventStatus;
+
 #define HTML_EVENT_DEFAULT_CAPACITY 64
 
 typedef const char *html_event_target;

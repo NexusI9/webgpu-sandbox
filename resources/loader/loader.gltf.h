@@ -6,11 +6,14 @@
 #include <webgpu/webgpu.h>
 
 
-#define LOADER_GLTF_SUCCESS 0
-#define LOADER_GLTF_UNDEF_ERROR 1
-#define LOADER_GLTF_TEXTURE_FOUND 2
-#define LOADER_GLTF_TEXTURE_UNFOUND 3
-#define LOADER_GLTF_TEXTURE_LOAD_ERROR 4
+
+typedef enum{
+  LoaderGLTFStatus_Success,
+  LoaderGLTFStatus_UndefError,
+  LoaderGLTFStatus_TextureFound,
+  LoaderGLTFStatus_TextureUnfound,
+  LoaderGLTFStatus_LoadError,
+} LoaderGLTFStatus;
 
 typedef struct {
   cgltf_texture_view diffuse;

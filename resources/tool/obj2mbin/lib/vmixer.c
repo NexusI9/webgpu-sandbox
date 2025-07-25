@@ -1,6 +1,7 @@
 #include "vmixer.h"
 #include "string.h"
 #include "vhash.h"
+#include "vindex.h"
 
 static void vmixer_index_create_vertex_set(IndexAttributeList *,
                                            VertexAttributeList **,
@@ -99,11 +100,11 @@ void vmixer_index_create_vertex_set(IndexAttributeList *index_list,
       mbin_index_t index;
       int insert_result = vhash_insert(table, vertices, &index);
 
-      if (insert_result == VHASH_SUCCESS) {
+      if (insert_result == VHashStatus_Success) {
         // if inserted, push values in the buffers
         vertex_buffer_insert(vb, vertices, VERTEX_STRIDE);
         index_buffer_insert(ib, index);
-      } else if (insert_result == VHASH_EXIST) {
+      } else if (insert_result == VHashStatus_Exist) {
         // else if already exist and could find it, add the index
         VertexHashKey *search_result = vhash_search(table, vertices);
         if (search_result)
@@ -126,10 +127,10 @@ int vmixer_index_compose_from_vertex(IndexAttributeList *index_list,
     vmixer_index_create_vertex_set(index_list, attr_list, &table, vb, ib);
   } else {
     perror("Couldn't create hash table for index composing\n");
-    return VINDEX_ALLOC_FAILURE;
+    return VIndexStatus_AllocFail;
   }
 
-  return VINDEX_SUCCESS;
+  return VIndexStatus_Success;
 }
 
 /**

@@ -37,7 +37,7 @@ MeshTopology mesh_topology_base_vertex(MeshTopologyBase *topo) {
 /**
    Create the base vertex attributes and upload data to buffer
  */
-int mesh_topology_base_create_vertex_attribute(MeshTopologyBase *base,
+MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(MeshTopologyBase *base,
                                                const VertexAttribute *va,
                                                const WGPUDevice *device,
                                                const WGPUQueue *queue) {
@@ -66,16 +66,16 @@ int mesh_topology_base_create_vertex_attribute(MeshTopologyBase *base,
                       .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
                       .mappedAtCreation = false,
                   });
-    return MESH_TOPOLOGY_BASE_SUCCESS;
+    return MeshTopologyBaseStatus_Success;
   }
 
-  return MESH_TOPOLOGY_BASE_EMPTY;
+  return MeshTopologyBaseStatus_Empty;
 }
 
 /**
    Create the base index attributes and upload data to buffer
  */
-int mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
+MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
                                            const VertexIndex *vi,
                                            const WGPUDevice *device,
                                            const WGPUQueue *queue) {
@@ -106,10 +106,10 @@ int mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
                       .mappedAtCreation = false,
                   });
 
-    return MESH_TOPOLOGY_BASE_SUCCESS;
+    return MeshTopologyBaseStatus_Success;
   }
 
-  return MESH_TOPOLOGY_BASE_EMPTY;
+  return MeshTopologyBaseStatus_Empty;
 }
 
 /**

@@ -5,8 +5,12 @@
 #include <stddef.h>
 
 #define MBIN_BUFFER_DEFAULT_CAPACITY 1024
-#define MBIN_BUFFER_SUCCESS 0
-#define MBIN_BUFFER_ALLOC_FAILURE 1
+
+typedef enum {
+  MBINBufferStatus_Success,
+  MBINBufferStatus_AllocFail,
+} MBINBufferStatus;
+
 
 typedef struct {
   size_t capacity;
@@ -20,11 +24,11 @@ typedef struct {
   mbin_index_t *entries;
 } IndexBuffer;
 
-int vertex_buffer_insert(VertexBuffer *, mbin_vertex_t *, size_t);
-int index_buffer_insert(IndexBuffer *, mbin_index_t);
+MBINBufferStatus vertex_buffer_insert(VertexBuffer *, mbin_vertex_t *, size_t);
+MBINBufferStatus index_buffer_insert(IndexBuffer *, mbin_index_t);
 
 void vertex_buffer_free(VertexBuffer *);
 void index_buffer_free(IndexBuffer *);
-int buffer_merge_data(VertexBuffer *, IndexBuffer *, mbin_data_t *);
+MBINBufferStatus buffer_merge_data(VertexBuffer *, IndexBuffer *, mbin_data_t *);
 
 #endif

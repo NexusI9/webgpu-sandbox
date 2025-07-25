@@ -19,7 +19,7 @@ static int camera_raycast_hit_list_sort_func(const void *a, const void *b) {
 /**
    Allocate hit list entries and define base parameters
  */
-int camera_raycast_hit_list_create(CameraRaycastHitList *list,
+CameraRaycastHitListStatus camera_raycast_hit_list_create(CameraRaycastHitList *list,
                                    size_t capacity) {
 
   list->entries = calloc(capacity, sizeof(CameraRaycastHit));
@@ -30,10 +30,10 @@ int camera_raycast_hit_list_create(CameraRaycastHitList *list,
     VERBOSE_ERROR("Couldn't allocate camera raycast hit list entries.");
     list->capacity = 0;
     list->length = 0;
-    return CAMERA_RAYCAST_HIT_LIST_ALLOC_FAIL;
+    return CameraRaycastHitListStatus_AllocFail;
   }
 
-  return CAMERA_RAYCAST_HIT_LIST_SUCCESS;
+  return CameraRaycastHitListStatus_Success;
 }
 
 /**

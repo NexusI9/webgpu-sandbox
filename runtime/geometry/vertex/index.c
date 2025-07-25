@@ -1,9 +1,10 @@
 #include "index.h"
+#include "core.h"
 #include "string.h"
 #include <stddef.h>
 #include "../utils/system.h"
 
-int vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
+VertexStatus vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
 
   if (dest->entries)
     vertex_index_destroy(dest);
@@ -19,12 +20,12 @@ int vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
     dest->buffer = NULL;
     dest->capacity = 0;
     dest->length = 0;
-    return VERTEX_ALLOC_FAIL;
+    return VertexStatus_AllocFail;
   }
 
   memcpy(dest->entries, src->entries, length);
 
-  return VERTEX_SUCCESS;
+  return VertexStatus_Success;
 }
 
 void vertex_index_destroy(VertexIndex *vi) {
@@ -40,7 +41,7 @@ void vertex_index_print(VertexIndex *vi) {
   printf("\n");
 }
 
-int vertex_index_create(VertexIndex *vi, size_t capacity, WGPUBuffer buffer) {
+VertexStatus vertex_index_create(VertexIndex *vi, size_t capacity, WGPUBuffer buffer) {
 
   vi->length = 0;
   vi->capacity = capacity;
@@ -51,13 +52,13 @@ int vertex_index_create(VertexIndex *vi, size_t capacity, WGPUBuffer buffer) {
     VERBOSE_ERROR("Could't create vertex index.");
     vi->capacity = 0;
     vi->buffer = NULL;
-    return VERTEX_ALLOC_FAIL;
+    return VertexStatus_AllocFail;
   }
 
-  return VERTEX_SUCCESS;
+  return VertexStatus_Success;
 }
 
-int vertex_index_insert(VertexIndex *vi, vindex_t *index_list, size_t length) {
+VertexStatus vertex_index_insert(VertexIndex *vi, vindex_t *index_list, size_t length) {
 
   // check capacity
   if (vi->length + length >= vi->capacity) {
@@ -70,7 +71,7 @@ int vertex_index_insert(VertexIndex *vi, vindex_t *index_list, size_t length) {
       vi->entries = temp;
     } else {
       VERBOSE_ERROR("Could't reallocate vertex index.");
-      return VERTEX_ALLOC_FAIL;
+      return VertexStatus_AllocFail;
     }
   }
 
@@ -80,5 +81,5 @@ int vertex_index_insert(VertexIndex *vi, vindex_t *index_list, size_t length) {
   // incr length
   vi->length += length;
 
-  return VERTEX_SUCCESS;
+  return VertexStatus_Success;
 }

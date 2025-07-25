@@ -101,6 +101,8 @@ void scene_selection_init(Scene *scene) {
   mesh_ref_list_create(&scene->pipelines[ScenePipeline_Selection],
                        SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
+  // init gizmo cached position
+
   /**
       ===================== ADD SELECTION RELATED EVENTS ===================
 

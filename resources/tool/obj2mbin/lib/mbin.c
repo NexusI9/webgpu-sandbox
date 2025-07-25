@@ -19,7 +19,7 @@
    As a result it's necessary to allocate the whole MBIN block with the data
    size included.
 */
-int mbin_create(MBINFile **mbin, const MBINFileCreateDescriptor *desc) {
+MBINStatus mbin_create(MBINFile **mbin, const MBINFileCreateDescriptor *desc) {
 
   size_t index_size = desc->index_length * desc->index_size_type;
   size_t vert_size = desc->vertex_length * desc->vertex_size_type;
@@ -29,7 +29,7 @@ int mbin_create(MBINFile **mbin, const MBINFileCreateDescriptor *desc) {
 
   if (mbin == NULL) {
     perror("Failed to allocate memory for MBIN object\n");
-    return MBIN_ALLOC_FAIL;
+    return MBINStatus_AllocFail;
   }
 
   (*mbin)->index_length = desc->index_length;
@@ -37,10 +37,10 @@ int mbin_create(MBINFile **mbin, const MBINFileCreateDescriptor *desc) {
   (*mbin)->vertex_size_type = desc->vertex_size_type;
   (*mbin)->vertex_length = desc->vertex_length;
 
-  return MBIN_SUCCESS;
+  return MBINStatus_Success;
 }
 
-int mbin_write_buffer(const char *path, MBINFile *mbin) {
+MBINStatus mbin_write_buffer(const char *path, MBINFile *mbin) {
 
   FILE *f = fopen(path, "wb");
 
@@ -61,7 +61,7 @@ int mbin_write_buffer(const char *path, MBINFile *mbin) {
   fwrite(mbin, sizeof(MBINFile) + data_size, 1, f);
   fclose(f);
 
-  return 0;
+  return MBINStatus_Success;
 }
 
 void mbin_print(MBINFile *mbin) {

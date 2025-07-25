@@ -1,5 +1,5 @@
-#include "vector.h"
-#include "system.h"
+#include "core.h"
+#include "../system.h"
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 

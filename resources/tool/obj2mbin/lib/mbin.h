@@ -1,8 +1,10 @@
 #ifndef _MBIN_H_
 #define _MBIN_H_
 
-#define MBIN_ALLOC_FAIL 1
-#define MBIN_SUCCESS 0
+typedef enum{
+  MBINStatus_Success,
+  MBINStatus_AllocFail,
+} MBINStatus;
 
 #include <stddef.h>
 #include <stdint.h>
@@ -75,8 +77,8 @@ typedef struct {
 } MBINFile;
 #pragma pack(pop)
 
-int mbin_create(MBINFile **, const MBINFileCreateDescriptor *);
-int mbin_write_buffer(const char *, MBINFile *);
+MBINStatus mbin_create(MBINFile **, const MBINFileCreateDescriptor *);
+MBINStatus mbin_write_buffer(const char *, MBINFile *);
 void mbin_print(MBINFile *);
 void mbin_free(MBINFile **);
 

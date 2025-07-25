@@ -3,9 +3,12 @@
 
 #include "../../mesh/mesh.h"
 
-#define CAMERA_RAYCAST_HIT_LIST_SUCCESS 0
-#define CAMERA_RAYCAST_HIT_LIST_ALLOC_FAIL 1
-#define CAMERA_RAYCAST_HIT_LIST_UNDEF_ERROR 2
+typedef enum {
+  CameraRaycastHitListStatus_Success,
+  CameraRaycastHitListStatus_AllocFail,
+  CameraRaycastHitListStatus_UndefError,
+} CameraRaycastHitListStatus;
+
 #define CAMERA_RAYCAST_HIT_LIST_MAX_HIT 128
 
 typedef struct {
@@ -14,14 +17,13 @@ typedef struct {
 } CameraRaycastHit;
 
 typedef struct {
-  CameraRaycastHit* entries;
+  CameraRaycastHit *entries;
   size_t capacity;
   size_t length;
 } CameraRaycastHitList;
 
-
-int camera_raycast_hit_list_create(CameraRaycastHitList*, size_t);
-void camera_raycast_hit_list_empty(CameraRaycastHitList*);
-void camera_raycast_hit_list_sort(CameraRaycastHitList*);
+CameraRaycastHitListStatus camera_raycast_hit_list_create(CameraRaycastHitList *, size_t);
+void camera_raycast_hit_list_empty(CameraRaycastHitList *);
+void camera_raycast_hit_list_sort(CameraRaycastHitList *);
 
 #endif

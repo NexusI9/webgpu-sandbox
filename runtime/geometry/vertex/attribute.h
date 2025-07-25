@@ -19,7 +19,7 @@ void vertex_attribute_set_position(VertexAttribute *, vertex_position *);
 void vertex_attribute_set_normal(VertexAttribute *, vertex_normal *);
 void vertex_attribute_set_color(VertexAttribute *, vertex_color *);
 void vertex_attribute_set_uv(VertexAttribute *, vertex_uv *);
-int vertex_attribute_copy(VertexAttribute *, VertexAttribute *);
+VertexStatus vertex_attribute_copy(VertexAttribute *, VertexAttribute *);
 void vertex_attribute_destroy(VertexAttribute *);
 
 #endif

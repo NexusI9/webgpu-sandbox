@@ -18,7 +18,7 @@ void vertex_attribute_print(VertexAttributeList *list) {
   printf("\n");
 }
 
-int vertex_attribute_list_insert(VertexAttributeList *list,
+VertexAttributeListStatus vertex_attribute_list_insert(VertexAttributeList *list,
                                  mbin_vertex_t *value, size_t count) {
 
   // init list
@@ -26,7 +26,7 @@ int vertex_attribute_list_insert(VertexAttributeList *list,
     list->entries = malloc(sizeof(mbin_vertex_t) * list->capacity);
     if (list->entries == NULL) {
       perror("Couldn't create list\n");
-      return VERTEX_ATTRIBUTE_LIST_ALLOC_FAIL;
+      return VertexAttributeListStatus_AllocFail;
     }
   }
 
@@ -41,14 +41,14 @@ int vertex_attribute_list_insert(VertexAttributeList *list,
       list->capacity = new_capacity;
     } else {
       perror("Couldn't realloc list\n");
-      return VERTEX_ATTRIBUTE_LIST_ALLOC_FAIL;
+      return VertexAttributeListStatus_AllocFail;
     }
   }
 
   memcpy(&list->entries[list->length], value, count * sizeof(mbin_vertex_t));
   list->length += count;
 
-  return VERTEX_ATTRIBUTE_LIST_SUCCESS;
+  return VertexAttributeListStatus_Success;
 }
 
 /**
@@ -99,7 +99,7 @@ void vertex_attribute_free(VertexAttributeList *list) {
   }
 }
 
-int vertex_attribute_copy(VertexAttributeList *src, VertexAttributeList *dest) {
+VertexAttributeListStatus vertex_attribute_copy(VertexAttributeList *src, VertexAttributeList *dest) {
   dest->capacity = src->capacity;
   dest->length = src->length;
   dest->dimension = src->dimension;
@@ -116,10 +116,10 @@ int vertex_attribute_copy(VertexAttributeList *src, VertexAttributeList *dest) {
 
     free(dest->prefix);
     dest->prefix = NULL;
-    return VERTEX_ATTRIBUTE_LIST_ALLOC_FAIL;
+    return VertexAttributeListStatus_AllocFail;
   }
 
   memcpy(dest->entries, src->entries, dest->length * sizeof(mbin_vertex_t));
 
-  return VERTEX_ATTRIBUTE_LIST_SUCCESS;
+  return VertexAttributeListStatus_Success;
 }

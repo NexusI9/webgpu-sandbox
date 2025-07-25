@@ -11,7 +11,7 @@ typedef struct {
 } TextureCreateDescriptor;
 
 void texture_create(Texture *, const TextureCreateDescriptor *);
-int texture_create_from_file(Texture *, const char *, bool flip);
+TextureStatus texture_create_from_file(Texture *, const char *, bool flip);
 
 
 

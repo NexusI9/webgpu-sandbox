@@ -2,9 +2,12 @@
 #define _LIGHT_LIST_H_
 #include "core.h"
 
-#define LIGHT_LIST_SUCCESS 0
-#define LIGHT_LIST_ALLOC_FAIL 1
-#define LIGHT_LIST_ERROR 2
+
+typedef enum{
+  LightListStatus_Success,
+  LightListStatus_AlloFail,
+  LightListStatus_Error,
+} LightListStatus;
 
 typedef struct {
   PointLightList point;
@@ -14,7 +17,7 @@ typedef struct {
 } LightList;
 
 
-int light_list_create(LightList*, size_t);
+LightListStatus light_list_create(LightList*, size_t);
 
 
 #endif

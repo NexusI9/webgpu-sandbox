@@ -10,10 +10,14 @@
 #include <stddef.h>
 #include <webgpu/webgpu.h>
 
+typedef enum {
+  GizmoListStatus_Success,
+  GizmoListStatus_AllocFail,
+  GizmoListStatus_NotInit,
+  GizmoListStatus_UndefError,
+} GizmoListStatus;
+
 #define GIZMO_LIST_CAPACITY_DEFAULT 16
-#define GIZMO_LIST_SUCCESS 0
-#define GIZMO_LIST_ALLOC_FAIL 1
-#define GIZMO_LIST_ERROR 2
 
 /*
   GIZMO LIST
@@ -89,26 +93,26 @@ typedef struct {
   size_t type_size;
 } GizmoListNewDescriptor;
 
-int gizmo_list_create(GizmoList *, size_t capacity);
+GizmoListStatus gizmo_list_create(GizmoList *, size_t capacity);
 
 // point light gizmo
-int gizmo_list_insert_point_light(GizmoList *, GizmoPointLight *);
+GizmoListStatus gizmo_list_insert_point_light(GizmoList *, GizmoPointLight *);
 GizmoPointLight *gizmo_list_new_point_light(GizmoList *);
 
 // ambient light gizmo
-int gizmo_list_insert_ambient_light(GizmoList *, GizmoAmbientLight *);
+GizmoListStatus gizmo_list_insert_ambient_light(GizmoList *, GizmoAmbientLight *);
 GizmoAmbientLight *gizmo_list_new_ambient_light(GizmoList *);
 
 // sun light gizmo
-int gizmo_list_insert_sun_light(GizmoList *, GizmoSunLight *);
+GizmoListStatus gizmo_list_insert_sun_light(GizmoList *, GizmoSunLight *);
 GizmoSunLight *gizmo_list_new_sun_light(GizmoList *);
 
 // spot light gizmo
-int gizmo_list_insert_spot_light(GizmoList *, GizmoSpotLight *);
+GizmoListStatus gizmo_list_insert_spot_light(GizmoList *, GizmoSpotLight *);
 GizmoSpotLight *gizmo_list_new_spot_light(GizmoList *);
 
 // camera gizmo
-int gizmo_list_insert_camera(GizmoList *, GizmoCamera *);
+GizmoListStatus gizmo_list_insert_camera(GizmoList *, GizmoCamera *);
 GizmoCamera *gizmo_list_new_camera(GizmoList *);
 
 #endif

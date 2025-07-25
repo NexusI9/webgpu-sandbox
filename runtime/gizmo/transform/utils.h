@@ -15,4 +15,5 @@ void gizmo_transform_create_mesh(MeshRefList *,
                                  const GizmoTransformCreateMeshDescriptor *);
 
 void gizmo_transform_origin(GizmoTransform *, vec3 *);
+
 #endif

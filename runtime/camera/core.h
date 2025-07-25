@@ -1,9 +1,12 @@
 #ifndef _CAMERA_CORE_H_
 #define _CAMERA_CORE_H_
 
-#define CAMERA_SUCCESS 0
-#define CAMERA_ALLOC_FAIL 1
-#define CAMERA_ERROR 2
+
+typedef enum{
+  CameraStatus_Success,
+  CameraStatus_AllocFail,
+  CameraStatus_Error,
+} CameraStatus;
 
 #include "../backend/clock.h"
 #include "../backend/registry.h"

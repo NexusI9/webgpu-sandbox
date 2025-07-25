@@ -8,7 +8,7 @@ typedef struct {
 } MeshRefListArray;
 
 // creators
-int mesh_ref_list_create(MeshRefList *, const size_t);
+MeshStatus mesh_ref_list_create(MeshRefList *, const size_t);
 Mesh *mesh_ref_list_insert(MeshRefList *, Mesh *);
 
 // destructors
@@ -17,8 +17,8 @@ void mesh_ref_list_empty(MeshRefList *);
 void mesh_ref_list_free(MeshRefList *);
 
 // transferts
-int mesh_ref_list_transfert(MeshRefList *, MeshRefList *);
-int mesh_ref_list_copy(const MeshRefList *, MeshRefList *);
+MeshStatus mesh_ref_list_transfert(MeshRefList *, MeshRefList *);
+MeshStatus mesh_ref_list_copy(const MeshRefList *, MeshRefList *);
 
 // utils
 Mesh *mesh_ref_list_find(const MeshRefList *, Mesh *);

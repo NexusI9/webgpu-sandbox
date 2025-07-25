@@ -25,7 +25,7 @@
 
 static IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *);
 static IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *);
-static int index_attribute_insert_group(char *, IndexAttributeGroup *,
+static VIndexStatus index_attribute_insert_group(char *, IndexAttributeGroup *,
                                         const char *);
 static void index_attribute_from_line(const char *, void *);
 
@@ -42,7 +42,7 @@ void index_attribute_print(const IndexAttributeList *list) {
   }
 }
 
-int index_attribute_insert_group(char *line, IndexAttributeGroup *list,
+VIndexStatus index_attribute_insert_group(char *line, IndexAttributeGroup *list,
                                  const char *pattern) {
 
   // split values and push them into the current list
@@ -79,7 +79,7 @@ int index_attribute_insert_group(char *line, IndexAttributeGroup *list,
     index_group = strtok(0, VINDEX_GROUP_SEPARATOR);
   }
 
-  return 0;
+  return VIndexStatus_Success;
 }
 
 IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *list) {
@@ -186,7 +186,7 @@ void index_attribute_cache(FILE *file, IndexAttributeList *list,
    responsibility to ensure the model has valid polygons count per faces
    (i.e.NGons could create unwanted topology)
  */
-int index_attribute_triangulate(IndexAttributeList *list) {
+VIndexStatus index_attribute_triangulate(IndexAttributeList *list) {
 
   for (size_t i = 0; i < list->length; i++) {
 
@@ -194,7 +194,7 @@ int index_attribute_triangulate(IndexAttributeList *list) {
 
     // already triangle
     if (group->length < 4)
-      return VINDEX_SUCCESS;
+      return VIndexStatus_Success;
 
     size_t capacity = (group->length - 2) * 3;
     IndexAttributeGroup new_group = {
@@ -205,7 +205,7 @@ int index_attribute_triangulate(IndexAttributeList *list) {
 
     if (!new_group.entries) {
       perror("Couldn't create new group attrubute\n");
-      return VINDEX_ALLOC_FAILURE;
+      return VIndexStatus_AllocFail;
     }
 
     // fan triangle
@@ -223,7 +223,7 @@ int index_attribute_triangulate(IndexAttributeList *list) {
     group->length = new_group.length;
     group->capacity = new_group.capacity;
   }
-  return VINDEX_SUCCESS;
+  return VIndexStatus_Success;
 }
 
 /**

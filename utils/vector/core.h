@@ -1,5 +1,5 @@
-#ifndef _VECTOR_UTILS_H_
-#define _VECTOR_UTILS_H_
+#ifndef _VECTOR_UTILS_CORE_H_
+#define _VECTOR_UTILS_CORE_H_
 
 #include <cglm/cglm.h>
 #include <stdbool.h>
@@ -43,5 +43,4 @@ void vec_baycentric(const vec2, const vec2, const vec2, const vec2,
 void ivec_to_vec(const int *, const VectorLength, float *);
 
 void vec_world_axis(const Axis, vec3 *);
-
 #endif

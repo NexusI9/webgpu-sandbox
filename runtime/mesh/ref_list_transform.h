@@ -2,7 +2,7 @@
 #define _MESH_REFERENCE_LIST_TRANSFORM_H_
 
 #include "ref_list.h"
-#include "../utils/vector.h"
+#include "../utils/vector/vector.h"
 
 // scale
 void mesh_ref_list_scale(MeshRefList *, vec3);

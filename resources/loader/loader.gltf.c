@@ -29,7 +29,7 @@ static void loader_gltf_create_shader(Shader *, WGPUDevice *, WGPUQueue *,
 static void loader_gltf_bind_uniforms(Shader *, cgltf_material *,
                                       WGPUTextureView *);
 
-static uint8_t loader_gltf_extract_texture(cgltf_texture_view *, void **,
+static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *, void **,
                                            size_t *, int *, int *);
 
 void loader_gltf_load(const GLTFLoadDescriptor *desc) {
@@ -336,7 +336,7 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
     // If find texture, upload new texture to GPU and bind to shader
     //(before freeing it)
     if (loader_gltf_extract_texture(texture_view_list[t], &data, &size, &width,
-                                    &height) == LOADER_GLTF_TEXTURE_FOUND) {
+                                    &height) == LoaderGLTFStatus_TextureFound) {
 
       // send texture + sampler to shader
       shader_add_texture(
@@ -412,7 +412,7 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
     1. if uri => load image (TODO)
     2. if buffer_view => store buffer & size
  */
-uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
+LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
                                     void **data, size_t *size, int *width,
                                     int *height) {
 
@@ -438,22 +438,22 @@ uint8_t loader_gltf_extract_texture(cgltf_texture_view *texture_view,
 
       *size = (*width) * (*height) * TEXTURE_CHANNELS_RGBA;
 
-      return LOADER_GLTF_TEXTURE_FOUND;
+      return LoaderGLTFStatus_TextureFound;
 
     } else {
       VERBOSE_PRINT(
           "Loader GLTF: Texture found but couldn't be loaded, loading "
           "default texture");
-      return LOADER_GLTF_TEXTURE_UNFOUND;
+      return LoaderGLTFStatus_LoadError;
     }
 
   } else {
     VERBOSE_PRINT(
         "Loader GLTF: Couldn't find texture, loading default texture");
-    return LOADER_GLTF_TEXTURE_UNFOUND;
+    return LoaderGLTFStatus_TextureUnfound;
   }
 
-  return LOADER_GLTF_UNDEF_ERROR;
+  return LoaderGLTFStatus_UndefError;
 }
 
 void loader_gltf_mesh_position(Mesh *mesh, const char *name, cgltf_data *data) {

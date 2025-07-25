@@ -1,7 +1,7 @@
 #ifndef _TEXTURE_CORE_H_
 #define _TEXTURE_CORE_H_
 
-#include "../utils/vector.h"
+#include "../utils/vector/vector.h"
 #include <cglm/cglm.h>
 #include <stdint.h>
 #include <webgpu/webgpu.h>
@@ -11,9 +11,12 @@
 #define TEXTURE_CHANNELS_R 1
 #define TEXTURE_MIN_SIZE 64
 
-#define TEXTURE_SUCCESS 0
-#define TEXTURE_ALLOC_FAIL 1
-#define TEXTURE_FILE_ERROR 2
+
+typedef enum{
+  TextureStatus_Success,
+  TextureStatus_AllocFail,
+  TextureStatus_FileError,
+} TextureStatus;
 
 typedef unsigned char *texture_data;
 

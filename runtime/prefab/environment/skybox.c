@@ -219,7 +219,7 @@ void prefab_skybox_create(Scene *scene,
 
     Texture layer_texture;
     if (texture_create_from_file(&layer_texture, path, false) ==
-        TEXTURE_SUCCESS) {
+        TextureStatus_Success) {
 
       // upload image to gpu and update relative layer texture view
       prefab_skybox_create_layer(&skybox_texture, &layer_texture, i,

@@ -2,7 +2,6 @@
 #include "../include/stb/stb_image.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
-#include "../utils/vector.h"
 #include <stdlib.h>
 #include <string.h>
 

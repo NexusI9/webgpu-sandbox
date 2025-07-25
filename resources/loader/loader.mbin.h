@@ -13,9 +13,11 @@ typedef uint32_t mbin_length_t;
    2. or provide data to create scene mesh (++ flexibility)
  */
 
-#define MBIN_LOADER_SUCCESS 0
-#define MBIN_LOADER_ALLOC_FAIL 1
-#define MBIN_LOADER_LOAD_ERROR 2
+typedef enum {
+  MBINLoaderStatus_Success,
+  MBINLoaderStatus_AllocFail,
+  MBINLoaderStatus_UndefError,
+} MBINLoaderStatus;
 
 typedef struct {
   const char *path;
@@ -28,7 +30,7 @@ typedef struct {
   Primitive *primitive;
 } MBINLoadPrimitiveDescriptor;
 
-int loader_mbin_load(MBINFile **, const char *);
-int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *);
+MBINLoaderStatus loader_mbin_load(MBINFile **, const char *);
+MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *);
 
 #endif

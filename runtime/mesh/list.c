@@ -2,7 +2,7 @@
 #include "../../utils/system.h"
 #include "core.h"
 
-int mesh_list_create(MeshList *list, size_t capacity) {
+MeshStatus mesh_list_create(MeshList *list, size_t capacity) {
 
   list->entries = malloc(capacity * sizeof(Mesh));
   if (list->entries == NULL) {

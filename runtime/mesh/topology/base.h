@@ -4,10 +4,12 @@
 #include "anchor.h"
 #include "core.h"
 
-#define MESH_TOPOLOGY_BASE_SUCCESS 0
-#define MESH_TOPOLOGY_BASE_ALLOC_FAIL 1
-#define MESH_TOPOLOGY_BASE_ERROR 2
-#define MESH_TOPOLOGY_BASE_EMPTY 3
+typedef enum {
+  MeshTopologyBaseStatus_Success,
+  MeshTopologyBaseStatus_AllocFail,
+  MeshTopologyBaseStatus_Empty,
+  MeshTopologyBaseStatus_UndefError,
+} MeshTopologyBaseStatus;
 
 typedef struct {
   VertexAttribute attribute;
@@ -22,15 +24,13 @@ void mesh_topology_base_create(MeshTopologyBase *, const VertexAttribute *,
                                const VertexIndex *, const WGPUDevice *,
                                const WGPUQueue *);
 
-int mesh_topology_base_create_vertex_attribute(MeshTopologyBase *,
-                                               const VertexAttribute *,
-                                               const WGPUDevice *,
-                                               const WGPUQueue *);
+MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
+    MeshTopologyBase *, const VertexAttribute *, const WGPUDevice *,
+    const WGPUQueue *);
 
-int mesh_topology_base_create_vertex_index(MeshTopologyBase *,
-                                           const VertexIndex *,
-                                           const WGPUDevice *,
-                                           const WGPUQueue *);
+MeshTopologyBaseStatus
+mesh_topology_base_create_vertex_index(MeshTopologyBase *, const VertexIndex *,
+                                       const WGPUDevice *, const WGPUQueue *);
 
 void mesh_topology_base_scale(MeshTopologyBase *, const VertexGroup *, vec3 *);
 

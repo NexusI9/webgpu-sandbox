@@ -6,9 +6,13 @@
 #include "base.h"
 #include "core.h"
 
-#define MESH_TOPOLOGY_WIREFRAME_SUCCESS 0
-#define MESH_TOPOLOGY_WIREFRAME_ALLOC_FAIL 1
-#define MESH_TOPOLOGY_WIREFRAME_ERROR 2
+
+typedef enum{
+  MeshTopologyWireframeStatus_Success,
+  MeshTopologyWireframeStatus_AllocFail,
+  MeshTopologyWireframeStatus_UnderError,
+} MeshTopologyWireframeStatus;
+
 
 typedef struct {
   VertexIndex index;

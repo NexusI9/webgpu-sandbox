@@ -16,8 +16,11 @@
 #define MESH_NAME_MAX_LENGTH 64
 #define MESH_INDEX_FORMAT WGPUIndexFormat_Uint32
 
-#define MESH_SUCCESS 0
-#define MESH_ALLOC_FAILURE 1
+typedef enum{
+  MeshStatus_Success,
+  MeshStatus_AllocFail,
+} MeshStatus;
+
 
 typedef struct {
   struct Mesh **entries;

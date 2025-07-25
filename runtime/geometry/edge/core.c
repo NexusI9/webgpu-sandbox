@@ -1,6 +1,6 @@
 #include "core.h"
 #include "../utils/system.h"
-#include "../utils/vector.h"
+#include "../utils/vector/vector.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>

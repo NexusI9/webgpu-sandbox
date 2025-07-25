@@ -75,7 +75,7 @@ void camera_raycast_create_event(Camera *cam,
   CameraRaycastHitList *hits_list = malloc(sizeof(CameraRaycastHitList));
   if (hits_list == NULL || camera_raycast_hit_list_create(
                                hits_list, CAMERA_RAYCAST_HIT_LIST_MAX_HIT) !=
-                               CAMERA_RAYCAST_HIT_LIST_SUCCESS) {
+                               CameraRaycastHitListStatus_Success) {
     VERBOSE_ERROR("Couldn't allocate camera raycast 'hit list'\n");
     return;
   }

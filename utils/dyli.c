@@ -7,7 +7,7 @@
    Allocate necessary resource for dynamic list and update the capacity and
    length.
  */
-int dyli_create(void **entries, size_t *capacity, size_t *length,
+DynamicListStatus dyli_create(void **entries, size_t *capacity, size_t *length,
                 size_t type_size, size_t num, const char *label) {
 
   *entries = calloc(num, type_size);
@@ -17,16 +17,16 @@ int dyli_create(void **entries, size_t *capacity, size_t *length,
   if (*entries == NULL) {
     VERBOSE_ERROR("Couldn't create new dynamic list: %s\n", label);
     *capacity = 0;
-    return VERTEX_GROUP_ALLOC_FAIL;
+    return DynamicListStatus_AllocFail;
   }
 
-  return DYNAMIC_LIST_SUCCESS;
+  return DynamicListStatus_Success;
 }
 
 /**
    Expand the dynamic list of 2n capacity.
  */
-int dyli_expand(void **entries, size_t *capacity, size_t *length,
+DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
                 size_t type_size, size_t scale, const char *label) {
 
   size_t new_capacity = scale * (*capacity);
@@ -34,13 +34,13 @@ int dyli_expand(void **entries, size_t *capacity, size_t *length,
 
   if (temp == NULL) {
     VERBOSE_ERROR("Couldn't expand dynamic list: %s\n", label);
-    return DYNAMIC_LIST_ALLOC_FAIL;
+    return DynamicListStatus_AllocFail;
   }
 
   *entries = temp;
   *capacity = new_capacity;
 
-  return DYNAMIC_LIST_SUCCESS;
+  return DynamicListStatus_Success;
 }
 
 void dyli_free(void **entries, size_t *capacity, size_t *length) {

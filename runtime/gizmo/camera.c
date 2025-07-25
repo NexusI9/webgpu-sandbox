@@ -56,7 +56,7 @@ void gizmo_camera_create(GizmoCamera *gizmo, Camera *camera,
   // init vertex groups
   VertexGroupSet *cube_group = &cube->topology.base.group;
   if (vertex_group_set_create(cube_group, VERTEX_GROUP_CAPACITY_DEFAULT) ==
-      VERTEX_SUCCESS) {
+      VertexGroupStatus_Success) {
 
     vertex_group_set_insert(cube_group,
                             &(VertexGroup){

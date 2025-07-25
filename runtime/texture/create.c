@@ -2,6 +2,7 @@
 #include "../../include/stb/stb_image.h"
 #include "../utils/system.h"
 #include "./write.h"
+#include "core.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
 
@@ -29,7 +30,7 @@ void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
 /**
    load picture from file
  */
-int texture_create_from_file(Texture *texture, const char *path, bool flip) {
+TextureStatus texture_create_from_file(Texture *texture, const char *path, bool flip) {
   // flip vertically so match wgpu coordinates
   stbi_set_flip_vertically_on_load(flip);
 
@@ -45,7 +46,7 @@ int texture_create_from_file(Texture *texture, const char *path, bool flip) {
     texture->height = 0;
     texture->channels = 0;
     texture->size = 0;
-    return TEXTURE_FILE_ERROR;
+    return TextureStatus_FileError;
   }
 
   texture->size = width * height * 4;
@@ -54,5 +55,5 @@ int texture_create_from_file(Texture *texture, const char *path, bool flip) {
   texture->height = height;
   texture->channels = 4;
 
-  return TEXTURE_SUCCESS;
+  return TextureStatus_Success;
 }

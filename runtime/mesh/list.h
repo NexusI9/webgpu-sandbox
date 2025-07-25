@@ -8,7 +8,7 @@ typedef struct {
   size_t length;
 } MeshList;
 
-int mesh_list_create(MeshList *, size_t);
+MeshStatus mesh_list_create(MeshList *, size_t);
 Mesh *mesh_list_new_mesh(MeshList *);
 
 void mesh_list_translate(MeshList *, vec3);

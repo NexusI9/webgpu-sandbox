@@ -16,7 +16,7 @@ static void *loader_mbin_mmap(const char *, size_t *);
 #endif
 static void *loader_mbin_read(const char *, size_t *);
 
-int loader_mbin_load(MBINFile **file, const char *path) {
+MBINLoaderStatus loader_mbin_load(MBINFile **file, const char *path) {
 
   VERBOSE_IMPORT("MBIN file");
   // directly map data into memory for unix environments
@@ -32,10 +32,10 @@ int loader_mbin_load(MBINFile **file, const char *path) {
 
   if (file == NULL) {
     VERBOSE_ERROR("Error while loading Mesh Binary file\n");
-    return MBIN_LOADER_LOAD_ERROR;
+    return MBINLoaderStatus_UndefError;
   }
 
-  return MBIN_LOADER_SUCCESS;
+  return MBINLoaderStatus_Success;
 }
 
 #ifdef __unix__
@@ -120,13 +120,13 @@ static void *loader_mbin_read(const char *path, size_t *size) {
    Load MBIN into a Primitive
    Basically a wrapper that automatically define the references primitive
  */
-int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
+MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
 
   MBINFile *mbin;
 
   if (loader_mbin_load(&mbin, desc->path)) {
     VERBOSE_ERROR("Error while loading Mesh Binary file to Primitive\n");
-    return MBIN_LOADER_LOAD_ERROR;
+    return MBINLoaderStatus_UndefError;
   }
 
   // map referenced primitive vertex attribuets
@@ -137,7 +137,7 @@ int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
 
   if (vert_attr->entries == NULL) {
     VERBOSE_ERROR("Couldn't allocate memory for vertex attribute\n");
-    return MBIN_LOADER_ALLOC_FAIL;
+    return MBINLoaderStatus_AllocFail;
   }
 
   MBIN_U32Float converter;
@@ -155,11 +155,11 @@ int loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
 
   if (index_attr->entries == NULL) {
     VERBOSE_ERROR("Couldn't allocate memory for vertex attribute\n");
-    return MBIN_LOADER_ALLOC_FAIL;
+    return MBINLoaderStatus_AllocFail;
   }
 
   memcpy(index_attr->entries, mbin->data + mbin->vertex_length,
          sizeof(mbin_data_t) * mbin->index_length);
 
-  return MBIN_LOADER_SUCCESS;
+  return MBINLoaderStatus_Success;
 }

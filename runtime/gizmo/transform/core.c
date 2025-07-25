@@ -129,29 +129,11 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *mesh,
   // define active handle
   gizmo->active_handle = &gizmo->handles[gizmo->mode];
 
+ 
   // compute and cache initial offset
   vec3 target;
   gizmo_transform_origin(gizmo, &target);
-
-  vec3 axis_dir;
-  vec_world_axis(gizmo->axis, &axis_dir);
-
-  float x = g_input.mouse.x;
-  float y = g_input.mouse.y;
-
-  raycast_project_from_screen_to_axis(
-      &(RaycastProjectScreenToAxis){
-          .origin = &camera->position,
-          .target = &target,
-          .axis_direction = &axis_dir,
-          .view = &camera->view,
-          .projection = &viewport->projection,
-          .x = x,
-          .y = y,
-          .width = viewport->width,
-          .height = viewport->height,
-      },
-      &gizmo->init_offset);
+  glm_vec3_copy(target, gizmo->init_offset);
 
 }
 

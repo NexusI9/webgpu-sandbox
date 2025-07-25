@@ -3,6 +3,7 @@
 #include "../runtime/geometry/edge/edge.h"
 #include "../runtime/geometry/line/line.h"
 #include "../utils/math.h"
+#include "anchor.h"
 #include <string.h>
 
 static bool mesh_topology_wireframe_is_face(VertexIndex *);
@@ -177,7 +178,7 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
                 });
 
 
-  return MESH_TOPOLOGY_WIREFRAME_SUCCESS;
+  return MeshTopologyWireframeStatus_Success;
 }
 
 /**
@@ -219,7 +220,7 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
       }
 
     } else {
-      return MESH_TOPOLOGY_ANCHOR_UNSET;
+      return MeshTopologyAnchorStatus_Unset;
     }
   }
 
@@ -228,7 +229,7 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
                        dest_topo->attribute.entries,
                        dest_topo->attribute.length * sizeof(vattr_t));
 
-  return MESH_TOPOLOGY_WIREFRAME_SUCCESS;
+  return MeshTopologyWireframeStatus_Success;
 }
 
 /**

@@ -78,7 +78,8 @@ void gizmo_transform_callback_translate(GizmoTransform *gizmo,
 
   // project ray into axis
   vec3 target;
-  gizmo_transform_origin(gizmo, &target);
+  // gizmo_transform_origin(gizmo, &target);
+  glm_vec3_copy(gizmo->init_offset, target);
 
   vec3 axis_dir;
   vec_world_axis(axis, &axis_dir);
@@ -98,23 +99,16 @@ void gizmo_transform_callback_translate(GizmoTransform *gizmo,
       },
       &position);
 
-  raycast_from_screen(&mouse_ray, &camera->position, &camera->view,
-                      &viewport->projection, x, y);
-
-  vec3 delta;
-  float sensi = 0.5f;
-  glm_vec3_sub(position, gizmo->init_offset, delta);
-  glm_vec3_scale(delta, sensi, delta);
-  //print_vec3(delta);
-
-  glm_vec3_copy(position, gizmo->init_offset);
+  glm_vec3_scale(position, -1.0f, position);
+  print_vec3(position);
 
   // move meshes
-  for (size_t i = 0; i < list->length; i++)
-    mesh_translate_axis_add(list->entries[i], delta[axis], axis);
+  for (size_t i = 0; i < list->length; i++) 
+    mesh_translate(list->entries[i], position);
+  
 
   // move gizmo
-  gizmo_transform_translate_add(gizmo, delta[axis], axis);
+  gizmo_transform_translate(gizmo, position);
 }
 
 void gizmo_transform_callback_rotate(GizmoTransform *gizmo, MeshRefList *list,

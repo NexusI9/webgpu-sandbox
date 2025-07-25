@@ -12,9 +12,9 @@
  ▝▚▞▘ ▐▙▄▄▖▐▌ ▐▌ █  ▐▙▄▄▖▗▞▘▝▚▖    ▝▚▄▞▘▐▌ ▐▌▝▚▄▞▘▝▚▄▞▘▐▌
 */
 
-static int vertex_group_expand(VertexGroup *);
+static VertexGroupStatus vertex_group_expand(VertexGroup *);
 
-int vertex_group_expand(VertexGroup *group) {
+VertexGroupStatus vertex_group_expand(VertexGroup *group) {
 
   size_t new_capacity = 2 * group->capacity;
   vindex_t *temp =
@@ -22,16 +22,16 @@ int vertex_group_expand(VertexGroup *group) {
 
   if (temp == NULL) {
     VERBOSE_ERROR("Couldn't expand new vertex group.");
-    return VERTEX_GROUP_ALLOC_FAIL;
+    return VertexGroupStatus_AllocFail;
   }
 
   group->entries = temp;
   group->capacity = new_capacity;
 
-  return VERTEX_GROUP_SUCCESS;
+  return VertexGroupStatus_Success;
 }
 
-int vertex_group_create(VertexGroup *group, size_t capacity, const char *name) {
+VertexGroupStatus vertex_group_create(VertexGroup *group, size_t capacity, const char *name) {
 
   group->entries = calloc(capacity, sizeof(vindex_t));
   group->length = 0;
@@ -41,17 +41,17 @@ int vertex_group_create(VertexGroup *group, size_t capacity, const char *name) {
   if (group->entries == NULL || group->name == NULL) {
     VERBOSE_ERROR("Couldn't create new vertex group.");
     group->capacity = 0;
-    return VERTEX_GROUP_ALLOC_FAIL;
+    return VertexGroupStatus_AllocFail;
   }
 
-  return VERTEX_GROUP_SUCCESS;
+  return VertexGroupStatus_Success;
 }
 
 VertexGroup *vertex_group_insert(VertexGroup *group, vindex_t *index_list,
                                  size_t length) {
 
   while (group->length + length > group->capacity) {
-    if (vertex_group_expand(group) != VERTEX_GROUP_SUCCESS) {
+    if (vertex_group_expand(group) != VertexGroupStatus_Success) {
       VERBOSE_ERROR("Couldn't insert new vertex group value.");
       return NULL;
     }
@@ -83,13 +83,13 @@ void vertex_group_free(VertexGroup *group) {
 
  */
 
-static int vertex_group_set_expand(VertexGroupSet *);
+static VertexGroupStatus vertex_group_set_expand(VertexGroupSet *);
 static void vertex_group_set_rehash(VertexGroupSet *);
 
 // TODO: REHASH
 void vertex_group_set_rehash(VertexGroupSet *set) {}
 
-int vertex_group_set_expand(VertexGroupSet *set) {
+VertexGroupStatus vertex_group_set_expand(VertexGroupSet *set) {
 
   size_t new_capacity = 2 * set->capacity;
   VertexGroup *temp =
@@ -97,16 +97,16 @@ int vertex_group_set_expand(VertexGroupSet *set) {
 
   if (temp == NULL) {
     VERBOSE_ERROR("Couldn't expand new vertex group set.");
-    return VERTEX_GROUP_ALLOC_FAIL;
+    return VertexGroupStatus_AllocFail;
   }
 
   set->entries = temp;
   set->capacity = new_capacity;
 
-  return VERTEX_GROUP_SUCCESS;
+  return VertexGroupStatus_Success;
 }
 
-int vertex_group_set_create(VertexGroupSet *set, size_t capacity) {
+VertexGroupStatus vertex_group_set_create(VertexGroupSet *set, size_t capacity) {
 
   set->entries = calloc(capacity, sizeof(VertexGroup));
   set->length = 0;
@@ -115,17 +115,17 @@ int vertex_group_set_create(VertexGroupSet *set, size_t capacity) {
   if (set->entries == NULL) {
     VERBOSE_ERROR("Couldn't create new vertex group set.");
     set->capacity = 0;
-    return VERTEX_GROUP_ALLOC_FAIL;
+    return VertexGroupStatus_AllocFail;
   }
 
-  return VERTEX_GROUP_SUCCESS;
+  return VertexGroupStatus_Success;
 }
 
 VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
                                      VertexGroup *new_group) {
 
   if (set->length >= set->capacity * 0.75 &&
-      vertex_group_set_expand(set) != VERTEX_GROUP_SUCCESS) {
+      vertex_group_set_expand(set) != VertexGroupStatus_Success) {
     return NULL;
   }
 
@@ -183,7 +183,7 @@ VertexGroup *vertex_group_set_find(VertexGroupSet *set, vgroup_key key) {
   }
 }
 
-int vertex_group_set_delete(VertexGroupSet *set, vgroup_key key) {
+VertexGroupStatus vertex_group_set_delete(VertexGroupSet *set, vgroup_key key) {
 
   vgroup_hash hash = hash_djb2(key) % set->capacity;
 
@@ -193,10 +193,10 @@ int vertex_group_set_delete(VertexGroupSet *set, vgroup_key key) {
   if (vgroup && vgroup->entries != NULL) {
     vertex_group_free(vgroup);
     set->length--;
-    return VERTEX_GROUP_SUCCESS;
+    return VertexGroupStatus_Success;
   }
 
-  return VERTEX_GROUP_SET_UNFOUND;
+  return VertexGroupStatus_SetUnfound;
 }
 
 void vertex_group_set_free(VertexGroupSet *set) {

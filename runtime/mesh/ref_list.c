@@ -3,7 +3,7 @@
 #include "core.h"
 #include <string.h>
 
-int mesh_ref_list_create(MeshRefList *list, const size_t capacity) {
+MeshStatus mesh_ref_list_create(MeshRefList *list, const size_t capacity) {
 
   list->entries = malloc(capacity * sizeof(Mesh *));
   list->length = 0;
@@ -11,10 +11,10 @@ int mesh_ref_list_create(MeshRefList *list, const size_t capacity) {
 
   if (list->entries == NULL) {
     VERBOSE_ERROR("Couldn't allocate memory for mesh indexed list.");
-    return MESH_ALLOC_FAILURE;
+    return MeshStatus_AllocFail;
   }
 
-  return MESH_SUCCESS;
+  return MeshStatus_Success;
 }
 
 Mesh *mesh_ref_list_insert(MeshRefList *list, Mesh *mesh) {
@@ -90,7 +90,7 @@ Mesh *mesh_ref_list_find(const MeshRefList *list, Mesh *mesh) {
 /**
    Copy mesh pointers from one list to another
  */
-int mesh_ref_list_transfert(MeshRefList *src, MeshRefList *dest) {
+MeshStatus mesh_ref_list_transfert(MeshRefList *src, MeshRefList *dest) {
 
   // expand if destination is too small
   while (dest->length + src->length >= dest->capacity) {
@@ -104,7 +104,7 @@ int mesh_ref_list_transfert(MeshRefList *src, MeshRefList *dest) {
 
     } else {
       VERBOSE_ERROR("Couldn't reallocate and expand mesh indexed list.");
-      return MESH_ALLOC_FAILURE;
+      return MeshStatus_AllocFail;
     }
   }
 
@@ -113,13 +113,13 @@ int mesh_ref_list_transfert(MeshRefList *src, MeshRefList *dest) {
 
   dest->length += src->length;
 
-  return MESH_SUCCESS;
+  return MeshStatus_Success;
 }
 
 /**
    Copy a Gizmo Mesh list from a source to a given desination
  */
-int mesh_ref_list_copy(const MeshRefList *src, MeshRefList *dest) {
+MeshStatus mesh_ref_list_copy(const MeshRefList *src, MeshRefList *dest) {
 
   // copy length
   dest->length = src->length;
@@ -129,12 +129,12 @@ int mesh_ref_list_copy(const MeshRefList *src, MeshRefList *dest) {
   if (dest->entries == NULL) {
     VERBOSE_ERROR("Couldn't allocate memory for mesh reference list copy.");
     dest->length = 0;
-    return MESH_ALLOC_FAILURE;
+    return MeshStatus_AllocFail;
   }
 
   // copy meshes pointer
   memcpy(dest->entries, src->entries, dest->length * sizeof(Mesh *));
-  return MESH_SUCCESS;
+  return MeshStatus_Success;
 }
 
 void mesh_ref_list_print(MeshRefList *list) {
