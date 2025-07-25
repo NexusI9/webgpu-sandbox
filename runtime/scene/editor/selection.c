@@ -35,8 +35,7 @@ void scene_selection_raycast_mesh_callback(
     // cap + right click : remove selection if exist, add if not
     if (mouseEvent->shiftKey && mouseEvent->button == 2) {
 
-      Mesh *already_selected =
-          mesh_ref_list_find(selection_list, hit->mesh);
+      Mesh *already_selected = mesh_ref_list_find(selection_list, hit->mesh);
 
       if (already_selected == NULL) {
         scene_selection_add(scene, hit->mesh);
@@ -57,16 +56,16 @@ void scene_selection_raycast_mesh_callback(
   if (selection_list->length > 0) {
 
     // get average position
-    vec3 position; 
+    vec3 position;
     scene_selection_average_position(scene, &position);
     gizmo_transform_translate(gizmo, position);
 
     scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                                   ScenePipeline_Fixed);
+                             ScenePipeline_Fixed);
   } else {
     // hide from the scene
     scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                                   ScenePipeline_Fixed);
+                             ScenePipeline_Fixed);
   }
 }
 
@@ -101,7 +100,7 @@ void scene_selection_init(Scene *scene) {
 
   // init selection list
   mesh_ref_list_create(&scene->pipelines[ScenePipeline_Selection],
-                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   /**
       ===================== ADD SELECTION RELATED EVENTS ===================
@@ -206,7 +205,7 @@ void scene_selection_init(Scene *scene) {
  */
 static int l = 0;
 void scene_selection_draw_callback(void *data) {
-  
+
   Scene *cast_scene = (Scene *)data;
   MeshRefList *selection_list = &cast_scene->pipelines[ScenePipeline_Selection];
   GizmoTransform *gizmo = &cast_scene->editor.gizmo.transform;
@@ -214,7 +213,9 @@ void scene_selection_draw_callback(void *data) {
   if (g_input.mouse.state == InputMouseState_Down &&
       gizmo->active_handle != NULL && selection_list->length > 0)
     // look-up transform callback
-    gizmo->transform_callback[gizmo->mode](gizmo, selection_list, cast_scene->active_camera);
+    gizmo->transform_callback[gizmo->mode](gizmo, selection_list,
+                                           cast_scene->active_camera,
+                                           &cast_scene->viewport);
 }
 
 /**
@@ -241,10 +242,9 @@ void scene_selection_average_position(Scene *scene, vec3 *dest) {
 void scene_selection_add(Scene *scene, Mesh *mesh) {
 
   // only add if mesh not already exists
-  if (mesh_ref_list_find(&scene->pipelines[ScenePipeline_Selection],
-                               mesh) == NULL)
-    mesh_ref_list_insert(&scene->pipelines[ScenePipeline_Selection],
-                               mesh);
+  if (mesh_ref_list_find(&scene->pipelines[ScenePipeline_Selection], mesh) ==
+      NULL)
+    mesh_ref_list_insert(&scene->pipelines[ScenePipeline_Selection], mesh);
 }
 
 /**

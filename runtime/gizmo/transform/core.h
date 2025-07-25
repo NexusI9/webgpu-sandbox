@@ -11,7 +11,7 @@
 typedef struct GizmoTransform GizmoTransform;
 
 typedef void (*gizmo_transform_callback)(GizmoTransform *, MeshRefList *,
-                                         Camera *);
+                                         Camera *, Viewport*);
 
 typedef enum {
   GizmoTransformMode_Translate,
