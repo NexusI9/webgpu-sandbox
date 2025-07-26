@@ -2,6 +2,15 @@
 #include "core.h"
 #include "utils.h"
 
+/*static const Axis rotate_axis[] = {
+[Axis_X] = Axis
+};*/
+
+static inline void
+gizmo_transform(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
+                mesh_transform_axis_callback transform_callback, vec3 *delta);
+
+// DELETEME
 void gizmo_transform_callback_movement(GizmoTransform *gizmo, MeshRefList *list,
                                        Camera *camera, Viewport *viewport) {
 
@@ -65,8 +74,13 @@ void gizmo_transform_callback_movement(GizmoTransform *gizmo, MeshRefList *list,
   gizmo_transform_translate_add(gizmo, movement[axis], axis);
 }
 
-void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
-                                        Viewport *viewport) {
+/**
+   Generic function to transform gizmo based on axis and provided callback
+   (trans/rot/scale)
+ */
+void gizmo_transform(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
+                     mesh_transform_axis_callback transform_callback,
+                     vec3 *delta) {
 
   const Axis axis = gizmo->axis;
   vec3 *gizmo_position = &gizmo->cache.gizmo_init_position;
@@ -99,10 +113,14 @@ void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
   // cancel initial offset
   glm_vec3_sub(projected_position, gizmo->cache.delta_init, gizmo_delta);
 
+  // out
+  if (delta)
+    glm_vec3_copy(gizmo_delta, *delta);
+
   // move meshes
   for (size_t i = 0; i < gizmo->cache.selection.length; i++) {
 
-    vec3 *init_position = &gizmo->cache.selection_init_positions.entries[i];
+    vec3 *init_position = &gizmo->cache.selection_init_attribute.entries[i];
     Mesh *mesh = gizmo->cache.selection.entries[i];
 
     // calculate offset
@@ -110,17 +128,29 @@ void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
     glm_vec3_add(*init_position, gizmo_delta, offset_position);
 
     // translate mesh
-    mesh_translate(mesh, offset_position);
+    transform_callback(mesh, offset_position[gizmo->axis], gizmo->axis);
   }
+}
+
+void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
+                                        Viewport *viewport) {
+
+  vec3 delta;
+  gizmo_transform(gizmo, camera, viewport, mesh_translate_axis, &delta);
 
   // translate gizmo
   vec3 gizmo_offset;
-  glm_vec3_add(*gizmo_position, gizmo_delta, gizmo_offset);
+  glm_vec3_add(gizmo->cache.gizmo_init_position, delta, gizmo_offset);
   gizmo_transform_translate(gizmo, gizmo_offset);
 }
 
 void gizmo_transform_callback_rotate(GizmoTransform *gizmo, Camera *camera,
-                                     Viewport *viewport) {}
+                                     Viewport *viewport) {
+  printf("axis: %d\n", gizmo->axis);
+  gizmo_transform(gizmo, camera, viewport, mesh_rotate_axis, NULL);
+}
 
 void gizmo_transform_callback_scale(GizmoTransform *gizmo, Camera *camera,
-                                    Viewport *viewport) {}
+                                    Viewport *viewport) {
+  gizmo_transform(gizmo, camera, viewport, mesh_scale_axis, NULL);
+}

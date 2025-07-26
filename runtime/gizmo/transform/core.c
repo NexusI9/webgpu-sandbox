@@ -6,6 +6,14 @@
 #include "./utils.h"
 #include <stddef.h>
 
+// Map Gizmo mode to mesh get attributes to apply correct transformation based
+// in gizmo mode (trans/rot/scale).
+static const mesh_get_transform_attribute mesh_transform_attribute[] = {
+    [GizmoTransformMode_Translate] = mesh_get_position,
+    [GizmoTransformMode_Rotate] = mesh_get_rotation_euler,
+    [GizmoTransformMode_Scale] = mesh_get_scale,
+};
+
 static inline void gizmo_transform_set_axis_from_mesh(GizmoTransform *,
                                                       const Mesh *);
 
@@ -20,10 +28,10 @@ void gizmo_transform_create(GizmoTransform *gizmo,
 
   // init 'cache' attributes
   const size_t capacity = GIZMO_TRANSFORM_POSITION_CAPACITY;
-  vec3_list_create(&gizmo->cache.selection_init_positions, capacity);
+  vec3_list_create(&gizmo->cache.selection_init_attribute, capacity);
   mesh_ref_list_create(&gizmo->cache.selection, capacity);
 
-  // define callbacks
+  // define callbacks that will be called when a handle will be clicked on
   gizmo->transform_callback[GizmoTransformMode_Translate] =
       gizmo_transform_callback_translate;
 
@@ -127,22 +135,25 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
                                 const MeshRefList *selected_meshes,
                                 Camera *camera, Viewport *viewport) {
 
+  // DEBUG
+  gizmo->mode = GizmoTransformMode_Rotate;
+
   // define active axis
   gizmo_transform_set_axis_from_mesh(gizmo, hit_handle);
 
   // cache gizmo init position
   gizmo_transform_origin(gizmo, &gizmo->cache.gizmo_init_position);
 
-  // update selection (= conctat: scene gizmo + selection active handle)
-  /*mesh_ref_list_transfert(&gizmo->handles[gizmo->mode],
-                          &gizmo->cache.selection);*/
-
+  // update selection
   mesh_ref_list_transfert(selected_meshes, &gizmo->cache.selection);
 
-  // cache all meshes initial positions (selection + gizmo)
-  for (size_t i = 0; i < selected_meshes->length; i++)
-    vec3_list_insert(&gizmo->cache.selection_init_positions,
-                     selected_meshes->entries[i]->position);
+  // cache all meshes initial attribute based on gizmo mode (pos/rot/scale)
+  for (size_t i = 0; i < selected_meshes->length; i++) {
+    Mesh *mesh = selected_meshes->entries[i];
+    vec3 attribute;
+    mesh_transform_attribute[gizmo->mode](mesh, &attribute);
+    vec3_list_insert(&gizmo->cache.selection_init_attribute, attribute);
+  }
 
   // init delta
   vec3 axis_dir;
@@ -168,10 +179,13 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
    during the next mouse down we can repopulate the new data.
  */
 void gizmo_transform_clear_active(GizmoTransform *gizmo) {
-  // reset gizmo initial position
+  // reset gizmo initial position and delta
   glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.gizmo_init_position);
+  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.delta_init);
+
   // reset cache meshes positions
-  vec3_list_empty(&gizmo->cache.selection_init_positions);
+  vec3_list_empty(&gizmo->cache.selection_init_attribute);
+
   // empty selection list
   mesh_ref_list_empty(&gizmo->cache.selection);
 }

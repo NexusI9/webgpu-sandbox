@@ -16,11 +16,12 @@
 #define MESH_NAME_MAX_LENGTH 64
 #define MESH_INDEX_FORMAT WGPUIndexFormat_Uint32
 
-typedef enum{
+typedef struct Mesh Mesh;
+
+typedef enum {
   MeshStatus_Success,
   MeshStatus_AllocFail,
 } MeshStatus;
-
 
 typedef struct {
   struct Mesh **entries;
@@ -44,8 +45,10 @@ typedef struct {
   const char *name;
 } MeshCreatePrimitiveDescriptor;
 
+typedef void (*mesh_get_transform_attribute)(Mesh *, vec3 *);
+
 // Core
-typedef struct Mesh {
+struct Mesh {
 
   id_t id;
   char *name;
@@ -79,10 +82,9 @@ typedef struct Mesh {
   } shader;
 
   // hierarchy
-  struct Mesh *parent;
+  Mesh *parent;
   MeshRefList children;
-
-} Mesh;
+};
 
 // constructor
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
@@ -93,7 +95,6 @@ void mesh_set_name(Mesh *, const char *);
 void mesh_set_shader(Mesh *, const ShaderCreateDescriptor *);
 void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *);
 void mesh_build(Mesh *, Shader *);
-
 
 // hierarchy
 void mesh_set_parent(Mesh *, Mesh *);
@@ -114,6 +115,9 @@ MeshTopology mesh_topology_boundbox(Mesh *);
 MeshTopology mesh_topology_override(Mesh *); // for fixed mesh only
 void mesh_topology_set_override(Mesh *, const MeshTopology topology);
 
-// events
+// getter
+void mesh_get_position(Mesh *, vec3 *);
+void mesh_get_scale(Mesh *, vec3 *);
+void mesh_get_rotation_euler(Mesh *, vec3 *);
 
 #endif

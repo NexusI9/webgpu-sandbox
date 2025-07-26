@@ -4,7 +4,9 @@
 #include "../utils/vector/vector.h"
 #include "core.h"
 
-typedef void (*mesh_transform_axis_callback)(Mesh *, const float);
+typedef void (*mesh_transform_axis_callback)(Mesh *, const float, const Axis);
+typedef void (*mesh_transform_uni_axis_callback)(Mesh *, const float);
+typedef void (*mesh_transform_callback)(Mesh *, vec3);
 
 // scale
 void mesh_scale(Mesh *, vec3);

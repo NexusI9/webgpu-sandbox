@@ -10,7 +10,6 @@
 static Mesh *mesh_children_list_check_init(Mesh *);
 static Mesh *mesh_children_list_check_capacity(Mesh *);
 
-
 void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
@@ -115,8 +114,6 @@ void mesh_draw(MeshTopology topology, Shader *shader,
                                       MESH_INDEX_FORMAT, 0, WGPU_WHOLE_SIZE);
   wgpuRenderPassEncoderDrawIndexed(*render_pass, index_length, 1, 0, 0, 0);
 }
-
-
 
 /**
    Check if children list is already created.
@@ -260,3 +257,16 @@ MeshTopology mesh_topology_override(Mesh *mesh) {
 void mesh_topology_set_override(Mesh *mesh, const MeshTopology topology) {
   mesh->topology.override = topology;
 }
+
+void mesh_get_position(Mesh *mesh, vec3 *dest) {
+  glm_vec3_copy(mesh->position, *dest);
+}
+
+void mesh_get_scale(Mesh *mesh, vec3 *dest) {
+  glm_vec3_copy(mesh->scale, *dest);
+}
+
+void mesh_get_rotation_euler(Mesh *mesh, vec3 *dest) {
+  glm_vec3_copy(mesh->rotation_euler, *dest);
+}
+

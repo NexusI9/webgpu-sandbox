@@ -5,42 +5,42 @@
 // callbacks look up
 
 // translate look up
-static const mesh_transform_axis_callback mesh_translate_axis_callback[] = {
+static const mesh_transform_uni_axis_callback mesh_translate_axis_callback[] = {
     [Axis_X] = mesh_translate_x,
     [Axis_Y] = mesh_translate_y,
     [Axis_Z] = mesh_translate_z,
 };
 
 // rotate look up
-static const mesh_transform_axis_callback mesh_rotate_axis_callback[] = {
+static const mesh_transform_uni_axis_callback mesh_rotate_axis_callback[] = {
     [Axis_X] = mesh_rotate_x,
     [Axis_Y] = mesh_rotate_y,
     [Axis_Z] = mesh_rotate_z,
 };
 
 // scale look up
-static const mesh_transform_axis_callback mesh_scale_axis_callback[] = {
+static const mesh_transform_uni_axis_callback mesh_scale_axis_callback[] = {
     [Axis_X] = mesh_scale_x,
     [Axis_Y] = mesh_scale_y,
     [Axis_Z] = mesh_scale_z,
 };
 
 // translate add look up
-static const mesh_transform_axis_callback mesh_translate_axis_add_callback[] = {
+static const mesh_transform_uni_axis_callback mesh_translate_axis_add_callback[] = {
     [Axis_X] = mesh_translate_x_add,
     [Axis_Y] = mesh_translate_y_add,
     [Axis_Z] = mesh_translate_z_add,
 };
 
 // rotate add look up
-static const mesh_transform_axis_callback mesh_rotate_axis_add_callback[] = {
+static const mesh_transform_uni_axis_callback mesh_rotate_axis_add_callback[] = {
     [Axis_X] = mesh_rotate_x_add,
     [Axis_Y] = mesh_rotate_y_add,
     [Axis_Z] = mesh_rotate_z_add,
 };
 
 // scale add look up
-static const mesh_transform_axis_callback mesh_scale_axis_add_callback[] = {
+static const mesh_transform_uni_axis_callback mesh_scale_axis_add_callback[] = {
     [Axis_X] = mesh_scale_x_add,
     [Axis_Y] = mesh_scale_y_add,
     [Axis_Z] = mesh_scale_z_add,

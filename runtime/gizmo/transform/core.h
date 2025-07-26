@@ -53,14 +53,13 @@ struct GizmoTransform {
     on the hot path.
 
                          .----------------------------------.
-                         |                                  |
                          |     HTML EVENTS (clicks...)      |
-                         |                                  |
+                         |        if{...}else{...}          |
                          '----------------------------------'
                                     push ⎜ Pop
                                          ▼
-      .----- Cache Selection Array -----------------------------------------.
-      | gizmo handles* | hit mesh* | hit mesh* |        |         |         |
+      .-- Cache Selection Array --------------------------------------------.
+      | hit mesh*  |  hit mesh*  |  hit mesh*  |         |         |        |
       '---------------------------------------------------------------------'
                                          ⎜
                                          ▼
@@ -72,7 +71,7 @@ struct GizmoTransform {
   */
   struct {
     MeshRefList selection;
-    Vec3List selection_init_positions;
+    Vec3List selection_init_attribute;
     vec3 delta_init;
     vec3 gizmo_init_position;
   } cache;
@@ -90,13 +89,6 @@ void gizmo_transform_translate(GizmoTransform *, vec3);
 void gizmo_transform_translate_add(GizmoTransform *, float, const Axis);
 void gizmo_transform_rotate_add(GizmoTransform *, float, const Axis);
 
-/**
-   TODO: Currently we use the active handle as a switch (boolean/flag-like
-   approach) to detect if the loop callback should actually move the meshes
-   based on mouse position.
-
-   Maybe find a more data-oriented-friendly way for this approach.
- */
 void gizmo_transform_set_active(GizmoTransform *, const Mesh *,
                                 const MeshRefList *, Camera *, Viewport *);
 
