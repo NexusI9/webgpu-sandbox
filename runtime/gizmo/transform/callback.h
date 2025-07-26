@@ -3,13 +3,10 @@
 
 #include "core.h"
 
-void gizmo_transform_callback_translate(GizmoTransform *, MeshRefList *,
-                                        Camera *, Viewport *);
+void gizmo_transform_callback_translate(GizmoTransform *, Camera *, Viewport *);
 
-void gizmo_transform_callback_rotate(GizmoTransform *, MeshRefList *, Camera *,
-                                     Viewport *);
+void gizmo_transform_callback_rotate(GizmoTransform *, Camera *, Viewport *);
 
-void gizmo_transform_callback_scale(GizmoTransform *, MeshRefList *, Camera *,
-                                    Viewport *);
+void gizmo_transform_callback_scale(GizmoTransform *, Camera *, Viewport *);
 
 #endif

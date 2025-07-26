@@ -4,6 +4,7 @@
 #include "./scale.h"
 #include "./translate.h"
 #include "./utils.h"
+#include <stddef.h>
 
 static inline void gizmo_transform_set_axis_from_mesh(GizmoTransform *,
                                                       const Mesh *);
@@ -16,9 +17,11 @@ void gizmo_transform_create(GizmoTransform *gizmo,
                             const GizmoCreateDescriptor *desc) {
 
   gizmo->mode = GizmoTransformMode_Translate;
-  gizmo->active_handle = NULL;
 
-  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->init_offset);
+  // init 'cache' attributes
+  const size_t capacity = GIZMO_TRANSFORM_POSITION_CAPACITY;
+  vec3_list_create(&gizmo->cache.selection_init_positions, capacity);
+  mesh_ref_list_create(&gizmo->cache.selection, capacity);
 
   // define callbacks
   gizmo->transform_callback[GizmoTransformMode_Translate] =
@@ -120,25 +123,37 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
    3. Finally cache gizmo initial offset position projected on the right axis.
 
  */
-void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *mesh,
+void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
+                                const MeshRefList *selected_meshes,
                                 Camera *camera, Viewport *viewport) {
 
   // define active axis
-  gizmo_transform_set_axis_from_mesh(gizmo, mesh);
+  gizmo_transform_set_axis_from_mesh(gizmo, hit_handle);
 
-  // define active handle
-  gizmo->active_handle = &gizmo->handles[gizmo->mode];
+  // cache gizmo init position
+  gizmo_transform_origin(gizmo, &gizmo->cache.gizmo_init_position);
 
- 
-  // compute and cache initial offset
-  vec3 target;
-  gizmo_transform_origin(gizmo, &target);
-  glm_vec3_copy(target, gizmo->init_offset);
+  // update selection (= conctat: scene gizmo + selection active handle)
+  /*mesh_ref_list_transfert(&gizmo->handles[gizmo->mode],
+                          &gizmo->cache.selection);*/
 
+  mesh_ref_list_transfert(selected_meshes, &gizmo->cache.selection);
+
+  // cache all meshes initial positions (selection + gizmo)
+  for (size_t i = 0; i < selected_meshes->length; i++)
+    vec3_list_insert(&gizmo->cache.selection_init_positions,
+                     selected_meshes->entries[i]->position);
 }
 
+/**
+   Clear gizmo cached data. Used on HTML events mouse up so
+   during the next mouse down we can repopulate the new data.
+ */
 void gizmo_transform_clear_active(GizmoTransform *gizmo) {
-  gizmo->active_handle = NULL;
-
-  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->init_offset);
+  // reset gizmo initial position
+  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.gizmo_init_position);
+  // reset cache meshes positions
+  vec3_list_empty(&gizmo->cache.selection_init_positions);
+  // empty selection list
+  mesh_ref_list_empty(&gizmo->cache.selection);
 }

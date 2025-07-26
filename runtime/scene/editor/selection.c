@@ -86,8 +86,9 @@ void scene_selection_raycast_gizmo_callback(
     Scene *scene = cast_user_data->scene;
     GizmoTransform *gizmo = &scene->editor.gizmo.transform;
     // set active handle from current mode and initialize offset
-    gizmo_transform_set_active(gizmo, hit, scene->active_camera,
-                               &scene->viewport);
+    gizmo_transform_set_active(gizmo, hit,
+                               &scene->pipelines[ScenePipeline_Selection],
+                               scene->active_camera, &scene->viewport);
   }
 }
 
@@ -198,8 +199,6 @@ void scene_selection_init(Scene *scene) {
 
     We then constantly through the loop:
      1. check if the mouse is pressed
-     2. check the selection pipeline length
-     3. check which axis is good
 
     According to those checkes we then transform the meshes.
 
@@ -208,15 +207,14 @@ static int l = 0;
 void scene_selection_draw_callback(void *data) {
 
   Scene *cast_scene = (Scene *)data;
-  MeshRefList *selection_list = &cast_scene->pipelines[ScenePipeline_Selection];
   GizmoTransform *gizmo = &cast_scene->editor.gizmo.transform;
+  MeshRefList *selection_list = &gizmo->cache.selection;
+  // look-up transform callback
+  gizmo_transform_callback transform_callback =
+      gizmo->transform_callback[gizmo->mode];
 
-  if (g_input.mouse.state == InputMouseState_Down &&
-      gizmo->active_handle != NULL && selection_list->length > 0)
-    // look-up transform callback
-    gizmo->transform_callback[gizmo->mode](gizmo, selection_list,
-                                           cast_scene->active_camera,
-                                           &cast_scene->viewport);
+  if (g_input.mouse.state == InputMouseState_Down && selection_list->length > 0)
+    transform_callback(gizmo, cast_scene->active_camera, &cast_scene->viewport);
 }
 
 /**

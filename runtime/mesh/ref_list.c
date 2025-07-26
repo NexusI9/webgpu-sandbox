@@ -90,7 +90,7 @@ Mesh *mesh_ref_list_find(const MeshRefList *list, Mesh *mesh) {
 /**
    Copy mesh pointers from one list to another
  */
-MeshStatus mesh_ref_list_transfert(MeshRefList *src, MeshRefList *dest) {
+MeshStatus mesh_ref_list_transfert(const MeshRefList *src, MeshRefList *dest) {
 
   // expand if destination is too small
   while (dest->length + src->length >= dest->capacity) {
@@ -118,6 +118,7 @@ MeshStatus mesh_ref_list_transfert(MeshRefList *src, MeshRefList *dest) {
 
 /**
    Copy a Gizmo Mesh list from a source to a given desination
+   DELETEME ??? (transfert instead ??)
  */
 MeshStatus mesh_ref_list_copy(const MeshRefList *src, MeshRefList *dest) {
 

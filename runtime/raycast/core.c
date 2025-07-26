@@ -112,7 +112,7 @@ void raycast_project_to_axis(Raycast *ray, vec3 *position, vec3 *axis_direction,
 
   vec3 move_pos;
   glm_vec3_scale(d2, t, move_pos);
-  glm_vec3_add(*position, move_pos, *dest);
+  glm_vec3_sub(*position, move_pos, *dest);
 }
 
 /**

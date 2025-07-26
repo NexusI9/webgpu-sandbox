@@ -17,7 +17,7 @@ void mesh_ref_list_empty(MeshRefList *);
 void mesh_ref_list_free(MeshRefList *);
 
 // transferts
-MeshStatus mesh_ref_list_transfert(MeshRefList *, MeshRefList *);
+MeshStatus mesh_ref_list_transfert(const MeshRefList *, MeshRefList *);
 MeshStatus mesh_ref_list_copy(const MeshRefList *, MeshRefList *);
 
 // utils

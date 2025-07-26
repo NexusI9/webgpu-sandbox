@@ -65,11 +65,11 @@ void gizmo_transform_callback_movement(GizmoTransform *gizmo, MeshRefList *list,
   gizmo_transform_translate_add(gizmo, movement[axis], axis);
 }
 
-void gizmo_transform_callback_translate(GizmoTransform *gizmo,
-                                        MeshRefList *list, Camera *camera,
+void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
                                         Viewport *viewport) {
 
   const Axis axis = gizmo->axis;
+  vec3 *gizmo_position = &gizmo->cache.gizmo_init_position;
 
   // draw raywast from mouse position
   Raycast mouse_ray;
@@ -77,18 +77,15 @@ void gizmo_transform_callback_translate(GizmoTransform *gizmo,
   float y = g_input.mouse.y;
 
   // project ray into axis
-  vec3 target;
-  // gizmo_transform_origin(gizmo, &target);
-  glm_vec3_copy(gizmo->init_offset, target);
-
   vec3 axis_dir;
   vec_world_axis(axis, &axis_dir);
+  glm_vec3_normalize(axis_dir);
 
-  vec3 position;
+  vec3 projected_position;
   raycast_project_from_screen_to_axis(
       &(RaycastProjectScreenToAxis){
           .origin = &camera->position,
-          .target = &target,
+          .target = gizmo_position,
           .axis_direction = &axis_dir,
           .view = &camera->view,
           .projection = &viewport->projection,
@@ -97,22 +94,33 @@ void gizmo_transform_callback_translate(GizmoTransform *gizmo,
           .width = viewport->width,
           .height = viewport->height,
       },
-      &position);
+      &projected_position);
 
-  glm_vec3_scale(position, -1.0f, position);
-  print_vec3(position);
+  vec3 gizmo_delta;
+  glm_vec3_sub(projected_position, *gizmo_position, gizmo_delta);
 
   // move meshes
-  for (size_t i = 0; i < list->length; i++) 
-    mesh_translate(list->entries[i], position);
-  
+  for (size_t i = 0; i < gizmo->cache.selection.length; i++) {
 
-  // move gizmo
-  gizmo_transform_translate(gizmo, position);
+    vec3 *init_position = &gizmo->cache.selection_init_positions.entries[i];
+    Mesh *mesh = gizmo->cache.selection.entries[i];
+
+    // calculate offset
+    vec3 offset_position;
+    glm_vec3_add(*init_position, gizmo_delta, offset_position);
+
+    // translate mesh
+    mesh_translate(mesh, offset_position);
+  }
+
+  // translate gizmo
+  vec3 gizmo_offset;
+  glm_vec3_add(*gizmo_position, gizmo_delta, gizmo_offset);
+  gizmo_transform_translate(gizmo, gizmo_offset);
 }
 
-void gizmo_transform_callback_rotate(GizmoTransform *gizmo, MeshRefList *list,
-                                     Camera *camera, Viewport *viewport) {}
+void gizmo_transform_callback_rotate(GizmoTransform *gizmo, Camera *camera,
+                                     Viewport *viewport) {}
 
-void gizmo_transform_callback_scale(GizmoTransform *gizmo, MeshRefList *list,
-                                    Camera *camera, Viewport *viewport) {}
+void gizmo_transform_callback_scale(GizmoTransform *gizmo, Camera *camera,
+                                    Viewport *viewport) {}

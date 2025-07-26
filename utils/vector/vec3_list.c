@@ -7,7 +7,7 @@ DynamicListStatus vec3_list_create(Vec3List *list, size_t capacity) {
 
 DynamicListStatus vec3_list_insert(Vec3List *list, vec3 entry) {
   return dyli_insert((void *)&list->entries, &list->capacity, &list->length,
-                     sizeof(vec3), (void *)&entry, 1, "Vector 3 list");
+                     sizeof(vec3), (void *)entry, 1, "Vector 3 list");
 }
 
 DynamicListStatus vec3_list_empty(Vec3List *list) {
