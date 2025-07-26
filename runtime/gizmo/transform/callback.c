@@ -79,7 +79,6 @@ void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
   // project ray into axis
   vec3 axis_dir;
   vec_world_axis(axis, &axis_dir);
-  glm_vec3_normalize(axis_dir);
 
   vec3 projected_position;
   raycast_project_from_screen_to_axis(
@@ -97,7 +96,8 @@ void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
       &projected_position);
 
   vec3 gizmo_delta;
-  glm_vec3_sub(projected_position, *gizmo_position, gizmo_delta);
+  // cancel initial offset
+  glm_vec3_sub(projected_position, gizmo->cache.delta_init, gizmo_delta);
 
   // move meshes
   for (size_t i = 0; i < gizmo->cache.selection.length; i++) {

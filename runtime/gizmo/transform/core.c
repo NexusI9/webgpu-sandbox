@@ -143,6 +143,24 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
   for (size_t i = 0; i < selected_meshes->length; i++)
     vec3_list_insert(&gizmo->cache.selection_init_positions,
                      selected_meshes->entries[i]->position);
+
+  // init delta
+  vec3 axis_dir;
+  vec_world_axis(gizmo->axis, &axis_dir);
+
+  raycast_project_from_screen_to_axis(
+      &(RaycastProjectScreenToAxis){
+          .origin = &camera->position,
+          .target = &gizmo->cache.gizmo_init_position,
+          .axis_direction = &axis_dir,
+          .view = &camera->view,
+          .projection = &viewport->projection,
+          .x = g_input.mouse.x,
+          .y = g_input.mouse.y,
+          .width = viewport->width,
+          .height = viewport->height,
+      },
+      &gizmo->cache.delta_init);
 }
 
 /**

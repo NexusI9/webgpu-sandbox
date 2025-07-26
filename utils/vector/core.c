@@ -83,4 +83,5 @@ void vec_world_axis(const Axis axis, vec3 *dest) {
   };
 
   glm_vec3_copy(axis_dir[axis], *dest);
+  glm_vec3_normalize(*dest);
 }

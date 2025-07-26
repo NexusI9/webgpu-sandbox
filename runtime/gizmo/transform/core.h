@@ -73,6 +73,7 @@ struct GizmoTransform {
   struct {
     MeshRefList selection;
     Vec3List selection_init_positions;
+    vec3 delta_init;
     vec3 gizmo_init_position;
   } cache;
 };
