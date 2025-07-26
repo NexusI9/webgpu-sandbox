@@ -26,7 +26,7 @@
 static IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *);
 static IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *);
 static VIndexStatus index_attribute_insert_group(char *, IndexAttributeGroup *,
-                                        const char *);
+                                                 const char *);
 static void index_attribute_from_line(const char *, void *);
 
 void index_attribute_print(const IndexAttributeList *list) {
@@ -43,7 +43,7 @@ void index_attribute_print(const IndexAttributeList *list) {
 }
 
 VIndexStatus index_attribute_insert_group(char *line, IndexAttributeGroup *list,
-                                 const char *pattern) {
+                                          const char *pattern) {
 
   // split values and push them into the current list
   // "1/3/4 1/9/4 3/2/1" => [ [1/3/4] , [1/9/4] , [3/2/1] ]
@@ -317,5 +317,4 @@ void index_attribute_line_set_doublon(IndexAttributeList *list) {
         index_attribute_new_attribute(current_group);
     index_attribute_copy(&new_attributes[0], new_attribute_b);
   }
-
 }

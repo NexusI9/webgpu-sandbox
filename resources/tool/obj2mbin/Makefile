@@ -14,7 +14,7 @@ all:
 
 compile:
 	@echo "Compiling"
-	@gcc $(FLAGS) -o $(TARGET) $(C_FILES)
+	@gcc -g $(FLAGS) -o $(TARGET) $(C_FILES)
 
 run:
 	@echo "Converting"

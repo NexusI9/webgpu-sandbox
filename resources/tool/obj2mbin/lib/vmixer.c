@@ -118,9 +118,8 @@ void vmixer_index_create_vertex_set(IndexAttributeList *index_list,
    Read each index group from the list,
  */
 int vmixer_index_compose_from_vertex(IndexAttributeList *index_list,
-                                               VertexAttributeList **attr_list,
-                                               VertexBuffer *vb,
-                                               IndexBuffer *ib) {
+                                     VertexAttributeList **attr_list,
+                                     VertexBuffer *vb, IndexBuffer *ib) {
 
   VertexHashTable table;
   if (vhash_create(&table, VHASH_BASE_CAPACITY) == 0) {
@@ -138,7 +137,4 @@ int vmixer_index_compose_from_vertex(IndexAttributeList *index_list,
  */
 void vmixer_attribute_line_direction(const VertexAttributeList *src,
                                      const IndexAttributeList *index,
-                                     VertexAttributeList *dest) {
-
-    
-}
+                                     VertexAttributeList *dest) {}

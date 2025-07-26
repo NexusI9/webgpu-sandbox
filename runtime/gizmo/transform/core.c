@@ -24,7 +24,7 @@ static inline void gizmo_transform_set_axis_from_mesh(GizmoTransform *,
 void gizmo_transform_create(GizmoTransform *gizmo,
                             const GizmoCreateDescriptor *desc) {
 
-  gizmo->mode = GizmoTransformMode_Translate;
+  gizmo->mode = GizmoTransformMode_Rotate;
 
   // init 'cache' attributes
   const size_t capacity = GIZMO_TRANSFORM_POSITION_CAPACITY;
@@ -46,7 +46,7 @@ void gizmo_transform_create(GizmoTransform *gizmo,
       &gizmo->handles[GizmoTransformMode_Translate], desc);
 
   // rotate
-  gizmo_transform_translate_create(&gizmo->handles[GizmoTransformMode_Rotate],
+  gizmo_transform_rotate_create(&gizmo->handles[GizmoTransformMode_Rotate],
                                    desc);
 
   // scale
@@ -134,9 +134,6 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
 void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
                                 const MeshRefList *selected_meshes,
                                 Camera *camera, Viewport *viewport) {
-
-  // DEBUG
-  gizmo->mode = GizmoTransformMode_Rotate;
 
   // define active axis
   gizmo_transform_set_axis_from_mesh(gizmo, hit_handle);
