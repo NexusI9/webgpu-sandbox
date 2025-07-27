@@ -102,7 +102,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Texture draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Texture,
-      &(RenderPassLayout){
+      &(RenderPassLayoutDescriptor){
           .length = 1,
           .entries =
               {
@@ -150,7 +150,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Solid draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Solid,
-      &(RenderPassLayout){
+      &(RenderPassLayoutDescriptor){
           .length = 1,
           .entries =
               {
@@ -193,7 +193,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Wireframe draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Wireframe,
-      &(RenderPassLayout){
+      &(RenderPassLayoutDescriptor){
           .length = 1,
           .entries =
               {
@@ -235,7 +235,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Boundbox draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Boundbox,
-      &(RenderPassLayout){
+      &(RenderPassLayoutDescriptor){
           .length = 1,
           .entries =
               {
@@ -281,7 +281,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Fixed draw configuration (use override topology & shader)
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Fixed,
-      &(RenderPassLayout){
+      &(RenderPassLayoutDescriptor){
           .length = 1,
           .entries =
               {
@@ -305,7 +305,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Selection draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Selection,
-      &(RenderPassLayout){
+      &(RenderPassLayoutDescriptor){
           .length = 1,
           .entries =
               {

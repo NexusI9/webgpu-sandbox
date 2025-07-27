@@ -116,7 +116,7 @@ void scene_renderer_set_draw_mode(SceneRenderer *, const SceneRendererDrawMode);
 
 void scene_renderer_set_draw_layout(SceneRenderer *,
                                     const SceneRendererDrawMode,
-                                    const RenderPassLayout *);
+                                    const RenderPassLayoutDescriptor *);
 
 void scene_renderer_add_draw_callback(SceneRenderer *,
                                       scene_renderer_draw_callback, void *);

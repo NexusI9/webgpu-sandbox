@@ -18,7 +18,6 @@ typedef struct {
 } RenderPassDrawLayout;
 
 typedef struct {
-  RenderPassType pass;
   RenderPassDrawLayout entries[SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST];
   size_t length;
 } RenderPassDrawLayoutList;
@@ -27,6 +26,22 @@ typedef struct {
   RenderPassDrawLayoutList entries[RENDER_PASS_COUNT];
   size_t length;
 } RenderPassLayout;
+
+
+// Descriptor
+typedef struct {
+  RenderPassType pass;
+  RenderPassDrawLayout entries[SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST];
+  size_t length;
+} RenderPassDrawLayoutListDescriptor;
+
+typedef struct {
+  RenderPassDrawLayoutListDescriptor entries[RENDER_PASS_COUNT];
+  size_t length;
+} RenderPassLayoutDescriptor;
+
+
+
 
 typedef struct {
 

@@ -129,17 +129,21 @@ scene_renderer_color_attachment_monosample(SceneRenderer *renderer,
    By following this order, we can simply map the right array entry depending on
    the scene render mode.
  */
-void scene_renderer_set_draw_layout(SceneRenderer *renderer,
-                                    const SceneRendererDrawMode mode,
-                                    const RenderPassLayout *pass_layout) {
+void scene_renderer_set_draw_layout(
+    SceneRenderer *renderer, const SceneRendererDrawMode mode,
+    const RenderPassLayoutDescriptor *pass_layout) {
 
   if (mode >= SCENE_RENDERER_DRAW_MODE_COUNT)
     return;
 
   for (size_t i = 0; i < pass_layout->length; i++) {
 
-    const RenderPassDrawLayoutList *render_pass = &pass_layout->entries[i];
+    const RenderPassDrawLayoutListDescriptor *render_pass =
+        &pass_layout->entries[i];
+
     renderer->draw.layouts[mode].length = pass_layout->length;
+
+    /* Map descriptor attribute to entity*/
 
     // target scene renderer based on mode (tex/solid/wire) and
     // type(Scene/Gizmo...)
@@ -147,13 +151,11 @@ void scene_renderer_set_draw_layout(SceneRenderer *renderer,
         &renderer->draw.layouts[mode].entries[render_pass->pass];
 
     // assign length
-    dest_layout->pass = render_pass->pass;
     dest_layout->length = render_pass->length;
 
     // copy mesh ref lists array
     memcpy(dest_layout->entries, render_pass->entries,
            sizeof(RenderPassDrawLayout) * dest_layout->length);
-
   }
 }
 
