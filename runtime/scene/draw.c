@@ -24,6 +24,7 @@ void scene_camera_draw_callback(void *data) {
    Using topology and shader callbacks allow greater flexibility when it comes
    to the different display modes.
  */
+static int t = 0;
 void scene_layout_draw_callback(void *data) {
 
   // cast data to renderer
@@ -31,22 +32,28 @@ void scene_layout_draw_callback(void *data) {
 
   // retrieve mode
   SceneRendererDrawMode mode = cast_renderer->draw.mode;
-  SceneRendererDrawLayoutList *layout_list = &cast_renderer->draw.layouts[mode];
+  RenderPassLayout *pass_layout = &cast_renderer->draw.layouts[mode];
   WGPURenderPassEncoder *render_pass = &cast_renderer->wgpu.render_pass;
 
-  // loop through mesh lists and draw meshes
-  for (size_t i = 0; i < layout_list->length; i++) {
+  for (size_t i = 0; i < pass_layout->length; i++) {
 
-    // retrieve layout
-    SceneRendererDrawLayout *layout = &layout_list->entries[i];
-    mesh_get_topology_callback target_topology = layout->topology_callback;
-    mesh_get_shader_callback target_shader = layout->shader_callback;
-    MeshRefList *meshes = layout->meshes;
+    // retrieve each render pass entries (mesh/topo/shader)
+    RenderPassDrawLayoutList *layout_list = &pass_layout->entries[i];
 
-    // draw mesh with layout callbacks
-    for (size_t j = 0; j < meshes->length; j++) {
-      Mesh *mesh = meshes->entries[j];
-      mesh_draw(target_topology(mesh), target_shader(mesh), render_pass);
+    // loop through mesh lists and draw meshes
+    for (size_t j = 0; j < layout_list->length; j++) {
+
+      // retrieve layout
+      RenderPassDrawLayout *layout = &layout_list->entries[j];
+      mesh_get_topology_callback target_topology = layout->topology_callback;
+      mesh_get_shader_callback target_shader = layout->shader_callback;
+      MeshRefList *meshes = layout->meshes;
+
+      // draw mesh with layout callbacks
+      for (size_t k = 0; k < meshes->length; k++) {
+        Mesh *mesh = meshes->entries[k];
+        mesh_draw(target_topology(mesh), target_shader(mesh), render_pass);
+      }
     }
   }
 }

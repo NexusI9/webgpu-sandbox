@@ -6,6 +6,7 @@
 #include "ao_bake.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
+#include "render_pass.h"
 #include "shadow_pass.h"
 #include "webgpu/webgpu.h"
 #include <string.h>
@@ -80,8 +81,8 @@ WGPURenderPassColorAttachment
 scene_renderer_color_attachment_multisample(SceneRenderer *renderer,
                                             WGPUTextureView swapchain_view) {
   return (WGPURenderPassColorAttachment){
-      .view = renderer->texture.multisampling.view, // pass 4x sample as view
       .resolveTarget = swapchain_view,              // 1x sampled
+      .view = renderer->texture.multisampling.view, // pass 4x sample as view
       .loadOp = WGPULoadOp_Clear,
       .storeOp = WGPUStoreOp_Store,
       .clearValue = renderer->background,
@@ -111,7 +112,16 @@ scene_renderer_color_attachment_monosample(SceneRenderer *renderer,
    each mesh.
 
    Note that the order of the array is relative to the SceneRendererMode:
+
    0 - Texture config
+          L Render Pass 1
+          L Render Pass 2
+               L Length
+               L Draw Layouts[]
+                    L Mesh List
+                    L Shader Callback
+                    L Topo Callback
+
    1 - Solid config
    2 - Wireframe config
    3 - Boundbox config
@@ -121,19 +131,30 @@ scene_renderer_color_attachment_monosample(SceneRenderer *renderer,
  */
 void scene_renderer_set_draw_layout(SceneRenderer *renderer,
                                     const SceneRendererDrawMode mode,
-                                    const SceneRendererDrawLayoutList *layout) {
+                                    const RenderPassLayout *pass_layout) {
 
   if (mode >= SCENE_RENDERER_DRAW_MODE_COUNT)
     return;
 
-  // assign values
-  renderer->draw.layouts[mode] = (SceneRendererDrawLayoutList){
-      .length = layout->length,
-  };
+  for (size_t i = 0; i < pass_layout->length; i++) {
 
-  // copy mesh ref lists
-  memcpy(renderer->draw.layouts[mode].entries, layout->entries,
-         sizeof(SceneRendererDrawLayout) * layout->length);
+    const RenderPassDrawLayoutList *render_pass = &pass_layout->entries[i];
+    renderer->draw.layouts[mode].length = pass_layout->length;
+
+    // target scene renderer based on mode (tex/solid/wire) and
+    // type(Scene/Gizmo...)
+    RenderPassDrawLayoutList *dest_layout =
+        &renderer->draw.layouts[mode].entries[render_pass->pass];
+
+    // assign length
+    dest_layout->pass = render_pass->pass;
+    dest_layout->length = render_pass->length;
+
+    // copy mesh ref lists array
+    memcpy(dest_layout->entries, render_pass->entries,
+           sizeof(RenderPassDrawLayout) * dest_layout->length);
+
+  }
 }
 
 int scene_renderer_resize(SceneRenderer *renderer, int event_type,

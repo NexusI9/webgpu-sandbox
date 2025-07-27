@@ -37,16 +37,16 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   // background
   mesh_ref_list_create(&scene->pipelines[ScenePipeline_Background],
-                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
   // lit
   mesh_ref_list_create(&scene->pipelines[ScenePipeline_Lit],
-                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
   // unlit
   mesh_ref_list_create(&scene->pipelines[ScenePipeline_Unlit],
-                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
   // fixed
   mesh_ref_list_create(&scene->pipelines[ScenePipeline_Fixed],
-                             SCENE_MESH_LIST_DEFAULT_CAPACITY);
+                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init scene layers
   scene_layer_set_create(&scene->layers, SCENE_LAYER_SET_CAPACITY);
@@ -93,40 +93,56 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
    Define the scene renderer draw configurations by providing each draw mode
    their respective topology, shader callbacks as well a mesh list to draw
    during the loop.
+
+   Can be read like : 'For each draw mode (tex/solid/wire) draw in the given
+   render pass the mesh list with this shader and this topology.'
  */
 void scene_init_draw_layouts(Scene *scene) {
 
   // Texture draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Texture,
-      &(SceneRendererDrawLayoutList){
-          .length = 5,
+      &(RenderPassLayout){
+          .length = 1,
           .entries =
               {
                   {
-                      .meshes = &scene->pipelines[ScenePipeline_Background],
-                      .shader_callback = mesh_shader_texture,
-                      .topology_callback = mesh_topology_base,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Lit],
-                      .shader_callback = mesh_shader_texture,
-                      .topology_callback = mesh_topology_base,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Unlit],
-                      .shader_callback = mesh_shader_texture,
-                      .topology_callback = mesh_topology_base,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Selection],
-                      .shader_callback = mesh_shader_wireframe,
-                      .topology_callback = mesh_topology_boundbox,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
-                      .shader_callback = mesh_shader_override,
-                      .topology_callback = mesh_topology_override,
+                      .pass = RenderPassType_Scene,
+                      .length = 5,
+                      .entries =
+                          {
+                              {
+                                  .meshes = &scene->pipelines
+                                                 [ScenePipeline_Background],
+                                  .shader_callback = mesh_shader_texture,
+                                  .topology_callback = mesh_topology_base,
+                              },
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Lit],
+                                  .shader_callback = mesh_shader_texture,
+                                  .topology_callback = mesh_topology_base,
+                              },
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Unlit],
+                                  .shader_callback = mesh_shader_texture,
+                                  .topology_callback = mesh_topology_base,
+                              },
+                              {
+                                  .meshes =
+                                      &scene
+                                           ->pipelines[ScenePipeline_Selection],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_boundbox,
+                              },
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Fixed],
+                                  .shader_callback = mesh_shader_override,
+                                  .topology_callback = mesh_topology_override,
+                              },
+                          },
                   },
               },
       });
@@ -134,60 +150,84 @@ void scene_init_draw_layouts(Scene *scene) {
   // Solid draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Solid,
-      &(SceneRendererDrawLayoutList){
-          .length = 4,
+      &(RenderPassLayout){
+          .length = 1,
           .entries =
               {
                   {
-                      .meshes = &scene->pipelines[ScenePipeline_Lit],
-                      .shader_callback = mesh_shader_solid,
-                      .topology_callback = mesh_topology_base,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Unlit],
-                      .shader_callback = mesh_shader_solid,
-                      .topology_callback = mesh_topology_base,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Selection],
-                      .shader_callback = mesh_shader_wireframe,
-                      .topology_callback = mesh_topology_boundbox,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
-                      .shader_callback = mesh_shader_override,
-                      .topology_callback = mesh_topology_override,
-                  },
+                      .pass = RenderPassType_Scene,
+                      .length = 4,
+                      .entries =
+                          {
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Lit],
+                                  .shader_callback = mesh_shader_solid,
+                                  .topology_callback = mesh_topology_base,
+                              },
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Unlit],
+                                  .shader_callback = mesh_shader_solid,
+                                  .topology_callback = mesh_topology_base,
+                              },
+                              {
+                                  .meshes =
+                                      &scene
+                                           ->pipelines[ScenePipeline_Selection],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_boundbox,
+                              },
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Fixed],
+                                  .shader_callback = mesh_shader_override,
+                                  .topology_callback = mesh_topology_override,
+                              },
 
+                          },
+                  },
               },
       });
 
   // Wireframe draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Wireframe,
-      &(SceneRendererDrawLayoutList){
-          .length = 4,
+      &(RenderPassLayout){
+          .length = 1,
           .entries =
               {
                   {
-                      .meshes = &scene->pipelines[ScenePipeline_Lit],
-                      .shader_callback = mesh_shader_wireframe,
-                      .topology_callback = mesh_topology_wireframe,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Unlit],
-                      .shader_callback = mesh_shader_wireframe,
-                      .topology_callback = mesh_topology_wireframe,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Selection],
-                      .shader_callback = mesh_shader_wireframe,
-                      .topology_callback = mesh_topology_boundbox,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
-                      .shader_callback = mesh_shader_override,
-                      .topology_callback = mesh_topology_override,
+                      .pass = RenderPassType_Scene,
+                      .length = 4,
+                      .entries =
+                          {
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Lit],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_wireframe,
+                              },
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Unlit],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_wireframe,
+                              },
+                              {
+                                  .meshes =
+                                      &scene
+                                           ->pipelines[ScenePipeline_Selection],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_boundbox,
+                              },
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Fixed],
+                                  .shader_callback = mesh_shader_override,
+                                  .topology_callback = mesh_topology_override,
+                              },
+                          },
                   },
               },
       });
@@ -195,34 +235,45 @@ void scene_init_draw_layouts(Scene *scene) {
   // Boundbox draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Boundbox,
-      &(SceneRendererDrawLayoutList){
-          .length = 4,
+      &(RenderPassLayout){
+          .length = 1,
           .entries =
               {
                   {
-                      .meshes = &scene->pipelines[ScenePipeline_Lit],
-                      .shader_callback = mesh_shader_wireframe,
-                      .topology_callback = mesh_topology_boundbox,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Unlit],
-                      .shader_callback = mesh_shader_wireframe,
-                      .topology_callback = mesh_topology_boundbox,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Selection],
-                      .shader_callback = mesh_shader_wireframe,
-                      .topology_callback = mesh_topology_boundbox,
-                  },
-                  {
-                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
-                      .shader_callback = mesh_shader_override,
-                      .topology_callback = mesh_topology_override,
+                      .length = 4,
+                      .entries =
+                          {
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Lit],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_boundbox,
+                              },
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Unlit],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_boundbox,
+                              },
+                              {
+                                  .meshes =
+                                      &scene
+                                           ->pipelines[ScenePipeline_Selection],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_boundbox,
+                              },
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Fixed],
+                                  .shader_callback = mesh_shader_override,
+                                  .topology_callback = mesh_topology_override,
+                              },
+                          },
+
                   },
               },
       });
 
-  
   /*
     Below configuration won't be used in runtime out of debug purpose.
    */
@@ -230,14 +281,23 @@ void scene_init_draw_layouts(Scene *scene) {
   // Fixed draw configuration (use override topology & shader)
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Fixed,
-      &(SceneRendererDrawLayoutList){
+      &(RenderPassLayout){
           .length = 1,
           .entries =
               {
+
                   {
-                      .meshes = &scene->pipelines[ScenePipeline_Fixed],
-                      .shader_callback = mesh_shader_override,
-                      .topology_callback = mesh_topology_override,
+                      .pass = RenderPassType_Scene,
+                      .length = 1,
+                      .entries =
+                          {
+                              {
+                                  .meshes =
+                                      &scene->pipelines[ScenePipeline_Fixed],
+                                  .shader_callback = mesh_shader_override,
+                                  .topology_callback = mesh_topology_override,
+                              },
+                          },
                   },
               },
       });
@@ -245,14 +305,24 @@ void scene_init_draw_layouts(Scene *scene) {
   // Selection draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Selection,
-      &(SceneRendererDrawLayoutList){
+      &(RenderPassLayout){
           .length = 1,
           .entries =
               {
                   {
-                      .meshes = &scene->pipelines[ScenePipeline_Selection],
-                      .shader_callback = mesh_shader_wireframe,
-                      .topology_callback = mesh_topology_boundbox,
+                      .pass = RenderPassType_Scene,
+                      .length = 1,
+                      .entries =
+                          {
+                              {
+                                  .meshes =
+                                      &scene
+                                           ->pipelines[ScenePipeline_Selection],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_boundbox,
+                              },
+                          },
+
                   },
               },
       });

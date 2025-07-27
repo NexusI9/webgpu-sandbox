@@ -1,17 +1,17 @@
 #ifndef _SCENE_RENDERER_CORE_H_
 #define _SCENE_RENDERER_CORE_H_
 
-#include "../../../runtime/mesh/mesh.h"
 #include "../../../runtime/pipeline/pipeline.h"
 #include "../../clock.h"
 #include "../runtime/texture/texture.h"
+#include "render_pass.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-#define SCENE_RENDERER_DPI_AUTO 0
 #define SCENE_RENDERER_DRAW_MODE_COUNT 6
-#define SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST 6
 #define SCENE_RENDERER_MAX_HOOK 6
+
+#define SCENE_RENDERER_DPI_AUTO 0
 
 typedef struct {
   const char *name;
@@ -30,17 +30,6 @@ typedef enum {
   SceneRendererDrawMode_Selection,
 } SceneRendererDrawMode;
 
-typedef struct {
-  mesh_get_shader_callback shader_callback;
-  mesh_get_topology_callback topology_callback;
-  MeshRefList *meshes;
-} SceneRendererDrawLayout;
-
-typedef struct {
-  SceneRendererDrawLayout entries[SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST];
-  size_t length;
-} SceneRendererDrawLayoutList;
-
 typedef void (*scene_renderer_draw_callback)(void *);
 
 typedef struct {
@@ -52,6 +41,10 @@ typedef struct {
   SceneRendererDrawCallback entries[SCENE_RENDERER_MAX_HOOK];
   ssize_t length;
 } SceneRendererDrawCallbackList;
+
+typedef struct {
+
+} RenderPassCallbacks;
 
 typedef struct {
 
@@ -101,8 +94,8 @@ typedef struct SceneRenderer {
 
   struct {
     SceneRendererDrawMode mode;
-    SceneRendererDrawLayoutList layouts[SCENE_RENDERER_DRAW_MODE_COUNT];
     SceneRendererDrawCallbackList callbacks;
+    RenderPassLayout layouts[SCENE_RENDERER_DRAW_MODE_COUNT];
   } draw;
 
 } SceneRenderer;
@@ -119,11 +112,12 @@ typedef struct {
 void scene_renderer_create(SceneRenderer *,
                            const SceneRendererCreateDescriptor *);
 
+void scene_renderer_set_draw_mode(SceneRenderer *, const SceneRendererDrawMode);
+
 void scene_renderer_set_draw_layout(SceneRenderer *,
                                     const SceneRendererDrawMode,
-                                    const SceneRendererDrawLayoutList *);
+                                    const RenderPassLayout *);
 
-void scene_renderer_set_draw_mode(SceneRenderer *, const SceneRendererDrawMode);
 void scene_renderer_add_draw_callback(SceneRenderer *,
                                       scene_renderer_draw_callback, void *);
 void scene_renderer_draw(SceneRenderer *);
