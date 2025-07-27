@@ -1,5 +1,5 @@
 #include "set.h"
-
+#include "webgpu/webgpu.h"
 
 /**
    Define custom vertex state for pipeline prior building it
@@ -58,3 +58,13 @@ void pipeline_set_stencil(Pipeline *pipeline,
   pipeline->stencil_state = state;
 }
 
+void pipeline_set_blend(Pipeline *pipeline, const WGPUBlendState *state) {
+
+  pipeline->blend_state = (WGPUBlendState){
+      .color = state->color,
+      .alpha = state->alpha,
+  };
+
+  pipeline->color_state.blend = &pipeline->blend_state;
+  pipeline->fragment_state.targets = &pipeline->color_state;
+}

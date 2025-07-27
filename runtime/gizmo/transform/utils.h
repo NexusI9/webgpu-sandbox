@@ -3,6 +3,7 @@
 
 #include "../../mesh/mesh.h"
 #include "core.h"
+#include "../utils/color.h"
 
 typedef struct {
   const char *mbin_path;
@@ -11,8 +12,11 @@ typedef struct {
   MeshList *list;
 } GizmoTransformCreateMeshDescriptor;
 
-void gizmo_transform_create_mesh(MeshRefList *,
-                                 const GizmoTransformCreateMeshDescriptor *);
+void gizmo_transform_create_mesh(Mesh *, Primitive *, const color*,
+                                 const WGPUQueue *, const WGPUDevice *);
+
+void gizmo_transform_create_handles(MeshRefList *,
+                                    const GizmoTransformCreateMeshDescriptor *);
 
 void gizmo_transform_origin(GizmoTransform *, vec3 *);
 

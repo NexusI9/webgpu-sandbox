@@ -66,7 +66,7 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
                                 });
 
   for (size_t i = 0; i < 3; i++) {
-    // add the gizmo handles to Gizmo Transform list as to only include this
+    // add the gizmo handles to 'Gizmo Transform' layer as to only include this
     // layer for he raycast selection
     scene_layer_set_insert_mesh_ref_list(
         &scene->layers, SCENE_LAYER_GIZMO_TRANSFORM, &gizmo->handles[i]);

@@ -4,7 +4,7 @@
 void gizmo_transform_scale_create(MeshRefList *list,
                                   const GizmoCreateDescriptor *desc) {
 
-  gizmo_transform_create_mesh(
+  gizmo_transform_create_handles(
       list, &(GizmoTransformCreateMeshDescriptor){
                 .device = desc->device,
                 .queue = desc->queue,

@@ -5,9 +5,10 @@
 #include "../camera/camera.h"
 #include "../viewport/viewport.h"
 #include <webgpu/webgpu.h>
+#include "../utils/color.h"
 
 typedef struct {
-  vec4 color;
+  color color;
   float size;
   float cell_size;
   float thickness;

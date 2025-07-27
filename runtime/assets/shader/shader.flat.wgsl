@@ -34,7 +34,7 @@ struct Viewport {
 @group(0) @binding(1) var<uniform> uCamera : Camera;
 @group(0) @binding(2) var<uniform> uMesh : Mesh;
 
-@group(1) @binding(0) var<uniform> uColor : vec3<f32>;
+@group(1) @binding(0) var<uniform> uColor : vec4<f32>;
 @group(1) @binding(1) var<uniform> uFixedScale : f32;
 
 // vertex shader
@@ -56,7 +56,7 @@ struct Viewport {
   var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
 
   var output : VertexOut;
-  output.Position = cam * blend_pos;
+  output.Position = cam * world_pos; // blend_pos;
   output.vCol = input.aCol;
 
   return output;
@@ -64,5 +64,5 @@ struct Viewport {
 
 // fragment shader
 @fragment fn fs_main() -> @location(0) vec4<f32> {
-  return vec4<f32>(uColor, 1.0f);
+  return uColor;
 }
