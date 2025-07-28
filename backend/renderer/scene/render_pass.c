@@ -140,11 +140,33 @@ static void render_pass_draw_layout(RenderPassLayout *pass_layout,
 
    Using topology and shader callbacks allow greater flexibility when it comes
    to the different display modes.
+
+   For each multisample pass we render to the scene renderer shared color and
+   depth textures (accumulate).
+   And after all passes we make a final one (resolve pass) where we send the
+   shared texture to the swapchain.
+
+      Render Pass 1     Render Pass 2       Resolve Pass
+      +-----------+     +-----------+      +-----------+
+      |           |     |           |      |           |
+      |  Texture  |  +  |  Texture  |  =>  | Swapchain |
+      |           |     |           |      |           |
+      +-----------+     +-----------+      +-----------+
+
+  For monosample we directly render to the swapchain as it is 1x sampled
+
+      Render Pass 1     Render Pass 2
+      +-----------+     +-----------+
+      |           |     |           |
+      | Swapchain |  +  | Swapchain |
+      |           |     |           |
+      +-----------+     +-----------+
+
  */
 void render_pass_draw_multisample(RenderPass pass_list[RENDER_PASS_COUNT],
                                   RenderPassLayout *pass_layout,
-                                  WGPUTextureView *color_view,
-                                  WGPUTextureView *depth_view,
+                                  WGPUTextureView *shared_color_view,
+                                  WGPUTextureView *shared_depth_view,
                                   WGPUTextureView *swapchain_view,
                                   WGPUCommandEncoder *encoder) {
 
@@ -156,8 +178,8 @@ void render_pass_draw_multisample(RenderPass pass_list[RENDER_PASS_COUNT],
     RenderPass *pass = &pass_list[type];
 
     // assign shared textures view amongst passes
-    pass->color.attachment.view = *color_view;
-    pass->depth.attachment.view = *depth_view;
+    pass->color.attachment.view = *shared_color_view;
+    pass->depth.attachment.view = *shared_depth_view;
 
     // begin render pass
     pass->encoder = wgpuCommandEncoderBeginRenderPass(
@@ -177,26 +199,27 @@ void render_pass_draw_multisample(RenderPass pass_list[RENDER_PASS_COUNT],
 
   // resolve pass (MSAA only)
   WGPURenderPassEncoder resolve_pass = wgpuCommandEncoderBeginRenderPass(
-      *encoder, &(WGPURenderPassDescriptor){
-                    .label = "MSAA Resolve Pass",
-                    .colorAttachmentCount = 1,
-                    .colorAttachments =
-                        &(WGPURenderPassColorAttachment){
-                            .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-                            .view = *color_view, // pass 4x sample as view
-                            .resolveTarget = *swapchain_view, // 1x sampled
-                            .loadOp = WGPULoadOp_Load,
-                            .storeOp = WGPUStoreOp_Store,
-                        },
-                });
+      *encoder,
+      &(WGPURenderPassDescriptor){
+          .label = "MSAA Resolve Pass",
+          .colorAttachmentCount = 1,
+          .colorAttachments =
+              &(WGPURenderPassColorAttachment){
+                  .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+                  .view = *shared_color_view,       // pass 4x sample as view
+                  .resolveTarget = *swapchain_view, // 1x sampled
+                  .loadOp = WGPULoadOp_Load,
+                  .storeOp = WGPUStoreOp_Store,
+              },
+      });
 
   wgpuRenderPassEncoderEnd(resolve_pass);
 }
 
 void render_pass_draw_monosample(RenderPass pass_list[RENDER_PASS_COUNT],
                                  RenderPassLayout *pass_layout,
-                                 WGPUTextureView *color_view,
-                                 WGPUTextureView *depth_view,
+                                 WGPUTextureView *shared_color_view,
+                                 WGPUTextureView *shared_depth_view,
                                  WGPUTextureView *swapchain_view,
                                  WGPUCommandEncoder *encoder) {
 
