@@ -3,7 +3,5 @@
 
 void scene_camera_draw_callback(void *);
 
-void scene_layout_draw_callback(void *);
-
 
 #endif

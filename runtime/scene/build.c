@@ -50,8 +50,7 @@ static inline void build_utils_bind(Mesh *, mesh_get_shader_callback,
 void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 
   SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
-  PipelineMultisampleCount sample_count =
-      scene->renderer.texture.multisampling.count;
+  PipelineMultisampleCount sample_count = scene->renderer.texture.multisample;
   Camera *camera = scene->active_camera;
   Viewport *viewport = &scene->viewport;
   WGPUQueue *queue = scene_queue(scene);
@@ -138,7 +137,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
    objects fit in the same pipeline.
  */
 void scene_build_mesh_ref_list(Scene *scene, MeshRefList *list,
-                                     const ScenePipeline pipeline) {
+                               const ScenePipeline pipeline) {
 
   for (size_t i = 0; i < list->length; i++)
     scene_build_mesh(scene, list->entries[i], pipeline);

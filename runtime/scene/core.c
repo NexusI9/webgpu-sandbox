@@ -18,18 +18,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   scene->camera = scene_init_main_camera(scene, desc->clock);
   scene->active_camera = scene->camera;
 
-  // set renderer
-  scene_renderer_create(&scene->renderer, desc->renderer);
-
-  // set viewport
-  // TODO: currently it's kinda weird to include the width and height in the
-  // viewport descriptor by override it in the scene. Maybe remove the width and
-  // height from the create descriptor (although it seems counter intuitive to
-  // do so...)
-  viewport_create(&scene->viewport, desc->viewport);
-  scene->viewport.width = scene_renderer_width(&scene->renderer);
-  scene->viewport.height = scene_renderer_height(&scene->renderer);
-
   // init global mesh list
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
@@ -56,6 +44,18 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   // init draw callbacks configuration
   scene_init_draw_layouts(scene);
+
+  // set renderer
+  scene_renderer_create(&scene->renderer, desc->renderer);
+
+  // set viewport
+  // TODO: currently it's kinda weird to include the width and height in the
+  // viewport descriptor by override it in the scene. Maybe remove the width and
+  // height from the create descriptor (although it seems counter intuitive to
+  // do so...)
+  viewport_create(&scene->viewport, desc->viewport);
+  scene->viewport.width = scene_renderer_width(&scene->renderer);
+  scene->viewport.height = scene_renderer_height(&scene->renderer);
 
   /* ==== EDITOR ==== */
   // EDITORONLY
@@ -102,7 +102,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Texture draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Texture,
-      &(RenderPassLayoutDescriptor){
+      &(RenderPassLayout){
           .length = 1,
           .entries =
               {
@@ -150,7 +150,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Solid draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Solid,
-      &(RenderPassLayoutDescriptor){
+      &(RenderPassLayout){
           .length = 1,
           .entries =
               {
@@ -193,7 +193,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Wireframe draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Wireframe,
-      &(RenderPassLayoutDescriptor){
+      &(RenderPassLayout){
           .length = 1,
           .entries =
               {
@@ -235,11 +235,12 @@ void scene_init_draw_layouts(Scene *scene) {
   // Boundbox draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Boundbox,
-      &(RenderPassLayoutDescriptor){
+      &(RenderPassLayout){
           .length = 1,
           .entries =
               {
                   {
+                      .pass = RenderPassType_Scene,
                       .length = 4,
                       .entries =
                           {
@@ -281,7 +282,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Fixed draw configuration (use override topology & shader)
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Fixed,
-      &(RenderPassLayoutDescriptor){
+      &(RenderPassLayout){
           .length = 1,
           .entries =
               {
@@ -305,7 +306,7 @@ void scene_init_draw_layouts(Scene *scene) {
   // Selection draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Selection,
-      &(RenderPassLayoutDescriptor){
+      &(RenderPassLayout){
           .length = 1,
           .entries =
               {
@@ -330,10 +331,6 @@ void scene_init_draw_layouts(Scene *scene) {
   // add the camera update callback
   scene_renderer_add_draw_callback(&scene->renderer, scene_camera_draw_callback,
                                    (void *)scene->active_camera);
-
-  // once defined, add layouts draw callbacks
-  scene_renderer_add_draw_callback(&scene->renderer, scene_layout_draw_callback,
-                                   (void *)&scene->renderer);
 }
 
 /**

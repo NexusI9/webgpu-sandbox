@@ -6,6 +6,8 @@
 #define SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST 6
 #define RENDER_PASS_COUNT 2
 
+typedef struct RenderPass RenderPass;
+
 typedef enum {
   RenderPassType_Scene,
   RenderPassType_Gizmo,
@@ -18,73 +20,77 @@ typedef struct {
 } RenderPassDrawLayout;
 
 typedef struct {
-  RenderPassDrawLayout entries[SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST];
-  size_t length;
-} RenderPassDrawLayoutList;
-
-typedef struct {
-  RenderPassDrawLayoutList entries[RENDER_PASS_COUNT];
-  size_t length;
-} RenderPassLayout;
-
-
-// Descriptor
-typedef struct {
   RenderPassType pass;
   RenderPassDrawLayout entries[SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST];
   size_t length;
-} RenderPassDrawLayoutListDescriptor;
+} RenderPassDrawList;
 
 typedef struct {
-  RenderPassDrawLayoutListDescriptor entries[RENDER_PASS_COUNT];
+  RenderPassDrawList entries[RENDER_PASS_COUNT];
   size_t length;
-} RenderPassLayoutDescriptor;
+} RenderPassLayout;
 
-
-
+// Descriptor
 
 typedef struct {
+  WGPURenderPassColorAttachment attachment;
+  PipelineMultisampleCount multisample;
+} RenderPassColor;
 
+typedef struct {
+  WGPURenderPassDepthStencilAttachment attachment;
+} RenderPassDepth;
+
+struct RenderPass {
   const char *label;
-  int width;
-  int height;
-
-  struct {
-    WGPURenderPassColorAttachment attachment;
-    WGPUTextureView target;
-    WGPUColor clear_color;
-  } color;
-
-  struct {
-    WGPURenderPassDepthStencilAttachment attachment;
-    WGPUTextureView target;
-  } depth;
-
-} RenderPass;
+  RenderPassColor color;
+  RenderPassDepth depth;
+  WGPURenderPassEncoder encoder;
+};
 
 typedef struct {
+  WGPUTextureView *view;
   WGPULoadOp load_op;
   WGPUStoreOp store_op;
   uint32_t clear_value;
-  bool depthReadOnly;
+  bool read_only;
 } RenderPassDepthAttachment;
 
 typedef struct {
+  WGPUTextureView *view;
   WGPULoadOp load_op;
   WGPUStoreOp store_op;
-  WGPUColor clearValue;
-  uint32_t depthSlice;
+  WGPUColor clear_value;
+  uint32_t depth_slice;
+  PipelineMultisampleCount multisample;
 } RenderPassColorAttachment;
+
 
 typedef struct {
   const char *label;
-  int width;
-  int height;
   RenderPassColorAttachment color;
   RenderPassDepthAttachment depth;
 } RenderPassCreateDescriptor;
 
-void render_pass_create_default(RenderPass *);
+typedef struct {
+  RenderPassLayout *pass_layout;
+  PipelineMultisampleCount multisample;
+  WGPUSwapChain *swapchain;
+  WGPUTextureView *color_target;
+  WGPUTextureView *depth_target;
+  const WGPUDevice *device;
+  const WGPUQueue *queue;
+  RenderPass pass_list[RENDER_PASS_COUNT];
+} RenderPassDrawDescriptor;
+
+typedef void (*render_pass_color_attachment_callback)(RenderPass *);
+typedef void (*render_pass_draw_callback)(RenderPass[RENDER_PASS_COUNT], RenderPassLayout *,
+                                          WGPUTextureView *, WGPUTextureView *,
+                                          WGPUTextureView *,
+                                          WGPUCommandEncoder *);
+
 void render_pass_create(RenderPass *, const RenderPassCreateDescriptor *);
+
+void render_pass_draw(RenderPassDrawDescriptor *);
 
 #endif
