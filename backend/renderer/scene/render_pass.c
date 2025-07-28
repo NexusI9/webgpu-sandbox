@@ -10,12 +10,10 @@ static void render_pass_draw_layout(RenderPassDrawList *,
 
 static void render_pass_draw_monosample(RenderPass *, RenderPassLayout *,
                                         WGPUTextureView *, WGPUTextureView *,
-                                        WGPUTextureView *,
                                         WGPUCommandEncoder *);
 
 static void render_pass_draw_multisample(RenderPass *, RenderPassLayout *,
                                          WGPUTextureView *, WGPUTextureView *,
-                                         WGPUTextureView *,
                                          WGPUCommandEncoder *);
 
 /**
@@ -40,9 +38,8 @@ void render_pass_create(RenderPass *render_pass,
   render_pass->label = strdup(desc->label);
 
   // assign color attributes
-  render_pass->color.multisample = desc->color.multisample;
-
   render_pass->color.attachment = (WGPURenderPassColorAttachment){
+      .view = *desc->color.view,
       .clearValue = desc->color.clear_value,
       .depthSlice = desc->color.depth_slice,
       .loadOp = desc->color.load_op,
@@ -51,6 +48,7 @@ void render_pass_create(RenderPass *render_pass,
 
   // assign depth
   render_pass->depth.attachment = (WGPURenderPassDepthStencilAttachment){
+      .view = *desc->depth.view,
       .depthClearValue = desc->depth.clear_value,
       .depthReadOnly = desc->depth.read_only,
       .depthLoadOp = desc->depth.load_op,
@@ -76,8 +74,8 @@ void render_pass_draw(RenderPassDrawDescriptor *desc) {
       wgpuSwapChainGetCurrentTextureView(*desc->swapchain);
 
   draw_callback[desc->multisample](desc->pass_list, desc->pass_layout,
-                                   desc->color_target, desc->depth_target,
-                                   &swapchain_view, &render_encoder);
+                                   desc->msaa_view, &swapchain_view,
+                                   &render_encoder);
 
   // create command buffer
   WGPUCommandBuffer render_buffer =
@@ -157,10 +155,10 @@ void render_pass_draw_layout(RenderPassDrawList *draw_list,
       +-----------+     +-----------+
 
  */
+static int t = 0;
 void render_pass_draw_multisample(RenderPass *pass_list,
                                   RenderPassLayout *pass_layout,
                                   WGPUTextureView *shared_color_view,
-                                  WGPUTextureView *shared_depth_view,
                                   WGPUTextureView *swapchain_view,
                                   WGPUCommandEncoder *encoder) {
 
@@ -170,10 +168,6 @@ void render_pass_draw_multisample(RenderPass *pass_list,
     const RenderPassType type = pass_layout->entries[i].pass;
     // look-up renderer pass from the list depending on the type
     RenderPass *pass = &pass_list[type];
-
-    // assign shared textures view amongst passes
-    pass->color.attachment.view = *shared_color_view;
-    pass->depth.attachment.view = *shared_depth_view;
 
     // begin render pass
     pass->encoder = wgpuCommandEncoderBeginRenderPass(
@@ -214,7 +208,6 @@ void render_pass_draw_multisample(RenderPass *pass_list,
 void render_pass_draw_monosample(RenderPass *pass_list,
                                  RenderPassLayout *pass_layout,
                                  WGPUTextureView *shared_color_view,
-                                 WGPUTextureView *shared_depth_view,
                                  WGPUTextureView *swapchain_view,
                                  WGPUCommandEncoder *encoder) {
 

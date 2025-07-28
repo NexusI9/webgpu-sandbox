@@ -18,4 +18,10 @@ void scene_renderer_init_render_textures(SceneRenderer *);
 
 WGPUSwapChain scene_renderer_create_swapchain(const SceneRenderer *);
 
+void scene_renderer_create_multisampling_view(
+    WGPUTextureView *, const SceneRendererTextureDescriptor *);
+
+void scene_renderer_create_depth_view(WGPUTextureView *,
+                                      const SceneRendererTextureDescriptor *);
+
 #endif

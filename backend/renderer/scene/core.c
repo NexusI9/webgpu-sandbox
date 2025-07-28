@@ -149,8 +149,7 @@ void scene_renderer_draw_layout_callback(void *data) {
   // Go through and draw each mode render pass
   render_pass_draw(&(RenderPassDrawDescriptor){
       .pass_layout = pass_layout,
-      .color_target = &renderer->texture.render.color,
-      .depth_target = &renderer->texture.render.depth,
+      .msaa_view = &renderer->texture.render.color,
       .swapchain = &renderer->wgpu.swapchain,
       .multisample = renderer->texture.multisample,
       .pass_list = renderer->draw.pass,
@@ -219,14 +218,15 @@ void scene_renderer_init_render_pass(SceneRenderer *renderer) {
                          .label = "Scene Render Pass",
                          .color =
                              {
+                                 .view = &renderer->texture.render.color,
                                  .clear_value = renderer->background,
-                                 .multisample = renderer->texture.multisample,
                                  .load_op = WGPULoadOp_Clear,
                                  .store_op = WGPUStoreOp_Store,
                                  .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
                              },
                          .depth =
                              {
+                                 .view = &renderer->texture.render.depth,
                                  // Allow depth write
                                  .read_only = false,
                                  // Far plane
@@ -239,24 +239,37 @@ void scene_renderer_init_render_pass(SceneRenderer *renderer) {
                      });
 
   // init Gizmo render pass
+
+  // create dedicated depth texture for gizmo
+  WGPUTextureView gizmo_depth_view;
+  scene_renderer_create_depth_view(
+      &gizmo_depth_view, &(SceneRendererTextureDescriptor){
+                             .device = scene_renderer_device(renderer),
+                             .height = scene_renderer_height(renderer),
+                             .width = scene_renderer_width(renderer),
+                             .multisample = renderer->texture.multisample,
+                         });
+
   render_pass_create(&renderer->draw.pass[RenderPassType_Gizmo],
                      &(RenderPassCreateDescriptor){
                          .label = "Gizmo Render Pass",
                          .color =
                              {
-                                 .clear_value = renderer->background,
-                                 .multisample = renderer->texture.multisample,
+                                 .view = &renderer->texture.render.color,
+                                 .clear_value = 0,
                                  .load_op = WGPULoadOp_Load,
                                  .store_op = WGPUStoreOp_Store,
                                  .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
                              },
                          .depth =
                              {
+                                 .view = &gizmo_depth_view,
                                  .read_only = false,
                                  .clear_value = 1.0f,
-                                 .store_op = WGPUStoreOp_Store,
-                                 // Store previously rendered depth
-                                 .load_op = WGPULoadOp_Load,
+                                 // clear previously rendered depth
+                                 .load_op = WGPULoadOp_Clear,
+                                 // do not store it afterward
+                                 .store_op = WGPUStoreOp_Discard,
                              },
                      });
 }

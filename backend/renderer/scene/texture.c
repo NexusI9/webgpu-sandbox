@@ -22,12 +22,6 @@ static inline void
 scene_renderer_create_fallback_depth_2d_array(WGPUTextureView *, WGPUDevice *,
                                               WGPUQueue *);
 
-static inline void scene_renderer_create_multisampling_view(
-    WGPUTextureView *, const SceneRendererTextureDescriptor *);
-
-static inline void
-scene_renderer_create_depth_view(WGPUTextureView *,
-                                 const SceneRendererTextureDescriptor *);
 
 /**
    ▗▄▄▄▖ ▗▄▖ ▗▖   ▗▖   ▗▄▄▖  ▗▄▖  ▗▄▄▖▗▖ ▗▖

@@ -5,6 +5,7 @@
 
 #define SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST 6
 #define RENDER_PASS_COUNT 2
+#define RENDER_PASS_VIEW_CREATE -1
 
 typedef struct RenderPass RenderPass;
 
@@ -34,7 +35,6 @@ typedef struct {
 
 typedef struct {
   WGPURenderPassColorAttachment attachment;
-  PipelineMultisampleCount multisample;
 } RenderPassColor;
 
 typedef struct {
@@ -62,7 +62,6 @@ typedef struct {
   WGPUStoreOp store_op;
   WGPUColor clear_value;
   uint32_t depth_slice;
-  PipelineMultisampleCount multisample;
 } RenderPassColorAttachment;
 
 typedef struct {
@@ -73,18 +72,16 @@ typedef struct {
 
 typedef struct {
   RenderPassLayout *pass_layout;
-  PipelineMultisampleCount multisample;
   WGPUSwapChain *swapchain;
-  WGPUTextureView *color_target;
-  WGPUTextureView *depth_target;
+  PipelineMultisampleCount multisample;
+  WGPUTextureView *msaa_view;
   const WGPUDevice *device;
   const WGPUQueue *queue;
   RenderPass *pass_list;
 } RenderPassDrawDescriptor;
 
 typedef void (*render_pass_color_attachment_callback)(RenderPass *);
-typedef void (*render_pass_draw_callback)(RenderPass*,
-                                          RenderPassLayout *, WGPUTextureView *,
+typedef void (*render_pass_draw_callback)(RenderPass *, RenderPassLayout *,
                                           WGPUTextureView *, WGPUTextureView *,
                                           WGPUCommandEncoder *);
 

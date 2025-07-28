@@ -20,7 +20,8 @@ void scene_selection_raycast_mesh_callback(
       (SceneSelectionCallbackData *)user_data;
 
   Scene *scene = cast_user_data->scene;
-  MeshRefList *selection_list = &scene->pipelines[ScenePipeline_Fixed_Selection];
+  MeshRefList *selection_list =
+      &scene->pipelines[ScenePipeline_Fixed_Selection];
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
   // early return if no hits
@@ -61,11 +62,11 @@ void scene_selection_raycast_mesh_callback(
     gizmo_transform_translate(gizmo, position);
 
     scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                             ScenePipeline_Fixed);
+                             ScenePipeline_Fixed_Front);
   } else {
     // hide from the scene
     scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                             ScenePipeline_Fixed);
+                             ScenePipeline_Fixed_Front);
   }
 }
 
@@ -241,9 +242,10 @@ void scene_selection_average_position(Scene *scene, vec3 *dest) {
 void scene_selection_add(Scene *scene, Mesh *mesh) {
 
   // only add if mesh not already exists
-  if (mesh_ref_list_find(&scene->pipelines[ScenePipeline_Fixed_Selection], mesh) ==
-      NULL)
-    mesh_ref_list_insert(&scene->pipelines[ScenePipeline_Fixed_Selection], mesh);
+  if (mesh_ref_list_find(&scene->pipelines[ScenePipeline_Fixed_Selection],
+                         mesh) == NULL)
+    mesh_ref_list_insert(&scene->pipelines[ScenePipeline_Fixed_Selection],
+                         mesh);
 }
 
 /**
