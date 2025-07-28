@@ -171,7 +171,7 @@ void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
     mesh *view = scene_new_mesh(scene, NULL);
     mesh *view_mesh = &debug_view_light.mesh[v];
     memcpy(view, view_mesh, sizeof(mesh));
-    scene_add_mesh(scene, view, ScenePipeline_Unlit, NULL);
+    scene_add_mesh(scene, view, ScenePipeline_Dynamic_Unlit, NULL);
     }*/
 }
 

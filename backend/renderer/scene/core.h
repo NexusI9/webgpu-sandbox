@@ -9,9 +9,7 @@
 #include <stdint.h>
 
 #define SCENE_RENDERER_MAX_HOOK 6
-
 #define SCENE_RENDERER_DPI_AUTO 0
-
 #define SCENE_RENDERER_DRAW_MODE_COUNT 6
 
 typedef enum {

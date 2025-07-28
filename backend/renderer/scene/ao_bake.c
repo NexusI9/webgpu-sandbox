@@ -196,7 +196,7 @@ void ao_bake_local(const AOBakeDescriptor *desc) {
                         .queue = desc->queue,
                         .name = "line mesh",
                     });
-  scene_add_mesh(scene, line, ScenePipeline_Unlit, NULL);
+  scene_add_mesh(scene, line, ScenePipeline_Dynamic_Unlit, NULL);
 #endif
 
   for (size_t m = 0; m < desc->mesh_list->length; m++) {

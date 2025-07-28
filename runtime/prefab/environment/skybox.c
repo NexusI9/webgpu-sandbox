@@ -190,7 +190,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
                            .format = WGPUTextureFormat_Depth24Plus,
                        });
 
-  scene_add_mesh(scene, skybox_mesh, ScenePipeline_Background, NULL);
+  scene_add_mesh(scene, skybox_mesh, ScenePipeline_Dynamic_Background, NULL);
 }
 
 /**

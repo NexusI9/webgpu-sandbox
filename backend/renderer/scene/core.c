@@ -153,7 +153,7 @@ void scene_renderer_draw_layout_callback(void *data) {
       .depth_target = &renderer->texture.render.depth,
       .swapchain = &renderer->wgpu.swapchain,
       .multisample = renderer->texture.multisample,
-      .pass_list = *renderer->draw.pass,
+      .pass_list = renderer->draw.pass,
       .queue = scene_renderer_queue(renderer),
       .device = scene_renderer_device(renderer),
   });
@@ -246,7 +246,7 @@ void scene_renderer_init_render_pass(SceneRenderer *renderer) {
                              {
                                  .clear_value = renderer->background,
                                  .multisample = renderer->texture.multisample,
-                                 .load_op = WGPULoadOp_Clear,
+                                 .load_op = WGPULoadOp_Load,
                                  .store_op = WGPUStoreOp_Store,
                                  .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
                              },

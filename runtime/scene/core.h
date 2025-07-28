@@ -12,14 +12,13 @@
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
-#define SCENE_PIPELINE_COUNT 5
+#define SCENE_PIPELINE_COUNT 7
 
-typedef enum{
+typedef enum {
   SceneStatus_Success,
   SceneStatus_MaxCapacityReach,
   SceneStatus_AllocFail,
-}SceneStatus;
-
+} SceneStatus;
 
 typedef uint8_t shader_bind_t;
 
@@ -80,13 +79,16 @@ typedef uint8_t shader_bind_t;
  */
 
 typedef enum {
-  ScenePipeline_Background,
-  ScenePipeline_Lit,
-  ScenePipeline_Unlit,
+  // Dynamic
+  ScenePipeline_Dynamic_Background,
+  ScenePipeline_Dynamic_Lit,
+  ScenePipeline_Dynamic_Unlit,
+  // Fixed
   ScenePipeline_Fixed,
-  ScenePipeline_Selection,
+  ScenePipeline_Fixed_Selection,
+  ScenePipeline_Fixed_Front,
+  ScenePipeline_Fixed_UI,
 } ScenePipeline;
-
 
 typedef struct {
 

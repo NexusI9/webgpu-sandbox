@@ -58,10 +58,12 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 
   switch (pipeline) {
 
-  case ScenePipeline_Fixed:
     // Fixed rendering (NOT part of shader/topology creation automation, meaning
     // it's the developer responsibility to create the relative topology and
     // shaders.)
+  case ScenePipeline_Fixed:
+  case ScenePipeline_Fixed_Selection:
+  case ScenePipeline_Fixed_Front:
     VERBOSE_MESH_BUILD("Fixed %s", mesh->name);
     scene_build_mesh_fixed(mesh, camera, viewport, sample_count);
     break;
@@ -111,12 +113,12 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
           &(AOBakeInitDescriptor){
               .queue = queue,
               .device = device,
-              .mesh_list = &scene->pipelines[ScenePipeline_Lit],
+              .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
           },
           &(ShadowMapInitDescriptor){
               .device = device,
               .queue = queue,
-              .mesh_list = &scene->pipelines[ScenePipeline_Lit],
+              .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
               .lights =
                   {
                       .point = &scene->lights.point,
@@ -167,7 +169,7 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
                               SHADER_TEXTURE_BINDGROUP_VIEWS);
 
   // lit only pipeline
-  if (build_desc->pipeline == ScenePipeline_Lit) {
+  if (build_desc->pipeline == ScenePipeline_Dynamic_Lit) {
     // create binding for shadow maps (using fallback texture)
     material_texture_bind_shadow_maps(mesh, *build_desc->point_map,
                                       *build_desc->spot_map);

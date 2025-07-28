@@ -30,5 +30,5 @@ void example_gizmo(Scene *scene) {
 
   mesh_translate(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 
-  scene_add_mesh(scene, gizmo, ScenePipeline_Fixed, NULL);
+  scene_add_mesh(scene, gizmo, ScenePipeline_Fixed_Front, NULL);
 }

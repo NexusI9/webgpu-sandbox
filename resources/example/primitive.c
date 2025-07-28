@@ -23,5 +23,5 @@ void example_primitive(Mesh *cube, vec3 position, Scene *scene) {
 
   mesh_translate(cube, position);
 
-  scene_add_mesh(scene, cube, ScenePipeline_Unlit, NULL);
+  scene_add_mesh(scene, cube, ScenePipeline_Dynamic_Unlit, NULL);
 }

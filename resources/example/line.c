@@ -18,5 +18,5 @@ void example_line(Scene *scene) {
                  (vec3){0.0f, 1.0f, 0.0f}, &line->topology.base.attribute,
                  &line->topology.base.index);
 
-  scene_add_mesh(scene, line, ScenePipeline_Unlit, NULL);
+  scene_add_mesh(scene, line, ScenePipeline_Dynamic_Unlit, NULL);
 }

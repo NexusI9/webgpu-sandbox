@@ -65,7 +65,6 @@ typedef struct {
   PipelineMultisampleCount multisample;
 } RenderPassColorAttachment;
 
-
 typedef struct {
   const char *label;
   RenderPassColorAttachment color;
@@ -80,13 +79,13 @@ typedef struct {
   WGPUTextureView *depth_target;
   const WGPUDevice *device;
   const WGPUQueue *queue;
-  RenderPass pass_list[RENDER_PASS_COUNT];
+  RenderPass *pass_list;
 } RenderPassDrawDescriptor;
 
 typedef void (*render_pass_color_attachment_callback)(RenderPass *);
-typedef void (*render_pass_draw_callback)(RenderPass[RENDER_PASS_COUNT], RenderPassLayout *,
+typedef void (*render_pass_draw_callback)(RenderPass*,
+                                          RenderPassLayout *, WGPUTextureView *,
                                           WGPUTextureView *, WGPUTextureView *,
-                                          WGPUTextureView *,
                                           WGPUCommandEncoder *);
 
 void render_pass_create(RenderPass *, const RenderPassCreateDescriptor *);

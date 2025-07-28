@@ -22,19 +22,9 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
   // init mesh pipelines
-
-  // background
-  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Background],
-                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  // lit
-  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Lit],
-                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  // unlit
-  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Unlit],
-                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  // fixed
-  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Fixed],
-                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  for (size_t i = 0; i < SCENE_PIPELINE_COUNT; i++)
+    mesh_ref_list_create(&scene->pipelines[i],
+                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init scene layers
   scene_layer_set_create(&scene->layers, SCENE_LAYER_SET_CAPACITY);
@@ -99,11 +89,25 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
  */
 void scene_init_draw_layouts(Scene *scene) {
 
+  RenderPassDrawList gizmo_pass = {
+      .pass = RenderPassType_Gizmo,
+      .length = 1,
+      .entries =
+          {
+              {
+                  .meshes = &scene->pipelines[ScenePipeline_Fixed_Front],
+                  .shader_callback = mesh_shader_solid,
+                  .topology_callback = mesh_topology_base,
+              },
+
+          },
+  };
+
   // Texture draw configuration
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Texture,
       &(RenderPassLayout){
-          .length = 1,
+          .length = 2,
           .entries =
               {
                   {
@@ -112,27 +116,28 @@ void scene_init_draw_layouts(Scene *scene) {
                       .entries =
                           {
                               {
+                                  .meshes =
+                                      &scene->pipelines
+                                           [ScenePipeline_Dynamic_Background],
+                                  .shader_callback = mesh_shader_texture,
+                                  .topology_callback = mesh_topology_base,
+                              },
+                              {
                                   .meshes = &scene->pipelines
-                                                 [ScenePipeline_Background],
+                                                 [ScenePipeline_Dynamic_Lit],
+                                  .shader_callback = mesh_shader_texture,
+                                  .topology_callback = mesh_topology_base,
+                              },
+                              {
+                                  .meshes = &scene->pipelines
+                                                 [ScenePipeline_Dynamic_Unlit],
                                   .shader_callback = mesh_shader_texture,
                                   .topology_callback = mesh_topology_base,
                               },
                               {
                                   .meshes =
-                                      &scene->pipelines[ScenePipeline_Lit],
-                                  .shader_callback = mesh_shader_texture,
-                                  .topology_callback = mesh_topology_base,
-                              },
-                              {
-                                  .meshes =
-                                      &scene->pipelines[ScenePipeline_Unlit],
-                                  .shader_callback = mesh_shader_texture,
-                                  .topology_callback = mesh_topology_base,
-                              },
-                              {
-                                  .meshes =
-                                      &scene
-                                           ->pipelines[ScenePipeline_Selection],
+                                      &scene->pipelines
+                                           [ScenePipeline_Fixed_Selection],
                                   .shader_callback = mesh_shader_wireframe,
                                   .topology_callback = mesh_topology_boundbox,
                               },
@@ -142,6 +147,20 @@ void scene_init_draw_layouts(Scene *scene) {
                                   .shader_callback = mesh_shader_override,
                                   .topology_callback = mesh_topology_override,
                               },
+                          },
+                  },
+                  {
+                      .pass = RenderPassType_Gizmo,
+                      .length = 1,
+                      .entries =
+                          {
+                              {
+                                  .meshes = &scene->pipelines
+                                                 [ScenePipeline_Fixed_Front],
+                                  .shader_callback = mesh_shader_override,
+                                  .topology_callback = mesh_topology_override,
+                              },
+
                           },
                   },
               },
@@ -160,21 +179,21 @@ void scene_init_draw_layouts(Scene *scene) {
                       .entries =
                           {
                               {
-                                  .meshes =
-                                      &scene->pipelines[ScenePipeline_Lit],
+                                  .meshes = &scene->pipelines
+                                                 [ScenePipeline_Dynamic_Lit],
+                                  .shader_callback = mesh_shader_solid,
+                                  .topology_callback = mesh_topology_base,
+                              },
+                              {
+                                  .meshes = &scene->pipelines
+                                                 [ScenePipeline_Dynamic_Unlit],
                                   .shader_callback = mesh_shader_solid,
                                   .topology_callback = mesh_topology_base,
                               },
                               {
                                   .meshes =
-                                      &scene->pipelines[ScenePipeline_Unlit],
-                                  .shader_callback = mesh_shader_solid,
-                                  .topology_callback = mesh_topology_base,
-                              },
-                              {
-                                  .meshes =
-                                      &scene
-                                           ->pipelines[ScenePipeline_Selection],
+                                      &scene->pipelines
+                                           [ScenePipeline_Fixed_Selection],
                                   .shader_callback = mesh_shader_wireframe,
                                   .topology_callback = mesh_topology_boundbox,
                               },
@@ -203,21 +222,21 @@ void scene_init_draw_layouts(Scene *scene) {
                       .entries =
                           {
                               {
-                                  .meshes =
-                                      &scene->pipelines[ScenePipeline_Lit],
+                                  .meshes = &scene->pipelines
+                                                 [ScenePipeline_Dynamic_Lit],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_wireframe,
+                              },
+                              {
+                                  .meshes = &scene->pipelines
+                                                 [ScenePipeline_Dynamic_Unlit],
                                   .shader_callback = mesh_shader_wireframe,
                                   .topology_callback = mesh_topology_wireframe,
                               },
                               {
                                   .meshes =
-                                      &scene->pipelines[ScenePipeline_Unlit],
-                                  .shader_callback = mesh_shader_wireframe,
-                                  .topology_callback = mesh_topology_wireframe,
-                              },
-                              {
-                                  .meshes =
-                                      &scene
-                                           ->pipelines[ScenePipeline_Selection],
+                                      &scene->pipelines
+                                           [ScenePipeline_Fixed_Selection],
                                   .shader_callback = mesh_shader_wireframe,
                                   .topology_callback = mesh_topology_boundbox,
                               },
@@ -245,21 +264,21 @@ void scene_init_draw_layouts(Scene *scene) {
                       .entries =
                           {
                               {
-                                  .meshes =
-                                      &scene->pipelines[ScenePipeline_Lit],
+                                  .meshes = &scene->pipelines
+                                                 [ScenePipeline_Dynamic_Lit],
+                                  .shader_callback = mesh_shader_wireframe,
+                                  .topology_callback = mesh_topology_boundbox,
+                              },
+                              {
+                                  .meshes = &scene->pipelines
+                                                 [ScenePipeline_Dynamic_Unlit],
                                   .shader_callback = mesh_shader_wireframe,
                                   .topology_callback = mesh_topology_boundbox,
                               },
                               {
                                   .meshes =
-                                      &scene->pipelines[ScenePipeline_Unlit],
-                                  .shader_callback = mesh_shader_wireframe,
-                                  .topology_callback = mesh_topology_boundbox,
-                              },
-                              {
-                                  .meshes =
-                                      &scene
-                                           ->pipelines[ScenePipeline_Selection],
+                                      &scene->pipelines
+                                           [ScenePipeline_Fixed_Selection],
                                   .shader_callback = mesh_shader_wireframe,
                                   .topology_callback = mesh_topology_boundbox,
                               },
@@ -317,8 +336,8 @@ void scene_init_draw_layouts(Scene *scene) {
                           {
                               {
                                   .meshes =
-                                      &scene
-                                           ->pipelines[ScenePipeline_Selection],
+                                      &scene->pipelines
+                                           [ScenePipeline_Fixed_Selection],
                                   .shader_callback = mesh_shader_wireframe,
                                   .topology_callback = mesh_topology_boundbox,
                               },

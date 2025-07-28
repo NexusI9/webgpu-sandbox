@@ -5,17 +5,17 @@
 static void render_pass_create_color_multisample(RenderPass *);
 static void render_pass_create_color_monosample(RenderPass *);
 
-static void render_pass_draw_layout(RenderPassLayout *,
+static void render_pass_draw_layout(RenderPassDrawList *,
                                     WGPURenderPassEncoder *);
 
-static void render_pass_draw_monosample(RenderPass[RENDER_PASS_COUNT],
-                                        RenderPassLayout *, WGPUTextureView *,
+static void render_pass_draw_monosample(RenderPass *, RenderPassLayout *,
                                         WGPUTextureView *, WGPUTextureView *,
+                                        WGPUTextureView *,
                                         WGPUCommandEncoder *);
 
-static void render_pass_draw_multisample(RenderPass[RENDER_PASS_COUNT],
-                                         RenderPassLayout *, WGPUTextureView *,
+static void render_pass_draw_multisample(RenderPass *, RenderPassLayout *,
                                          WGPUTextureView *, WGPUTextureView *,
+                                         WGPUTextureView *,
                                          WGPUCommandEncoder *);
 
 /**
@@ -106,29 +106,23 @@ void render_pass_draw(RenderPassDrawDescriptor *desc) {
    Traverse a specific layout array and draw meshes onto the given render pass
    encoder
  */
-static void render_pass_draw_layout(RenderPassLayout *pass_layout,
-                                    WGPURenderPassEncoder *encoder) {
+void render_pass_draw_layout(RenderPassDrawList *draw_list,
+                             WGPURenderPassEncoder *encoder) {
 
   // Draw meshes
-  for (size_t i = 0; i < pass_layout->length; i++) {
+  // loop through mesh lists and draw meshes
+  for (size_t j = 0; j < draw_list->length; j++) {
 
-    // retrieve each render pass entries (mesh/topo/shader)
-    RenderPassDrawList *layout_list = &pass_layout->entries[i];
+    // retrieve layout
+    RenderPassDrawLayout *layout = &draw_list->entries[j];
+    mesh_get_topology_callback target_topology = layout->topology_callback;
+    mesh_get_shader_callback target_shader = layout->shader_callback;
+    MeshRefList *meshes = layout->meshes;
 
-    // loop through mesh lists and draw meshes
-    for (size_t j = 0; j < layout_list->length; j++) {
-
-      // retrieve layout
-      RenderPassDrawLayout *layout = &layout_list->entries[j];
-      mesh_get_topology_callback target_topology = layout->topology_callback;
-      mesh_get_shader_callback target_shader = layout->shader_callback;
-      MeshRefList *meshes = layout->meshes;
-
-      // draw mesh with layout callbacks
-      for (size_t k = 0; k < meshes->length; k++) {
-        Mesh *mesh = meshes->entries[k];
-        mesh_draw(target_topology(mesh), target_shader(mesh), encoder);
-      }
+    // draw mesh with layout callbacks
+    for (size_t k = 0; k < meshes->length; k++) {
+      Mesh *mesh = meshes->entries[k];
+      mesh_draw(target_topology(mesh), target_shader(mesh), encoder);
     }
   }
 }
@@ -163,7 +157,7 @@ static void render_pass_draw_layout(RenderPassLayout *pass_layout,
       +-----------+     +-----------+
 
  */
-void render_pass_draw_multisample(RenderPass pass_list[RENDER_PASS_COUNT],
+void render_pass_draw_multisample(RenderPass *pass_list,
                                   RenderPassLayout *pass_layout,
                                   WGPUTextureView *shared_color_view,
                                   WGPUTextureView *shared_depth_view,
@@ -190,8 +184,9 @@ void render_pass_draw_multisample(RenderPass pass_list[RENDER_PASS_COUNT],
                       .depthStencilAttachment = &pass->depth.attachment,
                   });
 
-    // draw layout (mesh > topo > shader)
-    render_pass_draw_layout(pass_layout, &pass->encoder);
+    // draw layout list (mesh > topo > shader)
+    RenderPassDrawList *draw_list = &pass_layout->entries[i];
+    render_pass_draw_layout(draw_list, &pass->encoder);
 
     // end render pass
     wgpuRenderPassEncoderEnd(pass->encoder);
@@ -216,7 +211,7 @@ void render_pass_draw_multisample(RenderPass pass_list[RENDER_PASS_COUNT],
   wgpuRenderPassEncoderEnd(resolve_pass);
 }
 
-void render_pass_draw_monosample(RenderPass pass_list[RENDER_PASS_COUNT],
+void render_pass_draw_monosample(RenderPass *pass_list,
                                  RenderPassLayout *pass_layout,
                                  WGPUTextureView *shared_color_view,
                                  WGPUTextureView *shared_depth_view,
@@ -244,7 +239,8 @@ void render_pass_draw_monosample(RenderPass pass_list[RENDER_PASS_COUNT],
                   });
 
     // draw layout (mesh > topo > shader)
-    render_pass_draw_layout(pass_layout, &pass->encoder);
+    RenderPassDrawList *draw_list = &pass_layout->entries[i];
+    render_pass_draw_layout(draw_list, &pass->encoder);
 
     // end render pass
     wgpuRenderPassEncoderEnd(pass->encoder);

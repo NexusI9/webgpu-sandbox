@@ -75,7 +75,7 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
     // we do not "Add" them, only Build cause we don't necessarily want to show
     // them unless meshes have been selected.
     scene_build_mesh_ref_list(scene, &gizmo->handles[i],
-                                    ScenePipeline_Fixed);
+                                    ScenePipeline_Fixed_Front);
   }
 }
 
