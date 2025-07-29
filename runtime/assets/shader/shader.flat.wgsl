@@ -56,7 +56,7 @@ struct Viewport {
   var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
 
   var output : VertexOut;
-  output.Position = cam * world_pos; // blend_pos;
+  output.Position = cam * blend_pos;
   output.vCol = input.aCol;
 
   return output;
@@ -64,5 +64,6 @@ struct Viewport {
 
 // fragment shader
 @fragment fn fs_main() -> @location(0) vec4<f32> {
+  // return uColor;
   return uColor;
 }

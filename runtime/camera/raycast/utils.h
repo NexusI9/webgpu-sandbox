@@ -5,6 +5,6 @@
 
 void camera_raycast_screen_space(Camera *, Mesh *, float, AABB *);
 
-bool camera_raycast_is_excluded(const MeshRefListArray *array, Mesh *mesh);
+bool camera_raycast_is_excluded(const MeshRefListArray *, Mesh *);
 
 #endif

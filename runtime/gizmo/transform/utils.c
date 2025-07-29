@@ -36,7 +36,7 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
                      &(ShaderCreateUniformDescriptor){
                          .entry_count = 2,
                          .group_index = 1,
-                         .visibility = WGPUShaderStage_Fragment,
+                         .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
                          .entries =
                              (ShaderBindGroupUniformEntry[]){
                                  {
@@ -66,8 +66,7 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
   // material_texture_double_sided(mesh);
 
   // scale gizmo (cpu side as well, so the hitbox are correct dimension)
-  const float gizmo_size = 1.0f;
-  mesh_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
+  //mesh_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
 }
 
 /**

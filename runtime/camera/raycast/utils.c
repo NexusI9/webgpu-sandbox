@@ -22,9 +22,19 @@ bool camera_raycast_is_excluded(const MeshRefListArray *array, Mesh *mesh) {
  */
 void camera_raycast_screen_space(Camera *camera, Mesh *mesh, float scale,
                                  AABB *boundbox) {
-  float dist = glm_vec3_distance(camera->position, mesh->position);
-  float screen_scale = dist / scale;
 
-  glm_vec3_scale(boundbox->min, screen_scale, boundbox->min);
-  glm_vec3_scale(boundbox->max, screen_scale, boundbox->max);
+  vec3 cam_to_mesh;
+  glm_vec3_sub(mesh->position, camera->position, cam_to_mesh);
+  glm_vec3_normalize(cam_to_mesh);
+
+  vec3 fixed_origin;
+  glm_vec3_scale(cam_to_mesh, scale, fixed_origin);
+  glm_vec3_add(camera->position, fixed_origin, fixed_origin);
+
+  vec3 min_offset, max_offset;
+  glm_vec3_sub(boundbox->min, mesh->position, min_offset);
+  glm_vec3_sub(boundbox->max, mesh->position, max_offset);
+
+  glm_vec3_add(fixed_origin, min_offset, boundbox->min);
+  glm_vec3_add(fixed_origin, max_offset, boundbox->max);
 }

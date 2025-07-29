@@ -24,7 +24,7 @@ static inline void gizmo_transform_set_axis_from_mesh(GizmoTransform *,
 void gizmo_transform_create(GizmoTransform *gizmo,
                             const GizmoCreateDescriptor *desc) {
 
-  gizmo->mode = GizmoTransformMode_Rotate;
+  gizmo->mode = GizmoTransformMode_Translate;
 
   // init 'cache' attributes
   const size_t capacity = GIZMO_TRANSFORM_POSITION_CAPACITY;

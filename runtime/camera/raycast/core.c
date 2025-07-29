@@ -19,13 +19,13 @@ static inline void camera_raycast_create_event(Camera *,
 
 // look up tables callbacks
 static const html_event_mouse html_event_callbacks[] = {
-  [CameraRaycastEvent_MouseDown] = html_event_add_mouse_down,
-  [CameraRaycastEvent_MouseHover] = html_event_add_mouse_move,
+    [CameraRaycastEvent_MouseDown] = html_event_add_mouse_down,
+    [CameraRaycastEvent_MouseHover] = html_event_add_mouse_move,
 };
 
-static const em_mouse_callback_func em_mouse_callbacks [] = {
-  [CameraRaycastTarget_MousePosition] = camera_raycast_event_callback_mouse,
-  [CameraRaycastTarget_ScreenCenter] = camera_raycast_event_callback_center,
+static const em_mouse_callback_func em_mouse_callbacks[] = {
+    [CameraRaycastTarget_MousePosition] = camera_raycast_event_callback_mouse,
+    [CameraRaycastTarget_ScreenCenter] = camera_raycast_event_callback_center,
 };
 
 static inline MeshRefList **malloc_reflist(MeshRefList **, size_t);
@@ -99,6 +99,8 @@ void camera_raycast_create_event(Camera *cam,
       .camera = cam,
       .viewport = desc->viewport,
       .hits = hits_list,
+      .screen_space_size = desc->screen_space_size,
+      .space = desc->space,
 
       // bound attributes
       .include =
@@ -123,7 +125,6 @@ void camera_raycast_create_event(Camera *cam,
       .owner = cam->id,
   });
 }
-
 
 /**
 
@@ -158,4 +159,3 @@ void camera_raycast(Camera *cam, const CameraRaycastDescriptor *desc) {
   camera_raycast_create_event(cam, desc, camera_raycast_event_callback_mouse,
                               html_event_add_mouse_down);
 }
-
