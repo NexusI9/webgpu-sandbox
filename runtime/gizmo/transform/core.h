@@ -8,6 +8,7 @@
 
 #define GIZMO_TRANSFORM_SIZE 15.0f
 #define GIZMO_TRANSFORM_POSITION_CAPACITY 128
+#define GIZMO_TRANSFORM_AXIS_COUNT 3
 
 /**
   Gizmo Transform
@@ -60,11 +61,6 @@ typedef enum {
   GizmoTransformMode_Scale,
 } GizmoTransformMode;
 
-typedef struct {
-  Mesh *mesh[3];
-  Axis axis[3];
-} GizmoTransformMeshAxis;
-
 struct GizmoTransform {
 
   GizmoTransformMode mode;
@@ -75,20 +71,26 @@ struct GizmoTransform {
      Gizmo handles (mesh*) mostly use to hide/show targeted mesh based on gizmo
      mode
    */
-  MeshRefList handles[3];
+  MeshRefList handles[GIZMO_TRANSFORM_AXIS_COUNT];
 
   /**
-     Handles axis axes cached mesh pointers that will be used later to retrieve
-     the selected axis based on the clicked mesh pointer.
+     Temporarily need to separate Visual handles from Interactive ones cause the
+     rotate gizmo use a sphere in the middle as occluder. However since we only
+     implemented the the "AABB" boundind box model the occluder boundbox take
+     over the actual gizmo axis boundbox which cancel the axis selection based
+     on which handle has been clicked on
+     tl;dr: it basically always detect the occluder cause its hitbox is bigger.
 
-     Mesh : [0x30443] , [0x45832] , [0x95943]
-               |            |           |
-     Axis : [Axis_X]  , [Axis_Y]  ,  [Axis_Z]
+     The temporal solution is to include in a separate list the interactive
+     handles.
 
+     A more robust solution to this is to set a Hull boundbox around the
+     occluder to is doesn't override the other handle. (Yet to be
+     implemented...)
    */
-  GizmoTransformMeshAxis handles_axis[3];
+  MeshRefList interactive_handles[GIZMO_TRANSFORM_AXIS_COUNT];
 
-  gizmo_transform_callback transform_callback[3];
+  gizmo_transform_callback transform_callback[GIZMO_TRANSFORM_AXIS_COUNT];
 
   /**
      Cached attribute on click
@@ -102,7 +104,7 @@ struct GizmoTransform {
 };
 
 typedef void (*gizmo_transform_create_handles_callback)(
-    MeshRefList *, GizmoTransformMeshAxis *, const GizmoCreateDescriptor *);
+    MeshRefList *, MeshRefList *, const GizmoCreateDescriptor *);
 
 void gizmo_transform_create(GizmoTransform *,
                             const GizmoCreateDescriptor *desc);

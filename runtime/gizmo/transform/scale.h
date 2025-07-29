@@ -4,7 +4,7 @@
 #include "../core.h"
 #include "./core.h"
 
-void gizmo_transform_scale_create(MeshRefList *, GizmoTransformMeshAxis *,
+void gizmo_transform_scale_create(MeshRefList *, MeshRefList *,
                                   const GizmoCreateDescriptor *);
 
 #endif

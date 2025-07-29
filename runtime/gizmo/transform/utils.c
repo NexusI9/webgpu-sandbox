@@ -75,13 +75,17 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
    process.
  */
 void gizmo_transform_create_handles(
-    MeshRefList *list, GizmoTransformMeshAxis *mesh_axis,
+    MeshRefList *visual_list, MeshRefList *interactive_list,
     const GizmoTransformCreateMeshDescriptor *desc) {
 
   // init gizmo reference list
   const size_t gizmo_mesh_count = 3;
-  if (list->entries == NULL)
-    mesh_ref_list_create(list, gizmo_mesh_count);
+  
+  if (interactive_list->capacity == 0)
+    mesh_ref_list_create(interactive_list, gizmo_mesh_count);
+
+  if (visual_list->capacity == 0)
+    mesh_ref_list_create(visual_list, gizmo_mesh_count);
 
   // load arrow mesh binary
   Primitive mesh_primitive;
@@ -106,11 +110,9 @@ void gizmo_transform_create_handles(
                       });
 
     // update gizmo ref list
-    mesh_ref_list_insert(list, mesh);
-
-    // assign mesh axis so we link mesh pointer with a target Axis (x/y/z)
-    mesh_axis->mesh[i] = mesh;
-    mesh_axis->axis[i] = i;
+    mesh_ref_list_insert(visual_list, mesh);
+    // add to interactive list
+    mesh_ref_list_insert(interactive_list, mesh);
   }
 }
 

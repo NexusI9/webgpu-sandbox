@@ -4,7 +4,7 @@
 #include "../core.h"
 #include "./utils.h"
 
-void gizmo_transform_rotate_create(MeshRefList *, GizmoTransformMeshAxis *,
+void gizmo_transform_rotate_create(MeshRefList *, MeshRefList * ,
                                    const GizmoCreateDescriptor *);
 
 #endif

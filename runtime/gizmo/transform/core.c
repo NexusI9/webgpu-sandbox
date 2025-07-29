@@ -51,14 +51,15 @@ void gizmo_transform_create(GizmoTransform *gizmo,
   // Use for-loop and lookup tables to map the callbacks functions and creating
   // methods since all handles use the same approach.
   // 0 = Transform, 1 = Rotate, 2 = Scale
-  for (size_t i = 0; i < 3; i++) {
+  for (size_t i = 0; i < GIZMO_TRANSFORM_AXIS_COUNT; i++) {
 
     // look up transform callbacks that will be called when a handle will be
     // clicked on
     gizmo->transform_callback[i] = transform_callback_func[i];
 
     // create handles (mesh / mesh axis)
-    handles_create_func[i](&gizmo->handles[i], &gizmo->handles_axis[i], desc);
+    handles_create_func[i](&gizmo->handles[i], &gizmo->interactive_handles[i],
+                           desc);
   }
 }
 
@@ -117,8 +118,8 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
                                         const Mesh *mesh) {
 
   for (size_t j = 0; j < 3; j++) // axis
-    if (gizmo->handles_axis[gizmo->mode].mesh[j] == mesh)
-      gizmo->axis = gizmo->handles_axis[gizmo->mode].axis[j];
+    if (gizmo->interactive_handles[gizmo->mode].entries[j] == mesh)
+      gizmo->axis = j;
 }
 
 /**

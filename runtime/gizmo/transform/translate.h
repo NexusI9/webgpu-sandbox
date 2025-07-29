@@ -5,7 +5,7 @@
 #include "./core.h"
 #include "../core.h"
 
-void gizmo_transform_translate_create(MeshRefList *, GizmoTransformMeshAxis *,
+void gizmo_transform_translate_create(MeshRefList *, MeshRefList *,
                                       const GizmoCreateDescriptor *);
 
 #endif

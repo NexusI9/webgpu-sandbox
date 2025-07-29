@@ -4,11 +4,11 @@
 #include "./utils.h"
 #include "webgpu/webgpu.h"
 
-void gizmo_transform_rotate_create(MeshRefList *list,
-                                   GizmoTransformMeshAxis *mesh_axis,
+void gizmo_transform_rotate_create(MeshRefList *visual_list,
+                                   MeshRefList *interactive_list,
                                    const GizmoCreateDescriptor *desc) {
 
-  mesh_ref_list_create(list, 4);
+  mesh_ref_list_create(visual_list, 4);
 
   // sphere mask first
   Mesh *sphere = mesh_list_new_mesh(desc->list);
@@ -30,11 +30,11 @@ void gizmo_transform_rotate_create(MeshRefList *list,
                            .format = WGPUTextureFormat_Depth24Plus,
                        });
 
-  mesh_ref_list_insert(list, sphere);
+  mesh_ref_list_insert(visual_list, sphere);
 
   // create axis then
   gizmo_transform_create_handles(
-      list, mesh_axis,
+      visual_list, interactive_list,
       &(GizmoTransformCreateMeshDescriptor){
           .device = desc->device,
           .queue = desc->queue,

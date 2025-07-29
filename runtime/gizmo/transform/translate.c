@@ -6,11 +6,11 @@
 #include "webgpu/webgpu.h"
 
 void gizmo_transform_translate_create(MeshRefList *list,
-                                      GizmoTransformMeshAxis *mesh_axis,
+                                      MeshRefList *interactive_list,
                                       const GizmoCreateDescriptor *desc) {
 
   gizmo_transform_create_handles(
-      list, mesh_axis,
+      list, interactive_list,
       &(GizmoTransformCreateMeshDescriptor){
           .device = desc->device,
           .queue = desc->queue,
