@@ -6,6 +6,18 @@
 #include "./utils.h"
 #include <stddef.h>
 
+static const gizmo_transform_create_handles_callback handles_create_func[] = {
+    [GizmoTransformMode_Translate] = gizmo_transform_translate_create,
+    [GizmoTransformMode_Rotate] = gizmo_transform_rotate_create,
+    [GizmoTransformMode_Scale] = gizmo_transform_scale_create,
+};
+
+static const gizmo_transform_callback transform_callback_func[] = {
+    [GizmoTransformMode_Translate] = gizmo_transform_callback_translate,
+    [GizmoTransformMode_Rotate] = gizmo_transform_callback_rotate,
+    [GizmoTransformMode_Scale] = gizmo_transform_callback_scale,
+};
+
 /**
    Map Gizmo mode to mesh get attributes to apply correct transformation based
    in gizmo mode (trans/rot/scale).
@@ -29,33 +41,25 @@ static inline void gizmo_transform_set_axis_from_mesh(GizmoTransform *,
 void gizmo_transform_create(GizmoTransform *gizmo,
                             const GizmoCreateDescriptor *desc) {
 
-  gizmo->mode = GizmoTransformMode_Translate;
+  gizmo->mode = GizmoTransformMode_Rotate;
 
   // init 'cache' attributes
   const size_t capacity = GIZMO_TRANSFORM_POSITION_CAPACITY;
   vec3_list_create(&gizmo->cache.selection_init_attribute, capacity);
   mesh_ref_list_create(&gizmo->cache.selection, capacity);
 
-  // define callbacks that will be called when a handle will be clicked on
-  gizmo->transform_callback[GizmoTransformMode_Translate] =
-      gizmo_transform_callback_translate;
+  // Use for-loop and lookup tables to map the callbacks functions and creating
+  // methods since all handles use the same approach.
+  // 0 = Transform, 1 = Rotate, 2 = Scale
+  for (size_t i = 0; i < 3; i++) {
 
-  gizmo->transform_callback[GizmoTransformMode_Rotate] =
-      gizmo_transform_callback_rotate;
+    // look up transform callbacks that will be called when a handle will be
+    // clicked on
+    gizmo->transform_callback[i] = transform_callback_func[i];
 
-  gizmo->transform_callback[GizmoTransformMode_Scale] =
-      gizmo_transform_callback_scale;
-
-  // translate
-  gizmo_transform_translate_create(
-      &gizmo->handles[GizmoTransformMode_Translate], desc);
-
-  // rotate
-  gizmo_transform_rotate_create(&gizmo->handles[GizmoTransformMode_Rotate],
-                                desc);
-
-  // scale
-  gizmo_transform_scale_create(&gizmo->handles[GizmoTransformMode_Scale], desc);
+    // create handles (mesh / mesh axis)
+    handles_create_func[i](&gizmo->handles[i], &gizmo->handles_axis[i], desc);
+  }
 }
 
 /**
@@ -97,7 +101,6 @@ void gizmo_transform_translate(GizmoTransform *gizmo, vec3 position) {
   mesh_ref_list_translate(&gizmo->handles[gizmo->mode], position);
 }
 
-
 void gizmo_transform_rotate_add(GizmoTransform *gizmo, float value,
                                 const Axis axis) {
   mesh_ref_list_rotate_axis_add(&gizmo->handles[gizmo->mode], value, axis);
@@ -114,8 +117,8 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
                                         const Mesh *mesh) {
 
   for (size_t j = 0; j < 3; j++) // axis
-    if (gizmo->handles[gizmo->mode].entries[j] == mesh)
-      gizmo->axis = j;
+    if (gizmo->handles_axis[gizmo->mode].mesh[j] == mesh)
+      gizmo->axis = gizmo->handles_axis[gizmo->mode].axis[j];
 }
 
 /**

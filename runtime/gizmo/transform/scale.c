@@ -2,13 +2,15 @@
 #include "./utils.h"
 
 void gizmo_transform_scale_create(MeshRefList *list,
+                                  GizmoTransformMeshAxis *mesh_axis,
                                   const GizmoCreateDescriptor *desc) {
 
   gizmo_transform_create_handles(
-      list, &(GizmoTransformCreateMeshDescriptor){
-                .device = desc->device,
-                .queue = desc->queue,
-                .list = desc->list,
-                .mbin_path = "./resources/assets/mbin/scale.mbin",
-            });
+      list, mesh_axis,
+      &(GizmoTransformCreateMeshDescriptor){
+          .device = desc->device,
+          .queue = desc->queue,
+          .list = desc->list,
+          .mbin_path = "./resources/assets/mbin/scale.mbin",
+      });
 }

@@ -75,7 +75,8 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
    process.
  */
 void gizmo_transform_create_handles(
-    MeshRefList *list, const GizmoTransformCreateMeshDescriptor *desc) {
+    MeshRefList *list, GizmoTransformMeshAxis *mesh_axis,
+    const GizmoTransformCreateMeshDescriptor *desc) {
 
   // init gizmo reference list
   const size_t gizmo_mesh_count = 3;
@@ -89,7 +90,7 @@ void gizmo_transform_create_handles(
       .primitive = &mesh_primitive,
   });
 
-  // create new mesh in mesh ref list (x, y ,z)
+  // create new mesh in mesh ref list in order: x, y ,z
   for (size_t i = 0; i < gizmo_mesh_count; i++) {
     Mesh *mesh = mesh_list_new_mesh(desc->list);
     color rgba = {i == 0, i == 1, i == 2, 1.0f};
@@ -106,6 +107,10 @@ void gizmo_transform_create_handles(
 
     // update gizmo ref list
     mesh_ref_list_insert(list, mesh);
+
+    // assign mesh axis so we link mesh pointer with a target Axis (x/y/z)
+    mesh_axis->mesh[i] = mesh;
+    mesh_axis->axis[i] = i;
   }
 }
 

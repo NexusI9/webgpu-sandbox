@@ -3,6 +3,7 @@
 
 #include "core.h"
 
+
 void gizmo_transform_callback_translate(GizmoTransform *, Camera *, Viewport *);
 
 void gizmo_transform_callback_rotate(GizmoTransform *, Camera *, Viewport *);

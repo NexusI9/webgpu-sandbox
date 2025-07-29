@@ -5,6 +5,7 @@
 #include "webgpu/webgpu.h"
 
 void gizmo_transform_rotate_create(MeshRefList *list,
+                                   GizmoTransformMeshAxis *mesh_axis,
                                    const GizmoCreateDescriptor *desc) {
 
   mesh_ref_list_create(list, 4);
@@ -23,20 +24,21 @@ void gizmo_transform_rotate_create(MeshRefList *list,
 
   // occlude
   pipeline_set_stencil(shader_pipeline(mesh_shader_texture(sphere)),
-                        (WGPUDepthStencilState){
-                            .depthWriteEnabled = true,
-                            .depthCompare = WGPUCompareFunction_Less,
-                            .format = WGPUTextureFormat_Depth24Plus,
-                        });
+                       (WGPUDepthStencilState){
+                           .depthWriteEnabled = true,
+                           .depthCompare = WGPUCompareFunction_Less,
+                           .format = WGPUTextureFormat_Depth24Plus,
+                       });
 
   mesh_ref_list_insert(list, sphere);
 
   // create axis then
   gizmo_transform_create_handles(
-      list, &(GizmoTransformCreateMeshDescriptor){
-                .device = desc->device,
-                .queue = desc->queue,
-                .list = desc->list,
-                .mbin_path = "./resources/assets/mbin/rotate.mbin",
-            });
+      list, mesh_axis,
+      &(GizmoTransformCreateMeshDescriptor){
+          .device = desc->device,
+          .queue = desc->queue,
+          .list = desc->list,
+          .mbin_path = "./resources/assets/mbin/rotate.mbin",
+      });
 }
