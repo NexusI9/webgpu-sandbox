@@ -6,8 +6,13 @@
 #include "./utils.h"
 #include <stddef.h>
 
-// Map Gizmo mode to mesh get attributes to apply correct transformation based
-// in gizmo mode (trans/rot/scale).
+/**
+   Map Gizmo mode to mesh get attributes to apply correct transformation based
+   in gizmo mode (trans/rot/scale).
+
+   Used in the selection events when we need to cache the mesh attribute
+   (loc/rot/scale) depending on the gizmo mode.
+ */
 static const mesh_get_transform_attribute mesh_transform_attribute[] = {
     [GizmoTransformMode_Translate] = mesh_get_position,
     [GizmoTransformMode_Rotate] = mesh_get_rotation_euler,
@@ -47,7 +52,7 @@ void gizmo_transform_create(GizmoTransform *gizmo,
 
   // rotate
   gizmo_transform_rotate_create(&gizmo->handles[GizmoTransformMode_Rotate],
-                                   desc);
+                                desc);
 
   // scale
   gizmo_transform_scale_create(&gizmo->handles[GizmoTransformMode_Scale], desc);
@@ -92,10 +97,6 @@ void gizmo_transform_translate(GizmoTransform *gizmo, vec3 position) {
   mesh_ref_list_translate(&gizmo->handles[gizmo->mode], position);
 }
 
-void gizmo_transform_translate_add(GizmoTransform *gizmo, float value,
-                                   const Axis axis) {
-  mesh_ref_list_translate_axis_add(&gizmo->handles[gizmo->mode], value, axis);
-}
 
 void gizmo_transform_rotate_add(GizmoTransform *gizmo, float value,
                                 const Axis axis) {

@@ -32,27 +32,28 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
 
   // add color uniform
   const float fixed_size = GIZMO_TRANSFORM_SIZE;
-  shader_add_uniform(mesh_shader_texture(mesh),
-                     &(ShaderCreateUniformDescriptor){
-                         .entry_count = 2,
-                         .group_index = 1,
-                         .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
-                         .entries =
-                             (ShaderBindGroupUniformEntry[]){
-                                 {
-                                     .binding = 0,
-                                     .size = sizeof(color),
-                                     .data = (void *)rgba,
-                                     .offset = 0,
-                                 },
-                                 {
-                                     .binding = 1,
-                                     .size = sizeof(float),
-                                     .data = (void *)&fixed_size,
-                                     .offset = 0,
-                                 },
-                             },
-                     });
+  shader_add_uniform(
+      mesh_shader_texture(mesh),
+      &(ShaderCreateUniformDescriptor){
+          .entry_count = 2,
+          .group_index = 1,
+          .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
+          .entries =
+              (ShaderBindGroupUniformEntry[]){
+                  {
+                      .binding = 0,
+                      .size = sizeof(color),
+                      .data = (void *)rgba,
+                      .offset = 0,
+                  },
+                  {
+                      .binding = 1,
+                      .size = sizeof(float),
+                      .data = (void *)&fixed_size,
+                      .offset = 0,
+                  },
+              },
+      });
 
   // disable depth write
   pipeline_set_stencil(shader_pipeline(mesh_shader_texture(mesh)),
@@ -66,7 +67,7 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
   // material_texture_double_sided(mesh);
 
   // scale gizmo (cpu side as well, so the hitbox are correct dimension)
-  //mesh_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
+  // mesh_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
 }
 
 /**
@@ -100,7 +101,7 @@ void gizmo_transform_create_handles(
     mesh_rotate(mesh, (vec3){
                           (i == 2) * 90.0f,
                           0.0f,
-                          (i == 0) * 90.0f,
+                          (i == 0) * -90.0f,
                       });
 
     // update gizmo ref list

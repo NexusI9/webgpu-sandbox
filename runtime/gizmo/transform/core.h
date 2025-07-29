@@ -86,8 +86,7 @@ void gizmo_transform_update_mode(GizmoTransform *, MeshRefList *,
 void gizmo_transform_remove(GizmoTransform *, MeshRefList *);
 
 void gizmo_transform_translate(GizmoTransform *, vec3);
-void gizmo_transform_translate_add(GizmoTransform *, float, const Axis);
-void gizmo_transform_rotate_add(GizmoTransform *, float, const Axis);
+void gizmo_transform_rotate(GizmoTransform *, vec3);
 
 void gizmo_transform_set_active(GizmoTransform *, const Mesh *,
                                 const MeshRefList *, Camera *, Viewport *);
