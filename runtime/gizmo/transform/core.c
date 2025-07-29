@@ -135,6 +135,10 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
 
    3. Finally cache gizmo initial offset position projected on the right axis.
 
+   Since the transformation is based on a Delta factor, we need to store initial
+   values on click such as "angle" or "initial delta" to calculate the correct
+   offset.
+
  */
 void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
                                 const MeshRefList *selected_meshes,
@@ -157,11 +161,14 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
     vec3_list_insert(&gizmo->cache.selection_init_attribute, attribute);
   }
 
-  // init delta
+  // set axis direction
   vec3 axis_dir;
   vec_world_axis(gizmo->axis, &axis_dir);
 
+  // init delta
+  Raycast raycast;
   raycast_project_from_screen_to_axis(
+      &raycast,
       &(RaycastProjectScreenToAxis){
           .origin = &camera->position,
           .target = &gizmo->cache.gizmo_init_position,
@@ -174,6 +181,18 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
           .height = viewport->height,
       },
       &gizmo->cache.delta_init);
+
+  // rotation => angle based, so need to project ray to an infinite plane
+  if (gizmo->mode == GizmoTransformMode_Rotate) {
+
+    // init plane
+    inf_plane_create(&gizmo->cache.plane, gizmo->cache.gizmo_init_position,
+                     axis_dir);
+
+    // update init delta 
+    raycast_hit_inf_plane(&raycast, &gizmo->cache.plane,
+                          &gizmo->cache.delta_init);
+  }
 }
 
 /**

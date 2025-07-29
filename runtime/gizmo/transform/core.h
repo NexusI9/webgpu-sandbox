@@ -74,11 +74,13 @@ struct GizmoTransform {
   MeshRefList handles[GIZMO_TRANSFORM_AXIS_COUNT];
 
   /**
+     TODO:
      Temporarily need to separate Visual handles from Interactive ones cause the
-     rotate gizmo use a sphere in the middle as occluder. However since we only
-     implemented the the "AABB" boundind box model the occluder boundbox take
-     over the actual gizmo axis boundbox which cancel the axis selection based
-     on which handle has been clicked on
+     rotate gizmo use a sphere in the middle as occluder.
+     However since we only implemented the the "AABB" boundind box model the
+     occluder boundbox conflict with the actual gizmo axis boundbox and cancel
+     the axis selection based on which handle has been clicked on
+
      tl;dr: it basically always detect the occluder cause its hitbox is bigger.
 
      The temporal solution is to include in a separate list the interactive
@@ -99,6 +101,7 @@ struct GizmoTransform {
     MeshRefList selection;
     Vec3List selection_init_attribute;
     vec3 delta_init;
+    InfinitePlane plane;
     vec3 gizmo_init_position;
   } cache;
 };

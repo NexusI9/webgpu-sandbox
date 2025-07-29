@@ -1,6 +1,7 @@
 #include "core.h"
 #include "../input/input.h"
 #include <float.h>
+#include <math.h>
 
 bool raycast_hit_aabb(Raycast *ray, const AABB *box, float *distance) {
 
@@ -125,15 +126,39 @@ void raycast_project_to_axis(Raycast *ray, vec3 *position, vec3 *axis_direction,
    Used for gizmo transform to move the objects accordingly based on the
    selected axis.
  */
-void raycast_project_from_screen_to_axis(const RaycastProjectScreenToAxis *desc,
+void raycast_project_from_screen_to_axis(Raycast *ray,
+                                         const RaycastProjectScreenToAxis *desc,
                                          vec3 *dest) {
-  Raycast mouse_ray;
 
   // convert mouse to ndc (-1/1)
   float x, y;
   input_mouse_NDC(desc->x, desc->y, desc->width, desc->height, &x, &y);
 
-  raycast_from_screen(&mouse_ray, desc->origin, desc->view, desc->projection, x,
-                      y);
-  raycast_project_to_axis(&mouse_ray, desc->target, desc->axis_direction, dest);
+  raycast_from_screen(ray, desc->origin, desc->view, desc->projection, x, y);
+
+  raycast_project_to_axis(ray, desc->target, desc->axis_direction, dest);
+}
+
+/**
+   Detect if raycast hit an infinite plane
+ */
+bool raycast_hit_inf_plane(Raycast *ray, InfinitePlane *plane, vec3 *dest) {
+
+  float denom = glm_vec3_dot(plane->normal, ray->direction);
+
+  // ~ 0: parallel to plane
+  if (fabsf(denom) < 1e-6f)
+    return false;
+
+  float t = -(glm_vec3_dot(plane->normal, ray->origin) + plane->d) / denom;
+
+  // intersection behind ray origin
+  if (t < 0.0f)
+    return false;
+
+  vec3 scaled_dir;
+  glm_vec3_scale(ray->direction, t, scaled_dir);
+  glm_vec3_add(ray->origin, scaled_dir, *dest);
+
+  return true;
 }
