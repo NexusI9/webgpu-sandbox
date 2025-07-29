@@ -37,4 +37,6 @@ void camera_raycast_screen_space(Camera *camera, Mesh *mesh, float scale,
 
   glm_vec3_add(fixed_origin, min_offset, boundbox->min);
   glm_vec3_add(fixed_origin, max_offset, boundbox->max);
+
+  
 }

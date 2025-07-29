@@ -24,15 +24,12 @@ void scene_selection_raycast_mesh_callback(
       &scene->pipelines[ScenePipeline_Fixed_Selection];
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
-  // early return if no hits
-  if (cast_data->hits->length == 0)
-    return;
-
   // else retrieve first hit only (closest to camera)
   CameraRaycastHit *hit = &cast_data->hits->entries[0];
 
   // add hit to selection pipeline
-  if (hit) {
+  if (cast_data->hits->length > 0 && hit) {
+
     // cap + right click : remove selection if exist, add if not
     if (mouseEvent->shiftKey && mouseEvent->button == 2) {
 
@@ -51,6 +48,12 @@ void scene_selection_raycast_mesh_callback(
       mesh_ref_list_empty(selection_list);
       scene_selection_add(scene, hit->mesh);
     }
+  } else {
+    // empty selection
+    mesh_ref_list_empty(selection_list);
+    // hide from the scene
+    scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
+                             ScenePipeline_Fixed_Front);
   }
 
   // handle gizmo
@@ -62,10 +65,6 @@ void scene_selection_raycast_mesh_callback(
     gizmo_transform_translate(gizmo, position);
 
     scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                             ScenePipeline_Fixed_Front);
-  } else {
-    // hide from the scene
-    scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                              ScenePipeline_Fixed_Front);
   }
 }

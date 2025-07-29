@@ -42,6 +42,7 @@ void camera_raycast_check_bounds(
 
     MeshRefList *ref_list = cam_desc->include.lists[l];
 
+    //printf("include length: %lu\n", ref_list->length);
     for (size_t m = 0; m < ref_list->length; m++) {
       Mesh *mesh = ref_list->entries[m];
 
@@ -49,18 +50,26 @@ void camera_raycast_check_bounds(
       if (camera_raycast_is_excluded(&cam_desc->exclude, mesh))
         continue;
 
-      AABB *boundbox = &mesh->topology.boundbox.bound;
+      AABB boundbox = mesh->topology.boundbox.bound;
 
       // scale boundbox if hit is on ScreenSpace (for fixed scale object as
       // instance)
       if (cam_desc->space == CameraRaycastSpace_ScreenSpace)
         camera_raycast_screen_space(cam_desc->camera, mesh,
-                                    cam_desc->screen_space_size, boundbox);
+                                    cam_desc->screen_space_size, &boundbox);
+
+      /*
+      printf("hit box:");
+      printf("%s\n", mesh->name);
+      print_vec3(boundbox.min);
+      print_vec3(boundbox.max);
+      printf("===========\n");
+       */
 
       // check if raycast within mesh bound
       // add mesh pointer to temp ref list and sort by hit distance
       // (closer mesh first)
-      if (raycast_hit_aabb(&ray, boundbox, &ray.distance) &&
+      if (raycast_hit_aabb(&ray, &boundbox, &ray.distance) &&
           hits->length < hits->capacity) {
 
         // add mesh and distance to hit list
@@ -77,7 +86,6 @@ void camera_raycast_check_bounds(
   }
 
   // dispatch to callback if hits
-  if (cam_desc->hits->length > 0)
     cam_desc->callback(
         &(CameraRaycastCallback){
             .raycast = &ray,
