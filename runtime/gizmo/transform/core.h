@@ -77,17 +77,18 @@ struct GizmoTransform {
      TODO:
      Temporarily need to separate Visual handles from Interactive ones cause the
      rotate gizmo use a sphere in the middle as occluder.
-     However since we only implemented the the "AABB" boundind box model the
-     occluder boundbox conflict with the actual gizmo axis boundbox and cancel
-     the axis selection based on which handle has been clicked on
+     However since we only implemented the the "AABB" boundind box model, the
+     occluder boundbox conflicts with the actual gizmo axis boundbox and cancel
+     the axis selection based on which handle has been clicked on.
 
-     tl;dr: it basically always detect the occluder cause its hitbox is bigger.
+     tl;dr: raycast basically always detects the occluder cause its hitbox is
+     bigger.
 
      The temporal solution is to include in a separate list the interactive
      handles.
 
      A more robust solution to this is to set a Hull boundbox around the
-     occluder to is doesn't override the other handle. (Yet to be
+     occluder so is doesn't override the other handle. (Yet to be
      implemented...)
    */
   MeshRefList interactive_handles[GIZMO_TRANSFORM_AXIS_COUNT];
@@ -104,6 +105,11 @@ struct GizmoTransform {
     InfinitePlane plane;
     vec3 gizmo_init_position;
   } cache;
+
+  /**
+     Keyboard inputs state
+   */
+  KeyRecord keys;
 };
 
 typedef void (*gizmo_transform_create_handles_callback)(

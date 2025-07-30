@@ -1,6 +1,7 @@
 #ifndef _INPUT_CORE_H_
 #define _INPUT_CORE_H_
 
+#include "./keyrecord.h"
 #include "emscripten/html5.h"
 #include <stdbool.h>
 #include <stdint.h>
@@ -29,6 +30,7 @@ typedef enum {
 typedef struct {
 
   bool keys[INPUT_KEY_LENGTH];
+  KeyRecordSequenceList sequence_listener;
 
   struct {
 
@@ -71,4 +73,7 @@ bool input_wheel(int, const EmscriptenWheelEvent *, void *);
 
 void input_mouse_NDC(const float, const float, const int, const int, float *,
                      float *);
+
+KeyRecordStatus input_key_sequence_add(KeyRecordSequence *);
+KeyRecordStatus input_key_sequence_destroy_by_id(id_t);
 #endif

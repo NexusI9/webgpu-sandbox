@@ -78,3 +78,25 @@ DynamicListStatus dyli_free(void **entries, size_t *capacity, size_t *length) {
 
   return DynamicListStatus_Success;
 }
+
+DynamicListStatus dyli_remove(void *entries, size_t *length, size_t type_size,
+                              void *entry, const char *label) {
+  
+  char *base = (char *)entries;
+
+  for (size_t i = 0; i < *length; i++) {
+
+    void *current = base + i * type_size;
+
+    if (current == entry) {
+
+      if (i < *length - 1)
+        memmove(current, base + (i + 1), (*length - i - 1) * type_size);
+
+      (*length)--;
+      break;
+    }
+  }
+
+  return DynamicListStatus_Success;
+}

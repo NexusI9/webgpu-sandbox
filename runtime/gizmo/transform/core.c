@@ -151,7 +151,7 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
   gizmo_transform_origin(gizmo, &gizmo->cache.gizmo_init_position);
 
   // update selection
-  mesh_ref_list_transfert(selected_meshes, &gizmo->cache.selection);
+  mesh_ref_list_transfert(selected_meshes, &gizmo->cache.selection, NULL);
 
   // cache all meshes initial attribute based on gizmo mode (pos/rot/scale)
   for (size_t i = 0; i < selected_meshes->length; i++) {

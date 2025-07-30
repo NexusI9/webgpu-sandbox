@@ -1,6 +1,7 @@
 #include "core.h"
 #include "../html_event/html_event.h"
 #include "../utils/math.h"
+#include "keyrecord.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -116,6 +117,10 @@ void input_listen() {
       .data = NULL,
       .size = 0,
   });
+
+  // create key sequence recorder
+  input_keyrec_sequence_listener_create(&g_input.sequence_listener,
+                                        INPUT_KEY_RECORD_CAPACITY);
 }
 
 bool input_key(unsigned int key) {
@@ -138,4 +143,27 @@ void input_mouse_NDC(const float x, const float y, const int width,
                      const int height, float *dest_x, float *dest_y) {
   *dest_x = 2.0f * x / width - 1.0f;
   *dest_y = 1.0f - 2.0f * y / height;
+}
+
+/**
+   Below key record function uses the g_input, hence we don't put them in the
+   keyrec files since they use the global variable. They serve as alias by
+   directly passing the g_input.record_listener as argument.
+ */
+KeyRecordStatus input_key_sequence_add(KeyRecordSequence *seq) {
+  return input_keyrec_add_sequence(&g_input.sequence_listener, seq);
+}
+
+KeyRecordStatus input_key_sequence_destroy_by_id(id_t id) {
+
+  // seach all sequence with the owner id
+  KeyRecordSequenceListResult result =
+      input_keyrec_find_sequence_by_id(&g_input.sequence_listener, id);
+
+  // destroy/ free them
+  for (size_t i = 0; i < result.length; i++)
+    input_keyrec_destroy_sequence(&g_input.sequence_listener,
+                                  &g_input.sequence_listener.entries[i]);
+
+  return KeyRecordStatus_Success;
 }

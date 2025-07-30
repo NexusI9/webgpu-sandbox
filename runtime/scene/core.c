@@ -1,7 +1,6 @@
 #include "core.h"
 #include "./draw.h"
 #include "./editor/editor.h"
-#include "./editor/selection.h"
 #include "./layer.h"
 
 // initializers

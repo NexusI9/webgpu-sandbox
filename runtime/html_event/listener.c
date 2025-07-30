@@ -1,5 +1,6 @@
 #include "listener.h"
 #include "core.h"
+#include <stdio.h>
 
 /**
 
@@ -84,7 +85,7 @@ bool html_event_listener_key_up(int eventType,
                                 const EmscriptenKeyboardEvent *keyboardEvent,
                                 void *userData) {
 
-  for (size_t i = 0; i < g_html_event.wheel.length; i++) {
+  for (size_t i = 0; i < g_html_event.key_up.length; i++) {
 
     HTMLEventKey *event = &g_html_event.key_up.entries[i];
     em_key_callback_func callback = event->callback;
@@ -101,7 +102,7 @@ bool html_event_listener_key_down(int eventType,
                                   const EmscriptenKeyboardEvent *keyboardEvent,
                                   void *userData) {
 
-  for (size_t i = 0; i < g_html_event.wheel.length; i++) {
+  for (size_t i = 0; i < g_html_event.key_down.length; i++) {
 
     HTMLEventKey *event = &g_html_event.key_down.entries[i];
     em_key_callback_func callback = event->callback;

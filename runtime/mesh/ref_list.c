@@ -90,7 +90,8 @@ Mesh *mesh_ref_list_find(const MeshRefList *list, Mesh *mesh) {
 /**
    Copy mesh pointers from one list to another
  */
-MeshStatus mesh_ref_list_transfert(const MeshRefList *src, MeshRefList *dest) {
+MeshStatus mesh_ref_list_transfert(const MeshRefList *src, MeshRefList *dest,
+                                   MeshRefList *exclude) {
 
   // expand if destination is too small
   while (dest->length + src->length >= dest->capacity) {
@@ -108,17 +109,35 @@ MeshStatus mesh_ref_list_transfert(const MeshRefList *src, MeshRefList *dest) {
     }
   }
 
-  memcpy(&dest->entries[dest->length], src->entries,
-         src->length * sizeof(Mesh *));
+  // if no exclude, simply mem copy directly
+  if (exclude == NULL) {
 
-  dest->length += src->length;
+    memcpy(&dest->entries[dest->length], src->entries,
+           src->length * sizeof(Mesh *));
+
+    dest->length += src->length;
+  } else {
+    // else need to check if the src mesh is not part of the exclude list before
+    // inserting
+    for (size_t i = 0; i < src->length; i++) {
+      Mesh *src_mesh = src->entries[i];
+      Mesh *find = mesh_ref_list_find(exclude, src_mesh);
+
+      // skip if mesh pointer found in exclude list
+      if (find != NULL)
+        continue;
+
+      // else insert in the destination list
+      mesh_ref_list_insert(dest, src_mesh);
+    }
+  }
 
   return MeshStatus_Success;
 }
 
 /**
-   Copy a Gizmo Mesh list from a source to a given desination
-   DELETEME ??? (transfert instead ??)
+   Create a copy of a Gizmo Mesh list from a source to a given desination.
+   It allocate memory for the new src.
  */
 MeshStatus mesh_ref_list_copy(const MeshRefList *src, MeshRefList *dest) {
 

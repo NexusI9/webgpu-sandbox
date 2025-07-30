@@ -102,7 +102,7 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries, size_t *
     *entries = malloc(type_size * (*capacity));
 
     if (*entries == NULL) {
-      VERBOSE_ERROR("Coudln't allocate html event.");
+      VERBOSE_ERROR("Couldn't allocate html event.");
       *capacity = 0;
       return HTMLEventStatus_AllocFail;
     }

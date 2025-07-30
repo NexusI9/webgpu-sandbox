@@ -1,7 +1,7 @@
 #include "editor.h"
 #include "../../gizmo/gizmo.h"
 #include "../scene.h"
-#include "./selection.h"
+#include "./selection/selection.h"
 #include <stddef.h>
 
 static inline void scene_editor_gizmo_create_grid(Scene *);

@@ -2,6 +2,7 @@
 #define _UTILS_ID_H_
 
 #define REG_MAX_OBJECTS 1024
+#define REG_OWNER_UNDEFINED -1
 
 typedef int id_t;
 typedef enum {
