@@ -61,14 +61,20 @@ typedef enum {
   GizmoTransformMode_Scale,
 } GizmoTransformMode;
 
+typedef enum {
+  GizmoTransformMode_Global,
+  GizmoTransformMode_Local,
+} GizmoTransformSpace;
+
 struct GizmoTransform {
 
   GizmoTransformMode mode;
+  GizmoTransformSpace space;
 
   Axis axis;
 
   /**
-     Gizmo handles (mesh*) mostly use to hide/show targeted mesh based on gizmo
+     Visual Gizmo handles (mesh*) mostly use to hide/show targeted mesh based on gizmo
      mode
    */
   MeshRefList handles[GIZMO_TRANSFORM_AXIS_COUNT];

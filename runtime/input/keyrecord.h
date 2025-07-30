@@ -99,8 +99,6 @@ input_keyrec_find_sequence_by_id(KeyRecordSequenceList *, id_t);
 // HTML Callbacks
 bool input_keyrec_html_keydown_callback(int, const EmscriptenKeyboardEvent *,
                                         void *);
-bool input_keyrec_html_keyup_callback(int, const EmscriptenKeyboardEvent *,
-                                      void *);
 
 void input_keyrec_flush(KeyRecord*);
 

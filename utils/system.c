@@ -7,7 +7,9 @@ void print_ivec3(const ivec3 vector) {
   printf("%d\t%d\t%d\n", vector[0], vector[1], vector[2]);
 }
 
-void print_ivec2(const ivec2 vector) { printf("%d\t%d\n", vector[0], vector[1]); }
+void print_ivec2(const ivec2 vector) {
+  printf("%d\t%d\n", vector[0], vector[1]);
+}
 
 void print_ivec4(const ivec4 vector) {
   printf("%d\t%d\t%d\t%d\n", vector[0], vector[1], vector[2], vector[3]);
@@ -58,7 +60,6 @@ void print_list_uint16(uint16_t *list, size_t length, size_t stride) {
     printf("\n");
 }
 
-
 void print_list_uint32(uint32_t *list, size_t length, size_t stride) {
 
   for (int i = 0; i < length; i++) {
@@ -88,4 +89,18 @@ void print_mesh_tree(Mesh *mesh, uint16_t level) {
 
   for (int i = 0; i < mesh->children.length; i++)
     print_mesh_tree(mesh->children.entries[i], level);
+}
+
+void print_bin(size_t const size, void const *const ptr) {
+  unsigned char *b = (unsigned char *)ptr;
+  unsigned char byte;
+  int i, j;
+
+  for (i = size - 1; i >= 0; i--) {
+    for (j = 7; j >= 0; j--) {
+      byte = (b[i] >> j) & 1;
+      printf("%u", byte);
+    }
+  }
+  puts("");
 }

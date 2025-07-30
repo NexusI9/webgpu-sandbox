@@ -32,11 +32,6 @@ input_keyrec_sequence_listener_create(KeyRecordSequenceList *listener,
       .data = listener,
   });
 
-  html_event_add_key_up(&(HTMLEventKey){
-      .callback = input_keyrec_html_keyup_callback,
-      .data = listener,
-  });
-
   return KeyRecordStatus_Success;
 }
 
@@ -115,30 +110,14 @@ bool input_keyrec_html_keydown_callback(int enventType,
   return EM_FALSE;
 }
 
-/**
-   Set key record as released
- */
-bool input_keyrec_html_keyup_callback(int enventType,
-                                      const EmscriptenKeyboardEvent *keyEvent,
-                                      void *userData) {
-
-  KeyRecordSequenceList *listener = (KeyRecordSequenceList *)userData;
-  unsigned int keyCode = keyEvent->keyCode;
-
-  // update listener record
-  input_keyrec_update(&listener->record, keyCode, false);
-
-  return EM_FALSE;
-}
-
 void input_keyrec_update(KeyRecord *record, const key_t key, bool pressed) {
 
-  // shift the timeline by 1 bit
-  record->key[key] <<= 1;
+  for (size_t i = 0; i < INPUT_KEY_RECORD_MAX_KEYS; i++)
+    // shift the timeline by 1 bit
+    record->key[i] <<= 1;
 
   // if pressed, add a new 1 at the start of the sequence
-  if (pressed)
-    record->key[key] |= 0x01;
+  record->key[key] |= 0x01;
 }
 
 /**
@@ -160,32 +139,33 @@ void input_keyrec_update(KeyRecord *record, const key_t key, bool pressed) {
     mask  0x000001  |  0x000001  | 0x000001
 
  */
+
 bool input_keyrec_match(KeyRecord *record, const key_t *seq,
                         const size_t length) {
 
   key_t mask = 0x01;
   key_t cursor = 0;
-  key_t last_char = 0;
-
+  
   for (size_t i = length; i-- > 0;) {
 
     key_t current_char = seq[i];
 
-    // reset cursor if change sequence character
-    if (current_char != last_char)
-      cursor = 0;
-
     // shift by i the record key to the right
-    key_t shif_val = record->key[(size_t)current_char] >> cursor;
+    key_t shift_val = record->key[(size_t)current_char] >> cursor;
 
     // compare with the mask
     // if shifted value is 0 (0x01) means not match returns false
-    if ((shif_val & mask) == 0)
+    if ((shift_val & mask) == 0)
       return false;
 
+    // reset cursor if change sequence character
     cursor++;
-    last_char = current_char;
   }
+
+  printf("match\n");
+  for (size_t i = 0; i < length; i++)
+    printf("%c ", seq[i]);
+  printf("\n");
 
   return true;
 }

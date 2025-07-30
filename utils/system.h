@@ -114,4 +114,5 @@ void print_list_float(float *, size_t, size_t);
 void print_list_uint16(uint16_t *, size_t, size_t);
 void print_list_uint32(uint32_t *, size_t, size_t);
 void print_mesh_tree(Mesh *, uint16_t);
+void print_bin(size_t const, void const *const);
 #endif
