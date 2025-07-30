@@ -1,9 +1,9 @@
 #include "callback_mouse.h"
-#include "./selection.h"
 #include "../../show.h"
+#include "./selection.h"
 #include "./utils.h"
 
-void scene_selection_init_mouse_events(Scene* scene) {
+void scene_selection_init_mouse_events(Scene *scene) {
 
   /**
       ===================== ADD SELECTION RELATED EVENTS ===================
@@ -92,16 +92,16 @@ void scene_selection_init_mouse_events(Scene* scene) {
 
 /**
    ▗▖  ▗▖ ▗▄▖ ▗▖ ▗▖ ▗▄▄▖▗▄▄▄▖
-   ▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌   
+   ▐▛▚▞▜▌▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌
    ▐▌  ▐▌▐▌ ▐▌▐▌ ▐▌ ▝▀▚▖▐▛▀▀▘
    ▐▌  ▐▌▝▚▄▞▘▝▚▄▞▘▗▄▄▞▘▐▙▄▄▖
-   
+
     ▗▄▄▖ ▗▄▖ ▗▖   ▗▖   ▗▄▄▖  ▗▄▖  ▗▄▄▖▗▖ ▗▖ ▗▄▄▖
-   ▐▌   ▐▌ ▐▌▐▌   ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌▗▞▘▐▌   
+   ▐▌   ▐▌ ▐▌▐▌   ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌▗▞▘▐▌
    ▐▌   ▐▛▀▜▌▐▌   ▐▌   ▐▛▀▚▖▐▛▀▜▌▐▌   ▐▛▚▖  ▝▀▚▖
    ▝▚▄▄▖▐▌ ▐▌▐▙▄▄▖▐▙▄▄▖▐▙▄▞▘▐▌ ▐▌▝▚▄▄▖▐▌ ▐▌▗▄▄▞▘
-                                                
-                              
+
+
    Callback called during the scene main camera raycast mouse click.
    Define the logic for the selection process such as:
    - Adding / Removing meshes from the selection pipeline
@@ -155,9 +155,7 @@ void scene_selection_raycast_mesh_callback(
   if (selection_list->length > 0) {
 
     // get average position
-    vec3 position;
-    scene_selection_average_position(scene, &position);
-    gizmo_transform_translate(gizmo, position);
+    scene_gizmo_transform_pos_to_selection(scene);
 
     scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                              ScenePipeline_Fixed_Front);
@@ -184,5 +182,6 @@ void scene_selection_raycast_gizmo_callback(
     gizmo_transform_set_active(gizmo, hit,
                                &scene->pipelines[ScenePipeline_Fixed_Selection],
                                scene->active_camera, &scene->viewport);
+
   }
 }

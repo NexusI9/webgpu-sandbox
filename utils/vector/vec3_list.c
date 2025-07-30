@@ -11,7 +11,7 @@ DynamicListStatus vec3_list_insert(Vec3List *list, vec3 entry) {
 }
 
 DynamicListStatus vec3_list_empty(Vec3List *list) {
-  return dyli_empty((void *)&list->entries, &list->length, sizeof(vec3));
+  return dyli_empty((void *)list->entries, &list->length, sizeof(vec3));
 }
 
 void vec3_list_destroy(Vec3List *list) {}

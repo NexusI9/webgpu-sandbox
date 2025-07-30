@@ -47,21 +47,3 @@ void scene_selection_draw_callback(void *data) {
   if (g_input.mouse.state == InputMouseState_Down && selection_list->length > 0)
     transform_callback(gizmo, cast_scene->active_camera, &cast_scene->viewport);
 }
-
-/**
-   Get the selection average position (used to translate the gizmo)
- */
-void scene_selection_average_position(Scene *scene, vec3 *dest) {
-
-  MeshRefList *selection = &scene->pipelines[ScenePipeline_Fixed_Selection];
-
-  glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, *dest);
-
-  if (selection->length == 0)
-    return;
-
-  for (size_t i = 0; i < selection->length; i++)
-    glm_vec3_add(selection->entries[i]->position, *dest, *dest);
-
-  glm_vec3_scale(*dest, 1.0f / selection->length, *dest);
-}

@@ -189,7 +189,7 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
     inf_plane_create(&gizmo->cache.plane, gizmo->cache.gizmo_init_position,
                      axis_dir);
 
-    // update init delta 
+    // update init delta
     raycast_hit_inf_plane(&raycast, &gizmo->cache.plane,
                           &gizmo->cache.delta_init);
   }
