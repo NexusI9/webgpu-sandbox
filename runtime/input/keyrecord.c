@@ -143,7 +143,7 @@ void input_keyrec_update(KeyRecord *record, const key_t key, bool pressed) {
 bool input_keyrec_match(KeyRecord *record, const key_t *seq,
                         const size_t length) {
 
-  key_t mask = 0x01;
+  const key_t mask = 0x01;
   key_t cursor = 0;
   
   for (size_t i = length; i-- > 0;) {
@@ -161,11 +161,6 @@ bool input_keyrec_match(KeyRecord *record, const key_t *seq,
     // reset cursor if change sequence character
     cursor++;
   }
-
-  printf("match\n");
-  for (size_t i = 0; i < length; i++)
-    printf("%c ", seq[i]);
-  printf("\n");
 
   return true;
 }

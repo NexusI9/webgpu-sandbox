@@ -144,9 +144,6 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
                                 const MeshRefList *selected_meshes,
                                 Camera *camera, Viewport *viewport) {
 
-  // define active axis
-  gizmo_transform_set_axis_from_mesh(gizmo, hit_handle);
-
   // cache gizmo init position
   gizmo_transform_origin(gizmo, &gizmo->cache.gizmo_init_position);
 
@@ -161,6 +158,9 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
     vec3_list_insert(&gizmo->cache.selection_init_attribute, attribute);
   }
 
+  // define active axis
+  gizmo_transform_set_axis_from_mesh(gizmo, hit_handle);
+  
   // set axis direction
   vec3 axis_dir;
   vec_world_axis(gizmo->axis, &axis_dir);
