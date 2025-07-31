@@ -16,6 +16,8 @@ typedef enum {
   Axis_XY,
   Axis_YZ,
   Axis_XZ,
+  Axis_XYZ,
+  Axis_View,
 } Axis;
 
 typedef enum {

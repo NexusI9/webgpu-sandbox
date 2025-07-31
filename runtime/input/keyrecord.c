@@ -7,16 +7,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static void input_keyrec_update(KeyRecord *, const key_t, bool);
-static bool input_keyrec_match(KeyRecord *, const key_t *, const size_t);
+static void keyrec_update(KeyRecord *, const key_t, bool);
+static bool keyrec_match(KeyRecord *, const key_t *, const size_t);
 
 /**
    Create a new html input callback and update the key record according to the
    input keys.
  */
-KeyRecordStatus
-input_keyrec_sequence_listener_create(KeyRecordSequenceList *listener,
-                                      size_t capacity) {
+KeyRecordStatus keyrec_sequence_listener_create(KeyRecordSequenceList *listener,
+                                                size_t capacity) {
 
   // init listener dynamic list
   DynamicListStatus list = dyli_create(
@@ -28,15 +27,15 @@ input_keyrec_sequence_listener_create(KeyRecordSequenceList *listener,
 
   // init events listeners
   html_event_add_key_down(&(HTMLEventKey){
-      .callback = input_keyrec_html_keydown_callback,
+      .callback = keyrec_html_keydown_callback,
       .data = listener,
   });
 
   return KeyRecordStatus_Success;
 }
 
-KeyRecordStatus input_keyrec_add_sequence(KeyRecordSequenceList *listener,
-                                          KeyRecordSequence *seq) {
+KeyRecordStatus keyrec_add_sequence(KeyRecordSequenceList *listener,
+                                    KeyRecordSequence *seq) {
 
   // duplicate sequence keys
   key_t *temp = (key_t *)malloc(sizeof(key_t) * seq->length);
@@ -62,8 +61,8 @@ KeyRecordStatus input_keyrec_add_sequence(KeyRecordSequenceList *listener,
   return KeyRecordStatus_Success;
 }
 
-KeyRecordStatus input_keyrec_destroy_sequence(KeyRecordSequenceList *list,
-                                              KeyRecordSequence *seq) {
+KeyRecordStatus keyrec_destroy_sequence(KeyRecordSequenceList *list,
+                                        KeyRecordSequence *seq) {
 
   // free sequence
   free(seq->sequence);
@@ -89,28 +88,28 @@ KeyRecordStatus input_keyrec_destroy_sequence(KeyRecordSequenceList *list,
 /**
    Set key record as pressed
  */
-bool input_keyrec_html_keydown_callback(int enventType,
-                                        const EmscriptenKeyboardEvent *keyEvent,
-                                        void *userData) {
+bool keyrec_html_keydown_callback(int enventType,
+                                  const EmscriptenKeyboardEvent *keyEvent,
+                                  void *userData) {
 
   KeyRecordSequenceList *listener = (KeyRecordSequenceList *)userData;
   unsigned int keyCode = keyEvent->keyCode;
 
   // update listener record
-  input_keyrec_update(&listener->record, keyCode, true);
+  keyrec_update(&listener->record, keyCode, true);
 
   // traverse callbacks and check if matches
   for (size_t i = 0; i < listener->length; i++)
     // if record history match sequence, call entry callback
-    if (input_keyrec_match(&listener->record, listener->entries[i].sequence,
-                           listener->entries[i].length))
+    if (keyrec_match(&listener->record, listener->entries[i].sequence,
+                     listener->entries[i].length))
       listener->entries[i].callback(&listener->entries[i],
                                     listener->entries[i].data);
 
   return EM_FALSE;
 }
 
-void input_keyrec_update(KeyRecord *record, const key_t key, bool pressed) {
+void keyrec_update(KeyRecord *record, const key_t key, bool pressed) {
 
   for (size_t i = 0; i < INPUT_KEY_RECORD_MAX_KEYS; i++)
     // shift the timeline by 1 bit
@@ -140,12 +139,11 @@ void input_keyrec_update(KeyRecord *record, const key_t key, bool pressed) {
 
  */
 
-bool input_keyrec_match(KeyRecord *record, const key_t *seq,
-                        const size_t length) {
+bool keyrec_match(KeyRecord *record, const key_t *seq, const size_t length) {
 
   const key_t mask = 0x01;
   key_t cursor = 0;
-  
+
   for (size_t i = length; i-- > 0;) {
 
     key_t current_char = seq[i];
@@ -166,7 +164,7 @@ bool input_keyrec_match(KeyRecord *record, const key_t *seq,
 }
 
 KeyRecordSequenceListResult
-input_keyrec_find_sequence_by_id(KeyRecordSequenceList *list, id_t id) {
+keyrec_find_sequence_by_id(KeyRecordSequenceList *list, id_t id) {
 
   KeyRecordSequenceListResult result = {0};
 
@@ -178,6 +176,10 @@ input_keyrec_find_sequence_by_id(KeyRecordSequenceList *list, id_t id) {
   return result;
 }
 
-void input_keyrec_flush(KeyRecord *record) {
+void keyrec_flush(KeyRecord *record) {
   memset(record->key, 0, INPUT_KEY_RECORD_MAX_KEYS * sizeof(key_t));
+}
+
+bool keyrec_sequence_equal(key_t *a, key_t *b, size_t length) {
+  return memcmp(a, b, length * sizeof(key_t)) == 0;
 }

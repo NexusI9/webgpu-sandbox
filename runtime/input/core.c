@@ -119,8 +119,8 @@ void input_listen() {
   });
 
   // create key sequence recorder
-  input_keyrec_sequence_listener_create(&g_input.sequence_listener,
-                                        INPUT_KEY_RECORD_CAPACITY);
+  keyrec_sequence_listener_create(&g_input.sequence_listener,
+                                  INPUT_KEY_RECORD_CAPACITY);
 }
 
 bool input_key(unsigned int key) {
@@ -151,19 +151,19 @@ void input_mouse_NDC(const float x, const float y, const int width,
    directly passing the g_input.record_listener as argument.
  */
 KeyRecordStatus input_key_sequence_add(KeyRecordSequence *seq) {
-  return input_keyrec_add_sequence(&g_input.sequence_listener, seq);
+  return keyrec_add_sequence(&g_input.sequence_listener, seq);
 }
 
 KeyRecordStatus input_key_sequence_destroy_by_id(id_t id) {
 
   // seach all sequence with the owner id
   KeyRecordSequenceListResult result =
-      input_keyrec_find_sequence_by_id(&g_input.sequence_listener, id);
+      keyrec_find_sequence_by_id(&g_input.sequence_listener, id);
 
   // destroy/ free them
   for (size_t i = 0; i < result.length; i++)
-    input_keyrec_destroy_sequence(&g_input.sequence_listener,
-                                  &g_input.sequence_listener.entries[i]);
+    keyrec_destroy_sequence(&g_input.sequence_listener,
+                            &g_input.sequence_listener.entries[i]);
 
   return KeyRecordStatus_Success;
 }

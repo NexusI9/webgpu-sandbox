@@ -178,10 +178,17 @@ void scene_selection_raycast_gizmo_callback(
   if (mouseEvent->button == 0 && hit) {
     Scene *scene = cast_user_data->scene;
     GizmoTransform *gizmo = &scene->editor.gizmo.transform;
+
+    // map active axis from hit handle pointer
+    gizmo_transform_set_axis_from_mesh(gizmo, hit);
+
+    // retrieve axis direction from gizmo axis
+    vec3 axis;
+    vec_world_axis(gizmo->axis, &axis);
+
     // set active handle from current mode and initialize offset
-    gizmo_transform_set_active(gizmo, hit,
+    gizmo_transform_set_active(gizmo, axis,
                                &scene->pipelines[ScenePipeline_Fixed_Selection],
                                scene->active_camera, &scene->viewport);
-
   }
 }

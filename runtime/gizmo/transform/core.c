@@ -31,9 +31,6 @@ static const mesh_get_transform_attribute mesh_transform_attribute[] = {
     [GizmoTransformMode_Scale] = mesh_get_scale,
 };
 
-static inline void gizmo_transform_set_axis_from_mesh(GizmoTransform *,
-                                                      const Mesh *);
-
 /**
    Create the three key transform gizmo handles (translate, rotate, scale) and
    set active handle.
@@ -140,7 +137,7 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
    offset.
 
  */
-void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
+void gizmo_transform_set_active(GizmoTransform *gizmo, vec3 axis,
                                 const MeshRefList *selected_meshes,
                                 Camera *camera, Viewport *viewport) {
 
@@ -158,12 +155,6 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
     vec3_list_insert(&gizmo->cache.selection_init_attribute, attribute);
   }
 
-  if(hit_handle){
-    
-  }
-  // define active axis
-  gizmo_transform_set_axis_from_mesh(gizmo, hit_handle);
-  
   // set axis direction
   vec3 axis_dir;
   vec_world_axis(gizmo->axis, &axis_dir);

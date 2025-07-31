@@ -4,6 +4,14 @@
 #include "../runtime/input/input.h"
 #include "../../core.h"
 
+
+typedef struct{
+  key_t sequence[3];
+  size_t length;
+  input_keyrec_callback callback;
+  Axis axis;
+} SelectionKeySequence;
+
 void scene_selection_init_key_events(Scene* scene);
 
 // key event callback

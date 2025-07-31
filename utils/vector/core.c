@@ -77,16 +77,17 @@ void ivec_to_vec(const int *src, const VectorLength length, float *dest) {
 void vec_world_axis(const Axis axis, vec3 *dest) {
 
   vec3 axis_dir[] = {
-      [Axis_X] = {1.0f, 0.0f, 0.0f},  // X axis
-      [Axis_Y] = {0.0f, 1.0f, 0.0f},  // Y axis
-      [Axis_Z] = {0.0f, 0.0f, 1.0f},  // Z axis
-      [Axis_XY] = {0.0f, 0.0f, 1.0f}, // Z normal
-      [Axis_YZ] = {1.0f, 0.0f, 0.0f}, // X normal
-      [Axis_XZ] = {0.0f, 1.0f, 0.0f}, // Y normal
+      [Axis_X] = {1.0f, 0.0f, 0.0f},   // X axis
+      [Axis_Y] = {0.0f, 1.0f, 0.0f},   // Y axis
+      [Axis_Z] = {0.0f, 0.0f, 1.0f},   // Z axis
+      [Axis_XY] = {0.0f, 0.0f, 1.0f},  // Z normal
+      [Axis_YZ] = {1.0f, 0.0f, 0.0f},  // X normal
+      [Axis_XZ] = {0.0f, 1.0f, 0.0f},  // Y normal
+      [Axis_XYZ] = {1.0f, 1.0f, 1.0f}, // XYZ combined
+      [Axis_View] = {0}                // Unvalid
   };
 
   glm_vec3_copy(axis_dir[axis], *dest);
-  glm_vec3_normalize(*dest);
 }
 
 /**
@@ -103,16 +104,19 @@ static const vec3 axis_factor[] = {
     // 2D Axis
     [Axis_XY] = {1.0f, 1.0f, 0.0f},
     [Axis_YZ] = {0.0f, 1.0f, 1.0f},
-    [Axis_XZ] = {1.0f, 1.0f, 1.0f},
+    [Axis_XZ] = {1.0f, 0.0f, 1.0f},
+    // 3D Axis
+    [Axis_XYZ] = {1.0f, 1.0f, 1.0f},
+    // Unvalid (need to be calculated based on camera)
+    [Axis_View] = {0},
 };
 
 void vec3_replace_axis(vec3 src, vec3 value, const Axis axis, vec3 *dest) {
 
   // first copy src to destination
   glm_vec3_copy(src, *dest);
-  
+
   //  replace by value if the axis factor is 1
   for (size_t i = 0; i < 3; i++)
     (*dest)[i] = (axis_factor[axis][i] > 0.0f) ? value[i] : (*dest)[i];
-
 }

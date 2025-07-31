@@ -74,8 +74,8 @@ struct GizmoTransform {
   Axis axis;
 
   /**
-     Visual Gizmo handles (mesh*) mostly use to hide/show targeted mesh based on gizmo
-     mode
+     Visual Gizmo handles (mesh*) mostly use to hide/show targeted mesh based on
+     gizmo mode
    */
   MeshRefList handles[GIZMO_TRANSFORM_AXIS_COUNT];
 
@@ -102,7 +102,25 @@ struct GizmoTransform {
   gizmo_transform_callback transform_callback[GIZMO_TRANSFORM_AXIS_COUNT];
 
   /**
-     Cached attribute on click
+     Cached attribute on transform (click/ hotkey)
+
+     - selection: act as a buffer between scene selection pipeline and
+     selection draw loop. All meshes within the gizmo selection will be affected
+     by the gizmo transformation callback.
+
+     - selection_init_attribute: store each selection meshes their initial
+     attributes depending on gizmo mode (loc/rot/scale) as to properly offset
+     it.
+
+     - delta_init: initial projected mouse position in space, used during
+     transformation loop to properly offset.
+
+     - plane: initial inifite plane from which normal is set depending on axis.
+     Is used during 2D axis transformation (XY, YZ, XZ).
+
+     - gizmo_init_position: used to project the mouse position to the closest
+     point on an axis based on the gizmo position.
+     
    */
   struct {
     MeshRefList selection;
@@ -132,9 +150,11 @@ void gizmo_transform_remove(GizmoTransform *, MeshRefList *);
 void gizmo_transform_translate(GizmoTransform *, vec3);
 void gizmo_transform_rotate(GizmoTransform *, vec3);
 
-void gizmo_transform_set_active(GizmoTransform *, const Mesh *,
-                                const MeshRefList *, Camera *, Viewport *);
+void gizmo_transform_set_active(GizmoTransform *, vec3, const MeshRefList *,
+                                Camera *, Viewport *);
 
 void gizmo_transform_clear_active(GizmoTransform *);
+
+void gizmo_transform_set_axis_from_mesh(GizmoTransform *, const Mesh *);
 
 #endif

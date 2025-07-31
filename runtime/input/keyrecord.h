@@ -84,22 +84,24 @@ typedef struct {
 } KeyRecordSequenceListResult;
 
 // Core
-KeyRecordStatus input_keyrec_sequence_listener_create(KeyRecordSequenceList *,
+KeyRecordStatus keyrec_sequence_listener_create(KeyRecordSequenceList *,
                                                       size_t);
 
-KeyRecordStatus input_keyrec_add_sequence(KeyRecordSequenceList *,
+KeyRecordStatus keyrec_add_sequence(KeyRecordSequenceList *,
                                           KeyRecordSequence *);
 
-KeyRecordStatus input_keyrec_destroy_sequence(KeyRecordSequenceList *,
+KeyRecordStatus keyrec_destroy_sequence(KeyRecordSequenceList *,
                                               KeyRecordSequence *);
 
 KeyRecordSequenceListResult
-input_keyrec_find_sequence_by_id(KeyRecordSequenceList *, id_t);
+keyrec_find_sequence_by_id(KeyRecordSequenceList *, id_t);
 
 // HTML Callbacks
-bool input_keyrec_html_keydown_callback(int, const EmscriptenKeyboardEvent *,
+bool keyrec_html_keydown_callback(int, const EmscriptenKeyboardEvent *,
                                         void *);
 
-void input_keyrec_flush(KeyRecord*);
+void keyrec_flush(KeyRecord*);
+
+bool keyrec_sequence_equal(key_t*, key_t*, size_t);
 
 #endif
