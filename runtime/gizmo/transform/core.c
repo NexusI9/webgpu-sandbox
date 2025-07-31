@@ -102,9 +102,9 @@ void gizmo_transform_translate(GizmoTransform *gizmo, vec3 position) {
   mesh_ref_list_translate(&gizmo->handles[gizmo->mode], position);
 }
 
-void gizmo_transform_rotate_add(GizmoTransform *gizmo, float value,
+void gizmo_transform_rotate_add(GizmoTransform *gizmo, vec3 value,
                                 const Axis axis) {
-  mesh_ref_list_rotate_axis_add(&gizmo->handles[gizmo->mode], value, axis);
+  mesh_ref_list_rotate_axis(&gizmo->handles[gizmo->mode], value, axis);
 }
 
 /**

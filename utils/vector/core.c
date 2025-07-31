@@ -88,3 +88,31 @@ void vec_world_axis(const Axis axis, vec3 *dest) {
   glm_vec3_copy(axis_dir[axis], *dest);
   glm_vec3_normalize(*dest);
 }
+
+/**
+   Replace the values of src vector depending on given axis:
+   - if axis is X, replace src.x by value.x.
+   - if axis is XY, replace src.x and src.y by value.x and value.y.
+ */
+
+static const vec3 axis_factor[] = {
+    // 1D axis
+    [Axis_X] = {1.0f, 0.0f, 0.0f},
+    [Axis_Y] = {0.0f, 1.0f, 0.0f},
+    [Axis_Z] = {0.0f, 0.0f, 1.0f},
+    // 2D Axis
+    [Axis_XY] = {1.0f, 1.0f, 0.0f},
+    [Axis_YZ] = {0.0f, 1.0f, 1.0f},
+    [Axis_XZ] = {1.0f, 1.0f, 1.0f},
+};
+
+void vec3_replace_axis(vec3 src, vec3 value, const Axis axis, vec3 *dest) {
+
+  // first copy src to destination
+  glm_vec3_copy(src, *dest);
+  
+  //  replace by value if the axis factor is 1
+  for (size_t i = 0; i < 3; i++)
+    (*dest)[i] = (axis_factor[axis][i] > 0.0f) ? value[i] : (*dest)[i];
+
+}

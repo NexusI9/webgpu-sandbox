@@ -1,53 +1,6 @@
 #include "transform.h"
 #include "../utils/matrix.h"
 
-
-// callbacks look up
-
-// translate look up
-static const mesh_transform_uni_axis_callback mesh_translate_axis_callback[] = {
-    [Axis_X] = mesh_translate_x,
-    [Axis_Y] = mesh_translate_y,
-    [Axis_Z] = mesh_translate_z,
-};
-
-// rotate look up
-static const mesh_transform_uni_axis_callback mesh_rotate_axis_callback[] = {
-    [Axis_X] = mesh_rotate_x,
-    [Axis_Y] = mesh_rotate_y,
-    [Axis_Z] = mesh_rotate_z,
-};
-
-// scale look up
-static const mesh_transform_uni_axis_callback mesh_scale_axis_callback[] = {
-    [Axis_X] = mesh_scale_x,
-    [Axis_Y] = mesh_scale_y,
-    [Axis_Z] = mesh_scale_z,
-};
-
-// translate add look up
-static const mesh_transform_uni_axis_callback mesh_translate_axis_add_callback[] = {
-    [Axis_X] = mesh_translate_x_add,
-    [Axis_Y] = mesh_translate_y_add,
-    [Axis_Z] = mesh_translate_z_add,
-};
-
-// rotate add look up
-static const mesh_transform_uni_axis_callback mesh_rotate_axis_add_callback[] = {
-    [Axis_X] = mesh_rotate_x_add,
-    [Axis_Y] = mesh_rotate_y_add,
-    [Axis_Z] = mesh_rotate_z_add,
-};
-
-// scale add look up
-static const mesh_transform_uni_axis_callback mesh_scale_axis_add_callback[] = {
-    [Axis_X] = mesh_scale_x_add,
-    [Axis_Y] = mesh_scale_y_add,
-    [Axis_Z] = mesh_scale_z_add,
-};
-
-
-
 static void mesh_update_model_matrix(Mesh *);
 
 /**
@@ -84,60 +37,11 @@ void mesh_scale(Mesh *mesh, vec3 scale) {
   mesh_update_model_matrix(mesh);
 }
 
-void mesh_scale_axis(Mesh *mesh, const float value, const Axis axis) {
-  mesh_scale_axis_callback[axis](mesh, value);
-}
+void mesh_scale_axis(Mesh *mesh, vec3 value, const Axis axis) {
+  vec3 axis_value;
+  vec3_replace_axis(mesh->scale, value, axis, &axis_value);
 
-void mesh_scale_axis_add(Mesh *mesh, const float value, const Axis axis) {
-  mesh_scale_axis_add_callback[axis](mesh, value);
-}
-
-void mesh_scale_x(Mesh *mesh, const float value) {
-  mesh_scale(mesh, (vec3){
-                       value,
-                       mesh->scale[1],
-                       mesh->scale[2],
-                   });
-}
-
-void mesh_scale_y(Mesh *mesh, const float value) {
-  mesh_scale(mesh, (vec3){
-                       mesh->scale[0],
-                       value,
-                       mesh->scale[2],
-                   });
-}
-
-void mesh_scale_z(Mesh *mesh, const float value) {
-  mesh_scale(mesh, (vec3){
-                       mesh->scale[0],
-                       mesh->scale[1],
-                       value,
-                   });
-}
-
-void mesh_scale_x_add(Mesh *mesh, const float value) {
-  mesh_scale(mesh, (vec3){
-                       mesh->scale[0] + value,
-                       mesh->scale[1],
-                       mesh->scale[2],
-                   });
-}
-
-void mesh_scale_y_add(Mesh *mesh, const float value) {
-  mesh_scale(mesh, (vec3){
-                       mesh->scale[0],
-                       mesh->scale[1] + value,
-                       mesh->scale[2],
-                   });
-}
-
-void mesh_scale_z_add(Mesh *mesh, const float value) {
-  mesh_scale(mesh, (vec3){
-                       mesh->scale[0],
-                       mesh->scale[1],
-                       mesh->scale[2] + value,
-                   });
+  mesh_scale(mesh, axis_value);
 }
 
 /**
@@ -149,61 +53,11 @@ void mesh_translate(Mesh *mesh, vec3 position) {
   mesh_update_model_matrix(mesh);
 }
 
-void mesh_translate_axis(Mesh *mesh, const float value, const Axis axis) {
-  mesh_translate_axis_callback[axis](mesh, value);
-}
+void mesh_translate_axis(Mesh *mesh, vec3 value, const Axis axis) {
+  vec3 axis_value;
+  vec3_replace_axis(mesh->position, value, axis, &axis_value);
 
-void mesh_translate_axis_add(Mesh *mesh, const float value,
-                             const Axis axis) {
-  mesh_translate_axis_add_callback[axis](mesh, value);
-}
-
-void mesh_translate_x(Mesh *mesh, const float value) {
-  mesh_translate(mesh, (vec3){
-                           value,
-                           mesh->position[1],
-                           mesh->position[2],
-                       });
-}
-
-void mesh_translate_y(Mesh *mesh, const float value) {
-  mesh_translate(mesh, (vec3){
-                           mesh->position[0],
-                           value,
-                           mesh->position[2],
-                       });
-}
-
-void mesh_translate_z(Mesh *mesh, const float value) {
-  mesh_translate(mesh, (vec3){
-                           mesh->position[0],
-                           mesh->position[1],
-                           value,
-                       });
-}
-
-void mesh_translate_x_add(Mesh *mesh, const float value) {
-  mesh_translate(mesh, (vec3){
-                           mesh->position[0] + value,
-                           mesh->position[1],
-                           mesh->position[2],
-                       });
-}
-
-void mesh_translate_y_add(Mesh *mesh, const float value) {
-  mesh_translate(mesh, (vec3){
-                           mesh->position[0],
-                           mesh->position[1] + value,
-                           mesh->position[2],
-                       });
-}
-
-void mesh_translate_z_add(Mesh *mesh, const float value) {
-  mesh_translate(mesh, (vec3){
-                           mesh->position[0],
-                           mesh->position[1],
-                           mesh->position[2] + value,
-                       });
+  mesh_translate(mesh, axis_value);
 }
 
 /**
@@ -223,60 +77,11 @@ void mesh_rotate(Mesh *mesh, vec3 rotation) {
   mesh_update_model_matrix(mesh);
 }
 
-void mesh_rotate_axis(Mesh *mesh, const float value, const Axis axis) {
-  mesh_rotate_axis_callback[axis](mesh, value);
-}
+void mesh_rotate_axis(Mesh *mesh, vec3 value, const Axis axis) {
+  vec3 axis_value;
+  vec3_replace_axis(mesh->rotation_euler, value, axis, &axis_value);
 
-void mesh_rotate_axis_add(Mesh *mesh, const float value, const Axis axis) {
-  mesh_rotate_axis_add_callback[axis](mesh, value);
-}
-
-void mesh_rotate_x(Mesh *mesh, const float value) {
-  mesh_rotate(mesh, (vec3){
-                        value,
-                        mesh->rotation_euler[1],
-                        mesh->rotation_euler[2],
-                    });
-}
-
-void mesh_rotate_y(Mesh *mesh, const float value) {
-  mesh_rotate(mesh, (vec3){
-                        mesh->rotation_euler[0],
-                        value,
-                        mesh->rotation_euler[2],
-                    });
-}
-
-void mesh_rotate_z(Mesh *mesh, const float value) {
-  mesh_rotate(mesh, (vec3){
-                        mesh->rotation_euler[0],
-                        mesh->rotation_euler[1],
-                        value,
-                    });
-}
-
-void mesh_rotate_x_add(Mesh *mesh, const float value) {
-  mesh_rotate(mesh, (vec3){
-                        mesh->rotation_euler[0] + value,
-                        mesh->rotation_euler[1],
-                        mesh->rotation_euler[2],
-                    });
-}
-
-void mesh_rotate_y_add(Mesh *mesh, const float value) {
-  mesh_rotate(mesh, (vec3){
-                        mesh->rotation_euler[0],
-                        mesh->rotation_euler[1] + value,
-                        mesh->rotation_euler[2],
-                    });
-}
-
-void mesh_rotate_z_add(Mesh *mesh, const float value) {
-  mesh_rotate(mesh, (vec3){
-                        mesh->rotation_euler[0],
-                        mesh->rotation_euler[1],
-                        mesh->rotation_euler[2] + value,
-                    });
+  mesh_rotate(mesh, axis_value);
 }
 
 /**

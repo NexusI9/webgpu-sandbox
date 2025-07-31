@@ -232,5 +232,6 @@ void scene_selection_key_sequence_callback_transform(KeyRecordSequence *seq,
 
   printf("Transform gizmo\n");
 
-  //gizmo_transform_set_active(gizmo, );
+  // dispatch correct transform callback (axis based or plane based)
+  
 }

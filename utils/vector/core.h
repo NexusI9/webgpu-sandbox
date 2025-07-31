@@ -7,6 +7,8 @@
 
 typedef uint8_t VectorLength_t;
 
+#define AXIS_COUNT 6
+
 typedef enum {
   Axis_X,
   Axis_Y,
@@ -46,4 +48,6 @@ void vec_baycentric(const vec2, const vec2, const vec2, const vec2,
 void ivec_to_vec(const int *, const VectorLength, float *);
 
 void vec_world_axis(const Axis, vec3 *);
+
+void vec3_replace_axis(vec3, vec3, const Axis, vec3 *);
 #endif

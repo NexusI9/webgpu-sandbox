@@ -12,7 +12,8 @@
  */
 static inline void
 gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
-                mesh_transform_axis_callback transform_callback, vec3 *delta);
+                     mesh_transform_axis_callback transform_callback,
+                     vec3 *delta);
 
 static inline void
 gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
@@ -34,16 +35,16 @@ static const raycast_project_screen_to_axis_callback project_callback[] = {
     [Axis_XY] = raycast_project_from_screen_to_plane,
     [Axis_YZ] = raycast_project_from_screen_to_plane,
     [Axis_XZ] = raycast_project_from_screen_to_plane,
-    
 };
 
 /**
    Generic function to transform gizmo based on axis and provided callback
    (trans/rot/scale)
  */
-void gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
-                     mesh_transform_axis_callback transform_callback,
-                     vec3 *delta) {
+void gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera,
+                          Viewport *viewport,
+                          mesh_transform_axis_callback transform_callback,
+                          vec3 *delta) {
 
   const Axis axis = gizmo->axis;
   vec3 *gizmo_position = &gizmo->cache.gizmo_init_position;
@@ -90,7 +91,7 @@ void gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera, Viewport *viewp
     glm_vec3_add(*init_attribute, gizmo_delta, offset_attribute);
 
     // translate mesh
-    transform_callback(mesh, offset_attribute[gizmo->axis], gizmo->axis);
+    transform_callback(mesh, offset_attribute, gizmo->axis);
   }
 }
 
@@ -155,7 +156,7 @@ void gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera,
     glm_vec3_add(*init_attribute, rotation, offset_attribute);
 
     // translate mesh
-    transform_callback(mesh, offset_attribute[gizmo->axis], gizmo->axis);
+    transform_callback(mesh, offset_attribute, gizmo->axis);
   }
 }
 
