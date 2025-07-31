@@ -77,9 +77,12 @@ void ivec_to_vec(const int *src, const VectorLength length, float *dest) {
 void vec_world_axis(const Axis axis, vec3 *dest) {
 
   vec3 axis_dir[] = {
-      [Axis_X] = {1.0f, 0.0f, 0.0f},
-      [Axis_Y] = {0.0f, 1.0f, 0.0f},
-      [Axis_Z] = {0.0f, 0.0f, 1.0f},
+      [Axis_X] = {1.0f, 0.0f, 0.0f},  // X axis
+      [Axis_Y] = {0.0f, 1.0f, 0.0f},  // Y axis
+      [Axis_Z] = {0.0f, 0.0f, 1.0f},  // Z axis
+      [Axis_XY] = {0.0f, 0.0f, 1.0f}, // Z normal
+      [Axis_YZ] = {1.0f, 0.0f, 0.0f}, // X normal
+      [Axis_XZ] = {0.0f, 1.0f, 0.0f}, // Y normal
   };
 
   glm_vec3_copy(axis_dir[axis], *dest);

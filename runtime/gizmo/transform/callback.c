@@ -11,7 +11,7 @@
    Utilities function to retrieve the delta or angle
  */
 static inline void
-gizmo_transform(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
+gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
                 mesh_transform_axis_callback transform_callback, vec3 *delta);
 
 static inline void
@@ -20,10 +20,28 @@ gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
                       vec3 *delta);
 
 /**
+   Callbacks to determine how to calculate the mouse position within the world
+   space.
+ */
+static const raycast_project_screen_to_axis_callback project_callback[] = {
+
+    // uni-axis based projection (1d)
+    [Axis_X] = raycast_project_from_screen_to_axis,
+    [Axis_Y] = raycast_project_from_screen_to_axis,
+    [Axis_Z] = raycast_project_from_screen_to_axis,
+
+    // plane based projection (2D)
+    [Axis_XY] = raycast_project_from_screen_to_plane,
+    [Axis_YZ] = raycast_project_from_screen_to_plane,
+    [Axis_XZ] = raycast_project_from_screen_to_plane,
+    
+};
+
+/**
    Generic function to transform gizmo based on axis and provided callback
    (trans/rot/scale)
  */
-void gizmo_transform(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
+void gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
                      mesh_transform_axis_callback transform_callback,
                      vec3 *delta) {
 
@@ -32,27 +50,25 @@ void gizmo_transform(GizmoTransform *gizmo, Camera *camera, Viewport *viewport,
 
   // draw raywast from mouse position
   Raycast mouse_ray;
-  float x = g_input.mouse.x;
-  float y = g_input.mouse.y;
 
   // project ray into axis
   vec3 axis_dir;
   vec_world_axis(axis, &axis_dir);
 
   vec3 projected_position;
-  raycast_project_from_screen_to_axis(&mouse_ray,
-                                      &(RaycastProjectScreenToAxis){
-                                          .origin = &camera->position,
-                                          .target = gizmo_position,
-                                          .axis_direction = &axis_dir,
-                                          .view = &camera->view,
-                                          .projection = &viewport->projection,
-                                          .x = x,
-                                          .y = y,
-                                          .width = viewport->width,
-                                          .height = viewport->height,
-                                      },
-                                      &projected_position);
+  project_callback[axis](&mouse_ray,
+                         &(RaycastProjectScreenToAxis){
+                             .origin = &camera->position,
+                             .target = gizmo_position,
+                             .axis_direction = &axis_dir,
+                             .view = &camera->view,
+                             .projection = &viewport->projection,
+                             .x = g_input.mouse.x,
+                             .y = g_input.mouse.y,
+                             .width = viewport->width,
+                             .height = viewport->height,
+                         },
+                         &projected_position);
 
   vec3 gizmo_delta;
   // cancel initial offset
@@ -86,23 +102,22 @@ void gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera,
                            mesh_transform_axis_callback transform_callback,
                            vec3 *dest) {
 
-  // retrieve axis direction
-  const Axis axis = gizmo->axis;
-  vec3 axis_dir;
-  vec_world_axis(axis, &axis_dir);
-
-  // retrieve mouse position
-  float x, y;
-  input_mouse_NDC(g_input.mouse.x, g_input.mouse.y, viewport->width,
-                  viewport->height, &x, &y);
-
   // cast ray from mouse to world
   Raycast raycast;
-  raycast_from_screen(&raycast, &camera->position, &camera->view,
-                      &viewport->projection, x, y);
-
   vec3 hit_position;
-  raycast_hit_inf_plane(&raycast, &gizmo->cache.plane, &hit_position);
+
+  raycast_project_from_screen_to_plane(&raycast,
+                                       &(RaycastProjectScreenToAxis){
+                                           .origin = &camera->position,
+                                           .plane = &gizmo->cache.plane,
+                                           .view = &camera->view,
+                                           .projection = &viewport->projection,
+                                           .x = g_input.mouse.x,
+                                           .y = g_input.mouse.y,
+                                           .width = viewport->width,
+                                           .height = viewport->height,
+                                       },
+                                       &hit_position);
 
   // get vector from center to these points
   vec3 v0, v1;
@@ -114,6 +129,11 @@ void gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera,
 
   // get angle between vectors around axis
   float angle = glm_deg(acosf(glm_vec3_dot(v0, v1)));
+
+  // retrieve axis direction
+  const Axis axis = gizmo->axis;
+  vec3 axis_dir;
+  vec_world_axis(axis, &axis_dir);
 
   // get sign using cross product
   vec3 cross;
@@ -152,7 +172,7 @@ void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
   vec3 delta;
 
   // transform selection
-  gizmo_transform(gizmo, camera, viewport, mesh_translate_axis, &delta);
+  gizmo_transform_axis(gizmo, camera, viewport, mesh_translate_axis, &delta);
 
   // translate gizmo based on cached delta
   vec3 gizmo_offset;
@@ -167,5 +187,5 @@ void gizmo_transform_callback_rotate(GizmoTransform *gizmo, Camera *camera,
 
 void gizmo_transform_callback_scale(GizmoTransform *gizmo, Camera *camera,
                                     Viewport *viewport) {
-  gizmo_transform(gizmo, camera, viewport, mesh_scale_axis, NULL);
+  gizmo_transform_axis(gizmo, camera, viewport, mesh_scale_axis, NULL);
 }

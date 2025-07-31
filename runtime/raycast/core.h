@@ -23,15 +23,19 @@ typedef struct {
 
 typedef struct {
   vec3 *origin;
-  vec3 *target;
-  vec3 *axis_direction;
   mat4 *view;
   mat4 *projection;
+  vec3 *axis_direction; // 1D axis only (x,y,z)
+  vec3 *target;         // 1D axis only (x,y,z)
+  InfinitePlane *plane; // 2D axis only (xy,yz,xz)
   float x;
   float y;
   int width;
   int height;
 } RaycastProjectScreenToAxis;
+
+typedef void (*raycast_project_screen_to_axis_callback)(
+    Raycast *, const RaycastProjectScreenToAxis *, vec3 *);
 
 bool raycast_hit_aabb(Raycast *, const AABB *, float *);
 bool raycast_hit_inf_plane(Raycast *, InfinitePlane *, vec3 *);
@@ -41,4 +45,8 @@ void raycast_project_to_axis(Raycast *, vec3 *, vec3 *, vec3 *);
 void raycast_project_from_screen_to_axis(Raycast *,
                                          const RaycastProjectScreenToAxis *,
                                          vec3 *);
+
+void raycast_project_from_screen_to_plane(Raycast *,
+                                          const RaycastProjectScreenToAxis *,
+                                          vec3 *);
 #endif

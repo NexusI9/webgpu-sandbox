@@ -158,6 +158,9 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, const Mesh *hit_handle,
     vec3_list_insert(&gizmo->cache.selection_init_attribute, attribute);
   }
 
+  if(hit_handle){
+    
+  }
   // define active axis
   gizmo_transform_set_axis_from_mesh(gizmo, hit_handle);
   

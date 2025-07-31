@@ -140,6 +140,34 @@ void raycast_project_from_screen_to_axis(Raycast *ray,
 }
 
 /**
+   Convert a mouse projection to world space and project it onto an infinite
+   plane with a defined normal direction.
+
+   Destination returns the position of the closest point on the
+   axis based on the initial mouse position.
+
+   Used for gizmo transform to move the objects accordingly based on the
+   selected plane (XY, YZ, XZ, Camera).
+ */
+void raycast_project_from_screen_to_plane(
+    Raycast *ray, const RaycastProjectScreenToAxis *desc, vec3 *dest) {
+
+  // convert mouse to ndc (-1/1)
+  // retrieve mouse position
+  float x, y;
+  input_mouse_NDC(g_input.mouse.x, g_input.mouse.y, desc->width, desc->height,
+                  &x, &y);
+
+  // cast ray from mouse to world
+  Raycast raycast;
+  raycast_from_screen(&raycast, desc->origin, desc->view, desc->projection, x,
+                      y);
+
+  // create infinite plane based on axis direction and target
+  raycast_hit_inf_plane(&raycast, desc->plane, dest);
+}
+
+/**
    Detect if raycast hit an infinite plane
  */
 bool raycast_hit_inf_plane(Raycast *ray, InfinitePlane *plane, vec3 *dest) {
