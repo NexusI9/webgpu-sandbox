@@ -51,5 +51,5 @@ void raycast_project_from_screen_to_plane(Raycast *,
                                           vec3 *);
 
 void raycast_project_from_screen(Raycast *, const Axis,
-                                const RaycastProjectScreenToAxis *, vec3 *);
+                                 RaycastProjectScreenToAxis *, vec3 *);
 #endif

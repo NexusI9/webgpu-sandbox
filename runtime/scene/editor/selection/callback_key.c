@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 const uint8_t seq_count_select = 1;
-const uint8_t seq_count_mode = 0;
+const uint8_t seq_count_mode = 3;
 const uint8_t seq_count_transform = 6;
 const uint8_t seq_count_total =
     seq_count_select + seq_count_mode + seq_count_transform;
@@ -85,29 +85,33 @@ static SelectionKeySequence selection_key_sequences_transform[6] = {
     },
 };
 
+static const uint8_t seq_count = 3;
+/**
+   List of hot key sequences.
+   Note that the order is important. Switching entry 2 and 3 will break the
+   overall sequence logic (1 hit G -> switch mode, 2 hit G -> transform).
+ */
 static const struct {
   SelectionKeySequence *sequences;
   size_t length;
-} selection_key_sequences[2] = {
+} selection_key_sequences[3] = {
     {
         .sequences = selection_key_sequences_select,
         .length = seq_count_select,
     },
-    /*
-    {
-        .sequences = selection_key_sequences_mode,
-        .length = seq_count_mode,
-    },
-     */
     {
         .sequences = selection_key_sequences_transform,
         .length = seq_count_transform,
+    },
+    {
+        .sequences = selection_key_sequences_mode,
+        .length = seq_count_mode,
     },
 };
 
 void scene_selection_init_key_events(Scene *scene) {
 
-  for (size_t i = 0; i < 2; i++) {
+  for (size_t i = 0; i < seq_count; i++) {
 
     // dispatch to global input key record sequence
     SelectionKeySequence *sequences = selection_key_sequences[i].sequences;
@@ -233,17 +237,8 @@ void scene_selection_key_sequence_callback_transform(
 
       // If gizmo is NOT already in the mode we do NOT transform
       // only switch mode
-      if (key_seq_mode != gizmo->mode) {
-
-        scene_gizmo_transform_hide(scene);
-
-        gizmo->mode = key_seq_mode;
-
-        // update location to selection average and redisplay it
-        scene_gizmo_transform_pos_to_selection(scene);
-        scene_gizmo_transform_show(scene);
+      if (key_seq_mode != gizmo->mode)
         return;
-      }
 
       // map axis from static sequences
       gizmo->axis = key_seq_axis;

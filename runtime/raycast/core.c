@@ -191,15 +191,13 @@ bool raycast_hit_inf_plane(Raycast *ray, InfinitePlane *plane, vec3 *dest) {
   return true;
 }
 
-
 /**
    Project the mouse towards a certain axis (1D or 2D) in world space.
    The function basically dispatch to two sub-methods : .._to_axis or
    .._to_plane depending on the dimension of the Axis (1D or 2D).
  */
 void raycast_project_from_screen(Raycast *raycast, const Axis axis,
-                                const RaycastProjectScreenToAxis *desc,
-                                vec3 *dest) {
+                                 RaycastProjectScreenToAxis *desc, vec3 *dest) {
   switch (axis) {
 
     // 1D => project to Axis
@@ -214,8 +212,15 @@ void raycast_project_from_screen(Raycast *raycast, const Axis axis,
   case Axis_YZ:
   case Axis_XZ:
   case Axis_XYZ:
-  case Axis_View:
+  case Axis_View: {
+
+    // create plane from axis direction
+    InfinitePlane plane;
+    inf_plane_create(&plane, *desc->target, *desc->axis_direction);
+    desc->plane = &plane;
+
     raycast_project_from_screen_to_plane(raycast, desc, dest);
     break;
+  }
   }
 }

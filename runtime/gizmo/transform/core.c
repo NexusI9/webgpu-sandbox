@@ -38,7 +38,7 @@ static const mesh_get_transform_attribute mesh_transform_attribute[] = {
 void gizmo_transform_create(GizmoTransform *gizmo,
                             const GizmoCreateDescriptor *desc) {
 
-  gizmo->mode = GizmoTransformMode_Rotate;
+  gizmo->mode = GizmoTransformMode_Translate;
 
   // init 'cache' attributes
   const size_t capacity = GIZMO_TRANSFORM_POSITION_CAPACITY;
