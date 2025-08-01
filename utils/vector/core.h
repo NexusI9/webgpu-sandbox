@@ -52,4 +52,8 @@ void ivec_to_vec(const int *, const VectorLength, float *);
 void vec_world_axis(const Axis, vec3 *);
 
 void vec3_replace_axis(vec3, vec3, const Axis, vec3 *);
+
+float vec3_max_value(vec3);
+
+float vec3_max_abs_value(vec3);
 #endif

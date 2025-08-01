@@ -107,8 +107,8 @@ static const vec3 axis_factor[] = {
     [Axis_XZ] = {1.0f, 0.0f, 1.0f},
     // 3D Axis
     [Axis_XYZ] = {1.0f, 1.0f, 1.0f},
-    // Unvalid (need to be calculated based on camera)
-    [Axis_View] = {0},
+    // Need to be calculated based on camera direction
+    [Axis_View] = {1.0f, 1.0f, 1.0f},
 };
 
 void vec3_replace_axis(vec3 src, vec3 value, const Axis axis, vec3 *dest) {
@@ -117,6 +117,22 @@ void vec3_replace_axis(vec3 src, vec3 value, const Axis axis, vec3 *dest) {
   glm_vec3_copy(src, *dest);
 
   //  replace by value if the axis factor is 1
-  for (size_t i = 0; i < 3; i++)
+  for (size_t i = 0; i < VectorLength_3; i++)
     (*dest)[i] = (axis_factor[axis][i] > 0.0f) ? value[i] : (*dest)[i];
+}
+
+float vec3_max_value(vec3 src) {
+  float max = src[0];
+  for (size_t i = 1; i < VectorLength_3; i++)
+    max = glm_max(max, src[i]);
+
+  return max;
+}
+
+float vec3_max_abs_value(vec3 src) {
+  float max = fabs(src[0]);
+  for (size_t i = 1; i < VectorLength_3; i++)
+    max = glm_max(max, fabs(src[i]));
+
+  return max;
 }

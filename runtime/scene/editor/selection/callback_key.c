@@ -4,15 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-const uint8_t gizmo_mode_from_char[] = {
-    ['G'] = GizmoTransformMode_Translate,
-    ['S'] = GizmoTransformMode_Scale,
-    ['R'] = GizmoTransformMode_Rotate,
-};
-
 const uint8_t seq_count_select = 1;
-const uint8_t seq_count_mode = 3;
-const uint8_t seq_count_transform = 12;
+const uint8_t seq_count_mode = 0;
+const uint8_t seq_count_transform = 6;
 const uint8_t seq_count_total =
     seq_count_select + seq_count_mode + seq_count_transform;
 
@@ -31,92 +25,61 @@ static SelectionKeySequence selection_key_sequences_mode[3] = {
         .sequence = {'G'},
         .length = 1,
         .callback = scene_selection_key_sequence_callback_set_gizmo_mode,
+        .mode = GizmoTransformMode_Translate,
     },
     {
         .sequence = {'S'},
         .length = 1,
         .callback = scene_selection_key_sequence_callback_set_gizmo_mode,
+        .mode = GizmoTransformMode_Scale,
     },
     {
         .sequence = {'R'},
         .length = 1,
         .callback = scene_selection_key_sequence_callback_set_gizmo_mode,
+        .mode = GizmoTransformMode_Rotate,
     },
 };
 
-static SelectionKeySequence selection_key_sequences_transform[12] = {
-    // translate axis
+static SelectionKeySequence selection_key_sequences_transform[6] = {
+    // transform view/general
     {
         .sequence = {'G'},
         .length = 1,
         .callback = scene_selection_key_sequence_callback_transform,
         .axis = Axis_View,
+        .mode = GizmoTransformMode_Translate,
     },
-    {
-        .sequence = {'G', 'X'},
-        .length = 2,
-        .callback = scene_selection_key_sequence_callback_transform,
-        .axis = Axis_X,
-    },
-    {
-        .sequence = {'G', 'Y'},
-        .length = 2,
-        .callback = scene_selection_key_sequence_callback_transform,
-        .axis = Axis_Y,
-    },
-    {
-        .sequence = {'G', 'Z'},
-        .length = 2,
-        .callback = scene_selection_key_sequence_callback_transform,
-        .axis = Axis_Z,
-    },
-    // scale axis
-    {
-        .sequence = {'S'},
-        .length = 1,
-        .callback = scene_selection_key_sequence_callback_transform,
-        .axis = Axis_XYZ,
-    },
-    {
-        .sequence = {'S', 'X'},
-        .length = 2,
-        .callback = scene_selection_key_sequence_callback_transform,
-        .axis = Axis_X,
-    },
-    {
-        .sequence = {'S', 'Y'},
-        .length = 2,
-        .callback = scene_selection_key_sequence_callback_transform,
-        .axis = Axis_Y,
-    },
-    {
-        .sequence = {'S', 'Z'},
-        .length = 2,
-        .callback = scene_selection_key_sequence_callback_transform,
-        .axis = Axis_Z,
-    },
-    // rotate axis
     {
         .sequence = {'R'},
         .length = 1,
         .callback = scene_selection_key_sequence_callback_transform,
         .axis = Axis_View,
+        .mode = GizmoTransformMode_Rotate,
     },
     {
-        .sequence = {'R', 'X'},
-        .length = 2,
+        .sequence = {'S'},
+        .length = 1,
+        .callback = scene_selection_key_sequence_callback_transform,
+        .axis = Axis_XYZ,
+        .mode = GizmoTransformMode_Scale,
+    },
+    // transform axis
+    {
+        .sequence = {'X'},
+        .length = 1,
         .callback = scene_selection_key_sequence_callback_transform,
         .axis = Axis_X,
     },
     {
-        .sequence = {'R', 'Y'},
-        .length = 2,
+        .sequence = {'Y'},
+        .length = 1,
         .callback = scene_selection_key_sequence_callback_transform,
         .axis = Axis_Y,
     },
     {
-        .sequence = {'R', 'Z'},
-        .length = 2,
+        .sequence = {'Z'},
+        .length = 1,
         .callback = scene_selection_key_sequence_callback_transform,
         .axis = Axis_Z,
     },
@@ -125,15 +88,17 @@ static SelectionKeySequence selection_key_sequences_transform[12] = {
 static const struct {
   SelectionKeySequence *sequences;
   size_t length;
-} selection_key_sequences[3] = {
+} selection_key_sequences[2] = {
     {
         .sequences = selection_key_sequences_select,
         .length = seq_count_select,
     },
+    /*
     {
         .sequences = selection_key_sequences_mode,
         .length = seq_count_mode,
     },
+     */
     {
         .sequences = selection_key_sequences_transform,
         .length = seq_count_transform,
@@ -142,7 +107,7 @@ static const struct {
 
 void scene_selection_init_key_events(Scene *scene) {
 
-  for (size_t i = 0; i < 3; i++) {
+  for (size_t i = 0; i < 2; i++) {
 
     // dispatch to global input key record sequence
     SelectionKeySequence *sequences = selection_key_sequences[i].sequences;
@@ -230,16 +195,18 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
   // hide gizmo
   scene_gizmo_transform_hide(scene);
 
-  // look up mode based on the sequence character (len = 1)
-  for (size_t i = 0; i < seq->length; i++)
-    gizmo->mode = gizmo_mode_from_char[seq->sequence[i]];
-
-  // update location to selection average
-  scene_gizmo_transform_pos_to_selection(scene);
+  // search for same sequence in static array and assign mode to gizmo
+  for (size_t i = 0; i < seq_count_mode; i++)
+    if (keyrec_sequence_equal(selection_key_sequences_mode[i].sequence,
+                              seq->sequence, seq->length))
+      gizmo->mode = selection_key_sequences_mode[i].mode;
 
   // show gizmo if has selection
-  if (selection_list->length)
+  if (selection_list->length) {
+    // update location to selection average
+    scene_gizmo_transform_pos_to_selection(scene);
     scene_gizmo_transform_show(scene);
+  }
 }
 
 void scene_selection_key_sequence_callback_transform(
@@ -254,18 +221,40 @@ void scene_selection_key_sequence_callback_transform(
   if (selection_list->length == 0)
     return;
 
-  // map axis from static sequences
-  vec3 axis;
-  for (size_t i = 0; i < seq_count_transform; i++)
-    if (keyrec_sequence_equal(current_seq->sequence,
-                              selection_key_sequences_transform[i].sequence,
-                              current_seq->length)) {
-      vec_world_axis(selection_key_sequences_transform[i].axis, &axis);
-      break;
-    }
+  for (size_t i = 0; i < seq_count_transform; i++) {
 
-  // set active handle from current mode and initialize offset
-  gizmo_transform_set_active(gizmo, axis,
-                             &scene->pipelines[ScenePipeline_Fixed_Selection],
-                             scene->active_camera, &scene->viewport);
+    SelectionKeySequence *key_seq = &selection_key_sequences_transform[i];
+    // find equal key sequence
+    if (keyrec_sequence_equal(current_seq->sequence, key_seq->sequence,
+                              current_seq->length)) {
+
+      Axis key_seq_axis = key_seq->axis;
+      GizmoTransformMode key_seq_mode = key_seq->mode;
+
+      // If gizmo is NOT already in the mode we do NOT transform
+      // only switch mode
+      if (key_seq_mode != gizmo->mode) {
+
+        scene_gizmo_transform_hide(scene);
+
+        gizmo->mode = key_seq_mode;
+
+        // update location to selection average and redisplay it
+        scene_gizmo_transform_pos_to_selection(scene);
+        scene_gizmo_transform_show(scene);
+        return;
+      }
+
+      // map axis from static sequences
+      gizmo->axis = key_seq_axis;
+
+      // set gizmo position to center of selection
+      scene_gizmo_transform_pos_to_selection(scene);
+
+      // set active handle from current mode and initialize offset
+      gizmo_transform_set_active(
+          gizmo, &scene->pipelines[ScenePipeline_Fixed_Selection],
+          scene->active_camera, &scene->viewport);
+    }
+  }
 }

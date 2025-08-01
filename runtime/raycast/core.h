@@ -34,7 +34,7 @@ typedef struct {
   int height;
 } RaycastProjectScreenToAxis;
 
-typedef void (*raycast_project_screen_to_axis_callback)(
+typedef void (*raycast_project_from_screen_callback)(
     Raycast *, const RaycastProjectScreenToAxis *, vec3 *);
 
 bool raycast_hit_aabb(Raycast *, const AABB *, float *);
@@ -49,4 +49,7 @@ void raycast_project_from_screen_to_axis(Raycast *,
 void raycast_project_from_screen_to_plane(Raycast *,
                                           const RaycastProjectScreenToAxis *,
                                           vec3 *);
+
+void raycast_project_from_screen(Raycast *, const Axis,
+                                const RaycastProjectScreenToAxis *, vec3 *);
 #endif

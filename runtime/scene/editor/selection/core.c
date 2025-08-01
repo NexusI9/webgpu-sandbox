@@ -44,6 +44,6 @@ void scene_selection_draw_callback(void *data) {
   gizmo_transform_callback transform_callback =
       gizmo->transform_callback[gizmo->mode];
 
-  if (g_input.mouse.state == InputMouseState_Down && selection_list->length > 0)
+  if (selection_list->length)
     transform_callback(gizmo, cast_scene->active_camera, &cast_scene->viewport);
 }

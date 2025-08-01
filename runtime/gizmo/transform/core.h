@@ -9,6 +9,7 @@
 #define GIZMO_TRANSFORM_SIZE 15.0f
 #define GIZMO_TRANSFORM_POSITION_CAPACITY 128
 #define GIZMO_TRANSFORM_AXIS_COUNT 3
+#define GIZMO_TRANSFORM_MODE_COUNT 3
 
 /**
   Gizmo Transform
@@ -62,8 +63,8 @@ typedef enum {
 } GizmoTransformMode;
 
 typedef enum {
-  GizmoTransformMode_Global,
-  GizmoTransformMode_Local,
+  GizmoTransformSpace_Global,
+  GizmoTransformSpace_Local,
 } GizmoTransformSpace;
 
 struct GizmoTransform {
@@ -99,7 +100,7 @@ struct GizmoTransform {
    */
   MeshRefList interactive_handles[GIZMO_TRANSFORM_AXIS_COUNT];
 
-  gizmo_transform_callback transform_callback[GIZMO_TRANSFORM_AXIS_COUNT];
+  gizmo_transform_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
 
   /**
      Cached attribute on transform (click/ hotkey)
@@ -107,25 +108,36 @@ struct GizmoTransform {
      - selection: act as a buffer between scene selection pipeline and
      selection draw loop. All meshes within the gizmo selection will be affected
      by the gizmo transformation callback.
+     Meshes are only added from the scene selection to the gizmo when gizmo has
+     been triggered either by clicking on the handles or by hotkey.
+     The cache selection is updated during the "set_active" gizmo function.
 
      - selection_init_attribute: store each selection meshes their initial
      attributes depending on gizmo mode (loc/rot/scale) as to properly offset
      it.
 
-     - delta_init: initial projected mouse position in space, used during
+     - init_delta: initial projected mouse position in space, used during
      transformation loop to properly offset.
+
+     - init_distance: initial distance between the projected mouse to world
+     space and the gizmo origin.
+
+     - axis_direction: Overall direction according to which the transformation
+     should operate.
 
      - plane: initial inifite plane from which normal is set depending on axis.
      Is used during 2D axis transformation (XY, YZ, XZ).
 
      - gizmo_init_position: used to project the mouse position to the closest
      point on an axis based on the gizmo position.
-     
+
    */
   struct {
     MeshRefList selection;
     Vec3List selection_init_attribute;
-    vec3 delta_init;
+    vec3 init_delta;
+    float init_distance;
+    vec3 axis_direction;
     InfinitePlane plane;
     vec3 gizmo_init_position;
   } cache;
@@ -150,8 +162,8 @@ void gizmo_transform_remove(GizmoTransform *, MeshRefList *);
 void gizmo_transform_translate(GizmoTransform *, vec3);
 void gizmo_transform_rotate(GizmoTransform *, vec3);
 
-void gizmo_transform_set_active(GizmoTransform *, vec3, const MeshRefList *,
-                                Camera *, Viewport *);
+void gizmo_transform_set_active(GizmoTransform *, const MeshRefList *, Camera *,
+                                Viewport *);
 
 void gizmo_transform_clear_active(GizmoTransform *);
 

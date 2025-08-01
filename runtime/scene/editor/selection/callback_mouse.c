@@ -182,12 +182,8 @@ void scene_selection_raycast_gizmo_callback(
     // map active axis from hit handle pointer
     gizmo_transform_set_axis_from_mesh(gizmo, hit);
 
-    // retrieve axis direction from gizmo axis
-    vec3 axis;
-    vec_world_axis(gizmo->axis, &axis);
-
     // set active handle from current mode and initialize offset
-    gizmo_transform_set_active(gizmo, axis,
+    gizmo_transform_set_active(gizmo,
                                &scene->pipelines[ScenePipeline_Fixed_Selection],
                                scene->active_camera, &scene->viewport);
   }

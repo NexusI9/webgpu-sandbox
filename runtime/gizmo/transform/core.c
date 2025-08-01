@@ -77,8 +77,7 @@ void gizmo_transform_update_mode(GizmoTransform *gizmo, MeshRefList *dest_list,
   gizmo->mode = mode;
 
   // insert new handles
-  for (size_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
-    mesh_ref_list_insert(dest_list, gizmo->handles[gizmo->mode].entries[i]);
+  mesh_ref_list_transfert(&gizmo->handles[gizmo->mode], dest_list, NULL);
 }
 
 /**
@@ -137,12 +136,21 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
    offset.
 
  */
-void gizmo_transform_set_active(GizmoTransform *gizmo, vec3 axis,
+void gizmo_transform_set_active(GizmoTransform *gizmo,
                                 const MeshRefList *selected_meshes,
                                 Camera *camera, Viewport *viewport) {
 
   // cache gizmo init position
   gizmo_transform_origin(gizmo, &gizmo->cache.gizmo_init_position);
+
+  // cache axis
+  // get direction from camera
+  if (gizmo->axis == Axis_View) {
+    glm_vec3_copy(camera->forward, gizmo->cache.axis_direction);
+  } else {
+    // get world direction from axis
+    vec_world_axis(gizmo->axis, &gizmo->cache.axis_direction);
+  }
 
   // update selection
   mesh_ref_list_transfert(selected_meshes, &gizmo->cache.selection, NULL);
@@ -155,18 +163,14 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, vec3 axis,
     vec3_list_insert(&gizmo->cache.selection_init_attribute, attribute);
   }
 
-  // set axis direction
-  vec3 axis_dir;
-  vec_world_axis(gizmo->axis, &axis_dir);
-
   // init delta
   Raycast raycast;
-  raycast_project_from_screen_to_axis(
-      &raycast,
+  raycast_project_from_screen(
+      &raycast, gizmo->axis,
       &(RaycastProjectScreenToAxis){
           .origin = &camera->position,
           .target = &gizmo->cache.gizmo_init_position,
-          .axis_direction = &axis_dir,
+          .axis_direction = &gizmo->cache.axis_direction,
           .view = &camera->view,
           .projection = &viewport->projection,
           .x = g_input.mouse.x,
@@ -174,18 +178,22 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, vec3 axis,
           .width = viewport->width,
           .height = viewport->height,
       },
-      &gizmo->cache.delta_init);
+      &gizmo->cache.init_delta);
+
+  // define init distance
+  gizmo->cache.init_distance = glm_vec3_distance(
+      gizmo->cache.gizmo_init_position, gizmo->cache.init_delta);
 
   // rotation => angle based, so need to project ray to an infinite plane
   if (gizmo->mode == GizmoTransformMode_Rotate) {
 
     // init plane
     inf_plane_create(&gizmo->cache.plane, gizmo->cache.gizmo_init_position,
-                     axis_dir);
+                     gizmo->cache.axis_direction);
 
     // update init delta
     raycast_hit_inf_plane(&raycast, &gizmo->cache.plane,
-                          &gizmo->cache.delta_init);
+                          &gizmo->cache.init_delta);
   }
 }
 
@@ -196,7 +204,9 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, vec3 axis,
 void gizmo_transform_clear_active(GizmoTransform *gizmo) {
   // reset gizmo initial position and delta
   glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.gizmo_init_position);
-  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.delta_init);
+  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.init_delta);
+
+  gizmo->cache.init_distance = 0.0f;
 
   // reset cache meshes positions
   vec3_list_empty(&gizmo->cache.selection_init_attribute);
