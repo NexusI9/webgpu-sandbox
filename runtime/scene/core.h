@@ -90,7 +90,28 @@ typedef enum {
   ScenePipeline_Fixed_UI,
 } ScenePipeline;
 
+
 typedef struct {
+
+  // mesh based selection (for mesh with outline pass)
+  struct {
+    MeshRefListArray include; // mesh lists to be included for selection
+    MeshRefListArray exclude; // mesh lists to be excluded for selection
+    MeshRefList output;       // pipeline for mesh to be added on selection
+  } mesh_based;
+
+  // shader based selection (for mesh with uniform highlight boolean)
+  struct {
+    MeshRefListArray include; // mesh lists to be included for selection
+    MeshRefListArray exclude; // mesh lists to be excluded for selection
+  } shader_based;
+
+} SceneSelection;
+
+
+typedef struct {
+
+  SceneSelection selection;
 
   struct {
     GizmoList list;           // gizmo lists

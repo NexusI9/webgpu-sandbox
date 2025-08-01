@@ -34,10 +34,8 @@ DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
   size_t new_capacity = scale * (*capacity);
   void *temp = (void *)realloc(*entries, new_capacity * type_size);
 
-  if (temp == NULL) {
-    VERBOSE_ERROR("Couldn't expand dynamic list: %s\n", label);
+  if (temp == NULL)
     return DynamicListStatus_AllocFail;
-  }
 
   *entries = temp;
   *capacity = new_capacity;
@@ -49,10 +47,15 @@ DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
                               size_t type_size, void *entry, size_t count,
                               const char *label) {
 
-  if (*capacity < *length + count &&
-      dyli_expand(entries, capacity, length, type_size, 2, label) !=
-          DynamicListStatus_Success) {
-    return DynamicListStatus_UndefError;
+  if (*capacity < *length + count) {
+
+    size_t new_capacity = (*capacity == 0) ? count : *capacity * 2;
+    while (new_capacity < *length + count)
+      new_capacity *= 2;
+
+    if (dyli_expand(entries, capacity, length, type_size, new_capacity,
+                    label) != DynamicListStatus_Success)
+      return DynamicListStatus_UndefError;
   }
 
   void *target = (char *)(*entries) + (*length * type_size);
@@ -81,7 +84,7 @@ DynamicListStatus dyli_free(void **entries, size_t *capacity, size_t *length) {
 
 DynamicListStatus dyli_remove(void *entries, size_t *length, size_t type_size,
                               void *entry, const char *label) {
-  
+
   char *base = (char *)entries;
 
   for (size_t i = 0; i < *length; i++) {

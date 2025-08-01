@@ -1,14 +1,17 @@
 #ifndef _MESH_REF_LIST_H_
 #define _MESH_REF_LIST_H_
 #include "core.h"
+#include "../utils/dyli.h"
 
 typedef struct {
   MeshRefList **lists;
+  size_t capacity;
   size_t length;
 } MeshRefListArray;
 
 // creators
-MeshStatus mesh_ref_list_create(MeshRefList *, const size_t);
+DynamicListStatus mesh_ref_list_create(MeshRefList *, const size_t);
+DynamicListStatus mesh_ref_list_array_create(MeshRefListArray *, const size_t);
 Mesh *mesh_ref_list_insert(MeshRefList *, Mesh *);
 
 // destructors
@@ -17,12 +20,14 @@ void mesh_ref_list_empty(MeshRefList *);
 void mesh_ref_list_free(MeshRefList *);
 
 // transferts
-MeshStatus mesh_ref_list_transfert(const MeshRefList *, MeshRefList *, MeshRefList*);
+MeshStatus mesh_ref_list_transfert(const MeshRefList *, MeshRefList *,
+                                   MeshRefList *);
 MeshStatus mesh_ref_list_copy(const MeshRefList *, MeshRefList *);
+MeshStatus mesh_ref_list_array_copy(const MeshRefListArray *,
+                                    MeshRefListArray *);
 
 // utils
 Mesh *mesh_ref_list_find(const MeshRefList *, Mesh *);
-
 
 // debug
 void mesh_ref_list_print(MeshRefList *);

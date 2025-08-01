@@ -3,54 +3,37 @@
 #include "core.h"
 #include <string.h>
 
-MeshStatus mesh_ref_list_create(MeshRefList *list, const size_t capacity) {
+DynamicListStatus mesh_ref_list_create(MeshRefList *list,
+                                       const size_t capacity) {
 
-  list->entries = malloc(capacity * sizeof(Mesh *));
-  list->length = 0;
-  list->capacity = capacity;
+  return dyli_create((void *)&list->entries, &list->capacity, &list->length,
+                     sizeof(Mesh *), capacity, "Mesh reference list");
+}
 
-  if (list->entries == NULL) {
-    VERBOSE_ERROR("Couldn't allocate memory for mesh indexed list.");
-    return MeshStatus_AllocFail;
-  }
+DynamicListStatus mesh_ref_list_array_create(MeshRefListArray *list_array,
+                                             const size_t capacity) {
 
-  return MeshStatus_Success;
+  return dyli_create((void *)&list_array->lists, &list_array->capacity,
+                     &list_array->length, sizeof(MeshRefList *), capacity,
+                     "Mesh reference list array");
 }
 
 Mesh *mesh_ref_list_insert(MeshRefList *list, Mesh *mesh) {
 
-  // ADD MESH TO LIST
-  // eventually expand mesh vector if overflow
-  if (list->length == list->capacity) {
-    size_t new_capacity = list->capacity * 2;
-    Mesh **temp = realloc(list->entries, sizeof(Mesh *) * new_capacity);
+  if (dyli_insert((void *)&list->entries, &list->capacity, &list->length,
+                  sizeof(Mesh *), (void *)&mesh, 1,
+                  "Mesh Reference list") != DynamicListStatus_Success)
+    return NULL;
 
-    if (temp) {
-      list->entries = temp;
-      list->capacity = new_capacity;
-    } else {
-      VERBOSE_PRINT("Scene mesh list reached full capacity, could not "
-                    "reallocate new space\n");
-      return NULL;
-    }
-  }
-
-  list->entries[list->length] = mesh;
-  list->length++;
   return mesh;
 }
 
 void mesh_ref_list_empty(MeshRefList *list) {
-
-  memset(list->entries, 0, list->capacity * sizeof(Mesh *));
-  list->length = 0;
+  dyli_empty((void *)list->entries, &list->length, sizeof(Mesh *));
 }
 
 void mesh_ref_list_free(MeshRefList *list) {
-  free(list->entries);
-  list->entries = NULL;
-  list->capacity = 0;
-  list->length = 0;
+  dyli_free((void *)&list->entries, &list->capacity, &list->length);
 }
 
 /**
@@ -59,20 +42,8 @@ void mesh_ref_list_free(MeshRefList *list) {
    TODO: Maybe for bigger selection, need a more efficient/quick way.
  */
 void mesh_ref_list_remove(MeshRefList *list, Mesh *mesh) {
-
-  for (size_t i = 0; i < list->length; i++) {
-
-    if (list->entries[i]->id == mesh->id) {
-
-      if (i < list->length - 1) {
-        memmove(&list->entries[i], &list->entries[i + 1],
-                (list->length - i - 1) * sizeof(Mesh *));
-      }
-
-      list->length--;
-      break;
-    }
-  }
+  dyli_remove((void *)list->entries, &list->length, sizeof(Mesh *),
+              (void *)mesh, "Mesh reference list");
 }
 
 /**

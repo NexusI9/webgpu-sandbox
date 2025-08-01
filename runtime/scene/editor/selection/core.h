@@ -4,6 +4,7 @@
 #include "../../core.h"
 #include "emscripten/html5.h"
 
+
 typedef struct {
   Scene *scene;
 } SceneSelectionCallbackData;
@@ -11,7 +12,5 @@ typedef struct {
 void scene_selection_init(Scene *);
 
 void scene_selection_draw_callback(void *);
-
-
 
 #endif
