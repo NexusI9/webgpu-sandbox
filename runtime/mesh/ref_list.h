@@ -18,7 +18,7 @@ DynamicListStatus mesh_ref_list_array_create(MeshRefListArray *, const size_t);
 Mesh *mesh_ref_list_insert(MeshRefList *, Mesh *);
 
 // destructors
-void mesh_ref_list_remove(MeshRefList *, Mesh *);
+DynamicListStatus mesh_ref_list_remove(MeshRefList *, Mesh *);
 void mesh_ref_list_empty(MeshRefList *);
 void mesh_ref_list_free(MeshRefList *);
 

@@ -1,32 +1,56 @@
 #include "show.h"
+#include "core.h"
 
 /**
    Show the mesh by pushing it to the pipeline ref list
  */
-void scene_show_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
-  
+SceneStatus scene_show_mesh(Scene *scene, Mesh *mesh,
+                            const ScenePipeline pipeline) {
+
   // prevent duplicate
   if (mesh_ref_list_find(&scene->pipelines[pipeline], mesh) != NULL)
-    return;
-  
-  mesh_ref_list_insert(&scene->pipelines[pipeline], mesh);
+    return SceneStatus_MeshUnfound;
+
+  if (mesh_ref_list_insert(&scene->pipelines[pipeline], mesh) !=
+      DynamicListStatus_Success)
+    return SceneStatus_MeshInsertFail;
+
+  return SceneStatus_Success;
 }
 
 /**
    Hide the mesh by removing it from the pipelines ref list.
  */
-void scene_hide_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
+SceneStatus scene_hide_mesh(Scene *scene, Mesh *mesh,
+                            const ScenePipeline pipeline) {
   mesh_ref_list_remove(&scene->pipelines[pipeline], mesh);
+
+  return SceneStatus_Success;
 }
 
-void scene_show_mesh_ref_list(Scene *scene, MeshRefList *list,
-                                    const ScenePipeline pipeline) {
-  for (size_t i = 0; i < list->length; i++)
-    scene_show_mesh(scene, list->entries[i], pipeline);
+SceneStatus scene_show_mesh_ref_list(Scene *scene, MeshRefList *list,
+                                     const ScenePipeline pipeline) {
+
+  SceneStatus status = SceneStatus_Success;
+
+  for (size_t i = 0; i < list->length; i++) {
+    SceneStatus show = scene_show_mesh(scene, list->entries[i], pipeline);
+    if (show != SceneStatus_Success)
+      status = show;
+  }
+
+  return status;
 }
 
-void scene_hide_mesh_ref_list(Scene *scene, MeshRefList *list,
-                                    const ScenePipeline pipeline) {
-  for (size_t i = 0; i < list->length; i++)
-    scene_hide_mesh(scene, list->entries[i], pipeline);
+SceneStatus scene_hide_mesh_ref_list(Scene *scene, MeshRefList *list,
+                                     const ScenePipeline pipeline) {
+  SceneStatus status = SceneStatus_Success;
+
+  for (size_t i = 0; i < list->length; i++) {
+    SceneStatus show = scene_hide_mesh(scene, list->entries[i], pipeline);
+    if (show != SceneStatus_Success)
+      status = show;
+  }
+
+  return status;
 }

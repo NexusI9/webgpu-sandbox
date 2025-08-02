@@ -181,6 +181,7 @@ struct GizmoTransform {
     Vec3List selection_init_attribute;
     vec3 init_delta;
     float init_distance;
+    float init_inv_distance;
     vec3 axis_direction;
     InfinitePlane plane;
     vec3 gizmo_init_position;
@@ -206,7 +207,7 @@ void gizmo_transform_remove(GizmoTransform *, MeshRefList *);
 void gizmo_transform_translate(GizmoTransform *, vec3);
 void gizmo_transform_rotate(GizmoTransform *, vec3);
 
-void gizmo_transform_set_active(GizmoTransform *, const MeshRefListArray *,
+void gizmo_transform_set_active(GizmoTransform *, MeshRefList **, size_t,
                                 Camera *, Viewport *);
 
 void gizmo_transform_clear_active(GizmoTransform *);

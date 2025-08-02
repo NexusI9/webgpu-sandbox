@@ -2,6 +2,7 @@
 #include "../../show.h"
 #include "./selection.h"
 #include "./utils.h"
+#include "core.h"
 #include <stdint.h>
 
 void scene_selection_init_mouse_events(Scene *scene) {
@@ -25,17 +26,10 @@ void scene_selection_init_mouse_events(Scene *scene) {
   SceneLayer *exclude_layer =
       scene_layer_set_find(&scene->layers, SCENE_LAYER_UNSELECTABLE);
 
-  const uint8_t selection_rules_count = 2;
-
-  SceneSelectionRuleSet *refs_list[2] = {
-      // Mesh based rules
-      &scene->editor.selection.mesh_based,
-      // Shader based rules
-      &scene->editor.selection.shader_based,
-  };
+  SceneSelectionSet *refs_list = scene->editor.selection;
 
   // right click raycast on scene main camera (to select meshes)
-  for (size_t i = 0; i < selection_rules_count; i++) {
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
     camera_raycast(scene->active_camera,
                    &(CameraRaycastDescriptor){
                        .target = CameraRaycastTarget_MousePosition,
@@ -46,19 +40,19 @@ void scene_selection_init_mouse_events(Scene *scene) {
                        .data =
                            (void *)&(SceneSelectionCallbackData){
                                .scene = scene,
-                               .source = &refs_list[i]->source,
-                               .destination = refs_list[i]->destination,
+                               .source = &refs_list[i].source,
+                               .destination = refs_list[i].destination,
                            },
                        .size = sizeof(SceneSelectionCallbackData),
                        .include =
                            {
-                               .lists = refs_list[i]->include.entries,
-                               .length = refs_list[i]->include.length,
+                               .lists = refs_list[i].include.entries,
+                               .length = refs_list[i].include.length,
                            },
                        .exclude =
                            {
-                               .lists = refs_list[i]->exclude.entries,
-                               .length = refs_list[i]->exclude.length,
+                               .lists = refs_list[i].exclude.entries,
+                               .length = refs_list[i].exclude.length,
                            },
                    });
   }
@@ -195,16 +189,20 @@ void scene_selection_raycast_mesh_callback(
     // empty selection
     mesh_ref_list_empty(source_list);
     // hide from the scene
-    scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                             ScenePipeline_Fixed_Front);
+    // scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
+    //                         ScenePipeline_Fixed_Front);
   }
 
   // handle gizmo
-  if (source_list->length > 0) {
-
+  if (scene_selection_length(scene->editor.selection) > 0) {
     // get average position
-    scene_gizmo_transform_pos_to_selection(gizmo, source_list);
+    scene_gizmo_transform_pos_to_selection(gizmo, scene->editor.selection);
     scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
+                             ScenePipeline_Fixed_Front);
+  } else {
+    // hide from the scene
+
+    scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                              ScenePipeline_Fixed_Front);
   }
 
@@ -236,16 +234,10 @@ void scene_selection_raycast_gizmo_callback(
     gizmo_transform_set_axis_from_mesh(gizmo, hit);
 
     // set active handle from current mode and initialize offset
-    gizmo_transform_set_active(
-        gizmo,
-        &(MeshRefListArray){
-            .lists =
-                (MeshRefList *[2]){
-                    &scene->editor.selection.mesh_based.source,
-                    &scene->editor.selection.shader_based.source,
-                },
-            .length = 2,
-        },
-        scene->active_camera, &scene->viewport);
+    MeshRefList *list[SCENE_SELECTION_TYPE_COUNT];
+    size_t length;
+    scene_selection_meshes_lists(scene->editor.selection, list, &length);
+    gizmo_transform_set_active(gizmo, list, length, scene->active_camera,
+                               &scene->viewport);
   }
 }

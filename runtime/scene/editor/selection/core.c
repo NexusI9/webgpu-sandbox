@@ -73,7 +73,7 @@ void scene_selection_init_rules(Scene *scene) {
 
    */
 
-  SceneSelectionRuleSet *mesh_rules = &scene->editor.selection.mesh_based;
+  SceneSelectionSet *mesh_rules = &scene->editor.selection[SceneSelectionType_Mesh];
 
   // include
   mesh_rules->include.entries[0] = &scene->pipelines[ScenePipeline_Dynamic_Lit];
@@ -99,7 +99,7 @@ void scene_selection_init_rules(Scene *scene) {
 
    */
 
-  SceneSelectionRuleSet *shader_rules = &scene->editor.selection.shader_based;
+  SceneSelectionSet *shader_rules = &scene->editor.selection[SceneSelectionType_Shader];
 
   // include
   shader_rules->include.entries[0] = &scene->pipelines[ScenePipeline_Fixed];
@@ -118,3 +118,4 @@ void scene_selection_init_rules(Scene *scene) {
   // pipeline)
   shader_rules->destination = NULL;
 }
+

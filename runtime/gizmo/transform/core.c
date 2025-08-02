@@ -137,7 +137,7 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
 
  */
 void gizmo_transform_set_active(GizmoTransform *gizmo,
-                                const MeshRefListArray *selected_meshes,
+                                MeshRefList **selected_meshes, size_t length,
                                 Camera *camera, Viewport *viewport) {
 
   // cache gizmo init position
@@ -153,9 +153,8 @@ void gizmo_transform_set_active(GizmoTransform *gizmo,
   }
 
   // transfering and merging selection meshes to gizmo cached selection
-  for (size_t i = 0; i < selected_meshes->length; i++)
-    mesh_ref_list_transfert(selected_meshes->lists[i], &gizmo->cache.selection,
-                            NULL);
+  for (size_t i = 0; i < length; i++)
+    mesh_ref_list_transfert(selected_meshes[i], &gizmo->cache.selection, NULL);
 
   // cache all meshes initial attribute based on gizmo mode (pos/rot/scale)
   for (size_t i = 0; i < gizmo->cache.selection.length; i++) {
@@ -185,6 +184,9 @@ void gizmo_transform_set_active(GizmoTransform *gizmo,
   // define init distance
   gizmo->cache.init_distance = glm_vec3_distance(
       gizmo->cache.gizmo_init_position, gizmo->cache.init_delta);
+
+  // cache inverted distance (since div is expensive)
+  gizmo->cache.init_inv_distance = 1.0f / gizmo->cache.init_distance;
 
   // rotation => angle based, so need to project ray to an infinite plane
   if (gizmo->mode == GizmoTransformMode_Rotate) {

@@ -41,8 +41,8 @@ void mesh_ref_list_free(MeshRefList *list) {
    Use linear probing with ID comparison.
    TODO: Maybe for bigger selection, need a more efficient/quick way.
  */
-void mesh_ref_list_remove(MeshRefList *list, Mesh *mesh) {
-  dyli_remove((void *)list->entries, &list->length, sizeof(Mesh *),
+DynamicListStatus mesh_ref_list_remove(MeshRefList *list, Mesh *mesh) {
+  return dyli_remove((void *)list->entries, &list->length, sizeof(Mesh *),
               (void *)mesh, "Mesh reference list");
 }
 

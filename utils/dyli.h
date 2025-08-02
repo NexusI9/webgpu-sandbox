@@ -7,6 +7,7 @@
 typedef enum {
   DynamicListStatus_Success,
   DynamicListStatus_AllocFail,
+  DynamicListStatus_UnfoundEntry,
   DynamicListStatus_UndefError,
 } DynamicListStatus;
 

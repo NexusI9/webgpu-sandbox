@@ -54,7 +54,8 @@ void gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera,
     // calculate offset distance and replace delta
     float dist =
         glm_vec3_distance(gizmo->cache.gizmo_init_position, projected_position);
-    float delta_dist = (dist - gizmo->cache.init_distance) / gizmo->cache.init_distance;
+    float delta_dist =
+        (dist - gizmo->cache.init_distance) * gizmo->cache.init_inv_distance;
 
     glm_vec3_copy((vec3){delta_dist, delta_dist, delta_dist}, gizmo_delta);
   } else {

@@ -14,5 +14,4 @@ void scene_selection_init(Scene *);
 
 void scene_selection_draw_callback(void *);
 
-
 #endif

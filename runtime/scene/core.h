@@ -15,14 +15,7 @@
 #define SCENE_CAMERA_LIST_CAPACITY 16
 #define SCENE_PIPELINE_COUNT 7
 #define SCENE_SELECTION_LIST_CAPACITY 3
-
-typedef enum {
-  SceneStatus_Success,
-  SceneStatus_MaxCapacityReach,
-  SceneStatus_AllocFail,
-} SceneStatus;
-
-typedef uint8_t shader_bind_t;
+#define SCENE_SELECTION_TYPE_COUNT 2
 
 // due to depth test, need to write fully solid mesh first and then
 // transparent meshes
@@ -80,6 +73,17 @@ typedef uint8_t shader_bind_t;
 
  */
 
+typedef enum {
+  SceneStatus_Success,
+  SceneStatus_MaxCapacityReach,
+  SceneStatus_AllocFail,
+  SceneStatus_MeshUnfound,
+  SceneStatus_MeshInsertFail,
+  SceneStatuc_UndefError,
+} SceneStatus;
+
+typedef uint8_t shader_bind_t;
+
 typedef struct Scene Scene;
 
 typedef enum {
@@ -107,18 +111,17 @@ typedef struct {
   // reference list for mesh to be added on selection
   MeshRefList source;
   MeshRefList *destination; // optional
-} SceneSelectionRuleSet;
+} SceneSelectionSet;
+
+typedef enum {
+  SceneSelectionType_Mesh,
+  SceneSelectionType_Shader,
+} SceneSelectionType;
 
 typedef struct {
-  // mesh based selection (for mesh with outline pass)
-  SceneSelectionRuleSet mesh_based;
-  // shader based selection (for mesh with uniform highlight boolean)
-  SceneSelectionRuleSet shader_based;
-} SceneSelection;
 
-typedef struct {
-
-  SceneSelection selection; // selection interface
+  // selection sets
+  SceneSelectionSet selection[SCENE_SELECTION_TYPE_COUNT];
 
   struct {
     GizmoList list;           // gizmo lists
