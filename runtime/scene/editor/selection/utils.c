@@ -3,22 +3,13 @@
 /**
    Add mesh to the selection list
  */
-void scene_selection_add(Scene *scene, Mesh *mesh) {
+void scene_selection_add(MeshRefList *list, Mesh *mesh) {
 
   // only add if mesh not already exists
-  if (mesh_ref_list_find(&scene->pipelines[ScenePipeline_Fixed_Selection],
-                         mesh) == NULL)
-    mesh_ref_list_insert(&scene->pipelines[ScenePipeline_Fixed_Selection],
-                         mesh);
+  if (mesh_ref_list_find(list, mesh) == NULL)
+    mesh_ref_list_insert(list, mesh);
 }
 
-/**
-   Remove mesh from the selection.
- */
-void scene_selection_remove(Scene *scene, Mesh *mesh) {
-
-  mesh_ref_list_remove(&scene->pipelines[ScenePipeline_Fixed_Selection], mesh);
-}
 
 /**
    Set the gizmo active handle to NULL which acts as a trigger.
@@ -54,27 +45,10 @@ void scene_gizmo_transform_hide(Scene *scene) {
 /**
    Get the selection average position (used to translate the gizmo)
  */
-void scene_selection_average_position(Scene *scene, vec3 *dest) {
+void scene_gizmo_transform_pos_to_selection(GizmoTransform* gizmo, MeshRefList* list) {
 
-  MeshRefList *selection = &scene->pipelines[ScenePipeline_Fixed_Selection];
-
-  glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, *dest);
-
-  if (selection->length == 0)
-    return;
-
-  for (size_t i = 0; i < selection->length; i++)
-    glm_vec3_add(selection->entries[i]->position, *dest, *dest);
-
-  glm_vec3_scale(*dest, 1.0f / selection->length, *dest);
-}
-
-void scene_gizmo_transform_pos_to_selection(Scene *scene) {
-  
-  GizmoTransform *gizmo = &scene->editor.gizmo.transform;
-  
   // get average position
   vec3 position;
-  scene_selection_average_position(scene, &position);
+  mesh_ref_list_average_position(list, &position);
   gizmo_transform_translate(gizmo, position);
 }

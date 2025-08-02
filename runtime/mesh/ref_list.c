@@ -52,7 +52,7 @@ void mesh_ref_list_remove(MeshRefList *list, Mesh *mesh) {
 Mesh *mesh_ref_list_find(const MeshRefList *list, Mesh *mesh) {
 
   for (size_t i = 0; i < list->length; i++)
-    if (list->entries[i]->id == mesh->id)
+    if (list->entries[i] == mesh)
       return list->entries[i];
 
   return NULL;
@@ -132,4 +132,17 @@ void mesh_ref_list_print(MeshRefList *list) {
 
   for (size_t i = 0; i < list->length; i++)
     VERBOSE_DEBUG("[%p] %s", list->entries[i], list->entries[i]->name);
+}
+
+void mesh_ref_list_average_position(MeshRefList *list, vec3 *dest) {
+
+  glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, *dest);
+
+  if (list->length == 0)
+    return;
+
+  for (size_t i = 0; i < list->length; i++)
+    glm_vec3_add(list->entries[i]->position, *dest, *dest);
+
+  glm_vec3_scale(*dest, 1.0f / list->length, *dest);
 }

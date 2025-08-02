@@ -58,6 +58,7 @@ DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
       return DynamicListStatus_UndefError;
   }
 
+
   void *target = (char *)(*entries) + (*length * type_size);
   memcpy(target, entry, type_size * count);
   *length += count;

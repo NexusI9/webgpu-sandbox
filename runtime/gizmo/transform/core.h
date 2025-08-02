@@ -60,7 +60,7 @@
       .-------------------.
       | Add Mesh to Scene |
       |  Selection List   |                    HTML EVENTS
-      '-------------------'                
+      '-------------------'
                 |            .----------------------. .-----------------------.
                 |            |    Click on Handle   | |     Press hotkey      |
                 |            '----------.-----------' '-----------.-----------'
@@ -93,7 +93,7 @@
                                     |  ▲    GIZMO TRANSFORM LOOP      ▼  |
                                     |  '------------------------------   |
                                     '------------------------------------'
- */                                 
+ */
 
 typedef struct GizmoTransform GizmoTransform;
 
@@ -206,8 +206,8 @@ void gizmo_transform_remove(GizmoTransform *, MeshRefList *);
 void gizmo_transform_translate(GizmoTransform *, vec3);
 void gizmo_transform_rotate(GizmoTransform *, vec3);
 
-void gizmo_transform_set_active(GizmoTransform *, const MeshRefList *, Camera *,
-                                Viewport *);
+void gizmo_transform_set_active(GizmoTransform *, const MeshRefListArray *,
+                                Camera *, Viewport *);
 
 void gizmo_transform_clear_active(GizmoTransform *);
 

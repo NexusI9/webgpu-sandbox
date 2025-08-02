@@ -48,7 +48,7 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
                     });
 
   scene_add_mesh(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
-                 SCENE_LAYER_GIZMO_UNSELECTABLE);
+                 SCENE_LAYER_UNSELECTABLE);
 }
 
 /**

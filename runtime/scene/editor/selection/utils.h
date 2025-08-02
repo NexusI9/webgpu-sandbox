@@ -4,13 +4,12 @@
 #include "../../core.h"
 
 /* Scene utils */
-void scene_selection_add(Scene *, Mesh *);
-void scene_selection_remove(Scene *, Mesh *);
+void scene_selection_add(MeshRefList *, Mesh *);
 void scene_selection_average_position(Scene *, vec3 *);
 
 /* Gizmo utils */
-void scene_gizmo_transform_pos_to_selection(Scene*);
-void scene_gizmo_transform_show(Scene*);
-void scene_gizmo_transform_hide(Scene*);
+void scene_gizmo_transform_pos_to_selection(GizmoTransform *, MeshRefList *);
+void scene_gizmo_transform_show(Scene *);
+void scene_gizmo_transform_hide(Scene *);
 
 #endif

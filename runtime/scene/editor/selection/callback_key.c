@@ -149,42 +149,56 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
 
   Scene *scene = (Scene *)data;
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
-  MeshRefList *selection_list =
-      &scene->pipelines[ScenePipeline_Fixed_Selection];
 
-  // if already selection => unselect everything
-  if (selection_list->length) {
-    // empty selection
-    mesh_ref_list_empty(selection_list);
-    // hide from the scene
-    scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                             ScenePipeline_Fixed_Front);
+  // get selection methods to dispatch each mesh in the right
+  SceneSelectionRuleSet *rules[2] = {
+      &scene->editor.selection.mesh_based,
+      &scene->editor.selection.shader_based,
+  };
 
-  }
-  // else select everything
-  else {
+  // empty gizmo current selection (will merge all meshes after)
+  mesh_ref_list_empty(&gizmo->cache.selection);
 
-    // Empty slection list first for safety
-    mesh_ref_list_empty(selection_list);
+  for (size_t i = 0; i < 2; i++) {
 
-    SceneLayer *exclude =
-        scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_UNSELECTABLE);
+    SceneSelectionRuleSet *rule = rules[i];
+    MeshRefList *current_selection = &rule->source;
 
-    // Transfert all meshes from selectable pipeline
-    // TODO: Unify the way we define the selectable pipelines
-    mesh_ref_list_transfert(&scene->pipelines[ScenePipeline_Dynamic_Lit],
-                            selection_list, &exclude->meshes);
+    // if already selection => unselect everything
+    if (current_selection->length) {
+      // empty selection
+      mesh_ref_list_empty(current_selection);
+      // hide gizmo from the scene
+      scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
+                               ScenePipeline_Fixed_Front);
 
-    mesh_ref_list_transfert(&scene->pipelines[ScenePipeline_Dynamic_Unlit],
-                            selection_list, &exclude->meshes);
+    }
+    // else select everything
+    else {
 
-    mesh_ref_list_transfert(&scene->pipelines[ScenePipeline_Dynamic_Lit],
-                            selection_list, &exclude->meshes);
+      // Empty slection list first for safety
+      mesh_ref_list_empty(current_selection);
 
-    // show gizmo
-    scene_gizmo_transform_pos_to_selection(scene);
-    scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                             ScenePipeline_Fixed_Front);
+      SceneLayer *exclude =
+          scene_layer_set_find(&scene->layers, SCENE_LAYER_UNSELECTABLE);
+
+      // Transfert all meshes from included mesh reference lists
+
+      for (size_t j = 0; j < rule->include.length; j++)
+        mesh_ref_list_transfert(rule->include.entries[j], current_selection,
+                                &exclude->meshes);
+
+      // transfert to destination list (if any)
+      if (rule->destination) {
+        mesh_ref_list_empty(rule->destination);
+        mesh_ref_list_transfert(current_selection, rule->destination, NULL);
+      }
+
+      // show gizmo
+      scene_gizmo_transform_pos_to_selection(gizmo, current_selection);
+      scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
+                               ScenePipeline_Fixed_Front);
+    }
   }
 }
 
@@ -193,8 +207,6 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
 
   Scene *scene = (Scene *)data;
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
-  MeshRefList *selection_list =
-      &scene->pipelines[ScenePipeline_Fixed_Selection];
 
   // hide gizmo
   scene_gizmo_transform_hide(scene);
@@ -206,9 +218,9 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
       gizmo->mode = selection_key_sequences_mode[i].mode;
 
   // show gizmo if has selection
-  if (selection_list->length) {
+  if (gizmo->cache.selection.length) {
     // update location to selection average
-    scene_gizmo_transform_pos_to_selection(scene);
+    scene_gizmo_transform_pos_to_selection(gizmo, &gizmo->cache.selection);
     scene_gizmo_transform_show(scene);
   }
 }
@@ -244,11 +256,19 @@ void scene_selection_key_sequence_callback_transform(
       gizmo->axis = key_seq_axis;
 
       // set gizmo position to center of selection
-      scene_gizmo_transform_pos_to_selection(scene);
+      scene_gizmo_transform_pos_to_selection(gizmo, &gizmo->cache.selection);
 
       // set active handle from current mode and initialize offset
       gizmo_transform_set_active(
-          gizmo, &scene->pipelines[ScenePipeline_Fixed_Selection],
+          gizmo,
+          &(MeshRefListArray){
+              .lists =
+                  (MeshRefList *[2]){
+                      &scene->editor.selection.mesh_based.source,
+                      &scene->editor.selection.shader_based.source,
+                  },
+              .length = 2,
+          },
           scene->active_camera, &scene->viewport);
     }
   }

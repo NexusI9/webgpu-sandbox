@@ -58,7 +58,7 @@ void camera_raycast_check_bounds(
         camera_raycast_screen_space(cam_desc->camera, mesh,
                                     cam_desc->screen_space_size, &boundbox);
 
-      /*
+      /* DELETEME
       printf("hit box:");
       printf("%s\n", mesh->name);
       print_vec3(boundbox.min);

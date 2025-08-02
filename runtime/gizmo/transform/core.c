@@ -137,7 +137,7 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
 
  */
 void gizmo_transform_set_active(GizmoTransform *gizmo,
-                                const MeshRefList *selected_meshes,
+                                const MeshRefListArray *selected_meshes,
                                 Camera *camera, Viewport *viewport) {
 
   // cache gizmo init position
@@ -152,12 +152,14 @@ void gizmo_transform_set_active(GizmoTransform *gizmo,
     vec_world_axis(gizmo->axis, &gizmo->cache.axis_direction);
   }
 
-  // update selection
-  mesh_ref_list_transfert(selected_meshes, &gizmo->cache.selection, NULL);
+  // transfering and merging selection meshes to gizmo cached selection
+  for (size_t i = 0; i < selected_meshes->length; i++)
+    mesh_ref_list_transfert(selected_meshes->lists[i], &gizmo->cache.selection,
+                            NULL);
 
   // cache all meshes initial attribute based on gizmo mode (pos/rot/scale)
-  for (size_t i = 0; i < selected_meshes->length; i++) {
-    Mesh *mesh = selected_meshes->entries[i];
+  for (size_t i = 0; i < gizmo->cache.selection.length; i++) {
+    Mesh *mesh = gizmo->cache.selection.entries[i];
     vec3 attribute;
     mesh_transform_attribute[gizmo->mode](mesh, &attribute);
     vec3_list_insert(&gizmo->cache.selection_init_attribute, attribute);

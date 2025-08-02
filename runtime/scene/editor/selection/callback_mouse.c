@@ -2,6 +2,7 @@
 #include "../../show.h"
 #include "./selection.h"
 #include "./utils.h"
+#include <stdint.h>
 
 void scene_selection_init_mouse_events(Scene *scene) {
 
@@ -16,41 +17,51 @@ void scene_selection_init_mouse_events(Scene *scene) {
      3. Add a draw callback: to poll mouse events and loop through selection to
      apply transform.
 
-     4. Add a html event on mouse up: reset axis to -1
+     4. Add a html event on mouse up
 
    */
 
   // cache selection exclude layer (ex: grid...)
   SceneLayer *exclude_layer =
-      scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_UNSELECTABLE);
+      scene_layer_set_find(&scene->layers, SCENE_LAYER_UNSELECTABLE);
+
+  const uint8_t selection_rules_count = 2;
+
+  SceneSelectionRuleSet *refs_list[2] = {
+      // Mesh based rules
+      &scene->editor.selection.mesh_based,
+      // Shader based rules
+      &scene->editor.selection.shader_based,
+  };
 
   // right click raycast on scene main camera (to select meshes)
-  camera_raycast(
-      scene->active_camera,
-      &(CameraRaycastDescriptor){
-          .target = CameraRaycastTarget_MousePosition,
-          .event = CameraRaycastEvent_MouseDown,
-          .space = CameraRaycastSpace_WorldSpace,
-          .include =
-              {
-                  .lists =
-                      (MeshRefList *[]){
-                          &scene->pipelines[ScenePipeline_Dynamic_Lit],
-                          &scene->pipelines[ScenePipeline_Dynamic_Unlit],
-                          &scene->pipelines[ScenePipeline_Fixed],
-                      },
-                  .length = 3,
-              },
-          .exclude =
-              {
-                  .lists = (MeshRefList *[]){&exclude_layer->meshes},
-                  .length = 1,
-              },
-          .viewport = &scene->viewport,
-          .callback = scene_selection_raycast_mesh_callback,
-          .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
-          .size = sizeof(SceneSelectionCallbackData),
-      });
+  for (size_t i = 0; i < selection_rules_count; i++) {
+    camera_raycast(scene->active_camera,
+                   &(CameraRaycastDescriptor){
+                       .target = CameraRaycastTarget_MousePosition,
+                       .event = CameraRaycastEvent_MouseDown,
+                       .space = CameraRaycastSpace_WorldSpace,
+                       .viewport = &scene->viewport,
+                       .callback = scene_selection_raycast_mesh_callback,
+                       .data =
+                           (void *)&(SceneSelectionCallbackData){
+                               .scene = scene,
+                               .source = &refs_list[i]->source,
+                               .destination = refs_list[i]->destination,
+                           },
+                       .size = sizeof(SceneSelectionCallbackData),
+                       .include =
+                           {
+                               .lists = refs_list[i]->include.entries,
+                               .length = refs_list[i]->include.length,
+                           },
+                       .exclude =
+                           {
+                               .lists = refs_list[i]->exclude.entries,
+                               .length = refs_list[i]->exclude.length,
+                           },
+                   });
+  }
 
   // left click raycast on scene main camera (to select gizmo transform)
   SceneLayer *gizmo_layer =
@@ -106,6 +117,44 @@ void scene_selection_init_mouse_events(Scene *scene) {
    Define the logic for the selection process such as:
    - Adding / Removing meshes from the selection pipeline
    - Showing / Hidding the transform gizmo based on hit length
+
+    1. Manipulate each method (mesh/ shader) source list
+    2. If method has a destination then transfert source -> destination
+    3. Merge both method source list to gizmo selection
+
+     Mesh based highlight                 Shader based highlight
+      .---------------.                      .---------------.
+      |  Source list  |                      |  Source list  |
+      '-------.-------'                      '-------.-------'
+              |                                      |
+      [[ Push / Pop  ]] ---------.---------- [[ Push / Pop  ]]
+              |                  |                   |
+          copy to                |           .-------'-------.
+              |                  |           |    Update     |
+      .-------'------.           |           | Uniform flag  |
+      | Destination  |           |           '---------------'
+      |  (pipeline)  |           |
+      '------.-------'           |
+             |                   |
+      .--------------.           |
+      | Render Pass  |           |
+      | (Highlight)  |	         |
+      '--------------'           |
+                                 |
+                                 |
+                                 |
+                      Gizmo Selection list (merge)
+                                 |
+              .-- array ---------|--------------------.
+              | Mesh Source List + Shader Source List |
+              '------------------|--------------------'
+                                 |
+              .------------------'--------------------.
+              |   --------------------------------.   |
+              |  ▲     Gizmo Transform Loop       ▼   |
+              |  '--------------------------------    |
+              '---------------------------------------'
+
  */
 void scene_selection_raycast_mesh_callback(
     CameraRaycastCallback *cast_data, const EmscriptenMouseEvent *mouseEvent,
@@ -115,8 +164,8 @@ void scene_selection_raycast_mesh_callback(
       (SceneSelectionCallbackData *)user_data;
 
   Scene *scene = cast_user_data->scene;
-  MeshRefList *selection_list =
-      &scene->pipelines[ScenePipeline_Fixed_Selection];
+  MeshRefList *source_list = cast_user_data->source;
+  MeshRefList *destination_list = cast_user_data->destination;
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
   // else retrieve first hit only (closest to camera)
@@ -128,37 +177,41 @@ void scene_selection_raycast_mesh_callback(
     // cap + right click : remove selection if exist, add if not
     if (mouseEvent->shiftKey && mouseEvent->button == 2) {
 
-      Mesh *already_selected = mesh_ref_list_find(selection_list, hit->mesh);
+      Mesh *already_selected = mesh_ref_list_find(source_list, hit->mesh);
 
-      if (already_selected == NULL) {
-        scene_selection_add(scene, hit->mesh);
-      } else {
-        scene_selection_remove(scene, hit->mesh);
-      }
+      if (already_selected == NULL)
+        scene_selection_add(source_list, hit->mesh);
+      else
+        mesh_ref_list_remove(source_list, hit->mesh);
 
     }
     // right click : add to selection
     else if (mouseEvent->button == 2) {
       // clear selection and add new one
-      mesh_ref_list_empty(selection_list);
-      scene_selection_add(scene, hit->mesh);
+      mesh_ref_list_empty(source_list);
+      scene_selection_add(source_list, hit->mesh);
     }
   } else {
     // empty selection
-    mesh_ref_list_empty(selection_list);
+    mesh_ref_list_empty(source_list);
     // hide from the scene
     scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                              ScenePipeline_Fixed_Front);
   }
 
   // handle gizmo
-  if (selection_list->length > 0) {
+  if (source_list->length > 0) {
 
     // get average position
-    scene_gizmo_transform_pos_to_selection(scene);
-
+    scene_gizmo_transform_pos_to_selection(gizmo, source_list);
     scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                              ScenePipeline_Fixed_Front);
+  }
+
+  // transfert source to destination
+  if (destination_list) {
+    mesh_ref_list_empty(destination_list);
+    mesh_ref_list_transfert(source_list, destination_list, NULL);
   }
 }
 
@@ -183,8 +236,16 @@ void scene_selection_raycast_gizmo_callback(
     gizmo_transform_set_axis_from_mesh(gizmo, hit);
 
     // set active handle from current mode and initialize offset
-    gizmo_transform_set_active(gizmo,
-                               &scene->pipelines[ScenePipeline_Fixed_Selection],
-                               scene->active_camera, &scene->viewport);
+    gizmo_transform_set_active(
+        gizmo,
+        &(MeshRefListArray){
+            .lists =
+                (MeshRefList *[2]){
+                    &scene->editor.selection.mesh_based.source,
+                    &scene->editor.selection.shader_based.source,
+                },
+            .length = 2,
+        },
+        scene->active_camera, &scene->viewport);
   }
 }

@@ -10,6 +10,7 @@ void scene_selection_raycast_mesh_callback(CameraRaycastCallback *,
                                            const EmscriptenMouseEvent *,
                                            void *);
 
+
 void scene_selection_raycast_gizmo_callback(CameraRaycastCallback *,
                                             const EmscriptenMouseEvent *,
                                             void *);

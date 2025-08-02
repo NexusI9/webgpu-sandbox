@@ -8,11 +8,13 @@
 #include "../gizmo/transform/transform.h"
 #include "./layer.h"
 #include "webgpu/webgpu.h"
+#include <stddef.h>
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
 #define SCENE_PIPELINE_COUNT 7
+#define SCENE_SELECTION_LIST_CAPACITY 3
 
 typedef enum {
   SceneStatus_Success,
@@ -78,6 +80,8 @@ typedef uint8_t shader_bind_t;
 
  */
 
+typedef struct Scene Scene;
+
 typedef enum {
   // Dynamic
   ScenePipeline_Dynamic_Background,
@@ -90,28 +94,31 @@ typedef enum {
   ScenePipeline_Fixed_UI,
 } ScenePipeline;
 
+typedef struct {
+  MeshRefList *entries[SCENE_SELECTION_LIST_CAPACITY];
+  size_t length;
+} SceneSelectionRefList;
 
 typedef struct {
+  // mesh lists to be included for selection
+  SceneSelectionRefList include;
+  // mesh lists to be excluded for selection
+  SceneSelectionRefList exclude;
+  // reference list for mesh to be added on selection
+  MeshRefList source;
+  MeshRefList *destination; // optional
+} SceneSelectionRuleSet;
 
+typedef struct {
   // mesh based selection (for mesh with outline pass)
-  struct {
-    MeshRefListArray include; // mesh lists to be included for selection
-    MeshRefListArray exclude; // mesh lists to be excluded for selection
-    MeshRefList output;       // pipeline for mesh to be added on selection
-  } mesh_based;
-
+  SceneSelectionRuleSet mesh_based;
   // shader based selection (for mesh with uniform highlight boolean)
-  struct {
-    MeshRefListArray include; // mesh lists to be included for selection
-    MeshRefListArray exclude; // mesh lists to be excluded for selection
-  } shader_based;
-
+  SceneSelectionRuleSet shader_based;
 } SceneSelection;
 
-
 typedef struct {
 
-  SceneSelection selection;
+  SceneSelection selection; // selection interface
 
   struct {
     GizmoList list;           // gizmo lists
@@ -119,13 +126,9 @@ typedef struct {
     Mesh *grid;               // grid gizmo (unique)
   } gizmo;
 
-  struct {
-
-  } ui;
-
 } SceneEditor;
 
-typedef struct {
+struct Scene {
 
   id_t id;
 
@@ -150,8 +153,7 @@ typedef struct {
   // will be never seen or used in actually "Game" mode
   SceneEditor editor;
   SceneRenderer renderer;
-
-} Scene;
+};
 
 typedef struct {
   cclock *clock;

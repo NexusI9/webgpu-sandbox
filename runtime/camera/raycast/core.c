@@ -81,7 +81,7 @@ void camera_raycast_create_event(Camera *cam,
   }
 
   // === ALLOCATE USER DATA ===
-  void *alloc_data = malloc(sizeof(desc->size));
+  void *alloc_data = malloc(desc->size);
   if (alloc_data == NULL) {
     VERBOSE_ERROR("Couldn't allocate camera raycast 'data'\n");
     return;

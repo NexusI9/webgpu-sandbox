@@ -6,18 +6,17 @@
 #define SCENE_LAYER_CAPACITY 16
 #define SCENE_LAYER_SET_CAPACITY 128
 
-typedef enum{
+typedef enum {
   SceneLayerStatus_Success,
   SceneLayerStatus_AllocFail,
   SceneLayerStatus_SetUnfound,
   SceneLayerStatus_UnderError,
 } SceneLayerStatus;
 
-
 static const char *const SCENE_LAYER_DEFAULT = "Default";
 static const char *const SCENE_LAYER_GIZMO_TRANSFORM = "Gizmo Transform";
 static const char *const SCENE_LAYER_GIZMO_SELECTABLE = "Gizmo Selectable";
-static const char *const SCENE_LAYER_GIZMO_UNSELECTABLE = "Gizmo Unselectable";
+static const char *const SCENE_LAYER_UNSELECTABLE = "Unselectable";
 
 typedef struct {
   char *name;
@@ -45,8 +44,9 @@ SceneLayer *scene_layer_set_find(SceneLayerSet *, const char *);
 int scene_layer_set_delete(SceneLayerSet *, const char *);
 void scene_layer_set_free(SceneLayerSet *);
 Mesh *scene_layer_set_insert_mesh(SceneLayerSet *, const char *, Mesh *);
-void scene_layer_set_insert_mesh_ref_list(SceneLayerSet *, const char *, MeshRefList *);
+void scene_layer_set_insert_mesh_ref_list(SceneLayerSet *, const char *,
+                                          MeshRefList *);
 
 /*Utils*/
-void scene_layer_set_print_layer(SceneLayerSet *, const char*);
+void scene_layer_set_print_layer(SceneLayerSet *, const char *);
 #endif
