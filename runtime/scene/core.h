@@ -78,6 +78,7 @@ typedef enum {
   SceneStatus_MaxCapacityReach,
   SceneStatus_AllocFail,
   SceneStatus_MeshUnfound,
+  SceneStatus_MeshAlreadyExists,
   SceneStatus_MeshInsertFail,
   SceneStatuc_UndefError,
 } SceneStatus;

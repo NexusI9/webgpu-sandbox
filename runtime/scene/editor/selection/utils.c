@@ -1,5 +1,6 @@
 #include "./utils.h"
 #include "../../show.h"
+#include <stdint.h>
 /**
    Add mesh to the selection list
  */
@@ -54,7 +55,7 @@ void scene_gizmo_transform_pos_to_selection(GizmoTransform *gizmo,
   size_t length;
   scene_selection_meshes_lists(selection, list, &length);
 
-  size_t denom = 1;
+  uint8_t denom = 0;
 
   for (size_t i = 0; i < length; i++) {
     vec3 list_avg;
@@ -64,7 +65,7 @@ void scene_gizmo_transform_pos_to_selection(GizmoTransform *gizmo,
       denom++;
   }
 
-  glm_vec3_scale(position, 1.0f / denom, position);
+  glm_vec3_scale(position, 1.0f / glm_max(denom, 1), position);
 
   gizmo_transform_translate(gizmo, position);
 }

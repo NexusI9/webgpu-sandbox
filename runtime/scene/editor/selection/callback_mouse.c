@@ -188,9 +188,6 @@ void scene_selection_raycast_mesh_callback(
   } else {
     // empty selection
     mesh_ref_list_empty(source_list);
-    // hide from the scene
-    // scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-    //                         ScenePipeline_Fixed_Front);
   }
 
   // handle gizmo
@@ -201,7 +198,6 @@ void scene_selection_raycast_mesh_callback(
                              ScenePipeline_Fixed_Front);
   } else {
     // hide from the scene
-
     scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                              ScenePipeline_Fixed_Front);
   }

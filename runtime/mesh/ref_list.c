@@ -43,7 +43,7 @@ void mesh_ref_list_free(MeshRefList *list) {
  */
 DynamicListStatus mesh_ref_list_remove(MeshRefList *list, Mesh *mesh) {
   return dyli_remove((void *)list->entries, &list->length, sizeof(Mesh *),
-              (void *)mesh, "Mesh reference list");
+              (void *)&mesh, "Mesh reference list");
 }
 
 /**

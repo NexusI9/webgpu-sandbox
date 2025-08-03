@@ -9,10 +9,13 @@ SceneStatus scene_show_mesh(Scene *scene, Mesh *mesh,
 
   // prevent duplicate
   if (mesh_ref_list_find(&scene->pipelines[pipeline], mesh) != NULL)
-    return SceneStatus_MeshUnfound;
+    return SceneStatus_MeshAlreadyExists;
 
-  if (mesh_ref_list_insert(&scene->pipelines[pipeline], mesh) !=
-      DynamicListStatus_Success)
+  printf("show mesh\n");
+  Mesh *insert = mesh_ref_list_insert(&scene->pipelines[pipeline], mesh);
+
+  printf("insert mesh: %p\n", insert);
+  if (insert == NULL)
     return SceneStatus_MeshInsertFail;
 
   return SceneStatus_Success;
@@ -23,8 +26,10 @@ SceneStatus scene_show_mesh(Scene *scene, Mesh *mesh,
  */
 SceneStatus scene_hide_mesh(Scene *scene, Mesh *mesh,
                             const ScenePipeline pipeline) {
-  mesh_ref_list_remove(&scene->pipelines[pipeline], mesh);
+  DynamicListStatus remove =
+      mesh_ref_list_remove(&scene->pipelines[pipeline], mesh);
 
+  printf("[%p] hide: %d\n", mesh, remove);
   return SceneStatus_Success;
 }
 
