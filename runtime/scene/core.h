@@ -14,7 +14,7 @@
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
 #define SCENE_PIPELINE_COUNT 7
-#define SCENE_SELECTION_LIST_CAPACITY 3
+#define SCENE_SELECTION_LIST_CAPACITY 6
 #define SCENE_SELECTION_TYPE_COUNT 2
 
 // due to depth test, need to write fully solid mesh first and then
@@ -110,9 +110,17 @@ typedef struct {
   // mesh lists to be excluded for selection
   SceneSelectionRefList exclude;
   // reference list for mesh to be added on selection
-  MeshRefList source;
-  MeshRefList *destination; // optional
-} SceneSelectionSet;
+  MeshRefList selection;
+  MeshRefList *transfert; // optional
+} SceneSelectionFilter;
+
+typedef struct {
+  SceneSelectionFilter filters[SCENE_SELECTION_TYPE_COUNT];
+  // mesh lists to be included for selection
+  SceneSelectionRefList include;
+  // mesh lists to be excluded for selection
+  SceneSelectionRefList exclude;
+} SceneSelection;
 
 typedef enum {
   SceneSelectionType_Mesh,
@@ -122,7 +130,7 @@ typedef enum {
 typedef struct {
 
   // selection sets
-  SceneSelectionSet selection[SCENE_SELECTION_TYPE_COUNT];
+  SceneSelection selection;
 
   struct {
     GizmoList list;           // gizmo lists

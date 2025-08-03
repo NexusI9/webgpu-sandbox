@@ -69,11 +69,36 @@ void scene_selection_init_rules(Scene *scene) {
 
   /*
 
+    ==== global selection ====
+
+   */
+
+  SceneSelection *selection = &scene->editor.selection;
+
+  // include
+  selection->include.length = 3;
+
+  const ScenePipeline included_pipelines[3] = {
+      ScenePipeline_Dynamic_Lit,
+      ScenePipeline_Dynamic_Unlit,
+      ScenePipeline_Fixed,
+  };
+
+  for (uint8_t i = 0; i < selection->include.length; i++)
+    selection->include.entries[i] = &scene->pipelines[included_pipelines[i]];
+
+  // exclude
+  selection->exclude.length = 1;
+  selection->exclude.entries[0] = &exclude_layer->meshes;
+
+  /*
+
     ====  mesh based selection ====
 
    */
 
-  SceneSelectionSet *mesh_rules = &scene->editor.selection[SceneSelectionType_Mesh];
+  SceneSelectionFilter *mesh_rules =
+      &scene->editor.selection.filters[SceneSelectionType_Mesh];
 
   // include
   mesh_rules->include.entries[0] = &scene->pipelines[ScenePipeline_Dynamic_Lit];
@@ -87,11 +112,11 @@ void scene_selection_init_rules(Scene *scene) {
   mesh_rules->exclude.length = 2;
 
   // create source list
-  mesh_ref_list_create(&mesh_rules->source, MESH_REF_LIST_CAPACITY);
+  mesh_ref_list_create(&mesh_rules->selection, MESH_REF_LIST_CAPACITY);
 
   // define destination (i.e. the pipeline where the selected meshes will be
   // pushes to)
-  mesh_rules->destination = &scene->pipelines[ScenePipeline_Fixed_Selection];
+  mesh_rules->transfert = &scene->pipelines[ScenePipeline_Fixed_Selection];
 
   /*
 
@@ -99,7 +124,8 @@ void scene_selection_init_rules(Scene *scene) {
 
    */
 
-  SceneSelectionSet *shader_rules = &scene->editor.selection[SceneSelectionType_Shader];
+  SceneSelectionFilter *shader_rules =
+      &scene->editor.selection.filters[SceneSelectionType_Shader];
 
   // include
   shader_rules->include.entries[0] = &scene->pipelines[ScenePipeline_Fixed];
@@ -112,10 +138,9 @@ void scene_selection_init_rules(Scene *scene) {
   shader_rules->exclude.length = 3;
 
   // create source list
-  mesh_ref_list_create(&shader_rules->source, MESH_REF_LIST_CAPACITY);
+  mesh_ref_list_create(&shader_rules->selection, MESH_REF_LIST_CAPACITY);
 
   // set destination to NULL (no need to add selected meshes to a specific
   // pipeline)
-  shader_rules->destination = NULL;
+  shader_rules->transfert = NULL;
 }
-

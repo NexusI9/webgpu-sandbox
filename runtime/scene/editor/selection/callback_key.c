@@ -148,51 +148,62 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
                                                       void *data) {
 
   Scene *scene = (Scene *)data;
+  SceneSelection *selection = &scene->editor.selection;
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
-  // empty gizmo current selection (will merge all meshes after)
-  mesh_ref_list_empty(&gizmo->cache.selection);
+  /*
 
-  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+    ==== DESELECT ALL ====
 
-    SceneSelectionSet *set = &set[i];
-    MeshRefList *current_selection = &set->source;
+   */
+  // if already selection => unselect everything
+  if (scene_selection_length(selection)) {
+    // empty selection
+    scene_selection_empty(selection);
+    // hide gizmo
+    scene_gizmo_transform_hide(scene);
+    // empty gizmo current selection (will merge all meshes after)
+    mesh_ref_list_empty(&gizmo->cache.selection);
+  } else {
+    /*
 
-    // if already selection => unselect everything
-    if (current_selection->length) {
-      // empty selection
-      mesh_ref_list_empty(current_selection);
-      // hide gizmo from the scene
-      scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                               ScenePipeline_Fixed_Front);
+        ==== SELECT ALL ====
 
-    }
-    // else select everything
-    else {
+       */
 
-      // Empty slection list first for safety
-      mesh_ref_list_empty(current_selection);
+    for (size_t i = 0; i < selection->include.length; i++) {
 
-      SceneLayer *exclude =
-          scene_layer_set_find(&scene->layers, SCENE_LAYER_UNSELECTABLE);
+      // check includes lists
+      for (size_t j = 0; j < selection->include.entries[i]->length; j++) {
 
-      // Transfert all meshes from included mesh reference lists
+        Mesh *mesh = selection->include.entries[i]->entries[j];
 
-      for (size_t j = 0; j < set->include.length; j++)
-        mesh_ref_list_transfert(set->include.entries[j], current_selection,
-                                &exclude->meshes);
+        // if excluded, continue to next mesh
+        bool excluded = false;
+        for (size_t k = 0; k < selection->exclude.length; k++) {
+          if (mesh_ref_list_find(selection->exclude.entries[k], mesh) != NULL) {
+            excluded = true;
+            break;
+          }
+        }
 
-      // transfert to destination list (if any)
-      if (set->destination) {
-        mesh_ref_list_empty(set->destination);
-        mesh_ref_list_transfert(current_selection, set->destination, NULL);
+        if (excluded)
+          continue;
+
+        // add it to the target filter
+        SceneSelectionFilter *target_filter =
+            scene_selection_filter_find_mesh(selection, mesh);
+
+        if (target_filter == NULL)
+          continue;
+
+        scene_selection_filter_add_mesh(target_filter, mesh);
       }
-
-      // show gizmo
-      scene_gizmo_transform_pos_to_selection(gizmo, scene->editor.selection);
-      scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                               ScenePipeline_Fixed_Front);
     }
+
+    // show gizmo
+    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection);
+    scene_gizmo_transform_show(scene);
   }
 }
 
@@ -214,7 +225,7 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
   // show gizmo if has selection
   if (gizmo->cache.selection.length) {
     // update location to selection average
-    scene_gizmo_transform_pos_to_selection(gizmo, scene->editor.selection);
+    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection);
     scene_gizmo_transform_show(scene);
   }
 }
@@ -252,7 +263,7 @@ void scene_selection_key_sequence_callback_transform(
       // set active handle from current mode and initialize offset
       MeshRefList *list[SCENE_SELECTION_TYPE_COUNT];
       size_t length;
-      scene_selection_meshes_lists(scene->editor.selection, list, &length);
+      scene_selection_meshes_lists(&scene->editor.selection, list, &length);
       gizmo_transform_set_active(gizmo, list, length, scene->active_camera,
                                  &scene->viewport);
     }

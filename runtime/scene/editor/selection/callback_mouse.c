@@ -26,36 +26,30 @@ void scene_selection_init_mouse_events(Scene *scene) {
   SceneLayer *exclude_layer =
       scene_layer_set_find(&scene->layers, SCENE_LAYER_UNSELECTABLE);
 
-  SceneSelectionSet *refs_list = scene->editor.selection;
+  SceneSelection *scene_selection = &scene->editor.selection;
 
   // right click raycast on scene main camera (to select meshes)
-  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
-    camera_raycast(scene->active_camera,
-                   &(CameraRaycastDescriptor){
-                       .target = CameraRaycastTarget_MousePosition,
-                       .event = CameraRaycastEvent_MouseDown,
-                       .space = CameraRaycastSpace_WorldSpace,
-                       .viewport = &scene->viewport,
-                       .callback = scene_selection_raycast_mesh_callback,
-                       .data =
-                           (void *)&(SceneSelectionCallbackData){
-                               .scene = scene,
-                               .source = &refs_list[i].source,
-                               .destination = refs_list[i].destination,
-                           },
-                       .size = sizeof(SceneSelectionCallbackData),
-                       .include =
-                           {
-                               .lists = refs_list[i].include.entries,
-                               .length = refs_list[i].include.length,
-                           },
-                       .exclude =
-                           {
-                               .lists = refs_list[i].exclude.entries,
-                               .length = refs_list[i].exclude.length,
-                           },
-                   });
-  }
+  camera_raycast(
+      scene->active_camera,
+      &(CameraRaycastDescriptor){
+          .target = CameraRaycastTarget_MousePosition,
+          .event = CameraRaycastEvent_MouseDown,
+          .space = CameraRaycastSpace_WorldSpace,
+          .viewport = &scene->viewport,
+          .callback = scene_selection_raycast_mesh_callback,
+          .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
+          .size = sizeof(SceneSelectionCallbackData),
+          .include =
+              {
+                  .lists = scene_selection->include.entries,
+                  .length = scene_selection->include.length,
+              },
+          .exclude =
+              {
+                  .lists = scene_selection->exclude.entries,
+                  .length = scene_selection->exclude.length,
+              },
+      });
 
   // left click raycast on scene main camera (to select gizmo transform)
   SceneLayer *gizmo_layer =
@@ -158,8 +152,7 @@ void scene_selection_raycast_mesh_callback(
       (SceneSelectionCallbackData *)user_data;
 
   Scene *scene = cast_user_data->scene;
-  MeshRefList *source_list = cast_user_data->source;
-  MeshRefList *destination_list = cast_user_data->destination;
+  SceneSelection *selection = &scene->editor.selection;
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
   // else retrieve first hit only (closest to camera)
@@ -168,44 +161,54 @@ void scene_selection_raycast_mesh_callback(
   // add hit to selection pipeline
   if (cast_data->hits->length > 0 && hit) {
 
-    // cap + right click : remove selection if exist, add if not
-    if (mouseEvent->shiftKey && mouseEvent->button == 2) {
+    // get the tarfet selectionfilter to dispatch the hit mesh in the right
+    // "corridor" (mesh or shader)
+    SceneSelectionFilter *target_filter =
+        scene_selection_filter_find_mesh(selection, hit->mesh);
 
-      Mesh *already_selected = mesh_ref_list_find(source_list, hit->mesh);
+    if (target_filter != NULL) {
 
-      if (already_selected == NULL)
-        scene_selection_add(source_list, hit->mesh);
-      else
-        mesh_ref_list_remove(source_list, hit->mesh);
+      MeshRefList *filter_selection = &target_filter->selection;
 
-    }
-    // right click : add to selection
-    else if (mouseEvent->button == 2) {
-      // clear selection and add new one
-      mesh_ref_list_empty(source_list);
-      scene_selection_add(source_list, hit->mesh);
+      // cap + right click : remove selection if exist, add if not
+      if (mouseEvent->shiftKey && mouseEvent->button == 2) {
+
+        Mesh *already_selected =
+            mesh_ref_list_find(filter_selection, hit->mesh);
+
+        if (already_selected == NULL)
+          scene_selection_add(filter_selection, hit->mesh);
+        else
+          mesh_ref_list_remove(filter_selection, hit->mesh);
+
+      }
+      // right click : add to selection
+      else if (mouseEvent->button == 2) {
+        // clear selection and add new one
+        scene_selection_empty(selection);
+        scene_selection_add(filter_selection, hit->mesh);
+      }
+
+      // transfert source to destination
+      if (target_filter->transfert) {
+        mesh_ref_list_empty(target_filter->transfert);
+        mesh_ref_list_transfert(filter_selection, target_filter->transfert,
+                                NULL);
+      }
     }
   } else {
     // empty selection
-    mesh_ref_list_empty(source_list);
+    scene_selection_empty(selection);
   }
 
   // handle gizmo
-  if (scene_selection_length(scene->editor.selection) > 0) {
+  if (scene_selection_length(&scene->editor.selection) > 0) {
     // get average position
-    scene_gizmo_transform_pos_to_selection(gizmo, scene->editor.selection);
-    scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                             ScenePipeline_Fixed_Front);
+    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection);
+    scene_gizmo_transform_show(scene);
   } else {
     // hide from the scene
-    scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                             ScenePipeline_Fixed_Front);
-  }
-
-  // transfert source to destination
-  if (destination_list) {
-    mesh_ref_list_empty(destination_list);
-    mesh_ref_list_transfert(source_list, destination_list, NULL);
+    scene_gizmo_transform_hide(scene);
   }
 }
 
@@ -232,7 +235,7 @@ void scene_selection_raycast_gizmo_callback(
     // set active handle from current mode and initialize offset
     MeshRefList *list[SCENE_SELECTION_TYPE_COUNT];
     size_t length;
-    scene_selection_meshes_lists(scene->editor.selection, list, &length);
+    scene_selection_meshes_lists(&scene->editor.selection, list, &length);
     gizmo_transform_set_active(gizmo, list, length, scene->active_camera,
                                &scene->viewport);
   }

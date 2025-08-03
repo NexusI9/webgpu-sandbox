@@ -6,8 +6,6 @@
 
 typedef struct {
   Scene *scene;
-  MeshRefList *source;
-  MeshRefList *destination;
 } SceneSelectionCallbackData;
 
 void scene_selection_init(Scene *);
