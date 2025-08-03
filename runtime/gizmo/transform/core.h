@@ -98,7 +98,7 @@
 typedef struct GizmoTransform GizmoTransform;
 
 typedef void (*gizmo_transform_callback)(GizmoTransform *, Camera *,
-                                         Viewport *);
+                                         Viewport *, vec3*);
 
 typedef enum {
   GizmoTransformMode_Translate,
@@ -178,7 +178,6 @@ struct GizmoTransform {
    */
   struct {
     MeshRefList selection;
-    Vec3List selection_init_attribute;
     vec3 init_delta;
     float init_distance;
     float init_inv_distance;

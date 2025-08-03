@@ -1,5 +1,6 @@
 #include "callback_key.h"
 #include "../../show.h"
+#include "core.h"
 #include "utils.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -223,7 +224,7 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
       gizmo->mode = selection_key_sequences_mode[i].mode;
 
   // show gizmo if has selection
-  if (gizmo->cache.selection.length) {
+  if (scene_selection_length(&scene->editor.selection)) {
     // update location to selection average
     scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection);
     scene_gizmo_transform_show(scene);
@@ -259,6 +260,10 @@ void scene_selection_key_sequence_callback_transform(
 
       // map axis from static sequences
       gizmo->axis = key_seq_axis;
+
+      // cache scene selection initial attributes
+      scene_selection_cache_initial_attributes(&scene->editor.selection,
+                                               gizmo->mode);
 
       // set active handle from current mode and initialize offset
       MeshRefList *list[SCENE_SELECTION_TYPE_COUNT];

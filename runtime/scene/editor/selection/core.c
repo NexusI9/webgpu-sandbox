@@ -2,6 +2,7 @@
 #include "../../show.h"
 #include "./callback_key.h"
 #include "./callback_mouse.h"
+#include "./config.h"
 #include "./utils.h"
 #include "emscripten/em_types.h"
 
@@ -44,14 +45,37 @@ void scene_selection_init(Scene *scene) {
 void scene_selection_draw_callback(void *data) {
 
   Scene *cast_scene = (Scene *)data;
+  SceneSelection *selection = &cast_scene->editor.selection;
   GizmoTransform *gizmo = &cast_scene->editor.gizmo.transform;
-  MeshRefList *selection_list = &gizmo->cache.selection;
-  // look-up transform callback
-  gizmo_transform_callback transform_callback =
-      gizmo->transform_callback[gizmo->mode];
+  MeshRefList *gizmo_selection_list = &gizmo->cache.selection;
 
-  if (selection_list->length)
-    transform_callback(gizmo, cast_scene->active_camera, &cast_scene->viewport);
+  if (gizmo_selection_list->length) {
+
+    // use each selection filters transform callbacks on their respective meshes
+
+    for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+
+      vec3 delta;
+
+      // 1. transform gizmo
+      gizmo_transform_callback gizmo_transform_callback =
+          gizmo->transform_callback[gizmo->mode];
+
+      gizmo_transform_callback(gizmo, cast_scene->active_camera,
+                               &cast_scene->viewport, &delta);
+
+      // 2. transform filter selection with delta calculated by gizmo
+      SceneSelectionFilter *filter = &selection->filters[i];
+
+      // look-up filter transform callback depending on gizmo mode
+      // (loc/rot/scale)
+      scene_selection_transform_callback mesh_transform_callback =
+          filter->transform_callbacks[gizmo->mode];
+
+      mesh_transform_callback(&filter->selection, &filter->init_attribute,
+                              delta, gizmo->axis);
+    }
+  }
 }
 
 /**
@@ -64,83 +88,184 @@ void scene_selection_draw_callback(void *data) {
  */
 void scene_selection_init_rules(Scene *scene) {
 
-  SceneLayer *exclude_layer =
-      scene_layer_set_find(&scene->layers, SCENE_LAYER_UNSELECTABLE);
+  scene_selection_config(scene);
 
-  /*
+  // create filters source list
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
 
-    ==== global selection ====
+    SceneSelectionFilter *filter =
+        &scene->editor.selection.filters[SceneSelectionType_Mesh];
 
-   */
+    // init selection list
+    mesh_ref_list_create(&filter->selection, MESH_REF_LIST_CAPACITY);
 
-  SceneSelection *selection = &scene->editor.selection;
+    // init initial attribute list
+    vec3_list_create(&filter->init_attribute, MESH_REF_LIST_CAPACITY);
+  }
+}
 
-  // include
-  selection->include.length = 3;
+/**
+   Add mesh to the selection list
+ */
+void scene_selection_add(MeshRefList *list, Mesh *mesh) {
 
-  const ScenePipeline included_pipelines[3] = {
-      ScenePipeline_Dynamic_Lit,
-      ScenePipeline_Dynamic_Unlit,
-      ScenePipeline_Fixed,
-  };
+  // only add if mesh not already exists
+  if (mesh_ref_list_find(list, mesh) == NULL)
+    mesh_ref_list_insert(list, mesh);
+}
 
-  for (uint8_t i = 0; i < selection->include.length; i++)
-    selection->include.entries[i] = &scene->pipelines[included_pipelines[i]];
+/**
+   Set the gizmo active handle to NULL which acts as a trigger.
+   This wall the loop callback doesn't move the meshes anymore if the mouse is
+   down again.
+ */
+bool scene_selection_reset_callback(int eventType,
+                                    const EmscriptenMouseEvent *mouseEvent,
+                                    void *userData) {
 
-  // exclude
-  selection->exclude.length = 1;
-  selection->exclude.entries[0] = &exclude_layer->meshes;
+  GizmoTransform *gizmo = (GizmoTransform *)userData;
+  gizmo_transform_clear_active(gizmo);
 
-  /*
+  return EM_FALSE;
+}
 
-    ====  mesh based selection ====
+/**
+   Get the average position of all selected mesh in all filters.
+ */
+void scene_selection_average_position(SceneSelection *selection, vec3 *dest) {
 
-   */
+  glm_vec3_zero(*dest);
 
-  SceneSelectionFilter *mesh_rules =
-      &scene->editor.selection.filters[SceneSelectionType_Mesh];
+  uint8_t denom = 0;
 
-  // include
-  mesh_rules->include.entries[0] = &scene->pipelines[ScenePipeline_Dynamic_Lit];
-  mesh_rules->include.entries[1] =
-      &scene->pipelines[ScenePipeline_Dynamic_Unlit];
-  mesh_rules->include.length = 2;
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+    SceneSelectionFilter *filter = &selection->filters[i];
+    vec3 filter_avg;
+    mesh_ref_list_average_position(&filter->selection, &filter_avg);
+    glm_vec3_add(*dest, filter_avg, *dest);
 
-  // exclude
-  mesh_rules->exclude.entries[0] = &exclude_layer->meshes;
-  mesh_rules->exclude.entries[1] = &scene->pipelines[ScenePipeline_Fixed];
-  mesh_rules->exclude.length = 2;
+    if (filter->selection.length > 0)
+      denom++;
+  }
 
-  // create source list
-  mesh_ref_list_create(&mesh_rules->selection, MESH_REF_LIST_CAPACITY);
+  glm_vec3_scale(*dest, 1.0f / glm_max(denom, 1), *dest);
+}
 
-  // define destination (i.e. the pipeline where the selected meshes will be
-  // pushes to)
-  mesh_rules->transfert = &scene->pipelines[ScenePipeline_Fixed_Selection];
+void scene_selection_meshes_lists(SceneSelection *selection,
+                                  MeshRefList *list[SCENE_SELECTION_TYPE_COUNT],
+                                  size_t *length) {
 
-  /*
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
+    list[i] = &selection[i].filters->selection;
 
-    ==== shader based selection ====
+  *length = SCENE_SELECTION_TYPE_COUNT;
+}
 
-   */
+size_t scene_selection_length(SceneSelection *selection) {
 
-  SceneSelectionFilter *shader_rules =
-      &scene->editor.selection.filters[SceneSelectionType_Shader];
+  size_t length = 0;
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
+    length += selection->filters[i].selection.length;
 
-  // include
-  shader_rules->include.entries[0] = &scene->pipelines[ScenePipeline_Fixed];
-  shader_rules->include.length = 1;
+  return length;
+}
 
-  // exclude
-  shader_rules->exclude.entries[0] = &exclude_layer->meshes;
-  shader_rules->exclude.entries[1] = mesh_rules->include.entries[0];
-  shader_rules->exclude.entries[2] = mesh_rules->include.entries[1];
-  shader_rules->exclude.length = 3;
+bool scene_selection_filter_include_mesh(SceneSelectionFilter *filter,
+                                         Mesh *mesh) {
+  bool included = false;
+  // check include
+  for (size_t j = 0; j < filter->include.length; j++) {
 
-  // create source list
-  mesh_ref_list_create(&shader_rules->selection, MESH_REF_LIST_CAPACITY);
+    MeshRefList *include_list = filter->include.entries[j];
 
-  // set destination to NULL (no need to add selected meshes to a specific
-  // pipeline)
-  shader_rules->transfert = NULL;
+    Mesh *find = mesh_ref_list_find(include_list, mesh);
+
+    // if mesh found in current include list
+    if (find != NULL) {
+      included = true;
+
+      // if no exclude, no need to check anymore
+      if (filter->exclude.length == 0)
+        break;
+    }
+  }
+
+  // check exclude
+  for (size_t k = 0; k < filter->exclude.length; k++) {
+    MeshRefList *exclude_list = filter->exclude.entries[k];
+
+    // cancel if mesh is actually excluded from the filter
+    if (mesh_ref_list_find(exclude_list, mesh) != NULL)
+      included = false;
+  }
+
+  return included;
+}
+
+/**
+   Search if a mesh belong to a scene selection filter.
+   Returns the target filter or NULL if not found.
+ */
+SceneSelectionFilter *
+scene_selection_filter_find_mesh(SceneSelection *selection, Mesh *mesh) {
+
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+    SceneSelectionFilter *filter = &selection->filters[i];
+    if (scene_selection_filter_include_mesh(filter, mesh))
+      return filter;
+  }
+
+  return NULL;
+}
+
+void scene_selection_filter_add_mesh(SceneSelectionFilter *filter, Mesh *mesh) {
+  mesh_ref_list_insert(&filter->selection, mesh);
+
+  // transftert (optional)
+  if (filter->transfert)
+    mesh_ref_list_insert(filter->transfert, mesh);
+}
+
+/**
+   Empty each filter's selection
+ */
+void scene_selection_empty(SceneSelection *selection) {
+
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+    SceneSelectionFilter *filter = &selection->filters[i];
+    mesh_ref_list_empty(&filter->selection);
+
+    if (filter->transfert)
+      mesh_ref_list_empty(filter->transfert);
+  }
+}
+
+/**
+   Map Gizmo mode to mesh get attributes to apply correct transformation based
+   in gizmo mode (trans/rot/scale).
+
+   Used in the selection events when we need to cache the mesh attribute
+   (loc/rot/scale) depending on the gizmo mode.
+ */
+static const mesh_get_transform_attribute mesh_transform_attribute[] = {
+    [GizmoTransformMode_Translate] = mesh_get_position,
+    [GizmoTransformMode_Rotate] = mesh_get_rotation_euler,
+    [GizmoTransformMode_Scale] = mesh_get_scale,
+};
+
+void scene_selection_cache_initial_attributes(SceneSelection *selection,
+                                              const GizmoTransformMode mode) {
+
+  // cache all meshes initial attribute based on gizmo mode (pos/rot/scale)
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+    SceneSelectionFilter *filter = &selection->filters[i];
+
+    for (size_t j = 0; j < filter->selection.length; j++) {
+      Mesh *mesh = filter->selection.entries[i];
+      vec3 attribute;
+      mesh_transform_attribute[mode](mesh, &attribute);
+      vec3_list_insert(&filter->init_attribute, attribute);
+    }
+  }
+  
 }

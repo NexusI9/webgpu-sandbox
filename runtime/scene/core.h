@@ -99,19 +99,46 @@ typedef enum {
   ScenePipeline_Fixed_UI,
 } ScenePipeline;
 
+/**
+
+
+   ===== SELECTION =====
+
+
+ */
+typedef void (*scene_selection_transform_callback)(MeshRefList *, Vec3List *,
+                                                   vec3, const Axis);
+
 typedef struct {
   MeshRefList *entries[SCENE_SELECTION_LIST_CAPACITY];
   size_t length;
 } SceneSelectionRefList;
 
 typedef struct {
+
   // mesh lists to be included for selection
   SceneSelectionRefList include;
+
   // mesh lists to be excluded for selection
   SceneSelectionRefList exclude;
+
   // reference list for mesh to be added on selection
   MeshRefList selection;
-  MeshRefList *transfert; // optional
+
+  // cached selection meshes initial attribute to correctly offset from delta
+  // when transforming and keep in memory previous value is cancel transform.
+  Vec3List init_attribute;
+
+  // transform callback will transform the included mesh according to gizmo mode
+  // and given callbacks
+  scene_selection_transform_callback
+      transform_callbacks[GIZMO_TRANSFORM_MODE_COUNT];
+
+  // (optional) transfert filter mesh to a given mesh reference list
+  // define destination (i.e. the pipeline where the selected meshes will be
+  // pushes to)
+  MeshRefList *transfert;
+
 } SceneSelectionFilter;
 
 typedef struct {
@@ -126,6 +153,14 @@ typedef enum {
   SceneSelectionType_Mesh,
   SceneSelectionType_Shader,
 } SceneSelectionType;
+
+/**
+
+
+   ===== EDITOR =====
+
+
+ */
 
 typedef struct {
 

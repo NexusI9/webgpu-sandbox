@@ -12,4 +12,24 @@ void scene_selection_init(Scene *);
 
 void scene_selection_draw_callback(void *);
 
+void scene_selection_add(MeshRefList *, Mesh *);
+
+void scene_selection_average_position(SceneSelection *, vec3 *);
+
+void scene_selection_meshes_lists(SceneSelection *,
+                                  MeshRefList *[SCENE_SELECTION_TYPE_COUNT],
+                                  size_t *);
+
+size_t scene_selection_length(SceneSelection *);
+
+/* Filters */
+SceneSelectionFilter *scene_selection_filter_find_mesh(SceneSelection *,
+                                                       Mesh *);
+
+bool scene_selection_filter_include_mesh(SceneSelectionFilter *, Mesh *);
+void scene_selection_filter_add_mesh(SceneSelectionFilter *, Mesh *);
+void scene_selection_empty(SceneSelection *);
+void scene_selection_cache_initial_attributes(SceneSelection *,
+                                              const GizmoTransformMode);
+
 #endif

@@ -19,19 +19,6 @@ static const gizmo_transform_callback transform_callback_func[] = {
 };
 
 /**
-   Map Gizmo mode to mesh get attributes to apply correct transformation based
-   in gizmo mode (trans/rot/scale).
-
-   Used in the selection events when we need to cache the mesh attribute
-   (loc/rot/scale) depending on the gizmo mode.
- */
-static const mesh_get_transform_attribute mesh_transform_attribute[] = {
-    [GizmoTransformMode_Translate] = mesh_get_position,
-    [GizmoTransformMode_Rotate] = mesh_get_rotation_euler,
-    [GizmoTransformMode_Scale] = mesh_get_scale,
-};
-
-/**
    Create the three key transform gizmo handles (translate, rotate, scale) and
    set active handle.
  */
@@ -42,7 +29,6 @@ void gizmo_transform_create(GizmoTransform *gizmo,
 
   // init 'cache' attributes
   const size_t capacity = GIZMO_TRANSFORM_POSITION_CAPACITY;
-  vec3_list_create(&gizmo->cache.selection_init_attribute, capacity);
   mesh_ref_list_create(&gizmo->cache.selection, capacity);
 
   // Use for-loop and lookup tables to map the callbacks functions and creating
@@ -156,14 +142,6 @@ void gizmo_transform_set_active(GizmoTransform *gizmo,
   for (size_t i = 0; i < length; i++)
     mesh_ref_list_transfert(selected_meshes[i], &gizmo->cache.selection, NULL);
 
-  // cache all meshes initial attribute based on gizmo mode (pos/rot/scale)
-  for (size_t i = 0; i < gizmo->cache.selection.length; i++) {
-    Mesh *mesh = gizmo->cache.selection.entries[i];
-    vec3 attribute;
-    mesh_transform_attribute[gizmo->mode](mesh, &attribute);
-    vec3_list_insert(&gizmo->cache.selection_init_attribute, attribute);
-  }
-
   // init delta
   Raycast raycast;
   raycast_project_from_screen(
@@ -211,9 +189,6 @@ void gizmo_transform_clear_active(GizmoTransform *gizmo) {
   glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.init_delta);
 
   gizmo->cache.init_distance = 0.0f;
-
-  // reset cache meshes positions
-  vec3_list_empty(&gizmo->cache.selection_init_attribute);
 
   // empty selection list
   mesh_ref_list_empty(&gizmo->cache.selection);

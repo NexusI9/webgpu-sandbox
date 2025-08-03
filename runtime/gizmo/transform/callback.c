@@ -67,20 +67,6 @@ void gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera,
   if (delta)
     glm_vec3_copy(gizmo_delta, *delta);
 
-  // move meshes
-  for (size_t i = 0; i < gizmo->cache.selection.length; i++) {
-
-    vec3 *init_attribute = &gizmo->cache.selection_init_attribute.entries[i];
-    Mesh *mesh = gizmo->cache.selection.entries[i];
-
-    // calculate offset
-    vec3 offset_attribute;
-
-    glm_vec3_add(*init_attribute, gizmo_delta, offset_attribute);
-
-    // translate mesh
-    transform_callback(mesh, offset_attribute, gizmo->axis);
-  }
 }
 
 /**
@@ -128,19 +114,9 @@ void gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera,
 
   vec3 rotation;
   glm_vec3_scale(gizmo->cache.axis_direction, angle, rotation);
-  // move meshes
-  for (size_t i = 0; i < gizmo->cache.selection.length; i++) {
 
-    vec3 *init_attribute = &gizmo->cache.selection_init_attribute.entries[i];
-    Mesh *mesh = gizmo->cache.selection.entries[i];
-
-    // calculate offset
-    vec3 offset_attribute;
-    glm_vec3_add(*init_attribute, rotation, offset_attribute);
-
-    // translate mesh
-    transform_callback(mesh, offset_attribute, gizmo->axis);
-  }
+  if (dest)
+    glm_vec3_copy(rotation, *dest);
 }
 
 /**
@@ -149,28 +125,34 @@ void gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera,
    ▐▌   ▐▛▀▜▌▐▌   ▐▌   ▐▛▀▚▖▐▛▀▜▌▐▌   ▐▛▚▖  ▝▀▚▖
    ▝▚▄▄▖▐▌ ▐▌▐▙▄▄▖▐▙▄▄▖▐▙▄▞▘▐▌ ▐▌▝▚▄▄▖▐▌ ▐▌▗▄▄▞▘
 
+
+   Gizmo transforms callback are mostly use to project the curso to world space
+   and calculate the delta depending on the given axis.
+
+   Those callback do not handle the mesh selection transform. This process is
+   handled in the scene selection draw callback.
+
  */
 void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
-                                        Viewport *viewport) {
+                                        Viewport *viewport, vec3 *delta) {
 
-  vec3 delta;
   // transform selection
-  gizmo_transform_axis(gizmo, camera, viewport, mesh_translate_axis, &delta);
+  gizmo_transform_axis(gizmo, camera, viewport, mesh_translate_axis, delta);
 
   // translate gizmo based on cached delta
   vec3 gizmo_offset;
-  glm_vec3_add(gizmo->cache.gizmo_init_position, delta, gizmo_offset);
+  glm_vec3_add(gizmo->cache.gizmo_init_position, *delta, gizmo_offset);
   gizmo_transform_translate(gizmo, gizmo_offset);
 }
 
 void gizmo_transform_callback_rotate(GizmoTransform *gizmo, Camera *camera,
-                                     Viewport *viewport) {
+                                     Viewport *viewport, vec3 *delta) {
 
-  gizmo_transform_angle(gizmo, camera, viewport, mesh_rotate_axis, NULL);
+  gizmo_transform_angle(gizmo, camera, viewport, mesh_rotate_axis, delta);
 }
 
 void gizmo_transform_callback_scale(GizmoTransform *gizmo, Camera *camera,
-                                    Viewport *viewport) {
+                                    Viewport *viewport, vec3 *delta) {
 
-  gizmo_transform_axis(gizmo, camera, viewport, mesh_scale_axis, NULL);
+  gizmo_transform_axis(gizmo, camera, viewport, mesh_scale_axis, delta);
 }

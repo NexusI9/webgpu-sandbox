@@ -232,6 +232,10 @@ void scene_selection_raycast_gizmo_callback(
     // map active axis from hit handle pointer
     gizmo_transform_set_axis_from_mesh(gizmo, hit);
 
+    // cache scene selection initial attributes
+    scene_selection_cache_initial_attributes(&scene->editor.selection,
+                                             gizmo->mode);
+
     // set active handle from current mode and initialize offset
     MeshRefList *list[SCENE_SELECTION_TYPE_COUNT];
     size_t length;
