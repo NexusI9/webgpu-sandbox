@@ -1,8 +1,9 @@
 #ifndef _SCENE_ADD_H_
 #define _SCENE_ADD_H_
 
-#include "../gizmo/gizmo.h"
+#include "./editor/gizmo/gizmo.h"
 #include "core.h"
+#include "editor/object/core.h"
 
 /**
    Key methods to add, remove, hide or show an item in the scene. Below are some
@@ -34,13 +35,13 @@
  */
 
 // light
-GizmoPointLight *scene_add_point_light(Scene *, PointLightDescriptor *);
-GizmoSpotLight *scene_add_spot_light(Scene *, SpotLightDescriptor *);
-GizmoAmbientLight *scene_add_ambient_light(Scene *, AmbientLightDescriptor *);
-GizmoSunLight *scene_add_sun_light(Scene *, SunLightDescriptor *);
+SceneEditorObject *scene_add_point_light(Scene *, PointLightDescriptor *);
+SceneEditorObject *scene_add_spot_light(Scene *, SpotLightDescriptor *);
+SceneEditorObject *scene_add_ambient_light(Scene *, AmbientLightDescriptor *);
+SceneEditorObject *scene_add_sun_light(Scene *, SunLightDescriptor *);
 
 // camera
-GizmoCamera *scene_add_camera(Scene *, const CameraCreateDescriptor *);
+SceneEditorObject *scene_add_camera(Scene *, const CameraCreateDescriptor *);
 
 // mesh
 Mesh *scene_new_mesh(Scene *);

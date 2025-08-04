@@ -4,9 +4,10 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../backend/renderer/renderer.h"
-#include "../gizmo/list.h"
-#include "../gizmo/transform/transform.h"
+#include "./editor/object/object.h"
+#include "./editor/gizmo/gizmo.h"
 #include "./layer.h"
+#include "editor/object/core.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
 
@@ -167,8 +168,9 @@ typedef struct {
   // selection sets
   SceneSelection selection;
 
+  SceneEditorObjectList seo_list; // cam/ lights  lists
+
   struct {
-    GizmoList list;           // gizmo lists
     GizmoTransform transform; // transform gizmo (unique)
     Mesh *grid;               // grid gizmo (unique)
   } gizmo;
