@@ -177,7 +177,6 @@ struct GizmoTransform {
 
    */
   struct {
-    MeshRefList selection;
     vec3 init_delta;
     float init_distance;
     float init_inv_distance;

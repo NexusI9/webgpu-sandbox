@@ -51,7 +51,7 @@ void scene_selection_mesh_scale(MeshRefList *list, Vec3List *init_attr,
     glm_vec3_add(*init_attribute, delta, offset_attribute);
 
     // translate mesh
-    mesh_translate_axis(mesh, offset_attribute, axis);
+    mesh_scale_axis(mesh, offset_attribute, axis);
   }
 }
 

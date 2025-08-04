@@ -81,7 +81,7 @@ void scene_selection_init_mouse_events(Scene *scene) {
 
   // add mouse up / reset callback
   html_event_add_mouse_up(&(HTMLEventMouse){
-      .data = (void *)&scene->editor.gizmo.transform,
+      .data = (void *)scene,
       .size = 0, // set to 0 so no heap allocation (and use same data pointer)
       .owner = scene->id,
       .callback = scene_selection_reset_callback,

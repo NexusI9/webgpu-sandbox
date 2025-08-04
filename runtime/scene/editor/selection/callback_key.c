@@ -163,8 +163,6 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
     scene_selection_empty(selection);
     // hide gizmo
     scene_gizmo_transform_hide(scene);
-    // empty gizmo current selection (will merge all meshes after)
-    mesh_ref_list_empty(&gizmo->cache.selection);
   } else {
     /*
 
@@ -242,6 +240,9 @@ void scene_selection_key_sequence_callback_transform(
   // use the length as a flag to detect if gizmo already active or not
   if (selection_list->length == 0)
     return;
+
+  // cache scene selection initial attributes
+  scene_selection_empty_initial_attributes(&scene->editor.selection);
 
   for (size_t i = 0; i < seq_count_transform; i++) {
 

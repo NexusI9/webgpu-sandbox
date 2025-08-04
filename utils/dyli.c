@@ -66,6 +66,7 @@ DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
 }
 
 DynamicListStatus dyli_empty(void *entries, size_t *length, size_t type_size) {
+
   memset(entries, 0, (*length) * type_size);
   *length = 0;
   return DynamicListStatus_Success;

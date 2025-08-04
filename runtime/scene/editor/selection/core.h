@@ -31,5 +31,6 @@ void scene_selection_filter_add_mesh(SceneSelectionFilter *, Mesh *);
 void scene_selection_empty(SceneSelection *);
 void scene_selection_cache_initial_attributes(SceneSelection *,
                                               const GizmoTransformMode);
+void scene_selection_empty_initial_attributes(SceneSelection *);
 
 #endif

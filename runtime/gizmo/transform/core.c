@@ -28,9 +28,7 @@ void gizmo_transform_create(GizmoTransform *gizmo,
   gizmo->mode = GizmoTransformMode_Translate;
 
   // init 'cache' attributes
-  const size_t capacity = GIZMO_TRANSFORM_POSITION_CAPACITY;
-  mesh_ref_list_create(&gizmo->cache.selection, capacity);
-
+  
   // Use for-loop and lookup tables to map the callbacks functions and creating
   // methods since all handles use the same approach.
   // 0 = Transform, 1 = Rotate, 2 = Scale
@@ -138,10 +136,6 @@ void gizmo_transform_set_active(GizmoTransform *gizmo,
     vec_world_axis(gizmo->axis, &gizmo->cache.axis_direction);
   }
 
-  // transfering and merging selection meshes to gizmo cached selection
-  for (size_t i = 0; i < length; i++)
-    mesh_ref_list_transfert(selected_meshes[i], &gizmo->cache.selection, NULL);
-
   // init delta
   Raycast raycast;
   raycast_project_from_screen(
@@ -190,6 +184,4 @@ void gizmo_transform_clear_active(GizmoTransform *gizmo) {
 
   gizmo->cache.init_distance = 0.0f;
 
-  // empty selection list
-  mesh_ref_list_empty(&gizmo->cache.selection);
 }

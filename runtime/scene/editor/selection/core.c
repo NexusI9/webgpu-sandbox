@@ -47,12 +47,10 @@ void scene_selection_draw_callback(void *data) {
   Scene *cast_scene = (Scene *)data;
   SceneSelection *selection = &cast_scene->editor.selection;
   GizmoTransform *gizmo = &cast_scene->editor.gizmo.transform;
-  MeshRefList *gizmo_selection_list = &gizmo->cache.selection;
 
-  if (gizmo_selection_list->length) {
+  if (gizmo->cache.init_distance != 0.0f) {
 
     // use each selection filters transform callbacks on their respective meshes
-
     for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
 
       vec3 delta;
@@ -93,8 +91,7 @@ void scene_selection_init_rules(Scene *scene) {
   // create filters source list
   for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
 
-    SceneSelectionFilter *filter =
-        &scene->editor.selection.filters[SceneSelectionType_Mesh];
+    SceneSelectionFilter *filter = &scene->editor.selection.filters[i];
 
     // init selection list
     mesh_ref_list_create(&filter->selection, MESH_REF_LIST_CAPACITY);
@@ -123,8 +120,14 @@ bool scene_selection_reset_callback(int eventType,
                                     const EmscriptenMouseEvent *mouseEvent,
                                     void *userData) {
 
-  GizmoTransform *gizmo = (GizmoTransform *)userData;
+  Scene *scene = (Scene *)userData;
+
+  // clear gizmo cache
+  GizmoTransform *gizmo = &scene->editor.gizmo.transform;
   gizmo_transform_clear_active(gizmo);
+
+  // reset selection initial cached attributes
+  scene_selection_empty_initial_attributes(&scene->editor.selection);
 
   return EM_FALSE;
 }
@@ -253,19 +256,29 @@ static const mesh_get_transform_attribute mesh_transform_attribute[] = {
     [GizmoTransformMode_Scale] = mesh_get_scale,
 };
 
+/**
+  Cache all meshes initial attribute based on gizmo mode (pos/rot/scale)
+ */
 void scene_selection_cache_initial_attributes(SceneSelection *selection,
                                               const GizmoTransformMode mode) {
 
-  // cache all meshes initial attribute based on gizmo mode (pos/rot/scale)
   for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+
     SceneSelectionFilter *filter = &selection->filters[i];
 
     for (size_t j = 0; j < filter->selection.length; j++) {
-      Mesh *mesh = filter->selection.entries[i];
+      Mesh *mesh = filter->selection.entries[j];
       vec3 attribute;
       mesh_transform_attribute[mode](mesh, &attribute);
       vec3_list_insert(&filter->init_attribute, attribute);
     }
   }
-  
+}
+
+/**
+  Empty all meshes initial attribute based on gizmo mode (pos/rot/scale)
+ */
+void scene_selection_empty_initial_attributes(SceneSelection *selection) {
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
+    vec3_list_empty(&selection->filters[i].init_attribute);
 }
