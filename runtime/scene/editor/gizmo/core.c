@@ -28,7 +28,7 @@ void gizmo_transform_create(GizmoTransform *gizmo,
   gizmo->mode = GizmoTransformMode_Translate;
 
   // init 'cache' attributes
-  
+
   // Use for-loop and lookup tables to map the callbacks functions and creating
   // methods since all handles use the same approach.
   // 0 = Transform, 1 = Rotate, 2 = Scale
@@ -121,7 +121,6 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
 
  */
 void gizmo_transform_set_active(GizmoTransform *gizmo,
-                                MeshRefList **selected_meshes, size_t length,
                                 Camera *camera, Viewport *viewport) {
 
   // cache gizmo init position
@@ -183,5 +182,4 @@ void gizmo_transform_clear_active(GizmoTransform *gizmo) {
   glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.init_delta);
 
   gizmo->cache.init_distance = 0.0f;
-
 }

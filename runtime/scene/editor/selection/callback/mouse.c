@@ -231,14 +231,8 @@ void scene_selection_raycast_gizmo_callback(
     // cache scene selection initial attributes
     scene_selection_cache_initial_attributes(&scene->editor.selection,
                                              gizmo->mode);
-
-    // cache active meshes extra targets
-
+    
     // set active handle from current mode and initialize offset
-    MeshRefList *list[SCENE_SELECTION_TYPE_COUNT];
-    size_t length;
-    scene_selection_meshes_lists(&scene->editor.selection, list, &length);
-    gizmo_transform_set_active(gizmo, list, length, scene->active_camera,
-                               &scene->viewport);
+    gizmo_transform_set_active(gizmo, scene->active_camera, &scene->viewport);
   }
 }

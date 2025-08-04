@@ -202,7 +202,7 @@ void scene_selection_key_sequence_callback_transform(
       &scene->pipelines[ScenePipeline_Fixed_Selection];
 
   // use the length as a flag to detect if gizmo already active or not
-  if (selection_list->length == 0)
+  if (scene_selection_length(&scene->editor.selection) == 0)
     return;
 
   // cache scene selection initial attributes
@@ -230,12 +230,9 @@ void scene_selection_key_sequence_callback_transform(
       scene_selection_cache_initial_attributes(&scene->editor.selection,
                                                gizmo->mode);
 
+
       // set active handle from current mode and initialize offset
-      MeshRefList *list[SCENE_SELECTION_TYPE_COUNT];
-      size_t length;
-      scene_selection_meshes_lists(&scene->editor.selection, list, &length);
-      gizmo_transform_set_active(gizmo, list, length, scene->active_camera,
-                                 &scene->viewport);
+      gizmo_transform_set_active(gizmo, scene->active_camera, &scene->viewport);
     }
   }
 }

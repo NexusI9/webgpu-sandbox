@@ -1,8 +1,8 @@
 #ifndef _GIZMO_TRANSFORM_CORE_H_
 #define _GIZMO_TRANSFORM_CORE_H_
 
-#include "../runtime/mesh/mesh.h"
 #include "../runtime/camera/camera.h"
+#include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
 #include "../utils/vector/vector.h"
 #include <stddef.h>
@@ -98,8 +98,8 @@
 
 typedef struct GizmoTransform GizmoTransform;
 
-typedef void (*gizmo_transform_callback)(GizmoTransform *, Camera *,
-                                         Viewport *, vec3*);
+typedef void (*gizmo_transform_callback)(GizmoTransform *, Camera *, Viewport *,
+                                         vec3 *);
 
 typedef enum {
   GizmoTransformMode_Translate,
@@ -200,7 +200,6 @@ typedef struct {
   MeshList *list; // mesh pool from which gizmo mesh will be created
 } GizmoCreateDescriptor;
 
-
 typedef void (*gizmo_transform_create_handles_callback)(
     MeshRefList *, MeshRefList *, const GizmoCreateDescriptor *);
 
@@ -215,8 +214,7 @@ void gizmo_transform_remove(GizmoTransform *, MeshRefList *);
 void gizmo_transform_translate(GizmoTransform *, vec3);
 void gizmo_transform_rotate(GizmoTransform *, vec3);
 
-void gizmo_transform_set_active(GizmoTransform *, MeshRefList **, size_t,
-                                Camera *, Viewport *);
+void gizmo_transform_set_active(GizmoTransform *, Camera *, Viewport *);
 
 void gizmo_transform_clear_active(GizmoTransform *);
 
