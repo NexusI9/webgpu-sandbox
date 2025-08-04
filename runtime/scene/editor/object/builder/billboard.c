@@ -8,8 +8,8 @@
 /**
    Create a plane mesh with a billboard shader
  */
-void gizmo_create_billboard(Mesh *mesh,
-                            const GizmoCreateBillboardDescriptor *desc) {
+void seo_create_billboard(Mesh *mesh,
+                            const SEOCreateBillboardDescriptor *desc) {
 
   // create plane
   Primitive plane = primitive_plane();
@@ -18,7 +18,7 @@ void gizmo_create_billboard(Mesh *mesh,
                                   .primitive = plane,
                                   .device = desc->device,
                                   .queue = desc->queue,
-                                  .name = "Gizmo Billboard",
+                                  .name = "SEO Billboard",
                               });
 
   // set mesh position to light position
@@ -31,8 +31,8 @@ void gizmo_create_billboard(Mesh *mesh,
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
                             .device = desc->device,
                             .queue = desc->queue,
-                            .label = "Gizmo billboard shader",
-                            .name = "Gizmo billboard shader",
+                            .label = "SEO billboard shader",
+                            .name = "SEO billboard shader",
                             .path = SHADER_PATH_BILLBOARD,
                         });
 

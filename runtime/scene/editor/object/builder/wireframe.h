@@ -2,7 +2,7 @@
 #define _SCENE_EDITOR_OBJECT_BUILDER_WIREFRAME_H_
 #include "../core.h"
 
-#define GIZMO_WIREFRAME_LINE_THICKNESS 0.001f
+#define SEO_WIREFRAME_LINE_THICKNESS 0.001f
 
 typedef struct {
   WGPUDevice *device;
@@ -12,8 +12,8 @@ typedef struct {
   vec3 *color;
   float thickness;
   const char *name;
-} GizmoCreateWireframeDescriptor;
+} SEOCreateWireframeDescriptor;
 
-void gizmo_create_wireframe(Mesh *, const GizmoCreateWireframeDescriptor *);
+void seo_create_wireframe(Mesh *, const SEOCreateWireframeDescriptor *);
 
 #endif

@@ -1,36 +1,36 @@
 #include "camera.h"
-#include "../runtime/geometry/vertex/vertex.h"
+#include "../builder/builder.h"
 #include "../resources/loader/loader.mbin.h"
 #include "../runtime/geometry/line/line.h"
+#include "../runtime/geometry/vertex/vertex.h"
 #include "../utils/system.h"
-#include "../builder/builder.h"
 
 #include <stddef.h>
 
-void seo_camera_create(SceneEditorObject *gizmo, Camera *camera,
-                         const GizmoCreateDescriptor *desc) {
+void seo_camera_create(SceneEditorObject *seo, Camera *camera,
+                       const GizmoCreateDescriptor *desc) {
 
   // define target
-  gizmo->target = camera;
+  seo->target = camera;
 
-  const size_t gizmo_mesh_count = 2;
-  mesh_ref_list_create(&gizmo->meshes, gizmo_mesh_count);
+  const size_t seo_mesh_count = 2;
+  mesh_ref_list_create(&seo->meshes, seo_mesh_count);
 
   // create new mesh in the mesh list
   Mesh *icon = mesh_list_new_mesh(desc->list);
   const char *texture_path = "./resources/assets/texture/ui/camera.png";
 
   // create icon mesh
-  gizmo_create_billboard(icon, &(GizmoCreateBillboardDescriptor){
-                                   .texture_path = texture_path,
-                                   .device = desc->device,
-                                   .queue = desc->queue,
-                                   .position = &camera->position,
-                                   .scale = &GIZMO_BILLBOARD_SCALE,
-                               });
+  seo_create_billboard(icon, &(SEOCreateBillboardDescriptor){
+                                 .texture_path = texture_path,
+                                 .device = desc->device,
+                                 .queue = desc->queue,
+                                 .position = &camera->position,
+                                 .scale = &SEO_BILLBOARD_SCALE,
+                             });
 
-  // store mesh pointer in gizmo mesh ref list
-  mesh_ref_list_insert(&gizmo->meshes, icon);
+  // store mesh pointer in seo mesh ref list
+  mesh_ref_list_insert(&seo->meshes, icon);
 
   // create box mesh
   Primitive cube_primitive;
@@ -41,17 +41,17 @@ void seo_camera_create(SceneEditorObject *gizmo, Camera *camera,
 
   Mesh *cube = mesh_list_new_mesh(desc->list);
 
-  // create manually wirerfame since gizmo is part of fixed rendering, so the
+  // create manually wirerfame since seo is part of fixed rendering, so the
   // mesh topology generation isn't automatically handled.
-  gizmo_create_wireframe(cube, &(GizmoCreateWireframeDescriptor){
-                                   .device = desc->device,
-                                   .queue = desc->queue,
-                                   .color = &(vec3){1.0f, 0.7f, 0.4f},
-                                   .thickness = GIZMO_WIREFRAME_LINE_THICKNESS,
-                                   .vertex = &cube_primitive.vertex,
-                                   .index = &cube_primitive.index,
-                                   .name = "gizmo camera",
-                               });
+  seo_create_wireframe(cube, &(SEOCreateWireframeDescriptor){
+                                 .device = desc->device,
+                                 .queue = desc->queue,
+                                 .color = &(vec3){1.0f, 0.7f, 0.4f},
+                                 .thickness = SEO_WIREFRAME_LINE_THICKNESS,
+                                 .vertex = &cube_primitive.vertex,
+                                 .index = &cube_primitive.index,
+                                 .name = "seo camera",
+                             });
 
   // init vertex groups
   VertexGroupSet *cube_group = &cube->topology.base.group;
@@ -77,44 +77,51 @@ void seo_camera_create(SceneEditorObject *gizmo, Camera *camera,
   // translate cube upward
   mesh_translate(cube, (vec3){0.0f, 1.0f, 0.0f});
 
-  mesh_ref_list_insert(&gizmo->meshes, cube);
+  mesh_ref_list_insert(&seo->meshes, cube);
 
   // set fov deformation
-  seo_camera_fov(gizmo, 90.0f);
+  seo_camera_fov(seo, 90.0f);
+
+  // set callback
+  seo->transform_callback[GizmoTransformMode_Translate] = seo_camera_translate;
+  seo->transform_callback[GizmoTransformMode_Rotate] = seo_camera_rotate;
+  seo->transform_callback[GizmoTransformMode_Scale] = seo_camera_scale;
 }
 
-void seo_camera_translate(SceneEditorObject *gizmo, vec3 position) {
+void seo_camera_translate(SceneEditorObject *seo, vec3 position,
+                          const Axis axis) {
 
   // transform target
-  camera_translate(gizmo->target, position);
+  camera_translate(seo->target, position);
 
   // transform mesh
-  mesh_ref_list_translate(&gizmo->meshes, position);
+  mesh_ref_list_translate(&seo->meshes, position);
 }
 
-void seo_camera_rotate(SceneEditorObject *gizmo, vec3 rotation) {}
+void seo_camera_rotate(SceneEditorObject *seo, vec3 position, const Axis axis) {
+}
 
-void seo_camera_scale(SceneEditorObject *gizmo, vec3 scale) {}
+void seo_camera_scale(SceneEditorObject *seo, vec3 position, const Axis axis) {}
 
-void seo_camera_lookat(SceneEditorObject *gizmo, vec3 position, vec3 target) {
+void seo_camera_lookat(SceneEditorObject *seo, vec3 position, vec3 target) {
 
   // update icon position
-  Mesh *icon = gizmo->meshes.entries[0];
+  Mesh *icon = seo->meshes.entries[0];
   mesh_translate(icon, position);
 
   // update camera matrix
-  camera_lookat(gizmo->target, position, target);
+  camera_lookat(seo->target, position, target);
 
-  // update gizmo cube mesh rotation
-  Mesh *cube = gizmo->meshes.entries[1];
+  // update seo cube mesh rotation
+  Mesh *cube = seo->meshes.entries[1];
   mesh_lookat(cube, position, target);
 }
 
 /**
-   Deform camera gizmo mesh according to fov
+   Deform camera seo mesh according to fov
    (Goes from cube to prism)
  */
-void seo_camera_fov(SceneEditorObject *gizmo, float fov) {
+void seo_camera_fov(SceneEditorObject *seo, float fov) {
 
   /**
         checked on blender to get faces vertex indices:
@@ -133,7 +140,7 @@ void seo_camera_fov(SceneEditorObject *gizmo, float fov) {
 
   size_t cube_mesh_id = 1;
 
-  Mesh *cube = gizmo->meshes.entries[cube_mesh_id];
+  Mesh *cube = seo->meshes.entries[cube_mesh_id];
   // get vertex attributes + index for line mesh composition
   VertexAttribute *cube_base_attribute = mesh_topology_base(cube).attribute;
 

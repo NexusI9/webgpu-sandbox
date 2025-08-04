@@ -1,7 +1,7 @@
 #ifndef _SCENE_EDITOR_OBJECT_BUILDER_BILLBOARD_H_
 #define _SCENE_EDITOR_OBJECT_BUILDER_BILLBOARD_H_
 
-#define GIZMO_BILLBOARD_SCALE ((vec3){0.85f, 0.85f, 0.85f})
+#define SEO_BILLBOARD_SCALE ((vec3){0.85f, 0.85f, 0.85f})
 
 #include <cglm/cglm.h>
 #include <stddef.h>
@@ -16,9 +16,9 @@ typedef struct {
   WGPUQueue *queue;
   const char *label;
   const char *texture_path;
-} GizmoCreateBillboardDescriptor;
+} SEOCreateBillboardDescriptor;
 
 
-void gizmo_create_billboard(Mesh *, const GizmoCreateBillboardDescriptor *);
+void seo_create_billboard(Mesh *, const SEOCreateBillboardDescriptor *);
 
 #endif

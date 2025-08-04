@@ -14,8 +14,8 @@
    responsibility to handle the wireframe generation as well as the overriden
    topology/shader to be rendered all the time.
  */
-void gizmo_create_wireframe(Mesh *mesh,
-                            const GizmoCreateWireframeDescriptor *desc) {
+void seo_create_wireframe(Mesh *mesh,
+                            const SEOCreateWireframeDescriptor *desc) {
 
   // set wireframe color from the vertex attributes
   vertex_attribute_set_color(desc->vertex, desc->color);
@@ -39,8 +39,8 @@ void gizmo_create_wireframe(Mesh *mesh,
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
                             .device = desc->device,
                             .queue = desc->queue,
-                            .label = "Gizmo wireframe shader",
-                            .name = "Gizmo wireframe shader",
+                            .label = "SEO wireframe shader",
+                            .name = "SEO wireframe shader",
                             .path = SHADER_PATH_LINE,
                         });
 

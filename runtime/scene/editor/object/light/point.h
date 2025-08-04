@@ -6,5 +6,10 @@
 #include "../runtime/mesh/mesh.h"
 
 void seo_light_point_create(SceneEditorObject *, PointLight *,
-                              const GizmoCreateDescriptor *);
+                            const GizmoCreateDescriptor *);
+
+void seo_light_point_translate(SceneEditorObject *, vec3, const Axis);
+void seo_light_point_rotate(SceneEditorObject *, vec3, const Axis);
+void seo_light_point_scale(SceneEditorObject *, vec3, const Axis);
+
 #endif

@@ -26,7 +26,6 @@ void scene_selection_filter_set_all_active(SceneSelectionFilter *filter) {
                                filter->highlight_data);
 }
 
-
 /**
    Empty all the filter objects to meshes[SceneSelectionState_Selected].
    */

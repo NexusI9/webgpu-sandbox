@@ -6,12 +6,6 @@ static const mesh_transform_axis_callback transform_callback_mesh[] = {
     [GizmoTransformMode_Scale] = mesh_scale_axis,
 };
 
-static const mesh_transform_axis_callback transform_callback_seo[] = {
-    [GizmoTransformMode_Translate] = mesh_translate_axis,
-    [GizmoTransformMode_Rotate] = mesh_rotate_axis,
-    [GizmoTransformMode_Scale] = mesh_scale_axis,
-};
-
 /* Mesh based transform */
 void scene_selection_mesh_transform(MeshRefList *active_meshes,
                                     SceneSelectionTargetList *target_list,
@@ -26,7 +20,6 @@ void scene_selection_mesh_transform(MeshRefList *active_meshes,
 
     // calculate offset from delta
     vec3 offset_attribute;
-
     glm_vec3_add(*init_attribute, delta, offset_attribute);
 
     // transform mesh
@@ -46,21 +39,13 @@ void scene_selection_seo_transform(MeshRefList *active_meshes,
 
     vec3 *init_attribute = &initial_attributes->entries[i];
     Mesh *mesh = active_meshes->entries[i];
-    SceneEditorObject *seo = (SceneEditorObject *)&target_list[i];
+    SceneEditorObject *seo = (SceneEditorObject *)target_list->entries[i];
 
-    // transform mesh
-    
     // calculate offset from delta
     vec3 offset_attribute;
-
     glm_vec3_add(*init_attribute, delta, offset_attribute);
 
-    // transform mesh
-    transform_callback_seo[transform_mode](mesh, offset_attribute, axis);
-
-    print_vec3(offset_attribute);
-    // transform seo target
-    
-    
+    // transform seo via their own callback
+    seo->transform_callback[transform_mode](seo, offset_attribute, axis);
   }
 }

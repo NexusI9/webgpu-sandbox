@@ -19,12 +19,12 @@ void seo_light_sun_create(SceneEditorObject *gizmo, SunLight *light,
   const char *texture_path = "./resources/assets/texture/ui/light-sun.png";
 
   // create gizmo mesh
-  gizmo_create_billboard(icon, &(GizmoCreateBillboardDescriptor){
+  seo_create_billboard(icon, &(SEOCreateBillboardDescriptor){
                                    .texture_path = texture_path,
                                    .device = desc->device,
                                    .queue = desc->queue,
                                    .position = &light->position,
-                                   .scale = &GIZMO_BILLBOARD_SCALE,
+                                   .scale = &SEO_BILLBOARD_SCALE,
                                });
 
   // store mesh pointer in gizmo ref list
