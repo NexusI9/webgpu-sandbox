@@ -30,4 +30,22 @@ void seo_light_spot_create(SceneEditorObject *seo, SpotLight *light,
   // store mesh pointer in gizmo ref list
   mesh_ref_list_insert(&seo->meshes, icon);
 
+    // set callback
+  seo->transform_callback[GizmoTransformMode_Translate] =
+      seo_light_spot_translate;
+  seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_spot_rotate;
+  seo->transform_callback[GizmoTransformMode_Scale] = seo_light_spot_scale;
+
 }
+
+
+
+
+void seo_light_spot_translate(SceneEditorObject *seo, vec3 value) {
+
+  mesh_ref_list_translate(&seo->meshes, value);
+}
+
+void seo_light_spot_rotate(SceneEditorObject *seo, vec3 value) {}
+
+void seo_light_spot_scale(SceneEditorObject *seo, vec3 value) {}

@@ -6,5 +6,11 @@
 #include "../core.h"
 
 void seo_light_ambient_create(SceneEditorObject *, AmbientLight *,
-                                const GizmoCreateDescriptor *);
+                              const GizmoCreateDescriptor *);
+
+
+void seo_light_ambient_translate(SceneEditorObject *, vec3);
+void seo_light_ambient_rotate(SceneEditorObject *, vec3);
+void seo_light_ambient_scale(SceneEditorObject *, vec3);
+
 #endif

@@ -59,17 +59,13 @@ void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
       seo_light_point_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_point_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_light_point_scale;
-
 }
 
-void seo_light_point_translate(SceneEditorObject *seo, vec3 value,
-                               const Axis axis) {
+void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
 
   mesh_ref_list_translate(&seo->meshes, value);
 }
 
-void seo_light_point_rotate(SceneEditorObject *seo, vec3 value,
-                            const Axis axis) {}
+void seo_light_point_rotate(SceneEditorObject *seo, vec3 value) {}
 
-void seo_light_point_scale(SceneEditorObject *seo, vec3 value,
-                           const Axis axis) {}
+void seo_light_point_scale(SceneEditorObject *seo, vec3 value) {}

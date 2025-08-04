@@ -1,9 +1,9 @@
 #include "transform.h"
 
-static const mesh_transform_axis_callback transform_callback_mesh[] = {
-    [GizmoTransformMode_Translate] = mesh_translate_axis,
-    [GizmoTransformMode_Rotate] = mesh_rotate_axis,
-    [GizmoTransformMode_Scale] = mesh_scale_axis,
+static const mesh_transform_callback transform_callback_mesh[] = {
+    [GizmoTransformMode_Translate] = mesh_translate,
+    [GizmoTransformMode_Rotate] = mesh_rotate,
+    [GizmoTransformMode_Scale] = mesh_scale,
 };
 
 /* Mesh based transform */
@@ -23,7 +23,7 @@ void scene_selection_mesh_transform(MeshRefList *active_meshes,
     glm_vec3_add(*init_attribute, delta, offset_attribute);
 
     // transform mesh
-    transform_callback_mesh[transform_mode](mesh, offset_attribute, axis);
+    transform_callback_mesh[transform_mode](mesh, offset_attribute);
   }
 }
 
@@ -46,6 +46,6 @@ void scene_selection_seo_transform(MeshRefList *active_meshes,
     glm_vec3_add(*init_attribute, delta, offset_attribute);
 
     // transform seo via their own callback
-    seo->transform_callback[transform_mode](seo, offset_attribute, axis);
+    seo->transform_callback[transform_mode](seo, offset_attribute);
   }
 }

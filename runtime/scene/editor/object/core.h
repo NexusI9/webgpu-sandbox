@@ -5,7 +5,7 @@
 
 typedef struct SceneEditorObject SceneEditorObject;
 
-typedef void (*seo_transform_axis_callback)(SceneEditorObject *, vec3, const Axis);
+typedef void (*seo_transform_axis_callback)(SceneEditorObject *, vec3);
 
 struct SceneEditorObject {
   void *target;

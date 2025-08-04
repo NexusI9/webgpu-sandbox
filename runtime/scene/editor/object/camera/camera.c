@@ -88,20 +88,18 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   seo->transform_callback[GizmoTransformMode_Scale] = seo_camera_scale;
 }
 
-void seo_camera_translate(SceneEditorObject *seo, vec3 position,
-                          const Axis axis) {
+void seo_camera_translate(SceneEditorObject *seo, vec3 value) {
 
   // transform target
-  camera_translate(seo->target, position);
+  camera_translate(seo->target, value);
 
   // transform mesh
-  mesh_ref_list_translate(&seo->meshes, position);
+  mesh_ref_list_translate(&seo->meshes, value);
 }
 
-void seo_camera_rotate(SceneEditorObject *seo, vec3 position, const Axis axis) {
-}
+void seo_camera_rotate(SceneEditorObject *seo, vec3 value) {}
 
-void seo_camera_scale(SceneEditorObject *seo, vec3 position, const Axis axis) {}
+void seo_camera_scale(SceneEditorObject *seo, vec3 value) {}
 
 void seo_camera_lookat(SceneEditorObject *seo, vec3 position, vec3 target) {
 

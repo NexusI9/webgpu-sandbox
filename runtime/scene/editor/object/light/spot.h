@@ -7,4 +7,10 @@
 
 void seo_light_spot_create(SceneEditorObject*, SpotLight *, const GizmoCreateDescriptor *);
 
+
+void seo_light_spot_translate(SceneEditorObject *, vec3);
+void seo_light_spot_rotate(SceneEditorObject *, vec3);
+void seo_light_spot_scale(SceneEditorObject *, vec3);
+
+
 #endif
