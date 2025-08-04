@@ -1,7 +1,7 @@
 #ifndef _SCENE_EDITOR_CALLBACK_KEY_H_
 #define _SCENE_EDITOR_CALLBACK_KEY_H_
 
-#include "../../core.h"
+#include "../../../core.h"
 #include "../runtime/input/input.h"
 
 typedef struct {

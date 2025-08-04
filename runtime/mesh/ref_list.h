@@ -16,9 +16,11 @@ typedef struct {
 DynamicListStatus mesh_ref_list_create(MeshRefList *, const size_t);
 DynamicListStatus mesh_ref_list_array_create(MeshRefListArray *, const size_t);
 Mesh *mesh_ref_list_insert(MeshRefList *, Mesh *);
+Mesh *mesh_ref_list_new_entry(MeshRefList *);
 
 // destructors
 DynamicListStatus mesh_ref_list_remove(MeshRefList *, Mesh *);
+DynamicListStatus mesh_ref_list_remove_at_index(MeshRefList *, size_t);
 void mesh_ref_list_empty(MeshRefList *);
 void mesh_ref_list_free(MeshRefList *);
 
@@ -28,7 +30,7 @@ MeshStatus mesh_ref_list_transfert(const MeshRefList *, MeshRefList *,
 MeshStatus mesh_ref_list_copy(const MeshRefList *, MeshRefList *);
 
 // utils
-Mesh *mesh_ref_list_find(const MeshRefList *, Mesh *);
+Mesh *mesh_ref_list_find(const MeshRefList *, Mesh *, size_t *);
 
 // debug
 void mesh_ref_list_print(MeshRefList *);

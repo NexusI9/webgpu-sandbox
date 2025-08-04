@@ -1,7 +1,7 @@
 #ifndef _SCENE_EDITOR_CALLBACK_MOUSE_H_
 #define _SCENE_EDITOR_CALLBACK_MOUSE_H_
 
-#include "../../core.h"
+#include "../../../core.h"
 
 void scene_selection_init_mouse_events(Scene* scene);
 

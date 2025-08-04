@@ -1,0 +1,66 @@
+#include "transform.h"
+
+static const mesh_transform_axis_callback transform_callback_mesh[] = {
+    [GizmoTransformMode_Translate] = mesh_translate_axis,
+    [GizmoTransformMode_Rotate] = mesh_rotate_axis,
+    [GizmoTransformMode_Scale] = mesh_scale_axis,
+};
+
+static const mesh_transform_axis_callback transform_callback_seo[] = {
+    [GizmoTransformMode_Translate] = mesh_translate_axis,
+    [GizmoTransformMode_Rotate] = mesh_rotate_axis,
+    [GizmoTransformMode_Scale] = mesh_scale_axis,
+};
+
+/* Mesh based transform */
+void scene_selection_mesh_transform(MeshRefList *active_meshes,
+                                    SceneSelectionTargetList *target_list,
+                                    Vec3List *initial_attributes, vec3 delta,
+                                    const Axis axis,
+                                    const GizmoTransformMode transform_mode,
+                                    void *data) {
+  for (size_t i = 0; i < active_meshes->length; i++) {
+
+    vec3 *init_attribute = &initial_attributes->entries[i];
+    Mesh *mesh = active_meshes->entries[i];
+
+    // calculate offset from delta
+    vec3 offset_attribute;
+
+    glm_vec3_add(*init_attribute, delta, offset_attribute);
+
+    // transform mesh
+    transform_callback_mesh[transform_mode](mesh, offset_attribute, axis);
+  }
+}
+
+/* SEO based transform */
+void scene_selection_seo_transform(MeshRefList *active_meshes,
+                                   SceneSelectionTargetList *target_list,
+                                   Vec3List *initial_attributes, vec3 delta,
+                                   const Axis axis,
+                                   const GizmoTransformMode transform_mode,
+                                   void *data) {
+
+  for (size_t i = 0; i < active_meshes->length; i++) {
+
+    vec3 *init_attribute = &initial_attributes->entries[i];
+    Mesh *mesh = active_meshes->entries[i];
+    SceneEditorObject *seo = (SceneEditorObject *)&target_list[i];
+
+    // transform mesh
+    
+    // calculate offset from delta
+    vec3 offset_attribute;
+
+    glm_vec3_add(*init_attribute, delta, offset_attribute);
+
+    // transform mesh
+    transform_callback_seo[transform_mode](mesh, offset_attribute, axis);
+
+    print_vec3(offset_attribute);
+    // transform seo target
+    
+    
+  }
+}

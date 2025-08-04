@@ -43,17 +43,26 @@ void mesh_ref_list_free(MeshRefList *list) {
  */
 DynamicListStatus mesh_ref_list_remove(MeshRefList *list, Mesh *mesh) {
   return dyli_remove((void *)list->entries, &list->length, sizeof(Mesh *),
-              (void *)&mesh, "Mesh reference list");
+                     (void *)&mesh, "Mesh reference list");
+}
+
+DynamicListStatus mesh_ref_list_remove_at_index(MeshRefList *list,
+                                                size_t index) {
+  return dyli_remove_at_index((void *)list->entries, &list->length,
+                              sizeof(Mesh *), index, "Mesh reference list");
 }
 
 /**
    Linearily traverse the list and compare mesh id to find match
  */
-Mesh *mesh_ref_list_find(const MeshRefList *list, Mesh *mesh) {
+Mesh *mesh_ref_list_find(const MeshRefList *list, Mesh *mesh, size_t *index) {
 
   for (size_t i = 0; i < list->length; i++)
-    if (list->entries[i] == mesh)
+    if (list->entries[i] == mesh) {
+      if (index)
+        *index = i;
       return list->entries[i];
+    }
 
   return NULL;
 }
@@ -92,7 +101,7 @@ MeshStatus mesh_ref_list_transfert(const MeshRefList *src, MeshRefList *dest,
     // inserting
     for (size_t i = 0; i < src->length; i++) {
       Mesh *src_mesh = src->entries[i];
-      Mesh *find = mesh_ref_list_find(exclude, src_mesh);
+      Mesh *find = mesh_ref_list_find(exclude, src_mesh, NULL);
 
       // skip if mesh pointer found in exclude list
       if (find != NULL)
@@ -145,4 +154,10 @@ void mesh_ref_list_average_position(MeshRefList *list, vec3 *dest) {
     glm_vec3_add(list->entries[i]->position, *dest, *dest);
 
   glm_vec3_scale(*dest, 1.0f / list->length, *dest);
+}
+
+Mesh *mesh_ref_list_new_entry(MeshRefList *list) {
+  return (Mesh *)dyli_new_entry((void *)&list->entries, &list->capacity,
+                                &list->length, sizeof(Mesh *),
+                                "Mesh reference list");
 }

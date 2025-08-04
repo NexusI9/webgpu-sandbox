@@ -1,8 +1,9 @@
-#include "callback_mouse.h"
-#include "../../show.h"
-#include "./selection.h"
-#include "./utils.h"
-#include "core.h"
+#include "mouse.h"
+#include "../../../show.h"
+#include "../core.h"
+#include "../filter.h"
+#include "../selection.h"
+#include "../utils.h"
 #include <stdint.h>
 
 void scene_selection_init_mouse_events(Scene *scene) {
@@ -41,14 +42,16 @@ void scene_selection_init_mouse_events(Scene *scene) {
           .size = sizeof(SceneSelectionCallbackData),
           .include =
               {
-                  .lists = scene_selection->include.entries,
-                  .length = scene_selection->include.length,
+                  .lists =
+                      (MeshRefList *[]){
+                          &scene_selection->filters[0]
+                               .meshes[SceneSelectionState_Default],
+                          &scene_selection->filters[1]
+                               .meshes[SceneSelectionState_Default],
+                      },
+                  .length = SCENE_SELECTION_TYPE_COUNT,
               },
-          .exclude =
-              {
-                  .lists = scene_selection->exclude.entries,
-                  .length = scene_selection->exclude.length,
-              },
+          .exclude = {0},
       });
 
   // left click raycast on scene main camera (to select gizmo transform)
@@ -168,33 +171,26 @@ void scene_selection_raycast_mesh_callback(
 
     if (target_filter != NULL) {
 
-      MeshRefList *filter_selection = &target_filter->selection;
+      MeshRefList *filter_selection =
+          &target_filter->meshes[SceneSelectionState_Selected];
 
       // cap + right click : remove selection if exist, add if not
-      if (mouseEvent->shiftKey && mouseEvent->button == 2) {
+      if (mouseEvent->shiftKey && mouseEvent->button == 2 &&
+          scene_selection_filter_set_active(target_filter, hit->mesh) ==
+              SceneSelectionFilterStatus_MeshAlreadySelected)
 
-        Mesh *already_selected =
-            mesh_ref_list_find(filter_selection, hit->mesh);
+        scene_selection_filter_set_inactive(target_filter, hit->mesh);
 
-        if (already_selected == NULL)
-          scene_selection_add(filter_selection, hit->mesh);
-        else
-          mesh_ref_list_remove(filter_selection, hit->mesh);
-
-      }
       // right click : add to selection
       else if (mouseEvent->button == 2) {
         // clear selection and add new one
         scene_selection_empty(selection);
-        scene_selection_add(filter_selection, hit->mesh);
+        scene_selection_filter_set_active(target_filter, hit->mesh);
       }
 
       // transfert source to destination
-      if (target_filter->transfert) {
-        mesh_ref_list_empty(target_filter->transfert);
-        mesh_ref_list_transfert(filter_selection, target_filter->transfert,
-                                NULL);
-      }
+      if (target_filter->highlight_callback)
+        target_filter->highlight_callback(filter_selection, scene);
     }
   } else {
     // empty selection
@@ -235,6 +231,8 @@ void scene_selection_raycast_gizmo_callback(
     // cache scene selection initial attributes
     scene_selection_cache_initial_attributes(&scene->editor.selection,
                                              gizmo->mode);
+
+    // cache active meshes extra targets
 
     // set active handle from current mode and initialize offset
     MeshRefList *list[SCENE_SELECTION_TYPE_COUNT];

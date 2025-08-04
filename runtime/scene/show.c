@@ -8,7 +8,7 @@ SceneStatus scene_show_mesh(Scene *scene, Mesh *mesh,
                             const ScenePipeline pipeline) {
 
   // prevent duplicate
-  if (mesh_ref_list_find(&scene->pipelines[pipeline], mesh) != NULL)
+  if (mesh_ref_list_find(&scene->pipelines[pipeline], mesh, NULL) != NULL)
     return SceneStatus_MeshAlreadyExists;
 
   if (mesh_ref_list_insert(&scene->pipelines[pipeline], mesh) == NULL)

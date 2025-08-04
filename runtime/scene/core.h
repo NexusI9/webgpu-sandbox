@@ -4,9 +4,10 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../backend/renderer/renderer.h"
-#include "./editor/object/object.h"
 #include "./editor/gizmo/gizmo.h"
+#include "./editor/object/object.h"
 #include "./layer.h"
+#include "editor/gizmo/core.h"
 #include "editor/object/core.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
@@ -15,9 +16,10 @@
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
 #define SCENE_PIPELINE_COUNT 7
+
 #define SCENE_SELECTION_LIST_CAPACITY 6
 #define SCENE_SELECTION_TYPE_COUNT 2
-
+#define SCENE_SELECTION_STATE_COUNT 2
 // due to depth test, need to write fully solid mesh first and then
 // transparent meshes
 
@@ -107,53 +109,49 @@ typedef enum {
 
 
  */
-typedef void (*scene_selection_transform_callback)(MeshRefList *, Vec3List *,
-                                                   vec3, const Axis);
 
+typedef void *scene_selection_target_t;
 typedef struct {
-  MeshRefList *entries[SCENE_SELECTION_LIST_CAPACITY];
+  scene_selection_target_t *entries;
   size_t length;
-} SceneSelectionRefList;
+  size_t capacity;
+} SceneSelectionTargetList;
+
+typedef void (*scene_selection_transform_callback)(MeshRefList *,
+                                                   SceneSelectionTargetList *,
+                                                   Vec3List *, vec3, const Axis,
+                                                   const GizmoTransformMode,
+                                                   void *);
+
+typedef void (*scene_selection_highlight_callback)(MeshRefList *, void *);
+
+typedef enum {
+  SceneSelectionState_Default,
+  SceneSelectionState_Selected,
+} SceneSelectionState;
+
+typedef enum {
+  SceneSelectionType_Mesh,
+  SceneSelectionType_SEO,
+} SceneSelectionType;
 
 typedef struct {
 
-  // mesh lists to be included for selection
-  SceneSelectionRefList include;
+  MeshRefList meshes[SCENE_SELECTION_STATE_COUNT];
+  SceneSelectionTargetList targets[SCENE_SELECTION_STATE_COUNT];
+  Vec3List initial_attributes;
 
-  // mesh lists to be excluded for selection
-  SceneSelectionRefList exclude;
+  scene_selection_highlight_callback highlight_callback;
+  void *highlight_data;
 
-  // reference list for mesh to be added on selection
-  MeshRefList selection;
-
-  // cached selection meshes initial attribute to correctly offset from delta
-  // when transforming and keep in memory previous value is cancel transform.
-  Vec3List init_attribute;
-
-  // transform callback will transform the included mesh according to gizmo mode
-  // and given callbacks
-  scene_selection_transform_callback
-      transform_callbacks[GIZMO_TRANSFORM_MODE_COUNT];
-
-  // (optional) transfert filter mesh to a given mesh reference list
-  // define destination (i.e. the pipeline where the selected meshes will be
-  // pushes to)
-  MeshRefList *transfert;
+  scene_selection_transform_callback transform_callback;
+  void *transform_data;
 
 } SceneSelectionFilter;
 
 typedef struct {
   SceneSelectionFilter filters[SCENE_SELECTION_TYPE_COUNT];
-  // mesh lists to be included for selection
-  SceneSelectionRefList include;
-  // mesh lists to be excluded for selection
-  SceneSelectionRefList exclude;
 } SceneSelection;
-
-typedef enum {
-  SceneSelectionType_Mesh,
-  SceneSelectionType_Shader,
-} SceneSelectionType;
 
 /**
 

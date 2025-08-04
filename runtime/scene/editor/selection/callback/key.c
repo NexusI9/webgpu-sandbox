@@ -1,7 +1,8 @@
-#include "callback_key.h"
-#include "../../show.h"
-#include "core.h"
-#include "utils.h"
+#include "key.h"
+#include "../../../show.h"
+#include "../core.h"
+#include "../filter.h"
+#include "../utils.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -152,11 +153,7 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
   SceneSelection *selection = &scene->editor.selection;
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
-  /*
-
-    ==== DESELECT ALL ====
-
-   */
+  /* ==== DESELECT ALL ====   */
   // if already selection => unselect everything
   if (scene_selection_length(selection)) {
     // empty selection
@@ -164,41 +161,8 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
     // hide gizmo
     scene_gizmo_transform_hide(scene);
   } else {
-    /*
-
-        ==== SELECT ALL ====
-
-       */
-
-    for (size_t i = 0; i < selection->include.length; i++) {
-
-      // check includes lists
-      for (size_t j = 0; j < selection->include.entries[i]->length; j++) {
-
-        Mesh *mesh = selection->include.entries[i]->entries[j];
-
-        // if excluded, continue to next mesh
-        bool excluded = false;
-        for (size_t k = 0; k < selection->exclude.length; k++) {
-          if (mesh_ref_list_find(selection->exclude.entries[k], mesh) != NULL) {
-            excluded = true;
-            break;
-          }
-        }
-
-        if (excluded)
-          continue;
-
-        // add it to the target filter
-        SceneSelectionFilter *target_filter =
-            scene_selection_filter_find_mesh(selection, mesh);
-
-        if (target_filter == NULL)
-          continue;
-
-        scene_selection_filter_add_mesh(target_filter, mesh);
-      }
-    }
+    /*  ==== SELECT ALL ==== */
+    scene_selection_all(selection);
 
     // show gizmo
     scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection);

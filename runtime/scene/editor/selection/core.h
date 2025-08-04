@@ -22,13 +22,14 @@ void scene_selection_meshes_lists(SceneSelection *,
 
 size_t scene_selection_length(SceneSelection *);
 
-/* Filters */
-SceneSelectionFilter *scene_selection_filter_find_mesh(SceneSelection *,
-                                                       Mesh *);
+void scene_selection_add_mesh_ref_list(SceneSelection *, MeshRefList *, void *,
+                                       const SceneSelectionType);
 
-bool scene_selection_filter_include_mesh(SceneSelectionFilter *, Mesh *);
-void scene_selection_filter_add_mesh(SceneSelectionFilter *, Mesh *);
+void scene_selection_add_mesh(SceneSelection *selection, Mesh *list,
+                              void *extra, const SceneSelectionType type);
+
 void scene_selection_empty(SceneSelection *);
+void scene_selection_all(SceneSelection *);
 void scene_selection_cache_initial_attributes(SceneSelection *,
                                               const GizmoTransformMode);
 void scene_selection_empty_initial_attributes(SceneSelection *);

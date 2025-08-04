@@ -34,6 +34,7 @@
    
  */
 
+// Scene Editor Objects
 // light
 SceneEditorObject *scene_add_point_light(Scene *, PointLightDescriptor *);
 SceneEditorObject *scene_add_spot_light(Scene *, SpotLightDescriptor *);
@@ -43,7 +44,7 @@ SceneEditorObject *scene_add_sun_light(Scene *, SunLightDescriptor *);
 // camera
 SceneEditorObject *scene_add_camera(Scene *, const CameraCreateDescriptor *);
 
-// mesh
+// Scene Meshes
 Mesh *scene_new_mesh(Scene *);
 void scene_add_mesh(Scene *, Mesh *, const ScenePipeline, const char *);
 void scene_add_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline,

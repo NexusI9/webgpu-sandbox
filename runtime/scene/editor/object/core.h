@@ -5,13 +5,12 @@
 
 typedef struct SceneEditorObject SceneEditorObject;
 
-typedef void (*seo_transform_callback)(SceneEditorObject *, vec3, vec3,
-                                       const Axis);
+typedef void (*seo_transform_axis_callback)(SceneEditorObject *, vec3, const Axis);
 
 struct SceneEditorObject {
   void *target;
   MeshRefList meshes;
-  seo_transform_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
+  seo_transform_axis_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
 };
 
 typedef struct {
