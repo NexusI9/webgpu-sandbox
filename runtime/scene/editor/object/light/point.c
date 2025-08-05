@@ -70,7 +70,7 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
   glm_vec3_copy(value, light->position);
 
   mesh_ref_list_translate(&seo->meshes, value);
-  
+
   // update light shadow map
   shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
       .light = &seo->scene->lights.point.entries[seo->target_list_index],

@@ -31,10 +31,12 @@ void shader_build(Shader *shader) {
     shader_bind_group_build(&shader->bind_groups.entries[i], i, shader->device,
                             &shader->pipeline.handle);
 
-  // shader_module_release(shader);
   // TODO: properly release pipeline when deleting mesh
   // shader_pipeline_release_layout(shader);
   free(bindgroup_layouts);
+
+  // release shader module after building pipeline
+  shader_module_release(shader);
 }
 
 /**
@@ -53,11 +55,11 @@ void shader_build_pipeline(Shader *shader, WGPUBindGroupLayout *layout) {
 
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
       shader->device, &(WGPUPipelineLayoutDescriptor){
-                           // total bind groups count
-                           .bindGroupLayoutCount = shader->bind_groups.length,
-                           .bindGroupLayouts = layout,
-                           .label = shader->name,
-                       });
+                          // total bind groups count
+                          .bindGroupLayoutCount = shader->bind_groups.length,
+                          .bindGroupLayouts = layout,
+                          .label = shader->name,
+                      });
 
   // create pipeline
   pipeline_build(&shader->pipeline, &pipeline_layout);

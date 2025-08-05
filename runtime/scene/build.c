@@ -16,8 +16,7 @@ typedef struct {
 static void scene_build_mesh_texture(Mesh *, Camera *, Viewport *,
                                      PipelineMultisampleCount,
                                      const SceneBuildTextureDescriptor *,
-                                     const AOBakeInitDescriptor *,
-                                     const ShadowMapDrawAllDescriptor *);
+                                     const AOBakeInitDescriptor *);
 
 static void scene_build_mesh_shadow(Mesh *, Camera *, Viewport *,
                                     PipelineMultisampleCount);
@@ -113,12 +112,6 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
               .queue = queue,
               .device = device,
               .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
-          },
-          &(ShadowMapDrawAllDescriptor){
-              .device = device,
-              .queue = queue,
-              .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
-              .lights = &scene->lights,
           });
 
       break;
@@ -150,8 +143,7 @@ void scene_build_mesh_ref_list(Scene *scene, MeshRefList *list,
 void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
                               PipelineMultisampleCount sample,
                               const SceneBuildTextureDescriptor *build_desc,
-                              const AOBakeInitDescriptor *ao_desc,
-                              const ShadowMapDrawAllDescriptor *shad_desc) {
+                              const AOBakeInitDescriptor *ao_desc) {
 
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
@@ -164,6 +156,13 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
   // lit only pipeline
   if (build_desc->pipeline == ScenePipeline_Dynamic_Lit) {
 
+    // create binding for shadow maps (using fallback texture)
+    material_texture_bind_shadow_maps(mesh, build_desc->point_map,
+                                      build_desc->spot_map);
+    // bind lights
+    material_texture_bind_lights(mesh, build_desc->lights,
+                                 SHADER_TEXTURE_BINDGROUP_LIGHTS);
+
     // create mesh shadow shader
     mesh_create_shadow_shader(mesh);
 
@@ -173,19 +172,8 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
     // build shadow shader layout
     mesh_build(mesh, mesh_shader_shadow(mesh));
 
-    // create binding for shadow maps (using fallback texture)
-    material_texture_bind_shadow_maps(mesh, build_desc->point_map,
-                                      build_desc->spot_map);
-
-    // bind lights
-    material_texture_bind_lights(mesh, build_desc->lights,
-                                 SHADER_TEXTURE_BINDGROUP_LIGHTS);
-
     // Bake AO textures for static scenes elements
     // ao_bake_init(ao_desc);
-
-    // Update Shadow maps (both color and depth map)
-    shadow_map_draw_all(shad_desc);
   }
 
   // build mesh
@@ -315,7 +303,4 @@ void build_utils_bind(Mesh *mesh, mesh_get_shader_callback target_shader,
 
   // build shader pipeline
   mesh_build(mesh, target_shader(mesh));
-
-  // release shader module
-  shader_module_release(target_shader(mesh));
 }

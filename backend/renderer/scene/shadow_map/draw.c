@@ -171,6 +171,10 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
  */
 void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
+  VERBOSE_PROCESS("Computing all shadow maps...");
+
+  // Todo : check why cannot use this global shadow_encoder, looks like it's
+  // related to light view matrix but not sure....
   WGPUCommandEncoder shadow_encoder =
       wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
@@ -295,21 +299,10 @@ void shadow_map_draw_point_light(
  */
 void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
 
-  // 1. Bind meshes
+  // 1. Update uniforms
   for (int m = 0; m < desc->mesh_list->length; m++) {
     Mesh *current_mesh = desc->mesh_list->entries[m];
     material_shadow_update_views(current_mesh, &desc->views->views[0]);
-
-    /*
-      Cullmode adjustment below:
-      Point Light pipeline use a FRONT cull cause by flipping the scene on
-      the x axis to match cube map coordinates.
-
-      However since spot light use a casual Texture and doesn't require
-      to flip the scene projection, we set back the cull to BACK.
-    */
-
-    // material_shadow_set_cullmode(current_mesh, WGPUCullMode_Back);
   }
 
   // 2. Render scene (create shadow render pass to texture layer)

@@ -1,4 +1,5 @@
 #include "shadow.h"
+#include "../utils/system.h"
 
 /**
    Bind a specific point light view to the mesh's shadow shader
@@ -14,9 +15,6 @@ void material_shadow_bind_views(Mesh *mesh) {
 
   MeshUniform uModel = mesh_uniform_model(mesh);
 
-  mat4 init_view;
-  glm_mat4_zero(init_view);
-
   shader_add_uniform(
       mesh_shader_shadow(mesh),
       &(ShaderCreateUniformDescriptor){
@@ -27,7 +25,7 @@ void material_shadow_bind_views(Mesh *mesh) {
               (ShaderBindGroupUniformEntry[]){
                   {
                       .binding = 0,
-                      .data = (void *)&init_view,
+                      .data = (void *)0,
                       .size = sizeof(mat4),
                       .offset = 0,
                   },

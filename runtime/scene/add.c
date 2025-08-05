@@ -262,6 +262,15 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   // add mesh pointer to the right pipeline
   mesh_ref_list_insert(&scene->pipelines[pipeline], mesh);
 
+  // Update Shadow maps if added to Dynamic_Lit pipeline
+  if (pipeline == ScenePipeline_Dynamic_Lit)
+    shadow_map_draw_all(&(ShadowMapDrawAllDescriptor){
+        .device = scene_device(scene),
+        .queue = scene_queue(scene),
+        .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
+        .lights = &scene->lights,
+    });
+
   // EDITORONLY
   // add mesh to selection
   scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
