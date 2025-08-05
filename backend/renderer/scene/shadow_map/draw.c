@@ -305,6 +305,7 @@ void shadow_map_draw_point_light(
         .depth_texture = desc->depth_map,
         .layer = layer,
         .device = desc->device,
+	.queue = desc->queue,
         .encoder = desc->encoder,
     });
 
