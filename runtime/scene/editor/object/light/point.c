@@ -63,6 +63,10 @@ void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
 
 void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
 
+  PointLight *light = (PointLight *)seo->target;
+
+  glm_vec3_copy(value, light->position);
+
   mesh_ref_list_translate(&seo->meshes, value);
 }
 

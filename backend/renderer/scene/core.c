@@ -7,7 +7,6 @@
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "render_pass.h"
-#include "shadow_pass.h"
 #include "webgpu/webgpu.h"
 #include <string.h>
 
@@ -327,10 +326,6 @@ void scene_renderer_render(void *desc) {
    with it (ao, shadow mapping...). Also call the main loop.
  */
 void scene_renderer_draw(SceneRenderer *renderer) {
-
-  /* Define render color attachment callback based on multisample count.
-     Using callback prevents branching within the main loop
-   */
 
   // call main loop
   emscripten_set_main_loop_arg(

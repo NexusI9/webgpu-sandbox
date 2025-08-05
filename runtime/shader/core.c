@@ -146,12 +146,12 @@ void shader_pipeline_release_layout(Shader *shader) {
  */
 void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
 
-  if (shader->pipeline.handle == NULL) {
+  /*if (shader->pipeline.handle == NULL) {
     VERBOSE_ERROR("Shader pipeline not defined for: %s. Make sure the "
                   "mesh has been properly built. Skip drawing.",
                   shader->name);
     return;
-  }
+  }*/
 
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline.handle);

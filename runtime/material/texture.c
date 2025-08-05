@@ -42,11 +42,7 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
     for (size_t i = 0; i < ambient_uniform.length; i++) {
       AmbientLight *light = &ambient_list->entries[i];
       AmbientLightUniform *uniform = &ambient_uniform.entries[i];
-
-      // map light to light uniform (including paddings...)
-      *uniform = (AmbientLightUniform){0};
-      uniform->intensity = light->intensity;
-      glm_vec3_copy(light->color, uniform->color);
+      ambient_light_uniform(uniform, light);
     }
   }
 
@@ -57,21 +53,7 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
     for (size_t i = 0; i < spot_uniform.length; i++) {
       SpotLight *light = &spot_list->entries[i];
       SpotLightUniform *uniform = &spot_uniform.entries[i];
-
-      // TODO: create a light method "light_spot_uniform"
-      *uniform = (SpotLightUniform){0};
-      uniform->intensity = light->intensity;
-      uniform->cutoff = light->cutoff;
-      uniform->inner_cutoff = light->inner_cutoff;
-      glm_vec3_copy(light->color, uniform->color);
-      glm_vec3_copy(light->target, uniform->target);
-      glm_vec3_copy(light->position, uniform->position);
-
-      // get light view matrix
-      LightViews spot_view =
-          light_spot_view(light->position, light->target, light->angle);
-
-      glm_mat4_copy(spot_view.views[0], uniform->view);
+      spot_light_uniform(uniform, light);
     }
   }
 
@@ -82,22 +64,7 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
     for (size_t i = 0; i < point_uniform.length; i++) {
       PointLight *light = &point_list->entries[i];
       PointLightUniform *uniform = &point_uniform.entries[i];
-
-      *uniform = (PointLightUniform){0};
-      uniform->intensity = light->intensity;
-      uniform->cutoff = light->cutoff;
-      uniform->inner_cutoff = light->inner_cutoff;
-      uniform->near = light->near;
-      uniform->far = light->far;
-
-      glm_vec3_copy(light->color, uniform->color);
-      glm_vec3_copy(light->position, uniform->position);
-
-      // copy 6 points views for shader depth comparison
-      LightViews points_views =
-          light_point_views(light->position, light->near, light->far);
-      for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++)
-        glm_mat4_copy(points_views.views[v], uniform->views[v]);
+      point_light_uniform(uniform, light);
     }
   }
 
@@ -106,18 +73,9 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
     sun_uniform.length = sun_list->length;
 
     for (size_t i = 0; i < sun_uniform.length; i++) {
-
       SunLight *light = &sun_list->entries[i];
       SunLightUniform *uniform = &sun_uniform.entries[i];
-
-      *uniform = (SunLightUniform){0};
-      uniform->intensity = light->intensity;
-      glm_vec3_copy(light->position, uniform->position);
-      glm_vec3_copy(light->color, uniform->color);
-
-      // get light view matrix
-      LightViews sun_view = light_sun_view(light->position, light->size);
-      glm_mat4_copy(sun_view.views[0], uniform->view);
+      sun_light_uniform(uniform, light);
     }
   }
 
@@ -128,6 +86,7 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
           .data = &ambient_uniform,
           .offset = 0,
           .size = sizeof(AmbientLightListUniform),
+
       },
       // spot light
       {
@@ -142,6 +101,12 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
           .data = &point_uniform,
           .offset = 0,
           .size = sizeof(PointLightListUniform),
+          .update =
+              {
+                  .callback = point_light_list_update_callback,
+                  .trigger = point_light_list_trigger_callback,
+                  .data = point_list,
+              },
       },
       // sun light
       {
@@ -206,10 +171,9 @@ void material_texture_bind_ambient_occlusion(Mesh *mesh,
    Bind the shadow maps and sampler to the default shader (called during shader
    creation)
  */
-void material_texture_bind_shadow_maps(Mesh *mesh,
-                                       WGPUTextureView fallback_point_texture_view,
-                                       WGPUTextureView fallback_spot_texture_view) {
-
+void material_texture_bind_shadow_maps(
+    Mesh *mesh, WGPUTextureView fallback_point_texture_view,
+    WGPUTextureView fallback_spot_texture_view) {
 
   const uint8_t sampler_binding = 5;
   const uint8_t group_index = 2;

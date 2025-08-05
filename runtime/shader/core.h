@@ -86,7 +86,7 @@ typedef struct {
    pass as the unifom.
 
    A common usage is:
-   - Callback Data: object itself (Camera*, Mesh*)
+   - Callback Data: object itself (Camera*, Mesh*...)
    - Entry Data: object's uniform (model view matrix...)
 
    .--------------------------------------------------------------------------.

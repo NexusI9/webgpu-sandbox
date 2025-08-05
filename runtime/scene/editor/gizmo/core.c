@@ -120,8 +120,8 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
    offset.
 
  */
-void gizmo_transform_set_active(GizmoTransform *gizmo,
-                                Camera *camera, Viewport *viewport) {
+void gizmo_transform_set_active(GizmoTransform *gizmo, Camera *camera,
+                                Viewport *viewport) {
 
   // cache gizmo init position
   gizmo_transform_origin(gizmo, &gizmo->cache.gizmo_init_position);

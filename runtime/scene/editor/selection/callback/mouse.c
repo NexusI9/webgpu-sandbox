@@ -222,6 +222,7 @@ void scene_selection_raycast_gizmo_callback(
   Mesh *hit = cast_data->hits->entries[0].mesh;
 
   if (mouseEvent->button == 0 && hit) {
+
     Scene *scene = cast_user_data->scene;
     GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
@@ -231,7 +232,7 @@ void scene_selection_raycast_gizmo_callback(
     // cache scene selection initial attributes
     scene_selection_cache_initial_attributes(&scene->editor.selection,
                                              gizmo->mode);
-    
+
     // set active handle from current mode and initialize offset
     gizmo_transform_set_active(gizmo, scene->active_camera, &scene->viewport);
   }

@@ -20,8 +20,6 @@
 #define SCENE_SELECTION_LIST_CAPACITY 6
 #define SCENE_SELECTION_TYPE_COUNT 2
 #define SCENE_SELECTION_STATE_COUNT 2
-// due to depth test, need to write fully solid mesh first and then
-// transparent meshes
 
 /*
   Scene has a global list of mesh and sublist of mesh pointers that are called
@@ -106,7 +104,7 @@ typedef enum {
 
 
    ===== SELECTION =====
-
+   TODO: Put selection struct within editor dir
 
  */
 
@@ -157,7 +155,7 @@ typedef struct {
 
 
    ===== EDITOR =====
-
+   TODO: Put editor struct within editor dir
 
  */
 

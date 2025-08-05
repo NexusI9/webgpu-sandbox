@@ -85,97 +85,9 @@ typedef struct {
   float intensity;
 } SunLightDescriptor;
 
-// light type
-// NOTE: use __attribute__ on list AS WELL AS entries (pointlights...) else
-// wrong alignment in list entries (i.e. _padding takes color.r value)
-typedef struct {
-  vec3 position;
-  float cutoff;
-  vec3 color;
-  float intensity;
-  mat4 views[LIGHT_POINT_VIEWS];
-  float inner_cutoff;
-  float near;
-  float far;
-  float _padding;
-} __attribute__((aligned(16))) PointLightUniform;
-
-typedef struct {
-  vec3 color;
-  float intensity;
-} __attribute__((aligned(16))) AmbientLightUniform;
-
-typedef struct {
-  vec3 position;
-  float cutoff;
-  vec3 target;
-  float inner_cutoff;
-  vec3 color;
-  float intensity;
-  mat4 view;
-} __attribute__((aligned(16))) SpotLightUniform;
-
-typedef struct {
-  vec3 position;
-  float intensity;
-  vec3 color;
-  float _padding;
-  mat4 view;
-} __attribute__((aligned(16))) SunLightUniform;
-
-// light uniforms
-typedef struct {
-  uint32_t length;
-  PointLightUniform entries[LIGHT_MAX_CAPACITY];
-} __attribute__((aligned(16))) PointLightListUniform;
-
-typedef struct {
-  uint32_t length;
-  AmbientLightUniform entries[LIGHT_MAX_CAPACITY];
-} __attribute__((aligned(16))) AmbientLightListUniform;
-
-typedef struct {
-  uint32_t length;
-  SpotLightUniform entries[LIGHT_MAX_CAPACITY];
-} __attribute__((aligned(16))) SpotLightListUniform;
-
-typedef struct {
-  uint32_t length;
-  SunLightUniform entries[LIGHT_MAX_CAPACITY];
-} __attribute__((aligned(16))) SunLightListUniform;
-
 typedef struct {
   WGPUTextureView texture;
   WGPUSampler sampler;
 } LightTexture;
-
-// light list
-typedef struct {
-  size_t length;
-  size_t capacity;
-  PointLight entries[LIGHT_MAX_CAPACITY];
-  WGPUTextureView color_map;
-  WGPUTextureView depth_map;
-} PointLightList;
-
-typedef struct {
-  size_t length;
-  size_t capacity;
-  SpotLight entries[LIGHT_MAX_CAPACITY];
-  WGPUTextureView color_map;
-  WGPUTextureView depth_map;
-} SpotLightList;
-
-typedef struct {
-  size_t length;
-  size_t capacity;
-  AmbientLight entries[LIGHT_MAX_CAPACITY];
-} AmbientLightList;
-
-typedef struct {
-  size_t length;
-  size_t capacity;
-  SunLight entries[LIGHT_MAX_CAPACITY];
-} SunLightList;
 
 #endif
