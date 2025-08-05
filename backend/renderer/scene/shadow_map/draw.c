@@ -406,6 +406,7 @@ void shadow_map_update_binding(const ShadowMapDrawAllDescriptor *desc) {
     const WGPUTextureView spot_map = desc->lights->spot.depth_view;
 #endif
 
+    // only release the texture if it's not equal
     material_texture_update_shadow_maps(current_mesh, point_map, spot_map);
   }
 }

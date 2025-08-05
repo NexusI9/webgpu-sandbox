@@ -1,9 +1,9 @@
 #include "add.h"
 #include "./editor/editor.h"
+#include "./editor/object/object.h"
 #include "./editor/selection/selection.h"
 #include "build.h"
 #include "core.h"
-#include "editor/object/core.h"
 #include "editor/object/list/list.h"
 #include "editor/selection/core.h"
 
@@ -38,12 +38,12 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
       seo_list_new_entry(scene_editor_object_list(scene));
 
   seo_light_point_create(seo_light, new_light,
-                         &(GizmoCreateDescriptor){
+                         &(SEOCreateDescriptor){
                              .camera = scene->active_camera,
                              .viewport = &scene->viewport,
                              .device = scene_device(scene),
                              .queue = scene_queue(scene),
-                             .list = scene_mesh_list(scene),
+                             .scene = scene,
                          });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -70,12 +70,12 @@ SceneEditorObject *scene_add_spot_light(Scene *scene,
       seo_list_new_entry(scene_editor_object_list(scene));
 
   seo_light_spot_create(seo_light, new_light,
-                        &(GizmoCreateDescriptor){
+                        &(SEOCreateDescriptor){
                             .camera = scene->active_camera,
                             .viewport = &scene->viewport,
                             .device = scene_device(scene),
                             .queue = scene_queue(scene),
-                            .list = scene_mesh_list(scene),
+                            .scene = scene,
                         });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -102,12 +102,12 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
       seo_list_new_entry(scene_editor_object_list(scene));
 
   seo_light_ambient_create(seo_light, new_light,
-                           &(GizmoCreateDescriptor){
+                           &(SEOCreateDescriptor){
                                .camera = scene->active_camera,
                                .viewport = &scene->viewport,
                                .device = scene_device(scene),
                                .queue = scene_queue(scene),
-                               .list = scene_mesh_list(scene),
+                               .scene = scene,
                            });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -133,12 +133,12 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
       seo_list_new_entry(scene_editor_object_list(scene));
 
   seo_light_sun_create(seo_light, new_light,
-                       &(GizmoCreateDescriptor){
+                       &(SEOCreateDescriptor){
                            .camera = scene->active_camera,
                            .viewport = &scene->viewport,
                            .device = scene_device(scene),
                            .queue = scene_queue(scene),
-                           .list = scene_mesh_list(scene),
+                           .scene = scene,
                        });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -179,12 +179,12 @@ SceneEditorObject *scene_add_camera(Scene *scene,
       seo_list_new_entry(scene_editor_object_list(scene));
 
   seo_camera_create(seo_cam, new_cam,
-                    &(GizmoCreateDescriptor){
+                    &(SEOCreateDescriptor){
                         .camera = scene->active_camera,
                         .viewport = &scene->viewport,
                         .device = scene_device(scene),
                         .queue = scene_queue(scene),
-                        .list = scene_mesh_list(scene),
+                        .scene = scene,
                     });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered

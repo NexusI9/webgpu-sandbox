@@ -3,7 +3,6 @@
 
 #include "./editor/gizmo/gizmo.h"
 #include "core.h"
-#include "editor/object/core.h"
 
 /**
    Key methods to add, remove, hide or show an item in the scene. Below are some

@@ -1,8 +1,8 @@
-#include "ao_bake.h"
 #include "../backend/buffer.h"
 #include "../runtime/material/material.h"
 #include "../utils/point.h"
 #include "../utils/system.h"
+#include "ao_bake.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
 
@@ -122,6 +122,7 @@ Triangle ao_bake_mesh_triangle(Mesh *mesh, size_t index) {
 void ao_bake_init(const AOBakeInitDescriptor *desc) {
 
   // init textures
+  // TODO cache MESH AO textures
   Texture ao_textures[desc->mesh_list->length];
   for (int t = 0; t < desc->mesh_list->length; t++) {
     texture_create(&ao_textures[t], &(TextureCreateDescriptor){

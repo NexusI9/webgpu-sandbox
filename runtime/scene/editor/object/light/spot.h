@@ -3,9 +3,9 @@
 
 #include "../runtime/light/light.h"
 #include "../runtime/mesh/mesh.h"
-#include "../core.h"
+#include "../runtime/scene/core.h"
 
-void seo_light_spot_create(SceneEditorObject*, SpotLight *, const GizmoCreateDescriptor *);
+void seo_light_spot_create(SceneEditorObject*, SpotLight *, const SEOCreateDescriptor *);
 
 
 void seo_light_spot_translate(SceneEditorObject *, vec3);

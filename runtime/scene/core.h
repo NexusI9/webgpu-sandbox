@@ -5,11 +5,8 @@
 #include "../backend/registry.h"
 #include "../backend/renderer/renderer.h"
 #include "./editor/gizmo/gizmo.h"
-#include "./editor/object/object.h"
 #include "./layer.h"
 #include "editor/gizmo/core.h"
-#include "editor/object/core.h"
-#include "webgpu/webgpu.h"
 #include <stddef.h>
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
@@ -17,9 +14,130 @@
 #define SCENE_CAMERA_LIST_CAPACITY 16
 #define SCENE_PIPELINE_COUNT 7
 
+typedef uint8_t shader_bind_t;
+
+typedef struct Scene Scene;
+
+/**
+    ▗▄▄▖ ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖    ▗▄▄▄▖▗▄▄▄ ▗▄▄▄▖▗▄▄▄▖▗▄▖ ▗▄▄▖
+   ▐▌   ▐▌   ▐▌   ▐▛▚▖▐▌▐▌       ▐▌   ▐▌  █  █    █ ▐▌ ▐▌▐▌ ▐▌
+    ▝▀▚▖▐▌   ▐▛▀▀▘▐▌ ▝▜▌▐▛▀▀▘    ▐▛▀▀▘▐▌  █  █    █ ▐▌ ▐▌▐▛▀▚▖
+   ▗▄▄▞▘▝▚▄▄▖▐▙▄▄▖▐▌  ▐▌▐▙▄▄▖    ▐▙▄▄▖▐▙▄▄▀▗▄█▄▖  █ ▝▚▄▞▘▐▌ ▐▌
+
+                 ▗▄▖ ▗▄▄▖    ▗▖▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
+                ▐▌ ▐▌▐▌ ▐▌   ▐▌▐▌   ▐▌     █
+                ▐▌ ▐▌▐▛▀▚▖   ▐▌▐▛▀▀▘▐▌     █
+                ▝▚▄▞▘▐▙▄▞▘▗▄▄▞▘▐▙▄▄▖▝▚▄▄▖  █
+
+ */
+
+#define SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT 16
+
+typedef struct SceneEditorObject SceneEditorObject;
+
+typedef void (*seo_transform_axis_callback)(SceneEditorObject *, vec3);
+
+struct SceneEditorObject {
+  Scene *scene;
+  void *target;
+  MeshRefList meshes;
+  seo_transform_axis_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
+};
+
+typedef struct {
+  Scene *scene;
+  WGPUDevice *device;
+  WGPUQueue *queue;
+  Camera *camera;
+  Viewport *viewport;
+} SEOCreateDescriptor;
+
+typedef struct {
+  size_t length;
+  size_t capacity;
+  SceneEditorObject *entries;
+} SceneEditorObjectList;
+
+/**
+    ▗▄▄▖▗▄▄▄▖▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖▗▄▄▄▖ ▗▄▖ ▗▖  ▗▖
+   ▐▌   ▐▌   ▐▌   ▐▌   ▐▌     █    █  ▐▌ ▐▌▐▛▚▖▐▌
+    ▝▀▚▖▐▛▀▀▘▐▌   ▐▛▀▀▘▐▌     █    █  ▐▌ ▐▌▐▌ ▝▜▌
+   ▗▄▄▞▘▐▙▄▄▖▐▙▄▄▖▐▙▄▄▖▝▚▄▄▖  █  ▗▄█▄▖▝▚▄▞▘▐▌  ▐▌
+
+   TODO: Put selection struct within editor dir
+
+ */
+
 #define SCENE_SELECTION_LIST_CAPACITY 6
 #define SCENE_SELECTION_TYPE_COUNT 2
 #define SCENE_SELECTION_STATE_COUNT 2
+
+typedef void *scene_selection_target_t;
+typedef struct {
+  scene_selection_target_t *entries;
+  size_t length;
+  size_t capacity;
+} SceneSelectionTargetList;
+
+/* Callbacks */
+typedef void (*scene_selection_transform_callback)(MeshRefList *,
+                                                   SceneSelectionTargetList *,
+                                                   Vec3List *, vec3, const Axis,
+                                                   const GizmoTransformMode,
+                                                   void *);
+
+typedef void (*scene_selection_highlight_callback)(MeshRefList *, void *);
+
+typedef enum {
+  SceneSelectionState_Default,
+  SceneSelectionState_Selected,
+} SceneSelectionState;
+
+typedef enum {
+  SceneSelectionType_Mesh,
+  SceneSelectionType_SEO,
+} SceneSelectionType;
+
+typedef struct {
+
+  MeshRefList meshes[SCENE_SELECTION_STATE_COUNT];
+  SceneSelectionTargetList targets[SCENE_SELECTION_STATE_COUNT];
+  Vec3List initial_attributes;
+
+  scene_selection_highlight_callback highlight_callback;
+  void *highlight_data;
+
+  scene_selection_transform_callback transform_callback;
+  void *transform_data;
+
+} SceneSelectionFilter;
+
+typedef struct {
+  SceneSelectionFilter filters[SCENE_SELECTION_TYPE_COUNT];
+} SceneSelection;
+
+/**
+  ▗▄▄▄▖▗▄▄▄ ▗▄▄▄▖▗▄▄▄▖▗▄▖ ▗▄▄▖
+  ▐▌   ▐▌  █  █    █ ▐▌ ▐▌▐▌ ▐▌
+  ▐▛▀▀▘▐▌  █  █    █ ▐▌ ▐▌▐▛▀▚▖
+  ▐▙▄▄▖▐▙▄▄▀▗▄█▄▖  █ ▝▚▄▞▘▐▌ ▐▌
+
+   TODO: Put editor struct within editor dir
+ */
+
+typedef struct {
+
+  // selection sets
+  SceneSelection selection;
+
+  SceneEditorObjectList seo_list; // cam/ lights  lists
+
+  struct {
+    GizmoTransform transform; // transform gizmo (unique)
+    Mesh *grid;               // grid gizmo (unique)
+  } gizmo;
+
+} SceneEditor;
 
 /*
   Scene has a global list of mesh and sublist of mesh pointers that are called
@@ -84,10 +202,6 @@ typedef enum {
   SceneStatuc_UndefError,
 } SceneStatus;
 
-typedef uint8_t shader_bind_t;
-
-typedef struct Scene Scene;
-
 typedef enum {
   // Dynamic
   ScenePipeline_Dynamic_Background,
@@ -99,79 +213,6 @@ typedef enum {
   ScenePipeline_Fixed_Front,
   ScenePipeline_Fixed_UI,
 } ScenePipeline;
-
-/**
-
-
-   ===== SELECTION =====
-   TODO: Put selection struct within editor dir
-
- */
-
-typedef void *scene_selection_target_t;
-typedef struct {
-  scene_selection_target_t *entries;
-  size_t length;
-  size_t capacity;
-} SceneSelectionTargetList;
-
-typedef void (*scene_selection_transform_callback)(MeshRefList *,
-                                                   SceneSelectionTargetList *,
-                                                   Vec3List *, vec3, const Axis,
-                                                   const GizmoTransformMode,
-                                                   void *);
-
-typedef void (*scene_selection_highlight_callback)(MeshRefList *, void *);
-
-typedef enum {
-  SceneSelectionState_Default,
-  SceneSelectionState_Selected,
-} SceneSelectionState;
-
-typedef enum {
-  SceneSelectionType_Mesh,
-  SceneSelectionType_SEO,
-} SceneSelectionType;
-
-typedef struct {
-
-  MeshRefList meshes[SCENE_SELECTION_STATE_COUNT];
-  SceneSelectionTargetList targets[SCENE_SELECTION_STATE_COUNT];
-  Vec3List initial_attributes;
-
-  scene_selection_highlight_callback highlight_callback;
-  void *highlight_data;
-
-  scene_selection_transform_callback transform_callback;
-  void *transform_data;
-
-} SceneSelectionFilter;
-
-typedef struct {
-  SceneSelectionFilter filters[SCENE_SELECTION_TYPE_COUNT];
-} SceneSelection;
-
-/**
-
-
-   ===== EDITOR =====
-   TODO: Put editor struct within editor dir
-
- */
-
-typedef struct {
-
-  // selection sets
-  SceneSelection selection;
-
-  SceneEditorObjectList seo_list; // cam/ lights  lists
-
-  struct {
-    GizmoTransform transform; // transform gizmo (unique)
-    Mesh *grid;               // grid gizmo (unique)
-  } gizmo;
-
-} SceneEditor;
 
 struct Scene {
 

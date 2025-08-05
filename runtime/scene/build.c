@@ -8,8 +8,8 @@
 typedef struct {
   ScenePipeline pipeline;
   LightList *lights;
-  WGPUTextureView *point_map;
-  WGPUTextureView *spot_map;
+  WGPUTextureView point_map;
+  WGPUTextureView spot_map;
 } SceneBuildTextureDescriptor;
 
 // pipeline builders
@@ -106,9 +106,8 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
           &(SceneBuildTextureDescriptor){
               .pipeline = pipeline,
               .lights = &scene->lights,
-              .point_map =
-                  &scene->renderer.texture.fallback.depth_cube_array_view,
-              .spot_map = &scene->renderer.texture.fallback.depth_2d_array_view,
+              .point_map = scene->lights.point.depth_view,
+              .spot_map = scene->lights.spot.depth_view,
           },
           &(AOBakeInitDescriptor){
               .queue = queue,
@@ -165,8 +164,8 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
   // lit only pipeline
   if (build_desc->pipeline == ScenePipeline_Dynamic_Lit) {
     // create binding for shadow maps (using fallback texture)
-    material_texture_bind_shadow_maps(mesh, *build_desc->point_map,
-                                      *build_desc->spot_map);
+    material_texture_bind_shadow_maps(mesh, build_desc->point_map,
+                                      build_desc->spot_map);
 
     // bind lights
     material_texture_bind_lights(mesh, build_desc->lights,

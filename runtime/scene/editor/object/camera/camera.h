@@ -1,12 +1,12 @@
 #ifndef _SCENE_EDITOR_CAMERA_H_
 #define _SCENE_EDITOR_CAMERA_H_
 
-#include "../core.h"
+#include "../runtime/scene/core.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 
 void seo_camera_create(SceneEditorObject *, Camera *,
-                       const GizmoCreateDescriptor *);
+                       const SEOCreateDescriptor *);
 
 void seo_camera_translate(SceneEditorObject *, vec3);
 void seo_camera_rotate(SceneEditorObject *, vec3);

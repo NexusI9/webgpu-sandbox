@@ -1,11 +1,12 @@
 #include "spot.h"
 #include "../builder/builder.h"
+#include "../runtime/scene/scene.h"
 
 /**
    Insert Spot light gizmo mesh to the list
  */
 void seo_light_spot_create(SceneEditorObject *seo, SpotLight *light,
-                             const GizmoCreateDescriptor *desc) {
+                           const SEOCreateDescriptor *desc) {
 
   // define target
   seo->target = light;
@@ -15,31 +16,29 @@ void seo_light_spot_create(SceneEditorObject *seo, SpotLight *light,
   mesh_ref_list_create(&seo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
-  Mesh *icon = mesh_list_new_mesh(desc->list);
+  Mesh *icon = scene_new_mesh(desc->scene);
   const char *texture_path = "./resources/assets/texture/ui/light-spot.png";
 
   // create gizmo mesh
   seo_create_billboard(icon, &(SEOCreateBillboardDescriptor){
-                                   .texture_path = texture_path,
-                                   .device = desc->device,
-                                   .queue = desc->queue,
-                                   .position = &light->position,
-                                   .scale = &SEO_BILLBOARD_SCALE,
-                               });
+                                 .texture_path = texture_path,
+                                 .device = desc->device,
+                                 .queue = desc->queue,
+                                 .position = &light->position,
+                                 .scale = &SEO_BILLBOARD_SCALE,
+                             });
 
   // store mesh pointer in gizmo ref list
   mesh_ref_list_insert(&seo->meshes, icon);
 
-    // set callback
+  // set callback
   seo->transform_callback[GizmoTransformMode_Translate] =
       seo_light_spot_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_spot_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_light_spot_scale;
 
+  seo->scene = desc->scene;
 }
-
-
-
 
 void seo_light_spot_translate(SceneEditorObject *seo, vec3 value) {
 

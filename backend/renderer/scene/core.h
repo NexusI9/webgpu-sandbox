@@ -43,10 +43,9 @@ typedef struct {
 
 typedef struct {
   // globals textures
-  Texture texture_2d;
-  WGPUTextureView texture_2d_view;
-  WGPUTextureView depth_cube_array_view;
-  WGPUTextureView depth_2d_array_view;
+  WGPUTexture texture_2d;
+  WGPUTexture depth_cube_array;
+  WGPUTexture depth_2d_array;
 } SceneRendererTextureFallback;
 
 typedef struct {

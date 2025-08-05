@@ -29,8 +29,9 @@ static void loader_gltf_create_shader(Shader *, WGPUDevice *, WGPUQueue *,
 static void loader_gltf_bind_uniforms(Shader *, cgltf_material *,
                                       WGPUTextureView *);
 
-static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *, void **,
-                                           size_t *, int *, int *);
+static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
+                                                    void **, size_t *, int *,
+                                                    int *);
 
 void loader_gltf_load(const GLTFLoadDescriptor *desc) {
 
@@ -149,8 +150,8 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
   VERBOSE_IMPORT("GLTF file");
 
   // get the cached fallback texture view from renderer
-  WGPUTextureView *fallback_texture =
-      &scene->renderer.texture.fallback.texture_2d_view;
+  WGPUTextureView fallback_texture =
+      scene_renderer_fallback_texture_view_2d(&scene->renderer);
 
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
@@ -273,7 +274,7 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
 
       // load shader
       loader_gltf_create_shader(mesh_shader_texture(target_mesh), device, queue,
-                                &current_primitive, fallback_texture);
+                                &current_primitive, &fallback_texture);
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
@@ -283,6 +284,9 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
       scene_add_mesh(scene, target_mesh, ScenePipeline_Dynamic_Lit, NULL);
     }
   }
+
+  // free fallback texture view
+  wgpuTextureViewRelease(fallback_texture);
 }
 
 void loader_gltf_create_shader(Shader *shader, WGPUDevice *device,
@@ -413,8 +417,8 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
     2. if buffer_view => store buffer & size
  */
 LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
-                                    void **data, size_t *size, int *width,
-                                    int *height) {
+                                             void **data, size_t *size,
+                                             int *width, int *height) {
 
   if (texture_view->texture) {
 

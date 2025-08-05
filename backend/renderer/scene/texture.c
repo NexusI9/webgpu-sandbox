@@ -9,19 +9,32 @@
 // black color
 static const uint8_t pixel[4] = {255, 255, 255, 255};
 
+/* DELETE ME ?
 static inline void
 scene_renderer_create_fallback_texture_2d(Texture *, WGPUDevice *, WGPUQueue *);
 
-static inline void
-scene_renderer_create_fallback_texture_2d_view(WGPUTextureView *, WGPUDevice *,
-                                               WGPUQueue *);
-static inline void
-scene_renderer_create_fallback_depth_cube_array(WGPUTextureView *, WGPUDevice *,
-                                                WGPUQueue *);
-static inline void
-scene_renderer_create_fallback_depth_2d_array(WGPUTextureView *, WGPUDevice *,
-                                              WGPUQueue *);
+void scene_renderer_create_fallback_texture_2d(Texture *texture,
+                                               WGPUDevice *device,
+                                               WGPUQueue *queue) {
+  texture_create(texture, &(TextureCreateDescriptor){
+                              .channels = 4,
+                              .width = 1,
+                              .height = 1,
+                              .value = (uint8_t[]){0, 0, 0, 255},
+                          });
+}
+ */
 
+static inline void scene_renderer_create_fallback_texture_2d(WGPUTexture *,
+                                                             WGPUDevice *,
+                                                             WGPUQueue *);
+static inline void
+scene_renderer_create_fallback_depth_cube_array(WGPUTexture *, WGPUDevice *,
+                                                WGPUQueue *);
+
+static inline void scene_renderer_create_fallback_depth_2d_array(WGPUTexture *,
+                                                                 WGPUDevice *,
+                                                                 WGPUQueue *);
 
 /**
    ▗▄▄▄▖ ▗▄▖ ▗▖   ▗▖   ▗▄▄▖  ▗▄▖  ▗▄▄▖▗▖ ▗▖
@@ -40,58 +53,61 @@ void scene_renderer_init_fallback_textures(SceneRenderer *renderer) {
   WGPUDevice *device = &renderer->wgpu.device;
   WGPUQueue *queue = &renderer->wgpu.queue;
 
-  // create texture 2D fallback
+  // create texture 2D view fallback
   scene_renderer_create_fallback_texture_2d(
       &renderer->texture.fallback.texture_2d, device, queue);
 
-  // create texture 2D view fallback
-  scene_renderer_create_fallback_texture_2d_view(
-      &renderer->texture.fallback.texture_2d_view, device, queue);
-
   // create depth cube array view fallback
   scene_renderer_create_fallback_depth_cube_array(
-      &renderer->texture.fallback.depth_cube_array_view, device, queue);
+      &renderer->texture.fallback.depth_cube_array, device, queue);
 
   // create depth 2d array view fallback
   scene_renderer_create_fallback_depth_2d_array(
-      &renderer->texture.fallback.depth_2d_array_view, device, queue);
+      &renderer->texture.fallback.depth_2d_array, device, queue);
 }
 
-void scene_renderer_create_fallback_texture_2d(Texture *texture,
+void scene_renderer_create_fallback_texture_2d(WGPUTexture *texture,
                                                WGPUDevice *device,
                                                WGPUQueue *queue) {
-  texture_create(texture, &(TextureCreateDescriptor){
-                              .channels = 4,
-                              .width = 1,
-                              .height = 1,
-                              .value = (uint8_t[]){0, 0, 0, 255},
-                          });
-}
 
-void scene_renderer_create_fallback_texture_2d_view(WGPUTextureView *view,
-                                                    WGPUDevice *device,
-                                                    WGPUQueue *queue) {
+  *texture = wgpuDeviceCreateTexture(
+      *device,
+      &(WGPUTextureDescriptor){
+          .size =
+              {
+                  .width = 1,
+                  .height = 1,
+                  .depthOrArrayLayers = 1,
+              },
+          .format = WGPUTextureFormat_R8Unorm,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+          .dimension = WGPUTextureDimension_2D,
+          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+      });
 
-  buffer_create_texture(view,
-                        &(CreateTextureDescriptor){
-                            .device = device,
-                            .queue = queue,
-                            .width = 1,
-                            .height = 1,
-                            .channels = 1,
-                            .format = WGPUTextureFormat_R8Unorm,
-                            .data = (uint8_t[]){255},
-                            .size = sizeof(uint32_t),
+  wgpuQueueWriteTexture(*queue,
+                        &(WGPUImageCopyTexture){
+                            .texture = *texture,
+                            .mipLevel = 0,
+                            .origin = {0, 0, 0},
+                            .aspect = WGPUTextureAspect_All,
                         },
-                        BufferTextureMemory_Keep);
+                        (uint8_t[]){255}, sizeof(uint32_t),
+                        &(WGPUTextureDataLayout){
+                            .offset = 0,
+                            .bytesPerRow = 1,
+                            .rowsPerImage = 1,
+                        },
+                        &(WGPUExtent3D){1, 1, 1});
 }
 
-void scene_renderer_create_fallback_depth_cube_array(WGPUTextureView *view,
+void scene_renderer_create_fallback_depth_cube_array(WGPUTexture *texture,
                                                      WGPUDevice *device,
                                                      WGPUQueue *queue) {
 
   // create texture
-  WGPUTexture texture = wgpuDeviceCreateTexture(
+  *texture = wgpuDeviceCreateTexture(
       *device, &(WGPUTextureDescriptor){
                    .label = "Fallback texture cube array",
                    .size =
@@ -107,27 +123,14 @@ void scene_renderer_create_fallback_depth_cube_array(WGPUTextureView *view,
                    .mipLevelCount = 1,
                    .sampleCount = 1,
                });
-
-  // assign to texture view
-  *view = wgpuTextureCreateView(
-      texture, &(WGPUTextureViewDescriptor){
-                   .label = "Falbback texture view cube array",
-                   .dimension = WGPUTextureViewDimension_CubeArray,
-                   .format = SHADOW_DEPTH_FORMAT,
-                   .baseMipLevel = 0,
-                   .mipLevelCount = 1,
-                   .baseArrayLayer = 0,
-                   .arrayLayerCount = 6,
-                   .aspect = WGPUTextureAspect_DepthOnly,
-               });
 }
 
-void scene_renderer_create_fallback_depth_2d_array(WGPUTextureView *view,
+void scene_renderer_create_fallback_depth_2d_array(WGPUTexture *texture,
                                                    WGPUDevice *device,
                                                    WGPUQueue *queue) {
 
   // create texture
-  WGPUTexture texture = wgpuDeviceCreateTexture(
+  *texture = wgpuDeviceCreateTexture(
       *device,
       &(WGPUTextureDescriptor){
           .label = "Fallback depth 2d array",
@@ -143,19 +146,45 @@ void scene_renderer_create_fallback_depth_2d_array(WGPUTextureView *view,
           .mipLevelCount = 1,
           .sampleCount = 1,
       });
+}
 
-  // assign to texture view
-  *view = wgpuTextureCreateView(
-      texture, &(WGPUTextureViewDescriptor){
-                   .label = "Fallback 2D array view",
-                   .dimension = WGPUTextureViewDimension_2DArray,
-                   .format = SHADOW_DEPTH_FORMAT,
-                   .baseMipLevel = 0,
-                   .mipLevelCount = 1,
-                   .baseArrayLayer = 0,
-                   .arrayLayerCount = 1, // or however many layers you define
-                   .aspect = WGPUTextureAspect_DepthOnly,
-               });
+
+WGPUTextureView scene_renderer_fallback_texture_view_2d(SceneRenderer *rd) {
+  return wgpuTextureCreateView(rd->texture.fallback.texture_2d, NULL);
+}
+
+WGPUTextureView
+scene_renderer_fallback_texture_view_depth_cube_array(SceneRenderer *rd) {
+
+  return wgpuTextureCreateView(
+      rd->texture.fallback.depth_cube_array,
+      &(WGPUTextureViewDescriptor){
+          .label = "Falbback texture view cube array",
+          .dimension = WGPUTextureViewDimension_CubeArray,
+          .format = SHADOW_DEPTH_FORMAT,
+          .baseMipLevel = 0,
+          .mipLevelCount = 1,
+          .baseArrayLayer = 0,
+          .arrayLayerCount = 6,
+          .aspect = WGPUTextureAspect_DepthOnly,
+      });
+}
+
+WGPUTextureView
+scene_renderer_fallback_texture_view_depth_2d_array(SceneRenderer *rd) {
+
+  return wgpuTextureCreateView(
+      rd->texture.fallback.depth_2d_array,
+      &(WGPUTextureViewDescriptor){
+          .label = "Fallback 2D array view",
+          .dimension = WGPUTextureViewDimension_2DArray,
+          .format = SHADOW_DEPTH_FORMAT,
+          .baseMipLevel = 0,
+          .mipLevelCount = 1,
+          .baseArrayLayer = 0,
+          .arrayLayerCount = 1, // or however many layers
+          .aspect = WGPUTextureAspect_DepthOnly,
+      });
 }
 
 /**

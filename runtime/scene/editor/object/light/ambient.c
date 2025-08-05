@@ -1,11 +1,12 @@
 #include "./ambient.h"
 #include "../builder/builder.h"
+#include "../runtime/scene/scene.h"
 
 /**
    Insert Ambient light gizmo mesh to the list
  */
 void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
-                              const GizmoCreateDescriptor *desc) {
+                              const SEOCreateDescriptor *desc) {
 
   // define target
   seo->target = light;
@@ -15,7 +16,7 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
   mesh_ref_list_create(&seo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
-  Mesh *icon = mesh_list_new_mesh(desc->list);
+  Mesh *icon = scene_new_mesh(desc->scene);
   const char *texture_path = "./resources/assets/texture/ui/light-ambient.png";
 
   // create gizmo mesh
@@ -35,6 +36,8 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
       seo_light_ambient_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_ambient_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_light_ambient_scale;
+
+  seo->scene = desc->scene;
 }
 
 void seo_light_ambient_translate(SceneEditorObject *seo, vec3 value) {

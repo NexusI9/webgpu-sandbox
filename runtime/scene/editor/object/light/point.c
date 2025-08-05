@@ -1,12 +1,12 @@
 #include "./point.h"
 #include "../builder/builder.h"
 #include "../resources/loader/loader.mbin.h"
-
+#include "../runtime/scene/scene.h"
 /**
    Insert Point light gizmo mesh to the list
  */
 void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
-                            const GizmoCreateDescriptor *desc) {
+                            const SEOCreateDescriptor *desc) {
 
   // define target
   seo->target = light;
@@ -16,7 +16,7 @@ void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
   mesh_ref_list_create(&seo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
-  Mesh *icon = mesh_list_new_mesh(desc->list);
+  Mesh *icon = scene_new_mesh(desc->scene);
   const char *texture_path = "./resources/assets/texture/ui/light-point.png";
 
   // create gizmo mesh
@@ -59,6 +59,8 @@ void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
       seo_light_point_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_point_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_light_point_scale;
+
+  seo->scene = desc->scene;
 }
 
 void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
@@ -68,6 +70,8 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
   glm_vec3_copy(value, light->position);
 
   mesh_ref_list_translate(&seo->meshes, value);
+
+  // update light shadow map
 }
 
 void seo_light_point_rotate(SceneEditorObject *seo, vec3 value) {}

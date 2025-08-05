@@ -1,9 +1,7 @@
 #ifndef _SCENE_EDTIOR_OBJECT_LIST_H_
 #define _SCENE_EDTIOR_OBJECT_LIST_H_
 
-#include "../core.h"
-
-#define SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT 16
+#include "../runtime/scene/scene.h"
 
 /*
   GIZMO LIST
@@ -30,11 +28,6 @@
 
  */
 
-typedef struct {
-  size_t length;
-  size_t capacity;
-  SceneEditorObject *entries;
-} SceneEditorObjectList;
 
 DynamicListStatus seo_list_create(SceneEditorObjectList *, size_t);
 

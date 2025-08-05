@@ -1,6 +1,6 @@
 #ifndef _SCENE_EDITOR_OBJECT_BUILDER_WIREFRAME_H_
 #define _SCENE_EDITOR_OBJECT_BUILDER_WIREFRAME_H_
-#include "../core.h"
+#include "../runtime/scene/core.h"
 
 #define SEO_WIREFRAME_LINE_THICKNESS 0.001f
 

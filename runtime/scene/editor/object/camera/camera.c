@@ -4,11 +4,12 @@
 #include "../runtime/geometry/line/line.h"
 #include "../runtime/geometry/vertex/vertex.h"
 #include "../utils/system.h"
+#include "../runtime/scene/scene.h"
 
 #include <stddef.h>
 
 void seo_camera_create(SceneEditorObject *seo, Camera *camera,
-                       const GizmoCreateDescriptor *desc) {
+                       const SEOCreateDescriptor *desc) {
 
   // define target
   seo->target = camera;
@@ -17,7 +18,7 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   mesh_ref_list_create(&seo->meshes, seo_mesh_count);
 
   // create new mesh in the mesh list
-  Mesh *icon = mesh_list_new_mesh(desc->list);
+  Mesh *icon = scene_new_mesh(desc->scene);
   const char *texture_path = "./resources/assets/texture/ui/camera.png";
 
   // create icon mesh
@@ -39,7 +40,7 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
       .primitive = &cube_primitive,
   });
 
-  Mesh *cube = mesh_list_new_mesh(desc->list);
+  Mesh *cube = scene_new_mesh(desc->scene);
 
   // create manually wirerfame since seo is part of fixed rendering, so the
   // mesh topology generation isn't automatically handled.
@@ -86,6 +87,8 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   seo->transform_callback[GizmoTransformMode_Translate] = seo_camera_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_camera_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_camera_scale;
+
+  seo->scene = desc->scene;
 }
 
 void seo_camera_translate(SceneEditorObject *seo, vec3 value) {

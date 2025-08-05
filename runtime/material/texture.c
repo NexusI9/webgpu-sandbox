@@ -178,6 +178,8 @@ void material_texture_bind_shadow_maps(
   const uint8_t sampler_binding = 5;
   const uint8_t group_index = 2;
 
+  // create texture views
+
 #ifdef RENDER_SHADOW_AS_COLOR
   const WGPUTextureFormat texture_format = SHADOW_COLOR_FORMAT;
   const WGPUTextureSampleType texture_sample_type = WGPUTextureSampleType_Float;

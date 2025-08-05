@@ -2,7 +2,7 @@
 #include "../scene.h"
 #include "./gizmo/gizmo.h"
 #include "./selection/selection.h"
-#include "object/list/list.h"
+#include "object/object.h"
 #include <stddef.h>
 
 static inline void scene_editor_gizmo_create_grid(Scene *);

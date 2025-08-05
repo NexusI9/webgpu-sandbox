@@ -3,10 +3,10 @@
 
 #include "../runtime/light/light.h"
 #include "../runtime/mesh/mesh.h"
-#include "../core.h"
+#include "../runtime/scene/core.h"
 
 void seo_light_ambient_create(SceneEditorObject *, AmbientLight *,
-                              const GizmoCreateDescriptor *);
+                              const SEOCreateDescriptor *);
 
 
 void seo_light_ambient_translate(SceneEditorObject *, vec3);
