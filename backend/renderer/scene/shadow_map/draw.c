@@ -192,12 +192,14 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
   for (size_t p = 0; p < point_length; p++)
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
-        .light_index = p,
-        .light_list = &desc->lights->point,
+        .layer = p,
+        .light = &desc->lights->point.entries[p],
         .mesh_list = desc->mesh_list,
         .device = &desc->device,
         .queue = desc->queue,
         .encoder = &shadow_encoder,
+        .color_map = desc->lights->point.color_map,
+        .depth_map = desc->lights->point.depth_map,
     });
 
   /*
@@ -210,12 +212,14 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
   for (size_t p = 0; p < spot_length; p++)
     shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
-        .light_index = p,
-        .light_list = &desc->lights->spot,
+        .layer = p,
+        .light = &desc->lights->spot.entries[p],
         .mesh_list = desc->mesh_list,
         .device = &desc->device,
         .queue = desc->queue,
         .encoder = &shadow_encoder,
+        .color_map = desc->lights->spot.color_map,
+        .depth_map = desc->lights->spot.depth_map,
     });
 
   /*
@@ -232,13 +236,12 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         // to the same map but include it in the sun light list struct itself.
         .color_map = desc->lights->spot.color_map,
         .depth_map = desc->lights->spot.depth_map,
-        .layer_index = spot_length + p,
-        .light_index = p,
+        .layer = spot_length + p,
         .device = &desc->device,
         .queue = desc->queue,
         .encoder = &shadow_encoder,
         .mesh_list = desc->mesh_list,
-        .light_list = &desc->lights->sun,
+        .light = &desc->lights->sun.entries[p],
     });
 
   // finish encoding command
@@ -264,10 +267,9 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 void shadow_map_draw_point_light(
     const ShadowMapDrawPointLightDescriptor *desc) {
 
-  PointLight *light = &desc->light_list->entries[desc->light_index];
   // retrieve 6 views of point cube
-  LightViews light_views =
-      light_point_views(light->position, light->near, light->far);
+  LightViews light_views = light_point_views(
+      desc->light->position, desc->light->near, desc->light->far);
 
   // render scene and store depth map for each view
   for (size_t v = 0; v < light_views.length; v++) {
@@ -283,11 +285,11 @@ void shadow_map_draw_point_light(
     }
 
     // 2. Render scene (create shadow render pass to texture layer)
-    size_t layer = desc->light_index * light_views.length + v;
+    size_t layer = desc->layer * light_views.length + v;
     shadow_map_draw(&(ShadowMapDrawDescriptor){
         .mesh_list = desc->mesh_list,
-        .color_texture = desc->light_list->color_map,
-        .depth_texture = desc->light_list->depth_map,
+        .color_texture = desc->color_map,
+        .depth_texture = desc->depth_map,
         .layer = layer,
         .device = desc->device,
         .encoder = *desc->encoder,
@@ -331,7 +333,7 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
       .mesh_list = desc->mesh_list,
       .color_texture = desc->color_map,
       .depth_texture = desc->depth_map,
-      .layer = desc->layer_index,
+      .layer = desc->layer,
       .device = desc->device,
       .queue = desc->queue,
       .encoder = *desc->encoder,
@@ -346,10 +348,9 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
 
 void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
 
-  SunLight *light = &desc->light_list->entries[desc->light_index];
 
   // get each light orthographic view depending on target
-  LightViews light_views = light_sun_view(light->position, light->size);
+  LightViews light_views = light_sun_view(desc->light->position, desc->light->size);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
       .color_map = desc->color_map,
@@ -358,27 +359,25 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
       .queue = desc->queue,
       .device = desc->device,
       .encoder = desc->encoder,
-      .layer_index = desc->light_index,
+      .layer = desc->layer,
       .views = &light_views,
   });
 }
 
 void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
 
-  SpotLight *light = &desc->light_list->entries[desc->light_index];
-
   // get each light orthographic view depending on target
   LightViews light_views =
-      light_spot_view(light->position, light->target, light->angle);
+      light_spot_view(desc->light->position, desc->light->target, desc->light->angle);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
-      .color_map = desc->light_list->color_map,
-      .depth_map = desc->light_list->depth_map,
+      .color_map = desc->color_map,
+      .depth_map = desc->depth_map,
       .mesh_list = desc->mesh_list,
       .device = desc->device,
       .queue = desc->queue,
       .encoder = desc->encoder,
-      .layer_index = desc->light_index,
+      .layer = desc->layer,
       .views = &light_views,
   });
 }

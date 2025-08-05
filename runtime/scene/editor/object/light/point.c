@@ -72,6 +72,7 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
   mesh_ref_list_translate(&seo->meshes, value);
 
   // update light shadow map
+  
 }
 
 void seo_light_point_rotate(SceneEditorObject *seo, vec3 value) {}
