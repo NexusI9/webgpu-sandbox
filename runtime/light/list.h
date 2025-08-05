@@ -1,30 +1,33 @@
 #ifndef _LIGHT_LIST_H_
 #define _LIGHT_LIST_H_
 #include "core.h"
+#include "webgpu/webgpu.h"
 
-
-typedef enum{
+typedef enum {
   LightListStatus_Success,
   LightListStatus_AlloFail,
   LightListStatus_Error,
 } LightListStatus;
-
 
 // light list
 typedef struct {
   size_t length;
   size_t capacity;
   PointLight entries[LIGHT_MAX_CAPACITY];
-  WGPUTextureView color_map;
-  WGPUTextureView depth_map;
+  WGPUTexture color_map;
+  WGPUTexture depth_map;
+  WGPUTextureView color_view;
+  WGPUTextureView depth_view;
 } PointLightList;
 
 typedef struct {
   size_t length;
   size_t capacity;
   SpotLight entries[LIGHT_MAX_CAPACITY];
-  WGPUTextureView color_map;
-  WGPUTextureView depth_map;
+  WGPUTexture color_map;
+  WGPUTexture depth_map;
+  WGPUTextureView color_view;
+  WGPUTextureView depth_view;
 } SpotLightList;
 
 typedef struct {
@@ -39,8 +42,6 @@ typedef struct {
   SunLight entries[LIGHT_MAX_CAPACITY];
 } SunLightList;
 
-
-
 typedef struct {
   PointLightList point;
   SpotLightList spot;
@@ -48,8 +49,6 @@ typedef struct {
   SunLightList sun;
 } LightList;
 
-
-LightListStatus light_list_create(LightList*, size_t);
-
+LightListStatus light_list_create(LightList *, size_t);
 
 #endif

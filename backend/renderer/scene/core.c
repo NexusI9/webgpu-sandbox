@@ -3,7 +3,6 @@
 #include "../runtime/input/input.h"
 #include "../utils/system.h"
 #include "./texture.h"
-#include "ao_bake.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "render_pass.h"

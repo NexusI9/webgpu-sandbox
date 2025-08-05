@@ -1,5 +1,5 @@
-#ifndef _AO_BAKE_H_
-#define _AO_BAKE_H_
+#ifndef _AO_BAKE_CORE_H_
+#define _AO_BAKE_CORE_H_
 
 #include "../runtime/geometry/triangle/triangle.h"
 #include "../runtime/texture/texture.h"

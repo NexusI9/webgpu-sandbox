@@ -3,7 +3,7 @@
 
 
 #include "./core.h"
-#include "./ao_bake.h"
-#include "./shadow_pass.h"
+#include "./ao_bake/ao_bake.h"
+#include "./shadow_map/shadow_map.h"
 
 #endif

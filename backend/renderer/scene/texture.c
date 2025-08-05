@@ -1,7 +1,7 @@
 #include "texture.h"
 #include "../backend/buffer.h"
 #include "../utils/system.h"
-#include "./shadow_pass.h"
+#include "./shadow_map/shadow_map.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
