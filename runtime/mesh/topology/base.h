@@ -21,16 +21,16 @@ typedef struct {
 MeshTopology mesh_topology_base_vertex(MeshTopologyBase *);
 
 void mesh_topology_base_create(MeshTopologyBase *, const VertexAttribute *,
-                               const VertexIndex *, const WGPUDevice *,
-                               const WGPUQueue *);
+                               const VertexIndex *, const WGPUDevice,
+                               const WGPUQueue);
 
 MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
-    MeshTopologyBase *, const VertexAttribute *, const WGPUDevice *,
-    const WGPUQueue *);
+    MeshTopologyBase *, const VertexAttribute *, const WGPUDevice,
+    const WGPUQueue);
 
 MeshTopologyBaseStatus
 mesh_topology_base_create_vertex_index(MeshTopologyBase *, const VertexIndex *,
-                                       const WGPUDevice *, const WGPUQueue *);
+                                       const WGPUDevice, const WGPUQueue);
 
 void mesh_topology_base_scale(MeshTopologyBase *, const VertexGroup *, vec3 *);
 

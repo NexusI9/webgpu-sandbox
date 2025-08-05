@@ -11,8 +11,8 @@
    Used to generate each gizmo handles.
  */
 void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
-                                 const color *rgba, const WGPUQueue *queue,
-                                 const WGPUDevice *device) {
+                                 const color *rgba, const WGPUQueue queue,
+                                 const WGPUDevice device) {
 
   // init mesh
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){

@@ -61,14 +61,14 @@ static const char *const SHADER_PATH_FLAT =
 typedef struct {
   const char *path;
   const char *label;
-  const WGPUDevice *device;
-  const WGPUQueue *queue;
+  WGPUDevice device;
+  WGPUQueue queue;
   const char *name;
 } ShaderCreateDescriptor;
 
 // bind group
 /**
-   
+
    Takes in some data useful for the uniform update as well as the entry data
    that will be overriden and uploaded to the GPU.
 
@@ -252,8 +252,8 @@ typedef struct {
   char *name;
 
   // wgpu
-  const WGPUDevice *device;
-  const WGPUQueue *queue;
+  WGPUDevice device;
+  WGPUQueue queue;
 
   // pipelines
   Pipeline pipeline;
@@ -280,7 +280,7 @@ void shader_destroy(Shader *);
 
 // on update
 void shader_draw(Shader *, WGPURenderPassEncoder *);
-void shader_uniform_update(ShaderBindGroup *, const WGPUQueue *);
+void shader_uniform_update(ShaderBindGroup *, const WGPUQueue);
 
 void shader_module_release(Shader *);
 Pipeline *shader_pipeline(Shader *);

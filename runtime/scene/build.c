@@ -53,8 +53,8 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
   PipelineMultisampleCount sample_count = scene->renderer.texture.multisample;
   Camera *camera = scene->active_camera;
   Viewport *viewport = &scene->viewport;
-  WGPUQueue *queue = scene_queue(scene);
-  WGPUDevice *device = scene_device(scene);
+  const WGPUQueue queue = scene_queue(scene);
+  const WGPUDevice device = scene_device(scene);
 
   switch (pipeline) {
 
@@ -115,7 +115,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
               .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
           },
           &(ShadowMapDrawAllDescriptor){
-              .device = *device,
+              .device = device,
               .queue = queue,
               .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
               .lights = &scene->lights,

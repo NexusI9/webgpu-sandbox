@@ -195,7 +195,7 @@ void shader_add_sampler(Shader *shader,
 
       // creating sampler by mapping desc configuration
       current_entry->sampler = wgpuDeviceCreateSampler(
-          *shader->device, &(WGPUSamplerDescriptor){
+          shader->device, &(WGPUSamplerDescriptor){
                                .compare = current_entry->compare,
                                .addressModeU = current_entry->addressModeU,
                                .addressModeV = current_entry->addressModeV,

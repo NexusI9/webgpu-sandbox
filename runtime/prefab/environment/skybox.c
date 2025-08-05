@@ -6,11 +6,12 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-static inline WGPUTexture prefab_skybox_texture(WGPUDevice *, const size_t);
+static inline WGPUTexture prefab_skybox_texture(const WGPUDevice, const size_t);
 
 static inline void prefab_skybox_create_layer(const WGPUTexture *,
                                               const Texture *, const size_t,
-                                              WGPUQueue *, BufferTextureMemory);
+                                              const WGPUQueue,
+                                              BufferTextureMemory);
 
 static inline void prefab_skybox_create_from_texture(Scene *,
                                                      const WGPUTexture *,
@@ -25,7 +26,8 @@ static const WGPUTextureFormat format = WGPUTextureFormat_RGBA8Unorm;
 static inline void prefab_skybox_create_layer(const WGPUTexture *texture,
                                               const Texture *layer_texture,
                                               const size_t layer_index,
-                                              WGPUQueue *queue, BufferTextureMemory free) {
+                                              const WGPUQueue queue,
+                                              BufferTextureMemory free) {
   WGPUTextureView layer_texture_view = wgpuTextureCreateView(
       *texture, &(WGPUTextureViewDescriptor){
                     .format = format,
@@ -54,9 +56,9 @@ static inline void prefab_skybox_create_layer(const WGPUTexture *texture,
 /**
   Create texture & global texture view
  */
-WGPUTexture prefab_skybox_texture(WGPUDevice *device, const size_t resolution) {
+WGPUTexture prefab_skybox_texture(const WGPUDevice device, const size_t resolution) {
   return wgpuDeviceCreateTexture(
-      *device,
+      device,
       &(WGPUTextureDescriptor){
           .dimension = WGPUTextureDimension_2D,
           .format = format,

@@ -52,7 +52,7 @@ void shader_build(Shader *shader) {
 void shader_build_pipeline(Shader *shader, WGPUBindGroupLayout *layout) {
 
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
-      *shader->device, &(WGPUPipelineLayoutDescriptor){
+      shader->device, &(WGPUPipelineLayoutDescriptor){
                            // total bind groups count
                            .bindGroupLayoutCount = shader->bind_groups.length,
                            .bindGroupLayouts = layout,

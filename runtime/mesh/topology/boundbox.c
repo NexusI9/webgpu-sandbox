@@ -134,7 +134,7 @@ void mesh_topology_boundbox_worldspace(AABB *bound, vec3 corners[8],
 
 MeshTopologyBoundboxStatus mesh_topology_boundbox_create(
     MeshTopologyBase *base, mat4 model_matrix, MeshTopologyBoundbox *bound,
-    const WGPUDevice *device, const WGPUQueue *queue) {
+    const WGPUDevice device, const WGPUQueue queue) {
 
   // allocate vertex + index attribute
   // 12 edges * 4 vertex (/edges)
@@ -222,7 +222,7 @@ MeshTopology mesh_topology_boundbox_vertex(MeshTopologyBoundbox *bound) {
 MeshTopologyBoundboxStatus
 mesh_topology_boundbox_update(const MeshTopologyBase *base, mat4 model,
                               MeshTopologyBoundbox *bound,
-                              const WGPUQueue *queue) {
+                              const WGPUQueue queue) {
 
   // get base min max
   mesh_topology_boundbox_compute_bound(base, model, bound);
@@ -232,7 +232,7 @@ mesh_topology_boundbox_update(const MeshTopologyBase *base, mat4 model,
   // update cube
 
   // update buffer
-  /*wgpuQueueWriteBuffer(*queue, bound->attribute.buffer, 0,
+  /*wgpuQueueWriteBuffer(queue, bound->attribute.buffer, 0,
                        bound->attribute.entries,
                        bound->attribute.length * sizeof(vattr_t));*/
 

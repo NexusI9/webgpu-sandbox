@@ -68,9 +68,9 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
   // init pipeline
   pipeline_create(&shader->pipeline,
                   &(PipelineCreateDescriptor){
-                      .vertex_layout = &shader->vertex.layout,
+                      .vertex_layout = shader->vertex.layout,
                       .device = shader->device,
-                      .module = &shader->module,
+                      .module = shader->module,
                   });
 }
 
@@ -183,7 +183,7 @@ Pipeline *shader_pipeline(Shader *shader) { return &shader->pipeline; }
    If the trigger returns true, then it update the gpu buffer with the new data
    output from the callback
  */
-void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue *queue) {
+void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue queue) {
 
   // update bindgroup entries (callback)
   for (int j = 0; j < group->uniforms.length; j++) {
@@ -205,7 +205,7 @@ void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue *queue) {
       uniform_update->callback(uniform_update->data, current_entry->data);
 
       // rewrite uniform to GPU
-      wgpuQueueWriteBuffer(*queue, current_entry->buffer, 0,
+      wgpuQueueWriteBuffer(queue, current_entry->buffer, 0,
                            current_entry->data, current_entry->size);
     }
   }

@@ -185,7 +185,7 @@ void shader_bind_group_realize(WGPUBindGroup *bind_group,
                                const ShaderBindGroupRealize *desc) {
 
   *bind_group = wgpuDeviceCreateBindGroup(
-      *desc->device, &(WGPUBindGroupDescriptor){
+     desc->device, &(WGPUBindGroupDescriptor){
                          .layout = wgpuRenderPipelineGetBindGroupLayout(
                              *desc->pipeline_handle, desc->group_index),
                          .entryCount = desc->entryCount,
@@ -216,7 +216,7 @@ void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
    4. Create bind group based on the converted entries.
  */
 void shader_bind_group_build(ShaderBindGroup *group,
-                             bind_group_index group_index, const WGPUDevice *device,
+                             bind_group_index group_index, const WGPUDevice device,
                              WGPURenderPipeline *pipeline) {
 
   uint16_t total_length = shader_bind_group_entries_count(group);

@@ -1,11 +1,11 @@
 #ifndef _SCENE_EDITOR_OBJECT_GRID_H_
 #define _SCENE_EDITOR_OBJECT_GRID_H_
 
-#include "../runtime/mesh/mesh.h"
 #include "../runtime/camera/camera.h"
+#include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
-#include <webgpu/webgpu.h>
 #include "../utils/color.h"
+#include <webgpu/webgpu.h>
 
 typedef struct {
   color color;
@@ -17,8 +17,8 @@ typedef struct {
 typedef struct {
 
   GizmoGridUniform uniform;
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
 
 } GizmoGridCreateDescriptor;
 
@@ -26,8 +26,8 @@ typedef struct {
 
   GizmoGridUniform uniform;
 
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
 
   Camera *camera;
   Viewport *viewport;

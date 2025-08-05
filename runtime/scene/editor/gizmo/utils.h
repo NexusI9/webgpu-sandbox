@@ -7,14 +7,13 @@
 
 typedef struct {
   const char *mbin_path;
-  const WGPUDevice *device;
-  const WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
   MeshList *list;
 } GizmoTransformCreateMeshDescriptor;
 
-
 void gizmo_transform_create_mesh(Mesh *, Primitive *, const color *,
-                                 const WGPUQueue *, const WGPUDevice *);
+                                 const WGPUQueue, const WGPUDevice);
 
 void gizmo_transform_create_handles(MeshRefList *, MeshRefList *,
                                     const GizmoTransformCreateMeshDescriptor *);

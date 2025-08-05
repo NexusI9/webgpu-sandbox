@@ -11,8 +11,8 @@
 #define SHADOW_MAP_SIZE 1024
 
 typedef struct {
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
   LightList *lights;
 } ShadowMapInitDescriptor;
 

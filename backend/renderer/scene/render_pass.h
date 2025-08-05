@@ -75,8 +75,8 @@ typedef struct {
   WGPUSwapChain *swapchain;
   PipelineMultisampleCount multisample;
   WGPUTextureView *msaa_view;
-  const WGPUDevice *device;
-  const WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
   RenderPass *pass_list;
 } RenderPassDrawDescriptor;
 

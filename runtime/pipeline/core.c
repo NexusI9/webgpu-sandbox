@@ -25,10 +25,10 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 
   // Vertex State
   pipeline->vertex_state = (WGPUVertexState){
-      .module = *pipeline->module,
+      .module = pipeline->module,
       .entryPoint = "vs_main",
       .bufferCount = 1,
-      .buffers = pipeline->vertex_layout,
+      .buffers = &pipeline->vertex_layout,
   };
 
   // Primitive State
@@ -64,7 +64,7 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 
   // Fragment State
   pipeline->fragment_state = (WGPUFragmentState){
-      .module = *pipeline->module,
+      .module = pipeline->module,
       .entryPoint = "fs_main",
       .targetCount = 1,
       .targets = &pipeline->color_state,
@@ -112,7 +112,7 @@ void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
     pipeline_destroy(pipeline);
 
   pipeline->handle =
-      wgpuDeviceCreateRenderPipeline(*pipeline->device, &pipeline->descriptor);
+      wgpuDeviceCreateRenderPipeline(pipeline->device, &pipeline->descriptor);
 }
 
 /**

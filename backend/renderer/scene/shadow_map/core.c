@@ -82,7 +82,7 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
   shadow_pass_texture_create(&(ShadowPassTextureDescriptor){
       .dimension = WGPUTextureViewDimension_CubeArray, // Cube array
       .layer_count = MAX(point_light_length, 1) * LIGHT_POINT_VIEWS,
-      .device = *desc->device,
+      .device = desc->device,
       .width = SHADOW_MAP_SIZE,
       .height = SHADOW_MAP_SIZE,
       .color =
@@ -101,7 +101,7 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
   shadow_pass_texture_create(&(ShadowPassTextureDescriptor){
       .dimension = WGPUTextureViewDimension_2DArray, // 2D Array
       .layer_count = MAX(spot_light_length + sun_light_length, 1),
-      .device = *desc->device,
+      .device = desc->device,
       .width = SHADOW_MAP_SIZE,
       .height = SHADOW_MAP_SIZE,
       .color =

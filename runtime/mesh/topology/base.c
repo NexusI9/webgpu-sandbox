@@ -11,8 +11,8 @@ static void mesh_topology_base_create_anchor(MeshTopologyBase *);
  */
 void mesh_topology_base_create(MeshTopologyBase *base,
                                const VertexAttribute *va, const VertexIndex *vi,
-                               const WGPUDevice *device,
-                               const WGPUQueue *queue) {
+                               const WGPUDevice device,
+                               const WGPUQueue queue) {
 
   // create vertex attributes
   mesh_topology_base_create_vertex_attribute(base, va, device, queue);
@@ -39,8 +39,8 @@ MeshTopology mesh_topology_base_vertex(MeshTopologyBase *topo) {
  */
 MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(MeshTopologyBase *base,
                                                const VertexAttribute *va,
-                                               const WGPUDevice *device,
-                                               const WGPUQueue *queue) {
+                                               const WGPUDevice device,
+                                               const WGPUQueue queue) {
 
   // reset buffer
   if (base->attribute.buffer) {
@@ -77,8 +77,8 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(MeshTopologyBa
  */
 MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
                                            const VertexIndex *vi,
-                                           const WGPUDevice *device,
-                                           const WGPUQueue *queue) {
+                                           const WGPUDevice device,
+                                           const WGPUQueue queue) {
 
   // reset buffer
   if (base->index.buffer) {

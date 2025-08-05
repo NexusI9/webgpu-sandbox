@@ -7,15 +7,15 @@
 #include <webgpu/webgpu.h>
 
 typedef struct {
-  WGPUDevice device;
-  WGPUQueue queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
   MeshRefList *mesh_list;
   LightList *lights;
 } ShadowMapDrawAllDescriptor;
 
 typedef struct {
   const WGPUDevice device;
-  WGPUQueue queue;
+  const WGPUQueue queue;
   const WGPUCommandEncoder encoder;
   PointLight *light;
   const size_t layer;
@@ -26,7 +26,7 @@ typedef struct {
 
 typedef struct {
   const WGPUDevice device;
-  WGPUQueue queue;
+  const WGPUQueue queue;
   const WGPUCommandEncoder encoder;
   SunLight *light;
   const size_t layer;
@@ -37,7 +37,7 @@ typedef struct {
 
 typedef struct {
   const WGPUDevice device;
-  WGPUQueue queue;
+  const WGPUQueue queue;
   const WGPUCommandEncoder encoder;
   SpotLight *light;
   const size_t layer;
@@ -48,7 +48,7 @@ typedef struct {
 
 typedef struct {
   const WGPUDevice device;
-  WGPUQueue queue;
+  const WGPUQueue queue;
   const WGPUCommandEncoder encoder;
   WGPUTexture color_map;
   WGPUTexture depth_map;
@@ -63,7 +63,7 @@ typedef struct {
   WGPUTexture depth_texture;
   uint32_t layer;
   const WGPUDevice device;
-  WGPUQueue queue;
+  const WGPUQueue queue;
   WGPUCommandEncoder encoder;
 } ShadowMapDrawDescriptor;
 

@@ -21,11 +21,11 @@ typedef struct {
 } MeshTopologyWireframe;
 
 int mesh_topology_wireframe_create(MeshTopology *, MeshTopologyWireframe *,
-                                   const WGPUDevice *, const WGPUQueue *);
+                                   const WGPUDevice, const WGPUQueue);
 
 MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *);
 
 int mesh_topology_wireframe_update(const MeshTopologyBase *,
-                                   MeshTopologyWireframe *, const WGPUQueue *);
+                                   MeshTopologyWireframe *, const WGPUQueue);
 
 #endif

@@ -99,8 +99,8 @@ static void mesh_topology_wireframe_create_points(EdgeHashSet *,
  */
 int mesh_topology_wireframe_create(MeshTopology *src_topo,
                                    MeshTopologyWireframe *dest_topo,
-                                   const WGPUDevice *device,
-                                   const WGPUQueue *queue) {
+                                   const WGPUDevice device,
+                                   const WGPUQueue queue) {
 
   // reset existing wireframe buffer if exists
   // DELETEME:
@@ -197,7 +197,7 @@ MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *topo) {
  */
 int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
                                    MeshTopologyWireframe *dest_topo,
-                                   const WGPUQueue *queue) {
+                                   const WGPUQueue queue) {
 
   for (size_t b = 0; b < base_topo->index.length; b++) {
 
@@ -225,7 +225,7 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
   }
 
   // update buffer or use map_write for direct link with CPU
-  wgpuQueueWriteBuffer(*queue, dest_topo->attribute.buffer, 0,
+  wgpuQueueWriteBuffer(queue, dest_topo->attribute.buffer, 0,
                        dest_topo->attribute.entries,
                        dest_topo->attribute.length * sizeof(vattr_t));
 

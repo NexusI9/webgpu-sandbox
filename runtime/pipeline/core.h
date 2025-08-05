@@ -53,17 +53,17 @@ typedef enum {
 } PipelineMultisampleCount;
 
 typedef struct {
-  const WGPUDevice *device;
-  WGPUShaderModule *module;
-  WGPUVertexBufferLayout *vertex_layout;
+  WGPUDevice device;
+  WGPUShaderModule module;
+  WGPUVertexBufferLayout vertex_layout;
 } PipelineCreateDescriptor;
 
 typedef struct {
 
   // core
-  const WGPUDevice *device;
-  WGPUShaderModule *module;
-  WGPUVertexBufferLayout *vertex_layout;
+  WGPUDevice device;
+  WGPUShaderModule module;
+  WGPUVertexBufferLayout vertex_layout;
 
   // cached attributes
   WGPUVertexState vertex_state;

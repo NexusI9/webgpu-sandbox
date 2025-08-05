@@ -7,7 +7,7 @@
    Buffer methods are in charge to upload data to the GPU
  */
 
-void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice *device,
+void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice device,
                           char *code, const char *label) {
 
   WGPUShaderModuleWGSLDescriptor wgsl = {
@@ -16,7 +16,7 @@ void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice *device,
   };
 
   *module = wgpuDeviceCreateShaderModule(
-      *device, &(WGPUShaderModuleDescriptor){
+      device, &(WGPUShaderModuleDescriptor){
                    .nextInChain = (WGPUChainedStruct *)(&wgsl),
                    .label = label,
                });
@@ -28,7 +28,7 @@ void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice *device,
 void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
 
   // prepare buffer object
-  *buffer = wgpuDeviceCreateBuffer(*bf->device,
+  *buffer = wgpuDeviceCreateBuffer(bf->device,
                                    &(WGPUBufferDescriptor){
                                        .usage = bf->usage,
                                        .size = bf->size,
@@ -55,7 +55,7 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
 
   // populate buffer
   // replace manual wgpuBufferGetMappedRange() + wgpuBufferUnmap()
-  wgpuQueueWriteBuffer(*bf->queue, *buffer, 0, bf->data, bf->size);
+  wgpuQueueWriteBuffer(bf->queue, *buffer, 0, bf->data, bf->size);
 }
 
 void buffer_create_texture(WGPUTextureView *texture_view,
@@ -69,7 +69,7 @@ void buffer_create_texture(WGPUTextureView *texture_view,
   // create GPU texture handle (used for binding as texture view argument/
   // "texture gpu reference")
   WGPUTexture texture = wgpuDeviceCreateTexture(
-      *tx->device,
+      tx->device,
       &(WGPUTextureDescriptor){
           .size =
               {
@@ -86,7 +86,7 @@ void buffer_create_texture(WGPUTextureView *texture_view,
       });
 
   // upload texture to GPU
-  wgpuQueueWriteTexture(*tx->queue,
+  wgpuQueueWriteTexture(tx->queue,
                         &(WGPUImageCopyTexture){
                             .texture = texture,
                             .mipLevel = 0,
@@ -117,7 +117,7 @@ void buffer_create_texture_cube(WGPUTextureView *texture_view,
                                 BufferTextureMemory free) {
 
   // upload texture to GPU
-  wgpuQueueWriteTexture(*tx->queue,
+  wgpuQueueWriteTexture(tx->queue,
                         &(WGPUImageCopyTexture){
                             .texture = *tx->texture,
                             .mipLevel = 0,

@@ -12,8 +12,8 @@
 #define LINE_INDEX_COUNT 6  // generate 12 (2*6) index per line
 
 typedef struct {
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
   const char *name;
 } LineCreateDescriptor;
 

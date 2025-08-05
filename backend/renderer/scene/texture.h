@@ -9,7 +9,7 @@ typedef struct {
   int width;
   int height;
   PipelineMultisampleCount multisample;
-  const WGPUDevice *device;
+  const WGPUDevice device;
 } SceneRendererTextureDescriptor;
 
 // textures initializer called in the scene_renderer_create (./core.c)

@@ -12,12 +12,11 @@
 typedef struct {
   vec3 *position;
   vec3 *scale;
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
   const char *label;
   const char *texture_path;
 } SEOCreateBillboardDescriptor;
-
 
 void seo_create_billboard(Mesh *, const SEOCreateBillboardDescriptor *);
 

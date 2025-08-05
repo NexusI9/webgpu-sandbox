@@ -59,10 +59,10 @@ WGPUBindGroupLayout *shader_layout_build(Shader *shader) {
 
     // create layout from previously populated entries array
     *current_layout = wgpuDeviceCreateBindGroupLayout(
-        *shader->device, &(WGPUBindGroupLayoutDescriptor){
-                             .entryCount = total_length,
-                             .entries = layout_entries,
-                         });
+        shader->device, &(WGPUBindGroupLayoutDescriptor){
+                            .entryCount = total_length,
+                            .entries = layout_entries,
+                        });
 
     free(layout_entries);
   }

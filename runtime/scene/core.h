@@ -48,8 +48,8 @@ struct SceneEditorObject {
 typedef struct {
   Scene *scene;
   size_t target_list_index;
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
   Camera *camera;
   Viewport *viewport;
 } SEOCreateDescriptor;
@@ -259,9 +259,9 @@ MeshList *scene_mesh_list(Scene *);
 
 // scene layer quick access
 MeshRefList *scene_layer_meshes(Scene *, const char *);
-WGPUQueue *scene_queue(Scene *);
-WGPUDevice *scene_device(Scene *);
+WGPUQueue scene_queue(Scene *);
+WGPUDevice scene_device(Scene *);
 
-MeshRefList* scene_pipeline_lit(Scene*);
+MeshRefList *scene_pipeline_lit(Scene *);
 
 #endif

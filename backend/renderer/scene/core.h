@@ -112,8 +112,8 @@ void scene_renderer_draw(SceneRenderer *);
 void scene_renderer_close(const SceneRenderer *);
 
 // getters
-WGPUDevice *scene_renderer_device(SceneRenderer *);
-WGPUQueue *scene_renderer_queue(SceneRenderer *);
+WGPUDevice scene_renderer_device(SceneRenderer *);
+WGPUQueue scene_renderer_queue(SceneRenderer *);
 int scene_renderer_width(const SceneRenderer *);
 int scene_renderer_height(const SceneRenderer *);
 

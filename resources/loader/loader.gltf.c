@@ -18,12 +18,12 @@ static void loader_gltf_add_vertex_attribute(VertexAttribute *, float *, size_t,
 static void loader_gltf_init_vertex_lists(VertexAttribute *, VertexList *,
                                           size_t);
 // mesh utils
-static void loader_gltf_create_mesh(Scene *, WGPUDevice *, WGPUQueue *,
+static void loader_gltf_create_mesh(Scene *, const WGPUDevice, const WGPUQueue,
                                     cgltf_data *);
 static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
 
 // shader utils
-static void loader_gltf_create_shader(Shader *, WGPUDevice *, WGPUQueue *,
+static void loader_gltf_create_shader(Shader *, const WGPUDevice, const WGPUQueue,
                                       cgltf_primitive *, WGPUTextureView *);
 
 static void loader_gltf_bind_uniforms(Shader *, cgltf_material *,
@@ -144,7 +144,7 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   return (VertexIndex){index_data, index_count};
 }
 
-void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
+void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device, const WGPUQueue queue,
                              cgltf_data *data) {
 
   VERBOSE_IMPORT("GLTF file");
@@ -289,8 +289,8 @@ void loader_gltf_create_mesh(Scene *scene, WGPUDevice *device, WGPUQueue *queue,
   wgpuTextureViewRelease(fallback_texture);
 }
 
-void loader_gltf_create_shader(Shader *shader, WGPUDevice *device,
-                               WGPUQueue *queue, cgltf_primitive *primitive,
+void loader_gltf_create_shader(Shader *shader, const WGPUDevice device,
+                               const WGPUQueue queue, cgltf_primitive *primitive,
                                WGPUTextureView *fallback_texture) {
 
   // Use default pbr shader as default

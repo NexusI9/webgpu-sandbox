@@ -67,7 +67,7 @@ void render_pass_draw(RenderPassDrawDescriptor *desc) {
   - Compute passes
 */
   WGPUCommandEncoder render_encoder =
-      wgpuDeviceCreateCommandEncoder(*desc->device, NULL);
+      wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
   // get swapchain view to be resolved
   WGPUTextureView swapchain_view =
@@ -82,7 +82,7 @@ void render_pass_draw(RenderPassDrawDescriptor *desc) {
       wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
 
   // submit commands
-  wgpuQueueSubmit(*desc->queue, 1, &render_buffer);
+  wgpuQueueSubmit(desc->queue, 1, &render_buffer);
 
   // release all passes encoders
   for (size_t i = 0; i < desc->pass_layout->length; i++) {

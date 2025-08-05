@@ -23,15 +23,15 @@
 
 typedef struct {
   MeshRefList *mesh_list;
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
 } AOBakeInitDescriptor;
 
 typedef struct {
   MeshRefList *mesh_list;
   Texture *texture;
-  WGPUDevice *device;
-  WGPUQueue *queue;
+  const WGPUDevice device;
+  const WGPUQueue queue;
 } AOBakeDescriptor;
 
 typedef struct {

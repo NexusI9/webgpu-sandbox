@@ -333,10 +333,8 @@ void scene_renderer_draw(SceneRenderer *renderer) {
 }
 
 // getters
-WGPUDevice *scene_renderer_device(SceneRenderer *rd) {
-  return &rd->wgpu.device;
-}
-WGPUQueue *scene_renderer_queue(SceneRenderer *rd) { return &rd->wgpu.queue; }
+WGPUDevice scene_renderer_device(SceneRenderer *rd) { return rd->wgpu.device; }
+WGPUQueue scene_renderer_queue(SceneRenderer *rd) { return rd->wgpu.queue; }
 
 int scene_renderer_width(const SceneRenderer *rd) { return rd->context.width; }
 int scene_renderer_height(const SceneRenderer *rd) {
