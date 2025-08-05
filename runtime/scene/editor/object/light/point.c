@@ -10,6 +10,8 @@ void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
 
   // define target
   seo->target = light;
+  seo->scene = desc->scene;
+  seo->target_list_index = desc->target_list_index;
 
   // define mesh
   size_t gizmo_mesh_count = 1;
@@ -59,8 +61,6 @@ void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
       seo_light_point_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_point_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_light_point_scale;
-
-  seo->scene = desc->scene;
 }
 
 void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
@@ -71,8 +71,18 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
 
   mesh_ref_list_translate(&seo->meshes, value);
 
+  printf("target index: %lu\n", seo->target_list_index);
   // update light shadow map
-  
+  shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
+      .light = &seo->scene->lights.point.entries[seo->target_list_index],
+      .mesh_list = scene_pipeline_lit(seo->scene),
+      .color_map = seo->scene->lights.point.color_map,
+      .depth_map = seo->scene->lights.point.depth_map,
+      .device = scene_device(seo->scene),
+      .queue = scene_queue(seo->scene),
+      .layer = seo->target_list_index,
+      .encoder = NULL,
+  });
 }
 
 void seo_light_point_rotate(SceneEditorObject *seo, vec3 value) {}

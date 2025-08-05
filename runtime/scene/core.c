@@ -405,3 +405,7 @@ WGPUQueue *scene_queue(Scene *scene) { return &scene->renderer.wgpu.queue; }
    Return nested device from the scene renderer
  */
 WGPUDevice *scene_device(Scene *scene) { return &scene->renderer.wgpu.device; }
+
+MeshRefList *scene_pipeline_lit(Scene *scene) {
+  return &scene->pipelines[ScenePipeline_Dynamic_Lit];
+}

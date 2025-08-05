@@ -10,7 +10,9 @@ void seo_light_sun_create(SceneEditorObject *seo, SunLight *light,
 
   // define target
   seo->target = light;
-
+  seo->scene = desc->scene;
+  seo->target_list_index = desc->target_list_index;
+  
   // define mesh
   size_t gizmo_mesh_count = 1;
   mesh_ref_list_create(&seo->meshes, gizmo_mesh_count);
@@ -36,8 +38,6 @@ void seo_light_sun_create(SceneEditorObject *seo, SunLight *light,
       seo_light_sun_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_sun_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_light_sun_scale;
-
-  seo->scene = desc->scene;
 }
 
 void seo_light_sun_translate(SceneEditorObject *seo, vec3 value) {

@@ -75,7 +75,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
   // create "local" encoder if is not included
   //(usually when only drawing one light)
   if (shadow_encoder == NULL)
-    shadow_encoder = wgpuDeviceCreateCommandEncoder(*desc->device, NULL);
+    shadow_encoder = wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
   // create per layer texture views (depth + color)
   WGPUTextureViewDescriptor layer_texture_descriptor_depth = {
@@ -103,6 +103,8 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
 
   WGPUTextureView layer_texture_view_color = wgpuTextureCreateView(
       desc->color_texture, &layer_texture_descriptor_color);
+
+  printf("shadow encoder: %p\n", shadow_encoder);
 
   // create render pass and render it to the nested layer
   WGPURenderPassEncoder shadow_pass = wgpuCommandEncoderBeginRenderPass(
@@ -136,10 +138,16 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
 
   // clean up "local" encoder if not provided in the descriptor
   if (desc->encoder == NULL) {
+
+    printf("queue: %p\n", desc->queue);
+    printf("shadow_encoder: %p\n", shadow_encoder);
+    
     // finish encoding command
     WGPUCommandBuffer command_buffer =
         wgpuCommandEncoderFinish(shadow_encoder, NULL);
-    wgpuQueueSubmit(*desc->queue, 1, &command_buffer);
+    wgpuQueueSubmit(desc->queue, 1, &command_buffer);
+
+    printf("command buffer: %p\n", command_buffer);
 
     // clean up
     wgpuCommandBufferRelease(command_buffer);
@@ -185,19 +193,19 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
  */
 
   // create shadow shader
-  for (int m = 0; m < target_mesh_list->length; m++) {
+  /*for (int m = 0; m < target_mesh_list->length; m++) {
     Mesh *current_mesh = target_mesh_list->entries[m];
     mesh_create_shadow_shader(current_mesh);
-  }
+  }*/
 
   for (size_t p = 0; p < point_length; p++)
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
         .layer = p,
         .light = &desc->lights->point.entries[p],
         .mesh_list = desc->mesh_list,
-        .device = &desc->device,
+        .device = desc->device,
         .queue = desc->queue,
-        .encoder = &shadow_encoder,
+        .encoder = shadow_encoder,
         .color_map = desc->lights->point.color_map,
         .depth_map = desc->lights->point.depth_map,
     });
@@ -215,9 +223,9 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         .layer = p,
         .light = &desc->lights->spot.entries[p],
         .mesh_list = desc->mesh_list,
-        .device = &desc->device,
+        .device = desc->device,
         .queue = desc->queue,
-        .encoder = &shadow_encoder,
+        .encoder = shadow_encoder,
         .color_map = desc->lights->spot.color_map,
         .depth_map = desc->lights->spot.depth_map,
     });
@@ -237,9 +245,9 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         .color_map = desc->lights->spot.color_map,
         .depth_map = desc->lights->spot.depth_map,
         .layer = spot_length + p,
-        .device = &desc->device,
+        .device = desc->device,
         .queue = desc->queue,
-        .encoder = &shadow_encoder,
+        .encoder = shadow_encoder,
         .mesh_list = desc->mesh_list,
         .light = &desc->lights->sun.entries[p],
     });
@@ -247,7 +255,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
   // finish encoding command
   WGPUCommandBuffer command_buffer =
       wgpuCommandEncoderFinish(shadow_encoder, NULL);
-  wgpuQueueSubmit(*desc->queue, 1, &command_buffer);
+  wgpuQueueSubmit(desc->queue, 1, &command_buffer);
 
   // clean up
   wgpuCommandBufferRelease(command_buffer);
@@ -266,6 +274,11 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
 void shadow_map_draw_point_light(
     const ShadowMapDrawPointLightDescriptor *desc) {
+
+  for (int m = 0; m < desc->mesh_list->length; m++) {
+    Mesh *current_mesh = desc->mesh_list->entries[m];
+    mesh_create_shadow_shader(current_mesh);
+  }
 
   // retrieve 6 views of point cube
   LightViews light_views = light_point_views(
@@ -292,7 +305,7 @@ void shadow_map_draw_point_light(
         .depth_texture = desc->depth_map,
         .layer = layer,
         .device = desc->device,
-        .encoder = *desc->encoder,
+        .encoder = desc->encoder,
     });
 
     // 3. Clear meshes bind group
@@ -336,7 +349,7 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
       .layer = desc->layer,
       .device = desc->device,
       .queue = desc->queue,
-      .encoder = *desc->encoder,
+      .encoder = desc->encoder,
   });
 
   // 3. Clear meshes bind group
@@ -348,9 +361,14 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
 
 void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
 
+  for (int m = 0; m < desc->mesh_list->length; m++) {
+    Mesh *current_mesh = desc->mesh_list->entries[m];
+    mesh_create_shadow_shader(current_mesh);
+  }
 
   // get each light orthographic view depending on target
-  LightViews light_views = light_sun_view(desc->light->position, desc->light->size);
+  LightViews light_views =
+      light_sun_view(desc->light->position, desc->light->size);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
       .color_map = desc->color_map,
@@ -366,9 +384,14 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
 
 void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
 
+  for (int m = 0; m < desc->mesh_list->length; m++) {
+    Mesh *current_mesh = desc->mesh_list->entries[m];
+    mesh_create_shadow_shader(current_mesh);
+  }
+
   // get each light orthographic view depending on target
-  LightViews light_views =
-      light_spot_view(desc->light->position, desc->light->target, desc->light->angle);
+  LightViews light_views = light_spot_view(
+      desc->light->position, desc->light->target, desc->light->angle);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
       .color_map = desc->color_map,

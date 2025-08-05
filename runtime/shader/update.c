@@ -14,8 +14,6 @@ void shader_update_texture(Shader *shader, bind_group_index group_index,
       shader_find_texture(shader, group_index, index);
 
   // WGPUTextureView previous_texture_view = bound_texture->texture_view;
-
-  printf("updating texture: %s %p\n", shader->name, *texture);
   
   if (bound_texture != NULL) {
 

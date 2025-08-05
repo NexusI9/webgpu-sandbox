@@ -38,14 +38,16 @@ typedef struct SceneEditorObject SceneEditorObject;
 typedef void (*seo_transform_axis_callback)(SceneEditorObject *, vec3);
 
 struct SceneEditorObject {
-  Scene *scene;
-  void *target;
-  MeshRefList meshes;
+  Scene *scene;             // parent scene pointer
+  void *target;             // camera, light objects
+  size_t target_list_index; // index of object (ex in LightList or CameraList)
+  MeshRefList meshes;       // helped/ visual representation
   seo_transform_axis_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
 };
 
 typedef struct {
   Scene *scene;
+  size_t target_list_index;
   WGPUDevice *device;
   WGPUQueue *queue;
   Camera *camera;
@@ -259,5 +261,7 @@ MeshList *scene_mesh_list(Scene *);
 MeshRefList *scene_layer_meshes(Scene *, const char *);
 WGPUQueue *scene_queue(Scene *);
 WGPUDevice *scene_device(Scene *);
+
+MeshRefList* scene_pipeline_lit(Scene*);
 
 #endif

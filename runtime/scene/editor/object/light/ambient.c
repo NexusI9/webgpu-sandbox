@@ -10,6 +10,8 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
 
   // define target
   seo->target = light;
+  seo->scene = desc->scene;
+  seo->target_list_index = desc->target_list_index;
 
   // define mesh
   size_t gizmo_mesh_count = 1;
@@ -36,8 +38,6 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
       seo_light_ambient_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_ambient_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_light_ambient_scale;
-
-  seo->scene = desc->scene;
 }
 
 void seo_light_ambient_translate(SceneEditorObject *seo, vec3 value) {

@@ -3,8 +3,8 @@
 #include "../resources/loader/loader.mbin.h"
 #include "../runtime/geometry/line/line.h"
 #include "../runtime/geometry/vertex/vertex.h"
-#include "../utils/system.h"
 #include "../runtime/scene/scene.h"
+#include "../utils/system.h"
 
 #include <stddef.h>
 
@@ -13,6 +13,8 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
 
   // define target
   seo->target = camera;
+  seo->scene = desc->scene;
+  seo->target_list_index = desc->target_list_index;
 
   const size_t seo_mesh_count = 2;
   mesh_ref_list_create(&seo->meshes, seo_mesh_count);
@@ -87,8 +89,6 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   seo->transform_callback[GizmoTransformMode_Translate] = seo_camera_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_camera_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_camera_scale;
-
-  seo->scene = desc->scene;
 }
 
 void seo_camera_translate(SceneEditorObject *seo, vec3 value) {

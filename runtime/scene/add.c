@@ -44,6 +44,7 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
                              .device = scene_device(scene),
                              .queue = scene_queue(scene),
                              .scene = scene,
+                             .target_list_index = list->length - 1,
                          });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -76,6 +77,7 @@ SceneEditorObject *scene_add_spot_light(Scene *scene,
                             .device = scene_device(scene),
                             .queue = scene_queue(scene),
                             .scene = scene,
+                            .target_list_index = list->length - 1,
                         });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -108,6 +110,7 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
                                .device = scene_device(scene),
                                .queue = scene_queue(scene),
                                .scene = scene,
+                               .target_list_index = list->length - 1,
                            });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -139,6 +142,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
                            .device = scene_device(scene),
                            .queue = scene_queue(scene),
                            .scene = scene,
+                           .target_list_index = list->length - 1,
                        });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -185,6 +189,7 @@ SceneEditorObject *scene_add_camera(Scene *scene,
                         .device = scene_device(scene),
                         .queue = scene_queue(scene),
                         .scene = scene,
+                        .target_list_index = scene->cameras.length - 1,
                     });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered

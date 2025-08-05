@@ -10,6 +10,8 @@ void seo_light_spot_create(SceneEditorObject *seo, SpotLight *light,
 
   // define target
   seo->target = light;
+  seo->scene = desc->scene;
+  seo->target_list_index = desc->target_list_index;
 
   // define mesh
   size_t gizmo_mesh_count = 1;
@@ -36,8 +38,6 @@ void seo_light_spot_create(SceneEditorObject *seo, SpotLight *light,
       seo_light_spot_translate;
   seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_spot_rotate;
   seo->transform_callback[GizmoTransformMode_Scale] = seo_light_spot_scale;
-
-  seo->scene = desc->scene;
 }
 
 void seo_light_spot_translate(SceneEditorObject *seo, vec3 value) {
