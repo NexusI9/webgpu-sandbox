@@ -67,7 +67,6 @@ void shader_bind_group_clear(Shader *shader) {
 
   for (size_t b = 0; b < shader->bind_groups.length; b++) {
     ShaderBindGroup *current_group = &shader->bind_groups.entries[b];
-    current_group->bind_group = NULL;
 
     // reseting uniforms
     current_group->uniforms.length = 0;
@@ -87,6 +86,9 @@ void shader_bind_group_clear(Shader *shader) {
     current_group->samplers.entries = NULL;
     current_group->samplers.length = 0;
     current_group->samplers.capacity = 0;
+
+    wgpuBindGroupRelease(current_group->bind_group);
+    current_group->bind_group = NULL;
   }
 
   shader->bind_groups.length = 0;
@@ -185,12 +187,12 @@ void shader_bind_group_realize(WGPUBindGroup *bind_group,
                                const ShaderBindGroupRealize *desc) {
 
   *bind_group = wgpuDeviceCreateBindGroup(
-     desc->device, &(WGPUBindGroupDescriptor){
-                         .layout = wgpuRenderPipelineGetBindGroupLayout(
-                             *desc->pipeline_handle, desc->group_index),
-                         .entryCount = desc->entryCount,
-                         .entries = desc->entries,
-                     });
+      desc->device, &(WGPUBindGroupDescriptor){
+                        .layout = wgpuRenderPipelineGetBindGroupLayout(
+                            *desc->pipeline_handle, desc->group_index),
+                        .entryCount = desc->entryCount,
+                        .entries = desc->entries,
+                    });
 }
 
 void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
@@ -216,7 +218,8 @@ void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
    4. Create bind group based on the converted entries.
  */
 void shader_bind_group_build(ShaderBindGroup *group,
-                             bind_group_index group_index, const WGPUDevice device,
+                             bind_group_index group_index,
+                             const WGPUDevice device,
                              WGPURenderPipeline *pipeline) {
 
   uint16_t total_length = shader_bind_group_entries_count(group);

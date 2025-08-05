@@ -14,7 +14,7 @@ void shader_update_texture(Shader *shader, bind_group_index group_index,
       shader_find_texture(shader, group_index, index);
 
   // WGPUTextureView previous_texture_view = bound_texture->texture_view;
-  
+
   if (bound_texture != NULL) {
 
     // first release the current bind group
@@ -22,7 +22,7 @@ void shader_update_texture(Shader *shader, bind_group_index group_index,
 
     // TODO OPTI: clear the previous textureview if they are NOT == fallback
     // texture
-    //wgpuTextureViewRelease(bound_texture->texture_view);
+    // wgpuTextureViewRelease(bound_texture->texture_view);
 
     // replace the value
     bound_texture->texture_view = *texture;
@@ -40,7 +40,32 @@ void shader_update_texture(Shader *shader, bind_group_index group_index,
 }
 
 void shader_update_uniform(Shader *shader, bind_group_index group_index,
-                           void *data, size_t size, bind_index index) {}
+                           void *data, size_t size, bind_index index) {
 
-void shader_update_sampler(Shader *shader, bind_group_index group_indx,
+  ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
+  ShaderBindGroupUniformEntry *bound_uniform =
+      shader_find_uniform(shader, group_index, index);
+
+  if (bound_uniform != NULL) {
+
+    shader_bind_group_release(bind_group);
+
+    bound_uniform->data = data;
+    bound_uniform->size = size;
+
+    wgpuQueueWriteBuffer(shader->queue, bound_uniform->buffer, 0,
+                         bound_uniform->data, bound_uniform->size);
+
+    shader_bind_group_build(bind_group, group_index, shader->device,
+                            &shader->pipeline.handle);
+
+  } else {
+    VERBOSE_WARNING(
+        "Could not find the bound texture in group: %d, index: %d, make sure "
+        "the shader is correctly initialised with all bounds (shader: %s)",
+        group_index, index, shader->name);
+  }
+}
+
+void shader_update_sampler(Shader *shader, bind_group_index group_index,
                            WGPUSampler *sampler, bind_index index) {}

@@ -1,6 +1,7 @@
 #include "draw.h"
 #include "../runtime/material/material.h"
 #include "./core.h"
+#include "webgpu/webgpu.h"
 
 static inline void shadow_map_draw(const ShadowMapDrawDescriptor *);
 
@@ -78,7 +79,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
     shadow_encoder = wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
   // create per layer texture views (depth + color)
-  WGPUTextureViewDescriptor layer_texture_descriptor_depth = {
+  WGPUTextureViewDescriptor temp_layer_texture_descriptor_depth = {
       .label = "Shadow per layer texture view - Depth",
       .format = SHADOW_DEPTH_FORMAT,
       .dimension = WGPUTextureViewDimension_2D,
@@ -88,7 +89,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
       .baseMipLevel = 0,
   };
 
-  WGPUTextureViewDescriptor layer_texture_descriptor_color = {
+  WGPUTextureViewDescriptor temp_layer_texture_descriptor_color = {
       .label = "Shadow per layer texture view - Color",
       .format = SHADOW_COLOR_FORMAT,
       .dimension = WGPUTextureViewDimension_2D,
@@ -98,13 +99,11 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
       .baseMipLevel = 0,
   };
 
-  WGPUTextureView layer_texture_view_depth = wgpuTextureCreateView(
-      desc->depth_texture, &layer_texture_descriptor_depth);
+  WGPUTextureView temp_layer_texture_view_depth = wgpuTextureCreateView(
+      desc->depth_texture, &temp_layer_texture_descriptor_depth);
 
-  WGPUTextureView layer_texture_view_color = wgpuTextureCreateView(
-      desc->color_texture, &layer_texture_descriptor_color);
-
-  printf("shadow encoder: %p\n", shadow_encoder);
+  WGPUTextureView temp_layer_texture_view_color = wgpuTextureCreateView(
+      desc->color_texture, &temp_layer_texture_descriptor_color);
 
   // create render pass and render it to the nested layer
   WGPURenderPassEncoder shadow_pass = wgpuCommandEncoderBeginRenderPass(
@@ -113,7 +112,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
                           .colorAttachmentCount = 1,
                           .colorAttachments =
                               &(WGPURenderPassColorAttachment){
-                                  .view = layer_texture_view_color,
+                                  .view = temp_layer_texture_view_color,
                                   .clearValue = {0.0f, 0.0f, 0.0f, 1.0f},
                                   .loadOp = WGPULoadOp_Clear,
                                   .storeOp = WGPUStoreOp_Store,
@@ -121,7 +120,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
                               },
                           .depthStencilAttachment =
                               &(WGPURenderPassDepthStencilAttachment){
-                                  .view = layer_texture_view_depth,
+                                  .view = temp_layer_texture_view_depth,
                                   .depthClearValue = 1.0f,
                                   .depthLoadOp = WGPULoadOp_Clear,
                                   .depthStoreOp = WGPUStoreOp_Store,
@@ -135,19 +134,16 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
   }
 
   wgpuRenderPassEncoderEnd(shadow_pass);
+  wgpuTextureViewRelease(temp_layer_texture_view_depth);
+  wgpuTextureViewRelease(temp_layer_texture_view_color);
 
   // clean up "local" encoder if not provided in the descriptor
   if (desc->encoder == NULL) {
 
-    printf("queue: %p\n", desc->queue);
-    printf("shadow_encoder: %p\n", shadow_encoder);
-    
     // finish encoding command
     WGPUCommandBuffer command_buffer =
         wgpuCommandEncoderFinish(shadow_encoder, NULL);
     wgpuQueueSubmit(desc->queue, 1, &command_buffer);
-
-    printf("command buffer: %p\n", command_buffer);
 
     // clean up
     wgpuCommandBufferRelease(command_buffer);
@@ -191,12 +187,6 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
   ==========================================
  */
-
-  // create shadow shader
-  /*for (int m = 0; m < target_mesh_list->length; m++) {
-    Mesh *current_mesh = target_mesh_list->entries[m];
-    mesh_create_shadow_shader(current_mesh);
-  }*/
 
   for (size_t p = 0; p < point_length; p++)
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
@@ -260,8 +250,6 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
   // clean up
   wgpuCommandBufferRelease(command_buffer);
   wgpuCommandEncoderRelease(shadow_encoder);
-
-  shadow_map_update_binding(desc);
 }
 
 /**
@@ -275,26 +263,17 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 void shadow_map_draw_point_light(
     const ShadowMapDrawPointLightDescriptor *desc) {
 
-  for (int m = 0; m < desc->mesh_list->length; m++) {
-    Mesh *current_mesh = desc->mesh_list->entries[m];
-    mesh_create_shadow_shader(current_mesh);
-  }
-
   // retrieve 6 views of point cube
   LightViews light_views = light_point_views(
       desc->light->position, desc->light->near, desc->light->far);
 
   // render scene and store depth map for each view
   for (size_t v = 0; v < light_views.length; v++) {
-    mat4 *current_view = &light_views.views[v];
 
+    // update each mesh shadow uniforms with current light view
     for (int m = 0; m < desc->mesh_list->length; m++) {
-      // 1. Bind meshes
-      Mesh *current_mesh = desc->mesh_list->entries[m];
-      // bind light respective views
-      material_shadow_bind_views(current_mesh, current_view);
-      // build shadow shader layout
-      mesh_build(current_mesh, mesh_shader_shadow(current_mesh));
+      Mesh *mesh = desc->mesh_list->entries[m];
+      material_shadow_update_views(mesh, &light_views.views[v]);
     }
 
     // 2. Render scene (create shadow render pass to texture layer)
@@ -305,17 +284,9 @@ void shadow_map_draw_point_light(
         .depth_texture = desc->depth_map,
         .layer = layer,
         .device = desc->device,
-	.queue = desc->queue,
+        .queue = desc->queue,
         .encoder = desc->encoder,
     });
-
-    // 3. Clear meshes bind group
-    for (int m = 0; m < desc->mesh_list->length; m++) {
-      Mesh *current_mesh = desc->mesh_list->entries[m];
-      material_shadow_clear_bindings(current_mesh);
-      // destroy previous pipeline for next views
-      pipeline_destroy(shader_pipeline(mesh_shader_shadow(current_mesh)));
-    }
   }
 }
 
@@ -327,7 +298,7 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
   // 1. Bind meshes
   for (int m = 0; m < desc->mesh_list->length; m++) {
     Mesh *current_mesh = desc->mesh_list->entries[m];
-    material_shadow_bind_views(current_mesh, &desc->views->views[0]);
+    material_shadow_update_views(current_mesh, &desc->views->views[0]);
 
     /*
       Cullmode adjustment below:
@@ -338,8 +309,7 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
       to flip the scene projection, we set back the cull to BACK.
     */
 
-    material_shadow_set_cullmode(current_mesh, WGPUCullMode_Back);
-    mesh_build(current_mesh, mesh_shader_shadow(current_mesh));
+    // material_shadow_set_cullmode(current_mesh, WGPUCullMode_Back);
   }
 
   // 2. Render scene (create shadow render pass to texture layer)
@@ -352,20 +322,9 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
       .queue = desc->queue,
       .encoder = desc->encoder,
   });
-
-  // 3. Clear meshes bind group
-  for (int m = 0; m < desc->mesh_list->length; m++) {
-    Mesh *current_mesh = desc->mesh_list->entries[m];
-    material_shadow_clear_bindings(current_mesh);
-  }
 }
 
 void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
-
-  for (int m = 0; m < desc->mesh_list->length; m++) {
-    Mesh *current_mesh = desc->mesh_list->entries[m];
-    mesh_create_shadow_shader(current_mesh);
-  }
 
   // get each light orthographic view depending on target
   LightViews light_views =
@@ -384,11 +343,6 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
 }
 
 void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
-
-  for (int m = 0; m < desc->mesh_list->length; m++) {
-    Mesh *current_mesh = desc->mesh_list->entries[m];
-    mesh_create_shadow_shader(current_mesh);
-  }
 
   // get each light orthographic view depending on target
   LightViews light_views = light_spot_view(
@@ -413,6 +367,10 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
   ▝▚▄▞▘  █  ▗▄█▄▖▐▙▄▄▖▗▄▄▞▘
 
   Transfert depth texture array to each meshes default shader
+
+  DELETEME
+  Is not currently used but may be useful to display the shadow as color for
+  debug, not sure yet.. Maybe can delete.
  */
 void shadow_map_update_binding(const ShadowMapDrawAllDescriptor *desc) {
 

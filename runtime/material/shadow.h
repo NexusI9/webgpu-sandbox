@@ -13,7 +13,9 @@ void material_shadow_init_shader(Mesh *);
 void material_shadow_clear_bindings(Mesh *);
 
 // bind shadow specicif view
-void material_shadow_bind_views(Mesh *, mat4 *);
+void material_shadow_bind_views(Mesh *);
+
+void material_shadow_update_views(Mesh *, mat4 *);
 
 void material_shadow_set_cullmode(Mesh *, const WGPUCullMode);
 

@@ -1,6 +1,5 @@
 #include "shadow.h"
 
-
 /**
    Bind a specific point light view to the mesh's shadow shader
    The function is called during the scene shadow updating process
@@ -11,9 +10,12 @@
    upload separate views in the shader.
  */
 
-void material_shadow_bind_views(Mesh *mesh, mat4 *view) {
+void material_shadow_bind_views(Mesh *mesh) {
 
   MeshUniform uModel = mesh_uniform_model(mesh);
+
+  mat4 init_view;
+  glm_mat4_zero(init_view);
 
   shader_add_uniform(
       mesh_shader_shadow(mesh),
@@ -25,7 +27,7 @@ void material_shadow_bind_views(Mesh *mesh, mat4 *view) {
               (ShaderBindGroupUniformEntry[]){
                   {
                       .binding = 0,
-                      .data = view,
+                      .data = (void *)&init_view,
                       .size = sizeof(mat4),
                       .offset = 0,
                   },
@@ -39,6 +41,12 @@ void material_shadow_bind_views(Mesh *mesh, mat4 *view) {
       });
 }
 
+void material_shadow_update_views(Mesh *mesh, mat4 *view) {
+
+  MeshUniform uModel = mesh_uniform_model(mesh);
+  shader_update_uniform(mesh_shader_shadow(mesh), 0, view, sizeof(mat4), 0);
+}
+
 void material_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
 
   pipeline_set_primitive(shader_pipeline(mesh_shader_shadow(mesh)),
@@ -50,12 +58,9 @@ void material_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
                          });
 }
 
-
 /**
    Clear the shadow shader bind groups of mesh
  */
 void material_shadow_clear_bindings(Mesh *mesh) {
   shader_bind_group_clear(mesh_shader_shadow(mesh));
 }
-
-

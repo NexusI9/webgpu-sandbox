@@ -163,6 +163,16 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
 
   // lit only pipeline
   if (build_desc->pipeline == ScenePipeline_Dynamic_Lit) {
+
+    // create mesh shadow shader
+    mesh_create_shadow_shader(mesh);
+
+    // bind light and mesh uniform to shadow
+    material_shadow_bind_views(mesh);
+
+    // build shadow shader layout
+    mesh_build(mesh, mesh_shader_shadow(mesh));
+
     // create binding for shadow maps (using fallback texture)
     material_texture_bind_shadow_maps(mesh, build_desc->point_map,
                                       build_desc->spot_map);
