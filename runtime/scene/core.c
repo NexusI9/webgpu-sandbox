@@ -28,14 +28,14 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   // init scene layers
   scene_layer_set_create(&scene->layers, SCENE_LAYER_SET_CAPACITY);
 
-  // init lights
-  scene_init_light_list(scene);
-
   // init draw callbacks configuration
   scene_init_draw_layouts(scene);
 
   // set renderer
   scene_renderer_create(&scene->renderer, desc->renderer);
+
+  // init lights
+  scene_init_light_list(scene);
 
   // set viewport
   // TODO: currently it's kinda weird to include the width and height in the
@@ -382,6 +382,13 @@ void scene_init_light_list(Scene *scene) {
   // init ambient light list
   scene->lights.sun.capacity = LIGHT_MAX_CAPACITY;
   scene->lights.sun.length = 0;
+
+  // init shadow textures
+  shadow_map_init(&(ShadowMapInitDescriptor){
+      .device = scene_renderer_device(&scene->renderer),
+      .queue = scene_renderer_queue(&scene->renderer),
+      .lights = &scene->lights,
+  });
 }
 
 /**

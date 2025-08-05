@@ -78,4 +78,5 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
           .baseArrayLayer = 0,
           .aspect = WGPUTextureAspect_DepthOnly,
       });
+
 }

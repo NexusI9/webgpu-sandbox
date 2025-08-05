@@ -64,9 +64,9 @@
 
    */
 
-void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
+void shadow_map_init(const ShadowMapInitDescriptor *desc) {
 
-  VERBOSE_PROCESS("Computing shadow map...");
+  VERBOSE_PROCESS("Creating scene shadow map textures...");
 
   /*debug_view_create(&debug_view_light, &(DebugViewCreateDescriptor){
                                            .device = &device,
@@ -74,9 +74,9 @@ void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
                                            });*/
 
   // create multi layered light texture (passed to the renderpass)
-  size_t point_light_length = desc->lights.point->length;
-  size_t spot_light_length = desc->lights.spot->length;
-  size_t sun_light_length = desc->lights.spot->length;
+  size_t point_light_length = desc->lights->point.length;
+  size_t spot_light_length = desc->lights->spot.length;
+  size_t sun_light_length = desc->lights->sun.length;
 
   // Setup point light
   shadow_pass_texture_create(&(ShadowPassTextureDescriptor){
@@ -87,18 +87,17 @@ void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
       .height = SHADOW_MAP_SIZE,
       .color =
           {
-              .texture = &desc->lights.point->color_map,
-              .texture_view = &desc->lights.point->color_view,
+              .texture = &desc->lights->point.color_map,
+              .texture_view = &desc->lights->point.color_view,
           },
       .depth =
           {
-              .texture = &desc->lights.point->depth_map,
-              .texture_view = &desc->lights.point->depth_view,
+              .texture = &desc->lights->point.depth_map,
+              .texture_view = &desc->lights->point.depth_view,
           },
   });
 
   // Setup directional lights
-
   shadow_pass_texture_create(&(ShadowPassTextureDescriptor){
       .dimension = WGPUTextureViewDimension_2DArray, // 2D Array
       .layer_count = MAX(spot_light_length + sun_light_length, 1),
@@ -107,36 +106,13 @@ void shadow_pass_init(const ShadowMapInitDescriptor *desc) {
       .height = SHADOW_MAP_SIZE,
       .color =
           {
-              .texture = &desc->lights.spot->color_map,
-              .texture_view = &desc->lights.spot->color_view,
+              .texture = &desc->lights->spot.color_map,
+              .texture_view = &desc->lights->spot.color_view,
           },
       .depth =
           {
-              .texture = &desc->lights.spot->depth_map,
-              .texture_view = &desc->lights.spot->depth_view,
-          },
-  });
-
-  // Generate Shadow maps (both color and depth map)
-  shadow_map_draw_all(&(ShadowMapDrawAllDescriptor){
-      .device = *desc->device,
-      .queue = *desc->queue,
-      .mesh_list = desc->mesh_list,
-      .lights =
-          {
-              .point = desc->lights.point,
-              .spot = desc->lights.spot,
-              .sun = desc->lights.sun,
-          },
-      .point_light =
-          {
-              .color_texture = &desc->lights.point->color_map,
-              .depth_texture = &desc->lights.point->depth_map,
-          },
-      .directional_light =
-          {
-              .color_texture = &desc->lights.spot->color_map,
-              .depth_texture = &desc->lights.spot->depth_map,
+              .texture = &desc->lights->spot.depth_map,
+              .texture_view = &desc->lights->spot.depth_view,
           },
   });
 

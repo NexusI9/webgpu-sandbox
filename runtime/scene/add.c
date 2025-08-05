@@ -49,9 +49,6 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_seo(scene, seo_light);
 
-  printf("after creation seo: %p\n", seo_light);
-  printf("after crea transform callback: %p\n",
-         seo_light->transform_callback[0]);
   return seo_light;
 }
 

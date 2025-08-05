@@ -17,7 +17,7 @@ static void scene_build_mesh_texture(Mesh *, Camera *, Viewport *,
                                      PipelineMultisampleCount,
                                      const SceneBuildTextureDescriptor *,
                                      const AOBakeInitDescriptor *,
-                                     const ShadowMapInitDescriptor *);
+                                     const ShadowMapDrawAllDescriptor *);
 
 static void scene_build_mesh_shadow(Mesh *, Camera *, Viewport *,
                                     PipelineMultisampleCount);
@@ -115,17 +115,11 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
               .device = device,
               .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
           },
-          &(ShadowMapInitDescriptor){
-              .device = device,
+          &(ShadowMapDrawAllDescriptor){
+              .device = *device,
               .queue = queue,
               .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
-              .lights =
-                  {
-                      .point = &scene->lights.point,
-                      .sun = &scene->lights.sun,
-                      .spot = &scene->lights.spot,
-                  },
-
+              .lights = &scene->lights,
           });
 
       break;
@@ -158,7 +152,7 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
                               PipelineMultisampleCount sample,
                               const SceneBuildTextureDescriptor *build_desc,
                               const AOBakeInitDescriptor *ao_desc,
-                              const ShadowMapInitDescriptor *shad_desc) {
+                              const ShadowMapDrawAllDescriptor *shad_desc) {
 
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
@@ -179,10 +173,10 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
                                  SHADER_TEXTURE_BINDGROUP_LIGHTS);
 
     // Bake AO textures for static scenes elements
-    ao_bake_init(ao_desc);
+    // ao_bake_init(ao_desc);
 
-    // Setup drawing pass may need to move it elsewhere
-    shadow_pass_init(shad_desc);
+    // Update Shadow maps (both color and depth map)
+    shadow_map_draw_all(shad_desc);
   }
 
   // build mesh

@@ -8,28 +8,14 @@
 
 typedef struct {
   WGPUDevice device;
-  WGPUQueue queue;
+  WGPUQueue *queue;
   MeshRefList *mesh_list;
-  struct {
-    PointLightList *point;
-    SpotLightList *spot;
-    SunLightList *sun;
-  } lights;
-
-  struct {
-    WGPUTexture *color_texture;
-    WGPUTexture *depth_texture;
-  } point_light;
-
-  struct {
-    WGPUTexture *color_texture;
-    WGPUTexture *depth_texture;
-  } directional_light;
-
+  LightList* lights;
 } ShadowMapDrawAllDescriptor;
 
 typedef struct {
   const WGPUDevice *device;
+  WGPUQueue *queue;
   const WGPUCommandEncoder *encoder;
   PointLightList *light_list;
   const size_t light_index;
@@ -38,6 +24,7 @@ typedef struct {
 
 typedef struct {
   const WGPUDevice *device;
+  WGPUQueue *queue;
   const WGPUCommandEncoder *encoder;
   SunLightList *light_list;
   WGPUTexture color_map;
@@ -49,6 +36,7 @@ typedef struct {
 
 typedef struct {
   const WGPUDevice *device;
+  WGPUQueue *queue;
   const WGPUCommandEncoder *encoder;
   SpotLightList *light_list;
   const size_t light_index;
@@ -57,6 +45,7 @@ typedef struct {
 
 typedef struct {
   const WGPUDevice *device;
+  WGPUQueue *queue;
   const WGPUCommandEncoder *encoder;
   WGPUTexture color_map;
   WGPUTexture depth_map;
@@ -71,6 +60,7 @@ typedef struct {
   WGPUTexture depth_texture;
   uint32_t layer;
   const WGPUDevice *device;
+  WGPUQueue *queue;
   WGPUCommandEncoder encoder;
 } ShadowMapDrawDescriptor;
 

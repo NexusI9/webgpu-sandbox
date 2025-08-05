@@ -1,8 +1,8 @@
 #ifndef _SHADOW_MAP_CORE_H_
 #define _SHADOW_MAP_CORE_H_
 
-#include "../runtime/mesh/mesh.h"
 #include "../runtime/light/light.h"
+#include "../runtime/mesh/mesh.h"
 
 #include <webgpu/webgpu.h>
 
@@ -13,14 +13,8 @@
 typedef struct {
   WGPUDevice *device;
   WGPUQueue *queue;
-  MeshRefList *mesh_list;
-  struct {
-    PointLightList *point;
-    SpotLightList *spot;
-    SunLightList *sun;
-  } lights;
+  LightList *lights;
 } ShadowMapInitDescriptor;
-
 
 typedef struct {
   WGPUTexture color_texture;
@@ -29,7 +23,6 @@ typedef struct {
   const WGPUQueue queue;
 } ShadowPassFallbackToTextureDescriptor;
 
-
-void shadow_pass_init(const ShadowMapInitDescriptor *);
+void shadow_map_init(const ShadowMapInitDescriptor *);
 
 #endif
