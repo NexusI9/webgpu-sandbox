@@ -46,7 +46,8 @@ void material_shadow_update_views(Mesh *mesh, mat4 *view) {
 }
 
 void material_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
-
+  /*
+    STDPIPELINE SHADOW
   pipeline_set_primitive(shader_pipeline(mesh_shader_shadow(mesh)),
                          (WGPUPrimitiveState){
                              .frontFace = WGPUFrontFace_CCW,
@@ -54,11 +55,14 @@ void material_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
                              .topology = WGPUPrimitiveTopology_TriangleList,
                              .stripIndexFormat = WGPUIndexFormat_Undefined,
                          });
+
+*/
 }
 
 void material_shadow_update_cullmode(Mesh *mesh, WGPUCullMode mode) {
 
-  Pipeline *pipeline = &mesh->shader.shadow.pipeline;
+  /*
+  const Pipeline *pipeline = &mesh->shader.shadow.pipeline;
   wgpuRenderPipelineRelease(pipeline->handle);
 
   pipeline_set_primitive(pipeline,
@@ -69,7 +73,9 @@ void material_shadow_update_cullmode(Mesh *mesh, WGPUCullMode mode) {
                              .stripIndexFormat = WGPUIndexFormat_Undefined,
                          });
 
-  pipeline->handle = wgpuDeviceCreateRenderPipeline(pipeline->device, &pipeline->descriptor);
+  pipeline->handle = wgpuDeviceCreateRenderPipeline(pipeline->device,
+&pipeline->descriptor); STDPIPELINE SHADOW
+*/
 }
 
 /**

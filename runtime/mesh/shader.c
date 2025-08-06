@@ -50,12 +50,12 @@ Shader *mesh_shader_override(Mesh *mesh) { return mesh->shader.override; }
    The init shadow shader doesn't belong to the material API as it is a
    necessary component set by default on mesh creation.
  */
-void mesh_create_shadow_shader(Mesh *mesh) {
+void mesh_create_shadow_shader(Mesh *mesh, const Pipeline *pipeline) {
 
   // import shadow shader
   Shader *shadow_shader = mesh_shader_shadow(mesh);
   shader_create(shadow_shader, &(ShaderCreateDescriptor){
-                                   .path = SHADER_PATH_SHADOW,
+                                   .pipeline = pipeline,
                                    .label = "Mesh shadow shader",
                                    .device = mesh->device,
                                    .queue = mesh->queue,
@@ -63,23 +63,23 @@ void mesh_create_shadow_shader(Mesh *mesh) {
                                });
 
   // edit shader pipeline (vertex only)
-  pipeline_set_stencil(shader_pipeline(shadow_shader),
+  /*pipeline_set_stencil(shader_pipeline(shadow_shader),
                        (WGPUDepthStencilState){
                            .format = SHADOW_DEPTH_FORMAT,
                            .depthWriteEnabled = true,
                            .depthCompare = WGPUCompareFunction_Less,
-                       });
+                       });*/
 
   /* need to set the cullback to FRONT for point light because the light POV
    * render is flipped on the X axis to match the cubemap coordinates, such
    * negative scaling lead to set the cullback to front.*/
-  pipeline_set_primitive(shader_pipeline(shadow_shader),
+  /*pipeline_set_primitive(shader_pipeline(shadow_shader),
                          (WGPUPrimitiveState){
                              .frontFace = WGPUFrontFace_CCW,
                              .cullMode = WGPUCullMode_Front,
                              .topology = WGPUPrimitiveTopology_TriangleList,
                              .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
+                         });*/
 }
 
 /**
@@ -97,7 +97,7 @@ void mesh_create_shadow_shader(Mesh *mesh) {
      3. Upload data to GPU buffer
      4. Create wireframe shader
  */
-void mesh_create_wireframe_shader(Mesh *mesh) {
+void mesh_create_wireframe_shader(Mesh *mesh, const Pipeline *pipeline) {
 
   Shader *wireframe_shader = mesh_shader_wireframe(mesh);
 
@@ -107,7 +107,7 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
 
   // create shader
   shader_create(wireframe_shader, &(ShaderCreateDescriptor){
-                                      .path = SHADER_PATH_LINE,
+                                      .pipeline = pipeline,
                                       .label = "Mesh wireframe shader",
                                       .device = mesh->device,
                                       .queue = mesh->queue,
@@ -115,19 +115,19 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
                                   });
 
   // update pipeline for double-sided
-  material_texture_double_sided(mesh);
+  // material_texture_double_sided(mesh);
 }
 
 /**
    Initialize solid shader
  */
-void mesh_create_solid_shader(Mesh *mesh) {
+void mesh_create_solid_shader(Mesh *mesh, const Pipeline *pipeline) {
 
   Shader *solid_shader = mesh_shader_solid(mesh);
 
   // create shader
   shader_create(solid_shader, &(ShaderCreateDescriptor){
-                                  .path = SHADER_PATH_SOLID,
+                                  .pipeline = pipeline,
                                   .label = "Mesh solid shader",
                                   .device = mesh->device,
                                   .queue = mesh->queue,

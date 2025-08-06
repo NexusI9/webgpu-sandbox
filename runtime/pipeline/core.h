@@ -48,22 +48,69 @@
  */
 
 typedef enum {
+  PipelineMultisampleCount_Undefined = 0,
   PipelineMultisampleCount_1x = 1,
   PipelineMultisampleCount_4x = 4
 } PipelineMultisampleCount;
 
 typedef struct {
   WGPUDevice device;
-  WGPUShaderModule module;
-  WGPUVertexBufferLayout vertex_layout;
+  const char *label;
+  const char *path;
 } PipelineCreateDescriptor;
 
+// Standards pipelines
+#define PIPELINE_TYPE_COUNT 10
+
+typedef enum {
+  PipelineType_Billboard,
+  PipelineType_Default,
+  PipelineType_Grid,
+  PipelineType_Line,
+  PipelineType_PBR,
+  PipelineType_Screen,
+  PipelineType_Shadow,
+  PipelineType_Skybox,
+  PipelineType_Solid,
+  PipelineType_Unlit,
+} PipelineType;
+
+
 typedef struct {
+  WGPUFragmentState fragment_state;
+  WGPUColorTargetState color_state;
+  WGPUBlendState blend_state;
+} PipelineFragmentDescriptor;
+
+typedef struct {
+  const char *label;
+
+  // WGSL file to load module
+  const char *shader_path;
+
+  // Shader bind groups layout
+  size_t bind_groups_count;
+  const WGPUBindGroupLayoutDescriptor *bind_groups;
+
+  struct {
+    WGPUVertexState vertex_state;
+    PipelineFragmentDescriptor fragment_state;
+    WGPUPrimitiveState primitive_state;
+    WGPUDepthStencilState stencil_state;
+    WGPUBlendState blend_state;
+    PipelineMultisampleCount multisample;
+  } custom_attributes;
+
+} PipelineLayoutDescriptor;
+
+typedef struct {
+
+  const char *label;
+  const char *path;
 
   // core
   WGPUDevice device;
   WGPUShaderModule module;
-  WGPUVertexBufferLayout vertex_layout;
 
   // cached attributes
   WGPUVertexState vertex_state;
@@ -79,7 +126,15 @@ typedef struct {
   WGPURenderPipeline handle;
   WGPUPipelineLayout layout;
 
+  // vertex data
+  struct {
+    WGPUVertexAttribute attribute[4];
+    WGPUVertexBufferLayout buffer;
+  } vertex_layout;
+
 } Pipeline;
+
+void pipeline_standards_create(Pipeline *);
 
 // init pipeline
 void pipeline_create(Pipeline *, const PipelineCreateDescriptor *);

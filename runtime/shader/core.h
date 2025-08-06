@@ -1,7 +1,7 @@
 #ifndef _SHADER_CORE_H_
 #define _SHADER_CORE_H_
 
-#include "../pipeline/pipeline.h"
+#include "../runtime/pipeline/pipeline.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
@@ -32,31 +32,6 @@
 // fixed shader
 #define SHADER_FIXED_BINDGROUP_VIEWS 0
 
-// native shader path
-static const char *const SHADER_PATH_DEFAULT =
-    "./runtime/assets/shader/shader.default.wgsl";
-
-static const char *const SHADER_PATH_PBR =
-    "./runtime/assets/shader/shader.pbr.wgsl";
-
-static const char *const SHADER_PATH_SHADOW =
-    "./runtime/assets/shader/shader.shadow.wgsl";
-
-static const char *const SHADER_PATH_SCREEN =
-    "./runtime/assets/shader/shader.screen.wgsl";
-
-static const char *const SHADER_PATH_BILLBOARD =
-    "./runtime/assets/shader/shader.billboard.wgsl";
-
-static const char *const SHADER_PATH_LINE =
-    "./runtime/assets/shader/shader.line.wgsl";
-
-static const char *const SHADER_PATH_SOLID =
-    "./runtime/assets/shader/shader.solid.wgsl";
-
-static const char *const SHADER_PATH_FLAT =
-    "./runtime/assets/shader/shader.flat.wgsl";
-
 // descriptors
 typedef struct {
   const char *path;
@@ -64,6 +39,7 @@ typedef struct {
   WGPUDevice device;
   WGPUQueue queue;
   const char *name;
+  const Pipeline *pipeline;
 } ShaderCreateDescriptor;
 
 // bind group
@@ -247,8 +223,6 @@ typedef struct {
 
 // core
 typedef struct {
-  char *source; // shader source code
-  WGPUShaderModule module;
   char *name;
 
   // wgpu
@@ -256,13 +230,7 @@ typedef struct {
   WGPUQueue queue;
 
   // pipelines
-  Pipeline pipeline;
-
-  // vertex data
-  struct {
-    WGPUVertexAttribute attribute[4];
-    WGPUVertexBufferLayout layout;
-  } vertex;
+  const Pipeline *pipeline;
 
   // uniforms data along with userful information (buffer, group index...)
   // TODO: separate statics from dynamics
@@ -283,7 +251,7 @@ void shader_draw(Shader *, WGPURenderPassEncoder *);
 void shader_uniform_update(ShaderBindGroup *, const WGPUQueue);
 
 void shader_module_release(Shader *);
-Pipeline *shader_pipeline(Shader *);
+const Pipeline *shader_pipeline(Shader *);
 void shader_pipeline_release_layout(Shader *);
 
 #endif

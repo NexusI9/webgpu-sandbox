@@ -15,7 +15,12 @@
    topology/shader to be rendered all the time.
  */
 void seo_create_wireframe(Mesh *mesh,
-                            const SEOCreateWireframeDescriptor *desc) {
+                          const SEOCreateWireframeDescriptor *desc) {
+
+  if (desc->pipeline == NULL) {
+    VERBOSE_ERROR("No pipeline has been provided for SEO Wireframe.");
+    return;
+  }
 
   // set wireframe color from the vertex attributes
   vertex_attribute_set_color(desc->vertex, desc->color);
@@ -41,7 +46,7 @@ void seo_create_wireframe(Mesh *mesh,
                             .queue = desc->queue,
                             .label = "SEO wireframe shader",
                             .name = "SEO wireframe shader",
-                            .path = SHADER_PATH_LINE,
+                            .pipeline = desc->pipeline,
                         });
 
   // set override topology and shader as wireframe

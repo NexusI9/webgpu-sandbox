@@ -51,7 +51,9 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
   vec3 new_position;
   debug_view_compute_position(debug_view, new_position);
   mesh_translate(new_view, new_position);
-
+  /*
+    STDPIPELINE SCREEN
+    
   pipeline_set_primitive(&mesh_shader_texture(new_view)->pipeline,
                          (WGPUPrimitiveState){
                              .frontFace = WGPUFrontFace_CCW,
@@ -59,6 +61,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
                              .topology = WGPUPrimitiveTopology_TriangleList,
                              .stripIndexFormat = WGPUIndexFormat_Undefined,
                          });
+*/
 
   // bind model & viewport matrix
   MeshUniform uModel = mesh_uniform_model(new_view);

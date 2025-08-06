@@ -23,7 +23,8 @@ static void loader_gltf_create_mesh(Scene *, const WGPUDevice, const WGPUQueue,
 static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
 
 // shader utils
-static void loader_gltf_create_shader(Shader *, const WGPUDevice, const WGPUQueue,
+static void loader_gltf_create_shader(Shader *, const Pipeline *,
+                                      const WGPUDevice, const WGPUQueue,
                                       cgltf_primitive *, WGPUTextureView *);
 
 static void loader_gltf_bind_uniforms(Shader *, cgltf_material *,
@@ -144,8 +145,8 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   return (VertexIndex){index_data, index_count};
 }
 
-void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device, const WGPUQueue queue,
-                             cgltf_data *data) {
+void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
+                             const WGPUQueue queue, cgltf_data *data) {
 
   VERBOSE_IMPORT("GLTF file");
 
@@ -273,8 +274,10 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device, const WGPUQu
       }
 
       // load shader
-      loader_gltf_create_shader(mesh_shader_texture(target_mesh), device, queue,
-                                &current_primitive, &fallback_texture);
+      loader_gltf_create_shader(
+          mesh_shader_texture(target_mesh),
+          std_pipeline(&scene->renderer, PipelineType_PBR), device, queue,
+          &current_primitive, &fallback_texture);
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
@@ -289,8 +292,9 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device, const WGPUQu
   wgpuTextureViewRelease(fallback_texture);
 }
 
-void loader_gltf_create_shader(Shader *shader, const WGPUDevice device,
-                               const WGPUQueue queue, cgltf_primitive *primitive,
+void loader_gltf_create_shader(Shader *shader, const Pipeline *pipeline,
+                               const WGPUDevice device, const WGPUQueue queue,
+                               cgltf_primitive *primitive,
                                WGPUTextureView *fallback_texture) {
 
   // Use default pbr shader as default
@@ -298,7 +302,7 @@ void loader_gltf_create_shader(Shader *shader, const WGPUDevice device,
 
   cgltf_material *material = primitive->material;
   shader_create(shader, &(ShaderCreateDescriptor){
-                            .path = "./runtime/assets/shader/shader.pbr.wgsl",
+                            .pipeline = pipeline,
                             .label = material->name,
                             .name = material->name,
                             .device = device,

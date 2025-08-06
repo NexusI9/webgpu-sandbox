@@ -24,13 +24,16 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   const char *texture_path = "./resources/assets/texture/ui/camera.png";
 
   // create icon mesh
-  seo_create_billboard(icon, &(SEOCreateBillboardDescriptor){
-                                 .texture_path = texture_path,
-                                 .device = desc->device,
-                                 .queue = desc->queue,
-                                 .position = &camera->position,
-                                 .scale = &SEO_BILLBOARD_SCALE,
-                             });
+  seo_create_billboard(icon,
+                       &(SEOCreateBillboardDescriptor){
+                           .texture_path = texture_path,
+                           .pipeline = std_pipeline(&desc->scene->renderer,
+                                                    PipelineType_Billboard),
+                           .device = desc->device,
+                           .queue = desc->queue,
+                           .position = &camera->position,
+                           .scale = &SEO_BILLBOARD_SCALE,
+                       });
 
   // store mesh pointer in seo mesh ref list
   mesh_ref_list_insert(&seo->meshes, icon);
@@ -47,6 +50,8 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   // create manually wirerfame since seo is part of fixed rendering, so the
   // mesh topology generation isn't automatically handled.
   seo_create_wireframe(cube, &(SEOCreateWireframeDescriptor){
+                                 .pipeline = std_pipeline(
+                                     &desc->scene->renderer, PipelineType_Line),
                                  .device = desc->device,
                                  .queue = desc->queue,
                                  .color = &(vec3){1.0f, 0.7f, 0.4f},

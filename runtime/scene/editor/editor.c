@@ -35,18 +35,20 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
 
   scene->editor.gizmo.grid = scene_new_mesh(scene);
 
-  seo_grid_create(scene->editor.gizmo.grid,
-                  &(GizmoGridCreateDescriptor){
-                      .device = scene_device(scene),
-                      .queue = scene_queue(scene),
-                      .uniform =
-                          (GizmoGridUniform){
-                              .size = 100.0f,
-                              .cell_size = 100.0f,
-                              .thickness = 44.0f,
-                              .color = {0.5f, 0.5f, 0.5f, 1.0f},
-                          },
-                  });
+  seo_grid_create(
+      scene->editor.gizmo.grid,
+      &(GizmoGridCreateDescriptor){
+          .device = scene_device(scene),
+          .queue = scene_queue(scene),
+          .pipeline = std_pipeline(&scene->renderer, PipelineType_Grid),
+          .uniform =
+              (GizmoGridUniform){
+                  .size = 100.0f,
+                  .cell_size = 100.0f,
+                  .thickness = 44.0f,
+                  .color = {0.5f, 0.5f, 0.5f, 1.0f},
+              },
+      });
 
   scene_add_mesh(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
                  SCENE_LAYER_UNSELECTABLE);
@@ -58,13 +60,15 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
 void scene_editor_gizmo_create_transform(Scene *scene) {
 
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
-  gizmo_transform_create(gizmo, &(GizmoCreateDescriptor){
-                                    .camera = scene->active_camera,
-                                    .device = scene_device(scene),
-                                    .queue = scene_queue(scene),
-                                    .viewport = &scene->viewport,
-                                    .list = &scene->meshes,
-                                });
+  gizmo_transform_create(
+      gizmo, &(GizmoCreateDescriptor){
+                 .pipeline = std_pipeline(&scene->renderer, PipelineType_Unlit),
+                 .camera = scene->active_camera,
+                 .device = scene_device(scene),
+                 .queue = scene_queue(scene),
+                 .viewport = &scene->viewport,
+                 .list = &scene->meshes,
+             });
 
   for (size_t i = 0; i < 3; i++) {
     // add the gizmo interactive handles to 'Gizmo Transform' layer as to only

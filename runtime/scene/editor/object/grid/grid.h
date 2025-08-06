@@ -19,7 +19,7 @@ typedef struct {
   GizmoGridUniform uniform;
   const WGPUDevice device;
   const WGPUQueue queue;
-
+  const Pipeline* pipeline;
 } GizmoGridCreateDescriptor;
 
 typedef struct {

@@ -16,6 +16,7 @@ typedef struct {
   const WGPUQueue queue;
   const char *label;
   const char *texture_path;
+  const Pipeline *pipeline;
 } SEOCreateBillboardDescriptor;
 
 void seo_create_billboard(Mesh *, const SEOCreateBillboardDescriptor *);

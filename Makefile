@@ -27,7 +27,7 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE -DENGINE_EDITOR
 
 # Preprocess cwgsl shader to wgsl Shader files
-SHADER_DIR := ./runtime/assets/shader
+SHADER_DIR := ./backend/renderer/scene/std_pipeline/modules/
 CUSTOM_WGSL_EXT = .wgsl.in
 CUSTOM_WGSL_IN := $(shell find $(SHADER_DIR) -type f -name "*$(CUSTOM_WGSL_EXT)")
 COMPILE_WGSL := $(CUSTOM_WGSL_IN:$(CUSTOM_WGSL_EXT)=.wgsl)

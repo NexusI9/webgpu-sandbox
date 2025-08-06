@@ -6,6 +6,7 @@
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "render_pass.h"
+#include "std_pipeline/core.h"
 #include "webgpu/webgpu.h"
 #include <string.h>
 
@@ -46,6 +47,9 @@ void scene_renderer_create(SceneRenderer *renderer,
 
   // init render passes
   scene_renderer_init_render_pass(renderer);
+
+  // init standards shaders
+  scene_renderer_init_standard_pipelines(renderer);
 
   // set draw layouts callback
   if (renderer->draw.layouts->length == 0) {

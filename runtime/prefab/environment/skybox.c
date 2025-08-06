@@ -56,7 +56,8 @@ static inline void prefab_skybox_create_layer(const WGPUTexture *texture,
 /**
   Create texture & global texture view
  */
-WGPUTexture prefab_skybox_texture(const WGPUDevice device, const size_t resolution) {
+WGPUTexture prefab_skybox_texture(const WGPUDevice device,
+                                  const size_t resolution) {
   return wgpuDeviceCreateTexture(
       device,
       &(WGPUTextureDescriptor){
@@ -107,14 +108,14 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
                                      });
 
   // assign shader
-  mesh_set_shader(skybox_mesh,
-                  &(ShaderCreateDescriptor){
-                      .device = scene_device(scene),
-                      .queue = scene_queue(scene),
-                      .label = "skybox shader",
-                      .name = "skybox shader",
-                      .path = "./runtime/assets/shader/shader.skybox.wgsl",
-                  });
+  mesh_set_shader(skybox_mesh, &(ShaderCreateDescriptor){
+                                   .device = scene_device(scene),
+                                   .queue = scene_queue(scene),
+                                   .label = "skybox shader",
+                                   .name = "skybox shader",
+                                   .pipeline = std_pipeline(
+                                       &scene->renderer, PipelineType_Skybox),
+                               });
 
   // bind texture and sampler
   Shader *shader = mesh_shader_texture(skybox_mesh);
@@ -173,7 +174,10 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
                              });
 
   // alter pipeline (no depth test)
-  Pipeline *pipeline = shader_pipeline(shader);
+  const Pipeline *pipeline = shader_pipeline(shader);
+
+  /*
+    STDPIPELINE SKYBOX PIPELINE
 
   // set cull to front face (inside cube)
   pipeline_set_primitive(pipeline,
@@ -191,6 +195,8 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
                            .depthCompare = WGPUCompareFunction_LessEqual,
                            .format = WGPUTextureFormat_Depth24Plus,
                        });
+
+   */
 
   scene_add_mesh(scene, skybox_mesh, ScenePipeline_Dynamic_Background, NULL);
 }

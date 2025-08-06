@@ -1,4 +1,5 @@
 #include "gizmo.h"
+#include "../backend/renderer/scene/scene.h"
 #include "../resources/loader/loader.mbin.h"
 #include "../runtime/material/material.h"
 
@@ -19,7 +20,8 @@ void example_gizmo(Scene *scene) {
                                });
 
   mesh_set_shader(gizmo, &(ShaderCreateDescriptor){
-                             .path = SHADER_PATH_LINE,
+                             .pipeline = std_pipeline(
+                                 &scene->renderer, PipelineType_Line),
                              .device = scene_device(scene),
                              .queue = scene_queue(scene),
                              .label = "gizmo shader",

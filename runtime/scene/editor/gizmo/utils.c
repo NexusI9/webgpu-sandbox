@@ -10,8 +10,9 @@
 
    Used to generate each gizmo handles.
  */
-void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
-                                 const color *rgba, const WGPUQueue queue,
+void gizmo_transform_create_mesh(Mesh *mesh, const Pipeline *pipeline,
+                                 Primitive *primitive, const color *rgba,
+                                 const WGPUQueue queue,
                                  const WGPUDevice device) {
 
   // init mesh
@@ -23,7 +24,7 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
                               });
   // add shader
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
-                            .path = SHADER_PATH_FLAT,
+                            .pipeline = pipeline,
                             .device = device,
                             .queue = queue,
                             .label = "Gizmo transform shader",
@@ -56,12 +57,17 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
       });
 
   // disable depth write
+  /*
+
+   STDPIPELINE CUSTOM UNLIT
   pipeline_set_stencil(shader_pipeline(mesh_shader_texture(mesh)),
                        (WGPUDepthStencilState){
                            .depthWriteEnabled = true,
                            .depthCompare = WGPUCompareFunction_Less,
                            .format = WGPUTextureFormat_Depth24Plus,
                        });
+
+  */
 
   // set double sided culling
   // material_texture_double_sided(mesh);
@@ -80,7 +86,7 @@ void gizmo_transform_create_handles(
 
   // init gizmo reference list
   const size_t gizmo_mesh_count = 3;
-  
+
   if (interactive_list->capacity == 0)
     mesh_ref_list_create(interactive_list, gizmo_mesh_count);
 
@@ -99,8 +105,8 @@ void gizmo_transform_create_handles(
     Mesh *mesh = mesh_list_new_mesh(desc->list);
     color rgba = {i == 0, i == 1, i == 2, 1.0f};
 
-    gizmo_transform_create_mesh(mesh, &mesh_primitive, &rgba, desc->queue,
-                                desc->device);
+    gizmo_transform_create_mesh(mesh, desc->pipeline, &mesh_primitive, &rgba,
+                                desc->queue, desc->device);
 
     // rotate
     mesh_rotate(mesh, (vec3){

@@ -11,6 +11,11 @@
 void seo_create_billboard(Mesh *mesh,
                             const SEOCreateBillboardDescriptor *desc) {
 
+  if(desc->pipeline == NULL){
+    VERBOSE_ERROR("No pipeline has been provided for SEO BIllboard.");
+    return;
+  }
+  
   // create plane
   Primitive plane = primitive_plane();
 
@@ -33,7 +38,7 @@ void seo_create_billboard(Mesh *mesh,
                             .queue = desc->queue,
                             .label = "SEO billboard shader",
                             .name = "SEO billboard shader",
-                            .path = SHADER_PATH_BILLBOARD,
+                            .pipeline = desc->pipeline,
                         });
 
   // set double side rendering

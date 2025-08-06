@@ -220,7 +220,7 @@ void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
 void shader_bind_group_build(ShaderBindGroup *group,
                              bind_group_index group_index,
                              const WGPUDevice device,
-                             WGPURenderPipeline *pipeline) {
+                             const WGPURenderPipeline *pipeline) {
 
   uint16_t total_length = shader_bind_group_entries_count(group);
 

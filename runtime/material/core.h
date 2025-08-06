@@ -6,6 +6,8 @@
 #include "../camera/camera.h"
 #include "../viewport/viewport.h"
 
+
+
 void material_bind_views(Mesh *, mesh_get_shader_callback, Camera *, Viewport *,
                          uint8_t);
 

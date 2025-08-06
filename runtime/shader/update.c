@@ -29,7 +29,7 @@ void shader_update_texture(Shader *shader, bind_group_index group_index,
 
     // rebuild the bind group
     shader_bind_group_build(bind_group, group_index, shader->device,
-                            &shader->pipeline.handle);
+                            &shader->pipeline->handle);
 
   } else {
     VERBOSE_WARNING(
@@ -57,7 +57,7 @@ void shader_update_uniform(Shader *shader, bind_group_index group_index,
                          bound_uniform->data, bound_uniform->size);
 
     shader_bind_group_build(bind_group, group_index, shader->device,
-                            &shader->pipeline.handle);
+                            &shader->pipeline->handle);
 
   } else {
     VERBOSE_WARNING(

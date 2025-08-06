@@ -1,9 +1,9 @@
 #ifndef _SCENE_RENDERER_CORE_H_
 #define _SCENE_RENDERER_CORE_H_
 
-#include "../../../runtime/pipeline/pipeline.h"
 #include "../../clock.h"
 #include "../runtime/texture/texture.h"
+#include "../runtime/pipeline/pipeline.h"
 #include "render_pass.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -86,6 +86,8 @@ typedef struct SceneRenderer {
     RenderPassLayout layouts[SCENE_RENDERER_DRAW_MODE_COUNT];
     RenderPass pass[RENDER_PASS_COUNT];
   } draw;
+ 
+  Pipeline std_pipelines[PIPELINE_TYPE_COUNT];
 
 } SceneRenderer;
 

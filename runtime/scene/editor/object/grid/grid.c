@@ -1,12 +1,12 @@
 #include "grid.h"
-#include "../runtime/primitive/plane.h"
 #include "../runtime/material/material.h"
+#include "../runtime/primitive/plane.h"
 #include "webgpu/webgpu.h"
 
 void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
 
   Primitive plane = primitive_plane();
-  
+
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .name = "grid",
                                   .queue = gd->queue,
@@ -15,13 +15,15 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                               });
 
   mesh_set_shader(mesh, &(ShaderCreateDescriptor){
-                            .path = "./runtime/assets/shader/shader.grid.wgsl",
+                            .pipeline = gd->pipeline,
                             .label = "grid",
                             .name = "grid",
                             .device = gd->device,
                             .queue = gd->queue,
                         });
 
+  /*
+    STDPIPELINE GRID
   pipeline_set_primitive(&mesh_shader_texture(mesh)->pipeline,
                          (WGPUPrimitiveState){
                              .frontFace = WGPUFrontFace_CCW,
@@ -29,7 +31,9 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                              .topology = WGPUPrimitiveTopology_TriangleList,
                              .stripIndexFormat = WGPUIndexFormat_Undefined,
                          });
+
   material_texture_double_sided(mesh);
+       */
 
   mesh_scale(mesh, (vec3){
                        gd->uniform.size,

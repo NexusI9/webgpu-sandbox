@@ -20,23 +20,16 @@ void shader_build(Shader *shader) {
 
   // build bind group entries for each individual group index
 
-  // I. Create layout
-  WGPUBindGroupLayout *bindgroup_layouts = shader_layout_build(shader);
-
-  // II. Apply layout to pipeline
-  shader_build_pipeline(shader, bindgroup_layouts);
-
-  // III. Realize all bindgroups for GPU reference
+  /*
+    Create Shader GPUBindGroup for each bindgroups
+   */
   for (int i = 0; i < shader->bind_groups.length; i++)
     shader_bind_group_build(&shader->bind_groups.entries[i], i, shader->device,
-                            &shader->pipeline.handle);
+                            &shader->pipeline->handle);
 
   // TODO: properly release pipeline when deleting mesh
   // shader_pipeline_release_layout(shader);
-  free(bindgroup_layouts);
-
-  // release shader module after building pipeline
-  shader_module_release(shader);
+  // free(bindgroup_layouts);
 }
 
 /**
@@ -53,6 +46,10 @@ void shader_build(Shader *shader) {
  */
 void shader_build_pipeline(Shader *shader, WGPUBindGroupLayout *layout) {
 
+  // I. Create layout
+  WGPUBindGroupLayout *bindgroup_layouts = shader_layout_build(shader);
+
+  // II. Apply layout to pipeline
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
       shader->device, &(WGPUPipelineLayoutDescriptor){
                           // total bind groups count
@@ -62,7 +59,10 @@ void shader_build_pipeline(Shader *shader, WGPUBindGroupLayout *layout) {
                       });
 
   // create pipeline
-  pipeline_build(&shader->pipeline, &pipeline_layout);
+  // pipeline_build(shader->pipeline, &pipeline_layout);
+
+  // release shader module after building pipeline
+  shader_module_release(shader);
 }
 
 /**
@@ -70,4 +70,6 @@ void shader_build_pipeline(Shader *shader, WGPUBindGroupLayout *layout) {
    Prevent the shader "program" to be built twice while switching between
    drawing modes.
  */
-bool shader_is_built(Shader *shader) { return shader->pipeline.handle != NULL; }
+bool shader_is_built(Shader *shader) {
+  return shader->pipeline->handle != NULL;
+}

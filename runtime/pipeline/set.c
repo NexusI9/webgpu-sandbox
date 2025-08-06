@@ -1,5 +1,6 @@
 #include "set.h"
 #include "webgpu/webgpu.h"
+#include <stdio.h>
 
 /**
    Define custom vertex state for pipeline prior building it
@@ -55,6 +56,8 @@ void pipeline_set_primitive(Pipeline *pipeline,
  */
 void pipeline_set_stencil(Pipeline *pipeline,
                           const WGPUDepthStencilState state) {
+
+  printf("Updating stencil for pipeline: %s\n", pipeline->label);
   pipeline->stencil_state = state;
 }
 

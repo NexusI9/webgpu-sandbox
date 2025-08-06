@@ -43,102 +43,29 @@
 
  */
 
-static void shader_set_vertex_layout(Shader *);
-
 void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 
   // set name
   shader->name = strdup(sd->name);
   VERBOSE_SHADER_CREATE("%s", shader->name);
 
-  // store shader string in memory
-  store_file(&shader->source, sd->path);
-
-  // compile shader module intro GPU device
-  buffer_create_shader(&shader->module, sd->device, shader->source, sd->label);
   shader->device = sd->device;
   shader->queue = sd->queue;
+  shader->pipeline = sd->pipeline;
 
   // define bind groups length
   shader->bind_groups.length = 0;
 
-  // set vertex layout
-  shader_set_vertex_layout(shader);
-
-  // init pipeline
-  pipeline_create(&shader->pipeline,
-                  &(PipelineCreateDescriptor){
-                      .vertex_layout = shader->vertex.layout,
-                      .device = shader->device,
-                      .module = shader->module,
-                  });
 }
 
 void shader_destroy(Shader *shader) {
-
-  // clearing module
-  wgpuShaderModuleRelease(shader->module);
 
   // clearing name
   free(shader->name);
   shader->name = NULL;
 
-  // clearing pipeline
-  if (shader->pipeline.handle)
-    pipeline_destroy(shader_pipeline(shader));
-
   // clearing bind groups
   shader_bind_group_clear(shader);
-}
-
-/**
-   Define standard vertex layout to be used in pipeline
-   1. Position (vec3)
-   2. Normals (vec3)
-   3. Color (vec3)
-   4. Texture Coordinate (vec2)
- */
-void shader_set_vertex_layout(Shader *shader) {
-
-  // set x,y,z
-  shader->vertex.attribute[0] = (WGPUVertexAttribute){
-      .format = WGPUVertexFormat_Float32x3,
-      .offset = 0,
-      .shaderLocation = 0,
-  };
-
-  // set normals
-  shader->vertex.attribute[1] = (WGPUVertexAttribute){
-      .format = WGPUVertexFormat_Float32x3,
-      .offset = 3 * sizeof(float),
-      .shaderLocation = 1,
-  };
-
-  // set r,g,b
-  shader->vertex.attribute[2] = (WGPUVertexAttribute){
-      .format = WGPUVertexFormat_Float32x3,
-      .offset = 6 * sizeof(float),
-      .shaderLocation = 2,
-  };
-
-  // set u,v
-  shader->vertex.attribute[3] = (WGPUVertexAttribute){
-      .format = WGPUVertexFormat_Float32x2,
-      .offset = 9 * sizeof(float),
-      .shaderLocation = 3,
-  };
-
-  // define layout from attributes above
-  shader->vertex.layout = (WGPUVertexBufferLayout){
-      .arrayStride = VERTEX_STRIDE * sizeof(float),
-      .attributeCount = 4,
-      .attributes = shader->vertex.attribute,
-  };
-}
-
-void shader_pipeline_release_layout(Shader *shader) {
-  // Release pipeline
-  wgpuPipelineLayoutRelease(shader->pipeline.layout);
 }
 
 /**
@@ -146,15 +73,8 @@ void shader_pipeline_release_layout(Shader *shader) {
  */
 void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
 
-  /*if (shader->pipeline.handle == NULL) {
-    VERBOSE_ERROR("Shader pipeline not defined for: %s. Make sure the "
-                  "mesh has been properly built. Skip drawing.",
-                  shader->name);
-    return;
-  }*/
-
   // bind pipeline to render
-  wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline.handle);
+  wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline->handle);
 
   // update bind group (uniforms, projection/view matrix...)
   for (int i = 0; i < shader->bind_groups.length; i++) {
@@ -173,10 +93,10 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
 void shader_module_release(Shader *shader) {
   // releasing shader module before drawing
   // invoked when adding the shader to the mesh (mesh_create)
-  wgpuShaderModuleRelease(shader->module);
+  wgpuShaderModuleRelease(shader->pipeline->module);
 }
 
-Pipeline *shader_pipeline(Shader *shader) { return &shader->pipeline; }
+const Pipeline *shader_pipeline(Shader *shader) { return shader->pipeline; }
 
 /**
    Access all uniforms from a bind group and check if it requires any update.
@@ -205,8 +125,8 @@ void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue queue) {
       uniform_update->callback(uniform_update->data, current_entry->data);
 
       // rewrite uniform to GPU
-      wgpuQueueWriteBuffer(queue, current_entry->buffer, 0,
-                           current_entry->data, current_entry->size);
+      wgpuQueueWriteBuffer(queue, current_entry->buffer, 0, current_entry->data,
+                           current_entry->size);
     }
   }
 }
