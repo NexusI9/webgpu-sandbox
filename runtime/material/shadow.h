@@ -19,4 +19,6 @@ void material_shadow_update_views(Mesh *, mat4 *);
 
 void material_shadow_set_cullmode(Mesh *, const WGPUCullMode);
 
+void material_shadow_update_cullmode(Mesh *, const WGPUCullMode);
+
 #endif

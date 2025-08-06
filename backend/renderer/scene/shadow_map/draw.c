@@ -129,7 +129,13 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
 
   // draw target
   for (size_t i = 0; i < desc->mesh_list->length; i++) {
+
     Mesh *mesh = desc->mesh_list->entries[i];
+
+    // update each mesh shadow uniforms with current light view
+    material_shadow_update_views(mesh, desc->light_view);
+
+    // draw mesh
     mesh_draw(mesh_topology_base(mesh), mesh_shader_shadow(mesh), &shadow_pass);
   }
 
@@ -173,8 +179,9 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
   VERBOSE_PROCESS("Computing all shadow maps...");
 
-  // Todo : check why cannot use this global shadow_encoder, looks like it's
+  // TODO : check why cannot use this global shadow_encoder, looks like it's
   // related to light view matrix but not sure....
+  // Hints: looks like it's taking the texture/perspective from the sun
   WGPUCommandEncoder shadow_encoder =
       wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
@@ -199,7 +206,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         .mesh_list = desc->mesh_list,
         .device = desc->device,
         .queue = desc->queue,
-        .encoder = shadow_encoder,
+        .encoder = NULL, // shadow_encoder,
         .color_map = desc->lights->point.color_map,
         .depth_map = desc->lights->point.depth_map,
     });
@@ -274,13 +281,7 @@ void shadow_map_draw_point_light(
   // render scene and store depth map for each view
   for (size_t v = 0; v < light_views.length; v++) {
 
-    // update each mesh shadow uniforms with current light view
-    for (int m = 0; m < desc->mesh_list->length; m++) {
-      Mesh *mesh = desc->mesh_list->entries[m];
-      material_shadow_update_views(mesh, &light_views.views[v]);
-    }
-
-    // 2. Render scene (create shadow render pass to texture layer)
+    // Render scene (create shadow render pass to texture layer)
     size_t layer = desc->layer * light_views.length + v;
     shadow_map_draw(&(ShadowMapDrawDescriptor){
         .mesh_list = desc->mesh_list,
@@ -290,6 +291,7 @@ void shadow_map_draw_point_light(
         .device = desc->device,
         .queue = desc->queue,
         .encoder = desc->encoder,
+        .light_view = &light_views.views[v],
     });
   }
 }
@@ -299,13 +301,17 @@ void shadow_map_draw_point_light(
  */
 void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
 
-  // 1. Update uniforms
-  for (int m = 0; m < desc->mesh_list->length; m++) {
-    Mesh *current_mesh = desc->mesh_list->entries[m];
-    material_shadow_update_views(current_mesh, &desc->views->views[0]);
-  }
+  /*
+   Cullmode adjustment below:
+   Point Light pipeline use a FRONT CULL combined with a flip the scene on
+   the x axis to match cube map coordinates.
 
-  // 2. Render scene (create shadow render pass to texture layer)
+   However since spot light use a casual Texture and doesn't require
+   to flip the scene projection, we set back the cull to BACK.
+   */
+
+
+  // Render scene (create shadow render pass to texture layer)
   shadow_map_draw(&(ShadowMapDrawDescriptor){
       .mesh_list = desc->mesh_list,
       .color_texture = desc->color_map,
@@ -314,7 +320,10 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
       .device = desc->device,
       .queue = desc->queue,
       .encoder = desc->encoder,
+      .light_view = &desc->views->views[0],
   });
+
+  
 }
 
 void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {

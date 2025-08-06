@@ -56,6 +56,22 @@ void material_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
                          });
 }
 
+void material_shadow_update_cullmode(Mesh *mesh, WGPUCullMode mode) {
+
+  Pipeline *pipeline = &mesh->shader.shadow.pipeline;
+  wgpuRenderPipelineRelease(pipeline->handle);
+
+  pipeline_set_primitive(pipeline,
+                         (WGPUPrimitiveState){
+                             .frontFace = WGPUFrontFace_CCW,
+                             .cullMode = mode,
+                             .topology = WGPUPrimitiveTopology_TriangleList,
+                             .stripIndexFormat = WGPUIndexFormat_Undefined,
+                         });
+
+  pipeline->handle = wgpuDeviceCreateRenderPipeline(pipeline->device, &pipeline->descriptor);
+}
+
 /**
    Clear the shadow shader bind groups of mesh
  */

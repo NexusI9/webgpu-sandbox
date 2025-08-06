@@ -65,6 +65,7 @@ typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
   WGPUCommandEncoder encoder;
+  mat4 *light_view;
 } ShadowMapDrawDescriptor;
 
 void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *);
