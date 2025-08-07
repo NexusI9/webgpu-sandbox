@@ -1,5 +1,7 @@
 #include "build.h"
+#include "../utils/system.h"
 #include "bindgroup.h"
+#include "core.h"
 #include "layout.h"
 #include "update.h"
 #include "utils.h"
@@ -15,7 +17,7 @@ void shader_build(Shader *shader) {
 
   // clear pipeline if existing
 #ifdef VERBOSE_BUILDING_PHASE
-  VERBOSE_PRINT("  └ Building Shader: %s\n", shader->name);
+  VERBOSE_PRINT("\t└ Building Shader: %s", shader->name);
 #endif
 
   // build bind group entries for each individual group index
@@ -23,9 +25,26 @@ void shader_build(Shader *shader) {
   /*
     Create Shader GPUBindGroup for each bindgroups
    */
-  for (int i = 0; i < shader->bind_groups.length; i++)
-    shader_bind_group_build(&shader->bind_groups.entries[i], i, shader->device,
+  for (int i = 0; i < shader->bind_groups.length; i++) {
+
+    ShaderBindGroup *group = &shader->bind_groups.entries[i];
+
+    // check if bind group is not already built
+    // necessary cause in the wireframe mode we basically already built the
+    // wireframe shader a first time for the boundbox but then a second time for
+    // the wireframe topology, so we need to make sure it's not already built.
+    // If it build a second time it actually push new entries to the bind group
+    // (goes from 3 to 6 entries) which lead to an error since the pieline
+    // expect 3 entries.
+    if (group->bind_group != NULL)
+      continue;
+
+#ifdef VERBOSE_BINDING_PHASE
+    VERBOSE_PRINT("\t\t└ Bingroup: %d", i);
+#endif
+    shader_bind_group_build(group, i, shader->device,
                             &shader->pipeline->handle);
+  }
 
   // TODO: properly release pipeline when deleting mesh
   // shader_pipeline_release_layout(shader);
@@ -63,13 +82,4 @@ void shader_build_pipeline(Shader *shader, WGPUBindGroupLayout *layout) {
 
   // release shader module after building pipeline
   shader_module_release(shader);
-}
-
-/**
-   Check if shader is already built by checking the pipeline handle (or layout).
-   Prevent the shader "program" to be built twice while switching between
-   drawing modes.
- */
-bool shader_is_built(Shader *shader) {
-  return shader->pipeline->handle != NULL;
 }

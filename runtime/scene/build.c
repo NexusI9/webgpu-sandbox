@@ -213,6 +213,7 @@ void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera, Viewport *viewport,
                                 const Pipeline *pipeline,
                                 PipelineMultisampleCount sample) {
 
+  printf("build wireframe start\n");
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
                                        &mesh->topology.boundbox);

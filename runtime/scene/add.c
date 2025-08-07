@@ -263,7 +263,8 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   mesh_ref_list_insert(&scene->pipelines[pipeline], mesh);
 
   // Update Shadow maps if added to Dynamic_Lit pipeline
-  if (pipeline == ScenePipeline_Dynamic_Lit)
+  if (pipeline == ScenePipeline_Dynamic_Lit &&
+      scene->renderer.draw.mode == SceneRendererDrawMode_Texture)
     shadow_map_draw_all(&(ShadowMapDrawAllDescriptor){
         .device = scene_device(scene),
         .queue = scene_queue(scene),

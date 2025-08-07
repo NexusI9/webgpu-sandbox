@@ -7,5 +7,4 @@
 
 void shader_build(Shader *);
 
-bool shader_is_built(Shader *);
 #endif

@@ -225,9 +225,9 @@ void shader_bind_group_build(ShaderBindGroup *group,
   uint16_t total_length = shader_bind_group_entries_count(group);
 
 #ifdef VERBOSE_BINDING_PHASE
-  VERBOSE_PRINT("    └ Bindgroup %d\n\t\t└ Uniforms: %lu\n\t\t└ Textures: "
-                "%lu\n\t\t└ Samplers: %lu\n",
-                group->index, group->uniforms.length, group->textures.length,
+  VERBOSE_PRINT("\t\t\t└ Uniforms: %lu\n\t\t\t└ Textures: "
+                "%lu\n\t\t\t└ Samplers: %lu",
+                group->uniforms.length, group->textures.length,
                 group->samplers.length);
 #endif
 

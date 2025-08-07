@@ -96,8 +96,6 @@ void mesh_create_wireframe_shader(Mesh *mesh, const Pipeline *pipeline) {
                                       .name = "Mesh wireframe shader",
                                   });
 
-  // update pipeline for double-sided
-  // material_texture_double_sided(mesh);
 }
 
 /**

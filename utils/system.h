@@ -14,6 +14,11 @@
 
 #define VERBOSE_PRINT(...)                                                     \
   do {                                                                         \
+    printf(__VA_ARGS__);                                                       \
+    PRINT_LINE();                                                              \
+  } while (0)
+#define VERBOSE_INFO(...)                                                      \
+  do {                                                                         \
     printf("ℹ️ ");                                                              \
     printf(__VA_ARGS__);                                                       \
     PRINT_LINE();                                                              \
@@ -91,6 +96,7 @@
 
 #else
 #define VERBOSE_PRINT(...) // no-op
+#define VERBOSE_INFO(...)
 #define VERBOSE_ERROR(...)
 #define VERBOSE_WARNING(...)
 #define VERBOSE_DEBUG(...)
