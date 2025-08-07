@@ -95,7 +95,7 @@ void scene_init_draw_layouts(Scene *scene) {
           {
               {
                   .meshes = &scene->pipelines[ScenePipeline_Fixed_Front],
-                  .shader_callback = mesh_shader_solid,
+                  .shader_callback = mesh_shader_override,
                   .topology_callback = mesh_topology_base,
               },
 
@@ -148,20 +148,7 @@ void scene_init_draw_layouts(Scene *scene) {
                               },
                           },
                   },
-                  {
-                      .pass = RenderPassType_Gizmo,
-                      .length = 1,
-                      .entries =
-                          {
-                              {
-                                  .meshes = &scene->pipelines
-                                                 [ScenePipeline_Fixed_Front],
-                                  .shader_callback = mesh_shader_override,
-                                  .topology_callback = mesh_topology_override,
-                              },
-
-                          },
-                  },
+                  gizmo_pass,
               },
       });
 
@@ -169,7 +156,7 @@ void scene_init_draw_layouts(Scene *scene) {
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Solid,
       &(RenderPassLayout){
-          .length = 1,
+          .length = 2,
           .entries =
               {
                   {
@@ -205,6 +192,7 @@ void scene_init_draw_layouts(Scene *scene) {
 
                           },
                   },
+                  gizmo_pass,
               },
       });
 
@@ -212,7 +200,7 @@ void scene_init_draw_layouts(Scene *scene) {
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Wireframe,
       &(RenderPassLayout){
-          .length = 1,
+          .length = 2,
           .entries =
               {
                   {
@@ -247,6 +235,7 @@ void scene_init_draw_layouts(Scene *scene) {
                               },
                           },
                   },
+                  gizmo_pass,
               },
       });
 
@@ -254,7 +243,7 @@ void scene_init_draw_layouts(Scene *scene) {
   scene_renderer_set_draw_layout(
       &scene->renderer, SceneRendererDrawMode_Boundbox,
       &(RenderPassLayout){
-          .length = 1,
+          .length = 2,
           .entries =
               {
                   {
@@ -290,11 +279,16 @@ void scene_init_draw_layouts(Scene *scene) {
                           },
 
                   },
+                  gizmo_pass,
               },
       });
 
   /*
+
+
     Below configuration won't be used in runtime out of debug purpose.
+
+
    */
 
   // Fixed draw configuration (use override topology & shader)

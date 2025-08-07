@@ -358,3 +358,7 @@ RenderPass *scene_renderer_pass(SceneRenderer *renderer,
                                 const RenderPassType render_pass) {
   return &renderer->draw.pass[render_pass];
 }
+
+const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *renderer) {
+  return renderer->draw.mode;
+}

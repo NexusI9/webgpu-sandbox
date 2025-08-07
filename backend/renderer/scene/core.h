@@ -121,4 +121,6 @@ int scene_renderer_height(const SceneRenderer *);
 
 const char *scene_renderer_target(SceneRenderer *);
 
+const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer*);
+
 #endif

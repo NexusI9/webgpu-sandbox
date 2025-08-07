@@ -75,16 +75,18 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
   mesh_ref_list_translate(&seo->meshes, value);
 
   // update light shadow map
-  shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
-      .light = &seo->scene->lights.point.entries[seo->target_list_index],
-      .mesh_list = scene_pipeline_lit(seo->scene),
-      .color_map = seo->scene->lights.point.color_map,
-      .depth_map = seo->scene->lights.point.depth_map,
-      .device = scene_device(seo->scene),
-      .queue = scene_queue(seo->scene),
-      .layer = seo->target_list_index,
-      .encoder = NULL,
-  });
+  if (scene_renderer_draw_mode(&seo->scene->renderer) ==
+      SceneRendererDrawMode_Texture)
+    shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
+        .light = &seo->scene->lights.point.entries[seo->target_list_index],
+        .mesh_list = scene_pipeline_lit(seo->scene),
+        .color_map = seo->scene->lights.point.color_map,
+        .depth_map = seo->scene->lights.point.depth_map,
+        .device = scene_device(seo->scene),
+        .queue = scene_queue(seo->scene),
+        .layer = seo->target_list_index,
+        .encoder = NULL,
+    });
 }
 
 void seo_light_point_rotate(SceneEditorObject *seo, vec3 value) {}
