@@ -54,6 +54,7 @@ typedef struct {
   WGPUTexture depth_map;
   LightViews *views;
   const size_t layer;
+  const Pipeline *pipeline;
   MeshRefList *mesh_list;
 } ShadowMapDrawDirLightDescriptor;
 

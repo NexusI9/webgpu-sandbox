@@ -1,4 +1,5 @@
 #include "draw.h"
+#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 #include "../runtime/material/material.h"
 #include "./core.h"
 #include "webgpu/webgpu.h"
@@ -129,8 +130,11 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
 
   // draw target
   for (size_t i = 0; i < desc->mesh_list->length; i++) {
-
+    
     Mesh *mesh = desc->mesh_list->entries[i];
+
+    // swap pipeline (cull front/back)
+    mesh_shader_shadow(mesh)->pipeline = desc->pipeline;
 
     // update each mesh shadow uniforms with current light view
     material_shadow_update_views(mesh, desc->light_view);
@@ -292,6 +296,7 @@ void shadow_map_draw_point_light(
         .queue = desc->queue,
         .encoder = desc->encoder,
         .light_view = &light_views.views[v],
+        .pipeline = std_pipeline(PipelineType_Shadow),
     });
   }
 }
@@ -310,7 +315,6 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
    to flip the scene projection, we set back the cull to BACK.
    */
 
-
   // Render scene (create shadow render pass to texture layer)
   shadow_map_draw(&(ShadowMapDrawDescriptor){
       .mesh_list = desc->mesh_list,
@@ -321,9 +325,8 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
       .queue = desc->queue,
       .encoder = desc->encoder,
       .light_view = &desc->views->views[0],
+      .pipeline = desc->pipeline,
   });
-
-  
 }
 
 void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
@@ -341,6 +344,7 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
       .encoder = desc->encoder,
       .layer = desc->layer,
       .views = &light_views,
+      .pipeline = std_pipeline(PipelineType_ShadowCullBack),
   });
 }
 
@@ -359,6 +363,7 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
       .encoder = desc->encoder,
       .layer = desc->layer,
       .views = &light_views,
+      .pipeline = std_pipeline(PipelineType_ShadowCullBack),
   });
 }
 
