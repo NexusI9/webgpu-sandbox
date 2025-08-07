@@ -118,7 +118,7 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
   };
 
   shader_add_uniform(
-      &mesh->shader.texture,
+      mesh_shader_texture(mesh),
       &(ShaderCreateUniformDescriptor){
           .group_index = group_index,
           .entry_count = 4,

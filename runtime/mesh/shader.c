@@ -1,6 +1,7 @@
 #include "shader.h"
 #include "../backend/renderer/renderer.h"
 #include "../material/material.h"
+#include "core.h"
 
 /**
    ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
@@ -18,22 +19,22 @@
 /**
    Return mesh default shader
  */
-Shader *mesh_shader_texture(Mesh *mesh) { return &mesh->shader.texture; }
+Shader *mesh_shader_texture(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Texture]; }
 
 /**
    Return mesh shadow shader
  */
-Shader *mesh_shader_shadow(Mesh *mesh) { return &mesh->shader.shadow; }
+Shader *mesh_shader_shadow(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Shadow]; }
 
 /**
    Return mesh wireframe shader
  */
-Shader *mesh_shader_wireframe(Mesh *mesh) { return &mesh->shader.wireframe; }
+Shader *mesh_shader_wireframe(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Wireframe]; }
 
 /**
    Return mesh solid shader
  */
-Shader *mesh_shader_solid(Mesh *mesh) { return &mesh->shader.solid; }
+Shader *mesh_shader_solid(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Solid]; }
 
 /**
    Return mesh override shader

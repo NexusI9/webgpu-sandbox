@@ -75,7 +75,7 @@ void mesh_set_name(Mesh *mesh, const char *name) {
 
 void mesh_set_shader(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // alias to shader_create
-  shader_create(&mesh->shader.texture, desc);
+  shader_create(mesh_shader_texture(mesh), desc);
 }
 
 /**
