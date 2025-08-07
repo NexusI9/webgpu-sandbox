@@ -108,14 +108,14 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
                                      });
 
   // assign shader
-  mesh_set_shader(skybox_mesh, &(ShaderCreateDescriptor){
-                                   .device = scene_device(scene),
-                                   .queue = scene_queue(scene),
-                                   .label = "skybox shader",
-                                   .name = "skybox shader",
-                                   .pipeline = std_pipeline(
-                                       &scene->renderer, PipelineType_Skybox),
-                               });
+  mesh_set_shader(skybox_mesh,
+                  &(ShaderCreateDescriptor){
+                      .device = scene_device(scene),
+                      .queue = scene_queue(scene),
+                      .label = "skybox shader",
+                      .name = "skybox shader",
+                      .pipeline = std_pipeline(PipelineType_Skybox),
+                  });
 
   // bind texture and sampler
   Shader *shader = mesh_shader_texture(skybox_mesh);

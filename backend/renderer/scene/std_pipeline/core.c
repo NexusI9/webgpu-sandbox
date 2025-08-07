@@ -21,29 +21,32 @@ static const PipelineLayoutDescriptor *standard_layouts[PIPELINE_TYPE_COUNT] = {
     [PipelineType_PBR] = &layout_pbr,
     [PipelineType_Screen] = &layout_screen,
     [PipelineType_Shadow] = &layout_shadow,
+    [PipelineType_ShadowCullBack] = &layout_shadow_cullback,
     [PipelineType_Skybox] = &layout_skybox,
     [PipelineType_Solid] = &layout_solid,
 };
 
+Pipeline g_std_pipelines[PIPELINE_TYPE_COUNT] = {0};
+
 /**
    Initialize standards shaders and build pipelines layout for each of them.
  */
-void scene_renderer_init_standard_pipelines(SceneRenderer *renderer) {
+void standard_pipelines_init(const WGPUDevice device,
+                             const PipelineMultisampleCount multisample) {
 
   VERBOSE_PROCESS("Initializing standards pipelines...");
 
   for (size_t i = 0; i < PIPELINE_TYPE_COUNT; i++) {
 
     const PipelineLayoutDescriptor *layout = standard_layouts[i];
-    Pipeline *cached_pipeline = &renderer->std_pipelines[i];
+    Pipeline *cached_pipeline = &g_std_pipelines[i];
 
     // create pipeline
-    pipeline_create(cached_pipeline,
-                    &(PipelineCreateDescriptor){
-                        .device = scene_renderer_device(renderer),
-                        .label = layout->label,
-                        .path = layout->shader_path,
-                    });
+    pipeline_create(cached_pipeline, &(PipelineCreateDescriptor){
+                                         .device = device,
+                                         .label = layout->label,
+                                         .path = layout->shader_path,
+                                     });
 
     // check custom attributes (weak check)
 
@@ -81,18 +84,18 @@ void scene_renderer_init_standard_pipelines(SceneRenderer *renderer) {
                             layout->custom_attributes.multisample);
     } else {
       // else use the renderer one
-      pipeline_set_sampling(cached_pipeline, renderer->texture.multisample);
+      pipeline_set_sampling(cached_pipeline, multisample);
     }
 
     // build layout based on bindgroup description
     WGPUPipelineLayout temp_layout = pipeline_layout_descriptor_create(
-        layout->bind_groups, layout->bind_groups_count,
-        scene_renderer_device(renderer), NULL);
+        layout->bind_groups, layout->bind_groups_count, device, NULL);
 
     pipeline_build(cached_pipeline, &temp_layout);
+
   }
 }
 
-Pipeline *std_pipeline(SceneRenderer *renderer, const PipelineType type) {
-  return &renderer->std_pipelines[type];
+const Pipeline *std_pipeline(const PipelineType type) {
+  return &g_std_pipelines[type];
 }

@@ -14,22 +14,21 @@ typedef struct {
 
 // pipeline builders
 static void scene_build_mesh_texture(Mesh *, Camera *, Viewport *,
-                                     const Pipeline *, PipelineMultisampleCount,
+                                     PipelineMultisampleCount,
                                      const SceneBuildTextureDescriptor *,
                                      const AOBakeInitDescriptor *);
 
 static void scene_build_mesh_solid(Mesh *, Camera *, Viewport *,
-                                   const Pipeline *, PipelineMultisampleCount);
+                                   PipelineMultisampleCount);
 
 static void scene_build_mesh_wireframe(Mesh *, Camera *, Viewport *,
-                                       const Pipeline *,
+
                                        PipelineMultisampleCount);
 
 static void scene_build_mesh_fixed(Mesh *, Camera *, Viewport *,
                                    PipelineMultisampleCount);
 
 static void scene_build_mesh_boundbox(Mesh *, Camera *, Viewport *,
-                                      const Pipeline *,
                                       PipelineMultisampleCount);
 
 /**
@@ -67,9 +66,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
     // EDITORONLY
     // Build Boundbox & Wireframe by default for selection
     VERBOSE_MESH_BUILD("Boundbox %s", mesh->name);
-    scene_build_mesh_boundbox(mesh, camera, viewport,
-                              std_pipeline(&scene->renderer, PipelineType_Line),
-                              sample_count);
+    scene_build_mesh_boundbox(mesh, camera, viewport, sample_count);
 
     // Dynamic rendering
     switch (draw_mode) {
@@ -82,17 +79,13 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
       // build solid
     case SceneRendererDrawMode_Solid:
       VERBOSE_MESH_BUILD("Solid %s", mesh->name);
-      scene_build_mesh_solid(mesh, camera, viewport,
-                             std_pipeline(&scene->renderer, PipelineType_Solid),
-                             sample_count);
+      scene_build_mesh_solid(mesh, camera, viewport, sample_count);
       break;
 
       // build wireframe
     case SceneRendererDrawMode_Wireframe:
       VERBOSE_MESH_BUILD("Wireframe %s", mesh->name);
-      scene_build_mesh_wireframe(
-          mesh, camera, viewport,
-          std_pipeline(&scene->renderer, PipelineType_Line), sample_count);
+      scene_build_mesh_wireframe(mesh, camera, viewport, sample_count);
       break;
 
     // build texture
@@ -102,8 +95,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
       VERBOSE_MESH_BUILD("Texture %s", mesh->name);
 
       scene_build_mesh_texture(
-          mesh, camera, viewport,
-          std_pipeline(&scene->renderer, PipelineType_Shadow), sample_count,
+          mesh, camera, viewport, sample_count,
           &(SceneBuildTextureDescriptor){
               .pipeline = pipeline,
               .lights = &scene->lights,
@@ -143,7 +135,6 @@ void scene_build_mesh_ref_list(Scene *scene, MeshRefList *list,
    Establish pipeline from previously set bind groups
  */
 void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
-                              const Pipeline *pipeline,
                               PipelineMultisampleCount sample,
                               const SceneBuildTextureDescriptor *build_desc,
                               const AOBakeInitDescriptor *ao_desc) {
@@ -167,7 +158,7 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
                                  SHADER_TEXTURE_BINDGROUP_LIGHTS);
 
     // create mesh shadow shader
-    mesh_create_shadow_shader(mesh, pipeline);
+    mesh_create_shadow_shader(mesh);
 
     // bind light and mesh uniform to shadow
     material_shadow_bind_views(mesh);
@@ -188,7 +179,6 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
    Establish pipeline from previously set bind groups
  */
 void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport,
-                            const Pipeline *pipeline,
                             PipelineMultisampleCount sample) {
 
   // compute boundbox bounds for collisions (lightweight)
@@ -196,7 +186,7 @@ void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport,
                                        &mesh->topology.boundbox);
 
   // create meshes' solid shader
-  mesh_create_solid_shader(mesh, pipeline);
+  mesh_create_solid_shader(mesh);
 
   // bind views
   material_solid_bind_views(mesh, camera, viewport,
@@ -210,7 +200,6 @@ void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport,
    Establish pipeline from previously set bind groups
  */
 void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera, Viewport *viewport,
-                                const Pipeline *pipeline,
                                 PipelineMultisampleCount sample) {
 
   printf("build wireframe start\n");
@@ -225,7 +214,7 @@ void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera, Viewport *viewport,
                                  mesh->queue);
 
   // create meshes' wireframe shader
-  mesh_create_wireframe_shader(mesh, pipeline);
+  mesh_create_wireframe_shader(mesh);
 
   // bind views
   material_wireframe_bind_views(mesh, camera, viewport,
@@ -240,7 +229,6 @@ void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera, Viewport *viewport,
    Establish pipeline from previously set bind groups
  */
 void scene_build_mesh_boundbox(Mesh *mesh, Camera *camera, Viewport *viewport,
-                               const Pipeline *pipeline,
                                PipelineMultisampleCount sample) {
 
   // create full boundbox topology
@@ -249,7 +237,7 @@ void scene_build_mesh_boundbox(Mesh *mesh, Camera *camera, Viewport *viewport,
                                 mesh->device, mesh->queue);
 
   // create meshes' wireframe shader
-  mesh_create_wireframe_shader(mesh, pipeline);
+  mesh_create_wireframe_shader(mesh);
 
   // bind views
   material_wireframe_bind_views(mesh, camera, viewport,

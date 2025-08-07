@@ -48,9 +48,6 @@ void scene_renderer_create(SceneRenderer *renderer,
   // init render passes
   scene_renderer_init_render_pass(renderer);
 
-  // init standards shaders
-  scene_renderer_init_standard_pipelines(renderer);
-
   // set draw layouts callback
   if (renderer->draw.layouts->length == 0) {
     VERBOSE_WARNING("No draw layouts were provided for the scene renderer.");
@@ -63,6 +60,10 @@ void scene_renderer_create(SceneRenderer *renderer,
 
   // TODO: Since renderer isn't high level anymore, put the below calls in a
   // more global object ("Context" ?)
+
+  // init standards shaders
+  standard_pipelines_init(scene_renderer_device(renderer),
+                          renderer->texture.multisample);
 
   // init global HTML event manager with context
   //  name (implicit)

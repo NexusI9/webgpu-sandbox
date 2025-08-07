@@ -3,8 +3,10 @@
 
 #include "../core.h"
 
-void scene_renderer_init_standard_pipelines(SceneRenderer *renderer);
+extern Pipeline g_std_pipelines[PIPELINE_TYPE_COUNT];
 
-Pipeline *std_pipeline(SceneRenderer *, const PipelineType);
+void standard_pipelines_init(const WGPUDevice, const PipelineMultisampleCount);
+
+const Pipeline *std_pipeline(const PipelineType);
 
 #endif

@@ -20,15 +20,12 @@ void example_gizmo(Scene *scene) {
                                });
 
   mesh_set_shader(gizmo, &(ShaderCreateDescriptor){
-                             .pipeline = std_pipeline(
-                                 &scene->renderer, PipelineType_Line),
+                             .pipeline = std_pipeline(PipelineType_Line),
                              .device = scene_device(scene),
                              .queue = scene_queue(scene),
                              .label = "gizmo shader",
                              .name = "gizmo shader",
                          });
-
-  material_texture_double_sided(gizmo);
 
   mesh_translate(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 

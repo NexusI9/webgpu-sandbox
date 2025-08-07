@@ -50,18 +50,18 @@ Shader *mesh_shader_override(Mesh *mesh) { return mesh->shader.override; }
    The init shadow shader doesn't belong to the material API as it is a
    necessary component set by default on mesh creation.
  */
-void mesh_create_shadow_shader(Mesh *mesh, const Pipeline *pipeline) {
+void mesh_create_shadow_shader(Mesh *mesh) {
 
   // import shadow shader
   Shader *shadow_shader = mesh_shader_shadow(mesh);
-  shader_create(shadow_shader, &(ShaderCreateDescriptor){
-                                   .pipeline = pipeline,
-                                   .label = "Mesh shadow shader",
-                                   .device = mesh->device,
-                                   .queue = mesh->queue,
-                                   .name = "Mesh shadow shader",
-                               });
-
+  shader_create(shadow_shader,
+                &(ShaderCreateDescriptor){
+                    .pipeline = std_pipeline(PipelineType_Shadow),
+                    .label = "Mesh shadow shader",
+                    .device = mesh->device,
+                    .queue = mesh->queue,
+                    .name = "Mesh shadow shader",
+                });
 }
 
 /**
@@ -79,7 +79,7 @@ void mesh_create_shadow_shader(Mesh *mesh, const Pipeline *pipeline) {
      3. Upload data to GPU buffer
      4. Create wireframe shader
  */
-void mesh_create_wireframe_shader(Mesh *mesh, const Pipeline *pipeline) {
+void mesh_create_wireframe_shader(Mesh *mesh) {
 
   Shader *wireframe_shader = mesh_shader_wireframe(mesh);
 
@@ -88,31 +88,32 @@ void mesh_create_wireframe_shader(Mesh *mesh, const Pipeline *pipeline) {
     return;
 
   // create shader
-  shader_create(wireframe_shader, &(ShaderCreateDescriptor){
-                                      .pipeline = pipeline,
-                                      .label = "Mesh wireframe shader",
-                                      .device = mesh->device,
-                                      .queue = mesh->queue,
-                                      .name = "Mesh wireframe shader",
-                                  });
-
+  shader_create(wireframe_shader,
+                &(ShaderCreateDescriptor){
+                    .pipeline = &g_std_pipelines[PipelineType_Line],
+                    .label = "Mesh wireframe shader",
+                    .device = mesh->device,
+                    .queue = mesh->queue,
+                    .name = "Mesh wireframe shader",
+                });
 }
 
 /**
    Initialize solid shader
  */
-void mesh_create_solid_shader(Mesh *mesh, const Pipeline *pipeline) {
+void mesh_create_solid_shader(Mesh *mesh) {
 
   Shader *solid_shader = mesh_shader_solid(mesh);
 
   // create shader
-  shader_create(solid_shader, &(ShaderCreateDescriptor){
-                                  .pipeline = pipeline,
-                                  .label = "Mesh solid shader",
-                                  .device = mesh->device,
-                                  .queue = mesh->queue,
-                                  .name = "Mesh solid shader",
-                              });
+  shader_create(solid_shader,
+                &(ShaderCreateDescriptor){
+                    .pipeline = &g_std_pipelines[PipelineType_Solid],
+                    .label = "Mesh solid shader",
+                    .device = mesh->device,
+                    .queue = mesh->queue,
+                    .name = "Mesh solid shader",
+                });
 }
 
 /**

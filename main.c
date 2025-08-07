@@ -134,7 +134,7 @@ int main(int argc, const char *argv[]) {
    */
 
   scene_renderer_set_draw_mode(&main_scene.renderer,
-                               SceneRendererDrawMode_Wireframe);
+                               SceneRendererDrawMode_Solid);
 
   example_gltf(&main_scene);
 

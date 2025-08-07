@@ -72,4 +72,68 @@ static const PipelineLayoutDescriptor layout_shadow = {
         },
 };
 
+
+static const PipelineLayoutDescriptor layout_shadow_cullback= {
+    .label = "Pipeline Bind Groups - Shadow Cullback",
+    .shader_path =
+        "./backend/renderer/scene/std_pipeline/modules/shader.shadow.wgsl",
+    .bind_groups_count = 1,
+    .bind_groups =
+        (WGPUBindGroupLayoutDescriptor[]){
+            {
+                // Group 0: view_projection + uModel
+                .label = "Group 0 - Shadow Matrices",
+                .entryCount = 2,
+                .entries =
+                    (WGPUBindGroupLayoutEntry[]){
+                        {
+                            // view_projection
+                            .binding = 0,
+                            .visibility = WGPUShaderStage_Vertex,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize = sizeof(
+                                        mat4), // adjust if using a struct
+                                },
+                        },
+                        {
+                            // uModel
+                            .binding = 1,
+                            .visibility = WGPUShaderStage_Vertex,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize = sizeof(MeshUniform),
+                                },
+                        },
+                    },
+            },
+        },
+    .custom_attributes =
+        {
+            .multisample = PipelineMultisampleCount_1x,
+            .stencil_state =
+                (WGPUDepthStencilState){
+                    .format = SHADOW_DEPTH_FORMAT,
+                    .depthWriteEnabled = true,
+                    .depthCompare = WGPUCompareFunction_Less,
+                },
+
+            /* need to set the cullback to FRONT for point light because the
+             * light POV render is flipped on the X axis to match the cubemap
+             * coordinates, such negative scaling lead to set the cullback to
+             * front.*/
+            .primitive_state =
+                (WGPUPrimitiveState){
+                    .frontFace = WGPUFrontFace_CCW,
+                    .cullMode = WGPUCullMode_Back,
+                    .topology = WGPUPrimitiveTopology_TriangleList,
+                    .stripIndexFormat = WGPUIndexFormat_Undefined,
+                },
+        },
+};
+
 #endif

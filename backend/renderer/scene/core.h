@@ -86,9 +86,8 @@ typedef struct SceneRenderer {
     RenderPassLayout layouts[SCENE_RENDERER_DRAW_MODE_COUNT];
     RenderPass pass[RENDER_PASS_COUNT];
   } draw;
- 
-  Pipeline std_pipelines[PIPELINE_TYPE_COUNT];
 
+  
 } SceneRenderer;
 
 typedef struct {
