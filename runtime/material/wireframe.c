@@ -6,23 +6,3 @@ void material_wireframe_bind_views(Mesh *mesh, Camera *camera,
                       group_index);
 }
 
-
-/**
-  update pipeline for double-sided
- */
-void material_wireframe_double_sided(Mesh *mesh) {
-
-  /*
-
-  STDPIPELINE WIREFRAME
-
-  pipeline_set_primitive(shader_pipeline(mesh_shader_wireframe(mesh)),
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_None,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
-
-  */
-}

@@ -56,22 +56,6 @@ void gizmo_transform_create_mesh(Mesh *mesh, const Pipeline *pipeline,
               },
       });
 
-  // disable depth write
-  /*
-
-   STDPIPELINE CUSTOM UNLIT
-  pipeline_set_stencil(shader_pipeline(mesh_shader_texture(mesh)),
-                       (WGPUDepthStencilState){
-                           .depthWriteEnabled = true,
-                           .depthCompare = WGPUCompareFunction_Less,
-                           .format = WGPUTextureFormat_Depth24Plus,
-                       });
-
-  */
-
-  // set double sided culling
-  // material_texture_double_sided(mesh);
-
   // scale gizmo (cpu side as well, so the hitbox are correct dimension)
   // mesh_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
 }

@@ -22,19 +22,6 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                             .queue = gd->queue,
                         });
 
-  /*
-    STDPIPELINE GRID
-  pipeline_set_primitive(&mesh_shader_texture(mesh)->pipeline,
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_None,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
-
-  material_texture_double_sided(mesh);
-       */
-
   mesh_scale(mesh, (vec3){
                        gd->uniform.size,
                        gd->uniform.size,

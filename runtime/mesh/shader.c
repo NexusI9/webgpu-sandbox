@@ -62,24 +62,6 @@ void mesh_create_shadow_shader(Mesh *mesh, const Pipeline *pipeline) {
                                    .name = "Mesh shadow shader",
                                });
 
-  // edit shader pipeline (vertex only)
-  /*pipeline_set_stencil(shader_pipeline(shadow_shader),
-                       (WGPUDepthStencilState){
-                           .format = SHADOW_DEPTH_FORMAT,
-                           .depthWriteEnabled = true,
-                           .depthCompare = WGPUCompareFunction_Less,
-                       });*/
-
-  /* need to set the cullback to FRONT for point light because the light POV
-   * render is flipped on the X axis to match the cubemap coordinates, such
-   * negative scaling lead to set the cullback to front.*/
-  /*pipeline_set_primitive(shader_pipeline(shadow_shader),
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_Front,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });*/
 }
 
 /**

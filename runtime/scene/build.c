@@ -32,10 +32,6 @@ static void scene_build_mesh_boundbox(Mesh *, Camera *, Viewport *,
                                       const Pipeline *,
                                       PipelineMultisampleCount);
 
-// utils
-static inline void build_utils_bind(Mesh *, mesh_get_shader_callback,
-                                    PipelineMultisampleCount);
-
 /**
    ▗▄▄▄ ▗▄▄▄▖ ▗▄▄▖▗▄▄▖  ▗▄▖▗▄▄▄▖▗▄▄▖▗▖ ▗▖▗▄▄▄▖▗▄▄▖
    ▐▌  █  █  ▐▌   ▐▌ ▐▌▐▌ ▐▌ █ ▐▌   ▐▌ ▐▌▐▌   ▐▌ ▐▌
@@ -184,7 +180,7 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
   }
 
   // build mesh
-  build_utils_bind(mesh, mesh_shader_texture, sample);
+  mesh_build(mesh, mesh_shader_texture(mesh));
 }
 
 /**
@@ -206,7 +202,7 @@ void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport,
   material_solid_bind_views(mesh, camera, viewport,
                             SHADER_SOLID_BINDGROUP_VIEWS);
 
-  build_utils_bind(mesh, mesh_shader_solid, sample);
+  mesh_build(mesh, mesh_shader_solid(mesh));
 }
 
 /**
@@ -235,7 +231,7 @@ void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera, Viewport *viewport,
                                 SHADER_WIREFRAME_BINDGROUP_VIEWS);
 
   // already built during the defaut boundbox
-  build_utils_bind(mesh, mesh_shader_wireframe, sample);
+  mesh_build(mesh, mesh_shader_wireframe(mesh));
 }
 
 /**
@@ -258,7 +254,7 @@ void scene_build_mesh_boundbox(Mesh *mesh, Camera *camera, Viewport *viewport,
   material_wireframe_bind_views(mesh, camera, viewport,
                                 SHADER_WIREFRAME_BINDGROUP_VIEWS);
 
-  build_utils_bind(mesh, mesh_shader_wireframe, sample);
+  mesh_build(mesh, mesh_shader_wireframe(mesh));
 }
 
 /**
@@ -277,29 +273,5 @@ void scene_build_mesh_fixed(Mesh *mesh, Camera *camera, Viewport *viewport,
                                SHADER_FIXED_BINDGROUP_VIEWS);
 
   // build fixed
-  build_utils_bind(mesh, mesh_shader_override, sample);
-}
-
-/**
-    ▗▖ ▗▖▗▄▄▄▖▗▄▄▄▖▗▖    ▗▄▄▖
-    ▐▌ ▐▌  █    █  ▐▌   ▐▌
-    ▐▌ ▐▌  █    █  ▐▌    ▝▀▚▖
-    ▝▚▄▞▘  █  ▗▄█▄▖▐▙▄▄▖▗▄▄▞▘
-
- */
-
-void build_utils_bind(Mesh *mesh, mesh_get_shader_callback target_shader,
-                      PipelineMultisampleCount sample) {
-
-  /*Shader *shader = target_shader(mesh);
-  // abort build if already built
-  if (shader_is_built(shader)) {
-    return;
-  }*/
-
-  // updating meshes shader's pipeline sampling (dirty)
-  // pipeline_set_sampling(shader_pipeline(target_shader(mesh)), sample);
-
-  // build shader pipeline
-  mesh_build(mesh, target_shader(mesh));
+  mesh_build(mesh, mesh_shader_override(mesh));
 }

@@ -22,16 +22,6 @@ void gizmo_transform_rotate_create(MeshRefList *visual_list,
                               &(color){0.2f, 0.2f, 0.2f, 0.0f}, desc->queue,
                               desc->device);
 
-  // occlude
-  /*
-    STDPIPELINE CUSTOM UNLIT
-  pipeline_set_stencil(shader_pipeline(mesh_shader_texture(sphere)),
-                       (WGPUDepthStencilState){
-                           .depthWriteEnabled = true,
-                           .depthCompare = WGPUCompareFunction_Less,
-                           .format = WGPUTextureFormat_Depth24Plus,
-                       });
-*/
 
   mesh_ref_list_insert(visual_list, sphere);
 

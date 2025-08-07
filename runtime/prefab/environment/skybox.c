@@ -176,28 +176,6 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
   // alter pipeline (no depth test)
   const Pipeline *pipeline = shader_pipeline(shader);
 
-  /*
-    STDPIPELINE SKYBOX PIPELINE
-
-  // set cull to front face (inside cube)
-  pipeline_set_primitive(pipeline,
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_Front,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
-
-  // remove depth write, set depth comparison
-  pipeline_set_stencil(pipeline,
-                       (WGPUDepthStencilState){
-                           .depthWriteEnabled = false,
-                           .depthCompare = WGPUCompareFunction_LessEqual,
-                           .format = WGPUTextureFormat_Depth24Plus,
-                       });
-
-   */
-
   scene_add_mesh(scene, skybox_mesh, ScenePipeline_Dynamic_Background, NULL);
 }
 
