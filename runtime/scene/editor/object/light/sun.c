@@ -25,7 +25,6 @@ void seo_light_sun_create(SceneEditorObject *seo, SunLight *light,
   seo_create_billboard(icon,
                        &(SEOCreateBillboardDescriptor){
                            .texture_path = texture_path,
-                           .pipeline = std_pipeline(PipelineType_Billboard),
                            .device = desc->device,
                            .queue = desc->queue,
                            .position = &light->position,

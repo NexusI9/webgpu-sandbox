@@ -1,7 +1,7 @@
 #include "gizmo.h"
 #include "../backend/renderer/scene/scene.h"
 #include "../resources/loader/loader.mbin.h"
-#include "../runtime/material/material.h"
+#include "../runtime/mesh/shader/shader.h"
 
 void example_gizmo(Scene *scene) {
 
@@ -19,7 +19,7 @@ void example_gizmo(Scene *scene) {
                                    .name = "gizmo",
                                });
 
-  mesh_set_shader(gizmo, &(ShaderCreateDescriptor){
+  mesh_shader_create_fixed(gizmo, &(ShaderCreateDescriptor){
                              .pipeline = std_pipeline(PipelineType_Line),
                              .device = scene_device(scene),
                              .queue = scene_queue(scene),

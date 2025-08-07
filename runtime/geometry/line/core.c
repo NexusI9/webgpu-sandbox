@@ -1,10 +1,11 @@
 #include "core.h"
-#include "../runtime/material/material.h"
 #include "../utils/system.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 #include <stdio.h>
+#include "../runtime/mesh/shader/shader.h"
+#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 
 static void line_create_plane(const LineCreatePlaneDescriptor *);
 
@@ -40,15 +41,15 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
                                          },
                                          desc->device, desc->queue);
 
-  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
-                            .path = "./runtime/assets/shader/shader.line.wgsl",
-                            .label = "line",
-                            .name = "line",
-                            .device = desc->device,
-                            .queue = desc->queue,
-                        });
+  mesh_shader_create_fixed(mesh,
+                           &(ShaderCreateDescriptor){
+                               .pipeline = std_pipeline(PipelineType_Line),
+                               .label = "line",
+                               .name = "line",
+                               .device = desc->device,
+                               .queue = desc->queue,
+                           });
 
-  material_texture_double_sided(mesh);
 }
 
 /** Define vertex data from a vertex array.
@@ -189,7 +190,6 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
   vertex_index->entries[vertex_index->length + 5] = (vindex_t)vertex_length + 3;
 
   vertex_index->length += 6;
-
 }
 
 void line_update_buffer(Mesh *mesh) {

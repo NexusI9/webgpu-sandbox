@@ -9,11 +9,10 @@ typedef struct {
   const char *mbin_path;
   const WGPUDevice device;
   const WGPUQueue queue;
-  const Pipeline *pipeline;
   MeshList *list;
 } GizmoTransformCreateMeshDescriptor;
 
-void gizmo_transform_create_mesh(Mesh *, const Pipeline *, Primitive *,
+void gizmo_transform_create_mesh(Mesh *, Primitive *,
                                  const color *, const WGPUQueue,
                                  const WGPUDevice);
 

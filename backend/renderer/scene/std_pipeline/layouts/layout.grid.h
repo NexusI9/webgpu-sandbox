@@ -76,15 +76,27 @@ static const PipelineLayoutDescriptor layout_grid = {
                     },
             },
         },
-    .custom_attributes = {
-        // double sided
-        .primitive_state =
-            (WGPUPrimitiveState){
-                .frontFace = WGPUFrontFace_CCW,
-                .cullMode = WGPUCullMode_None,
-                .topology = WGPUPrimitiveTopology_TriangleList,
-                .stripIndexFormat = WGPUIndexFormat_Undefined,
-            },
-    }};
+    .pipeline_attributes =
+        {
+            // double sided
+            .primitive_state =
+                (WGPUPrimitiveState){
+                    .frontFace = WGPUFrontFace_CCW,
+                    .cullMode = WGPUCullMode_None,
+                    .topology = WGPUPrimitiveTopology_TriangleList,
+                    .stripIndexFormat = WGPUIndexFormat_Undefined,
+                },
+        },
+    .bindings =
+        {
+            .mvp =
+                {
+                    .group = 0,
+                    .projection = 0,
+                    .view = 1,
+                    .model = 2,
+                },
+        },
+};
 
 #endif

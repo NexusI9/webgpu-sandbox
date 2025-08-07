@@ -11,7 +11,8 @@
 
 static const PipelineLayoutDescriptor layout_pbr = {
     .label = "Pipeline Bind Groups - PBR",
-    .shader_path = "../backend/renderer/scene/std_pipeline/modules/shader.pbr.wgsl",
+    .shader_path =
+        "../backend/renderer/scene/std_pipeline/modules/shader.pbr.wgsl",
     .bind_groups_count = 3,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
@@ -286,6 +287,16 @@ static const PipelineLayoutDescriptor layout_pbr = {
                         },
                     },
             },
+        },
+    .bindings =
+        {
+            .mvp =
+                {
+                    .group = 1,
+                    .projection = 0,
+                    .view = 1,
+                    .model = 2,
+                },
         },
 };
 

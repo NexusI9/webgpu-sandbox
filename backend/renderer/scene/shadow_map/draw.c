@@ -1,6 +1,6 @@
 #include "draw.h"
 #include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
-#include "../runtime/material/material.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "./core.h"
 #include "webgpu/webgpu.h"
 
@@ -137,7 +137,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
     mesh_shader_shadow(mesh)->pipeline = desc->pipeline;
 
     // update each mesh shadow uniforms with current light view
-    material_shadow_update_views(mesh, desc->light_view);
+    mesh_shader_shadow_update_views(mesh, desc->light_view);
 
     // draw mesh
     mesh_draw(mesh_topology_base(mesh), mesh_shader_shadow(mesh), &shadow_pass);
@@ -395,6 +395,6 @@ void shadow_map_update_binding(const ShadowMapDrawAllDescriptor *desc) {
 #endif
 
     // only release the texture if it's not equal
-    material_texture_update_shadow_maps(current_mesh, point_map, spot_map);
+    mesh_shader_texture_update_shadow_maps(current_mesh, point_map, spot_map);
   }
 }

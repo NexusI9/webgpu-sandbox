@@ -27,7 +27,6 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   seo_create_billboard(icon,
                        &(SEOCreateBillboardDescriptor){
                            .texture_path = texture_path,
-                           .pipeline = std_pipeline(PipelineType_Billboard),
                            .device = desc->device,
                            .queue = desc->queue,
                            .position = &camera->position,
@@ -49,7 +48,6 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   // create manually wirerfame since seo is part of fixed rendering, so the
   // mesh topology generation isn't automatically handled.
   seo_create_wireframe(cube, &(SEOCreateWireframeDescriptor){
-                                 .pipeline = std_pipeline(PipelineType_Line),
                                  .device = desc->device,
                                  .queue = desc->queue,
                                  .color = &(vec3){1.0f, 0.7f, 0.4f},

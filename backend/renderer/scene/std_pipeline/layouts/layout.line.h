@@ -57,7 +57,7 @@ static const PipelineLayoutDescriptor layout_line = {
                     },
             },
         },
-    .custom_attributes =
+    .pipeline_attributes =
         {
             .primitive_state =
                 (WGPUPrimitiveState){
@@ -65,6 +65,16 @@ static const PipelineLayoutDescriptor layout_line = {
                     .cullMode = WGPUCullMode_None,
                     .topology = WGPUPrimitiveTopology_TriangleList,
                     .stripIndexFormat = WGPUIndexFormat_Undefined,
+                },
+        },
+    .bindings =
+        {
+            .mvp =
+                {
+                    .group = 0,
+                    .projection = 0,
+                    .view = 1,
+                    .model = 2,
                 },
         },
 };

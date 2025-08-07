@@ -1,6 +1,7 @@
 #ifndef _RENDER_PASS_H_
 #define _RENDER_PASS_H_
 #include "../../../runtime/mesh/mesh.h"
+#include "../runtime/mesh/shader/shader.h"
 #include <webgpu/webgpu.h>
 
 #define SCENE_RENDERER_DRAW_LAYOUT_MAX_MESH_LIST 6

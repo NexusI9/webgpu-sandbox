@@ -1,5 +1,5 @@
 #include "../backend/buffer.h"
-#include "../runtime/material/material.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "../utils/point.h"
 #include "../utils/system.h"
 #include "ao_bake.h"
@@ -175,7 +175,7 @@ void ao_bake_init(const AOBakeInitDescriptor *desc) {
                           },
                           BufferTextureMemory_Free);
 
-    material_texture_update_ambient_occlusion(source_mesh, ao_texture_view);
+    mesh_shader_texture_update_ambient_occlusion(source_mesh, ao_texture_view);
   }
 }
 

@@ -1,4 +1,5 @@
 #include "shadow.h"
+#include "./core.h"
 #include "../utils/system.h"
 
 /**
@@ -11,7 +12,7 @@
    upload separate views in the shader.
  */
 
-void material_shadow_bind_views(Mesh *mesh) {
+void mesh_shader_shadow_bind_views(Mesh *mesh) {
 
   MeshUniform uModel = mesh_uniform_model(mesh);
 
@@ -39,13 +40,13 @@ void material_shadow_bind_views(Mesh *mesh) {
       });
 }
 
-void material_shadow_update_views(Mesh *mesh, mat4 *view) {
+void mesh_shader_shadow_update_views(Mesh *mesh, mat4 *view) {
 
   MeshUniform uModel = mesh_uniform_model(mesh);
   shader_update_uniform(mesh_shader_shadow(mesh), 0, view, sizeof(mat4), 0);
 }
 
-void material_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
+void mesh_shader_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
   /*
     STDPIPELINE SHADOW
   pipeline_set_primitive(shader_pipeline(mesh_shader_shadow(mesh)),
@@ -59,7 +60,7 @@ void material_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
 */
 }
 
-void material_shadow_update_cullmode(Mesh *mesh, WGPUCullMode mode) {
+void mesh_shader_shadow_update_cullmode(Mesh *mesh, WGPUCullMode mode) {
 
   /*
   const Pipeline *pipeline = &mesh->shader.shadow.pipeline;
@@ -81,6 +82,6 @@ void material_shadow_update_cullmode(Mesh *mesh, WGPUCullMode mode) {
 /**
    Clear the shadow shader bind groups of mesh
  */
-void material_shadow_clear_bindings(Mesh *mesh) {
+void mesh_shader_shadow_clear_bindings(Mesh *mesh) {
   shader_bind_group_clear(mesh_shader_shadow(mesh));
 }

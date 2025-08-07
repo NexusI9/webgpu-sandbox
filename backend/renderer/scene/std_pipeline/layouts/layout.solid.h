@@ -10,7 +10,8 @@
 
 static const PipelineLayoutDescriptor layout_solid = {
     .label = "Pipeline Bind Groups - Solid",
-    .shader_path = "./backend/renderer/scene/std_pipeline/modules/shader.solid.wgsl",
+    .shader_path =
+        "./backend/renderer/scene/std_pipeline/modules/shader.solid.wgsl",
     .bind_groups_count = 1,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
@@ -34,7 +35,8 @@ static const PipelineLayoutDescriptor layout_solid = {
                         {
                             // uCamera
                             .binding = 1,
-                            .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
+                            .visibility = WGPUShaderStage_Fragment |
+                                          WGPUShaderStage_Vertex,
                             .buffer =
                                 (WGPUBufferBindingLayout){
                                     .type = WGPUBufferBindingType_Uniform,
@@ -45,7 +47,8 @@ static const PipelineLayoutDescriptor layout_solid = {
                         {
                             // uMesh
                             .binding = 2,
-                            .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
+                            .visibility = WGPUShaderStage_Fragment |
+                                          WGPUShaderStage_Vertex,
                             .buffer =
                                 (WGPUBufferBindingLayout){
                                     .type = WGPUBufferBindingType_Uniform,
@@ -55,6 +58,16 @@ static const PipelineLayoutDescriptor layout_solid = {
                         },
                     },
             },
+        },
+    .bindings =
+        {
+            .mvp =
+                {
+                    .group = 0,
+                    .projection = 0,
+                    .view = 1,
+                    .model = 2,
+                },
         },
 };
 

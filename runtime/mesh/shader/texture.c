@@ -1,18 +1,19 @@
 #include "texture.h"
-#include "../../backend/renderer/renderer.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
+#include "./utils.h"
+#include "../backend/renderer/scene/scene.h"
 
 /**
    Clear the texture shader bind groups of mesh
  */
-void material_texture_clear_bindings(Mesh *mesh) {
+void mesh_shader_texture_clear_bindings(Mesh *mesh) {
   shader_bind_group_clear(mesh_shader_texture(mesh));
 }
 
-void material_texture_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport,
-                                 uint8_t group_index) {
-  material_bind_views(mesh, mesh_shader_texture, camera, viewport, group_index);
+void mesh_shader_texture_bind_views(Mesh *mesh, Camera *camera,
+                                 Viewport *viewport) {
+  mesh_shader_bind_views(mesh, mesh_shader_texture, camera, viewport);
 }
 
 /**
@@ -22,7 +23,7 @@ void material_texture_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport,
    by default we will upload all the lights (point, ambient, spot)
    within a defined group
   */
-void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
+void mesh_shader_texture_bind_lights(Mesh *mesh, LightList *light_list,
                                   uint8_t group_index) {
 
   AmbientLightList *ambient_list = &light_list->ambient;
@@ -131,7 +132,7 @@ void material_texture_bind_lights(Mesh *mesh, LightList *light_list,
    Bind the ambient occlusion maps and sampler to the default shader (called
    during shader creation)
  */
-void material_texture_bind_ambient_occlusion(Mesh *mesh,
+void mesh_shader_texture_bind_ambient_occlusion(Mesh *mesh,
                                              WGPUTextureView ao_texture_view) {
 
   shader_add_texture_view(
@@ -171,7 +172,7 @@ void material_texture_bind_ambient_occlusion(Mesh *mesh,
    Bind the shadow maps and sampler to the default shader (called during shader
    creation)
  */
-void material_texture_bind_shadow_maps(
+void mesh_shader_texture_bind_shadow_maps(
     Mesh *mesh, WGPUTextureView fallback_point_texture_view,
     WGPUTextureView fallback_spot_texture_view) {
 
@@ -270,7 +271,7 @@ void material_texture_bind_shadow_maps(
     (full layout)                                        (bind group only)
 
  */
-void material_texture_update_ambient_occlusion(Mesh *mesh,
+void mesh_shader_texture_update_ambient_occlusion(Mesh *mesh,
                                                WGPUTextureView map) {
 
   VERBOSE_PROCESS("Update AO map: %s", mesh->name);
@@ -279,7 +280,7 @@ void material_texture_update_ambient_occlusion(Mesh *mesh,
                         SHADER_TEXTURE_BINDING_AO);
 }
 
-void material_texture_update_shadow_maps(Mesh *mesh, WGPUTextureView point_map,
+void mesh_shader_texture_update_shadow_maps(Mesh *mesh, WGPUTextureView point_map,
                                          WGPUTextureView spot_map) {
 
   VERBOSE_PROCESS("Update shadow map: %s", mesh->name);
@@ -296,7 +297,7 @@ void material_texture_update_shadow_maps(Mesh *mesh, WGPUTextureView point_map,
 /**
    Transfer Uniform to the right mesh shader (texture)
  */
-void material_texture_add_uniform(Mesh *mesh,
+void mesh_shader_texture_add_uniform(Mesh *mesh,
                                   const ShaderCreateUniformDescriptor *desc) {
   shader_add_uniform(mesh_shader_texture(mesh), desc);
 }
@@ -304,7 +305,7 @@ void material_texture_add_uniform(Mesh *mesh,
 /**
    Transfer Texture to the right mesh shader (texture)
  */
-void material_texture_add_texture(Mesh *mesh,
+void mesh_shader_texture_add_texture(Mesh *mesh,
                                   const ShaderCreateTextureDescriptor *desc) {
   shader_add_texture(mesh_shader_texture(mesh), desc);
 }
@@ -312,7 +313,7 @@ void material_texture_add_texture(Mesh *mesh,
 /**
    Transfer Texture View to the right mesh shader (texture)
  */
-void material_texture_add_texture_view(
+void mesh_shader_texture_add_texture_view(
     Mesh *mesh, const ShaderCreateTextureViewDescriptor *desc) {
   shader_add_texture_view(mesh_shader_texture(mesh), desc);
 }
@@ -320,7 +321,7 @@ void material_texture_add_texture_view(
 /**
    Transfer Sampler to the right mesh shader (texture)
  */
-void material_texture_add_sampler(Mesh *mesh,
+void mesh_shader_texture_add_sampler(Mesh *mesh,
                                   const ShaderCreateSamplerDescriptor *desc) {
   shader_add_sampler(mesh_shader_texture(mesh), desc);
 }
@@ -328,7 +329,7 @@ void material_texture_add_sampler(Mesh *mesh,
 /**
   update pipeline for double-sided
  */
-void material_texture_double_sided(Mesh *mesh) {
+void mesh_shader_texture_double_sided(Mesh *mesh) {
 
   /* STDPIPELINE TEXTURE
   pipeline_set_primitive(shader_pipeline(mesh_shader_texture(mesh)),

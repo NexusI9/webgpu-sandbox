@@ -1,5 +1,5 @@
 #include "wireframe.h"
-#include "../runtime/material/material.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
 
 /**
@@ -16,11 +16,6 @@
  */
 void seo_create_wireframe(Mesh *mesh,
                           const SEOCreateWireframeDescriptor *desc) {
-
-  if (desc->pipeline == NULL) {
-    VERBOSE_ERROR("No pipeline has been provided for SEO Wireframe.");
-    return;
-  }
 
   // set wireframe color from the vertex attributes
   vertex_attribute_set_color(desc->vertex, desc->color);
@@ -41,17 +36,15 @@ void seo_create_wireframe(Mesh *mesh,
                                  desc->queue);
 
   // set wireframe shader
-  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
+  mesh_shader_create_fixed(mesh, &(ShaderCreateDescriptor){
                             .device = desc->device,
                             .queue = desc->queue,
                             .label = "SEO wireframe shader",
                             .name = "SEO wireframe shader",
-                            .pipeline = desc->pipeline,
+                            .pipeline = std_pipeline(PipelineType_Line),
                         });
 
   // set override topology and shader as wireframe
   mesh_topology_set_override(mesh, mesh_topology_wireframe(mesh));
 
-  // set double sided
-  material_texture_double_sided(mesh);
 }

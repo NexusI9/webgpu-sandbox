@@ -195,7 +195,6 @@ struct GizmoTransform {
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  const Pipeline *pipeline;
   Camera *camera;
   Viewport *viewport;
   MeshList *list; // mesh pool from which gizmo mesh will be created

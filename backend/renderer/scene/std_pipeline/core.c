@@ -51,41 +51,44 @@ void standard_pipelines_init(const WGPUDevice device,
     // check custom attributes (weak check)
 
     // vertex state
-    if (layout->custom_attributes.vertex_state.module != NULL)
+    if (layout->pipeline_attributes.vertex_state.module != NULL)
       pipeline_set_vertex(cached_pipeline,
-                          layout->custom_attributes.vertex_state);
+                          layout->pipeline_attributes.vertex_state);
 
     // fragment state
-    if (layout->custom_attributes.fragment_state.color_state.format !=
+    if (layout->pipeline_attributes.fragment_state.color_state.format !=
         WGPUTextureFormat_Undefined)
       pipeline_set_fragment(cached_pipeline,
-                            &layout->custom_attributes.fragment_state);
+                            &layout->pipeline_attributes.fragment_state);
 
     // primitive state
-    if (layout->custom_attributes.primitive_state.cullMode !=
+    if (layout->pipeline_attributes.primitive_state.cullMode !=
         WGPUCullMode_Undefined)
       pipeline_set_primitive(cached_pipeline,
-                             layout->custom_attributes.primitive_state);
+                             layout->pipeline_attributes.primitive_state);
     // stencil state
-    if (layout->custom_attributes.stencil_state.format !=
+    if (layout->pipeline_attributes.stencil_state.format !=
         WGPUTextureFormat_Undefined)
       pipeline_set_stencil(cached_pipeline,
-                           layout->custom_attributes.stencil_state);
+                           layout->pipeline_attributes.stencil_state);
 
     // blend state
-    if (layout->custom_attributes.blend_state.alpha.dstFactor)
+    if (layout->pipeline_attributes.blend_state.alpha.dstFactor)
       pipeline_set_blend(cached_pipeline,
-                         &layout->custom_attributes.blend_state);
+                         &layout->pipeline_attributes.blend_state);
 
     // if sampling set in custom attbutes, apply the config one
-    if (layout->custom_attributes.multisample !=
+    if (layout->pipeline_attributes.multisample !=
         PipelineMultisampleCount_Undefined) {
       pipeline_set_sampling(cached_pipeline,
-                            layout->custom_attributes.multisample);
+                            layout->pipeline_attributes.multisample);
     } else {
       // else use the renderer one
       pipeline_set_sampling(cached_pipeline, multisample);
     }
+
+    // copy std bindings (mvp)
+    cached_pipeline->bindings = layout->bindings;
 
     // build layout based on bindgroup description
     WGPUPipelineLayout temp_layout = pipeline_layout_descriptor_create(

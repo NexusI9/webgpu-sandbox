@@ -1,5 +1,6 @@
 #include "grid.h"
-#include "../runtime/material/material.h"
+#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "../runtime/primitive/plane.h"
 #include "webgpu/webgpu.h"
 
@@ -14,13 +15,14 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                                   .primitive = plane,
                               });
 
-  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
-                            .pipeline = gd->pipeline,
-                            .label = "grid",
-                            .name = "grid",
-                            .device = gd->device,
-                            .queue = gd->queue,
-                        });
+  mesh_shader_create_fixed(mesh,
+                           &(ShaderCreateDescriptor){
+                               .pipeline = std_pipeline(PipelineType_Grid),
+                               .label = "grid",
+                               .name = "grid",
+                               .device = gd->device,
+                               .queue = gd->queue,
+                           });
 
   mesh_scale(mesh, (vec3){
                        gd->uniform.size,
@@ -28,7 +30,7 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                        gd->uniform.size,
                    });
 
-  material_texture_add_uniform(
+  mesh_shader_fixed_add_uniform(
       mesh, &(ShaderCreateUniformDescriptor){
                 .group_index = 1,
                 .entry_count = 1,

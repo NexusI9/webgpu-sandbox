@@ -1,7 +1,5 @@
-#include "shader.h"
-#include "../backend/renderer/renderer.h"
-#include "../material/material.h"
 #include "core.h"
+#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 
 /**
    ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
@@ -19,28 +17,45 @@
 /**
    Return mesh default shader
  */
-Shader *mesh_shader_texture(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Texture]; }
+Shader *mesh_shader_texture(Mesh *mesh) {
+  return &mesh->shader.standard[MeshShader_Texture];
+}
 
 /**
    Return mesh shadow shader
  */
-Shader *mesh_shader_shadow(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Shadow]; }
+Shader *mesh_shader_shadow(Mesh *mesh) {
+  return &mesh->shader.standard[MeshShader_Shadow];
+}
 
 /**
    Return mesh wireframe shader
  */
-Shader *mesh_shader_wireframe(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Wireframe]; }
+Shader *mesh_shader_wireframe(Mesh *mesh) {
+  return &mesh->shader.standard[MeshShader_Wireframe];
+}
 
 /**
    Return mesh solid shader
  */
-Shader *mesh_shader_solid(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Solid]; }
+Shader *mesh_shader_solid(Mesh *mesh) {
+  return &mesh->shader.standard[MeshShader_Solid];
+}
 
 /**
    Return mesh override shader
    Primarily used for fixed layer during the scene build/draw process.
  */
-Shader *mesh_shader_override(Mesh *mesh) { return mesh->shader.override; }
+Shader *mesh_shader_fixed(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Fixed]; }
+
+Shader *mesh_shader_active(Mesh *mesh) { return mesh->shader.active; }
+
+
+
+void mesh_shader_set_active(Mesh *mesh, const MeshShader shader) {
+  mesh->shader.active = &mesh->shader.standard[shader];
+}
+
 
 /**
    Init mesh shadow shader.
@@ -51,7 +66,7 @@ Shader *mesh_shader_override(Mesh *mesh) { return mesh->shader.override; }
    The init shadow shader doesn't belong to the material API as it is a
    necessary component set by default on mesh creation.
  */
-void mesh_create_shadow_shader(Mesh *mesh) {
+void mesh_shader_create_shadow(Mesh *mesh) {
 
   // import shadow shader
   Shader *shadow_shader = mesh_shader_shadow(mesh);
@@ -80,7 +95,7 @@ void mesh_create_shadow_shader(Mesh *mesh) {
      3. Upload data to GPU buffer
      4. Create wireframe shader
  */
-void mesh_create_wireframe_shader(Mesh *mesh) {
+void mesh_shader_create_wireframe(Mesh *mesh) {
 
   Shader *wireframe_shader = mesh_shader_wireframe(mesh);
 
@@ -102,7 +117,7 @@ void mesh_create_wireframe_shader(Mesh *mesh) {
 /**
    Initialize solid shader
  */
-void mesh_create_solid_shader(Mesh *mesh) {
+void mesh_shader_create_solid(Mesh *mesh) {
 
   Shader *solid_shader = mesh_shader_solid(mesh);
 
@@ -117,14 +132,19 @@ void mesh_create_solid_shader(Mesh *mesh) {
                 });
 }
 
+
 /**
-   Override shader allow to direct toward another shader for any rendering type.
-   This can become handy for gizmo if they need to appear as "wireframe" instead
-   of solid. Shader Override often comes hand in hand with Topology Override.
-   Override basically means:
-   "I want you to use this topology and shader no matter the rendering mode"
-   (wireframe/ solid/ textured..)
+   Set texture shader.
  */
-void mesh_shader_set_override(Mesh *mesh, Shader *shader) {
-  mesh->shader.override = shader;
+void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
+  // alias to shader_create
+  shader_create(mesh_shader_texture(mesh), desc);
+}
+
+/**
+   Set texture shader.
+ */
+void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
+  // alias to shader_create
+  shader_create(mesh_shader_fixed(mesh), desc);
 }

@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include "../../../runtime/camera/camera.h"
 #include "../../../runtime/viewport/viewport.h"
+#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 
 static void debug_view_compute_position(DebugView *, vec3);
 
@@ -36,9 +37,9 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
                                   });
 
   // set view texture
-  mesh_set_shader(new_view,
+  mesh_shader_create_fixed(new_view,
                   &(ShaderCreateDescriptor){
-                      .path = "./runtime/assets/shader/shader.screen.wgsl",
+                    .pipeline = std_pipeline(PipelineType_Screen),
                       .name = "Debug view billboard shader",
                       .label = "Debug view billboard shader",
                       .device = debug_view->device,

@@ -12,7 +12,7 @@ void example_primitive(Mesh *cube, vec3 position, Scene *scene) {
                                   .queue = scene_queue(scene),
                               });
 
-  mesh_set_shader(cube,
+  mesh_shader_create(cube,
                   &(ShaderCreateDescriptor){
                       .path = "./runtime/assets/shader/shader.default.wgsl",
                       .label = "cube",

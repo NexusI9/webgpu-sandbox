@@ -48,7 +48,7 @@ static const PipelineLayoutDescriptor layout_shadow = {
                     },
             },
         },
-    .custom_attributes =
+    .pipeline_attributes =
         {
             .multisample = PipelineMultisampleCount_1x,
             .stencil_state =
@@ -72,8 +72,7 @@ static const PipelineLayoutDescriptor layout_shadow = {
         },
 };
 
-
-static const PipelineLayoutDescriptor layout_shadow_cullback= {
+static const PipelineLayoutDescriptor layout_shadow_cullback = {
     .label = "Pipeline Bind Groups - Shadow Cullback",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/shader.shadow.wgsl",
@@ -112,7 +111,7 @@ static const PipelineLayoutDescriptor layout_shadow_cullback= {
                     },
             },
         },
-    .custom_attributes =
+    .pipeline_attributes =
         {
             .multisample = PipelineMultisampleCount_1x,
             .stencil_state =
@@ -132,6 +131,14 @@ static const PipelineLayoutDescriptor layout_shadow_cullback= {
                     .cullMode = WGPUCullMode_Back,
                     .topology = WGPUPrimitiveTopology_TriangleList,
                     .stripIndexFormat = WGPUIndexFormat_Undefined,
+                },
+        },
+    .bindings =
+        {
+            .mvp =
+                {
+                    .group = 0,
+                    .model = 1,
                 },
         },
 };

@@ -95,7 +95,7 @@ void scene_init_draw_layouts(Scene *scene) {
           {
               {
                   .meshes = &scene->pipelines[ScenePipeline_Fixed_Front],
-                  .shader_callback = mesh_shader_override,
+                  .shader_callback = mesh_shader_fixed,
                   .topology_callback = mesh_topology_base,
               },
 
@@ -143,7 +143,7 @@ void scene_init_draw_layouts(Scene *scene) {
                               {
                                   .meshes =
                                       &scene->pipelines[ScenePipeline_Fixed],
-                                  .shader_callback = mesh_shader_override,
+                                  .shader_callback = mesh_shader_fixed,
                                   .topology_callback = mesh_topology_override,
                               },
                           },
@@ -186,7 +186,7 @@ void scene_init_draw_layouts(Scene *scene) {
                               {
                                   .meshes =
                                       &scene->pipelines[ScenePipeline_Fixed],
-                                  .shader_callback = mesh_shader_override,
+                                  .shader_callback = mesh_shader_fixed,
                                   .topology_callback = mesh_topology_override,
                               },
 
@@ -230,7 +230,7 @@ void scene_init_draw_layouts(Scene *scene) {
                               {
                                   .meshes =
                                       &scene->pipelines[ScenePipeline_Fixed],
-                                  .shader_callback = mesh_shader_override,
+                                  .shader_callback = mesh_shader_fixed,
                                   .topology_callback = mesh_topology_override,
                               },
                           },
@@ -273,7 +273,7 @@ void scene_init_draw_layouts(Scene *scene) {
                               {
                                   .meshes =
                                       &scene->pipelines[ScenePipeline_Fixed],
-                                  .shader_callback = mesh_shader_override,
+                                  .shader_callback = mesh_shader_fixed,
                                   .topology_callback = mesh_topology_override,
                               },
                           },
@@ -307,7 +307,7 @@ void scene_init_draw_layouts(Scene *scene) {
                               {
                                   .meshes =
                                       &scene->pipelines[ScenePipeline_Fixed],
-                                  .shader_callback = mesh_shader_override,
+                                  .shader_callback = mesh_shader_fixed,
                                   .topology_callback = mesh_topology_override,
                               },
                           },

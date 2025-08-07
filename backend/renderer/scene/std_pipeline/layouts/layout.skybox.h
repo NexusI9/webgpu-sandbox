@@ -97,7 +97,7 @@ static const PipelineLayoutDescriptor layout_skybox = {
                     },
             },
         },
-    .custom_attributes =
+    .pipeline_attributes =
         {
             // set cull to front face (inside cube)
             .primitive_state =
@@ -113,6 +113,16 @@ static const PipelineLayoutDescriptor layout_skybox = {
                     .depthWriteEnabled = false,
                     .depthCompare = WGPUCompareFunction_LessEqual,
                     .format = WGPUTextureFormat_Depth24Plus,
+                },
+        },
+    .bindings =
+        {
+            .mvp =
+                {
+                    .group = 1,
+                    .projection = 0,
+                    .view = 1,
+                    .model = 2,
                 },
         },
 

@@ -1,5 +1,6 @@
-#ifndef _MATERIAL_H_
-#define _MATERIAL_H_
+#ifndef _MESH_SHADER_H_
+#define _MESH_SHADER_H_
+
 
 /**
    ============================= MATERIAL API ================================
@@ -38,6 +39,8 @@
 #include "solid.h"
 #include "texture.h"
 #include "wireframe.h"
-#include "override.h"
+#include "fixed.h"
+
+
 
 #endif

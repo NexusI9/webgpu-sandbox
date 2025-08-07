@@ -15,7 +15,7 @@
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
 #define MESH_INDEX_FORMAT WGPUIndexFormat_Uint32
-#define MESH_STD_SHADER_COUNT 4
+#define MESH_STD_SHADER_COUNT 5
 
 typedef struct Mesh Mesh;
 
@@ -34,7 +34,8 @@ typedef enum {
   MeshShader_Texture,
   MeshShader_Shadow,
   MeshShader_Solid,
-  MeshShader_Wireframe
+  MeshShader_Wireframe,
+  MeshShader_Fixed,
 } MeshShader;
 
 // Builder Pattern | Descriptor Pattern
@@ -83,7 +84,7 @@ struct Mesh {
   // shader
   struct {
     Shader standard[MESH_STD_SHADER_COUNT];
-    Shader *override;
+    Shader *active;
   } shader;
 
   // hierarchy
@@ -97,9 +98,8 @@ void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
 void mesh_set_name(Mesh *, const char *);
 
 // shader
-void mesh_set_shader(Mesh *, const ShaderCreateDescriptor *);
 void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *);
-void mesh_build(Mesh *, Shader *);
+void mesh_build(Mesh *, const MeshShader);
 
 // hierarchy
 void mesh_set_parent(Mesh *, Mesh *);

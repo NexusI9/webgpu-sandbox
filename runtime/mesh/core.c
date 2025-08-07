@@ -2,8 +2,8 @@
 #include "../backend/buffer.h"
 #include "../utils/matrix.h"
 #include "../utils/system.h"
-#include "shader.h"
 #include "topology/boundbox.h"
+#include "shader/shader.h"
 #include <string.h>
 
 // Shadow map is implicitely handled withing mesh
@@ -43,7 +43,6 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
   // defines default override
-  mesh_shader_set_override(mesh, mesh_shader_texture(mesh));
   mesh_topology_set_override(mesh,
                              (MeshTopology){
                                  .attribute = &mesh->topology.base.attribute,
@@ -73,24 +72,23 @@ void mesh_set_name(Mesh *mesh, const char *name) {
   mesh->name = strdup(name);
 }
 
-void mesh_set_shader(Mesh *mesh, const ShaderCreateDescriptor *desc) {
-  // alias to shader_create
-  shader_create(mesh_shader_texture(mesh), desc);
-}
 
 /**
    Build mesh shaders pipeline
    If given shader is NULL, it will choose the default shader as fallback
  */
-void mesh_build(Mesh *mesh, Shader *shader) {
+void mesh_build(Mesh *mesh, const MeshShader shader) {
 
   // check if mesh has correct buffer before drawing
   if (mesh->topology.base.index.buffer == NULL ||
       mesh->topology.base.attribute.buffer == NULL)
     VERBOSE_ERROR("Mesh has no vertex index or attribute buffer.");
 
+  // set shader as active
+  mesh_shader_set_active(mesh, shader);
+
   // build shader
-  shader_build(shader);
+  shader_build(mesh_shader_active(mesh));
 }
 
 /**
@@ -269,4 +267,3 @@ void mesh_get_scale(Mesh *mesh, vec3 *dest) {
 void mesh_get_rotation_euler(Mesh *mesh, vec3 *dest) {
   glm_vec3_copy(mesh->rotation_euler, *dest);
 }
-

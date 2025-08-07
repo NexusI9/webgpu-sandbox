@@ -2,6 +2,8 @@
 #define _PIPELINE_CORE_H_
 
 #include "webgpu/webgpu.h"
+#include <stddef.h>
+#include <stdint.h>
 
 /**
    ============================== PIPELINE ==============================
@@ -61,6 +63,7 @@ typedef struct {
 
 // Standards pipelines
 #define PIPELINE_TYPE_COUNT 11
+#define PIPELINE_STD_BINDING
 
 typedef enum {
   PipelineType_Billboard,
@@ -76,12 +79,24 @@ typedef enum {
   PipelineType_Unlit,
 } PipelineType;
 
-
 typedef struct {
   WGPUFragmentState fragment_state;
   WGPUColorTargetState color_state;
   WGPUBlendState blend_state;
 } PipelineFragmentDescriptor;
+
+typedef struct {
+  uint8_t group;
+  uint16_t model;
+  uint16_t view;
+  uint16_t projection;
+} PipelineBindingMVP PIPELINE_STD_BINDING;
+
+typedef struct {
+
+  PipelineBindingMVP mvp;
+
+} PipelineBinding;
 
 typedef struct {
   const char *label;
@@ -100,7 +115,9 @@ typedef struct {
     WGPUDepthStencilState stencil_state;
     WGPUBlendState blend_state;
     PipelineMultisampleCount multisample;
-  } custom_attributes;
+  } pipeline_attributes;
+
+  PipelineBinding bindings;
 
 } PipelineLayoutDescriptor;
 
@@ -126,6 +143,9 @@ typedef struct {
   WGPURenderPipelineDescriptor descriptor;
   WGPURenderPipeline handle;
   WGPUPipelineLayout layout;
+
+  // pipeline std bindings
+  PipelineBinding bindings;
 
   // vertex data
   struct {

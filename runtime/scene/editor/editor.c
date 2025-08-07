@@ -39,7 +39,6 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
                   &(GizmoGridCreateDescriptor){
                       .device = scene_device(scene),
                       .queue = scene_queue(scene),
-                      .pipeline = std_pipeline(PipelineType_Grid),
                       .uniform =
                           (GizmoGridUniform){
                               .size = 100.0f,
@@ -61,7 +60,6 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
   gizmo_transform_create(gizmo,
                          &(GizmoCreateDescriptor){
-                             .pipeline = std_pipeline(PipelineType_Unlit),
                              .camera = scene->active_camera,
                              .device = scene_device(scene),
                              .queue = scene_queue(scene),

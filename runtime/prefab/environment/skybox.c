@@ -108,7 +108,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
                                      });
 
   // assign shader
-  mesh_set_shader(skybox_mesh,
+  mesh_shader_create(skybox_mesh,
                   &(ShaderCreateDescriptor){
                       .device = scene_device(scene),
                       .queue = scene_queue(scene),

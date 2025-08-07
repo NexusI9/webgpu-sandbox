@@ -82,7 +82,7 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
     ShaderBindGroup *current_bind_group = &shader->bind_groups.entries[i];
 
     // update bindgroup uniforms data
-    shader_uniform_update(current_bind_group, shader->queue);
+    //shader_uniform_update(current_bind_group, shader->queue);
 
     // link bind group
     wgpuRenderPassEncoderSetBindGroup(*render_pass, i,

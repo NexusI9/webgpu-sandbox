@@ -10,7 +10,8 @@
 
 static const PipelineLayoutDescriptor layout_unlit = {
     .label = "Pipeline Bind Groups - Unlit",
-    .shader_path = "./backend/renderer/scene/std_pipeline/modules/shader.unlit.wgsl",
+    .shader_path =
+        "./backend/renderer/scene/std_pipeline/modules/shader.unlit.wgsl",
     .bind_groups_count = 2,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
@@ -85,6 +86,16 @@ static const PipelineLayoutDescriptor layout_unlit = {
                         },
                     },
             },
+        },
+    .bindings =
+        {
+            .mvp =
+                {
+                    .group = 0,
+                    .projection = 0,
+                    .view = 1,
+                    .model = 2,
+                },
         },
 };
 

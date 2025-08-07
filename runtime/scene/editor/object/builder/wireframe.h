@@ -12,7 +12,6 @@ typedef struct {
   vec3 *color;
   float thickness;
   const char *name;
-  const Pipeline* pipeline;
 } SEOCreateWireframeDescriptor;
 
 void seo_create_wireframe(Mesh *, const SEOCreateWireframeDescriptor *);

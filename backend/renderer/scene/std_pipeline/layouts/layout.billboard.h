@@ -96,6 +96,16 @@ static const PipelineLayoutDescriptor layout_billboard = {
                     },
             },
         },
+    .bindings =
+        {
+            .mvp =
+                {
+                    .group = 0,
+                    .projection = 0,
+                    .view = 1,
+                    .model = 2,
+                },
+        },
 };
 
 #endif

@@ -1,6 +1,6 @@
 #include "billboard.h"
+#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 #include "../runtime/primitive/plane.h"
-#include "../runtime/material/material.h"
 #include "../runtime/texture/texture.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -9,13 +9,8 @@
    Create a plane mesh with a billboard shader
  */
 void seo_create_billboard(Mesh *mesh,
-                            const SEOCreateBillboardDescriptor *desc) {
+                          const SEOCreateBillboardDescriptor *desc) {
 
-  if(desc->pipeline == NULL){
-    VERBOSE_ERROR("No pipeline has been provided for SEO BIllboard.");
-    return;
-  }
-  
   // create plane
   Primitive plane = primitive_plane();
 
@@ -33,23 +28,21 @@ void seo_create_billboard(Mesh *mesh,
   mesh_scale(mesh, *desc->scale);
 
   // assign billboard shader
-  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
-                            .device = desc->device,
-                            .queue = desc->queue,
-                            .label = "SEO billboard shader",
-                            .name = "SEO billboard shader",
-                            .pipeline = desc->pipeline,
-                        });
-
-  // set double side rendering
-  material_texture_double_sided(mesh);
+  mesh_shader_create_fixed(mesh,
+                           &(ShaderCreateDescriptor){
+                               .device = desc->device,
+                               .queue = desc->queue,
+                               .label = "SEO billboard shader",
+                               .name = "SEO billboard shader",
+                               .pipeline = std_pipeline(PipelineType_Billboard),
+                           });
 
   // TODO: create UI Atlas
   Texture light_texture;
   texture_create_from_file(&light_texture, desc->texture_path, true);
 
   // bind texture + sampler
-  material_texture_add_texture(
+  mesh_shader_fixed_add_texture(
       mesh, &(ShaderCreateTextureDescriptor){
                 .group_index = 1,
                 .entry_count = 1,
@@ -67,25 +60,25 @@ void seo_create_billboard(Mesh *mesh,
                 }},
             });
 
-  material_texture_add_sampler(mesh,
-                               &(ShaderCreateSamplerDescriptor){
-                                   .group_index = 1,
-                                   .entry_count = 1,
-                                   .visibility = WGPUShaderStage_Fragment,
-                                   .entries = (ShaderBindGroupSamplerEntry[]){{
-                                       .binding = 1,
-                                       .addressModeU = WGPUAddressMode_Repeat,
-                                       .addressModeV = WGPUAddressMode_Repeat,
-                                       .addressModeW = WGPUAddressMode_Repeat,
-                                       .minFilter = WGPUFilterMode_Linear,
-                                       .magFilter = WGPUFilterMode_Linear,
-                                       .type = WGPUSamplerBindingType_Filtering,
-                                       .compare = WGPUCompareFunction_Undefined,
-                                   }},
-                               });
+  mesh_shader_fixed_add_sampler(
+      mesh, &(ShaderCreateSamplerDescriptor){
+                .group_index = 1,
+                .entry_count = 1,
+                .visibility = WGPUShaderStage_Fragment,
+                .entries = (ShaderBindGroupSamplerEntry[]){{
+                    .binding = 1,
+                    .addressModeU = WGPUAddressMode_Repeat,
+                    .addressModeV = WGPUAddressMode_Repeat,
+                    .addressModeW = WGPUAddressMode_Repeat,
+                    .minFilter = WGPUFilterMode_Linear,
+                    .magFilter = WGPUFilterMode_Linear,
+                    .type = WGPUSamplerBindingType_Filtering,
+                    .compare = WGPUCompareFunction_Undefined,
+                }},
+            });
 
   const uint32_t size = 0;
-  material_texture_add_uniform(
+  mesh_shader_fixed_add_uniform(
       mesh, &(ShaderCreateUniformDescriptor){
                 .group_index = 1,
                 .entry_count = 1,
@@ -97,6 +90,4 @@ void seo_create_billboard(Mesh *mesh,
                     .offset = 0,
                 }},
             });
-
-
 }

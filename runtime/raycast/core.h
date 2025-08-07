@@ -3,7 +3,7 @@
 
 #include "../geometry/aabb/aabb.h"
 #include "../geometry/plane/plane.h"
-#include "../mesh/mesh.h"
+#include "../utils/vector/vector.h"
 #include <cglm/cglm.h>
 
 #define RAYCAST_DISTANCE_INF 1000.0f

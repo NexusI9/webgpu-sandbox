@@ -1,18 +1,17 @@
 #include "utils.h"
+#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 #include "../resources/loader/loader.mbin.h"
-#include "../runtime/material/material.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "./core.h"
 #include "webgpu/webgpu.h"
-
 /**
    Create a gizmo transform mesh with the solid pipeline and the other relative
    pipeline settings (no depth write).
 
    Used to generate each gizmo handles.
  */
-void gizmo_transform_create_mesh(Mesh *mesh, const Pipeline *pipeline,
-                                 Primitive *primitive, const color *rgba,
-                                 const WGPUQueue queue,
+void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
+                                 const color *rgba, const WGPUQueue queue,
                                  const WGPUDevice device) {
 
   // init mesh
@@ -23,38 +22,38 @@ void gizmo_transform_create_mesh(Mesh *mesh, const Pipeline *pipeline,
                                   .name = "Gizmo transform",
                               });
   // add shader
-  mesh_set_shader(mesh, &(ShaderCreateDescriptor){
-                            .pipeline = pipeline,
-                            .device = device,
-                            .queue = queue,
-                            .label = "Gizmo transform shader",
-                            .name = "Gizmo transform shader",
-                        });
+  mesh_shader_create_fixed(mesh,
+                           &(ShaderCreateDescriptor){
+                               .pipeline = std_pipeline(PipelineType_Unlit),
+                               .device = device,
+                               .queue = queue,
+                               .label = "Gizmo transform shader",
+                               .name = "Gizmo transform shader",
+                           });
 
   // add color uniform
   const float fixed_size = GIZMO_TRANSFORM_SIZE;
-  shader_add_uniform(
-      mesh_shader_texture(mesh),
-      &(ShaderCreateUniformDescriptor){
-          .entry_count = 2,
-          .group_index = 1,
-          .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
-          .entries =
-              (ShaderBindGroupUniformEntry[]){
-                  {
-                      .binding = 0,
-                      .size = sizeof(color),
-                      .data = (void *)rgba,
-                      .offset = 0,
-                  },
-                  {
-                      .binding = 1,
-                      .size = sizeof(float),
-                      .data = (void *)&fixed_size,
-                      .offset = 0,
-                  },
-              },
-      });
+  mesh_shader_fixed_add_uniform(
+      mesh, &(ShaderCreateUniformDescriptor){
+                .entry_count = 2,
+                .group_index = 1,
+                .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
+                .entries =
+                    (ShaderBindGroupUniformEntry[]){
+                        {
+                            .binding = 0,
+                            .size = sizeof(color),
+                            .data = (void *)rgba,
+                            .offset = 0,
+                        },
+                        {
+                            .binding = 1,
+                            .size = sizeof(float),
+                            .data = (void *)&fixed_size,
+                            .offset = 0,
+                        },
+                    },
+            });
 
   // scale gizmo (cpu side as well, so the hitbox are correct dimension)
   // mesh_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
@@ -89,8 +88,8 @@ void gizmo_transform_create_handles(
     Mesh *mesh = mesh_list_new_mesh(desc->list);
     color rgba = {i == 0, i == 1, i == 2, 1.0f};
 
-    gizmo_transform_create_mesh(mesh, desc->pipeline, &mesh_primitive, &rgba,
-                                desc->queue, desc->device);
+    gizmo_transform_create_mesh(mesh, &mesh_primitive, &rgba, desc->queue,
+                                desc->device);
 
     // rotate
     mesh_rotate(mesh, (vec3){
