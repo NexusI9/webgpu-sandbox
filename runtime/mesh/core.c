@@ -79,24 +79,6 @@ void mesh_set_name(Mesh *mesh, const char *name) {
 }
 
 /**
-   Build mesh shaders pipeline
-   If given shader is NULL, it will choose the default shader as fallback
- */
-void mesh_build(Mesh *mesh, const MeshShader shader) {
-
-  return;
-  // check if mesh has correct buffer before drawing
-  if (mesh->topology.base.index.buffer == NULL ||
-      mesh->topology.base.attribute.buffer == NULL)
-    VERBOSE_ERROR("Mesh has no vertex index or attribute buffer.");
-
-  // build shader
-  shader_build(&mesh->shader.standard[shader]);
-
-  // mesh_shader_set_active(mesh, shader);
-}
-
-/**
    Mesh main draw from default vertex and index buffer
  */
 void mesh_draw(MeshTopology topology, Shader *shader,

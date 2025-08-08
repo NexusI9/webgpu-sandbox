@@ -180,31 +180,6 @@ void mesh_shader_texture_bind_shadow_maps(
                              SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP,
                              fallback_spot_texture_view, texture_format);
 
-  /*DELETEME shader_add_texture_view(
-      mesh_shader_texture(mesh),
-      &(ShaderCreateTextureViewDescriptor){
-          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-          .entry_count = 2,
-          .group_index = group_index,
-          .entries =
-              (ShaderBindGroupTextureViewEntry[]){
-                  {
-                      .binding = SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
-                      .texture_view = fallback_point_texture_view,
-                      .dimension = WGPUTextureViewDimension_CubeArray,
-                      .format = texture_format,
-                      .sample_type = texture_sample_type,
-                  },
-                  {
-                      .binding = SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP,
-                      .texture_view = fallback_spot_texture_view,
-                      .dimension = WGPUTextureViewDimension_2DArray,
-                      .format = texture_format,
-                      .sample_type = texture_sample_type,
-                  },
-              },
-      });*/
-
   // add related sampler to default shader
   // NOTE: With depth texture need to use a special sampler type:
   // Comparison

@@ -99,7 +99,6 @@ void mesh_set_name(Mesh *, const char *);
 
 // shader
 void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *);
-void mesh_build(Mesh *, const MeshShader);
 
 // hierarchy
 void mesh_set_parent(Mesh *, Mesh *);

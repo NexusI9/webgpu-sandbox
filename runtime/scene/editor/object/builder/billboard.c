@@ -53,23 +53,6 @@ void seo_create_billboard(Mesh *mesh,
                             .format = WGPUTextureFormat_RGBA8Unorm,
                         });
 
-  /*DELETEME mesh_shader_fixed_add_texture(
-      mesh, &(ShaderCreateTextureDescriptor){
-                .group_index = 1,
-                .entry_count = 1,
-                .visibility = WGPUShaderStage_Fragment,
-                .entries = (ShaderBindGroupTextureEntry[]){{
-                    .binding = 0,
-                    .width = light_texture.width,
-                    .height = light_texture.height,
-                    .data = light_texture.data,
-                    .size = light_texture.size,
-                    .channels = light_texture.channels,
-                    .dimension = WGPUTextureViewDimension_2D,
-                    .format = WGPUTextureFormat_RGBA8Unorm,
-                    .sample_type = WGPUTextureSampleType_Float,
-                }},
-            });*/
 
   shader_update_sampler(mesh_shader_fixed(mesh), 1, 1,
                         &(WGPUSamplerDescriptor){

@@ -156,15 +156,9 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
     // bind light and mesh uniform to shadow
     mesh_shader_shadow_bind_views(mesh);
 
-    // build shadow shader layout
-    mesh_build(mesh, MeshShader_Shadow);
-
     // Bake AO textures for static scenes elements
     // ao_bake_init(ao_desc);
   }
-
-  // build mesh
-  mesh_build(mesh, MeshShader_Texture);
 }
 
 /**
@@ -182,8 +176,6 @@ void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport) {
 
   // bind views
   mesh_shader_solid_bind_views(mesh, camera, viewport);
-
-  mesh_build(mesh, MeshShader_Solid);
 }
 
 /**
@@ -210,8 +202,6 @@ void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera,
   // bind views
   mesh_shader_wireframe_bind_views(mesh, camera, viewport);
 
-  // already built during the defaut boundbox
-  mesh_build(mesh, MeshShader_Wireframe);
 }
 
 /**
@@ -231,7 +221,6 @@ void scene_build_mesh_boundbox(Mesh *mesh, Camera *camera, Viewport *viewport) {
   // bind views
   mesh_shader_wireframe_bind_views(mesh, camera, viewport);
 
-  mesh_build(mesh, MeshShader_Wireframe);
 }
 
 /**
@@ -247,6 +236,4 @@ void scene_build_mesh_fixed(Mesh *mesh, Camera *camera, Viewport *viewport) {
   // bind views
   mesh_shader_fixed_bind_views(mesh, camera, viewport);
 
-  // build fixed
-  mesh_build(mesh, MeshShader_Fixed);
 }

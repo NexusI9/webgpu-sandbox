@@ -9,9 +9,6 @@ static inline void shadow_map_draw(const ShadowMapDrawDescriptor *);
 static inline void
 shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *);
 
-static inline void
-shadow_map_update_binding(const ShadowMapDrawAllDescriptor *);
-
 /**
    The building shadow phase is segmented in numerous steps:
 
@@ -367,34 +364,3 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
   });
 }
 
-/**
-  ▗▖ ▗▖▗▄▄▄▖▗▄▄▄▖▗▖    ▗▄▄▖
-  ▐▌ ▐▌  █    █  ▐▌   ▐▌
-  ▐▌ ▐▌  █    █  ▐▌    ▝▀▚▖
-  ▝▚▄▞▘  █  ▗▄█▄▖▐▙▄▄▖▗▄▄▞▘
-
-  Transfert depth texture array to each meshes default shader
-
-  DELETEME
-  Is not currently used but may be useful to display the shadow as color for
-  debug, not sure yet.. Maybe can delete.
- */
-void shadow_map_update_binding(const ShadowMapDrawAllDescriptor *desc) {
-
-  for (size_t m = 0; m < desc->mesh_list->length; m++) {
-
-    Mesh *current_mesh = desc->mesh_list->entries[m];
-
-    // bind point & spot light texture view + sampler to Textue Shader
-#ifdef RENDER_SHADOW_AS_COLOR
-    const WGPUTextureView point_map = scene->lights.point->color_view;
-    const WGPUTextureView spot_map = scene->lights.spot->color_view;
-#else
-    const WGPUTextureView point_map = desc->lights->point.depth_view;
-    const WGPUTextureView spot_map = desc->lights->spot.depth_view;
-#endif
-
-    // only release the texture if it's not equal
-    mesh_shader_texture_update_shadow_maps(current_mesh, point_map, spot_map);
-  }
-}
