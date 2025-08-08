@@ -5,14 +5,25 @@
 #include "core.h"
 #include "webgpu/webgpu.h"
 
-void shader_update_texture(Shader *, bind_group_index, WGPUTextureView *,
-                           bind_index);
+typedef struct {
+  int width;
+  int height;
+  unsigned char *data;
+  size_t size;
+  uint8_t channels;
+  WGPUTextureViewDimension dimension;
+  WGPUTextureFormat format;
+} ShaderUpdateTexture;
 
-void shader_update_uniform(Shader *, bind_group_index, void *, size_t,
-                           bind_index);
+void shader_update_texture(Shader *, bind_group_index, bind_index,
+                           const ShaderUpdateTexture *);
 
-void shader_update_sampler(Shader *, bind_group_index, WGPUSampler *,
-                           bind_index);
+void shader_update_texture_view(Shader *, bind_group_index, bind_index,
+                                WGPUTextureView, WGPUTextureFormat);
 
+void shader_update_uniform(Shader *, bind_group_index, bind_index, void *);
+
+void shader_update_sampler(Shader *, bind_group_index, bind_index,
+                           const WGPUSamplerDescriptor *);
 
 #endif

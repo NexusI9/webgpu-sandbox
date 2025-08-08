@@ -3,6 +3,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 #define CGLTF_IMPLEMENTATION
+#include "../backend/renderer/scene/std_texture/std_texture.h"
 #include "../backend/renderer/scene/texture.h"
 #include "cgltf/cgltf.h"
 
@@ -23,12 +24,8 @@ static void loader_gltf_create_mesh(Scene *, const WGPUDevice, const WGPUQueue,
 static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
 
 // shader utils
-static void loader_gltf_create_shader(Shader *, const WGPUDevice,
-                                      const WGPUQueue, cgltf_primitive *,
-                                      WGPUTextureView *);
 
-static void loader_gltf_bind_uniforms(Shader *, cgltf_material *,
-                                      WGPUTextureView *);
+static void loader_gltf_bind_uniforms(Shader *, cgltf_material *);
 
 static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
                                                     void **, size_t *, int *,
@@ -150,10 +147,6 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
 
   VERBOSE_IMPORT("GLTF file");
 
-  // get the cached fallback texture view from renderer
-  WGPUTextureView fallback_texture =
-      scene_renderer_fallback_texture_view_2d(&scene->renderer);
-
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
 
@@ -274,8 +267,20 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       }
 
       // load shader
-      loader_gltf_create_shader(mesh_shader_texture(target_mesh), device, queue,
-                                &current_primitive, &fallback_texture);
+      // Use default pbr shader as default
+      // TODO: Add a custom path for different shader in loader configuration
+      cgltf_material *material = current_primitive.material;
+      
+      mesh_shader_create(target_mesh,
+                         &(ShaderCreateDescriptor){
+                             .pipeline = std_pipeline(PipelineType_PBR),
+                             .label = material->name,
+                             .name = material->name,
+                             .device = device,
+                             .queue = queue,
+                         });
+
+      loader_gltf_bind_uniforms(mesh_shader_texture(target_mesh), material);
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
@@ -285,37 +290,13 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       scene_add_mesh(scene, target_mesh, NULL);
     }
   }
-
-  // free fallback texture view
-  wgpuTextureViewRelease(fallback_texture);
-}
-
-void loader_gltf_create_shader(Shader *shader, const WGPUDevice device,
-                               const WGPUQueue queue,
-                               cgltf_primitive *primitive,
-                               WGPUTextureView *fallback_texture) {
-
-  // Use default pbr shader as default
-  // TODO: Add a custom path for different shader in loader configuration
-
-  cgltf_material *material = primitive->material;
-  shader_create(shader, &(ShaderCreateDescriptor){
-                            .pipeline = std_pipeline(PipelineType_PBR),
-                            .label = material->name,
-                            .name = material->name,
-                            .device = device,
-                            .queue = queue,
-                        });
-
-  loader_gltf_bind_uniforms(shader, material, fallback_texture);
 }
 
 /**
   Bind PBR textures
   store the texture_views (hold pointer to actual texture + other data)
  */
-void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
-                               WGPUTextureView *fallback_texture) {
+void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
 
   const uint8_t texture_length = 5;
 
@@ -333,6 +314,11 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
   ShaderBindGroupSamplerEntry samplers[texture_length];
 
   uint8_t binding = 0;
+
+  // get the cached fallback texture view from renderer
+  const WGPUTextureView fallback_texture =
+      std_texture_view(TextureViewType_Float);
+
   for (int t = 0; t < texture_length; t++) {
 
     void *data;
@@ -345,72 +331,40 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
                                     &height) == LoaderGLTFStatus_TextureFound) {
 
       // send texture + sampler to shader
-      shader_add_texture(
-          shader, &(ShaderCreateTextureDescriptor){
-                      .group_index = SHADER_TEXTURE_BINDGROUP_TEXTURES,
-                      .entry_count = 1,
-                      .entries =
-                          (ShaderBindGroupTextureEntry[]){
-                              {
-                                  .binding = binding,
-                                  .data = data,
-                                  .size = size,
-                                  .width = width,
-                                  .height = height,
-                                  .dimension = WGPUTextureViewDimension_2D,
-                                  .format = WGPUTextureFormat_BGRA8Unorm,
-                                  .channels = TEXTURE_CHANNELS_RGBA,
-                                  .sample_type = WGPUTextureSampleType_Float,
-                              },
-                          },
-                      .visibility = WGPUShaderStage_Fragment,
-                  });
+      shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
+                            &(ShaderUpdateTexture){
+                                .data = data,
+                                .size = size,
+                                .width = width,
+                                .height = height,
+                                .dimension = WGPUTextureViewDimension_2D,
+                                .format = WGPUTextureFormat_BGRA8Unorm,
+                                .channels = TEXTURE_CHANNELS_RGBA,
+                            });
+
     }
     // If texture not found or error while loading, upload cached texture view
     // fallback from GPU instead
     else {
       // send fallback texture view
-      shader_add_texture_view(
-          shader, &(ShaderCreateTextureViewDescriptor){
-                      .group_index = SHADER_TEXTURE_BINDGROUP_TEXTURES,
-                      .entry_count = 1,
-                      .entries =
-                          (ShaderBindGroupTextureViewEntry[]){
-                              {
-                                  .binding = binding,
-                                  .texture_view = *fallback_texture,
-                                  .dimension = WGPUTextureViewDimension_2D,
-                                  .format = WGPUTextureFormat_BGRA8Unorm,
-                                  .sample_type = WGPUTextureSampleType_Float,
-                              },
-                          },
-                      .visibility = WGPUShaderStage_Fragment,
-                  });
+      shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
+                                 binding, fallback_texture,
+                                 WGPUTextureFormat_BGRA8Unorm);
     }
 
-    // push new sampler with correct binding index
-    samplers[t] = (ShaderBindGroupSamplerEntry){
-        .binding = binding + 1,
-        .type = WGPUSamplerBindingType_Filtering,
-        .addressModeU = WGPUAddressMode_ClampToEdge,
-        .addressModeV = WGPUAddressMode_ClampToEdge,
-        .addressModeW = WGPUAddressMode_ClampToEdge,
-        .minFilter = WGPUFilterMode_Linear,
-        .magFilter = WGPUFilterMode_Linear,
-        .compare = WGPUCompareFunction_Undefined,
-    };
-
+    // update sampler entry from generated array
+    shader_update_sampler(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
+                          binding + 1,
+                          &(WGPUSamplerDescriptor){
+                              .addressModeU = WGPUAddressMode_ClampToEdge,
+                              .addressModeV = WGPUAddressMode_ClampToEdge,
+                              .addressModeW = WGPUAddressMode_ClampToEdge,
+                              .minFilter = WGPUFilterMode_Linear,
+                              .magFilter = WGPUFilterMode_Linear,
+                              .compare = WGPUCompareFunction_Undefined,
+                          });
     binding += 2;
   }
-
-  // create sampler entry from generated array
-  shader_add_sampler(shader,
-                     &(ShaderCreateSamplerDescriptor){
-                         .group_index = SHADER_TEXTURE_BINDGROUP_TEXTURES,
-                         .entry_count = texture_length,
-                         .entries = samplers,
-                         .visibility = WGPUShaderStage_Fragment,
-                     });
 }
 
 /**

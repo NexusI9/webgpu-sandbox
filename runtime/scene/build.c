@@ -245,7 +245,7 @@ void scene_build_mesh_fixed(Mesh *mesh, Camera *camera, Viewport *viewport) {
                                        &mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_fixed_bind_views(mesh, camera, viewport);
+  mesh_shader_bind_views(mesh, camera, viewport);
 
   // build fixed
   mesh_build(mesh, MeshShader_Fixed);

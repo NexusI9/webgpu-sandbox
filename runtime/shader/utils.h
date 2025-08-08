@@ -8,4 +8,5 @@
 uint16_t shader_bind_group_entries_count(const ShaderBindGroup*);
 
 bool shader_validate_binding(Shader *);
+
 #endif

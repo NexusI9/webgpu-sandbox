@@ -109,74 +109,35 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
 
   // assign shader
   mesh_shader_create_fixed(skybox_mesh,
-                  &(ShaderCreateDescriptor){
-                      .device = scene_device(scene),
-                      .queue = scene_queue(scene),
-                      .label = "skybox shader",
-                      .name = "skybox shader",
-                      .pipeline = std_pipeline(PipelineType_Skybox),
-                  });
+                           &(ShaderCreateDescriptor){
+                               .device = scene_device(scene),
+                               .queue = scene_queue(scene),
+                               .label = "skybox shader",
+                               .name = "skybox shader",
+                               .pipeline = std_pipeline(PipelineType_Skybox),
+                           });
 
-  // bind texture and sampler
+  // update texture and sampler
   Shader *shader = mesh_shader_fixed(skybox_mesh);
-  shader_add_texture_view(
-      shader, &(ShaderCreateTextureViewDescriptor){
-                  .entry_count = 1,
-                  .group_index = 0,
-                  .visibility = WGPUShaderStage_Fragment,
-                  .entries =
-                      (ShaderBindGroupTextureViewEntry[]){
-                          {
-                              .binding = 0,
-                              .texture_view = skybox_texture_view,
-                              .dimension = WGPUTextureViewDimension_Cube,
-                              .format = format,
-                              .sample_type = WGPUTextureSampleType_Float,
-                          },
-                      },
-              });
-
-  shader_add_sampler(
-      shader, &(ShaderCreateSamplerDescriptor){
-                  .entry_count = 1,
-                  .group_index = 0,
-                  .visibility = WGPUShaderStage_Fragment,
-                  .entries =
-                      (ShaderBindGroupSamplerEntry[]){
-                          {
-                              .binding = 1,
-                              .addressModeU = WGPUAddressMode_ClampToEdge,
-                              .addressModeV = WGPUAddressMode_ClampToEdge,
-                              .addressModeW = WGPUAddressMode_ClampToEdge,
-                              .minFilter = WGPUFilterMode_Linear,
-                              .magFilter = WGPUFilterMode_Linear,
-                              .type = WGPUSamplerBindingType_Filtering,
-                              .compare = WGPUCompareFunction_Undefined,
-                          },
-                      },
-              });
+  shader_update_texture_view(shader, 0, 0, skybox_texture_view, format);
+  shader_update_sampler(shader, 0, 1,
+                        &(WGPUSamplerDescriptor){
+                            .addressModeU = WGPUAddressMode_ClampToEdge,
+                            .addressModeV = WGPUAddressMode_ClampToEdge,
+                            .addressModeW = WGPUAddressMode_ClampToEdge,
+                            .minFilter = WGPUFilterMode_Linear,
+                            .magFilter = WGPUFilterMode_Linear,
+                            .compare = WGPUCompareFunction_Undefined,
+                        });
 
   // add blur uniform
-  shader_add_uniform(shader, &(ShaderCreateUniformDescriptor){
-                                 .entry_count = 1,
-                                 .group_index = 0,
-                                 .visibility = WGPUShaderStage_Fragment,
-                                 .entries =
-                                     (ShaderBindGroupUniformEntry[]){
-                                         {
-                                             .binding = 2,
-                                             .size = sizeof(float),
-                                             .offset = 0,
-                                             .data = (void *)&blur,
-                                             .update = NULL,
-                                         },
-                                     },
-                             });
+  shader_update_uniform(shader, 0, 2, (void *)&blur);
 
   // alter pipeline (no depth test)
   const Pipeline *pipeline = shader_pipeline(shader);
 
-  scene_add_mesh_fixed(scene, skybox_mesh, ScenePipeline_Fixed_Background, NULL);
+  scene_add_mesh_fixed(scene, skybox_mesh, ScenePipeline_Fixed_Background,
+                       NULL);
 }
 
 /**

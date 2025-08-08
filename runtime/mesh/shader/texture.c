@@ -1,19 +1,19 @@
 #include "texture.h"
+#include "../backend/renderer/scene/scene.h"
+#include "./utils.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
-#include "./utils.h"
-#include "../backend/renderer/scene/scene.h"
+
+void mesh_shader_texture_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport) {
+  mesh_shader_bind_views_any(mesh, mesh_shader_texture, camera, viewport);
+}
+
 
 /**
    Clear the texture shader bind groups of mesh
  */
 void mesh_shader_texture_clear_bindings(Mesh *mesh) {
   shader_bind_group_clear(mesh_shader_texture(mesh));
-}
-
-void mesh_shader_texture_bind_views(Mesh *mesh, Camera *camera,
-                                 Viewport *viewport) {
-  mesh_shader_bind_views(mesh, mesh_shader_texture, camera, viewport);
 }
 
 /**
@@ -24,7 +24,7 @@ void mesh_shader_texture_bind_views(Mesh *mesh, Camera *camera,
    within a defined group
   */
 void mesh_shader_texture_bind_lights(Mesh *mesh, LightList *light_list,
-                                  uint8_t group_index) {
+                                     uint8_t group_index) {
 
   AmbientLightList *ambient_list = &light_list->ambient;
   SpotLightList *spot_list = &light_list->spot;
@@ -102,12 +102,12 @@ void mesh_shader_texture_bind_lights(Mesh *mesh, LightList *light_list,
           .data = &point_uniform,
           .offset = 0,
           .size = sizeof(PointLightListUniform),
-          .update =
-              {
-                  .callback = point_light_list_update_callback,
-                  .trigger = point_light_list_trigger_callback,
-                  .data = point_list,
-              },
+          /*.update =
+                {
+                     .callback = point_light_list_update_callback,
+                     .trigger = point_light_list_trigger_callback,
+                     .data = point_list,
+                 },*/
       },
       // sun light
       {
@@ -118,54 +118,32 @@ void mesh_shader_texture_bind_lights(Mesh *mesh, LightList *light_list,
       },
   };
 
-  shader_add_uniform(
-      mesh_shader_texture(mesh),
-      &(ShaderCreateUniformDescriptor){
-          .group_index = group_index,
-          .entry_count = 4,
-          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-          .entries = entries,
-      });
+  for (size_t i = 0; i < 4; i++) {
+    ShaderBindGroupUniformEntry *entry = &entries[i];
+    shader_update_uniform(mesh_shader_texture(mesh), group_index,
+                          entry->binding, entry->data);
+  }
 }
 
 /**
    Bind the ambient occlusion maps and sampler to the default shader (called
    during shader creation)
  */
-void mesh_shader_texture_bind_ambient_occlusion(Mesh *mesh,
-                                             WGPUTextureView ao_texture_view) {
+void mesh_shader_texture_bind_ambient_occlusion(
+    Mesh *mesh, WGPUTextureView ao_texture_view) {
 
-  shader_add_texture_view(
-      mesh_shader_texture(mesh),
-      &(ShaderCreateTextureViewDescriptor){
-          .group_index = 0,
-          .entry_count = 1,
-          .entries = (ShaderBindGroupTextureViewEntry[]){
-              {
-                  .binding = 8,
-                  .texture_view = ao_texture_view,
-                  .dimension = WGPUTextureViewDimension_2D,
-                  .format = AO_TEXTURE_FORMAT,
-                  .sample_type = WGPUTextureSampleType_Float,
-              },
-          }});
+  shader_update_texture_view(mesh_shader_texture(mesh), 0, 8, ao_texture_view,
+                             AO_TEXTURE_FORMAT);
 
-  shader_add_sampler(mesh_shader_texture(mesh),
-                     &(ShaderCreateSamplerDescriptor){
-                         .group_index = 0,
-                         .entry_count = 1,
-                         .entries = (ShaderBindGroupSamplerEntry[]){
-                             {
-                                 .binding = 9,
-                                 .type = WGPUSamplerBindingType_Filtering,
-                                 .addressModeU = WGPUAddressMode_ClampToEdge,
-                                 .addressModeV = WGPUAddressMode_ClampToEdge,
-                                 .addressModeW = WGPUAddressMode_ClampToEdge,
-                                 .minFilter = WGPUFilterMode_Linear,
-                                 .magFilter = WGPUFilterMode_Linear,
-                                 .compare = WGPUCompareFunction_Undefined,
-                             },
-                         }});
+  shader_update_sampler(mesh_shader_texture(mesh), 0, 9,
+                        &(WGPUSamplerDescriptor){
+                            .addressModeU = WGPUAddressMode_ClampToEdge,
+                            .addressModeV = WGPUAddressMode_ClampToEdge,
+                            .addressModeW = WGPUAddressMode_ClampToEdge,
+                            .minFilter = WGPUFilterMode_Linear,
+                            .magFilter = WGPUFilterMode_Linear,
+                            .compare = WGPUCompareFunction_Undefined,
+                        });
 }
 
 /**
@@ -194,7 +172,15 @@ void mesh_shader_texture_bind_shadow_maps(
 #endif
 
   // add multi-layered texture to default shader
-  shader_add_texture_view(
+  shader_update_texture_view(mesh_shader_texture(mesh), group_index,
+                             SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
+                             fallback_point_texture_view, texture_format);
+
+  shader_update_texture_view(mesh_shader_texture(mesh), group_index,
+                             SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP,
+                             fallback_spot_texture_view, texture_format);
+
+  /*DELETEME shader_add_texture_view(
       mesh_shader_texture(mesh),
       &(ShaderCreateTextureViewDescriptor){
           .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
@@ -217,15 +203,13 @@ void mesh_shader_texture_bind_shadow_maps(
                       .sample_type = texture_sample_type,
                   },
               },
-      });
+      });*/
 
   // add related sampler to default shader
   // NOTE: With depth texture need to use a special sampler type:
   // Comparison
 
-  ShaderBindGroupSamplerEntry point_sampler = {
-      .binding = sampler_binding,
-      .type = sample_type,
+  WGPUSamplerDescriptor sampler = {
       .addressModeU = WGPUAddressMode_ClampToEdge,
       .addressModeV = WGPUAddressMode_ClampToEdge,
       .addressModeW = WGPUAddressMode_ClampToEdge,
@@ -234,21 +218,11 @@ void mesh_shader_texture_bind_shadow_maps(
       .compare = sample_compare,
   };
 
-  ShaderBindGroupSamplerEntry spot_sampler = point_sampler;
-  spot_sampler.binding += 2;
+  shader_update_sampler(mesh_shader_texture(mesh), group_index, sampler_binding,
+                        &sampler);
 
-  shader_add_sampler(
-      mesh_shader_texture(mesh),
-      &(ShaderCreateSamplerDescriptor){
-          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-          .entry_count = 2,
-          .group_index = group_index,
-          .entries =
-              (ShaderBindGroupSamplerEntry[]){
-                  point_sampler,
-                  spot_sampler,
-              },
-      });
+  shader_update_sampler(mesh_shader_texture(mesh), group_index,
+                        sampler_binding + 2, &sampler);
 }
 
 /**
@@ -272,58 +246,29 @@ void mesh_shader_texture_bind_shadow_maps(
 
  */
 void mesh_shader_texture_update_ambient_occlusion(Mesh *mesh,
-                                               WGPUTextureView map) {
+                                                  WGPUTextureView map) {
 
   VERBOSE_PROCESS("Update AO map: %s", mesh->name);
   Shader *shader = mesh_shader_texture(mesh);
-  shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES, &map,
-                        SHADER_TEXTURE_BINDING_AO);
+  shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
+                             SHADER_TEXTURE_BINDING_AO, map, AO_TEXTURE_FORMAT);
 }
 
-void mesh_shader_texture_update_shadow_maps(Mesh *mesh, WGPUTextureView point_map,
-                                         WGPUTextureView spot_map) {
+void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
+                                            WGPUTextureView point_map,
+                                            WGPUTextureView spot_map) {
 
   VERBOSE_PROCESS("Update shadow map: %s", mesh->name);
   Shader *shader = mesh_shader_texture(mesh);
 
   // update textures
-  shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS, &point_map,
-                        SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP);
+  shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
+                             SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
+                             point_map, SHADOW_DEPTH_FORMAT);
 
-  shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS, &spot_map,
-                        SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP);
-}
-
-/**
-   Transfer Uniform to the right mesh shader (texture)
- */
-void mesh_shader_texture_add_uniform(Mesh *mesh,
-                                  const ShaderCreateUniformDescriptor *desc) {
-  shader_add_uniform(mesh_shader_texture(mesh), desc);
-}
-
-/**
-   Transfer Texture to the right mesh shader (texture)
- */
-void mesh_shader_texture_add_texture(Mesh *mesh,
-                                  const ShaderCreateTextureDescriptor *desc) {
-  shader_add_texture(mesh_shader_texture(mesh), desc);
-}
-
-/**
-   Transfer Texture View to the right mesh shader (texture)
- */
-void mesh_shader_texture_add_texture_view(
-    Mesh *mesh, const ShaderCreateTextureViewDescriptor *desc) {
-  shader_add_texture_view(mesh_shader_texture(mesh), desc);
-}
-
-/**
-   Transfer Sampler to the right mesh shader (texture)
- */
-void mesh_shader_texture_add_sampler(Mesh *mesh,
-                                  const ShaderCreateSamplerDescriptor *desc) {
-  shader_add_sampler(mesh_shader_texture(mesh), desc);
+  shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
+                             SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP, spot_map,
+                             SHADOW_DEPTH_FORMAT);
 }
 
 /**

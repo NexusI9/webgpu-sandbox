@@ -9,8 +9,9 @@
    - Binding 1: Camera matrix
    - Binding 2: Model matrix
  */
-void mesh_shader_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
-                         Camera *camera, Viewport *viewport) {
+void mesh_shader_bind_views_any(Mesh *mesh,
+                                mesh_get_shader_callback target_shader,
+                                Camera *camera, Viewport *viewport) {
 
   CameraUniform uCamera = camera_uniform(camera);
   ViewportUniform uViewport = viewport_uniform(viewport);
@@ -21,47 +22,44 @@ void mesh_shader_bind_views(Mesh *mesh, mesh_get_shader_callback target_shader,
   // retrieve the model-view-projection binding index from the pipeline
   const PipelineBindingMVP *mvp = &shader->pipeline->bindings.mvp;
 
-  shader_add_uniform(
-      shader,
-      &(ShaderCreateUniformDescriptor){
-          .group_index = mvp->group,
-          .entry_count = 3,
-          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-          .entries =
-              (ShaderBindGroupUniformEntry[]){
-                  // viewport
-                  {
-                      .binding = mvp->projection,
-                      .data = &uViewport,
-                      .size = sizeof(ViewportUniform),
-                      .offset = 0,
-                  },
-                  // camera
-                  {
-                      .binding = mvp->view,
-                      .data = &uCamera,
-                      .size = sizeof(CameraUniform),
-                      .offset = 0,
-                      /* .update =
-                          {
-                              .callback = camera_uniform_update_matrix,
-                              .trigger = camera_uniform_compare_views,
-                              .data = camera,
-                          },*/
-                  },
-                  // model
-                  {
-                      .binding = mvp->model,
-                      .data = &uMesh,
-                      .size = sizeof(MeshUniform),
-                      .offset = 0,
-                      /*.update =
-                          {
-                              .callback = mesh_uniform_model_update,
-                              .trigger = mesh_uniform_model_compare,
-                              .data = mesh,
-                          },*/
-                  },
-              },
-      });
+  ShaderBindGroupUniformEntry entries[3] = {
+      // viewport
+      {
+          .binding = mvp->projection,
+          .data = &uViewport,
+          .size = sizeof(ViewportUniform),
+          .offset = 0,
+      },
+      // camera
+      {
+          .binding = mvp->view,
+          .data = &uCamera,
+          .size = sizeof(CameraUniform),
+          .offset = 0,
+          /* .update =
+              {
+                  .callback = camera_uniform_update_matrix,
+                  .trigger = camera_uniform_compare_views,
+                  .data = camera,
+              },*/
+      },
+      // model
+      {
+          .binding = mvp->model,
+          .data = &uMesh,
+          .size = sizeof(MeshUniform),
+          .offset = 0,
+          /*.update =
+              {
+                  .callback = mesh_uniform_model_update,
+                  .trigger = mesh_uniform_model_compare,
+                  .data = mesh,
+              },*/
+      },
+  };
+
+  for (size_t i = 0; i < 3; i++) {
+    ShaderBindGroupUniformEntry *entry = &entries[i];
+    shader_update_uniform(shader, mvp->group, entry->binding, entry->data);
+  }
 }

@@ -31,7 +31,7 @@ void mesh_update_model_matrix(Mesh *mesh) {
   mesh_topology_boundbox_update(&mesh->topology.base, mesh->model,
                                 &mesh->topology.boundbox, mesh->queue);
 
-  //mesh_update_model_uniform(mesh);
+  // mesh_update_model_uniform(mesh);
 }
 
 static void mesh_update_model_uniform(Mesh *mesh) {
@@ -39,8 +39,7 @@ static void mesh_update_model_uniform(Mesh *mesh) {
   Shader *shader = mesh->shader.active;
 
   shader_update_uniform(shader, shader->pipeline->bindings.mvp.group,
-                        &mesh->model, sizeof(MeshUniform),
-                        shader->pipeline->bindings.mvp.model);
+                        shader->pipeline->bindings.mvp.model, &mesh->model);
 }
 
 /**

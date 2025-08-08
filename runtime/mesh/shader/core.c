@@ -1,5 +1,6 @@
 #include "core.h"
 #include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "./utils.h"
 
 /**
    ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
@@ -46,16 +47,15 @@ Shader *mesh_shader_solid(Mesh *mesh) {
    Return mesh override shader
    Primarily used for fixed layer during the scene build/draw process.
  */
-Shader *mesh_shader_fixed(Mesh *mesh) { return &mesh->shader.standard[MeshShader_Fixed]; }
+Shader *mesh_shader_fixed(Mesh *mesh) {
+  return &mesh->shader.standard[MeshShader_Fixed];
+}
 
 Shader *mesh_shader_active(Mesh *mesh) { return mesh->shader.active; }
-
-
 
 void mesh_shader_set_active(Mesh *mesh, const MeshShader shader) {
   mesh->shader.active = &mesh->shader.standard[shader];
 }
-
 
 /**
    Init mesh shadow shader.
@@ -132,13 +132,16 @@ void mesh_shader_create_solid(Mesh *mesh) {
                 });
 }
 
-
 /**
    Set texture shader.
  */
 void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
+  printf("mesh_shader_texture: %p\n", mesh_shader_texture(mesh));
   // alias to shader_create
   shader_create(mesh_shader_texture(mesh), desc);
+  // define texture shader as active
+  mesh_shader_set_active(mesh, MeshShader_Texture);
+  printf("mesh active: %p\n", mesh->shader.active);
 }
 
 /**
@@ -147,4 +150,10 @@ void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
 void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // alias to shader_create
   shader_create(mesh_shader_fixed(mesh), desc);
+  // define fixed shader as active
+  mesh_shader_set_active(mesh, MeshShader_Fixed);
+}
+
+void mesh_shader_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport) {
+  mesh_shader_bind_views_any(mesh, mesh_shader_active, camera, viewport);
 }

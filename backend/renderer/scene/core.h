@@ -42,13 +42,6 @@ typedef struct {
 } SceneRendererDrawCallbackList;
 
 typedef struct {
-  // globals textures
-  WGPUTexture texture_2d;
-  WGPUTexture depth_cube_array;
-  WGPUTexture depth_2d_array;
-} SceneRendererTextureFallback;
-
-typedef struct {
   WGPUTextureView depth;
   WGPUTextureView color;
 } SceneRendererTextureRender;
@@ -75,7 +68,6 @@ typedef struct SceneRenderer {
   } wgpu;
 
   struct {
-    SceneRendererTextureFallback fallback;
     SceneRendererTextureRender render;
     PipelineMultisampleCount multisample;
   } texture;

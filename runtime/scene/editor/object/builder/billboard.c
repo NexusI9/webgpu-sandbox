@@ -42,7 +42,18 @@ void seo_create_billboard(Mesh *mesh,
   texture_create_from_file(&light_texture, desc->texture_path, true);
 
   // bind texture + sampler
-  mesh_shader_fixed_add_texture(
+  shader_update_texture(mesh_shader_fixed(mesh), 1, 0,
+                        &(ShaderUpdateTexture){
+                            .width = light_texture.width,
+                            .height = light_texture.height,
+                            .data = light_texture.data,
+                            .size = light_texture.size,
+                            .channels = light_texture.channels,
+                            .dimension = WGPUTextureViewDimension_2D,
+                            .format = WGPUTextureFormat_RGBA8Unorm,
+                        });
+
+  /*DELETEME mesh_shader_fixed_add_texture(
       mesh, &(ShaderCreateTextureDescriptor){
                 .group_index = 1,
                 .entry_count = 1,
@@ -58,36 +69,18 @@ void seo_create_billboard(Mesh *mesh,
                     .format = WGPUTextureFormat_RGBA8Unorm,
                     .sample_type = WGPUTextureSampleType_Float,
                 }},
-            });
+            });*/
 
-  mesh_shader_fixed_add_sampler(
-      mesh, &(ShaderCreateSamplerDescriptor){
-                .group_index = 1,
-                .entry_count = 1,
-                .visibility = WGPUShaderStage_Fragment,
-                .entries = (ShaderBindGroupSamplerEntry[]){{
-                    .binding = 1,
-                    .addressModeU = WGPUAddressMode_Repeat,
-                    .addressModeV = WGPUAddressMode_Repeat,
-                    .addressModeW = WGPUAddressMode_Repeat,
-                    .minFilter = WGPUFilterMode_Linear,
-                    .magFilter = WGPUFilterMode_Linear,
-                    .type = WGPUSamplerBindingType_Filtering,
-                    .compare = WGPUCompareFunction_Undefined,
-                }},
-            });
+  shader_update_sampler(mesh_shader_fixed(mesh), 1, 1,
+                        &(WGPUSamplerDescriptor){
+                            .addressModeU = WGPUAddressMode_Repeat,
+                            .addressModeV = WGPUAddressMode_Repeat,
+                            .addressModeW = WGPUAddressMode_Repeat,
+                            .minFilter = WGPUFilterMode_Linear,
+                            .magFilter = WGPUFilterMode_Linear,
+                            .compare = WGPUCompareFunction_Undefined,
+                        });
 
   const uint32_t size = 0;
-  mesh_shader_fixed_add_uniform(
-      mesh, &(ShaderCreateUniformDescriptor){
-                .group_index = 1,
-                .entry_count = 1,
-                .visibility = WGPUShaderStage_Fragment | WGPUShaderStage_Vertex,
-                .entries = (ShaderBindGroupUniformEntry[]){{
-                    .binding = 2,
-                    .data = (void *)&size,
-                    .size = sizeof(uint32_t),
-                    .offset = 0,
-                }},
-            });
+  shader_update_uniform(mesh_shader_fixed(mesh), 1, 2, (void *)&size);
 }

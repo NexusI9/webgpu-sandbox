@@ -30,19 +30,5 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                        gd->uniform.size,
                    });
 
-  mesh_shader_fixed_add_uniform(
-      mesh, &(ShaderCreateUniformDescriptor){
-                .group_index = 1,
-                .entry_count = 1,
-                .entries =
-                    (ShaderBindGroupUniformEntry[]){
-                        {
-                            .binding = 0,
-                            .data = &gd->uniform,
-                            .size = sizeof(GizmoGridUniform),
-                            .offset = 0,
-                        },
-                    },
-                .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-            });
+  shader_update_uniform(mesh_shader_fixed(mesh), 1, 0, &gd->uniform);
 }

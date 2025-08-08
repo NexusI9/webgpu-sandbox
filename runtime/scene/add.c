@@ -270,6 +270,7 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   // add mesh to selection
   scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
                            SceneSelectionType_Mesh);
+
 }
 
 /**

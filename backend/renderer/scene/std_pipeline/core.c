@@ -48,6 +48,10 @@ void standard_pipelines_init(const WGPUDevice device,
                                          .path = layout->shader_path,
                                      });
 
+    // transfert original layout descriptor so empty shader bindgroups can be
+    // generated from it
+    cached_pipeline->layout_descriptor = layout;
+
     // check custom attributes (weak check)
 
     // vertex state
@@ -95,7 +99,6 @@ void standard_pipelines_init(const WGPUDevice device,
         layout->bind_groups, layout->bind_groups_count, device, NULL);
 
     pipeline_build(cached_pipeline, &temp_layout);
-
   }
 }
 

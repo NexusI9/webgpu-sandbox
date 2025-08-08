@@ -143,6 +143,9 @@ typedef struct {
   WGPURenderPipelineDescriptor descriptor;
   WGPURenderPipeline handle;
   WGPUPipelineLayout layout;
+  
+  // initial layout
+  const PipelineLayoutDescriptor *layout_descriptor;
 
   // pipeline std bindings
   PipelineBinding bindings;

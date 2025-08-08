@@ -1,6 +1,6 @@
 #include "shadow.h"
-#include "./core.h"
 #include "../utils/system.h"
+#include "./core.h"
 
 /**
    Bind a specific point light view to the mesh's shadow shader
@@ -16,34 +16,14 @@ void mesh_shader_shadow_bind_views(Mesh *mesh) {
 
   MeshUniform uModel = mesh_uniform_model(mesh);
 
-  shader_add_uniform(
-      mesh_shader_shadow(mesh),
-      &(ShaderCreateUniformDescriptor){
-          .group_index = 0,
-          .entry_count = 2,
-          .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-          .entries =
-              (ShaderBindGroupUniformEntry[]){
-                  {
-                      .binding = 0,
-                      .data = (void *)0,
-                      .size = sizeof(mat4),
-                      .offset = 0,
-                  },
-                  {
-                      .binding = 1,
-                      .data = &uModel,
-                      .size = sizeof(MeshUniform),
-                      .offset = 0,
-                  },
-              },
-      });
+  shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, (void *)0);
+  shader_update_uniform(mesh_shader_shadow(mesh), 0, 1, &uModel);
 }
 
 void mesh_shader_shadow_update_views(Mesh *mesh, mat4 *view) {
 
   MeshUniform uModel = mesh_uniform_model(mesh);
-  shader_update_uniform(mesh_shader_shadow(mesh), 0, view, sizeof(mat4), 0);
+  shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, view);
 }
 
 void mesh_shader_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {

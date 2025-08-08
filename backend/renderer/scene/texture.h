@@ -14,12 +14,6 @@ typedef struct {
 
 // textures initializer called in the scene_renderer_create (./core.c)
 
-/* Fallbacks Textures */
-void scene_renderer_init_fallback_textures(SceneRenderer *);
-WGPUTextureView scene_renderer_fallback_texture_view_2d(SceneRenderer *);
-WGPUTextureView scene_renderer_fallback_texture_view_depth_cube_array(SceneRenderer *);
-WGPUTextureView scene_renderer_fallback_texture_view_depth_2d_array(SceneRenderer *);
-
 /* Renderer Default Textures */
 void scene_renderer_init_render_textures(SceneRenderer *);
 

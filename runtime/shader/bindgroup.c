@@ -1,7 +1,10 @@
 #include "bindgroup.h"
+#include "../backend/renderer/scene/std_texture/std_texture.h"
 #include "../utils/system.h"
 #include "./utils.h"
+#include "add.h"
 #include "core.h"
+#include "webgpu/webgpu.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -11,6 +14,16 @@ static inline void shader_convert_textures(ShaderBindGroup *,
                                            WGPUBindGroupEntry *, bind_index *);
 static inline void shader_convert_samplers(ShaderBindGroup *,
                                            WGPUBindGroupEntry *, bind_index *);
+
+static inline void shader_layout_print(bind_group_index group, bind_index index,
+                                       const char *type);
+
+#ifdef VERBOSE_BINDING_PHASE
+void shader_layout_print(bind_group_index group, bind_index index,
+                         const char *type) {
+  VERBOSE_PRINT("\t\t└ group: %u | binding: %u | '%s'", group, index, type);
+}
+#endif
 
 /**
    Initialise shader bind group lists and eventually free/reset the existing
@@ -249,4 +262,121 @@ void shader_bind_group_build(ShaderBindGroup *group,
   // TODO: Clear layouts on mesh destruction
   // WGPUBindGroupLayout *current_layout = &layouts[i];
   // wgpuBindGroupLayoutRelease(*current_layout);
+}
+
+/**
+   Create empty bind groups for the shader depending on its pipeline layout.
+   The function matches the shader pieline from the std pipelines and generate
+   the bindgroups with empty values but with the right size.
+
+   The function is called at the shader creation step, ensuring the right
+   bindgroups are created. Once the shader is created uniforms and textures can
+   be updated via update functions.
+ */
+void shader_bind_group_create_from_layout(
+    Shader *shader, const PipelineLayoutDescriptor *layout) {
+
+#ifdef VERBOSE_BINDING_PHASE
+  VERBOSE_PRINT("Creating bindgroups from pipeline layout:");
+#endif
+  
+  // traverse group
+  for (size_t i = 0; i < layout->bind_groups_count; i++) {
+
+    for (size_t j = 0; j < layout->bind_groups[i].entryCount; j++) {
+      const WGPUBindGroupLayoutEntry *entry =
+          &layout->bind_groups[i].entries[j];
+      // Use discriminator to define entry type
+
+      // generate uniform
+      if (entry->buffer.type != WGPUBufferBindingType_Undefined) {
+#ifdef VERBOSE_BINDING_PHASE
+        shader_layout_print(i, entry->binding, "uniform");
+#endif
+        shader_add_uniform(shader,
+                           &(ShaderCreateUniformDescriptor){
+                               .entry_count = 1,
+                               .visibility = entry->visibility,
+                               .group_index = i,
+                               .entries =
+                                   (ShaderBindGroupUniformEntry[]){
+                                       {
+                                           .binding = entry->binding,
+                                           .size = entry->buffer.minBindingSize,
+                                           .offset = 0,
+                                           .data = (void *)0, // empty data
+                                       },
+                                   },
+                           });
+      }
+      // generate float texture
+      if (entry->texture.sampleType == WGPUTextureSampleType_Float) {
+#ifdef VERBOSE_BINDING_PHASE
+        shader_layout_print(i, entry->binding, "float texture");
+#endif
+        shader_add_texture_view(
+            shader, &(ShaderCreateTextureViewDescriptor){
+                        .entry_count = 1,
+                        .visibility = entry->visibility,
+                        .group_index = i,
+                        .entries =
+                            (ShaderBindGroupTextureViewEntry[]){
+                                {
+                                    .binding = entry->binding,
+                                    .dimension = entry->texture.viewDimension,
+                                    .sample_type = entry->texture.sampleType,
+                                    .format = WGPUTextureFormat_R8Unorm,
+                                    // use fallback texture as  placeholder
+                                    .texture_view =
+                                        std_texture_view(TextureViewType_Float),
+                                },
+                            },
+                    });
+      }
+
+      // generate depth texture
+      if (entry->texture.sampleType == WGPUTextureSampleType_Depth) {
+#ifdef VERBOSE_BINDING_PHASE
+        shader_layout_print(i, entry->binding, "depth texture");
+#endif
+        shader_add_texture_view(
+            shader, &(ShaderCreateTextureViewDescriptor){
+                        .entry_count = 1,
+                        .visibility = entry->visibility,
+                        .group_index = i,
+                        .entries =
+                            (ShaderBindGroupTextureViewEntry[]){
+                                {
+                                    .binding = entry->binding,
+                                    .dimension = entry->texture.viewDimension,
+                                    .sample_type = entry->texture.sampleType,
+                                    .format = WGPUTextureFormat_Depth24Plus,
+                                    // use fallback texture as  placeholder
+                                    .texture_view =
+                                        std_texture_view(TextureViewType_Depth),
+                                },
+                            },
+                    });
+      }
+
+      // generate sampler
+      if (entry->sampler.type != WGPUSamplerBindingType_Undefined) {
+#ifdef VERBOSE_BINDING_PHASE
+        shader_layout_print(i, entry->binding, "sampler");
+#endif
+        shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){
+                                       .entry_count = 1,
+                                       .visibility = entry->visibility,
+                                       .group_index = i,
+                                       .entries =
+                                           (ShaderBindGroupSamplerEntry[]){
+                                               {
+                                                   .binding = entry->binding,
+                                                   .type = entry->sampler.type,
+                                               },
+                                           },
+                                   });
+      }
+    }
+  }
 }

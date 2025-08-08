@@ -7,6 +7,7 @@
 #include "emscripten/html5_webgpu.h"
 #include "render_pass.h"
 #include "std_pipeline/core.h"
+#include "std_texture/core.h"
 #include "webgpu/webgpu.h"
 #include <string.h>
 
@@ -39,9 +40,6 @@ void scene_renderer_create(SceneRenderer *renderer,
   // define context size
   scene_renderer_resize(renderer, 0, NULL, NULL);
 
-  // set fallback textures
-  scene_renderer_init_fallback_textures(renderer);
-
   // init shared render textures
   scene_renderer_init_render_textures(renderer);
 
@@ -60,6 +58,10 @@ void scene_renderer_create(SceneRenderer *renderer,
 
   // TODO: Since renderer isn't high level anymore, put the below calls in a
   // more global object ("Context" ?)
+
+  // set fallback textures
+  scene_renderer_init_fallback_textures(scene_renderer_device(renderer),
+                                        scene_renderer_queue(renderer));
 
   // init standards shaders
   standard_pipelines_init(scene_renderer_device(renderer),

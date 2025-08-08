@@ -28,7 +28,7 @@
   do {                                                                         \
     printf("🛑 ");                                                             \
     printf(__VA_ARGS__);                                                       \
-    printf(" (%s:%d)\n", __FILE__, __LINE__);                                  \
+    PRINT_LINE();                                                              \
   } while (0)
 
 #define VERBOSE_WARNING(...)                                                   \
