@@ -1,9 +1,11 @@
 #include "./core.h"
 #include "../backend/buffer.h"
+#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 #include "../utils/matrix.h"
 #include "../utils/system.h"
-#include "topology/boundbox.h"
 #include "shader/shader.h"
+#include "shader/texture.h"
+#include "topology/boundbox.h"
 #include <string.h>
 
 // Shadow map is implicitely handled withing mesh
@@ -42,7 +44,10 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation_euler);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
-  // defines default override
+  // set default pipeline shader
+  mesh_shader_texture(mesh)->pipeline = std_pipeline(PipelineType_Default);
+
+  // defines default topology override
   mesh_topology_set_override(mesh,
                              (MeshTopology){
                                  .attribute = &mesh->topology.base.attribute,
@@ -71,7 +76,6 @@ void mesh_set_name(Mesh *mesh, const char *name) {
   free(mesh->name);
   mesh->name = strdup(name);
 }
-
 
 /**
    Build mesh shaders pipeline

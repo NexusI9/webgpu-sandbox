@@ -12,16 +12,15 @@ void example_primitive(Mesh *cube, vec3 position, Scene *scene) {
                                   .queue = scene_queue(scene),
                               });
 
-  mesh_shader_create(cube,
-                  &(ShaderCreateDescriptor){
-                      .path = "./runtime/assets/shader/shader.default.wgsl",
-                      .label = "cube",
-                      .name = "cube",
-                      .device = scene_device(scene),
-                      .queue = scene_queue(scene),
-                  });
+  mesh_shader_create(cube, &(ShaderCreateDescriptor){
+                               .pipeline = std_pipeline(PipelineType_Default),
+                               .label = "cube",
+                               .name = "cube",
+                               .device = scene_device(scene),
+                               .queue = scene_queue(scene),
+                           });
 
   mesh_translate(cube, position);
 
-  scene_add_mesh(scene, cube, ScenePipeline_Dynamic_Unlit, NULL);
+  scene_add_mesh(scene, cube, NULL);
 }

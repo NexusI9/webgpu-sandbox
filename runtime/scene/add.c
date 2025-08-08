@@ -242,17 +242,11 @@ Mesh *scene_new_mesh(Scene *scene) {
   return new_mesh;
 }
 
-/**
- Return the new mesh pointer from the global array and push the new pointer to
- the right scene layer.
-  1. first create new mesh in the scene pool
-  2. add the reference to the relative mesh ref list
- */
-void scene_add_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
-                    const char *layer) {
+static void scene_add_mesh_any(Scene *, Mesh *, const ScenePipeline,
+                               const char *);
 
-  // build mesh depending on pipeline and scene render mode
-  scene_build_mesh(scene, mesh, pipeline);
+void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
+                        const char *layer) {
 
   // add to scene layers ('Default' layer if NULL)
   if (layer == NULL)
@@ -279,12 +273,59 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
 }
 
 /**
+   Add mesh to the dynamic pipeline.
+   Depending on the mesh current texture pipeline, it will either dispatch the
+   mesh to the unlit or lit pipeline.
+   Basically if mesh texture shader has PBR pipeline it goes to the lit, if it
+   has Unlit pieline it goes to the unlit.
+
+   To add a mesh to the fixed pipelines (ex: Gizmo, Scene Editor Objects), the
+   scene_add_mesh_fixed dedicated function shall be used.
+
+   The below function is designed for "common usage", meaning on a daily basis,
+   one will add dynamic assets to the scene, compared to the fixed elements
+   which are only used by the editor itself.
+ */
+void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
+
+  // dispatch mesh based on their global pipeline address (lit by default)
+  ScenePipeline pipeline = ScenePipeline_Dynamic_Lit;
+  if (mesh_shader_texture(mesh)->pipeline == std_pipeline(PipelineType_Unlit))
+    pipeline = ScenePipeline_Dynamic_Unlit;
+
+  // build mesh depending on pipeline and scene render mode
+  scene_build_mesh(scene, mesh, pipeline);
+
+  scene_add_mesh_any(scene, mesh, pipeline, layer);
+}
+
+/**
    Add a list of mesh pointers (presumably from the scene mesh pool) to a
    pipeline. Meaning each meshes are going to be build depending on the pipeline
    and the current render mode.
  */
 void scene_add_mesh_ref_list(Scene *scene, MeshRefList *list,
-                             const ScenePipeline mode, const char *layer) {
+                             const char *layer) {
   for (size_t i = 0; i < list->length; i++)
-    scene_add_mesh(scene, list->entries[i], mode, layer);
+    scene_add_mesh(scene, list->entries[i], layer);
+}
+
+void scene_add_mesh_fixed(Scene *scene, Mesh *mesh,
+                          const ScenePipeline pipeline, const char *layer) {
+
+  scene_build_mesh(scene, mesh, pipeline);
+
+  scene_add_mesh_any(scene, mesh, pipeline, layer);
+}
+
+/**
+   Add a list of mesh pointers (presumably from the scene mesh pool) to a
+   pipeline. Meaning each meshes are going to be build depending on the pipeline
+   and the current render mode.
+ */
+void scene_add_mesh_fixed_ref_list(Scene *scene, MeshRefList *list,
+                                   const ScenePipeline pipeline,
+                                   const char *layer) {
+  for (size_t i = 0; i < list->length; i++)
+    scene_add_mesh_any(scene, list->entries[i], pipeline, layer);
 }

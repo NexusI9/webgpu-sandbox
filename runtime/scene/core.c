@@ -117,8 +117,8 @@ void scene_init_draw_layouts(Scene *scene) {
                               {
                                   .meshes =
                                       &scene->pipelines
-                                           [ScenePipeline_Dynamic_Background],
-                                  .shader_callback = mesh_shader_texture,
+                                           [ScenePipeline_Fixed_Background],
+                                  .shader_callback = mesh_shader_fixed,
                                   .topology_callback = mesh_topology_base,
                               },
                               {

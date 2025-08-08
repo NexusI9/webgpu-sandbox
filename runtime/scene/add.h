@@ -30,7 +30,7 @@
    |   '----------------------------'    '----------------------------'  |
    '---------------------------------------------------------------------'
 
-   
+
  */
 
 // Scene Editor Objects
@@ -45,12 +45,14 @@ SceneEditorObject *scene_add_camera(Scene *, const CameraCreateDescriptor *);
 
 // Scene Meshes
 Mesh *scene_new_mesh(Scene *);
-void scene_add_mesh(Scene *, Mesh *, const ScenePipeline, const char *);
-void scene_add_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline,
+void scene_add_mesh(Scene *, Mesh *, const char *);
+void scene_add_mesh_ref_list(Scene *, MeshRefList *, const char *);
+
+void scene_add_mesh_fixed(Scene *, Mesh *, const ScenePipeline, const char *);
+void scene_add_mesh_fixed_ref_list(Scene *, MeshRefList *, const ScenePipeline,
                                    const char *);
 
 void scene_remove_mesh(Scene *, Mesh *, const ScenePipeline);
 void scene_remove_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);
-
 
 #endif

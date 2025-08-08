@@ -206,10 +206,10 @@ typedef enum {
 
 typedef enum {
   // Dynamic
-  ScenePipeline_Dynamic_Background,
   ScenePipeline_Dynamic_Lit,
   ScenePipeline_Dynamic_Unlit,
   // Fixed
+  ScenePipeline_Fixed_Background,
   ScenePipeline_Fixed,
   ScenePipeline_Fixed_Selection,
   ScenePipeline_Fixed_Front,

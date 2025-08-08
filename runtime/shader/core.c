@@ -72,7 +72,7 @@ void shader_destroy(Shader *shader) {
    Update method called as such: scene update => mesh update => shader update
  */
 void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
-
+  
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline->handle);
 

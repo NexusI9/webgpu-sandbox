@@ -282,7 +282,7 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                                 &vert_index, target_mesh->device,
                                 target_mesh->queue);
 
-      scene_add_mesh(scene, target_mesh, ScenePipeline_Dynamic_Lit, NULL);
+      scene_add_mesh(scene, target_mesh, NULL);
     }
   }
 

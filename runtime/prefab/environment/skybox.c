@@ -108,7 +108,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
                                      });
 
   // assign shader
-  mesh_shader_create(skybox_mesh,
+  mesh_shader_create_fixed(skybox_mesh,
                   &(ShaderCreateDescriptor){
                       .device = scene_device(scene),
                       .queue = scene_queue(scene),
@@ -118,7 +118,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
                   });
 
   // bind texture and sampler
-  Shader *shader = mesh_shader_texture(skybox_mesh);
+  Shader *shader = mesh_shader_fixed(skybox_mesh);
   shader_add_texture_view(
       shader, &(ShaderCreateTextureViewDescriptor){
                   .entry_count = 1,
@@ -176,7 +176,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
   // alter pipeline (no depth test)
   const Pipeline *pipeline = shader_pipeline(shader);
 
-  scene_add_mesh(scene, skybox_mesh, ScenePipeline_Dynamic_Background, NULL);
+  scene_add_mesh_fixed(scene, skybox_mesh, ScenePipeline_Fixed_Background, NULL);
 }
 
 /**

@@ -51,6 +51,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
   case ScenePipeline_Fixed:
   case ScenePipeline_Fixed_Selection:
   case ScenePipeline_Fixed_Front:
+  case ScenePipeline_Fixed_Background:
     VERBOSE_MESH_BUILD("Fixed %s", mesh->name);
     scene_build_mesh_fixed(mesh, camera, viewport);
     break;
