@@ -78,6 +78,7 @@ void mesh_shader_create_shadow(Mesh *mesh) {
                     .queue = mesh->queue,
                     .name = "Mesh shadow shader",
                 });
+
 }
 
 /**
@@ -136,12 +137,8 @@ void mesh_shader_create_solid(Mesh *mesh) {
    Set texture shader.
  */
 void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
-  printf("mesh_shader_texture: %p\n", mesh_shader_texture(mesh));
   // alias to shader_create
   shader_create(mesh_shader_texture(mesh), desc);
-  // define texture shader as active
-  mesh_shader_set_active(mesh, MeshShader_Texture);
-  printf("mesh active: %p\n", mesh->shader.active);
 }
 
 /**
@@ -150,10 +147,4 @@ void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
 void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // alias to shader_create
   shader_create(mesh_shader_fixed(mesh), desc);
-  // define fixed shader as active
-  mesh_shader_set_active(mesh, MeshShader_Fixed);
-}
-
-void mesh_shader_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport) {
-  mesh_shader_bind_views_any(mesh, mesh_shader_active, camera, viewport);
 }

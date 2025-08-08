@@ -3,6 +3,7 @@
 #include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 #include "../utils/matrix.h"
 #include "../utils/system.h"
+#include "shader/core.h"
 #include "shader/shader.h"
 #include "shader/texture.h"
 #include "topology/boundbox.h"
@@ -83,16 +84,16 @@ void mesh_set_name(Mesh *mesh, const char *name) {
  */
 void mesh_build(Mesh *mesh, const MeshShader shader) {
 
+  return;
   // check if mesh has correct buffer before drawing
   if (mesh->topology.base.index.buffer == NULL ||
       mesh->topology.base.attribute.buffer == NULL)
     VERBOSE_ERROR("Mesh has no vertex index or attribute buffer.");
 
-  // set shader as active
-  mesh_shader_set_active(mesh, shader);
-
   // build shader
-  shader_build(mesh_shader_active(mesh));
+  shader_build(&mesh->shader.standard[shader]);
+
+  // mesh_shader_set_active(mesh, shader);
 }
 
 /**

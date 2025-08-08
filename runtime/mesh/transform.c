@@ -1,5 +1,6 @@
 #include "transform.h"
 #include "../utils/matrix.h"
+#include "./shader/shader.h"
 #include "core.h"
 #include "uniform.h"
 
@@ -31,13 +32,11 @@ void mesh_update_model_matrix(Mesh *mesh) {
   mesh_topology_boundbox_update(&mesh->topology.base, mesh->model,
                                 &mesh->topology.boundbox, mesh->queue);
 
-  // mesh_update_model_uniform(mesh);
+  //mesh_update_model_uniform(mesh);
 }
 
 static void mesh_update_model_uniform(Mesh *mesh) {
-
-  Shader *shader = mesh->shader.active;
-
+  Shader *shader = mesh_shader_active(mesh);
   shader_update_uniform(shader, shader->pipeline->bindings.mvp.group,
                         shader->pipeline->bindings.mvp.model, &mesh->model);
 }

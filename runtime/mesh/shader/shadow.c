@@ -15,14 +15,11 @@
 void mesh_shader_shadow_bind_views(Mesh *mesh) {
 
   MeshUniform uModel = mesh_uniform_model(mesh);
-
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, (void *)0);
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 1, &uModel);
 }
 
 void mesh_shader_shadow_update_views(Mesh *mesh, mat4 *view) {
-
-  MeshUniform uModel = mesh_uniform_model(mesh);
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, view);
 }
 

@@ -30,6 +30,9 @@ static inline WGPUTextureView
 scene_renderer_create_fallback_float(const WGPUDevice, const WGPUQueue);
 
 static inline WGPUTextureView
+scene_renderer_create_fallback_float_cube(const WGPUDevice, const WGPUQueue);
+
+static inline WGPUTextureView
 scene_renderer_create_fallback_depth(const WGPUDevice, const WGPUQueue);
 
 static inline WGPUTextureView
@@ -62,6 +65,10 @@ void scene_renderer_init_fallback_textures(const WGPUDevice device,
   // create texture 2D depth view fallback
   g_std_texture_view[TextureViewType_Depth] =
       scene_renderer_create_fallback_depth(device, queue);
+
+  // create texture 2D float cube view fallback
+  g_std_texture_view[TextureViewType_FloatCube] =
+      scene_renderer_create_fallback_float_cube(device, queue);
 
   // create depth cube array view fallback
   g_std_texture_view[TextureViewType_DepthCubeArray] =
@@ -107,6 +114,49 @@ WGPUTextureView scene_renderer_create_fallback_float(const WGPUDevice device,
                         &(WGPUExtent3D){1, 1, 1});
 
   return wgpuTextureCreateView(texture, NULL);
+}
+
+WGPUTextureView
+scene_renderer_create_fallback_float_cube(const WGPUDevice device,
+                                          const WGPUQueue queue) {
+
+  WGPUTexture texture = wgpuDeviceCreateTexture(
+      device,
+      &(WGPUTextureDescriptor){
+          .size =
+              {
+                  .width = 1,
+                  .height = 1,
+                  .depthOrArrayLayers = 6,
+              },
+          .format = WGPUTextureFormat_R8Unorm,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+          .dimension = WGPUTextureDimension_2D,
+          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+      });
+
+  wgpuQueueWriteTexture(queue,
+                        &(WGPUImageCopyTexture){
+                            .texture = texture,
+                            .mipLevel = 0,
+                            .origin = {0, 0, 0},
+                            .aspect = WGPUTextureAspect_All,
+                        },
+                        (uint8_t[]){255}, sizeof(uint32_t),
+                        &(WGPUTextureDataLayout){
+                            .offset = 0,
+                            .bytesPerRow = 1,
+                            .rowsPerImage = 1,
+                        },
+                        &(WGPUExtent3D){1, 1, 1});
+
+  return wgpuTextureCreateView(
+      texture,
+      &(WGPUTextureViewDescriptor){.dimension = WGPUTextureViewDimension_Cube,
+                                   .format = WGPUTextureFormat_R8Unorm,
+                                   .mipLevelCount = 1,
+                                   .arrayLayerCount = 6});
 }
 
 WGPUTextureView scene_renderer_create_fallback_depth(const WGPUDevice device,
@@ -203,4 +253,21 @@ scene_renderer_create_fallback_depth_2d_array(const WGPUDevice device,
 
 const WGPUTextureView std_texture_view(const TextureViewType type) {
   return g_std_texture_view[type];
+}
+
+/**
+   Traverse the std texture view list and compare the argument and returns true
+   if the view corressponds to a standrard texture view.
+
+   This function is mostly used during the shader texture updates as to prevent
+   to release a global std texture (making it unavailable for the resources
+   using it).
+ */
+bool is_std_texture_view(const WGPUTextureView view) {
+
+  for (size_t i = 0; i < STD_TEXTURE_VIEW_COUNT; i++)
+    if (view == std_texture_view(i))
+      return true;
+
+  return false;
 }

@@ -21,7 +21,7 @@ static inline void shader_layout_print(bind_group_index group, bind_index index,
 #ifdef VERBOSE_BINDING_PHASE
 void shader_layout_print(bind_group_index group, bind_index index,
                          const char *type) {
-  VERBOSE_PRINT("\t\t└ group: %u | binding: %u | '%s'", group, index, type);
+  VERBOSE_PRINT("\t\t\t└ group: %u | binding: %u | '%s'", group, index, type);
 }
 #endif
 
@@ -265,6 +265,18 @@ void shader_bind_group_build(ShaderBindGroup *group,
 }
 
 /**
+   Basically unmount and remount the shader bind group.
+   Function mostly used during the uniforms/texture/sampler updates.
+ */
+void shader_bind_group_refresh(ShaderBindGroup *group,
+                               bind_group_index group_index,
+                               const WGPUDevice device,
+                               const WGPURenderPipeline *pipeline) {
+  shader_bind_group_release(group);
+  shader_bind_group_build(group, group_index, device, pipeline);
+}
+
+/**
    Create empty bind groups for the shader depending on its pipeline layout.
    The function matches the shader pieline from the std pipelines and generate
    the bindgroups with empty values but with the right size.
@@ -277,9 +289,9 @@ void shader_bind_group_create_from_layout(
     Shader *shader, const PipelineLayoutDescriptor *layout) {
 
 #ifdef VERBOSE_BINDING_PHASE
-  VERBOSE_PRINT("Creating bindgroups from pipeline layout:");
+  VERBOSE_PRINT("\t\t└ Initialize bindgroups from pipeline layout:");
 #endif
-  
+
   // traverse group
   for (size_t i = 0; i < layout->bind_groups_count; i++) {
 
@@ -311,71 +323,183 @@ void shader_bind_group_create_from_layout(
       }
       // generate float texture
       if (entry->texture.sampleType == WGPUTextureSampleType_Float) {
+
+        // 2D Texture
+        if (entry->texture.viewDimension == WGPUTextureViewDimension_2D) {
+
 #ifdef VERBOSE_BINDING_PHASE
-        shader_layout_print(i, entry->binding, "float texture");
+          shader_layout_print(i, entry->binding, "2D texture");
 #endif
-        shader_add_texture_view(
-            shader, &(ShaderCreateTextureViewDescriptor){
-                        .entry_count = 1,
-                        .visibility = entry->visibility,
-                        .group_index = i,
-                        .entries =
-                            (ShaderBindGroupTextureViewEntry[]){
-                                {
-                                    .binding = entry->binding,
-                                    .dimension = entry->texture.viewDimension,
-                                    .sample_type = entry->texture.sampleType,
-                                    .format = WGPUTextureFormat_R8Unorm,
-                                    // use fallback texture as  placeholder
-                                    .texture_view =
-                                        std_texture_view(TextureViewType_Float),
-                                },
-                            },
-                    });
+          shader_add_texture_view(
+              shader, &(ShaderCreateTextureViewDescriptor){
+                          .entry_count = 1,
+                          .visibility = entry->visibility,
+                          .group_index = i,
+                          .entries =
+                              (ShaderBindGroupTextureViewEntry[]){
+                                  {
+                                      .binding = entry->binding,
+                                      .dimension = entry->texture.viewDimension,
+                                      .sample_type = entry->texture.sampleType,
+                                      .format = WGPUTextureFormat_R8Unorm,
+                                      // use fallback texture as  placeholder
+                                      .texture_view = std_texture_view(
+                                          TextureViewType_Float),
+                                  },
+                              },
+                      });
+        }
+
+        // Cube
+        if (entry->texture.viewDimension == WGPUTextureViewDimension_Cube) {
+#ifdef VERBOSE_BINDING_PHASE
+          shader_layout_print(i, entry->binding, "2D float cube texture");
+#endif
+          shader_add_texture_view(
+              shader, &(ShaderCreateTextureViewDescriptor){
+                          .entry_count = 1,
+                          .visibility = entry->visibility,
+                          .group_index = i,
+                          .entries =
+                              (ShaderBindGroupTextureViewEntry[]){
+                                  {
+                                      .binding = entry->binding,
+                                      .dimension = entry->texture.viewDimension,
+                                      .sample_type = entry->texture.sampleType,
+                                      .format = WGPUTextureFormat_R8Unorm,
+                                      // use fallback texture as  placeholder
+                                      .texture_view = std_texture_view(
+                                          TextureViewType_FloatCube),
+                                  },
+                              },
+                      });
+        }
       }
 
       // generate depth texture
       if (entry->texture.sampleType == WGPUTextureSampleType_Depth) {
+
+        // Depth 2D
+        if (entry->texture.viewDimension == WGPUTextureViewDimension_2D) {
+
 #ifdef VERBOSE_BINDING_PHASE
-        shader_layout_print(i, entry->binding, "depth texture");
+          shader_layout_print(i, entry->binding, "2d depth texture");
 #endif
-        shader_add_texture_view(
-            shader, &(ShaderCreateTextureViewDescriptor){
+          shader_add_texture_view(
+              shader, &(ShaderCreateTextureViewDescriptor){
+                          .entry_count = 1,
+                          .visibility = entry->visibility,
+                          .group_index = i,
+                          .entries =
+                              (ShaderBindGroupTextureViewEntry[]){
+                                  {
+                                      .binding = entry->binding,
+                                      .dimension = entry->texture.viewDimension,
+                                      .sample_type = entry->texture.sampleType,
+                                      .format = WGPUTextureFormat_Depth24Plus,
+                                      // use fallback texture as  placeholder
+                                      .texture_view = std_texture_view(
+                                          TextureViewType_Depth),
+                                  },
+                              },
+                      });
+        }
+
+        // Depth Cube
+        if (entry->texture.viewDimension ==
+            WGPUTextureViewDimension_CubeArray) {
+
+#ifdef VERBOSE_BINDING_PHASE
+          shader_layout_print(i, entry->binding, "cube depth texture");
+#endif
+          shader_add_texture_view(
+              shader, &(ShaderCreateTextureViewDescriptor){
+                          .entry_count = 1,
+                          .visibility = entry->visibility,
+                          .group_index = i,
+                          .entries =
+                              (ShaderBindGroupTextureViewEntry[]){
+                                  {
+                                      .binding = entry->binding,
+                                      .dimension = entry->texture.viewDimension,
+                                      .sample_type = entry->texture.sampleType,
+                                      .format = WGPUTextureFormat_Depth24Plus,
+                                      // use fallback texture as  placeholder
+                                      .texture_view = std_texture_view(
+                                          TextureViewType_DepthCubeArray),
+                                  },
+                              },
+                      });
+        }
+
+        // Depth Array
+        if (entry->texture.viewDimension == WGPUTextureViewDimension_2DArray) {
+
+#ifdef VERBOSE_BINDING_PHASE
+          shader_layout_print(i, entry->binding, "array depth texture");
+#endif
+          shader_add_texture_view(
+              shader, &(ShaderCreateTextureViewDescriptor){
+                          .entry_count = 1,
+                          .visibility = entry->visibility,
+                          .group_index = i,
+                          .entries =
+                              (ShaderBindGroupTextureViewEntry[]){
+                                  {
+                                      .binding = entry->binding,
+                                      .dimension = entry->texture.viewDimension,
+                                      .sample_type = entry->texture.sampleType,
+                                      .format = WGPUTextureFormat_Depth24Plus,
+                                      // use fallback texture as  placeholder
+                                      .texture_view = std_texture_view(
+                                          TextureViewType_Depth2DArray),
+                                  },
+                              },
+                      });
+        }
+      }
+
+      // generate filtering sampler
+      if (entry->sampler.type == WGPUSamplerBindingType_Filtering) {
+#ifdef VERBOSE_BINDING_PHASE
+        shader_layout_print(i, entry->binding, "filtering sampler");
+#endif
+        shader_add_sampler(
+            shader, &(ShaderCreateSamplerDescriptor){
                         .entry_count = 1,
                         .visibility = entry->visibility,
                         .group_index = i,
                         .entries =
-                            (ShaderBindGroupTextureViewEntry[]){
+                            (ShaderBindGroupSamplerEntry[]){
                                 {
                                     .binding = entry->binding,
-                                    .dimension = entry->texture.viewDimension,
-                                    .sample_type = entry->texture.sampleType,
-                                    .format = WGPUTextureFormat_Depth24Plus,
-                                    // use fallback texture as  placeholder
-                                    .texture_view =
-                                        std_texture_view(TextureViewType_Depth),
+                                    .type = entry->sampler.type,
+                                    .compare = WGPUCompareFunction_Undefined,
                                 },
                             },
                     });
       }
 
-      // generate sampler
-      if (entry->sampler.type != WGPUSamplerBindingType_Undefined) {
+      // generate comparison sampler
+      if (entry->sampler.type == WGPUSamplerBindingType_Comparison) {
 #ifdef VERBOSE_BINDING_PHASE
-        shader_layout_print(i, entry->binding, "sampler");
+        shader_layout_print(i, entry->binding, "filtering sampler");
 #endif
-        shader_add_sampler(shader, &(ShaderCreateSamplerDescriptor){
-                                       .entry_count = 1,
-                                       .visibility = entry->visibility,
-                                       .group_index = i,
-                                       .entries =
-                                           (ShaderBindGroupSamplerEntry[]){
-                                               {
-                                                   .binding = entry->binding,
-                                                   .type = entry->sampler.type,
-                                               },
-                                           },
-                                   });
+        shader_add_sampler(
+            shader, &(ShaderCreateSamplerDescriptor){
+                        .entry_count = 1,
+                        .visibility = entry->visibility,
+                        .group_index = i,
+                        .entries =
+                            (ShaderBindGroupSamplerEntry[]){
+                                {
+                                    .binding = entry->binding,
+                                    .type = entry->sampler.type,
+                                    // default compare function
+                                    .compare = WGPUCompareFunction_LessEqual,
+                                },
+                            },
+                    });
       }
     }
   }
