@@ -87,6 +87,7 @@ Mesh *scene_layer_find(SceneLayer *layer, Mesh *mesh) {
    Insert a new mesh in the layer mesh reference list
  */
 Mesh *scene_layer_insert(SceneLayer *layer, Mesh *mesh) {
+
   return mesh_ref_list_insert(&layer->meshes, mesh);
 }
 

@@ -30,7 +30,7 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
   }
 
   // create sun light
-  PointLight *new_light = &list->entries[list->length++];
+  PointLight *new_light = &list->entries[list->length];
   light_create_point(new_light, desc);
 
   // create mesh/gizmo
@@ -44,11 +44,28 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
                              .device = scene_device(scene),
                              .queue = scene_queue(scene),
                              .scene = scene,
-                             .target_list_index = list->length - 1,
+                             .target_list_index = list->length,
                          });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_seo(scene, seo_light);
+
+  // recompute shadow map if render mode
+  // TODO: systematize this for all point light
+  if (scene_renderer_draw_mode(&scene->renderer) ==
+      SceneRendererDrawMode_Texture)
+    shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
+        .light = new_light,
+        .mesh_list = scene_pipeline_lit(scene),
+        .color_map = scene->lights.point.color_map,
+        .depth_map = scene->lights.point.depth_map,
+        .device = scene_device(scene),
+        .queue = scene_queue(scene),
+        .layer = list->length,
+        .encoder = NULL,
+    });
+
+  list->length++;
 
   return seo_light;
 }
@@ -63,7 +80,7 @@ SceneEditorObject *scene_add_spot_light(Scene *scene,
   }
 
   // create sun light
-  SpotLight *new_light = &list->entries[list->length++];
+  SpotLight *new_light = &list->entries[list->length];
   light_create_spot(new_light, desc);
 
   // create mesh/gizmo
@@ -77,11 +94,28 @@ SceneEditorObject *scene_add_spot_light(Scene *scene,
                             .device = scene_device(scene),
                             .queue = scene_queue(scene),
                             .scene = scene,
-                            .target_list_index = list->length - 1,
+                            .target_list_index = list->length,
                         });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_seo(scene, seo_light);
+
+  // recompute shadow map if render mode
+  // TODO: systematize this for all point light
+  if (scene_renderer_draw_mode(&scene->renderer) ==
+      SceneRendererDrawMode_Texture)
+    shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
+        .light = new_light,
+        .mesh_list = scene_pipeline_lit(scene),
+        .color_map = scene->lights.spot.color_map,
+        .depth_map = scene->lights.spot.depth_map,
+        .device = scene_device(scene),
+        .queue = scene_queue(scene),
+        .layer = list->length,
+        .encoder = NULL,
+    });
+
+  list->length++;
 
   return seo_light;
 }
@@ -128,7 +162,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
   }
 
   // create sun light
-  SunLight *new_light = &list->entries[list->length++];
+  SunLight *new_light = &list->entries[list->length];
   light_create_sun(new_light, desc);
 
   // create mesh/gizmo
@@ -142,12 +176,30 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
                            .device = scene_device(scene),
                            .queue = scene_queue(scene),
                            .scene = scene,
-                           .target_list_index = list->length - 1,
+                           .target_list_index = list->length,
                        });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
 
   scene_add_seo(scene, seo_light);
+
+  // recompute shadow map if render mode
+  // TODO: systematize this for all point light
+  if (scene_renderer_draw_mode(&scene->renderer) ==
+      SceneRendererDrawMode_Texture)
+    shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
+        .light = new_light,
+        .mesh_list = scene_pipeline_lit(scene),
+        .color_map = scene->lights.spot.color_map,
+        .depth_map = scene->lights.spot.depth_map,
+        .device = scene_device(scene),
+        .queue = scene_queue(scene),
+        .layer = scene->lights.spot.length + list->length,
+        .encoder = NULL,
+    });
+
+  list->length++;
+
   return seo_light;
 }
 
@@ -268,8 +320,7 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   // EDITORONLY
   // add mesh to selection
   scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
-  SceneSelectionType_Mesh);
-
+                           SceneSelectionType_Mesh);
 }
 
 /**

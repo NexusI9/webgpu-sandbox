@@ -3,10 +3,10 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-void mesh_shader_texture_update_mvp(Mesh *mesh, Camera *camera, Viewport *viewport) {
+void mesh_shader_texture_update_mvp(Mesh *mesh, Camera *camera,
+                                    Viewport *viewport) {
   mesh_shader_update_mvp(mesh, mesh_shader_texture, camera, viewport);
 }
-
 
 /**
    Clear the texture shader bind groups of mesh
@@ -23,7 +23,7 @@ void mesh_shader_texture_clear_bindings(Mesh *mesh) {
    within a defined group
   */
 void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
-                                     uint8_t group_index) {
+                                       uint8_t group_index) {
 
   AmbientLightList *ambient_list = &light_list->ambient;
   SpotLightList *spot_list = &light_list->spot;
@@ -149,9 +149,9 @@ void mesh_shader_texture_bind_ambient_occlusion(
    Bind the shadow maps and sampler to the default shader (called during shader
    creation)
  */
-void mesh_shader_texture_bind_shadow_maps(
-    Mesh *mesh, WGPUTextureView fallback_point_texture_view,
-    WGPUTextureView fallback_spot_texture_view) {
+void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
+                                          WGPUTextureView point_texture_view,
+                                          WGPUTextureView spot_texture_view) {
 
   const uint8_t sampler_binding = 5;
   const uint8_t group_index = 2;
@@ -170,14 +170,16 @@ void mesh_shader_texture_bind_shadow_maps(
   const WGPUCompareFunction sample_compare = WGPUCompareFunction_Less;
 #endif
 
+  printf("point view: %p\n", point_texture_view);
+  printf("spot view: %p\n", spot_texture_view);
   // add multi-layered texture to default shader
   shader_update_texture_view(mesh_shader_texture(mesh), group_index,
                              SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
-                             fallback_point_texture_view, texture_format);
+                             point_texture_view, texture_format);
 
   shader_update_texture_view(mesh_shader_texture(mesh), group_index,
                              SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP,
-                             fallback_spot_texture_view, texture_format);
+                             spot_texture_view, texture_format);
 
   // add related sampler to default shader
   // NOTE: With depth texture need to use a special sampler type:

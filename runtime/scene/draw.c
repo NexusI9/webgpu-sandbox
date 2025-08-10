@@ -33,8 +33,16 @@ static const MeshShader map_shader_draw_mode[SCENE_RENDERER_DRAW_MODE_COUNT] = {
 void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
 
   // update active mesh shader depending on draw mode
-  
 
   // update renderer drawn render pass configuration
   scene_renderer_set_draw_mode(&scene->renderer, SceneRendererDrawMode_Texture);
+}
+
+/**
+   Update textures of all certain type of lights (Point, Sun, Spot...)
+   Function used when an object is added to the scene.
+ */
+void scene_update_shadow_map(Scene *scene, const LightType light_type) {
+
+  
 }

@@ -58,8 +58,8 @@ void shader_update_uniform(Shader *shader, bind_group_index group_index,
     wgpuQueueWriteBuffer(shader->queue, bound_uniform->buffer, 0,
                          bound_uniform->data, bound_uniform->size);
     // rebuild group
-    // shader_bind_group_refresh(bind_group, group_index, shader->device,
-    //                          &shader_pipeline(shader)->handle);
+    shader_bind_group_refresh(bind_group, group_index, shader->device,
+                              &shader_pipeline(shader)->handle);
   } else {
     VERBOSE_WARNING(
         "Could not find the bound uniform in group: %d, index: %d, make sure "

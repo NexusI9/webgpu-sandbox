@@ -75,7 +75,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
   //(usually when only drawing one light)
   if (shadow_encoder == NULL)
     shadow_encoder = wgpuDeviceCreateCommandEncoder(desc->device, NULL);
-
+  
   // create per layer texture views (depth + color)
   WGPUTextureViewDescriptor temp_layer_texture_descriptor_depth = {
       .label = "Shadow per layer texture view - Depth",
@@ -127,7 +127,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
 
   // draw target
   for (size_t i = 0; i < desc->mesh_list->length; i++) {
-    
+
     Mesh *mesh = desc->mesh_list->entries[i];
 
     // swap pipeline (cull front/back)
@@ -363,4 +363,3 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
       .pipeline = std_pipeline(PipelineType_ShadowCullBack),
   });
 }
-
