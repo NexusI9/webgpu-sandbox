@@ -7,6 +7,7 @@
 #include "./editor/gizmo/gizmo.h"
 #include "./layer.h"
 #include "editor/gizmo/core.h"
+#include "event/core.h"
 #include <stddef.h>
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
@@ -241,6 +242,7 @@ struct Scene {
   // will be never seen or used in actually "Game" mode
   SceneEditor editor;
   SceneRenderer renderer;
+  SceneEventDispatcher dispatcher;
 };
 
 typedef struct {

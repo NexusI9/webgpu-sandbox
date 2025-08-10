@@ -1,13 +1,6 @@
 #ifndef _CAMERA_CORE_H_
 #define _CAMERA_CORE_H_
 
-
-typedef enum{
-  CameraStatus_Success,
-  CameraStatus_AllocFail,
-  CameraStatus_Error,
-} CameraStatus;
-
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include <emscripten/html5.h>
@@ -15,6 +8,13 @@ typedef enum{
 #include <cglm/cglm.h>
 #include <stddef.h>
 #include <stdint.h>
+#include "../runtime/scene/event/event.h"
+
+typedef enum {
+  CameraStatus_Success,
+  CameraStatus_AllocFail,
+  CameraStatus_Error,
+} CameraStatus;
 
 typedef enum {
   CameraMode_Fixed = 1 << 0,
@@ -46,7 +46,7 @@ typedef struct Camera {
 
   cclock *clock;
   id_t id;
-  
+
   vec3 position;
   vec3 euler_rotation;
   vec3 target;
@@ -60,6 +60,7 @@ typedef struct Camera {
   CameraSensitivity sensitivity;
 
   CameraMode mode;
+  SceneEventDispatcher dispatch;
 
 } Camera;
 

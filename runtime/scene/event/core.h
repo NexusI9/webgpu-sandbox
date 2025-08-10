@@ -4,35 +4,46 @@
 typedef enum {
 
   // scene events
-  SceneEventType_None = 0,
+  SceneEventType_None,
 
   // mesh events
-  SceneEventType_MeshShown = 1 << 0,
-  SceneEventType_MeshHidden = 1 << 1,
-  SceneEventType_MeshBuilt = 1 << 2,
+  SceneEventType_MeshShown,
+  SceneEventType_MeshHidden,
+  SceneEventType_MeshBuilt,
 
-  // object events
-  SceneEventType_ObjectAdded = 1 << 3,
-  SceneEventType_ObjectRemoved = 1 << 4,
+  SceneEventType_MeshTransformStart,
+  SceneEventType_MeshTransformUpdated,
+  SceneEventType_MeshTransformCommited,
+  SceneEventType_MeshTransformCanceled,
 
-  // transform events
-  SceneEventType_ObjectTransformStart = 1 << 5,
-  SceneEventType_ObjectTransformUpdated = 1 << 6,
-  SceneEventType_ObjectTransformCommited = 1 << 7,
-  SceneEventType_ObjectTransformCanceled = 1 << 8,
+  SceneEventType_MeshAdded,
+  SceneEventType_MeshRemoved,
+
+  // camera
+  SceneEventType_CameraTransformStart,
+  SceneEventType_CameraTransformUpdated,
+  SceneEventType_CameraTransformCommited,
+  SceneEventType_CameraTransformCanceled,
+
+  SceneEventType_CameraAdded,
+  SceneEventType_CameraRemoved,
+
+  // light
+  SceneEventType_LightTransformStart,
+  SceneEventType_LightTransformUpdated,
+  SceneEventType_LightTransformCommited,
+  SceneEventType_LightTransformCanceled,
+
+  SceneEventType_LightAdded,
+  SceneEventType_LightRemoved,
 
   // selection events
-  SceneEventType_SelectionUpdated = 1 << 9,
-  SceneEventType_SelectionCleared = 1 << 10,
+  SceneEventType_SelectionUpdated,
+  SceneEventType_SelectionCleared,
 
-  // mouse events
-  SceneEventType_MouseDown = 1 << 11,
-  SceneEventType_MouseUp = 1 << 12,
-  SceneEventType_MouseMove = 1 << 13,
-
-  // key events
-  SceneEventType_KeyDown = 1 << 14,
-  SceneEventType_KeyUp = 1 << 15,
 } SceneEventType;
 
+typedef void (*SceneEventDispatcher)(const SceneEventType, void *);
+
+void scene_event_dispatcher(const SceneEventType, void *);
 #endif
