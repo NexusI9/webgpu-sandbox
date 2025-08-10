@@ -1,12 +1,14 @@
 #include "update.h"
 #include "../backend/buffer.h"
 #include "../backend/renderer/scene/std_texture/std_texture.h"
-#include "../utils/system.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "find.h"
 #include "utils.h"
 #include "webgpu/webgpu.h"
+#include <string.h>
+
+#include "../utils/system.h"
 
 /*TODO: BATCH UPDATE : like add, take a bunch of entry and ONLY REBUILD at the
  * end of update*/
@@ -43,7 +45,7 @@ void shader_update_texture_view(Shader *shader, bind_group_index group_index,
 
 void shader_update_uniform(Shader *shader, bind_group_index group_index,
                            bind_index index, void *data) {
-  
+
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
   ShaderBindGroupUniformEntry *bound_uniform =
@@ -56,11 +58,74 @@ void shader_update_uniform(Shader *shader, bind_group_index group_index,
     wgpuQueueWriteBuffer(shader->queue, bound_uniform->buffer, 0,
                          bound_uniform->data, bound_uniform->size);
     // rebuild group
-    shader_bind_group_refresh(bind_group, group_index, shader->device,
-                              &shader_pipeline(shader)->handle);
+    // shader_bind_group_refresh(bind_group, group_index, shader->device,
+    //                          &shader_pipeline(shader)->handle);
   } else {
     VERBOSE_WARNING(
-        "Could not find the bound texture in group: %d, index: %d, make sure "
+        "Could not find the bound uniform in group: %d, index: %d, make sure "
+        "the shader is correctly initialised with all bounds (shader: %s)",
+        group_index, index, shader->name);
+  }
+}
+
+/**
+   Update uniform callback autocheck
+ */
+void shader_update_uniform_callback(Shader *shader,
+                                    bind_group_index group_index,
+                                    bind_index index,
+                                    const ShaderUniformUpdate *update) {
+
+  ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
+
+  ShaderBindGroupUniformEntry *bound_uniform =
+      shader_find_uniform(shader, group_index, index);
+
+  if (bound_uniform != NULL) {
+
+    /*
+      Since the callback function requires an allocated copy of the original
+      data (see below paragraph for detailed explanation), it is necessary to
+      not overuse this function as to avoid too many allocation, as a result we
+      add an early return if the bound group already has a callback.
+
+      The idea behing the callback model is to only use it once and update
+      the unform based on this callback.
+     */
+    if (bound_uniform->update.callback != NULL) {
+      VERBOSE_WARNING("The uniform in group: %d, index: %d already has a "
+                      "callback hooked on, abort. (shader: %s)",
+                      group_index, index, shader->name);
+      return;
+    }
+
+    if (update->callback != NULL) {
+      /*
+        In case of an update callback, we need to make a copy of the data since
+        the uniform update is based on a old/new value principle. If we reuse
+        the same pointer as the original data we will always compare to the
+        latest value will won't trigger the update since the uniform data will
+        always be equal to the original one.
+
+        Also note that the allocated size is based on the orignial pipeline
+        layout. Meaning if my layout expect a vec3 but a mesh is provided it
+        will lead to memory corruption.
+       */
+      if (bound_uniform->data) {
+        void *temp_data = bound_uniform->data;
+        bound_uniform->data = malloc(bound_uniform->size);
+        memcpy(bound_uniform->data, temp_data, bound_uniform->size);
+      }
+
+      bound_uniform->update = (ShaderUniformUpdate){
+          .callback = update->callback,
+          .trigger = update->trigger,
+          .data = update->data,
+      };
+    }
+  } else {
+    VERBOSE_WARNING(
+        "Could not find the bound uniform in group: %d, index: %d, make sure "
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
   }

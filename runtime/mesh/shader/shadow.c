@@ -14,7 +14,7 @@
 
 void mesh_shader_shadow_update_mvp(Mesh *mesh) {
 
-  MeshUniform uModel = mesh_uniform_model(mesh);
+  MeshUniform* uModel = mesh_uniform(mesh);
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, (void *)0);
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 1, &uModel);
 }

@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include "../utils/system.h"
+#include "uniform.h"
 
 // Shadow map is implicitely handled withing mesh
 static Mesh *mesh_children_list_check_init(Mesh *);
@@ -46,6 +47,9 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->position);
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation_euler);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
+
+  // create uniform
+  mesh_uniform_update(mesh);
 
   // set default pipeline shader
   mesh_shader_texture(mesh)->pipeline = std_pipeline(PipelineType_Default);

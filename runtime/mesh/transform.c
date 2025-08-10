@@ -6,8 +6,6 @@
 
 static void mesh_update_model_matrix(Mesh *);
 
-static void mesh_update_model_uniform(Mesh *);
-
 /**
    Update mesh model matrix on the right order based on the cached position,
    rotation and scale.
@@ -32,40 +30,13 @@ void mesh_update_model_matrix(Mesh *mesh) {
   mesh_topology_boundbox_update(&mesh->topology.base, mesh->model,
                                 &mesh->topology.boundbox, mesh->queue);
 
-  mesh_update_model_uniform(mesh);
+  
+  // Automatically updated via trigger/callback model
+  // See ./runtime/scene/event/event.h for more info
+  mesh_uniform_update(mesh);
+
 }
 
-/**
-   Update the active shader mvp uniform
- */
-void mesh_update_model_uniform(Mesh *mesh) {
-
-  Shader *shader = mesh_shader_active(mesh);
-
-  /*
-    TODO: Currently the mesh/shader creation process is a bit unclear, it's hard
-    to know if the mesh or the shader should be created first, and if transforms
-    should be applied before or after the shader creation. However since we now
-    update the shader uniform on transform it means that the mesh requires a
-    shader before transform.
-
-    As a result need to find a more clear way to streamline the flow, this could
-    be done by directly creating a mesh along with the mesh create
-    (scene_new_mesh), adding the shader description in the mesh create
-    descriptor.
-
-    Temporary solution is add a if to check if mesh has active mesh.
-   */
-
-  if (shader == NULL) {
-    VERBOSE_ERROR("Mesh has no active shader, unable to update Model uniform.");
-    return;
-  }
-
-  shader_update_uniform(shader, shader->pipeline->bindings.mvp.group,
-                        shader->pipeline->bindings.mvp.model,
-                        (void *)mesh->model);
-}
 
 /**
    Apply scale to mesh transform matrix

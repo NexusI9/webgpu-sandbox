@@ -8,6 +8,7 @@
 
 /*
 
+  !! DEPRECATED NEED UDPATE !!
   OVERALL BUILDING PROCESS:
   1. First build layouts for uniforms, textures + samplers
   2. Build pipeline based on those layouts
@@ -89,7 +90,7 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
     ShaderBindGroup *current_bind_group = &shader->bind_groups.entries[i];
 
     // update bindgroup uniforms data
-    // shader_uniform_update(current_bind_group, shader->queue);
+    shader_uniform_update(current_bind_group, shader->queue);
 
     // link bind group
     wgpuRenderPassEncoderSetBindGroup(*render_pass, i,

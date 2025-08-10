@@ -54,6 +54,11 @@ typedef struct {
   const char *name;
 } MeshCreatePrimitiveDescriptor;
 
+typedef struct {
+  mat4 model;
+  vec4 position;
+} __attribute__((aligned(16))) MeshUniform;
+
 typedef void (*mesh_get_transform_attribute)(Mesh *, vec3 *);
 
 // Core
@@ -68,6 +73,7 @@ struct Mesh {
   vec3 scale;
   vec3 rotation_euler;
   versor rotation_quat;
+  MeshUniform uniform;
 
   // wgpu
   WGPUDevice device;

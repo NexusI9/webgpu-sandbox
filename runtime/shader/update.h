@@ -23,6 +23,9 @@ void shader_update_texture_view(Shader *, bind_group_index, bind_index,
 
 void shader_update_uniform(Shader *, bind_group_index, bind_index, void *);
 
+void shader_update_uniform_callback(Shader *, bind_group_index, bind_index,
+                                    const ShaderUniformUpdate *);
+
 void shader_update_sampler(Shader *, bind_group_index, bind_index,
                            const WGPUSamplerDescriptor *);
 

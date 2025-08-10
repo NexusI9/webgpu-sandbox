@@ -72,7 +72,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
    */
 
-  scene_event_html(scene);
+  //scene_event_html(scene);
 
   /*
 

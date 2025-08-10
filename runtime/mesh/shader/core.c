@@ -151,22 +151,29 @@ void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   mesh_shader_set_active(mesh, MeshShader_Fixed);
 }
 
-
 /**
-   Bind Mesh, Camera and Projection matrix to a given mesh shader
-   Note that the binding process follows a fixed convention of order, meaning
-   one shall ensure the shader actually fits the bellow binding order:
+   Build Mesh, Camera and Projection matrix to a given mesh shader.
+   It replaces the initial bound values by the ones provided by the scene
+   (active camera matrix, viewport data).
+
+   Additionally it also add the relative callbacks and trigger ensuring the mesh
+   update their mvp on camera move and mesh translation.
+
+   Note that the binding process follows a
+   fixed convention of order, meaning one shall ensure the shader actually fits
+   the bellow binding order:
    - Binding 0: Viewport projection matrix
    - Binding 1: Camera matrix
    - Binding 2: Model matrix
- */
-void mesh_shader_update_mvp(Mesh *mesh,
-                                mesh_get_shader_callback target_shader,
-                                Camera *camera, Viewport *viewport) {
 
-  CameraUniform uCamera = camera_uniform(camera);
-  ViewportUniform uViewport = viewport_uniform(viewport);
-  MeshUniform uMesh = mesh_uniform_model(mesh);
+   This function is primarily used when a mesh is firstly added to the scene.
+ */
+void mesh_shader_build_mvp(Mesh *mesh, mesh_get_shader_callback target_shader,
+                           Camera *camera, Viewport *viewport) {
+
+  CameraUniform *uCamera = camera_uniform(camera);
+  ViewportUniform *uViewport = viewport_uniform(viewport);
+  MeshUniform *uMesh = mesh_uniform(mesh);
 
   Shader *shader = target_shader(mesh);
 
@@ -177,29 +184,71 @@ void mesh_shader_update_mvp(Mesh *mesh,
       // viewport
       {
           .binding = mvp->projection,
-          .data = &uViewport,
+          .data = uViewport,
+          .update = {0},
       },
       // camera
       {
           .binding = mvp->view,
-          .data = &uCamera,
-          /* .update =
+          .data = uCamera,
+          .update =
               {
-                  .callback = camera_uniform_update_matrix,
-                  .trigger = camera_uniform_compare_views,
+                  .callback = camera_uniform_update_matrix_callback,
+                  .trigger = camera_uniform_compare_views_callback,
                   .data = camera,
-              },*/
+              },
       },
       // model
       {
           .binding = mvp->model,
-          .data = &uMesh,
-          /*.update =
+          .data = uMesh,
+          .update =
               {
-                  .callback = mesh_uniform_model_update,
-                  .trigger = mesh_uniform_model_compare,
+                  .callback = mesh_uniform_model_update_callback,
+                  .trigger = mesh_uniform_model_compare_callback,
                   .data = mesh,
-              },*/
+              },
+      },
+  };
+
+  for (size_t i = 0; i < 3; i++) {
+    ShaderBindGroupUniformEntry *entry = &entries[i];
+    shader_update_uniform(shader, mvp->group, entry->binding, entry->data);
+    shader_update_uniform_callback(shader, mvp->group, entry->binding,
+                                   &entry->update);
+  }
+}
+
+/**
+
+ */
+void mesh_shader_update_mvp(Mesh *mesh, mesh_get_shader_callback target_shader,
+                            Camera *camera, Viewport *viewport) {
+
+  CameraUniform *uCamera = camera_uniform(camera);
+  ViewportUniform *uViewport = viewport_uniform(viewport);
+  MeshUniform *uMesh = mesh_uniform(mesh);
+
+  Shader *shader = target_shader(mesh);
+
+  // retrieve the model-view-projection binding index from the pipeline
+  const PipelineBindingMVP *mvp = &shader->pipeline->bindings.mvp;
+
+  ShaderBindGroupUniformEntry entries[3] = {
+      // viewport
+      {
+          .binding = mvp->projection,
+          .data = uViewport,
+      },
+      // camera
+      {
+          .binding = mvp->view,
+          .data = uCamera,
+      },
+      // model
+      {
+          .binding = mvp->model,
+          .data = uMesh,
       },
   };
 

@@ -29,11 +29,17 @@ typedef struct {
   float aspect;
   mat4 projection;
   cclock *clock;
+  ViewportUniform uniform;
 } Viewport;
 
 void viewport_create(Viewport *, const ViewportCreateDescriptor *);
 void viewport_update_projection(Viewport *);
-ViewportUniform viewport_uniform(Viewport *);
+
+void viewport_uniform_update(Viewport *);
+ViewportUniform *viewport_uniform(Viewport *);
+
 mat4 *viewport_projection(Viewport *);
+
+void viewport_destroy(Viewport *);
 
 #endif

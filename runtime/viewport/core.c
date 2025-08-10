@@ -1,6 +1,8 @@
 #include "core.h"
-#include "../utils/system.h"
+#include "string.h"
 #include <cglm/cglm.h>
+
+#include "../utils/system.h"
 
 void viewport_create(Viewport *viewport,
                      const ViewportCreateDescriptor *view_desc) {
@@ -15,6 +17,7 @@ void viewport_create(Viewport *viewport,
 
   // init projection matrix
   viewport_update_projection(viewport);
+  viewport_uniform_update(viewport);
 }
 
 void viewport_update_projection(Viewport *viewport) {
@@ -29,14 +32,20 @@ void viewport_update_projection(Viewport *viewport) {
   glm_perspective(fov, aspect, near, far, viewport->projection);
 }
 
-ViewportUniform viewport_uniform(Viewport *viewport) {
-  ViewportUniform uViewport = {
-      .width = viewport->width,
-      .height = viewport->height,
-  };
+ViewportUniform *viewport_uniform(Viewport *viewport) {
+  return &viewport->uniform;
+}
 
-  glm_mat4_copy(viewport->projection, uViewport.projection);
-  return uViewport;
+void viewport_uniform_update(Viewport *viewport) {
+
+  viewport->uniform.width = viewport->width,
+  viewport->uniform.height = viewport->height,
+
+  glm_mat4_copy(viewport->projection, viewport->uniform.projection);
 }
 
 mat4 *viewport_projection(Viewport *vp) { return &vp->projection; }
+
+void viewport_destroy(Viewport *vp) {
+  memset(vp, 0, sizeof(Viewport));
+}

@@ -3,14 +3,11 @@
 
 #include "core.h"
 
-typedef struct {
-  mat4 model;
-  vec4 position;
-} __attribute__((aligned(16))) MeshUniform;
+MeshUniform *mesh_uniform(Mesh *);
 
-MeshUniform mesh_uniform_model(Mesh *);
+void mesh_uniform_update(Mesh *);
 
-void mesh_uniform_model_update(void*, void*);
-bool mesh_uniform_model_compare(void*, const void*);
+void mesh_uniform_model_update_callback(void *, void *);
+bool mesh_uniform_model_compare_callback(void *, const void *);
 
 #endif

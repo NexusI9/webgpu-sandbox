@@ -50,7 +50,7 @@ typedef struct {
 
    Trigger used for the mesh model uniform. It compare the current model with
    the newest provided and return true if it's different.
-   When a trigger returns true the uniform gets replaced by the unirofom
+   When a trigger returns true the uniform gets replaced by the uniform
    callback (function above "mesh_uniform_model_update").
 
    Having a trigger prevent to constantly rewrite in the GPU if the values are

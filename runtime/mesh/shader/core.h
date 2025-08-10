@@ -27,11 +27,12 @@ Shader *mesh_shader_active(Mesh *);
 
 void mesh_shader_set_active(Mesh *, const MeshShader);
 
-
 void mesh_shader_update_mvp(Mesh *, mesh_get_shader_callback, Camera *,
-                         Viewport *);
+                            Viewport *);
+
+void mesh_shader_build_mvp(Mesh *, mesh_get_shader_callback, Camera *,
+                          Viewport *);
 
 typedef void (*mesh_shader_bind_views_callback)(Mesh *, Camera *, Viewport *);
-
 
 #endif

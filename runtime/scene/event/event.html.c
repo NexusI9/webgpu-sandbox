@@ -76,7 +76,7 @@ void scene_event_html_update_meshes(void *data) {
         bind_index view_index = shader->pipeline->bindings.mvp.view;
 
 	// generate new camera
-        CameraUniform cam = camera_uniform(scene->active_camera);
+        CameraUniform* cam = camera_uniform(scene->active_camera);
 
         shader_update_uniform(shader, group_index, view_index, (void *)&cam);
       }

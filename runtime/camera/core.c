@@ -4,6 +4,7 @@
 #include "../../utils/system.h"
 #include "../input/input.h"
 #include "./mode.h"
+#include "./uniform.h"
 #include "emscripten/html5.h"
 #include "math.h"
 #include "string.h"
@@ -11,6 +12,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#include "../utils/system.h"
 
 void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
@@ -24,6 +27,9 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->clock = cd->clock;
   cam->mode = cd->mode;
   cam->sensitivity = cd->sensitivity;
+
+  // init uniform
+  camera_uniform_update(cam);
 }
 
 void camera_reset(Camera *c) {
@@ -43,6 +49,8 @@ void camera_reset(Camera *c) {
 
     vec3 right = {0.0f, 0.0f, 0.0f};
     glm_vec3_copy(right, c->right);
+
+    c->uniform = (CameraUniform){0};
   }
 }
 
@@ -69,6 +77,7 @@ void camera_draw(Camera *camera) {
   }
 
   camera_update_view(camera);
+  camera_uniform_update(camera);
 }
 
 void camera_translate(Camera *camera, vec3 new_position) {
@@ -80,12 +89,15 @@ void camera_translate(Camera *camera, vec3 new_position) {
   camera->position[1] += new_position[1];
   camera->position[2] += new_position[2];
 
-  // camera_update_view(camera);
+  camera_update_view(camera);
+  camera_uniform_update(camera);
 }
 
 void camera_rotate(Camera *camera, vec3 new_rotation) {
   glm_vec3_copy(new_rotation, camera->euler_rotation);
-  // camera_update_view(camera);
+
+  camera_update_view(camera);
+  camera_uniform_update(camera);
 }
 
 void camera_update_view(Camera *camera) {
@@ -140,6 +152,8 @@ void camera_lookat(Camera *camera, vec3 position, vec3 target) {
       .position = position,
       .target = target,
   });
+
+  camera_uniform_update(camera);
 }
 
 mat4 *camera_view(Camera *camera) { return &camera->view; }

@@ -41,6 +41,14 @@ typedef struct {
   CameraSensitivity sensitivity;
 } CameraCreateDescriptor;
 
+typedef struct {
+  mat4 view;
+  vec4 position;
+  vec4 lookat;
+  uint32_t mode;
+  uint32_t _pad[4];
+} __attribute__((aligned(16))) CameraUniform;
+
 typedef struct Camera {
 
   cclock *clock;
@@ -52,6 +60,7 @@ typedef struct Camera {
   vec3 forward;
   vec3 up;
   vec3 right;
+  CameraUniform uniform;
 
   mat4 view;
 
