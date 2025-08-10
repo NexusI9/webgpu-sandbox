@@ -50,7 +50,6 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
   base->attribute.length = va->length;
   base->attribute.capacity = va->length;
 
-  printf("pirmitive vertex attributes: %p\n", va->entries);
   // copy vertex attributes
   size_t vattr_size = va->length * sizeof(vattr_t);
   base->attribute.entries = malloc(vattr_size);
@@ -91,11 +90,9 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(
   base->index.length = vi->length;
   base->index.capacity = vi->length;
 
-  printf("index length: %lu\n", base->index.length);
   size_t vindex_size = vi->length * sizeof(vindex_t);
   base->index.entries = malloc(vindex_size);
 
-  printf("index entries: %p\n", base->index.entries);
   memcpy(base->index.entries, vi->entries, vindex_size);
 
   if (base->index.length) {

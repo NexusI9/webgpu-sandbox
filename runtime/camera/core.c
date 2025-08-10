@@ -14,6 +14,8 @@
 
 void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
+  cam->id = reg_register((void *)cam, RegEntryType_Camera);
+
   // set matrix and position to 0
   camera_reset(cam);
 
@@ -22,8 +24,6 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->clock = cd->clock;
   cam->mode = cd->mode;
   cam->sensitivity = cd->sensitivity;
-
-  cam->id = reg_register((void *)cam, RegEntryType_Camera);
 }
 
 void camera_reset(Camera *c) {

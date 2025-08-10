@@ -15,7 +15,6 @@
 #include "runtime/scene/draw.h"
 
 static Scene main_scene;
-static cclock main_clock;
 
 // callback
 static void init_scene();
@@ -24,11 +23,9 @@ void init_scene() {
 
   scene_create(&main_scene,
                &(SceneCreateDescriptor){
-                   .clock = &main_clock,
                    .renderer =
                        &(SceneRendererCreateDescriptor){
                            .name = "canvas",
-                           .clock = &main_clock,
                            .multisampling_count = PipelineMultisampleCount_4x,
                            .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f},
                            .dpi = 1.0,

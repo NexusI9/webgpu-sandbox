@@ -1,12 +1,9 @@
 #include "clock.h"
 #include <time.h>
 
-cclock clock_create(){
-    cclock c;
-    c.last_time = clock();
-    c.delta = 0.0;
-
-    return c;
+void clock_create(cclock * c){
+    c->last_time = clock();
+    c->delta = 0.0;
 }
 
 void clock_update_delta(cclock * c){

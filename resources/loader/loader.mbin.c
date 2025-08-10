@@ -136,16 +136,10 @@ MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
   vert_attr->length = mbin->vertex_length;
   vert_attr->entries = malloc(sizeof(vattr_t) * vert_attr->length);
 
-  printf("entries: %p\n", vert_attr->entries);
-
   if (vert_attr->entries == NULL) {
     VERBOSE_ERROR("Couldn't allocate memory for vertex attribute");
     return MBINLoaderStatus_AllocFail;
   }
-
-  printf("length: %lu\n", vert_attr->length);
-  printf("capacity: %lu\n", vert_attr->capacity);
-  printf("entries: %p\n", vert_attr->entries);
 
   // manually copy and convert mbin file uint to float via union
   MBIN_U32Float converter;
@@ -158,9 +152,6 @@ MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
   VertexIndex *index_attr = &desc->primitive->index;
   index_attr->capacity = mbin->index_length;
   index_attr->length = mbin->index_length;
-
-  printf("index capacity: %lu\n", index_attr->capacity);
-  printf("index length: %lu\n", index_attr->length);
 
   index_attr->entries = malloc(sizeof(vindex_t) * mbin->index_length);
 

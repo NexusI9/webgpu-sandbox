@@ -48,7 +48,7 @@ typedef struct {
 
 typedef struct SceneRenderer {
 
-  cclock *clock; // update clock delta on draw
+  cclock clock; // update clock delta on draw
   WGPUColor background;
 
   struct {
@@ -114,5 +114,6 @@ const char *scene_renderer_target(SceneRenderer *);
 const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *);
 
 bool scene_renderer_resize_callback(int, const EmscriptenUiEvent *, void *);
+cclock* scene_renderer_clock(SceneRenderer*);
 
 #endif

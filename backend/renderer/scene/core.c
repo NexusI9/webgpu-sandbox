@@ -25,10 +25,12 @@ void scene_renderer_create(SceneRenderer *renderer,
                            const SceneRendererCreateDescriptor *rd) {
 
   renderer->context.name = rd->name;
-  renderer->clock = rd->clock;
   renderer->background = rd->background;
   renderer->context.dpi = scene_renderer_dpi(rd->dpi);
 
+  // create clock
+  clock_create(&renderer->clock);
+  
   // set wgpu data
   renderer->wgpu.instance = wgpuCreateInstance(NULL);
   renderer->wgpu.device = emscripten_webgpu_get_device();
@@ -328,7 +330,7 @@ void scene_renderer_render(void *desc) {
   }
 
   // update clock delta
-  clock_update_delta(config->renderer->clock);
+  clock_update_delta(&config->renderer->clock);
 }
 
 /**
@@ -368,4 +370,8 @@ RenderPass *scene_renderer_pass(SceneRenderer *renderer,
 
 const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *renderer) {
   return renderer->draw.mode;
+}
+
+cclock *scene_renderer_clock(SceneRenderer *renderer) {
+  return &renderer->clock;
 }

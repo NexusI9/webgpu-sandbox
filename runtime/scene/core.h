@@ -244,7 +244,6 @@ struct Scene {
 };
 
 typedef struct {
-  cclock *clock;
   const ViewportCreateDescriptor *viewport;
   const SceneRendererCreateDescriptor *renderer;
 } SceneCreateDescriptor;

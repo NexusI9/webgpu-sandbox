@@ -12,21 +12,16 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   scene->id = reg_register((void *)scene, RegEntryType_Scene);
 
-  // create camera list, and set active camera
-  camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
-  scene->camera = scene_init_main_camera(scene, desc->clock);
-  scene->active_camera = scene->camera;
-
-  // init global mesh list
-  mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
+  /*
+    
+    ===== SCENE RENDER =====
+    
+   */
 
   // init mesh pipelines
   for (size_t i = 0; i < SCENE_PIPELINE_COUNT; i++)
     mesh_ref_list_create(&scene->pipelines[i],
                          SCENE_MESH_LIST_DEFAULT_CAPACITY);
-
-  // init scene layers
-  scene_layer_init(&scene->layers);
 
   // init draw callbacks configuration
   scene_init_draw_layouts(scene);
@@ -34,8 +29,35 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   // set renderer
   scene_renderer_create(&scene->renderer, desc->renderer);
 
+  /*
+    
+    ===== MESH LISTS =====
+    
+   */
+
+  // init scene layers
+  scene_layer_init(&scene->layers);
+
   // init lights
   scene_init_light_list(scene);
+
+  // init global mesh list
+  mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
+
+  /*
+    
+    ===== CAMERA & VIEWPORT =====
+    
+   */
+
+  // create camera list, and set active camera
+  camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
+  scene->camera =
+      scene_init_main_camera(scene, scene_renderer_clock(&scene->renderer));
+  scene->active_camera = scene->camera;
+  // add the camera update callback
+  scene_renderer_add_draw_callback(&scene->renderer, scene_camera_draw_callback,
+                                   (void *)scene->active_camera);
 
   // set viewport
   // TODO: currently it's kinda weird to include the width and height in the
@@ -46,7 +68,11 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   scene->viewport.width = scene_renderer_width(&scene->renderer);
   scene->viewport.height = scene_renderer_height(&scene->renderer);
 
-  /* ==== EDITOR ==== */
+  /*
+    
+    ===== EDITOR =====
+    
+   */
   // EDITORONLY
   scene_editor_init(scene);
 }
@@ -58,6 +84,7 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 
   Camera *camera = camera_list_new_camera(&scene->cameras);
 
+  printf("main camera: %p\n", camera);
   // create main camera
   camera_create(camera, &(CameraCreateDescriptor){
                             .speed = 20.0f,
@@ -339,10 +366,6 @@ void scene_init_draw_layouts(Scene *scene) {
                   },
               },
       });
-
-  // add the camera update callback
-  scene_renderer_add_draw_callback(&scene->renderer, scene_camera_draw_callback,
-                                   (void *)scene->active_camera);
 }
 
 /**
