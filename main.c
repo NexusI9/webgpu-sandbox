@@ -137,6 +137,7 @@ int main(int argc, const char *argv[]) {
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);
+
   // Quit
   scene_renderer_close(&main_scene.renderer);
 
