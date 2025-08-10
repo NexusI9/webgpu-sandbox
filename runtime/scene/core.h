@@ -242,7 +242,7 @@ struct Scene {
   // will be never seen or used in actually "Game" mode
   SceneEditor editor;
   SceneRenderer renderer;
-  SceneEventDispatcher dispatcher;
+
 };
 
 typedef struct {

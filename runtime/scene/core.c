@@ -2,6 +2,7 @@
 #include "./draw.h"
 #include "./editor/editor.h"
 #include "./layer.h"
+#include "event/event.html.h"
 
 // initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
@@ -67,6 +68,14 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   /*
 
+  ===== EVENT =====
+
+   */
+
+  scene_event_html(scene);
+
+  /*
+
     ===== EDITOR =====
 
    */
@@ -78,15 +87,15 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
    Create scene camera list and main camera.
  */
 void scene_init_camera(Scene *scene) {
-  
+
   // create camera list, and set active camera
   camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
   scene->camera =
-    scene_init_main_camera(scene, scene_renderer_clock(&scene->renderer));
+      scene_init_main_camera(scene, scene_renderer_clock(&scene->renderer));
 
   // set scene main camera as active
   scene->active_camera = scene->camera;
-  
+
   // add the camera update callback
   scene_renderer_add_draw_callback(&scene->renderer, scene_camera_draw_callback,
                                    (void *)scene->active_camera);

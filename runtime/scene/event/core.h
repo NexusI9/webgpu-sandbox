@@ -1,6 +1,7 @@
 #ifndef _SCENE_EVENT_CORE_H_
 #define _SCENE_EVENT_CORE_H_
 
+/*DELETEME UNUSED*/
 typedef enum {
 
   // scene events
@@ -43,7 +44,4 @@ typedef enum {
 
 } SceneEventType;
 
-typedef void (*SceneEventDispatcher)(const SceneEventType, void *);
-
-void scene_event_dispatcher(const SceneEventType, void *);
 #endif

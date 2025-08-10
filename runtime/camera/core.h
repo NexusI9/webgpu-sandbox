@@ -8,7 +8,6 @@
 #include <cglm/cglm.h>
 #include <stddef.h>
 #include <stdint.h>
-#include "../runtime/scene/event/event.h"
 
 typedef enum {
   CameraStatus_Success,
@@ -60,7 +59,6 @@ typedef struct Camera {
   CameraSensitivity sensitivity;
 
   CameraMode mode;
-  SceneEventDispatcher dispatch;
 
 } Camera;
 
