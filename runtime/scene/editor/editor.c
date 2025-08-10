@@ -47,9 +47,13 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
                               .color = {0.5f, 0.5f, 0.5f, 1.0f},
                           },
                   });
-
+  /*
+    Do not use this function cause it adds it as selectable and cause crash
   scene_add_mesh_fixed(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
-                       SCENE_LAYER_UNSELECTABLE);
+  SCENE_LAYER_UNSELECTABLE);*/
+  scene_build_mesh(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed);
+  mesh_ref_list_insert(&scene->pipelines[ScenePipeline_Fixed],
+                       scene->editor.gizmo.grid);
 }
 
 /**
