@@ -3,6 +3,6 @@
 #include "core.h"
 #include "../runtime/camera/camera.h"
 
-void mesh_shader_solid_bind_views(Mesh *, Camera *, Viewport *);
+void mesh_shader_solid_update_mvp(Mesh *, Camera *, Viewport *);
 
 #endif

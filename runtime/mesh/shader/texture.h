@@ -5,14 +5,13 @@
 #include "../runtime/light/light.h"
 
 // bind
-void mesh_shader_texture_bind_views(Mesh *, Camera *, Viewport *);
-void mesh_shader_texture_bind_lights(Mesh *, LightList *, uint8_t);
-
 void mesh_shader_texture_bind_ambient_occlusion(Mesh *, WGPUTextureView);
 void mesh_shader_texture_bind_shadow_maps(Mesh *, WGPUTextureView,
                                        WGPUTextureView);
 
 // update
+void mesh_shader_texture_update_mvp(Mesh *, Camera *, Viewport *);
+void mesh_shader_texture_update_lights(Mesh *, LightList *, uint8_t);
 void mesh_shader_texture_update_ambient_occlusion(Mesh *, WGPUTextureView);
 void mesh_shader_texture_update_shadow_maps(Mesh *, WGPUTextureView,
                                          WGPUTextureView);

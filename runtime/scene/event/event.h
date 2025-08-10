@@ -25,8 +25,11 @@
    .- Example -----------------------------------------------------------------.
    |  On mouse move, the camera move, so we need to also  set a callback to    |
    |  update all meshes MVP uniforms.                                          |
-   '---------------------------------------------------------------------------' 
-      
+   '---------------------------------------------------------------------------'
+
+   However the previous is still available a I already foresee limitation with
+   this one.
+
  */
 
 #include "core.h"

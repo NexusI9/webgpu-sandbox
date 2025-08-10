@@ -138,7 +138,7 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
                                        &mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_texture_bind_views(mesh, camera, viewport);
+  mesh_shader_texture_update_mvp(mesh, camera, viewport);
 
   // lit only pipeline
   if (build_desc->pipeline == ScenePipeline_Dynamic_Lit) {
@@ -147,14 +147,14 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
     mesh_shader_texture_bind_shadow_maps(mesh, build_desc->point_map,
                                          build_desc->spot_map);
     // bind lights
-    mesh_shader_texture_bind_lights(mesh, build_desc->lights,
+    mesh_shader_texture_update_lights(mesh, build_desc->lights,
                                     SHADER_TEXTURE_BINDGROUP_LIGHTS);
 
     // create mesh shadow shader
     mesh_shader_create_shadow(mesh);
 
     // bind light and mesh uniform to shadow
-    mesh_shader_shadow_bind_views(mesh);
+    mesh_shader_shadow_update_mvp(mesh);
 
     // Bake AO textures for static scenes elements
     // ao_bake_init(ao_desc);
@@ -178,7 +178,7 @@ void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport) {
   mesh_shader_create_solid(mesh);
 
   // bind views
-  mesh_shader_solid_bind_views(mesh, camera, viewport);
+  mesh_shader_solid_update_mvp(mesh, camera, viewport);
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Solid);
@@ -206,7 +206,7 @@ void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera,
   mesh_shader_create_wireframe(mesh);
 
   // bind views
-  mesh_shader_wireframe_bind_views(mesh, camera, viewport);
+  mesh_shader_wireframe_update_mvp(mesh, camera, viewport);
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Wireframe);
@@ -227,7 +227,7 @@ void scene_build_mesh_boundbox(Mesh *mesh, Camera *camera, Viewport *viewport) {
   mesh_shader_create_wireframe(mesh);
 
   // bind views
-  mesh_shader_wireframe_bind_views(mesh, camera, viewport);
+  mesh_shader_wireframe_update_mvp(mesh, camera, viewport);
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Wireframe);
@@ -244,7 +244,7 @@ void scene_build_mesh_fixed(Mesh *mesh, Camera *camera, Viewport *viewport) {
                                        &mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_fixed_bind_views(mesh, camera, viewport);
+  mesh_shader_fixed_update_mvp(mesh, camera, viewport);
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Fixed);

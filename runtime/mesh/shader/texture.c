@@ -1,11 +1,10 @@
 #include "texture.h"
 #include "../backend/renderer/scene/scene.h"
-#include "./utils.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-void mesh_shader_texture_bind_views(Mesh *mesh, Camera *camera, Viewport *viewport) {
-  mesh_shader_bind_views_any(mesh, mesh_shader_texture, camera, viewport);
+void mesh_shader_texture_update_mvp(Mesh *mesh, Camera *camera, Viewport *viewport) {
+  mesh_shader_update_mvp(mesh, mesh_shader_texture, camera, viewport);
 }
 
 
@@ -23,7 +22,7 @@ void mesh_shader_texture_clear_bindings(Mesh *mesh) {
    by default we will upload all the lights (point, ambient, spot)
    within a defined group
   */
-void mesh_shader_texture_bind_lights(Mesh *mesh, LightList *light_list,
+void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
                                      uint8_t group_index) {
 
   AmbientLightList *ambient_list = &light_list->ambient;

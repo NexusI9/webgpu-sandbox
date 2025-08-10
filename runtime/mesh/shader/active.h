@@ -5,7 +5,7 @@
 #include "../runtime/light/light.h"
 
 // bind
-void mesh_shader_active_update_views(Mesh *, Camera *, Viewport *);
+void mesh_shader_active_update_mvp(Mesh *, Camera *, Viewport *);
 
 
 

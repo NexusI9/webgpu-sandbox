@@ -12,14 +12,14 @@
    upload separate views in the shader.
  */
 
-void mesh_shader_shadow_bind_views(Mesh *mesh) {
+void mesh_shader_shadow_update_mvp(Mesh *mesh) {
 
   MeshUniform uModel = mesh_uniform_model(mesh);
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, (void *)0);
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 1, &uModel);
 }
 
-void mesh_shader_shadow_update_views(Mesh *mesh, mat4 *view) {
+void mesh_shader_shadow_update_view(Mesh *mesh, mat4 *view) {
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, view);
 }
 

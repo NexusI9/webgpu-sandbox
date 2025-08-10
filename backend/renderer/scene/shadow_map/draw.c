@@ -134,7 +134,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
     mesh_shader_shadow(mesh)->pipeline = desc->pipeline;
 
     // update each mesh shadow uniforms with current light view
-    mesh_shader_shadow_update_views(mesh, desc->light_view);
+    mesh_shader_shadow_update_view(mesh, desc->light_view);
 
     // draw mesh
     mesh_draw(mesh_topology_base(mesh), mesh_shader_shadow(mesh), &shadow_pass);

@@ -55,8 +55,31 @@ void scene_event_html(Scene *scene) {
 void scene_event_html_update_meshes(void *data) {
   Scene *scene = (Scene *)data;
 
-  // update mesh uniforms from active shader (Texture | Fixed)
-  for (size_t i = 0; i < scene->meshes.length; i++)
-    mesh_shader_active_update_views(&scene->meshes.entries[i],
-                                    scene->active_camera, &scene->viewport);
+  // traverse the active pipelines from the render mode and
+  SceneRendererDrawMode draw_mode = scene_renderer_draw_mode(&scene->renderer);
+  RenderPassLayout *layout = &scene->renderer.draw.layouts[draw_mode];
+
+  // traverse render pass configs of the layout
+  for (size_t i = 0; i < layout->length; i++) {
+    RenderPassDrawList *draw_list = &layout->entries[i];
+    for (size_t j = 0; j < draw_list->length; j++) {
+      RenderPassDrawLayout *mesh_lists = &draw_list->entries[j];
+      // update bind views of each meshes in each rende pass pipelines
+      for (size_t k = 0; k < mesh_lists->meshes->length; k++) {
+
+	// target mesh and shader
+        Mesh *mesh = mesh_lists->meshes->entries[k];
+        Shader *shader = mesh_lists->shader_callback(mesh);
+
+	// get shader relative view index
+        bind_group_index group_index = shader->pipeline->bindings.mvp.group;
+        bind_index view_index = shader->pipeline->bindings.mvp.view;
+
+	// generate new camera
+        CameraUniform cam = camera_uniform(scene->active_camera);
+
+        shader_update_uniform(shader, group_index, view_index, (void *)&cam);
+      }
+    }
+  }
 }

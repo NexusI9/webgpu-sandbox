@@ -5,6 +5,6 @@
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
 
-void mesh_shader_fixed_bind_views(Mesh *, Camera *, Viewport *);
+void mesh_shader_fixed_update_mvp(Mesh *, Camera *, Viewport *);
 
 #endif
