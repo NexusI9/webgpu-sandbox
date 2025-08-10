@@ -25,8 +25,8 @@ size_t scene_selection_length(SceneSelection *);
 void scene_selection_add_mesh_ref_list(SceneSelection *, MeshRefList *, void *,
                                        const SceneSelectionType);
 
-void scene_selection_add_mesh(SceneSelection *selection, Mesh *list,
-                              void *extra, const SceneSelectionType type);
+void scene_selection_add_mesh(SceneSelection *, Mesh *, void *,
+                              const SceneSelectionType);
 
 void scene_selection_empty(SceneSelection *);
 void scene_selection_all(SceneSelection *);

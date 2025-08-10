@@ -25,12 +25,14 @@ ShaderBindGroupUniformEntry *shader_find_uniform(Shader *shader,
                                                  bind_index index) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
-
+  
   if (bind_group == NULL) {
     VERBOSE_WARNING("Could not find the group index at %d (Shader: %s)",
                     group_index, shader->name);
     return NULL;
-  } else if (bind_group->uniforms.entries == NULL) {
+  }
+  
+  if (bind_group->uniforms.entries == NULL) {
     VERBOSE_WARNING("Uniforms not initialized in bind group: %d (shader: %s)",
                     group_index, shader->name);
     return NULL;

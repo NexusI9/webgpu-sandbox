@@ -16,11 +16,13 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
 
   // init mesh
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
-                                  .primitive = *primitive,
+                                  .primitive = primitive,
                                   .device = device,
                                   .queue = queue,
                                   .name = "Gizmo transform",
                               });
+
+
   // add shader
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
@@ -35,6 +37,7 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
   const float fixed_size = GIZMO_TRANSFORM_SIZE;
   shader_update_uniform(mesh_shader_fixed(mesh), 1, 0, (void *)rgba);
   shader_update_uniform(mesh_shader_fixed(mesh), 1, 1, (void *)&fixed_size);
+ 
 
   // scale gizmo (cpu side as well, so the hitbox are correct dimension)
   // mesh_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
@@ -72,6 +75,7 @@ void gizmo_transform_create_handles(
     gizmo_transform_create_mesh(mesh, &mesh_primitive, &rgba, desc->queue,
                                 desc->device);
 
+
     // rotate
     mesh_rotate(mesh, (vec3){
                           (i == 2) * 90.0f,
@@ -84,6 +88,8 @@ void gizmo_transform_create_handles(
     // add to interactive list
     mesh_ref_list_insert(interactive_list, mesh);
   }
+
+  primitive_destroy(&mesh_primitive);
 }
 
 void gizmo_transform_origin(GizmoTransform *gizmo, vec3 *position) {

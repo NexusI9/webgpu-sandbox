@@ -1,8 +1,9 @@
 #include "attribute.h"
-#include "../utils/system.h"
 #include "../utils/vector/vector.h"
 #include "core.h"
 #include "string.h"
+
+#include "../utils/system.h"
 
 static void vertex_attribute_replace(VertexAttribute *, float *, VertexOffset,
                                      size_t);
@@ -56,7 +57,8 @@ void vertex_attribute_set_uv(VertexAttribute *va, vertex_uv *uv) {
   vertex_attribute_replace(va, *uv, VertexOffset_Uv, sizeof(vertex_uv));
 }
 
-VertexStatus vertex_attribute_copy(VertexAttribute *src, VertexAttribute *dest) {
+VertexStatus vertex_attribute_copy(VertexAttribute *src,
+                                   VertexAttribute *dest) {
 
   if (dest->entries)
     vertex_attribute_destroy(dest);
@@ -81,7 +83,7 @@ VertexStatus vertex_attribute_copy(VertexAttribute *src, VertexAttribute *dest) 
 }
 
 void vertex_attribute_destroy(VertexAttribute *va) {
-  // free(va->entries);
+  free(va->entries);
   va->entries = NULL;
   va->length = 0;
   va->capacity = 0;

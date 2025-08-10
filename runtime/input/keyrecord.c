@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "../utils/system.h"
+
 static void keyrec_update(KeyRecord *, const key_t, bool);
 static bool keyrec_match(KeyRecord *, const key_t *, const size_t);
 

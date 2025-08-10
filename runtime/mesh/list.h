@@ -1,6 +1,7 @@
 #ifndef _MESH_LIST_H_
 #define _MESH_LIST_H_
 #include "./core.h"
+#include "../utils/dyli.h"
 
 typedef struct {
   struct Mesh *entries;
@@ -8,7 +9,7 @@ typedef struct {
   size_t length;
 } MeshList;
 
-MeshStatus mesh_list_create(MeshList *, size_t);
+DynamicListStatus mesh_list_create(MeshList *, size_t);
 Mesh *mesh_list_new_mesh(MeshList *);
 
 void mesh_list_translate(MeshList *, vec3);

@@ -3,6 +3,8 @@
 #include "webgpu/webgpu.h"
 #include <stdlib.h>
 
+#include "../utils/system.h"
+
 /**
    Transforms bindgroups into pipeline layouts and returns the generated
    pipeline descriptor

@@ -4,7 +4,9 @@
 #include "../runtime/geometry/line/line.h"
 #include "../utils/math.h"
 #include "anchor.h"
-#include <string.h>
+#include "string.h"
+
+#include "../utils/system.h"
 
 static bool mesh_topology_wireframe_is_face(VertexIndex *);
 
@@ -176,7 +178,6 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
                     .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,
                 });
-
 
   return MeshTopologyWireframeStatus_Success;
 }

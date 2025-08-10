@@ -1,38 +1,18 @@
 #include "list.h"
 #include "../../utils/system.h"
 #include "core.h"
+#include "string.h"
+#include <stdlib.h>
 
-MeshStatus mesh_list_create(MeshList *list, size_t capacity) {
+DynamicListStatus mesh_list_create(MeshList *list, size_t capacity) {
 
-  list->entries = malloc(capacity * sizeof(Mesh));
-  if (list->entries == NULL) {
-    VERBOSE_WARNING("Cannot create new mesh list");
-    return 1;
-  }
-
-  list->length = 0;
-  list->capacity = capacity;
-
-  return 0;
+  return dyli_create((void *)&list->entries, &list->capacity, &list->length,
+                     sizeof(Mesh), capacity, "Mesh list");
 }
 
 Mesh *mesh_list_new_mesh(MeshList *list) {
-
-  if (list->length == list->capacity) {
-    size_t new_capacity = list->capacity * 2;
-    Mesh *temp = realloc(list->entries, sizeof(Mesh) * new_capacity);
-
-    if (temp) {
-      list->entries = temp;
-      list->capacity = new_capacity;
-    } else {
-      VERBOSE_WARNING("Scene mesh list reached full capacity, could not "
-                      "reallocate new space\n");
-      return 0;
-    }
-  }
-
-  return &list->entries[list->length++];
+  return (Mesh *)dyli_new_entry((void *)&list->entries, &list->capacity,
+                                &list->length, sizeof(Mesh), "Mesh list");
 }
 
 void mesh_list_translate(MeshList *list, vec3 position) {

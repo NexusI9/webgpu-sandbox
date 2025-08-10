@@ -1,7 +1,8 @@
 #include "ref_list.h"
-#include "../utils/system.h"
 #include "core.h"
 #include <string.h>
+
+#include "../utils/system.h"
 
 DynamicListStatus mesh_ref_list_create(MeshRefList *list,
                                        const size_t capacity) {

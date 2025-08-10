@@ -1,6 +1,7 @@
 #include "anchor.h"
-#include "../utils/system.h"
 #include "string.h"
+
+#include "../utils/system.h"
 
 /**
      ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖
@@ -71,9 +72,9 @@ int mesh_topology_anchor_expand(MeshTopologyAnchor *anchor) {
 
 int mesh_topology_anchor_create(MeshTopologyAnchor *anchor, size_t capacity) {
 
+  anchor->entries = malloc(sizeof(vindex_t) * capacity);
   anchor->capacity = capacity;
   anchor->length = 0;
-  anchor->entries = malloc(sizeof(vindex_t) * capacity);
 
   if (anchor->entries == NULL) {
     VERBOSE_ERROR("Couldn't create new line mesh anchor.");
@@ -228,7 +229,7 @@ int mesh_topology_anchor_list_create(MeshTopologyAnchorList *list,
 
 /**
    Insert a COPY of the anchor in the anchor list.
-   If the anchor already exists it appends the anchor's indexes int he existing
+   If the anchor already exists it appends the anchor's indexes int the existing
    item.
  */
 int mesh_topology_anchor_list_insert(MeshTopologyAnchorList *list,
@@ -247,7 +248,7 @@ int mesh_topology_anchor_list_insert(MeshTopologyAnchorList *list,
       mesh_topology_anchor_list_find_hash(list, position);
 
   if (existing_anchor != NULL) {
-    mesh_topology_anchor_insert(existing_anchor, index, 2);
+    mesh_topology_anchor_insert(existing_anchor, index, length);
 
   } else {
 
@@ -281,7 +282,8 @@ mesh_topology_anchor_list_new_hash(MeshTopologyAnchorList *list,
 
   // check capacity
   if (list->length >= list->capacity * 0.75 &&
-      mesh_topology_anchor_list_expand(list) != MeshTopologyAnchorStatus_Success) {
+      mesh_topology_anchor_list_expand(list) !=
+          MeshTopologyAnchorStatus_Success) {
     VERBOSE_ERROR("Couldn't expand wireframe anchor list.");
     return NULL;
   }
@@ -300,8 +302,8 @@ mesh_topology_anchor_list_new_index(MeshTopologyAnchorList *list,
                                     vindex_t index) {
 
   // check capacity
-  if (list->capacity < index &&
-      mesh_topology_anchor_list_expand(list) != MeshTopologyAnchorStatus_Success) {
+  if (list->capacity < index && mesh_topology_anchor_list_expand(list) !=
+                                    MeshTopologyAnchorStatus_Success) {
     VERBOSE_ERROR("Couldn't expand wireframe anchor list.");
     return NULL;
   }

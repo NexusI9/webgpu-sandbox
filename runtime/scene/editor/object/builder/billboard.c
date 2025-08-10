@@ -15,17 +15,11 @@ void seo_create_billboard(Mesh *mesh,
   Primitive plane = primitive_plane();
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
-                                  .primitive = plane,
+                                  .primitive = &plane,
                                   .device = desc->device,
                                   .queue = desc->queue,
                                   .name = "SEO Billboard",
                               });
-
-  // set mesh position to light position
-  mesh_translate(mesh, *desc->position);
-
-  // scale down gizmo
-  mesh_scale(mesh, *desc->scale);
 
   // assign billboard shader
   mesh_shader_create_fixed(mesh,
@@ -36,6 +30,12 @@ void seo_create_billboard(Mesh *mesh,
                                .name = "SEO billboard shader",
                                .pipeline = std_pipeline(PipelineType_Billboard),
                            });
+
+  // set mesh position to light position
+  mesh_translate(mesh, *desc->position);
+
+  // scale down gizmo
+  mesh_scale(mesh, *desc->scale);
 
   // TODO: create UI Atlas
   Texture light_texture;
@@ -52,7 +52,6 @@ void seo_create_billboard(Mesh *mesh,
                             .dimension = WGPUTextureViewDimension_2D,
                             .format = WGPUTextureFormat_RGBA8Unorm,
                         });
-
 
   shader_update_sampler(mesh_shader_fixed(mesh), 1, 1,
                         &(WGPUSamplerDescriptor){

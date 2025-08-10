@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void vertex_attribute_print(VertexAttributeList *list) {
+void mbin_vertex_attribute_print(VertexAttributeList *list) {
 
   if (list->length == 0)
     return;
@@ -18,7 +18,7 @@ void vertex_attribute_print(VertexAttributeList *list) {
   printf("\n");
 }
 
-VertexAttributeListStatus vertex_attribute_list_insert(VertexAttributeList *list,
+VertexAttributeListStatus mbin_vertex_attribute_list_insert(VertexAttributeList *list,
                                  mbin_vertex_t *value, size_t count) {
 
   // init list
@@ -54,7 +54,7 @@ VertexAttributeListStatus vertex_attribute_list_insert(VertexAttributeList *list
 /**
    Split a line into float values and insert it in the given list.
  */
-void vertex_attribute_from_line(const char *line, void *data) {
+void mbin_vertex_attribute_from_line(const char *line, void *data) {
 
   VertexAttributeCallbackDescriptor *desc =
       (VertexAttributeCallbackDescriptor *)data;
@@ -69,24 +69,24 @@ void vertex_attribute_from_line(const char *line, void *data) {
   while (token) {
     // convert char to float
     float value = strtof(token, NULL);
-    vertex_attribute_list_insert(desc->list, &value, 1);
+    mbin_vertex_attribute_list_insert(desc->list, &value, 1);
     token = strtok(0, VERTEX_SEPARATOR);
   }
 }
 
-void vertex_attribute_cache(FILE *file, VertexAttributeList **list) {
+void mbin_vertex_attribute_cache(FILE *file, VertexAttributeList **list) {
 
   // cache attributes in their respective array
   for (int v = 0; v < 3; v++) {
     VertexAttributeList *list_attr = list[v];
-    file_read_line_prefix(file, list_attr->prefix, vertex_attribute_from_line,
+    file_read_line_prefix(file, list_attr->prefix, mbin_vertex_attribute_from_line,
                           &(VertexAttributeCallbackDescriptor){
                               .list = list_attr,
                           });
   }
 }
 
-void vertex_attribute_free(VertexAttributeList *list) {
+void mbin_vertex_attribute_free(VertexAttributeList *list) {
 
   if (list->entries) {
     free(list->entries);
@@ -99,7 +99,7 @@ void vertex_attribute_free(VertexAttributeList *list) {
   }
 }
 
-VertexAttributeListStatus vertex_attribute_copy(VertexAttributeList *src, VertexAttributeList *dest) {
+VertexAttributeListStatus mbin_vertex_attribute_copy(VertexAttributeList *src, VertexAttributeList *dest) {
   dest->capacity = src->capacity;
   dest->length = src->length;
   dest->dimension = src->dimension;

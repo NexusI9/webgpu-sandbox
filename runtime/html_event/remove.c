@@ -2,6 +2,8 @@
 #include "core.h"
 #include <string.h>
 
+#include "../utils/system.h"
+
 static void html_event_remove(void *, size_t *, size_t, size_t);
 static void html_event_traverse_remove(void *, size_t *, size_t, size_t);
 
@@ -62,7 +64,6 @@ void html_event_remove_mouse_down(id_t id) {
 
   html_event_traverse_remove(entries, length, id, type_size);
 }
-
 
 void html_event_remove_mouse_up(id_t id) {
 

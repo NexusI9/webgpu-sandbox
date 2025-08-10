@@ -27,15 +27,11 @@ void mesh_shader_bind_views_any(Mesh *mesh,
       {
           .binding = mvp->projection,
           .data = &uViewport,
-          .size = sizeof(ViewportUniform),
-          .offset = 0,
       },
       // camera
       {
           .binding = mvp->view,
           .data = &uCamera,
-          .size = sizeof(CameraUniform),
-          .offset = 0,
           /* .update =
               {
                   .callback = camera_uniform_update_matrix,
@@ -47,8 +43,6 @@ void mesh_shader_bind_views_any(Mesh *mesh,
       {
           .binding = mvp->model,
           .data = &uMesh,
-          .size = sizeof(MeshUniform),
-          .offset = 0,
           /*.update =
               {
                   .callback = mesh_uniform_model_update,

@@ -61,7 +61,7 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     VertexAttributeList *cached_position =
         cached_attributes[VertexAttributeListIndex_Position];
 
-    vertex_attribute_copy(cached_position, &cached_line_normal);
+    mbin_vertex_attribute_copy(cached_position, &cached_line_normal);
 
     // create uv attributes
     const size_t new_uv_length = 8;
@@ -75,7 +75,7 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     const float thickness = 0.005f;
     const float A_mul = 1.0f;
     const float B_mul = -1.0f;
-    mbin_vertex_t new_uv[new_uv_length] = {
+    mbin_vertex_t new_uv[8] = {
 
         // A +1
         1.0f,  // side
@@ -95,7 +95,7 @@ void cache_lines(IndexAttributeList *cached_lines_index,
 
     };
 
-    vertex_attribute_list_insert(&cached_line_uv, new_uv, new_uv_length);
+    mbin_vertex_attribute_list_insert(&cached_line_uv, new_uv, new_uv_length);
 
     // set line opposite vertex
     index_attribute_line_set_opposite(cached_lines_index);
@@ -169,11 +169,11 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
   cached_attributes[VertexAttributeListIndex_Normal] = &cached_normal;
   cached_attributes[VertexAttributeListIndex_Uv] = &cached_uv;
 
-  vertex_attribute_cache(f, cached_attributes);
+  mbin_vertex_attribute_cache(f, cached_attributes);
 
 #ifdef VERBOSE
   for (int v = 0; v < 3; v++)
-    vertex_attribute_print(cached_attributes[v]);
+    mbin_vertex_attribute_print(cached_attributes[v]);
 #endif
 
   // cache faces index
@@ -200,7 +200,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
   return 0;
 }
 
-int main(int argc, char **argv) {
+int mbin_main(int argc, char **argv) {
 
   if (argc < 3) {
     fprintf(stderr, "Usage: %s <obj_path1> [<obj_path2> ...] <output_dir>\n",

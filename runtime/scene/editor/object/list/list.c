@@ -11,7 +11,7 @@ SceneEditorObject *seo_list_insert(SceneEditorObjectList *list,
                                    SceneEditorObject *entry) {
 
   if (dyli_insert((void *)&list->entries, &list->capacity, &list->length,
-                  sizeof(SceneEditorObject), (void *)&entry, 1,
+                  sizeof(SceneEditorObject), (void *)entry, 1,
                   "Scene Editor Object list") != DynamicListStatus_Success)
     return NULL;
 
@@ -19,7 +19,8 @@ SceneEditorObject *seo_list_insert(SceneEditorObjectList *list,
 }
 
 SceneEditorObject *seo_list_new_entry(SceneEditorObjectList *list) {
-  SceneEditorObject new_entry;
-  seo_list_insert(list, &new_entry);
-  return &list->entries[list->length - 1];
+
+  return (SceneEditorObject *)dyli_new_entry(
+      (void *)&list->entries, &list->capacity, &list->length,
+      sizeof(SceneEditorObject), "Scene Editor Object list");
 }

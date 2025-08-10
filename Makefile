@@ -23,6 +23,7 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 #   - VERBOSE : enable verbose
 #   - VERBOSE_BINDING_PHASE : print shader binding structure
 #   - VERBOSE_BUILDING_PHASE : print mesh building phase
+#   - DEBUG_MALLOC : print each allocation size
 #
 MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE -DENGINE_EDITOR
 
@@ -41,13 +42,23 @@ SHADER_FILES := $(addprefix --preload-file , $(COMPILE_WGSL) $(WGSL_FILES))
 # GLTF files
 GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 's/^/--preload-file /')
 
-#MBIN files
+# MBIN files
 MBIN_FILES := $(shell find ./resources/assets/mbin -type f -name "*.mbin" | sed 's/^/--preload-file /')
 
-#Textures files
+# Textures files
 TEXTURE_FILES := $(shell find ./resources/assets/texture \( -name "*.png" -o -name "*.jpg" \) -type f | sed 's/^/--preload-file /')
 
-
+# Dev mode
+# Need to allow memory growth since ASan shadow memory
+# Allocate 400MB+ on the heap on start creating a
+# Heap overflow
+DEV_FLAGS := \
+	-fsanitize=address \
+	-fsanitize=undefined \
+	-g \
+	-sALLOW_MEMORY_GROWTH=1 \
+	-sMAXIMUM_MEMORY=1073741824 \
+	-sINITIAL_MEMORY=67108864 
 
 # Main output build script
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
@@ -73,13 +84,13 @@ clean_shader:
 	@echo "done"
 
 wasm:
-	@emcc $(MACROS) $(C_FILES) -o $(OUTPUT) \
+	@emcc $(DEV_FLAGS) $(MACROS) $(C_FILES) -o $(OUTPUT) \
 		-I include \
 		-s NO_EXIT_RUNTIME=1 \
 		-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
 		-s EXPORTED_FUNCTIONS="['_main']" \
 		-s USE_WEBGPU=1 \
-		-s SINGLE_FILE \
+		-s SINGLE_FILE  \
 		$(SHADER_FILES) \
 		$(GLTF_FILES) \
 		$(MBIN_FILES) \

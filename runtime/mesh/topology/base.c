@@ -1,8 +1,9 @@
 #include "base.h"
 #include "../backend/buffer.h"
-#include "../utils/system.h"
 #include "anchor.h"
 #include <string.h>
+
+#include "../utils/system.h"
 
 static void mesh_topology_base_create_anchor(MeshTopologyBase *);
 
@@ -11,8 +12,7 @@ static void mesh_topology_base_create_anchor(MeshTopologyBase *);
  */
 void mesh_topology_base_create(MeshTopologyBase *base,
                                const VertexAttribute *va, const VertexIndex *vi,
-                               const WGPUDevice device,
-                               const WGPUQueue queue) {
+                               const WGPUDevice device, const WGPUQueue queue) {
 
   // create vertex attributes
   mesh_topology_base_create_vertex_attribute(base, va, device, queue);
@@ -37,10 +37,9 @@ MeshTopology mesh_topology_base_vertex(MeshTopologyBase *topo) {
 /**
    Create the base vertex attributes and upload data to buffer
  */
-MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(MeshTopologyBase *base,
-                                               const VertexAttribute *va,
-                                               const WGPUDevice device,
-                                               const WGPUQueue queue) {
+MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
+    MeshTopologyBase *base, const VertexAttribute *va, const WGPUDevice device,
+    const WGPUQueue queue) {
 
   // reset buffer
   if (base->attribute.buffer) {
@@ -48,14 +47,18 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(MeshTopologyBa
     base->attribute.buffer = NULL;
   }
 
-  base->attribute.entries = va->entries;
   base->attribute.length = va->length;
   base->attribute.capacity = va->length;
 
+  printf("pirmitive vertex attributes: %p\n", va->entries);
+  // copy vertex attributes
+  size_t vattr_size = va->length * sizeof(vattr_t);
+  base->attribute.entries = malloc(vattr_size);
+  memcpy(base->attribute.entries, va->entries, vattr_size);
+
   if (base->attribute.length) {
-    if (device == NULL || queue == NULL) 
+    if (device == NULL || queue == NULL)
       VERBOSE_ERROR("Mesh has no device or queue.");
-    
 
     buffer_create(&base->attribute.buffer,
                   &(CreateBufferDescriptor){
@@ -75,10 +78,9 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(MeshTopologyBa
 /**
    Create the base index attributes and upload data to buffer
  */
-MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
-                                           const VertexIndex *vi,
-                                           const WGPUDevice device,
-                                           const WGPUQueue queue) {
+MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(
+    MeshTopologyBase *base, const VertexIndex *vi, const WGPUDevice device,
+    const WGPUQueue queue) {
 
   // reset buffer
   if (base->index.buffer) {
@@ -86,15 +88,20 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(MeshTopologyBase *
     base->index.buffer = NULL;
   }
 
-  base->index.entries = vi->entries;
   base->index.length = vi->length;
   base->index.capacity = vi->length;
 
+  printf("index length: %lu\n", base->index.length);
+  size_t vindex_size = vi->length * sizeof(vindex_t);
+  base->index.entries = malloc(vindex_size);
+
+  printf("index entries: %p\n", base->index.entries);
+  memcpy(base->index.entries, vi->entries, vindex_size);
+
   if (base->index.length) {
 
-    if (device == NULL || queue == NULL) 
+    if (device == NULL || queue == NULL)
       VERBOSE_ERROR("Mesh has no device or queue.");
-    
 
     buffer_create(&base->index.buffer,
                   &(CreateBufferDescriptor){
@@ -125,7 +132,6 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
 
   // 1. store based on position (hash)
   for (size_t i = 0; i < base->index.length; i++) {
-
     vindex_t base_index = base->index.entries[i];
     vattr_t *base_vertex = &base->attribute.entries[base_index * VERTEX_STRIDE];
     vec3 position;

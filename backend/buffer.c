@@ -3,6 +3,8 @@
 #include "stb/stb_image.h"
 #include "webgpu/webgpu.h"
 
+#include "../utils/system.h"
+
 /**
    Buffer methods are in charge to upload data to the GPU
  */

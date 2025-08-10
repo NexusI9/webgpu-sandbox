@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "../utils/system.h"
+
 // Listener Flags
 static inline uint8_t html_event_listener_flag(HTMLEventType);
 static inline void html_event_listener_flag_set(HTMLEventType);
@@ -13,8 +15,10 @@ static inline void html_event_check_callback(HTMLEventType, void *);
 
 // Event lists inserts
 static HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
-                             size_t *length, size_t *capacity, size_t type_size,
-                             HTMLEventType event_type, void *event_callback);
+                                         size_t *length, size_t *capacity,
+                                         size_t type_size,
+                                         HTMLEventType event_type,
+                                         void *event_callback);
 
 uint8_t html_event_listener_flag(HTMLEventType type) { return 1u << type; }
 bool html_event_has_listener(HTMLEventType type) {
@@ -87,9 +91,10 @@ void html_event_check_callback(HTMLEventType type, void *event_callback) {
   }
 }
 
-HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries, size_t *length,
-                      size_t *capacity, size_t type_size,
-                      HTMLEventType event_type, void *event_callback) {
+HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
+                                  size_t *length, size_t *capacity,
+                                  size_t type_size, HTMLEventType event_type,
+                                  void *event_callback) {
 
   html_event_check_callback(event_type, event_callback);
 

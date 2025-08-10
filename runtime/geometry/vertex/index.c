@@ -2,6 +2,7 @@
 #include "core.h"
 #include "string.h"
 #include <stddef.h>
+
 #include "../utils/system.h"
 
 VertexStatus vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
@@ -29,7 +30,7 @@ VertexStatus vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
 }
 
 void vertex_index_destroy(VertexIndex *vi) {
-  // free(vi->entries);
+  free(vi->entries);
   vi->entries = NULL;
   vi->length = 0;
   vi->capacity = 0;
@@ -41,7 +42,8 @@ void vertex_index_print(VertexIndex *vi) {
   printf("\n");
 }
 
-VertexStatus vertex_index_create(VertexIndex *vi, size_t capacity, WGPUBuffer buffer) {
+VertexStatus vertex_index_create(VertexIndex *vi, size_t capacity,
+                                 WGPUBuffer buffer) {
 
   vi->length = 0;
   vi->capacity = capacity;
@@ -58,7 +60,8 @@ VertexStatus vertex_index_create(VertexIndex *vi, size_t capacity, WGPUBuffer bu
   return VertexStatus_Success;
 }
 
-VertexStatus vertex_index_insert(VertexIndex *vi, vindex_t *index_list, size_t length) {
+VertexStatus vertex_index_insert(VertexIndex *vi, vindex_t *index_list,
+                                 size_t length) {
 
   // check capacity
   if (vi->length + length >= vi->capacity) {

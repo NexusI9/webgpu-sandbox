@@ -5,9 +5,11 @@
 void viewport_create(Viewport *viewport,
                      const ViewportCreateDescriptor *view_desc) {
   // set viewport default values
-  viewport->fov = view_desc->fov, viewport->near_clip = view_desc->near_clip,
-  viewport->far_clip = view_desc->far_clip,
-  viewport->aspect = view_desc->aspect, viewport->clock = view_desc->clock,
+  viewport->fov = view_desc->fov;
+  viewport->near_clip = view_desc->near_clip;
+  viewport->far_clip = view_desc->far_clip;
+  viewport->aspect = view_desc->aspect;
+  viewport->clock = view_desc->clock;
   viewport->width = view_desc->width;
   viewport->height = view_desc->height;
 

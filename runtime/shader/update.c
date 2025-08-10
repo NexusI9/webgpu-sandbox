@@ -43,8 +43,9 @@ void shader_update_texture_view(Shader *shader, bind_group_index group_index,
 
 void shader_update_uniform(Shader *shader, bind_group_index group_index,
                            bind_index index, void *data) {
-
+  
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
+
   ShaderBindGroupUniformEntry *bound_uniform =
       shader_find_uniform(shader, group_index, index);
 
@@ -54,11 +55,9 @@ void shader_update_uniform(Shader *shader, bind_group_index group_index,
 
     wgpuQueueWriteBuffer(shader->queue, bound_uniform->buffer, 0,
                          bound_uniform->data, bound_uniform->size);
-
     // rebuild group
     shader_bind_group_refresh(bind_group, group_index, shader->device,
                               &shader_pipeline(shader)->handle);
-
   } else {
     VERBOSE_WARNING(
         "Could not find the bound texture in group: %d, index: %d, make sure "
@@ -74,8 +73,6 @@ void shader_update_sampler(Shader *shader, bind_group_index group_index,
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupSamplerEntry *bound_sampler =
       shader_find_sampler(shader, group_index, index);
-
-  // WGPUTextureView previous_texture_view = bound_texture->texture_view;
 
   if (bound_sampler != NULL) {
 

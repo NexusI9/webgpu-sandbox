@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../utils/system.h"
+
 /**
     ▗▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄▖
    ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌

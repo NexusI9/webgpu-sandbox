@@ -9,6 +9,7 @@ typedef enum {
   DynamicListStatus_AllocFail,
   DynamicListStatus_UnfoundEntry,
   DynamicListStatus_UndefError,
+  DynamicListStatus_NotInit,
 } DynamicListStatus;
 
 typedef struct {

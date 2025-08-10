@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../utils/system.h"
+
 /**
    Allocate necessary resource for dynamic list and update the capacity and
    length.
@@ -32,6 +34,7 @@ DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
                               const char *label) {
 
   size_t new_capacity = scale * (*capacity);
+
   void *temp = (void *)realloc(*entries, new_capacity * type_size);
 
   if (temp == NULL)
@@ -47,18 +50,21 @@ DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
                               size_t type_size, void *entry, size_t count,
                               const char *label) {
 
-  if (*capacity < *length + count) {
-
-    size_t new_capacity = (*capacity == 0) ? count : *capacity * 2;
-    while (new_capacity < *length + count)
-      new_capacity *= 2;
-
-    if (dyli_expand(entries, capacity, length, type_size, new_capacity,
-                    label) != DynamicListStatus_Success)
-      return DynamicListStatus_UndefError;
+  if (*entries == NULL || *capacity == 0) {
+    VERBOSE_ERROR("Dynamic list '%s' not initialized, insertion aborted.",
+                  label);
+    return DynamicListStatus_NotInit;
   }
 
-  void *target = (char *)(*entries) + (*length * type_size);
+  if (*capacity < *length + count) {
+    size_t new_capacity = (*capacity == 0) ? count : *capacity * 2;
+    while (new_capacity < *length + count)
+      if (dyli_expand(entries, capacity, length, type_size, 2, label) !=
+          DynamicListStatus_Success)
+        return DynamicListStatus_UndefError;
+  }
+
+  char *target = (char *)(*entries) + (*length * type_size);
   memcpy(target, entry, type_size * count);
   *length += count;
 
@@ -122,12 +128,23 @@ DynamicListStatus dyli_remove_at_index(void *entries, size_t *length,
 void *dyli_new_entry(void **entries, size_t *capacity, size_t *length,
                      size_t type_size, const char *label) {
 
-  void *mock_entry = NULL;
-  if (dyli_insert(entries, capacity, length, type_size, &mock_entry, 1,
-                  label) == DynamicListStatus_Success)
-    return (char *)(*entries) + ((*length - 1) * type_size);
+  // Ensure capacity first
+  if (*length >= *capacity) {
+    if (dyli_expand(entries, capacity, length, type_size, 2, label) !=
+        DynamicListStatus_Success)
+      return NULL;
+  }
 
-  return NULL;
+  // Compute pointer to new slot
+  void *slot = (char *)(*entries) + ((*length) * type_size);
+
+  // Zero-init for safety
+  memset(slot, 0, type_size);
+
+  // Increment length AFTER assignment
+  (*length)++;
+
+  return slot;
 }
 
 DynamicListStatus dyli_transfert(const void *src_entries,

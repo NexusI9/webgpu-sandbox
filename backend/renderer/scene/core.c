@@ -13,10 +13,9 @@
 
 static void scene_renderer_init(SceneRenderer *);
 
-static int scene_renderer_resize(SceneRenderer *, int,
-                                 const EmscriptenUiEvent *, void *);
-
 static void scene_renderer_init_render_pass(SceneRenderer *);
+
+static void scene_renderer_resize(SceneRenderer *);
 
 static void scene_renderer_render(void *);
 
@@ -38,7 +37,7 @@ void scene_renderer_create(SceneRenderer *renderer,
   renderer->texture.multisample = rd->multisampling_count;
 
   // define context size
-  scene_renderer_resize(renderer, 0, NULL, NULL);
+  scene_renderer_resize(renderer);
 
   // init shared render textures
   scene_renderer_init_render_textures(renderer);
@@ -163,8 +162,16 @@ void scene_renderer_draw_layout_callback(void *data) {
   });
 }
 
-int scene_renderer_resize(SceneRenderer *renderer, int event_type,
-                          const EmscriptenUiEvent *ui_event, void *user_data) {
+bool scene_renderer_resize_callback(int event_type,
+                                    const EmscriptenUiEvent *ui_event,
+                                    void *user_data) {
+
+  SceneRenderer *renderer = (SceneRenderer *)user_data;
+  scene_renderer_resize(renderer);
+  return 1;
+}
+
+void scene_renderer_resize(SceneRenderer *renderer) {
 
   double w, h;
 
@@ -185,8 +192,6 @@ int scene_renderer_resize(SceneRenderer *renderer, int event_type,
   }
 
   renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
-
-  return 1;
 }
 
 double scene_renderer_dpi(double value) {
@@ -199,9 +204,8 @@ double scene_renderer_dpi(double value) {
 }
 
 void scene_renderer_init(SceneRenderer *renderer) {
-  scene_renderer_resize(renderer, 0, NULL, NULL);
-  emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, 0, false,
-                                 (em_ui_callback_func)scene_renderer_resize);
+  emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, renderer,
+                                 false, scene_renderer_resize_callback);
 }
 
 void scene_renderer_close(const SceneRenderer *renderer) {

@@ -161,9 +161,6 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                                 .index = (VertexIndex){0},
                             });
 
-    // set mesh position
-    loader_gltf_mesh_position(scene_mesh, gl_mesh.name, data);
-
     /*
       GLTF PRIMITIVES
       primitives are vertices that belong to a same mesh but have different
@@ -270,7 +267,7 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       // Use default pbr shader as default
       // TODO: Add a custom path for different shader in loader configuration
       cgltf_material *material = current_primitive.material;
-      
+
       mesh_shader_create(target_mesh,
                          &(ShaderCreateDescriptor){
                              .pipeline = std_pipeline(PipelineType_PBR),
@@ -286,6 +283,9 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
                                 &vert_index, target_mesh->device,
                                 target_mesh->queue);
+
+      // set mesh position
+      loader_gltf_mesh_position(scene_mesh, gl_mesh.name, data);
 
       scene_add_mesh(scene, target_mesh, NULL);
     }
@@ -369,7 +369,7 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
 
 /**
     Extract textures from texture_view
-    1. if uri => load image (TODO)
+    1. if uri => load image
     2. if buffer_view => store buffer & size
  */
 LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
@@ -382,8 +382,12 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
     // channels
     cgltf_image *image = texture_view->texture->image;
     int channels;
-    if (image->buffer_view) {
+    if (image->uri) {
       cgltf_decode_uri(image->uri);
+      *data = stbi_load(image->uri, width, height, &channels,
+                        TEXTURE_CHANNELS_RGBA);
+
+    } else if (image->buffer_view) {
 
       unsigned char *gltf_data =
           (unsigned char *)image->buffer_view->buffer->data +
@@ -396,14 +400,17 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
                                     width, height, &channels,
                                     TEXTURE_CHANNELS_RGBA);
 
-      *size = (*width) * (*height) * TEXTURE_CHANNELS_RGBA;
-
-      return LoaderGLTFStatus_TextureFound;
-
     } else {
       VERBOSE_PRINT(
           "Loader GLTF: Texture found but couldn't be loaded, loading "
           "default texture");
+      return LoaderGLTFStatus_LoadError;
+    }
+
+    if (*data != NULL) {
+      *size = (*width) * (*height) * TEXTURE_CHANNELS_RGBA;
+      return LoaderGLTFStatus_TextureFound;
+    } else {
       return LoaderGLTFStatus_LoadError;
     }
 

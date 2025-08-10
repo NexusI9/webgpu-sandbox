@@ -18,7 +18,7 @@ static void *loader_mbin_read(const char *, size_t *);
 
 MBINLoaderStatus loader_mbin_load(MBINFile **file, const char *path) {
 
-  VERBOSE_IMPORT("MBIN file");
+  VERBOSE_IMPORT("MBIN file: %s", path);
   // directly map data into memory for unix environments
   // open: directly communicate with linux kernel
   // fopen: provide FILE, does not depend on OS kernel
@@ -125,23 +125,30 @@ MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
   MBINFile *mbin;
 
   if (loader_mbin_load(&mbin, desc->path)) {
-    VERBOSE_ERROR("Error while loading Mesh Binary file to Primitive\n");
+    VERBOSE_ERROR("Error while loading Mesh Binary file to Primitive.");
     return MBINLoaderStatus_UndefError;
   }
 
   // map referenced primitive vertex attribuets
   VertexAttribute *vert_attr = &desc->primitive->vertex;
+
   vert_attr->capacity = mbin->vertex_length;
   vert_attr->length = mbin->vertex_length;
-  vert_attr->entries = malloc(sizeof(vattr_t) * mbin->vertex_length);
+  vert_attr->entries = malloc(sizeof(vattr_t) * vert_attr->length);
+
+  printf("entries: %p\n", vert_attr->entries);
 
   if (vert_attr->entries == NULL) {
-    VERBOSE_ERROR("Couldn't allocate memory for vertex attribute\n");
+    VERBOSE_ERROR("Couldn't allocate memory for vertex attribute");
     return MBINLoaderStatus_AllocFail;
   }
 
-  MBIN_U32Float converter;
+  printf("length: %lu\n", vert_attr->length);
+  printf("capacity: %lu\n", vert_attr->capacity);
+  printf("entries: %p\n", vert_attr->entries);
 
+  // manually copy and convert mbin file uint to float via union
+  MBIN_U32Float converter;
   for (size_t v = 0; v < mbin->vertex_length; v++) {
     converter.u = mbin->data[v];
     vert_attr->entries[v] = converter.f;
@@ -151,7 +158,11 @@ MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
   VertexIndex *index_attr = &desc->primitive->index;
   index_attr->capacity = mbin->index_length;
   index_attr->length = mbin->index_length;
-  index_attr->entries = malloc(sizeof(vindex_t) * mbin->vertex_length);
+
+  printf("index capacity: %lu\n", index_attr->capacity);
+  printf("index length: %lu\n", index_attr->length);
+
+  index_attr->entries = malloc(sizeof(vindex_t) * mbin->index_length);
 
   if (index_attr->entries == NULL) {
     VERBOSE_ERROR("Couldn't allocate memory for vertex attribute\n");

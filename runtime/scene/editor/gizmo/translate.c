@@ -15,4 +15,5 @@ void gizmo_transform_translate_create(MeshRefList *list,
           .list = desc->list,
           .mbin_path = "./resources/assets/mbin/translate.mbin",
       });
+
 }

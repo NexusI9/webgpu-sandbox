@@ -26,7 +26,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                          SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init scene layers
-  scene_layer_set_create(&scene->layers, SCENE_LAYER_SET_CAPACITY);
+  scene_layer_init(&scene->layers);
 
   // init draw callbacks configuration
   scene_init_draw_layouts(scene);
@@ -56,26 +56,26 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
  */
 Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 
-  Camera camera;
+  Camera *camera = camera_list_new_camera(&scene->cameras);
 
   // create main camera
-  camera_create(&camera, &(CameraCreateDescriptor){
-                             .speed = 20.0f,
-                             .clock = clock,
-                             .mode = CameraMode_Edit,
-                             .sensitivity =
-                                 {
-                                     .move = 0.02f,
-                                     .rotate = 0.002f,
-                                     .zoom = 0.02f,
-                                 },
+  camera_create(camera, &(CameraCreateDescriptor){
+                            .speed = 20.0f,
+                            .clock = clock,
+                            .mode = CameraMode_Edit,
+                            .sensitivity =
+                                {
+                                    .move = 0.02f,
+                                    .rotate = 0.002f,
+                                    .zoom = 0.02f,
+                                },
 
-                         });
+                        });
 
   // init main camera position
-  camera_lookat(&camera, (vec3){20.0f, 20.0f, 20.0f}, (vec3){0.0f, 0.0f, 0.0f});
+  camera_lookat(camera, (vec3){20.0f, 20.0f, 20.0f}, (vec3){0.0f, 0.0f, 0.0f});
 
-  return camera_list_insert(&scene->cameras, &camera);
+  return camera;
 }
 
 /**

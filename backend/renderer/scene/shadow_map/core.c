@@ -116,7 +116,7 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
           },
   });
 
-  // !!DEBUG: Add views to scene
+  // DEBUG: Add views to scene
   /*for (size_t v = 0; v < debug_view_length(&debug_view_light); v++) {
     mesh *view = scene_new_mesh(scene, NULL);
     mesh *view_mesh = &debug_view_light.mesh[v];

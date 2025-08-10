@@ -5,6 +5,7 @@
 
 #define SCENE_LAYER_CAPACITY 16
 #define SCENE_LAYER_SET_CAPACITY 128
+#define SCENE_STD_LAYER_COUNT 4
 
 typedef enum {
   SceneLayerStatus_Success,
@@ -18,6 +19,7 @@ static const char *const SCENE_LAYER_GIZMO_TRANSFORM = "Gizmo Transform";
 static const char *const SCENE_LAYER_GIZMO_SELECTABLE = "Gizmo Selectable";
 static const char *const SCENE_LAYER_UNSELECTABLE = "Unselectable";
 
+
 typedef struct {
   char *name;
   MeshRefList meshes;
@@ -28,6 +30,8 @@ typedef struct {
   size_t capacity;
   SceneLayer *entries;
 } SceneLayerSet;
+
+void scene_layer_init(SceneLayerSet*);
 
 /*Layer*/
 SceneLayerStatus scene_layer_create(SceneLayer *, const char *, size_t);

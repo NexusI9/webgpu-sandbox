@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 void print_ivec3(const ivec3 vector) {
   printf("%d\t%d\t%d\n", vector[0], vector[1], vector[2]);
@@ -104,3 +105,21 @@ void print_bin(size_t const size, void const *const ptr) {
   }
   puts("");
 }
+
+#ifdef DEBUG_MALLOC
+
+#undef malloc
+#undef free
+
+void *custom_malloc(size_t size, const char *file, int line) {
+  printf("🔴 Allocating %zu bytes at %s:%d\n", size, file, line);
+  void *p = malloc(size);
+  return p;
+}
+
+void custom_free(void *ptr, const char *file, int line) {
+  printf("🟢 Freeing memory from %s:%d\n", file, line);
+  free(ptr);
+}
+
+#endif // DEBUG_MALLOC

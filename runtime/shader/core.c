@@ -1,10 +1,10 @@
 #include "core.h"
-
 #include "../backend/buffer.h"
 #include "../utils/file.h"
-#include "../utils/system.h"
 #include "build.h"
 #include "string.h"
+
+#include "../utils/system.h"
 
 /*
 

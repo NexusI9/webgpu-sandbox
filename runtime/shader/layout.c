@@ -1,6 +1,8 @@
 #include "layout.h"
 #include "./utils.h"
 
+#include "../utils/system.h"
+
 static inline void shader_layout_uniforms(Shader *, ShaderBindGroup *,
                                           WGPUBindGroupLayoutEntry *,
                                           uint16_t *);

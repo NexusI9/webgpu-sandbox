@@ -22,8 +22,10 @@ void gizmo_transform_rotate_create(MeshRefList *visual_list,
                               &(color){0.2f, 0.2f, 0.2f, 0.0f}, desc->queue,
                               desc->device);
 
-
   mesh_ref_list_insert(visual_list, sphere);
+
+  // free primitive
+  primitive_destroy(&sphere_primitive);
 
   // create axis then
   gizmo_transform_create_handles(
@@ -34,4 +36,6 @@ void gizmo_transform_rotate_create(MeshRefList *visual_list,
           .list = desc->list,
           .mbin_path = "./resources/assets/mbin/rotate.mbin",
       });
+
+
 }

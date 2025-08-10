@@ -6,7 +6,6 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-
 /**
    ▗▄▄▖ ▗▄▄▄▖▗▖  ▗▖▗▄▄▄ ▗▄▄▄▖▗▄▄▖
    ▐▌ ▐▌▐▌   ▐▛▚▖▐▌▐▌  █▐▌   ▐▌ ▐▌

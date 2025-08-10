@@ -50,7 +50,7 @@ typedef struct {
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  Primitive primitive;
+  Primitive* primitive;
   const char *name;
 } MeshCreatePrimitiveDescriptor;
 

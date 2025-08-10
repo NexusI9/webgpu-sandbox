@@ -99,12 +99,11 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture *texture,
    * maybe can use a "position-only" version to save a bit of memory */
   Primitive box_primitive = primitive_cube();
   Mesh *skybox_mesh = scene_new_mesh(scene);
-
   mesh_create_primitive(skybox_mesh, &(MeshCreatePrimitiveDescriptor){
                                          .device = scene_device(scene),
                                          .queue = scene_queue(scene),
                                          .name = "skybox mesh",
-                                         .primitive = box_primitive,
+                                         .primitive = &box_primitive,
                                      });
 
   // assign shader
@@ -167,7 +166,6 @@ void prefab_skybox_create(Scene *scene,
     Texture layer_texture;
     if (texture_create_from_file(&layer_texture, path, false) ==
         TextureStatus_Success) {
-
       // upload image to gpu and update relative layer texture view
       prefab_skybox_create_layer(&skybox_texture, &layer_texture, i,
                                  scene_queue(scene), true);

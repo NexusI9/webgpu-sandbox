@@ -237,9 +237,7 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
  */
 
 Mesh *scene_new_mesh(Scene *scene) {
-  Mesh *new_mesh = mesh_list_new_mesh(&scene->meshes);
-
-  return new_mesh;
+  return mesh_list_new_mesh(&scene->meshes);
 }
 
 static void scene_add_mesh_any(Scene *, Mesh *, const ScenePipeline,
@@ -249,6 +247,7 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
                         const char *layer) {
 
   // add to scene layers ('Default' layer if NULL)
+
   if (layer == NULL)
     layer = SCENE_LAYER_DEFAULT;
   scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
@@ -269,7 +268,7 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   // EDITORONLY
   // add mesh to selection
   scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
-                           SceneSelectionType_Mesh);
+  SceneSelectionType_Mesh);
 
 }
 

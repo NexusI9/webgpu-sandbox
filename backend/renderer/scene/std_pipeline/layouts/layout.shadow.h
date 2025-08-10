@@ -138,6 +138,8 @@ static const PipelineLayoutDescriptor layout_shadow_cullback = {
             .mvp =
                 {
                     .group = 0,
+                    .view = 0,
+                    .projection = 0,
                     .model = 1,
                 },
         },

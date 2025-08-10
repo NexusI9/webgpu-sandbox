@@ -12,7 +12,7 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                                   .name = "grid",
                                   .queue = gd->queue,
                                   .device = gd->device,
-                                  .primitive = plane,
+                                  .primitive = &plane,
                               });
 
   mesh_shader_create_fixed(mesh,
@@ -31,4 +31,5 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                    });
 
   shader_update_uniform(mesh_shader_fixed(mesh), 1, 0, &gd->uniform);
+
 }

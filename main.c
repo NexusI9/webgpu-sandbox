@@ -12,6 +12,7 @@
 #include "resources/example/skybox.h"
 #include "runtime/prefab/environment/skybox.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/draw.h"
 
 static Scene main_scene;
 static cclock main_clock;
@@ -133,8 +134,7 @@ int main(int argc, const char *argv[]) {
                       (vec3){0.0f, 0.0f, 0.0f});
    */
 
-  scene_renderer_set_draw_mode(&main_scene.renderer,
-                               SceneRendererDrawMode_Texture);
+  scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
   example_gltf(&main_scene);
 

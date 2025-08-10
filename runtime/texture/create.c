@@ -34,7 +34,7 @@ TextureStatus texture_create_from_file(Texture *texture, const char *path, bool 
   // flip vertically so match wgpu coordinates
   stbi_set_flip_vertically_on_load(flip);
 
-  VERBOSE_IMPORT("Importing texture: %s", path);
+  VERBOSE_IMPORT("texture: %s", path);
   
   int width, height, channels;
   texture_data data = stbi_load(path, &width, &height, &channels, 4);

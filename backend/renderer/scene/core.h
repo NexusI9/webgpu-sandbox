@@ -2,8 +2,8 @@
 #define _SCENE_RENDERER_CORE_H_
 
 #include "../../clock.h"
-#include "../runtime/texture/texture.h"
 #include "../runtime/pipeline/pipeline.h"
+#include "../runtime/texture/texture.h"
 #include "render_pass.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -79,7 +79,6 @@ typedef struct SceneRenderer {
     RenderPass pass[RENDER_PASS_COUNT];
   } draw;
 
-  
 } SceneRenderer;
 
 typedef struct {
@@ -112,6 +111,8 @@ int scene_renderer_height(const SceneRenderer *);
 
 const char *scene_renderer_target(SceneRenderer *);
 
-const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer*);
+const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *);
+
+bool scene_renderer_resize_callback(int, const EmscriptenUiEvent *, void *);
 
 #endif

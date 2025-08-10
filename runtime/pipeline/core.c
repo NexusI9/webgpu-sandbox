@@ -30,7 +30,7 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
   // compile shader module intro GPU device
   buffer_create_shader(&pipeline->module, pipeline->device, source,
                        pipeline->label);
-
+  
   /*
     DEFINE PIPELINE CACHED ATTRIBUTES
     Define default layout, the default layout correspond to the texture shader

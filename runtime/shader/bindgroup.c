@@ -1,12 +1,13 @@
 #include "bindgroup.h"
 #include "../backend/renderer/scene/std_texture/std_texture.h"
-#include "../utils/system.h"
 #include "./utils.h"
 #include "add.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 #include <string.h>
+
+#include "../utils/system.h"
 
 static inline void shader_convert_uniforms(ShaderBindGroup *,
                                            WGPUBindGroupEntry *, bind_index *);
@@ -183,13 +184,15 @@ WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *group) {
   uint16_t total_length = shader_bind_group_entries_count(group);
 
   WGPUBindGroupEntry *converted_entries =
-      (WGPUBindGroupEntry *)malloc(total_length * sizeof(WGPUBindGroupEntry));
+      malloc(total_length * sizeof(WGPUBindGroupEntry));
 
   uint16_t length = 0;
   // bind uniforms
   shader_convert_uniforms(group, converted_entries, &length);
+
   // bind textures
   shader_convert_textures(group, converted_entries, &length);
+
   // bind samplers
   shader_convert_samplers(group, converted_entries, &length);
 
@@ -259,6 +262,7 @@ void shader_bind_group_build(ShaderBindGroup *group,
 
   // release layouts
   free(converted_entries);
+  converted_entries = NULL;
   // TODO: Clear layouts on mesh destruction
   // WGPUBindGroupLayout *current_layout = &layouts[i];
   // wgpuBindGroupLayoutRelease(*current_layout);

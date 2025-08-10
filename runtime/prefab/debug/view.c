@@ -30,7 +30,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
   Primitive plane = primitive_plane();
 
   mesh_create_primitive(new_view, &(MeshCreatePrimitiveDescriptor){
-                                      .primitive = plane,
+                                      .primitive = &plane,
                                       .device = debug_view->device,
                                       .queue = debug_view->queue,
                                       .name = "debug view",

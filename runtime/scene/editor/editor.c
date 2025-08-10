@@ -14,6 +14,9 @@ static inline void scene_editor_gizmo_create_transform(Scene *);
  */
 void scene_editor_init(Scene *scene) {
 
+  // init selection list & related events
+  scene_selection_init(scene);
+
   // init editor related gizmos
   scene_editor_gizmo_create_grid(scene);
 
@@ -23,9 +26,6 @@ void scene_editor_init(Scene *scene) {
   //  init gizmo list
   seo_list_create(scene_editor_object_list(scene),
                   SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT);
-
-  // init selection list & related events
-  scene_selection_init(scene);
 }
 
 /**
@@ -49,7 +49,7 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
                   });
 
   scene_add_mesh_fixed(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
-                 SCENE_LAYER_UNSELECTABLE);
+                       SCENE_LAYER_UNSELECTABLE);
 }
 
 /**
@@ -58,14 +58,13 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
 void scene_editor_gizmo_create_transform(Scene *scene) {
 
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
-  gizmo_transform_create(gizmo,
-                         &(GizmoCreateDescriptor){
-                             .camera = scene->active_camera,
-                             .device = scene_device(scene),
-                             .queue = scene_queue(scene),
-                             .viewport = &scene->viewport,
-                             .list = &scene->meshes,
-                         });
+  gizmo_transform_create(gizmo, &(GizmoCreateDescriptor){
+                                    .camera = scene->active_camera,
+                                    .device = scene_device(scene),
+                                    .queue = scene_queue(scene),
+                                    .viewport = &scene->viewport,
+                                    .list = &scene->meshes,
+                                });
 
   for (size_t i = 0; i < 3; i++) {
     // add the gizmo interactive handles to 'Gizmo Transform' layer as to only

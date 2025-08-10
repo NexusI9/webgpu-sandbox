@@ -2,12 +2,13 @@
 #include "../backend/buffer.h"
 #include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 #include "../utils/matrix.h"
-#include "../utils/system.h"
 #include "shader/core.h"
 #include "shader/shader.h"
 #include "shader/texture.h"
 #include "topology/boundbox.h"
 #include <string.h>
+
+#include "../utils/system.h"
 
 // Shadow map is implicitely handled withing mesh
 static Mesh *mesh_children_list_check_init(Mesh *);
@@ -17,6 +18,7 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
   mesh_set_name(mesh, md->name);
+
   VERBOSE_MESH_CREATE("%s", mesh->name);
 
   mesh->id = reg_register((void *)mesh, RegEntryType_Mesh);
@@ -65,8 +67,8 @@ void mesh_create_primitive(Mesh *mesh,
   mesh_create(mesh, &(MeshCreateDescriptor){
                         .queue = md->queue,
                         .device = md->device,
-                        .index = md->primitive.index,
-                        .vertex = md->primitive.vertex,
+                        .index = md->primitive->index,
+                        .vertex = md->primitive->vertex,
                         .name = md->name,
                     });
 }
@@ -74,7 +76,8 @@ void mesh_create_primitive(Mesh *mesh,
 void mesh_set_parent(Mesh *child, Mesh *parent) { child->parent = parent; }
 
 void mesh_set_name(Mesh *mesh, const char *name) {
-  free(mesh->name);
+  if (mesh->name)
+    free(mesh->name);
   mesh->name = strdup(name);
 }
 

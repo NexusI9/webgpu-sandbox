@@ -54,7 +54,7 @@ VIndexStatus index_attribute_insert_group(char *line, IndexAttributeGroup *list,
     // store attributes in an array since pattern may no necessarily match 3,
     // need 0 as initial value
     const size_t attr_count = 3;
-    mbin_index_t idx_attr[attr_count] = {0, 0, 0}; // position/ uv / normal
+    mbin_index_t idx_attr[3] = {0, 0, 0}; // position/ uv / normal
     mbin_index_t *iPos = &idx_attr[0];
     mbin_index_t *iUv = &idx_attr[1];
     mbin_index_t *iNrm = &idx_attr[2];

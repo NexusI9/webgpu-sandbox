@@ -78,7 +78,6 @@ void mesh_shader_create_shadow(Mesh *mesh) {
                     .queue = mesh->queue,
                     .name = "Mesh shadow shader",
                 });
-
 }
 
 /**
@@ -139,6 +138,8 @@ void mesh_shader_create_solid(Mesh *mesh) {
 void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // alias to shader_create
   shader_create(mesh_shader_texture(mesh), desc);
+  // set active shader
+  mesh_shader_set_active(mesh, MeshShader_Texture);
 }
 
 /**
@@ -147,4 +148,6 @@ void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
 void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // alias to shader_create
   shader_create(mesh_shader_fixed(mesh), desc);
+  // set active shader
+  mesh_shader_set_active(mesh, MeshShader_Fixed);
 }

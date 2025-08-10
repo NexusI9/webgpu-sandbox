@@ -13,7 +13,7 @@ void example_gizmo(Scene *scene) {
   });
 
   mesh_create_primitive(gizmo, &(MeshCreatePrimitiveDescriptor){
-                                   .primitive = mbin_primitive,
+                                   .primitive = &mbin_primitive,
                                    .device = scene_device(scene),
                                    .queue = scene_queue(scene),
                                    .name = "gizmo",

@@ -38,13 +38,13 @@ typedef struct {
   VertexAttributeList *list;
 } VertexAttributeCallbackDescriptor;
 
-void vertex_attribute_print(VertexAttributeList *);
-VertexAttributeListStatus vertex_attribute_list_insert(VertexAttributeList *, mbin_vertex_t *,
+void mbin_vertex_attribute_print(VertexAttributeList *);
+VertexAttributeListStatus mbin_vertex_attribute_list_insert(VertexAttributeList *, mbin_vertex_t *,
                                  size_t);
-void vertex_attribute_from_line(const char *, void *);
-void vertex_attribute_cache(FILE *, VertexAttributeList **);
+void mbin_vertex_attribute_from_line(const char *, void *);
+void mbin_vertex_attribute_cache(FILE *, VertexAttributeList **);
 
-void vertex_attribute_free(VertexAttributeList *);
-VertexAttributeListStatus vertex_attribute_copy(VertexAttributeList *, VertexAttributeList *);
+void mbin_vertex_attribute_free(VertexAttributeList *);
+VertexAttributeListStatus mbin_vertex_attribute_copy(VertexAttributeList *, VertexAttributeList *);
 
 #endif

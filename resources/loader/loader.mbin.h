@@ -3,8 +3,8 @@
 
 #include "../runtime/geometry/vertex/vertex.h"
 #include "../runtime/primitive/primitive.h"
-#include "../tool/obj2mbin/lib/mbin.h"
 #include <stdint.h>
+#include "../resources/tool/obj2mbin/lib/mbin.h"
 
 typedef uint32_t mbin_length_t;
 
@@ -12,6 +12,7 @@ typedef uint32_t mbin_length_t;
    1. either directly push mesh in scene list
    2. or provide data to create scene mesh (++ flexibility)
  */
+
 
 typedef enum {
   MBINLoaderStatus_Success,

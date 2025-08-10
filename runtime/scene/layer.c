@@ -1,8 +1,29 @@
 #include "layer.h"
 #include "../../utils/dyli.h"
 #include "../../utils/hash.h"
-#include "../../utils/system.h"
 #include <string.h>
+
+#include "../../utils/system.h"
+
+static const char *standard_layers[SCENE_STD_LAYER_COUNT] = {
+    SCENE_LAYER_DEFAULT,
+    SCENE_LAYER_GIZMO_TRANSFORM,
+    SCENE_LAYER_GIZMO_SELECTABLE,
+    SCENE_LAYER_UNSELECTABLE,
+};
+
+/**
+   Initialized scene standards layers
+ */
+void scene_layer_init(SceneLayerSet *layers) {
+
+  // create layers set hash list
+  scene_layer_set_create(layers, SCENE_LAYER_SET_CAPACITY);
+
+  // generate standards layers
+  for (size_t i = 0; i < SCENE_STD_LAYER_COUNT; i++)
+    scene_layer_set_create_layer(layers, standard_layers[i]);
+}
 
 /*
    ▗▖    ▗▄▖▗▖  ▗▖▗▄▄▄▖▗▄▄▖
@@ -16,7 +37,8 @@
    Create a new layer by duplicating name and allocating room for its mesh
    reference list.
  */
-SceneLayerStatus scene_layer_create(SceneLayer *layer, const char *name, size_t capacity) {
+SceneLayerStatus scene_layer_create(SceneLayer *layer, const char *name,
+                                    size_t capacity) {
 
   // assign name
   layer->name = strdup(name);
@@ -221,9 +243,8 @@ Mesh *scene_layer_set_insert_mesh(SceneLayerSet *set, const char *name,
   return scene_layer_insert(layer, mesh);
 }
 
-void scene_layer_set_insert_mesh_ref_list(SceneLayerSet *set,
-                                                const char *name,
-                                                MeshRefList *list) {
+void scene_layer_set_insert_mesh_ref_list(SceneLayerSet *set, const char *name,
+                                          MeshRefList *list) {
   for (size_t i = 0; i < list->length; i++)
     scene_layer_set_insert_mesh(set, name, list->entries[i]);
 }
