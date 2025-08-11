@@ -186,6 +186,36 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
      to be calculated and gets overriden by the the sun point of view.
 
      A solution to this is to add an offset or use a command encoder per light
+
+     The overall flow would be:
+     
+     1. set the shadow pipeline minBindSize to:
+     .------------------------------------------------------------------------.
+     |                      Mp * Nvp + Ms + Mn * sizeof(mat4)                 |
+     |	               ex:  16 *  6  + 16 + 16 *    64                        |
+     |                                                                        |
+     |  - Mp: max point light                                                 |
+     |  - Nvp: number of point light view (6)                                 |
+     |  - Ms: max spot light                                                  |
+     |  - Mn: max sun light                                                   |
+     '------------------------------------------------------------------------'
+
+     2. For each light: push the view to the ViewArray at correct index (cache?)
+     .------------------------------------------------------------------------.
+     |  Offset 0 × sizeof(mat4)       → point light view matrix face 0        |
+     |  Offset 1 × sizeof(mat4)       → point light view matrix face 1        |
+     |  ...                                                                   |
+     |  Offset 5 × sizeof(mat4)       → point light view matrix face 5        |
+     |  Offset 6 × sizeof(mat4)       → sun light view matrix                 |
+     |  ...                                                                   |
+     '------------------------------------------------------------------------'
+
+      3. Write to each mesh shadow view uniform the views with the
+      index * sizeof(mat4) as offset. (shader_update_uniform)
+
+      4. Draw the mesh with the same offset (wgpuRenderPassEncoderSetBindGroup)
+
+
    */
 
   MeshRefList *target_mesh_list = desc->mesh_list;
@@ -214,7 +244,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         .mesh_list = desc->mesh_list,
         .device = desc->device,
         .queue = desc->queue,
-        .encoder = shadow_encoder,
+        .encoder = NULL, // shadow_encoder,
         .color_map = desc->lights->point.color_map,
         .depth_map = desc->lights->point.depth_map,
     });
