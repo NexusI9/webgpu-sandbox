@@ -22,9 +22,14 @@ void scene_selection_init_mouse_events(Scene *scene) {
      4. Add a html event on mouse up
 
    */
-  
+
   // cache selection exclude layer (ex: grid...)
   SceneSelection *scene_selection = &scene->editor.selection;
+
+  MeshRefList *scene_selection_config_lists[SCENE_SELECTION_TYPE_COUNT];
+  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
+    scene_selection_config_lists[i] =
+        &scene_selection->filters[i].meshes[SceneSelectionState_Default];
 
   // right click raycast on scene main camera (to select meshes)
   camera_raycast(
@@ -39,13 +44,7 @@ void scene_selection_init_mouse_events(Scene *scene) {
           .size = sizeof(SceneSelectionCallbackData),
           .include =
               {
-                  .lists =
-                      (MeshRefList *[]){
-                          &scene_selection->filters[0]
-                               .meshes[SceneSelectionState_Default],
-                          &scene_selection->filters[1]
-                               .meshes[SceneSelectionState_Default],
-                      },
+                  .lists = scene_selection_config_lists,
                   .length = SCENE_SELECTION_TYPE_COUNT,
               },
           .exclude = {0},

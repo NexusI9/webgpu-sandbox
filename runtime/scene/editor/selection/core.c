@@ -72,10 +72,14 @@ void scene_selection_draw_callback(void *data) {
       scene_selection_transform_callback mesh_transform_callback =
           filter->transform_callback;
 
-      mesh_transform_callback(&filter->meshes[SceneSelectionState_Selected],
-                              &filter->targets[SceneSelectionState_Selected],
-                              &filter->initial_attributes, delta, gizmo->axis,
-                              gizmo->mode, scene);
+      mesh_transform_callback(&(SceneSelectionTransform){
+          .active_meshes = &filter->meshes[SceneSelectionState_Selected],
+          .target_list = &filter->targets[SceneSelectionState_Selected],
+          .initial_attributes = &filter->initial_attributes,
+          .delta = &delta,
+          .axis = gizmo->axis,
+          .transform_mode = gizmo->mode,
+          .scene = scene});
     }
   }
 }

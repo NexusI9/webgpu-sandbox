@@ -72,7 +72,7 @@ typedef struct {
  */
 
 #define SCENE_SELECTION_LIST_CAPACITY 6
-#define SCENE_SELECTION_TYPE_COUNT 2
+#define SCENE_SELECTION_TYPE_COUNT 3
 #define SCENE_SELECTION_STATE_COUNT 2
 
 typedef void *scene_selection_target_t;
@@ -82,12 +82,18 @@ typedef struct {
   size_t capacity;
 } SceneSelectionTargetList;
 
+typedef struct {
+  MeshRefList *active_meshes;
+  SceneSelectionTargetList *target_list;
+  Vec3List *initial_attributes;
+  vec3 *delta;
+  const Axis axis;
+  const GizmoTransformMode transform_mode;
+  Scene *scene;
+} SceneSelectionTransform;
+
 /* Callbacks */
-typedef void (*scene_selection_transform_callback)(MeshRefList *,
-                                                   SceneSelectionTargetList *,
-                                                   Vec3List *, vec3, const Axis,
-                                                   const GizmoTransformMode,
-                                                   Scene *);
+typedef void (*scene_selection_transform_callback)(SceneSelectionTransform *);
 
 typedef void (*scene_selection_highlight_callback)(MeshRefList *, void *);
 
@@ -98,11 +104,12 @@ typedef enum {
 
 typedef enum {
   SceneSelectionType_Mesh,
+  SceneSelectionType_MeshShadow, // update shadow map on move
   SceneSelectionType_SEO,
 } SceneSelectionType;
 
 typedef struct {
-
+  // linked attribtutes ( mesh[i] <> targets[i] <> init_attr[i] )
   MeshRefList meshes[SCENE_SELECTION_STATE_COUNT];
   SceneSelectionTargetList targets[SCENE_SELECTION_STATE_COUNT];
   Vec3List initial_attributes;
@@ -263,7 +270,8 @@ MeshRefList *scene_layer_meshes(Scene *, const char *);
 WGPUQueue scene_queue(Scene *);
 WGPUDevice scene_device(Scene *);
 
-static inline MeshRefList *scene_pipeline(Scene *scene, const ScenePipeline pipeline) {
+static inline MeshRefList *scene_pipeline(Scene *scene,
+                                          const ScenePipeline pipeline) {
   // take lower bit
   return &scene->pipelines[__builtin_ctz(pipeline)];
 }

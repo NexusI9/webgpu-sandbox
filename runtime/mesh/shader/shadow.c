@@ -14,8 +14,8 @@
 
 void mesh_shader_shadow_update_mvp(Mesh *mesh) {
 
-  MeshUniform* uModel = mesh_uniform(mesh);
-  
+  MeshUniform *uModel = mesh_uniform(mesh);
+
   // views uniforms (will be replaced during shadow pass)
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, (void *)0);
 
@@ -25,6 +25,13 @@ void mesh_shader_shadow_update_mvp(Mesh *mesh) {
 
 void mesh_shader_shadow_update_view(Mesh *mesh, mat4 *view) {
   shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, view);
+}
+
+void mesh_shader_shadow_update_model(Mesh *mesh) {
+
+  MeshUniform *uModel = mesh_uniform(mesh);
+  // mesh model matrix
+  shader_update_uniform(mesh_shader_shadow(mesh), 0, 1, uModel);
 }
 
 void mesh_shader_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {

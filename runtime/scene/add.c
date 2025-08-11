@@ -299,7 +299,6 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
                         const char *layer) {
 
   // add to scene layers ('Default' layer if NULL)
-
   if (layer == NULL)
     layer = SCENE_LAYER_DEFAULT;
   scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
@@ -309,7 +308,7 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
 
   // Update Shadow maps if added to Dynamic_Lit pipeline
   if (pipeline == ScenePipeline_Dynamic_LitShadow &&
-      scene->renderer.draw.mode == SceneRendererDrawMode_Texture)
+      scene->renderer.draw.mode == SceneRendererDrawMode_Texture) {
     shadow_map_draw_all(&(ShadowMapDrawAllDescriptor){
         .device = scene_device(scene),
         .queue = scene_queue(scene),
@@ -317,10 +316,17 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
         .lights = &scene->lights,
     });
 
-  // EDITORONLY
-  // add mesh to selection
-  scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
-                           SceneSelectionType_Mesh);
+    // EDITORONLY
+    // add mesh to selection shadow
+    scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
+                             SceneSelectionType_MeshShadow);
+
+  } else {
+    // EDITORONLY
+    // add mesh to selection
+    scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
+                             SceneSelectionType_Mesh);
+  }
 }
 
 /**

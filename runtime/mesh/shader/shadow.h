@@ -17,6 +17,8 @@ void mesh_shader_shadow_update_mvp(Mesh *);
 
 void mesh_shader_shadow_update_view(Mesh *, mat4 *);
 
+void mesh_shader_shadow_update_model(Mesh *);
+
 void mesh_shader_shadow_set_cullmode(Mesh *, const WGPUCullMode);
 
 void mesh_shader_shadow_update_cullmode(Mesh *, const WGPUCullMode);

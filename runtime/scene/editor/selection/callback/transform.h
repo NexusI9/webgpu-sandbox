@@ -4,12 +4,16 @@
 #include "../../../core.h"
 #include <cglm/cglm.h>
 
-void scene_selection_mesh_transform(MeshRefList *, SceneSelectionTargetList *,
-                                    Vec3List *, vec3, const Axis,
-                                    const GizmoTransformMode, Scene *);
+// mesh transform
+void scene_selection_mesh_transform(SceneSelectionTransform *);
 
-void scene_selection_seo_transform(MeshRefList *, SceneSelectionTargetList *,
-                                   Vec3List *, vec3, const Axis,
-                                   const GizmoTransformMode, Scene *);
+// seo transform
+void scene_selection_seo_transform(SceneSelectionTransform *);
+
+// mesh shadow transform
+void scene_selection_mesh_shadow_transform(SceneSelectionTransform *);
+
+// seo shadow transform
+void scene_selection_seo_shadow_transform(SceneSelectionTransform *);
 
 #endif

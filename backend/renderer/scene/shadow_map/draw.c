@@ -178,7 +178,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
  */
 void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
-  VERBOSE_PROCESS("Computing all shadow maps...");
+  //VERBOSE_PROCESS("Computing all shadow maps...");
 
   // TODO : check why cannot use this global shadow_encoder, looks like it's
   // related to light view matrix but not sure....

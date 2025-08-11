@@ -24,7 +24,14 @@ static inline void scene_selection_config(Scene *scene) {
                       .highlight_callback = scene_selection_mesh_highlight,
                       .highlight_data = (void *)scene,
                   },
-
+              // mesh shadow based rule
+              [SceneSelectionType_MeshShadow] =
+                  {
+                      .transform_callback =
+                          scene_selection_mesh_shadow_transform,
+                      .highlight_callback = scene_selection_mesh_highlight,
+                      .highlight_data = (void *)scene,
+                  },
               // shader based rule
               [SceneSelectionType_SEO] =
                   {
