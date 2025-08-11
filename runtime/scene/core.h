@@ -87,7 +87,7 @@ typedef void (*scene_selection_transform_callback)(MeshRefList *,
                                                    SceneSelectionTargetList *,
                                                    Vec3List *, vec3, const Axis,
                                                    const GizmoTransformMode,
-                                                   void *);
+                                                   Scene *);
 
 typedef void (*scene_selection_highlight_callback)(MeshRefList *, void *);
 
@@ -207,14 +207,15 @@ typedef enum {
 
 typedef enum {
   // Dynamic
-  ScenePipeline_Dynamic_Lit,
-  ScenePipeline_Dynamic_Unlit,
+  ScenePipeline_Dynamic_Unlit = 1 << 0,
+  ScenePipeline_Dynamic_Lit = 1 << 1,
+  ScenePipeline_Dynamic_LitShadow = 1 << 2,
   // Fixed
-  ScenePipeline_Fixed_Background,
-  ScenePipeline_Fixed,
-  ScenePipeline_Fixed_Selection,
-  ScenePipeline_Fixed_Front,
-  ScenePipeline_Fixed_UI,
+  ScenePipeline_Fixed_Background = 1 << 3,
+  ScenePipeline_Fixed = 1 << 4,
+  ScenePipeline_Fixed_Selection = 1 << 5,
+  ScenePipeline_Fixed_Front = 1 << 6,
+  ScenePipeline_Fixed_UI = 1 << 7,
 } ScenePipeline;
 
 struct Scene {
@@ -234,15 +235,14 @@ struct Scene {
   CameraList cameras; // camera list
 
   // References List (ptr)
-  MeshRefList
-      pipelines[SCENE_PIPELINE_COUNT]; // meshes pipelines (for render logic)
-  SceneLayerSet layers;                // meshes layer (for interaction logic)
+  MeshRefList pipelines[SCENE_PIPELINE_COUNT]; // meshes pipelines (for
+                                               // render logic)
+  SceneLayerSet layers; // meshes layer (for interaction logic)
 
   // TODO: only enable selection/gizmo related function for "Editor" mode since
   // will be never seen or used in actually "Game" mode
   SceneEditor editor;
   SceneRenderer renderer;
-
 };
 
 typedef struct {
@@ -263,6 +263,9 @@ MeshRefList *scene_layer_meshes(Scene *, const char *);
 WGPUQueue scene_queue(Scene *);
 WGPUDevice scene_device(Scene *);
 
-MeshRefList *scene_pipeline_lit(Scene *);
+static inline MeshRefList *scene_pipeline(Scene *scene, const ScenePipeline pipeline) {
+  // take lower bit
+  return &scene->pipelines[__builtin_ctz(pipeline)];
+}
 
 #endif

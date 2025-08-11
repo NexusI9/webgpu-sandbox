@@ -56,7 +56,7 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
       SceneRendererDrawMode_Texture)
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
         .light = new_light,
-        .mesh_list = scene_pipeline_lit(scene),
+        .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
         .color_map = scene->lights.point.color_map,
         .depth_map = scene->lights.point.depth_map,
         .device = scene_device(scene),
@@ -106,7 +106,7 @@ SceneEditorObject *scene_add_spot_light(Scene *scene,
       SceneRendererDrawMode_Texture)
     shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
         .light = new_light,
-        .mesh_list = scene_pipeline_lit(scene),
+        .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
         .color_map = scene->lights.spot.color_map,
         .depth_map = scene->lights.spot.depth_map,
         .device = scene_device(scene),
@@ -189,7 +189,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
       SceneRendererDrawMode_Texture)
     shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
         .light = new_light,
-        .mesh_list = scene_pipeline_lit(scene),
+        .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
         .color_map = scene->lights.spot.color_map,
         .depth_map = scene->lights.spot.depth_map,
         .device = scene_device(scene),
@@ -271,7 +271,7 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
     Mesh *mesh = seo->meshes.entries[i];
     // build mesh depending on pipeline and scene render mode
     scene_build_mesh(scene, mesh, ScenePipeline_Fixed);
-    mesh_ref_list_insert(&scene->pipelines[ScenePipeline_Fixed], mesh);
+    mesh_ref_list_insert(scene_pipeline(scene, ScenePipeline_Fixed), mesh);
   }
 
   // add the SEO into the right selection branch/ filter and link the SEO as
@@ -305,15 +305,15 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
 
   // add mesh pointer to the right pipeline
-  mesh_ref_list_insert(&scene->pipelines[pipeline], mesh);
+  mesh_ref_list_insert(scene_pipeline(scene, pipeline), mesh);
 
   // Update Shadow maps if added to Dynamic_Lit pipeline
-  if (pipeline == ScenePipeline_Dynamic_Lit &&
+  if (pipeline == ScenePipeline_Dynamic_LitShadow &&
       scene->renderer.draw.mode == SceneRendererDrawMode_Texture)
     shadow_map_draw_all(&(ShadowMapDrawAllDescriptor){
         .device = scene_device(scene),
         .queue = scene_queue(scene),
-        .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
+        .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
         .lights = &scene->lights,
     });
 
@@ -340,7 +340,7 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
 void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
 
   // dispatch mesh based on their global pipeline address (lit by default)
-  ScenePipeline pipeline = ScenePipeline_Dynamic_Lit;
+  ScenePipeline pipeline = ScenePipeline_Dynamic_LitShadow;
   if (mesh_shader_texture(mesh)->pipeline == std_pipeline(PipelineType_Unlit))
     pipeline = ScenePipeline_Dynamic_Unlit;
 

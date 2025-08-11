@@ -199,7 +199,7 @@ void scene_selection_key_sequence_callback_transform(
   Scene *scene = (Scene *)data;
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
   MeshRefList *selection_list =
-      &scene->pipelines[ScenePipeline_Fixed_Selection];
+      scene_pipeline(scene, ScenePipeline_Fixed_Selection);
 
   // use the length as a flag to detect if gizmo already active or not
   if (scene_selection_length(&scene->editor.selection) == 0)
@@ -229,7 +229,6 @@ void scene_selection_key_sequence_callback_transform(
       // cache scene selection initial attributes
       scene_selection_cache_initial_attributes(&scene->editor.selection,
                                                gizmo->mode);
-
 
       // set active handle from current mode and initialize offset
       gizmo_transform_set_active(gizmo, scene->active_camera, &scene->viewport);

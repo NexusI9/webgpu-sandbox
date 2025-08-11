@@ -17,7 +17,7 @@ void scene_selection_init_filters(Scene *scene);
 void scene_selection_init(Scene *scene) {
 
   // init selection list
-  mesh_ref_list_create(&scene->pipelines[ScenePipeline_Fixed_Selection],
+  mesh_ref_list_create(scene_pipeline(scene, ScenePipeline_Fixed_Selection),
                        SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // configure editor selections list (fixed)
@@ -46,9 +46,9 @@ void scene_selection_init(Scene *scene) {
  */
 void scene_selection_draw_callback(void *data) {
 
-  Scene *cast_scene = (Scene *)data;
-  SceneSelection *selection = &cast_scene->editor.selection;
-  GizmoTransform *gizmo = &cast_scene->editor.gizmo.transform;
+  Scene *scene = (Scene *)data;
+  SceneSelection *selection = &scene->editor.selection;
+  GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
   if (gizmo->cache.init_distance != 0.0f) {
 
@@ -61,8 +61,8 @@ void scene_selection_draw_callback(void *data) {
       gizmo_transform_callback gizmo_transform_callback =
           gizmo->transform_callback[gizmo->mode];
 
-      gizmo_transform_callback(gizmo, cast_scene->active_camera,
-                               &cast_scene->viewport, &delta);
+      gizmo_transform_callback(gizmo, scene->active_camera, &scene->viewport,
+                               &delta);
 
       // 2. transform filter selection with delta calculated by gizmo
       SceneSelectionFilter *filter = &selection->filters[i];
@@ -75,7 +75,7 @@ void scene_selection_draw_callback(void *data) {
       mesh_transform_callback(&filter->meshes[SceneSelectionState_Selected],
                               &filter->targets[SceneSelectionState_Selected],
                               &filter->initial_attributes, delta, gizmo->axis,
-                              gizmo->mode, NULL);
+                              gizmo->mode, scene);
     }
   }
 }

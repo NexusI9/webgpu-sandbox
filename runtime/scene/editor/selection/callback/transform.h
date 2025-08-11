@@ -6,10 +6,10 @@
 
 void scene_selection_mesh_transform(MeshRefList *, SceneSelectionTargetList *,
                                     Vec3List *, vec3, const Axis,
-                                    const GizmoTransformMode, void *);
+                                    const GizmoTransformMode, Scene *);
 
 void scene_selection_seo_transform(MeshRefList *, SceneSelectionTargetList *,
                                    Vec3List *, vec3, const Axis,
-                                   const GizmoTransformMode, void *);
+                                   const GizmoTransformMode, Scene *);
 
 #endif

@@ -52,7 +52,7 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
   scene_add_mesh_fixed(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
   SCENE_LAYER_UNSELECTABLE);*/
   scene_build_mesh(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed);
-  mesh_ref_list_insert(&scene->pipelines[ScenePipeline_Fixed],
+  mesh_ref_list_insert(scene_pipeline(scene, ScenePipeline_Fixed),
                        scene->editor.gizmo.grid);
 }
 

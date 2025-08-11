@@ -22,14 +22,13 @@ void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
   const char *texture_path = "./resources/assets/texture/ui/light-point.png";
 
   // create gizmo mesh
-  seo_create_billboard(icon,
-                       &(SEOCreateBillboardDescriptor){
-                           .texture_path = texture_path,
-                           .device = desc->device,
-                           .queue = desc->queue,
-                           .position = &light->position,
-                           .scale = &SEO_BILLBOARD_SCALE,
-                       });
+  seo_create_billboard(icon, &(SEOCreateBillboardDescriptor){
+                                 .texture_path = texture_path,
+                                 .device = desc->device,
+                                 .queue = desc->queue,
+                                 .position = &light->position,
+                                 .scale = &SEO_BILLBOARD_SCALE,
+                             });
 
   // store mesh pointer in gizmo ref list
   mesh_ref_list_insert(&seo->meshes, icon);
@@ -77,7 +76,8 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
       SceneRendererDrawMode_Texture)
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
         .light = &seo->scene->lights.point.entries[seo->target_list_index],
-        .mesh_list = scene_pipeline_lit(seo->scene),
+        .mesh_list =
+            scene_pipeline(seo->scene, ScenePipeline_Dynamic_LitShadow),
         .color_map = seo->scene->lights.point.color_map,
         .depth_map = seo->scene->lights.point.depth_map,
         .device = scene_device(seo->scene),

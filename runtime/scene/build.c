@@ -100,7 +100,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
           &(AOBakeInitDescriptor){
               .queue = queue,
               .device = device,
-              .mesh_list = &scene->pipelines[ScenePipeline_Dynamic_Lit],
+              .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
           });
 
       break;
@@ -140,24 +140,30 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
   // bind views
   mesh_shader_build_mvp(mesh, mesh_shader_texture, camera, viewport);
 
-  // lit only pipeline
-  if (build_desc->pipeline == ScenePipeline_Dynamic_Lit) {
+  // lit and shadow pipeline
+  if (build_desc->pipeline &
+      (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
+
+    // bind lights
+    mesh_shader_texture_update_lights(mesh, build_desc->lights,
+                                      SHADER_TEXTURE_BINDGROUP_LIGHTS);
+
+    // Bake AO textures for static scenes elements
+    // ao_bake_init(ao_desc);
+  }
+
+  // shadow only pipeline
+  if (build_desc->pipeline == ScenePipeline_Dynamic_LitShadow) {
 
     // create binding for shadow maps (using fallback texture)
     mesh_shader_texture_bind_shadow_maps(mesh, build_desc->point_map,
                                          build_desc->spot_map);
-    // bind lights
-    mesh_shader_texture_update_lights(mesh, build_desc->lights,
-                                      SHADER_TEXTURE_BINDGROUP_LIGHTS);
 
     // create mesh shadow shader
     mesh_shader_create_shadow(mesh);
 
     // bind light and mesh uniform to shadow
     mesh_shader_shadow_update_mvp(mesh);
-
-    // Bake AO textures for static scenes elements
-    // ao_bake_init(ao_desc);
   }
 
   // set active shader

@@ -12,7 +12,7 @@ void scene_selection_mesh_transform(MeshRefList *active_meshes,
                                     Vec3List *initial_attributes, vec3 delta,
                                     const Axis axis,
                                     const GizmoTransformMode transform_mode,
-                                    void *data) {
+                                    Scene *scene) {
   for (size_t i = 0; i < active_meshes->length; i++) {
 
     vec3 *init_attribute = &initial_attributes->entries[i];
@@ -24,6 +24,9 @@ void scene_selection_mesh_transform(MeshRefList *active_meshes,
 
     // transform mesh
     transform_callback_mesh[transform_mode](mesh, offset_attribute);
+
+    // TODO: update shadow map
+
   }
 }
 
@@ -33,7 +36,7 @@ void scene_selection_seo_transform(MeshRefList *active_meshes,
                                    Vec3List *initial_attributes, vec3 delta,
                                    const Axis axis,
                                    const GizmoTransformMode transform_mode,
-                                   void *data) {
+                                   Scene *scene) {
 
   for (size_t i = 0; i < active_meshes->length; i++) {
 

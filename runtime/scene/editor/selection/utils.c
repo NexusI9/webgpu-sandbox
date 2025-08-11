@@ -1,14 +1,13 @@
 #include "./utils.h"
 #include "../../show.h"
+#include "./core.h"
 #include "stdbool.h"
 #include <stdint.h>
-#include "./core.h"
-
 
 void scene_gizmo_transform_show(Scene *scene) {
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
   MeshRefList *selection_list =
-      &scene->pipelines[ScenePipeline_Fixed_Selection];
+      scene_pipeline(scene, ScenePipeline_Fixed_Selection);
   scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                            ScenePipeline_Fixed_Front);
 }
@@ -16,7 +15,7 @@ void scene_gizmo_transform_show(Scene *scene) {
 void scene_gizmo_transform_hide(Scene *scene) {
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
   MeshRefList *selection_list =
-      &scene->pipelines[ScenePipeline_Fixed_Selection];
+      scene_pipeline(scene, ScenePipeline_Fixed_Selection);
   scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                            ScenePipeline_Fixed_Front);
 }

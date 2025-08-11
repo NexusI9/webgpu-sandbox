@@ -170,8 +170,6 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
   const WGPUCompareFunction sample_compare = WGPUCompareFunction_Less;
 #endif
 
-  printf("point view: %p\n", point_texture_view);
-  printf("spot view: %p\n", spot_texture_view);
   // add multi-layered texture to default shader
   shader_update_texture_view(mesh_shader_texture(mesh), group_index,
                              SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
