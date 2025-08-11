@@ -123,8 +123,6 @@ void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue queue) {
     ShaderBindGroupUniformEntry *current_entry = dynamic_uniforms->entries[j];
 
     ShaderUniformUpdate *uniform_update = &current_entry->update;
-    // TODO: separate dynamic (callback) from static (non callback) shader
-    // in two arrays so no last minute decision
 
     // if no trigger (no gatekeep) or if trigger is true, then rewrite uniform
     // with callback

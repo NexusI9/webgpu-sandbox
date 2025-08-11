@@ -168,9 +168,8 @@ void prefab_skybox_create(Scene *scene,
         TextureStatus_Success) {
       // upload image to gpu and update relative layer texture view
       prefab_skybox_create_layer(&skybox_texture, &layer_texture, i,
-                                 scene_queue(scene), true);
+                                 scene_queue(scene), BufferTextureMemory_Free);
 
-      // TODO: free texture
     } else {
       VERBOSE_ERROR("Couldn't read skybox texture.");
       return;

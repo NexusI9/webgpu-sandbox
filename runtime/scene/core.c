@@ -142,7 +142,6 @@ MeshRefList *scene_layer_meshes(Scene *scene, const char *name) {
   return &layer->meshes;
 }
 
-// TODO: move light list in Light not Scene anymore
 void scene_init_light_list(Scene *scene) {
 
   // init point light list

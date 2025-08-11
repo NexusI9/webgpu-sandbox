@@ -119,7 +119,7 @@ void shader_bind_group_clear(Shader *shader) {
               &current_group->samplers.length);
 
     // dynamics
-    
+
     // reseting uniforms
     dyli_free((void *)&current_group->uniforms_dynamics.entries,
               &current_group->uniforms_dynamics.capacity,
@@ -202,8 +202,7 @@ ShaderBindGroup *shader_get_bind_group(Shader *shader,
     return NULL;
   }
 
-  // check if group index already exists (TODO: find a more robust way to check
-  // if a bindgroup is initalized)
+  // check if group index already exists
   if (shader->bind_groups.entries[group_index].textures.entries == NULL) {
     // create new bind group
     shader_bind_group_create(shader, group_index);

@@ -29,7 +29,6 @@ void mesh_topology_anchor_set_attribute(MeshTopology *mesh,
 int mesh_topology_anchor_insert(MeshTopologyAnchor *anchor, vindex_t *index,
                                 size_t length) {
 
-  // TODO: create global list grow/create functions
   // check anchor entries capacity
   if (anchor->capacity <= anchor->length + length &&
       mesh_topology_anchor_expand(anchor) != MeshTopologyAnchorStatus_Success) {

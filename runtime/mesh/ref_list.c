@@ -39,7 +39,7 @@ void mesh_ref_list_free(MeshRefList *list) {
 
 /**
    Remove mesh from the selection.
-   Use linear probing with ID comparison.
+   Use linear pointer comparison.
    TODO: Maybe for bigger selection, need a more efficient/quick way.
  */
 DynamicListStatus mesh_ref_list_remove(MeshRefList *list, Mesh *mesh) {

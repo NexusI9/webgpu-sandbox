@@ -282,6 +282,7 @@ void scene_selection_raycast_gizmo_hover_callback(
 
   // update only once
   if (cast_data->last_hit->mesh != hit->mesh &&
+      // if mouse is down >> lock 
       g_input.mouse.state == InputMouseState_Up) {
 
     if (hit->mesh) {
