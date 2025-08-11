@@ -4,6 +4,7 @@
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
+#include "../utils/color.h"
 #include "../utils/vector/vector.h"
 #include <stddef.h>
 
@@ -200,6 +201,12 @@ typedef struct {
   MeshList *list; // mesh pool from which gizmo mesh will be created
 } GizmoCreateDescriptor;
 
+static color *gizmo_handle_color[GIZMO_TRANSFORM_AXIS_COUNT] = {
+    &COLOR_GIZMO_TRANSFORM_X,
+    &COLOR_GIZMO_TRANSFORM_Y,
+    &COLOR_GIZMO_TRANSFORM_Z,
+};
+
 typedef void (*gizmo_transform_create_handles_callback)(
     MeshRefList *, MeshRefList *, const GizmoCreateDescriptor *);
 
@@ -219,5 +226,7 @@ void gizmo_transform_set_active(GizmoTransform *, Camera *, Viewport *);
 void gizmo_transform_clear_active(GizmoTransform *);
 
 void gizmo_transform_set_axis_from_mesh(GizmoTransform *, const Mesh *);
+
+void gizmo_transform_reset_color_uniform(GizmoTransform *);
 
 #endif

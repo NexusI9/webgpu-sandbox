@@ -11,10 +11,13 @@ void scene_selection_raycast_mesh_callback(CameraRaycastCallback *,
                                            void *);
 
 
-void scene_selection_raycast_gizmo_callback(CameraRaycastCallback *,
+void scene_selection_raycast_gizmo_down_callback(CameraRaycastCallback *,
                                             const EmscriptenMouseEvent *,
                                             void *);
 
+void scene_selection_raycast_gizmo_hover_callback(CameraRaycastCallback *,
+                                            const EmscriptenMouseEvent *,
+                                            void *);
 
 // mouse event callback
 bool scene_selection_reset_callback(int, const EmscriptenMouseEvent *, void *);

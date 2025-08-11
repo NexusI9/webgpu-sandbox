@@ -1,4 +1,5 @@
 #include "core.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "./callback.h"
 #include "./rotate.h"
 #include "./scale.h"
@@ -182,4 +183,20 @@ void gizmo_transform_clear_active(GizmoTransform *gizmo) {
   glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.init_delta);
 
   gizmo->cache.init_distance = 0.0f;
+}
+
+/**
+   Got through the active meshes and update their uniform back to their default
+   one. Function primarily used in the selection callback to set back the handle
+   color on mouse leave.
+
+   Use a lookup table coupled with a linear search to pick the right pointer.
+ */
+void gizmo_transform_reset_color_uniform(GizmoTransform *gizmo) {
+
+  for (uint8_t i = 0; i < GIZMO_TRANSFORM_AXIS_COUNT; i++) {
+    Mesh *handle = gizmo->interactive_handles[gizmo->mode].entries[i];
+    shader_update_uniform(mesh_shader_fixed(handle), 1, 0,
+                          gizmo_handle_color[i]);
+  }
 }

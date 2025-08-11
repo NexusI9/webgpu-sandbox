@@ -4,7 +4,23 @@
 #include "../filter.h"
 #include "../selection.h"
 #include "../utils.h"
+#include "../utils/color.h"
+#include <stddef.h>
 #include <stdint.h>
+
+static const struct {
+  CameraRaycastEvent event;
+  camera_raycast_callback callback;
+} selection_gizmo_mouse_events[2] = {
+    {
+        .event = CameraRaycastEvent_MouseDown,
+        .callback = scene_selection_raycast_gizmo_down_callback,
+    },
+    {
+        .event = CameraRaycastEvent_MouseHover,
+        .callback = scene_selection_raycast_gizmo_hover_callback,
+    },
+};
 
 void scene_selection_init_mouse_events(Scene *scene) {
 
@@ -31,9 +47,15 @@ void scene_selection_init_mouse_events(Scene *scene) {
     scene_selection_config_lists[i] =
         &scene_selection->filters[i].meshes[SceneSelectionState_Default];
 
+  /*
+
+     ===== MESHES EVENTS =====
+
+   */
+
   // right click raycast on scene main camera (to select meshes)
   camera_raycast(
-      scene->active_camera,
+      scene->camera,
       &(CameraRaycastDescriptor){
           .target = CameraRaycastTarget_MousePosition,
           .event = CameraRaycastEvent_MouseDown,
@@ -50,29 +72,37 @@ void scene_selection_init_mouse_events(Scene *scene) {
           .exclude = {0},
       });
 
+  /*
+
+     ===== GIZMO EVENTS =====
+
+   */
+
   // left click raycast on scene main camera (to select gizmo transform)
   SceneLayer *gizmo_layer =
       scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_TRANSFORM);
 
-  camera_raycast(
-      scene->active_camera,
-      &(CameraRaycastDescriptor){
-          .target = CameraRaycastTarget_MousePosition,
-          .event = CameraRaycastEvent_MouseDown,
-          .space = CameraRaycastSpace_ScreenSpace, // use scree-space since
-                                                   // gizmo have fixed scale
-          .screen_space_size = GIZMO_TRANSFORM_SIZE,
-          .include =
-              {
-                  .lists = (MeshRefList *[]){&gizmo_layer->meshes},
-                  .length = 1,
-              },
-          .exclude = {0},
-          .viewport = &scene->viewport,
-          .callback = scene_selection_raycast_gizmo_callback,
-          .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
-          .size = sizeof(SceneSelectionCallbackData),
-      });
+  // map selection gizmo mouse events
+  for (uint8_t i = 0; i < 2; i++)
+    camera_raycast(
+        scene->camera,
+        &(CameraRaycastDescriptor){
+            .target = CameraRaycastTarget_MousePosition,
+            .event = selection_gizmo_mouse_events[i].event,
+            // use scree-space since gizmo have fixed scale
+            .space = CameraRaycastSpace_ScreenSpace,
+            .screen_space_size = GIZMO_TRANSFORM_SIZE, // Gizmo size
+            .include =
+                {
+                    .lists = (MeshRefList *[]){&gizmo_layer->meshes},
+                    .length = 1,
+                },
+            .exclude = {0},
+            .viewport = &scene->viewport,
+            .callback = selection_gizmo_mouse_events[i].callback,
+            .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
+            .size = sizeof(SceneSelectionCallbackData),
+        });
 
   // add draw callback
   scene_renderer_add_draw_callback(&scene->renderer,
@@ -208,7 +238,7 @@ void scene_selection_raycast_mesh_callback(
    Left click raycast callback.
    Check if one of the gizmo is clicked and define the axis.
  */
-void scene_selection_raycast_gizmo_callback(
+void scene_selection_raycast_gizmo_down_callback(
     CameraRaycastCallback *cast_data, const EmscriptenMouseEvent *mouseEvent,
     void *user_data) {
 
@@ -231,5 +261,40 @@ void scene_selection_raycast_gizmo_callback(
 
     // set active handle from current mode and initialize offset
     gizmo_transform_set_active(gizmo, scene->active_camera, &scene->viewport);
+  }
+}
+
+/**
+   Hover on gizmo raycast callback.
+   Check if one of the gizmo is clicked and define the axis.
+ */
+
+void scene_selection_raycast_gizmo_hover_callback(
+    CameraRaycastCallback *cast_data, const EmscriptenMouseEvent *mouseEvent,
+    void *user_data) {
+
+  SceneSelectionCallbackData *cast_user_data =
+      (SceneSelectionCallbackData *)user_data;
+  GizmoTransform *gizmo = &cast_user_data->scene->editor.gizmo.transform;
+
+  // for (size_t i = 0; i < cast_data->hits->length; i++)
+  CameraRaycastHit *hit = &cast_data->hits->entries[0];
+
+  // update only once
+  if (cast_data->last_hit->mesh != hit->mesh &&
+      g_input.mouse.state == InputMouseState_Up) {
+
+    if (hit->mesh) {
+
+      // reset colors
+      gizmo_transform_reset_color_uniform(gizmo);
+
+      // update hovered gizmo color
+      shader_update_uniform(mesh_shader_fixed(hit->mesh), 1, 0,
+                            COLOR_GIZMO_TRANSFORM_HOVER);
+
+    } else {
+      gizmo_transform_reset_color_uniform(gizmo);
+    }
   }
 }

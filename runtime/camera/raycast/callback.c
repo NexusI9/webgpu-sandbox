@@ -20,14 +20,14 @@ typedef struct {
 } CameraRaycastCheckBoundsDescriptor;
 
 static void
-camera_raycast_check_bounds(const CameraRaycastCallbackData *,
+camera_raycast_check_bounds(CameraRaycastCallbackData *,
                             const CameraRaycastCheckBoundsDescriptor *);
 
 /**
    Traverse the meshes ref lists and check if the
  */
 void camera_raycast_check_bounds(
-    const CameraRaycastCallbackData *cam_desc,
+    CameraRaycastCallbackData *cam_desc,
     const CameraRaycastCheckBoundsDescriptor *bound_desc) {
 
   Raycast ray;
@@ -44,7 +44,7 @@ void camera_raycast_check_bounds(
 
     MeshRefList *ref_list = cam_desc->include.lists[l];
 
-    //printf("include length: %lu\n", ref_list->length);
+    // printf("include length: %lu\n", ref_list->length);
     for (size_t m = 0; m < ref_list->length; m++) {
       Mesh *mesh = ref_list->entries[m];
 
@@ -88,12 +88,16 @@ void camera_raycast_check_bounds(
   }
 
   // dispatch to callback if hits
-    cam_desc->callback(
-        &(CameraRaycastCallback){
-            .raycast = &ray,
-            .hits = hits,
-        },
-        bound_desc->em_mouse_event, cam_desc->data);
+  cam_desc->callback(
+      &(CameraRaycastCallback){
+          .raycast = &ray,
+          .hits = hits,
+          .last_hit = &cam_desc->last_hit,
+      },
+      bound_desc->em_mouse_event, cam_desc->data);
+
+  // update last first hit
+  cam_desc->last_hit = hits->entries[0];
 };
 
 bool camera_raycast_event_callback_center(

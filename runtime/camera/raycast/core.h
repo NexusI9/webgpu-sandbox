@@ -74,6 +74,9 @@ typedef enum {
 typedef struct {
   Raycast *raycast;
   CameraRaycastHitList *hits;
+  // use last hit to prevent spamming update on hover
+  // (only update if current hit != last hit)
+  const CameraRaycastHit *last_hit;
 } CameraRaycastCallback;
 
 typedef void (*camera_raycast_callback)(CameraRaycastCallback *,
@@ -95,6 +98,7 @@ typedef struct {
 
   // raycast result list
   CameraRaycastHitList *hits;
+  CameraRaycastHit last_hit;
 
   // callback
   camera_raycast_callback callback;

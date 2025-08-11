@@ -98,6 +98,7 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
       for (size_t j = 0; j < pipelines[i]->length; j++) {
         Mesh *mesh = pipelines[i]->entries[j];
         Shader *shader = mesh_shader_texture(mesh);
+	// TODO: only update point light uniforms
         mesh_shader_texture_update_lights(mesh, &seo->scene->lights,
                                           SHADER_TEXTURE_BINDGROUP_LIGHTS);
       }

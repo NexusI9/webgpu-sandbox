@@ -131,7 +131,7 @@ int main(int argc, const char *argv[]) {
                       (vec3){0.0f, 0.0f, 0.0f});
    */
 
-  scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
+  scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Solid);
 
   example_gltf(&main_scene);
 

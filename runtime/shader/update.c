@@ -62,9 +62,12 @@ void shader_update_uniform(Shader *shader, bind_group_index group_index,
 
     wgpuQueueWriteBuffer(shader->queue, bound_uniform->buffer, 0,
                          bound_uniform->data, bound_uniform->size);
-    // rebuild group
-    // shader_bind_group_refresh(bind_group, group_index, shader->device,
-    //                          &shader_pipeline(shader)->handle);
+
+    /* DELETME
+       rebuild group (no need for uniforms)
+       shader_bind_group_refresh(bind_group, group_index, shader->device,
+                                &shader_pipeline(shader)->handle);
+     */
   } else {
     VERBOSE_WARNING(
         "Could not find the bound uniform in group: %d, index: %d, make sure "
@@ -106,8 +109,8 @@ void shader_update_uniform_callback(Shader *shader,
         dyli_insert((void *)&bind_group->uniforms_dynamics.entries,
                     &bind_group->uniforms_dynamics.capacity,
                     &bind_group->uniforms_dynamics.length,
-                    sizeof(ShaderBindGroupUniformEntry *), (void *)&bound_uniform,
-                    1, "Shader dynamic uniform");
+                    sizeof(ShaderBindGroupUniformEntry *),
+                    (void *)&bound_uniform, 1, "Shader dynamic uniform");
 
         /* 2. Copy Initial Data for comparison
 

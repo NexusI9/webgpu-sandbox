@@ -21,6 +21,9 @@ void mesh_shader_texture_clear_bindings(Mesh *mesh) {
    are already set at <light_list>[12], init them all to 0
    by default we will upload all the lights (point, ambient, spot)
    within a defined group
+
+   TODO OPTI: currently we update all the lights on each update, implement a more
+   targetted way to update lights based on their index.
   */
 void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
                                        uint8_t group_index) {

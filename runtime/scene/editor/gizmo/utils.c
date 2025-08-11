@@ -70,9 +70,8 @@ void gizmo_transform_create_handles(
   // create new mesh in mesh ref list in order: x, y ,z
   for (size_t i = 0; i < gizmo_mesh_count; i++) {
     Mesh *mesh = mesh_list_new_mesh(desc->list);
-    color rgba = {i == 0, i == 1, i == 2, 1.0f};
 
-    gizmo_transform_create_mesh(mesh, &mesh_primitive, &rgba, desc->queue,
+    gizmo_transform_create_mesh(mesh, &mesh_primitive, gizmo_handle_color[i], desc->queue,
                                 desc->device);
 
 
