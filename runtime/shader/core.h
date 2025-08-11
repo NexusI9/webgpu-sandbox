@@ -170,15 +170,46 @@ typedef struct {
   size_t length;
 } ShaderBindGroupSamplers;
 
+// dynamic lists
+// uniform / texture / samplers pointers array
+typedef struct {
+  ShaderBindGroupUniformEntry **entries;
+  size_t length;
+  size_t capacity;
+} ShaderBindGroupUniformsDynamics;
+
+typedef struct {
+  ShaderBindGroupTextureEntry **entries;
+  size_t capacity;
+  size_t length;
+} ShaderBindGroupTexturesDynamics;
+
+typedef struct {
+  ShaderBindGroupSamplerEntry **entries;
+  size_t capacity;
+  size_t length;
+} ShaderBindGroupSamplersDynamics;
+
 // Bind group main
 typedef struct {
-  WGPUBindGroup bind_group;         // bind group
-  WGPUShaderStageFlags visibility;  // visibility (frag | vert)
-                                    // ELEMENTS:
-  ShaderBindGroupUniforms uniforms; // uniforms
-  ShaderBindGroupTextures textures; // textures
-  ShaderBindGroupSamplers samplers; // samplers
+  WGPUBindGroup bind_group;        // bind group
+  WGPUShaderStageFlags visibility; // visibility (frag | vert)
+
+  ShaderBindGroupUniforms uniforms;                  // uniforms
+  ShaderBindGroupUniformsDynamics uniforms_dynamics; // dynamic pointers
+
+  ShaderBindGroupTextures textures;                  // textures
+  ShaderBindGroupTexturesDynamics textures_dynamics; // dynamic pointers
+
+  ShaderBindGroupSamplers samplers;                  // sampler
+  ShaderBindGroupSamplersDynamics samplers_dynamics; // sampler
+
 } ShaderBindGroup;
+
+typedef struct {
+  ShaderBindGroup entries[SHADER_MAX_BIND_GROUP];
+  size_t length;
+} ShaderBindGroupList;
 
 // Descriptors
 
@@ -232,13 +263,7 @@ typedef struct {
   // pipelines
   const Pipeline *pipeline;
 
-  // uniforms data along with userful information (buffer, group index...)
-  // TODO: separate statics from dynamics
-  // registered bind group unique indexes
-  struct {
-    ShaderBindGroup entries[SHADER_MAX_BIND_GROUP];
-    size_t length;
-  } bind_groups;
+  ShaderBindGroupList bind_groups;
 
 } Shader;
 

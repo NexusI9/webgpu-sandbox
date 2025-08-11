@@ -1,5 +1,6 @@
 #include "utils.h"
 #include "../utils/system.h"
+#include <stdint.h>
 /**
    Returns the sum of group uniforms, textures and samplers.
    Useful when creating each bind groups layout where the number of total
@@ -9,8 +10,8 @@ uint16_t shader_bind_group_entries_count(const ShaderBindGroup *group) {
 
   return group->uniforms.length + group->textures.length +
          group->samplers.length;
-}
 
+}
 
 /**
    Check if the shader has every requirements before binding groups

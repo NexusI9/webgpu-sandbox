@@ -2,6 +2,7 @@
 #include "./utils.h"
 
 #include "../utils/system.h"
+#include "core.h"
 
 static inline void shader_layout_uniforms(Shader *, ShaderBindGroup *,
                                           WGPUBindGroupLayoutEntry *,
@@ -33,14 +34,16 @@ static inline void shader_layout_samplers(Shader *, ShaderBindGroup *,
   */
 WGPUBindGroupLayout *shader_layout_build(Shader *shader) {
 
+  ShaderBindGroupList *bindgroups = &shader->bind_groups;
+
   // need to use malloc cause of VLA (variable length array)
   WGPUBindGroupLayout *layout_list = (WGPUBindGroupLayout *)malloc(
-      shader->bind_groups.length * sizeof(WGPUBindGroupLayout));
+      bindgroups->length * sizeof(WGPUBindGroupLayout));
 
   // go through shader bind groups and combine entries
-  for (int i = 0; i < shader->bind_groups.length; i++) {
+  for (int i = 0; i < bindgroups->length; i++) {
 
-    ShaderBindGroup *current_group = &shader->bind_groups.entries[i];
+    ShaderBindGroup *current_group = &bindgroups->entries[i];
     WGPUBindGroupLayout *current_layout = &layout_list[i];
 
     // combine all bind group entries in one array

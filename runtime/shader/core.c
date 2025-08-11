@@ -5,6 +5,7 @@
 #include "string.h"
 
 #include "../utils/system.h"
+#include <stdint.h>
 
 /*
 
@@ -84,10 +85,11 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline->handle);
 
-  // update bind group (uniforms, projection/view matrix...)
-  for (int i = 0; i < shader->bind_groups.length; i++) {
+  ShaderBindGroupList *dynamic_list = &shader->bind_groups;
 
-    ShaderBindGroup *current_bind_group = &shader->bind_groups.entries[i];
+  for (int i = 0; i < dynamic_list->length; i++) {
+
+    ShaderBindGroup *current_bind_group = &dynamic_list->entries[i];
 
     // update bindgroup uniforms data
     shader_uniform_update(current_bind_group, shader->queue);
@@ -114,9 +116,11 @@ const Pipeline *shader_pipeline(Shader *shader) { return shader->pipeline; }
 void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue queue) {
 
   // update bindgroup entries (callback)
-  for (int j = 0; j < group->uniforms.length; j++) {
+  ShaderBindGroupUniformsDynamics *dynamic_uniforms = &group->uniforms_dynamics;
 
-    ShaderBindGroupUniformEntry *current_entry = &group->uniforms.entries[j];
+  for (int j = 0; j < dynamic_uniforms->length; j++) {
+
+    ShaderBindGroupUniformEntry *current_entry = dynamic_uniforms->entries[j];
 
     ShaderUniformUpdate *uniform_update = &current_entry->update;
     // TODO: separate dynamic (callback) from static (non callback) shader

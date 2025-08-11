@@ -18,7 +18,7 @@ void shader_update_texture_view(Shader *shader, bind_group_index group_index,
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupTextureEntry *bound_texture =
-      shader_find_texture(shader, group_index, index);
+      shader_find_texture(shader, group_index, index, NULL);
 
   if (bound_texture != NULL) {
 
@@ -49,7 +49,7 @@ void shader_update_uniform(Shader *shader, bind_group_index group_index,
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
   ShaderBindGroupUniformEntry *bound_uniform =
-      shader_find_uniform(shader, group_index, index);
+      shader_find_uniform(shader, group_index, index, NULL);
 
   if (bound_uniform != NULL) {
 
@@ -83,28 +83,51 @@ void shader_update_uniform_callback(Shader *shader,
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
+  size_t uniform_list_index;
   ShaderBindGroupUniformEntry *bound_uniform =
-      shader_find_uniform(shader, group_index, index);
+      shader_find_uniform(shader, group_index, index, &uniform_list_index);
 
   if (bound_uniform != NULL) {
 
     if (update->callback != NULL) {
 
-      /*
-        In case of an update callback, we need to make a copy of the data since
-        the uniform update is based on a old/new value principle. If we reuse
-        the same pointer as the original data we will always compare to the
-        latest value will won't trigger the update since the uniform data will
-        always be equal to the original one.
+      // If callback not set yet
+      if (bound_uniform->update.callback == NULL) {
 
-        Also note that the allocated size is based on the orignial pipeline
-        layout. Meaning if my layout expect a vec3 but a mesh is provided it
-        will lead to memory corruption.
-       */
-      if (bound_uniform->update.callback == NULL && bound_uniform->data) {
-        void *temp_data = bound_uniform->data;
-        bound_uniform->data = malloc(bound_uniform->size);
-        memcpy(bound_uniform->data, temp_data, bound_uniform->size);
+        /* 1. Push pointer to Dynamic Resources Array
+
+           Add uniform pointer to dynamic list. During the shader draw phase the
+           resources (uniforms/textures/samplers) are splitted in two kinds:
+           Statics and Dynamics. Only Dynamics resources (that have a callback)
+           go through a secondary type of check to check depending on their
+           callback if their data shall be updated.
+         */
+
+        dyli_insert((void *)&bind_group->uniforms_dynamics.entries,
+                    &bind_group->uniforms_dynamics.capacity,
+                    &bind_group->uniforms_dynamics.length,
+                    sizeof(ShaderBindGroupUniformEntry *), (void *)&bound_uniform,
+                    1, "Shader dynamic uniform");
+
+        /* 2. Copy Initial Data for comparison
+
+           In case of a new update callback, we need to make a copy of the data
+           since the uniform update is based on a old/new value comparison
+           principle to trigger the change. If we reuse the same pointer as the
+           original data we will always compare to the latest value and won't
+           trigger the update since the uniform data will always be equal to the
+           original one.
+
+           Also note that the allocated size is based on the orignial pipeline
+           layout. Meaning if my layout expect a vec3 but a mesh is provided it
+           will lead to memory corruption.
+         */
+
+        if (bound_uniform->data) {
+          void *temp_data = bound_uniform->data;
+          bound_uniform->data = malloc(bound_uniform->size);
+          memcpy(bound_uniform->data, temp_data, bound_uniform->size);
+        }
       }
 
       bound_uniform->update = (ShaderUniformUpdate){
@@ -127,7 +150,7 @@ void shader_update_sampler(Shader *shader, bind_group_index group_index,
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupSamplerEntry *bound_sampler =
-      shader_find_sampler(shader, group_index, index);
+      shader_find_sampler(shader, group_index, index, NULL);
 
   if (bound_sampler != NULL) {
 
@@ -161,7 +184,7 @@ void shader_update_texture(Shader *shader, bind_group_index group_index,
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupTextureEntry *bound_texture =
-      shader_find_texture(shader, group_index, index);
+      shader_find_texture(shader, group_index, index, NULL);
 
   if (bound_texture != NULL) {
 

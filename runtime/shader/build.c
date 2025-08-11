@@ -23,9 +23,7 @@ void shader_build(Shader *shader) {
 
   // build bind group entries for each individual group index
 
-  /*
-    Create Shader GPUBindGroup for each bindgroups
-   */
+  // Create Shader GPUBindGroup for each bindgroups
   for (int i = 0; i < shader->bind_groups.length; i++) {
 
     ShaderBindGroup *group = &shader->bind_groups.entries[i];
