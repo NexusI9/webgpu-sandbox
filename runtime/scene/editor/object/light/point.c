@@ -73,7 +73,8 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
 
   // update light shadow map
   if (scene_renderer_draw_mode(&seo->scene->renderer) ==
-      SceneRendererDrawMode_Texture)
+      SceneRendererDrawMode_Texture) {
+
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
         .light = &seo->scene->lights.point.entries[seo->target_list_index],
         .mesh_list =
@@ -85,6 +86,23 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
         .layer = seo->target_list_index,
         .encoder = NULL,
     });
+
+    // update lit and lit shadow meshes light uniforms
+    const MeshRefList *pipelines[2] = {
+        scene_pipeline(seo->scene, ScenePipeline_Dynamic_LitShadow),
+        scene_pipeline(seo->scene, ScenePipeline_Dynamic_Lit),
+    };
+    
+    // traverse and update texture shader
+    for (uint8_t i = 0; i < 2; i++) {
+      for (size_t j = 0; j < pipelines[i]->length; j++) {
+        Mesh *mesh = pipelines[i]->entries[j];
+        Shader *shader = mesh_shader_texture(mesh);
+        mesh_shader_texture_update_lights(mesh, &seo->scene->lights,
+                                          SHADER_TEXTURE_BINDGROUP_LIGHTS);
+      }
+    }
+  }
 }
 
 void seo_light_point_rotate(SceneEditorObject *seo, vec3 value) {}

@@ -94,7 +94,7 @@ void init_scene() {
 
    */
 
-  example_skybox(&main_scene);
+  example_skybox_gradient(&main_scene);
 }
 
 void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
