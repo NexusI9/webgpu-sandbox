@@ -85,7 +85,7 @@ void init_scene() {
   scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
                                            .color = {1.0f, 1.0f, 1.0f},
                                            .intensity = 0.2f,
-                                           .position = {2.0f, 4.0f, -5.0f},
+                                           .position = {-2.0f, 1.0f, 0.3f},
                                        });
 
   /*

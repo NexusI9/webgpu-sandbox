@@ -75,7 +75,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
   //(usually when only drawing one light)
   if (shadow_encoder == NULL)
     shadow_encoder = wgpuDeviceCreateCommandEncoder(desc->device, NULL);
-  
+
   // create per layer texture views (depth + color)
   WGPUTextureViewDescriptor temp_layer_texture_descriptor_depth = {
       .label = "Shadow per layer texture view - Depth",
@@ -178,13 +178,15 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
  */
 void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
-  //VERBOSE_PROCESS("Computing all shadow maps...");
+  // VERBOSE_PROCESS("Computing all shadow maps...");
 
-  // TODO : check why cannot use this global shadow_encoder, looks like it's
-  // related to light view matrix but not sure....
-  // Hints: looks like it's taking the texture/perspective from the sun
-  WGPUCommandEncoder shadow_encoder =
-      wgpuDeviceCreateCommandEncoder(desc->device, NULL);
+  /* TODO :
+     When using "global" shadow encoder and passing it through all the passes
+     create an async conflict issue: the point light view probably takes longer
+     to be calculated and gets overriden by the the sun point of view.
+
+     A solution to this is to add an offset or use a command encoder per light
+   */
 
   MeshRefList *target_mesh_list = desc->mesh_list;
 
@@ -200,6 +202,11 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
   ==========================================
  */
 
+  WGPUCommandEncoder shadow_encoder =
+      wgpuDeviceCreateCommandEncoder(desc->device, NULL);
+
+  WGPUCommandBuffer command_buffer;
+
   for (size_t p = 0; p < point_length; p++)
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
         .layer = p,
@@ -207,7 +214,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         .mesh_list = desc->mesh_list,
         .device = desc->device,
         .queue = desc->queue,
-        .encoder = NULL, // shadow_encoder,
+        .encoder = shadow_encoder,
         .color_map = desc->lights->point.color_map,
         .depth_map = desc->lights->point.depth_map,
     });
@@ -242,7 +249,8 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
   for (size_t p = 0; p < sun_length; p++)
     shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
-        // TODO: currently use spot light color_map, maybe make a linked pointer
+        // TODO: currently use spot light color_map, maybe make a linked
+        // pointer
         // to the same map but include it in the sun light list struct itself.
         .color_map = desc->lights->spot.color_map,
         .depth_map = desc->lights->spot.depth_map,
@@ -255,8 +263,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
     });
 
   // finish encoding command
-  WGPUCommandBuffer command_buffer =
-      wgpuCommandEncoderFinish(shadow_encoder, NULL);
+  command_buffer = wgpuCommandEncoderFinish(shadow_encoder, NULL);
   wgpuQueueSubmit(desc->queue, 1, &command_buffer);
 
   // clean up
@@ -284,6 +291,7 @@ void shadow_map_draw_point_light(
 
     // Render scene (create shadow render pass to texture layer)
     size_t layer = desc->layer * light_views.length + v;
+
     shadow_map_draw(&(ShadowMapDrawDescriptor){
         .mesh_list = desc->mesh_list,
         .color_texture = desc->color_map,
