@@ -53,7 +53,12 @@ void shader_update_uniform(Shader *shader, bind_group_index group_index,
 
   if (bound_uniform != NULL) {
 
-    bound_uniform->data = data;
+    // since callback/trigger system use an allocated copy of the data we
+    // need to make sure to copy the data content and not replace the pointer
+    if (bound_uniform->update.callback != NULL)
+      memcpy(bound_uniform->data, data, sizeof(bound_uniform->size));
+    else
+      bound_uniform->data = data;
 
     wgpuQueueWriteBuffer(shader->queue, bound_uniform->buffer, 0,
                          bound_uniform->data, bound_uniform->size);
@@ -83,23 +88,9 @@ void shader_update_uniform_callback(Shader *shader,
 
   if (bound_uniform != NULL) {
 
-    /*
-      Since the callback function requires an allocated copy of the original
-      data (see below paragraph for detailed explanation), it is necessary to
-      not overuse this function as to avoid too many allocation, as a result we
-      add an early return if the bound group already has a callback.
-
-      The idea behing the callback model is to only use it once and update
-      the unform based on this callback.
-     */
-    if (bound_uniform->update.callback != NULL) {
-      VERBOSE_WARNING("The uniform in group: %d, index: %d already has a "
-                      "callback hooked on, abort. (shader: %s)",
-                      group_index, index, shader->name);
-      return;
-    }
-
     if (update->callback != NULL) {
+
+
       /*
         In case of an update callback, we need to make a copy of the data since
         the uniform update is based on a old/new value principle. If we reuse
@@ -111,7 +102,7 @@ void shader_update_uniform_callback(Shader *shader,
         layout. Meaning if my layout expect a vec3 but a mesh is provided it
         will lead to memory corruption.
        */
-      if (bound_uniform->data) {
+      if (bound_uniform->update.callback == NULL && bound_uniform->data) {
         void *temp_data = bound_uniform->data;
         bound_uniform->data = malloc(bound_uniform->size);
         memcpy(bound_uniform->data, temp_data, bound_uniform->size);

@@ -99,13 +99,17 @@ void mesh_shader_create_wireframe(Mesh *mesh) {
   Shader *wireframe_shader = mesh_shader_wireframe(mesh);
 
   // skip if already created
-  if (wireframe_shader->name != NULL)
+  if (wireframe_shader->name != NULL) {
+    VERBOSE_INFO(
+        "Wireframe shader for %s is already created, skip shader creation.",
+        mesh->name);
     return;
+  }
 
   // create shader
   shader_create(wireframe_shader,
                 &(ShaderCreateDescriptor){
-                    .pipeline = &g_std_pipelines[PipelineType_Line],
+                    .pipeline = std_pipeline(PipelineType_Line),
                     .label = "Mesh wireframe shader",
                     .device = mesh->device,
                     .queue = mesh->queue,
@@ -121,14 +125,13 @@ void mesh_shader_create_solid(Mesh *mesh) {
   Shader *solid_shader = mesh_shader_solid(mesh);
 
   // create shader
-  shader_create(solid_shader,
-                &(ShaderCreateDescriptor){
-                    .pipeline = &g_std_pipelines[PipelineType_Solid],
-                    .label = "Mesh solid shader",
-                    .device = mesh->device,
-                    .queue = mesh->queue,
-                    .name = "Mesh solid shader",
-                });
+  shader_create(solid_shader, &(ShaderCreateDescriptor){
+                                  .pipeline = std_pipeline(PipelineType_Solid),
+                                  .label = "Mesh solid shader",
+                                  .device = mesh->device,
+                                  .queue = mesh->queue,
+                                  .name = "Mesh solid shader",
+                              });
 }
 
 /**

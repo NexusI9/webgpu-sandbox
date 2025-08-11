@@ -21,11 +21,9 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
    */
 
   // init mesh pipelines
-  for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1) {
-    printf("%d : %d\n", flag, __builtin_ctz(flag));
+  for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
     mesh_ref_list_create(scene_pipeline(scene, flag),
                          SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  }
 
   // init draw callbacks configuration
   scene_init_draw_layouts(scene);
@@ -135,8 +133,10 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
    their respective topology, shader callbacks as well a mesh list to draw
    during the loop.
 
-   Can be read like : 'For each draw mode (tex/solid/wire) draw in the given
-   render pass the mesh list with this shader and this topology.'
+   Can be read like :
+   For each draw mode (tex/solid/wire) draw
+          L for each given render pass draw
+               L the mesh list with this shader and this topology.
  */
 void scene_init_draw_layouts(Scene *scene) {
 

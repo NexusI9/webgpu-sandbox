@@ -35,7 +35,7 @@ void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
   // update active mesh shader depending on draw mode
 
   // update renderer drawn render pass configuration
-  scene_renderer_set_draw_mode(&scene->renderer, SceneRendererDrawMode_Texture);
+  scene_renderer_set_draw_mode(&scene->renderer, mode);
 }
 
 /**

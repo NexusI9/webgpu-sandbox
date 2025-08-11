@@ -197,7 +197,6 @@ void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport) {
 void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera,
                                 Viewport *viewport) {
 
-  printf("build wireframe start\n");
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
                                        &mesh->topology.boundbox);
