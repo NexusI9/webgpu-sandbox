@@ -33,6 +33,8 @@ static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
 
 void loader_gltf_load(const GLTFLoadDescriptor *desc) {
 
+  VERBOSE_IMPORT("GLTF file: %s", desc->path);
+  
   cgltf_data *data = NULL;
   // load json structure
   cgltf_result result =
@@ -144,8 +146,6 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
 
 void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                              const WGPUQueue queue, cgltf_data *data) {
-
-  VERBOSE_IMPORT("GLTF file");
 
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
@@ -347,9 +347,9 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
     // fallback from GPU instead
     else {
       // send fallback texture view
-      shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
+      /*shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
                                  binding, fallback_texture,
-                                 WGPUTextureFormat_BGRA8Unorm);
+                                 WGPUTextureFormat_BGRA8Unorm);*/
     }
 
     // update sampler entry from generated array

@@ -3,6 +3,7 @@
 #include "../runtime/input/input.h"
 #include "../utils/system.h"
 #include "./texture.h"
+#include "ao_bake/core.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "render_pass.h"
@@ -30,7 +31,7 @@ void scene_renderer_create(SceneRenderer *renderer,
 
   // create clock
   clock_create(&renderer->clock);
-  
+
   // set wgpu data
   renderer->wgpu.instance = wgpuCreateInstance(NULL);
   renderer->wgpu.device = emscripten_webgpu_get_device();
@@ -47,6 +48,13 @@ void scene_renderer_create(SceneRenderer *renderer,
   // init render passes
   scene_renderer_init_render_pass(renderer);
 
+  ao_bake_init(&renderer->texture.ambient_occlusion,
+               &(AOBakeInitDescriptor){
+                   .size = AO_TEXTURE_SIZE,
+                   .layer_count = AO_LAYER_COUNT,
+                   .device = scene_renderer_device(renderer),
+               });
+
   // set draw layouts callback
   if (renderer->draw.layouts->length == 0) {
     VERBOSE_WARNING("No draw layouts were provided for the scene renderer.");
@@ -55,7 +63,11 @@ void scene_renderer_create(SceneRenderer *renderer,
         renderer, scene_renderer_draw_layout_callback, (void *)renderer);
   }
 
-  /* Global Input & Event polling */
+  /*
+
+     Global Input & Event polling
+
+   */
 
   // TODO: Since renderer isn't high level anymore, put the below calls in a
   // more global object ("Context" ?)

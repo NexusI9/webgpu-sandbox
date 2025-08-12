@@ -4,6 +4,7 @@
 #include "../../clock.h"
 #include "../runtime/pipeline/pipeline.h"
 #include "../runtime/texture/texture.h"
+#include "./ao_bake/ao_bake.h"
 #include "render_pass.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -69,6 +70,7 @@ typedef struct SceneRenderer {
 
   struct {
     SceneRendererTextureRender render;
+    SceneRendererTextureAO ambient_occlusion;
     PipelineMultisampleCount multisample;
   } texture;
 
@@ -114,6 +116,6 @@ const char *scene_renderer_target(SceneRenderer *);
 const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *);
 
 bool scene_renderer_resize_callback(int, const EmscriptenUiEvent *, void *);
-cclock* scene_renderer_clock(SceneRenderer*);
+cclock *scene_renderer_clock(SceneRenderer *);
 
 #endif

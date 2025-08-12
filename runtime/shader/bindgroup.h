@@ -36,3 +36,4 @@ void shader_bind_group_refresh(ShaderBindGroup *, bind_group_index,
 ShaderBindGroup *shader_get_bind_group(Shader *, bind_group_index);
 
 #endif
+

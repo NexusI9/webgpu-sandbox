@@ -22,8 +22,8 @@ void mesh_shader_texture_clear_bindings(Mesh *mesh) {
    by default we will upload all the lights (point, ambient, spot)
    within a defined group
 
-   TODO OPTI: currently we update all the lights on each update, implement a more
-   targetted way to update lights based on their index.
+   TODO OPTI: currently we update all the lights on each update, implement a
+   more targetted way to update lights based on their index.
   */
 void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
                                        uint8_t group_index) {
@@ -128,27 +128,6 @@ void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
 }
 
 /**
-   Bind the ambient occlusion maps and sampler to the default shader (called
-   during shader creation)
- */
-void mesh_shader_texture_bind_ambient_occlusion(
-    Mesh *mesh, WGPUTextureView ao_texture_view) {
-
-  shader_update_texture_view(mesh_shader_texture(mesh), 0, 8, ao_texture_view,
-                             AO_TEXTURE_FORMAT);
-
-  shader_update_sampler(mesh_shader_texture(mesh), 0, 9,
-                        &(WGPUSamplerDescriptor){
-                            .addressModeU = WGPUAddressMode_ClampToEdge,
-                            .addressModeV = WGPUAddressMode_ClampToEdge,
-                            .addressModeW = WGPUAddressMode_ClampToEdge,
-                            .minFilter = WGPUFilterMode_Linear,
-                            .magFilter = WGPUFilterMode_Linear,
-                            .compare = WGPUCompareFunction_Undefined,
-                        });
-}
-
-/**
    Bind the shadow maps and sampler to the default shader (called during shader
    creation)
  */
@@ -202,34 +181,6 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
                         sampler_binding + 2, &sampler);
 }
 
-/**
-   Update the Ambient Occlusion texture view map of the given mesh.
-   While the bind functions create and bind samplers + textures,
-   the Update functions simply replace the Texture view.
-
-   Replacing the texture view doesn't require to clear the whole pipeline, since
-   the pipeline only cares about:
-   - shader code
-   - bing group layout (not their content)
-   - vertex buffer layouts, formats etc.
-
-   However we do need to rebuild the shader->bind_groups, since they are used
-   during the draw loop.
-
-   So the overall process is:
-
-    Build shader  => compute maps => replace bind group => build shader
-    (full layout)                                        (bind group only)
-
- */
-void mesh_shader_texture_update_ambient_occlusion(Mesh *mesh,
-                                                  WGPUTextureView map) {
-
-  VERBOSE_PROCESS("Update AO map: %s", mesh->name);
-  Shader *shader = mesh_shader_texture(mesh);
-  shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
-                             SHADER_TEXTURE_BINDING_AO, map, AO_TEXTURE_FORMAT);
-}
 
 void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
                                             WGPUTextureView point_map,

@@ -14,8 +14,7 @@ typedef struct {
 
 // pipeline builders
 static void scene_build_mesh_texture(Mesh *, Camera *, Viewport *,
-                                     const SceneBuildTextureDescriptor *,
-                                     const AOBakeInitDescriptor *);
+                                     const SceneBuildTextureDescriptor *);
 
 static void scene_build_mesh_solid(Mesh *, Camera *, Viewport *);
 
@@ -89,19 +88,13 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
     case SceneRendererDrawMode_Texture:
       VERBOSE_MESH_BUILD("Texture %s", mesh->name);
 
-      scene_build_mesh_texture(
-          mesh, camera, viewport,
-          &(SceneBuildTextureDescriptor){
-              .pipeline = pipeline,
-              .lights = &scene->lights,
-              .point_map = scene->lights.point.depth_view,
-              .spot_map = scene->lights.spot.depth_view,
-          },
-          &(AOBakeInitDescriptor){
-              .queue = queue,
-              .device = device,
-              .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
-          });
+      scene_build_mesh_texture(mesh, camera, viewport,
+                               &(SceneBuildTextureDescriptor){
+                                   .pipeline = pipeline,
+                                   .lights = &scene->lights,
+                                   .point_map = scene->lights.point.depth_view,
+                                   .spot_map = scene->lights.spot.depth_view,
+                               });
 
       break;
     }
@@ -130,8 +123,7 @@ void scene_build_mesh_ref_list(Scene *scene, MeshRefList *list,
    Establish pipeline from previously set bind groups
  */
 void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
-                              const SceneBuildTextureDescriptor *build_desc,
-                              const AOBakeInitDescriptor *ao_desc) {
+                              const SceneBuildTextureDescriptor *build_desc) {
 
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
@@ -148,8 +140,6 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
     mesh_shader_texture_update_lights(mesh, build_desc->lights,
                                       SHADER_TEXTURE_BINDGROUP_LIGHTS);
 
-    // Bake AO textures for static scenes elements
-    // ao_bake_init(ao_desc);
   }
 
   // shadow only pipeline

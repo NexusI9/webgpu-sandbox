@@ -3,6 +3,8 @@
 
 #include "../runtime/mesh/mesh.h"
 #include <cglm/cglm.h>
+#include <stdio.h>
+#include <time.h>
 
 #ifdef VERBOSE
 
@@ -40,7 +42,7 @@
 
 #define VERBOSE_DEBUG(...)                                                     \
   do {                                                                         \
-    printf("🐞 ");                                                             \
+    printf("");                                                             \
     printf(__VA_ARGS__);                                                       \
     PRINT_LINE();                                                              \
   } while (0)
@@ -61,7 +63,7 @@
 
 #define VERBOSE_MESH_CREATE(...)                                               \
   do {                                                                         \
-    printf("✨ Creating mesh: ");                                              \
+    printf("🔼 Creating mesh: ");                                              \
     printf(__VA_ARGS__);                                                       \
     PRINT_LINE();                                                              \
   } while (0)
@@ -109,11 +111,17 @@
 #define VERBOSE_HEADER(...)
 #endif // VERBOSE
 
+/*
+
+ DEBUG MALLOC
+
+ */
+
 #ifdef DEBUG_MALLOC
 
 // Declarations for our custom functions
-void* custom_malloc(size_t size, const char* file, int line);
-void custom_free(void* ptr, const char* file, int line);
+void *custom_malloc(size_t size, const char *file, int line);
+void custom_free(void *ptr, const char *file, int line);
 
 // The macros that replace malloc and free
 #define malloc(size) custom_malloc(size, __FILE__, __LINE__)
@@ -121,6 +129,30 @@ void custom_free(void* ptr, const char* file, int line);
 
 #endif // DEBUG_MALLOC
 
+/*
+
+  DEBUG_TIME
+
+ */
+
+#ifdef DEBUG_TIME
+
+#define TIMER(name, code)                                                      \
+  do {                                                                         \
+    struct timespec _start, _end;                                              \
+    clock_gettime(CLOCK_MONOTONIC, &_start);                                   \
+    code clock_gettime(CLOCK_MONOTONIC, &_end);                                \
+    double _elapsed = (_end.tv_sec - _start.tv_sec) * 1000.0 +                 \
+                      (_end.tv_nsec - _start.tv_nsec) / 1000000.0;             \
+    printf("%s\t %.3f ms\n", name, _elapsed);                                  \
+  } while (0)
+
+#else
+#define TIMER(name, code)                                                      \
+  do {                                                                         \
+    code                                                                       \
+  } while (0)
+#endif
 
 void print_ivec4(const ivec4);
 void print_ivec3(const ivec3);

@@ -14,7 +14,7 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 #
 # AO BAKING: 
 #   - AO_BAKE_DISPLAY_RAY : display raycast during AO Bake pass
-#   - AO_GLOBAL_SELF : enable comparison with source mesh itself during global phase
+#   - AO_BAKE_HIT_COUNT : print the hit count for each mesh
 #
 # COORDINATES:
 #   - CGLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -24,8 +24,14 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 #   - VERBOSE_BINDING_PHASE : print shader binding structure
 #   - VERBOSE_BUILDING_PHASE : print mesh building phase
 #   - DEBUG_MALLOC : print each allocation size
+#   - DEBUG_TIME : show marked functions execution time
 #
-MACROS := -DCGLM_FORCE_DEPTH_ZERO_TO_ONE -DVERBOSE -DENGINE_EDITOR
+MACROS := \
+       -DCGLM_FORCE_DEPTH_ZERO_TO_ONE \
+       -DVERBOSE \
+       -DENGINE_EDITOR \
+       -DDEBUG_TIME \
+       -DAO_BAKE_HIT_COUNT
 
 # Preprocess cwgsl shader to wgsl Shader files
 SHADER_DIR := ./backend/renderer/scene/std_pipeline/modules/

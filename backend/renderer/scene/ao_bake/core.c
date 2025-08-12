@@ -1,395 +1,141 @@
+#include "./core.h"
 #include "../backend/buffer.h"
 #include "../runtime/mesh/shader/shader.h"
-#include "../utils/point.h"
 #include "../utils/system.h"
-#include "ao_bake.h"
+#include "./global.h"
+#include "./local.h"
+#include "./texture_list.h"
 #include "string.h"
+#include "utils.h"
 #include "webgpu/webgpu.h"
 
-static inline void ao_bake_global(const AOBakeDescriptor *desc);
-static inline void ao_bake_local(const AOBakeDescriptor *desc);
-static inline void ao_bake_raycast(const AOBakeRaycastDescriptor *);
-static inline float ao_bake_vertex(Vertex *, Mesh *, Mesh *);
-static Triangle ao_bake_mesh_triangle(Mesh *, size_t);
+/**
+   Create and cache Ambient Occlusion main array texture.
+ */
+void ao_bake_init(SceneRendererTextureAO *ao,
+                  const AOBakeInitDescriptor *desc) {
 
-float ao_bake_vertex(Vertex *vertex, Mesh *source, Mesh *line) {
+  VERBOSE_PROCESS("Initializing Ambient Occlusion Texture...");
 
-  int vertex_hit = 0;
-  vec3 rays[AO_LOCAL_RAY_AMOUNT];
-  // Generate random ray in an hemisphere oriented on vertex normal
-  hemisphere_random_points(vertex->normal, AO_LOCAL_RAY_AMOUNT, rays);
+  ao->layer_count = desc->layer_count;
+  ao->size = desc->size;
 
-  vec3 world_position;
-  glm_mat4_mulv3(source->model, vertex->position, 1.0f, world_position);
+  ao->texture = wgpuDeviceCreateTexture(
+      desc->device,
+      &(WGPUTextureDescriptor){
+          .size = {ao->size, ao->size, desc->layer_count},
+          .format = AO_TEXTURE_FORMAT,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+          .dimension = WGPUTextureDimension_2D,
+          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+      });
 
-  for (int ray = 0; ray < AO_LOCAL_RAY_AMOUNT; ray++) {
+  ao_bake_texture_list_create(&ao->texture_list, ao->layer_count);
+}
 
-    vec3 ray_direction;
-    glm_vec3_scale(rays[ray], AO_LOCAL_RAY_MAX_DISTANCE, ray_direction);
-    glm_vec3_add(world_position, ray_direction, ray_direction);
+void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
+                       const AOBakeDrawDescriptor *desc) {
 
-#ifdef AO_BAKE_DISPLAY_RAY
-    if (line && ray < AO_RAY_MAX_COUNT)
-      line_add_point(world_position, ray_direction, (vec3){0.0f, 1.0f, 0.0f},
-                     &line->vertex, &line->index);
-#endif
+  size_t layer = DYLI_INVALID_INDEX;
+  Texture *texture = ao_bake_texture_list_find(&ao->texture_list, mesh, &layer);
 
-    // traverse mesh triangles
-    for (size_t t = 0; t < source->topology.base.index.length; t += 3) {
-      Triangle triangle = ao_bake_mesh_triangle(source, t);
-      vec3 hit;
-      triangle_raycast(&triangle, world_position, ray_direction,
-                       AO_LOCAL_RAY_MAX_DISTANCE, hit);
+  // temp
+  if (layer != DYLI_INVALID_INDEX && layer >= (int)ao->layer_count) {
+    VERBOSE_WARNING(
+        "AO Texture Layer reached max capacity, AO Baking aborted.");
+    return;
+  }
 
-      // is occluded
-      if (hit[0] || hit[1] || hit[2])
-        vertex_hit++;
+  if (texture == NULL) {
+    AOBakeTextureListEntry *new_entry =
+        ao_bake_texture_list_new_entry(&ao->texture_list);
+
+    if (new_entry) {
+      new_entry->owner = mesh;
+      texture = &new_entry->texture;
+      layer = ao->texture_list.length - 1;
+
+      WGPUTextureView layer_view = wgpuTextureCreateView(
+          ao->texture, &(WGPUTextureViewDescriptor){
+                           .arrayLayerCount = 1,
+                           .baseArrayLayer = layer,
+                           .mipLevelCount = 1,
+                           .aspect = WGPUTextureAspect_All,
+                           .baseMipLevel = 0,
+                           .dimension = WGPUTextureViewDimension_2D,
+                       });
+
+      shader_update_texture_view(mesh_shader_texture(mesh), 0, 8, layer_view,
+                                 AO_TEXTURE_FORMAT);
+
+      Shader *shader = mesh_shader_texture(mesh);
+      ShaderBindGroup *bind_group = shader_get_bind_group(shader, 0);
+      shader_bind_group_refresh(bind_group, 0, desc->device,
+                                &shader->pipeline->handle);
+    } else {
+      VERBOSE_WARNING("New AO texture couldn't be created, AO Bake aborted.");
+      return;
     }
   }
 
-  // accumulated AO
-  return 1 - ((float)vertex_hit / AO_LOCAL_RAY_AMOUNT);
-}
+  texture_create(texture, &(TextureCreateDescriptor){
+                              .width = ao->size,
+                              .height = ao->size,
+                              .channels = TEXTURE_CHANNELS_R,
+                              .value = (uint8_t[]){255},
+                          });
 
-/**
-   Raycast from the source surage towards a certain direction an check if the
-   ray traverse a triangle of the compared mesh
- */
-void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
+  // generate global ao to texture
+  if (desc->global.sample_amount)
+    TIMER("AO Global Bake", {
+      ao_bake_global(ao, &(AOBakeGlobalDescriptor){
+                             .device = desc->device,
+                             .queue = desc->queue,
+                             .mesh_list = desc->mesh_list,
+                             .settings = &desc->global,
+                             .mesh = mesh,
+                             .texture = texture,
+                         });
+    });
 
-  // Raycast from ray origin (source surface) towards each compare mesh
-  // triangles
-  for (size_t i = 0; i < desc->compare_mesh->topology.base.index.length;
-       i += 3) {
-    Triangle compare_triangle = ao_bake_mesh_triangle(desc->compare_mesh, i);
-    vec3 hit;
-    triangle_raycast(&compare_triangle, *desc->ray_origin, *desc->ray_direction,
-                     AO_GLOBAL_RAY_MAX_DISTANCE, hit);
+  // generate local ao to texture
+  if (desc->local.sample_amount)
+    TIMER("AO Global Bake", {
+      ao_bake_local(ao, &(AOBakeLocalDescriptor){
+                            .device = desc->device,
+                            .queue = desc->queue,
+                            .settings = &desc->local,
+                            .mesh = mesh,
+                            .texture = texture,
+                        });
+    });
 
-    // is occluded
-    // transpose hit point to triangle UV space
-    // 1. retrieve hit position and translate it to uv space
-    // 2. scale to the texture coordinates
-    // 3.write pixel to texture
-    if (hit[0] || hit[1] || hit[2]) {
-      vec2 compare_uv, source_uv;
-      triangle_point_to_uv(desc->source_triangle, *desc->ray_origin, source_uv);
-      glm_vec2_scale(source_uv, AO_TEXTURE_SIZE, source_uv);
-      texture_write_pixel(desc->source_texture, 0, source_uv,
-                          TextureWriteMethod_Replace);
+  // post process texture (blur, add contrast since sometimes with few sampling
+  // factor the dots a too clearly visible)
+  ao_bake_process_texture(texture);
 
-      // do the same for compare mesh
-      triangle_point_to_uv(&compare_triangle, hit, compare_uv);
-      glm_vec2_scale(compare_uv, AO_TEXTURE_SIZE, compare_uv);
-      texture_write_pixel(desc->compare_texture, 0, compare_uv,
-                          TextureWriteMethod_Replace);
-    }
-  }
-}
-
-/**
-   Return a triangle of a mesh starting at a certain index
- */
-Triangle ao_bake_mesh_triangle(Mesh *mesh, size_t index) {
-
-  vattr_t *base_attribute = mesh->topology.base.attribute.entries;
-  vindex_t *base_index = mesh->topology.base.index.entries;
-
-  Vertex source_vertex_a =
-      vertex_from_array(&base_attribute[base_index[index] * VERTEX_STRIDE]);
-
-  Vertex source_vertex_b =
-      vertex_from_array(&base_attribute[base_index[index + 1] * VERTEX_STRIDE]);
-
-  Vertex source_vertex_c =
-      vertex_from_array(&base_attribute[base_index[index + 2] * VERTEX_STRIDE]);
-
-  // put vertex to worldspace
-  glm_mat4_mulv3(mesh->model, source_vertex_a.position, 1.0f,
-                 source_vertex_a.position);
-  glm_mat4_mulv3(mesh->model, source_vertex_b.position, 1.0f,
-                 source_vertex_b.position);
-  glm_mat4_mulv3(mesh->model, source_vertex_c.position, 1.0f,
-                 source_vertex_c.position);
-
-  return (Triangle){
-      .a = source_vertex_a,
-      .b = source_vertex_b,
-      .c = source_vertex_c,
-  };
-}
-
-void ao_bake_init(const AOBakeInitDescriptor *desc) {
-
-  // init textures
-  // TODO cache MESH AO textures
-  Texture ao_textures[desc->mesh_list->length];
-  for (int t = 0; t < desc->mesh_list->length; t++) {
-    texture_create(&ao_textures[t], &(TextureCreateDescriptor){
-                                        .width = AO_TEXTURE_SIZE,
-                                        .height = AO_TEXTURE_SIZE,
-                                        .channels = TEXTURE_CHANNELS_R,
-                                        .value = (uint8_t[]){255},
-                                    });
-  }
-
-  // global ao generation
-  ao_bake_global(&(AOBakeDescriptor){
-      .device = desc->device,
-      .queue = desc->queue,
-      .mesh_list = desc->mesh_list,
-      .texture = ao_textures,
-  });
-
-  // local ao generation
-  ao_bake_local(&(AOBakeDescriptor){
-      .device = desc->device,
-      .queue = desc->queue,
-      .mesh_list = desc->mesh_list,
-      .texture = ao_textures,
-  });
-
-  // blur and bind textures once baking is done
-  for (int s = 0; s < desc->mesh_list->length; s++) {
-    Texture *texture = &ao_textures[s];
-    Mesh *source_mesh = desc->mesh_list->entries[s];
-    texture_remap(texture, 0, 1, &texture->data);
-
-    // 1st pass blur
-    texture_blur(texture, 3, 1.0f, &texture->data);
-    // 2nd pass blur
-    texture_blur(texture, 3, 1.0f, &texture->data);
-
-    // update texture
-    WGPUTextureView ao_texture_view;
-    buffer_create_texture(&ao_texture_view,
-                          &(CreateTextureDescriptor){
-                              .device = desc->device,
-                              .queue = desc->queue,
-                              .data = texture->data,
-                              .size = texture->size,
-                              .width = texture->width,
-                              .height = texture->height,
-                              .format = AO_TEXTURE_FORMAT,
-                              .channels = AO_TEXTURE_CHANNELS,
+  // TODO: batch update ?
+  if (layer >= 0 && layer != DYLI_INVALID_INDEX)
+    wgpuQueueWriteTexture(desc->queue,
+                          &(WGPUImageCopyTexture){
+                              .texture = ao->texture,
+                              .mipLevel = 0,
+                              .origin = {0, 0, layer},
+                              .aspect = WGPUTextureAspect_All,
                           },
-                          BufferTextureMemory_Free);
-
-    mesh_shader_texture_update_ambient_occlusion(source_mesh, ao_texture_view);
-  }
+                          texture->data, texture->size,
+                          &(WGPUTextureDataLayout){
+                              .offset = 0,
+                              .bytesPerRow = texture->width * texture->channels,
+                              .rowsPerImage = texture->height,
+                          },
+                          &(WGPUExtent3D){texture->width, texture->height, 1});
 }
 
-/**
-   Bake local ambient occlusion to texture, meaning occlusion based on mesh own
-   vertices occlusion.
-   Compared to the global baking, the local use a vertex
-   based approach and act as a cavity map rather than a standard AO map.
- */
-void ao_bake_local(const AOBakeDescriptor *desc) {
+void ao_bake_draw_list(SceneRendererTextureAO *ao,
+                       const AOBakeDrawDescriptor *desc) {
 
-  VERBOSE_PROCESS("Baking local AO...");
-
-  Mesh *line = NULL;
-#ifdef AO_BAKE_DISPLAY_RAY
-  line = scene_new_mesh(desc->scene, NULL);
-  line_create(line, &(LineCreateDescriptor){
-                        .device = desc->device,
-                        .queue = desc->queue,
-                        .name = "line mesh",
-                    });
-  scene_add_mesh(scene, line, ScenePipeline_Dynamic_Unlit, NULL);
-#endif
-
-  for (size_t m = 0; m < desc->mesh_list->length; m++) {
-
-    Mesh *current_mesh = desc->mesh_list->entries[m];
-
-    VERBOSE_PRINT("Baking mesh: %s", current_mesh->name);
-
-    VertexAttribute *mesh_vertex = &current_mesh->topology.base.attribute;
-    VertexIndex *mesh_index = &current_mesh->topology.base.index;
-    Texture *mesh_texture = &desc->texture[m];
-    /*
-      Go through each indexes
-      since indexes are drawn sequentially we can compare 2 by 2 and interpolate
-      the result between these two as to draw the cavity on the texture:
-
-             AO(n) = 1.0       Interpolate
-              x          <-------- 0.95
-               '.         <------- 0.75
-                 '.        <------ 0.50
-                   '.       <----- 0.25
-                     x
-                      AO(n+1) = 0.0
-
-       UPDATE: It kinda sucks as it clearly highlights the triangles too much
-     */
-
-    for (size_t i = 0; i < mesh_index->length; i += 3) {
-
-      // calculate AO for vertex A
-      size_t offset_a = mesh_index->entries[i] * VERTEX_STRIDE;
-      Vertex vertex_a = vertex_from_array(&mesh_vertex->entries[offset_a]);
-      float ao_a = ao_bake_vertex(&vertex_a, current_mesh, line);
-      vec2 uv_a;
-      glm_vec2_scale(vertex_a.uv, AO_TEXTURE_SIZE, uv_a);
-
-      // calculate AO for vertex B
-      size_t offset_b = mesh_index->entries[i + 1] * VERTEX_STRIDE;
-      Vertex vertex_b = vertex_from_array(&mesh_vertex->entries[offset_b]);
-      float ao_b = ao_bake_vertex(&vertex_b, current_mesh, line);
-      vec2 uv_b;
-      glm_vec2_scale(vertex_b.uv, AO_TEXTURE_SIZE, uv_b);
-
-      // calculate AO for vertex C
-      size_t offset_c = mesh_index->entries[i + 2] * VERTEX_STRIDE;
-      Vertex vertex_c = vertex_from_array(&mesh_vertex->entries[offset_c]);
-      float ao_c = ao_bake_vertex(&vertex_c, current_mesh, line);
-      vec2 uv_c;
-      glm_vec2_scale(vertex_c.uv, AO_TEXTURE_SIZE, uv_c);
-
-      // if at least on vertex is occluded
-      if (ao_a + ao_b + ao_c > 0) {
-
-        /* Draw line on each vertex and bridges due to UV seams
-
-           3D View:
-                     '-.  A,C  .-'
-                     |  '-.o.-'  |
-                     |     x     |
-                     |	   x <--------- UV seam of AB/CD
-                     ',    x    ,'
-                       '-._o_.-'
-                          B,D
-           UV View:
-
-          0                                     +1
-           +------------------------------------>
-           |    A                          C
-           |     o._                    _.o
-           |	 x  '-.______________.-'  x
-           |     x    |              |    x
-           |     x    |              |    x
-           |     x    |              |    x
-           |     x    |              |    x
-           |     x    |              |    x
-           |     x    |              |    x
-           |     x _.-+--------------+-._ x
-           |     o'                      'o
-           |    B                           D
-           v
-         +1
-
-             Need to draw line on both AB and CD
-        */
-
-        texture_write_triangle_gradient(
-            &(TextureWriteTriangleGradientDescriptor){
-                .source = mesh_texture,
-                .destination = &mesh_texture->data,
-                .length = 1,
-                .write_method = TextureWriteMethod_Mul,
-                .points =
-                    (TextureTriangleGradientDescriptor[]){
-                        {
-                            .a =
-                                {
-                                    .position = {uv_a[0], uv_a[1]},
-                                    .value = &(float){ao_a},
-                                },
-                            .b =
-                                {
-                                    .position = {uv_b[0], uv_b[1]},
-                                    .value = &(float){ao_b},
-                                },
-                            .c =
-                                {
-                                    .position = {uv_c[0], uv_c[1]},
-                                    .value = &(float){ao_c},
-                                },
-                        },
-                    },
-            });
-      }
-    }
-  }
-
-#ifdef AO_BAKE_DISPLAY_RAY
-  line_update_buffer(line);
-#endif
-}
-
-/**
-   Bake global ambient occlusion to texture, meaning occlusion based on
-   meshes in a scene using a raycasting method.
- */
-void ao_bake_global(const AOBakeDescriptor *desc) {
-
-  VERBOSE_PROCESS("Baking Global AO...");
-
-#ifdef AO_BAKE_DISPLAY_RAY
-  mesh *line = scene_new_mesh_unlit(desc->scene, NULL);
-  line_create(line, &(LineCreateDescriptor){
-                        .device = desc->device,
-                        .queue = desc->queue,
-                        .name = "line mesh",
-                    });
-#endif
-
-  // traverse list
-  for (size_t s = 0; s < desc->mesh_list->length; s++) {
-
-    Mesh *source_mesh = desc->mesh_list->entries[s];
-    VERBOSE_PRINT("Baking mesh: %s", source_mesh->name);
-
-    // go through the mesh triangles and check if it's occluded
-    for (size_t i = 0; i < source_mesh->topology.base.index.length; i += 3) {
-      Triangle source_triangle = ao_bake_mesh_triangle(source_mesh, i);
-      vec3 rays[AO_GLOBAL_RAY_AMOUNT];
-      vec3 ray_normal;
-      triangle_normal(&source_triangle, ray_normal);
-      glm_vec3_scale(ray_normal, AO_GLOBAL_RAY_MAX_DISTANCE, ray_normal);
-
-      triangle_random_points(&source_triangle, AO_GLOBAL_RAY_AMOUNT, rays);
-
-      // create a ray on the triangle surface, projects it and check if it
-      // collides with another mesh in the scene within a certain distance
-      for (int ray = 0; ray < AO_GLOBAL_RAY_AMOUNT; ray++) {
-
-        vec3 ray_direction;
-        glm_vec3_add(rays[ray], ray_normal, ray_direction);
-
-#ifdef AO_BAKE_DISPLAY_RAY
-        if (ray < AO_RAY_MAX_COUNT)
-          line_add_point(rays[ray], ray_direction, (vec3){0.0f, 1.0f, 0.0f},
-                         &line->vertex, &line->index);
-#endif
-
-        for (size_t c = 0; c < desc->mesh_list->length; c++) {
-
-          Mesh *compare_mesh = desc->mesh_list->entries[c];
-
-#ifndef AO_GLOBAL_SELF
-          // TODO: once the index system is properly setup, replace m == s
-          // src id == compare id
-          if (strcmp(source_mesh->name, compare_mesh->name) == 0)
-            continue;
-#endif
-
-          ao_bake_raycast(&(AOBakeRaycastDescriptor){
-              .ray_origin = &rays[ray],
-              .ray_direction = &ray_direction,
-              .source_triangle = &source_triangle,
-              .source_texture = &desc->texture[s],
-              .compare_texture = &desc->texture[c],
-              .compare_mesh = compare_mesh,
-          });
-        }
-      }
-    }
-  }
-
-#ifdef AO_BAKE_DISPLAY_RAY
-  line_update_buffer(line);
-#endif
+  for (int t = 0; t < desc->mesh_list->length; t++)
+    ao_bake_draw_mesh(ao, desc->mesh_list->entries[t], desc);
 }

@@ -14,8 +14,8 @@ DynamicListStatus dyli_create(void **entries, size_t *capacity, size_t *length,
                               size_t type_size, size_t num, const char *label) {
 
   *entries = calloc(num, type_size);
-  *length = 0;
   *capacity = num;
+  *length = 0;
 
   if (*entries == NULL) {
     VERBOSE_ERROR("Couldn't create new dynamic list: %s\n", label);

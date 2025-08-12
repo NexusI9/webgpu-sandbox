@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
+#define DYLI_INVALID_INDEX ((size_t)-1)
+
 typedef enum {
   DynamicListStatus_Success,
   DynamicListStatus_AllocFail,
