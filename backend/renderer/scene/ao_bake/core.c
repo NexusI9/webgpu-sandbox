@@ -19,7 +19,6 @@ void ao_bake_init(SceneRendererTextureAO *ao,
 
   ao->layer_count = desc->layer_count;
   ao->size = desc->size;
-
   ao->texture = wgpuDeviceCreateTexture(
       desc->device,
       &(WGPUTextureDescriptor){
@@ -35,7 +34,8 @@ void ao_bake_init(SceneRendererTextureAO *ao,
 }
 
 void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
-                       const AOBakeDrawDescriptor *desc) {
+                       const AOBakeDrawDescriptor *desc,
+                       bool update_bind_view) {
 
   size_t layer = DYLI_INVALID_INDEX;
   Texture *texture = ao_bake_texture_list_find(&ao->texture_list, mesh, &layer);
@@ -88,7 +88,7 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
 
   // generate global ao to texture
   if (desc->global.sample_amount)
-    TIMER("AO Global Bake", {
+    TIMER("Done", {
       ao_bake_global(ao, &(AOBakeGlobalDescriptor){
                              .device = desc->device,
                              .queue = desc->queue,
@@ -96,27 +96,27 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
                              .settings = &desc->global,
                              .mesh = mesh,
                              .texture = texture,
+                             .debug = desc->debug,
                          });
     });
 
   // generate local ao to texture
   if (desc->local.sample_amount)
-    TIMER("AO Global Bake", {
+    TIMER("Done", {
       ao_bake_local(ao, &(AOBakeLocalDescriptor){
                             .device = desc->device,
                             .queue = desc->queue,
                             .settings = &desc->local,
                             .mesh = mesh,
                             .texture = texture,
+                            .debug = desc->debug,
                         });
     });
 
-  // post process texture (blur, add contrast since sometimes with few sampling
-  // factor the dots a too clearly visible)
-  ao_bake_process_texture(texture);
+  if (update_bind_view) {
 
-  // TODO: batch update ?
-  if (layer >= 0 && layer != DYLI_INVALID_INDEX)
+    ao_bake_process_texture(texture);
+
     wgpuQueueWriteTexture(desc->queue,
                           &(WGPUImageCopyTexture){
                               .texture = ao->texture,
@@ -131,11 +131,40 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
                               .rowsPerImage = texture->height,
                           },
                           &(WGPUExtent3D){texture->width, texture->height, 1});
+  }
+
+
 }
 
 void ao_bake_draw_list(SceneRendererTextureAO *ao,
                        const AOBakeDrawDescriptor *desc) {
 
+  // first compute all texture CPU side
   for (int t = 0; t < desc->mesh_list->length; t++)
-    ao_bake_draw_mesh(ao, desc->mesh_list->entries[t], desc);
+    ao_bake_draw_mesh(ao, desc->mesh_list->entries[t], desc, false);
+
+  // once computed, apply post-process and write to GPU
+  for (size_t i = 0; i < ao->texture_list.length; i++) {
+
+    Texture *texture = &ao->texture_list.entries[i].texture;
+
+    // post process texture (blur, add contrast since sometimes with few
+    // sampling factor the dots a too clearly visible)
+    ao_bake_process_texture(texture);
+
+    wgpuQueueWriteTexture(desc->queue,
+                          &(WGPUImageCopyTexture){
+                              .texture = ao->texture,
+                              .mipLevel = 0,
+                              .origin = {0, 0, i},
+                              .aspect = WGPUTextureAspect_All,
+                          },
+                          texture->data, texture->size,
+                          &(WGPUTextureDataLayout){
+                              .offset = 0,
+                              .bytesPerRow = texture->width * texture->channels,
+                              .rowsPerImage = texture->height,
+                          },
+                          &(WGPUExtent3D){texture->width, texture->height, 1});
+  }
 }

@@ -1,9 +1,12 @@
 #ifndef _AO_BAKE_CORE_H_
 #define _AO_BAKE_CORE_H_
 
+#include "../runtime/camera/camera.h"
 #include "../runtime/geometry/triangle/triangle.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/texture/texture.h"
+#include "../runtime/viewport/viewport.h"
+#include "../utils/color.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
@@ -15,6 +18,7 @@
 
 // Global AO Baking
 #define AO_GLOBAL_RAY_AMOUNT 1024
+#define AO_GLOBAL_RAY_MAX_AMOUNT 1024
 #define AO_GLOBAL_RAY_MAX_DISTANCE 0.05f
 
 // Local AO Baking
@@ -54,11 +58,21 @@ typedef struct {
 } AOBakeInitDescriptor;
 
 typedef struct {
+  MeshList *meshes;
+  MeshRefList *pipeline;
+  Camera *camera;
+  Viewport *viewport;
+  color *color;
+  size_t max_ray;
+} AOBakeDrawDebug;
+
+typedef struct {
   MeshRefList *mesh_list;
   AOBakeSettings local;
   AOBakeSettings global;
   const WGPUDevice device;
   const WGPUQueue queue;
+  AOBakeDrawDebug *debug;
 } AOBakeDrawDescriptor;
 
 typedef struct {
@@ -69,6 +83,7 @@ typedef struct {
   const WGPUQueue queue;
   const AOBakeSettings *settings;
   Texture *texture;
+  AOBakeDrawDebug *debug;
 } AOBakeGlobalDescriptor;
 
 typedef struct {
@@ -77,6 +92,7 @@ typedef struct {
   const WGPUQueue queue;
   const AOBakeSettings *settings;
   Texture *texture;
+  AOBakeDrawDebug *debug;
 } AOBakeLocalDescriptor;
 
 typedef struct {
@@ -94,6 +110,6 @@ void ao_bake_init(SceneRendererTextureAO *, const AOBakeInitDescriptor *);
 void ao_bake_draw_list(SceneRendererTextureAO *, const AOBakeDrawDescriptor *);
 
 void ao_bake_draw_mesh(SceneRendererTextureAO *, Mesh *,
-                       const AOBakeDrawDescriptor *);
+                       const AOBakeDrawDescriptor *, bool);
 
 #endif

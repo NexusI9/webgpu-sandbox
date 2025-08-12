@@ -8,8 +8,12 @@
 
 #define LINE_MAX_POINTS 1024
 #define LINE_THICKNESS 0.005
-#define LINE_VERTEX_COUNT 4 // generate 8 (2*4) vertex per line
-#define LINE_INDEX_COUNT 6  // generate 12 (2*6) index per line
+
+// generate 8 (2*4) vertex per line
+#define LINE_VERTEX_COUNT 4
+
+// generate 12 (2*6) index per line
+#define LINE_INDEX_COUNT 6
 
 typedef struct {
   const WGPUDevice device;
@@ -25,7 +29,7 @@ typedef struct {
 } LineCreatePlaneDescriptor;
 
 typedef struct {
-    
+
   vindex_t index;
 } LineAnchor;
 
@@ -34,6 +38,5 @@ void line_add_point(vec3, vec3, vec3, VertexAttribute *, VertexIndex *);
 void line_update_buffer(Mesh *);
 void line_set_vertex(const vec3, const vec3, const vec3, const vec2,
                      const size_t, float *);
-
 
 #endif

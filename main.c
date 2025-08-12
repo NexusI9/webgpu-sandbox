@@ -4,6 +4,7 @@
 //  https://stackoverflow.com/questions/23997312/how-do-i-read-a-user-specified-file-in-an-emscripten-compiled-library
 
 #include "backend/renderer/renderer.h"
+#include "backend/renderer/scene/ao_bake/core.h"
 #include "backend/renderer/scene/core.h"
 #include "resources/example/example.h"
 #include <emscripten/emscripten.h>
@@ -145,6 +146,15 @@ int main(int argc, const char *argv[]) {
               scene_pipeline(&main_scene, ScenePipeline_Dynamic_LitShadow),
           .global = {AO_GLOBAL_RAY_AMOUNT, AO_GLOBAL_RAY_MAX_DISTANCE},
           .local = {AO_LOCAL_RAY_AMOUNT, AO_LOCAL_RAY_MAX_DISTANCE},
+          .debug =
+              &(AOBakeDrawDebug){
+                  .meshes = scene_mesh_list(&main_scene),
+                  .pipeline = scene_pipeline(&main_scene, ScenePipeline_Fixed),
+                  .camera = main_scene.active_camera,
+                  .viewport = &main_scene.viewport,
+                  .color = &(color){0.0f, 1.0f, 0.0f, 1.0f},
+                  .max_ray = 20,
+              },
       });
 
   // Update Loop

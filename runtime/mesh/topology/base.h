@@ -24,9 +24,10 @@ void mesh_topology_base_create(MeshTopologyBase *, const VertexAttribute *,
                                const VertexIndex *, const WGPUDevice,
                                const WGPUQueue);
 
-MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
-    MeshTopologyBase *, const VertexAttribute *, const WGPUDevice,
-    const WGPUQueue);
+MeshTopologyBaseStatus
+mesh_topology_base_create_vertex_attribute(MeshTopologyBase *,
+                                           const VertexAttribute *,
+                                           const WGPUDevice, const WGPUQueue);
 
 MeshTopologyBaseStatus
 mesh_topology_base_create_vertex_index(MeshTopologyBase *, const VertexIndex *,
@@ -37,4 +38,6 @@ void mesh_topology_base_scale(MeshTopologyBase *, const VertexGroup *, vec3 *);
 void mesh_topology_base_translate(MeshTopologyBase *, const VertexGroup *,
                                   vec3 *);
 
+void mesh_topology_base_update_buffer(MeshTopologyBase *, const WGPUDevice,
+                                      const WGPUQueue);
 #endif

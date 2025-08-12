@@ -1,9 +1,11 @@
 #include "core.h"
 #include "./draw.h"
+#include "./draw_config.h"
 #include "./editor/editor.h"
 #include "./layer.h"
 #include "event/event.html.h"
-#include "./draw_config.h"
+
+#include "../utils/system.h"
 
 // initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
@@ -12,75 +14,77 @@ static inline void scene_init_camera(Scene *);
 
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
-  scene->id = reg_register((void *)scene, RegEntryType_Scene);
+  TIMER("Scene Load", {
+    scene->id = reg_register((void *)scene, RegEntryType_Scene);
 
-  /*
+    /*
 
-    ===== SCENE RENDER =====
+      ===== SCENE RENDER =====
 
-   */
+     */
 
-  // init mesh pipelines
-  for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
-    mesh_ref_list_create(scene_pipeline(scene, flag),
-                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
+    // init mesh pipelines
+    for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
+      mesh_ref_list_create(scene_pipeline(scene, flag),
+                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
-  // init draw callbacks configuration
-  scene_init_draw_layouts(scene);
+    // init draw callbacks configuration
+    scene_init_draw_layouts(scene);
 
-  // set renderer
-  scene_renderer_create(&scene->renderer, desc->renderer);
+    // set renderer
+    scene_renderer_create(&scene->renderer, desc->renderer);
 
-  /*
+    /*
 
-    ===== MESH LISTS =====
+      ===== MESH LISTS =====
 
-   */
+     */
 
-  // init scene layers
-  scene_layer_init(&scene->layers);
+    // init scene layers
+    scene_layer_init(&scene->layers);
 
-  // init lights
-  scene_init_light_list(scene);
+    // init lights
+    scene_init_light_list(scene);
 
-  // init global mesh list
-  mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
+    // init global mesh list
+    mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
-  /*
+    /*
 
-    ===== CAMERA & VIEWPORT =====
+      ===== CAMERA & VIEWPORT =====
 
-   */
+     */
 
-  // init camera lists and set main/active camera
-  scene_init_camera(scene);
+    // init camera lists and set main/active camera
+    scene_init_camera(scene);
 
-  // set viewport (using renderer width/height)
-  viewport_create(&scene->viewport,
-                  &(ViewportCreateDescriptor){
-                      .fov = desc->viewport->fov,
-                      .near_clip = desc->viewport->near_clip,
-                      .far_clip = desc->viewport->far_clip,
-                      .aspect = desc->viewport->aspect,
-                      .width = scene_renderer_width(&scene->renderer),
-                      .height = scene_renderer_height(&scene->renderer),
-                  });
+    // set viewport (using renderer width/height)
+    viewport_create(&scene->viewport,
+                    &(ViewportCreateDescriptor){
+                        .fov = desc->viewport->fov,
+                        .near_clip = desc->viewport->near_clip,
+                        .far_clip = desc->viewport->far_clip,
+                        .aspect = desc->viewport->aspect,
+                        .width = scene_renderer_width(&scene->renderer),
+                        .height = scene_renderer_height(&scene->renderer),
+                    });
 
-  /*
+    /*
 
-  ===== EVENT =====
+    ===== EVENT =====
 
-   */
+     */
 
-  // scene_event_html(scene);
+    // scene_event_html(scene);
 
-  /*
+    /*
 
-    ===== EDITOR =====
+      ===== EDITOR =====
 
-   */
-  // EDITORONLY
-  scene_editor_init(scene);
+     */
+    // EDITORONLY
+    scene_editor_init(scene);
+  });
 }
 
 /**
@@ -127,7 +131,6 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 
   return camera;
 }
-
 
 /**
    Quick access to a scene layer mesh list.

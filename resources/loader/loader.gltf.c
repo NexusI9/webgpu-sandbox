@@ -34,7 +34,7 @@ static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
 void loader_gltf_load(const GLTFLoadDescriptor *desc) {
 
   VERBOSE_IMPORT("GLTF file: %s", desc->path);
-  
+
   cgltf_data *data = NULL;
   // load json structure
   cgltf_result result =
@@ -108,7 +108,8 @@ void loader_gltf_init_vertex_lists(VertexAttribute *attributes,
   // list->count is the number of vertex used by index array
   // need to multiply by 3
   attributes->length = list->count * VERTEX_STRIDE;
-  attributes->entries = (float *)calloc(attributes->length, sizeof(float));
+  attributes->capacity = attributes->length;
+  attributes->entries = (float *)calloc(attributes->capacity, sizeof(float));
 }
 
 static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
@@ -141,7 +142,11 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
     index_data[i] = (vindex_t)raw_index_data[i];
 
   // DELETEME: print_list_uint32(index_data, index_count, 1);
-  return (VertexIndex){index_data, index_count};
+  return (VertexIndex){
+      .entries = index_data,
+      .capacity = index_count,
+      .length = index_count,
+  };
 }
 
 void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
@@ -174,8 +179,8 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       // load vertex attributes
 
       VertexList vert_list; // raw vertex list (non-interleaved)
-      VertexAttribute vert_attr;
-      VertexIndex vert_index;
+      VertexAttribute vert_attr = {0};
+      VertexIndex vert_index = {0};
 
       cgltf_primitive current_primitive = gl_mesh.primitives[p];
 

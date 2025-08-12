@@ -133,6 +133,10 @@ void texture_remap(const Texture *source, int min, int max,
     }
   }
 
+  // solid color, no need for remap
+  if (old_max == old_min)
+    return;
+
   float old_range = old_max - old_min;
 
   if (old_range == 0.0f)

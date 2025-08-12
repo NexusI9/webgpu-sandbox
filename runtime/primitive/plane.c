@@ -33,6 +33,8 @@ Primitive primitive_plane() {
               .entries = plane_vertex_data,
               .length =
                   sizeof(plane_vertex_data) / sizeof(plane_vertex_data[0]),
+	      .capacity =
+                  sizeof(plane_vertex_data) / sizeof(plane_vertex_data[0]),
           },
 
       // index data
@@ -40,6 +42,7 @@ Primitive primitive_plane() {
           {
               .entries = plane_index_data,
               .length = sizeof(plane_index_data) / sizeof(plane_index_data[0]),
+	      .capacity = sizeof(plane_index_data) / sizeof(plane_index_data[0]),
           },
   };
 }

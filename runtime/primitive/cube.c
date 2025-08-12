@@ -40,6 +40,7 @@ Primitive primitive_cube() {
           {
               .entries = cube_vertex_data,
               .length = sizeof(cube_vertex_data) / sizeof(cube_vertex_data[0]),
+	      .capacity = sizeof(cube_vertex_data) / sizeof(cube_vertex_data[0])
           },
 
       // index data
@@ -47,6 +48,7 @@ Primitive primitive_cube() {
           {
               .entries = cube_index_data,
               .length = sizeof(cube_index_data) / sizeof(cube_index_data[0]),
+	      .capacity = sizeof(cube_index_data) / sizeof(cube_index_data[0])
           },
   };
 }

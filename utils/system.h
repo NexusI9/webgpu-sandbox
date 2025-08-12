@@ -42,7 +42,7 @@
 
 #define VERBOSE_DEBUG(...)                                                     \
   do {                                                                         \
-    printf("");                                                             \
+    printf("");                                                                \
     printf(__VA_ARGS__);                                                       \
     PRINT_LINE();                                                              \
   } while (0)
@@ -144,7 +144,7 @@ void custom_free(void *ptr, const char *file, int line);
     code clock_gettime(CLOCK_MONOTONIC, &_end);                                \
     double _elapsed = (_end.tv_sec - _start.tv_sec) * 1000.0 +                 \
                       (_end.tv_nsec - _start.tv_nsec) / 1000000.0;             \
-    printf("%s\t %.3f ms\n", name, _elapsed);                                  \
+    printf("%s\t\t\t %.3f ms\n", name, _elapsed);                              \
   } while (0)
 
 #else

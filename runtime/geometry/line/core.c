@@ -1,11 +1,11 @@
 #include "core.h"
+#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "../utils/system.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 #include <stdio.h>
-#include "../runtime/mesh/shader/shader.h"
-#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
 
 static void line_create_plane(const LineCreatePlaneDescriptor *);
 
@@ -20,36 +20,38 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
                     });
 
   // create vertex attributes
-  vattr_t *vertex_attributes = calloc(
-      LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX_COUNT, sizeof(vattr_t));
+  size_t attribute_capacity =
+      LINE_MAX_POINTS * VERTEX_STRIDE * LINE_VERTEX_COUNT;
+  vattr_t *vertex_attributes = calloc(attribute_capacity, sizeof(vattr_t));
 
   mesh_topology_base_create_vertex_attribute(&mesh->topology.base,
                                              &(VertexAttribute){
                                                  .entries = vertex_attributes,
                                                  .length = 0,
+                                                 .capacity = attribute_capacity,
                                              },
                                              desc->device, desc->queue);
 
   // crate vertex index
-  vindex_t *vertex_index =
-      calloc(LINE_MAX_POINTS * LINE_INDEX_COUNT, sizeof(vindex_t));
+  size_t index_capacity = LINE_MAX_POINTS * LINE_INDEX_COUNT;
+  vindex_t *vertex_index = calloc(index_capacity, sizeof(vindex_t));
 
   mesh_topology_base_create_vertex_index(&mesh->topology.base,
                                          &(VertexIndex){
                                              .entries = vertex_index,
                                              .length = 0,
+                                             .capacity = index_capacity,
                                          },
                                          desc->device, desc->queue);
 
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
                                .pipeline = std_pipeline(PipelineType_Line),
-                               .label = "line",
-                               .name = "line",
+                               .label = "Line",
+                               .name = "Line",
                                .device = desc->device,
                                .queue = desc->queue,
                            });
-
 }
 
 /** Define vertex data from a vertex array.
@@ -194,11 +196,6 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
 
 void line_update_buffer(Mesh *mesh) {
   // update mesh vertex + index buffers
-  mesh_topology_base_create_vertex_attribute(&mesh->topology.base,
-                                             &mesh->topology.base.attribute,
-                                             mesh->device, mesh->queue);
-
-  mesh_topology_base_create_vertex_index(&mesh->topology.base,
-                                         &mesh->topology.base.index,
-                                         mesh->device, mesh->queue);
+  mesh_topology_base_update_buffer(&mesh->topology.base, mesh->device,
+                                   mesh->queue);
 }

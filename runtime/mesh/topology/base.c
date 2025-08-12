@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "../utils/system.h"
+#include "webgpu/webgpu.h"
 
 static void mesh_topology_base_create_anchor(MeshTopologyBase *);
 
@@ -48,10 +49,10 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
   }
 
   base->attribute.length = va->length;
-  base->attribute.capacity = va->length;
+  base->attribute.capacity = va->capacity;
 
   // copy vertex attributes
-  size_t vattr_size = va->length * sizeof(vattr_t);
+  size_t vattr_size = va->capacity * sizeof(vattr_t);
   base->attribute.entries = malloc(vattr_size);
   memcpy(base->attribute.entries, va->entries, vattr_size);
 
@@ -68,6 +69,7 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
                       .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
                       .mappedAtCreation = false,
                   });
+
     return MeshTopologyBaseStatus_Success;
   }
 
@@ -88,11 +90,10 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(
   }
 
   base->index.length = vi->length;
-  base->index.capacity = vi->length;
+  base->index.capacity = vi->capacity;
 
-  size_t vindex_size = vi->length * sizeof(vindex_t);
+  size_t vindex_size = vi->capacity * sizeof(vindex_t);
   base->index.entries = malloc(vindex_size);
-
   memcpy(base->index.entries, vi->entries, vindex_size);
 
   if (base->index.length) {
@@ -202,4 +203,40 @@ void mesh_topology_base_translate(MeshTopologyBase *base,
           .length = combined_anchor.length,
       },
       &base->attribute, translate);
+}
+
+/*
+  Refresh attribute and index buffer.
+  Used if vertex and index changes and need to update the buffer to reflect new
+  data.
+ */
+void mesh_topology_base_update_buffer(MeshTopologyBase *topo,
+                                      const WGPUDevice device,
+                                      const WGPUQueue queue) {
+
+  if (topo->attribute.buffer)
+    wgpuBufferRelease(topo->attribute.buffer);
+
+  buffer_create(&topo->attribute.buffer,
+                &(CreateBufferDescriptor){
+                    .queue = queue,
+                    .device = device,
+                    .data = (void *)topo->attribute.entries,
+                    .size = topo->attribute.length * sizeof(vindex_t),
+                    .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
+                    .mappedAtCreation = false,
+                });
+
+  if (topo->index.buffer)
+    wgpuBufferRelease(topo->index.buffer);
+
+  buffer_create(&topo->index.buffer,
+                &(CreateBufferDescriptor){
+                    .queue = queue,
+                    .device = device,
+                    .data = (void *)topo->index.entries,
+                    .size = topo->index.length * sizeof(vindex_t),
+                    .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
+                    .mappedAtCreation = false,
+                });
 }
