@@ -54,31 +54,37 @@ void ao_bake_global(SceneRendererTextureAO *ao,
       vec3 ray_direction;
       glm_vec3_add(rays[ray], ray_normal, ray_direction);
 
-      if (line && ray < desc->debug->max_ray) {
-        line_add_point(rays[ray], ray_direction, (vec3){0.0f, 1.0f, 0.0f},
-                       &line->topology.base.attribute,
-                       &line->topology.base.index);
-      }
+      vec3 color = {0.0f, 1.0f, 0.0f};
 
       for (size_t c = 0; c < desc->mesh_list->length; c++) {
         Mesh *compare_mesh = desc->mesh_list->entries[c];
 
-        if (mesh == compare_mesh)
+        if (mesh == compare_mesh ||
+            !aabb_within_distance(&mesh->topology.boundbox.bound,
+                                  &compare_mesh->topology.boundbox.bound,
+                                  desc->settings->max_distance))
           continue;
 
         Texture *compare_texture =
             ao_bake_texture_list_find(&ao->texture_list, compare_mesh, NULL);
 
-        ao_bake_raycast(&(AOBakeRaycastDescriptor){
-            .ray_origin = &rays[ray],
-            .ray_direction = &ray_direction,
-            .source_triangle = &source_triangle,
-            .source_texture = desc->texture,
-            .compare_texture = compare_texture,
-            .compare_mesh = compare_mesh,
-            .max_distance = desc->settings->max_distance,
-        });
+        if (ao_bake_raycast(&(AOBakeRaycastDescriptor){
+                .ray_origin = &rays[ray],
+                .ray_direction = &ray_direction,
+                .source_triangle = &source_triangle,
+                .source_texture = desc->texture,
+                .compare_texture = compare_texture,
+                .compare_mesh = compare_mesh,
+                .max_distance = desc->settings->max_distance,
+            }))
+          // set debug ray color to red if hit
+          glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, color);
       }
+
+      if (line && ray < desc->debug->max_ray)
+        line_add_point(rays[ray], ray_direction, color,
+                       &line->topology.base.attribute,
+                       &line->topology.base.index);
     }
   }
 

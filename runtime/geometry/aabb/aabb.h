@@ -9,4 +9,6 @@ typedef struct {
   vec3 max;
 } AABB;
 
+bool aabb_within_distance(const AABB *, const AABB *, const float);
+
 #endif

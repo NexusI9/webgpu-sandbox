@@ -159,10 +159,8 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
                     VertexIndex *vertex_index) {
 
   if (vertex_attribute->length / VERTEX_STRIDE / LINE_VERTEX_COUNT ==
-      LINE_MAX_POINTS - LINE_VERTEX_COUNT - 1) {
-    VERBOSE_PRINT("Lines reached maximum, cannot add more point\n");
+      LINE_MAX_POINTS - LINE_VERTEX_COUNT - 1)
     return;
-  }
 
   // update vertex array
   for (int p = 0; p < LINE_VERTEX_COUNT; p++) {

@@ -49,7 +49,9 @@ float ao_bake_vertex(Vertex *vertex, Mesh *source, Mesh *line) {
    ray traverse a triangle of the compared mesh
  */
 
-void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
+bool ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
+
+  bool ray_hit = false;
 
   // Raycast from ray origin (source surface) towards each compare mesh
   // triangles
@@ -82,8 +84,12 @@ void ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
         texture_write_pixel(desc->compare_texture, 0, compare_uv,
                             TextureWriteMethod_Replace);
       }
+
+      ray_hit = true;
     }
   }
+
+  return ray_hit;
 }
 
 /**

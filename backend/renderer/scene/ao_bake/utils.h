@@ -8,7 +8,7 @@
 extern int g_debug_ao_bake_hit_count;
 #endif
 
-void ao_bake_raycast(const AOBakeRaycastDescriptor *);
+bool ao_bake_raycast(const AOBakeRaycastDescriptor *);
 float ao_bake_vertex(Vertex *, Mesh *, Mesh *);
 Triangle ao_bake_mesh_triangle(Mesh *, size_t);
 void ao_bake_process_texture(Texture *);
