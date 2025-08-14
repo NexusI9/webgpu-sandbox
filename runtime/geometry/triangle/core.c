@@ -102,7 +102,7 @@ void triangle_normal(Triangle *surface, vec3 dest) {
 void triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
                       float max_distance, vec3 hit) {
 
-  float epsilon = FLT_EPSILON;
+  float epsilon = 1e-6f; //FLT_EPSILON;
 
   vec3 edge1, edge2, ray_cross_e2;
 
@@ -112,7 +112,7 @@ void triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
 
   float det = glm_vec3_dot(edge1, ray_cross_e2);
 
-  if (det > -epsilon && det < epsilon) {
+  if (fabsf(det) < epsilon) {
     // ray parallel to triangle
     glm_vec3_zero(hit);
     return;
