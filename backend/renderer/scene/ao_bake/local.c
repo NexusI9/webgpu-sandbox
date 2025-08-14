@@ -1,6 +1,9 @@
 #include "./local.h"
+#include "../runtime/geometry/line/line.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "../utils/system.h"
 #include "./utils.h"
+#include "core.h"
 
 /**
    Bake local ambient occlusion to texture, meaning occlusion based on mesh own
@@ -12,15 +15,17 @@ void ao_bake_local(SceneRendererTextureAO *ao,
                    const AOBakeLocalDescriptor *desc) {
 
   Mesh *line = NULL;
-#ifdef AO_BAKE_DISPLAY_RAY
-  line = scene_new_mesh(desc->scene, NULL);
-  line_create(line, &(LineCreateDescriptor){
-                        .device = desc->device,
-                        .queue = desc->queue,
-                        .name = "line mesh",
-                    });
-  scene_add_mesh(scene, line, ScenePipeline_Dynamic_Unlit, NULL);
-#endif
+  if (desc->debug->meshes) {
+    line = mesh_list_new_mesh(desc->debug->meshes);
+    line_create(line, &(LineCreateDescriptor){
+                          .device = desc->device,
+                          .queue = desc->queue,
+                          .name = "line mesh",
+                      });
+
+    mesh_shader_build_mvp(line, mesh_shader_fixed, desc->debug->camera,
+                          desc->debug->viewport);
+  }
 
   Mesh *mesh = desc->mesh;
 
@@ -47,29 +52,29 @@ void ao_bake_local(SceneRendererTextureAO *ao,
 
   for (size_t i = 0; i < mesh_index->length; i += 3) {
 
-    // calculate AO for vertex A
-    size_t offset_a = mesh_index->entries[i] * VERTEX_STRIDE;
-    Vertex vertex_a = vertex_from_array(&mesh_vertex->entries[offset_a]);
-    float ao_a = ao_bake_vertex(&vertex_a, mesh, line);
-    vec2 uv_a;
-    glm_vec2_scale(vertex_a.uv, AO_TEXTURE_SIZE, uv_a);
+    float ao_factor[3]; // point a,b,c ao factor
+    vec3 uv[3];
+    float sum = 0;
 
-    // calculate AO for vertex B
-    size_t offset_b = mesh_index->entries[i + 1] * VERTEX_STRIDE;
-    Vertex vertex_b = vertex_from_array(&mesh_vertex->entries[offset_b]);
-    float ao_b = ao_bake_vertex(&vertex_b, mesh, line);
-    vec2 uv_b;
-    glm_vec2_scale(vertex_b.uv, AO_TEXTURE_SIZE, uv_b);
-
-    // calculate AO for vertex C
-    size_t offset_c = mesh_index->entries[i + 2] * VERTEX_STRIDE;
-    Vertex vertex_c = vertex_from_array(&mesh_vertex->entries[offset_c]);
-    float ao_c = ao_bake_vertex(&vertex_c, mesh, line);
-    vec2 uv_c;
-    glm_vec2_scale(vertex_c.uv, AO_TEXTURE_SIZE, uv_c);
+    for (size_t j = 0; j < 3; j++) {
+      size_t offset = mesh_index->entries[i + j] * VERTEX_STRIDE;
+      Vertex vertex = vertex_from_array(&mesh_vertex->entries[offset]);
+      ao_factor[j] = ao_bake_vertex(&(AOBakeVertexDescriptor){
+          .vertex = &vertex,
+          .mesh = mesh,
+          .debug =
+              {
+                  .line = line,
+                  .max_ray = desc->debug->max_ray,
+              },
+          .settings = desc->settings,
+      });
+      glm_vec2_scale(vertex.uv, ao->size, uv[j]);
+      sum += ao_factor[j];
+    }
 
     // if at least on vertex is occluded
-    if (ao_a + ao_b + ao_c > 0) {
+    if (sum > 0) {
 
 #ifdef AO_BAKE_HIT_COUNT
       g_debug_ao_bake_hit_count++;
@@ -117,18 +122,18 @@ void ao_bake_local(SceneRendererTextureAO *ao,
                   {
                       .a =
                           {
-                              .position = {uv_a[0], uv_a[1]},
-                              .value = &(float){ao_a},
+                              .position = {uv[0][0], uv[0][1]},
+                              .value = &(float){ao_factor[0]},
                           },
                       .b =
                           {
-                              .position = {uv_b[0], uv_b[1]},
-                              .value = &(float){ao_b},
+                              .position = {uv[1][0], uv[1][1]},
+                              .value = &(float){ao_factor[1]},
                           },
                       .c =
                           {
-                              .position = {uv_c[0], uv_c[1]},
-                              .value = &(float){ao_c},
+                              .position = {uv[2][0], uv[2][1]},
+                              .value = &(float){ao_factor[2]},
                           },
                   },
               },
@@ -136,12 +141,13 @@ void ao_bake_local(SceneRendererTextureAO *ao,
     }
   }
 
+  if (line && desc->debug->pipeline) {
+    line_update_buffer(line);
+    mesh_ref_list_insert(desc->debug->pipeline, line);
+  }
+
 #ifdef AO_BAKE_HIT_COUNT
   VERBOSE_DEBUG("%s hits: %d", mesh->name, g_debug_ao_bake_hit_count);
   g_debug_ao_bake_hit_count = 0;
-#endif
-
-#ifdef AO_BAKE_DISPLAY_RAY
-  line_update_buffer(line);
 #endif
 }

@@ -31,42 +31,57 @@ void ao_bake_global(SceneRendererTextureAO *ao,
   Mesh *mesh = desc->mesh;
   VERBOSE_PROCESS("Baking Global AO for mesh: %s", mesh->name);
 
-  // go through the mesh triangles and check if it's occluded
-  for (size_t i = 0; i < mesh->topology.base.index.length; i += 3) {
+  // COMPARE MESH
+  for (size_t c = 0; c < desc->mesh_list->length; c++) {
 
-    Triangle source_triangle = ao_bake_mesh_triangle(mesh, i);
+    Mesh *compare_mesh = desc->mesh_list->entries[c];
 
-    uint16_t sampling =
-        glm_min(AO_GLOBAL_RAY_MAX_AMOUNT, desc->settings->sample_amount);
+    if (mesh == compare_mesh ||
+        !aabb_within_distance(&mesh->topology.boundbox.bound,
+                              &compare_mesh->topology.boundbox.bound,
+                              desc->settings->max_distance))
+      continue;
 
-    vec3 rays[AO_GLOBAL_RAY_MAX_AMOUNT];
-    vec3 ray_normal;
+    Texture *compare_texture =
+        ao_bake_texture_list_find(&ao->texture_list, compare_mesh, NULL);
 
-    triangle_normal(&source_triangle, ray_normal);
-    glm_vec3_scale(ray_normal, desc->settings->max_distance, ray_normal);
+    // go through the mesh triangles and check if it's occluded
+    for (size_t i = 0; i < mesh->topology.base.index.length; i += 3) {
 
-    triangle_random_points(&source_triangle, sampling, rays);
+      Triangle source_triangle = ao_bake_mesh_triangle(mesh, i);
 
-    // create a ray on the triangle surface, projects it and check if it
-    // collides with another mesh in the scene within a certain distance
-    for (int ray = 0; ray < sampling; ray++) {
+      AABB tri_aabb;
+      vec3 tri_points[3];
+      glm_vec3_copy(source_triangle.a.position, tri_points[0]);
+      glm_vec3_copy(source_triangle.b.position, tri_points[1]);
+      glm_vec3_copy(source_triangle.c.position, tri_points[2]);
+      
+      aabb_from_vec3(&tri_aabb, tri_points, 3);
 
-      vec3 ray_direction;
-      glm_vec3_add(rays[ray], ray_normal, ray_direction);
+      if (!aabb_within_distance(&tri_aabb,
+                                &compare_mesh->topology.boundbox.bound,
+                                desc->settings->max_distance))
+        continue;
 
-      vec3 color = {0.0f, 1.0f, 0.0f};
+      uint16_t sampling =
+          glm_min(AO_GLOBAL_RAY_MAX_AMOUNT, desc->settings->sample_amount);
 
-      for (size_t c = 0; c < desc->mesh_list->length; c++) {
-        Mesh *compare_mesh = desc->mesh_list->entries[c];
+      vec3 rays[AO_GLOBAL_RAY_MAX_AMOUNT];
+      vec3 ray_normal;
 
-        if (mesh == compare_mesh ||
-            !aabb_within_distance(&mesh->topology.boundbox.bound,
-                                  &compare_mesh->topology.boundbox.bound,
-                                  desc->settings->max_distance))
-          continue;
+      triangle_normal(&source_triangle, ray_normal);
+      glm_vec3_scale(ray_normal, desc->settings->max_distance, ray_normal);
 
-        Texture *compare_texture =
-            ao_bake_texture_list_find(&ao->texture_list, compare_mesh, NULL);
+      triangle_random_points(&source_triangle, sampling, rays);
+
+      // RAY SAMPLES
+      // create a ray on the triangle surface, projects it and check if it
+      // collides with another mesh in the scene within a certain distance
+      for (int ray = 0; ray < sampling; ray++) {
+        vec3 ray_direction;
+        glm_vec3_add(rays[ray], ray_normal, ray_direction);
+
+        vec3 color = {0.0f, 1.0f, 0.0f};
 
         if (ao_bake_raycast(&(AOBakeRaycastDescriptor){
                 .ray_origin = &rays[ray],
@@ -79,12 +94,12 @@ void ao_bake_global(SceneRendererTextureAO *ao,
             }))
           // set debug ray color to red if hit
           glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, color);
-      }
 
-      if (line && ray < desc->debug->max_ray)
-        line_add_point(rays[ray], ray_direction, color,
-                       &line->topology.base.attribute,
-                       &line->topology.base.index);
+        if (line && ray < desc->debug->max_ray)
+          line_add_point(rays[ray], ray_direction, color,
+                         &line->topology.base.attribute,
+                         &line->topology.base.index);
+      }
     }
   }
 

@@ -23,6 +23,7 @@
 
 // Local AO Baking
 #define AO_LOCAL_RAY_AMOUNT 32
+#define AO_LOCAL_RAY_MAX_AMOUNT 1024
 #define AO_LOCAL_RAY_MAX_DISTANCE 0.3f
 
 // Debug
@@ -104,6 +105,16 @@ typedef struct {
   Mesh *compare_mesh;
   const float max_distance;
 } AOBakeRaycastDescriptor;
+
+typedef struct {
+  Vertex *vertex;
+  Mesh *mesh;
+  const AOBakeSettings *settings;
+  struct {
+    int max_ray;
+    Mesh *line;
+  } debug;
+} AOBakeVertexDescriptor;
 
 void ao_bake_init(SceneRendererTextureAO *, const AOBakeInitDescriptor *);
 

@@ -1,47 +1,55 @@
 #include "utils.h"
+#include "../runtime/geometry/line/line.h"
 #include "../utils/point.h"
 
 #ifdef AO_BAKE_HIT_COUNT
 int g_debug_ao_bake_hit_count = 0;
 #endif
 
-float ao_bake_vertex(Vertex *vertex, Mesh *source, Mesh *line) {
+float ao_bake_vertex(const AOBakeVertexDescriptor *desc) {
 
   int vertex_hit = 0;
-  vec3 rays[AO_LOCAL_RAY_AMOUNT];
+  vec3 rays[AO_LOCAL_RAY_MAX_AMOUNT];
+  int ray_count =
+      glm_min(desc->settings->sample_amount, AO_LOCAL_RAY_MAX_AMOUNT);
+
+  vec3 ray_color = {0.0f, 1.0f, 0.0f};
+
   // Generate random ray in an hemisphere oriented on vertex normal
-  hemisphere_random_points(vertex->normal, AO_LOCAL_RAY_AMOUNT, rays);
+  hemisphere_random_points(desc->vertex->normal, ray_count, rays);
 
   vec3 world_position;
-  glm_mat4_mulv3(source->model, vertex->position, 1.0f, world_position);
+  glm_mat4_mulv3(desc->mesh->model, desc->vertex->position, 1.0f,
+                 world_position);
 
-  for (int ray = 0; ray < AO_LOCAL_RAY_AMOUNT; ray++) {
+  for (int ray = 0; ray < ray_count; ray++) {
 
     vec3 ray_direction;
-    glm_vec3_scale(rays[ray], AO_LOCAL_RAY_MAX_DISTANCE, ray_direction);
+    glm_vec3_scale(rays[ray], desc->settings->max_distance, ray_direction);
     glm_vec3_add(world_position, ray_direction, ray_direction);
 
-#ifdef AO_BAKE_DISPLAY_RAY
-    if (line && ray < AO_RAY_MAX_COUNT)
-      line_add_point(world_position, ray_direction, (vec3){0.0f, 1.0f, 0.0f},
-                     &line->vertex, &line->index);
-#endif
-
     // traverse mesh triangles
-    for (size_t t = 0; t < source->topology.base.index.length; t += 3) {
-      Triangle triangle = ao_bake_mesh_triangle(source, t);
+    for (size_t t = 0; t < desc->mesh->topology.base.index.length; t += 3) {
+      Triangle triangle = ao_bake_mesh_triangle(desc->mesh, t);
       vec3 hit;
       triangle_raycast(&triangle, world_position, ray_direction,
-                       AO_LOCAL_RAY_MAX_DISTANCE, hit);
+                       desc->settings->max_distance, hit);
 
       // is occluded
-      if (hit[0] || hit[1] || hit[2])
+      if (hit[0] || hit[1] || hit[2]) {
         vertex_hit++;
+        glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, ray_color);
+      }
+
+      if (desc->debug.line && ray < desc->debug.max_ray)
+        line_add_point(world_position, ray_direction, ray_color,
+                       &desc->debug.line->topology.base.attribute,
+                       &desc->debug.line->topology.base.index);
     }
   }
 
-  // accumulated AO
-  return 1 - ((float)vertex_hit / AO_LOCAL_RAY_AMOUNT);
+  // accumulated AO (actually unused for now)
+  return 1 - ((float)vertex_hit / ray_count);
 }
 
 /**
