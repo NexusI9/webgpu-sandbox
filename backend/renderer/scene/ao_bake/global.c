@@ -40,6 +40,7 @@ void ao_bake_global(SceneRendererTextureAO *ao,
         !aabb_within_distance(&mesh->topology.boundbox.bound,
                               &compare_mesh->topology.boundbox.bound,
                               desc->settings->max_distance))
+
       continue;
 
     Texture *compare_texture =
@@ -48,14 +49,15 @@ void ao_bake_global(SceneRendererTextureAO *ao,
     // go through the mesh triangles and check if it's occluded
     for (size_t i = 0; i < mesh->topology.base.index.length; i += 3) {
 
-      Triangle source_triangle = ao_bake_mesh_triangle(mesh, i);
+      Triangle source_triangle;
+      ao_bake_mesh_triangle(&source_triangle, mesh, i);
 
       AABB tri_aabb;
       vec3 tri_points[3];
       glm_vec3_copy(source_triangle.a.position, tri_points[0]);
       glm_vec3_copy(source_triangle.b.position, tri_points[1]);
       glm_vec3_copy(source_triangle.c.position, tri_points[2]);
-      
+
       aabb_from_vec3(&tri_aabb, tri_points, 3);
 
       if (!aabb_within_distance(&tri_aabb,
@@ -92,8 +94,7 @@ void ao_bake_global(SceneRendererTextureAO *ao,
                 .compare_mesh = compare_mesh,
                 .max_distance = desc->settings->max_distance,
             }))
-          // set debug ray color to red if hit
-          glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, color);
+          glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, color); // red
 
         if (line && ray < desc->debug->max_ray)
           line_add_point(rays[ray], ray_direction, color,

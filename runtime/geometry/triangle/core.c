@@ -99,10 +99,10 @@ void triangle_normal(Triangle *surface, vec3 dest) {
    triangle.
    https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
  */
-void triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
+TriangleStatus triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
                       float max_distance, vec3 hit) {
-
-  float epsilon = 1e-6f; //FLT_EPSILON;
+  // FLT_EPSILON
+  float epsilon = 1e-6f;
 
   vec3 edge1, edge2, ray_cross_e2;
 
@@ -112,10 +112,10 @@ void triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
 
   float det = glm_vec3_dot(edge1, ray_cross_e2);
 
-  if (fabsf(det) < epsilon) {
+  if (det > -epsilon && det < epsilon) {
     // ray parallel to triangle
     glm_vec3_zero(hit);
-    return;
+    return TriangleStatus_RaycastParallel;
   }
 
   float inv_det = 1.0 / det;
@@ -124,8 +124,9 @@ void triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
   float u = inv_det * glm_vec3_dot(s, ray_cross_e2);
 
   if (u < 0.0f || u > 1.0f) {
+    // out of triangle edge 1
     glm_vec3_zero(hit);
-    return;
+    return TriangleStatus_RaycastOutEdge1;
   }
 
   vec3 s_cross_e1;
@@ -133,8 +134,9 @@ void triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
   float v = inv_det * glm_vec3_dot(ray_direction, s_cross_e1);
 
   if (v < 0.0f || u + v > 1.0f) {
+    // out of triangle edge 2
     glm_vec3_zero(hit);
-    return;
+    return TriangleStatus_RaycastOutEdge2;
   }
 
   // compute to find where interesction is on the line
@@ -148,7 +150,10 @@ void triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
   } else {
     // line interesction but no Ray intersection
     glm_vec3_zero(hit);
+    return TriangleStatus_RaycastHitTooFar;
   }
+
+  return TriangleStatus_RaycastSuccess;
 }
 
 /**
@@ -159,7 +164,7 @@ void triangle_point_to_uv(Triangle *surface, vec3 point, vec2 dest) {
 
   vec3 p0, p1, p2;
 
-  //TODO replace by vec_baycentric function
+  // TODO replace by vec_baycentric function
   glm_vec3_sub(surface->b.position, surface->a.position, p0);
   glm_vec3_sub(surface->c.position, surface->a.position, p1);
   glm_vec3_sub(point, surface->a.position, p2);

@@ -951,8 +951,8 @@ fn sun_shadow_factor(frag_position : vec3<f32>) -> f32 {
   let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                             point_shadow + directional_shadow + sun_shadow);
 
-  //return vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
-  return vec4<f32>(vec3<f32>(occlusion.r / 2.0f), 1.0f);
+  return vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
+  //return vec4<f32>(vec3<f32>(occlusion.r / 2.0f), 1.0f);
 }
 
 // attribute/uniform decls
@@ -1363,7 +1363,7 @@ struct Viewport {
 			],
 			"translation":[
 				0,
-				0.16590499877929688,
+				-0.1579430103302002,
 				0
 			]
 		},
@@ -1378,7 +1378,7 @@ struct Viewport {
 			],
 			"translation":[
 				-0.9676611423492432,
-				1.1763033866882324,
+				0.8524553775787354,
 				-1.5909743309020996
 			]
 		},
@@ -1387,7 +1387,7 @@ struct Viewport {
 			"name":"Cube.014",
 			"translation":[
 				0,
-				1.6861313581466675,
+				1.3622833490371704,
 				0
 			]
 		},
@@ -1401,7 +1401,7 @@ struct Viewport {
 			],
 			"translation":[
 				0.05011308193206787,
-				3.495849847793579,
+				3.172001838684082,
 				-0.022407829761505127
 			]
 		}
