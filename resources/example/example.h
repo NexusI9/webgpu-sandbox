@@ -6,5 +6,6 @@
 #include "line.h"
 #include "primitive.h"
 #include "skybox.h"
+#include "ao.h"
 
 #endif

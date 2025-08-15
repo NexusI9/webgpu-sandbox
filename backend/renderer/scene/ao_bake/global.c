@@ -36,11 +36,10 @@ void ao_bake_global(SceneRendererTextureAO *ao,
 
     Mesh *compare_mesh = desc->mesh_list->entries[c];
 
-    if (mesh == compare_mesh)
-      /*	||
-              !aabb_within_distance(&mesh->topology.boundbox.bound,
-                                    &compare_mesh->topology.boundbox.bound,
-                                    desc->settings->max_distance,NULL))*/
+    if (mesh == compare_mesh ||
+        !aabb_within_distance(&mesh->topology.boundbox.bound,
+                              &compare_mesh->topology.boundbox.bound,
+                              desc->settings->max_distance, NULL))
 
       continue;
 
@@ -73,7 +72,8 @@ void ao_bake_global(SceneRendererTextureAO *ao,
       vec3 ray_normal, ray_scaled_normal;
 
       triangle_normal(&source_triangle, ray_normal);
-      glm_vec3_scale(ray_normal, desc->settings->max_distance, ray_scaled_normal);
+      glm_vec3_scale(ray_normal, desc->settings->max_distance,
+                     ray_scaled_normal);
 
       triangle_random_points(&source_triangle, sampling, rays);
 
