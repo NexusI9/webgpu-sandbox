@@ -10,7 +10,7 @@ void example_gltf(Scene *scene) {
       .cgltf_options = &(cgltf_options){0},
       .options =
           &(LoaderGLTFOptions){
-              .max_texture_size = TextureSize_128,
+              .max_texture_size = TextureSize_512,
           },
   });
 }

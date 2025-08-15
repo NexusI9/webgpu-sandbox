@@ -99,10 +99,14 @@ void triangle_normal(Triangle *surface, vec3 dest) {
    triangle.
    https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
  */
-TriangleStatus triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_direction,
-                      float max_distance, vec3 hit) {
+TriangleStatus triangle_raycast(Triangle *surface, vec3 ray_origin,
+                                vec3 ray_direction, float max_distance,
+                                vec3 hit) {
   // FLT_EPSILON
+
   float epsilon = 1e-6f;
+
+  // printf("epsilon: %f | distance: %f | mul: %f\n", 1e-6f, scale, epsilon);
 
   vec3 edge1, edge2, ray_cross_e2;
 
@@ -141,7 +145,7 @@ TriangleStatus triangle_raycast(Triangle *surface, vec3 ray_origin, vec3 ray_dir
 
   // compute to find where interesction is on the line
   float t = inv_det * glm_vec3_dot(edge2, s_cross_e1);
-
+  // fabsf( * scale &&
   if (t > epsilon && t < max_distance) {
     // intersection
     vec3 distance;

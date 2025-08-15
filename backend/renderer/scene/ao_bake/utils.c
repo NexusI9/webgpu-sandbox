@@ -58,7 +58,6 @@ float ao_bake_vertex(const AOBakeVertexDescriptor *desc) {
    Raycast from the source surage towards a certain direction an check if the
    ray traverse a triangle of the compared mesh
  */
-static float di = 0;
 bool ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
 
   bool ray_hit = false;
@@ -70,31 +69,31 @@ bool ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
     Triangle compare_triangle;
     ao_bake_mesh_triangle(&compare_triangle, desc->compare_mesh, i);
     vec3 hit;
-    triangle_raycast(&compare_triangle, *desc->ray_origin, *desc->ray_direction,
-                     desc->max_distance, hit);
 
-    if(di++ < 10){
-      printf("distance: %f\n", desc->max_distance);
-    }
     // is occluded
     // transpose hit point to triangle UV space
     // 1. retrieve hit position and translate it to uv space
     // 2. scale to the texture coordinates
     // 3.write pixel to texture
-    if (hit[0] || hit[1] || hit[2]) {
+    if (triangle_raycast(&compare_triangle, *desc->ray_origin,
+                         *desc->ray_direction, desc->max_distance,
+                         hit) == TriangleStatus_RaycastSuccess) {
 #ifdef AO_BAKE_HIT_COUNT
       g_debug_ao_bake_hit_count++;
 #endif
+
       vec2 compare_uv, source_uv;
-      triangle_point_to_uv(desc->source_triangle, *desc->ray_origin, source_uv);
-      glm_vec2_scale(source_uv, AO_TEXTURE_SIZE, source_uv);
-      texture_write_pixel(desc->source_texture, 0, source_uv,
-                          TextureWriteMethod_Replace);
+        triangle_point_to_uv(desc->source_triangle, *desc->ray_origin,
+                             source_uv);
+        glm_vec2_scale(source_uv, desc->texture_size, source_uv);
+        texture_write_pixel(desc->source_texture, 0, source_uv,
+                            TextureWriteMethod_Replace);
+      
 
       // do the same for compare mesh
       if (desc->compare_texture) {
         triangle_point_to_uv(&compare_triangle, hit, compare_uv);
-        glm_vec2_scale(compare_uv, AO_TEXTURE_SIZE, compare_uv);
+        glm_vec2_scale(compare_uv, desc->texture_size, compare_uv);
         texture_write_pixel(desc->compare_texture, 0, compare_uv,
                             TextureWriteMethod_Replace);
       }

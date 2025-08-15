@@ -10,7 +10,7 @@ typedef struct {
   vec3 max;
 } AABB;
 
-bool aabb_within_distance(const AABB *, const AABB *, const float);
+bool aabb_within_distance(const AABB *, const AABB *, const float, float*);
 void aabb_from_vec3(AABB *, vec3 *, const size_t);
 void aabb_from_vert_attr(AABB *, const VertexAttribute *);
 

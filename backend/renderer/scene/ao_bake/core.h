@@ -19,7 +19,7 @@
 // Global AO Baking
 #define AO_GLOBAL_RAY_AMOUNT 1024
 #define AO_GLOBAL_RAY_MAX_AMOUNT 1024
-#define AO_GLOBAL_RAY_MAX_DISTANCE 0.08f
+#define AO_GLOBAL_RAY_MAX_DISTANCE 0.1f
 
 // Local AO Baking
 #define AO_LOCAL_RAY_AMOUNT 32
@@ -104,6 +104,7 @@ typedef struct {
   Texture *compare_texture;
   Mesh *compare_mesh;
   const float max_distance;
+  const uint16_t texture_size;
 } AOBakeRaycastDescriptor;
 
 typedef struct {

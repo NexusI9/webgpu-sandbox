@@ -36,10 +36,11 @@ void ao_bake_global(SceneRendererTextureAO *ao,
 
     Mesh *compare_mesh = desc->mesh_list->entries[c];
 
-    if (mesh == compare_mesh ||
-        !aabb_within_distance(&mesh->topology.boundbox.bound,
-                              &compare_mesh->topology.boundbox.bound,
-                              desc->settings->max_distance))
+    if (mesh == compare_mesh)
+      /*	||
+              !aabb_within_distance(&mesh->topology.boundbox.bound,
+                                    &compare_mesh->topology.boundbox.bound,
+                                    desc->settings->max_distance,NULL))*/
 
       continue;
 
@@ -62,17 +63,17 @@ void ao_bake_global(SceneRendererTextureAO *ao,
 
       if (!aabb_within_distance(&tri_aabb,
                                 &compare_mesh->topology.boundbox.bound,
-                                desc->settings->max_distance))
+                                desc->settings->max_distance, NULL))
         continue;
 
       uint16_t sampling =
           glm_min(AO_GLOBAL_RAY_MAX_AMOUNT, desc->settings->sample_amount);
 
       vec3 rays[AO_GLOBAL_RAY_MAX_AMOUNT];
-      vec3 ray_normal;
+      vec3 ray_normal, ray_scaled_normal;
 
       triangle_normal(&source_triangle, ray_normal);
-      glm_vec3_scale(ray_normal, desc->settings->max_distance, ray_normal);
+      glm_vec3_scale(ray_normal, desc->settings->max_distance, ray_scaled_normal);
 
       triangle_random_points(&source_triangle, sampling, rays);
 
@@ -81,7 +82,8 @@ void ao_bake_global(SceneRendererTextureAO *ao,
       // collides with another mesh in the scene within a certain distance
       for (int ray = 0; ray < sampling; ray++) {
         vec3 ray_direction;
-        glm_vec3_add(rays[ray], ray_normal, ray_direction);
+        glm_vec3_sub(ray_normal, rays[ray], ray_direction);
+        glm_normalize(ray_direction);
 
         vec3 color = {0.0f, 1.0f, 0.0f};
 
@@ -93,13 +95,17 @@ void ao_bake_global(SceneRendererTextureAO *ao,
                 .compare_texture = compare_texture,
                 .compare_mesh = compare_mesh,
                 .max_distance = desc->settings->max_distance,
+                .texture_size = ao->size,
             }))
           glm_vec3_copy((vec3){1.0f, 0.0f, 0.0f}, color); // red
 
-        if (line && ray < desc->debug->max_ray)
-          line_add_point(rays[ray], ray_direction, color,
+        if (line && ray < desc->debug->max_ray) {
+          vec3 ray_target;
+          glm_vec3_add(ray_scaled_normal, rays[ray], ray_target);
+          line_add_point(rays[ray], ray_target, color,
                          &line->topology.base.attribute,
                          &line->topology.base.index);
+        }
       }
     }
   }

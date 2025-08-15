@@ -441,7 +441,6 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
           VERBOSE_WARNING("GLTF Loader STBI resize texture fail.");
         } else {
 
-          printf("resized: %d => %d | %d => %d\n", *width, n_w, *height, n_h);
           *width = n_w;
           *height = n_h;
 

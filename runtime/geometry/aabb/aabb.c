@@ -1,7 +1,8 @@
 #include "aabb.h"
 #include <math.h>
 
-bool aabb_within_distance(const AABB *a, const AABB *b, const float distance) {
+bool aabb_within_distance(const AABB *a, const AABB *b, const float distance,
+                          float *dest) {
 
   float sq = 0.0f;
   float max_distance = distance * distance;
@@ -10,6 +11,9 @@ bool aabb_within_distance(const AABB *a, const AABB *b, const float distance) {
     float axis_distance =
         fmaxf(0.0f, fmaxf(a->min[i] - b->max[i], b->min[i] - a->max[i]));
     sq += axis_distance * axis_distance;
+
+    if (dest)
+      *dest = sq;
 
     if (sq > max_distance)
       return false;
@@ -91,4 +95,3 @@ void aabb_to_worldspace(AABB *bound, vec3 corners[8], mat4 matrix) {
     glm_vec3_maxv(bound->max, transformed, bound->max);
   }
 }
-
