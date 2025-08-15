@@ -5,9 +5,7 @@
 #include "cgltf/cgltf.h"
 #include <webgpu/webgpu.h>
 
-
-
-typedef enum{
+typedef enum {
   LoaderGLTFStatus_Success,
   LoaderGLTFStatus_UndefError,
   LoaderGLTFStatus_TextureFound,
@@ -24,10 +22,15 @@ typedef struct {
 } GLTFTextureViews;
 
 typedef struct {
+  const TextureSize max_texture_size;
+} LoaderGLTFOptions;
+
+typedef struct {
   Scene *scene;
   const char *path;
   const WGPUDevice device;
   const WGPUQueue queue;
+  const LoaderGLTFOptions *options;
   const cgltf_options *cgltf_options;
 } GLTFLoadDescriptor;
 

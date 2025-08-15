@@ -1,10 +1,15 @@
 #include "loader.gltf.h"
-#include "webgpu/webgpu.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb/stb_image.h"
-#define CGLTF_IMPLEMENTATION
 #include "../backend/renderer/scene/std_texture/std_texture.h"
 #include "../backend/renderer/scene/texture.h"
+#include "webgpu/webgpu.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb/stb_image.h"
+
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb/stb_image_resize2.h"
+
+#define CGLTF_IMPLEMENTATION
 #include "cgltf/cgltf.h"
 
 // gltf utils
@@ -20,16 +25,17 @@ static void loader_gltf_init_vertex_lists(VertexAttribute *, VertexList *,
                                           size_t);
 // mesh utils
 static void loader_gltf_create_mesh(Scene *, const WGPUDevice, const WGPUQueue,
-                                    cgltf_data *);
+                                    cgltf_data *, const LoaderGLTFOptions *);
 static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
 
 // shader utils
 
-static void loader_gltf_bind_uniforms(Shader *, cgltf_material *);
+static void loader_gltf_bind_uniforms(Shader *, cgltf_material *,
+                                      const LoaderGLTFOptions *);
 
 static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
                                                     void **, size_t *, int *,
-                                                    int *);
+                                                    int *, int *, TextureSize);
 
 void loader_gltf_load(const GLTFLoadDescriptor *desc) {
 
@@ -51,7 +57,8 @@ void loader_gltf_load(const GLTFLoadDescriptor *desc) {
     break;
 
   case cgltf_result_success:
-    loader_gltf_create_mesh(desc->scene, desc->device, desc->queue, data);
+    loader_gltf_create_mesh(desc->scene, desc->device, desc->queue, data,
+                            desc->options);
     break;
 
   case cgltf_result_file_not_found:
@@ -150,7 +157,8 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
 }
 
 void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
-                             const WGPUQueue queue, cgltf_data *data) {
+                             const WGPUQueue queue, cgltf_data *data,
+                             const LoaderGLTFOptions *options) {
 
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
@@ -282,7 +290,8 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                              .queue = queue,
                          });
 
-      loader_gltf_bind_uniforms(mesh_shader_texture(target_mesh), material);
+      loader_gltf_bind_uniforms(mesh_shader_texture(target_mesh), material,
+                                options);
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
@@ -301,7 +310,8 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
   Bind PBR textures
   store the texture_views (hold pointer to actual texture + other data)
  */
-void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
+void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
+                               const LoaderGLTFOptions *options) {
 
   const uint8_t texture_length = 5;
 
@@ -328,12 +338,13 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
 
     void *data;
     size_t size;
-    int width, height;
+    int width, height, channels;
 
     // If find texture, upload new texture to GPU and bind to shader
     //(before freeing it)
-    if (loader_gltf_extract_texture(texture_view_list[t], &data, &size, &width,
-                                    &height) == LoaderGLTFStatus_TextureFound) {
+    if (loader_gltf_extract_texture(
+            texture_view_list[t], &data, &size, &width, &height, &channels,
+            options->max_texture_size) == LoaderGLTFStatus_TextureFound) {
 
       // send texture + sampler to shader
       shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
@@ -346,15 +357,6 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
                                 .format = WGPUTextureFormat_BGRA8Unorm,
                                 .channels = TEXTURE_CHANNELS_RGBA,
                             });
-
-    }
-    // If texture not found or error while loading, upload cached texture view
-    // fallback from GPU instead
-    else {
-      // send fallback texture view
-      /*shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
-                                 binding, fallback_texture,
-                                 WGPUTextureFormat_BGRA8Unorm);*/
     }
 
     // update sampler entry from generated array
@@ -379,18 +381,20 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material) {
  */
 LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
                                              void **data, size_t *size,
-                                             int *width, int *height) {
+                                             int *width, int *height,
+                                             int *channels,
+                                             TextureSize max_size) {
+
+  const int forced_channel = TEXTURE_CHANNELS_RGBA;
 
   if (texture_view->texture) {
 
     // TODO: check why cgltf buffer->size return smaller size that w * h *
     // channels
     cgltf_image *image = texture_view->texture->image;
-    int channels;
     if (image->uri) {
       cgltf_decode_uri(image->uri);
-      *data = stbi_load(image->uri, width, height, &channels,
-                        TEXTURE_CHANNELS_RGBA);
+      *data = stbi_load(image->uri, width, height, channels, forced_channel);
 
     } else if (image->buffer_view) {
 
@@ -402,8 +406,7 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
       // TODO: more flexible texture upload (RGB/RGBA, large texture
       // handling...)
       *data = stbi_load_from_memory(gltf_data, image->buffer_view->buffer->size,
-                                    width, height, &channels,
-                                    TEXTURE_CHANNELS_RGBA);
+                                    width, height, channels, forced_channel);
 
     } else {
       VERBOSE_PRINT(
@@ -413,7 +416,43 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
     }
 
     if (*data != NULL) {
-      *size = (*width) * (*height) * TEXTURE_CHANNELS_RGBA;
+
+      if (*width > max_size || *height > max_size) {
+
+        int n_w = max_size;
+        int n_h = max_size;
+
+        if (*width > *height)
+          n_h = (int)((float)*height * max_size / *width);
+        else
+          n_w = (int)((float)*width * max_size / *height);
+
+        n_w = glm_max(1, n_w);
+        n_h = glm_max(1, n_h);
+
+        unsigned char *n_data = malloc(n_w * n_h * forced_channel);
+
+        if (n_data == NULL) {
+          VERBOSE_WARNING(
+              "GLTF Loader couldn't allocate resources for resize texture.");
+        } else if (stbir_resize_uint8_srgb(*data, *width, *height, 0, n_data,
+                                           n_w, n_h, 0,
+                                           forced_channel) == NULL) {
+          VERBOSE_WARNING("GLTF Loader STBI resize texture fail.");
+        } else {
+
+          printf("resized: %d => %d | %d => %d\n", *width, n_w, *height, n_h);
+          *width = n_w;
+          *height = n_h;
+
+          // free old texture
+          stbi_image_free(*data);
+
+          *data = n_data;
+        }
+      }
+
+      *size = (*width) * (*height) * forced_channel;
       return LoaderGLTFStatus_TextureFound;
     } else {
       return LoaderGLTFStatus_LoadError;
@@ -433,8 +472,8 @@ void loader_gltf_mesh_position(Mesh *mesh, const char *name, cgltf_data *data) {
   // Apply transformation to mesh
   // Transformation attributes are stored in the nodes
   // whereas mesh only contain vertices/index related data
-  // need to go through the nodes and compare with the given gltf_mesh to see if
-  // it matches name
+  // need to go through the nodes and compare with the given gltf_mesh to see
+  // if it matches name
 
   for (size_t n = 0; n < data->nodes_count; n++) {
 

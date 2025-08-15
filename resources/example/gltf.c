@@ -8,5 +8,9 @@ void example_gltf(Scene *scene) {
       .device = scene_device(scene),
       .queue = scene_queue(scene),
       .cgltf_options = &(cgltf_options){0},
+      .options =
+          &(LoaderGLTFOptions){
+              .max_texture_size = TextureSize_128,
+          },
   });
 }
