@@ -264,7 +264,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         .mesh_list = desc->mesh_list,
         .device = desc->device,
         .queue = desc->queue,
-        .encoder = shadow_encoder,
+        .encoder = NULL,
         .color_map = desc->lights->spot.color_map,
         .depth_map = desc->lights->spot.depth_map,
     });
