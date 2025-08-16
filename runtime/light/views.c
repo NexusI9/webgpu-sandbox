@@ -4,9 +4,10 @@
    Compute point view for Point light
    Point lights use 6 views, each pointing to different directions
  */
-LightViews light_point_views(vec3 light_position, float near, float far) {
+void light_point_views(LightViews *views, vec3 light_position, float near,
+                       float far) {
 
-  LightViews new_views = (LightViews){.length = LIGHT_POINT_VIEWS};
+  views->length = LIGHT_POINT_VIEWS;
 
   vec3 directions[LIGHT_POINT_VIEWS] = {
       {1.0f, 0.0f, 0.0f},  // +x (right)
@@ -35,7 +36,7 @@ LightViews light_point_views(vec3 light_position, float near, float far) {
    */
   projection[0][0] *= -1.0f;
 
-  for (int v = 0; v < new_views.length; v++) {
+  for (int v = 0; v < views->length; v++) {
 
     vec3 direction;
     glm_vec3_add(light_position, directions[v], direction);
@@ -43,19 +44,18 @@ LightViews light_point_views(vec3 light_position, float near, float far) {
     mat4 view;
     glm_lookat(light_position, direction, ups[v], view);
 
-    glm_mat4_mul(projection, view, new_views.views[v]);
+    glm_mat4_mul(projection, view, views->views[v]);
   }
 
-  return new_views;
 }
 
 /**
    Compute point view for spot light
  */
-LightViews light_spot_view(vec3 light_position, vec3 light_target,
-                           float angle) {
+void light_spot_view(LightViews *views, vec3 light_position, vec3 light_target,
+                     float angle) {
 
-  LightViews new_views = (LightViews){.length = LIGHT_SPOT_VIEW};
+  views->length = LIGHT_SPOT_VIEW;
 
   vec3 up = {0.0f, 1.0f, 0.0f};
 
@@ -66,13 +66,11 @@ LightViews light_spot_view(vec3 light_position, vec3 light_target,
   mat4 projection;
   glm_perspective(glm_rad(angle), 1.0f, 0.1f, 100.0f, projection);
 
-  for (int v = 0; v < new_views.length; v++) {
+  for (int v = 0; v < views->length; v++) {
     mat4 view;
     glm_lookat(light_position, light_target, up, view);
-    glm_mat4_mul(projection, view, new_views.views[v]);
+    glm_mat4_mul(projection, view, views->views[v]);
   }
-
-  return new_views;
 }
 
 /**
@@ -81,9 +79,9 @@ LightViews light_spot_view(vec3 light_position, vec3 light_target,
    For Sun are position agnostic, target is always 0,0,0, but the position
    simulates sun position by being super far away from the scene
  */
-LightViews light_sun_view(vec3 light_position, float size) {
+void light_sun_view(LightViews *views, vec3 light_position, float size) {
 
-  LightViews new_views = (LightViews){.length = LIGHT_SPOT_VIEW};
+  views->length = LIGHT_SPOT_VIEW;
 
   vec3 up = {0.0f, 1.0f, 0.0f};
 
@@ -94,12 +92,9 @@ LightViews light_sun_view(vec3 light_position, float size) {
   mat4 ortho;
   glm_ortho(-size, size, -size, size, 0.1f, 100.0f, ortho);
 
-  for (int v = 0; v < new_views.length; v++) {
+  for (int v = 0; v < views->length; v++) {
     mat4 view;
     glm_lookat(light_position, (vec3){0.0f, 0.0f, 0.0f}, up, view);
-    glm_mat4_mul(ortho, view, new_views.views[v]);
+    glm_mat4_mul(ortho, view, views->views[v]);
   }
-
-  return new_views;
 }
-

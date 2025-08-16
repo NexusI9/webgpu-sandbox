@@ -29,9 +29,9 @@ void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
                                        uint8_t group_index) {
 
   AmbientLightList *ambient_list = &light_list->ambient;
-  SpotLightList *spot_list = &light_list->spot;
-  SunLightList *sun_list = &light_list->sun;
-  PointLightList *point_list = &light_list->point;
+  SpotLightListBase *spot_list = &light_list->spot.base;
+  SunLightListBase *sun_list = &light_list->sun.base;
+  PointLightListBase *point_list = &light_list->point.base;
 
   AmbientLightListUniform ambient_uniform;
   SpotLightListUniform spot_uniform;
@@ -104,12 +104,12 @@ void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
           .data = &point_uniform,
           .offset = 0,
           .size = sizeof(PointLightListUniform),
-          /*.update =
-                {
-                     .callback = point_light_list_update_callback,
-                     .trigger = point_light_list_trigger_callback,
-                     .data = point_list,
-                 },*/
+         /* .update =
+              {
+                  .callback = point_light_list_update_callback,
+                  .trigger = point_light_list_trigger_callback,
+                  .data = point_list,
+              },*/
       },
       // sun light
       {
@@ -181,7 +181,6 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
                         sampler_binding + 2, &sampler);
 }
 
-
 void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
                                             WGPUTextureView point_map,
                                             WGPUTextureView spot_map) {
@@ -189,11 +188,12 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
   VERBOSE_PROCESS("Update shadow map: %s", mesh->name);
   Shader *shader = mesh_shader_texture(mesh);
 
-  // update textures
+  // update point texture
   shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
                              SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
                              point_map, SHADOW_DEPTH_FORMAT);
 
+  // update dir texture
   shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
                              SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP, spot_map,
                              SHADOW_DEPTH_FORMAT);

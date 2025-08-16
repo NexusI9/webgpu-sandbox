@@ -188,7 +188,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
      A solution to this is to add an offset or use a command encoder per light
 
      The overall flow would be:
-     
+
      1. set the shadow pipeline minBindSize to:
      .------------------------------------------------------------------------.
      |                      Mp * Nvp + Ms + Mn * sizeof(mat4)                 |
@@ -220,9 +220,9 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
   MeshRefList *target_mesh_list = desc->mesh_list;
 
-  const size_t point_length = desc->lights->point.length;
-  const size_t spot_length = desc->lights->spot.length;
-  const size_t sun_length = desc->lights->sun.length;
+  const size_t point_length = desc->lights->point.shadow.length;
+  const size_t spot_length = desc->lights->spot.shadow.length;
+  const size_t sun_length = desc->lights->sun.shadow.length;
 
   /*
   ==========================================
@@ -240,13 +240,13 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
   for (size_t p = 0; p < point_length; p++)
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
         .layer = p,
-        .light = &desc->lights->point.entries[p],
+        .light = desc->lights->point.shadow.entries[p],
         .mesh_list = desc->mesh_list,
         .device = desc->device,
         .queue = desc->queue,
         .encoder = NULL, // shadow_encoder,
-        .color_map = desc->lights->point.color_map,
-        .depth_map = desc->lights->point.depth_map,
+        .color_map = desc->lights->point.shadow.color_map,
+        .depth_map = desc->lights->point.shadow.depth_map,
     });
 
   /*
@@ -260,13 +260,13 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
   for (size_t p = 0; p < spot_length; p++)
     shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
         .layer = p,
-        .light = &desc->lights->spot.entries[p],
+        .light = desc->lights->spot.shadow.entries[p],
         .mesh_list = desc->mesh_list,
         .device = desc->device,
         .queue = desc->queue,
         .encoder = NULL,
-        .color_map = desc->lights->spot.color_map,
-        .depth_map = desc->lights->spot.depth_map,
+        .color_map = desc->lights->spot.shadow.color_map,
+        .depth_map = desc->lights->spot.shadow.depth_map,
     });
 
   /*
@@ -282,14 +282,14 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         // TODO: currently use spot light color_map, maybe make a linked
         // pointer
         // to the same map but include it in the sun light list struct itself.
-        .color_map = desc->lights->spot.color_map,
-        .depth_map = desc->lights->spot.depth_map,
+        .color_map = desc->lights->spot.shadow.color_map,
+        .depth_map = desc->lights->spot.shadow.depth_map,
         .layer = spot_length + p,
         .device = desc->device,
         .queue = desc->queue,
         .encoder = shadow_encoder,
         .mesh_list = desc->mesh_list,
-        .light = &desc->lights->sun.entries[p],
+        .light = desc->lights->sun.shadow.entries[p],
     });
 
   // finish encoding command
@@ -313,8 +313,9 @@ void shadow_map_draw_point_light(
     const ShadowMapDrawPointLightDescriptor *desc) {
 
   // retrieve 6 views of point cube
-  LightViews light_views = light_point_views(
-      desc->light->position, desc->light->near, desc->light->far);
+  LightViews light_views;
+  light_point_views(&light_views, desc->light->position, desc->light->near,
+                    desc->light->far);
 
   // render scene and store depth map for each view
   for (size_t v = 0; v < light_views.length; v++) {
@@ -367,8 +368,8 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
 void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
 
   // get each light orthographic view depending on target
-  LightViews light_views =
-      light_sun_view(desc->light->position, desc->light->size);
+  LightViews light_views;
+  light_sun_view(&light_views, desc->light->position, desc->light->size);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
       .color_map = desc->color_map,
@@ -386,8 +387,9 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
 void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
 
   // get each light orthographic view depending on target
-  LightViews light_views = light_spot_view(
-      desc->light->position, desc->light->target, desc->light->angle);
+  LightViews light_views;
+  light_spot_view(&light_views, desc->light->position, desc->light->target,
+                  desc->light->angle);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
       .color_map = desc->color_map,

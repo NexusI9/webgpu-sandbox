@@ -21,101 +21,124 @@ static inline void scene_add_seo(Scene *, SceneEditorObject *);
              ▝▚▄▞▘▐▙▄▞▘▗▄▄▞▘▐▙▄▄▖▝▚▄▄▖  █ ▗▄▄▞▘
  */
 SceneEditorObject *scene_add_point_light(Scene *scene,
-                                         PointLightDescriptor *desc) {
+                                         PointLightDescriptor *desc,
+                                         const LightShadow shadow) {
 
-  PointLightList *list = &scene->lights.point;
-  if (list->length == list->capacity) {
+  PointLightListBase *base_list = &scene->lights.point.base;
+  if (base_list->length == base_list->capacity) {
     VERBOSE_ERROR("Scene point light capacity reached maximum.");
     return 0;
   }
 
   // create sun light
-  PointLight *new_light = &list->entries[list->length];
+  PointLight *new_light = &base_list->entries[base_list->length];
   light_create_point(new_light, desc);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =
       seo_list_new_entry(scene_editor_object_list(scene));
 
-  seo_light_point_create(seo_light, new_light,
-                         &(SEOCreateDescriptor){
-                             .camera = scene->active_camera,
-                             .viewport = &scene->viewport,
-                             .device = scene_device(scene),
-                             .queue = scene_queue(scene),
-                             .scene = scene,
-                             .target_list_index = list->length,
-                         });
+  SEOCreateDescriptor seo_desc = {
+      .camera = scene->active_camera,
+      .viewport = &scene->viewport,
+      .device = scene_device(scene),
+      .queue = scene_queue(scene),
+      .scene = scene,
+      .target_list_index = 0,
+  };
+
+  if (shadow) {
+
+    PointLightListShadow *shadow_list = &scene->lights.point.shadow;
+
+    seo_desc.target_list_index = shadow_list->length;
+    seo_light_point_create(seo_light, new_light, &seo_desc);
+
+    light_list_point_shadow_insert(shadow_list, new_light);
+
+    // recompute shadow map if render mode
+    if (scene_renderer_draw_mode(&scene->renderer) ==
+        SceneRendererDrawMode_Texture)
+      shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
+          .light = new_light,
+          .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+          .color_map = scene->lights.point.shadow.color_map,
+          .depth_map = scene->lights.point.shadow.depth_map,
+          .device = scene_device(scene),
+          .queue = scene_queue(scene),
+          .layer = shadow_list->length,
+          .encoder = NULL,
+      });
+  } else {
+    seo_light_point_create(seo_light, new_light, &seo_desc);
+  }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_seo(scene, seo_light);
 
-  // recompute shadow map if render mode
-  // TODO: systematize this for all point light
-  if (scene_renderer_draw_mode(&scene->renderer) ==
-      SceneRendererDrawMode_Texture)
-    shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
-        .light = new_light,
-        .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
-        .color_map = scene->lights.point.color_map,
-        .depth_map = scene->lights.point.depth_map,
-        .device = scene_device(scene),
-        .queue = scene_queue(scene),
-        .layer = list->length,
-        .encoder = NULL,
-    });
-
-  list->length++;
+  base_list->length++;
 
   return seo_light;
 }
 
-SceneEditorObject *scene_add_spot_light(Scene *scene,
-                                        SpotLightDescriptor *desc) {
+SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
+                                        const LightShadow shadow) {
 
-  SpotLightList *list = &scene->lights.spot;
-  if (list->length == list->capacity) {
+  SpotLightListBase *base_list = &scene->lights.spot.base;
+  if (base_list->length == base_list->capacity) {
     VERBOSE_ERROR("Scene spot light capacity reached maximum.");
     return 0;
   }
 
   // create sun light
-  SpotLight *new_light = &list->entries[list->length];
+  SpotLight *new_light = &base_list->entries[base_list->length];
   light_create_spot(new_light, desc);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =
       seo_list_new_entry(scene_editor_object_list(scene));
 
-  seo_light_spot_create(seo_light, new_light,
-                        &(SEOCreateDescriptor){
-                            .camera = scene->active_camera,
-                            .viewport = &scene->viewport,
-                            .device = scene_device(scene),
-                            .queue = scene_queue(scene),
-                            .scene = scene,
-                            .target_list_index = list->length,
-                        });
+  SEOCreateDescriptor seo_desc = {
+      .camera = scene->active_camera,
+      .viewport = &scene->viewport,
+      .device = scene_device(scene),
+      .queue = scene_queue(scene),
+      .scene = scene,
+      .target_list_index = 0,
+  };
+
+  if (shadow) {
+
+    SpotLightListShadow *shadow_list = &scene->lights.spot.shadow;
+
+    seo_desc.target_list_index = shadow_list->length;
+    seo_light_spot_shadow_create(seo_light, new_light, &seo_desc);
+
+    light_list_spot_shadow_insert(shadow_list, new_light);
+
+    // recompute shadow map if render mode
+    if (scene_renderer_draw_mode(&scene->renderer) ==
+        SceneRendererDrawMode_Texture)
+      shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
+          .light = new_light,
+          .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+          .color_map = shadow_list->color_map,
+          .depth_map = shadow_list->depth_map,
+          .device = scene_device(scene),
+          .queue = scene_queue(scene),
+          .layer = shadow_list->length,
+          .encoder = NULL,
+      });
+
+  } else {
+
+    seo_light_spot_create(seo_light, new_light, &seo_desc);
+  }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_seo(scene, seo_light);
 
-  // recompute shadow map if render mode
-  // TODO: systematize this for all point light
-  if (scene_renderer_draw_mode(&scene->renderer) ==
-      SceneRendererDrawMode_Texture)
-    shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
-        .light = new_light,
-        .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
-        .color_map = scene->lights.spot.color_map,
-        .depth_map = scene->lights.spot.depth_map,
-        .device = scene_device(scene),
-        .queue = scene_queue(scene),
-        .layer = list->length,
-        .encoder = NULL,
-    });
-
-  list->length++;
+  base_list->length++;
 
   return seo_light;
 }
@@ -153,52 +176,63 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
   return seo_light;
 }
 
-SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc) {
+SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
+                                       const LightShadow shadow) {
 
-  SunLightList *list = &scene->lights.sun;
-  if (list->length == list->capacity) {
+  SunLightListBase *base_list = &scene->lights.sun.base;
+  if (base_list->length == base_list->capacity) {
     VERBOSE_ERROR("Scene sun light capacity reached maximum.");
     return NULL;
   }
 
   // create sun light
-  SunLight *new_light = &list->entries[list->length];
+  SunLight *new_light = &base_list->entries[base_list->length];
   light_create_sun(new_light, desc);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =
       seo_list_new_entry(scene_editor_object_list(scene));
 
-  seo_light_sun_create(seo_light, new_light,
-                       &(SEOCreateDescriptor){
-                           .camera = scene->active_camera,
-                           .viewport = &scene->viewport,
-                           .device = scene_device(scene),
-                           .queue = scene_queue(scene),
-                           .scene = scene,
-                           .target_list_index = list->length,
-                       });
+  SEOCreateDescriptor seo_desc = {
+      .camera = scene->active_camera,
+      .viewport = &scene->viewport,
+      .device = scene_device(scene),
+      .queue = scene_queue(scene),
+      .scene = scene,
+      .target_list_index = 0,
+  };
+
+  if (shadow) {
+
+    SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
+
+    seo_desc.target_list_index = shadow_list->length;
+    seo_light_sun_create(seo_light, new_light, &seo_desc);
+
+    light_list_sun_shadow_insert(shadow_list, new_light);
+
+    // recompute shadow map if render mode
+    if (scene_renderer_draw_mode(&scene->renderer) ==
+        SceneRendererDrawMode_Texture)
+      shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
+          .light = new_light,
+          .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+          .color_map = scene->lights.spot.shadow.color_map,
+          .depth_map = scene->lights.spot.shadow.depth_map,
+          .device = scene_device(scene),
+          .queue = scene_queue(scene),
+          .layer = scene->lights.spot.shadow.length + shadow_list->length,
+          .encoder = NULL,
+      });
+
+  } else {
+    seo_light_sun_create(seo_light, new_light, &seo_desc);
+  }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-
   scene_add_seo(scene, seo_light);
 
-  // recompute shadow map if render mode
-  // TODO: systematize this for all point light
-  if (scene_renderer_draw_mode(&scene->renderer) ==
-      SceneRendererDrawMode_Texture)
-    shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
-        .light = new_light,
-        .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
-        .color_map = scene->lights.spot.color_map,
-        .depth_map = scene->lights.spot.depth_map,
-        .device = scene_device(scene),
-        .queue = scene_queue(scene),
-        .layer = scene->lights.spot.length + list->length,
-        .encoder = NULL,
-    });
-
-  list->length++;
+  base_list->length++;
 
   return seo_light;
 }

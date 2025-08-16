@@ -147,21 +147,7 @@ MeshRefList *scene_layer_meshes(Scene *scene, const char *name) {
 
 void scene_init_light_list(Scene *scene) {
 
-  // init point light list
-  scene->lights.point.capacity = LIGHT_MAX_CAPACITY;
-  scene->lights.point.length = 0;
-
-  // init spot light list
-  scene->lights.spot.capacity = LIGHT_MAX_CAPACITY;
-  scene->lights.spot.length = 0;
-
-  // init ambient light list
-  scene->lights.ambient.capacity = LIGHT_MAX_CAPACITY;
-  scene->lights.ambient.length = 0;
-
-  // init ambient light list
-  scene->lights.sun.capacity = LIGHT_MAX_CAPACITY;
-  scene->lights.sun.length = 0;
+  light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
 
   // init shadow textures
   shadow_map_init(&(ShadowMapInitDescriptor){

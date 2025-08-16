@@ -4,11 +4,12 @@
 #include "../runtime/scene/scene.h"
 #include "./utils.h"
 
-/**
-   Insert Point light gizmo mesh to the list
- */
-void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
-                            const SEOCreateDescriptor *desc) {
+static inline void seo_light_point_create_common(SceneEditorObject *,
+                                                 PointLight *,
+                                                 const SEOCreateDescriptor *);
+
+void seo_light_point_create_common(SceneEditorObject *seo, PointLight *light,
+                                   const SEOCreateDescriptor *desc) {
 
   // define target
   seo->target = light;
@@ -34,38 +35,42 @@ void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
 
   // store mesh pointer in gizmo ref list
   mesh_ref_list_insert(&seo->meshes, icon);
+}
 
-  // create sphere
-  /*DELELTEME: Mesh *sphere = mesh_list_new_mesh(desc->list);
-  Primitive sphere_primitive;
-  loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
-      .primitive = &sphere_primitive,
-      .path = "./resources/assets/mbin/sphere.mbin",
-  });
+/**
+   Insert Point light gizmo mesh to the list
+ */
+void seo_light_point_create(SceneEditorObject *seo, PointLight *light,
+                            const SEOCreateDescriptor *desc) {
 
-  gizmo_create_wireframe(sphere, &(GizmoCreateWireframeDescriptor){
-                                     .color = &(vec3){0.4f, 0.8f, 1.0f},
-                                     .device = desc->device,
-                                     .queue = desc->queue,
-                                     .name = "Gizmo spot light sphere",
-                                     .index = &sphere_primitive.index,
-                                     .vertex = &sphere_primitive.vertex,
-                                     .thickness = 0.005f,
-                                 });
+  seo_light_point_create_common(seo, light, desc);
 
-  // scale sphere to point far point
-  mesh_scale(sphere, (vec3){light->far, light->far, light->far});
-
-  mesh_ref_list_insert(&gizmo->meshes, sphere);*/
-
-  // set callback
-  seo->transform_callback[GizmoTransformMode_Translate] =
-      seo_light_point_translate;
-  seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_point_rotate;
-  seo->transform_callback[GizmoTransformMode_Scale] = seo_light_point_scale;
+  seo_light_point_update_transform_callback(seo, LightShadow_None);
 }
 
 void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
+
+  PointLight *light = (PointLight *)seo->target;
+
+  glm_vec3_copy(value, light->position);
+
+  mesh_ref_list_translate(&seo->meshes, value);
+}
+
+void seo_light_point_rotate(SceneEditorObject *seo, vec3 value) {}
+
+void seo_light_point_scale(SceneEditorObject *seo, vec3 value) {}
+
+/* shadow */
+void seo_light_point_shadow_create(SceneEditorObject *seo, PointLight *light,
+                                   const SEOCreateDescriptor *desc) {
+
+  seo_light_point_create_common(seo, light, desc);
+
+  seo_light_point_update_transform_callback(seo, LightShadow_Enabled);
+}
+
+void seo_light_point_shadow_translate(SceneEditorObject *seo, vec3 value) {
 
   PointLight *light = (PointLight *)seo->target;
 
@@ -78,11 +83,12 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
       SceneRendererDrawMode_Texture) {
 
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
-        .light = &seo->scene->lights.point.entries[seo->target_list_index],
+        .light =
+            seo->scene->lights.point.shadow.entries[seo->target_list_index],
         .mesh_list =
             scene_pipeline(seo->scene, ScenePipeline_Dynamic_LitShadow),
-        .color_map = seo->scene->lights.point.color_map,
-        .depth_map = seo->scene->lights.point.depth_map,
+        .color_map = seo->scene->lights.point.shadow.color_map,
+        .depth_map = seo->scene->lights.point.shadow.depth_map,
         .device = scene_device(seo->scene),
         .queue = scene_queue(seo->scene),
         .layer = seo->target_list_index,
@@ -93,6 +99,26 @@ void seo_light_point_translate(SceneEditorObject *seo, vec3 value) {
   }
 }
 
-void seo_light_point_rotate(SceneEditorObject *seo, vec3 value) {}
+static const seo_transform_axis_callback
+    light_transform_callback[2][GIZMO_TRANSFORM_MODE_COUNT] = {
+        [LightShadow_None] =
+            {
+                [GizmoTransformMode_Translate] = seo_light_point_translate,
+                [GizmoTransformMode_Rotate] = seo_light_point_rotate,
+                [GizmoTransformMode_Scale] = seo_light_point_scale,
+            },
+        [LightShadow_Enabled] =
+            {
+                [GizmoTransformMode_Translate] =
+                    seo_light_point_shadow_translate,
+                [GizmoTransformMode_Rotate] = seo_light_point_rotate,
+                [GizmoTransformMode_Scale] = seo_light_point_scale,
+            },
+};
 
-void seo_light_point_scale(SceneEditorObject *seo, vec3 value) {}
+void seo_light_point_update_transform_callback(SceneEditorObject *seo,
+                                               const LightShadow shadow) {
+
+  for (GizmoTransformMode i = 0; i < GIZMO_TRANSFORM_MODE_COUNT; i++)
+    seo->transform_callback[i] = light_transform_callback[shadow][i];
+}

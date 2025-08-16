@@ -9,8 +9,8 @@ typedef struct {
 } LightViews;
 
 // projections/view computing
-LightViews light_point_views(vec3, float, float);
-LightViews light_spot_view(vec3, vec3, float);
-LightViews light_sun_view(vec3, float);
+void light_point_views(LightViews *, vec3, float, float);
+void light_spot_view(LightViews *, vec3, vec3, float);
+void light_sun_view(LightViews *, vec3, float);
 
 #endif

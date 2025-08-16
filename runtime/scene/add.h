@@ -35,10 +35,10 @@
 
 // Scene Editor Objects
 // light
-SceneEditorObject *scene_add_point_light(Scene *, PointLightDescriptor *);
-SceneEditorObject *scene_add_spot_light(Scene *, SpotLightDescriptor *);
+SceneEditorObject *scene_add_point_light(Scene *, PointLightDescriptor *, const LightShadow);
+SceneEditorObject *scene_add_spot_light(Scene *, SpotLightDescriptor *, const LightShadow);
+SceneEditorObject *scene_add_sun_light(Scene *, SunLightDescriptor *, const LightShadow);
 SceneEditorObject *scene_add_ambient_light(Scene *, AmbientLightDescriptor *);
-SceneEditorObject *scene_add_sun_light(Scene *, SunLightDescriptor *);
 
 // camera
 SceneEditorObject *scene_add_camera(Scene *, const CameraCreateDescriptor *);

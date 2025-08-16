@@ -27,8 +27,9 @@ void point_light_uniform(PointLightUniform *uniform, PointLight *light) {
   glm_vec3_copy(light->position, uniform->position);
 
   // copy 6 points views for shader depth comparison
-  LightViews points_views =
-      light_point_views(light->position, light->near, light->far);
+  LightViews points_views;
+  light_point_views(&points_views, light->position, light->near, light->far);
+  
   for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++)
     glm_mat4_copy(points_views.views[v], uniform->views[v]);
 }
@@ -52,8 +53,8 @@ void spot_light_uniform(SpotLightUniform *uniform, SpotLight *light) {
   glm_vec3_copy(light->position, uniform->position);
 
   // get light view matrix
-  LightViews spot_view =
-      light_spot_view(light->position, light->target, light->angle);
+  LightViews spot_view;
+  light_spot_view(&spot_view, light->position, light->target, light->angle);
 
   glm_mat4_copy(spot_view.views[0], uniform->view);
 }
@@ -66,7 +67,9 @@ void sun_light_uniform(SunLightUniform *uniform, SunLight *light) {
   glm_vec3_copy(light->color, uniform->color);
 
   // get light view matrix
-  LightViews sun_view = light_sun_view(light->position, light->size);
+  LightViews sun_view;
+  light_sun_view(&sun_view, light->position, light->size);
+
   glm_mat4_copy(sun_view.views[0], uniform->view);
 }
 
@@ -77,7 +80,7 @@ void sun_light_uniform(SunLightUniform *uniform, SunLight *light) {
  */
 void point_light_list_update_callback(void *callback_data, void *entry_data) {
 
-  PointLightList *list = (PointLightList *)callback_data;
+  PointLightListBase *list = (PointLightListBase *)callback_data;
   PointLightListUniform *uniform = (PointLightListUniform *)entry_data;
 
   for (size_t i = 0; i < list->length; i++)
@@ -90,7 +93,7 @@ void point_light_list_update_callback(void *callback_data, void *entry_data) {
 bool point_light_list_trigger_callback(void *callback_data,
                                        const void *entry_data) {
 
-  PointLightList *list = (PointLightList *)callback_data;
+  PointLightListBase *list = (PointLightListBase *)callback_data;
   PointLightListUniform *unif = (PointLightListUniform *)entry_data;
 
   for (size_t i = 0; i < list->length; list++)

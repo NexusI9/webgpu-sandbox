@@ -92,8 +92,8 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
                                &(SceneBuildTextureDescriptor){
                                    .pipeline = pipeline,
                                    .lights = &scene->lights,
-                                   .point_map = scene->lights.point.depth_view,
-                                   .spot_map = scene->lights.spot.depth_view,
+                                   .point_map = scene->lights.point.shadow.depth_view,
+                                   .spot_map = scene->lights.spot.shadow.depth_view,
                                });
 
       break;
