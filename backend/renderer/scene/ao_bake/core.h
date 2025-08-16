@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 // AO Texture
-#define AO_TEXTURE_SIZE 128
+#define AO_TEXTURE_SIZE TextureSize_128
 #define AO_TEXTURE_FORMAT WGPUTextureFormat_R8Unorm
 #define AO_TEXTURE_CHANNELS TEXTURE_CHANNELS_R
 #define AO_LAYER_COUNT 24

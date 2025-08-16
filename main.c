@@ -49,7 +49,7 @@ void init_scene() {
   scene_add_sun_light(&main_scene, &(SunLightDescriptor){
                                        .position = {-2.0f, 2.0f, 2.0f},
                                        .color = {1.0f, 1.0f, 1.0f},
-                                       .intensity = 1.0f,
+                                       .intensity = 2.0f,
                                        .size = 10.0f,
                                    });
 
@@ -59,7 +59,7 @@ void init_scene() {
                                          .cutoff = 20.0f,
                                          .inner_cutoff = 50.0f,
                                          .near = 0.1,
-                                         .far = 20.0f,
+                                         .far = 10.0f,
                                          .position = {0.0f, 2.4f, 2.3f},
                                      });
 
@@ -95,7 +95,7 @@ void init_scene() {
 
    */
 
-  example_skybox_gradient(&main_scene);
+  // example_skybox_gradient(&main_scene);
 }
 
 void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
@@ -137,7 +137,7 @@ int main(int argc, const char *argv[]) {
   example_gltf(&main_scene);
 
   //  Bake AO textures
-  example_ao(&main_scene, false);
+  // example_ao(&main_scene, false);
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);

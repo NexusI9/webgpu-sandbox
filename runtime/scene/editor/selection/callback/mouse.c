@@ -252,15 +252,20 @@ void scene_selection_raycast_gizmo_down_callback(
     Scene *scene = cast_user_data->scene;
     GizmoTransform *gizmo = &scene->editor.gizmo.transform;
 
-    // map active axis from hit handle pointer
-    gizmo_transform_set_axis_from_mesh(gizmo, hit);
+    // if init distance > 0, means the gizmo is already active (from the hotkeyh
+    // as instance)
+    if (gizmo->cache.init_distance == 0.0) {
 
-    // cache scene selection initial attributes
-    scene_selection_cache_initial_attributes(&scene->editor.selection,
-                                             gizmo->mode);
+      // map active axis from hit handle pointer
+      gizmo_transform_set_axis_from_mesh(gizmo, hit);
 
-    // set active handle from current mode and initialize offset
-    gizmo_transform_set_active(gizmo, scene->active_camera, &scene->viewport);
+      // cache scene selection initial attributes
+      scene_selection_cache_initial_attributes(&scene->editor.selection,
+                                               gizmo->mode);
+
+      // set active handle from current mode and initialize offset
+      gizmo_transform_set_active(gizmo, scene->active_camera, &scene->viewport);
+    }
   }
 }
 
@@ -282,7 +287,7 @@ void scene_selection_raycast_gizmo_hover_callback(
 
   // update only once
   if (cast_data->last_hit->mesh != hit->mesh &&
-      // if mouse is down >> lock 
+      // if mouse is down >> lock
       g_input.mouse.state == InputMouseState_Up) {
 
     if (hit->mesh) {

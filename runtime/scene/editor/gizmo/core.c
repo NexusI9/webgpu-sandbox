@@ -181,7 +181,6 @@ void gizmo_transform_clear_active(GizmoTransform *gizmo) {
   // reset gizmo initial position and delta
   glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.gizmo_init_position);
   glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.init_delta);
-
   gizmo->cache.init_distance = 0.0f;
 }
 
