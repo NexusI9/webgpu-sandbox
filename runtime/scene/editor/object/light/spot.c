@@ -1,6 +1,7 @@
 #include "spot.h"
 #include "../builder/builder.h"
 #include "../runtime/scene/scene.h"
+#include "./utils.h"
 
 /**
    Insert Spot light gizmo mesh to the list
@@ -22,14 +23,13 @@ void seo_light_spot_create(SceneEditorObject *seo, SpotLight *light,
   const char *texture_path = "./resources/assets/texture/ui/light-spot.png";
 
   // create gizmo mesh
-  seo_create_billboard(icon,
-                       &(SEOCreateBillboardDescriptor){
-                           .texture_path = texture_path,
-                           .device = desc->device,
-                           .queue = desc->queue,
-                           .position = &light->position,
-                           .scale = &SEO_BILLBOARD_SCALE,
-                       });
+  seo_create_billboard(icon, &(SEOCreateBillboardDescriptor){
+                                 .texture_path = texture_path,
+                                 .device = desc->device,
+                                 .queue = desc->queue,
+                                 .position = &light->position,
+                                 .scale = &SEO_BILLBOARD_SCALE,
+                             });
 
   // store mesh pointer in gizmo ref list
   mesh_ref_list_insert(&seo->meshes, icon);
@@ -43,7 +43,30 @@ void seo_light_spot_create(SceneEditorObject *seo, SpotLight *light,
 
 void seo_light_spot_translate(SceneEditorObject *seo, vec3 value) {
 
+  SunLight *light = (SunLight *)seo->target;
+
+  glm_vec3_copy(value, light->position);
+
   mesh_ref_list_translate(&seo->meshes, value);
+
+  // update light shadow map
+  if (scene_renderer_draw_mode(&seo->scene->renderer) ==
+      SceneRendererDrawMode_Texture) {
+    
+    shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
+        .light = &seo->scene->lights.spot.entries[seo->target_list_index],
+        .mesh_list =
+            scene_pipeline(seo->scene, ScenePipeline_Dynamic_LitShadow),
+        .color_map = seo->scene->lights.spot.color_map,
+        .depth_map = seo->scene->lights.spot.depth_map,
+        .device = scene_device(seo->scene),
+        .queue = scene_queue(seo->scene),
+        .layer = seo->target_list_index,
+        .encoder = NULL,
+    });
+
+    seo_light_update_shadow_map(seo->scene);
+  }
 }
 
 void seo_light_spot_rotate(SceneEditorObject *seo, vec3 value) {}

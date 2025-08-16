@@ -186,7 +186,10 @@ void scene_selection_raycast_mesh_callback(
 
   // else retrieve first hit only (closest to camera)
   CameraRaycastHit *hit = &cast_data->hits->entries[0];
-
+  
+  if (mouseEvent->button != 2)
+    return;
+  
   // add hit to selection pipeline
   if (cast_data->hits->length > 0 && hit) {
 
