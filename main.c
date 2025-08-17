@@ -22,9 +22,11 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/shader/update.h"
+#include "runtime/texture/create.h"
 #include "stdlib.h"
 
 #include "./runtime/mesh/shader/shader.h"
+#include "webgpu/webgpu.h"
 
 static Scene main_scene;
 
@@ -52,7 +54,7 @@ void init_scene() {
                });
 
   example_light(&main_scene);
-  // example_skybox_gradient(&main_scene);
+  example_skybox(&main_scene);
 }
 
 void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
@@ -81,17 +83,34 @@ int main(int argc, const char *argv[]) {
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
   // example_gltf(&main_scene);
-  //  example_ao(&main_scene, false);
+  // example_ao(&main_scene, false);
 
   Mesh *cube = scene_new_mesh(&main_scene);
   example_primitive(cube, (vec3){0.0f, 0.0f, 0.0f}, &main_scene,
                     std_pipeline(PipelineType_Glass));
 
   // printf("mesh shader texture: %p\n", mesh_shader_texture(cube));
-  shader_update_uniform(mesh_shader_texture(cube), 0, 3, &(GlassUniform){
-      .color = {1.0f, 0.5f, 1.0f, 0.7f},
-      .roughness = 0.5f,
-  });
+  shader_update_uniform(mesh_shader_texture(cube), 0, 3,
+                        &(GlassUniform){
+                            .color = {1.0f, 0.5f, 1.0f, 0.7f},
+                            .roughness = 0.5f,
+                        });
+
+  WGPUTexture reflection;
+  /*texture_create_cubemap_from_file(
+      &reflection,
+      &(TextureCreateCubeMapDescriptor){
+          .resolution = 512,
+          .path =
+              &(CubeMapPath){
+                  .right = "./resources/assets/texture/skybox/lake/right.png",
+                  .left = "./resources/assets/texture/skybox/lake/left.png",
+                  .top = "./resources/assets/texture/skybox/lake/top.png",
+                  .bottom = "./resources/assets/texture/skybox/lake/bottom.png",
+                  .front = "./resources/assets/texture/skybox/lake/front.png",
+                  .back = "./resources/assets/texture/skybox/lake/back.png",
+              },
+      });*/
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);

@@ -50,7 +50,6 @@ void buffer_create(WGPUBuffer *, const CreateBufferDescriptor *);
 void buffer_create_texture(WGPUTextureView *, const CreateTextureDescriptor *,
                            BufferTextureMemory);
 
-void buffer_create_texture_cube(WGPUTextureView *,
-                                const CreateTextureCubeDescriptor *,
+void buffer_create_texture_cube(const CreateTextureCubeDescriptor *,
                                 BufferTextureMemory);
 #endif

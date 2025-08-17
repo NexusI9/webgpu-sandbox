@@ -35,7 +35,8 @@ static void loader_gltf_bind_uniforms(Shader *, cgltf_material *,
 
 static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
                                                     void **, size_t *, int *,
-                                                    int *, int *, TextureSize);
+                                                    int *, int *,
+                                                    TextureResolution);
 
 void loader_gltf_load(const GLTFLoadDescriptor *desc) {
 
@@ -355,7 +356,7 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
                                 .height = height,
                                 .dimension = WGPUTextureViewDimension_2D,
                                 .format = WGPUTextureFormat_BGRA8Unorm,
-                                .channels = TEXTURE_CHANNELS_RGBA,
+                                .channels = TextureChannel_RGBA,
                             });
     }
 
@@ -383,9 +384,9 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
                                              void **data, size_t *size,
                                              int *width, int *height,
                                              int *channels,
-                                             TextureSize max_size) {
+                                             TextureResolution max_size) {
 
-  const int forced_channel = TEXTURE_CHANNELS_RGBA;
+  const TextureChannel forced_channel = TextureChannel_RGBA;
 
   if (texture_view->texture) {
 
@@ -437,7 +438,7 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
               "GLTF Loader couldn't allocate resources for resize texture.");
         } else if (stbir_resize_uint8_srgb(*data, *width, *height, 0, n_data,
                                            n_w, n_h, 0,
-                                           forced_channel) == NULL) {
+                                           (uint8_t)forced_channel) == NULL) {
           VERBOSE_WARNING("GLTF Loader STBI resize texture fail.");
         } else {
 

@@ -22,7 +22,7 @@ typedef struct {
 } GLTFTextureViews;
 
 typedef struct {
-  const TextureSize max_texture_size;
+  const TextureResolution max_texture_size;
 } LoaderGLTFOptions;
 
 typedef struct {

@@ -6,24 +6,28 @@
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
-#define TEXTURE_CHANNELS_RGBA 4
-#define TEXTURE_CHANNELS_RGB 3
-#define TEXTURE_CHANNELS_R 1
 #define TEXTURE_MIN_SIZE 64
 
 typedef enum {
-  TextureSize_16 = 16,
-  TextureSize_32 = 32,
-  TextureSize_64 = 64,
-  TextureSize_128 = 128,
-  TextureSize_256 = 256,
-  TextureSize_512 = 512,
-  TextureSize_1024 = 1024,
-  TextureSize_2048 = 2048,
-} TextureSize;
+  TextureChannel_Undefined = 0,
+  TextureChannel_R = 1,
+  TextureChannel_RGB = 3,
+  TextureChannel_RGBA = 4,
+} TextureChannel;
 
+typedef enum {
+  TextureResolution_Undefined = 0,
+  TextureResolution_16 = 16,
+  TextureResolution_32 = 32,
+  TextureResolution_64 = 64,
+  TextureResolution_128 = 128,
+  TextureResolution_256 = 256,
+  TextureResolution_512 = 512,
+  TextureResolution_1024 = 1024,
+  TextureResolution_2048 = 2048,
+} TextureResolution;
 
-typedef TextureSize texture_size_t[2];
+typedef TextureResolution texture_size_t[2];
 
 typedef enum {
   TextureStatus_Success,
@@ -34,11 +38,11 @@ typedef enum {
 typedef unsigned char *texture_data;
 
 typedef struct {
-  int width;
-  int height;
+  TextureResolution width;
+  TextureResolution height;
   size_t size;
   texture_data data;
-  uint8_t channels;
+  TextureChannel channels;
   uint8_t value;
 } Texture;
 

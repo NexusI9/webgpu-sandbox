@@ -9,7 +9,7 @@ void example_skybox(Scene *scene) {
       scene,
       &(PrefabSkyboxCreateDescriptor){
           .blur = 0.0f,
-          .resolution = 1024,
+          .resolution = TextureResolution_512,
           .path =
               {
                   .right = "./resources/assets/texture/skybox/lake/right.png",

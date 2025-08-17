@@ -82,7 +82,7 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
   texture_create(texture, &(TextureCreateDescriptor){
                               .width = ao->size,
                               .height = ao->size,
-                              .channels = TEXTURE_CHANNELS_R,
+                              .channels = TextureChannel_R,
                               .value = (uint8_t[]){255},
                           });
 

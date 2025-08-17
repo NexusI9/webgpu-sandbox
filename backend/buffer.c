@@ -19,9 +19,9 @@ void buffer_create_shader(WGPUShaderModule *module, const WGPUDevice device,
 
   *module = wgpuDeviceCreateShaderModule(
       device, &(WGPUShaderModuleDescriptor){
-                   .nextInChain = (WGPUChainedStruct *)(&wgsl),
-                   .label = label,
-               });
+                  .nextInChain = (WGPUChainedStruct *)(&wgsl),
+                  .label = label,
+              });
 
   free(code);
   code = NULL;
@@ -61,7 +61,8 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
 }
 
 void buffer_create_texture(WGPUTextureView *texture_view,
-                           const CreateTextureDescriptor *tx, BufferTextureMemory free) {
+                           const CreateTextureDescriptor *tx,
+                           BufferTextureMemory free) {
 
   // sample + texture (ShaderTexture will be used later in the shader binding
   // process)
@@ -114,8 +115,7 @@ void buffer_create_texture(WGPUTextureView *texture_view,
 /**
    Upload a texture cube view to the GPU.
  */
-void buffer_create_texture_cube(WGPUTextureView *texture_view,
-                                const CreateTextureCubeDescriptor *tx,
+void buffer_create_texture_cube(const CreateTextureCubeDescriptor *tx,
                                 BufferTextureMemory free) {
 
   // upload texture to GPU

@@ -5,18 +5,8 @@
 #include "../prefab.h"
 
 typedef struct {
-  const char *right;
-  const char *left;
-  const char *top;
-  const char *bottom;
-  const char *front;
-  const char *back;
-} CubeMapPath;
-
-typedef struct {
-
   float blur;
-  size_t resolution;
+  TextureResolution resolution;
   CubeMapPath path;
 
 } PrefabSkyboxCreateDescriptor;

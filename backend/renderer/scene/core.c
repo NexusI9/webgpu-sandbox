@@ -50,7 +50,7 @@ void scene_renderer_create(SceneRenderer *renderer,
 
   ao_bake_init(&renderer->texture.ambient_occlusion,
                &(AOBakeInitDescriptor){
-                   .size = AO_TEXTURE_SIZE,
+                   .size = AO_TEXTURE_RESOLUTION,
                    .layer_count = AO_LAYER_COUNT,
                    .device = scene_renderer_device(renderer),
                });

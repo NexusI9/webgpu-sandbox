@@ -39,7 +39,14 @@ void seo_create_billboard(Mesh *mesh,
 
   // TODO: create UI Atlas
   Texture light_texture;
-  texture_create_from_file(&light_texture, desc->texture_path, true);
+  texture_create_from_file(&light_texture,
+                           &(TextureCreateFileDescriptor){
+                               .width = TextureResolution_Undefined,
+                               .height = TextureResolution_Undefined,
+                               .channels = TextureChannel_Undefined,
+                               .flip = true,
+                               .path = desc->texture_path,
+                           });
 
   // bind texture + sampler
   shader_update_texture(mesh_shader_fixed(mesh), 1, 0,
