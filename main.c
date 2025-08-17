@@ -6,15 +6,25 @@
 #include "backend/renderer/renderer.h"
 #include "backend/renderer/scene/ao_bake/core.h"
 #include "backend/renderer/scene/core.h"
+#include "backend/renderer/scene/std_pipeline/layouts/layout.glass.h"
 #include "resources/example/example.h"
 #include <emscripten/emscripten.h>
 
 // runtime
+#include "resources/example/light.h"
+#include "resources/example/primitive.h"
 #include "resources/example/skybox.h"
 #include "runtime/light/list.h"
+#include "runtime/mesh/core.h"
+#include "runtime/pipeline/core.h"
 #include "runtime/prefab/environment/skybox.h"
+#include "runtime/primitive/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
+#include "runtime/shader/update.h"
+#include "stdlib.h"
+
+#include "./runtime/mesh/shader/shader.h"
 
 static Scene main_scene;
 
@@ -41,57 +51,7 @@ void init_scene() {
                        },
                });
 
-  /*
-
-    =============        LIGHTS       ==============
-
-   */
-
-  scene_add_sun_light(&main_scene,
-                      &(SunLightDescriptor){
-                          .position = {-2.0f, 2.0f, 2.0f},
-                          .color = {1.0f, 1.0f, 1.0f},
-                          .intensity = 2.0f,
-                          .size = 10.0f,
-                      },
-                      LightShadow_Enabled);
-
-  scene_add_point_light(&main_scene,
-                        &(PointLightDescriptor){
-                            .color = {1.0f, 0.0f, 0.3f},
-                            .intensity = 4.0f,
-                            .cutoff = 20.0f,
-                            .inner_cutoff = 50.0f,
-                            .near = 0.1,
-                            .far = 10.0f,
-                            .position = {0.0f, 2.4f, 2.3f},
-                        },
-                        LightShadow_None);
-
-  scene_add_spot_light(&main_scene,
-                       &(SpotLightDescriptor){
-                           .color = {1.0f, 1.0f, 1.0f},
-                           .intensity = 2.0f,
-                           .cutoff = 45.0f,
-                           .angle = 90.0f,
-                           .inner_cutoff = 30.0f,
-                           .target = {0.0f, 0.0f, 0.0f},
-                           .position = {3.0f, 4.0f, -4.0f},
-                       },
-                       LightShadow_Enabled);
-
-  scene_add_ambient_light(&main_scene, &(AmbientLightDescriptor){
-                                           .color = {1.0f, 1.0f, 1.0f},
-                                           .intensity = 0.2f,
-                                           .position = {-2.0f, 1.0f, 0.3f},
-                                       });
-
-  /*
-
-  =============        SKYBOX       ==============
-
-   */
-
+  example_light(&main_scene);
   // example_skybox_gradient(&main_scene);
 }
 
@@ -104,17 +64,6 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
-
-  // raycast camera
-  /*camera_raycast_mouse_hover(
-      main_scene.active_camera,
-      &(CameraRaycastDescriptor){
-          .mesh_lists = (MeshRefList *[]){&main_scene.pipelines.fixed},
-          .length = 1,
-          .viewport = &main_scene.viewport,
-          .callback = on_camera_raycast,
-          .data = NULL,
-      });*/
 
   // add gizmo camera
   /*GizmoCamera *new_cam =
@@ -131,10 +80,18 @@ int main(int argc, const char *argv[]) {
 
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
-  example_gltf(&main_scene);
+  // example_gltf(&main_scene);
+  //  example_ao(&main_scene, false);
 
-  //  Bake AO textures
-  // example_ao(&main_scene, false);
+  Mesh *cube = scene_new_mesh(&main_scene);
+  example_primitive(cube, (vec3){0.0f, 0.0f, 0.0f}, &main_scene,
+                    std_pipeline(PipelineType_Glass));
+
+  // printf("mesh shader texture: %p\n", mesh_shader_texture(cube));
+  shader_update_uniform(mesh_shader_texture(cube), 0, 3, &(GlassUniform){
+      .color = {1.0f, 0.5f, 1.0f, 0.7f},
+      .roughness = 0.5f,
+  });
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);

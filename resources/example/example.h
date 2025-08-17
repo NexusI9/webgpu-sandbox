@@ -7,5 +7,7 @@
 #include "primitive.h"
 #include "skybox.h"
 #include "ao.h"
+#include "light.h"
+
 
 #endif

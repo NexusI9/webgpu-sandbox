@@ -5,6 +5,4 @@
 
 void example_line(Scene *);
 
-
-
 #endif

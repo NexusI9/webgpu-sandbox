@@ -9,22 +9,6 @@ WGPUTextureView g_std_texture_view[STD_TEXTURE_VIEW_COUNT] = {0};
 // black color
 static const uint8_t pixel[4] = {255, 255, 255, 255};
 
-/* DELETE ME ?
-static inline void
-scene_renderer_create_fallback_texture_2d(Texture *, const WGPUDevice, const
-WGPUQueue);
-
-void scene_renderer_create_fallback_texture_2d(Texture *texture,
-                                               const WGPUDevice device,
-                                               const WGPUQueue queue) {
-  texture_create(texture, &(TextureCreateDescriptor){
-                              .channels = 4,
-                              .width = 1,
-                              .height = 1,
-                              .value = (uint8_t[]){0, 0, 0, 255},
-                          });
-}
- */
 
 static inline WGPUTextureView
 scene_renderer_create_fallback_float(const WGPUDevice, const WGPUQueue);

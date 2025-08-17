@@ -10,6 +10,7 @@
 #include "./layouts/layout.skybox.h"
 #include "./layouts/layout.solid.h"
 #include "./layouts/layout.unlit.h"
+#include "./layouts/layout.glass.h"
 #include "webgpu/webgpu.h"
 
 static const PipelineLayoutDescriptor *standard_layouts[PIPELINE_TYPE_COUNT] = {
@@ -24,6 +25,7 @@ static const PipelineLayoutDescriptor *standard_layouts[PIPELINE_TYPE_COUNT] = {
     [PipelineType_ShadowCullBack] = &layout_shadow_cullback,
     [PipelineType_Skybox] = &layout_skybox,
     [PipelineType_Solid] = &layout_solid,
+    [PipelineType_Glass] = &layout_glass,
 };
 
 Pipeline g_std_pipelines[PIPELINE_TYPE_COUNT] = {0};

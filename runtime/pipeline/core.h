@@ -62,7 +62,7 @@ typedef struct {
 } PipelineCreateDescriptor;
 
 // Standards pipelines
-#define PIPELINE_TYPE_COUNT 11
+#define PIPELINE_TYPE_COUNT 12
 #define PIPELINE_STD_BINDING
 
 typedef enum {
@@ -77,6 +77,7 @@ typedef enum {
   PipelineType_Skybox,
   PipelineType_Solid,
   PipelineType_Unlit,
+  PipelineType_Glass,
 } PipelineType;
 
 typedef struct {
@@ -143,7 +144,7 @@ typedef struct {
   WGPURenderPipelineDescriptor descriptor;
   WGPURenderPipeline handle;
   WGPUPipelineLayout layout;
-  
+
   // initial layout
   const PipelineLayoutDescriptor *layout_descriptor;
 

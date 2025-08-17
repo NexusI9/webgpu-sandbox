@@ -50,7 +50,7 @@ typedef struct {
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  Primitive* primitive;
+  Primitive *primitive;
   const char *name;
 } MeshCreatePrimitiveDescriptor;
 
@@ -80,7 +80,7 @@ struct Mesh {
   WGPUQueue queue;
 
   // vertex data & buffer topology
-  struct {
+  struct mesh_topology {
     MeshTopologyBase base;
     MeshTopologyWireframe wireframe;
     MeshTopologyBoundbox boundbox;
@@ -88,7 +88,7 @@ struct Mesh {
   } topology;
 
   // shader
-  struct {
+  struct mesh_shader {
     Shader standard[MESH_STD_SHADER_COUNT];
     Shader *active;
   } shader;

@@ -3,8 +3,6 @@
 
 #include "../../runtime/scene/scene.h"
 
-void example_primitive(Mesh*, vec3, Scene*);
-
-
+void example_primitive(Mesh *, vec3, Scene *, const Pipeline *);
 
 #endif

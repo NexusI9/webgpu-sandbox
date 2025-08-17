@@ -384,7 +384,11 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
 
   // dispatch mesh based on their global pipeline address (lit by default)
   ScenePipeline pipeline = ScenePipeline_Dynamic_LitShadow;
-  if (mesh_shader_texture(mesh)->pipeline == std_pipeline(PipelineType_Unlit))
+
+  // TODO: find a cleaner way to define if mesh is Shadowed or not.. the overallx
+  // dispatch is unclear.
+  if (mesh_shader_texture(mesh)->pipeline == std_pipeline(PipelineType_Unlit) ||
+      mesh_shader_texture(mesh)->pipeline == std_pipeline(PipelineType_Glass))
     pipeline = ScenePipeline_Dynamic_Unlit;
 
   // build mesh depending on pipeline and scene render mode
