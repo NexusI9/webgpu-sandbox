@@ -16,16 +16,20 @@
 #include "resources/example/skybox.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/shader/core.h"
+#include "runtime/mesh/transform.h"
 #include "runtime/pipeline/core.h"
 #include "runtime/prefab/environment/skybox.h"
 #include "runtime/primitive/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/shader/update.h"
+#include "runtime/texture/core.h"
 #include "runtime/texture/create.h"
 #include "stdlib.h"
 
 #include "./runtime/mesh/shader/shader.h"
+#include "./runtime/primitive/plane.h"
 #include "webgpu/webgpu.h"
 
 static Scene main_scene;
@@ -54,7 +58,6 @@ void init_scene() {
                });
 
   example_light(&main_scene);
-  example_skybox(&main_scene);
 }
 
 void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
@@ -85,32 +88,54 @@ int main(int argc, const char *argv[]) {
   // example_gltf(&main_scene);
   // example_ao(&main_scene, false);
 
-  Mesh *cube = scene_new_mesh(&main_scene);
-  example_primitive(cube, (vec3){0.0f, 0.0f, 0.0f}, &main_scene,
-                    std_pipeline(PipelineType_Glass));
+  /*
 
-  // printf("mesh shader texture: %p\n", mesh_shader_texture(cube));
+   GLASS START
+
+ */
+
+  example_skybox_gradient(&main_scene);
+
+  Mesh *cube = scene_new_mesh(&main_scene);
+
+  Primitive prim = primitive_plane();
+
+  mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
+                                  .primitive = &prim,
+                                  .name = "cube",
+                                  .device = scene_device(&main_scene),
+                                  .queue = scene_queue(&main_scene),
+                              });
+
+  mesh_shader_create(cube, &(ShaderCreateDescriptor){
+                               .pipeline = std_pipeline(PipelineType_Glass),
+                               .label = "cube",
+                               .name = "cube",
+                               .device = scene_device(&main_scene),
+                               .queue = scene_queue(&main_scene),
+                           });
+
+  mesh_translate(cube, (vec3){0.0f, 0.4f, 0.0f});
+  mesh_rotate(cube, (vec3){180.0f, 0.0f, 0.0f});
+  mesh_scale(cube, (vec3){100.0f, 100.0f, 100.0f});
+
+  scene_add_mesh(&main_scene, cube, NULL);
+
   shader_update_uniform(mesh_shader_texture(cube), 0, 3,
                         &(GlassUniform){
-                            .color = {1.0f, 0.5f, 1.0f, 0.7f},
+                            .color = {1.0f, 0.5f, 1.0f, 1.0f},
                             .roughness = 0.5f,
                         });
 
-  WGPUTexture reflection;
-  /*texture_create_cubemap_from_file(
-      &reflection,
-      &(TextureCreateCubeMapDescriptor){
-          .resolution = 512,
-          .path =
-              &(CubeMapPath){
-                  .right = "./resources/assets/texture/skybox/lake/right.png",
-                  .left = "./resources/assets/texture/skybox/lake/left.png",
-                  .top = "./resources/assets/texture/skybox/lake/top.png",
-                  .bottom = "./resources/assets/texture/skybox/lake/bottom.png",
-                  .front = "./resources/assets/texture/skybox/lake/front.png",
-                  .back = "./resources/assets/texture/skybox/lake/back.png",
-              },
-      });*/
+  shader_update_texture_view(mesh_shader_texture(cube), 1, 0,
+                             main_scene.renderer.texture.skybox.cubemap,
+                             WGPUTextureFormat_BGRA8Unorm);
+
+  /*
+
+   GLASS END
+
+ */
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);

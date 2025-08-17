@@ -14,6 +14,7 @@ static inline void prefab_skybox_create_layer(const WGPUTexture,
                                               BufferTextureMemory);
 
 static inline void prefab_skybox_create_from_texture(Scene *, const WGPUTexture,
+                                                     WGPUTextureView *,
                                                      const size_t, const float);
 
 static const int layer_count = 6;
@@ -69,19 +70,20 @@ WGPUTexture prefab_skybox_texture(const WGPUDevice device,
    Create global view from previously generated cubemap texture and create mesh
  */
 void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
+                                       WGPUTextureView *view,
                                        const size_t resolution,
                                        const float blur) {
 
   // create global texture view
-  WGPUTextureView skybox_texture_view = wgpuTextureCreateView(
-      texture, &(WGPUTextureViewDescriptor){
-                   .dimension = WGPUTextureViewDimension_Cube,
-                   .format = format,
-                   .arrayLayerCount = layer_count,
-                   .baseArrayLayer = 0,
-                   .mipLevelCount = 1,
-                   .baseMipLevel = 0,
-               });
+  *view = wgpuTextureCreateView(texture,
+                                &(WGPUTextureViewDescriptor){
+                                    .dimension = WGPUTextureViewDimension_Cube,
+                                    .format = format,
+                                    .arrayLayerCount = layer_count,
+                                    .baseArrayLayer = 0,
+                                    .mipLevelCount = 1,
+                                    .baseMipLevel = 0,
+                                });
 
   // get mesh from scene mesh pool
   /* TODO OPTI: Currently use default box primitive which include
@@ -108,7 +110,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
 
   // update texture and sampler
   Shader *shader = mesh_shader_fixed(skybox_mesh);
-  shader_update_texture_view(shader, 0, 0, skybox_texture_view, format);
+  shader_update_texture_view(shader, 0, 0, *view, format);
   shader_update_sampler(shader, 0, 1,
                         &(WGPUSamplerDescriptor){
                             .addressModeU = WGPUAddressMode_ClampToEdge,
@@ -136,9 +138,11 @@ void prefab_skybox_create(Scene *scene,
                           const PrefabSkyboxCreateDescriptor *desc) {
 
   // create global texture
-  WGPUTexture skybox_texture;
+  WGPUTexture *skybox_texture = &scene->renderer.texture.skybox.texture;
+  WGPUTextureView *skybox_cubemap_view =
+      &scene->renderer.texture.skybox.cubemap;
 
-  texture_create_cubemap_from_file(&skybox_texture,
+  texture_create_cubemap_from_file(skybox_texture,
                                    &(TextureCreateCubeMapDescriptor){
                                        .device = scene_device(scene),
                                        .queue = scene_queue(scene),
@@ -147,8 +151,8 @@ void prefab_skybox_create(Scene *scene,
                                        .resolution = desc->resolution,
                                    });
 
-  prefab_skybox_create_from_texture(scene, skybox_texture, desc->resolution,
-                                    desc->blur);
+  prefab_skybox_create_from_texture(scene, *skybox_texture, skybox_cubemap_view,
+                                    desc->resolution, desc->blur);
 }
 
 /**
@@ -157,8 +161,12 @@ void prefab_skybox_create(Scene *scene,
 void prefab_skybox_gradient_create(
     Scene *scene, const PrefabSkyboxGradientCreateDescriptor *desc) {
 
+  WGPUTexture *skybox_texture = &scene->renderer.texture.skybox.texture;
+  WGPUTextureView *skybox_cubemap_view =
+      &scene->renderer.texture.skybox.cubemap;
+
   // create global texture
-  const WGPUTexture skybox_texture =
+  *skybox_texture =
       prefab_skybox_texture(scene_device(scene), desc->resolution);
 
   // define stops start and end (i.e. top and bottom color)
@@ -234,7 +242,7 @@ void prefab_skybox_gradient_create(
     }
 
     // upload texture
-    prefab_skybox_create_layer(skybox_texture, final_texture, i,
+    prefab_skybox_create_layer(*skybox_texture, final_texture, i,
                                scene_queue(scene), free_texture);
   }
 
@@ -242,6 +250,6 @@ void prefab_skybox_gradient_create(
   stbi_image_free(gradient_texture.data);
   gradient_texture.data = NULL;
 
-  prefab_skybox_create_from_texture(scene, skybox_texture, desc->resolution,
-                                    0.0f);
+  prefab_skybox_create_from_texture(scene, *skybox_texture, skybox_cubemap_view,
+                                    desc->resolution, 0.0f);
 }

@@ -1,16 +1,17 @@
 #ifndef _SHADER_UPDATE_H_
 #define _SHADER_UPDATE_H_
 
+#include "../runtime/texture/texture.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
 
 typedef struct {
-  int width;
-  int height;
+  TextureResolution width;
+  TextureResolution height;
+  TextureChannel channels;
   unsigned char *data;
   size_t size;
-  uint8_t channels;
   WGPUTextureViewDimension dimension;
   WGPUTextureFormat format;
 } ShaderUpdateTexture;

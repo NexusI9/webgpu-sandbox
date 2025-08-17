@@ -132,8 +132,7 @@ texture_create_cubemap_from_file(WGPUTexture *gpu_texture,
   // load image to layer textures
   for (size_t i = 0; i < layer_count; i++) {
     const char *path = path_sort[i];
-
-    printf("resolution: %u\n", desc->resolution);
+    
     Texture layer_texture;
     if (texture_create_from_file(&layer_texture,
                                  &(TextureCreateFileDescriptor){

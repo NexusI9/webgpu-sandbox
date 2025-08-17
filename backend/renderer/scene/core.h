@@ -47,6 +47,11 @@ typedef struct {
   WGPUTextureView color;
 } SceneRendererTextureRender;
 
+typedef struct {
+  WGPUTexture texture;
+  WGPUTextureView cubemap;
+} SceneRendererTextureSkybox;
+
 typedef struct SceneRenderer {
 
   cclock clock; // update clock delta on draw
@@ -68,10 +73,11 @@ typedef struct SceneRenderer {
     WGPURenderPassEncoder render_pass;
   } wgpu;
 
-  // cached texture
+  // cached texture shared throughout parent scene objects
   struct {
     SceneRendererTextureRender render;
     SceneRendererTextureAO ambient_occlusion;
+    SceneRendererTextureSkybox skybox;
     PipelineMultisampleCount multisample;
   } texture;
 
