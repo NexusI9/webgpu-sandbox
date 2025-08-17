@@ -68,6 +68,7 @@ typedef struct SceneRenderer {
     WGPURenderPassEncoder render_pass;
   } wgpu;
 
+  // cached texture
   struct {
     SceneRendererTextureRender render;
     SceneRendererTextureAO ambient_occlusion;
