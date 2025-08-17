@@ -111,8 +111,8 @@ typedef struct {
   uint64_t size;
   uint64_t offset;
   void *data;
-  ShaderUniformUpdate update;
   // private
+  ShaderUniformUpdate update;
   WGPUBuffer buffer;
 } ShaderBindGroupUniformEntry;
 

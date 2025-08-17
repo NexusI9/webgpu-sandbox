@@ -72,18 +72,18 @@ void seo_light_spot_shadow_create(SceneEditorObject *seo, SpotLight *light,
 
 void seo_light_spot_shadow_translate(SceneEditorObject *seo, vec3 value) {
 
-  SunLight *light = (SunLight *)seo->target;
+  SpotLight *light = (SpotLight *)seo->target;
 
   glm_vec3_copy(value, light->position);
 
   mesh_ref_list_translate(&seo->meshes, value);
-
+  
   // update light shadow map
   if (scene_renderer_draw_mode(&seo->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
 
     shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
-        .light = seo->scene->lights.spot.shadow.entries[seo->target_list_index],
+        .light = light,
         .mesh_list =
             scene_pipeline(seo->scene, ScenePipeline_Dynamic_LitShadow),
         .color_map = seo->scene->lights.spot.shadow.color_map,

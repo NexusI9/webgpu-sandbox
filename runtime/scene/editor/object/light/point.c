@@ -83,8 +83,7 @@ void seo_light_point_shadow_translate(SceneEditorObject *seo, vec3 value) {
       SceneRendererDrawMode_Texture) {
 
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
-        .light =
-            seo->scene->lights.point.shadow.entries[seo->target_list_index],
+        .light = light,
         .mesh_list =
             scene_pipeline(seo->scene, ScenePipeline_Dynamic_LitShadow),
         .color_map = seo->scene->lights.point.shadow.color_map,

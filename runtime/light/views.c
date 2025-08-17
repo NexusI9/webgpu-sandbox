@@ -1,5 +1,7 @@
 #include "views.h"
 
+#include "../utils/system.h"
+
 /**
    Compute point view for Point light
    Point lights use 6 views, each pointing to different directions
@@ -46,7 +48,6 @@ void light_point_views(LightViews *views, vec3 light_position, float near,
 
     glm_mat4_mul(projection, view, views->views[v]);
   }
-
 }
 
 /**
@@ -89,12 +90,17 @@ void light_sun_view(LightViews *views, vec3 light_position, float size) {
   // if (fabs(glm_vec3_dot(light_position, up)) > 0.99f)
   // glm_vec3_copy((vec3){0.0f, 0.0f, 1.0f}, up);
 
+  // For sun: normalize position and set it far away by default
+  vec3 norm_position, view_position;
+  glm_vec3_normalize_to(light_position, norm_position);
+  glm_vec3_scale(norm_position, (float)LIGHT_SUN_DISTANCE, view_position);
+
   mat4 ortho;
   glm_ortho(-size, size, -size, size, 0.1f, 100.0f, ortho);
 
   for (int v = 0; v < views->length; v++) {
     mat4 view;
-    glm_lookat(light_position, (vec3){0.0f, 0.0f, 0.0f}, up, view);
+    glm_lookat(view_position, (vec3){0.0f, 0.0f, 0.0f}, up, view);
     glm_mat4_mul(ortho, view, views->views[v]);
   }
 }

@@ -104,12 +104,12 @@ void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
           .data = &point_uniform,
           .offset = 0,
           .size = sizeof(PointLightListUniform),
-         /* .update =
+          .update =
               {
                   .callback = point_light_list_update_callback,
                   .trigger = point_light_list_trigger_callback,
                   .data = point_list,
-              },*/
+              },
       },
       // sun light
       {
@@ -124,6 +124,11 @@ void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
     ShaderBindGroupUniformEntry *entry = &entries[i];
     shader_update_uniform(mesh_shader_texture(mesh), group_index,
                           entry->binding, entry->data);
+
+    if (entry->update.callback)
+        shader_update_uniform_callback(mesh_shader_texture(mesh), group_index,
+                          entry->binding, &entry->update);
+    
   }
 }
 

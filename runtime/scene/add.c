@@ -4,6 +4,7 @@
 #include "./editor/selection/selection.h"
 #include "build.h"
 #include "core.h"
+#include "editor/object/light/sun.h"
 #include "editor/object/list/list.h"
 #include "editor/selection/core.h"
 
@@ -207,7 +208,8 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
     SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
 
     seo_desc.target_list_index = shadow_list->length;
-    seo_light_sun_create(seo_light, new_light, &seo_desc);
+
+    seo_light_sun_shadow_create(seo_light, new_light, &seo_desc);
 
     light_list_sun_shadow_insert(shadow_list, new_light);
 
@@ -221,7 +223,8 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
           .depth_map = scene->lights.spot.shadow.depth_map,
           .device = scene_device(scene),
           .queue = scene_queue(scene),
-          .layer = scene->lights.spot.shadow.length + shadow_list->length,
+          .layer =
+              scene->lights.spot.shadow.length + seo_desc.target_list_index,
           .encoder = NULL,
       });
 
