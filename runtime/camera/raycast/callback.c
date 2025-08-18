@@ -52,27 +52,29 @@ void camera_raycast_check_bounds(
       if (camera_raycast_is_excluded(&cam_desc->exclude, mesh))
         continue;
 
-      AABB boundbox = mesh->topology.boundbox.bound;
+      AABB boundbox = mesh->topology.boundbox.world;
 
-      // scale boundbox if hit is on ScreenSpace (for fixed scale object as
-      // instance)
       if (cam_desc->space == CameraRaycastSpace_ScreenSpace)
         camera_raycast_screen_space(cam_desc->camera, mesh,
                                     cam_desc->screen_space_size, &boundbox);
 
-      /* DELETEME
-      printf("hit box:");
-      printf("%s\n", mesh->name);
-      print_vec3(boundbox.min);
-      print_vec3(boundbox.max);
-      printf("===========\n");
-       */
+      bool hit = false;
+
+      switch (cam_desc->bound) {
+      case CameraRaycastBound_AABB:
+        hit = raycast_hit_aabb(&ray, &boundbox, &ray.distance);
+        break;
+
+      case CameraRaycastBound_OBB:
+        hit = raycast_hit_obb(&ray, &mesh->topology.boundbox.local, mesh->model,
+                              &ray.distance);
+        break;
+      }
 
       // check if raycast within mesh bound
       // add mesh pointer to temp ref list and sort by hit distance
       // (closer mesh first)
-      if (raycast_hit_aabb(&ray, &boundbox, &ray.distance) &&
-          hits->length < hits->capacity) {
+      if (hit && hits->length < hits->capacity) {
 
         // add mesh and distance to hit list
         hits->entries[hits->length].mesh = mesh;

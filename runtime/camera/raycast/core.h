@@ -57,8 +57,12 @@
  */
 
 typedef enum {
-  CameraRaycastSpace_AABB,
-  CameraRaycastSpace_OBB,
+  CameraRaycastBound_AABB,
+  CameraRaycastBound_OBB,
+} CameraRaycastBound;
+
+typedef enum {
+  CameraRaycastSpace_WorldSpace,
   CameraRaycastSpace_ScreenSpace,
 } CameraRaycastSpace;
 
@@ -92,6 +96,7 @@ typedef struct {
   Viewport *viewport;
   CameraRaycastSpace space;
   float screen_space_size;
+  CameraRaycastBound bound;
 
   // mesh lists to check
   MeshRefListArray include;
@@ -116,6 +121,7 @@ typedef struct {
   CameraRaycastEvent event;
   CameraRaycastSpace space;
   float screen_space_size;
+  CameraRaycastBound bound;
 
   // targets lists
   MeshRefListArray include;

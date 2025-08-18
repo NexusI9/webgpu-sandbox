@@ -1,9 +1,10 @@
 #include "core.h"
 #include "../input/input.h"
+#include "../utils/system.h"
 #include <float.h>
 #include <math.h>
 
-bool raycast_hit_aabb(Raycast *ray, const AABB *box, float *distance) {
+bool raycast_hit_aabb(const Raycast *ray, const AABB *box, float *distance) {
 
   float tmin = -FLT_MAX, tmax = FLT_MAX;
 
@@ -42,6 +43,54 @@ bool raycast_hit_aabb(Raycast *ray, const AABB *box, float *distance) {
     *distance = tmin;
 
   return true;
+}
+
+bool raycast_hit_obb(Raycast *ray, const AABB *local_box, mat4 matrix,
+                     float *distance) {
+
+  mat4 inv_world;
+  glm_mat4_inv(matrix, inv_world);
+
+  // transform ray to local raycast
+  Raycast local_ray;
+
+  vec4 o = {ray->origin[0], ray->origin[1], ray->origin[2], 1.0f};
+  glm_mat4_mulv(inv_world, o, o);
+  glm_vec3(o, local_ray.origin);
+
+  vec4 d = {ray->direction[0], ray->direction[1], ray->direction[2], 0.0f};
+  glm_mat4_mulv(inv_world, d, d);
+  glm_vec3(d, local_ray.direction);
+  glm_normalize(local_ray.direction);
+
+  float tmin;
+  if (raycast_hit_aabb(&local_ray, local_box, &tmin)) {
+
+    if (distance) {
+      // Intersection point in local space
+      vec3 local_hit;
+      glm_vec3_copy(local_ray.origin, local_hit);
+      glm_vec3_muladds(local_ray.direction, tmin, local_hit);
+
+      // Transform back to world
+      vec4 world_hit4;
+      glm_mat4_mulv(matrix,
+                    (vec4){local_hit[0], local_hit[1], local_hit[2], 1.0f},
+                    world_hit4);
+      vec3 world_hit = {world_hit4[0], world_hit4[1], world_hit4[2]};
+
+      // Compute world distance
+      vec3 diff;
+      glm_vec3_sub(world_hit, ray->origin, diff);
+
+      *distance = glm_vec3_norm(diff);
+
+    }
+
+    return true;
+  }
+
+  return false;
 }
 
 /**

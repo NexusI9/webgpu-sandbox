@@ -14,7 +14,8 @@ typedef struct {
   VertexIndex index;
   VertexAttribute attribute;
   vec3 corners[8];
-  AABB bound;
+  AABB world;
+  AABB local;
 } MeshTopologyBoundbox;
 
 void mesh_topology_boundbox_compute_bound(const MeshTopologyBase *, mat4,

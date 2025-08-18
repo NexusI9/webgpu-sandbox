@@ -37,8 +37,8 @@ void ao_bake_global(SceneRendererTextureAO *ao,
     Mesh *compare_mesh = desc->mesh_list->entries[c];
 
     if (mesh == compare_mesh ||
-        !aabb_within_distance(&mesh->topology.boundbox.bound,
-                              &compare_mesh->topology.boundbox.bound,
+        !aabb_within_distance(&mesh->topology.boundbox.world,
+                              &compare_mesh->topology.boundbox.world,
                               desc->settings->max_distance, NULL))
 
       continue;
@@ -61,7 +61,7 @@ void ao_bake_global(SceneRendererTextureAO *ao,
       aabb_from_vec3(&tri_aabb, tri_points, 3);
 
       if (!aabb_within_distance(&tri_aabb,
-                                &compare_mesh->topology.boundbox.bound,
+                                &compare_mesh->topology.boundbox.world,
                                 desc->settings->max_distance, NULL))
         continue;
 

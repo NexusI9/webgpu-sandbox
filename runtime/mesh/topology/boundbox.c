@@ -58,13 +58,14 @@ void mesh_topology_boundbox_compute_bound(const MeshTopologyBase *base,
                                           MeshTopologyBoundbox *bound) {
 
   // calculate local space bound
-  aabb_from_vert_attr(&bound->bound, &base->attribute);
+  aabb_from_vert_attr(&bound->local, &base->attribute);
+  aabb_copy(&bound->local, &bound->world);
 
   // compute corners
-  aabb_corners(&bound->bound, bound->corners);
+  aabb_corners(&bound->local, bound->corners);
 
   // transform bound to world space
-  aabb_to_worldspace(&bound->bound, bound->corners, model_matrix);
+  aabb_to_worldspace(&bound->world, bound->corners, model_matrix);
 }
 
 MeshTopologyBoundboxStatus

@@ -60,6 +60,7 @@ void scene_selection_init_mouse_events(Scene *scene) {
           .target = CameraRaycastTarget_MousePosition,
           .event = CameraRaycastEvent_MouseDown,
           .space = CameraRaycastSpace_WorldSpace,
+          .bound = CameraRaycastBound_OBB,
           .viewport = &scene->viewport,
           .callback = scene_selection_raycast_mesh_callback,
           .data = (void *)&(SceneSelectionCallbackData){.scene = scene},
@@ -186,10 +187,10 @@ void scene_selection_raycast_mesh_callback(
 
   // else retrieve first hit only (closest to camera)
   CameraRaycastHit *hit = &cast_data->hits->entries[0];
-  
+
   if (mouseEvent->button != 2)
     return;
-  
+
   // add hit to selection pipeline
   if (cast_data->hits->length > 0 && hit) {
 

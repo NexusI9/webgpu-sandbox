@@ -93,6 +93,7 @@ void camera_raycast_create_event(Camera *cam,
       .hits = hits_list,
       .screen_space_size = desc->screen_space_size,
       .space = desc->space,
+      .bound = desc->bound,
 
       // bound attributes
       .include =
