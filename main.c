@@ -29,7 +29,7 @@
 #include "stdlib.h"
 
 #include "./runtime/mesh/shader/shader.h"
-#include "./runtime/primitive/plane.h"
+#include "./runtime/primitive/cube.h"
 #include "webgpu/webgpu.h"
 
 static Scene main_scene;
@@ -94,11 +94,11 @@ int main(int argc, const char *argv[]) {
 
  */
 
-  example_skybox_gradient(&main_scene);
+  example_skybox(&main_scene);
 
   Mesh *cube = scene_new_mesh(&main_scene);
 
-  Primitive prim = primitive_plane();
+  Primitive prim = primitive_cube();
 
   mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &prim,
@@ -117,7 +117,7 @@ int main(int argc, const char *argv[]) {
 
   mesh_translate(cube, (vec3){0.0f, 0.4f, 0.0f});
   mesh_rotate(cube, (vec3){180.0f, 0.0f, 0.0f});
-  mesh_scale(cube, (vec3){100.0f, 100.0f, 100.0f});
+  mesh_scale(cube, (vec3){2.0f, 2.0f, 2.0f});
 
   scene_add_mesh(&main_scene, cube, NULL);
 
@@ -125,6 +125,8 @@ int main(int argc, const char *argv[]) {
                         &(GlassUniform){
                             .color = {1.0f, 0.5f, 1.0f, 1.0f},
                             .roughness = 0.5f,
+                            .frost_scale = 700.0f,
+                            .frost_strength = 0.4f,
                         });
 
   shader_update_texture_view(mesh_shader_texture(cube), 1, 0,

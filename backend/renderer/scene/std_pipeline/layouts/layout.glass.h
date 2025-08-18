@@ -10,7 +10,9 @@
 
 typedef struct {
   float roughness;
-  vec3 _pad;
+  float frost_scale;
+  float frost_strength;
+  float _pad;
   color color;
   vec4 _pad1;
 } __attribute__((aligned(16))) GlassUniform;
