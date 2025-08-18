@@ -119,8 +119,8 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var center : vec2<f32> = vec2(0.5f, 0.5f);
   var white : vec3<f32> = vec3(1.f);
   var black : vec3<f32> = vec3(0.f);
-  var x_color : vec3<f32> = vec3(1.f, 0.f, 0.f);
-  var z_color : vec3<f32> = vec3(0.f, 0.f, 1.f);
+  var x_color : vec3<f32> = vec3(0.91f, 0.29f, 0.23f);
+  var z_color : vec3<f32> = vec3(0.23f, 0.40f, 0.91f);
 
   // Add X & Y Axis
   var axisThickness : f32 = 0.04f / uGrid.scale;

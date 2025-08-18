@@ -76,6 +76,9 @@ void scene_renderer_create(SceneRenderer *renderer,
   scene_renderer_init_fallback_textures(scene_renderer_device(renderer),
                                         scene_renderer_queue(renderer));
 
+  renderer->texture.skybox.cubemap =
+      std_texture_view(TextureViewType_FloatCube);
+
   // init standards shaders
   standard_pipelines_init(scene_renderer_device(renderer),
                           renderer->texture.multisample);
