@@ -1,7 +1,7 @@
 #ifndef _CUBE_PRIMITIVE_H_
 #define _CUBE_PRIMITIVE_H_
 
-#include "primitive.h"
+#include "core.h"
 
 Primitive primitive_cube();
 

@@ -21,6 +21,7 @@
 #include "runtime/pipeline/core.h"
 #include "runtime/prefab/environment/skybox.h"
 #include "runtime/primitive/core.h"
+#include "runtime/primitive/icosphere.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/shader/update.h"
@@ -60,9 +61,6 @@ void init_scene() {
   example_light(&main_scene);
 }
 
-void on_camera_raycast(CameraRaycastCallback *cast_data, void *user_data) {
-  printf("hover\n");
-}
 
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused
@@ -85,7 +83,8 @@ int main(int argc, const char *argv[]) {
 
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
-  // example_gltf(&main_scene);
+  example_skybox(&main_scene);
+  example_gltf(&main_scene);
   // example_ao(&main_scene, false);
 
   /*
@@ -94,11 +93,9 @@ int main(int argc, const char *argv[]) {
 
  */
 
-  example_skybox(&main_scene);
-
   Mesh *cube = scene_new_mesh(&main_scene);
 
-  Primitive prim = primitive_cube();
+  Primitive prim = primitive_icosphere();
 
   mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &prim,
@@ -115,7 +112,7 @@ int main(int argc, const char *argv[]) {
                                .queue = scene_queue(&main_scene),
                            });
 
-  mesh_translate(cube, (vec3){0.0f, 0.4f, 0.0f});
+  mesh_translate(cube, (vec3){2.0f, 4.4f, -3.0f});
   mesh_rotate(cube, (vec3){180.0f, 0.0f, 0.0f});
   mesh_scale(cube, (vec3){2.0f, 2.0f, 2.0f});
 
@@ -124,7 +121,7 @@ int main(int argc, const char *argv[]) {
   shader_update_uniform(mesh_shader_texture(cube), 0, 3,
                         &(GlassUniform){
                             .color = {1.0f, 0.5f, 1.0f, 1.0f},
-                            .roughness = 0.5f,
+                            .roughness = 0.23f,
                             .frost_scale = 700.0f,
                             .frost_strength = 0.4f,
                         });

@@ -57,7 +57,8 @@
  */
 
 typedef enum {
-  CameraRaycastSpace_WorldSpace,
+  CameraRaycastSpace_AABB,
+  CameraRaycastSpace_OBB,
   CameraRaycastSpace_ScreenSpace,
 } CameraRaycastSpace;
 
