@@ -5,5 +5,6 @@
 #include "./camera/camera.h"
 #include "./light/light.h"
 #include "./grid/grid.h"
+#include "./probe/probe.h"
 
 #endif

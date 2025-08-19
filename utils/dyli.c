@@ -56,12 +56,10 @@ DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
     return DynamicListStatus_NotInit;
   }
 
-  if (*capacity < *length + count) {
-    size_t new_capacity = (*capacity == 0) ? count : *capacity * 2;
-    while (new_capacity < *length + count)
-      if (dyli_expand(entries, capacity, length, type_size, 2, label) !=
-          DynamicListStatus_Success)
-        return DynamicListStatus_UndefError;
+  while (*capacity < *length + count) {
+    if (dyli_expand(entries, capacity, length, type_size, 2, label) !=
+        DynamicListStatus_Success)
+      return DynamicListStatus_UndefError;
   }
 
   char *target = (char *)(*entries) + (*length * type_size);

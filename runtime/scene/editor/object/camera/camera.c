@@ -4,9 +4,10 @@
 #include "../runtime/geometry/line/line.h"
 #include "../runtime/geometry/vertex/vertex.h"
 #include "../runtime/scene/scene.h"
-#include "../utils/system.h"
-
 #include <stddef.h>
+#include <stdint.h>
+
+#include "../utils/system.h"
 
 void seo_camera_create(SceneEditorObject *seo, Camera *camera,
                        const SEOCreateDescriptor *desc) {
@@ -16,7 +17,7 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   seo->scene = desc->scene;
   seo->target_list_index = desc->target_list_index;
 
-  const size_t seo_mesh_count = 2;
+  const uint8_t seo_mesh_count = 2;
   mesh_ref_list_create(&seo->meshes, seo_mesh_count);
 
   // create new mesh in the mesh list
@@ -24,14 +25,13 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   const char *texture_path = "./resources/assets/texture/ui/camera.png";
 
   // create icon mesh
-  seo_create_billboard(icon,
-                       &(SEOCreateBillboardDescriptor){
-                           .texture_path = texture_path,
-                           .device = desc->device,
-                           .queue = desc->queue,
-                           .position = &camera->position,
-                           .scale = &SEO_BILLBOARD_SCALE,
-                       });
+  seo_create_billboard(icon, &(SEOCreateBillboardDescriptor){
+                                 .texture_path = texture_path,
+                                 .device = desc->device,
+                                 .queue = desc->queue,
+                                 .position = &camera->position,
+                                 .scale = &SEO_BILLBOARD_SCALE,
+                             });
 
   // store mesh pointer in seo mesh ref list
   mesh_ref_list_insert(&seo->meshes, icon);

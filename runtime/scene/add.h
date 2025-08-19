@@ -1,6 +1,7 @@
 #ifndef _SCENE_ADD_H_
 #define _SCENE_ADD_H_
 
+#include "../runtime/probe/probe.h"
 #include "./editor/gizmo/gizmo.h"
 #include "core.h"
 
@@ -35,10 +36,17 @@
 
 // Scene Editor Objects
 // light
-SceneEditorObject *scene_add_point_light(Scene *, PointLightDescriptor *, const LightShadow);
-SceneEditorObject *scene_add_spot_light(Scene *, SpotLightDescriptor *, const LightShadow);
-SceneEditorObject *scene_add_sun_light(Scene *, SunLightDescriptor *, const LightShadow);
+SceneEditorObject *scene_add_point_light(Scene *, PointLightDescriptor *,
+                                         const LightShadow);
+SceneEditorObject *scene_add_spot_light(Scene *, SpotLightDescriptor *,
+                                        const LightShadow);
+SceneEditorObject *scene_add_sun_light(Scene *, SunLightDescriptor *,
+                                       const LightShadow);
 SceneEditorObject *scene_add_ambient_light(Scene *, AmbientLightDescriptor *);
+
+// Probe
+SceneEditorObject *
+scene_add_probe_reflection_grid(Scene *, ProbeReflectionGridDescriptor *);
 
 // camera
 SceneEditorObject *scene_add_camera(Scene *, const CameraCreateDescriptor *);

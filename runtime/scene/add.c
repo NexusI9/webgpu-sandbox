@@ -6,6 +6,7 @@
 #include "core.h"
 #include "editor/object/light/sun.h"
 #include "editor/object/list/list.h"
+#include "editor/object/probe/reflection.h"
 #include "editor/selection/core.h"
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
@@ -20,6 +21,9 @@ static inline void scene_add_seo(Scene *, SceneEditorObject *);
              ▐▌ ▐▌▐▌ ▐▌   ▐▌▐▌   ▐▌     █ ▐▌
              ▐▌ ▐▌▐▛▀▚▖   ▐▌▐▛▀▀▘▐▌     █  ▝▀▚▖
              ▝▚▄▞▘▐▙▄▞▘▗▄▄▞▘▐▙▄▄▖▝▚▄▄▖  █ ▗▄▄▞▘
+
+
+
  */
 SceneEditorObject *scene_add_point_light(Scene *scene,
                                          PointLightDescriptor *desc,
@@ -244,10 +248,10 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
    "Create" a new uninitialized camera in the scene camera list and return the
    newly created item's pointer.
 
-      ScenePool<GizmoT>
+        ScenePool
        .---------.
        |   ...   |
-       |---------|             <GizmoT>
+       |---------|              SEO<T>
        |  cam N  | ---.      .-----------.       Scene Render Layer
        '---------'    '--->  |   target  |           .-----------.
                       .--->  |  meshes*  | --------> |  mesh 1*  |
@@ -315,6 +319,34 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
   // extra
   scene_selection_add_mesh_ref_list(&scene->editor.selection, &seo->meshes, seo,
                                     SceneSelectionType_SEO);
+}
+
+SceneEditorObject *
+scene_add_probe_reflection_grid(Scene *scene,
+                                ProbeReflectionGridDescriptor *desc) {
+
+  ProbeReflectionGrid new_grid;
+  probe_reflection_grid_create(&new_grid, desc);
+
+  // create scene object
+  SceneEditorObject *seo_grid =
+      seo_list_new_entry(scene_editor_object_list(scene));
+
+  
+  seo_probe_reflection_create(seo_grid, &new_grid,
+                              &(SEOCreateDescriptor){
+                                  .camera = scene->active_camera,
+                                  .viewport = &scene->viewport,
+                                  .device = scene_device(scene),
+                                  .queue = scene_queue(scene),
+                                  .scene = scene,
+                                  .target_list_index = 0,
+                              });
+
+  // transfert gizmo mesh pointers to scene pipeline so they get rendered
+  scene_add_seo(scene, seo_grid);
+
+  return NULL;
 }
 
 /**
@@ -385,8 +417,8 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
   // dispatch mesh based on their global pipeline address (lit by default)
   ScenePipeline pipeline = ScenePipeline_Dynamic_LitShadow;
 
-  // TODO: find a cleaner way to define if mesh is Shadowed or not.. the overallx
-  // dispatch is unclear.
+  // TODO: find a cleaner way to define if mesh is Shadowed or not.. the
+  // overallx dispatch is unclear.
   if (mesh_shader_texture(mesh)->pipeline == std_pipeline(PipelineType_Unlit) ||
       mesh_shader_texture(mesh)->pipeline == std_pipeline(PipelineType_Glass))
     pipeline = ScenePipeline_Dynamic_Unlit;

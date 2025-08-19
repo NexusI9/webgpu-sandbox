@@ -11,6 +11,7 @@
 #include <emscripten/emscripten.h>
 
 // runtime
+#include "resources/example/glass.h"
 #include "resources/example/light.h"
 #include "resources/example/primitive.h"
 #include "resources/example/skybox.h"
@@ -22,6 +23,8 @@
 #include "runtime/prefab/environment/skybox.h"
 #include "runtime/primitive/core.h"
 #include "runtime/primitive/icosphere.h"
+#include "runtime/probe/reflection/grid.h"
+#include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/shader/update.h"
@@ -83,57 +86,14 @@ int main(int argc, const char *argv[]) {
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
   // example_skybox(&main_scene);
-  example_gltf(&main_scene);
-  example_ao(&main_scene, false);
+  // example_gltf(&main_scene);
+  // example_ao(&main_scene, false);
+  example_glass(&main_scene);
 
-  /*
-
-   GLASS START
-
- */
-
-  Mesh *cube = scene_new_mesh(&main_scene);
-
-  Primitive prim = primitive_icosphere();
-
-  mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
-                                  .primitive = &prim,
-                                  .name = "cube",
-                                  .device = scene_device(&main_scene),
-                                  .queue = scene_queue(&main_scene),
-                              });
-
-  mesh_shader_create(cube, &(ShaderCreateDescriptor){
-                               .pipeline = std_pipeline(PipelineType_Glass),
-                               .label = "cube",
-                               .name = "cube",
-                               .device = scene_device(&main_scene),
-                               .queue = scene_queue(&main_scene),
-                           });
-
-  mesh_translate(cube, (vec3){2.0f, 4.4f, -3.0f});
-  mesh_rotate(cube, (vec3){180.0f, 0.0f, 0.0f});
-  mesh_scale(cube, (vec3){2.0f, 2.0f, 2.0f});
-
-  scene_add_mesh(&main_scene, cube, NULL);
-
-  shader_update_uniform(mesh_shader_texture(cube), 0, 3,
-                        &(GlassUniform){
-                            .color = {1.0f, 0.5f, 1.0f, 1.0f},
-                            .roughness = 0.23f,
-                            .frost_scale = 700.0f,
-                            .frost_strength = 0.4f,
-                        });
-
-  shader_update_texture_view(mesh_shader_texture(cube), 1, 0,
-                             main_scene.renderer.texture.skybox.cubemap,
-                             WGPUTextureFormat_BGRA8Unorm);
-
-  /*
-
- GLASS END
-
-*/
+  scene_add_probe_reflection_grid(&main_scene, &(ProbeReflectionGridDescriptor){
+                                                   .count = {3, 3, 3},
+                                                   .size = {3.0f, 3.0f, 3.0f},
+                                               });
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);

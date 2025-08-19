@@ -86,6 +86,12 @@ static const PipelineLayoutDescriptor layout_grid = {
                     .topology = WGPUPrimitiveTopology_TriangleList,
                     .stripIndexFormat = WGPUIndexFormat_Undefined,
                 },
+            .stencil_state =
+                (WGPUDepthStencilState){
+                    .format = WGPUTextureFormat_Depth24Plus,
+                    .depthWriteEnabled = false,
+                    .depthCompare = WGPUCompareFunction_Less,
+                },
         },
     .bindings =
         {
