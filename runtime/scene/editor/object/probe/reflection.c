@@ -77,6 +77,18 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
       seo_probe_reflection_scale;
 }
 
-void seo_probe_reflection_translate(SceneEditorObject *seo, vec3 value) {}
+void seo_probe_reflection_translate(SceneEditorObject *seo, vec3 offset) {
+
+  ProbeReflectionGrid *grid = (ProbeReflectionGrid *)seo->target;
+  Mesh *bound = seo->meshes.entries[0];
+  mesh_translate(bound, offset);
+
+  /*for (size_t i = 1; i < seo->meshes.length; i++) {
+    vec3 delta;
+    glm_vec3_add(grid->position.entries[i - 1], offset, delta);
+    mesh_translate(seo->meshes.entries[i], delta);
+  }*/
+}
 void seo_probe_reflection_rotate(SceneEditorObject *seo, vec3 value) {}
+
 void seo_probe_reflection_scale(SceneEditorObject *seo, vec3 value) {}

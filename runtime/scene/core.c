@@ -9,8 +9,8 @@
 
 // initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
-static inline void scene_init_light_list(Scene *);
-static inline void scene_init_camera(Scene *);
+static inline void scene_light_list_init(Scene *);
+static inline void scene_camera_init(Scene *);
 
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
@@ -36,19 +36,18 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
     /*
 
-      ===== MESH LISTS =====
+      ===== LISTS =====
 
      */
 
-    // init scene layers
     scene_layer_init(&scene->layers);
 
-    // init lights
-    scene_init_light_list(scene);
+    scene_light_list_init(scene);
 
-    // init global mesh list
     mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
+    probe_reflection_list_create(&scene->probes_reflection,
+                                 PROBE_REFLECTION_LIST_CAPACITY);
     /*
 
       ===== CAMERA & VIEWPORT =====
@@ -56,7 +55,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
      */
 
     // init camera lists and set main/active camera
-    scene_init_camera(scene);
+    scene_camera_init(scene);
 
     // set viewport (using renderer width/height)
     viewport_create(&scene->viewport,
@@ -90,7 +89,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 /**
    Create scene camera list and main camera.
  */
-void scene_init_camera(Scene *scene) {
+void scene_camera_init(Scene *scene) {
 
   // create camera list, and set active camera
   camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
@@ -145,7 +144,7 @@ MeshRefList *scene_layer_meshes(Scene *scene, const char *name) {
   return &layer->meshes;
 }
 
-void scene_init_light_list(Scene *scene) {
+void scene_light_list_init(Scene *scene) {
 
   light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
 

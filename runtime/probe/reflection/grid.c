@@ -19,7 +19,7 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
 
   for (size_t x = 0; x < desc->count[0]; x++) {
     float x_pos = probe_reflection_point(x, desc->count[0], desc->size[0]);
-    
+
     for (size_t y = 0; y < desc->count[1]; y++) {
       float y_pos = probe_reflection_point(y, desc->count[1], desc->size[1]);
 
@@ -30,4 +30,7 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
       }
     }
   }
+
+  printf("[%p] init vec3 length: %lu\n", &grid->position,
+         grid->position.length);
 }

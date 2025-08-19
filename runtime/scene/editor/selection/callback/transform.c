@@ -99,7 +99,7 @@ void scene_selection_seo_transform(SceneSelectionTransform *desc) {
     vec3 *init_attribute = &desc->initial_attributes->entries[i];
     Mesh *mesh = desc->active_meshes->entries[i];
     SceneEditorObject *seo = (SceneEditorObject *)desc->target_list->entries[i];
-    
+
     scene_selection_seo_transform_core(mesh, seo, init_attribute, desc);
   }
 }

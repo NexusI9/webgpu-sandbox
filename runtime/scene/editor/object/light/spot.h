@@ -13,7 +13,8 @@ void seo_light_spot_translate(SceneEditorObject *, vec3);
 void seo_light_spot_rotate(SceneEditorObject *, vec3);
 void seo_light_spot_scale(SceneEditorObject *, vec3);
 
-void seo_light_spot_update_transform_callback(SceneEditorObject*, const LightShadow);
+void seo_light_spot_update_transform_callback(SceneEditorObject *,
+                                              const LightShadow);
 
 /* Shadow */
 

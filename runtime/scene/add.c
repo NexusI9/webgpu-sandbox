@@ -325,15 +325,16 @@ SceneEditorObject *
 scene_add_probe_reflection_grid(Scene *scene,
                                 ProbeReflectionGridDescriptor *desc) {
 
-  ProbeReflectionGrid new_grid;
-  probe_reflection_grid_create(&new_grid, desc);
+  ProbeReflectionGrid *new_grid =
+      probe_reflection_list_new_entry(&scene->probes_reflection);
+
+  probe_reflection_grid_create(new_grid, desc);
 
   // create scene object
   SceneEditorObject *seo_grid =
       seo_list_new_entry(scene_editor_object_list(scene));
 
-  
-  seo_probe_reflection_create(seo_grid, &new_grid,
+  seo_probe_reflection_create(seo_grid, new_grid,
                               &(SEOCreateDescriptor){
                                   .camera = scene->active_camera,
                                   .viewport = &scene->viewport,

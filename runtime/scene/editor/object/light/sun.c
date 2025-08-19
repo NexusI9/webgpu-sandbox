@@ -68,7 +68,6 @@ void seo_light_sun_shadow_create(SceneEditorObject *seo, SunLight *light,
   seo_light_sun_create_common(seo, light, desc);
 
   seo_light_sun_update_transform_callback(seo, LightShadow_Enabled);
-
 }
 
 void seo_light_sun_shadow_translate(SceneEditorObject *seo, vec3 value) {
@@ -78,11 +77,11 @@ void seo_light_sun_shadow_translate(SceneEditorObject *seo, vec3 value) {
   glm_vec3_copy(value, light->position);
 
   mesh_ref_list_translate(&seo->meshes, value);
-  
+
   // update light shadow map
   if (scene_renderer_draw_mode(&seo->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
-    
+
     shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
         .light = light,
         .mesh_list =

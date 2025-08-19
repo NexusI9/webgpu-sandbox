@@ -7,6 +7,7 @@
 #include "./editor/gizmo/gizmo.h"
 #include "./layer.h"
 #include "editor/gizmo/core.h"
+#include "../runtime/probe/probe.h"
 #include "event/core.h"
 #include <stddef.h>
 
@@ -237,9 +238,10 @@ struct Scene {
   Viewport viewport;
 
   // Values lists
-  MeshList meshes;    // meshes pool
-  LightList lights;   // light list
-  CameraList cameras; // camera list
+  MeshList meshes;
+  LightList lights;
+  CameraList cameras;
+  ProbeReflectionList probes_reflection;
 
   // References List (ptr)
   MeshRefList pipelines[SCENE_PIPELINE_COUNT]; // meshes pipelines (for
