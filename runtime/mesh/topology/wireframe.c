@@ -241,8 +241,7 @@ void mesh_topology_wireframe_create_points(EdgeHashSet *edges,
                                            MeshTopologyAnchorList *hashed_list,
                                            MeshTopology *src_topo,
                                            MeshTopologyWireframe *dest_topo) {
-  // TODO: make dynamic wireframe color
-  vec3 color = {randf(), randf(), randf()};
+  vec3 color = {0};
 
   for (size_t l = 0; l < edges->length; l++) {
 

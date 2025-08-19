@@ -9,7 +9,7 @@ typedef struct {
   const WGPUQueue queue;
   VertexAttribute *vertex;
   VertexIndex *index;
-  vec3 *color;
+  color *color;
   float thickness;
   const char *name;
 } SEOCreateWireframeDescriptor;

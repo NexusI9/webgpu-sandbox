@@ -18,7 +18,7 @@ static const PipelineLayoutDescriptor layout_line = {
             {
                 // Group 0
                 .label = "Group 0 - Viewport, Camera, Mesh",
-                .entryCount = 3,
+                .entryCount = 4,
                 .entries =
                     (WGPUBindGroupLayoutEntry[]){
                         {
@@ -52,6 +52,16 @@ static const PipelineLayoutDescriptor layout_line = {
                                     .type = WGPUBufferBindingType_Uniform,
                                     .hasDynamicOffset = false,
                                     .minBindingSize = sizeof(MeshUniform),
+                                },
+                        },
+                        {
+                            .binding = 3, // Color
+                            .visibility = WGPUShaderStage_Fragment,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize = sizeof(color),
                                 },
                         },
                     },

@@ -32,7 +32,7 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
   });
 
   SEOCreateWireframeDescriptor wireframe_desc = {
-      .color = &(vec3){1.0f, 0.0f, 0.0f},
+      .color = &(color){1.0f, 0.0f, 0.0f, 1.0f},
       .device = desc->device,
       .queue = desc->queue,
       .index = &cube_primitive.index,

@@ -50,7 +50,7 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   seo_create_wireframe(cube, &(SEOCreateWireframeDescriptor){
                                  .device = desc->device,
                                  .queue = desc->queue,
-                                 .color = &(vec3){1.0f, 0.7f, 0.4f},
+                                 .color = &(color){1.0f, 0.7f, 0.4f, 1.0f},
                                  .thickness = SEO_WIREFRAME_LINE_THICKNESS,
                                  .vertex = &cube_primitive.vertex,
                                  .index = &cube_primitive.index,

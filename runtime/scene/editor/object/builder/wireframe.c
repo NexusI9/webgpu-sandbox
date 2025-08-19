@@ -17,9 +17,6 @@
 void seo_create_wireframe(Mesh *mesh,
                           const SEOCreateWireframeDescriptor *desc) {
 
-  // set wireframe color from the vertex attributes
-  vertex_attribute_set_color(desc->vertex, desc->color);
-
   // create mesh from vertex/index attributes
   mesh_create(mesh, &(MeshCreateDescriptor){
                         .device = desc->device,
@@ -36,15 +33,17 @@ void seo_create_wireframe(Mesh *mesh,
                                  desc->queue);
 
   // set wireframe shader
-  mesh_shader_create_fixed(mesh, &(ShaderCreateDescriptor){
-                            .device = desc->device,
-                            .queue = desc->queue,
-                            .label = "SEO wireframe shader",
-                            .name = "SEO wireframe shader",
-                            .pipeline = std_pipeline(PipelineType_Line),
-                        });
+  mesh_shader_create_fixed(mesh,
+                           &(ShaderCreateDescriptor){
+                               .device = desc->device,
+                               .queue = desc->queue,
+                               .label = "SEO wireframe shader",
+                               .name = "SEO wireframe shader",
+                               .pipeline = std_pipeline(PipelineType_Line),
+                           });
+
+  shader_update_uniform(mesh_shader_fixed(mesh), 0, 3, desc->color);
 
   // set override topology and shader as wireframe
   mesh_topology_set_override(mesh, mesh_topology_wireframe(mesh));
-
 }

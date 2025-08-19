@@ -1,5 +1,6 @@
 #include "core.h"
 #include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../utils/math.h"
 
 /**
    ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
@@ -115,6 +116,9 @@ void mesh_shader_create_wireframe(Mesh *mesh) {
                     .queue = mesh->queue,
                     .name = "Mesh wireframe shader",
                 });
+
+  shader_update_uniform(mesh_shader_wireframe(mesh), 0, 3,
+                        &(color){randf(), randf(), randf(), 1.0f});
 }
 
 /**
