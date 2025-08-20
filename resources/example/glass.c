@@ -21,9 +21,9 @@ void example_glass(Scene *scene) {
                                .queue = scene_queue(scene),
                            });
 
-  mesh_translate(cube, (vec3){2.0f, 4.4f, -3.0f});
-  mesh_rotate(cube, (vec3){180.0f, 0.0f, 0.0f});
-  mesh_scale(cube, (vec3){2.0f, 2.0f, 2.0f});
+  mesh_set_position(cube, (vec3){2.0f, 4.4f, -3.0f});
+  mesh_set_rotation(cube, (vec3){180.0f, 0.0f, 0.0f});
+  mesh_set_scale(cube, (vec3){2.0f, 2.0f, 2.0f});
 
   scene_add_mesh(scene, cube, NULL);
 

@@ -10,6 +10,6 @@ void example_child(Scene *scene) {
   example_primitive(child_cube_A, (vec3){-4.0f, -2.0f, -1.0f}, scene, pipeline);
   example_primitive(child_cube_B, (vec3){-3.0f, -9.0f, 1.0f}, scene, pipeline);
 
-  mesh_add_child(child_cube_A, parent_cube);
-  mesh_add_child(child_cube_B, parent_cube);
+  mesh_child_add(parent_cube, child_cube_A);
+  mesh_child_add(parent_cube, child_cube_B);
 }

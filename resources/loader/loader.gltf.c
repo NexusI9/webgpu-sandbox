@@ -255,7 +255,7 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
         target_mesh = scene_new_mesh(scene);
 
         // add target mesh pointer to parent mesh children list
-        mesh_add_child(target_mesh, scene_mesh);
+        mesh_child_add(scene_mesh, target_mesh);
 
         /*
           need to dynamically allocate name
@@ -482,22 +482,22 @@ void loader_gltf_mesh_position(Mesh *mesh, const char *name, cgltf_data *data) {
 
       // set translation
       if (node->has_translation)
-        mesh_translate(mesh, (vec3){
-                                 node->translation[0],
-                                 node->translation[1],
-                                 node->translation[2],
-                             });
+        mesh_set_position(mesh, (vec3){
+                                    node->translation[0],
+                                    node->translation[1],
+                                    node->translation[2],
+                                });
 
       // set scale
       if (node->has_scale)
-        mesh_scale(mesh, (vec3){
-                             node->scale[0],
-                             node->scale[1],
-                             node->scale[2],
-                         });
+        mesh_set_scale(mesh, (vec3){
+                                 node->scale[0],
+                                 node->scale[1],
+                                 node->scale[2],
+                             });
       // set rotation
       if (node->has_rotation)
-        mesh_rotate_quat(mesh, node->rotation);
+        mesh_set_rotation_quat(mesh, node->rotation);
     }
   }
 }

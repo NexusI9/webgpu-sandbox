@@ -29,5 +29,5 @@ void scene_gizmo_transform_pos_to_selection(GizmoTransform *gizmo,
   // get average position
   vec3 position;
   scene_selection_average_position(selection, &position);
-  gizmo_transform_translate(gizmo, position);
+  gizmo_transform_set_position(gizmo, position);
 }

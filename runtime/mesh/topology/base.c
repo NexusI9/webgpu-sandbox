@@ -153,7 +153,7 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
   mesh_topology_anchor_list_map(&hashed_list, &base_topo, mapped_list);
 }
 
-void mesh_topology_base_scale(MeshTopologyBase *base, const VertexGroup *select,
+void mesh_topology_base_set_scale(MeshTopologyBase *base, const VertexGroup *select,
                               vec3 *scale) {
 
   // combine all anchors
@@ -171,7 +171,7 @@ void mesh_topology_base_scale(MeshTopologyBase *base, const VertexGroup *select,
   }
 
   // apply transform with all combined anchors
-  vertex_transform_scale(
+  vertex_transform_set_scale(
       &(VertexGroup){
           .entries = combined_anchor.entries,
           .length = combined_anchor.length,
@@ -179,7 +179,7 @@ void mesh_topology_base_scale(MeshTopologyBase *base, const VertexGroup *select,
       &base->attribute, scale);
 }
 
-void mesh_topology_base_translate(MeshTopologyBase *base,
+void mesh_topology_base_set_position(MeshTopologyBase *base,
                                   const VertexGroup *select, vec3 *translate) {
 
   // combine all anchors
@@ -197,7 +197,7 @@ void mesh_topology_base_translate(MeshTopologyBase *base,
   }
 
   // apply transform with all combined anchors
-  vertex_transform_translate(
+  vertex_transform_set_position(
       &(VertexGroup){
           .entries = combined_anchor.entries,
           .length = combined_anchor.length,

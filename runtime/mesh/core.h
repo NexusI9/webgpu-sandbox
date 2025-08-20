@@ -108,10 +108,10 @@ void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *);
 
 // hierarchy
 void mesh_set_parent(Mesh *, Mesh *);
-Mesh *mesh_add_child(Mesh *, Mesh *);
-Mesh *mesh_new_child(Mesh *);
-Mesh *mesh_new_child_empty(Mesh *);
-Mesh *mesh_get_child_by_id(Mesh *, size_t);
+DynamicListStatus mesh_child_add(Mesh *, Mesh *);
+DynamicListStatus mesh_child_remove(Mesh *, Mesh *);
+Mesh *mesh_child_new(Mesh *);
+Mesh *mesh_child_get_by_id(Mesh *, size_t);
 
 // topology
 typedef MeshTopology (*mesh_get_topology_callback)(Mesh *);

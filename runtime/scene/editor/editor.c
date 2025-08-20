@@ -1,6 +1,5 @@
 #include "editor.h"
 #include "../scene.h"
-#include "./gizmo/gizmo.h"
 #include "./selection/selection.h"
 #include "object/object.h"
 #include <stddef.h>

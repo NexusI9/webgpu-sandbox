@@ -13,7 +13,5 @@ void scene_selection_seo_transform(SceneSelectionTransform *);
 // mesh shadow transform
 void scene_selection_mesh_shadow_transform(SceneSelectionTransform *);
 
-// seo shadow transform
-void scene_selection_seo_shadow_transform(SceneSelectionTransform *);
 
 #endif

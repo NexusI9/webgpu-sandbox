@@ -12,9 +12,9 @@ typedef struct {
 DynamicListStatus mesh_list_create(MeshList *, size_t);
 Mesh *mesh_list_new_mesh(MeshList *);
 
-void mesh_list_translate(MeshList *, vec3);
-void mesh_list_rotate(MeshList *, vec3);
-void mesh_list_rotate_quat(MeshList *, versor);
-void mesh_list_scale(MeshList *, vec3);
+void mesh_list_set_position(MeshList *, vec3);
+void mesh_list_set_rotation(MeshList *, vec3);
+void mesh_list_set_rotation_quat(MeshList *, versor);
+void mesh_list_set_scale(MeshList *, vec3);
 
 #endif

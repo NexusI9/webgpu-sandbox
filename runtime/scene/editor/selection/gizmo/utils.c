@@ -40,7 +40,7 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
  
 
   // scale gizmo (cpu side as well, so the hitbox are correct dimension)
-  // mesh_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
+  // mesh_set_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
 }
 
 /**
@@ -76,7 +76,7 @@ void gizmo_transform_create_handles(
 
 
     // rotate
-    mesh_rotate(mesh, (vec3){
+    mesh_set_rotation(mesh, (vec3){
                           (i == 2) * 90.0f,
                           0.0f,
                           (i == 0) * -90.0f,

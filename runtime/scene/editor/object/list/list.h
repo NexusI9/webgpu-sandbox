@@ -28,11 +28,30 @@
 
  */
 
-
+/* === SEO LIST === */
 DynamicListStatus seo_list_create(SceneEditorObjectList *, size_t);
 
-SceneEditorObject *seo_list_insert(SceneEditorObjectList *, SceneEditorObject *);
+SceneEditorObject *seo_list_insert(SceneEditorObjectList *,
+                                   SceneEditorObject *);
 
 SceneEditorObject *seo_list_new_entry(SceneEditorObjectList *);
+
+DynamicListStatus seo_list_remove(SceneEditorObjectList *, SceneEditorObject *);
+
+DynamicListStatus seo_list_destroy(SceneEditorObjectList *);
+
+/* === SEO MESH === */
+
+DynamicListStatus seo_mesh_list_create(SceneEditorObjectMeshList *, size_t);
+
+DynamicListStatus seo_mesh_list_insert(SceneEditorObjectMeshList *,
+                                        SceneEditorObjectMesh *);
+
+SceneEditorObjectMesh *seo_mesh_list_new_entry(SceneEditorObjectMeshList *);
+
+DynamicListStatus seo_mesh_list_remove(SceneEditorObjectMeshList *,
+                                       SceneEditorObjectMesh *);
+
+DynamicListStatus seo_mesh_list_destroy(SceneEditorObjectMeshList *);
 
 #endif

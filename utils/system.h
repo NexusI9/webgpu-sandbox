@@ -113,6 +113,31 @@
 
 /*
 
+  DEBUG_TIME
+
+ */
+
+#ifdef DEBUG_TIME
+
+#define TIMER(name, code)                                                      \
+  do {                                                                         \
+    struct timespec _start, _end;                                              \
+    clock_gettime(CLOCK_MONOTONIC, &_start);                                   \
+    code clock_gettime(CLOCK_MONOTONIC, &_end);                                \
+    double _elapsed = (_end.tv_sec - _start.tv_sec) * 1000.0 +                 \
+                      (_end.tv_nsec - _start.tv_nsec) / 1000000.0;             \
+    printf("%s > %.3f ms\n", name, _elapsed);                                  \
+  } while (0)
+
+#else
+#define TIMER(name, code)                                                      \
+  do {                                                                         \
+    code                                                                       \
+  } while (0)
+#endif
+
+/*
+
  DEBUG MALLOC
 
  */
@@ -128,31 +153,6 @@ void custom_free(void *ptr, const char *file, int line);
 #define free(ptr) custom_free(ptr, __FILE__, __LINE__)
 
 #endif // DEBUG_MALLOC
-
-/*
-
-  DEBUG_TIME
-
- */
-
-#ifdef DEBUG_TIME
-
-#define TIMER(name, code)                                                      \
-  do {                                                                         \
-    struct timespec _start, _end;                                              \
-    clock_gettime(CLOCK_MONOTONIC, &_start);                                   \
-    code clock_gettime(CLOCK_MONOTONIC, &_end);                                \
-    double _elapsed = (_end.tv_sec - _start.tv_sec) * 1000.0 +                 \
-                      (_end.tv_nsec - _start.tv_nsec) / 1000000.0;             \
-    printf("%s\t\t\t %.3f ms\n", name, _elapsed);                              \
-  } while (0)
-
-#else
-#define TIMER(name, code)                                                      \
-  do {                                                                         \
-    code                                                                       \
-  } while (0)
-#endif
 
 void print_ivec4(const ivec4);
 void print_ivec3(const ivec3);

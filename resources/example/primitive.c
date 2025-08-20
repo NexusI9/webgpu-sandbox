@@ -22,7 +22,7 @@ void example_primitive(Mesh *cube, vec3 position, Scene *scene,
                                .queue = scene_queue(scene),
                            });
 
-  mesh_translate(cube, position);
+  mesh_set_position(cube, position);
 
   scene_add_mesh(scene, cube, NULL);
 }

@@ -82,8 +82,8 @@ float camera_euler_rotation(const Camera *);
 mat4 *camera_view(Camera *);
 
 // set
-void camera_translate(Camera *, vec3);
-void camera_rotate(Camera *, vec3);
+void camera_set_position(Camera *, vec3);
+void camera_set_rotation(Camera *, vec3);
 void camera_update_view(Camera *);
 
 #endif

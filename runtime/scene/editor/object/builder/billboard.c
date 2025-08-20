@@ -32,10 +32,10 @@ void seo_create_billboard(Mesh *mesh,
                            });
 
   // set mesh position to light position
-  mesh_translate(mesh, *desc->position);
+  mesh_set_position(mesh, *desc->position);
 
   // scale down gizmo
-  mesh_scale(mesh, *desc->scale);
+  mesh_set_scale(mesh, *desc->scale);
 
   // TODO: create UI Atlas
   Texture light_texture;

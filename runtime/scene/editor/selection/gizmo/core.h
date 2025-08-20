@@ -103,8 +103,8 @@ typedef void (*gizmo_transform_callback)(GizmoTransform *, Camera *, Viewport *,
                                          vec3 *);
 
 typedef enum {
-  GizmoTransformMode_Translate,
-  GizmoTransformMode_Rotate,
+  GizmoTransformMode_Position,
+  GizmoTransformMode_Rotation,
   GizmoTransformMode_Scale,
 } GizmoTransformMode;
 
@@ -218,8 +218,8 @@ void gizmo_transform_update_mode(GizmoTransform *, MeshRefList *,
 
 void gizmo_transform_remove(GizmoTransform *, MeshRefList *);
 
-void gizmo_transform_translate(GizmoTransform *, vec3);
-void gizmo_transform_rotate(GizmoTransform *, vec3);
+void gizmo_transform_set_position(GizmoTransform *, vec3);
+void gizmo_transform_set_rotation(GizmoTransform *, vec3);
 
 void gizmo_transform_set_active(GizmoTransform *, Camera *, Viewport *);
 

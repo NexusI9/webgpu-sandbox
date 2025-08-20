@@ -41,39 +41,39 @@ void mesh_update_model_matrix(Mesh *mesh) {
 /**
    Apply scale to mesh transform matrix
  */
-void mesh_scale(Mesh *mesh, vec3 scale) {
+void mesh_set_scale(Mesh *mesh, vec3 scale) {
   glm_vec3_copy(scale, mesh->scale);
 
   mesh_update_model_matrix(mesh);
 }
 
-void mesh_scale_axis(Mesh *mesh, vec3 value, const Axis axis) {
+void mesh_set_scale_axis(Mesh *mesh, vec3 value, const Axis axis) {
   vec3 axis_value;
   vec3_replace_axis(mesh->scale, value, axis, &axis_value);
 
-  mesh_scale(mesh, axis_value);
+  mesh_set_scale(mesh, axis_value);
 }
 
 /**
    Apply translation to mesh transform matrix
  */
-void mesh_translate(Mesh *mesh, vec3 position) {
+void mesh_set_position(Mesh *mesh, vec3 position) {
   glm_vec3_copy(position, mesh->position);
 
   mesh_update_model_matrix(mesh);
 }
 
-void mesh_translate_axis(Mesh *mesh, vec3 value, const Axis axis) {
+void mesh_set_position_axis(Mesh *mesh, vec3 value, const Axis axis) {
   vec3 axis_value;
   vec3_replace_axis(mesh->position, value, axis, &axis_value);
 
-  mesh_translate(mesh, axis_value);
+  mesh_set_position(mesh, axis_value);
 }
 
 /**
    Set Euler rotation
  */
-void mesh_rotate(Mesh *mesh, vec3 rotation) {
+void mesh_set_rotation(Mesh *mesh, vec3 rotation) {
   // cache euler rotation
   glm_vec3_copy(rotation, mesh->rotation_euler);
 
@@ -87,17 +87,17 @@ void mesh_rotate(Mesh *mesh, vec3 rotation) {
   mesh_update_model_matrix(mesh);
 }
 
-void mesh_rotate_axis(Mesh *mesh, vec3 value, const Axis axis) {
+void mesh_set_rotation_axis(Mesh *mesh, vec3 value, const Axis axis) {
   vec3 axis_value;
   vec3_replace_axis(mesh->rotation_euler, value, axis, &axis_value);
 
-  mesh_rotate(mesh, axis_value);
+  mesh_set_rotation(mesh, axis_value);
 }
 
 /**
    Apply rotation to mesh transform matrix
  */
-void mesh_rotate_quat(Mesh *mesh, versor rotation) {
+void mesh_set_rotation_quat(Mesh *mesh, versor rotation) {
 
   // cache quat rotation
   glm_quat_copy(rotation, mesh->rotation_quat);

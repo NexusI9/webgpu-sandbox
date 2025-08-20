@@ -80,7 +80,7 @@ void camera_draw(Camera *camera) {
   camera_uniform_update(camera);
 }
 
-void camera_translate(Camera *camera, vec3 new_position) {
+void camera_set_position(Camera *camera, vec3 new_position) {
   // get the absolute value, need to transfom the new position into
   // the camera coordinate system (relative)
   // https://www.ogldev.org/www/tutorial13/tutorial13.html
@@ -93,7 +93,7 @@ void camera_translate(Camera *camera, vec3 new_position) {
   camera_uniform_update(camera);
 }
 
-void camera_rotate(Camera *camera, vec3 new_rotation) {
+void camera_set_rotation(Camera *camera, vec3 new_rotation) {
   glm_vec3_copy(new_rotation, camera->euler_rotation);
 
   camera_update_view(camera);

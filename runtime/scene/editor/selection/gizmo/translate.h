@@ -1,10 +1,10 @@
-#ifndef _GIZMO_TRANSLATE_H_
-#define _GIZMO_TRANSLATE_H_
+#ifndef _GIZMO_POSITION_H_
+#define _GIZMO_POSITION_H_
 
 #include "../runtime/mesh/mesh.h"
 #include "./core.h"
 
-void gizmo_transform_translate_create(MeshRefList *, MeshRefList *,
+void gizmo_transform_position_create(MeshRefList *, MeshRefList *,
                                       const GizmoCreateDescriptor *);
 
 #endif

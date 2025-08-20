@@ -33,9 +33,9 @@ MeshTopologyBaseStatus
 mesh_topology_base_create_vertex_index(MeshTopologyBase *, const VertexIndex *,
                                        const WGPUDevice, const WGPUQueue);
 
-void mesh_topology_base_scale(MeshTopologyBase *, const VertexGroup *, vec3 *);
+void mesh_topology_base_set_scale(MeshTopologyBase *, const VertexGroup *, vec3 *);
 
-void mesh_topology_base_translate(MeshTopologyBase *, const VertexGroup *,
+void mesh_topology_base_set_position(MeshTopologyBase *, const VertexGroup *,
                                   vec3 *);
 
 void mesh_topology_base_update_buffer(MeshTopologyBase *, const WGPUDevice,

@@ -4,10 +4,9 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../backend/renderer/renderer.h"
-#include "./editor/gizmo/gizmo.h"
-#include "./layer.h"
-#include "editor/gizmo/core.h"
 #include "../runtime/probe/probe.h"
+#include "./editor/selection/gizmo/gizmo.h"
+#include "./layer.h"
 #include "event/core.h"
 #include <stddef.h>
 
@@ -37,14 +36,31 @@ typedef struct Scene Scene;
 
 typedef struct SceneEditorObject SceneEditorObject;
 
-typedef void (*seo_transform_axis_callback)(SceneEditorObject *, vec3);
+typedef void (*seo_transform_axis_callback)(Mesh *, SceneEditorObject *, vec3);
+
+// Link each SEO Mesh a dedicated callback
+typedef struct {
+  Mesh *mesh;
+  seo_transform_axis_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
+} SceneEditorObjectMesh;
+
+typedef struct {
+  SceneEditorObjectMesh *entries;
+  size_t capacity;
+  size_t length;
+} SceneEditorObjectMeshList;
 
 struct SceneEditorObject {
-  Scene *scene;             // parent scene pointer
-  void *target;             // camera, light objects
-  size_t target_list_index; // index of object (ex in LightList or CameraList)
-  MeshRefList meshes;       // helped/ visual representation
-  seo_transform_axis_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
+  // parent scene pointer
+  Scene *scene;
+  // camera, light 'abstract' objects
+  void *target;
+  // index of object (ex in LightList or CameraList)
+  size_t target_list_index;
+  // origin mesh from which all sub meshes transformation will
+  // depend
+  SceneEditorObjectMeshList meshes;
+  Mesh *origin;
 };
 
 typedef struct {

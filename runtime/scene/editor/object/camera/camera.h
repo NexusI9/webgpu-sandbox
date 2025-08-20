@@ -8,9 +8,9 @@
 void seo_camera_create(SceneEditorObject *, Camera *,
                        const SEOCreateDescriptor *);
 
-void seo_camera_translate(SceneEditorObject *, vec3);
-void seo_camera_rotate(SceneEditorObject *, vec3);
-void seo_camera_scale(SceneEditorObject *, vec3);
+void seo_camera_set_position(Mesh*, SceneEditorObject *, vec3);
+void seo_camera_set_rotation(Mesh*, SceneEditorObject *, vec3);
+void seo_camera_set_scale(Mesh*, SceneEditorObject *, vec3);
 
 void seo_camera_lookat(SceneEditorObject *, vec3, vec3);
 void seo_camera_fov(SceneEditorObject *, float);

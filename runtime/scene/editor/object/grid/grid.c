@@ -24,7 +24,7 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                                .queue = gd->queue,
                            });
 
-  mesh_scale(mesh, (vec3){
+  mesh_set_scale(mesh, (vec3){
                        gd->uniform.size,
                        gd->uniform.size,
                        gd->uniform.size,

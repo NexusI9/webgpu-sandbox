@@ -207,15 +207,23 @@ void scene_selection_raycast_mesh_callback(
       // cap + right click : remove selection if exist, add if not
       if (mouseEvent->shiftKey && mouseEvent->button == 2 &&
           scene_selection_filter_set_active(target_filter, hit->mesh) ==
-              SceneSelectionFilterStatus_MeshAlreadySelected)
+              SceneSelectionFilterStatus_MeshAlreadySelected) {
 
         scene_selection_filter_set_inactive(target_filter, hit->mesh);
 
-      // right click : add to selection
-      else if (mouseEvent->button == 2) {
+        for (size_t i = 0; i < hit->mesh->children.length; i++)
+          scene_selection_filter_set_inactive(target_filter,
+                                              hit->mesh->children.entries[i]);
+
+        // right click : add to selection
+      } else if (mouseEvent->button == 2) {
         // clear selection and add new one
         scene_selection_empty(selection);
         scene_selection_filter_set_active(target_filter, hit->mesh);
+
+        for (size_t i = 0; i < hit->mesh->children.length; i++)
+          scene_selection_filter_set_active(target_filter,
+                                              hit->mesh->children.entries[i]);
       }
 
       // transfert source to destination

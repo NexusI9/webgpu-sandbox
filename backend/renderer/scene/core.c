@@ -43,17 +43,19 @@ void scene_renderer_create(SceneRenderer *renderer,
   scene_renderer_resize(renderer);
 
   // init shared render textures
-  scene_renderer_init_render_textures(renderer);
+  TIMER("", { scene_renderer_init_render_textures(renderer); });
 
   // init render passes
   scene_renderer_init_render_pass(renderer);
 
-  ao_bake_init(&renderer->texture.ambient_occlusion,
-               &(AOBakeInitDescriptor){
-                   .size = AO_TEXTURE_RESOLUTION,
-                   .layer_count = AO_LAYER_COUNT,
-                   .device = scene_renderer_device(renderer),
-               });
+  TIMER("", {
+    ao_bake_init(&renderer->texture.ambient_occlusion,
+                 &(AOBakeInitDescriptor){
+                     .size = AO_TEXTURE_RESOLUTION,
+                     .layer_count = AO_LAYER_COUNT,
+                     .device = scene_renderer_device(renderer),
+                 });
+  });
 
   // set draw layouts callback
   if (renderer->draw.layouts->length == 0) {
@@ -73,8 +75,11 @@ void scene_renderer_create(SceneRenderer *renderer,
   // more global object ("Context" ?)
 
   // set fallback textures
-  scene_renderer_init_fallback_textures(scene_renderer_device(renderer),
-                                        scene_renderer_queue(renderer));
+
+  TIMER("", {
+    scene_renderer_init_fallback_textures(scene_renderer_device(renderer),
+                                          scene_renderer_queue(renderer));
+  });
 
   renderer->texture.skybox.cubemap =
       std_texture_view(TextureViewType_FloatCube);

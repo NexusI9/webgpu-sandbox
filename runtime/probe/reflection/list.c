@@ -32,5 +32,5 @@ DynamicListStatus probe_reflection_list_remove(ProbeReflectionList *list,
 
 DynamicListStatus probe_reflection_list_destroy(ProbeReflectionList *list,
                                                 ProbeReflectionGrid *entry) {
-  return dyli_free((void *)list->entries, &list->capacity, &list->capacity);
+  return dyli_free((void *)list->entries, &list->capacity, &list->length);
 }

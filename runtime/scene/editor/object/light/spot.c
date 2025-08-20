@@ -1,5 +1,6 @@
 #include "spot.h"
 #include "../builder/builder.h"
+#include "../runtime/scene/editor/object/object.h"
 #include "../runtime/scene/scene.h"
 #include "./utils.h"
 
@@ -16,24 +17,25 @@ void seo_light_spot_create_common(SceneEditorObject *seo, SpotLight *light,
   seo->target_list_index = desc->target_list_index;
 
   // define mesh
-  size_t gizmo_mesh_count = 1;
-  mesh_ref_list_create(&seo->meshes, gizmo_mesh_count);
+  const size_t gizmo_mesh_count = 1;
+  seo_mesh_list_create(&seo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
-  Mesh *icon = scene_new_mesh(desc->scene);
+  SceneEditorObjectMesh *icon = seo_mesh_list_new_entry(&seo->meshes);
+  icon->mesh = scene_new_mesh(desc->scene);
+
   const char *texture_path = "./resources/assets/texture/ui/light-spot.png";
 
   // create gizmo mesh
-  seo_create_billboard(icon, &(SEOCreateBillboardDescriptor){
-                                 .texture_path = texture_path,
-                                 .device = desc->device,
-                                 .queue = desc->queue,
-                                 .position = &light->position,
-                                 .scale = &SEO_BILLBOARD_SCALE,
-                             });
+  seo_create_billboard(icon->mesh, &(SEOCreateBillboardDescriptor){
+                                       .texture_path = texture_path,
+                                       .device = desc->device,
+                                       .queue = desc->queue,
+                                       .position = &light->position,
+                                       .scale = &SEO_BILLBOARD_SCALE,
+                                   });
 
-  // store mesh pointer in gizmo ref list
-  mesh_ref_list_insert(&seo->meshes, icon);
+  seo->origin = icon->mesh;
 }
 
 /**
@@ -47,18 +49,21 @@ void seo_light_spot_create(SceneEditorObject *seo, SpotLight *light,
   seo_light_spot_update_transform_callback(seo, LightShadow_None);
 }
 
-void seo_light_spot_translate(SceneEditorObject *seo, vec3 value) {
+void seo_light_spot_set_position(Mesh *mesh, SceneEditorObject *seo,
+                                 vec3 value) {
 
   SunLight *light = (SunLight *)seo->target;
 
   glm_vec3_copy(value, light->position);
 
-  mesh_ref_list_translate(&seo->meshes, value);
+  for (size_t i = 0; i < seo->meshes.length; i++)
+    mesh_set_position(seo->meshes.entries[i].mesh, value);
 }
 
-void seo_light_spot_rotate(SceneEditorObject *seo, vec3 value) {}
+void seo_light_spot_set_rotation(Mesh *mesh, SceneEditorObject *seo,
+                                 vec3 value) {}
 
-void seo_light_spot_scale(SceneEditorObject *seo, vec3 value) {}
+void seo_light_spot_set_scale(Mesh *mesh, SceneEditorObject *seo, vec3 value) {}
 
 /* Shadow */
 
@@ -70,14 +75,16 @@ void seo_light_spot_shadow_create(SceneEditorObject *seo, SpotLight *light,
   seo_light_spot_update_transform_callback(seo, LightShadow_Enabled);
 }
 
-void seo_light_spot_shadow_translate(SceneEditorObject *seo, vec3 value) {
+void seo_light_spot_shadow_set_position(Mesh *mesh, SceneEditorObject *seo,
+                                     vec3 value) {
 
   SpotLight *light = (SpotLight *)seo->target;
 
   glm_vec3_copy(value, light->position);
 
-  mesh_ref_list_translate(&seo->meshes, value);
-  
+  for (size_t i = 0; i < seo->meshes.length; i++)
+    mesh_set_position(seo->meshes.entries[i].mesh, value);
+
   // update light shadow map
   if (scene_renderer_draw_mode(&seo->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
@@ -98,28 +105,32 @@ void seo_light_spot_shadow_translate(SceneEditorObject *seo, vec3 value) {
   }
 }
 
-void seo_light_spot_shadow_rotate(SceneEditorObject *seo, vec3 value) {}
+void seo_light_spot_shadow_set_rotation(Mesh *mesh, SceneEditorObject *seo,
+                                  vec3 value) {}
 
 static const seo_transform_axis_callback
     light_transform_callback[2][GIZMO_TRANSFORM_MODE_COUNT] = {
         [LightShadow_None] =
             {
-                [GizmoTransformMode_Translate] = seo_light_spot_translate,
-                [GizmoTransformMode_Rotate] = seo_light_spot_rotate,
-                [GizmoTransformMode_Scale] = seo_light_spot_scale,
+                [GizmoTransformMode_Position] = seo_light_spot_set_position,
+                [GizmoTransformMode_Rotation] = seo_light_spot_set_rotation,
+                [GizmoTransformMode_Scale] = seo_light_spot_set_scale,
             },
         [LightShadow_Enabled] =
             {
-                [GizmoTransformMode_Translate] =
-                    seo_light_spot_shadow_translate,
-                [GizmoTransformMode_Rotate] = seo_light_spot_shadow_rotate,
-                [GizmoTransformMode_Scale] = seo_light_spot_scale,
+                [GizmoTransformMode_Position] =
+                    seo_light_spot_shadow_set_position,
+                [GizmoTransformMode_Rotation] =
+                    seo_light_spot_shadow_set_rotation,
+                [GizmoTransformMode_Scale] = seo_light_spot_set_scale,
             },
 };
 
 void seo_light_spot_update_transform_callback(SceneEditorObject *seo,
                                               const LightShadow shadow) {
 
-  for (GizmoTransformMode i = 0; i < GIZMO_TRANSFORM_MODE_COUNT; i++)
-    seo->transform_callback[i] = light_transform_callback[shadow][i];
+  for (size_t i = 0; i < seo->meshes.length; i++)
+    for (GizmoTransformMode j = 0; j < GIZMO_TRANSFORM_MODE_COUNT; j++)
+      seo->meshes.entries[i].transform_callback[j] =
+          light_transform_callback[shadow][i];
 }

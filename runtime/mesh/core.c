@@ -1,6 +1,7 @@
 #include "./core.h"
 #include "../backend/buffer.h"
 #include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../utils/dyli.h"
 #include "../utils/matrix.h"
 #include "shader/core.h"
 #include "shader/shader.h"
@@ -12,15 +13,16 @@
 #include "uniform.h"
 
 // Shadow map is implicitely handled withing mesh
-static Mesh *mesh_children_list_check_init(Mesh *);
-static Mesh *mesh_children_list_check_capacity(Mesh *);
+static inline Mesh *mesh_children_list_check_init(Mesh *);
 
 void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set name
   mesh_set_name(mesh, md->name);
 
+#ifdef VERBOSE_CREATING_PHASE
   VERBOSE_MESH_CREATE("%s", mesh->name);
+#endif
 
   mesh->id = reg_register((void *)mesh, RegEntryType_Mesh);
 
@@ -113,103 +115,58 @@ void mesh_draw(MeshTopology topology, Shader *shader,
  */
 Mesh *mesh_children_list_check_init(Mesh *parent) {
 
-  if (parent->children.entries == NULL) {
-    parent->children.capacity = MESH_CHILD_LENGTH;
-    parent->children.entries = calloc(parent->children.capacity, sizeof(Mesh));
-  }
+  if (parent->children.entries == NULL)
+    dyli_create((void *)&parent->children.entries, &parent->children.capacity,
+                &parent->children.length, sizeof(Mesh *), 16,
+                "Mesh children list");
 
   return *parent->children.entries;
 }
 
-/**
-   Check if children list has reached max capacity and reallocate or not
-   accordingly
- */
-Mesh *mesh_children_list_check_capacity(Mesh *parent) {
-
-  if (parent->children.length == parent->children.capacity) {
-
-    size_t new_capacity = parent->children.capacity * 2;
-    Mesh *new_list = realloc(parent->children.entries,
-                             sizeof(Mesh) * parent->children.capacity);
-
-    if (new_list == NULL) {
-      VERBOSE_ERROR("Failed to expand mesh list.");
-      return NULL;
-    }
-
-    parent->children.entries = &new_list;
-    parent->children.capacity = new_capacity;
-  }
-
-  return *parent->children.entries;
-}
-
-Mesh *mesh_new_child(Mesh *parent) {
+Mesh *mesh_child_new(Mesh *parent) {
 
   // init list
   mesh_children_list_check_init(parent);
 
-  // expand parent mesh list
-  mesh_children_list_check_capacity(parent);
+  Mesh *child = dyli_new_entry(
+      (void *)&parent->children.entries, &parent->children.capacity,
+      &parent->children.length, sizeof(Mesh *), "Mesh child list");
 
-  size_t id = parent->children.length;
-  Mesh *child = parent->children.entries[id];
+  if (child == NULL) {
+    VERBOSE_WARNING("Couldn't create new entry in mesh child list.");
+    return NULL;
+  }
 
-  // assing child id
-  child->id = id;
-  child->parent = parent; // assign parent to child
-
-  // increment children length
-  parent->children.length++;
+  child->parent = parent;
 
   return child;
 }
 
 /**
-   Add and initialize an empty child to the given mesh
- */
-Mesh *mesh_new_child_empty(Mesh *mesh) {
-
-  struct Mesh *temp_mesh = mesh_new_child(mesh);
-
-  // still need to initialize it before adding
-  // this ensure proper init array
-  mesh_create(temp_mesh, &(MeshCreateDescriptor){
-                             .device = mesh->device,
-                             .queue = mesh->queue,
-                             .name = mesh->name,
-                         });
-
-  return temp_mesh;
-}
-
-/**
 Add a new child pointer to the destination mesh children list
  */
-Mesh *mesh_add_child(Mesh *child, Mesh *parent) {
+DynamicListStatus mesh_child_add(Mesh *parent, Mesh *child) {
 
-  // init list (?)
   mesh_children_list_check_init(parent);
 
-  // expand parent mesh list (?)
-  mesh_children_list_check_capacity(parent);
+  DynamicListStatus insert =
+      dyli_insert((void *)&parent->children.entries, &parent->children.capacity,
+                  &parent->children.length, sizeof(Mesh *), (void *)&child, 1,
+                  "Mesh children list");
 
-  // append pointer to the mesh list latest index
-  parent->children.entries[parent->children.length++] = child;
+  if (insert == DynamicListStatus_Success) {
+    // assign parent pointer to child
+    child->parent = parent;
+  }
 
-  // assign parent pointer to child
-  mesh_set_parent(child, parent);
-
-  // return this same pointer
-  return parent->children.entries[parent->children.length];
+  return insert;
 }
 
 /**
    Retireve the mesh children address at the given index from the mesh children
    list
  */
-Mesh *mesh_get_child(Mesh *mesh, size_t index) {
+Mesh *mesh_child_get(Mesh *mesh, size_t index) {
   return mesh->children.entries[index];
 }
 

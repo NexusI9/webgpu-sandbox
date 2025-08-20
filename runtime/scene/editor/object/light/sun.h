@@ -9,9 +9,9 @@
 void seo_light_sun_create(SceneEditorObject *, SunLight *,
                           const SEOCreateDescriptor *);
 
-void seo_light_sun_translate(SceneEditorObject *, vec3);
-void seo_light_sun_rotate(SceneEditorObject *, vec3);
-void seo_light_sun_scale(SceneEditorObject *, vec3);
+void seo_light_sun_set_position(Mesh *, SceneEditorObject *, vec3);
+void seo_light_sun_set_rotation(Mesh *, SceneEditorObject *, vec3);
+void seo_light_sun_set_scale(Mesh *, SceneEditorObject *, vec3);
 
 void seo_light_sun_update_transform_callback(SceneEditorObject *,
                                              const LightShadow);
@@ -20,6 +20,6 @@ void seo_light_sun_update_transform_callback(SceneEditorObject *,
 void seo_light_sun_shadow_create(SceneEditorObject *, SunLight *,
                                  const SEOCreateDescriptor *);
 
-void seo_light_sun_shadow_translate(SceneEditorObject *, vec3);
+void seo_light_sun_shadow_set_position(Mesh *, SceneEditorObject *, vec3);
 
 #endif

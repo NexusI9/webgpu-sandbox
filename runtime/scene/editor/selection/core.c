@@ -217,8 +217,8 @@ void scene_selection_all(SceneSelection *selection) {
    (loc/rot/scale) depending on the gizmo mode.
  */
 static const mesh_get_transform_attribute mesh_transform_attribute[] = {
-    [GizmoTransformMode_Translate] = mesh_get_position,
-    [GizmoTransformMode_Rotate] = mesh_get_rotation_euler,
+    [GizmoTransformMode_Position] = mesh_get_position,
+    [GizmoTransformMode_Rotation] = mesh_get_rotation_euler,
     [GizmoTransformMode_Scale] = mesh_get_scale,
 };
 

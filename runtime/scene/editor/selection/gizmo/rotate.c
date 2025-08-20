@@ -4,7 +4,7 @@
 #include "./utils.h"
 #include "webgpu/webgpu.h"
 
-void gizmo_transform_rotate_create(MeshRefList *visual_list,
+void gizmo_transform_rotation_create(MeshRefList *visual_list,
                                    MeshRefList *interactive_list,
                                    const GizmoCreateDescriptor *desc) {
 

@@ -309,16 +309,16 @@ SceneEditorObject *scene_add_camera(Scene *scene,
 void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
 
   for (size_t i = 0; i < seo->meshes.length; i++) {
-    Mesh *mesh = seo->meshes.entries[i];
+    Mesh *mesh = seo->meshes.entries[i].mesh;
     // build mesh depending on pipeline and scene render mode
     scene_build_mesh(scene, mesh, ScenePipeline_Fixed);
     mesh_ref_list_insert(scene_pipeline(scene, ScenePipeline_Fixed), mesh);
-  }
 
-  // add the SEO into the right selection branch/ filter and link the SEO as
-  // extra
-  scene_selection_add_mesh_ref_list(&scene->editor.selection, &seo->meshes, seo,
-                                    SceneSelectionType_SEO);
+    // add the SEO into the right selection branch/ filter and link the SEO as
+    // extra
+    scene_selection_add_mesh(&scene->editor.selection, mesh, seo,
+                             SceneSelectionType_SEO);
+  }
 }
 
 SceneEditorObject *

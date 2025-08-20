@@ -11,31 +11,8 @@
 #include <emscripten/emscripten.h>
 
 // runtime
-#include "resources/example/glass.h"
-#include "resources/example/light.h"
-#include "resources/example/primitive.h"
-#include "resources/example/skybox.h"
-#include "runtime/light/list.h"
-#include "runtime/mesh/core.h"
-#include "runtime/mesh/shader/core.h"
-#include "runtime/mesh/transform.h"
-#include "runtime/pipeline/core.h"
-#include "runtime/prefab/environment/skybox.h"
-#include "runtime/primitive/core.h"
-#include "runtime/primitive/icosphere.h"
-#include "runtime/probe/reflection/grid.h"
-#include "runtime/scene/add.h"
-#include "runtime/scene/core.h"
+#include "runtime/scene/scene.h"
 #include "runtime/scene/draw.h"
-#include "runtime/shader/update.h"
-#include "runtime/texture/core.h"
-#include "runtime/texture/create.h"
-#include "stdlib.h"
-
-#include "./runtime/mesh/shader/shader.h"
-#include "./runtime/primitive/cube.h"
-#include "webgpu/webgpu.h"
-
 static Scene main_scene;
 
 // callback

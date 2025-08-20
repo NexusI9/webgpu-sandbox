@@ -31,6 +31,5 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
     }
   }
 
-  printf("[%p] init vec3 length: %lu\n", &grid->position,
-         grid->position.length);
+
 }

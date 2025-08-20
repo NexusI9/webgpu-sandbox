@@ -1,5 +1,6 @@
 #include "./ambient.h"
 #include "../builder/builder.h"
+#include "../runtime/scene/editor/object/object.h"
 #include "../runtime/scene/scene.h"
 
 /**
@@ -14,37 +15,42 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
   seo->target_list_index = desc->target_list_index;
 
   // define mesh
-  size_t gizmo_mesh_count = 1;
-  mesh_ref_list_create(&seo->meshes, gizmo_mesh_count);
+  const size_t gizmo_mesh_count = 1;
+  seo_mesh_list_create(&seo->meshes, gizmo_mesh_count);
 
   // get new mesh pointer from main mesh list
-  Mesh *icon = scene_new_mesh(desc->scene);
+  SceneEditorObjectMesh *icon = seo_mesh_list_new_entry(&seo->meshes);
+  icon->mesh = scene_new_mesh(desc->scene);
+
   const char *texture_path = "./resources/assets/texture/ui/light-ambient.png";
 
   // create gizmo mesh
-  seo_create_billboard(icon, &(SEOCreateBillboardDescriptor){
-                                 .texture_path = texture_path,
-                                 .device = desc->device,
-                                 .queue = desc->queue,
-                                 .position = &light->position,
-                                 .scale = &SEO_BILLBOARD_SCALE,
-                             });
-
-  // store mesh pointer in gizmo ref list
-  mesh_ref_list_insert(&seo->meshes, icon);
+  seo_create_billboard(icon->mesh, &(SEOCreateBillboardDescriptor){
+                                       .texture_path = texture_path,
+                                       .device = desc->device,
+                                       .queue = desc->queue,
+                                       .position = &light->position,
+                                       .scale = &SEO_BILLBOARD_SCALE,
+                                   });
 
   // set callback
-  seo->transform_callback[GizmoTransformMode_Translate] =
-      seo_light_ambient_translate;
-  seo->transform_callback[GizmoTransformMode_Rotate] = seo_light_ambient_rotate;
-  seo->transform_callback[GizmoTransformMode_Scale] = seo_light_ambient_scale;
+  icon->transform_callback[GizmoTransformMode_Position] =
+      seo_light_ambient_set_position;
+  icon->transform_callback[GizmoTransformMode_Rotation] =
+      seo_light_ambient_set_rotation;
+  icon->transform_callback[GizmoTransformMode_Scale] =
+      seo_light_ambient_set_scale;
+
+  seo->origin = icon->mesh;
 }
 
-void seo_light_ambient_translate(SceneEditorObject *seo, vec3 value) {
+void seo_light_ambient_set_position(Mesh *mesh, SceneEditorObject *seo,
+                                 vec3 value) {
 
-  mesh_ref_list_translate(&seo->meshes, value);
+  for (size_t i = 0; i < seo->meshes.length; i++)
+    mesh_set_position(seo->meshes.entries[i].mesh, value);
 }
 
-void seo_light_ambient_rotate(SceneEditorObject *seo, vec3 value) {}
+void seo_light_ambient_set_rotation(Mesh *mesh, SceneEditorObject *seo, vec3 value) {}
 
-void seo_light_ambient_scale(SceneEditorObject *seo, vec3 value) {}
+void seo_light_ambient_set_scale(Mesh *mesh, SceneEditorObject *seo, vec3 value) {}

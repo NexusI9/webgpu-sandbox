@@ -2,7 +2,6 @@
 #define _SCENE_ADD_H_
 
 #include "../runtime/probe/probe.h"
-#include "./editor/gizmo/gizmo.h"
 #include "core.h"
 
 /**

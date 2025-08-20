@@ -3,7 +3,7 @@
 #include "./utils.h"
 #include "webgpu/webgpu.h"
 
-void gizmo_transform_translate_create(MeshRefList *list,
+void gizmo_transform_position_create(MeshRefList *list,
                                       MeshRefList *interactive_list,
                                       const GizmoCreateDescriptor *desc) {
 

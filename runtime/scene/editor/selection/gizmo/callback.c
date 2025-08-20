@@ -133,26 +133,26 @@ void gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera,
    handled in the scene selection draw callback.
 
  */
-void gizmo_transform_callback_translate(GizmoTransform *gizmo, Camera *camera,
+void gizmo_transform_callback_position(GizmoTransform *gizmo, Camera *camera,
                                         Viewport *viewport, vec3 *delta) {
 
   // transform selection
-  gizmo_transform_axis(gizmo, camera, viewport, mesh_translate_axis, delta);
+  gizmo_transform_axis(gizmo, camera, viewport, mesh_set_position_axis, delta);
 
   // translate gizmo based on cached delta
   vec3 gizmo_offset;
   glm_vec3_add(gizmo->cache.gizmo_init_position, *delta, gizmo_offset);
-  gizmo_transform_translate(gizmo, gizmo_offset);
+  gizmo_transform_set_position(gizmo, gizmo_offset);
 }
 
-void gizmo_transform_callback_rotate(GizmoTransform *gizmo, Camera *camera,
+void gizmo_transform_callback_rotation(GizmoTransform *gizmo, Camera *camera,
                                      Viewport *viewport, vec3 *delta) {
 
-  gizmo_transform_angle(gizmo, camera, viewport, mesh_rotate_axis, delta);
+  gizmo_transform_angle(gizmo, camera, viewport, mesh_set_rotation_axis, delta);
 }
 
 void gizmo_transform_callback_scale(GizmoTransform *gizmo, Camera *camera,
                                     Viewport *viewport, vec3 *delta) {
 
-  gizmo_transform_axis(gizmo, camera, viewport, mesh_scale_axis, delta);
+  gizmo_transform_axis(gizmo, camera, viewport, mesh_set_scale_axis, delta);
 }

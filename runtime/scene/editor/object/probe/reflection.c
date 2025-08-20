@@ -1,6 +1,7 @@
 #include "reflection.h"
 #include "../builder/builder.h"
 #include "../resources/loader/loader.mbin.h"
+#include "../runtime/scene/editor/object/object.h"
 #include "../runtime/scene/scene.h"
 #include <stdint.h>
 
@@ -15,7 +16,7 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
   // 1 bound cube + (x * y * z probes)
   const uint16_t seo_mesh_count =
       1 + grid->count[0] * grid->count[1] * grid->count[2];
-  mesh_ref_list_create(&seo->meshes, seo_mesh_count);
+  seo_mesh_list_create(&seo->meshes, seo_mesh_count);
 
   /*
 
@@ -23,7 +24,8 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
 
    */
 
-  Mesh *bound_cube = scene_new_mesh(desc->scene);
+  SceneEditorObjectMesh *bound_cube = seo_mesh_list_new_entry(&seo->meshes);
+  bound_cube->mesh = scene_new_mesh(desc->scene);
   Primitive cube_primitive;
   // TODO: cache MBIN
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
@@ -43,11 +45,16 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
 
   vec3 padded_size;
   glm_vec3_scale(grid->size, 1.2f, padded_size);
-  seo_create_wireframe(bound_cube, &wireframe_desc);
+  seo_create_wireframe(bound_cube->mesh, &wireframe_desc);
 
-  mesh_scale(bound_cube, padded_size);
+  mesh_set_scale(bound_cube->mesh, padded_size);
 
-  mesh_ref_list_insert(&seo->meshes, bound_cube);
+  bound_cube->transform_callback[GizmoTransformMode_Position] =
+      seo_probe_reflection_bound_set_position;
+  bound_cube->transform_callback[GizmoTransformMode_Rotation] =
+      seo_probe_reflection_set_rotation;
+  bound_cube->transform_callback[GizmoTransformMode_Scale] =
+      seo_probe_reflection_bound_set_scale;
 
   /*
 
@@ -56,39 +63,61 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
    */
   for (size_t i = 0; i < grid->position.length; i++) {
 
-    Mesh *probe = scene_new_mesh(desc->scene);
+    SceneEditorObjectMesh *probe = seo_mesh_list_new_entry(&seo->meshes);
+    probe->mesh = scene_new_mesh(desc->scene);
+
     if (probe == NULL) {
       VERBOSE_WARNING("Couldn't create new mesh for probe SEO.");
       break;
     }
 
-    seo_create_wireframe(probe, &wireframe_desc);
+    seo_create_wireframe(probe->mesh, &wireframe_desc);
 
-    mesh_scale(probe, (vec3){0.3f, 0.3f, 0.3f});
-    mesh_translate(probe, grid->position.entries[i]);
-    mesh_ref_list_insert(&seo->meshes, probe);
+    mesh_set_scale(probe->mesh, (vec3){0.3f, 0.3f, 0.3f});
+    mesh_set_position(probe->mesh, grid->position.entries[i]);
+
+    probe->transform_callback[GizmoTransformMode_Position] =
+        seo_probe_reflection_set_position;
+    probe->transform_callback[GizmoTransformMode_Rotation] =
+        seo_probe_reflection_set_rotation;
+    probe->transform_callback[GizmoTransformMode_Scale] =
+        seo_probe_reflection_set_scale;
+
+    mesh_child_add(bound_cube->mesh, probe->mesh);
   }
 
-  seo->transform_callback[GizmoTransformMode_Translate] =
-      seo_probe_reflection_translate;
-  seo->transform_callback[GizmoTransformMode_Rotate] =
-      seo_probe_reflection_rotate;
-  seo->transform_callback[GizmoTransformMode_Scale] =
-      seo_probe_reflection_scale;
+  seo->origin = bound_cube->mesh;
 }
 
-void seo_probe_reflection_translate(SceneEditorObject *seo, vec3 offset) {
+/**
+   Update the position list according to the origin on top the casual mesh
+   translation.
+ */
+void seo_probe_reflection_bound_set_position(Mesh *mesh, SceneEditorObject *seo,
+                                             vec3 offset) {
 
   ProbeReflectionGrid *grid = (ProbeReflectionGrid *)seo->target;
-  Mesh *bound = seo->meshes.entries[0];
-  mesh_translate(bound, offset);
+  mesh_set_position(mesh, offset);
 
-  /*for (size_t i = 1; i < seo->meshes.length; i++) {
-    vec3 delta;
-    glm_vec3_add(grid->position.entries[i - 1], offset, delta);
-    mesh_translate(seo->meshes.entries[i], delta);
-  }*/
+  for(size_t i = 0; i < grid->position.length; i++){
+    
+  }
 }
-void seo_probe_reflection_rotate(SceneEditorObject *seo, vec3 value) {}
 
-void seo_probe_reflection_scale(SceneEditorObject *seo, vec3 value) {}
+void seo_probe_reflection_bound_set_scale(Mesh *mesh, SceneEditorObject *seo,
+                                          vec3 offset) {
+    mesh_set_scale(mesh, offset);
+}
+
+void seo_probe_reflection_set_position(Mesh *mesh, SceneEditorObject *seo,
+                                       vec3 offset) {
+  mesh_set_position(mesh, offset);
+}
+
+void seo_probe_reflection_set_rotation(Mesh *mesh, SceneEditorObject *seo,
+                                       vec3 value) {}
+
+void seo_probe_reflection_set_scale(Mesh *mesh, SceneEditorObject *seo,
+                                    vec3 value) {
+  
+}

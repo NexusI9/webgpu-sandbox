@@ -23,6 +23,7 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 #   - VERBOSE : enable verbose
 #   - VERBOSE_BINDING_PHASE : print shader binding structure
 #   - VERBOSE_BUILDING_PHASE : print mesh building phase
+#   - VERBOSE_CREATING_PHASE: print entity creation (mesh, shaders)
 #   - DEBUG_MALLOC : print each allocation size
 #   - DEBUG_TIME : show marked functions execution time
 #

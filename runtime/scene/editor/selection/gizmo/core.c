@@ -8,14 +8,14 @@
 #include <stddef.h>
 
 static const gizmo_transform_create_handles_callback handles_create_func[] = {
-    [GizmoTransformMode_Translate] = gizmo_transform_translate_create,
-    [GizmoTransformMode_Rotate] = gizmo_transform_rotate_create,
+    [GizmoTransformMode_Position] = gizmo_transform_position_create,
+    [GizmoTransformMode_Rotation] = gizmo_transform_rotation_create,
     [GizmoTransformMode_Scale] = gizmo_transform_scale_create,
 };
 
 static const gizmo_transform_callback transform_callback_func[] = {
-    [GizmoTransformMode_Translate] = gizmo_transform_callback_translate,
-    [GizmoTransformMode_Rotate] = gizmo_transform_callback_rotate,
+    [GizmoTransformMode_Position] = gizmo_transform_callback_position,
+    [GizmoTransformMode_Rotation] = gizmo_transform_callback_rotation,
     [GizmoTransformMode_Scale] = gizmo_transform_callback_scale,
 };
 
@@ -26,7 +26,7 @@ static const gizmo_transform_callback transform_callback_func[] = {
 void gizmo_transform_create(GizmoTransform *gizmo,
                             const GizmoCreateDescriptor *desc) {
 
-  gizmo->mode = GizmoTransformMode_Translate;
+  gizmo->mode = GizmoTransformMode_Position;
 
   // init 'cache' attributes
 
@@ -79,13 +79,13 @@ void gizmo_transform_remove(GizmoTransform *gizmo, MeshRefList *dest_list) {
    Transform handle, used to set the handles at the center of selection.
  */
 
-void gizmo_transform_translate(GizmoTransform *gizmo, vec3 position) {
-  mesh_ref_list_translate(&gizmo->handles[gizmo->mode], position);
+void gizmo_transform_set_position(GizmoTransform *gizmo, vec3 position) {
+  mesh_ref_list_set_position(&gizmo->handles[gizmo->mode], position);
 }
 
-void gizmo_transform_rotate_add(GizmoTransform *gizmo, vec3 value,
+void gizmo_transform_set_rotation_add(GizmoTransform *gizmo, vec3 value,
                                 const Axis axis) {
-  mesh_ref_list_rotate_axis(&gizmo->handles[gizmo->mode], value, axis);
+  mesh_ref_list_set_rotation_axis(&gizmo->handles[gizmo->mode], value, axis);
 }
 
 /**
@@ -161,7 +161,7 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, Camera *camera,
   gizmo->cache.init_inv_distance = 1.0f / gizmo->cache.init_distance;
 
   // rotation => angle based, so need to project ray to an infinite plane
-  if (gizmo->mode == GizmoTransformMode_Rotate) {
+  if (gizmo->mode == GizmoTransformMode_Rotation) {
 
     // init plane
     inf_plane_create(&gizmo->cache.plane, gizmo->cache.gizmo_init_position,

@@ -27,7 +27,7 @@ static SelectionKeySequence selection_key_sequences_mode[3] = {
         .sequence = {'G'},
         .length = 1,
         .callback = scene_selection_key_sequence_callback_set_gizmo_mode,
-        .mode = GizmoTransformMode_Translate,
+        .mode = GizmoTransformMode_Position,
     },
     {
         .sequence = {'S'},
@@ -39,7 +39,7 @@ static SelectionKeySequence selection_key_sequences_mode[3] = {
         .sequence = {'R'},
         .length = 1,
         .callback = scene_selection_key_sequence_callback_set_gizmo_mode,
-        .mode = GizmoTransformMode_Rotate,
+        .mode = GizmoTransformMode_Rotation,
     },
 };
 
@@ -50,14 +50,14 @@ static SelectionKeySequence selection_key_sequences_transform[6] = {
         .length = 1,
         .callback = scene_selection_key_sequence_callback_transform,
         .axis = Axis_View,
-        .mode = GizmoTransformMode_Translate,
+        .mode = GizmoTransformMode_Position,
     },
     {
         .sequence = {'R'},
         .length = 1,
         .callback = scene_selection_key_sequence_callback_transform,
         .axis = Axis_View,
-        .mode = GizmoTransformMode_Rotate,
+        .mode = GizmoTransformMode_Rotation,
     },
     {
         .sequence = {'S'},

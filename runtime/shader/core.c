@@ -50,7 +50,10 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 
   // set name
   shader->name = strdup(sd->name);
+
+#ifdef VERBOSE_CREATING_PHASE
   VERBOSE_SHADER_CREATE("%s", shader->name);
+#endif
 
   shader->device = sd->device;
   shader->queue = sd->queue;

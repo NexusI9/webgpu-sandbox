@@ -2,6 +2,7 @@
 #include "../../utils/system.h"
 #include "core.h"
 #include "string.h"
+#include "transform.h"
 #include <stdlib.h>
 
 DynamicListStatus mesh_list_create(MeshList *list, size_t capacity) {
@@ -15,19 +16,19 @@ Mesh *mesh_list_new_mesh(MeshList *list) {
                                 &list->length, sizeof(Mesh), "Mesh list");
 }
 
-void mesh_list_translate(MeshList *list, vec3 position) {
+void mesh_list_set_position(MeshList *list, vec3 position) {
   for (size_t i = 0; i < list->length; i++)
-    mesh_translate(&list->entries[i], position);
+    mesh_set_position(&list->entries[i], position);
 }
-void mesh_list_rotate(MeshList *list, vec3 rotation) {
+void mesh_list_set_rotation(MeshList *list, vec3 rotation) {
   for (size_t i = 0; i < list->length; i++)
-    mesh_rotate(&list->entries[i], rotation);
+    mesh_set_rotation(&list->entries[i], rotation);
 }
-void mesh_list_rotate_quat(MeshList *list, versor quat) {
+void mesh_list_set_rotation_quat(MeshList *list, versor quat) {
   for (size_t i = 0; i < list->length; i++)
-    mesh_rotate_quat(&list->entries[i], quat);
+    mesh_set_rotation_quat(&list->entries[i], quat);
 }
-void mesh_list_scale(MeshList *list, vec3 scale) {
+void mesh_list_set_scale(MeshList *list, vec3 scale) {
   for (size_t i = 0; i < list->length; i++)
-    mesh_scale(&list->entries[i], scale);
+    mesh_set_scale(&list->entries[i], scale);
 }

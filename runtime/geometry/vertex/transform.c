@@ -15,7 +15,7 @@ static float *vertex_transform_attribute(const vindex_t,
 /**
    Adjust the vertex attribute properties depending on given indexes.
 */
-void vertex_transform_scale(const VertexGroup *index,
+void vertex_transform_set_scale(const VertexGroup *index,
                             VertexAttribute *attribute, vec3 *scale) {
 
   // get origin
@@ -46,7 +46,7 @@ void vertex_transform_scale(const VertexGroup *index,
 /**
    Adjust the vertex attribute properties depending on given indexes.
  */
-void vertex_transform_translate(const VertexGroup *index,
+void vertex_transform_set_position(const VertexGroup *index,
                                 VertexAttribute *attribute, vec3 *translation) {
 
   for (size_t i = 0; i < index->length; i++) {
@@ -65,7 +65,7 @@ void vertex_transform_translate(const VertexGroup *index,
 /**
    Adjust the vertex attribute properties depending on given indexes.
  */
-void vertex_transform_rotate(const VertexGroup *index,
+void vertex_transform_set_rotation(const VertexGroup *index,
                              VertexAttribute *attribute, vec3 *rotation) {}
 
 /**

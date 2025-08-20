@@ -27,7 +27,7 @@ void example_gizmo(Scene *scene) {
                              .name = "gizmo shader",
                          });
 
-  mesh_translate(gizmo, (vec3){2.0f, 3.3f, 2.0f});
+  mesh_set_position(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 
   scene_add_mesh_fixed(scene, gizmo, ScenePipeline_Fixed_Front, NULL);
 }
