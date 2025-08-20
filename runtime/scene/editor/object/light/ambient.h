@@ -8,8 +8,8 @@
 void seo_light_ambient_create(SceneEditorObject *, AmbientLight *,
                               const SEOCreateDescriptor *);
 
-void seo_light_ambient_set_position(Mesh *, SceneEditorObject *, vec3);
-void seo_light_ambient_set_rotation(Mesh *, SceneEditorObject *, vec3);
-void seo_light_ambient_set_scale(Mesh *, SceneEditorObject *, vec3);
+void seo_light_ambient_set_position(SEOTransformCallback *);
+void seo_light_ambient_set_rotation(SEOTransformCallback *);
+void seo_light_ambient_set_scale(SEOTransformCallback *);
 
 #endif

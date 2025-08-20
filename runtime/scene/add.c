@@ -326,7 +326,7 @@ scene_add_probe_reflection_grid(Scene *scene,
                                 ProbeReflectionGridDescriptor *desc) {
 
   ProbeReflectionGrid *new_grid =
-      probe_reflection_list_new_entry(&scene->probes_reflection);
+      probe_reflection_grid_list_new_entry(&scene->probes_reflection);
 
   probe_reflection_grid_create(new_grid, desc);
 

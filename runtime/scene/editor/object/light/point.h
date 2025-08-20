@@ -9,9 +9,9 @@
 void seo_light_point_create(SceneEditorObject *, PointLight *,
                             const SEOCreateDescriptor *);
 
-void seo_light_point_set_position(Mesh *, SceneEditorObject *, vec3);
-void seo_light_point_set_rotation(Mesh *, SceneEditorObject *, vec3);
-void seo_light_point_set_scale(Mesh *, SceneEditorObject *, vec3);
+void seo_light_point_set_position(SEOTransformCallback *);
+void seo_light_point_set_rotation(SEOTransformCallback *);
+void seo_light_point_set_scale(SEOTransformCallback *);
 
 void seo_light_point_update_transform_callback(SceneEditorObject *,
                                                const LightShadow);
@@ -21,6 +21,6 @@ void seo_light_point_update_transform_callback(SceneEditorObject *,
 void seo_light_point_shadow_create(SceneEditorObject *, PointLight *,
                                    const SEOCreateDescriptor *);
 
-void seo_light_point_shadow_set_position(Mesh*, SceneEditorObject *, vec3);
+void seo_light_point_shadow_set_position(SEOTransformCallback *);
 
 #endif

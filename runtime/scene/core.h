@@ -36,13 +36,26 @@ typedef struct Scene Scene;
 
 typedef struct SceneEditorObject SceneEditorObject;
 
-typedef void (*seo_transform_axis_callback)(Mesh *, SceneEditorObject *, vec3);
+typedef struct SceneEditorObjectMesh SceneEditorObjectMesh;
+
+typedef struct {
+  SceneEditorObjectMesh *mesh;
+  SceneEditorObject *seo;
+  float* offset;
+} SEOTransformCallback;
+
+typedef void (*seo_transform_axis_callback)(SEOTransformCallback *);
 
 // Link each SEO Mesh a dedicated callback
-typedef struct {
+struct SceneEditorObjectMesh {
   Mesh *mesh;
+  // camera, light 'abstract' objects the meshes drives through transformation
+  void *target;
+  // index of object (ex in LightList or CameraList), not sure about this
+  // flow...
+  size_t target_list_index;
   seo_transform_axis_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
-} SceneEditorObjectMesh;
+};
 
 typedef struct {
   SceneEditorObjectMesh *entries;
@@ -53,13 +66,9 @@ typedef struct {
 struct SceneEditorObject {
   // parent scene pointer
   Scene *scene;
-  // camera, light 'abstract' objects
-  void *target;
-  // index of object (ex in LightList or CameraList)
-  size_t target_list_index;
+  SceneEditorObjectMeshList meshes;
   // origin mesh from which all sub meshes transformation will
   // depend
-  SceneEditorObjectMeshList meshes;
   Mesh *origin;
 };
 
@@ -257,7 +266,7 @@ struct Scene {
   MeshList meshes;
   LightList lights;
   CameraList cameras;
-  ProbeReflectionList probes_reflection;
+  ProbeReflectionGridList probes_reflection;
 
   // References List (ptr)
   MeshRefList pipelines[SCENE_PIPELINE_COUNT]; // meshes pipelines (for

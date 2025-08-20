@@ -14,9 +14,7 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
                        const SEOCreateDescriptor *desc) {
 
   // define target
-  seo->target = camera;
   seo->scene = desc->scene;
-  seo->target_list_index = desc->target_list_index;
 
   const uint8_t seo_mesh_count = 2;
   seo_mesh_list_create(&seo->meshes, seo_mesh_count);
@@ -24,6 +22,9 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   // create new mesh in the mesh list
   SceneEditorObjectMesh *icon = seo_mesh_list_new_entry(&seo->meshes);
   icon->mesh = scene_new_mesh(desc->scene);
+  icon->target = camera;
+  icon->target_list_index = desc->target_list_index;
+
   const char *texture_path = "./resources/assets/texture/ui/camera.png";
 
   // create icon mesh
@@ -102,19 +103,19 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   seo_camera_fov(seo, 90.0f);
 }
 
-void seo_camera_set_position(Mesh *mesh, SceneEditorObject *seo, vec3 value) {
+void seo_camera_set_position(SEOTransformCallback *desc) {
 
   // transform target
-  camera_set_position(seo->target, value);
+  camera_set_position(desc->mesh->target, desc->offset);
 
   // transform mesh
-  for (size_t i = 0; i < seo->meshes.length; i++)
-    mesh_set_position(seo->meshes.entries[i].mesh, value);
+  for (size_t i = 0; i < desc->seo->meshes.length; i++)
+    mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
 }
 
-void seo_camera_set_rotation(Mesh *mesh, SceneEditorObject *seo, vec3 value) {}
+void seo_camera_set_rotation(SEOTransformCallback *desc) {}
 
-void seo_camera_set_scale(Mesh *mesh, SceneEditorObject *seo, vec3 value) {}
+void seo_camera_set_scale(SEOTransformCallback *desc) {}
 
 void seo_camera_lookat(SceneEditorObject *seo, vec3 position, vec3 target) {
 
@@ -123,7 +124,7 @@ void seo_camera_lookat(SceneEditorObject *seo, vec3 position, vec3 target) {
   mesh_set_position(icon, position);
 
   // update camera matrix
-  camera_lookat(seo->target, position, target);
+  // camera_lookat(seo->target, position, target);
 
   // update seo cube mesh rotation
   Mesh *cube = seo->meshes.entries[1].mesh;

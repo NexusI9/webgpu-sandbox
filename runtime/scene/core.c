@@ -46,7 +46,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
     mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
-    probe_reflection_list_create(&scene->probes_reflection,
+    probe_reflection_grid_list_create(&scene->probes_reflection,
                                  PROBE_REFLECTION_LIST_CAPACITY);
     /*
 

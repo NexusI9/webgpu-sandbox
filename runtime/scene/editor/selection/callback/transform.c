@@ -77,12 +77,12 @@ void scene_selection_mesh_shadow_transform(SceneSelectionTransform *desc) {
  */
 
 static inline void
-scene_selection_seo_transform_core(Mesh *, SceneEditorObject *, vec3 *,
-                                   seo_transform_axis_callback,
+scene_selection_seo_transform_core(SceneEditorObjectMesh *, SceneEditorObject *,
+                                   vec3 *, seo_transform_axis_callback,
                                    SceneSelectionTransform *);
 
 void scene_selection_seo_transform_core(
-    Mesh *mesh, SceneEditorObject *seo, vec3 *init_attribute,
+    SceneEditorObjectMesh *mesh, SceneEditorObject *seo, vec3 *init_attribute,
     seo_transform_axis_callback transform_callback,
     SceneSelectionTransform *desc) {
 
@@ -92,7 +92,11 @@ void scene_selection_seo_transform_core(
   glm_vec3_add(*init_attribute, *desc->delta, offset_attribute);
 
   // transform seo via their own callback
-  transform_callback(mesh, seo, offset_attribute);
+  transform_callback(&(SEOTransformCallback){
+      .mesh = mesh,
+      .seo = seo,
+      .offset = offset_attribute,
+  });
 }
 
 /*
@@ -139,9 +143,8 @@ void scene_selection_seo_transform(SceneSelectionTransform *desc) {
         seo->meshes.entries[local_index]
             .transform_callback[desc->transform_mode];
 
-    scene_selection_seo_transform_core(mesh, seo, init_attribute,
-                                       transform_callback, desc);
+    scene_selection_seo_transform_core(&seo->meshes.entries[local_index], seo,
+                                       init_attribute, transform_callback,
+                                       desc);
   }
 }
-
-

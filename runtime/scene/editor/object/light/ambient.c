@@ -10,9 +10,8 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
                               const SEOCreateDescriptor *desc) {
 
   // define target
-  seo->target = light;
+
   seo->scene = desc->scene;
-  seo->target_list_index = desc->target_list_index;
 
   // define mesh
   const size_t gizmo_mesh_count = 1;
@@ -21,6 +20,8 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
   // get new mesh pointer from main mesh list
   SceneEditorObjectMesh *icon = seo_mesh_list_new_entry(&seo->meshes);
   icon->mesh = scene_new_mesh(desc->scene);
+  icon->target_list_index = desc->target_list_index;
+  icon->target = light;
 
   const char *texture_path = "./resources/assets/texture/ui/light-ambient.png";
 
@@ -44,13 +45,12 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
   seo->origin = icon->mesh;
 }
 
-void seo_light_ambient_set_position(Mesh *mesh, SceneEditorObject *seo,
-                                 vec3 value) {
+void seo_light_ambient_set_position(SEOTransformCallback *desc) {
 
-  for (size_t i = 0; i < seo->meshes.length; i++)
-    mesh_set_position(seo->meshes.entries[i].mesh, value);
+  for (size_t i = 0; i < desc->seo->meshes.length; i++)
+    mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
 }
 
-void seo_light_ambient_set_rotation(Mesh *mesh, SceneEditorObject *seo, vec3 value) {}
+void seo_light_ambient_set_rotation(SEOTransformCallback *desc) {}
 
-void seo_light_ambient_set_scale(Mesh *mesh, SceneEditorObject *seo, vec3 value) {}
+void seo_light_ambient_set_scale(SEOTransformCallback *desc) {}
