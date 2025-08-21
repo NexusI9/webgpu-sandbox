@@ -1,16 +1,16 @@
 #include "core.h"
 #include "../runtime/pipeline/pipeline.h"
-#include "./layouts/layout.billboard.h"
-#include "./layouts/layout.default.h"
-#include "./layouts/layout.grid.h"
-#include "./layouts/layout.line.h"
-#include "./layouts/layout.pbr.h"
-#include "./layouts/layout.screen.h"
-#include "./layouts/layout.shadow.h"
-#include "./layouts/layout.skybox.h"
-#include "./layouts/layout.solid.h"
-#include "./layouts/layout.unlit.h"
-#include "./layouts/layout.glass.h"
+#include "./modules/billboard/billboard.h"
+#include "./modules/default/default.h"
+#include "./modules/grid/grid.h"
+#include "./modules/line/line.h"
+#include "./modules/pbr/pbr.h"
+#include "./modules/screen/screen.h"
+#include "./modules/shadow/shadow.h"
+#include "./modules/skybox/skybox.h"
+#include "./modules/solid/solid.h"
+#include "./modules/unlit/unlit.h"
+#include "./modules/glass/glass.h"
 #include "webgpu/webgpu.h"
 
 static const PipelineLayoutDescriptor *standard_layouts[PIPELINE_TYPE_COUNT] = {
@@ -32,6 +32,9 @@ Pipeline g_std_pipelines[PIPELINE_TYPE_COUNT] = {0};
 
 /**
    Initialize standards shaders and build pipelines layout for each of them.
+   
+                 [ BLUEPRINT ] ===> [ WGPUPipeline ]
+		 
  */
 void standard_pipelines_init(const WGPUDevice device,
                              const PipelineMultisampleCount multisample) {

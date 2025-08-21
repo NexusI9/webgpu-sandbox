@@ -13,7 +13,7 @@ void store_file(char **buffer, const char *path) {
   fp = fopen(path, "rb");
 
   if (!fp) {
-    VERBOSE_ERROR("Couldn't load file.");
+    VERBOSE_ERROR("Couldn't load file: %s.", path);
     exit(1);
   }
 

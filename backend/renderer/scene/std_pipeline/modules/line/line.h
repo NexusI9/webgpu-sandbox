@@ -1,24 +1,24 @@
-#ifndef _PIPELINE_LAYOUT_UNLIT_H_
-#define _PIPELINE_LAYOUT_UNLIT_H_
+#ifndef _PIPELINE_LAYOUT_LINE_H_
+#define _PIPELINE_LAYOUT_LINE_H_
 
-#include "../core.h"
+#include "../../core.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_unlit = {
-    .label = "Pipeline Bind Groups - Unlit",
+static const PipelineLayoutDescriptor layout_line = {
+    .label = "Pipeline Bind Groups - Line",
     .shader_path =
-        "./backend/renderer/scene/std_pipeline/modules/shader.unlit.wgsl",
-    .bind_groups_count = 2,
+        "./backend/renderer/scene/std_pipeline/modules/line/line.wgsl",
+    .bind_groups_count = 1,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
             {
-                // Group 0 (Scene Data)
-                .label = "Group 0 - Camera and Mesh",
-                .entryCount = 3,
+                // Group 0
+                .label = "Group 0 - Viewport, Camera, Mesh",
+                .entryCount = 4,
                 .entries =
                     (WGPUBindGroupLayoutEntry[]){
                         {
@@ -29,8 +29,7 @@ static const PipelineLayoutDescriptor layout_unlit = {
                                 (WGPUBufferBindingLayout){
                                     .type = WGPUBufferBindingType_Uniform,
                                     .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(
-                                        ViewportUniform), // or 256-aligned
+                                    .minBindingSize = sizeof(ViewportUniform),
                                 },
                         },
                         {
@@ -55,37 +54,28 @@ static const PipelineLayoutDescriptor layout_unlit = {
                                     .minBindingSize = sizeof(MeshUniform),
                                 },
                         },
-                    },
-            },
-            {
-                // Group 1 (Billboard Material)
-                .label = "Group 1 - Billboard Properties",
-                .entryCount = 2,
-                .entries =
-                    (WGPUBindGroupLayoutEntry[]){
                         {
-                            .binding = 0, // uColor
+                            .binding = 3, // Color
                             .visibility = WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
                                     .type = WGPUBufferBindingType_Uniform,
                                     .hasDynamicOffset = false,
-                                    .minBindingSize =
-                                        sizeof(float) * 4, // vec4<f32>
-                                },
-                        },
-                        {
-                            .binding = 1, // uFixedScale
-                            .visibility = WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(float), // f32
+                                    .minBindingSize = sizeof(color),
                                 },
                         },
                     },
             },
+        },
+    .pipeline_attributes =
+        {
+            .primitive_state =
+                (WGPUPrimitiveState){
+                    .frontFace = WGPUFrontFace_CCW,
+                    .cullMode = WGPUCullMode_None,
+                    .topology = WGPUPrimitiveTopology_TriangleList,
+                    .stripIndexFormat = WGPUIndexFormat_Undefined,
+                },
         },
     .bindings =
         {

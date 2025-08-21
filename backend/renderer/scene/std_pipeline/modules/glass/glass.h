@@ -1,28 +1,37 @@
-#ifndef _PIPELINE_LAYOUT_BILLBOARD_H_
-#define _PIPELINE_LAYOUT_BILLBOARD_H_
+#ifndef _PIPELINE_LAYOUT_GLASS_H_
+#define _PIPELINE_LAYOUT_GLASS_H_
 
-#include "../core.h"
+#include "../../core.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_billboard = {
-    .label = "Pipeline Bind Groups - Billboard",
+typedef struct {
+  float roughness;
+  float frost_scale;
+  float frost_strength;
+  float _pad;
+  color color;
+  vec4 _pad1;
+} __attribute__((aligned(16))) GlassUniform;
+
+static const PipelineLayoutDescriptor layout_glass = {
+    .label = "Pipeline Bind Groups - Glass",
     .shader_path =
-        "./backend/renderer/scene/std_pipeline/modules/shader.billboard.wgsl",
+        "./backend/renderer/scene/std_pipeline/modules/glass/glass.wgsl",
     .bind_groups_count = 2,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
             {
-                // Group 0
-                .label = "Group 0 (Scene Data)",
-                .entryCount = 3,
+                // Group 0 (Uniforms)
+                .label = "Group 0 (Scene + Glass Material Data)",
+                .entryCount = 4,
                 .entries =
                     (WGPUBindGroupLayoutEntry[]){
                         {
-                            .binding = 0,
+                            .binding = 0, // uViewport
                             .visibility = WGPUShaderStage_Vertex |
                                           WGPUShaderStage_Fragment,
                             .buffer =
@@ -33,7 +42,7 @@ static const PipelineLayoutDescriptor layout_billboard = {
                                 },
                         },
                         {
-                            .binding = 1,
+                            .binding = 1, // uCamera
                             .visibility = WGPUShaderStage_Vertex |
                                           WGPUShaderStage_Fragment,
                             .buffer =
@@ -44,7 +53,7 @@ static const PipelineLayoutDescriptor layout_billboard = {
                                 },
                         },
                         {
-                            .binding = 2,
+                            .binding = 2, // uMesh
                             .visibility = WGPUShaderStage_Vertex |
                                           WGPUShaderStage_Fragment,
                             .buffer =
@@ -54,43 +63,41 @@ static const PipelineLayoutDescriptor layout_billboard = {
                                     .minBindingSize = sizeof(MeshUniform),
                                 },
                         },
+                        {
+                            .binding = 3, // uGlassMaterial
+                            .visibility = WGPUShaderStage_Fragment,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize = sizeof(GlassUniform),
+                                },
+                        },
                     },
             },
             {
-                // Group 1
-                .label = "Group 1 (Material Data)",
-                .entryCount = 3,
+                // Group 1 (Environment map + sampler)
+                .label = "Group 1 (Environment Map)",
+                .entryCount = 2,
                 .entries =
                     (WGPUBindGroupLayoutEntry[]){
                         {
-                            .binding = 0,
+                            .binding = 0, // env_map
                             .visibility = WGPUShaderStage_Fragment,
                             .texture =
                                 (WGPUTextureBindingLayout){
                                     .sampleType = WGPUTextureSampleType_Float,
                                     .viewDimension =
-                                        WGPUTextureViewDimension_2D,
+                                        WGPUTextureViewDimension_Cube,
                                     .multisampled = false,
                                 },
                         },
                         {
-                            .binding = 1,
+                            .binding = 1, // env_sampler
                             .visibility = WGPUShaderStage_Fragment,
                             .sampler =
                                 (WGPUSamplerBindingLayout){
                                     .type = WGPUSamplerBindingType_Filtering,
-                                },
-                        },
-                        {
-                            .binding = 2,
-                            .visibility = WGPUShaderStage_Fragment |
-                                          WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize =
-                                        sizeof(uint32_t), // or 256-byte aligned
                                 },
                         },
                     },

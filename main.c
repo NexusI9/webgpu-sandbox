@@ -6,7 +6,6 @@
 #include "backend/renderer/renderer.h"
 #include "backend/renderer/scene/ao_bake/core.h"
 #include "backend/renderer/scene/core.h"
-#include "backend/renderer/scene/std_pipeline/layouts/layout.glass.h"
 #include "resources/example/example.h"
 #include <emscripten/emscripten.h>
 
@@ -63,7 +62,7 @@ int main(int argc, const char *argv[]) {
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
   // example_skybox(&main_scene);
-  // example_gltf(&main_scene);
+  example_gltf(&main_scene);
   // example_ao(&main_scene, false);
   example_glass(&main_scene);
 

@@ -37,12 +37,10 @@ void render_pass_create(RenderPass *render_pass,
 
   // assign color attributes
   WGPUTextureView color_view;
-  if (desc->color.view) {
+  if (desc->color.view)
     color_view = *desc->color.view;
-  } else if (desc->multisample > PipelineMultisampleCount_1x) {
+  else if (desc->multisample > PipelineMultisampleCount_1x)
     render_pass_create_multisampling_view(&color_view, &texture_config);
-  }
-  printf("color view: %p\n", color_view);
 
   // define callback based on multisample and swapchain
   switch (desc->multisample) {

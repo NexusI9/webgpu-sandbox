@@ -1,6 +1,7 @@
 #ifndef _PIPELINE_LAYOUT_SHADOW_H_
 #define _PIPELINE_LAYOUT_SHADOW_H_
-#include "../core.h"
+
+#include "../../core.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
@@ -12,7 +13,7 @@
 static const PipelineLayoutDescriptor layout_shadow = {
     .label = "Pipeline Bind Groups - Shadow",
     .shader_path =
-        "./backend/renderer/scene/std_pipeline/modules/shader.shadow.wgsl",
+        "./backend/renderer/scene/std_pipeline/modules/shadow/shadow.wgsl",
     .bind_groups_count = 1,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
@@ -75,7 +76,7 @@ static const PipelineLayoutDescriptor layout_shadow = {
 static const PipelineLayoutDescriptor layout_shadow_cullback = {
     .label = "Pipeline Bind Groups - Shadow Cullback",
     .shader_path =
-        "./backend/renderer/scene/std_pipeline/modules/shader.shadow.wgsl",
+        "./backend/renderer/scene/std_pipeline/modules/shadow/shadow.wgsl",
     .bind_groups_count = 1,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){

@@ -1,7 +1,7 @@
 #ifndef _PIPELINE_LAYOUT_GRID_H_
 #define _PIPELINE_LAYOUT_GRID_H_
 
-#include "../core.h"
+#include "../../core.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/scene/editor/object/grid/grid.h"
@@ -12,7 +12,7 @@
 static const PipelineLayoutDescriptor layout_grid = {
     .label = "Pipeline Bind Groups - Grid",
     .shader_path =
-        "./backend/renderer/scene/std_pipeline/modules/shader.grid.wgsl",
+        "./backend/renderer/scene/std_pipeline/modules/grid/grid.wgsl",
     .bind_groups_count = 2,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){

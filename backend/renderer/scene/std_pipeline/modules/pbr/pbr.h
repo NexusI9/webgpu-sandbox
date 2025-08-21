@@ -1,7 +1,7 @@
 #ifndef _PIPELINE_LAYOUT_PBR_H_
 #define _PIPELINE_LAYOUT_PBR_H_
 
-#include "../core.h"
+#include "../../core.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/light/uniform.h"
 #include "../runtime/mesh/mesh.h"
@@ -12,7 +12,7 @@
 static const PipelineLayoutDescriptor layout_pbr = {
     .label = "Pipeline Bind Groups - PBR",
     .shader_path =
-        "../backend/renderer/scene/std_pipeline/modules/shader.pbr.wgsl",
+        "../backend/renderer/scene/std_pipeline/modules/pbr/pbr.wgsl",
     .bind_groups_count = 3,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){

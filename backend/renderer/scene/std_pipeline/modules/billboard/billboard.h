@@ -1,41 +1,28 @@
-#ifndef _PIPELINE_LAYOUT_SCREEN_H_
-#define _PIPELINE_LAYOUT_SCREEN_H_
+#ifndef _PIPELINE_LAYOUT_BILLBOARD_H_
+#define _PIPELINE_LAYOUT_BILLBOARD_H_
 
-#include "../core.h"
+#include "../../core.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_screen = {
-    .label = "Pipeline Bind Groups - Screen",
+static const PipelineLayoutDescriptor layout_billboard = {
+    .label = "Pipeline Bind Groups - Billboard",
     .shader_path =
-        "./backend/renderer/scene/std_pipeline/modules/shader.screen.wgsl",
+        "./backend/renderer/scene/std_pipeline/modules/billboard/billboard.wgsl",
     .bind_groups_count = 2,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
             {
-                // Group 0: Mesh, Viewport, Camera
-                .label = "Group 0 - Mesh, Viewport, Camera",
+                // Group 0
+                .label = "Group 0 (Scene Data)",
                 .entryCount = 3,
                 .entries =
                     (WGPUBindGroupLayoutEntry[]){
                         {
-                            // uMesh
                             .binding = 0,
-                            .visibility = WGPUShaderStage_Vertex |
-                                          WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(MeshUniform),
-                                },
-                        },
-                        {
-                            // uViewport
-                            .binding = 1,
                             .visibility = WGPUShaderStage_Vertex |
                                           WGPUShaderStage_Fragment,
                             .buffer =
@@ -46,8 +33,7 @@ static const PipelineLayoutDescriptor layout_screen = {
                                 },
                         },
                         {
-                            // uCamera
-                            .binding = 2,
+                            .binding = 1,
                             .visibility = WGPUShaderStage_Vertex |
                                           WGPUShaderStage_Fragment,
                             .buffer =
@@ -57,16 +43,26 @@ static const PipelineLayoutDescriptor layout_screen = {
                                     .minBindingSize = sizeof(CameraUniform),
                                 },
                         },
+                        {
+                            .binding = 2,
+                            .visibility = WGPUShaderStage_Vertex |
+                                          WGPUShaderStage_Fragment,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize = sizeof(MeshUniform),
+                                },
+                        },
                     },
             },
             {
-                // Group 1: Texture + Sampler
-                .label = "Group 1 - Screen Texture",
-                .entryCount = 2,
+                // Group 1
+                .label = "Group 1 (Material Data)",
+                .entryCount = 3,
                 .entries =
                     (WGPUBindGroupLayoutEntry[]){
                         {
-                            // texture
                             .binding = 0,
                             .visibility = WGPUShaderStage_Fragment,
                             .texture =
@@ -78,7 +74,6 @@ static const PipelineLayoutDescriptor layout_screen = {
                                 },
                         },
                         {
-                            // texture_sampler
                             .binding = 1,
                             .visibility = WGPUShaderStage_Fragment,
                             .sampler =
@@ -86,18 +81,20 @@ static const PipelineLayoutDescriptor layout_screen = {
                                     .type = WGPUSamplerBindingType_Filtering,
                                 },
                         },
+                        {
+                            .binding = 2,
+                            .visibility = WGPUShaderStage_Fragment |
+                                          WGPUShaderStage_Vertex,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize =
+                                        sizeof(uint32_t), // or 256-byte aligned
+                                },
+                        },
                     },
             },
-        },
-    .pipeline_attributes =
-        {
-            .primitive_state =
-                (WGPUPrimitiveState){
-                    .frontFace = WGPUFrontFace_CCW,
-                    .cullMode = WGPUCullMode_None,
-                    .topology = WGPUPrimitiveTopology_TriangleList,
-                    .stripIndexFormat = WGPUIndexFormat_Undefined,
-                },
         },
     .bindings =
         {

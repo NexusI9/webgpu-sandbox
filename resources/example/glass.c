@@ -1,5 +1,5 @@
 #include "glass.h"
-#include "../backend/renderer/scene/std_pipeline/layouts/layout.glass.h"
+#include "../backend/renderer/scene/std_pipeline/modules/glass/glass.h"
 
 void example_glass(Scene *scene) {
   Mesh *cube = scene_new_mesh(scene);

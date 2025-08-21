@@ -1,7 +1,7 @@
 #ifndef _PIPELINE_LAYOUT_SKYBOX_H_
 #define _PIPELINE_LAYOUT_SKYBOX_H_
 
-#include "../core.h"
+#include "../../core.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
@@ -11,7 +11,7 @@
 static const PipelineLayoutDescriptor layout_skybox = {
     .label = "Pipeline Bind Groups - Skybox",
     .shader_path =
-        "./backend/renderer/scene/std_pipeline/modules/shader.skybox.wgsl",
+        "./backend/renderer/scene/std_pipeline/modules/skybox/skybox.wgsl",
     .bind_groups_count = 2,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
