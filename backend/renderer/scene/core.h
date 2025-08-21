@@ -43,11 +43,6 @@ typedef struct {
 } SceneRendererDrawCallbackList;
 
 typedef struct {
-  WGPUTextureView depth;
-  WGPUTextureView color;
-} SceneRendererTextureRender;
-
-typedef struct {
   WGPUTexture texture;
   WGPUTextureView cubemap;
 } SceneRendererTextureSkybox;
@@ -68,20 +63,18 @@ typedef struct SceneRenderer {
     WGPUInstance instance;
     WGPUDevice device;
     WGPUQueue queue;
-    WGPUSwapChain swapchain;
     WGPURenderPipeline pipeline;
     WGPURenderPassEncoder render_pass;
   } wgpu;
 
   // cached texture shared throughout parent scene objects
   struct {
-    SceneRendererTextureRender render;
     SceneRendererTextureAO ambient_occlusion;
     SceneRendererTextureSkybox skybox;
-    PipelineMultisampleCount multisample;
   } texture;
 
   struct {
+    WGPUSwapChain swapchain;
     SceneRendererDrawMode mode;
     SceneRendererDrawCallbackList callbacks;
     RenderPassLayout layouts[SCENE_RENDERER_DRAW_MODE_COUNT];

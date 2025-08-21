@@ -35,10 +35,10 @@ static void scene_build_mesh_boundbox(Mesh *, Camera *, Viewport *);
  */
 void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 
-  SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
-  PipelineMultisampleCount sample_count = scene->renderer.texture.multisample;
   Camera *camera = scene->active_camera;
   Viewport *viewport = &scene->viewport;
+  
+  const SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
   const WGPUQueue queue = scene_queue(scene);
   const WGPUDevice device = scene_device(scene);
 
@@ -88,13 +88,14 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
     case SceneRendererDrawMode_Texture:
       VERBOSE_MESH_BUILD("Texture %s", mesh->name);
 
-      scene_build_mesh_texture(mesh, camera, viewport,
-                               &(SceneBuildTextureDescriptor){
-                                   .pipeline = pipeline,
-                                   .lights = &scene->lights,
-                                   .point_map = scene->lights.point.shadow.depth_view,
-                                   .spot_map = scene->lights.spot.shadow.depth_view,
-                               });
+      scene_build_mesh_texture(
+          mesh, camera, viewport,
+          &(SceneBuildTextureDescriptor){
+              .pipeline = pipeline,
+              .lights = &scene->lights,
+              .point_map = scene->lights.point.shadow.depth_view,
+              .spot_map = scene->lights.spot.shadow.depth_view,
+          });
 
       break;
     }
@@ -139,7 +140,6 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
     // bind lights
     mesh_shader_texture_update_lights(mesh, build_desc->lights,
                                       SHADER_TEXTURE_BINDGROUP_LIGHTS);
-
   }
 
   // shadow only pipeline

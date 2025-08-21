@@ -5,7 +5,6 @@
 #include "./core.h"
 #include "./ao_bake/ao_bake.h"
 #include "./shadow_map/shadow_map.h"
-#include "./texture.h"
 #include "./std_pipeline/std_pipeline.h"
 
 #endif

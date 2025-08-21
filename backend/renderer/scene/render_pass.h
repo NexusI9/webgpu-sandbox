@@ -42,16 +42,29 @@ typedef struct {
   WGPURenderPassDepthStencilAttachment attachment;
 } RenderPassDepth;
 
-
 /**
-   Basically a RenderPass is just a config with a color, depth attachment and a builtin encoder to render layouts from the render layout.
+   Basically a RenderPass is just a config with a color, depth attachment and a
+   builtin encoder to render layouts from the render layout.
 */
 struct RenderPass {
   const char *label;
+  WGPUDevice device;
+  WGPUQueue queue;
   RenderPassColor color;
   RenderPassDepth depth;
   WGPURenderPassEncoder encoder;
+  PipelineMultisampleCount multisample;
+  WGPUSwapChain *swapchain;
+  int width;
+  int height;
 };
+
+typedef struct {
+  int width;
+  int height;
+  PipelineMultisampleCount multisample;
+  const WGPUDevice device;
+} RenderPassTextureDescriptor;
 
 typedef struct {
   WGPUTextureView *view;
@@ -73,21 +86,23 @@ typedef struct {
   const char *label;
   RenderPassColorAttachment color;
   RenderPassDepthAttachment depth;
+  PipelineMultisampleCount multisample;
+  WGPUSwapChain *swapchain;
+  const WGPUDevice device;
+  const WGPUQueue queue;
+  int width;
+  int height;
 } RenderPassCreateDescriptor;
 
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
   RenderPassLayout *pass_layout;
-  WGPUSwapChain *swapchain;
-  PipelineMultisampleCount multisample;
-  WGPUTextureView *msaa_view;
 } RenderPassDrawDescriptor;
 
 typedef void (*render_pass_color_attachment_callback)(RenderPass *);
 typedef void (*render_pass_draw_callback)(RenderPass *, RenderPassLayout *,
-                                          WGPUTextureView *, WGPUTextureView *,
-                                          WGPUCommandEncoder *);
+                                          WGPUTextureView, WGPUCommandEncoder);
 
 void render_pass_create(RenderPass *, const RenderPassCreateDescriptor *);
 

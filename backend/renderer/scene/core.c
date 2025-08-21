@@ -2,7 +2,6 @@
 #include "../runtime/html_event/html_event.h"
 #include "../runtime/input/input.h"
 #include "../utils/system.h"
-#include "./texture.h"
 #include "ao_bake/core.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
@@ -14,13 +13,18 @@
 
 static void scene_renderer_init(SceneRenderer *);
 
-static void scene_renderer_init_render_pass(SceneRenderer *);
+static inline void
+scene_renderer_init_render_pass(SceneRenderer *,
+                                const PipelineMultisampleCount);
 
 static void scene_renderer_resize(SceneRenderer *);
 
 static void scene_renderer_render(void *);
 
 static double scene_renderer_dpi(double);
+
+static inline WGPUSwapChain
+scene_renderer_create_swapchain(const SceneRenderer *);
 
 void scene_renderer_create(SceneRenderer *renderer,
                            const SceneRendererCreateDescriptor *rd) {
@@ -37,16 +41,11 @@ void scene_renderer_create(SceneRenderer *renderer,
   renderer->wgpu.device = emscripten_webgpu_get_device();
   renderer->wgpu.queue = wgpuDeviceGetQueue(renderer->wgpu.device);
 
-  renderer->texture.multisample = rd->multisampling_count;
-
   // define context size
   scene_renderer_resize(renderer);
 
-  // init shared render textures
-  TIMER("", { scene_renderer_init_render_textures(renderer); });
-
   // init render passes
-  scene_renderer_init_render_pass(renderer);
+  scene_renderer_init_render_pass(renderer, rd->multisampling_count);
 
   TIMER("", {
     ao_bake_init(&renderer->texture.ambient_occlusion,
@@ -86,7 +85,7 @@ void scene_renderer_create(SceneRenderer *renderer,
 
   // init standards shaders
   standard_pipelines_init(scene_renderer_device(renderer),
-                          renderer->texture.multisample);
+                          rd->multisampling_count);
 
   // init global HTML event manager with context
   //  name (implicit)
@@ -176,9 +175,6 @@ void scene_renderer_draw_layout_callback(void *data) {
   render_pass_draw(renderer->draw.pass,
                    &(RenderPassDrawDescriptor){
                        .pass_layout = pass_layout,
-                       .msaa_view = &renderer->texture.render.color,
-                       .swapchain = &renderer->wgpu.swapchain,
-                       .multisample = renderer->texture.multisample,
                        .queue = scene_renderer_queue(renderer),
                        .device = scene_renderer_device(renderer),
                    });
@@ -208,12 +204,12 @@ void scene_renderer_resize(SceneRenderer *renderer) {
   emscripten_set_element_css_size(renderer->context.name, w, h);
 
   // reset swap chain on resize
-  if (renderer->wgpu.swapchain) {
-    wgpuSwapChainRelease(renderer->wgpu.swapchain);
-    renderer->wgpu.swapchain = NULL;
+  if (renderer->draw.swapchain) {
+    wgpuSwapChainRelease(renderer->draw.swapchain);
+    renderer->draw.swapchain = NULL;
   }
 
-  renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
+  renderer->draw.swapchain = scene_renderer_create_swapchain(renderer);
 }
 
 double scene_renderer_dpi(double value) {
@@ -232,7 +228,7 @@ void scene_renderer_init(SceneRenderer *renderer) {
 
 void scene_renderer_close(const SceneRenderer *renderer) {
   wgpuRenderPipelineRelease(renderer->wgpu.pipeline);
-  wgpuSwapChainRelease(renderer->wgpu.swapchain);
+  wgpuSwapChainRelease(renderer->draw.swapchain);
   wgpuQueueRelease(renderer->wgpu.queue);
   wgpuDeviceRelease(renderer->wgpu.device);
   wgpuInstanceRelease(renderer->wgpu.instance);
@@ -241,15 +237,22 @@ void scene_renderer_close(const SceneRenderer *renderer) {
 /**
    Initialize scene renderer main render pass and define their configurations.
  */
-void scene_renderer_init_render_pass(SceneRenderer *renderer) {
+void scene_renderer_init_render_pass(
+    SceneRenderer *renderer, const PipelineMultisampleCount multisample) {
 
   // init Scene render pass
   render_pass_create(&renderer->draw.pass[RenderPassType_Scene],
                      &(RenderPassCreateDescriptor){
                          .label = "Scene Render Pass",
+                         .multisample = multisample,
+                         .swapchain = &renderer->draw.swapchain,
+                         .width = scene_renderer_width(renderer),
+                         .height = scene_renderer_height(renderer),
+                         .device = scene_renderer_device(renderer),
+                         .queue = scene_renderer_queue(renderer),
                          .color =
                              {
-                                 .view = &renderer->texture.render.color,
+                                 .view = NULL,
                                  .clear_value = renderer->background,
                                  .load_op = WGPULoadOp_Clear,
                                  .store_op = WGPUStoreOp_Store,
@@ -257,7 +260,7 @@ void scene_renderer_init_render_pass(SceneRenderer *renderer) {
                              },
                          .depth =
                              {
-                                 .view = &renderer->texture.render.depth,
+                                 .view = NULL,
                                  // Allow depth write
                                  .read_only = false,
                                  // Far plane
@@ -272,21 +275,18 @@ void scene_renderer_init_render_pass(SceneRenderer *renderer) {
   // init Gizmo render pass
 
   // create dedicated depth texture for gizmo
-  WGPUTextureView gizmo_depth_view;
-  scene_renderer_create_depth_view(
-      &gizmo_depth_view, &(SceneRendererTextureDescriptor){
-                             .device = scene_renderer_device(renderer),
-                             .height = scene_renderer_height(renderer),
-                             .width = scene_renderer_width(renderer),
-                             .multisample = renderer->texture.multisample,
-                         });
-
   render_pass_create(&renderer->draw.pass[RenderPassType_Gizmo],
                      &(RenderPassCreateDescriptor){
                          .label = "Gizmo Render Pass",
+                         .multisample = multisample,
+                         .swapchain = &renderer->draw.swapchain,
+                         .width = scene_renderer_width(renderer),
+                         .height = scene_renderer_height(renderer),
+                         .device = scene_renderer_device(renderer),
+                         .queue = scene_renderer_queue(renderer),
                          .color =
                              {
-                                 .view = &renderer->texture.render.color,
+                                 .view = NULL,
                                  .clear_value = 0,
                                  .load_op = WGPULoadOp_Load,
                                  .store_op = WGPUStoreOp_Store,
@@ -294,7 +294,7 @@ void scene_renderer_init_render_pass(SceneRenderer *renderer) {
                              },
                          .depth =
                              {
-                                 .view = &gizmo_depth_view,
+                                 .view = NULL,
                                  .read_only = false,
                                  .clear_value = 1.0f,
                                  // clear previously rendered depth
@@ -394,4 +394,26 @@ const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *renderer) {
 
 cclock *scene_renderer_clock(SceneRenderer *renderer) {
   return &renderer->clock;
+}
+
+WGPUSwapChain scene_renderer_create_swapchain(const SceneRenderer *renderer) {
+  WGPUSurface surface = wgpuInstanceCreateSurface(
+      renderer->wgpu.instance,
+      &(WGPUSurfaceDescriptor){
+          .nextInChain = (WGPUChainedStruct *)(&(
+              WGPUSurfaceDescriptorFromCanvasHTMLSelector){
+              .chain.sType = WGPUSType_SurfaceDescriptorFromCanvasHTMLSelector,
+              .selector = renderer->context.name,
+          }),
+      });
+
+  return wgpuDeviceCreateSwapChain(
+      renderer->wgpu.device, surface,
+      &(WGPUSwapChainDescriptor){
+          .usage = WGPUTextureUsage_RenderAttachment,
+          .format = WGPUTextureFormat_BGRA8Unorm,
+          .width = scene_renderer_width(renderer),
+          .height = scene_renderer_height(renderer),
+          .presentMode = WGPUPresentMode_Fifo,
+      });
 }
