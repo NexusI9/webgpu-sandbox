@@ -22,12 +22,10 @@ void scene_camera_draw_callback(void *data) {
  */
 
 static const MeshShader map_shader_draw_mode[SCENE_RENDERER_DRAW_MODE_COUNT] = {
-    [SceneRendererDrawMode_Fixed] = MeshShader_Fixed,
     [SceneRendererDrawMode_Texture] = MeshShader_Texture,
     [SceneRendererDrawMode_Solid] = MeshShader_Solid,
     [SceneRendererDrawMode_Wireframe] = MeshShader_Wireframe,
     [SceneRendererDrawMode_Boundbox] = MeshShader_Wireframe,
-    [SceneRendererDrawMode_Selection] = MeshShader_Wireframe,
 };
 
 void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
@@ -42,7 +40,4 @@ void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
    Update textures of all certain type of lights (Point, Sun, Spot...)
    Function used when an object is added to the scene.
  */
-void scene_update_shadow_map(Scene *scene, const LightType light_type) {
-
-  
-}
+void scene_update_shadow_map(Scene *scene, const LightType light_type) {}

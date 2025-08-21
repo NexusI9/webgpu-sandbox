@@ -11,15 +11,13 @@
 
 #define SCENE_RENDERER_MAX_HOOK 6
 #define SCENE_RENDERER_DPI_AUTO 0
-#define SCENE_RENDERER_DRAW_MODE_COUNT 6
+#define SCENE_RENDERER_DRAW_MODE_COUNT 4
 
 typedef enum {
   SceneRendererDrawMode_Texture,
   SceneRendererDrawMode_Solid,
   SceneRendererDrawMode_Wireframe,
   SceneRendererDrawMode_Boundbox,
-  SceneRendererDrawMode_Fixed,
-  SceneRendererDrawMode_Selection,
 } SceneRendererDrawMode;
 
 typedef struct {
@@ -64,6 +62,7 @@ typedef struct SceneRenderer {
     WGPUDevice device;
     WGPUQueue queue;
     WGPURenderPipeline pipeline;
+    WGPUSwapChain swapchain;
     WGPURenderPassEncoder render_pass;
   } wgpu;
 
@@ -74,11 +73,9 @@ typedef struct SceneRenderer {
   } texture;
 
   struct {
-    WGPUSwapChain swapchain;
     SceneRendererDrawMode mode;
     SceneRendererDrawCallbackList callbacks;
-    RenderPassLayout layouts[SCENE_RENDERER_DRAW_MODE_COUNT];
-    RenderPass pass[RENDER_PASS_COUNT];
+    RenderPassList pass[SCENE_RENDERER_DRAW_MODE_COUNT];
   } draw;
 
 } SceneRenderer;
@@ -92,12 +89,6 @@ void scene_renderer_create(SceneRenderer *,
 
 void scene_renderer_set_draw_mode(SceneRenderer *, const SceneRendererDrawMode);
 
-void scene_renderer_set_draw_layout(SceneRenderer *,
-                                    const SceneRendererDrawMode,
-                                    const RenderPassLayout *);
-
-RenderPass *scene_renderer_pass(SceneRenderer *, const RenderPassType);
-
 void scene_renderer_draw_layout_callback(void *);
 
 void scene_renderer_add_draw_callback(SceneRenderer *,
@@ -108,8 +99,10 @@ void scene_renderer_close(const SceneRenderer *);
 // getters
 WGPUDevice scene_renderer_device(SceneRenderer *);
 WGPUQueue scene_renderer_queue(SceneRenderer *);
+WGPUSwapChain scene_renderer_swapchain(SceneRenderer *);
 int scene_renderer_width(const SceneRenderer *);
 int scene_renderer_height(const SceneRenderer *);
+PipelineMultisampleCount scene_renderer_multisample(const SceneRenderer *);
 
 const char *scene_renderer_target(SceneRenderer *);
 

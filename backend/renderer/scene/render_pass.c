@@ -5,14 +5,8 @@
 static void render_pass_create_color_multisample(RenderPass *);
 static void render_pass_create_color_monosample(RenderPass *);
 
-static void render_pass_draw_layout(RenderPassDrawList *,
-                                    WGPURenderPassEncoder *);
-
-static void render_pass_draw_monosample(RenderPass *, RenderPassLayout *,
-                                        WGPUTextureView, WGPUCommandEncoder);
-
-static void render_pass_draw_multisample(RenderPass *, RenderPassLayout *,
-                                         WGPUTextureView, WGPUCommandEncoder);
+static void render_pass_draw_list(RenderPassDrawList *,
+                                  WGPURenderPassEncoder *);
 
 static inline void
 render_pass_create_multisampling_view(WGPUTextureView *,
@@ -21,21 +15,6 @@ render_pass_create_multisampling_view(WGPUTextureView *,
 static inline void
 render_pass_create_depth_view(WGPUTextureView *,
                               const RenderPassTextureDescriptor *);
-
-/**
-   Look up pass color draw based on msaa type
-
-   Depending on mono sampling or multi sampling, the pass color attachment of
-   renderer will be different (i.e. no resolveTarget for monosampling). As to
-   avoid branching during the draw function, we set those callback as parameters
-   before calling the draw.
-
-   MSAA Texture (Nx) ===> resolved ===> Swapchain texture (1x)
- */
-static const render_pass_draw_callback draw_callback[] = {
-    [PipelineMultisampleCount_1x] = render_pass_draw_monosample,
-    [PipelineMultisampleCount_4x] = render_pass_draw_multisample,
-};
 
 void render_pass_create(RenderPass *render_pass,
                         const RenderPassCreateDescriptor *desc) {
@@ -58,11 +37,25 @@ void render_pass_create(RenderPass *render_pass,
 
   // assign color attributes
   WGPUTextureView color_view;
-  if (desc->color.view)
+  if (desc->color.view) {
     color_view = *desc->color.view;
-  else if (desc->multisample != PipelineMultisampleCount_1x)
+  } else if (desc->multisample > PipelineMultisampleCount_1x) {
     render_pass_create_multisampling_view(&color_view, &texture_config);
+  }
+  printf("color view: %p\n", color_view);
 
+  // define callback based on multisample and swapchain
+  switch (desc->multisample) {
+
+  case PipelineMultisampleCount_4x:
+    render_pass->draw_callback = render_pass_draw_multisample;
+    break;
+
+  case PipelineMultisampleCount_1x:
+  default:
+    render_pass->draw_callback = render_pass_draw_monosample;
+    break;
+  }
 
   render_pass->color.attachment = (WGPURenderPassColorAttachment){
       .view = color_view,
@@ -86,9 +79,162 @@ void render_pass_create(RenderPass *render_pass,
       .depthLoadOp = desc->depth.load_op,
       .depthStoreOp = desc->depth.store_op,
   };
+
+  if (desc->draw_list)
+    render_pass_set_draw_list(render_pass, desc->draw_list);
 }
 
-void render_pass_draw(RenderPass *pass, RenderPassDrawDescriptor *desc) {
+void render_pass_list_create(RenderPassList *list,
+                             const RenderPassListCreate *desc) {
+  list->length = 0;
+  list->device = desc->device;
+  list->queue = desc->queue;
+  list->swapchain = desc->swapchain;
+
+  render_pass_create_multisampling_view(&list->msaa,
+                                        &(RenderPassTextureDescriptor){
+                                            .device = list->device,
+                                            .height = desc->height,
+                                            .width = desc->width,
+                                            .multisample = desc->multisample,
+                                        });
+}
+
+void render_pass_list_insert_pass(RenderPassList *list,
+                                  const RenderPassListInsert *desc) {
+
+  if (list->length == RENDER_PASS_MAX_DRAW_LIST) {
+    VERBOSE_WARNING("Render pass list reached maxed capacity (%d)",
+                    RENDER_PASS_MAX_DRAW_LIST);
+    return;
+  }
+
+  render_pass_create(&list->passes[list->length++],
+                     &(RenderPassCreateDescriptor){
+
+                         .label = desc->label,
+                         .draw_list = desc->draw_list,
+                         .color = desc->color,
+                         .depth = desc->depth,
+                         .width = desc->width,
+                         .height = desc->height,
+                         .multisample = desc->multisample,
+
+                         // list inherited properties
+                         .device = list->device,
+                         .queue = list->queue,
+                         .swapchain = list->swapchain,
+                     });
+}
+
+/**
+   Create scene renderer draw config, which basically is an array of callback
+   functions and mesh referecences list lists that will be picked during the
+   draw loop.
+
+   Basically for each draw call we require a "topology callback" and a
+   "shader callback" to define which topology and shader we want to draw for
+   each mesh.
+
+   Note that the order of the array is relative to the SceneRendererMode:
+
+   0 - Texture config
+          L Render Pass 1
+          L Render Pass 2
+               L Length
+               L Draw Layouts[]
+                    L Mesh List
+                    L Shader Callback
+                    L Topo Callback
+
+   1 - Solid config
+   2 - Wireframe config
+   3 - Boundbox config
+
+   By following this order, we can simply map the right array entry depending on
+   the scene render mode.
+ */
+void render_pass_set_draw_list(RenderPass *pass,
+                               const RenderPassDrawList *draw_list) {
+
+  size_t length = glm_imin(draw_list->length, RENDER_PASS_MAX_DRAW_LIST);
+  pass->draw_list.length = length;
+  memcpy(pass->draw_list.entries, draw_list->entries,
+         sizeof(RenderPassDrawLayout) * length);
+}
+
+void render_pass_list_draw(RenderPassList *list) {
+
+  /*
+    Create 1 command encoder for all the render passes.
+    Encoder records GPU operations such as:
+    - Texture upload
+    - Buffer upload
+    - Render passes
+    - Compute passes
+   */
+
+  WGPUCommandEncoder render_encoder =
+      wgpuDeviceCreateCommandEncoder(list->device, NULL);
+
+  // get swapchain view to be resolved
+  WGPUTextureView swapchain_view =
+      wgpuSwapChainGetCurrentTextureView(list->swapchain);
+
+  for (size_t i = 0; i < list->length; i++)
+    // Go through and draw each mode render pass
+    list->passes[i].draw_callback(&list->passes[i], swapchain_view,
+                                  render_encoder);
+
+  // resolve pass (MSAA only)
+  WGPURenderPassEncoder resolve_pass = wgpuCommandEncoderBeginRenderPass(
+      render_encoder, &(WGPURenderPassDescriptor){
+                          .label = "MSAA Resolve Pass",
+                          .colorAttachmentCount = 1,
+                          .colorAttachments =
+                              &(WGPURenderPassColorAttachment){
+                                  .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+                                  // pass last pass 4x sample as view
+                                  .view = list->msaa,
+                                  .resolveTarget = swapchain_view, // 1x sampled
+                                  .loadOp = WGPULoadOp_Load,
+                                  .storeOp = WGPUStoreOp_Store,
+                              },
+                      });
+  wgpuRenderPassEncoderEnd(resolve_pass);
+
+  // create command buffer
+  WGPUCommandBuffer render_buffer =
+      wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
+
+  // submit commands
+  wgpuQueueSubmit(list->queue, 1, &render_buffer);
+
+  // release all passes encoders
+  for (size_t i = 0; i < list->length; i++)
+    wgpuRenderPassEncoderRelease(list->passes[i].encoder);
+
+  // release command encoder
+  wgpuCommandEncoderRelease(render_encoder);
+
+  wgpuCommandBufferRelease(render_buffer);
+
+  // finally release swapchain texture
+  wgpuTextureViewRelease(swapchain_view);
+}
+
+/**
+   Look up pass color draw based on msaa type
+
+   Depending on mono sampling or multi sampling, the pass color attachment of
+   renderer will be different (i.e. no resolveTarget for monosampling). As to
+   avoid branching during the draw function, we set those callback as parameters
+   before calling the draw.
+
+   MSAA Texture (Nx) ===> resolved ===> Swapchain texture (1x)
+ */
+
+void render_pass_draw(RenderPass *pass) {
 
   /*
   Create 1 command encoder for all the render passes.
@@ -99,28 +245,23 @@ void render_pass_draw(RenderPass *pass, RenderPassDrawDescriptor *desc) {
   - Compute passes
 */
   WGPUCommandEncoder render_encoder =
-      wgpuDeviceCreateCommandEncoder(desc->device, NULL);
+      wgpuDeviceCreateCommandEncoder(pass->device, NULL);
 
   // get swapchain view to be resolved
   WGPUTextureView swapchain_view =
-      wgpuSwapChainGetCurrentTextureView(*pass->swapchain);
+      wgpuSwapChainGetCurrentTextureView(pass->swapchain);
 
-  draw_callback[pass->multisample](pass, desc->pass_layout, swapchain_view,
-                                   render_encoder);
+  pass->draw_callback(pass, swapchain_view, render_encoder);
 
   // create command buffer
   WGPUCommandBuffer render_buffer =
       wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
 
   // submit commands
-  wgpuQueueSubmit(desc->queue, 1, &render_buffer);
+  wgpuQueueSubmit(pass->queue, 1, &render_buffer);
 
   // release all passes encoders
-  for (size_t i = 0; i < desc->pass_layout->length; i++) {
-    const RenderPassType type = desc->pass_layout->entries[i].pass;
-    const RenderPass *p = &pass[type];
-    wgpuRenderPassEncoderRelease(p->encoder);
-  }
+  wgpuRenderPassEncoderRelease(pass->encoder);
 
   // release command encoder
   wgpuCommandEncoderRelease(render_encoder);
@@ -135,8 +276,8 @@ void render_pass_draw(RenderPass *pass, RenderPassDrawDescriptor *desc) {
    Traverse a specific layout array and draw meshes onto the given render pass
    encoder
  */
-void render_pass_draw_layout(RenderPassDrawList *draw_list,
-                             WGPURenderPassEncoder *encoder) {
+void render_pass_draw_list(RenderPassDrawList *draw_list,
+                           WGPURenderPassEncoder *encoder) {
 
   // Draw meshes
   // loop through mesh lists and draw meshes
@@ -186,91 +327,51 @@ void render_pass_draw_layout(RenderPassDrawList *draw_list,
       +-----------+     +-----------+
 
  */
-void render_pass_draw_multisample(RenderPass *pass_list,
-                                  RenderPassLayout *pass_layout,
+
+void render_pass_draw_multisample(RenderPass *pass,
                                   WGPUTextureView swapchain_view,
                                   WGPUCommandEncoder encoder) {
 
-  // Travese passes (Scene >> Gizmo >> ...)
-  for (size_t i = 0; i < pass_layout->length; i++) {
+  // begin render pass
+  pass->encoder = wgpuCommandEncoderBeginRenderPass(
+      encoder, &(WGPURenderPassDescriptor){
+                   .label = pass->label,
+                   .colorAttachmentCount = 1,
+                   .colorAttachments = &pass->color.attachment,
+                   .depthStencilAttachment = &pass->depth.attachment,
+               });
 
-    const RenderPassType type = pass_layout->entries[i].pass;
-    // look-up renderer pass from the list depending on the type
-    RenderPass *pass = &pass_list[type];
+  render_pass_draw_list(&pass->draw_list, &pass->encoder);
 
-    // begin render pass
-    pass->encoder = wgpuCommandEncoderBeginRenderPass(
-        encoder, &(WGPURenderPassDescriptor){
-                     .label = pass->label,
-                     .colorAttachmentCount = 1,
-                     .colorAttachments = &pass->color.attachment,
-                     .depthStencilAttachment = &pass->depth.attachment,
-                 });
-
-    // draw layout list (mesh > topo > shader)
-    RenderPassDrawList *draw_list = &pass_layout->entries[i];
-    render_pass_draw_layout(draw_list, &pass->encoder);
-
-    // end render pass
-    wgpuRenderPassEncoderEnd(pass->encoder);
-  }
-
-  // resolve pass (MSAA only)
-  WGPURenderPassEncoder resolve_pass = wgpuCommandEncoderBeginRenderPass(
-      encoder,
-      &(WGPURenderPassDescriptor){
-          .label = "MSAA Resolve Pass",
-          .colorAttachmentCount = 1,
-          .colorAttachments =
-              &(WGPURenderPassColorAttachment){
-                  .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-                  // pass last pass 4x sample as view
-                  .view =
-                      pass_list[pass_layout->length - 1].color.attachment.view,
-                  .resolveTarget = swapchain_view, // 1x sampled
-                  .loadOp = WGPULoadOp_Load,
-                  .storeOp = WGPUStoreOp_Store,
-              },
-      });
-
-  wgpuRenderPassEncoderEnd(resolve_pass);
+  // end render pass
+  wgpuRenderPassEncoderEnd(pass->encoder);
 }
 
-void render_pass_draw_monosample(RenderPass *pass_list,
-                                 RenderPassLayout *pass_layout,
+void render_pass_draw_monosample(RenderPass *pass,
                                  WGPUTextureView swapchain_view,
                                  WGPUCommandEncoder encoder) {
 
-  // Travese passes (Scene >> Gizmo >> ...)
-  for (size_t i = 0; i < pass_layout->length; i++) {
+  // begin render pass
+  pass->encoder = wgpuCommandEncoderBeginRenderPass(
+      encoder, &(WGPURenderPassDescriptor){
+                   .label = pass->label,
+                   .colorAttachmentCount = 1,
+                   .colorAttachments =
+                       &(WGPURenderPassColorAttachment){
+                           .view = swapchain_view, // replace with swapchain
+                           .clearValue = pass->color.attachment.clearValue,
+                           .depthSlice = pass->color.attachment.depthSlice,
+                           .loadOp = pass->color.attachment.loadOp,
+                           .storeOp = pass->color.attachment.storeOp,
+                       },
+                   .depthStencilAttachment = &pass->depth.attachment,
+               });
 
-    const RenderPassType type = pass_layout->entries[i].pass;
-    // look-up renderer pass from the list depending on the type
-    RenderPass *pass = &pass_list[type];
+  // draw layout (mesh > topo > shader)
+  render_pass_draw_list(&pass->draw_list, &pass->encoder);
 
-    // begin render pass
-    pass->encoder = wgpuCommandEncoderBeginRenderPass(
-        encoder, &(WGPURenderPassDescriptor){
-                     .label = pass->label,
-                     .colorAttachmentCount = 1,
-                     .colorAttachments =
-                         &(WGPURenderPassColorAttachment){
-                             .view = swapchain_view, // replace with swapchain
-                             .clearValue = pass->color.attachment.clearValue,
-                             .depthSlice = pass->color.attachment.depthSlice,
-                             .loadOp = pass->color.attachment.loadOp,
-                             .storeOp = pass->color.attachment.storeOp,
-                         },
-                     .depthStencilAttachment = &pass->depth.attachment,
-                 });
-
-    // draw layout (mesh > topo > shader)
-    RenderPassDrawList *draw_list = &pass_layout->entries[i];
-    render_pass_draw_layout(draw_list, &pass->encoder);
-
-    // end render pass
-    wgpuRenderPassEncoderEnd(pass->encoder);
-  }
+  // end render pass
+  wgpuRenderPassEncoderEnd(pass->encoder);
 }
 
 /**

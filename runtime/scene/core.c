@@ -23,22 +23,23 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
      */
 
-    // init mesh pipelines
-    for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
-      mesh_ref_list_create(scene_pipeline(scene, flag),
-                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
-
-    // init draw callbacks configuration
-    scene_init_draw_layouts(scene);
-
     // set renderer
     scene_renderer_create(&scene->renderer, desc->renderer);
+
+    // init draw callbacks configuration (kinda sketchy to pass the renderer
+    // desc attribute here)
+    scene_init_draw_layouts(scene, desc->renderer->multisampling_count);
 
     /*
 
       ===== LISTS =====
 
      */
+
+    // init mesh pipelines
+    for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
+      mesh_ref_list_create(scene_pipeline(scene, flag),
+                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
     scene_layer_init(&scene->layers);
 
@@ -47,7 +48,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
     probe_reflection_grid_list_create(&scene->probes_reflection,
-                                 PROBE_REFLECTION_LIST_CAPACITY);
+                                      PROBE_REFLECTION_LIST_CAPACITY);
     /*
 
       ===== CAMERA & VIEWPORT =====

@@ -9,13 +9,10 @@
 #include "std_pipeline/core.h"
 #include "std_texture/core.h"
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 #include <string.h>
 
 static void scene_renderer_init(SceneRenderer *);
-
-static inline void
-scene_renderer_init_render_pass(SceneRenderer *,
-                                const PipelineMultisampleCount);
 
 static void scene_renderer_resize(SceneRenderer *);
 
@@ -40,12 +37,10 @@ void scene_renderer_create(SceneRenderer *renderer,
   renderer->wgpu.instance = wgpuCreateInstance(NULL);
   renderer->wgpu.device = emscripten_webgpu_get_device();
   renderer->wgpu.queue = wgpuDeviceGetQueue(renderer->wgpu.device);
+  renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
 
   // define context size
   scene_renderer_resize(renderer);
-
-  // init render passes
-  scene_renderer_init_render_pass(renderer, rd->multisampling_count);
 
   TIMER("", {
     ao_bake_init(&renderer->texture.ambient_occlusion,
@@ -55,14 +50,6 @@ void scene_renderer_create(SceneRenderer *renderer,
                      .device = scene_renderer_device(renderer),
                  });
   });
-
-  // set draw layouts callback
-  if (renderer->draw.layouts->length == 0) {
-    VERBOSE_WARNING("No draw layouts were provided for the scene renderer.");
-  } else {
-    scene_renderer_add_draw_callback(
-        renderer, scene_renderer_draw_layout_callback, (void *)renderer);
-  }
 
   /*
 
@@ -101,63 +88,6 @@ void scene_renderer_create(SceneRenderer *renderer,
 }
 
 /**
-   Create scene renderer draw config, which basically is an array of callback
-   functions and mesh referecences list lists that will be picked during the
-   draw loop.
-
-   Basically for each draw call we require a "topology callback" and a
-   "shader callback" to define which topology and shader we want to draw for
-   each mesh.
-
-   Note that the order of the array is relative to the SceneRendererMode:
-
-   0 - Texture config
-          L Render Pass 1
-          L Render Pass 2
-               L Length
-               L Draw Layouts[]
-                    L Mesh List
-                    L Shader Callback
-                    L Topo Callback
-
-   1 - Solid config
-   2 - Wireframe config
-   3 - Boundbox config
-
-   By following this order, we can simply map the right array entry depending on
-   the scene render mode.
- */
-void scene_renderer_set_draw_layout(SceneRenderer *renderer,
-                                    const SceneRendererDrawMode mode,
-                                    const RenderPassLayout *pass_layout) {
-
-  if (mode >= SCENE_RENDERER_DRAW_MODE_COUNT)
-    return;
-
-  for (size_t i = 0; i < pass_layout->length; i++) {
-
-    const RenderPassDrawList *render_pass = &pass_layout->entries[i];
-
-    renderer->draw.layouts[mode].length = pass_layout->length;
-
-    /* Map descriptor attribute to entity*/
-
-    // target scene renderer based on mode (tex/solid/wire) and
-    // type(Scene/Gizmo...)
-    RenderPassDrawList *dest_layout =
-        &renderer->draw.layouts[mode].entries[render_pass->pass];
-
-    // assign length
-    dest_layout->length = render_pass->length;
-    dest_layout->pass = render_pass->pass;
-
-    // copy mesh ref lists array
-    memcpy(dest_layout->entries, render_pass->entries,
-           sizeof(RenderPassDrawLayout) * dest_layout->length);
-  }
-}
-
-/**
    Based on the renderer Draw Layouts, it first select the entry base on the
    renderer mode (texture/solid/wireframe).
  */
@@ -168,16 +98,7 @@ void scene_renderer_draw_layout_callback(void *data) {
   // retrieve render mode
   const SceneRendererDrawMode mode = renderer->draw.mode;
 
-  // retrieve render pass layout related to the draw mode
-  RenderPassLayout *pass_layout = &renderer->draw.layouts[mode];
-
-  // Go through and draw each mode render pass
-  render_pass_draw(renderer->draw.pass,
-                   &(RenderPassDrawDescriptor){
-                       .pass_layout = pass_layout,
-                       .queue = scene_renderer_queue(renderer),
-                       .device = scene_renderer_device(renderer),
-                   });
+  render_pass_list_draw(&renderer->draw.pass[mode]);
 }
 
 bool scene_renderer_resize_callback(int event_type,
@@ -203,13 +124,10 @@ void scene_renderer_resize(SceneRenderer *renderer) {
   // set canvas size
   emscripten_set_element_css_size(renderer->context.name, w, h);
 
-  // reset swap chain on resize
-  if (renderer->draw.swapchain) {
-    wgpuSwapChainRelease(renderer->draw.swapchain);
-    renderer->draw.swapchain = NULL;
+  if (renderer->wgpu.swapchain) {
+    wgpuSwapChainRelease(renderer->wgpu.swapchain);
+    renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
   }
-
-  renderer->draw.swapchain = scene_renderer_create_swapchain(renderer);
 }
 
 double scene_renderer_dpi(double value) {
@@ -228,81 +146,10 @@ void scene_renderer_init(SceneRenderer *renderer) {
 
 void scene_renderer_close(const SceneRenderer *renderer) {
   wgpuRenderPipelineRelease(renderer->wgpu.pipeline);
-  wgpuSwapChainRelease(renderer->draw.swapchain);
+  wgpuSwapChainRelease(renderer->wgpu.swapchain);
   wgpuQueueRelease(renderer->wgpu.queue);
   wgpuDeviceRelease(renderer->wgpu.device);
   wgpuInstanceRelease(renderer->wgpu.instance);
-}
-
-/**
-   Initialize scene renderer main render pass and define their configurations.
- */
-void scene_renderer_init_render_pass(
-    SceneRenderer *renderer, const PipelineMultisampleCount multisample) {
-
-  // init Scene render pass
-  render_pass_create(&renderer->draw.pass[RenderPassType_Scene],
-                     &(RenderPassCreateDescriptor){
-                         .label = "Scene Render Pass",
-                         .multisample = multisample,
-                         .swapchain = &renderer->draw.swapchain,
-                         .width = scene_renderer_width(renderer),
-                         .height = scene_renderer_height(renderer),
-                         .device = scene_renderer_device(renderer),
-                         .queue = scene_renderer_queue(renderer),
-                         .color =
-                             {
-                                 .view = NULL,
-                                 .clear_value = renderer->background,
-                                 .load_op = WGPULoadOp_Clear,
-                                 .store_op = WGPUStoreOp_Store,
-                                 .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
-                             },
-                         .depth =
-                             {
-                                 .view = NULL,
-                                 // Allow depth write
-                                 .read_only = false,
-                                 // Far plane
-                                 .clear_value = 1.0f,
-                                 // Keep depth for later use
-                                 .store_op = WGPUStoreOp_Store,
-                                 // Clear depth at start of render pass
-                                 .load_op = WGPULoadOp_Clear,
-                             },
-                     });
-
-  // init Gizmo render pass
-
-  // create dedicated depth texture for gizmo
-  render_pass_create(&renderer->draw.pass[RenderPassType_Gizmo],
-                     &(RenderPassCreateDescriptor){
-                         .label = "Gizmo Render Pass",
-                         .multisample = multisample,
-                         .swapchain = &renderer->draw.swapchain,
-                         .width = scene_renderer_width(renderer),
-                         .height = scene_renderer_height(renderer),
-                         .device = scene_renderer_device(renderer),
-                         .queue = scene_renderer_queue(renderer),
-                         .color =
-                             {
-                                 .view = NULL,
-                                 .clear_value = 0,
-                                 .load_op = WGPULoadOp_Load,
-                                 .store_op = WGPUStoreOp_Store,
-                                 .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
-                             },
-                         .depth =
-                             {
-                                 .view = NULL,
-                                 .read_only = false,
-                                 .clear_value = 1.0f,
-                                 // clear previously rendered depth
-                                 .load_op = WGPULoadOp_Clear,
-                                 // do not store it afterward
-                                 .store_op = WGPUStoreOp_Discard,
-                             },
-                     });
 }
 
 /**
@@ -359,6 +206,14 @@ void scene_renderer_render(void *desc) {
  */
 void scene_renderer_draw(SceneRenderer *renderer) {
 
+  // set draw layouts callback
+  if (renderer->draw.pass->length == 0) {
+    VERBOSE_WARNING("No render pass were provided for the scene renderer.");
+  } else {
+    scene_renderer_add_draw_callback(
+        renderer, scene_renderer_draw_layout_callback, (void *)renderer);
+  }
+
   // call main loop
   emscripten_set_main_loop_arg(
       scene_renderer_render,
@@ -368,7 +223,9 @@ void scene_renderer_draw(SceneRenderer *renderer) {
 // getters
 WGPUDevice scene_renderer_device(SceneRenderer *rd) { return rd->wgpu.device; }
 WGPUQueue scene_renderer_queue(SceneRenderer *rd) { return rd->wgpu.queue; }
-
+WGPUSwapChain scene_renderer_swapchain(SceneRenderer *rd) {
+  return rd->wgpu.swapchain;
+}
 int scene_renderer_width(const SceneRenderer *rd) { return rd->context.width; }
 int scene_renderer_height(const SceneRenderer *rd) {
   return rd->context.height;
@@ -381,11 +238,6 @@ const char *scene_renderer_target(SceneRenderer *rd) {
 void scene_renderer_set_draw_mode(SceneRenderer *renderer,
                                   const SceneRendererDrawMode mode) {
   renderer->draw.mode = mode;
-}
-
-RenderPass *scene_renderer_pass(SceneRenderer *renderer,
-                                const RenderPassType render_pass) {
-  return &renderer->draw.pass[render_pass];
 }
 
 const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *renderer) {

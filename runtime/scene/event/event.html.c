@@ -54,7 +54,8 @@ void scene_event_html(Scene *scene) {
 
 void scene_event_html_update_meshes(void *data) {
   Scene *scene = (Scene *)data;
-
+  /*
+    DELETEME ??
   // traverse the active pipelines from the render mode and
   SceneRendererDrawMode draw_mode = scene_renderer_draw_mode(&scene->renderer);
   RenderPassLayout *layout = &scene->renderer.draw.layouts[draw_mode];
@@ -82,4 +83,5 @@ void scene_event_html_update_meshes(void *data) {
       }
     }
   }
+  */
 }
