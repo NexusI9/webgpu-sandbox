@@ -56,7 +56,7 @@ void render_pass_create(RenderPass *render_pass,
   };
 }
 
-void render_pass_draw(RenderPassDrawDescriptor *desc) {
+void render_pass_draw(RenderPass *pass, RenderPassDrawDescriptor *desc) {
 
   /*
   Create 1 command encoder for all the render passes.
@@ -73,9 +73,8 @@ void render_pass_draw(RenderPassDrawDescriptor *desc) {
   WGPUTextureView swapchain_view =
       wgpuSwapChainGetCurrentTextureView(*desc->swapchain);
 
-  draw_callback[desc->multisample](desc->pass_list, desc->pass_layout,
-                                   desc->msaa_view, &swapchain_view,
-                                   &render_encoder);
+  draw_callback[desc->multisample](pass, desc->pass_layout, desc->msaa_view,
+                                   &swapchain_view, &render_encoder);
 
   // create command buffer
   WGPUCommandBuffer render_buffer =
@@ -87,8 +86,8 @@ void render_pass_draw(RenderPassDrawDescriptor *desc) {
   // release all passes encoders
   for (size_t i = 0; i < desc->pass_layout->length; i++) {
     const RenderPassType type = desc->pass_layout->entries[i].pass;
-    const RenderPass *pass = &desc->pass_list[type];
-    wgpuRenderPassEncoderRelease(pass->encoder);
+    const RenderPass *p = &pass[type];
+    wgpuRenderPassEncoderRelease(p->encoder);
   }
 
   // release command encoder

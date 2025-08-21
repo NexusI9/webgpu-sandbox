@@ -102,7 +102,7 @@ void seo_probe_reflection_bound_set_position(SEOTransformCallback *desc) {
 }
 
 void seo_probe_reflection_bound_set_scale(SEOTransformCallback *desc) {
-  mesh_set_scale(desc->mesh->mesh, desc->offset);
+  //mesh_set_scale(desc->mesh->mesh, desc->offset);
 }
 
 void seo_probe_reflection_set_position(SEOTransformCallback *desc) {
@@ -115,4 +115,7 @@ void seo_probe_reflection_set_position(SEOTransformCallback *desc) {
 
 void seo_probe_reflection_set_rotation(SEOTransformCallback *desc) {}
 
-void seo_probe_reflection_set_scale(SEOTransformCallback *desc) {}
+void seo_probe_reflection_set_scale(SEOTransformCallback *desc) {
+
+  //print_vec3(desc->offset);
+}

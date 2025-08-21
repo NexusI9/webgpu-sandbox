@@ -1,6 +1,7 @@
 #ifndef _PROBE_GRID_H_
 #define _PROBE_GRID_H_
 
+#include "../backend/renderer/scene/scene.h"
 #include "../utils/vector/vector.h"
 #include "probe.h"
 #include "webgpu/webgpu.h"
@@ -26,6 +27,8 @@ typedef struct {
 typedef struct {
   ivec3 count;
   vec3 size;
+  const WGPUDevice device;
+  const WGPUQueue queue;
 } ProbeReflectionGridDescriptor;
 
 void probe_reflection_grid_create(ProbeReflectionGrid *,
@@ -33,6 +36,7 @@ void probe_reflection_grid_create(ProbeReflectionGrid *,
 
 void probe_reflection_grid_destroy(ProbeReflectionGrid *);
 
+void probe_reflection_grid_draw(ProbeReflectionGrid *, SceneRenderer *);
 
 /* === Probe Grid List  === */
 

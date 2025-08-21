@@ -3,28 +3,35 @@
 #include "../shadow_map/shadow_map.h"
 #include "../utils/system.h"
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 
 WGPUTextureView g_std_texture_view[STD_TEXTURE_VIEW_COUNT] = {0};
+WGPUTexture g_std_texture[STD_TEXTURE_VIEW_COUNT] = {0};
 
 // black color
 static const uint8_t pixel[4] = {255, 255, 255, 255};
 
+static inline WGPUTextureView
+scene_renderer_create_fallback_float(WGPUTexture *, const WGPUDevice,
+                                     const WGPUQueue);
 
 static inline WGPUTextureView
-scene_renderer_create_fallback_float(const WGPUDevice, const WGPUQueue);
+scene_renderer_create_fallback_float_cube(WGPUTexture *, const WGPUDevice,
+                                          const WGPUQueue);
+
+static inline WGPUTextureView scene_renderer_create_fallback_float_cube_array(
+    WGPUTexture *, const WGPUDevice, const WGPUQueue);
 
 static inline WGPUTextureView
-scene_renderer_create_fallback_float_cube(const WGPUDevice, const WGPUQueue);
+scene_renderer_create_fallback_depth(WGPUTexture *, const WGPUDevice,
+                                     const WGPUQueue);
 
 static inline WGPUTextureView
-scene_renderer_create_fallback_depth(const WGPUDevice, const WGPUQueue);
-
-static inline WGPUTextureView
-scene_renderer_create_fallback_depth_cube_array(const WGPUDevice,
+scene_renderer_create_fallback_depth_cube_array(WGPUTexture *, const WGPUDevice,
                                                 const WGPUQueue);
 
 static inline WGPUTextureView
-scene_renderer_create_fallback_depth_2d_array(const WGPUDevice,
+scene_renderer_create_fallback_depth_2d_array(WGPUTexture *, const WGPUDevice,
                                               const WGPUQueue);
 
 /**
@@ -37,36 +44,34 @@ scene_renderer_create_fallback_depth_2d_array(const WGPUDevice,
    complex shader like PBR before being replace by computational intensive
    process like shadow map or AO baking.
  */
+
+static const std_texture_view_create texture_creator[STD_TEXTURE_VIEW_COUNT] = {
+    [TextureViewType_Float] = scene_renderer_create_fallback_float,
+    [TextureViewType_Depth] = scene_renderer_create_fallback_depth,
+    [TextureViewType_FloatCube] = scene_renderer_create_fallback_float_cube,
+    [TextureViewType_FloatCubeArray] =
+        scene_renderer_create_fallback_float_cube_array,
+    [TextureViewType_DepthCubeArray] =
+        scene_renderer_create_fallback_depth_cube_array,
+    [TextureViewType_Depth2DArray] =
+        scene_renderer_create_fallback_depth_2d_array,
+};
+
 void scene_renderer_init_fallback_textures(const WGPUDevice device,
                                            const WGPUQueue queue) {
 
   VERBOSE_PROCESS("Caching fallback textures...");
 
-  // create texture 2D float view fallback
-  g_std_texture_view[TextureViewType_Float] =
-      scene_renderer_create_fallback_float(device, queue);
-
-  // create texture 2D depth view fallback
-  g_std_texture_view[TextureViewType_Depth] =
-      scene_renderer_create_fallback_depth(device, queue);
-
-  // create texture 2D float cube view fallback
-  g_std_texture_view[TextureViewType_FloatCube] =
-      scene_renderer_create_fallback_float_cube(device, queue);
-
-  // create depth cube array view fallback
-  g_std_texture_view[TextureViewType_DepthCubeArray] =
-      scene_renderer_create_fallback_depth_cube_array(device, queue);
-
-  // create depth 2d array view fallback
-  g_std_texture_view[TextureViewType_Depth2DArray] =
-      scene_renderer_create_fallback_depth_2d_array(device, queue);
+  for (TextureViewType i = 0; i < STD_TEXTURE_VIEW_COUNT; i++)
+    g_std_texture_view[i] =
+        texture_creator[i](&g_std_texture[i], device, queue);
 }
 
-WGPUTextureView scene_renderer_create_fallback_float(const WGPUDevice device,
+WGPUTextureView scene_renderer_create_fallback_float(WGPUTexture *texture,
+                                                     const WGPUDevice device,
                                                      const WGPUQueue queue) {
 
-  WGPUTexture texture = wgpuDeviceCreateTexture(
+  *texture = wgpuDeviceCreateTexture(
       device,
       &(WGPUTextureDescriptor){
           .size =
@@ -84,7 +89,7 @@ WGPUTextureView scene_renderer_create_fallback_float(const WGPUDevice device,
 
   wgpuQueueWriteTexture(queue,
                         &(WGPUImageCopyTexture){
-                            .texture = texture,
+                            .texture = *texture,
                             .mipLevel = 0,
                             .origin = {0, 0, 0},
                             .aspect = WGPUTextureAspect_All,
@@ -97,14 +102,13 @@ WGPUTextureView scene_renderer_create_fallback_float(const WGPUDevice device,
                         },
                         &(WGPUExtent3D){1, 1, 1});
 
-  return wgpuTextureCreateView(texture, NULL);
+  return wgpuTextureCreateView(*texture, NULL);
 }
 
-WGPUTextureView
-scene_renderer_create_fallback_float_cube(const WGPUDevice device,
-                                          const WGPUQueue queue) {
+WGPUTextureView scene_renderer_create_fallback_float_cube(
+    WGPUTexture *texture, const WGPUDevice device, const WGPUQueue queue) {
 
-  WGPUTexture texture = wgpuDeviceCreateTexture(
+  *texture = wgpuDeviceCreateTexture(
       device,
       &(WGPUTextureDescriptor){
           .size =
@@ -122,7 +126,50 @@ scene_renderer_create_fallback_float_cube(const WGPUDevice device,
 
   wgpuQueueWriteTexture(queue,
                         &(WGPUImageCopyTexture){
-                            .texture = texture,
+                            .texture = *texture,
+                            .mipLevel = 0,
+                            .origin = {0, 0, 0},
+                            .aspect = WGPUTextureAspect_All,
+                        },
+                        (uint8_t[]){255}, sizeof(uint32_t),
+                        &(WGPUTextureDataLayout){
+                            .offset = 0,
+                            .bytesPerRow = 1,
+                            .rowsPerImage = 1,
+                        },
+                        &(WGPUExtent3D){1, 1, 1});
+
+  return wgpuTextureCreateView(*texture,
+                               &(WGPUTextureViewDescriptor){
+                                   .dimension = WGPUTextureViewDimension_Cube,
+                                   .format = WGPUTextureFormat_R8Unorm,
+                                   .mipLevelCount = 1,
+                                   .arrayLayerCount = 6,
+                               });
+}
+
+WGPUTextureView scene_renderer_create_fallback_float_cube_array(
+    WGPUTexture *texture, const WGPUDevice device, const WGPUQueue queue) {
+
+  *texture = wgpuDeviceCreateTexture(
+      device,
+      &(WGPUTextureDescriptor){
+          .size =
+              {
+                  .width = 1,
+                  .height = 1,
+                  .depthOrArrayLayers = 6,
+              },
+          .format = WGPUTextureFormat_R8Unorm,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+          .dimension = WGPUTextureDimension_2D,
+          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+      });
+
+  wgpuQueueWriteTexture(queue,
+                        &(WGPUImageCopyTexture){
+                            .texture = *texture,
                             .mipLevel = 0,
                             .origin = {0, 0, 0},
                             .aspect = WGPUTextureAspect_All,
@@ -136,17 +183,19 @@ scene_renderer_create_fallback_float_cube(const WGPUDevice device,
                         &(WGPUExtent3D){1, 1, 1});
 
   return wgpuTextureCreateView(
-      texture,
-      &(WGPUTextureViewDescriptor){.dimension = WGPUTextureViewDimension_Cube,
-                                   .format = WGPUTextureFormat_R8Unorm,
-                                   .mipLevelCount = 1,
-                                   .arrayLayerCount = 6});
+      *texture, &(WGPUTextureViewDescriptor){
+                    .dimension = WGPUTextureViewDimension_CubeArray,
+                    .format = WGPUTextureFormat_R8Unorm,
+                    .mipLevelCount = 1,
+                    .arrayLayerCount = 6,
+                });
 }
 
-WGPUTextureView scene_renderer_create_fallback_depth(const WGPUDevice device,
+WGPUTextureView scene_renderer_create_fallback_depth(WGPUTexture *texture,
+                                                     const WGPUDevice device,
                                                      const WGPUQueue queue) {
 
-  WGPUTexture texture = wgpuDeviceCreateTexture(
+  *texture = wgpuDeviceCreateTexture(
       device, &(WGPUTextureDescriptor){
                   .size =
                       {
@@ -162,15 +211,14 @@ WGPUTextureView scene_renderer_create_fallback_depth(const WGPUDevice device,
                            WGPUTextureUsage_RenderAttachment,
               });
 
-  return wgpuTextureCreateView(texture, NULL);
+  return wgpuTextureCreateView(*texture, NULL);
 }
 
-WGPUTextureView
-scene_renderer_create_fallback_depth_cube_array(const WGPUDevice device,
-                                                const WGPUQueue queue) {
+WGPUTextureView scene_renderer_create_fallback_depth_cube_array(
+    WGPUTexture *texture, const WGPUDevice device, const WGPUQueue queue) {
 
   // create texture
-  WGPUTexture texture = wgpuDeviceCreateTexture(
+  *texture = wgpuDeviceCreateTexture(
       device, &(WGPUTextureDescriptor){
                   .label = "Fallback texture cube array",
                   .size =
@@ -188,24 +236,23 @@ scene_renderer_create_fallback_depth_cube_array(const WGPUDevice device,
               });
 
   return wgpuTextureCreateView(
-      texture, &(WGPUTextureViewDescriptor){
-                   .label = "Falbback texture view cube array",
-                   .dimension = WGPUTextureViewDimension_CubeArray,
-                   .format = SHADOW_DEPTH_FORMAT,
-                   .baseMipLevel = 0,
-                   .mipLevelCount = 1,
-                   .baseArrayLayer = 0,
-                   .arrayLayerCount = 6,
-                   .aspect = WGPUTextureAspect_DepthOnly,
-               });
+      *texture, &(WGPUTextureViewDescriptor){
+                    .label = "Falbback texture view cube array",
+                    .dimension = WGPUTextureViewDimension_CubeArray,
+                    .format = SHADOW_DEPTH_FORMAT,
+                    .baseMipLevel = 0,
+                    .mipLevelCount = 1,
+                    .baseArrayLayer = 0,
+                    .arrayLayerCount = 6,
+                    .aspect = WGPUTextureAspect_DepthOnly,
+                });
 }
 
-WGPUTextureView
-scene_renderer_create_fallback_depth_2d_array(const WGPUDevice device,
-                                              const WGPUQueue queue) {
+WGPUTextureView scene_renderer_create_fallback_depth_2d_array(
+    WGPUTexture *texture, const WGPUDevice device, const WGPUQueue queue) {
 
   // create texture
-  WGPUTexture texture = wgpuDeviceCreateTexture(
+  *texture = wgpuDeviceCreateTexture(
       device,
       &(WGPUTextureDescriptor){
           .label = "Fallback depth 2d array",
@@ -223,16 +270,16 @@ scene_renderer_create_fallback_depth_2d_array(const WGPUDevice device,
       });
 
   return wgpuTextureCreateView(
-      texture, &(WGPUTextureViewDescriptor){
-                   .label = "Fallback 2D array view",
-                   .dimension = WGPUTextureViewDimension_2DArray,
-                   .format = SHADOW_DEPTH_FORMAT,
-                   .baseMipLevel = 0,
-                   .mipLevelCount = 1,
-                   .baseArrayLayer = 0,
-                   .arrayLayerCount = 1, // or however many layers
-                   .aspect = WGPUTextureAspect_DepthOnly,
-               });
+      *texture, &(WGPUTextureViewDescriptor){
+                    .label = "Fallback 2D array view",
+                    .dimension = WGPUTextureViewDimension_2DArray,
+                    .format = SHADOW_DEPTH_FORMAT,
+                    .baseMipLevel = 0,
+                    .mipLevelCount = 1,
+                    .baseArrayLayer = 0,
+                    .arrayLayerCount = 1, // or however many layers
+                    .aspect = WGPUTextureAspect_DepthOnly,
+                });
 }
 
 const WGPUTextureView std_texture_view(const TextureViewType type) {

@@ -173,15 +173,15 @@ void scene_renderer_draw_layout_callback(void *data) {
   RenderPassLayout *pass_layout = &renderer->draw.layouts[mode];
 
   // Go through and draw each mode render pass
-  render_pass_draw(&(RenderPassDrawDescriptor){
-      .pass_layout = pass_layout,
-      .msaa_view = &renderer->texture.render.color,
-      .swapchain = &renderer->wgpu.swapchain,
-      .multisample = renderer->texture.multisample,
-      .pass_list = renderer->draw.pass,
-      .queue = scene_renderer_queue(renderer),
-      .device = scene_renderer_device(renderer),
-  });
+  render_pass_draw(renderer->draw.pass,
+                   &(RenderPassDrawDescriptor){
+                       .pass_layout = pass_layout,
+                       .msaa_view = &renderer->texture.render.color,
+                       .swapchain = &renderer->wgpu.swapchain,
+                       .multisample = renderer->texture.multisample,
+                       .queue = scene_renderer_queue(renderer),
+                       .device = scene_renderer_device(renderer),
+                   });
 }
 
 bool scene_renderer_resize_callback(int event_type,

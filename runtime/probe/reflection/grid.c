@@ -2,6 +2,7 @@
 #include "probe.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
+#include "../backend/renderer/scene/std_texture/std_texture.h"
 
 static inline float probe_reflection_point(size_t x, uint16_t count,
                                            float size);
@@ -33,6 +34,11 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
       }
     }
   }
+
+  
+  
+  grid->view = std_texture_view(TextureViewType_FloatCubeArray);
+  
 }
 
 void probe_reflection_grid_destroy(ProbeReflectionGrid *grid) {
