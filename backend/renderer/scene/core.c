@@ -98,7 +98,7 @@ void scene_renderer_draw_layout_callback(void *data) {
   // retrieve render mode
   const SceneRendererDrawMode mode = renderer->draw.mode;
 
-  render_pass_list_draw(&renderer->draw.pass[mode]);
+  render_pass_list_draw_onscreen(&renderer->draw.pass[mode]);
 }
 
 bool scene_renderer_resize_callback(int event_type,

@@ -221,7 +221,7 @@ scene_init_draw_layouts(Scene *scene,
         .height = scene_renderer_height(&scene->renderer),
         .color =
             {
-                .view = &pass_list->msaa,
+                .view = &pass_list->resolve_view,
                 .clear_value = scene->renderer.background,
                 .load_op = WGPULoadOp_Clear,
                 .store_op = WGPUStoreOp_Store,
@@ -252,7 +252,7 @@ scene_init_draw_layouts(Scene *scene,
         .height = scene_renderer_height(&scene->renderer),
         .color =
             {
-                .view = &pass_list->msaa,
+                .view = &pass_list->resolve_view,
                 .clear_value = 0,
                 .load_op = WGPULoadOp_Load,
                 .store_op = WGPUStoreOp_Store,
