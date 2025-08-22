@@ -13,6 +13,7 @@
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
+  const RenderPassDrawList *draw_list;
   LightList *lights;
 } ShadowMapInitDescriptor;
 
@@ -23,6 +24,22 @@ typedef struct {
   const WGPUQueue queue;
 } ShadowPassFallbackToTextureDescriptor;
 
+typedef struct {
+  const int width;
+  const int height;
+  const size_t layer_count;
+  const WGPUDevice device;
+  const WGPUQueue queue;
+  const WGPUTextureViewDimension dimension;
+  RenderPass *pass;
+  const RenderPassDrawList *draw_list;
+} ShadowPassTextureDescriptor;
+
+
 void shadow_map_init(const ShadowMapInitDescriptor *);
+
+void shadow_map_pass_preprocessor_callback(const RenderPass *, Mesh *, void *);
+
+void shadow_pass_texture_create(const ShadowPassTextureDescriptor *);
 
 #endif

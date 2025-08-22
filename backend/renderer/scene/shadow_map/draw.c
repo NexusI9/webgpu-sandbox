@@ -90,73 +90,25 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
       .baseMipLevel = 0,
   };
 
+  // printf("pass depth texture: %p\n", )
+
   WGPUTextureView temp_layer_texture_view_depth = wgpuTextureCreateView(
-      desc->depth_texture, &temp_layer_texture_descriptor_depth);
+      desc->pass->depth.texture, &temp_layer_texture_descriptor_depth);
 
   WGPUTextureView temp_layer_texture_view_color = wgpuTextureCreateView(
-      desc->color_texture, &temp_layer_texture_descriptor_color);
-  
-  WGPUCommandEncoder shadow_encoder = desc->encoder;
+      desc->pass->color.texture, &temp_layer_texture_descriptor_color);
 
-  // create "local" encoder if is not included
-  //(usually when only drawing one light)
-  if (shadow_encoder == NULL)
-    shadow_encoder = wgpuDeviceCreateCommandEncoder(desc->device, NULL);
+  // Dynamically update the preprocessor data (Smelly...)
+  LightShadowData *data = (LightShadowData *)desc->pass->draw_list.entries[0]
+                              .mesh_preprocessor_data;
 
-  // create render pass and render it to the nested layer
-  WGPURenderPassEncoder shadow_pass = wgpuCommandEncoderBeginRenderPass(
-      shadow_encoder, &(WGPURenderPassDescriptor){
-                          .label = "Shadow render pass encoder",
-                          .colorAttachmentCount = 1,
-                          .colorAttachments =
-                              &(WGPURenderPassColorAttachment){
-                                  .view = temp_layer_texture_view_color,
-                                  .clearValue = {0.0f, 0.0f, 0.0f, 1.0f},
-                                  .loadOp = WGPULoadOp_Clear,
-                                  .storeOp = WGPUStoreOp_Store,
-                                  .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-                              },
-                          .depthStencilAttachment =
-                              &(WGPURenderPassDepthStencilAttachment){
-                                  .view = temp_layer_texture_view_depth,
-                                  .depthClearValue = 1.0f,
-                                  .depthLoadOp = WGPULoadOp_Clear,
-                                  .depthStoreOp = WGPUStoreOp_Store,
-                              },
-                      });
+  data->pipeline = desc->pipeline;
+  data->light_view = desc->light_view;
 
-  // draw target
-  for (size_t i = 0; i < desc->mesh_list->length; i++) {
-
-    Mesh *mesh = desc->mesh_list->entries[i];
-
-    // swap pipeline (cull front/back)
-    mesh_shader_shadow(mesh)->pipeline = desc->pipeline;
-
-    // update each mesh shadow uniforms with current light view
-    mesh_shader_shadow_update_view(mesh, desc->light_view);
-
-    // draw mesh
-    mesh_draw(mesh_topology_base(mesh), mesh_shader_shadow(mesh), shadow_pass);
-  }
-
-  wgpuRenderPassEncoderEnd(shadow_pass);
-
-  // clean up "local" encoder if not provided in the descriptor
-  if (desc->encoder == NULL) {
-
-    // finish encoding command
-    WGPUCommandBuffer command_buffer =
-        wgpuCommandEncoderFinish(shadow_encoder, NULL);
-    wgpuQueueSubmit(desc->queue, 1, &command_buffer);
-
-    // clean up
-    wgpuCommandBufferRelease(command_buffer);
-    wgpuCommandEncoderRelease(shadow_encoder);
-  }
-
-  wgpuTextureViewRelease(temp_layer_texture_view_depth);
-  wgpuTextureViewRelease(temp_layer_texture_view_color);
+  render_pass_draw(desc->pass, &(RenderPassViewOverride){
+                                   .color = temp_layer_texture_view_color,
+                                   .depth = temp_layer_texture_view_depth,
+                               });
 
   /*debug_view_add(&debug_view_light,
                  &(ViewDescriptor){
@@ -242,12 +194,10 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
         .layer = p,
         .light = desc->lights->point.shadow.entries[p],
-        .mesh_list = desc->mesh_list,
+        .pass = &desc->lights->point.shadow.pass,
         .device = desc->device,
         .queue = desc->queue,
         .encoder = NULL, // shadow_encoder,
-        .color_map = desc->lights->point.shadow.color_map,
-        .depth_map = desc->lights->point.shadow.depth_map,
     });
 
   /*
@@ -262,12 +212,10 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
     shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
         .layer = p,
         .light = desc->lights->spot.shadow.entries[p],
-        .mesh_list = desc->mesh_list,
         .device = desc->device,
         .queue = desc->queue,
         .encoder = NULL,
-        .color_map = desc->lights->spot.shadow.color_map,
-        .depth_map = desc->lights->spot.shadow.depth_map,
+        .pass = &desc->lights->spot.shadow.pass,
     });
 
   /*
@@ -283,13 +231,11 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         // TODO: currently use spot light color_map, maybe make a linked
         // pointer
         // to the same map but include it in the sun light list struct itself.
-        .color_map = desc->lights->spot.shadow.color_map,
-        .depth_map = desc->lights->spot.shadow.depth_map,
         .layer = spot_length + p,
         .device = desc->device,
         .queue = desc->queue,
         .encoder = shadow_encoder,
-        .mesh_list = desc->mesh_list,
+        .pass = &desc->lights->spot.shadow.pass,
         .light = desc->lights->sun.shadow.entries[p],
     });
 
@@ -325,9 +271,7 @@ void shadow_map_draw_point_light(
     size_t layer = desc->layer * light_views.length + v;
 
     shadow_map_draw(&(ShadowMapDrawDescriptor){
-        .mesh_list = desc->mesh_list,
-        .color_texture = desc->color_map,
-        .depth_texture = desc->depth_map,
+        .pass = desc->pass,
         .layer = layer,
         .device = desc->device,
         .queue = desc->queue,
@@ -354,9 +298,7 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
 
   // Render scene (create shadow render pass to texture layer)
   shadow_map_draw(&(ShadowMapDrawDescriptor){
-      .mesh_list = desc->mesh_list,
-      .color_texture = desc->color_map,
-      .depth_texture = desc->depth_map,
+      .pass = desc->pass,
       .layer = desc->layer,
       .device = desc->device,
       .queue = desc->queue,
@@ -373,9 +315,7 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
   light_sun_view(&light_views, desc->light->position, desc->light->size);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
-      .color_map = desc->color_map,
-      .depth_map = desc->depth_map,
-      .mesh_list = desc->mesh_list,
+      .pass = desc->pass,
       .queue = desc->queue,
       .device = desc->device,
       .encoder = desc->encoder,
@@ -393,9 +333,7 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
                   desc->light->angle);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
-      .color_map = desc->color_map,
-      .depth_map = desc->depth_map,
-      .mesh_list = desc->mesh_list,
+      .pass = desc->pass,
       .device = desc->device,
       .queue = desc->queue,
       .encoder = desc->encoder,

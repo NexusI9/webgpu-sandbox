@@ -5,7 +5,7 @@
 #include "../runtime/pipeline/pipeline.h"
 #include "../runtime/texture/texture.h"
 #include "./ao_bake/ao_bake.h"
-#include "render_pass.h"
+#include "./render_pass/render_pass.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 

@@ -1,11 +1,11 @@
 #include "core.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "../runtime/prefab/debug/view.h"
 #include "../runtime/scene/draw.h"
 #include "../runtime/texture/texture.h"
 #include "../utils/math.h"
 #include "../utils/system.h"
 #include "./draw.h"
-#include "./texture.h"
 #include <string.h>
 
 // static DebugView debug_view_light;
@@ -73,7 +73,6 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
                                            .queue = &queue,
                                            });*/
 
- 
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = desc->lights->point.shadow.length;
   size_t spot_light_length = desc->lights->spot.shadow.length;
@@ -85,18 +84,11 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
       .layer_count =
           MAX(point_light_length, LIGHT_MAX_CAPACITY) * LIGHT_POINT_VIEWS,
       .device = desc->device,
+      .queue = desc->queue,
       .width = SHADOW_MAP_SIZE,
       .height = SHADOW_MAP_SIZE,
-      .color =
-          {
-              .texture = &desc->lights->point.shadow.color_map,
-              .texture_view = &desc->lights->point.shadow.color_view,
-          },
-      .depth =
-          {
-              .texture = &desc->lights->point.shadow.depth_map,
-              .texture_view = &desc->lights->point.shadow.depth_view,
-          },
+      .pass = &desc->lights->point.shadow.pass,
+      .draw_list = desc->draw_list,
   });
 
   // Setup directional lights
@@ -105,18 +97,11 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
       .layer_count =
           MAX(spot_light_length + sun_light_length, LIGHT_MAX_CAPACITY),
       .device = desc->device,
+      .queue = desc->queue,
       .width = SHADOW_MAP_SIZE,
       .height = SHADOW_MAP_SIZE,
-      .color =
-          {
-              .texture = &desc->lights->spot.shadow.color_map,
-              .texture_view = &desc->lights->spot.shadow.color_view,
-          },
-      .depth =
-          {
-              .texture = &desc->lights->spot.shadow.depth_map,
-              .texture_view = &desc->lights->spot.shadow.depth_view,
-          },
+      .pass = &desc->lights->spot.shadow.pass,
+      .draw_list = desc->draw_list,
   });
 
   // DEBUG: Add views to scene
@@ -126,4 +111,123 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
     memcpy(view, view_mesh, sizeof(mesh));
     scene_add_mesh(scene, view, ScenePipeline_Dynamic_Unlit, NULL);
     }*/
+}
+
+/**
+   Create the two shadow textures (color and depth) for the point lights
+   In our semantic we use both terms Maps and Textures, however they both
+   serve different purpose.
+   - The Shadow Texture holds the Shadow mapping.
+   - The Shadow map is the result from our rendering.
+ */
+void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
+
+  // texture
+  WGPUTextureDescriptor texture_descriptor_base = {
+      .size =
+          (WGPUExtent3D){
+              .width = desc->width,
+              .height = desc->height,
+              .depthOrArrayLayers = desc->layer_count,
+          },
+      .usage = WGPUTextureUsage_CopyDst | WGPUTextureUsage_RenderAttachment |
+               WGPUTextureUsage_TextureBinding,
+      .dimension = WGPUTextureDimension_2D,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+  };
+
+  WGPUTextureDescriptor texture_descriptor_color = texture_descriptor_base;
+  texture_descriptor_color.label = "Light shadow texture - Color";
+  texture_descriptor_color.format = SHADOW_COLOR_FORMAT;
+
+  WGPUTextureDescriptor texture_descriptor_depth = texture_descriptor_base;
+  texture_descriptor_depth.label = "Light shadow texture - Depth";
+  texture_descriptor_depth.format = SHADOW_DEPTH_FORMAT;
+
+  // setup global texture view
+  WGPUTextureViewDescriptor texture_view_descriptor_base = {
+      .label = "Light Shadow: global texture view - Depth",
+      .format = SHADOW_DEPTH_FORMAT,
+      .dimension = desc->dimension, // cube for point | array 2d for dir
+      .mipLevelCount = 1,
+      .baseMipLevel = 0,
+      .arrayLayerCount = desc->layer_count,
+      .baseArrayLayer = 0,
+      .aspect = WGPUTextureAspect_DepthOnly,
+  };
+
+  // Create color texture
+  WGPUTexture color_texture =
+      wgpuDeviceCreateTexture(desc->device, &texture_descriptor_color);
+  WGPUTextureView color_view = wgpuTextureCreateView(
+      color_texture, &(WGPUTextureViewDescriptor){
+                         .label = "Light Shadow: global texture view - Color",
+                         .format = SHADOW_COLOR_FORMAT,
+                         .dimension = desc->dimension,
+                         .mipLevelCount = 1,
+                         .baseMipLevel = 0,
+                         .arrayLayerCount = desc->layer_count,
+                         .baseArrayLayer = 0,
+                         .aspect = WGPUTextureAspect_Undefined,
+                     });
+
+  // Setup light depth texture
+
+  // Create depth texture
+  WGPUTexture depth_texture =
+      wgpuDeviceCreateTexture(desc->device, &texture_descriptor_depth);
+  WGPUTextureView depth_view = wgpuTextureCreateView(
+      depth_texture, &(WGPUTextureViewDescriptor){
+                         .label = "Light Shadow: global texture view - Depth",
+                         .format = SHADOW_DEPTH_FORMAT,
+                         .dimension = desc->dimension,
+                         .mipLevelCount = 1,
+                         .baseMipLevel = 0,
+                         .arrayLayerCount = desc->layer_count,
+                         .baseArrayLayer = 0,
+                         .aspect = WGPUTextureAspect_DepthOnly,
+                     });
+
+  // set render pass
+  render_pass_create(desc->pass,
+                     &(RenderPassCreateDescriptor){
+                         .label = "Shadow Map Pass",
+                         .color =
+                             &(RenderPassColorAttachment){
+                                 .texture = color_texture,
+                                 .view = color_view,
+                                 .clear_value = {0.0f, 0.0f, 0.0f, 1.0f},
+                                 .load_op = WGPULoadOp_Clear,
+                                 .store_op = WGPUStoreOp_Store,
+                                 .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
+                             },
+                         .depth =
+                             &(RenderPassDepthAttachment){
+                                 .texture = depth_texture,
+                                 .view = depth_view,
+                                 .clear_value = 1.0f,
+                                 .load_op = WGPULoadOp_Clear,
+                                 .store_op = WGPUStoreOp_Store,
+                             },
+                         .device = desc->device,
+                         .queue = desc->queue,
+                         .height = desc->height,
+                         .width = desc->width,
+                         .swapchain = NULL,
+                         .multisample = PipelineMultisampleCount_1x,
+                         .draw_list = desc->draw_list,
+                     });
+}
+
+void shadow_map_pass_preprocessor_callback(const RenderPass *pass, Mesh *mesh,
+                                           void *userData) {
+
+  LightShadowData *data = (LightShadowData *)userData;
+
+  // swap pipeline (cull front/back)
+  mesh_shader_shadow(mesh)->pipeline = data->pipeline;
+
+  // update each mesh shadow uniforms with current light view
+  mesh_shader_shadow_update_view(mesh, data->light_view);
 }

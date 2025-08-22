@@ -37,7 +37,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 
   Camera *camera = scene->active_camera;
   Viewport *viewport = &scene->viewport;
-  
+
   const SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
   const WGPUQueue queue = scene_queue(scene);
   const WGPUDevice device = scene_device(scene);
@@ -93,8 +93,9 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
           &(SceneBuildTextureDescriptor){
               .pipeline = pipeline,
               .lights = &scene->lights,
-              .point_map = scene->lights.point.shadow.depth_view,
-              .spot_map = scene->lights.spot.shadow.depth_view,
+              .point_map =
+                  scene->lights.point.shadow.pass.depth.attachment.view,
+              .spot_map = scene->lights.spot.shadow.pass.depth.attachment.view,
           });
 
       break;

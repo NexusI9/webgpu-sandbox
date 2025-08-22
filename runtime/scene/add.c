@@ -1,4 +1,5 @@
 #include "add.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "./editor/editor.h"
 #include "./editor/object/object.h"
 #include "./editor/selection/selection.h"
@@ -8,7 +9,6 @@
 #include "editor/object/list/list.h"
 #include "editor/object/probe/reflection.h"
 #include "editor/selection/core.h"
-#include "../runtime/mesh/shader/shader.h"
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 
@@ -67,9 +67,7 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
         SceneRendererDrawMode_Texture)
       shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
           .light = new_light,
-          .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
-          .color_map = scene->lights.point.shadow.color_map,
-          .depth_map = scene->lights.point.shadow.depth_map,
+          .pass = &scene->lights.point.shadow.pass,
           .device = scene_device(scene),
           .queue = scene_queue(scene),
           .layer = shadow_list->length,
@@ -127,9 +125,7 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
         SceneRendererDrawMode_Texture)
       shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
           .light = new_light,
-          .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
-          .color_map = shadow_list->color_map,
-          .depth_map = shadow_list->depth_map,
+          .pass = &shadow_list->pass,
           .device = scene_device(scene),
           .queue = scene_queue(scene),
           .layer = shadow_list->length,
@@ -223,9 +219,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
         SceneRendererDrawMode_Texture)
       shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
           .light = new_light,
-          .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
-          .color_map = scene->lights.spot.shadow.color_map,
-          .depth_map = scene->lights.spot.shadow.depth_map,
+          .pass = &scene->lights.spot.shadow.pass,
           .device = scene_device(scene),
           .queue = scene_queue(scene),
           .layer =

@@ -1,6 +1,6 @@
-#ifndef _RENDER_PASS_H_
-#define _RENDER_PASS_H_
-#include "../../../runtime/mesh/mesh.h"
+#ifndef _RENDER_PASS_CORE_H_
+#define _RENDER_PASS_CORE_H_
+#include "../runtime/mesh/mesh.h"
 #include <webgpu/webgpu.h>
 
 #define RENDER_PASS_DRAW_LAYOUT_MAX_MESH_LIST 6
@@ -19,7 +19,7 @@ typedef void (*render_pass_list_draw_callback)(RenderPassList *);
 typedef struct {
   mesh_get_shader_callback shader_callback;
   mesh_get_topology_callback topology_callback;
-  render_pass_mesh_preprocessor_callback mesh_preprocessor;
+  render_pass_mesh_preprocessor_callback mesh_preprocessor_callback;
   void *mesh_preprocessor_data;
   MeshRefList *meshes;
 } RenderPassDrawLayout;
@@ -96,8 +96,8 @@ typedef struct {
 
 typedef struct {
   const char *label;
-  RenderPassColorAttachment color;
-  RenderPassDepthAttachment depth;
+  RenderPassColorAttachment *color;
+  RenderPassDepthAttachment *depth;
   WGPUSwapChain swapchain;
   const WGPUDevice device;
   const WGPUQueue queue;
@@ -109,8 +109,8 @@ typedef struct {
 
 typedef struct {
   const char *label;
-  RenderPassColorAttachment color;
-  RenderPassDepthAttachment depth;
+  RenderPassColorAttachment *color;
+  RenderPassDepthAttachment *depth;
   PipelineMultisampleCount multisample;
   int width;
   int height;
@@ -144,20 +144,5 @@ void render_pass_list_create(RenderPassList *, const RenderPassListCreate *);
 
 void render_pass_list_insert_pass(RenderPassList *,
                                   const RenderPassListInsert *);
-
-void render_pass_list_draw_onscreen_monosample(RenderPassList *);
-void render_pass_list_draw_onscreen_multisample(RenderPassList *);
-void render_pass_list_draw_offscreen(RenderPassList *);
-
-/* Draw callbacks */
-void render_pass_draw_onscreen_monosample(RenderPass *);
-void render_pass_draw_onscreen_multisample(RenderPass *);
-void render_pass_draw_offscreen(RenderPass *);
-
-void render_pass_draw(RenderPass *, const RenderPassViewOverride *);
-
-static inline void render_pass_list_draw(RenderPassList *list) {
-  list->draw_callback(list);
-}
 
 #endif

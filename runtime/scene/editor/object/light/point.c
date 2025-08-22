@@ -88,10 +88,7 @@ void seo_light_point_shadow_set_position(SEOTransformCallback *desc) {
 
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
         .light = light,
-        .mesh_list =
-            scene_pipeline(desc->seo->scene, ScenePipeline_Dynamic_LitShadow),
-        .color_map = desc->seo->scene->lights.point.shadow.color_map,
-        .depth_map = desc->seo->scene->lights.point.shadow.depth_map,
+	.pass = &desc->seo->scene->lights.point.shadow.pass,
         .device = scene_device(desc->seo->scene),
         .queue = scene_queue(desc->seo->scene),
         .layer = desc->mesh->target_list_index,

@@ -214,61 +214,66 @@ scene_init_draw_layouts(Scene *scene,
 
     render_pass_list_create(&pass_list[i], &list_config);
 
+    RenderPassColorAttachment scene_color_attachment = {
+        .view = pass_list->resolve_view,
+        .clear_value = scene->renderer.background,
+        .load_op = WGPULoadOp_Clear,
+        .store_op = WGPUStoreOp_Store,
+        .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
+    };
+
+    RenderPassDepthAttachment scene_depth_attachment = {
+        .view = NULL,
+        // Allow depth write
+        .read_only = false,
+        // Far plane
+        .clear_value = 1.0f,
+        // Keep depth for later use
+        .store_op = WGPUStoreOp_Store,
+        // Clear depth at start of render pass
+        .load_op = WGPULoadOp_Clear,
+    };
+
     // add scene draw list
     const RenderPassListInsert scene_pass = {
         .label = "Scene Render Pass",
         .multisample = multisample,
         .width = scene_renderer_width(&scene->renderer),
         .height = scene_renderer_height(&scene->renderer),
-        .color =
-            {
-                .view = pass_list->resolve_view,
-                .clear_value = scene->renderer.background,
-                .load_op = WGPULoadOp_Clear,
-                .store_op = WGPUStoreOp_Store,
-                .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
-            },
-        .depth =
-            {
-                .view = NULL,
-                // Allow depth write
-                .read_only = false,
-                // Far plane
-                .clear_value = 1.0f,
-                // Keep depth for later use
-                .store_op = WGPUStoreOp_Store,
-                // Clear depth at start of render pass
-                .load_op = WGPULoadOp_Clear,
-            },
+        .color = &scene_color_attachment,
+        .depth = &scene_depth_attachment,
         .draw_list = scene_draw_list[i],
     };
 
     render_pass_list_insert_pass(&pass_list[i], &scene_pass);
 
     // add gizmo draw list
+
+    RenderPassColorAttachment gizmo_color_attachment = {
+        .view = pass_list->resolve_view,
+        .clear_value = 0,
+        .load_op = WGPULoadOp_Load,
+        .store_op = WGPUStoreOp_Store,
+        .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
+    };
+
+    RenderPassDepthAttachment gizmo_depth_attachment = {
+        .view = NULL,
+        .read_only = false,
+        .clear_value = 1.0f,
+        // clear previously rendered depth
+        .load_op = WGPULoadOp_Clear,
+        // do not store it afterward
+        .store_op = WGPUStoreOp_Discard,
+    };
+
     const RenderPassListInsert gizmo_pass = {
         .label = "Gizmo Render Pass",
         .multisample = multisample,
         .width = scene_renderer_width(&scene->renderer),
         .height = scene_renderer_height(&scene->renderer),
-        .color =
-            {
-                .view = pass_list->resolve_view,
-                .clear_value = 0,
-                .load_op = WGPULoadOp_Load,
-                .store_op = WGPUStoreOp_Store,
-                .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
-            },
-        .depth =
-            {
-                .view = NULL,
-                .read_only = false,
-                .clear_value = 1.0f,
-                // clear previously rendered depth
-                .load_op = WGPULoadOp_Clear,
-                // do not store it afterward
-                .store_op = WGPUStoreOp_Discard,
-            },
+        .color = &gizmo_color_attachment,
+        .depth = &gizmo_depth_attachment,
         .draw_list = &gizmo_draw_list,
     };
 

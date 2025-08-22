@@ -1,6 +1,6 @@
 #ifndef _LIGHT_LIST_H_
 #define _LIGHT_LIST_H_
-#include "../backend/renderer/scene/render_pass.h"
+#include "../backend/renderer/scene/render_pass/render_pass.h"
 #include "../utils/stli.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
@@ -16,6 +16,11 @@ typedef enum {
   LightShadow_Enabled = 1,
 } LightShadow;
 
+typedef struct {
+  const Pipeline *pipeline;
+  mat4 *light_view;
+} LightShadowData;
+
 // light list
 typedef struct {
   size_t length;
@@ -27,11 +32,7 @@ typedef struct {
   size_t length;
   size_t capacity;
   PointLight *entries[LIGHT_MAX_CAPACITY];
-  WGPUTexture color_map;
-  WGPUTexture depth_map;
-  WGPUTextureView color_view;
-  WGPUTextureView depth_view;
-  RenderPass *pass;
+  RenderPass pass;
 } PointLightListShadow;
 
 typedef struct {
@@ -44,11 +45,7 @@ typedef struct {
   size_t length;
   size_t capacity;
   SpotLight *entries[LIGHT_MAX_CAPACITY];
-  WGPUTexture color_map;
-  WGPUTexture depth_map;
-  WGPUTextureView color_view;
-  WGPUTextureView depth_view;
-  RenderPass *pass;
+  RenderPass pass;
 } SpotLightListShadow;
 
 typedef struct {

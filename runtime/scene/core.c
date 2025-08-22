@@ -154,6 +154,23 @@ void scene_light_list_init(Scene *scene) {
       .device = scene_renderer_device(&scene->renderer),
       .queue = scene_renderer_queue(&scene->renderer),
       .lights = &scene->lights,
+      .draw_list =
+          &(RenderPassDrawList){
+              .length = 1,
+              .entries =
+                  {
+                      {
+                          .shader_callback = mesh_shader_shadow,
+                          .topology_callback = mesh_topology_base,
+                          .mesh_preprocessor_callback =
+                              shadow_map_pass_preprocessor_callback,
+                          .mesh_preprocessor_data =
+                              (void *)malloc(sizeof(LightShadowData)), //DEBUG
+                          .meshes = scene_pipeline(
+                              scene, ScenePipeline_Dynamic_LitShadow),
+                      },
+                  },
+          },
   });
 }
 

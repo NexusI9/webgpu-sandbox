@@ -5,7 +5,7 @@
 #include "ao_bake/core.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
-#include "render_pass.h"
+#include "render_pass/render_pass.h"
 #include "std_pipeline/core.h"
 #include "std_texture/core.h"
 #include "webgpu/webgpu.h"
