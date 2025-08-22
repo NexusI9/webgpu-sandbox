@@ -260,9 +260,9 @@ void shadow_map_draw_point_light(
     const ShadowMapDrawPointLightDescriptor *desc) {
 
   // retrieve 6 views of point cube
-  LightViews light_views;
-  light_point_views(&light_views, desc->light->position, desc->light->near,
-                    desc->light->far);
+  Projection light_views;
+  projection_point(&light_views, desc->light->position, desc->light->near,
+                   desc->light->far);
 
   // render scene and store depth map for each view
   for (size_t v = 0; v < light_views.length; v++) {
@@ -311,8 +311,8 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
 void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
 
   // get each light orthographic view depending on target
-  LightViews light_views;
-  light_sun_view(&light_views, desc->light->position, desc->light->size);
+  Projection light_views;
+  projection_sun(&light_views, desc->light->position, desc->light->size);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
       .pass = desc->pass,
@@ -328,8 +328,8 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
 void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
 
   // get each light orthographic view depending on target
-  LightViews light_views;
-  light_spot_view(&light_views, desc->light->position, desc->light->target,
+  Projection light_views;
+  projection_spot(&light_views, desc->light->position, desc->light->target,
                   desc->light->angle);
 
   shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){

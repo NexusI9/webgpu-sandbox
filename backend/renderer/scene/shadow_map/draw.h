@@ -3,6 +3,7 @@
 
 #include "../runtime/light/light.h"
 #include "../runtime/mesh/mesh.h"
+#include "../utils/projection.h"
 #include <stddef.h>
 #include <webgpu/webgpu.h>
 
@@ -44,7 +45,7 @@ typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
   const WGPUCommandEncoder encoder;
-  LightViews *views;
+  Projection *views;
   const size_t layer;
   const Pipeline *pipeline;
   RenderPass *pass;

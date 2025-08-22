@@ -16,6 +16,7 @@ typedef struct {
   WGPUTextureView view;
   ivec3 count;
   vec3 size;
+  RenderPass pass;
 } ProbeReflectionGrid;
 
 typedef struct {
@@ -36,7 +37,7 @@ void probe_reflection_grid_create(ProbeReflectionGrid *,
 
 void probe_reflection_grid_destroy(ProbeReflectionGrid *);
 
-void probe_reflection_grid_draw(ProbeReflectionGrid *, SceneRenderer *);
+void probe_reflection_grid_draw(ProbeReflectionGrid *);
 
 /* === Probe Grid List  === */
 

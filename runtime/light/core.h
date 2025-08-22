@@ -10,7 +10,6 @@
 #define LIGHT_POINT_VIEWS 6
 #define LIGHT_SPOT_VIEW 1
 #define LIGHT_MAX_CAPACITY 16
-#define LIGHT_SUN_DISTANCE 10
 
 typedef enum {
   LightType_Ambient = 1 << 0,

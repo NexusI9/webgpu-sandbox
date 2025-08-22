@@ -1,17 +1,16 @@
-#include "views.h"
-
-#include "../utils/system.h"
+#include "projection.h"
+#include "system.h"
 
 /**
    Compute point view for Point light
    Point lights use 6 views, each pointing to different directions
  */
-void light_point_views(LightViews *views, vec3 light_position, float near,
+void projection_point(Projection *views, vec3 light_position, float near,
                        float far) {
 
-  views->length = LIGHT_POINT_VIEWS;
+  views->length = PROJECTION_VIEW_COUNT;
 
-  vec3 directions[LIGHT_POINT_VIEWS] = {
+  vec3 directions[PROJECTION_VIEW_COUNT] = {
       {1.0f, 0.0f, 0.0f},  // +x (right)
       {-1.0f, 0.0f, 0.0f}, // -x (left)
       {0.0f, 1.0f, 0.0f},  // +y (top)
@@ -20,7 +19,7 @@ void light_point_views(LightViews *views, vec3 light_position, float near,
       {0.0f, 0.0f, -1.0f}, // -z (back)
   };
 
-  vec3 ups[LIGHT_POINT_VIEWS] = {
+  vec3 ups[PROJECTION_VIEW_COUNT] = {
       {0.0f, 1.0f, 0.0f},  // +x (right)
       {0.0f, 1.0f, 0.0f},  // -x (left)
       {0.0f, 0.0f, -1.0f}, // +y (top)
@@ -53,10 +52,10 @@ void light_point_views(LightViews *views, vec3 light_position, float near,
 /**
    Compute point view for spot light
  */
-void light_spot_view(LightViews *views, vec3 light_position, vec3 light_target,
+void projection_spot(Projection *views, vec3 light_position, vec3 light_target,
                      float angle) {
 
-  views->length = LIGHT_SPOT_VIEW;
+  views->length = PROJECTION_VIEW_COUNT;
 
   vec3 up = {0.0f, 1.0f, 0.0f};
 
@@ -80,9 +79,9 @@ void light_spot_view(LightViews *views, vec3 light_position, vec3 light_target,
    For Sun are position agnostic, target is always 0,0,0, but the position
    simulates sun position by being super far away from the scene
  */
-void light_sun_view(LightViews *views, vec3 light_position, float size) {
+void projection_sun(Projection *views, vec3 light_position, float size) {
 
-  views->length = LIGHT_SPOT_VIEW;
+  views->length = PROJECTION_VIEW_COUNT;
 
   vec3 up = {0.0f, 1.0f, 0.0f};
 
@@ -93,7 +92,7 @@ void light_sun_view(LightViews *views, vec3 light_position, float size) {
   // For sun: normalize position and set it far away by default
   vec3 norm_position, view_position;
   glm_vec3_normalize_to(light_position, norm_position);
-  glm_vec3_scale(norm_position, (float)LIGHT_SUN_DISTANCE, view_position);
+  glm_vec3_scale(norm_position, (float)PROJECTION_SUN_DISTANCE, view_position);
 
   mat4 ortho;
   glm_ortho(-size, size, -size, size, 0.1f, 100.0f, ortho);

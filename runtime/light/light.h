@@ -4,7 +4,6 @@
 #include "core.h"
 #include "create.h"
 #include "list.h"
-#include "views.h"
 #include "uniform.h"
 
 #endif
