@@ -9,7 +9,7 @@
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_pbr = {
+static const ShaderPipelineStateObject layout_pbr = {
     .label = "Pipeline Bind Groups - PBR",
     .shader_path =
         "../backend/renderer/scene/std_pipeline/modules/pbr/pbr.wgsl",

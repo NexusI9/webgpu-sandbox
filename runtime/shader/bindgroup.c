@@ -326,7 +326,7 @@ void shader_bind_group_refresh(ShaderBindGroup *group,
    be updated via update functions.
  */
 void shader_bind_group_create_from_layout(
-    Shader *shader, const PipelineLayoutDescriptor *layout) {
+    Shader *shader, const ShaderPipelineStateObject *layout) {
 
 #ifdef VERBOSE_BINDING_PHASE
   VERBOSE_PRINT("\t\t└ Initialize bindgroups from pipeline layout:");

@@ -9,7 +9,7 @@
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_grid = {
+static const ShaderPipelineStateObject layout_grid = {
     .label = "Pipeline Bind Groups - Grid",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/grid/grid.wgsl",

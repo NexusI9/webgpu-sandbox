@@ -99,12 +99,12 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
       desc->pass->color.texture, &temp_layer_texture_descriptor_color);
 
   // Dynamically update the preprocessor data (Smelly...)
-  LightShadowData *data = (LightShadowData *)desc->pass->draw_list.entries[0]
-                              .mesh_preprocessor_data;
+  LightShadowData data = {
+      .pipeline = desc->pipeline,
+      .light_view = desc->light_view,
+  };
 
-  data->pipeline = desc->pipeline;
-  data->light_view = desc->light_view;
-
+  desc->pass->draw_list.entries[0].mesh_preprocessor_data = &data;
   render_pass_draw(desc->pass, &(RenderPassViewOverride){
                                    .color = temp_layer_texture_view_color,
                                    .depth = temp_layer_texture_view_depth,

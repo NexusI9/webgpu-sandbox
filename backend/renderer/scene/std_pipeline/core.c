@@ -2,6 +2,7 @@
 #include "../runtime/pipeline/pipeline.h"
 #include "./modules/billboard/billboard.h"
 #include "./modules/default/default.h"
+#include "./modules/glass/glass.h"
 #include "./modules/grid/grid.h"
 #include "./modules/line/line.h"
 #include "./modules/pbr/pbr.h"
@@ -10,31 +11,31 @@
 #include "./modules/skybox/skybox.h"
 #include "./modules/solid/solid.h"
 #include "./modules/unlit/unlit.h"
-#include "./modules/glass/glass.h"
 #include "webgpu/webgpu.h"
 
-static const PipelineLayoutDescriptor *standard_layouts[PIPELINE_TYPE_COUNT] = {
-    [PipelineType_Billboard] = &layout_billboard,
-    [PipelineType_Default] = &layout_default,
-    [PipelineType_Line] = &layout_line,
-    [PipelineType_Unlit] = &layout_unlit,
-    [PipelineType_Grid] = &layout_grid,
-    [PipelineType_PBR] = &layout_pbr,
-    [PipelineType_Screen] = &layout_screen,
-    [PipelineType_Shadow] = &layout_shadow,
-    [PipelineType_ShadowCullBack] = &layout_shadow_cullback,
-    [PipelineType_Skybox] = &layout_skybox,
-    [PipelineType_Solid] = &layout_solid,
-    [PipelineType_Glass] = &layout_glass,
+static const ShaderPipelineStateObject *standard_layouts[PIPELINE_TYPE_COUNT] =
+    {
+        [PipelineType_Billboard] = &layout_billboard,
+        [PipelineType_Default] = &layout_default,
+        [PipelineType_Line] = &layout_line,
+        [PipelineType_Unlit] = &layout_unlit,
+        [PipelineType_Grid] = &layout_grid,
+        [PipelineType_PBR] = &layout_pbr,
+        [PipelineType_Screen] = &layout_screen,
+        [PipelineType_Shadow] = &layout_shadow,
+        [PipelineType_ShadowCullBack] = &layout_shadow_cullback,
+        [PipelineType_Skybox] = &layout_skybox,
+        [PipelineType_Solid] = &layout_solid,
+        [PipelineType_Glass] = &layout_glass,
 };
 
 Pipeline g_std_pipelines[PIPELINE_TYPE_COUNT] = {0};
 
 /**
    Initialize standards shaders and build pipelines layout for each of them.
-   
+
                  [ BLUEPRINT ] ===> [ WGPUPipeline ]
-		 
+
  */
 void standard_pipelines_init(const WGPUDevice device,
                              const PipelineMultisampleCount multisample) {
@@ -43,7 +44,7 @@ void standard_pipelines_init(const WGPUDevice device,
 
   for (size_t i = 0; i < PIPELINE_TYPE_COUNT; i++) {
 
-    const PipelineLayoutDescriptor *layout = standard_layouts[i];
+    const ShaderPipelineStateObject *layout = standard_layouts[i];
     Pipeline *cached_pipeline = &g_std_pipelines[i];
 
     // create pipeline
@@ -55,7 +56,7 @@ void standard_pipelines_init(const WGPUDevice device,
 
     // transfert original layout descriptor so empty shader bindgroups can be
     // generated from it
-    cached_pipeline->layout_descriptor = layout;
+    cached_pipeline->shader_pso = layout;
 
     // check custom attributes (weak check)
 
@@ -100,7 +101,7 @@ void standard_pipelines_init(const WGPUDevice device,
     cached_pipeline->bindings = layout->bindings;
 
     // build layout based on bindgroup description
-    WGPUPipelineLayout temp_layout = pipeline_layout_descriptor_create(
+    WGPUPipelineLayout temp_layout = shader_pipeline_state_object_create(
         layout->bind_groups, layout->bind_groups_count, device, NULL);
 
     pipeline_build(cached_pipeline, &temp_layout);

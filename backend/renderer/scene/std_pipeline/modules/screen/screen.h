@@ -8,7 +8,7 @@
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_screen = {
+static const ShaderPipelineStateObject layout_screen = {
     .label = "Pipeline Bind Groups - Screen",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/screen/screen.wgsl",

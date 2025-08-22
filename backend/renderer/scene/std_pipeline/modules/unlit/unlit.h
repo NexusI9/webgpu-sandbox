@@ -8,7 +8,7 @@
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_unlit = {
+static const ShaderPipelineStateObject layout_unlit = {
     .label = "Pipeline Bind Groups - Unlit",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/unlit/unlit.wgsl",

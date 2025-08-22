@@ -120,7 +120,7 @@ typedef struct {
 
   PipelineBinding bindings;
 
-} PipelineLayoutDescriptor;
+} ShaderPipelineStateObject;
 
 typedef struct {
 
@@ -146,7 +146,7 @@ typedef struct {
   WGPUPipelineLayout layout;
 
   // initial layout
-  const PipelineLayoutDescriptor *layout_descriptor;
+  const ShaderPipelineStateObject *shader_pso;
 
   // pipeline std bindings
   PipelineBinding bindings;

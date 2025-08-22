@@ -164,8 +164,7 @@ void scene_light_list_init(Scene *scene) {
                           .topology_callback = mesh_topology_base,
                           .mesh_preprocessor_callback =
                               shadow_map_pass_preprocessor_callback,
-                          .mesh_preprocessor_data =
-                              (void *)malloc(sizeof(LightShadowData)), //DEBUG
+                          .mesh_preprocessor_data = (void *)NULL,
                           .meshes = scene_pipeline(
                               scene, ScenePipeline_Dynamic_LitShadow),
                       },

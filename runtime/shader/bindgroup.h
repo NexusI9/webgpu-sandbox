@@ -23,7 +23,7 @@ void shader_bind_group_create(Shader *, bind_group_index);
 void shader_bind_group_clear(Shader *);
 
 void shader_bind_group_create_from_layout(Shader *,
-                                          const PipelineLayoutDescriptor *);
+                                          const ShaderPipelineStateObject *);
 
 WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *);
 void shader_bind_group_build(ShaderBindGroup *, bind_group_index,

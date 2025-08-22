@@ -64,7 +64,7 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 
   // generate empty bindgroups based on pipeline layout (CPU Side)
   shader_bind_group_create_from_layout(shader,
-                                       shader->pipeline->layout_descriptor);
+                                       shader->pipeline->shader_pso);
 
   // create gpu bindgroups from generated layout (GPU side)
   shader_build(shader);

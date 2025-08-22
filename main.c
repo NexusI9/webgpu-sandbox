@@ -10,6 +10,7 @@
 #include <emscripten/emscripten.h>
 
 // runtime
+#include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/scene/scene.h"
 static Scene main_scene;
@@ -66,10 +67,13 @@ int main(int argc, const char *argv[]) {
   // example_ao(&main_scene, false);
   example_glass(&main_scene);
 
-  scene_add_probe_reflection_grid(&main_scene, &(ProbeReflectionGridDescriptor){
-                                                   .count = {3, 3, 3},
-                                                   .size = {3.0f, 3.0f, 3.0f},
-                                               });
+  SceneEditorObject *grid_probe = scene_add_probe_reflection_grid(
+      &main_scene, &(ProbeReflectionGridDescriptor){
+                       .count = {3, 3, 3},
+                       .size = {3.0f, 3.0f, 3.0f},
+  });
+
+  
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);

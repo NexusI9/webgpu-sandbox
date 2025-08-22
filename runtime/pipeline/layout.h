@@ -5,7 +5,7 @@
 #include <webgpu/webgpu.h>
 
 WGPUPipelineLayout
-pipeline_layout_descriptor_create(const WGPUBindGroupLayoutDescriptor *,
+shader_pipeline_state_object_create(const WGPUBindGroupLayoutDescriptor *,
                                   const size_t, const WGPUDevice,
                                   WGPUBindGroupLayout *outLayout);
 

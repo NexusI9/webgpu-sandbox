@@ -17,7 +17,7 @@ typedef struct {
   vec4 _pad1;
 } __attribute__((aligned(16))) GlassUniform;
 
-static const PipelineLayoutDescriptor layout_glass = {
+static const ShaderPipelineStateObject layout_glass = {
     .label = "Pipeline Bind Groups - Glass",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/glass/glass.wgsl",

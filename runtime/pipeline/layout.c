@@ -9,7 +9,7 @@
    Transforms bindgroups into pipeline layouts and returns the generated
    pipeline descriptor
  */
-WGPUPipelineLayout pipeline_layout_descriptor_create(
+WGPUPipelineLayout shader_pipeline_state_object_create(
     const WGPUBindGroupLayoutDescriptor *bind_groups, const size_t count,
     const WGPUDevice device, WGPUBindGroupLayout *outLayout) {
 

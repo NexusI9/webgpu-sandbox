@@ -10,7 +10,7 @@
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_shadow = {
+static const ShaderPipelineStateObject layout_shadow = {
     .label = "Pipeline Bind Groups - Shadow",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/shadow/shadow.wgsl",
@@ -73,7 +73,7 @@ static const PipelineLayoutDescriptor layout_shadow = {
         },
 };
 
-static const PipelineLayoutDescriptor layout_shadow_cullback = {
+static const ShaderPipelineStateObject layout_shadow_cullback = {
     .label = "Pipeline Bind Groups - Shadow Cullback",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/shadow/shadow.wgsl",

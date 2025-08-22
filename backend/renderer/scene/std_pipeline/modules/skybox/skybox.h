@@ -8,7 +8,7 @@
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_skybox = {
+static const ShaderPipelineStateObject layout_skybox = {
     .label = "Pipeline Bind Groups - Skybox",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/skybox/skybox.wgsl",

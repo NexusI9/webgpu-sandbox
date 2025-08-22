@@ -8,7 +8,7 @@
 
 #include <webgpu/webgpu.h>
 
-static const PipelineLayoutDescriptor layout_billboard = {
+static const ShaderPipelineStateObject layout_billboard = {
     .label = "Pipeline Bind Groups - Billboard",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/billboard/billboard.wgsl",
