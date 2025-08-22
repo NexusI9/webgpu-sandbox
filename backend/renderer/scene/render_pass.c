@@ -70,13 +70,18 @@ void render_pass_create(RenderPass *render_pass,
   };
 
   // assign color attributes
+  WGPUTexture color_texture;
   WGPUTextureView color_view;
-  if (desc->color.view)
+  if (desc->color.view == NULL &&
+      desc->multisample > PipelineMultisampleCount_1x) {
+    render_pass_create_multisampling_view(&color_texture, &color_view,
+                                          &texture_config);
+  } else {
     color_view = desc->color.view;
-  else if (desc->multisample > PipelineMultisampleCount_1x)
-    render_pass_create_multisampling_view(&render_pass->color.texture,
-                                          &color_view, &texture_config);
+    color_texture = desc->color.texture;
+  }
 
+  render_pass->color.texture = color_texture;
   render_pass->color.attachment = (WGPURenderPassColorAttachment){
       .view = color_view,
       .clearValue = desc->color.clear_value,
@@ -85,14 +90,18 @@ void render_pass_create(RenderPass *render_pass,
       .storeOp = desc->color.store_op,
   };
 
+  WGPUTexture depth_texture;
   WGPUTextureView depth_view;
-  if (desc->depth.view == NULL)
-    render_pass_create_depth_view(&render_pass->depth.texture, &depth_view,
-                                  &texture_config);
-  else
-    depth_view = desc->depth.view;
+  if (desc->depth.view == NULL &&
+      desc->multisample > PipelineMultisampleCount_1x) {
+    render_pass_create_depth_view(&depth_texture, &depth_view, &texture_config);
+  } else {
+    color_view = desc->color.view;
+    color_texture = desc->color.texture;
+  }
 
   // assign depth
+  render_pass->depth.texture = depth_texture;
   render_pass->depth.attachment = (WGPURenderPassDepthStencilAttachment){
       .view = depth_view,
       .depthClearValue = desc->depth.clear_value,
@@ -557,7 +566,7 @@ void render_pass_create_multisampling_view(
     return;
   }
 
-  WGPUTexture msaa_texture = wgpuDeviceCreateTexture(
+  *texture = wgpuDeviceCreateTexture(
       desc->device,
       &(WGPUTextureDescriptor){
           .label = "MSAA Texture",
@@ -573,7 +582,7 @@ void render_pass_create_multisampling_view(
           .mipLevelCount = 1,
       });
 
-  *view = wgpuTextureCreateView(msaa_texture, NULL);
+  *view = wgpuTextureCreateView(*texture, NULL);
 }
 
 void render_pass_create_depth_view(WGPUTexture *texture, WGPUTextureView *view,
@@ -584,7 +593,7 @@ void render_pass_create_depth_view(WGPUTexture *texture, WGPUTextureView *view,
   // backgrounds...)
   // => Need to create a depth texture: a hidden buffer storing depth values for
   // each pixel
-  WGPUTexture depthTexture = wgpuDeviceCreateTexture(
+  *texture = wgpuDeviceCreateTexture(
       desc->device,
       &(WGPUTextureDescriptor){
           .usage = WGPUTextureUsage_RenderAttachment, // used in rendering pass
@@ -602,14 +611,13 @@ void render_pass_create_depth_view(WGPUTexture *texture, WGPUTextureView *view,
       });
 
   *view = wgpuTextureCreateView(
-      depthTexture,
-      &(WGPUTextureViewDescriptor){
-          .format = WGPUTextureFormat_Depth24Plus,
-          .dimension = WGPUTextureViewDimension_2D,
-          .baseMipLevel = 0,
-          .mipLevelCount = 1, // match above texture
-          .baseArrayLayer = 0,
-          .arrayLayerCount = 1, // not using array texture (only 1)
-          .aspect = WGPUTextureAspect_DepthOnly,
-      });
+      *texture, &(WGPUTextureViewDescriptor){
+                    .format = WGPUTextureFormat_Depth24Plus,
+                    .dimension = WGPUTextureViewDimension_2D,
+                    .baseMipLevel = 0,
+                    .mipLevelCount = 1, // match above texture
+                    .baseArrayLayer = 0,
+                    .arrayLayerCount = 1, // not using array texture (only 1)
+                    .aspect = WGPUTextureAspect_DepthOnly,
+                });
 }
