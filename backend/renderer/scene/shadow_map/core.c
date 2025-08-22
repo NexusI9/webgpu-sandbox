@@ -73,6 +73,7 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
                                            .queue = &queue,
                                            });*/
 
+ 
   // create multi layered light texture (passed to the renderpass)
   size_t point_light_length = desc->lights->point.shadow.length;
   size_t spot_light_length = desc->lights->spot.shadow.length;

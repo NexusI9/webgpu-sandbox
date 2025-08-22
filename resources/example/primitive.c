@@ -1,11 +1,12 @@
 #include "primitive.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "../runtime/primitive/cube.h"
 
 void example_primitive(Mesh *cube, vec3 position, Scene *scene,
                        const Pipeline *pipeline) {
 
   Primitive cube_prim = primitive_cube();
-  //cube = scene_new_mesh(scene);
+  // cube = scene_new_mesh(scene);
 
   mesh_create_primitive(cube, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &cube_prim,

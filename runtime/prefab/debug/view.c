@@ -2,6 +2,7 @@
 #include "../../../runtime/camera/camera.h"
 #include "../../../runtime/viewport/viewport.h"
 #include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "../runtime/primitive/plane.h"
 #include "../utils/system.h"
 #include "webgpu/webgpu.h"

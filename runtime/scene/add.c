@@ -8,6 +8,7 @@
 #include "editor/object/list/list.h"
 #include "editor/object/probe/reflection.h"
 #include "editor/selection/core.h"
+#include "../runtime/mesh/shader/shader.h"
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 

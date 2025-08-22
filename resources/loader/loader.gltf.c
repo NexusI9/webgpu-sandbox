@@ -1,5 +1,6 @@
 #include "loader.gltf.h"
 #include "../backend/renderer/scene/std_texture/std_texture.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
 
 #define STB_IMAGE_IMPLEMENTATION

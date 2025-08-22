@@ -7,6 +7,7 @@
 #include "../utils/color.h"
 #include <stddef.h>
 #include <stdint.h>
+#include "../runtime/mesh/shader/shader.h"
 
 static const struct {
   CameraRaycastEvent event;

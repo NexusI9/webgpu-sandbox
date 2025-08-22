@@ -69,13 +69,6 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
 
    */
 
-  WGPUCommandEncoder shadow_encoder = desc->encoder;
-
-  // create "local" encoder if is not included
-  //(usually when only drawing one light)
-  if (shadow_encoder == NULL)
-    shadow_encoder = wgpuDeviceCreateCommandEncoder(desc->device, NULL);
-
   // create per layer texture views (depth + color)
   WGPUTextureViewDescriptor temp_layer_texture_descriptor_depth = {
       .label = "Shadow per layer texture view - Depth",
@@ -102,6 +95,13 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
 
   WGPUTextureView temp_layer_texture_view_color = wgpuTextureCreateView(
       desc->color_texture, &temp_layer_texture_descriptor_color);
+  
+  WGPUCommandEncoder shadow_encoder = desc->encoder;
+
+  // create "local" encoder if is not included
+  //(usually when only drawing one light)
+  if (shadow_encoder == NULL)
+    shadow_encoder = wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
   // create render pass and render it to the nested layer
   WGPURenderPassEncoder shadow_pass = wgpuCommandEncoderBeginRenderPass(
@@ -141,8 +141,6 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
   }
 
   wgpuRenderPassEncoderEnd(shadow_pass);
-  wgpuTextureViewRelease(temp_layer_texture_view_depth);
-  wgpuTextureViewRelease(temp_layer_texture_view_color);
 
   // clean up "local" encoder if not provided in the descriptor
   if (desc->encoder == NULL) {
@@ -156,6 +154,9 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
     wgpuCommandBufferRelease(command_buffer);
     wgpuCommandEncoderRelease(shadow_encoder);
   }
+
+  wgpuTextureViewRelease(temp_layer_texture_view_depth);
+  wgpuTextureViewRelease(temp_layer_texture_view_color);
 
   /*debug_view_add(&debug_view_light,
                  &(ViewDescriptor){

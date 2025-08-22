@@ -4,6 +4,7 @@
 #include "../runtime/texture/texture.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
+#include "../runtime/mesh/shader/shader.h"
 
 /**
    Create a plane mesh with a billboard shader

@@ -1,5 +1,6 @@
 #include "glass.h"
 #include "../backend/renderer/scene/std_pipeline/modules/glass/glass.h"
+#include "../runtime/mesh/shader/shader.h"
 
 void example_glass(Scene *scene) {
   Mesh *cube = scene_new_mesh(scene);

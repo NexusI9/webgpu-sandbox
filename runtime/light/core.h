@@ -2,7 +2,6 @@
 #define _LIGHT_CORE_H_
 
 #include "../backend/registry.h"
-#include "../mesh/mesh.h"
 #include "../viewport/viewport.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>

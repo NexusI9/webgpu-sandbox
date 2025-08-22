@@ -1,7 +1,6 @@
 #ifndef _RENDER_PASS_H_
 #define _RENDER_PASS_H_
 #include "../../../runtime/mesh/mesh.h"
-#include "../runtime/mesh/shader/shader.h"
 #include <webgpu/webgpu.h>
 
 #define RENDER_PASS_DRAW_LAYOUT_MAX_MESH_LIST 6
@@ -13,11 +12,15 @@ typedef struct RenderPass RenderPass;
 typedef struct RenderPassList RenderPassList;
 
 typedef void (*render_pass_draw_callback)(RenderPass *);
+typedef void (*render_pass_mesh_preprocessor_callback)(const RenderPass *,
+                                                       Mesh *, void *);
 typedef void (*render_pass_list_draw_callback)(RenderPassList *);
 
 typedef struct {
   mesh_get_shader_callback shader_callback;
   mesh_get_topology_callback topology_callback;
+  render_pass_mesh_preprocessor_callback mesh_preprocessor;
+  void *mesh_preprocessor_data;
   MeshRefList *meshes;
 } RenderPassDrawLayout;
 
@@ -29,10 +32,12 @@ typedef struct {
 // Descriptor
 
 typedef struct {
+  WGPUTexture texture;
   WGPURenderPassColorAttachment attachment;
 } RenderPassColor;
 
 typedef struct {
+  WGPUTexture texture;
   WGPURenderPassDepthStencilAttachment attachment;
 } RenderPassDepth;
 
@@ -58,6 +63,7 @@ struct RenderPassList {
   WGPUQueue queue;
   WGPUSwapChain swapchain;
   WGPUTextureView resolve_view;
+  WGPUTexture resolve_texture;
   RenderPass passes[RENDER_PASS_MAX_DRAW_LIST];
   size_t length;
   render_pass_list_draw_callback draw_callback;
@@ -71,7 +77,8 @@ typedef struct {
 } RenderPassTextureDescriptor;
 
 typedef struct {
-  WGPUTextureView *view;
+  WGPUTexture texture;
+  WGPUTextureView view;
   WGPULoadOp load_op;
   WGPUStoreOp store_op;
   uint32_t clear_value;
@@ -79,7 +86,8 @@ typedef struct {
 } RenderPassDepthAttachment;
 
 typedef struct {
-  WGPUTextureView *view;
+  WGPUTexture texture;
+  WGPUTextureView view;
   WGPULoadOp load_op;
   WGPUStoreOp store_op;
   WGPUColor clear_value;
@@ -124,6 +132,10 @@ typedef struct {
   const WGPUQueue queue;
 } RenderPassDrawDescriptor;
 
+typedef struct {
+  WGPUTextureView color, depth;
+} RenderPassViewOverride;
+
 void render_pass_set_draw_list(RenderPass *, const RenderPassDrawList *);
 
 void render_pass_create(RenderPass *, const RenderPassCreateDescriptor *);
@@ -142,9 +154,7 @@ void render_pass_draw_onscreen_monosample(RenderPass *);
 void render_pass_draw_onscreen_multisample(RenderPass *);
 void render_pass_draw_offscreen(RenderPass *);
 
-static inline void render_pass_draw(RenderPass *pass) {
-  pass->draw_callback(pass);
-}
+void render_pass_draw(RenderPass *, const RenderPassViewOverride *);
 
 static inline void render_pass_list_draw(RenderPassList *list) {
   list->draw_callback(list);

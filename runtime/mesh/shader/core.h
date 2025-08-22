@@ -6,7 +6,6 @@
 #include "../runtime/shader/shader.h"
 #include "../runtime/viewport/viewport.h"
 
-typedef Shader *(*mesh_get_shader_callback)(Mesh *);
 typedef void (*mesh_create_dynamic_shader_callback)(Mesh *);
 
 /* custom */

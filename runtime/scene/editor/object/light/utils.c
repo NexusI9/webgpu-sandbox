@@ -1,4 +1,5 @@
 #include "./utils.h"
+#include "../runtime/mesh/shader/shader.h"
 
 void seo_light_update_shadow_map(Scene* scene) {
 

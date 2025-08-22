@@ -5,6 +5,7 @@
 #include "../../texture/texture.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
+#include "../runtime/mesh/shader/shader.h"
 
 static inline WGPUTexture prefab_skybox_texture(const WGPUDevice, const size_t);
 

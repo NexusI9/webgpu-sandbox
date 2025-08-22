@@ -1,5 +1,6 @@
 #ifndef _LIGHT_LIST_H_
 #define _LIGHT_LIST_H_
+#include "../backend/renderer/scene/render_pass.h"
 #include "../utils/stli.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
@@ -30,6 +31,7 @@ typedef struct {
   WGPUTexture depth_map;
   WGPUTextureView color_view;
   WGPUTextureView depth_view;
+  RenderPass *pass;
 } PointLightListShadow;
 
 typedef struct {
@@ -46,6 +48,7 @@ typedef struct {
   WGPUTexture depth_map;
   WGPUTextureView color_view;
   WGPUTextureView depth_view;
+  RenderPass *pass;
 } SpotLightListShadow;
 
 typedef struct {

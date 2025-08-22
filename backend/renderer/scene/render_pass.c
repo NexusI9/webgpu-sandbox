@@ -2,19 +2,19 @@
 #include "webgpu/webgpu.h"
 #include <string.h>
 
+#include "../utils/system.h"
+
 static void render_pass_create_color_multisample(RenderPass *);
 static void render_pass_create_color_monosample(RenderPass *);
-
-static void render_pass_draw_list(RenderPassDrawList *, WGPURenderPassEncoder);
 
 static inline void render_pass_draw_pass(RenderPass *, WGPUCommandEncoder);
 
 static inline void
-render_pass_create_multisampling_view(WGPUTextureView *,
+render_pass_create_multisampling_view(WGPUTexture *, WGPUTextureView *,
                                       const RenderPassTextureDescriptor *);
 
 static inline void
-render_pass_create_depth_view(WGPUTextureView *,
+render_pass_create_depth_view(WGPUTexture *, WGPUTextureView *,
                               const RenderPassTextureDescriptor *);
 
 void render_pass_create(RenderPass *render_pass,
@@ -72,9 +72,10 @@ void render_pass_create(RenderPass *render_pass,
   // assign color attributes
   WGPUTextureView color_view;
   if (desc->color.view)
-    color_view = *desc->color.view;
+    color_view = desc->color.view;
   else if (desc->multisample > PipelineMultisampleCount_1x)
-    render_pass_create_multisampling_view(&color_view, &texture_config);
+    render_pass_create_multisampling_view(&render_pass->color.texture,
+                                          &color_view, &texture_config);
 
   render_pass->color.attachment = (WGPURenderPassColorAttachment){
       .view = color_view,
@@ -86,9 +87,10 @@ void render_pass_create(RenderPass *render_pass,
 
   WGPUTextureView depth_view;
   if (desc->depth.view == NULL)
-    render_pass_create_depth_view(&depth_view, &texture_config);
+    render_pass_create_depth_view(&render_pass->depth.texture, &depth_view,
+                                  &texture_config);
   else
-    depth_view = *desc->depth.view;
+    depth_view = desc->depth.view;
 
   // assign depth
   render_pass->depth.attachment = (WGPURenderPassDepthStencilAttachment){
@@ -121,7 +123,8 @@ void render_pass_list_create(RenderPassList *list,
     list->draw_callback = render_pass_list_draw_offscreen;
 
   if (desc->multisample > PipelineMultisampleCount_1x) {
-    render_pass_create_multisampling_view(&list->resolve_view,
+    render_pass_create_multisampling_view(&list->resolve_texture,
+                                          &list->resolve_view,
                                           &(RenderPassTextureDescriptor){
                                               .device = list->device,
                                               .height = desc->height,
@@ -211,6 +214,10 @@ void render_pass_set_draw_list(RenderPass *pass,
 
  */
 
+/**
+   Traverse a specific pass draw list and draw meshes onto the given render pass
+   encoder
+ */
 void render_pass_draw_pass(RenderPass *pass,
                            WGPUCommandEncoder render_encoder) {
 
@@ -223,33 +230,30 @@ void render_pass_draw_pass(RenderPass *pass,
                       });
 
   // Go through and draw each mode render pass
-  render_pass_draw_list(&pass->draw_list, pass->encoder);
-  wgpuRenderPassEncoderEnd(pass->encoder);
-}
-
-/**
-   Traverse a specific layout array and draw meshes onto the given render pass
-   encoder
- */
-void render_pass_draw_list(RenderPassDrawList *draw_list,
-                           WGPURenderPassEncoder encoder) {
-
   // Draw meshes
   // loop through mesh lists and draw meshes
-  for (size_t j = 0; j < draw_list->length; j++) {
+  for (size_t j = 0; j < pass->draw_list.length; j++) {
 
     // retrieve layout
-    RenderPassDrawLayout *layout = &draw_list->entries[j];
-    mesh_get_topology_callback target_topology = layout->topology_callback;
-    mesh_get_shader_callback target_shader = layout->shader_callback;
-    MeshRefList *meshes = layout->meshes;
+    RenderPassDrawLayout *list = &pass->draw_list.entries[j];
+    mesh_get_topology_callback target_topology = list->topology_callback;
+    mesh_get_shader_callback target_shader = list->shader_callback;
+    render_pass_mesh_preprocessor_callback mesh_preprocessor =
+        list->mesh_preprocessor;
+    MeshRefList *meshes = list->meshes;
 
     // draw mesh with layout callbacks
     for (size_t k = 0; k < meshes->length; k++) {
       Mesh *mesh = meshes->entries[k];
-      mesh_draw(target_topology(mesh), target_shader(mesh), encoder);
+
+      if (mesh_preprocessor)
+        mesh_preprocessor(pass, mesh, list->mesh_preprocessor_data);
+
+      mesh_draw(target_topology(mesh), target_shader(mesh), pass->encoder);
     }
   }
+
+  wgpuRenderPassEncoderEnd(pass->encoder);
 }
 
 /**
@@ -505,6 +509,27 @@ void render_pass_draw_offscreen(RenderPass *pass) {
   wgpuCommandBufferRelease(render_buffer);
 }
 
+void render_pass_draw(RenderPass *pass,
+                      const RenderPassViewOverride *overrides) {
+
+  WGPUTextureView src_color_view = pass->color.attachment.view;
+  WGPUTextureView src_depth_view = pass->color.attachment.view;
+
+  if (overrides->color)
+    pass->color.attachment.view = overrides->color;
+
+  if (overrides->depth)
+    pass->depth.attachment.view = overrides->depth;
+
+  pass->draw_callback(pass);
+
+  wgpuTextureViewRelease(pass->color.attachment.view);
+  wgpuTextureViewRelease(pass->depth.attachment.view);
+
+  pass->color.attachment.view = src_color_view;
+  pass->depth.attachment.view = src_depth_view;
+}
+
 /**
 
 
@@ -522,7 +547,8 @@ void render_pass_draw_offscreen(RenderPass *pass) {
 
  */
 void render_pass_create_multisampling_view(
-    WGPUTextureView *view, const RenderPassTextureDescriptor *desc) {
+    WGPUTexture *texture, WGPUTextureView *view,
+    const RenderPassTextureDescriptor *desc) {
 
   if (desc->multisample == 0) {
     VERBOSE_WARNING("Multisample provided is not valid (%d), make sure the "
@@ -550,7 +576,7 @@ void render_pass_create_multisampling_view(
   *view = wgpuTextureCreateView(msaa_texture, NULL);
 }
 
-void render_pass_create_depth_view(WGPUTextureView *view,
+void render_pass_create_depth_view(WGPUTexture *texture, WGPUTextureView *view,
                                    const RenderPassTextureDescriptor *desc) {
 
   // Need to create a texture view for Z buffer stencil

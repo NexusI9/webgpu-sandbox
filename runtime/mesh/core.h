@@ -5,7 +5,7 @@
 #include "../geometry/vertex/vertex.h"
 #include "../primitive/primitive.h"
 #include "../shader/shader.h"
-#include "./topology/topology.h"
+#include "topology/topology.h"
 #include "topology/boundbox.h"
 #include "topology/core.h"
 #include "webgpu/webgpu.h"
@@ -60,6 +60,7 @@ typedef struct {
 } __attribute__((aligned(16))) MeshUniform;
 
 typedef void (*mesh_get_transform_attribute)(Mesh *, vec3 *);
+typedef Shader *(*mesh_get_shader_callback)(Mesh *);
 
 // Core
 struct Mesh {
