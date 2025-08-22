@@ -10,9 +10,10 @@
 #define RENDER_PASS_VIEW_CREATE -1
 
 typedef struct RenderPass RenderPass;
+typedef struct RenderPassList RenderPassList;
 
-typedef void (*render_pass_draw_callback)(RenderPass *, WGPUTextureView,
-                                          WGPUCommandEncoder);
+typedef void (*render_pass_draw_callback)(RenderPass *);
+typedef void (*render_pass_list_draw_callback)(RenderPassList *);
 
 typedef struct {
   mesh_get_shader_callback shader_callback;
@@ -47,21 +48,20 @@ struct RenderPass {
   RenderPassDepth depth;
   PipelineMultisampleCount multisample;
   WGPUSwapChain swapchain;
-  int width;
-  int height;
   RenderPassDrawList draw_list;
   render_pass_draw_callback draw_callback;
   WGPURenderPassEncoder encoder;
 };
 
-typedef struct {
+struct RenderPassList {
   WGPUDevice device;
   WGPUQueue queue;
   WGPUSwapChain swapchain;
   WGPUTextureView resolve_view;
   RenderPass passes[RENDER_PASS_MAX_DRAW_LIST];
   size_t length;
-} RenderPassList;
+  render_pass_list_draw_callback draw_callback;
+};
 
 typedef struct {
   const int width;
@@ -128,22 +128,26 @@ void render_pass_set_draw_list(RenderPass *, const RenderPassDrawList *);
 
 void render_pass_create(RenderPass *, const RenderPassCreateDescriptor *);
 
-void render_pass_draw_onscreen(RenderPass *);
-void render_pass_draw_offscreen(RenderPass *);
-
 void render_pass_list_create(RenderPassList *, const RenderPassListCreate *);
 
 void render_pass_list_insert_pass(RenderPassList *,
                                   const RenderPassListInsert *);
 
-void render_pass_list_draw_onscreen(RenderPassList *);
+void render_pass_list_draw_onscreen_monosample(RenderPassList *);
+void render_pass_list_draw_onscreen_multisample(RenderPassList *);
 void render_pass_list_draw_offscreen(RenderPassList *);
 
 /* Draw callbacks */
-void render_pass_draw_monosample(RenderPass *, WGPUTextureView,
-                                 WGPUCommandEncoder);
+void render_pass_draw_onscreen_monosample(RenderPass *);
+void render_pass_draw_onscreen_multisample(RenderPass *);
+void render_pass_draw_offscreen(RenderPass *);
 
-void render_pass_draw_multisample(RenderPass *, WGPUTextureView,
-                                  WGPUCommandEncoder);
+static inline void render_pass_draw(RenderPass *pass) {
+  pass->draw_callback(pass);
+}
+
+static inline void render_pass_list_draw(RenderPassList *list) {
+  list->draw_callback(list);
+}
 
 #endif

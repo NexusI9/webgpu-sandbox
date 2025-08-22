@@ -137,7 +137,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
     mesh_shader_shadow_update_view(mesh, desc->light_view);
 
     // draw mesh
-    mesh_draw(mesh_topology_base(mesh), mesh_shader_shadow(mesh), &shadow_pass);
+    mesh_draw(mesh_topology_base(mesh), mesh_shader_shadow(mesh), shadow_pass);
   }
 
   wgpuRenderPassEncoderEnd(shadow_pass);

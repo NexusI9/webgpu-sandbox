@@ -272,7 +272,7 @@ void shader_create(Shader *, const ShaderCreateDescriptor *);
 void shader_destroy(Shader *);
 
 // on update
-void shader_draw(Shader *, WGPURenderPassEncoder *);
+void shader_draw(Shader *, WGPURenderPassEncoder);
 void shader_uniform_update(ShaderBindGroup *, const WGPUQueue);
 
 void shader_module_release(Shader *);

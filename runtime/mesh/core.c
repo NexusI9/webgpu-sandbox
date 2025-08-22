@@ -91,7 +91,7 @@ void mesh_set_name(Mesh *mesh, const char *name) {
    Mesh main draw from default vertex and index buffer
  */
 void mesh_draw(MeshTopology topology, Shader *shader,
-               WGPURenderPassEncoder *render_pass) {
+               WGPURenderPassEncoder render_pass) {
 
   // draw shader
   // if shader is null, use default shader
@@ -102,11 +102,11 @@ void mesh_draw(MeshTopology topology, Shader *shader,
   size_t index_length = topology.index->length;
 
   // draw indexes from buffer
-  wgpuRenderPassEncoderSetVertexBuffer(*render_pass, 0, attribute_buffer, 0,
+  wgpuRenderPassEncoderSetVertexBuffer(render_pass, 0, attribute_buffer, 0,
                                        WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderSetIndexBuffer(*render_pass, index_buffer,
+  wgpuRenderPassEncoderSetIndexBuffer(render_pass, index_buffer,
                                       MESH_INDEX_FORMAT, 0, WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderDrawIndexed(*render_pass, index_length, 1, 0, 0, 0);
+  wgpuRenderPassEncoderDrawIndexed(render_pass, index_length, 1, 0, 0, 0);
 }
 
 /**

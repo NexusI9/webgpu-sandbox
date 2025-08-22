@@ -83,10 +83,10 @@ void shader_destroy(Shader *shader) {
 /**
    Update method called as such: scene update => mesh update => shader update
  */
-void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
-
+void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
+  
   // bind pipeline to render
-  wgpuRenderPassEncoderSetPipeline(*render_pass, shader->pipeline->handle);
+  wgpuRenderPassEncoderSetPipeline(render_pass, shader->pipeline->handle);
 
   ShaderBindGroupList *dynamic_list = &shader->bind_groups;
 
@@ -98,7 +98,7 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder *render_pass) {
     shader_uniform_update(current_bind_group, shader->queue);
 
     // link bind group
-    wgpuRenderPassEncoderSetBindGroup(*render_pass, i,
+    wgpuRenderPassEncoderSetBindGroup(render_pass, i,
                                       current_bind_group->bind_group, 0, NULL);
   }
 }

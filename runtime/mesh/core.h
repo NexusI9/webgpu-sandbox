@@ -104,7 +104,7 @@ void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
 void mesh_set_name(Mesh *, const char *);
 
 // shader
-void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder *);
+void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder);
 
 // hierarchy
 void mesh_set_parent(Mesh *, Mesh *);
