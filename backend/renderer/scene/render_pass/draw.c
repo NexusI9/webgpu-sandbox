@@ -1,4 +1,5 @@
 #include "draw.h"
+#include "../runtime/mesh/shader/shader.h"
 
 /**
 
@@ -38,7 +39,7 @@ void render_pass_draw_pass(RenderPass *pass,
     // retrieve layout
     RenderPassDrawLayout *list = &pass->draw_list.entries[j];
     mesh_get_topology_callback target_topology = list->topology_callback;
-    mesh_get_shader_callback target_shader = list->shader_callback;
+    MeshShader target_shader = list->shader;
     render_pass_mesh_preprocessor_callback mesh_preprocessor =
         list->mesh_preprocessor_callback;
     MeshRefList *meshes = list->meshes;
@@ -50,7 +51,7 @@ void render_pass_draw_pass(RenderPass *pass,
       if (mesh_preprocessor)
         mesh_preprocessor(pass, mesh, list->mesh_preprocessor_data);
 
-      mesh_draw(target_topology(mesh), target_shader(mesh), pass->encoder);
+      mesh_draw(target_topology(mesh), mesh_shader(mesh, target_shader), pass->encoder);
     }
   }
 
@@ -316,19 +317,23 @@ void render_pass_draw(RenderPass *pass,
   WGPUTextureView src_color_view = pass->color.attachment.view;
   WGPUTextureView src_depth_view = pass->depth.attachment.view;
 
-  if (overrides->color)
-    pass->color.attachment.view = overrides->color;
+  if (overrides) {
+    if (overrides->color)
+      pass->color.attachment.view = overrides->color;
 
-  if (overrides->depth)
-    pass->depth.attachment.view = overrides->depth;
+    if (overrides->depth)
+      pass->depth.attachment.view = overrides->depth;
+  }
 
   pass->draw_callback(pass);
 
-  if (overrides->color)
-    wgpuTextureViewRelease(pass->color.attachment.view);
+  if (overrides) {
+    if (overrides->color)
+      wgpuTextureViewRelease(pass->color.attachment.view);
 
-  if (overrides->depth)
-    wgpuTextureViewRelease(pass->depth.attachment.view);
+    if (overrides->depth)
+      wgpuTextureViewRelease(pass->depth.attachment.view);
+  }
 
   // put back the original views
   pass->color.attachment.view = src_color_view;

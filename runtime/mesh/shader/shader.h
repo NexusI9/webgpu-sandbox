@@ -40,7 +40,6 @@
 #include "texture.h"
 #include "wireframe.h"
 #include "fixed.h"
-#include "active.h"
 
 
 

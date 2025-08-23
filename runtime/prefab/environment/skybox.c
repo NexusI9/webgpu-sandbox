@@ -110,7 +110,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
                            });
 
   // update texture and sampler
-  Shader *shader = mesh_shader_fixed(skybox_mesh);
+  Shader *shader = mesh_shader(skybox_mesh, MeshShader_Fixed);
   shader_update_texture_view(shader, 0, 0, *view, format);
   shader_update_sampler(shader, 0, 1,
                         &(WGPUSamplerDescriptor){

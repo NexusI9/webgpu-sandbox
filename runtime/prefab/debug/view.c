@@ -92,16 +92,16 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   for (size_t i = 0; i < 3; i++) {
     ShaderBindGroupUniformEntry *entry = &entries[i];
-    shader_update_uniform(mesh_shader_fixed(new_view), 0, entry->binding,
-                          entry->data);
+    shader_update_uniform(mesh_shader(new_view, MeshShader_Fixed), 0,
+                          entry->binding, entry->data);
   }
 
   // bind texture view
-  shader_update_texture_view(mesh_shader_fixed(new_view), 1, 0,
+  shader_update_texture_view(mesh_shader(new_view, MeshShader_Fixed), 1, 0,
                              view->texture_view, WGPUTextureFormat_BGRA8Unorm);
 
   // bind sampler
-  shader_update_sampler(mesh_shader_fixed(new_view), 1, 1,
+  shader_update_sampler(mesh_shader(new_view, MeshShader_Fixed), 1, 1,
                         &(WGPUSamplerDescriptor){
                             .addressModeU = WGPUAddressMode_ClampToEdge,
                             .addressModeV = WGPUAddressMode_ClampToEdge,

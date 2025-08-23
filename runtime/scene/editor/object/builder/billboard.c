@@ -50,7 +50,7 @@ void seo_create_billboard(Mesh *mesh,
                            });
 
   // bind texture + sampler
-  shader_update_texture(mesh_shader_fixed(mesh), 1, 0,
+  shader_update_texture(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
                         &(ShaderUpdateTexture){
                             .width = light_texture.width,
                             .height = light_texture.height,
@@ -61,7 +61,7 @@ void seo_create_billboard(Mesh *mesh,
                             .format = WGPUTextureFormat_RGBA8Unorm,
                         });
 
-  shader_update_sampler(mesh_shader_fixed(mesh), 1, 1,
+  shader_update_sampler(mesh_shader(mesh, MeshShader_Fixed), 1, 1,
                         &(WGPUSamplerDescriptor){
                             .addressModeU = WGPUAddressMode_Repeat,
                             .addressModeV = WGPUAddressMode_Repeat,
@@ -72,5 +72,5 @@ void seo_create_billboard(Mesh *mesh,
                         });
 
   const uint32_t size = 0;
-  shader_update_uniform(mesh_shader_fixed(mesh), 1, 2, (void *)&size);
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Fixed), 1, 2, (void *)&size);
 }

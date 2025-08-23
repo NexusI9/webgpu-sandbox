@@ -17,21 +17,21 @@ void mesh_shader_shadow_update_mvp(Mesh *mesh) {
   MeshUniform *uModel = mesh_uniform(mesh);
 
   // views uniforms (will be replaced during shadow pass)
-  shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, (void *)0);
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Shadow), 0, 0, (void *)0);
 
   // mesh model matrix
-  shader_update_uniform(mesh_shader_shadow(mesh), 0, 1, uModel);
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Shadow), 0, 1, uModel);
 }
 
 void mesh_shader_shadow_update_view(Mesh *mesh, mat4 *view) {
-  shader_update_uniform(mesh_shader_shadow(mesh), 0, 0, view);
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Shadow), 0, 0, view);
 }
 
 void mesh_shader_shadow_update_model(Mesh *mesh) {
 
   MeshUniform *uModel = mesh_uniform(mesh);
   // mesh model matrix
-  shader_update_uniform(mesh_shader_shadow(mesh), 0, 1, uModel);
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Shadow), 0, 1, uModel);
 }
 
 void mesh_shader_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
@@ -71,5 +71,5 @@ void mesh_shader_shadow_update_cullmode(Mesh *mesh, WGPUCullMode mode) {
    Clear the shadow shader bind groups of mesh
  */
 void mesh_shader_shadow_clear_bindings(Mesh *mesh) {
-  shader_bind_group_clear(mesh_shader_shadow(mesh));
+  shader_bind_group_clear(mesh_shader(mesh, MeshShader_Shadow));
 }

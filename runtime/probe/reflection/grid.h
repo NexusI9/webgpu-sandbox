@@ -50,6 +50,11 @@ typedef struct {
 } ProbeReflectionGridListDescriptor;
 
 typedef struct {
+  mat4 *projection;
+  mat4 *view;
+} ProbeReflectionGridListPreprocessorData;
+
+typedef struct {
   uint32_t length;
   ProbeReflectionUniform entries[PROBE_REFLECTION_LIST_MAX_COUNT *
                                  PROBE_REFLECTION_GRID_LIST_CAPACITY];

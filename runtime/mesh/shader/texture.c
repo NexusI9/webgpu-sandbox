@@ -5,14 +5,15 @@
 
 void mesh_shader_texture_update_mvp(Mesh *mesh, Camera *camera,
                                     Viewport *viewport) {
-  mesh_shader_update_mvp(mesh, mesh_shader_texture, camera, viewport);
+  mesh_shader_update_mvp(mesh, MeshShader_Texture, camera,
+                         viewport);
 }
 
 /**
    Clear the texture shader bind groups of mesh
  */
 void mesh_shader_texture_clear_bindings(Mesh *mesh) {
-  shader_bind_group_clear(mesh_shader_texture(mesh));
+  shader_bind_group_clear(mesh_shader(mesh, MeshShader_Texture));
 }
 
 /**
@@ -122,13 +123,13 @@ void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
 
   for (size_t i = 0; i < 4; i++) {
     ShaderBindGroupUniformEntry *entry = &entries[i];
-    shader_update_uniform(mesh_shader_texture(mesh), group_index,
+    shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), group_index,
                           entry->binding, entry->data);
 
     if (entry->update.callback)
-        shader_update_uniform_callback(mesh_shader_texture(mesh), group_index,
-                          entry->binding, &entry->update);
-    
+      shader_update_uniform_callback(mesh_shader(mesh, MeshShader_Texture),
+                                     group_index, entry->binding,
+                                     &entry->update);
   }
 }
 
@@ -158,11 +159,11 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
 #endif
 
   // add multi-layered texture to default shader
-  shader_update_texture_view(mesh_shader_texture(mesh), group_index,
+  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), group_index,
                              SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
                              point_texture_view, texture_format);
 
-  shader_update_texture_view(mesh_shader_texture(mesh), group_index,
+  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), group_index,
                              SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP,
                              spot_texture_view, texture_format);
 
@@ -179,10 +180,10 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
       .compare = sample_compare,
   };
 
-  shader_update_sampler(mesh_shader_texture(mesh), group_index, sampler_binding,
-                        &sampler);
+  shader_update_sampler(mesh_shader(mesh, MeshShader_Texture), group_index,
+                        sampler_binding, &sampler);
 
-  shader_update_sampler(mesh_shader_texture(mesh), group_index,
+  shader_update_sampler(mesh_shader(mesh, MeshShader_Texture), group_index,
                         sampler_binding + 2, &sampler);
 }
 
@@ -191,7 +192,7 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
                                             WGPUTextureView spot_map) {
 
   VERBOSE_PROCESS("Update shadow map: %s", mesh->name);
-  Shader *shader = mesh_shader_texture(mesh);
+  Shader *shader = mesh_shader(mesh, MeshShader_Texture);
 
   // update point texture
   shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
@@ -210,7 +211,7 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
 void mesh_shader_texture_double_sided(Mesh *mesh) {
 
   /* STDPIPELINE TEXTURE
-  pipeline_set_primitive(shader_pipeline(mesh_shader_texture(mesh)),
+  pipeline_set_primitive(shader_pipeline(mesh_shader(mesh, MeshShader_Texture)),
                          (WGPUPrimitiveState){
                              .frontFace = WGPUFrontFace_CCW,
                              .cullMode = WGPUCullMode_None,

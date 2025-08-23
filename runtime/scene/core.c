@@ -61,7 +61,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                     .entries =
                         {
                             {
-                                .shader_callback = mesh_shader_texture,
+                                .shader = MeshShader_Texture,
                                 .topology_callback = mesh_topology_base,
                                 .meshes = scene_pipeline(
                                     scene, ScenePipeline_Dynamic_LitShadow),
@@ -69,7 +69,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                                     probe_reflection_grid_list_draw_preprocessor,
                             },
                             {
-                                .shader_callback = mesh_shader_texture,
+                                .shader = MeshShader_Texture,
                                 .topology_callback = mesh_topology_base,
                                 .meshes = scene_pipeline(
                                     scene, ScenePipeline_Dynamic_Lit),
@@ -77,7 +77,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                                     probe_reflection_grid_list_draw_preprocessor,
                             },
                             {
-                                .shader_callback = mesh_shader_texture,
+                                .shader = MeshShader_Texture,
                                 .topology_callback = mesh_topology_base,
                                 .meshes = scene_pipeline(
                                     scene, ScenePipeline_Dynamic_Unlit),
@@ -198,7 +198,7 @@ void scene_light_list_init(Scene *scene) {
               .entries =
                   {
                       {
-                          .shader_callback = mesh_shader_shadow,
+                          .shader = MeshShader_Shadow,
                           .topology_callback = mesh_topology_base,
                           .mesh_preprocessor_callback =
                               shadow_map_pass_preprocessor_callback,

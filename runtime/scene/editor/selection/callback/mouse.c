@@ -309,7 +309,7 @@ void scene_selection_raycast_gizmo_hover_callback(
       gizmo_transform_reset_color_uniform(gizmo);
 
       // update hovered gizmo color
-      shader_update_uniform(mesh_shader_fixed(hit->mesh), 1, 0,
+      shader_update_uniform(mesh_shader(hit->mesh, MeshShader_Fixed), 1, 0,
                             COLOR_GIZMO_TRANSFORM_HOVER);
 
     } else {

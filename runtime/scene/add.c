@@ -415,11 +415,10 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
 
   // TODO: find a cleaner way to define if mesh is Shadowed or not.. the
   // overallx dispatch is unclear.
-  if (mesh_shader_texture(mesh)->pipeline == std_pipeline(PipelineType_Unlit) ||
-      mesh_shader_texture(mesh)->pipeline ==
-          std_pipeline(PipelineType_GlassBox) ||
-      mesh_shader_texture(mesh)->pipeline ==
-          std_pipeline(PipelineType_GlassProbe))
+  const Pipeline *mesh_pipeline = mesh_shader(mesh, MeshShader_Texture)->pipeline;
+  if (mesh_pipeline == std_pipeline(PipelineType_Unlit) ||
+      mesh_pipeline == std_pipeline(PipelineType_GlassBox) ||
+      mesh_pipeline == std_pipeline(PipelineType_GlassProbe))
     pipeline = ScenePipeline_Dynamic_Unlit;
 
   // build mesh depending on pipeline and scene render mode

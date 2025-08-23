@@ -195,7 +195,7 @@ void gizmo_transform_reset_color_uniform(GizmoTransform *gizmo) {
 
   for (uint8_t i = 0; i < GIZMO_TRANSFORM_AXIS_COUNT; i++) {
     Mesh *handle = gizmo->interactive_handles[gizmo->mode].entries[i];
-    shader_update_uniform(mesh_shader_fixed(handle), 1, 0,
+    shader_update_uniform(mesh_shader(handle, MeshShader_Fixed), 1, 0,
                           gizmo_handle_color[i]);
   }
 }

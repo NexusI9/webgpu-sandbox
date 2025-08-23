@@ -66,10 +66,10 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
                            .dimension = WGPUTextureViewDimension_2D,
                        });
 
-      shader_update_texture_view(mesh_shader_texture(mesh), 0, 8, layer_view,
-                                 AO_TEXTURE_FORMAT);
+      shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 0, 8,
+                                 layer_view, AO_TEXTURE_FORMAT);
 
-      Shader *shader = mesh_shader_texture(mesh);
+      Shader *shader = mesh_shader(mesh, MeshShader_Texture);
       ShaderBindGroup *bind_group = shader_get_bind_group(shader, 0);
       shader_bind_group_refresh(bind_group, 0, desc->device,
                                 &shader->pipeline->handle);
@@ -132,8 +132,6 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
                           },
                           &(WGPUExtent3D){texture->width, texture->height, 1});
   }
-
-
 }
 
 void ao_bake_draw_list(SceneRendererTextureAO *ao,

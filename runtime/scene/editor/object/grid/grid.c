@@ -30,6 +30,6 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                        gd->uniform.size,
                    });
 
-  shader_update_uniform(mesh_shader_fixed(mesh), 1, 0, &gd->uniform);
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Fixed), 1, 0, &gd->uniform);
 
 }

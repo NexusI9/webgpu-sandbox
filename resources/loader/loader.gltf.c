@@ -291,7 +291,7 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                              .queue = queue,
                          });
 
-      loader_gltf_bind_uniforms(mesh_shader_texture(target_mesh), material,
+      loader_gltf_bind_uniforms(mesh_shader(target_mesh, MeshShader_Texture), material,
                                 options);
 
       // define mesh vertex attribute

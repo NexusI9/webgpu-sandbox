@@ -226,7 +226,7 @@ void shadow_map_pass_preprocessor_callback(const RenderPass *pass, Mesh *mesh,
   LightShadowData *data = (LightShadowData *)userData;
 
   // swap pipeline (cull front/back)
-  mesh_shader_shadow(mesh)->pipeline = data->pipeline;
+  mesh_shader(mesh, MeshShader_Shadow)->pipeline = data->pipeline;
 
   // update each mesh shadow uniforms with current light view
   mesh_shader_shadow_update_view(mesh, data->light_view);

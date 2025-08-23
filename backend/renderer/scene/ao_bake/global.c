@@ -24,7 +24,7 @@ void ao_bake_global(SceneRendererTextureAO *ao,
                           .name = "line mesh",
                       });
 
-    mesh_shader_build_mvp(line, mesh_shader_fixed, desc->debug->camera,
+    mesh_shader_build_mvp(line, MeshShader_Fixed, desc->debug->camera,
                           desc->debug->viewport);
   }
 

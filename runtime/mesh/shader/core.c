@@ -15,43 +15,9 @@
 
  */
 
-/**
-   Return mesh default shader
- */
-Shader *mesh_shader_texture(Mesh *mesh) {
-  return &mesh->shader.standard[MeshShader_Texture];
+Shader *mesh_shader(Mesh *mesh, const MeshShader shader) {
+  return &mesh->shader.standard[shader];
 }
-
-/**
-   Return mesh shadow shader
- */
-Shader *mesh_shader_shadow(Mesh *mesh) {
-  return &mesh->shader.standard[MeshShader_Shadow];
-}
-
-/**
-   Return mesh wireframe shader
- */
-Shader *mesh_shader_wireframe(Mesh *mesh) {
-  return &mesh->shader.standard[MeshShader_Wireframe];
-}
-
-/**
-   Return mesh solid shader
- */
-Shader *mesh_shader_solid(Mesh *mesh) {
-  return &mesh->shader.standard[MeshShader_Solid];
-}
-
-/**
-   Return mesh override shader
-   Primarily used for fixed layer during the scene build/draw process.
- */
-Shader *mesh_shader_fixed(Mesh *mesh) {
-  return &mesh->shader.standard[MeshShader_Fixed];
-}
-
-Shader *mesh_shader_active(Mesh *mesh) { return mesh->shader.active; }
 
 void mesh_shader_set_active(Mesh *mesh, const MeshShader shader) {
   mesh->shader.active = &mesh->shader.standard[shader];
@@ -69,7 +35,7 @@ void mesh_shader_set_active(Mesh *mesh, const MeshShader shader) {
 void mesh_shader_create_shadow(Mesh *mesh) {
 
   // import shadow shader
-  Shader *shadow_shader = mesh_shader_shadow(mesh);
+  Shader *shadow_shader = mesh_shader(mesh, MeshShader_Shadow);
   shader_create(shadow_shader,
                 &(ShaderCreateDescriptor){
                     .pipeline = std_pipeline(PipelineType_Shadow),
@@ -97,7 +63,7 @@ void mesh_shader_create_shadow(Mesh *mesh) {
  */
 void mesh_shader_create_wireframe(Mesh *mesh) {
 
-  Shader *wireframe_shader = mesh_shader_wireframe(mesh);
+  Shader *wireframe_shader = mesh_shader(mesh, MeshShader_Wireframe);
 
   // skip if already created
   if (wireframe_shader->name != NULL) {
@@ -117,7 +83,7 @@ void mesh_shader_create_wireframe(Mesh *mesh) {
                     .name = "Mesh wireframe shader",
                 });
 
-  shader_update_uniform(mesh_shader_wireframe(mesh), 0, 3,
+  shader_update_uniform(wireframe_shader, 0, 3,
                         &(color){randf(), randf(), randf(), 1.0f});
 }
 
@@ -126,7 +92,7 @@ void mesh_shader_create_wireframe(Mesh *mesh) {
  */
 void mesh_shader_create_solid(Mesh *mesh) {
 
-  Shader *solid_shader = mesh_shader_solid(mesh);
+  Shader *solid_shader = mesh_shader(mesh, MeshShader_Solid);
 
   // create shader
   shader_create(solid_shader, &(ShaderCreateDescriptor){
@@ -143,7 +109,7 @@ void mesh_shader_create_solid(Mesh *mesh) {
  */
 void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // alias to shader_create
-  shader_create(mesh_shader_texture(mesh), desc);
+  shader_create(mesh_shader(mesh, MeshShader_Texture), desc);
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Texture);
 }
@@ -153,7 +119,7 @@ void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
  */
 void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // alias to shader_create
-  shader_create(mesh_shader_fixed(mesh), desc);
+  shader_create(mesh_shader(mesh, MeshShader_Fixed), desc);
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Fixed);
 }
@@ -175,16 +141,15 @@ void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
 
    This function is primarily used when a mesh is firstly added to the scene.
  */
-void mesh_shader_build_mvp(Mesh *mesh, mesh_get_shader_callback target_shader,
+void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
                            Camera *camera, Viewport *viewport) {
 
   CameraUniform *uCamera = camera_uniform(camera);
   ViewportUniform *uViewport = viewport_uniform(viewport);
   MeshUniform *uMesh = mesh_uniform(mesh);
 
-  Shader *shader = target_shader(mesh);
-
   // retrieve the model-view-projection binding index from the pipeline
+  Shader *shader = mesh_shader(mesh, shader_type);
   const PipelineBindingMVP *mvp = &shader->pipeline->bindings.mvp;
 
   ShaderBindGroupUniformEntry entries[3] = {
@@ -229,16 +194,15 @@ void mesh_shader_build_mvp(Mesh *mesh, mesh_get_shader_callback target_shader,
 /**
 
  */
-void mesh_shader_update_mvp(Mesh *mesh, mesh_get_shader_callback target_shader,
+void mesh_shader_update_mvp(Mesh *mesh, const MeshShader shader_type,
                             Camera *camera, Viewport *viewport) {
 
   CameraUniform *uCamera = camera_uniform(camera);
   ViewportUniform *uViewport = viewport_uniform(viewport);
   MeshUniform *uMesh = mesh_uniform(mesh);
 
-  Shader *shader = target_shader(mesh);
-
   // retrieve the model-view-projection binding index from the pipeline
+  Shader *shader = mesh_shader(mesh, shader_type);
   const PipelineBindingMVP *mvp = &shader->pipeline->bindings.mvp;
 
   ShaderBindGroupUniformEntry entries[3] = {

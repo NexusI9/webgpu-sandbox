@@ -29,7 +29,7 @@ void example_glass_box(Scene *scene) {
 
   scene_add_mesh(scene, mesh, NULL);
 
-  shader_update_uniform(mesh_shader_texture(mesh), 0, 3,
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 3,
                         &(GlassUniform){
                             .color = {1.0f, 0.5f, 1.0f, 1.0f},
                             .roughness = 0.23f,
@@ -37,7 +37,7 @@ void example_glass_box(Scene *scene) {
                             .frost_strength = 0.4f,
                         });
 
-  shader_update_texture_view(mesh_shader_texture(mesh), 1, 0,
+  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 0,
                              scene->renderer.texture.skybox.cubemap,
                              WGPUTextureFormat_BGRA8Unorm);
 }
@@ -75,7 +75,7 @@ void example_glass_probe(Scene *scene) {
 
   scene_add_mesh(scene, mesh, NULL);
 
-  shader_update_uniform(mesh_shader_texture(mesh), 0, 3,
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 3,
                         &(GlassUniform){
                             .color = {1.0f, 0.5f, 1.0f, 1.0f},
                             .roughness = 0.23f,
@@ -83,7 +83,7 @@ void example_glass_probe(Scene *scene) {
                             .frost_strength = 0.4f,
                         });
 
-  shader_update_uniform(mesh_shader_texture(mesh), 0, 3,
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 3,
                         &(GlassUniform){
                             .color = {1.0f, 1.0f, 1.0f, 1.0f},
                             .frost_scale = 1.0f,
@@ -91,14 +91,17 @@ void example_glass_probe(Scene *scene) {
                             .roughness = 0.145f,
                         });
 
-  shader_update_uniform(mesh_shader_texture(mesh), 0, 4,
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 4,
                         &(ProbeReflectionListUniform){
                             .length = scene->probes_reflection.length,
                             .entries = {0},
                         });
 
+  // swap fallback view with probe render pass view
   shader_update_texture_view(
-      mesh_shader_texture(mesh), 1, 0,
+      mesh_shader(mesh, MeshShader_Texture), 1, 0,
       scene->probes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
+
+  probe_reflection_grid_list_draw(&scene->probes_reflection);
 }

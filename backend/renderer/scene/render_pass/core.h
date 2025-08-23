@@ -23,7 +23,7 @@ typedef enum {
 } RenderPassStatus;
 
 typedef struct {
-  mesh_get_shader_callback shader_callback;
+  MeshShader shader;
   mesh_get_topology_callback topology_callback;
   render_pass_mesh_preprocessor_callback mesh_preprocessor_callback;
   void *mesh_preprocessor_data;

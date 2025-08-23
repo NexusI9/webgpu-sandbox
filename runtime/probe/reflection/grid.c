@@ -250,12 +250,19 @@ probe_reflection_grid_list_destroy(ProbeReflectionGridList *list) {
 void probe_reflection_grid_list_draw_preprocessor(const RenderPass *pass,
                                                   Mesh *mesh, void *data) {
 
-  mat4 *view = (mat4 *)data;
+  ProbeReflectionGridListPreprocessorData *projection =
+      (ProbeReflectionGridListPreprocessorData *)data;
 
-  //shader_update_uniform(mesh_shader_texture(mesh), 0, );
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 0,
+                        projection->projection);
+
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 1,
+                        projection->view);
 }
 
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *list) {
+
+  size_t layer = 0;
 
   for (size_t i = 0; i < list->length; i++) {
 
@@ -269,9 +276,49 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list) {
       projection_point(&probe_views, probe->position, 0.1f, 100.0f);
 
       for (uint8_t k = 0; k < probe_views.length; k++) {
-	
-        //render_pass_update_all_preprocessor_data(&list->pass,
-        //                                         (void *)&probe_views.views[k]);
+
+        // define target layer
+        WGPUTextureView target_color = wgpuTextureCreateView(
+            list->pass.color.texture,
+            &(WGPUTextureViewDescriptor){
+                .label = "Probe Reflection Target Color View",
+                .arrayLayerCount = 1,
+                .baseArrayLayer = layer,
+                .dimension = WGPUTextureViewDimension_2D,
+                .aspect = WGPUTextureAspect_All,
+                .baseMipLevel = 0,
+                .mipLevelCount = 1,
+                .format = WGPUTextureFormat_BGRA8Unorm,
+            });
+
+        WGPUTextureView target_depth = wgpuTextureCreateView(
+            list->pass.color.texture,
+            &(WGPUTextureViewDescriptor){
+
+                .label = "Probe Reflection Target Depth View",
+                .arrayLayerCount = 1,
+                .baseArrayLayer = layer,
+                .dimension = WGPUTextureViewDimension_2D,
+                .aspect = WGPUTextureAspect_DepthOnly,
+                .baseMipLevel = 0,
+                .mipLevelCount = 1,
+                .format = WGPUTextureFormat_Depth24Plus,
+            });
+
+        // update each mesh views/projections matrix
+        render_pass_update_all_preprocessor_data(
+            &list->pass, &(ProbeReflectionGridListPreprocessorData){
+                             .projection = &probe_views.projection,
+                             .view = &probe_views.views[k],
+                         });
+
+        // draw pass
+        render_pass_draw(&list->pass, &(RenderPassViewOverride){
+                                          .color = target_color,
+                                          .depth = target_depth,
+                                      });
+
+        layer++;
       }
     }
   }
