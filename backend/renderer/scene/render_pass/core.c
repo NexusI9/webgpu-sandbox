@@ -3,6 +3,7 @@
 #include "texture.h"
 
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 #include <string.h>
 
 #include "../utils/system.h"
@@ -105,7 +106,7 @@ void render_pass_create(RenderPass *render_pass,
         .depthStoreOp = desc->depth->store_op,
     };
   }
-  
+
   /*
 
     === copy draw list ===
@@ -201,4 +202,29 @@ void render_pass_set_draw_list(RenderPass *pass,
   pass->draw_list.length = length;
   memcpy(pass->draw_list.entries, draw_list->entries,
          sizeof(RenderPassDrawLayout) * length);
+}
+
+RenderPassStatus render_pass_update_preprocessor_data(RenderPass *pass,
+                                                      uint8_t index,
+                                                      void *data) {
+  if (index > pass->draw_list.length) {
+    VERBOSE_WARNING("Trying to update an out of bound (%d) render pass "
+                    "preprocessor data. Target render pass has %lu draw lists.",
+                    index, pass->draw_list.length);
+    return RenderPassStatus_OutOfBoundDrawIndex;
+  }
+
+  pass->draw_list.entries[index].mesh_preprocessor_data = data;
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_update_all_preprocessor_data(RenderPass *pass,
+                                                          void *data) {
+
+  for (size_t i = 0; i < pass->draw_list.length; i++)
+    if (pass->draw_list.entries[i].mesh_preprocessor_callback)
+      pass->draw_list.entries[i].mesh_preprocessor_data = data;
+
+  return RenderPassStatus_Success;
 }

@@ -98,13 +98,12 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
   WGPUTextureView temp_layer_texture_view_color = wgpuTextureCreateView(
       desc->pass->color.texture, &temp_layer_texture_descriptor_color);
 
-  // Dynamically update the preprocessor data (Smelly...)
-  LightShadowData data = {
-      .pipeline = desc->pipeline,
-      .light_view = desc->light_view,
-  };
+  render_pass_update_preprocessor_data(desc->pass, 0,
+                                       &(LightShadowData){
+                                           .pipeline = desc->pipeline,
+                                           .light_view = desc->light_view,
+                                       });
 
-  desc->pass->draw_list.entries[0].mesh_preprocessor_data = &data;
   render_pass_draw(desc->pass, &(RenderPassViewOverride){
                                    .color = temp_layer_texture_view_color,
                                    .depth = temp_layer_texture_view_depth,
@@ -276,7 +275,7 @@ void shadow_map_draw_point_light(
         .device = desc->device,
         .queue = desc->queue,
         .encoder = desc->encoder,
-        .light_view = &light_views.views[v],
+        .light_view = &light_views.combined[v],
         .pipeline = std_pipeline(PipelineType_Shadow),
     });
   }
@@ -297,15 +296,16 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
    */
 
   // Render scene (create shadow render pass to texture layer)
-  shadow_map_draw(&(ShadowMapDrawDescriptor){
-      .pass = desc->pass,
-      .layer = desc->layer,
-      .device = desc->device,
-      .queue = desc->queue,
-      .encoder = desc->encoder,
-      .light_view = &desc->views->views[0],
-      .pipeline = desc->pipeline,
-  });
+  for (size_t v = 0; v < desc->views->length; v++)
+    shadow_map_draw(&(ShadowMapDrawDescriptor){
+        .pass = desc->pass,
+        .layer = desc->layer,
+        .device = desc->device,
+        .queue = desc->queue,
+        .encoder = desc->encoder,
+        .light_view = &desc->views->combined[v],
+        .pipeline = desc->pipeline,
+    });
 }
 
 void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {

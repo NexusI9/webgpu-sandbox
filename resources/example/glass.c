@@ -1,6 +1,7 @@
 #include "glass.h"
 #include "../backend/renderer/scene/std_pipeline/modules/glass/glass.h"
 #include "../runtime/mesh/shader/shader.h"
+#include "webgpu/webgpu.h"
 
 void example_glass_box(Scene *scene) {
   Mesh *mesh = scene_new_mesh(scene);
@@ -82,5 +83,22 @@ void example_glass_probe(Scene *scene) {
                             .frost_strength = 0.4f,
                         });
 
+  shader_update_uniform(mesh_shader_texture(mesh), 0, 3,
+                        &(GlassUniform){
+                            .color = {1.0f, 1.0f, 1.0f, 1.0f},
+                            .frost_scale = 1.0f,
+                            .frost_strength = 0.0f,
+                            .roughness = 0.145f,
+                        });
 
+  shader_update_uniform(mesh_shader_texture(mesh), 0, 4,
+                        &(ProbeReflectionListUniform){
+                            .length = scene->probes_reflection.length,
+                            .entries = {0},
+                        });
+
+  shader_update_texture_view(
+      mesh_shader_texture(mesh), 1, 0,
+      scene->probes_reflection.pass.color.attachment.view,
+      WGPUTextureFormat_BGRA8Unorm);
 }

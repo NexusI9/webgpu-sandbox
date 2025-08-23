@@ -6,7 +6,7 @@
    Point lights use 6 views, each pointing to different directions
  */
 void projection_point(Projection *views, vec3 light_position, float near,
-                       float far) {
+                      float far) {
 
   views->length = PROJECTION_VIEW_COUNT;
 
@@ -37,6 +37,8 @@ void projection_point(Projection *views, vec3 light_position, float near,
    */
   projection[0][0] *= -1.0f;
 
+  glm_mat4_copy(projection, views->projection);
+
   for (int v = 0; v < views->length; v++) {
 
     vec3 direction;
@@ -45,7 +47,8 @@ void projection_point(Projection *views, vec3 light_position, float near,
     mat4 view;
     glm_lookat(light_position, direction, ups[v], view);
 
-    glm_mat4_mul(projection, view, views->views[v]);
+    glm_mat4_copy(view, views->views[v]);
+    glm_mat4_mul(projection, view, views->combined[v]);
   }
 }
 
@@ -55,7 +58,7 @@ void projection_point(Projection *views, vec3 light_position, float near,
 void projection_spot(Projection *views, vec3 light_position, vec3 light_target,
                      float angle) {
 
-  views->length = PROJECTION_VIEW_COUNT;
+  views->length = 1;
 
   vec3 up = {0.0f, 1.0f, 0.0f};
 
@@ -66,10 +69,14 @@ void projection_spot(Projection *views, vec3 light_position, vec3 light_target,
   mat4 projection;
   glm_perspective(glm_rad(angle), 1.0f, 0.1f, 100.0f, projection);
 
+  glm_mat4_copy(projection, views->projection);
+
   for (int v = 0; v < views->length; v++) {
     mat4 view;
     glm_lookat(light_position, light_target, up, view);
-    glm_mat4_mul(projection, view, views->views[v]);
+
+    glm_mat4_copy(view, views->views[v]);
+    glm_mat4_mul(projection, view, views->combined[v]);
   }
 }
 
@@ -81,7 +88,7 @@ void projection_spot(Projection *views, vec3 light_position, vec3 light_target,
  */
 void projection_sun(Projection *views, vec3 light_position, float size) {
 
-  views->length = PROJECTION_VIEW_COUNT;
+  views->length = 1;
 
   vec3 up = {0.0f, 1.0f, 0.0f};
 
@@ -97,9 +104,13 @@ void projection_sun(Projection *views, vec3 light_position, float size) {
   mat4 ortho;
   glm_ortho(-size, size, -size, size, 0.1f, 100.0f, ortho);
 
+  glm_mat4_copy(ortho, views->projection);
+
   for (int v = 0; v < views->length; v++) {
     mat4 view;
     glm_lookat(view_position, (vec3){0.0f, 0.0f, 0.0f}, up, view);
-    glm_mat4_mul(ortho, view, views->views[v]);
+
+    glm_mat4_copy(view, views->views[v]);
+    glm_mat4_mul(ortho, view, views->combined[v]);
   }
 }

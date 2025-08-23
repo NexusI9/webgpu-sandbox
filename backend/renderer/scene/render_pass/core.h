@@ -16,6 +16,12 @@ typedef void (*render_pass_mesh_preprocessor_callback)(const RenderPass *,
                                                        Mesh *, void *);
 typedef void (*render_pass_list_draw_callback)(RenderPassList *);
 
+typedef enum {
+  RenderPassStatus_Success,
+  RenderPassStatus_OutOfBoundDrawIndex,
+  RenderPassStatus_UndefError,
+} RenderPassStatus;
+
 typedef struct {
   mesh_get_shader_callback shader_callback;
   mesh_get_topology_callback topology_callback;
@@ -145,4 +151,9 @@ void render_pass_list_create(RenderPassList *, const RenderPassListCreate *);
 void render_pass_list_insert_pass(RenderPassList *,
                                   const RenderPassListInsert *);
 
+RenderPassStatus render_pass_update_preprocessor_data(RenderPass *, uint8_t,
+                                                      void *);
+
+RenderPassStatus render_pass_update_all_preprocessor_data(RenderPass *,
+                                                      void *);
 #endif

@@ -1,7 +1,7 @@
 #include "uniform.h"
+#include "../utils/projection.h"
 #include "list.h"
 #include <string.h>
-#include "../utils/projection.h"
 
 static inline bool light_comparator_different(const LightComparator *,
                                               const LightComparator *);
@@ -29,9 +29,9 @@ void point_light_uniform(PointLightUniform *uniform, PointLight *light) {
   // copy 6 points views for shader depth comparison
   Projection points_views;
   projection_point(&points_views, light->position, light->near, light->far);
-  
-  for (uint8_t v = 0; v < LIGHT_POINT_VIEWS; v++)
-    glm_mat4_copy(points_views.views[v], uniform->views[v]);
+
+  for (uint8_t v = 0; v < points_views.length; v++)
+    glm_mat4_copy(points_views.combined[v], uniform->views[v]);
 }
 
 void ambient_light_uniform(AmbientLightUniform *uniform, AmbientLight *light) {
@@ -56,7 +56,8 @@ void spot_light_uniform(SpotLightUniform *uniform, SpotLight *light) {
   Projection spot_view;
   projection_spot(&spot_view, light->position, light->target, light->angle);
 
-  glm_mat4_copy(spot_view.views[0], uniform->view);
+  for (uint8_t v = 0; v < spot_view.length; v++)
+    glm_mat4_copy(spot_view.combined[v], uniform->view);
 }
 
 void sun_light_uniform(SunLightUniform *uniform, SunLight *light) {
@@ -70,7 +71,8 @@ void sun_light_uniform(SunLightUniform *uniform, SunLight *light) {
   Projection sun_view;
   projection_sun(&sun_view, light->position, light->size);
 
-  glm_mat4_copy(sun_view.views[0], uniform->view);
+  for (uint8_t v = 0; v < sun_view.length; v++)
+    glm_mat4_copy(sun_view.combined[v], uniform->view);
 }
 
 /* Callbacks */

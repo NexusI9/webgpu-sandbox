@@ -1,5 +1,6 @@
 #include "grid.h"
 #include "../backend/renderer/scene/std_texture/std_texture.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "probe.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -26,7 +27,7 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
     clamp_count[i] = glm_min(desc->count[i], PROBE_REFLECTION_GRID_MAX_COUNT);
 
   glm_ivec3_copy(clamp_count, grid->count);
-  
+
   size_t count = clamp_count[0] * clamp_count[1] * clamp_count[2];
   probe_reflection_list_create(&grid->probes, count);
 
@@ -250,6 +251,28 @@ void probe_reflection_grid_list_draw_preprocessor(const RenderPass *pass,
                                                   Mesh *mesh, void *data) {
 
   mat4 *view = (mat4 *)data;
+
+  //shader_update_uniform(mesh_shader_texture(mesh), 0, );
 }
 
-void probe_reflection_grid_list_draw(ProbeReflectionGridList *list) {}
+void probe_reflection_grid_list_draw(ProbeReflectionGridList *list) {
+
+  for (size_t i = 0; i < list->length; i++) {
+
+    ProbeReflectionGrid *grid = &list->entries[i];
+
+    for (size_t j = 0; j < grid->probes.length; j++) {
+
+      ProbeReflection *probe = &grid->probes.entries[j];
+
+      Projection probe_views;
+      projection_point(&probe_views, probe->position, 0.1f, 100.0f);
+
+      for (uint8_t k = 0; k < probe_views.length; k++) {
+	
+        //render_pass_update_all_preprocessor_data(&list->pass,
+        //                                         (void *)&probe_views.views[k]);
+      }
+    }
+  }
+}
