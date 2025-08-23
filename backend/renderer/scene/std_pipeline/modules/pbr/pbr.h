@@ -17,8 +17,52 @@ static const ShaderPipelineStateObject layout_pbr = {
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
             {
-                // Group 0: Material Textures
-                .label = "Group 0 - Material Textures",
+                // Group 0: Camera, Mesh
+                .label = "Group 0 - Camera, Viewport, Mesh",
+                .entryCount = 3,
+                .entries =
+                    (WGPUBindGroupLayoutEntry[]){
+                        {
+                            // uViewport
+                            .binding = 0,
+                            .visibility = WGPUShaderStage_Vertex |
+                                          WGPUShaderStage_Fragment,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize = sizeof(ViewportUniform),
+                                },
+                        },
+                        {
+                            // uCamera
+                            .binding = 1,
+                            .visibility = WGPUShaderStage_Vertex |
+                                          WGPUShaderStage_Fragment,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize = sizeof(CameraUniform),
+                                },
+                        },
+                        {
+                            // uMesh
+                            .binding = 2,
+                            .visibility = WGPUShaderStage_Vertex |
+                                          WGPUShaderStage_Fragment,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize = sizeof(MeshUniform),
+                                },
+                        },
+                    },
+            },
+            {
+                // Group 1: Material Textures
+                .label = "Group 1 - Material Textures",
                 .entryCount = 10,
                 .entries =
                     (WGPUBindGroupLayoutEntry[]){
@@ -125,50 +169,6 @@ static const ShaderPipelineStateObject layout_pbr = {
                             .sampler =
                                 (WGPUSamplerBindingLayout){
                                     .type = WGPUSamplerBindingType_Filtering,
-                                },
-                        },
-                    },
-            },
-            {
-                // Group 1: Camera, Mesh
-                .label = "Group 1 - Camera, Viewport, Mesh",
-                .entryCount = 3,
-                .entries =
-                    (WGPUBindGroupLayoutEntry[]){
-                        {
-                            // uViewport
-                            .binding = 0,
-                            .visibility = WGPUShaderStage_Vertex |
-                                          WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(ViewportUniform),
-                                },
-                        },
-                        {
-                            // uCamera
-                            .binding = 1,
-                            .visibility = WGPUShaderStage_Vertex |
-                                          WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(CameraUniform),
-                                },
-                        },
-                        {
-                            // uMesh
-                            .binding = 2,
-                            .visibility = WGPUShaderStage_Vertex |
-                                          WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(MeshUniform),
                                 },
                         },
                     },
@@ -292,7 +292,7 @@ static const ShaderPipelineStateObject layout_pbr = {
         {
             .mvp =
                 {
-                    .group = 1,
+                    .group = 0,
                     .projection = 0,
                     .view = 1,
                     .model = 2,
