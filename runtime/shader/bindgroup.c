@@ -414,6 +414,33 @@ void shader_bind_group_create_from_layout(
                               },
                       });
         }
+
+        // Cube Array
+        if (entry->texture.viewDimension ==
+            WGPUTextureViewDimension_CubeArray) {
+
+#ifdef VERBOSE_BINDING_PHASE
+          shader_layout_print(i, entry->binding, "2D float cube array texture");
+#endif
+          shader_add_texture_view(
+              shader, &(ShaderCreateTextureViewDescriptor){
+                          .entry_count = 1,
+                          .visibility = entry->visibility,
+                          .group_index = i,
+                          .entries =
+                              (ShaderBindGroupTextureViewEntry[]){
+                                  {
+                                      .binding = entry->binding,
+                                      .dimension = entry->texture.viewDimension,
+                                      .sample_type = entry->texture.sampleType,
+                                      .format = WGPUTextureFormat_R8Unorm,
+                                      // use fallback texture as  placeholder
+                                      .texture_view = std_texture_view(
+                                          TextureViewType_FloatCubeArray),
+                                  },
+                              },
+                      });
+        }
       }
 
       // generate depth texture

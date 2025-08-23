@@ -1,11 +1,15 @@
 #include "grid.h"
+#include "../backend/renderer/scene/std_texture/std_texture.h"
 #include "probe.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
-#include "../backend/renderer/scene/std_texture/std_texture.h"
 
 static inline float probe_reflection_point(size_t x, uint16_t count,
                                            float size);
+
+static inline void probe_reflection_grid_list_create_texture(
+    WGPUTexture *, WGPUTexture *, WGPUTextureView *, WGPUTextureView *,
+    const TextureResolution, const WGPUDevice);
 
 float probe_reflection_point(size_t x, uint16_t count, float size) {
   return count > 1 ? ((float)x * 2.0f * size / (count - 1)) - size : 0.0f;
@@ -14,31 +18,36 @@ float probe_reflection_point(size_t x, uint16_t count, float size) {
 void probe_reflection_grid_create(ProbeReflectionGrid *grid,
                                   ProbeReflectionGridDescriptor *desc) {
 
-  glm_ivec3_copy(desc->count, grid->count);
   glm_vec3_copy(desc->size, grid->size);
 
-  size_t count = desc->count[0] * desc->count[1] * desc->count[2];
+  int clamp_count[PROBE_REFLECTION_GRID_DIMENSION]; // prevent overflow
+
+  for (size_t i = 0; i < PROBE_REFLECTION_GRID_DIMENSION; i++)
+    clamp_count[i] = glm_min(desc->count[i], PROBE_REFLECTION_GRID_MAX_COUNT);
+
+  glm_ivec3_copy(clamp_count, grid->count);
+  
+  size_t count = clamp_count[0] * clamp_count[1] * clamp_count[2];
   probe_reflection_list_create(&grid->probes, count);
 
-  for (size_t x = 0; x < desc->count[0]; x++) {
-    float x_pos = probe_reflection_point(x, desc->count[0], desc->size[0]);
+  for (size_t x = 0; x < clamp_count[0]; x++) {
+    float x_pos = probe_reflection_point(x, clamp_count[0], desc->size[0]);
 
-    for (size_t y = 0; y < desc->count[1]; y++) {
-      float y_pos = probe_reflection_point(y, desc->count[1], desc->size[1]);
+    for (size_t y = 0; y < clamp_count[1]; y++) {
+      float y_pos = probe_reflection_point(y, clamp_count[1], desc->size[1]);
 
-      for (size_t z = 0; z < desc->count[2]; z++) {
-        float z_pos = probe_reflection_point(z, desc->count[2], desc->size[2]);
+      for (size_t z = 0; z < clamp_count[2]; z++) {
+        float z_pos = probe_reflection_point(z, clamp_count[2], desc->size[2]);
 
         ProbeReflection *probe = probe_reflection_list_new_entry(&grid->probes);
-        glm_vec3_copy((vec3){x_pos, y_pos, z_pos}, probe->position);
+
+        if (probe)
+          glm_vec3_copy((vec3){x_pos, y_pos, z_pos}, probe->position);
       }
     }
   }
 
-  
-  
   grid->view = std_texture_view(TextureViewType_FloatCubeArray);
-  
 }
 
 void probe_reflection_grid_destroy(ProbeReflectionGrid *grid) {
@@ -66,17 +75,147 @@ void probe_reflection_grid_destroy(ProbeReflectionGrid *grid) {
 
  */
 
-DynamicListStatus
-probe_reflection_grid_list_create(ProbeReflectionGridList *list,
-                                  const size_t capacity) {
-  return dyli_create((void *)&list->entries, &list->capacity, &list->length,
-                     sizeof(ProbeReflectionGrid), capacity,
-                     "Probe Reflection Grid list");
+DynamicListStatus probe_reflection_grid_list_create(
+    ProbeReflectionGridList *list,
+    const ProbeReflectionGridListDescriptor *desc) {
+
+  DynamicListStatus create =
+      dyli_create((void *)&list->entries, &list->capacity, &list->length,
+                  sizeof(ProbeReflectionGrid), desc->capacity,
+                  "Probe Reflection Grid list");
+
+  if (create == DynamicListStatus_Success) {
+
+    // create list textures array
+    WGPUTexture color_texture, depth_texture;
+    WGPUTextureView color_view, depth_view;
+
+    probe_reflection_grid_list_create_texture(&color_texture, &depth_texture,
+                                              &color_view, &depth_view,
+                                              desc->resolution, desc->device);
+
+    // create render pass preset
+    render_pass_create(&list->pass,
+                       &(RenderPassCreateDescriptor){
+                           .label = "Probe Reflection Grid List",
+                           .device = desc->device,
+                           .queue = desc->queue,
+                           .height = desc->resolution,
+                           .width = desc->resolution,
+                           .draw_list = desc->draw_list,
+                           .multisample = desc->multisample,
+                           .swapchain = NULL,
+                           .color =
+                               &(RenderPassColorAttachment){
+                                   .clear_value = {0.0f, 0.0f, 0.0f, 1.0f},
+                                   .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
+                                   .load_op = WGPULoadOp_Load,
+                                   .store_op = WGPUStoreOp_Store,
+                                   .texture = color_texture,
+                                   .view = color_view,
+                               },
+                           .depth =
+                               &(RenderPassDepthAttachment){
+                                   .clear_value = 0,
+                                   .load_op = WGPULoadOp_Load,
+                                   .store_op = WGPUStoreOp_Store,
+                                   .read_only = false,
+                                   .texture = depth_texture,
+                                   .view = depth_view,
+                               },
+                       });
+  }
+
+  return create;
+}
+
+void probe_reflection_grid_list_create_texture(
+    WGPUTexture *color_texture, WGPUTexture *depth_texture,
+    WGPUTextureView *color_view, WGPUTextureView *depth_view,
+    const TextureResolution resolution, const WGPUDevice device) {
+
+  /*
+    === COLOR ===
+   */
+
+  const size_t layer_count =
+      PROBE_REFLECTION_GRID_LIST_CAPACITY * PROBE_REFLECTION_LIST_MAX_COUNT;
+
+  *color_texture = wgpuDeviceCreateTexture(
+      device,
+      &(WGPUTextureDescriptor){
+          .label = "Probe Reflection Grid List Texture Color Cube Array",
+          .size =
+              (WGPUExtent3D){
+                  .width = resolution,
+                  .height = resolution,
+                  .depthOrArrayLayers = layer_count,
+              },
+          .format = WGPUTextureFormat_BGRA8Unorm,
+          .usage = WGPUTextureUsage_RenderAttachment |
+                   WGPUTextureUsage_TextureBinding,
+          .dimension = WGPUTextureDimension_2D,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+      });
+
+  *color_view = wgpuTextureCreateView(
+      *color_texture,
+      &(WGPUTextureViewDescriptor){
+          .label = "Probe Reflection Grid List View Color Cube Array",
+          .dimension = WGPUTextureViewDimension_CubeArray,
+          .format = WGPUTextureFormat_BGRA8Unorm,
+          .baseMipLevel = 0,
+          .mipLevelCount = 1,
+          .baseArrayLayer = 0,
+          .arrayLayerCount = layer_count,
+          .aspect = WGPUTextureAspect_All,
+      });
+
+  /*
+    === DEPTH ===
+   */
+
+  *depth_texture = wgpuDeviceCreateTexture(
+      device,
+      &(WGPUTextureDescriptor){
+          .label = "Probe Reflection Grid List Texture Depth Cube Array",
+          .size =
+              (WGPUExtent3D){
+                  .width = resolution,
+                  .height = resolution,
+                  .depthOrArrayLayers = layer_count,
+              },
+          .format = WGPUTextureFormat_Depth24Plus,
+          .usage = WGPUTextureUsage_RenderAttachment |
+                   WGPUTextureUsage_TextureBinding,
+          .dimension = WGPUTextureDimension_2D,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+      });
+
+  *depth_view = wgpuTextureCreateView(
+      *depth_texture,
+      &(WGPUTextureViewDescriptor){
+          .label = "Probe Reflection Grid List View Depth Cube Array",
+          .dimension = WGPUTextureViewDimension_CubeArray,
+          .format = WGPUTextureFormat_Depth24Plus,
+          .baseMipLevel = 0,
+          .mipLevelCount = 1,
+          .baseArrayLayer = 0,
+          .arrayLayerCount = layer_count,
+          .aspect = WGPUTextureAspect_DepthOnly,
+      });
 }
 
 DynamicListStatus
 probe_reflection_grid_list_insert(ProbeReflectionGridList *list,
                                   ProbeReflectionGrid *entry) {
+
+  // temporary (shader only accept static array for now)
+  if (list->length == PROBE_REFLECTION_GRID_LIST_CAPACITY)
+    return DynamicListStatus_UndefError;
+
   return dyli_insert((void *)&list->entries, &list->capacity, &list->length,
                      sizeof(ProbeReflectionGrid), (void *)entry, 1,
                      "Probe Reflection Grid list");
@@ -84,6 +223,10 @@ probe_reflection_grid_list_insert(ProbeReflectionGridList *list,
 
 ProbeReflectionGrid *
 probe_reflection_grid_list_new_entry(ProbeReflectionGridList *list) {
+
+  // temporary (shader only accept static array for now)
+  if (list->length == PROBE_REFLECTION_GRID_LIST_CAPACITY)
+    return NULL;
 
   return (ProbeReflectionGrid *)dyli_new_entry(
       (void *)&list->entries, &list->capacity, &list->length,
@@ -102,3 +245,11 @@ DynamicListStatus
 probe_reflection_grid_list_destroy(ProbeReflectionGridList *list) {
   return dyli_free((void *)list->entries, &list->capacity, &list->length);
 }
+
+void probe_reflection_grid_list_draw_preprocessor(const RenderPass *pass,
+                                                  Mesh *mesh, void *data) {
+
+  mat4 *view = (mat4 *)data;
+}
+
+void probe_reflection_grid_list_draw(ProbeReflectionGridList *list) {}

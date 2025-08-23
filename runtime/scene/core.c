@@ -47,8 +47,46 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
     mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
-    probe_reflection_grid_list_create(&scene->probes_reflection,
-                                      PROBE_REFLECTION_LIST_CAPACITY);
+    probe_reflection_grid_list_create(
+        &scene->probes_reflection,
+        &(ProbeReflectionGridListDescriptor){
+            .capacity = PROBE_REFLECTION_GRID_LIST_CAPACITY,
+            .device = scene_device(scene),
+            .queue = scene_queue(scene),
+            .multisample = desc->renderer->multisampling_count,
+            .resolution = TextureResolution_512,
+            .draw_list =
+                &(RenderPassDrawList){
+                    .length = 3,
+                    .entries =
+                        {
+                            {
+                                .shader_callback = mesh_shader_texture,
+                                .topology_callback = mesh_topology_base,
+                                .meshes = scene_pipeline(
+                                    scene, ScenePipeline_Dynamic_LitShadow),
+                                .mesh_preprocessor_callback =
+                                    probe_reflection_grid_list_draw_preprocessor,
+                            },
+                            {
+                                .shader_callback = mesh_shader_texture,
+                                .topology_callback = mesh_topology_base,
+                                .meshes = scene_pipeline(
+                                    scene, ScenePipeline_Dynamic_Lit),
+                                .mesh_preprocessor_callback =
+                                    probe_reflection_grid_list_draw_preprocessor,
+                            },
+                            {
+                                .shader_callback = mesh_shader_texture,
+                                .topology_callback = mesh_topology_base,
+                                .meshes = scene_pipeline(
+                                    scene, ScenePipeline_Dynamic_Unlit),
+                                .mesh_preprocessor_callback =
+                                    probe_reflection_grid_list_draw_preprocessor,
+                            },
+                        },
+                },
+        });
     /*
 
       ===== CAMERA & VIEWPORT =====

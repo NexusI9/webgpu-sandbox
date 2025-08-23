@@ -10,13 +10,20 @@
 typedef struct {
   vec3 position;
   mat4 view[PROBE_REFLECTION_VIEW_COUNT];
+  float radius;
 } ProbeReflection;
+
+typedef struct {
+  vec3 position;
+  float radius;
+} __attribute__((aligned(16))) ProbeReflectionUniform;
 
 typedef struct {
   ProbeReflection *entries;
   size_t length;
   size_t capacity;
 } ProbeReflectionList;
+
 
 /* === Probe List  === */
 

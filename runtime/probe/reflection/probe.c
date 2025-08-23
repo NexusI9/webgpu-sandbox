@@ -1,4 +1,5 @@
 #include "probe.h"
+#include "grid.h"
 
 /*
 
@@ -21,12 +22,21 @@ DynamicListStatus probe_reflection_list_create(ProbeReflectionList *list,
 
 DynamicListStatus probe_reflection_list_insert(ProbeReflectionList *list,
                                                ProbeReflection *entry) {
+
+  // temporary (shader require static length for now)
+  if (list->length == PROBE_REFLECTION_LIST_MAX_COUNT)
+    return DynamicListStatus_UndefError;
+
   return dyli_insert((void *)&list->entries, &list->capacity, &list->length,
                      sizeof(ProbeReflection), (void *)entry, 1,
                      "Probe Reflection list");
 }
 
 ProbeReflection *probe_reflection_list_new_entry(ProbeReflectionList *list) {
+
+  // temporary (shader require static length for now)
+  if (list->length == PROBE_REFLECTION_LIST_MAX_COUNT)
+    return NULL;
 
   return (ProbeReflection *)dyli_new_entry(
       (void *)&list->entries, &list->capacity, &list->length,

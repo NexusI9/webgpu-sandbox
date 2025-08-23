@@ -102,7 +102,7 @@ WGPUQueue scene_renderer_queue(SceneRenderer *);
 WGPUSwapChain scene_renderer_swapchain(SceneRenderer *);
 int scene_renderer_width(const SceneRenderer *);
 int scene_renderer_height(const SceneRenderer *);
-PipelineMultisampleCount scene_renderer_multisample(const SceneRenderer *);
+//PipelineMultisampleCount scene_renderer_multisample(const SceneRenderer *);
 
 const char *scene_renderer_target(SceneRenderer *);
 

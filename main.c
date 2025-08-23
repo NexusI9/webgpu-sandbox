@@ -10,6 +10,7 @@
 #include <emscripten/emscripten.h>
 
 // runtime
+#include "resources/example/glass.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/scene/scene.h"
@@ -63,17 +64,10 @@ int main(int argc, const char *argv[]) {
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
   // example_skybox(&main_scene);
-  example_gltf(&main_scene);
+  // example_gltf(&main_scene);
   // example_ao(&main_scene, false);
-  example_glass(&main_scene);
-
-  SceneEditorObject *grid_probe = scene_add_probe_reflection_grid(
-      &main_scene, &(ProbeReflectionGridDescriptor){
-                       .count = {3, 3, 3},
-                       .size = {3.0f, 3.0f, 3.0f},
-  });
-
-  
+  // example_glass_box(&main_scene);
+  example_glass_probe(&main_scene);
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);

@@ -3,6 +3,8 @@
 
 #include "../runtime/scene/scene.h"
 
-void example_glass(Scene *);
+void example_glass_box(Scene *);
+
+void example_glass_probe(Scene *);
 
 #endif

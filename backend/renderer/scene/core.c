@@ -247,6 +247,7 @@ cclock *scene_renderer_clock(SceneRenderer *renderer) {
   return &renderer->clock;
 }
 
+
 WGPUSwapChain scene_renderer_create_swapchain(const SceneRenderer *renderer) {
   WGPUSurface surface = wgpuInstanceCreateSurface(
       renderer->wgpu.instance,
