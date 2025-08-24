@@ -7,10 +7,10 @@
 #include "webgpu/webgpu.h"
 
 #define PROBE_REFLECTION_RESOLUTION 512
-#define PROBE_REFLECTION_GRID_MAX_COUNT 3
 #define PROBE_REFLECTION_GRID_DIMENSION 3
 
-// 6 x 6 x 6 max probes per grid
+#define PROBE_REFLECTION_GRID_MAX_COUNT 3
+// N^3 max probes per grid
 #define PROBE_REFLECTION_LIST_MAX_COUNT                                        \
   PROBE_REFLECTION_GRID_MAX_COUNT *PROBE_REFLECTION_GRID_MAX_COUNT             \
       *PROBE_REFLECTION_GRID_MAX_COUNT
@@ -56,8 +56,8 @@ typedef struct {
 
 typedef struct {
   uint32_t length;
-  ProbeReflectionUniform entries[PROBE_REFLECTION_LIST_MAX_COUNT *
-                                 PROBE_REFLECTION_GRID_LIST_CAPACITY];
+  ProbeReflectionUniform entries[PROBE_REFLECTION_GRID_LIST_CAPACITY *
+                                 PROBE_REFLECTION_LIST_MAX_COUNT];
 } __attribute__((aligned(16))) ProbeReflectionListUniform;
 
 void probe_reflection_grid_create(ProbeReflectionGrid *,
@@ -86,5 +86,8 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *);
 
 void probe_reflection_grid_list_draw_preprocessor(const RenderPass *, Mesh *,
                                                   void *);
+
+void probe_reflection_grid_list_uniform(ProbeReflectionListUniform *,
+                                        ProbeReflectionGridList *);
 
 #endif

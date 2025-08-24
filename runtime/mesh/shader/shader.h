@@ -36,11 +36,7 @@
 
 #include "core.h"
 #include "shadow.h"
-#include "solid.h"
 #include "texture.h"
-#include "wireframe.h"
-#include "fixed.h"
-
 
 
 #endif

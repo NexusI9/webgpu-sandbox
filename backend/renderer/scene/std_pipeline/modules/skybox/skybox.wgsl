@@ -18,15 +18,16 @@ struct Viewport {
   projection : mat4x4<f32>, width : u32, height : u32,
 }
 
-// skybox texture
-@group(0) @binding(0) var skybox_texture : texture_cube<f32>;
-@group(0) @binding(1) var skybox_sampler : sampler;
-@group(0) @binding(2) var<uniform> skybox_blur : f32;
+    // camera viewport
+@group(0) @binding(0) var<uniform> uViewport : Viewport;
+@group(0) @binding(1) var<uniform> uCamera : Camera;
+@group(0) @binding(2) var<uniform> uMesh : Mesh;
 
-// camera viewport
-@group(1) @binding(0) var<uniform> uViewport : Viewport;
-@group(1) @binding(1) var<uniform> uCamera : Camera;
-@group(1) @binding(2) var<uniform> uMesh : Mesh;
+// skybox texture
+@group(1) @binding(0) var skybox_texture : texture_cube<f32>;
+@group(1) @binding(1) var skybox_sampler : sampler;
+@group(1) @binding(2) var<uniform> skybox_blur : f32;
+
 
 @vertex fn vs_main(@location(0) position : vec3<f32>) -> VertexOutput {
 

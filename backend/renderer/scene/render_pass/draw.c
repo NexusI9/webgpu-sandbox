@@ -51,7 +51,8 @@ void render_pass_draw_pass(RenderPass *pass,
       if (mesh_preprocessor)
         mesh_preprocessor(pass, mesh, list->mesh_preprocessor_data);
 
-      mesh_draw(target_topology(mesh), mesh_shader(mesh, target_shader), pass->encoder);
+      mesh_draw(target_topology(mesh), mesh_shader(mesh, target_shader),
+                pass->encoder);
     }
   }
 
@@ -328,11 +329,14 @@ void render_pass_draw(RenderPass *pass,
   pass->draw_callback(pass);
 
   if (overrides) {
-    if (overrides->color)
-      wgpuTextureViewRelease(pass->color.attachment.view);
 
-    if (overrides->depth)
+    if (overrides->color) {
+      wgpuTextureViewRelease(pass->color.attachment.view);
+    }
+
+    if (overrides->depth) {
       wgpuTextureViewRelease(pass->depth.attachment.view);
+    }
   }
 
   // put back the original views

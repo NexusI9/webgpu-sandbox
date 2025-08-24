@@ -24,7 +24,6 @@ typedef struct {
   size_t capacity;
 } ProbeReflectionList;
 
-
 /* === Probe List  === */
 
 DynamicListStatus probe_reflection_list_create(ProbeReflectionList *,

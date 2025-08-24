@@ -23,7 +23,7 @@ void mesh_shader_set_active(Mesh *, const MeshShader);
 
 void mesh_shader_update_mvp(Mesh *, const MeshShader, Camera *, Viewport *);
 
-void mesh_shader_build_mvp(Mesh *, const MeshShader, Camera *, Viewport *);
+void mesh_shader_build_mvp(Mesh *, const MeshShader, Camera *, Viewport *, bool);
 
 typedef void (*mesh_shader_bind_views_callback)(Mesh *, Camera *, Viewport *);
 

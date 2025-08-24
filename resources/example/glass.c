@@ -46,7 +46,7 @@ void example_glass_probe(Scene *scene) {
 
   SceneEditorObject *grid_probe =
       scene_add_probe_reflection_grid(scene, &(ProbeReflectionGridDescriptor){
-                                                 .count = {3, 3, 3},
+                                                 .count = {2, 2, 2},
                                                  .size = {3.0f, 3.0f, 3.0f},
                                              });
 
@@ -70,18 +70,11 @@ void example_glass_probe(Scene *scene) {
                          .queue = scene_queue(scene),
                      });
 
+  mesh_set_position(mesh, (vec3){0.0f, 0.2f, 0.0f});
   mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});
   mesh_set_scale(mesh, (vec3){12.0f, 12.0f, 12.0f});
 
   scene_add_mesh(scene, mesh, NULL);
-
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 3,
-                        &(GlassUniform){
-                            .color = {1.0f, 0.5f, 1.0f, 1.0f},
-                            .roughness = 0.23f,
-                            .frost_scale = 700.0f,
-                            .frost_strength = 0.4f,
-                        });
 
   shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 3,
                         &(GlassUniform){
@@ -91,11 +84,12 @@ void example_glass_probe(Scene *scene) {
                             .roughness = 0.145f,
                         });
 
+  // first update each meshes draw list probe list uniform
+  ProbeReflectionListUniform list_uniform;
+  probe_reflection_grid_list_uniform(&list_uniform, &scene->probes_reflection);
+
   shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 4,
-                        &(ProbeReflectionListUniform){
-                            .length = scene->probes_reflection.length,
-                            .entries = {0},
-                        });
+                        &list_uniform);
 
   // swap fallback view with probe render pass view
   shader_update_texture_view(

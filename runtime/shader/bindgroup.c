@@ -277,8 +277,8 @@ void shader_bind_group_build(ShaderBindGroup *group,
   uint16_t total_length = shader_bind_group_entries_count(group);
 
 #ifdef VERBOSE_BINDING_PHASE
-  VERBOSE_PRINT("\t\t\t└ Uniforms: %lu\n\t\t\t└ Textures: "
-                "%lu\n\t\t\t└ Samplers: %lu",
+  VERBOSE_PRINT("\t\t\t\t└ Uniforms: %lu\n\t\t\t\t└ Textures: "
+                "%lu\n\t\t\t\t└ Samplers: %lu",
                 group->uniforms.length, group->textures.length,
                 group->samplers.length);
 #endif
@@ -312,6 +312,9 @@ void shader_bind_group_refresh(ShaderBindGroup *group,
                                bind_group_index group_index,
                                const WGPUDevice device,
                                const WGPURenderPipeline *pipeline) {
+#ifdef VERBOSE_BINDING_PHASE
+  VERBOSE_PRINT("\t\t\t(refresh)");
+#endif
   shader_bind_group_release(group);
   shader_bind_group_build(group, group_index, device, pipeline);
 }
@@ -329,7 +332,7 @@ void shader_bind_group_create_from_layout(
     Shader *shader, const ShaderPipelineStateObject *layout) {
 
 #ifdef VERBOSE_BINDING_PHASE
-  VERBOSE_PRINT("\t\t└ Initialize bindgroups from pipeline layout:");
+  VERBOSE_PRINT("\t\t└ Initialize bindgroups from PSO with default values:");
 #endif
 
   // traverse group

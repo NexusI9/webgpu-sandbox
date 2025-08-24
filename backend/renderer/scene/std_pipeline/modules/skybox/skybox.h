@@ -16,48 +16,8 @@ static const ShaderPipelineStateObject layout_skybox = {
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
             {
-                // Group 0: Skybox resources (texture, sampler, blur factor)
-                .label = "Group 0 - Skybox Resources",
-                .entryCount = 3,
-                .entries =
-                    (WGPUBindGroupLayoutEntry[]){
-                        {
-                            // skybox_texture
-                            .binding = 0,
-                            .visibility = WGPUShaderStage_Fragment,
-                            .texture =
-                                (WGPUTextureBindingLayout){
-                                    .sampleType = WGPUTextureSampleType_Float,
-                                    .viewDimension =
-                                        WGPUTextureViewDimension_Cube,
-                                    .multisampled = false,
-                                },
-                        },
-                        {
-                            // skybox_sampler
-                            .binding = 1,
-                            .visibility = WGPUShaderStage_Fragment,
-                            .sampler =
-                                (WGPUSamplerBindingLayout){
-                                    .type = WGPUSamplerBindingType_Filtering,
-                                },
-                        },
-                        {
-                            // skybox_blur (float)
-                            .binding = 2,
-                            .visibility = WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(float),
-                                },
-                        },
-                    },
-            },
-            {
-                // Group 1: Camera & Mesh data
-                .label = "Group 1 - Camera and Mesh",
+                // Group 0: Camera & Mesh data
+                .label = "Group 0 - Camera and Mesh",
                 .entryCount = 3,
                 .entries =
                     (WGPUBindGroupLayoutEntry[]){
@@ -96,6 +56,47 @@ static const ShaderPipelineStateObject layout_skybox = {
                         },
                     },
             },
+            {
+                // Group 1: Skybox resources (texture, sampler, blur factor)
+                .label = "Group 1 - Skybox Resources",
+                .entryCount = 3,
+                .entries =
+                    (WGPUBindGroupLayoutEntry[]){
+                        {
+                            // skybox_texture
+                            .binding = 0,
+                            .visibility = WGPUShaderStage_Fragment,
+                            .texture =
+                                (WGPUTextureBindingLayout){
+                                    .sampleType = WGPUTextureSampleType_Float,
+                                    .viewDimension =
+                                        WGPUTextureViewDimension_Cube,
+                                    .multisampled = false,
+                                },
+                        },
+                        {
+                            // skybox_sampler
+                            .binding = 1,
+                            .visibility = WGPUShaderStage_Fragment,
+                            .sampler =
+                                (WGPUSamplerBindingLayout){
+                                    .type = WGPUSamplerBindingType_Filtering,
+                                },
+                        },
+                        {
+                            // skybox_blur (float)
+                            .binding = 2,
+                            .visibility = WGPUShaderStage_Fragment,
+                            .buffer =
+                                (WGPUBufferBindingLayout){
+                                    .type = WGPUBufferBindingType_Uniform,
+                                    .hasDynamicOffset = false,
+                                    .minBindingSize = sizeof(float),
+                                },
+                        },
+                    },
+            },
+
         },
     .pipeline_attributes =
         {
@@ -119,7 +120,7 @@ static const ShaderPipelineStateObject layout_skybox = {
         {
             .mvp =
                 {
-                    .group = 1,
+                    .group = 0,
                     .projection = 0,
                     .view = 1,
                     .model = 2,

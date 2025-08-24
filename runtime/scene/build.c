@@ -51,15 +51,19 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
   case ScenePipeline_Fixed_Selection:
   case ScenePipeline_Fixed_Front:
   case ScenePipeline_Fixed_Background:
+#ifdef VERBOSE_BUILDING_PHASE
     VERBOSE_MESH_BUILD("Fixed %s", mesh->name);
+#endif
     scene_build_mesh_fixed(mesh, camera, viewport);
     break;
 
   default:
 
-    // EDITORONLY
-    // Build Boundbox & Wireframe by default for selection
+// EDITORONLY
+// Build Boundbox & Wireframe by default for selection
+#ifdef VERBOSE_BUILDING_PHASE
     VERBOSE_MESH_BUILD("Boundbox %s", mesh->name);
+#endif
     scene_build_mesh_boundbox(mesh, camera, viewport);
 
     // Dynamic rendering
@@ -72,13 +76,17 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 
       // build solid
     case SceneRendererDrawMode_Solid:
+#ifdef VERBOSE_BUILDING_PHASE
       VERBOSE_MESH_BUILD("Solid %s", mesh->name);
+#endif
       scene_build_mesh_solid(mesh, camera, viewport);
       break;
 
       // build wireframe
     case SceneRendererDrawMode_Wireframe:
+#ifdef VERBOSE_BUILDING_PHASE
       VERBOSE_MESH_BUILD("Wireframe %s", mesh->name);
+#endif
       scene_build_mesh_wireframe(mesh, camera, viewport);
       break;
 
@@ -86,7 +94,9 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
     // Since build texture include AO baking and shadow mapping we need to enter
     // more arguments compared to the other builds
     case SceneRendererDrawMode_Texture:
+#ifdef VERBOSE_BUILDING_PHASE
       VERBOSE_MESH_BUILD("Texture %s", mesh->name);
+#endif
 
       scene_build_mesh_texture(
           mesh, camera, viewport,
@@ -132,7 +142,8 @@ void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
                                        &mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Texture, camera, viewport);
+  mesh_shader_build_mvp(mesh, MeshShader_Texture, camera, viewport, true);
+  mesh_shader_build_mvp(mesh, MeshShader_Reflection, camera, viewport, false);
 
   // lit and shadow pipeline
   if (build_desc->pipeline &
@@ -175,7 +186,7 @@ void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport) {
   mesh_shader_create_solid(mesh);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Solid, camera, viewport);
+  mesh_shader_build_mvp(mesh, MeshShader_Solid, camera, viewport, true);
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Solid);
@@ -202,7 +213,7 @@ void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera,
   mesh_shader_create_wireframe(mesh);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Wireframe, camera, viewport);
+  mesh_shader_build_mvp(mesh, MeshShader_Wireframe, camera, viewport, true);
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Wireframe);
@@ -223,7 +234,7 @@ void scene_build_mesh_boundbox(Mesh *mesh, Camera *camera, Viewport *viewport) {
   mesh_shader_create_wireframe(mesh);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Wireframe, camera, viewport);
+  mesh_shader_build_mvp(mesh, MeshShader_Wireframe, camera, viewport, true);
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Wireframe);
@@ -240,7 +251,7 @@ void scene_build_mesh_fixed(Mesh *mesh, Camera *camera, Viewport *viewport) {
                                        &mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Fixed, camera, viewport);
+  mesh_shader_build_mvp(mesh, MeshShader_Fixed, camera, viewport, true);
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Fixed);

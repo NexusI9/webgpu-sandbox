@@ -25,7 +25,7 @@ void ao_bake_global(SceneRendererTextureAO *ao,
                       });
 
     mesh_shader_build_mvp(line, MeshShader_Fixed, desc->debug->camera,
-                          desc->debug->viewport);
+                          desc->debug->viewport, true);
   }
 
   Mesh *mesh = desc->mesh;

@@ -108,8 +108,12 @@ void mesh_shader_create_solid(Mesh *mesh) {
    Set texture shader.
  */
 void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
-  // alias to shader_create
+  // create texture shader as default
   shader_create(mesh_shader(mesh, MeshShader_Texture), desc);
+
+  // also initialise the reflection shader (basically a copy of the texture)
+  shader_create(mesh_shader(mesh, MeshShader_Reflection), desc);
+
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Texture);
 }
@@ -142,7 +146,7 @@ void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
    This function is primarily used when a mesh is firstly added to the scene.
  */
 void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
-                           Camera *camera, Viewport *viewport) {
+                           Camera *camera, Viewport *viewport, bool callbacks) {
 
   CameraUniform *uCamera = camera_uniform(camera);
   ViewportUniform *uViewport = viewport_uniform(viewport);
@@ -186,8 +190,9 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
   for (size_t i = 0; i < 3; i++) {
     ShaderBindGroupUniformEntry *entry = &entries[i];
     shader_update_uniform(shader, mvp->group, entry->binding, entry->data);
-    shader_update_uniform_callback(shader, mvp->group, entry->binding,
-                                   &entry->update);
+    if (callbacks)
+      shader_update_uniform_callback(shader, mvp->group, entry->binding,
+                                     &entry->update);
   }
 }
 

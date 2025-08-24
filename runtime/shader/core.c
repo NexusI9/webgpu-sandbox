@@ -63,8 +63,7 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
   shader->bind_groups.length = 0;
 
   // generate empty bindgroups based on pipeline layout (CPU Side)
-  shader_bind_group_create_from_layout(shader,
-                                       shader->pipeline->shader_pso);
+  shader_bind_group_create_from_layout(shader, shader->pipeline->shader_pso);
 
   // create gpu bindgroups from generated layout (GPU side)
   shader_build(shader);
@@ -84,7 +83,7 @@ void shader_destroy(Shader *shader) {
    Update method called as such: scene update => mesh update => shader update
  */
 void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
-  
+
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(render_pass, shader->pipeline->handle);
 

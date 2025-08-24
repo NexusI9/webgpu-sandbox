@@ -90,7 +90,6 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
       .baseMipLevel = 0,
   };
 
-  // printf("pass depth texture: %p\n", )
 
   WGPUTextureView temp_layer_texture_view_depth = wgpuTextureCreateView(
       desc->pass->depth.texture, &temp_layer_texture_descriptor_depth);

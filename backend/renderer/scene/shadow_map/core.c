@@ -145,18 +145,6 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
   texture_descriptor_depth.label = "Light shadow texture - Depth";
   texture_descriptor_depth.format = SHADOW_DEPTH_FORMAT;
 
-  // setup global texture view
-  WGPUTextureViewDescriptor texture_view_descriptor_base = {
-      .label = "Light Shadow: global texture view - Depth",
-      .format = SHADOW_DEPTH_FORMAT,
-      .dimension = desc->dimension, // cube for point | array 2d for dir
-      .mipLevelCount = 1,
-      .baseMipLevel = 0,
-      .arrayLayerCount = desc->layer_count,
-      .baseArrayLayer = 0,
-      .aspect = WGPUTextureAspect_DepthOnly,
-  };
-
   // Create color texture
   WGPUTexture color_texture =
       wgpuDeviceCreateTexture(desc->device, &texture_descriptor_color);
@@ -165,10 +153,10 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
                          .label = "Light Shadow: global texture view - Color",
                          .format = SHADOW_COLOR_FORMAT,
                          .dimension = desc->dimension,
-                         .mipLevelCount = 1,
                          .baseMipLevel = 0,
-                         .arrayLayerCount = desc->layer_count,
+                         .mipLevelCount = 1,
                          .baseArrayLayer = 0,
+                         .arrayLayerCount = desc->layer_count,
                          .aspect = WGPUTextureAspect_Undefined,
                      });
 
@@ -180,12 +168,12 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
   WGPUTextureView depth_view = wgpuTextureCreateView(
       depth_texture, &(WGPUTextureViewDescriptor){
                          .label = "Light Shadow: global texture view - Depth",
-                         .format = SHADOW_DEPTH_FORMAT,
                          .dimension = desc->dimension,
-                         .mipLevelCount = 1,
+                         .format = SHADOW_DEPTH_FORMAT,
                          .baseMipLevel = 0,
-                         .arrayLayerCount = desc->layer_count,
+                         .mipLevelCount = 1,
                          .baseArrayLayer = 0,
+                         .arrayLayerCount = desc->layer_count,
                          .aspect = WGPUTextureAspect_DepthOnly,
                      });
 

@@ -17,8 +17,8 @@ static inline void shader_build_pipeline(Shader *, WGPUBindGroupLayout *);
 void shader_build(Shader *shader) {
 
   // clear pipeline if existing
-#ifdef VERBOSE_BUILDING_PHASE
-  VERBOSE_PRINT("\t└ Building Shader: %s", shader->name);
+#ifdef VERBOSE_BINDING_PHASE
+  VERBOSE_PRINT("\t\t└ Binding Shader: %s", shader->name);
 #endif
 
   // build bind group entries for each individual group index
@@ -39,7 +39,7 @@ void shader_build(Shader *shader) {
       continue;
 
 #ifdef VERBOSE_BINDING_PHASE
-    VERBOSE_PRINT("\t\t└ Bingroup: %d", i);
+    VERBOSE_PRINT("\t\t\t└ Bingroup: %d", i);
 #endif
     shader_bind_group_build(group, i, shader->device,
                             &shader->pipeline->handle);

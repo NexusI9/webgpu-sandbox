@@ -111,8 +111,8 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
 
   // update texture and sampler
   Shader *shader = mesh_shader(skybox_mesh, MeshShader_Fixed);
-  shader_update_texture_view(shader, 0, 0, *view, format);
-  shader_update_sampler(shader, 0, 1,
+  shader_update_texture_view(shader, 1, 0, *view, format);
+  shader_update_sampler(shader, 1, 1,
                         &(WGPUSamplerDescriptor){
                             .addressModeU = WGPUAddressMode_ClampToEdge,
                             .addressModeV = WGPUAddressMode_ClampToEdge,
@@ -123,7 +123,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
                         });
 
   // add blur uniform
-  shader_update_uniform(shader, 0, 2, (void *)&blur);
+  shader_update_uniform(shader, 1, 2, (void *)&blur);
 
   // alter pipeline (no depth test)
   const Pipeline *pipeline = shader_pipeline(shader);

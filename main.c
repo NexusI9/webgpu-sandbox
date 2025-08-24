@@ -26,7 +26,7 @@ void init_scene() {
                    .renderer =
                        &(SceneRendererCreateDescriptor){
                            .name = "canvas",
-                           .multisampling_count = PipelineMultisampleCount_4x,
+                           .multisampling_count = PipelineMultisampleCount_1x,
                            .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f},
                            .dpi = 1.0,
                        },
@@ -63,11 +63,11 @@ int main(int argc, const char *argv[]) {
 
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
-  // example_skybox(&main_scene);
+  //example_skybox(&main_scene);
   example_gltf(&main_scene);
   // example_ao(&main_scene, false);
   // example_glass_box(&main_scene);
-  // example_glass_probe(&main_scene);
+  example_glass_probe(&main_scene);
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);

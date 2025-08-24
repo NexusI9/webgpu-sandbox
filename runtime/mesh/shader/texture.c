@@ -5,8 +5,7 @@
 
 void mesh_shader_texture_update_mvp(Mesh *mesh, Camera *camera,
                                     Viewport *viewport) {
-  mesh_shader_update_mvp(mesh, MeshShader_Texture, camera,
-                         viewport);
+  mesh_shader_update_mvp(mesh, MeshShader_Texture, camera, viewport);
 }
 
 /**
@@ -180,11 +179,21 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
       .compare = sample_compare,
   };
 
-  shader_update_sampler(mesh_shader(mesh, MeshShader_Texture), group_index,
-                        sampler_binding, &sampler);
+  const MeshShader shader_types[2] = {
+      MeshShader_Texture,
+      MeshShader_Reflection,
+  };
 
-  shader_update_sampler(mesh_shader(mesh, MeshShader_Texture), group_index,
-                        sampler_binding + 2, &sampler);
+  for (uint8_t i = 0; i < 2; i++) {
+
+    Shader *shader = mesh_shader(mesh, shader_types[i]);
+
+    shader_update_sampler(shader, group_index,
+                          sampler_binding, &sampler);
+
+    shader_update_sampler(shader, group_index,
+                          sampler_binding + 2, &sampler);
+  }
 }
 
 void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
@@ -192,17 +201,26 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
                                             WGPUTextureView spot_map) {
 
   VERBOSE_PROCESS("Update shadow map: %s", mesh->name);
-  Shader *shader = mesh_shader(mesh, MeshShader_Texture);
 
-  // update point texture
-  shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
-                             SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
-                             point_map, SHADOW_DEPTH_FORMAT);
+  const MeshShader shader_types[2] = {
+      MeshShader_Texture,
+      MeshShader_Reflection,
+  };
 
-  // update dir texture
-  shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
-                             SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP, spot_map,
-                             SHADOW_DEPTH_FORMAT);
+  for (uint8_t i = 0; i < 2; i++) {
+
+    Shader *shader = mesh_shader(mesh, shader_types[i]);
+
+    // update point texture
+    shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
+                               SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
+                               point_map, SHADOW_DEPTH_FORMAT);
+
+    // update dir texture
+    shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
+                               SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP, spot_map,
+                               SHADOW_DEPTH_FORMAT);
+  }
 }
 
 /**

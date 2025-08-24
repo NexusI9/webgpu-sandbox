@@ -34,39 +34,6 @@ void mesh_shader_shadow_update_model(Mesh *mesh) {
   shader_update_uniform(mesh_shader(mesh, MeshShader_Shadow), 0, 1, uModel);
 }
 
-void mesh_shader_shadow_set_cullmode(Mesh *mesh, WGPUCullMode mode) {
-  /*
-    STDPIPELINE SHADOW
-  pipeline_set_primitive(shader_pipeline(mesh_shader_shadow(mesh)),
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_Back,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
-
-*/
-}
-
-void mesh_shader_shadow_update_cullmode(Mesh *mesh, WGPUCullMode mode) {
-
-  /*
-  const Pipeline *pipeline = &mesh->shader.shadow.pipeline;
-  wgpuRenderPipelineRelease(pipeline->handle);
-
-  pipeline_set_primitive(pipeline,
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = mode,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
-
-  pipeline->handle = wgpuDeviceCreateRenderPipeline(pipeline->device,
-&pipeline->descriptor); STDPIPELINE SHADOW
-*/
-}
-
 /**
    Clear the shadow shader bind groups of mesh
  */

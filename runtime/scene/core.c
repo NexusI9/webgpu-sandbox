@@ -6,11 +6,14 @@
 #include "event/event.html.h"
 
 #include "../utils/system.h"
+#include <stdint.h>
 
 // initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
 static inline void scene_light_list_init(Scene *);
 static inline void scene_camera_init(Scene *);
+static inline void scene_probe_reflection_init(Scene *,
+                                               const PipelineMultisampleCount);
 
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
@@ -47,46 +50,8 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
     mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 
-    probe_reflection_grid_list_create(
-        &scene->probes_reflection,
-        &(ProbeReflectionGridListDescriptor){
-            .capacity = PROBE_REFLECTION_GRID_LIST_CAPACITY,
-            .device = scene_device(scene),
-            .queue = scene_queue(scene),
-            .multisample = desc->renderer->multisampling_count,
-            .resolution = TextureResolution_512,
-            .draw_list =
-                &(RenderPassDrawList){
-                    .length = 3,
-                    .entries =
-                        {
-                            {
-                                .shader = MeshShader_Texture,
-                                .topology_callback = mesh_topology_base,
-                                .meshes = scene_pipeline(
-                                    scene, ScenePipeline_Dynamic_LitShadow),
-                                .mesh_preprocessor_callback =
-                                    probe_reflection_grid_list_draw_preprocessor,
-                            },
-                            {
-                                .shader = MeshShader_Texture,
-                                .topology_callback = mesh_topology_base,
-                                .meshes = scene_pipeline(
-                                    scene, ScenePipeline_Dynamic_Lit),
-                                .mesh_preprocessor_callback =
-                                    probe_reflection_grid_list_draw_preprocessor,
-                            },
-                            {
-                                .shader = MeshShader_Texture,
-                                .topology_callback = mesh_topology_base,
-                                .meshes = scene_pipeline(
-                                    scene, ScenePipeline_Dynamic_Unlit),
-                                .mesh_preprocessor_callback =
-                                    probe_reflection_grid_list_draw_preprocessor,
-                            },
-                        },
-                },
-        });
+    scene_probe_reflection_init(scene, desc->renderer->multisampling_count);
+
     /*
 
       ===== CAMERA & VIEWPORT =====
@@ -168,6 +133,36 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
   camera_lookat(camera, (vec3){20.0f, 20.0f, 20.0f}, (vec3){0.0f, 0.0f, 0.0f});
 
   return camera;
+}
+
+void scene_probe_reflection_init(Scene *scene,
+                                 const PipelineMultisampleCount multisample) {
+
+  const ScenePipeline reflection_pipelines[2] = {
+      ScenePipeline_Dynamic_LitShadow,
+      ScenePipeline_Dynamic_Lit,
+  };
+
+  RenderPassDrawList reflection_draw_list = {.length = 2};
+  for (uint8_t i = 0; i < 2; i++)
+    reflection_draw_list.entries[i] = (RenderPassDrawLayout){
+        .shader = MeshShader_Reflection,
+        .topology_callback = mesh_topology_base,
+        .meshes = scene_pipeline(scene, reflection_pipelines[i]),
+        .mesh_preprocessor_callback =
+            probe_reflection_grid_list_draw_preprocessor,
+    };
+
+  probe_reflection_grid_list_create(
+      &scene->probes_reflection,
+      &(ProbeReflectionGridListDescriptor){
+          .capacity = PROBE_REFLECTION_GRID_LIST_CAPACITY,
+          .device = scene_device(scene),
+          .queue = scene_queue(scene),
+          .multisample = multisample,
+          .resolution = TextureResolution_512,
+          .draw_list = &reflection_draw_list,
+      });
 }
 
 /**

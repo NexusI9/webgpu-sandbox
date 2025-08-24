@@ -41,8 +41,8 @@ struct Glass {
                                                     color : vec4<f32>,
 }
 
-const PROBE_RELFECTION_GRID_LIST_CAPACITY : u32 = 16u;
-const PROBE_RELFECTION_MAX_COUNT : u32 = 6u;
+const PROBE_RELFECTION_GRID_LIST_CAPACITY : u32 = 8u;
+const PROBE_RELFECTION_MAX_COUNT : u32 = 3u;
 const PROBE_RELFECTION_LIST_MAX_COUNT
     : u32 = PROBE_RELFECTION_GRID_LIST_CAPACITY * PROBE_RELFECTION_MAX_COUNT *
             PROBE_RELFECTION_MAX_COUNT * PROBE_RELFECTION_MAX_COUNT;
@@ -60,7 +60,7 @@ struct ProbeReflectionList {
 @group(0) @binding(1) var<uniform> uCamera : Camera;
 @group(0) @binding(2) var<uniform> uMesh : Mesh;
 @group(0) @binding(3) var<uniform> uGlass : Glass;
-@group(0) @binding(4) var<uniform> uProbeRflectionList : ProbeReflectionList;
+@group(0) @binding(4) var<uniform> uProbeReflectionList : ProbeReflectionList;
 
 @group(1) @binding(0) var probe_reflection_maps : texture_cube_array<f32>;
 @group(1) @binding(1) var probe_reflection_sampler : sampler;
@@ -184,12 +184,30 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
 
   // Reflection Direction
   let R : vec3<f32> = reflect(-V, perturbed_N);
-
   let mip : f32 = uGlass.roughness * f32(MAX_MIP_LEVEL);
-  // let reflection : vec4<f32> = textureSample(env_map, env_sampler, R);
+
+   var closest_probe_index : u32 = 4u;
+   var best_dist : f32 = 1e9;
+   for (var i = 0u; i < uProbeReflectionList.length; i += 1u) {
+     let probe_pos = uProbeReflectionList.entries[i].position;
+     let dist = distance(vFrag, probe_pos);
+     if (dist < best_dist) {
+       best_dist = dist;
+       closest_probe_index = i;
+     }
+   }
+
+  let reflection : vec4<f32> = textureSample(probe_reflection_maps,
+                                            probe_reflection_sampler, R,
+                                            closest_probe_index);
 
   // let color : vec4<f32> = mix(uGlass.color * reflection, reflection, f.r);
 
-  return vec4<f32>(1.0f, 0.4f, 0.2f, 1.0f);
-  // return vec4<f32>(perturbed_N, 1.0f);
+  
+  //return vec4<f32>(
+  //   vec3<f32>(f32(closest_probe_index) / f32(uProbeReflectionList.length)),
+  //   1.0f);
+
+  return reflection;
+  
 }

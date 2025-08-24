@@ -108,18 +108,18 @@ DynamicListStatus probe_reflection_grid_list_create(
                            .swapchain = NULL,
                            .color =
                                &(RenderPassColorAttachment){
-                                   .clear_value = {0.0f, 0.0f, 0.0f, 1.0f},
+                                   .clear_value = {1.0f, 0.0f, 0.0f, 1.0f},
                                    .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
-                                   .load_op = WGPULoadOp_Load,
+                                   .load_op = WGPULoadOp_Clear,
                                    .store_op = WGPUStoreOp_Store,
                                    .texture = color_texture,
                                    .view = color_view,
                                },
                            .depth =
                                &(RenderPassDepthAttachment){
-                                   .clear_value = 0,
+                                   .clear_value = 1.0f,
                                    .load_op = WGPULoadOp_Load,
-                                   .store_op = WGPUStoreOp_Store,
+                                   .store_op = WGPUStoreOp_Discard,
                                    .read_only = false,
                                    .texture = depth_texture,
                                    .view = depth_view,
@@ -153,7 +153,8 @@ void probe_reflection_grid_list_create_texture(
                   .depthOrArrayLayers = layer_count,
               },
           .format = WGPUTextureFormat_BGRA8Unorm,
-          .usage = WGPUTextureUsage_RenderAttachment |
+          .usage = WGPUTextureUsage_CopyDst |
+                   WGPUTextureUsage_RenderAttachment |
                    WGPUTextureUsage_TextureBinding,
           .dimension = WGPUTextureDimension_2D,
           .mipLevelCount = 1,
@@ -164,13 +165,13 @@ void probe_reflection_grid_list_create_texture(
       *color_texture,
       &(WGPUTextureViewDescriptor){
           .label = "Probe Reflection Grid List View Color Cube Array",
-          .dimension = WGPUTextureViewDimension_CubeArray,
           .format = WGPUTextureFormat_BGRA8Unorm,
+          .dimension = WGPUTextureViewDimension_CubeArray,
           .baseMipLevel = 0,
           .mipLevelCount = 1,
           .baseArrayLayer = 0,
           .arrayLayerCount = layer_count,
-          .aspect = WGPUTextureAspect_All,
+          .aspect = WGPUTextureAspect_Undefined,
       });
 
   /*
@@ -188,7 +189,8 @@ void probe_reflection_grid_list_create_texture(
                   .depthOrArrayLayers = layer_count,
               },
           .format = WGPUTextureFormat_Depth24Plus,
-          .usage = WGPUTextureUsage_RenderAttachment |
+          .usage = WGPUTextureUsage_CopyDst |
+                   WGPUTextureUsage_RenderAttachment |
                    WGPUTextureUsage_TextureBinding,
           .dimension = WGPUTextureDimension_2D,
           .mipLevelCount = 1,
@@ -253,73 +255,93 @@ void probe_reflection_grid_list_draw_preprocessor(const RenderPass *pass,
   ProbeReflectionGridListPreprocessorData *projection =
       (ProbeReflectionGridListPreprocessorData *)data;
 
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 0,
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Reflection), 0, 0,
                         projection->projection);
 
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 1,
+  shader_update_uniform(mesh_shader(mesh, MeshShader_Reflection), 0, 1,
                         projection->view);
 }
 
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *list) {
 
+  // then update probe list texture cube array based on each probes views
   size_t layer = 0;
 
   for (size_t i = 0; i < list->length; i++) {
 
     ProbeReflectionGrid *grid = &list->entries[i];
 
-    for (size_t j = 0; j < grid->probes.length; j++) {
+    TIMER("", {
+      VERBOSE_PROCESS("Rendering Probe Reflection Grid %lu/%lu", i + 1,
+                      list->length);
 
-      ProbeReflection *probe = &grid->probes.entries[j];
+      for (size_t j = 0; j < grid->probes.length; j++) {
 
-      Projection probe_views;
-      projection_point(&probe_views, probe->position, 0.1f, 100.0f);
+        ProbeReflection *probe = &grid->probes.entries[j];
 
-      for (uint8_t k = 0; k < probe_views.length; k++) {
+        Projection probe_views;
+        projection_point(&probe_views, probe->position, 0.1f, 100.0f);
 
-        // define target layer
-        WGPUTextureView target_color = wgpuTextureCreateView(
-            list->pass.color.texture,
-            &(WGPUTextureViewDescriptor){
-                .label = "Probe Reflection Target Color View",
-                .arrayLayerCount = 1,
-                .baseArrayLayer = layer,
-                .dimension = WGPUTextureViewDimension_2D,
-                .aspect = WGPUTextureAspect_All,
-                .baseMipLevel = 0,
-                .mipLevelCount = 1,
-                .format = WGPUTextureFormat_BGRA8Unorm,
-            });
+        for (uint8_t k = 0; k < probe_views.length; k++) {
 
-        WGPUTextureView target_depth = wgpuTextureCreateView(
-            list->pass.color.texture,
-            &(WGPUTextureViewDescriptor){
+          // define target layer
+          WGPUTextureView target_color = wgpuTextureCreateView(
+              list->pass.color.texture,
+              &(WGPUTextureViewDescriptor){
+                  .label = "Probe Reflection Target Color View",
+                  .arrayLayerCount = 1,
+                  .baseArrayLayer = layer,
+                  .dimension = WGPUTextureViewDimension_2D,
+                  .baseMipLevel = 0,
+                  .mipLevelCount = 1,
+              });
 
-                .label = "Probe Reflection Target Depth View",
-                .arrayLayerCount = 1,
-                .baseArrayLayer = layer,
-                .dimension = WGPUTextureViewDimension_2D,
-                .aspect = WGPUTextureAspect_DepthOnly,
-                .baseMipLevel = 0,
-                .mipLevelCount = 1,
-                .format = WGPUTextureFormat_Depth24Plus,
-            });
+          WGPUTextureView target_depth = wgpuTextureCreateView(
+              list->pass.depth.texture,
+              &(WGPUTextureViewDescriptor){
+                  .label = "Probe Reflection Target Depth View",
+                  .arrayLayerCount = 1,
+                  .baseArrayLayer = layer,
+                  .dimension = WGPUTextureViewDimension_2D,
+                  .baseMipLevel = 0,
+                  .mipLevelCount = 1,
+              });
 
-        // update each mesh views/projections matrix
-        render_pass_update_all_preprocessor_data(
-            &list->pass, &(ProbeReflectionGridListPreprocessorData){
-                             .projection = &probe_views.projection,
-                             .view = &probe_views.views[k],
-                         });
+          // update each mesh views/projections matrix
+          render_pass_update_all_preprocessor_data(
+              &list->pass, &(ProbeReflectionGridListPreprocessorData){
+                               .projection = &probe_views.projection,
+                               .view = &probe_views.views[k],
+                           });
 
-        // draw pass
-        render_pass_draw(&list->pass, &(RenderPassViewOverride){
-                                          .color = target_color,
-                                          .depth = target_depth,
-                                      });
+          // draw pass
+          render_pass_draw(&list->pass, &(RenderPassViewOverride){
+                                            .color = target_color,
+                                            .depth = target_depth,
+                                        });
 
-        layer++;
+          printf("layer: %lu\n", layer);
+
+          layer++;
+        }
       }
+    });
+  }
+}
+
+void probe_reflection_grid_list_uniform(ProbeReflectionListUniform *uniform,
+                                        ProbeReflectionGridList *grid) {
+
+  uint16_t probe_count = 0;
+  uint16_t index = 0;
+  for (uint8_t i = 0; i < grid->length; i++) {
+    probe_count += grid->entries[i].probes.length;
+    for (uint8_t j = 0; j < grid->entries[i].probes.length; j++) {
+      glm_vec3_copy(grid->entries[i].probes.entries[j].position,
+                    uniform->entries[index].position);
+      index++;
     }
   }
+
+  uniform->length = probe_count;
 }

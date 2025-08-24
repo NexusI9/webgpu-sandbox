@@ -89,8 +89,7 @@ void render_pass_create(RenderPass *render_pass,
     render_pass->depth.texture = desc->depth->texture;
 
     WGPUTextureView depth_view;
-    if (desc->depth->view == NULL &&
-        desc->multisample > PipelineMultisampleCount_1x) {
+    if (desc->depth->view == NULL) {
       render_pass_create_depth_view(&render_pass->depth.texture, &depth_view,
                                     &texture_config);
     } else {
