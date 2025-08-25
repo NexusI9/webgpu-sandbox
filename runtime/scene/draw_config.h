@@ -4,6 +4,7 @@
 #include "../backend/renderer/scene/scene.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "./core.h"
+#include "debug/core.h"
 #include <stdint.h>
 
 /**
@@ -36,7 +37,7 @@ scene_init_draw_layouts(Scene *scene,
 
   // Texture draw configuration
   const RenderPassDrawList texture_draw_list = {
-      .length = 6,
+      .length = 8,
       .entries =
           {
               {
@@ -61,6 +62,7 @@ scene_init_draw_layouts(Scene *scene,
                   .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_base,
               },
+              // Fixed
               {
                   .meshes =
                       scene_pipeline(scene, ScenePipeline_Fixed_Selection),
@@ -72,12 +74,23 @@ scene_init_draw_layouts(Scene *scene,
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_override,
               },
+              // Debug
+              {
+                  .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
+                  .shader = MeshShader_Fixed,
+                  .topology_callback = mesh_topology_base,
+              },
+              {
+                  .meshes = &scene->debug.object_list[SceneDebugObject_View],
+                  .shader = MeshShader_Fixed,
+                  .topology_callback = mesh_topology_base,
+              },
           },
   };
 
   // Solid draw configuration
   const RenderPassDrawList solid_draw_list = {
-      .length = 5,
+      .length = 7,
       .entries =
           {
               {
@@ -96,6 +109,7 @@ scene_init_draw_layouts(Scene *scene,
                   .shader = MeshShader_Solid,
                   .topology_callback = mesh_topology_base,
               },
+              // Fixed
               {
                   .meshes =
                       scene_pipeline(scene, ScenePipeline_Fixed_Selection),
@@ -106,6 +120,17 @@ scene_init_draw_layouts(Scene *scene,
                   .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_override,
+              },
+              // Debug
+              {
+                  .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
+                  .shader = MeshShader_Fixed,
+                  .topology_callback = mesh_topology_base,
+              },
+              {
+                  .meshes = &scene->debug.object_list[SceneDebugObject_View],
+                  .shader = MeshShader_Fixed,
+                  .topology_callback = mesh_topology_base,
               },
 
           },
@@ -114,7 +139,7 @@ scene_init_draw_layouts(Scene *scene,
 
   // Wireframe draw configuration
   const RenderPassDrawList wireframe_draw_list = {
-      .length = 5,
+      .length = 7,
       .entries =
           {
               {
@@ -133,6 +158,7 @@ scene_init_draw_layouts(Scene *scene,
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_wireframe,
               },
+              // Fixed
               {
                   .meshes =
                       scene_pipeline(scene, ScenePipeline_Fixed_Selection),
@@ -143,6 +169,17 @@ scene_init_draw_layouts(Scene *scene,
                   .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_override,
+              },
+              // Debug
+              {
+                  .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
+                  .shader = MeshShader_Fixed,
+                  .topology_callback = mesh_topology_base,
+              },
+              {
+                  .meshes = &scene->debug.object_list[SceneDebugObject_View],
+                  .shader = MeshShader_Fixed,
+                  .topology_callback = mesh_topology_base,
               },
           },
 
@@ -150,7 +187,7 @@ scene_init_draw_layouts(Scene *scene,
 
   // Boundbox draw configuration
   const RenderPassDrawList boundbox_draw_list = {
-      .length = 5,
+      .length = 7,
       .entries =
           {
               {
@@ -169,6 +206,7 @@ scene_init_draw_layouts(Scene *scene,
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_boundbox,
               },
+              // Fixed
               {
                   .meshes =
                       scene_pipeline(scene, ScenePipeline_Fixed_Selection),
@@ -179,6 +217,17 @@ scene_init_draw_layouts(Scene *scene,
                   .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_override,
+              },
+              // Debug
+              {
+                  .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
+                  .shader = MeshShader_Fixed,
+                  .topology_callback = mesh_topology_base,
+              },
+              {
+                  .meshes = &scene->debug.object_list[SceneDebugObject_View],
+                  .shader = MeshShader_Fixed,
+                  .topology_callback = mesh_topology_base,
               },
           },
 

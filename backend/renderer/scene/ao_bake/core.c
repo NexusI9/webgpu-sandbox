@@ -66,12 +66,13 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
                            .dimension = WGPUTextureViewDimension_2D,
                        });
 
-      shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 0, 8,
+      const bind_group_index AO_group = 1;
+      shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), AO_group, 8,
                                  layer_view, AO_TEXTURE_FORMAT);
 
       Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-      ShaderBindGroup *bind_group = shader_get_bind_group(shader, 0);
-      shader_bind_group_refresh(bind_group, 0, desc->device,
+      ShaderBindGroup *bind_group = shader_get_bind_group(shader, AO_group);
+      shader_bind_group_refresh(bind_group, AO_group, desc->device,
                                 &shader->pipeline->handle);
     } else {
       VERBOSE_WARNING("New AO texture couldn't be created, AO Bake aborted.");

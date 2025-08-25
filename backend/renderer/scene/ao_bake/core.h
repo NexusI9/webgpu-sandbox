@@ -4,6 +4,7 @@
 #include "../runtime/camera/camera.h"
 #include "../runtime/geometry/triangle/triangle.h"
 #include "../runtime/mesh/mesh.h"
+#include "../runtime/scene/debug/debug.h"
 #include "../runtime/texture/texture.h"
 #include "../runtime/viewport/viewport.h"
 #include "../utils/color.h"
@@ -59,10 +60,7 @@ typedef struct {
 } AOBakeInitDescriptor;
 
 typedef struct {
-  MeshList *meshes;
-  MeshRefList *pipeline;
-  Camera *camera;
-  Viewport *viewport;
+  SceneDebug *debug_scene;
   color *color;
   size_t max_ray;
 } AOBakeDrawDebug;

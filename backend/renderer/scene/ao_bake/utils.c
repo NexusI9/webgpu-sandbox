@@ -44,9 +44,8 @@ float ao_bake_vertex(const AOBakeVertexDescriptor *desc) {
       }
 
       if (desc->debug.line && ray < desc->debug.max_ray)
-        line_add_point(world_position, ray_direction, ray_color,
-                       &desc->debug.line->topology.base.attribute,
-                       &desc->debug.line->topology.base.index);
+        scene_debug_ray_add_point(desc->debug.line, world_position,
+                                  ray_direction, ray_color);
     }
   }
 
@@ -83,12 +82,10 @@ bool ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
 #endif
 
       vec2 compare_uv, source_uv;
-        triangle_point_to_uv(desc->source_triangle, *desc->ray_origin,
-                             source_uv);
-        glm_vec2_scale(source_uv, desc->texture_size, source_uv);
-        texture_write_pixel(desc->source_texture, 0, source_uv,
-                            TextureWriteMethod_Replace);
-      
+      triangle_point_to_uv(desc->source_triangle, *desc->ray_origin, source_uv);
+      glm_vec2_scale(source_uv, desc->texture_size, source_uv);
+      texture_write_pixel(desc->source_texture, 0, source_uv,
+                          TextureWriteMethod_Replace);
 
       // do the same for compare mesh
       if (desc->compare_texture) {

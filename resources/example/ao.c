@@ -6,10 +6,7 @@ void example_ao(Scene *scene, bool debug) {
 
   if (debug) {
     debug_options = (AOBakeDrawDebug){
-        .meshes = scene_mesh_list(scene),
-        .pipeline = scene_pipeline(scene, ScenePipeline_Fixed),
-        .camera = scene->active_camera,
-        .viewport = &scene->viewport,
+        .debug_scene = &scene->debug,
         .color = &(color){0.0f, 1.0f, 0.0f, 1.0f},
         .max_ray = 20,
     };

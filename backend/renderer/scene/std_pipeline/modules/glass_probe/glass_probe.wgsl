@@ -186,7 +186,7 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
   let R : vec3<f32> = reflect(-V, perturbed_N);
   let mip : f32 = uGlass.roughness * f32(MAX_MIP_LEVEL);
 
-   var closest_probe_index : u32 = 4u;
+   var closest_probe_index : u32 = 0u;
    var best_dist : f32 = 1e9;
    for (var i = 0u; i < uProbeReflectionList.length; i += 1u) {
      let probe_pos = uProbeReflectionList.entries[i].position;
@@ -199,7 +199,7 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
 
   let reflection : vec4<f32> = textureSample(probe_reflection_maps,
                                             probe_reflection_sampler, R,
-                                            closest_probe_index);
+                                            0u);
 
   // let color : vec4<f32> = mix(uGlass.color * reflection, reflection, f.r);
 

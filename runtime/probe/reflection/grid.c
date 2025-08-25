@@ -151,7 +151,7 @@ void probe_reflection_grid_list_create_texture(
               (WGPUExtent3D){
                   .width = resolution,
                   .height = resolution,
-                  .depthOrArrayLayers = layer_count,
+                  .depthOrArrayLayers = 6 // layer_count,
               },
           .format = WGPUTextureFormat_BGRA8Unorm,
           .usage = WGPUTextureUsage_CopyDst |
@@ -171,7 +171,7 @@ void probe_reflection_grid_list_create_texture(
           .baseMipLevel = 0,
           .mipLevelCount = 1,
           .baseArrayLayer = 0,
-          .arrayLayerCount = layer_count,
+          .arrayLayerCount = 6, // layer_count,
           .aspect = WGPUTextureAspect_Undefined,
       });
 
@@ -318,6 +318,7 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list) {
                              });
 
             // draw pass
+
             render_pass_command_draw(&list->pass, &(RenderPassViewOverride){
                                                       .color = target_color,
                                                       .depth = target_depth,

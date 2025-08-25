@@ -46,13 +46,13 @@ void example_glass_probe(Scene *scene) {
 
   SceneEditorObject *grid_probe =
       scene_add_probe_reflection_grid(scene, &(ProbeReflectionGridDescriptor){
-                                                 .count = {2, 2, 2},
+                                                 .count = {1, 1, 1},
                                                  .size = {3.0f, 3.0f, 3.0f},
                                              });
 
   Mesh *mesh = scene_new_mesh(scene);
 
-  Primitive prim = primitive_plane();
+  Primitive prim = primitive_cube();
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &prim,

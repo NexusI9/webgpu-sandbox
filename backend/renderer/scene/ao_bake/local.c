@@ -15,17 +15,8 @@ void ao_bake_local(SceneRendererTextureAO *ao,
                    const AOBakeLocalDescriptor *desc) {
 
   Mesh *line = NULL;
-  if (desc->debug->meshes) {
-    line = mesh_list_new_mesh(desc->debug->meshes);
-    line_create(line, &(LineCreateDescriptor){
-                          .device = desc->device,
-                          .queue = desc->queue,
-                          .name = "line mesh",
-                      });
-
-    mesh_shader_build_mvp(line, MeshShader_Fixed, desc->debug->camera,
-                          desc->debug->viewport, true);
-  }
+  if (desc->debug->debug_scene)
+    scene_debug_ray_create(desc->debug->debug_scene, &line);
 
   Mesh *mesh = desc->mesh;
 
@@ -141,10 +132,8 @@ void ao_bake_local(SceneRendererTextureAO *ao,
     }
   }
 
-  if (line && desc->debug->pipeline) {
-    line_update_buffer(line);
-    mesh_ref_list_insert(desc->debug->pipeline, line);
-  }
+  if (line && desc->debug->debug_scene)
+    scene_debug_ray_build(desc->debug->debug_scene, line);
 
 #ifdef AO_BAKE_HIT_COUNT
   VERBOSE_DEBUG("%s hits: %d", mesh->name, g_debug_ao_bake_hit_count);

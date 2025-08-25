@@ -4,6 +4,7 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../backend/renderer/renderer.h"
+#include "./debug/debug.h"
 #include "../runtime/probe/probe.h"
 #include "./editor/selection/gizmo/gizmo.h"
 #include "./layer.h"
@@ -41,7 +42,7 @@ typedef struct SceneEditorObjectMesh SceneEditorObjectMesh;
 typedef struct {
   SceneEditorObjectMesh *mesh;
   SceneEditorObject *seo;
-  float* offset;
+  float *offset;
 } SEOTransformCallback;
 
 typedef void (*seo_transform_axis_callback)(SEOTransformCallback *);
@@ -277,6 +278,7 @@ struct Scene {
   // will be never seen or used in actually "Game" mode
   SceneEditor editor;
   SceneRenderer renderer;
+  SceneDebug debug;
 };
 
 typedef struct {

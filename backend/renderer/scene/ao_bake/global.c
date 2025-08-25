@@ -16,17 +16,8 @@ void ao_bake_global(SceneRendererTextureAO *ao,
                     const AOBakeGlobalDescriptor *desc) {
 
   Mesh *line = NULL;
-  if (desc->debug->meshes) {
-    line = mesh_list_new_mesh(desc->debug->meshes);
-    line_create(line, &(LineCreateDescriptor){
-                          .device = desc->device,
-                          .queue = desc->queue,
-                          .name = "line mesh",
-                      });
-
-    mesh_shader_build_mvp(line, MeshShader_Fixed, desc->debug->camera,
-                          desc->debug->viewport, true);
-  }
+  if (desc->debug->debug_scene)
+    scene_debug_ray_create(desc->debug->debug_scene, &line);
 
   Mesh *mesh = desc->mesh;
   VERBOSE_PROCESS("Baking Global AO for mesh: %s", mesh->name);
@@ -102,17 +93,14 @@ void ao_bake_global(SceneRendererTextureAO *ao,
         if (line && ray < desc->debug->max_ray) {
           vec3 ray_target;
           glm_vec3_add(ray_scaled_normal, rays[ray], ray_target);
-          line_add_point(rays[ray], ray_target, color,
-                         &line->topology.base.attribute,
-                         &line->topology.base.index);
+          scene_debug_ray_add_point(line, rays[ray], ray_target, color);
         }
       }
     }
   }
 
-  if (line && desc->debug->pipeline) {
-    line_update_buffer(line);
-    mesh_ref_list_insert(desc->debug->pipeline, line);
+  if (line && desc->debug->debug_scene) {
+    scene_debug_ray_build(desc->debug->debug_scene, line);
   }
 
 #ifdef AO_BAKE_HIT_COUNT

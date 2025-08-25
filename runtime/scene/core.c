@@ -3,6 +3,7 @@
 #include "./draw_config.h"
 #include "./editor/editor.h"
 #include "./layer.h"
+#include "debug/core.h"
 #include "event/event.html.h"
 
 #include "../utils/system.h"
@@ -87,6 +88,14 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
      */
     // EDITORONLY
     scene_editor_init(scene);
+
+    scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
+                                        .camera = scene->active_camera,
+                                        .device = scene_device(scene),
+                                        .queue = scene_queue(scene),
+                                        .viewport = &scene->viewport,
+                                        .pool = &scene->meshes,
+                                    });
   });
 }
 
