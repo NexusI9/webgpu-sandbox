@@ -101,7 +101,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
                              view->texture_view, WGPUTextureFormat_BGRA8Unorm);
 
   // bind sampler
-  shader_update_sampler(mesh_shader(new_view, MeshShader_Fixed), 1, 1,
+  /*shader_update_sampler(mesh_shader(new_view, MeshShader_Fixed), 1, 1,
                         &(WGPUSamplerDescriptor){
                             .addressModeU = WGPUAddressMode_ClampToEdge,
                             .addressModeV = WGPUAddressMode_ClampToEdge,
@@ -109,7 +109,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
                             .minFilter = WGPUFilterMode_Linear,
                             .magFilter = WGPUFilterMode_Linear,
                             .compare = WGPUCompareFunction_Undefined,
-                        });
+                        });*/
 }
 
 void debug_view_compute_position(DebugView *debug_view, vec3 result) {

@@ -41,17 +41,18 @@ struct Camera {
 
   // Final Matrix (Projection * View)
   var output : VertexOut;
-  let model_pos = uMesh.model * vec4<f32>(input.aPos, 1.0);
-  let clip_pos = vec4<f32>(model_pos.xy, model_pos.z, 1.0);
+  let model_pos = uMesh.model * vec4<f32>(input.aPos, 1.0f);
 
-  output.Position = uViewport.projection * uCamera.view * clip_pos;
+  output.Position = vec4<f32>(model_pos.xz, 0.0f, 1.0f);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
   return output;
 }
 
 // fragment shader
-@fragment fn fs_main(@location(1) vUv : vec2<f32>) -> @location(0) vec4<f32> {
+@fragment fn fs_main(@location(1) vUv : vec2<f32>,
+                     @location(0) vCol : vec3<f32>) -> @location(0) vec4<f32> {
 
-  return textureSample(texture, texture_sampler, vUv);
+  // return textureSample(texture, texture_sampler, vUv);
+  return vec4<f32>(vCol, 1.0f);
 }

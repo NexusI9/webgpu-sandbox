@@ -55,6 +55,11 @@ typedef struct {
 } ProbeReflectionGridListPreprocessorData;
 
 typedef struct {
+  SceneDebug *scene_debug;
+  const uint8_t max_views;
+} ProbeReflectionGridListDebug;
+
+typedef struct {
   uint32_t length;
   ProbeReflectionUniform entries[PROBE_REFLECTION_GRID_LIST_CAPACITY *
                                  PROBE_REFLECTION_LIST_MAX_COUNT];
@@ -82,7 +87,8 @@ DynamicListStatus probe_reflection_grid_list_remove(ProbeReflectionGridList *,
 
 DynamicListStatus probe_reflection_grid_list_destroy(ProbeReflectionGridList *);
 
-void probe_reflection_grid_list_draw(ProbeReflectionGridList *);
+void probe_reflection_grid_list_draw(ProbeReflectionGridList *,
+                                     ProbeReflectionGridListDebug *);
 
 void probe_reflection_grid_list_draw_preprocessor(const RenderPass *, Mesh *,
                                                   void *);

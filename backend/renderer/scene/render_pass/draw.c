@@ -72,12 +72,6 @@ void render_pass_command_draw(RenderPass *pass,
     wgpuRenderPassEncoderRelease(pass_encoder);
   }
 
-  if (overrides && overrides->color)
-    wgpuTextureViewRelease(pass->color.attachment.view);
-
-  if (overrides && overrides->depth)
-    wgpuTextureViewRelease(pass->depth.attachment.view);
-
   // put back the original views
   pass->color.attachment.view = src_color_view;
   pass->depth.attachment.view = src_depth_view;

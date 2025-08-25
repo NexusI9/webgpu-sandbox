@@ -198,7 +198,7 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
    }
 
   let reflection : vec4<f32> = textureSample(probe_reflection_maps,
-                                            probe_reflection_sampler, R,
+                                            probe_reflection_sampler, vNorm,
                                             0u);
 
   // let color : vec4<f32> = mix(uGlass.color * reflection, reflection, f.r);

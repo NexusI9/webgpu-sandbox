@@ -97,5 +97,9 @@ void example_glass_probe(Scene *scene) {
       scene->probes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
 
-  probe_reflection_grid_list_draw(&scene->probes_reflection);
+  probe_reflection_grid_list_draw(&scene->probes_reflection,
+                                  &(ProbeReflectionGridListDebug){
+                                      .scene_debug = &scene->debug,
+                                      .max_views = 8,
+                                  });
 }

@@ -116,6 +116,9 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
   if (desc->encoder == NULL)
     render_pass_command_end(desc->pass);
 
+  wgpuTextureViewRelease(temp_layer_texture_view_depth);
+  wgpuTextureViewRelease(temp_layer_texture_view_color);
+
   /*debug_view_add(&debug_view_light,
                  &(ViewDescriptor){
                      .texture_view = layer_texture_view_color,
@@ -191,11 +194,10 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
   ==========================================
  */
 
-  //WGPUCommandEncoder shadow_encoder =
-  //    wgpuDeviceCreateCommandEncoder(desc->device, NULL);
+  // WGPUCommandEncoder shadow_encoder =
+  //     wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
-  //WGPUCommandBuffer command_buffer;
-  
+  // WGPUCommandBuffer command_buffer;
 
   for (size_t p = 0; p < point_length; p++)
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){

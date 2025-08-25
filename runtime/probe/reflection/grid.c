@@ -263,7 +263,8 @@ void probe_reflection_grid_list_draw_preprocessor(const RenderPass *pass,
                         projection->view);
 }
 
-void probe_reflection_grid_list_draw(ProbeReflectionGridList *list) {
+void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
+                                     ProbeReflectionGridListDebug *debug) {
 
   // then update probe list texture cube array based on each probes views
   size_t layer = 0;
@@ -318,12 +319,19 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list) {
                              });
 
             // draw pass
-
+            /*
             render_pass_command_draw(&list->pass, &(RenderPassViewOverride){
                                                       .color = target_color,
                                                       .depth = target_depth,
-                                                  });
+            });
+            */
 
+            if (debug && layer < debug->max_views)
+              scene_debug_view_create(debug->scene_debug, target_color);
+            else
+              wgpuTextureViewRelease(target_color);
+
+            wgpuTextureViewRelease(target_depth);
             layer++;
           }
         }
