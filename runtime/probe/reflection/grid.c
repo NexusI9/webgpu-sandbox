@@ -108,17 +108,17 @@ DynamicListStatus probe_reflection_grid_list_create(
                            .swapchain = NULL,
                            .color =
                                &(RenderPassColorAttachment){
-                                   .clear_value = {1.0f, 0.0f, 0.0f, 1.0f},
+                                   .clear_value = {0.3f, 0.3f, 0.5f, 1.0f},
                                    .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
                                    .load_op = WGPULoadOp_Clear,
-                                   .store_op = WGPUStoreOp_Store,
+                                   .store_op = WGPUStoreOp_Discard,
                                    .texture = color_texture,
                                    .view = color_view,
                                },
                            .depth =
                                &(RenderPassDepthAttachment){
                                    .clear_value = 1.0f,
-                                   .load_op = WGPULoadOp_Load,
+                                   .load_op = WGPULoadOp_Load, // <== CAUSES FREEZE !!!
                                    .store_op = WGPUStoreOp_Discard,
                                    .read_only = false,
                                    .texture = depth_texture,
