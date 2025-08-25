@@ -7,11 +7,14 @@
 #define RENDER_PASS_MAX_DRAW_LIST 6
 #define RENDER_PASS_COUNT 2
 #define RENDER_PASS_VIEW_CREATE -1
+#define RENDER_PASS_VIEW_OVERRIDE_NONE 0
 
 typedef struct RenderPass RenderPass;
 typedef struct RenderPassList RenderPassList;
+typedef struct RenderPassViewOverride RenderPassViewOverride;
 
-typedef void (*render_pass_draw_callback)(RenderPass *);
+typedef void (*render_pass_draw_callback)(RenderPass *,
+                                          const RenderPassViewOverride *);
 typedef void (*render_pass_mesh_preprocessor_callback)(const RenderPass *,
                                                        Mesh *, void *);
 typedef void (*render_pass_list_draw_callback)(RenderPassList *);
@@ -61,7 +64,7 @@ struct RenderPass {
   WGPUSwapChain swapchain;
   RenderPassDrawList draw_list;
   render_pass_draw_callback draw_callback;
-  WGPURenderPassEncoder encoder;
+  WGPUCommandEncoder command_encoder;
 };
 
 struct RenderPassList {
@@ -138,9 +141,9 @@ typedef struct {
   const WGPUQueue queue;
 } RenderPassDrawDescriptor;
 
-typedef struct {
+struct RenderPassViewOverride {
   WGPUTextureView color, depth;
-} RenderPassViewOverride;
+};
 
 void render_pass_set_draw_list(RenderPass *, const RenderPassDrawList *);
 
@@ -154,6 +157,6 @@ void render_pass_list_insert_pass(RenderPassList *,
 RenderPassStatus render_pass_update_preprocessor_data(RenderPass *, uint8_t,
                                                       void *);
 
-RenderPassStatus render_pass_update_all_preprocessor_data(RenderPass *,
-                                                      void *);
+RenderPassStatus render_pass_update_all_preprocessor_data(RenderPass *, void *);
+
 #endif

@@ -90,23 +90,31 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
       .baseMipLevel = 0,
   };
 
-
   WGPUTextureView temp_layer_texture_view_depth = wgpuTextureCreateView(
       desc->pass->depth.texture, &temp_layer_texture_descriptor_depth);
 
   WGPUTextureView temp_layer_texture_view_color = wgpuTextureCreateView(
       desc->pass->color.texture, &temp_layer_texture_descriptor_color);
 
-  render_pass_update_preprocessor_data(desc->pass, 0,
-                                       &(LightShadowData){
-                                           .pipeline = desc->pipeline,
-                                           .light_view = desc->light_view,
-                                       });
+  // sometimes pass encoder may be set if we batch update all lights
+  if (desc->encoder == NULL)
+    render_pass_command_begin(desc->pass);
+  {
 
-  render_pass_draw(desc->pass, &(RenderPassViewOverride){
-                                   .color = temp_layer_texture_view_color,
-                                   .depth = temp_layer_texture_view_depth,
-                               });
+    render_pass_update_preprocessor_data(desc->pass, 0,
+                                         &(LightShadowData){
+                                             .pipeline = desc->pipeline,
+                                             .light_view = desc->light_view,
+                                         });
+
+    render_pass_command_draw(desc->pass,
+                             &(RenderPassViewOverride){
+                                 .color = temp_layer_texture_view_color,
+                                 .depth = temp_layer_texture_view_depth,
+                             });
+  }
+  if (desc->encoder == NULL)
+    render_pass_command_end(desc->pass);
 
   /*debug_view_add(&debug_view_light,
                  &(ViewDescriptor){
@@ -183,10 +191,11 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
   ==========================================
  */
 
-  WGPUCommandEncoder shadow_encoder =
-      wgpuDeviceCreateCommandEncoder(desc->device, NULL);
+  //WGPUCommandEncoder shadow_encoder =
+  //    wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
-  WGPUCommandBuffer command_buffer;
+  //WGPUCommandBuffer command_buffer;
+  
 
   for (size_t p = 0; p < point_length; p++)
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
@@ -232,18 +241,18 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
         .layer = spot_length + p,
         .device = desc->device,
         .queue = desc->queue,
-        .encoder = shadow_encoder,
+        .encoder = NULL, // shadow_encoder,
         .pass = &desc->lights->spot.shadow.pass,
         .light = desc->lights->sun.shadow.entries[p],
     });
 
   // finish encoding command
-  command_buffer = wgpuCommandEncoderFinish(shadow_encoder, NULL);
-  wgpuQueueSubmit(desc->queue, 1, &command_buffer);
+  // command_buffer = wgpuCommandEncoderFinish(shadow_encoder, NULL);
+  // wgpuQueueSubmit(desc->queue, 1, &command_buffer);
 
   // clean up
-  wgpuCommandBufferRelease(command_buffer);
-  wgpuCommandEncoderRelease(shadow_encoder);
+  // wgpuCommandBufferRelease(command_buffer);
+  // wgpuCommandEncoderRelease(shadow_encoder);
 }
 
 /**

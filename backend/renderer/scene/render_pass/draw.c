@@ -1,5 +1,6 @@
 #include "draw.h"
 #include "../runtime/mesh/shader/shader.h"
+#include "webgpu/webgpu.h"
 
 /**
 
@@ -20,43 +21,66 @@
    Traverse a specific pass draw list and draw meshes onto the given render pass
    encoder
  */
-void render_pass_draw_pass(RenderPass *pass,
-                           WGPUCommandEncoder render_encoder) {
+void render_pass_command_draw(RenderPass *pass,
+                              const RenderPassViewOverride *overrides) {
 
-  pass->encoder = wgpuCommandEncoderBeginRenderPass(
-      render_encoder, &(WGPURenderPassDescriptor){
-                          .label = pass->label,
-                          .colorAttachmentCount = 1,
-                          .colorAttachments = &pass->color.attachment,
-                          .depthStencilAttachment = &pass->depth.attachment,
-                      });
+  WGPUTextureView src_color_view = pass->color.attachment.view;
+  WGPUTextureView src_depth_view = pass->depth.attachment.view;
 
-  // Go through and draw each mode render pass
-  // Draw meshes
-  // loop through mesh lists and draw meshes
-  for (size_t j = 0; j < pass->draw_list.length; j++) {
+  if (overrides && overrides->color)
+    pass->color.attachment.view = overrides->color;
 
-    // retrieve layout
-    RenderPassDrawLayout *list = &pass->draw_list.entries[j];
-    mesh_get_topology_callback target_topology = list->topology_callback;
-    MeshShader target_shader = list->shader;
-    render_pass_mesh_preprocessor_callback mesh_preprocessor =
-        list->mesh_preprocessor_callback;
-    MeshRefList *meshes = list->meshes;
+  if (overrides && overrides->depth)
+    pass->depth.attachment.view = overrides->depth;
 
-    // draw mesh with layout callbacks
-    for (size_t k = 0; k < meshes->length; k++) {
-      Mesh *mesh = meshes->entries[k];
+  {
+    WGPURenderPassEncoder pass_encoder = wgpuCommandEncoderBeginRenderPass(
+        pass->command_encoder,
+        &(WGPURenderPassDescriptor){
+            .label = pass->label,
+            .colorAttachmentCount = 1,
+            .colorAttachments = &pass->color.attachment,
+            .depthStencilAttachment = &pass->depth.attachment,
+        });
 
-      if (mesh_preprocessor)
-        mesh_preprocessor(pass, mesh, list->mesh_preprocessor_data);
+    // Go through and draw each mode render pass
+    // Draw meshes
+    // loop through mesh lists and draw meshes
+    for (size_t j = 0; j < pass->draw_list.length; j++) {
 
-      mesh_draw(target_topology(mesh), mesh_shader(mesh, target_shader),
-                pass->encoder);
+      // retrieve layout
+      RenderPassDrawLayout *list = &pass->draw_list.entries[j];
+      mesh_get_topology_callback target_topology = list->topology_callback;
+      MeshShader target_shader = list->shader;
+      render_pass_mesh_preprocessor_callback mesh_preprocessor =
+          list->mesh_preprocessor_callback;
+      MeshRefList *meshes = list->meshes;
+
+      // draw mesh with layout callbacks
+      for (size_t k = 0; k < meshes->length; k++) {
+        Mesh *mesh = meshes->entries[k];
+
+        if (mesh_preprocessor)
+          mesh_preprocessor(pass, mesh, list->mesh_preprocessor_data);
+
+        mesh_draw(target_topology(mesh), mesh_shader(mesh, target_shader),
+                  pass_encoder);
+      }
     }
+
+    wgpuRenderPassEncoderEnd(pass_encoder);
+    wgpuRenderPassEncoderRelease(pass_encoder);
   }
 
-  wgpuRenderPassEncoderEnd(pass->encoder);
+  if (overrides && overrides->color)
+    wgpuTextureViewRelease(pass->color.attachment.view);
+
+  if (overrides && overrides->depth)
+    wgpuTextureViewRelease(pass->depth.attachment.view);
+
+  // put back the original views
+  pass->color.attachment.view = src_color_view;
+  pass->depth.attachment.view = src_depth_view;
 }
 
 /**
@@ -108,8 +132,10 @@ void render_pass_list_draw_onscreen_multisample(RenderPassList *list) {
       wgpuSwapChainGetCurrentTextureView(list->swapchain);
 
   // Go through and draw each mode render pass
-  for (size_t i = 0; i < list->length; i++)
-    render_pass_draw_pass(&list->passes[i], render_encoder);
+  for (size_t i = 0; i < list->length; i++) {
+    list->passes[i].command_encoder = render_encoder;
+    render_pass_command_draw(&list->passes[i], RENDER_PASS_VIEW_OVERRIDE_NONE);
+  }
 
   // resolve pass (MSAA only)
   WGPURenderPassEncoder resolve_pass = wgpuCommandEncoderBeginRenderPass(
@@ -128,24 +154,11 @@ void render_pass_list_draw_onscreen_multisample(RenderPassList *list) {
                       });
   wgpuRenderPassEncoderEnd(resolve_pass);
 
-  // create command buffer
-  WGPUCommandBuffer render_buffer =
-      wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
-
-  // submit commands
-  wgpuQueueSubmit(list->queue, 1, &render_buffer);
-
-  // release all passes encoders
-  for (size_t i = 0; i < list->length; i++)
-    wgpuRenderPassEncoderRelease(list->passes[i].encoder);
-
-  // release command encoder
-  wgpuCommandEncoderRelease(render_encoder);
-
-  wgpuCommandBufferRelease(render_buffer);
+  render_pass_list_command_end(list, render_encoder);
 
   // finally release swapchain texture
   wgpuTextureViewRelease(swapchain_view);
+  wgpuRenderPassEncoderRelease(resolve_pass);
 }
 
 void render_pass_list_draw_onscreen_monosample(RenderPassList *list) {
@@ -168,25 +181,12 @@ void render_pass_list_draw_onscreen_monosample(RenderPassList *list) {
 
   // Go through and draw each mode render pass
   for (size_t i = 0; i < list->length; i++) {
+    list->passes[i].command_encoder = render_encoder;
     list->passes[i].color.attachment.view = swapchain_view;
-    render_pass_draw_pass(&list->passes[i], render_encoder);
+    render_pass_command_draw(&list->passes[i], RENDER_PASS_VIEW_OVERRIDE_NONE);
   }
 
-  // create command buffer
-  WGPUCommandBuffer render_buffer =
-      wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
-
-  // submit commands
-  wgpuQueueSubmit(list->queue, 1, &render_buffer);
-
-  // release all passes encoders
-  for (size_t i = 0; i < list->length; i++)
-    wgpuRenderPassEncoderRelease(list->passes[i].encoder);
-
-  // release command encoder
-  wgpuCommandEncoderRelease(render_encoder);
-
-  wgpuCommandBufferRelease(render_buffer);
+  render_pass_list_command_end(list, render_encoder);
 
   // finally release swapchain texture
   wgpuTextureViewRelease(swapchain_view);
@@ -198,23 +198,9 @@ void render_pass_list_draw_offscreen(RenderPassList *list) {
       wgpuDeviceCreateCommandEncoder(list->device, NULL);
 
   for (size_t i = 0; i < list->length; i++)
-    render_pass_draw_pass(&list->passes[i], render_encoder);
+    render_pass_command_draw(&list->passes[i], RENDER_PASS_VIEW_OVERRIDE_NONE);
 
-  // create command buffer
-  WGPUCommandBuffer render_buffer =
-      wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
-
-  // submit commands
-  wgpuQueueSubmit(list->queue, 1, &render_buffer);
-
-  // release all passes encoders
-  for (size_t i = 0; i < list->length; i++)
-    wgpuRenderPassEncoderRelease(list->passes[i].encoder);
-
-  // release command encoder
-  wgpuCommandEncoderRelease(render_encoder);
-
-  wgpuCommandBufferRelease(render_buffer);
+  render_pass_list_command_end(list, render_encoder);
 }
 
 /**
@@ -228,118 +214,82 @@ void render_pass_list_draw_offscreen(RenderPassList *list) {
    MSAA Texture (Nx) ===> resolved ===> Swapchain texture (1x)
  */
 
-void render_pass_draw_onscreen_multisample(RenderPass *pass) {
+void render_pass_draw_onscreen_multisample(
+    RenderPass *pass, const RenderPassViewOverride *overrides) {
 
-  WGPUCommandEncoder render_encoder =
-      wgpuDeviceCreateCommandEncoder(pass->device, NULL);
+  pass->command_encoder = wgpuDeviceCreateCommandEncoder(pass->device, NULL);
 
   // get swapchain view to be resolved
   WGPUTextureView swapchain_view =
       wgpuSwapChainGetCurrentTextureView(pass->swapchain);
 
-  render_pass_draw_pass(pass, render_encoder);
-
-  // create command buffer
-  WGPUCommandBuffer render_buffer =
-      wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
-
-  // submit commands
-  wgpuQueueSubmit(pass->queue, 1, &render_buffer);
-
-  // release all passes encoders
-  wgpuRenderPassEncoderRelease(pass->encoder);
-
-  // release command encoder
-  wgpuCommandEncoderRelease(render_encoder);
-
-  wgpuCommandBufferRelease(render_buffer);
-
-  // finally release swapchain texture
-  wgpuTextureViewRelease(swapchain_view);
+  render_pass_command_draw(pass, overrides);
+  render_pass_command_end(pass);
 }
 
-void render_pass_draw_onscreen_monosample(RenderPass *pass) {
+void render_pass_draw_onscreen_monosample(
+    RenderPass *pass, const RenderPassViewOverride *overrides) {
 
-  WGPUCommandEncoder render_encoder =
-      wgpuDeviceCreateCommandEncoder(pass->device, NULL);
+  pass->command_encoder = wgpuDeviceCreateCommandEncoder(pass->device, NULL);
 
   // get swapchain view to be resolved
   WGPUTextureView swapchain_view =
       wgpuSwapChainGetCurrentTextureView(pass->swapchain);
 
   pass->color.attachment.view = swapchain_view;
-  render_pass_draw_pass(pass, render_encoder);
 
-  // create command buffer
-  WGPUCommandBuffer render_buffer =
-      wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
-
-  // submit commands
-  wgpuQueueSubmit(pass->queue, 1, &render_buffer);
-
-  // release all passes encoders
-  wgpuRenderPassEncoderRelease(pass->encoder);
-
-  // release command encoder
-  wgpuCommandEncoderRelease(render_encoder);
-
-  wgpuCommandBufferRelease(render_buffer);
-
-  // finally release swapchain texture
-  wgpuTextureViewRelease(swapchain_view);
+  render_pass_command_draw(pass, overrides);
+  render_pass_command_end(pass);
 }
 
-void render_pass_draw_offscreen(RenderPass *pass) {
+void render_pass_draw_offscreen(RenderPass *pass,
+                                const RenderPassViewOverride *overrides) {
 
-  WGPUCommandEncoder render_encoder =
-      wgpuDeviceCreateCommandEncoder(pass->device, NULL);
+  pass->command_encoder = wgpuDeviceCreateCommandEncoder(pass->device, NULL);
 
-  render_pass_draw_pass(pass, render_encoder);
-
-  // create command buffer
-  WGPUCommandBuffer render_buffer =
-      wgpuCommandEncoderFinish(render_encoder, NULL); // after 'end render pass'
-
-  // submit commands
-  wgpuQueueSubmit(pass->queue, 1, &render_buffer);
-
-  // release all passes encoders
-  wgpuRenderPassEncoderRelease(pass->encoder);
-
-  // release command encoder
-  wgpuCommandEncoderRelease(render_encoder);
-
-  wgpuCommandBufferRelease(render_buffer);
+  render_pass_command_draw(pass, overrides);
+  render_pass_command_end(pass);
 }
 
 void render_pass_draw(RenderPass *pass,
                       const RenderPassViewOverride *overrides) {
 
-  WGPUTextureView src_color_view = pass->color.attachment.view;
-  WGPUTextureView src_depth_view = pass->depth.attachment.view;
+  pass->draw_callback(pass, overrides);
+}
 
-  if (overrides) {
-    if (overrides->color)
-      pass->color.attachment.view = overrides->color;
+void render_pass_command_begin(RenderPass *pass) {
 
-    if (overrides->depth)
-      pass->depth.attachment.view = overrides->depth;
-  }
+  pass->command_encoder = wgpuDeviceCreateCommandEncoder(pass->device, NULL);
+}
 
-  pass->draw_callback(pass);
+void render_pass_command_end(RenderPass *pass) {
 
-  if (overrides) {
+  // create command buffer
+  WGPUCommandBuffer render_buffer = wgpuCommandEncoderFinish(
+      pass->command_encoder, NULL); // after 'end render pass'
 
-    if (overrides->color) {
-      wgpuTextureViewRelease(pass->color.attachment.view);
-    }
+  // submit commands
+  wgpuQueueSubmit(pass->queue, 1, &render_buffer);
 
-    if (overrides->depth) {
-      wgpuTextureViewRelease(pass->depth.attachment.view);
-    }
-  }
+  // release command encoder
+  wgpuCommandEncoderRelease(pass->command_encoder);
+  pass->command_encoder = NULL;
 
-  // put back the original views
-  pass->color.attachment.view = src_color_view;
-  pass->depth.attachment.view = src_depth_view;
+  wgpuCommandBufferRelease(render_buffer);
+}
+
+void render_pass_list_command_end(RenderPassList *list,
+                                  WGPUCommandEncoder command_encoder) {
+
+  // create command buffer
+  WGPUCommandBuffer render_buffer = wgpuCommandEncoderFinish(
+      command_encoder, NULL); // after 'end render pass'
+
+  // submit commands
+  wgpuQueueSubmit(list->queue, 1, &render_buffer);
+
+  // release command encoder
+  wgpuCommandEncoderRelease(command_encoder);
+
+  wgpuCommandBufferRelease(render_buffer);
 }

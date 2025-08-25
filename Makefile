@@ -32,9 +32,7 @@ MACROS := \
        -DVERBOSE \
        -DENGINE_EDITOR \
        -DDEBUG_TIME \
-       -DAO_BAKE_HIT_COUNT \
-       -DVERBOSE_CREATING_PHASE \
-       -DVERBOSE_BINDING_PHASE
+       -DAO_BAKE_HIT_COUNT 
 
 # Preprocess cwgsl shader to wgsl Shader files
 SHADER_DIR := ./backend/renderer/scene/std_pipeline/modules/
