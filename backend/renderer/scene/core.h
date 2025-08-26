@@ -2,6 +2,7 @@
 #define _SCENE_RENDERER_CORE_H_
 
 #include "../../clock.h"
+#include "../backend/ssbo.h"
 #include "../runtime/pipeline/pipeline.h"
 #include "../runtime/texture/texture.h"
 #include "./ao_bake/ao_bake.h"
@@ -47,8 +48,9 @@ typedef struct {
 
 typedef struct SceneRenderer {
 
-  cclock clock; // update clock delta on draw
-  WGPUColor background;
+  cclock clock;         // update clock delta on draw
+  WGPUColor background; // TODO: put this under context
+  SSBOManager ssbo;
 
   struct {
     const char *name;
@@ -70,7 +72,7 @@ typedef struct SceneRenderer {
   struct {
     SceneRendererTextureAO ambient_occlusion;
     SceneRendererTextureSkybox skybox;
-  } texture;
+  } texture; // TODO Make a TextureManager
 
   struct {
     SceneRendererDrawMode mode;
@@ -102,7 +104,7 @@ WGPUQueue scene_renderer_queue(SceneRenderer *);
 WGPUSwapChain scene_renderer_swapchain(SceneRenderer *);
 int scene_renderer_width(const SceneRenderer *);
 int scene_renderer_height(const SceneRenderer *);
-//PipelineMultisampleCount scene_renderer_multisample(const SceneRenderer *);
+// PipelineMultisampleCount scene_renderer_multisample(const SceneRenderer *);
 
 const char *scene_renderer_target(SceneRenderer *);
 

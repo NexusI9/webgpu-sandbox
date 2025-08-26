@@ -139,6 +139,7 @@ void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
    Build Mesh, Camera and Projection matrix to a given mesh shader.
    It replaces the initial bound values by the ones provided by the scene
    (active camera matrix, viewport data).
+   
 
    Additionally it also add the relative callbacks and trigger ensuring the mesh
    update their mvp on camera move and mesh translation.
@@ -203,40 +204,3 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
   }
 }
 
-/**
-
- */
-void mesh_shader_update_mvp(Mesh *mesh, const MeshShader shader_type,
-                            Camera *camera, Viewport *viewport) {
-
-  CameraUniform *uCamera = camera_uniform(camera);
-  ViewportUniform *uViewport = viewport_uniform(viewport);
-  MeshUniform *uMesh = mesh_uniform(mesh);
-
-  // retrieve the model-view-projection binding index from the pipeline
-  Shader *shader = mesh_shader(mesh, shader_type);
-  const PipelineBindingMVP *mvp = &shader->pipeline->bindings.mvp;
-
-  ShaderBindGroupUniformEntry entries[3] = {
-      // viewport
-      {
-          .binding = mvp->projection,
-          .data = uViewport,
-      },
-      // camera
-      {
-          .binding = mvp->view,
-          .data = uCamera,
-      },
-      // model
-      {
-          .binding = mvp->model,
-          .data = uMesh,
-      },
-  };
-
-  for (size_t i = 0; i < 3; i++) {
-    ShaderBindGroupUniformEntry *entry = &entries[i];
-    shader_update_uniform(shader, mvp->group, entry->binding, entry->data);
-  }
-}

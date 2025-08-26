@@ -1,7 +1,6 @@
 #include "core.h"
 #include "../backend/buffer.h"
 #include "../utils/file.h"
-#include "build.h"
 #include "string.h"
 
 #include "../utils/system.h"
@@ -141,4 +140,44 @@ void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue queue) {
                            current_entry->size);
     }
   }
+}
+
+/**
+   Build pipeline based on previously set bind groups.
+
+ */
+void shader_build(Shader *shader) {
+
+  // clear pipeline if existing
+#ifdef VERBOSE_BINDING_PHASE
+  VERBOSE_PRINT("\t\t└ Binding Shader: %s", shader->name);
+#endif
+
+  // build bind group entries for each individual group index
+
+  // Create Shader GPUBindGroup for each bindgroups
+  for (int i = 0; i < shader->bind_groups.length; i++) {
+
+    ShaderBindGroup *group = &shader->bind_groups.entries[i];
+
+    // check if bind group is not already built
+    // necessary cause in the wireframe mode we basically already built the
+    // wireframe shader a first time for the boundbox but then a second time for
+    // the wireframe topology, so we need to make sure it's not already built.
+    // If it build a second time it actually accumulate new entries to the bind
+    // group (goes from 3 to 6 entries) which lead to an error since the pieline
+    // expect 3 entries.
+    if (group->bind_group != NULL)
+      continue;
+
+#ifdef VERBOSE_BINDING_PHASE
+    VERBOSE_PRINT("\t\t\t└ Bingroup: %d", i);
+#endif
+    shader_bind_group_build(group, i, shader->device,
+                            &shader->pipeline->handle);
+  }
+
+  // TODO: properly release pipeline when deleting mesh
+  // shader_pipeline_release_layout(shader);
+  // free(bindgroup_layouts);
 }

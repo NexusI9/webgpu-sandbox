@@ -111,9 +111,9 @@ typedef struct {
   uint64_t size;
   uint64_t offset;
   void *data;
+  WGPUBuffer buffer;
   // private
   ShaderUniformUpdate update;
-  WGPUBuffer buffer;
 } ShaderBindGroupUniformEntry;
 
 typedef struct {
@@ -241,17 +241,6 @@ typedef struct {
   WGPUShaderStageFlags visibility;
 } ShaderCreateSamplerDescriptor;
 
-// pbr uniforms
-typedef struct {
-  vec4 diffuse_factor;
-  float metallic_factor;
-  float roughness_factor;
-  float occlusion_factor;
-  float normal_scale;
-  vec3 emissive_factor;
-  float _padding;
-} ShaderPBRUniform;
-
 // core
 typedef struct {
   char *name;
@@ -270,6 +259,7 @@ typedef struct {
 // methods
 void shader_create(Shader *, const ShaderCreateDescriptor *);
 void shader_destroy(Shader *);
+void shader_build(Shader *);
 
 // on update
 void shader_draw(Shader *, WGPURenderPassEncoder);

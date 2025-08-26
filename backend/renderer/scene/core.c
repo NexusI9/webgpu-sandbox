@@ -12,8 +12,6 @@
 #include <stdint.h>
 #include <string.h>
 
-static void scene_renderer_init(SceneRenderer *);
-
 static void scene_renderer_resize(SceneRenderer *);
 
 static void scene_renderer_render(void *);
@@ -51,14 +49,12 @@ void scene_renderer_create(SceneRenderer *renderer,
                  });
   });
 
-  /*
+  // init resize event
+  emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, renderer,
+                                 false, scene_renderer_resize_callback);
 
-     Global Input & Event polling
-
-   */
-
-  // TODO: Since renderer isn't high level anymore, put the below calls in a
-  // more global object ("Context" ?)
+  ssbo_init(&renderer->ssbo, scene_renderer_device(renderer),
+            scene_renderer_queue(renderer));
 
   // set fallback textures
 
@@ -74,17 +70,21 @@ void scene_renderer_create(SceneRenderer *renderer,
   standard_pipelines_init(scene_renderer_device(renderer),
                           rd->multisampling_count);
 
+  /*
+
+   Global Input & Event polling
+
+   TODO: Since renderer isn't high level anymore, put the below calls in a
+   more global object ("Context" ?)
+
+ */
+
   // init global HTML event manager with context
   //  name (implicit)
   html_event_init(rd->name);
 
   // poll global input
   input_listen();
-
-  /*********************************/
-
-  // init resize event
-  scene_renderer_init(renderer);
 }
 
 /**
@@ -125,8 +125,10 @@ void scene_renderer_resize(SceneRenderer *renderer) {
 
   if (renderer->wgpu.swapchain) {
     wgpuSwapChainRelease(renderer->wgpu.swapchain);
-    renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
+    renderer->wgpu.swapchain = NULL;
   }
+
+  renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
 }
 
 double scene_renderer_dpi(double value) {
@@ -136,11 +138,6 @@ double scene_renderer_dpi(double value) {
     return emscripten_get_device_pixel_ratio();
 
   return value;
-}
-
-void scene_renderer_init(SceneRenderer *renderer) {
-  emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, renderer,
-                                 false, scene_renderer_resize_callback);
 }
 
 void scene_renderer_close(const SceneRenderer *renderer) {
@@ -246,7 +243,6 @@ const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *renderer) {
 cclock *scene_renderer_clock(SceneRenderer *renderer) {
   return &renderer->clock;
 }
-
 
 WGPUSwapChain scene_renderer_create_swapchain(const SceneRenderer *renderer) {
   WGPUSurface surface = wgpuInstanceCreateSurface(

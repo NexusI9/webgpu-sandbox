@@ -41,6 +41,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
   const SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
   const WGPUQueue queue = scene_queue(scene);
   const WGPUDevice device = scene_device(scene);
+  
 
   switch (pipeline) {
 

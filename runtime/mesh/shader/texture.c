@@ -3,10 +3,6 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-void mesh_shader_texture_update_mvp(Mesh *mesh, Camera *camera,
-                                    Viewport *viewport) {
-  mesh_shader_update_mvp(mesh, MeshShader_Texture, camera, viewport);
-}
 
 /**
    Clear the texture shader bind groups of mesh
