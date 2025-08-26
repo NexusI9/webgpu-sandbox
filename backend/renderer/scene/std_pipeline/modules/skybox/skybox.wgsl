@@ -18,25 +18,28 @@ struct Viewport {
   projection : mat4x4<f32>, width : u32, height : u32,
 }
 
-    // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+// camera viewport
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 // skybox texture
 @group(1) @binding(0) var skybox_texture : texture_cube<f32>;
 @group(1) @binding(1) var skybox_sampler : sampler;
 @group(1) @binding(2) var<uniform> skybox_blur : f32;
 
-
 @vertex fn vs_main(@location(0) position : vec3<f32>) -> VertexOutput {
 
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // follow camera but infinitelly far (remove translation/ rotation only)
-  var rot_only_view = uCamera.view;
+  var rot_only_view = camera.view;
   rot_only_view[3] = vec4<f32>(0.0f, 0.0f, 0.0f, 1.0f);
 
   let new_position =
-      uViewport.projection * rot_only_view * vec4<f32>(position, 1.0f);
+      viewport.projection * rot_only_view * vec4<f32>(position, 1.0f);
 
   var output : VertexOutput;
   output.vDir = position;

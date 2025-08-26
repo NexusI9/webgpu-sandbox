@@ -92,7 +92,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   for (size_t i = 0; i < 3; i++) {
     ShaderBindGroupUniformEntry *entry = &entries[i];
-    shader_update_uniform(mesh_shader(new_view, MeshShader_Fixed), 0,
+    shader_update_uniform_data(mesh_shader(new_view, MeshShader_Fixed), 0,
                           entry->binding, entry->data);
   }
 

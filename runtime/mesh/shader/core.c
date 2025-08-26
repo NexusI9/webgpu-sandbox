@@ -83,8 +83,8 @@ void mesh_shader_create_wireframe(Mesh *mesh) {
                     .name = "Mesh wireframe shader",
                 });
 
-  shader_update_uniform(wireframe_shader, 0, 3,
-                        &(color){randf(), randf(), randf(), 1.0f});
+  shader_update_uniform_data(wireframe_shader, 0, 3,
+                             &(color){randf(), randf(), randf(), 1.0f});
 }
 
 /**
@@ -139,7 +139,8 @@ void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
    Build Mesh, Camera and Projection matrix to a given mesh shader.
    It replaces the initial bound values by the ones provided by the scene
    (active camera matrix, viewport data).
-   
+   For Views uniform we actually link to the scene SSBO to allow
+   queue and batch update.
 
    Additionally it also add the relative callbacks and trigger ensuring the mesh
    update their mvp on camera move and mesh translation.
@@ -154,27 +155,31 @@ void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
    This function is primarily used when a mesh is firstly added to the scene.
  */
 void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
-                           Camera *camera, Viewport *viewport, bool callbacks) {
+                           SSBOManager *ssbo_manager, Camera *camera,
+                           Viewport *viewport, bool callbacks) {
 
-  CameraUniform *uCamera = camera_uniform(camera);
-  ViewportUniform *uViewport = viewport_uniform(viewport);
-  MeshUniform *uMesh = mesh_uniform(mesh);
+  // upload mesh uniform to SSBO
+  ssbo_upload_entry(ssbo_manager, SSBOType_Mesh,
+                    ssbo_length(ssbo_manager, SSBOType_Mesh),
+                    mesh_uniform(mesh));
 
   // retrieve the model-view-projection binding index from the pipeline
   Shader *shader = mesh_shader(mesh, shader_type);
   const PipelineBindingMVP *mvp = &shader->pipeline->bindings.mvp;
 
+
   ShaderBindGroupUniformEntry entries[3] = {
       // viewport
       {
           .binding = mvp->projection,
-          .data = uViewport,
-          .update = {0},
+          .buffer = ssbo_buffer(ssbo_manager, SSBOType_Projection),
+          .offset = 0, // active vewport index
       },
       // camera
       {
           .binding = mvp->view,
-          .data = uCamera,
+          .buffer = ssbo_buffer(ssbo_manager, SSBOType_View),
+          .offset = 0, // active camera index
           .update =
               {
                   .callback = camera_uniform_update_matrix_callback,
@@ -185,7 +190,8 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
       // model
       {
           .binding = mvp->model,
-          .data = uMesh,
+          .buffer = ssbo_buffer(ssbo_manager, SSBOType_Mesh),
+          .offset = ssbo_length(ssbo_manager, SSBOType_Mesh) - 1,
           .update =
               {
                   .callback = mesh_uniform_model_update_callback,
@@ -197,10 +203,11 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
 
   for (size_t i = 0; i < 3; i++) {
     ShaderBindGroupUniformEntry *entry = &entries[i];
-    shader_update_uniform(shader, mvp->group, entry->binding, entry->data);
-    if (callbacks)
-      shader_update_uniform_callback(shader, mvp->group, entry->binding,
-                                     &entry->update);
+    shader_update_uniform_buffer(shader, mvp->group, entry->binding,
+                                 entry->buffer, entry->offset,
+                                 ShaderBufferLifetime_Keep);
+    // if (callbacks)
+    // shader_update_uniform_callback(shader, mvp->group, entry->binding,
+    //                                &entry->update);
   }
 }
-

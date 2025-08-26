@@ -30,18 +30,23 @@ struct Viewport {
 }
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
 
   var output : VertexOut;
-  output.Position = cam * uMesh.model * vec4<f32>(input.aPos, 1.0);
+  output.Position = cam * mesh.model * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
 
   return output;

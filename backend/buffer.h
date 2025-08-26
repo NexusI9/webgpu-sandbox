@@ -18,6 +18,7 @@ typedef struct {
   size_t size;
   WGPUBufferUsage usage;
   WGPUBool mappedAtCreation;
+  const char *label;
 } CreateBufferDescriptor;
 
 typedef struct {

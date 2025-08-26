@@ -10,6 +10,7 @@
 // commons
 #define SHADER_MAX_BIND_GROUP 4
 #define SHADER_MAX_UNIFORMS 12
+#define SHADER_MAX_OFFSET_CAPACITY 8
 #define SHADER_UNIFORMS_DEFAULT_CAPACITY 8
 #define SHADER_UNIFORM_STRUCT __attribute__((aligned(16)))
 
@@ -112,7 +113,7 @@ typedef struct {
   uint64_t offset;
   void *data;
   WGPUBuffer buffer;
-  // private
+  WGPUBufferUsage usage;
   ShaderUniformUpdate update;
 } ShaderBindGroupUniformEntry;
 
@@ -194,6 +195,11 @@ typedef struct {
 typedef struct {
   WGPUBindGroup bind_group;        // bind group
   WGPUShaderStageFlags visibility; // visibility (frag | vert)
+
+  struct {
+    uint8_t count;
+    uint32_t entries[SHADER_MAX_OFFSET_CAPACITY];
+  } offset;
 
   ShaderBindGroupUniforms uniforms;                  // uniforms
   ShaderBindGroupUniformsDynamics uniforms_dynamics; // dynamic pointers

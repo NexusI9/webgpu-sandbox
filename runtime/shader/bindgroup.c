@@ -343,26 +343,41 @@ void shader_bind_group_create_from_layout(
           &layout->bind_groups[i].entries[j];
       // Use discriminator to define entry type
 
-      // generate uniform
+      // generate uniform/ storage
       if (entry->buffer.type != WGPUBufferBindingType_Undefined) {
 #ifdef VERBOSE_BINDING_PHASE
         shader_layout_print(i, entry->binding, "uniform");
 #endif
-        shader_add_uniform(shader,
-                           &(ShaderCreateUniformDescriptor){
-                               .entry_count = 1,
-                               .visibility = entry->visibility,
-                               .group_index = i,
-                               .entries =
-                                   (ShaderBindGroupUniformEntry[]){
-                                       {
-                                           .binding = entry->binding,
-                                           .size = entry->buffer.minBindingSize,
-                                           .offset = 0,
-                                           .data = (void *)0, // empty data
-                                       },
-                                   },
-                           });
+
+        if (entry->buffer.hasDynamicOffset) {
+          ShaderBindGroup *bind_group = shader_get_bind_group(shader, i);
+          if (bind_group &&
+              bind_group->offset.count < SHADER_MAX_OFFSET_CAPACITY)
+            bind_group->offset.count++;
+        }
+
+        shader_add_uniform(
+            shader,
+            &(ShaderCreateUniformDescriptor){
+                .entry_count = 1,
+                .visibility = entry->visibility,
+                .group_index = i,
+                .entries =
+                    (ShaderBindGroupUniformEntry[]){
+                        {
+                            .usage =
+                                (entry->buffer.type ==
+                                         WGPUBufferBindingType_ReadOnlyStorage
+                                     ? WGPUBufferUsage_Storage
+                                     : WGPUBufferUsage_Uniform) |
+                                WGPUBufferUsage_CopyDst,
+                            .binding = entry->binding,
+                            .size = entry->buffer.minBindingSize,
+                            .offset = 0,
+                            .data = (void *)0, // empty data
+                        },
+                    },
+            });
       }
       // generate float texture
       if (entry->texture.sampleType == WGPUTextureSampleType_Float) {

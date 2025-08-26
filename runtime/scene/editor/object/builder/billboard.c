@@ -72,5 +72,5 @@ void seo_create_billboard(Mesh *mesh,
                         });
 
   const uint32_t size = 0;
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Fixed), 1, 2, (void *)&size);
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 2, (void *)&size);
 }

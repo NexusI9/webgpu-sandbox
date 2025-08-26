@@ -6,6 +6,11 @@
 #include "core.h"
 #include "webgpu/webgpu.h"
 
+typedef enum {
+  ShaderBufferLifetime_Keep,
+  ShaderBufferLifetime_Release,
+} ShaderBufferLifetime;
+
 typedef struct {
   TextureResolution width;
   TextureResolution height;
@@ -16,18 +21,25 @@ typedef struct {
   WGPUTextureFormat format;
 } ShaderUpdateTexture;
 
-void shader_update_texture(Shader *, bind_group_index, bind_index,
+void shader_update_texture(Shader *, const bind_group_index, const bind_index,
                            const ShaderUpdateTexture *);
 
-void shader_update_texture_view(Shader *, bind_group_index, bind_index,
-                                WGPUTextureView, WGPUTextureFormat);
+void shader_update_texture_view(Shader *, const bind_group_index,
+                                const bind_index, WGPUTextureView,
+                                WGPUTextureFormat);
 
-void shader_update_uniform(Shader *, bind_group_index, bind_index, void *);
+void shader_update_uniform_data(Shader *, const bind_group_index,
+                                const bind_index, void *);
 
-void shader_update_uniform_callback(Shader *, bind_group_index, bind_index,
+void shader_update_uniform_buffer(Shader *, const bind_group_index,
+                                  const bind_index, WGPUBuffer, const size_t,
+                                  const ShaderBufferLifetime);
+
+void shader_update_uniform_callback(Shader *, const bind_group_index,
+                                    const bind_index,
                                     const ShaderUniformUpdate *);
 
-void shader_update_sampler(Shader *, bind_group_index, bind_index,
+void shader_update_sampler(Shader *, const bind_group_index, const bind_index,
                            const WGPUSamplerDescriptor *);
 
 #endif

@@ -8,6 +8,7 @@ void scene_debug_init(SceneDebug *debug, const SceneDebugDescriptor *desc) {
   debug->pool = desc->pool;
   debug->queue = desc->queue;
   debug->device = desc->device;
+  debug->ssbo = desc->ssbo;
 
   for (SceneDebugObject i = 0; i < SCENE_DEBUG_MESH_LIST_COUNT; i++)
     mesh_ref_list_create(&debug->object_list[i], MESH_REF_LIST_CAPACITY);

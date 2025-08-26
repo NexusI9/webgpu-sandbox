@@ -44,14 +44,15 @@ void camera_uniform_update_matrix_callback(void *callback_camera, void *data) {
    callback shall trigger
  */
 bool camera_uniform_compare_views_callback(void *callback_camera,
-                                  const void *entry_data) {
+                                           const void *entry_data) {
 
   // cast void* to camera*
   Camera *cast_cam = (Camera *)callback_camera;
   CameraUniform *cast_uni = (CameraUniform *)entry_data;
 
-  //printf("compare: %d \n", memcmp(cast_cam->view, cast_uni->view, sizeof(mat4)));
-  
+  // printf("compare: %d \n", memcmp(cast_cam->view, cast_uni->view,
+  // sizeof(mat4)));
+
   // compare two views
   return memcmp(cast_cam->view, cast_uni->view, sizeof(mat4)) != 0;
 }

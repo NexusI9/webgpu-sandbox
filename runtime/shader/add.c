@@ -40,16 +40,16 @@ void shader_add_uniform(Shader *shader,
       ShaderBindGroupUniformEntry *current_entry = &bd->entries[i];
 
       // assign buffer to entry
-      buffer_create(
-          &bd->entries[i].buffer,
-          &(CreateBufferDescriptor){
-              .queue = shader->queue,
-              .device = shader->device,
-              .data = (void *)current_entry->data,
-              .size = current_entry->size,
-              .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
-              .mappedAtCreation = false,
-          });
+      buffer_create(&bd->entries[i].buffer,
+                    &(CreateBufferDescriptor){
+                        .label = "Initial Shader Buffer",
+                        .queue = shader->queue,
+                        .device = shader->device,
+                        .data = (void *)current_entry->data,
+                        .size = current_entry->size,
+                        .usage = current_entry->usage,
+                        .mappedAtCreation = false,
+                    });
 
       /*
         Need to dynamically allocate the uniform if it has a callback function,
@@ -197,13 +197,13 @@ void shader_add_sampler(Shader *shader,
       // creating sampler by mapping desc configuration
       current_entry->sampler = wgpuDeviceCreateSampler(
           shader->device, &(WGPUSamplerDescriptor){
-                               .compare = current_entry->compare,
-                               .addressModeU = current_entry->addressModeU,
-                               .addressModeV = current_entry->addressModeV,
-                               .addressModeW = current_entry->addressModeW,
-                               .minFilter = current_entry->minFilter,
-                               .magFilter = current_entry->magFilter,
-                           });
+                              .compare = current_entry->compare,
+                              .addressModeU = current_entry->addressModeU,
+                              .addressModeV = current_entry->addressModeV,
+                              .addressModeW = current_entry->addressModeW,
+                              .minFilter = current_entry->minFilter,
+                              .magFilter = current_entry->magFilter,
+                          });
 
       current_bind_group->samplers
           .entries[current_bind_group->samplers.length++] = *current_entry;

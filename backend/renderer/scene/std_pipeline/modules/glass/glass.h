@@ -36,9 +36,10 @@ static const ShaderPipelineStateObject layout_glass = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(ViewportUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(ViewportUniform) * SSBO_CAPACITY,
                                 },
                         },
                         {
@@ -47,9 +48,10 @@ static const ShaderPipelineStateObject layout_glass = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(CameraUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(CameraUniform) * SSBO_CAPACITY,
                                 },
                         },
                         {
@@ -58,9 +60,10 @@ static const ShaderPipelineStateObject layout_glass = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(MeshUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(MeshUniform) * SSBO_CAPACITY,
                                 },
                         },
                         {

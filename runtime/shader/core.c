@@ -90,14 +90,15 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
 
   for (int i = 0; i < dynamic_list->length; i++) {
 
-    ShaderBindGroup *current_bind_group = &dynamic_list->entries[i];
+    ShaderBindGroup *bind_group = &dynamic_list->entries[i];
 
     // update bindgroup uniforms data
-    shader_uniform_update(current_bind_group, shader->queue);
+    shader_uniform_update(bind_group, shader->queue);
 
     // link bind group
-    wgpuRenderPassEncoderSetBindGroup(render_pass, i,
-                                      current_bind_group->bind_group, 0, NULL);
+    wgpuRenderPassEncoderSetBindGroup(render_pass, i, bind_group->bind_group,
+                                      bind_group->offset.count,
+                                      bind_group->offset.entries);
   }
 }
 
@@ -136,8 +137,8 @@ void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue queue) {
       uniform_update->callback(uniform_update->data, current_entry->data);
 
       // rewrite uniform to GPU
-      wgpuQueueWriteBuffer(queue, current_entry->buffer, 0, current_entry->data,
-                           current_entry->size);
+      wgpuQueueWriteBuffer(queue, current_entry->buffer, current_entry->offset,
+                           current_entry->data, current_entry->size);
     }
   }
 }

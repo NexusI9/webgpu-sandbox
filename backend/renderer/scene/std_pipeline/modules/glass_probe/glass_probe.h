@@ -2,18 +2,18 @@
 #define _PIPELINE_LAYOUT_GLASS_PROBE_H_
 
 #include "../../core.h"
+#include "../glass/glass.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
-#include "../runtime/viewport/viewport.h"
 #include "../runtime/probe/reflection/grid.h"
-#include "../glass/glass.h"
+#include "../runtime/viewport/viewport.h"
 
 #include <webgpu/webgpu.h>
 
 static const ShaderPipelineStateObject layout_glass_probe = {
     .label = "Pipeline Bind Groups - Glass Probe",
-    .shader_path =
-        "./backend/renderer/scene/std_pipeline/modules/glass_probe/glass_probe.wgsl",
+    .shader_path = "./backend/renderer/scene/std_pipeline/modules/glass_probe/"
+                   "glass_probe.wgsl",
     .bind_groups_count = 2,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
@@ -29,9 +29,10 @@ static const ShaderPipelineStateObject layout_glass_probe = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(ViewportUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(ViewportUniform) * SSBO_CAPACITY,
                                 },
                         },
                         {
@@ -40,9 +41,10 @@ static const ShaderPipelineStateObject layout_glass_probe = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(CameraUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(CameraUniform) * SSBO_CAPACITY,
                                 },
                         },
                         {
@@ -51,9 +53,10 @@ static const ShaderPipelineStateObject layout_glass_probe = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(MeshUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(MeshUniform) * SSBO_CAPACITY,
                                 },
                         },
                         {

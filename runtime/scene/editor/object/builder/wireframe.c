@@ -42,7 +42,7 @@ void seo_create_wireframe(Mesh *mesh,
                                .pipeline = std_pipeline(PipelineType_Line),
                            });
 
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Fixed), 0, 3, desc->color);
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 0, 3, desc->color);
 
   // set override topology and shader as wireframe
   mesh_topology_set_override(mesh, mesh_topology_wireframe(mesh));

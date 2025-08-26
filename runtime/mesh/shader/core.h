@@ -1,6 +1,7 @@
 #ifndef _MESH_SHADER_C_
 #define _MESH_SHADER_C_
 
+#include "../backend/ssbo.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/core.h"
 #include "../runtime/shader/shader.h"
@@ -19,6 +20,7 @@ Shader *mesh_shader(Mesh *, const MeshShader);
 
 void mesh_shader_set_active(Mesh *, const MeshShader);
 
-void mesh_shader_build_mvp(Mesh *, const MeshShader, Camera *, Viewport *, bool);
+void mesh_shader_build_mvp(Mesh *, const MeshShader, SSBOManager *, Camera *,
+                           Viewport *, bool);
 
 #endif

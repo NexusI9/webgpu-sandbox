@@ -29,7 +29,7 @@ void example_glass_box(Scene *scene) {
 
   scene_add_mesh(scene, mesh, NULL);
 
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 3,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 0, 3,
                         &(GlassUniform){
                             .color = {1.0f, 0.5f, 1.0f, 1.0f},
                             .roughness = 0.23f,
@@ -76,7 +76,7 @@ void example_glass_probe(Scene *scene) {
 
   scene_add_mesh(scene, mesh, NULL);
 
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 3,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 0, 3,
                         &(GlassUniform){
                             .color = {1.0f, 1.0f, 1.0f, 1.0f},
                             .frost_scale = 1.0f,
@@ -88,7 +88,7 @@ void example_glass_probe(Scene *scene) {
   ProbeReflectionListUniform list_uniform;
   probe_reflection_grid_list_uniform(&list_uniform, &scene->probes_reflection);
 
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), 0, 4,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 0, 4,
                         &list_uniform);
 
   // swap fallback view with probe render pass view

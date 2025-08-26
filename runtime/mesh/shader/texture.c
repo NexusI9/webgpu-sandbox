@@ -118,7 +118,7 @@ void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
 
   for (size_t i = 0; i < 4; i++) {
     ShaderBindGroupUniformEntry *entry = &entries[i];
-    shader_update_uniform(mesh_shader(mesh, MeshShader_Texture), group_index,
+    shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), group_index,
                           entry->binding, entry->data);
 
     if (entry->update.callback)

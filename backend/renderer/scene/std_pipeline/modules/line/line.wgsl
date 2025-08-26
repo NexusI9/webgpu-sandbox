@@ -32,9 +32,10 @@ struct Viewport {
 const thickness : f32 = 0.0015f;
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 @group(0) @binding(3) var<uniform> uColor : vec4<f32>;
 
 // vertex shader
@@ -48,16 +49,20 @@ const thickness : f32 = 0.0015f;
   let midpoint = (a + b) * 0.5f;
   var model_dir = dir_mul * normalize(a - b); // invert direction on B endpoint
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // offset
-  let world_pos = uMesh.model * vec4<f32>(a, 1.0f);
-  let view_pos = uCamera.view * world_pos;
+  let world_pos = mesh.model * vec4<f32>(a, 1.0f);
+  let view_pos = camera.view * world_pos;
 
   // model space -> world space
   let world_dir : vec3<f32> =
-                      normalize((uMesh.model * vec4<f32>(model_dir, 0.0f)).xyz);
+                      normalize((mesh.model * vec4<f32>(model_dir, 0.0f)).xyz);
   // world space -> view space
   let view_dir : vec3<f32> =
-                     normalize((uCamera.view * vec4<f32>(world_dir, 0.0f)).xyz);
+                     normalize((camera.view * vec4<f32>(world_dir, 0.0f)).xyz);
 
   let view_2_cam = normalize(-view_pos.xyz);
   var world_view_raw = cross(view_dir, view_2_cam);
@@ -79,9 +84,9 @@ const thickness : f32 = 0.0015f;
   let abs_view_z = abs(view_pos.z);
 
   let view_space_offset_x =
-      thickness * 0.5f * abs_view_z / uViewport.projection[0][0];
+      thickness * 0.5f * abs_view_z / viewport.projection[0][0];
   let view_space_offset_y =
-      thickness * 0.5f * abs_view_z / uViewport.projection[1][1];
+      thickness * 0.5f * abs_view_z / viewport.projection[1][1];
 
   let offset_view_space = vec3<f32>(perp_view_2D.x * view_space_offset_x,
                                     perp_view_2D.y * view_space_offset_y, 0.0f);
@@ -90,7 +95,7 @@ const thickness : f32 = 0.0015f;
       vec4<f32>(view_pos.xyz + offset_view_space * side, view_pos.w);
 
   var output : VertexOut;
-  output.Position = uViewport.projection * final_view_pos;
+  output.Position = viewport.projection * final_view_pos;
   output.vCol = vec3<f32>(input.aCol);
 
   return output;

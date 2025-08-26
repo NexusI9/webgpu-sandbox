@@ -258,8 +258,9 @@ void probe_reflection_grid_list_draw_preprocessor(const RenderPass *pass,
 
   Shader *shader = mesh_shader(mesh, MeshShader_Reflection);
 
-  shader_update_uniform(shader, 0, 0, projection->projection);
-  shader_update_uniform(shader, 0, 1, projection->view);
+  // SSBO UPDATE INSTEAD
+  shader_update_uniform_data(shader, 0, 0, projection->projection);
+  shader_update_uniform_data(shader, 0, 1, projection->view);
 }
 
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,

@@ -20,13 +20,16 @@ struct Mesh {
   model : mat4x4<f32>, position : vec4<f32>,
 }
 
+const SSBO_CAPACITY : u32 = 32u;
 @group(0) @binding(0) var<uniform> view_projection : mat4x4<f32>;
-@group(0) @binding(1) var<uniform> uModel : Mesh;
+@group(0) @binding(1) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+
   var out : VertexOut;
-  let model = uModel.model * vec4<f32>(input.aPos, 1.0f);
+  let model = mesh.model * vec4<f32>(input.aPos, 1.0f);
   out.vFrag = model;
   out.vPosition = view_projection * model;
 

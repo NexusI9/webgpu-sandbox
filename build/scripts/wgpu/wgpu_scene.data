@@ -28,9 +28,10 @@ struct Camera {
                                     _pad : vec3<u32>,
 };
 
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;
@@ -42,24 +43,28 @@ struct Camera {
   // Final Matrix (Projection * View)
   var output : VertexOut;
 
-  let look = normalize(uCamera.position.xyz - uMesh.position.xyz);
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+ 
+  let look = normalize(camera.position.xyz - mesh.position.xyz);
   let worldUp = vec3<f32>(0.0f, 1.0f, 0.0f);
 
-  let scale_x = length(vec3<f32>(uMesh.model[0].xyz));
-  let scale_y = length(vec3<f32>(uMesh.model[1].xyz));
-  let scale_z = length(vec3<f32>(uMesh.model[2].xyz));
+  let scale_x = length(vec3<f32>(mesh.model[0].xyz));
+  let scale_y = length(vec3<f32>(mesh.model[1].xyz));
+  let scale_z = length(vec3<f32>(mesh.model[2].xyz));
   var scale_factor = 1.0f;
 
   if (uScale == 0u) {
 
     let target_pixel = 10.0f;
-    let view_pos = uCamera.view * vec4<f32>(uMesh.position.xyz, 1.0f);
-    let proj_pos = uViewport.projection * view_pos;
+    let view_pos = camera.view * vec4<f32>(mesh.position.xyz, 1.0f);
+    let proj_pos = viewport.projection * view_pos;
 
     let ndc_position = proj_pos.xyz / proj_pos.w;
 
     let pixel_size_ndc =
-        2.0f / vec2<f32>(f32(uViewport.width), f32(uViewport.height));
+        2.0f / vec2<f32>(f32(viewport.width), f32(viewport.height));
 
     let ndc_size = pixel_size_ndc * target_pixel;
 
@@ -74,10 +79,10 @@ struct Camera {
   let local_position = input.aPos.x * right * scale_x * scale_factor +
                        input.aPos.z * up * scale_z * scale_factor;
 
-  let world_position = uMesh.position.xyz + local_position;
+  let world_position = mesh.position.xyz + local_position;
 
   output.Position =
-      uViewport.projection * uCamera.view * vec4<f32>(world_position, 1.0f);
+      viewport.projection * camera.view * vec4<f32>(world_position, 1.0f);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
   return output;
@@ -120,18 +125,23 @@ struct Viewport {
 }
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
 
   var output : VertexOut;
-  output.Position = cam * uMesh.model * vec4<f32>(input.aPos, 1.0);
+  output.Position = cam * mesh.model * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
 
   return output;
@@ -185,9 +195,10 @@ struct Glass {
 }
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 @group(0) @binding(3) var<uniform> uGlass : Glass;
 
 @group(1) @binding(0) var env_map : texture_cube<f32>;
@@ -208,14 +219,18 @@ struct Glass {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
 
   var output : VertexOut;
-  output.Position = cam * uMesh.model * vec4<f32>(input.aPos, 1.0);
+  output.Position = cam * mesh.model * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
   output.vNorm = input.aNorm;
-  output.vFrag = (uMesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
+  output.vFrag = (mesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
   output.vUv = input.aUv;
 
   return output;
@@ -297,13 +312,15 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
                      @location(2) vFrag : vec3<f32>,
                      @location(3) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
+  let camera = uCamera[0];
+
   let N : vec3<f32> = normalize(vNorm);
 
   // frost effect
   let n : f32 = perlin_noise(vUv, uGlass.frost_scale);
   let perturbed_N : vec3<f32> = normalize(N + n * uGlass.frost_strength);
 
-  let V : vec3<f32> = normalize(uCamera.position.xyz - vFrag);
+  let V : vec3<f32> = normalize(camera.position.xyz - vFrag);
 
   // Fresnel
   let NdotV : f32 = max(dot(perturbed_N, V), 0.0f);
@@ -379,9 +396,11 @@ struct ProbeReflectionList {
            entries : array<ProbeReflection, PROBE_RELFECTION_LIST_MAX_COUNT>,
 }
 
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+
 @group(0) @binding(3) var<uniform> uGlass : Glass;
 @group(0) @binding(4) var<uniform> uProbeReflectionList : ProbeReflectionList;
 
@@ -403,14 +422,18 @@ struct ProbeReflectionList {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
 
   var output : VertexOut;
-  output.Position = cam * uMesh.model * vec4<f32>(input.aPos, 1.0);
+  output.Position = cam * mesh.model * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
   output.vNorm = input.aNorm;
-  output.vFrag = (uMesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
+  output.vFrag = (mesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
   output.vUv = input.aUv;
 
   return output;
@@ -492,13 +515,15 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
                      @location(2) vFrag : vec3<f32>,
                      @location(3) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
+  let camera = uCamera[0];
+
   let N : vec3<f32> = normalize(vNorm);
 
   // frost effect
   let n : f32 = perlin_noise(vUv, uGlass.frost_scale);
   let perturbed_N : vec3<f32> = normalize(N + n * uGlass.frost_strength);
 
-  let V : vec3<f32> = normalize(uCamera.position.xyz - vFrag);
+  let V : vec3<f32> = normalize(camera.position.xyz - vFrag);
 
   // Fresnel
   let NdotV : f32 = max(dot(perturbed_N, V), 0.0f);
@@ -588,24 +613,29 @@ struct GridData {
 }
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @group(1) @binding(0) var<uniform> uGrid : GridData;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
-  // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
-  var output : VertexOut;
-  var offset : vec2<f32> = vec2<f32>(uCamera.position.x, uCamera.position.z);
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
 
-  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 0u) {
+  // Final Matrix (Projection * View)
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
+  var output : VertexOut;
+  var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
+
+  if ((camera.mode & CAMERA_MODE_ORBIT) != 0u) {
     // fix position to target (lookat) if camera is Orbit mode
-    offset.x = uCamera.lookat.x;
-    offset.y = uCamera.lookat.z;
+    offset.x = camera.lookat.x;
+    offset.y = camera.lookat.z;
   }
 
   // Put the grid below the camera
@@ -616,7 +646,7 @@ struct GridData {
                                   vec4<f32>(offset.x, 0.0, offset.y, 1.0));
 
   output.Position =
-      cam * translate_matrix * uMesh.model * vec4<f32>(input.aPos, 1.0);
+      cam * translate_matrix * mesh.model * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
 
@@ -626,12 +656,16 @@ struct GridData {
 // fragment shader
 fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
 
-  var offset : vec2<f32> = vec2<f32>(uCamera.position.x, uCamera.position.z);
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
 
-  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 0u) {
+  var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
+
+  if ((camera.mode & CAMERA_MODE_ORBIT) != 0u) {
     // switch offset to target (lookat) if camera is Orbit mode
-    offset.x = uCamera.lookat.x;
-    offset.y = uCamera.lookat.z;
+    offset.x = camera.lookat.x;
+    offset.y = camera.lookat.z;
   }
 
   // Setup grid
@@ -667,7 +701,7 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var axisMask : vec4<f32> = vec4(min(1.0f - xAxis, 1.0f - yAxis));
 
   // Setup gradient
-  var fadeFactor : f32 = max(100.0f / abs(uCamera.position.y), 50.0f);
+  var fadeFactor : f32 = max(100.0f / abs(camera.position.y), 50.0f);
   var ray : f32 = min(distance(uv, center) * uGrid.scale / fadeFactor, 1.0f);
   var grad : vec3<f32> = mix(white, black, ray);
   var avg : f32 = (grad.r + grad.g + grad.b) / 3.0f;
@@ -714,9 +748,10 @@ struct Viewport {
 const thickness : f32 = 0.0015f;
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 @group(0) @binding(3) var<uniform> uColor : vec4<f32>;
 
 // vertex shader
@@ -730,16 +765,20 @@ const thickness : f32 = 0.0015f;
   let midpoint = (a + b) * 0.5f;
   var model_dir = dir_mul * normalize(a - b); // invert direction on B endpoint
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // offset
-  let world_pos = uMesh.model * vec4<f32>(a, 1.0f);
-  let view_pos = uCamera.view * world_pos;
+  let world_pos = mesh.model * vec4<f32>(a, 1.0f);
+  let view_pos = camera.view * world_pos;
 
   // model space -> world space
   let world_dir : vec3<f32> =
-                      normalize((uMesh.model * vec4<f32>(model_dir, 0.0f)).xyz);
+                      normalize((mesh.model * vec4<f32>(model_dir, 0.0f)).xyz);
   // world space -> view space
   let view_dir : vec3<f32> =
-                     normalize((uCamera.view * vec4<f32>(world_dir, 0.0f)).xyz);
+                     normalize((camera.view * vec4<f32>(world_dir, 0.0f)).xyz);
 
   let view_2_cam = normalize(-view_pos.xyz);
   var world_view_raw = cross(view_dir, view_2_cam);
@@ -761,9 +800,9 @@ const thickness : f32 = 0.0015f;
   let abs_view_z = abs(view_pos.z);
 
   let view_space_offset_x =
-      thickness * 0.5f * abs_view_z / uViewport.projection[0][0];
+      thickness * 0.5f * abs_view_z / viewport.projection[0][0];
   let view_space_offset_y =
-      thickness * 0.5f * abs_view_z / uViewport.projection[1][1];
+      thickness * 0.5f * abs_view_z / viewport.projection[1][1];
 
   let offset_view_space = vec3<f32>(perp_view_2D.x * view_space_offset_x,
                                     perp_view_2D.y * view_space_offset_y, 0.0f);
@@ -772,7 +811,7 @@ const thickness : f32 = 0.0015f;
       vec4<f32>(view_pos.xyz + offset_view_space * side, view_pos.w);
 
   var output : VertexOut;
-  output.Position = uViewport.projection * final_view_pos;
+  output.Position = viewport.projection * final_view_pos;
   output.vCol = vec3<f32>(input.aCol);
 
   return output;
@@ -895,9 +934,10 @@ struct SunLightStorage {
 // TODO: combine textures in a texture_2d_array + only use 1 sampler ?
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @group(1) @binding(0) var diffuse_texture : texture_2d<f32>;
 @group(1) @binding(1) var diffuse_sampler : sampler;
@@ -914,14 +954,12 @@ struct SunLightStorage {
 @group(1) @binding(8) var occlusion_texture : texture_2d<f32>;
 @group(1) @binding(9) var occlusion_sampler : sampler;
 
-
 // light
 // TODO: using uniform for now, but check the storage type
 @group(2) @binding(0) var<uniform> ambient_light_list : AmbientLightStorage;
 @group(2) @binding(1) var<uniform> spot_light_list : SpotLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
 @group(2) @binding(3) var<uniform> sun_light_list : SunLightStorage;
-
 
 
 @group(2) @binding(4) var point_shadow_maps : texture_depth_cube_array;
@@ -945,11 +983,15 @@ struct SunLightStorage {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
   var output : VertexOut;
 
-  output.vPosition = cam * uMesh.model * vec4<f32>(input.aPos, 1.0f);
+  output.vPosition = cam * mesh.model * vec4<f32>(input.aPos, 1.0f);
   output.vNormal = normalize(input.aNorm);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
@@ -957,7 +999,7 @@ struct SunLightStorage {
   // transform vertex position (object local position) to world space
   // used for lightning to know where the vertex is in the world space
   // if only used model, vertex position is "constriained" its own local space
-  output.vFrag = (uMesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
+  output.vFrag = (mesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
 
   return output;
 }
@@ -1039,6 +1081,8 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
                        light_position : vec3<f32>, light_color : vec3<f32>,
                        light_intensity : f32) -> vec3<f32> {
 
+  let mesh = uMesh[0];
+
   // compute light base on Cook-Torrance BRDF Model
 
   // 1. Normalize key vectors
@@ -1047,7 +1091,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
               normalize(camera_position - fragment_position); // view vector
 
   // transform normal to worldspace
-  let world_normal = (uMesh.model * vec4<f32>(vertex_normal, 0.0f)).xyz;
+  let world_normal = (mesh.model * vec4<f32>(vertex_normal, 0.0f)).xyz;
 
   // make dot product to check if normal point towards light or not
   var L : vec3<f32> =
@@ -1375,6 +1419,8 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
                      @location(2) vUv : vec2<f32>,
                      @location(3) vFrag : vec3<f32>) -> @location(0) vec4<f32> {
 
+  let camera = uCamera[0];
+
   var albedo = textureSample(diffuse_texture, diffuse_sampler, vUv);
   var metallic = textureSample(metallic_texture, metallic_sampler, vUv);
   var normal = textureSample(normal_texture, normal_sampler, vUv);
@@ -1393,7 +1439,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   // calculate point lights
   for (var i = 0u; i < point_light_list.length; i++) {
     let light = point_light_list.entries[i];
-    Lo += compute_point_light(material, vFrag, vNormal, uCamera.position.xyz,
+    Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
                               light.position, light.color, light.intensity);
   }
 
@@ -1403,14 +1449,14 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   for (var i = 0u; i < spot_light_list.length; i = i + 1u) {
     let light = spot_light_list.entries[i];
     let light_direction = -1.0f * light.lookat - light.position;
-    Lo += compute_point_light(material, vFrag, vNormal, uCamera.position.xyz,
+    Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
                               light_direction, light.color, light.intensity);
   }
 
   // calculate sun lights
   for (var i = 0u; i < sun_light_list.length; i = i + 1u) {
     let light = sun_light_list.entries[i];
-    Lo += compute_point_light(material, vFrag, vNormal, uCamera.position.xyz,
+    Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
                               light.position, light.color, light.intensity);
   }
 
@@ -1423,9 +1469,9 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   }
 
   // shadow map computation
-  let point_shadow = point_shadow_factor(vFrag, uCamera.position.xyz);
-  let directional_shadow = spot_shadow_factor(vFrag, uCamera.position.xyz);
-  let sun_shadow = sun_shadow_factor(vFrag, uCamera.position.xyz);
+  let point_shadow = point_shadow_factor(vFrag, camera.position.xyz);
+  let directional_shadow = spot_shadow_factor(vFrag, camera.position.xyz);
+  let sun_shadow = sun_shadow_factor(vFrag, camera.position.xyz);
 
   let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                             point_shadow + directional_shadow + sun_shadow);
@@ -1545,9 +1591,10 @@ struct SunLightStorage {
 // TODO: combine textures in a texture_2d_array + only use 1 sampler ?
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @group(1) @binding(0) var diffuse_texture : texture_2d<f32>;
 @group(1) @binding(1) var diffuse_sampler : sampler;
@@ -1593,11 +1640,15 @@ struct SunLightStorage {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
   var output : VertexOut;
 
-  output.vPosition = cam * uMesh.model * vec4<f32>(input.aPos, 1.0f);
+  output.vPosition = cam * mesh.model * vec4<f32>(input.aPos, 1.0f);
   output.vNormal = normalize(input.aNorm);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
@@ -1605,7 +1656,7 @@ struct SunLightStorage {
   // transform vertex position (object local position) to world space
   // used for lightning to know where the vertex is in the world space
   // if only used model, vertex position is "constriained" its own local space
-  output.vFrag = (uMesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
+  output.vFrag = (mesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
 
   return output;
 }
@@ -1687,6 +1738,8 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
                        light_position : vec3<f32>, light_color : vec3<f32>,
                        light_intensity : f32) -> vec3<f32> {
 
+  let mesh = uMesh[0];
+
   // compute light base on Cook-Torrance BRDF Model
 
   // 1. Normalize key vectors
@@ -1695,7 +1748,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
               normalize(camera_position - fragment_position); // view vector
 
   // transform normal to worldspace
-  let world_normal = (uMesh.model * vec4<f32>(vertex_normal, 0.0f)).xyz;
+  let world_normal = (mesh.model * vec4<f32>(vertex_normal, 0.0f)).xyz;
 
   // make dot product to check if normal point towards light or not
   var L : vec3<f32> =
@@ -2045,21 +2098,8 @@ struct Mesh {
   model : mat4x4<f32>, position : vec4<f32>,
 }
 
-struct Viewport {
-  projection : mat4x4<f32>, width : u32, height : u32,
-};
-
-struct Camera {
-  view : mat4x4<f32>,
-         position : vec4<f32>,
-                    lookat : vec4<f32>,
-                             mode : u32,
-                                    _pad : vec3<u32>,
-};
-
-@group(0) @binding(0) var<uniform> uMesh : Mesh;
-@group(0) @binding(1) var<uniform> uViewport : Viewport;
-@group(0) @binding(2) var<uniform> uCamera : Camera;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;
@@ -2067,9 +2107,11 @@ struct Camera {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+
   // Final Matrix (Projection * View)
   var output : VertexOut;
-  let model_pos = uMesh.model * vec4<f32>(input.aPos, 1.0f);
+  let model_pos = mesh.model * vec4<f32>(input.aPos, 1.0f);
 
   output.Position = vec4<f32>(model_pos.xz, 0.0f, 1.0f);
   output.vCol = input.aCol;
@@ -2106,13 +2148,16 @@ struct Mesh {
   model : mat4x4<f32>, position : vec4<f32>,
 }
 
+const SSBO_CAPACITY : u32 = 32u;
 @group(0) @binding(0) var<uniform> view_projection : mat4x4<f32>;
-@group(0) @binding(1) var<uniform> uModel : Mesh;
+@group(0) @binding(1) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+
   var out : VertexOut;
-  let model = uModel.model * vec4<f32>(input.aPos, 1.0f);
+  let model = mesh.model * vec4<f32>(input.aPos, 1.0f);
   out.vFrag = model;
   out.vPosition = view_projection * model;
 
@@ -2153,25 +2198,28 @@ struct Viewport {
   projection : mat4x4<f32>, width : u32, height : u32,
 }
 
-    // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+// camera viewport
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 // skybox texture
 @group(1) @binding(0) var skybox_texture : texture_cube<f32>;
 @group(1) @binding(1) var skybox_sampler : sampler;
 @group(1) @binding(2) var<uniform> skybox_blur : f32;
 
-
 @vertex fn vs_main(@location(0) position : vec3<f32>) -> VertexOutput {
 
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // follow camera but infinitelly far (remove translation/ rotation only)
-  var rot_only_view = uCamera.view;
+  var rot_only_view = camera.view;
   rot_only_view[3] = vec4<f32>(0.0f, 0.0f, 0.0f, 1.0f);
 
   let new_position =
-      uViewport.projection * rot_only_view * vec4<f32>(position, 1.0f);
+      viewport.projection * rot_only_view * vec4<f32>(position, 1.0f);
 
   var output : VertexOutput;
   output.vDir = position;
@@ -2266,18 +2314,23 @@ struct SunLight {
 };
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
   var output : VertexOut;
 
-  output.vPosition = cam * uMesh.model * vec4<f32>(input.aPos, 1.0f);
+  output.vPosition = cam * mesh.model * vec4<f32>(input.aPos, 1.0f);
   output.vNormal = normalize(input.aNorm);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
@@ -2285,7 +2338,7 @@ struct SunLight {
   // transform vertex position (object local position) to world space
   // used for lightning to know where the vertex is in the world space
   // if only used model, vertex position is "constriained" its own local space
-  output.vFrag = (uMesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
+  output.vFrag = (mesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
 
   return output;
 }
@@ -2295,12 +2348,14 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
                        light_color : vec3<f32>, light_intensity : f32)
     -> vec3<f32> {
 
+  let mesh = uMesh[0];
+
   // 1. Normalize key vectors
   var V : vec3<f32> =
               normalize(camera_position - fragment_position); // view vector
 
   // transform normal to worldspace
-  let world_normal = (uMesh.model * vec4<f32>(vertex_normal, 0.0f)).xyz;
+  let world_normal = (mesh.model * vec4<f32>(vertex_normal, 0.0f)).xyz;
 
   // make dot product to check if normal point towards light or not
   var L : vec3<f32> =
@@ -2316,6 +2371,8 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
                      @location(2) vUv : vec2<f32>,
                      @location(3) vFrag : vec3<f32>) -> @location(0) vec4<f32> {
 
+  let camera = uCamera[0];
+
   let coord = vec2<i32>(vUv);
   var Lo : vec3<f32> = vec3<f32>(0.0f);
 
@@ -2325,7 +2382,7 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
   sun_light.color = vec3<f32>(1.0f, 1.0f, 1.0f);
 
   // calculate sun lights
-  Lo += compute_point_light(vFrag, vNormal, uCamera.position.xyz,
+  Lo += compute_point_light(vFrag, vNormal, camera.position.xyz,
                             sun_light.position, sun_light.color,
                             sun_light.intensity);
 
@@ -2368,9 +2425,10 @@ struct Viewport {
 }
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @group(1) @binding(0) var<uniform> uColor : vec4<f32>;
 @group(1) @binding(1) var<uniform> uFixedScale : f32;
@@ -2378,20 +2436,24 @@ struct Viewport {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   let local_pos = vec4<f32>(input.aPos, 1.0);
-  let world_pos = uMesh.model * local_pos;
+  let world_pos = mesh.model * local_pos;
 
-  let cam_to_mesh = normalize(uMesh.position - uCamera.position);
-  let fixed_origin = uCamera.position + cam_to_mesh * uFixedScale;
+  let cam_to_mesh = normalize(mesh.position - camera.position);
+  let fixed_origin = camera.position + cam_to_mesh * uFixedScale;
 
-  let offset = world_pos - uMesh.position;
+  let offset = world_pos - mesh.position;
 
   // 0 = world position; 1 = fixed position
   let blend_pos =
       mix(world_pos, fixed_origin + offset, clamp(uFixedScale, 0.0f, 1.0f));
 
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
 
   var output : VertexOut;
   output.Position = cam * blend_pos;

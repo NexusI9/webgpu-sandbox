@@ -79,7 +79,7 @@ void scene_event_html_update_meshes(void *data) {
 	// generate new camera
         CameraUniform* cam = camera_uniform(scene->active_camera);
 
-        shader_update_uniform(shader, group_index, view_index, (void *)&cam);
+        shader_update_uniform_data(shader, group_index, view_index, (void *)&cam);
       }
     }
   }

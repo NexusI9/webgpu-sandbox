@@ -54,24 +54,29 @@ struct GridData {
 }
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @group(1) @binding(0) var<uniform> uGrid : GridData;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
-  // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
-  var output : VertexOut;
-  var offset : vec2<f32> = vec2<f32>(uCamera.position.x, uCamera.position.z);
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
 
-  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 0u) {
+  // Final Matrix (Projection * View)
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
+  var output : VertexOut;
+  var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
+
+  if ((camera.mode & CAMERA_MODE_ORBIT) != 0u) {
     // fix position to target (lookat) if camera is Orbit mode
-    offset.x = uCamera.lookat.x;
-    offset.y = uCamera.lookat.z;
+    offset.x = camera.lookat.x;
+    offset.y = camera.lookat.z;
   }
 
   // Put the grid below the camera
@@ -82,7 +87,7 @@ struct GridData {
                                   vec4<f32>(offset.x, 0.0, offset.y, 1.0));
 
   output.Position =
-      cam * translate_matrix * uMesh.model * vec4<f32>(input.aPos, 1.0);
+      cam * translate_matrix * mesh.model * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
 
@@ -92,12 +97,16 @@ struct GridData {
 // fragment shader
 fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
 
-  var offset : vec2<f32> = vec2<f32>(uCamera.position.x, uCamera.position.z);
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
 
-  if ((uCamera.mode & CAMERA_MODE_ORBIT) != 0u) {
+  var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
+
+  if ((camera.mode & CAMERA_MODE_ORBIT) != 0u) {
     // switch offset to target (lookat) if camera is Orbit mode
-    offset.x = uCamera.lookat.x;
-    offset.y = uCamera.lookat.z;
+    offset.x = camera.lookat.x;
+    offset.y = camera.lookat.z;
   }
 
   // Setup grid
@@ -133,7 +142,7 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var axisMask : vec4<f32> = vec4(min(1.0f - xAxis, 1.0f - yAxis));
 
   // Setup gradient
-  var fadeFactor : f32 = max(100.0f / abs(uCamera.position.y), 50.0f);
+  var fadeFactor : f32 = max(100.0f / abs(camera.position.y), 50.0f);
   var ray : f32 = min(distance(uv, center) * uGrid.scale / fadeFactor, 1.0f);
   var grad : vec3<f32> = mix(white, black, ray);
   var avg : f32 = (grad.r + grad.g + grad.b) / 3.0f;

@@ -44,12 +44,15 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
   manager->queue = queue;
 
   for (SSBOType i = 0; i < SSBO_TYPE_COUNT; i++) {
-    manager->buffers[i].type_size = ssbo_type[i].size;
-    manager->buffers[i].buffer = wgpuDeviceCreateBuffer(
+    SSBO *ssbo = &manager->buffers[i];
+    ssbo->type_size = ssbo_type[i].size;
+    ssbo->length = 0;
+    ssbo->capacity = SSBO_CAPACITY * SSBO_MAX_TYPE_SIZE;
+    ssbo->buffer = wgpuDeviceCreateBuffer(
         device, &(WGPUBufferDescriptor){
-                    .size = SSBO_ENTRY_CAPACITY * SSBO_MAX_TYPE_SIZE,
+                    .size = ssbo->capacity,
                     .mappedAtCreation = false,
-                    .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Uniform,
+                    .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Storage,
                     .label = ssbo_type[i].label,
                 });
   }
@@ -58,17 +61,20 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
 SSBOStatus ssbo_update_entry(SSBOManager *manager, const SSBOType type,
                              size_t index, void *data) {
 
-  if (index >= SSBO_ENTRY_CAPACITY) {
+  if (index >= SSBO_CAPACITY) {
     VERBOSE_WARNING(
         "Attempting to write into SSBO out of bound index (%lu) max SSBO "
         "capacity is currently set to %d.",
-        index, SSBO_ENTRY_CAPACITY);
+        index, SSBO_CAPACITY);
     return SSBOStatus_OutOfBound;
   }
 
   SSBO *ssbo = &manager->buffers[type];
   memcpy((void *)ssbo->entries + index * ssbo->type_size, data,
          ssbo->type_size);
+
+  // TODO improve index incrementation (currently very unsafe)
+  manager->buffers[type].length = index + 1;
 
   return SSBOStatus_Success;
 }
@@ -95,5 +101,30 @@ void ssbo_upload(SSBOManager *manager, const SSBOType type) {
 
   SSBO *ssbo = &manager->buffers[type];
   wgpuQueueWriteBuffer(manager->queue, ssbo->buffer, 0, ssbo->entries,
-                       ssbo->type_size * SSBO_ENTRY_CAPACITY);
+                       ssbo->type_size * SSBO_CAPACITY);
+}
+
+WGPUBuffer ssbo_buffer(SSBOManager *manager, const SSBOType type) {
+  return manager->buffers[type].buffer;
+}
+
+void *ssbo_new_entry(SSBOManager *manager, const SSBOType type, size_t *index) {
+  SSBO *ssbo = &manager->buffers[type];
+  return stli_new_entry((void *)&ssbo->entries, ssbo->capacity, &ssbo->length,
+                        ssbo->type_size, "SSBO Manager");
+}
+
+StaticListStatus ssbo_remove_entry(SSBOManager *manager, const SSBOType type,
+                                   size_t index) {
+  SSBO *ssbo = &manager->buffers[type];
+  return stli_remove((void *)&ssbo->entries, &ssbo->length, ssbo->type_size,
+                     &ssbo->entries[index], "SSBO Manager");
+}
+
+size_t ssbo_length(SSBOManager *ssbo, const SSBOType type) {
+  return ssbo->buffers[type].length;
+}
+
+void *ssbo_entry(SSBOManager *ssbo, const SSBOType type, size_t index) {
+  return (void *)&ssbo->buffers[type].entries[index];
 }

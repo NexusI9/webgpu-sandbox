@@ -32,6 +32,7 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
   // prepare buffer object
   *buffer = wgpuDeviceCreateBuffer(bf->device,
                                    &(WGPUBufferDescriptor){
+                                       .label = bf->label,
                                        .usage = bf->usage,
                                        .size = bf->size,
                                        .mappedAtCreation = bf->mappedAtCreation,

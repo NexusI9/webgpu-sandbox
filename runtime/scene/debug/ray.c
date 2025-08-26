@@ -5,16 +5,16 @@
 void scene_debug_ray_create(SceneDebug *debug, Mesh **line) {
   *line = mesh_list_new_mesh(debug->pool);
   line_create(*line, &(LineCreateDescriptor){
-                        .device = debug->device,
-                        .queue = debug->queue,
-                        .name = "Debug line mesh",
-                    });
+                         .device = debug->device,
+                         .queue = debug->queue,
+                         .name = "Debug line mesh",
+                     });
 
-  mesh_shader_build_mvp(*line, MeshShader_Fixed, debug->camera, debug->viewport,
-                        true);
+  mesh_shader_build_mvp(*line, MeshShader_Fixed, debug->ssbo, debug->camera,
+                        debug->viewport, true);
 
-  shader_update_uniform(mesh_shader(*line, MeshShader_Fixed), 0, 3,
-                        &(color){0.0f, 1.0f, 0.0f, 1.0f});
+  shader_update_uniform_data(mesh_shader(*line, MeshShader_Fixed), 0, 3,
+                             &(color){0.0f, 1.0f, 0.0f, 1.0f});
 }
 
 void scene_debug_ray_add_point(Mesh *line, vec3 origin, vec3 target,

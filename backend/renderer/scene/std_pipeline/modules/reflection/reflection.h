@@ -11,8 +11,8 @@
 
 static const ShaderPipelineStateObject layout_reflection = {
     .label = "Pipeline Bind Groups - PBR",
-    .shader_path =
-        "../backend/renderer/scene/std_pipeline/modules/reflection/reflection.wgsl",
+    .shader_path = "../backend/renderer/scene/std_pipeline/modules/reflection/"
+                   "reflection.wgsl",
     .bind_groups_count = 3,
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
@@ -29,9 +29,10 @@ static const ShaderPipelineStateObject layout_reflection = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(ViewportUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(ViewportUniform) * SSBO_CAPACITY,
                                 },
                         },
                         {
@@ -41,9 +42,10 @@ static const ShaderPipelineStateObject layout_reflection = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(CameraUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(CameraUniform) * SSBO_CAPACITY,
                                 },
                         },
                         {
@@ -53,9 +55,10 @@ static const ShaderPipelineStateObject layout_reflection = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(MeshUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(MeshUniform) * SSBO_CAPACITY,
                                 },
                         },
                     },

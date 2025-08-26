@@ -16,9 +16,9 @@ static const ShaderPipelineStateObject layout_screen = {
     .bind_groups =
         (WGPUBindGroupLayoutDescriptor[]){
             {
-                // Group 0: Mesh, Viewport, Camera
-                .label = "Group 0 - Mesh, Viewport, Camera",
-                .entryCount = 3,
+                // Group 0: Mesh
+                .label = "Group 0 - Mesh",
+                .entryCount = 1,
                 .entries =
                     (WGPUBindGroupLayoutEntry[]){
                         {
@@ -28,33 +28,10 @@ static const ShaderPipelineStateObject layout_screen = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(MeshUniform),
-                                },
-                        },
-                        {
-                            // uViewport
-                            .binding = 1,
-                            .visibility = WGPUShaderStage_Vertex |
-                                          WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(ViewportUniform),
-                                },
-                        },
-                        {
-                            // uCamera
-                            .binding = 2,
-                            .visibility = WGPUShaderStage_Vertex |
-                                          WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(CameraUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(MeshUniform) * SSBO_CAPACITY,
                                 },
                         },
                     },

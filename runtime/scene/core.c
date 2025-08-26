@@ -73,6 +73,9 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                         .height = scene_renderer_height(&scene->renderer),
                     });
 
+    ssbo_upload_entry(&scene->renderer.ssbo, SSBOType_Projection, 0,
+                      viewport_uniform(&scene->viewport));
+
     /*
 
     ===== EVENT =====
@@ -95,6 +98,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                                         .queue = scene_queue(scene),
                                         .viewport = &scene->viewport,
                                         .pool = &scene->meshes,
+                                        .ssbo = &scene->renderer.ssbo,
                                     });
   });
 }
@@ -111,6 +115,9 @@ void scene_camera_init(Scene *scene) {
 
   // set scene main camera as active
   scene->active_camera = scene->camera;
+
+  ssbo_upload_entry(&scene->renderer.ssbo, SSBOType_View, 0,
+                    camera_uniform(scene->camera));
 
   // add the camera update callback
   scene_renderer_add_draw_callback(&scene->renderer, scene_camera_draw_callback,

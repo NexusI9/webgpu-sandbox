@@ -30,9 +30,10 @@ struct Viewport {
 }
 
 // camera viewport
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @group(1) @binding(0) var<uniform> uColor : vec4<f32>;
 @group(1) @binding(1) var<uniform> uFixedScale : f32;
@@ -40,20 +41,24 @@ struct Viewport {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   let local_pos = vec4<f32>(input.aPos, 1.0);
-  let world_pos = uMesh.model * local_pos;
+  let world_pos = mesh.model * local_pos;
 
-  let cam_to_mesh = normalize(uMesh.position - uCamera.position);
-  let fixed_origin = uCamera.position + cam_to_mesh * uFixedScale;
+  let cam_to_mesh = normalize(mesh.position - camera.position);
+  let fixed_origin = camera.position + cam_to_mesh * uFixedScale;
 
-  let offset = world_pos - uMesh.position;
+  let offset = world_pos - mesh.position;
 
   // 0 = world position; 1 = fixed position
   let blend_pos =
       mix(world_pos, fixed_origin + offset, clamp(uFixedScale, 0.0f, 1.0f));
 
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
 
   var output : VertexOut;
   output.Position = cam * blend_pos;

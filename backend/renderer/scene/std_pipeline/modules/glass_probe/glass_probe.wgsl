@@ -56,9 +56,11 @@ struct ProbeReflectionList {
            entries : array<ProbeReflection, PROBE_RELFECTION_LIST_MAX_COUNT>,
 }
 
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+
 @group(0) @binding(3) var<uniform> uGlass : Glass;
 @group(0) @binding(4) var<uniform> uProbeReflectionList : ProbeReflectionList;
 
@@ -80,14 +82,18 @@ struct ProbeReflectionList {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = uViewport.projection * uCamera.view;
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
 
   var output : VertexOut;
-  output.Position = cam * uMesh.model * vec4<f32>(input.aPos, 1.0);
+  output.Position = cam * mesh.model * vec4<f32>(input.aPos, 1.0);
   output.vCol = input.aCol;
   output.vNorm = input.aNorm;
-  output.vFrag = (uMesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
+  output.vFrag = (mesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
   output.vUv = input.aUv;
 
   return output;
@@ -169,13 +175,15 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
                      @location(2) vFrag : vec3<f32>,
                      @location(3) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
+  let camera = uCamera[0];
+
   let N : vec3<f32> = normalize(vNorm);
 
   // frost effect
   let n : f32 = perlin_noise(vUv, uGlass.frost_scale);
   let perturbed_N : vec3<f32> = normalize(N + n * uGlass.frost_strength);
 
-  let V : vec3<f32> = normalize(uCamera.position.xyz - vFrag);
+  let V : vec3<f32> = normalize(camera.position.xyz - vFrag);
 
   // Fresnel
   let NdotV : f32 = max(dot(perturbed_N, V), 0.0f);

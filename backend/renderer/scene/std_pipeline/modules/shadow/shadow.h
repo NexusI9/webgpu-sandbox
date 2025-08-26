@@ -31,8 +31,7 @@ static const ShaderPipelineStateObject layout_shadow = {
                                 (WGPUBufferBindingLayout){
                                     .type = WGPUBufferBindingType_Uniform,
                                     .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(
-                                        mat4), // adjust if using a struct
+                                    .minBindingSize = sizeof(mat4),
                                 },
                         },
                         {
@@ -41,9 +40,10 @@ static const ShaderPipelineStateObject layout_shadow = {
                             .visibility = WGPUShaderStage_Vertex,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(MeshUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize =
+                                        sizeof(MeshUniform) * SSBO_CAPACITY,
                                 },
                         },
                     },
@@ -104,9 +104,9 @@ static const ShaderPipelineStateObject layout_shadow_cullback = {
                             .visibility = WGPUShaderStage_Vertex,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(MeshUniform),
+                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .hasDynamicOffset = true,
+                                    .minBindingSize = sizeof(MeshUniform) * SSBO_CAPACITY,
                                 },
                         },
                     },

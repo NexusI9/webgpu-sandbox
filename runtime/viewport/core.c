@@ -46,6 +46,4 @@ void viewport_uniform_update(Viewport *viewport) {
 
 mat4 *viewport_projection(Viewport *vp) { return &vp->projection; }
 
-void viewport_destroy(Viewport *vp) {
-  memset(vp, 0, sizeof(Viewport));
-}
+void viewport_destroy(Viewport *vp) { memset(vp, 0, sizeof(Viewport)); }

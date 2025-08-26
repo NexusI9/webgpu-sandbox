@@ -12,17 +12,22 @@ typedef struct {
   WGPUTextureView spot_map;
 } SceneBuildTextureDescriptor;
 
+typedef struct {
+  Mesh *mesh;
+  Camera *camera;
+  Viewport *viewport;
+  SSBOManager *ssbo;
+} SceneBuildDescriptor;
+
 // pipeline builders
-static void scene_build_mesh_texture(Mesh *, Camera *, Viewport *,
-                                     const SceneBuildTextureDescriptor *);
+static inline void
+scene_build_mesh_texture(const SceneBuildDescriptor *,
+                         const SceneBuildTextureDescriptor *);
 
-static void scene_build_mesh_solid(Mesh *, Camera *, Viewport *);
-
-static void scene_build_mesh_wireframe(Mesh *, Camera *, Viewport *);
-
-static void scene_build_mesh_fixed(Mesh *, Camera *, Viewport *);
-
-static void scene_build_mesh_boundbox(Mesh *, Camera *, Viewport *);
+static inline void scene_build_mesh_solid(const SceneBuildDescriptor *);
+static inline void scene_build_mesh_wireframe(const SceneBuildDescriptor *);
+static inline void scene_build_mesh_fixed(const SceneBuildDescriptor *);
+static inline void scene_build_mesh_boundbox(const SceneBuildDescriptor *);
 
 /**
    ▗▄▄▄ ▗▄▄▄▖ ▗▄▄▖▗▄▄▖  ▗▄▖▗▄▄▄▖▗▄▄▖▗▖ ▗▖▗▄▄▄▖▗▄▄▖
@@ -37,11 +42,17 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 
   Camera *camera = scene->active_camera;
   Viewport *viewport = &scene->viewport;
-
+  SSBOManager *ssbo = &scene->renderer.ssbo;
   const SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
   const WGPUQueue queue = scene_queue(scene);
   const WGPUDevice device = scene_device(scene);
-  
+
+  SceneBuildDescriptor build_desc = {
+      .mesh = mesh,
+      .camera = camera,
+      .viewport = viewport,
+      .ssbo = ssbo,
+  };
 
   switch (pipeline) {
 
@@ -55,7 +66,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 #ifdef VERBOSE_BUILDING_PHASE
     VERBOSE_MESH_BUILD("Fixed %s", mesh->name);
 #endif
-    scene_build_mesh_fixed(mesh, camera, viewport);
+    scene_build_mesh_fixed(&build_desc);
     break;
 
   default:
@@ -65,7 +76,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 #ifdef VERBOSE_BUILDING_PHASE
     VERBOSE_MESH_BUILD("Boundbox %s", mesh->name);
 #endif
-    scene_build_mesh_boundbox(mesh, camera, viewport);
+    scene_build_mesh_boundbox(&build_desc);
 
     // Dynamic rendering
     switch (draw_mode) {
@@ -80,7 +91,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 #ifdef VERBOSE_BUILDING_PHASE
       VERBOSE_MESH_BUILD("Solid %s", mesh->name);
 #endif
-      scene_build_mesh_solid(mesh, camera, viewport);
+      scene_build_mesh_solid(&build_desc);
       break;
 
       // build wireframe
@@ -88,7 +99,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 #ifdef VERBOSE_BUILDING_PHASE
       VERBOSE_MESH_BUILD("Wireframe %s", mesh->name);
 #endif
-      scene_build_mesh_wireframe(mesh, camera, viewport);
+      scene_build_mesh_wireframe(&build_desc);
       break;
 
     // build texture
@@ -100,7 +111,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 #endif
 
       scene_build_mesh_texture(
-          mesh, camera, viewport,
+          &build_desc,
           &(SceneBuildTextureDescriptor){
               .pipeline = pipeline,
               .lights = &scene->lights,
@@ -135,125 +146,143 @@ void scene_build_mesh_ref_list(Scene *scene, MeshRefList *list,
    Build meshes Texture shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_mesh_texture(Mesh *mesh, Camera *camera, Viewport *viewport,
-                              const SceneBuildTextureDescriptor *build_desc) {
+void scene_build_mesh_texture(
+    const SceneBuildDescriptor *build_desc,
+    const SceneBuildTextureDescriptor *build_texture_desc) {
 
   // compute boundbox bounds for collisions (lightweight)
-  mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
-                                       &mesh->topology.boundbox);
+  mesh_topology_boundbox_compute_bound(&build_desc->mesh->topology.base,
+                                       build_desc->mesh->model,
+                                       &build_desc->mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Texture, camera, viewport, true);
-  mesh_shader_build_mvp(mesh, MeshShader_Reflection, camera, viewport, false);
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Texture, build_desc->ssbo,
+                        build_desc->camera, build_desc->viewport, true);
+
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Reflection,
+                        build_desc->ssbo, build_desc->camera,
+                        build_desc->viewport, false);
 
   // lit and shadow pipeline
-  if (build_desc->pipeline &
+  if (build_texture_desc->pipeline &
       (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
 
     // bind lights
-    mesh_shader_texture_update_lights(mesh, build_desc->lights,
+    mesh_shader_texture_update_lights(build_desc->mesh,
+                                      build_texture_desc->lights,
                                       SHADER_TEXTURE_BINDGROUP_LIGHTS);
   }
 
   // shadow only pipeline
-  if (build_desc->pipeline == ScenePipeline_Dynamic_LitShadow) {
+  if (build_texture_desc->pipeline == ScenePipeline_Dynamic_LitShadow) {
 
     // create binding for shadow maps (using fallback texture)
-    mesh_shader_texture_bind_shadow_maps(mesh, build_desc->point_map,
-                                         build_desc->spot_map);
+    mesh_shader_texture_bind_shadow_maps(build_desc->mesh,
+                                         build_texture_desc->point_map,
+                                         build_texture_desc->spot_map);
 
     // create mesh shadow shader
-    mesh_shader_create_shadow(mesh);
+    mesh_shader_create_shadow(build_desc->mesh);
 
     // bind light and mesh uniform to shadow
-    mesh_shader_shadow_update_mvp(mesh);
+    mesh_shader_shadow_update_mvp(build_desc->mesh);
   }
 
   // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Texture);
+  mesh_shader_set_active(build_desc->mesh, MeshShader_Texture);
 }
 
 /**
    Build meshes Solid shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_mesh_solid(Mesh *mesh, Camera *camera, Viewport *viewport) {
+void scene_build_mesh_solid(const SceneBuildDescriptor *build_desc) {
 
   // compute boundbox bounds for collisions (lightweight)
-  mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
-                                       &mesh->topology.boundbox);
+  mesh_topology_boundbox_compute_bound(&build_desc->mesh->topology.base,
+                                       build_desc->mesh->model,
+                                       &build_desc->mesh->topology.boundbox);
 
   // create meshes' solid shader
-  mesh_shader_create_solid(mesh);
+  mesh_shader_create_solid(build_desc->mesh);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Solid, camera, viewport, true);
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Solid, build_desc->ssbo,
+                        build_desc->camera, build_desc->viewport, true);
 
   // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Solid);
+  mesh_shader_set_active(build_desc->mesh, MeshShader_Solid);
 }
 
 /**
    Build meshes Wireframe shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_mesh_wireframe(Mesh *mesh, Camera *camera,
-                                Viewport *viewport) {
+void scene_build_mesh_wireframe(const SceneBuildDescriptor *build_desc) {
 
   // compute boundbox bounds for collisions (lightweight)
-  mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
-                                       &mesh->topology.boundbox);
+  mesh_topology_boundbox_compute_bound(&build_desc->mesh->topology.base,
+                                       build_desc->mesh->model,
+                                       &build_desc->mesh->topology.boundbox);
 
   // create wireframe topology
-  MeshTopology src_topo = mesh_topology_base_vertex(&mesh->topology.base);
-  MeshTopologyWireframe *dest_topo = &mesh->topology.wireframe;
-  mesh_topology_wireframe_create(&src_topo, dest_topo, mesh->device,
-                                 mesh->queue);
+  MeshTopology src_topo =
+      mesh_topology_base_vertex(&build_desc->mesh->topology.base);
+  MeshTopologyWireframe *dest_topo = &build_desc->mesh->topology.wireframe;
+  mesh_topology_wireframe_create(&src_topo, dest_topo, build_desc->mesh->device,
+                                 build_desc->mesh->queue);
 
   // create meshes' wireframe shader
-  mesh_shader_create_wireframe(mesh);
+  mesh_shader_create_wireframe(build_desc->mesh);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Wireframe, camera, viewport, true);
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Wireframe,
+                        build_desc->ssbo, build_desc->camera,
+                        build_desc->viewport, true);
 
   // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Wireframe);
+  mesh_shader_set_active(build_desc->mesh, MeshShader_Wireframe);
 }
 
 /**
    Build meshes Boundbox shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void scene_build_mesh_boundbox(Mesh *mesh, Camera *camera, Viewport *viewport) {
+void scene_build_mesh_boundbox(const SceneBuildDescriptor *build_desc) {
 
   // create full boundbox topology
-  MeshTopologyBoundbox *dest_topo = &mesh->topology.boundbox;
-  mesh_topology_boundbox_create(&mesh->topology.base, mesh->model, dest_topo,
-                                mesh->device, mesh->queue);
+  MeshTopologyBoundbox *dest_topo = &build_desc->mesh->topology.boundbox;
+  mesh_topology_boundbox_create(
+      &build_desc->mesh->topology.base, build_desc->mesh->model, dest_topo,
+      build_desc->mesh->device, build_desc->mesh->queue);
 
   // create meshes' wireframe shader
-  mesh_shader_create_wireframe(mesh);
+  mesh_shader_create_wireframe(build_desc->mesh);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Wireframe, camera, viewport, true);
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Wireframe,
+                        build_desc->ssbo, build_desc->camera,
+                        build_desc->viewport, true);
 
   // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Wireframe);
+  mesh_shader_set_active(build_desc->mesh, MeshShader_Wireframe);
 }
 
 /**
    Build Fixed mesh layer.
    Fixed layer use the Override shader* as default shader.
  */
-void scene_build_mesh_fixed(Mesh *mesh, Camera *camera, Viewport *viewport) {
+void scene_build_mesh_fixed(const SceneBuildDescriptor *build_desc) {
 
   // compute boundbox bounds for collisions (lightweight)
-  mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
-                                       &mesh->topology.boundbox);
+  mesh_topology_boundbox_compute_bound(&build_desc->mesh->topology.base,
+                                       build_desc->mesh->model,
+                                       &build_desc->mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Fixed, camera, viewport, true);
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Fixed, build_desc->ssbo,
+                        build_desc->camera, build_desc->viewport, true);
 
   // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Fixed);
+  mesh_shader_set_active(build_desc->mesh, MeshShader_Fixed);
 }

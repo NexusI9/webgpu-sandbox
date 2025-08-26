@@ -28,9 +28,10 @@ struct Camera {
                                     _pad : vec3<u32>,
 };
 
-@group(0) @binding(0) var<uniform> uViewport : Viewport;
-@group(0) @binding(1) var<uniform> uCamera : Camera;
-@group(0) @binding(2) var<uniform> uMesh : Mesh;
+const SSBO_CAPACITY : u32 = 32u;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera, SSBO_CAPACITY>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;
@@ -42,24 +43,28 @@ struct Camera {
   // Final Matrix (Projection * View)
   var output : VertexOut;
 
-  let look = normalize(uCamera.position.xyz - uMesh.position.xyz);
+  let mesh = uMesh[0];
+  let camera = uCamera[0];
+  let viewport = uViewport[0];
+ 
+  let look = normalize(camera.position.xyz - mesh.position.xyz);
   let worldUp = vec3<f32>(0.0f, 1.0f, 0.0f);
 
-  let scale_x = length(vec3<f32>(uMesh.model[0].xyz));
-  let scale_y = length(vec3<f32>(uMesh.model[1].xyz));
-  let scale_z = length(vec3<f32>(uMesh.model[2].xyz));
+  let scale_x = length(vec3<f32>(mesh.model[0].xyz));
+  let scale_y = length(vec3<f32>(mesh.model[1].xyz));
+  let scale_z = length(vec3<f32>(mesh.model[2].xyz));
   var scale_factor = 1.0f;
 
   if (uScale == 0u) {
 
     let target_pixel = 10.0f;
-    let view_pos = uCamera.view * vec4<f32>(uMesh.position.xyz, 1.0f);
-    let proj_pos = uViewport.projection * view_pos;
+    let view_pos = camera.view * vec4<f32>(mesh.position.xyz, 1.0f);
+    let proj_pos = viewport.projection * view_pos;
 
     let ndc_position = proj_pos.xyz / proj_pos.w;
 
     let pixel_size_ndc =
-        2.0f / vec2<f32>(f32(uViewport.width), f32(uViewport.height));
+        2.0f / vec2<f32>(f32(viewport.width), f32(viewport.height));
 
     let ndc_size = pixel_size_ndc * target_pixel;
 
@@ -74,10 +79,10 @@ struct Camera {
   let local_position = input.aPos.x * right * scale_x * scale_factor +
                        input.aPos.z * up * scale_z * scale_factor;
 
-  let world_position = uMesh.position.xyz + local_position;
+  let world_position = mesh.position.xyz + local_position;
 
   output.Position =
-      uViewport.projection * uCamera.view * vec4<f32>(world_position, 1.0f);
+      viewport.projection * camera.view * vec4<f32>(world_position, 1.0f);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
   return output;

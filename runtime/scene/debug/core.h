@@ -1,6 +1,7 @@
 #ifndef _SCENE_DEBUG_CORE_H_
 #define _SCENE_DEBUG_CORE_H_
 
+#include "../backend/ssbo.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
@@ -14,6 +15,7 @@ typedef enum {
 
 typedef struct {
   MeshList *pool;
+  SSBOManager *ssbo;
   MeshRefList object_list[SCENE_DEBUG_MESH_LIST_COUNT];
   Camera *camera;
   Viewport *viewport;
@@ -23,6 +25,7 @@ typedef struct {
 
 typedef struct {
   MeshList *pool;
+  SSBOManager *ssbo;
   Camera *camera;
   Viewport *viewport;
   const WGPUDevice device;
