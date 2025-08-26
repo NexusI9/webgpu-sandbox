@@ -14,6 +14,7 @@
 #include "./modules/skybox/skybox.h"
 #include "./modules/solid/solid.h"
 #include "./modules/unlit/unlit.h"
+#include "./modules/reflection/reflection.h"
 
 static const ShaderPipelineStateObject *standard_layouts[PIPELINE_TYPE_COUNT] =
     {
@@ -30,6 +31,7 @@ static const ShaderPipelineStateObject *standard_layouts[PIPELINE_TYPE_COUNT] =
         [PipelineType_Solid] = &layout_solid,
         [PipelineType_GlassBox] = &layout_glass,
         [PipelineType_GlassProbe] = &layout_glass_probe,
+        [PipelineType_Reflection] = &layout_reflection,
 };
 
 Pipeline g_std_pipelines[PIPELINE_TYPE_COUNT] = {0};

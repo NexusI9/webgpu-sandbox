@@ -43,9 +43,6 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
                                     new_position);
   mesh_set_position(mesh, new_position);
 
-  printf("position: ");
-  print_vec3(mesh->position);
-
   // bind model matrix
   shader_update_uniform(mesh_shader(mesh, MeshShader_Fixed), 0, 0,
                         mesh_uniform(mesh));

@@ -46,13 +46,13 @@ void example_glass_probe(Scene *scene) {
 
   SceneEditorObject *grid_probe =
       scene_add_probe_reflection_grid(scene, &(ProbeReflectionGridDescriptor){
-                                                 .count = {1, 1, 1},
+                                                 .count = {2, 2, 2},
                                                  .size = {3.0f, 3.0f, 3.0f},
                                              });
 
   Mesh *mesh = scene_new_mesh(scene);
 
-  Primitive prim = primitive_cube();
+  Primitive prim = primitive_icosphere();
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &prim,
@@ -97,9 +97,10 @@ void example_glass_probe(Scene *scene) {
       scene->probes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
 
-  probe_reflection_grid_list_draw(&scene->probes_reflection,
-                                  &(ProbeReflectionGridListDebug){
-                                      .scene_debug = &scene->debug,
-                                      .max_views = 8,
-                                  });
+  ProbeReflectionGridListDebug debug_options = {
+      .scene_debug = &scene->debug,
+      .max_views = 16,
+  };
+
+  probe_reflection_grid_list_draw(&scene->probes_reflection, &debug_options);
 }

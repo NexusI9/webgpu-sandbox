@@ -151,7 +151,7 @@ void probe_reflection_grid_list_create_texture(
               (WGPUExtent3D){
                   .width = resolution,
                   .height = resolution,
-                  .depthOrArrayLayers = 6 // layer_count,
+                  .depthOrArrayLayers = layer_count,
               },
           .format = WGPUTextureFormat_BGRA8Unorm,
           .usage = WGPUTextureUsage_CopyDst |
@@ -171,7 +171,7 @@ void probe_reflection_grid_list_create_texture(
           .baseMipLevel = 0,
           .mipLevelCount = 1,
           .baseArrayLayer = 0,
-          .arrayLayerCount = 6, // layer_count,
+          .arrayLayerCount = layer_count,
           .aspect = WGPUTextureAspect_Undefined,
       });
 
@@ -256,11 +256,10 @@ void probe_reflection_grid_list_draw_preprocessor(const RenderPass *pass,
   ProbeReflectionGridListPreprocessorData *projection =
       (ProbeReflectionGridListPreprocessorData *)data;
 
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Reflection), 0, 0,
-                        projection->projection);
+  Shader *shader = mesh_shader(mesh, MeshShader_Reflection);
 
-  shader_update_uniform(mesh_shader(mesh, MeshShader_Reflection), 0, 1,
-                        projection->view);
+  shader_update_uniform(shader, 0, 0, projection->projection);
+  shader_update_uniform(shader, 0, 1, projection->view);
 }
 
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
@@ -269,76 +268,85 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
   // then update probe list texture cube array based on each probes views
   size_t layer = 0;
 
-  render_pass_command_begin(&list->pass);
-  {
-    for (size_t i = 0; i < list->length; i++) {
+  for (size_t i = 0; i < list->length; i++) {
 
-      ProbeReflectionGrid *grid = &list->entries[i];
+    ProbeReflectionGrid *grid = &list->entries[i];
 
-      TIMER("", {
-        VERBOSE_PROCESS("Rendering Probe Reflection Grid %lu/%lu", i + 1,
-                        list->length);
+    TIMER("", {
+      VERBOSE_PROCESS("Rendering Probe Reflection Grid %lu/%lu", i + 1,
+                      list->length);
 
-        for (size_t j = 0; j < grid->probes.length; j++) {
+      for (size_t j = 0; j < grid->probes.length; j++) {
 
-          ProbeReflection *probe = &grid->probes.entries[j];
+        ProbeReflection *probe = &grid->probes.entries[j];
 
-          Projection probe_views;
-          projection_point(&probe_views, probe->position, 0.1f, 100.0f);
+        Projection probe_views;
+        projection_point(&probe_views, probe->position, 0.1f, 100.0f);
 
-          for (uint8_t k = 0; k < probe_views.length; k++) {
+        for (uint8_t k = 0; k < probe_views.length; k++) {
 
-            // define target layer
-            WGPUTextureView target_color = wgpuTextureCreateView(
-                list->pass.color.texture,
-                &(WGPUTextureViewDescriptor){
-                    .label = "Probe Reflection Target Color View",
-                    .arrayLayerCount = 1,
-                    .baseArrayLayer = layer,
-                    .dimension = WGPUTextureViewDimension_2D,
-                    .baseMipLevel = 0,
-                    .mipLevelCount = 1,
-                });
+          // define target layer
+          WGPUTextureView target_color = wgpuTextureCreateView(
+              list->pass.color.texture,
+              &(WGPUTextureViewDescriptor){
+                  .label = "Probe Reflection Target Color View",
+                  .arrayLayerCount = 1,
+                  .baseArrayLayer = layer,
+                  .dimension = WGPUTextureViewDimension_2D,
+                  .baseMipLevel = 0,
+                  .mipLevelCount = 1,
+              });
 
-            WGPUTextureView target_depth = wgpuTextureCreateView(
-                list->pass.depth.texture,
-                &(WGPUTextureViewDescriptor){
-                    .label = "Probe Reflection Target Depth View",
-                    .arrayLayerCount = 1,
-                    .baseArrayLayer = layer,
-                    .dimension = WGPUTextureViewDimension_2D,
-                    .baseMipLevel = 0,
-                    .mipLevelCount = 1,
-                });
+          WGPUTextureView target_depth = wgpuTextureCreateView(
+              list->pass.depth.texture,
+              &(WGPUTextureViewDescriptor){
+                  .label = "Probe Reflection Target Depth View",
+                  .arrayLayerCount = 1,
+                  .baseArrayLayer = layer,
+                  .dimension = WGPUTextureViewDimension_2D,
+                  .baseMipLevel = 0,
+                  .mipLevelCount = 1,
+              });
 
-            // update each mesh views/projections matrix
-            render_pass_update_all_preprocessor_data(
-                &list->pass, &(ProbeReflectionGridListPreprocessorData){
-                                 .projection = &probe_views.projection,
-                                 .view = &probe_views.views[k],
-                             });
+          printf("layer: %lu : %p\n", layer, target_color);
 
+          // update each mesh views/projections matrix
+          render_pass_update_all_preprocessor_data(
+              &list->pass, &(ProbeReflectionGridListPreprocessorData){
+                               .projection = &probe_views.projection,
+                               .view = &probe_views.views[k],
+                           });
+
+          /* TODO OPTI:
+             Temporarily brute force render like this.
+             The issue is that each render pass we udpate the same buffer
+             uniform with the new view/projection matrix, so it basically
+             overrides the previous value.
+
+            The solution to this is to work with buffer offset which was planned
+            anyway.
+           */
+          render_pass_command_begin(&list->pass);
+          {
             // draw pass
-            /*
             render_pass_command_draw(&list->pass, &(RenderPassViewOverride){
                                                       .color = target_color,
                                                       .depth = target_depth,
-            });
-            */
-
-            if (debug && layer < debug->max_views)
-              scene_debug_view_create(debug->scene_debug, target_color);
-            else
-              wgpuTextureViewRelease(target_color);
-
-            wgpuTextureViewRelease(target_depth);
-            layer++;
+                                                  });
           }
+          render_pass_command_end(&list->pass);
+
+          if (debug && layer < debug->max_views)
+            scene_debug_view_create(debug->scene_debug, target_color);
+          else
+            wgpuTextureViewRelease(target_color);
+
+          wgpuTextureViewRelease(target_depth);
+          layer++;
         }
-      });
-    }
+      }
+    });
   }
-  render_pass_command_end(&list->pass);
 }
 
 void probe_reflection_grid_list_uniform(ProbeReflectionListUniform *uniform,

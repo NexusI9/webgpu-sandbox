@@ -112,7 +112,14 @@ void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   shader_create(mesh_shader(mesh, MeshShader_Texture), desc);
 
   // also initialise the reflection shader (basically a copy of the texture)
-  shader_create(mesh_shader(mesh, MeshShader_Reflection), desc);
+  shader_create(mesh_shader(mesh, MeshShader_Reflection),
+                &(ShaderCreateDescriptor){
+                    .pipeline = std_pipeline(PipelineType_Reflection),
+                    .label = "Mesh Reflection shader",
+                    .name = "Mesh Reflection shader",
+                    .device = mesh->device,
+                    .queue = mesh->queue,
+                });
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Texture);

@@ -67,12 +67,10 @@ void render_pass_command_draw(RenderPass *pass,
                   pass_encoder);
       }
     }
-
     wgpuRenderPassEncoderEnd(pass_encoder);
     wgpuRenderPassEncoderRelease(pass_encoder);
   }
 
-  // put back the original views
   pass->color.attachment.view = src_color_view;
   pass->depth.attachment.view = src_depth_view;
 }
