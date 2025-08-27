@@ -39,7 +39,7 @@ void init_scene() {
                        },
                });
 
-  //example_light(&main_scene);
+  example_light(&main_scene);
 }
 
 int main(int argc, const char *argv[]) {

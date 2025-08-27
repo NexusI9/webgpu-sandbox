@@ -166,11 +166,8 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
   // retrieve the model-view-projection binding index from the pipeline
   Shader *shader = mesh_shader(mesh, shader_type);
   const PipelineBindingMVP *mvp = &shader->pipeline->bindings.mvp;
-
+  
   size_t mesh_offset = ssbo_length(ssbo_manager, SSBOType_Mesh) - 1;
-  printf("%d | %lu | buffer %s\n", shader_type, mesh_offset, mesh->name);
-  MeshUniform *muni = ssbo_entry(ssbo_manager, SSBOType_Mesh, mesh_offset);
-  print_mat4(muni->model);
 
   ShaderBindGroupUniformEntry entries[3] = {
       // viewport

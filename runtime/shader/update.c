@@ -99,7 +99,6 @@ void shader_update_uniform_buffer(Shader *shader,
     WGPUSupportedLimits limits;
     wgpuDeviceGetLimits(shader->device, &limits);
     size_t alignment = limits.limits.minStorageBufferOffsetAlignment;
-    // size_t alignment = 1;
 
     bound_uniform->buffer = buffer;
 
@@ -108,12 +107,6 @@ void shader_update_uniform_buffer(Shader *shader,
 
      shader_bind_group_refresh(bind_group, group_index, shader->device,
                                &shader_pipeline(shader)->handle);
-
-    // DBEUG
-     for(size_t i = 0; i < SHADER_MAX_OFFSET_CAPACITY; i++){
-       printf(" %d |", bind_group->offset.entries[i]);
-     }
-     printf("\n");
     
   } else {
     VERBOSE_WARNING(

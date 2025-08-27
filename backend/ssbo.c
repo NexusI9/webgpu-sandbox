@@ -100,8 +100,6 @@ SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
     // update ssbo buffer at index
     SSBO *ssbo = &manager->buffers[type];
     size_t offset = index * ssbo->type_size;
-    printf("writting as offset %lu with size %lu\n", offset, ssbo->type_size);
-
     wgpuQueueWriteBuffer(manager->queue, ssbo->buffer, offset,
                          (uint8_t *)ssbo->entries + offset, ssbo->type_size);
   }
