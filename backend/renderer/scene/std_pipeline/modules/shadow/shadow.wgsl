@@ -22,7 +22,7 @@ struct Mesh {
 
 const SSBO_CAPACITY : u32 = 32u;
 @group(0) @binding(0) var<uniform> view_projection : mat4x4<f32>;
-@group(0) @binding(1) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage, read> uMesh : array<Mesh>;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 

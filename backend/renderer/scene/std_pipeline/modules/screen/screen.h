@@ -31,7 +31,7 @@ static const ShaderPipelineStateObject layout_screen = {
                                     .type = WGPUBufferBindingType_ReadOnlyStorage,
                                     .hasDynamicOffset = true,
                                     .minBindingSize =
-                                        sizeof(MeshUniform) * SSBO_CAPACITY,
+                                        sizeof(MeshUniform),
                                 },
                         },
                     },

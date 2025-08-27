@@ -103,11 +103,14 @@ void shader_update_uniform_buffer(Shader *shader,
     bound_uniform->buffer = buffer;
 
     bind_group->offset.entries[index] = offset * alignment;
-    bound_uniform->offset = offset * alignment;
 
-     shader_bind_group_refresh(bind_group, group_index, shader->device,
-                               &shader_pipeline(shader)->handle);
-    
+    // TODO SEARCH: why setting the uniform offset equal to the bindgroup offset
+    // messes up everything (have an idea why but not exactly)
+    bound_uniform->offset = 0;
+
+    shader_bind_group_refresh(bind_group, group_index, shader->device,
+                              &shader_pipeline(shader)->handle);
+
   } else {
     VERBOSE_WARNING(
         "Could not find the bound uniform in group: %d, index: %d, make sure "

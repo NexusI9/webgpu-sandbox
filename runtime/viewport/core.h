@@ -9,7 +9,7 @@ typedef struct {
   uint32_t width;
   uint32_t height;
   uint32_t _pad[46];
-} __attribute__((aligned(256))) ViewportUniform;
+} ViewportUniform;
 
 typedef struct {
   float fov;
@@ -30,7 +30,7 @@ typedef struct {
   float aspect;
   mat4 projection;
   cclock *clock;
-  ViewportUniform uniform;
+  ViewportUniform *uniform;
 } Viewport;
 
 void viewport_create(Viewport *, const ViewportCreateDescriptor *);

@@ -43,7 +43,7 @@ static const ShaderPipelineStateObject layout_shadow = {
                                     .type = WGPUBufferBindingType_ReadOnlyStorage,
                                     .hasDynamicOffset = true,
                                     .minBindingSize =
-                                        sizeof(MeshUniform) * SSBO_CAPACITY,
+                                        sizeof(MeshUniform),
                                 },
                         },
                     },
@@ -106,7 +106,7 @@ static const ShaderPipelineStateObject layout_shadow_cullback = {
                                 (WGPUBufferBindingLayout){
                                     .type = WGPUBufferBindingType_ReadOnlyStorage,
                                     .hasDynamicOffset = true,
-                                    .minBindingSize = sizeof(MeshUniform) * SSBO_CAPACITY,
+                                    .minBindingSize = sizeof(MeshUniform),
                                 },
                         },
                     },

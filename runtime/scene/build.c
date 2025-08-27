@@ -47,6 +47,13 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
   const WGPUQueue queue = scene_queue(scene);
   const WGPUDevice device = scene_device(scene);
 
+  // bind new mesh uniform to SSBO and copy previous mesh uniform data
+  size_t index;
+  MeshUniform *ssbo_uniform = ssbo_new_entry(ssbo, SSBOType_Mesh, &index);
+  ssbo_upload_entry(ssbo, SSBOType_Mesh, index, (void *)mesh->uniform);
+  free(mesh->uniform);
+  mesh->uniform = ssbo_uniform;
+
   SceneBuildDescriptor build_desc = {
       .mesh = mesh,
       .camera = camera,

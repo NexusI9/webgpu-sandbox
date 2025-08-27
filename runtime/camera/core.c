@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../utils/system.h"
 
@@ -28,8 +29,8 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->mode = cd->mode;
   cam->sensitivity = cd->sensitivity;
 
-  // init uniform
-  camera_uniform_update(cam);
+  // may be overriden/free by SSBO later when added to scene
+  cam->uniform = aligned_alloc(256, sizeof(CameraUniform));
 }
 
 void camera_reset(Camera *c) {
@@ -50,7 +51,7 @@ void camera_reset(Camera *c) {
     vec3 right = {0.0f, 0.0f, 0.0f};
     glm_vec3_copy(right, c->right);
 
-    c->uniform = (CameraUniform){0};
+    c->uniform = 0;
   }
 }
 

@@ -59,7 +59,7 @@ typedef struct {
   mat4 model;
   vec4 position;
   uint32_t _pad[44];
-} __attribute__((aligned(256))) MeshUniform;
+} MeshUniform;
 
 typedef void (*mesh_get_transform_attribute)(Mesh *, vec3 *);
 
@@ -75,7 +75,7 @@ struct Mesh {
   vec3 scale;
   vec3 rotation_euler;
   versor rotation_quat;
-  MeshUniform uniform;
+  MeshUniform* uniform;
 
   // wgpu
   WGPUDevice device;

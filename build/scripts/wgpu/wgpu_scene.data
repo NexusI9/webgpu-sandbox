@@ -29,9 +29,9 @@ struct Camera {
 };
 
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage, read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage, read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;
@@ -126,9 +126,9 @@ struct Viewport {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage, read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage, read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
@@ -196,9 +196,9 @@ struct Glass {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 @group(0) @binding(3) var<uniform> uGlass : Glass;
 
 @group(1) @binding(0) var env_map : texture_cube<f32>;
@@ -397,9 +397,9 @@ struct ProbeReflectionList {
 }
 
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 
 @group(0) @binding(3) var<uniform> uGlass : Glass;
 @group(0) @binding(4) var<uniform> uProbeReflectionList : ProbeReflectionList;
@@ -614,9 +614,9 @@ struct GridData {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var<uniform> uGrid : GridData;
 
@@ -749,9 +749,9 @@ const thickness : f32 = 0.0015f;
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 @group(0) @binding(3) var<uniform> uColor : vec4<f32>;
 
 // vertex shader
@@ -934,7 +934,6 @@ struct SunLightStorage {
 // TODO: combine textures in a texture_2d_array + only use 1 sampler ?
 
 // camera viewport
-const SSBO_CAPACITY : u32 = 32u;
 @group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
 @group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
 @group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
@@ -986,6 +985,17 @@ const SSBO_CAPACITY : u32 = 32u;
   let mesh = uMesh[0];
   let camera = uCamera[0];
   let viewport = uViewport[0];
+
+  let proj : mat4x4<f32> = mat4x4<f32>(vec4<f32>(1.961671, 0.0, 0.0, 0.0),
+                                       vec4<f32>(0.0, 3.487414, 0.0, 0.0),
+                                       vec4<f32>(0.0, 0.0, -1.001001, -1.0),
+                                       vec4<f32>(0.0, 0.0, -0.100100, 0.0));
+
+  let view : mat4x4<f32> =
+                 mat4x4<f32>(vec4<f32>(0.707107, -0.408248, 0.577350, 0.0),
+                             vec4<f32>(0.0, 0.816496, 0.577350, 0.0),
+                             vec4<f32>(-0.707107, -0.408248, 0.577350, 0.0),
+                             vec4<f32>(-0.0, -0.0, -34.641010, 1.0));
 
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = viewport.projection * camera.view;
@@ -1477,6 +1487,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
                             point_shadow + directional_shadow + sun_shadow);
 
   return vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
+
 }
 
 // attribute/uniform decls
@@ -1592,9 +1603,9 @@ struct SunLightStorage {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var diffuse_texture : texture_2d<f32>;
 @group(1) @binding(1) var diffuse_sampler : sampler;
@@ -2099,7 +2110,7 @@ struct Mesh {
 }
 
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;
@@ -2150,7 +2161,7 @@ struct Mesh {
 
 const SSBO_CAPACITY : u32 = 32u;
 @group(0) @binding(0) var<uniform> view_projection : mat4x4<f32>;
-@group(0) @binding(1) var<storage, read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(1) var<storage, read> uMesh : array<Mesh>;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
@@ -2200,9 +2211,9 @@ struct Viewport {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 
 // skybox texture
 @group(1) @binding(0) var skybox_texture : texture_cube<f32>;
@@ -2315,9 +2326,9 @@ struct SunLight {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
@@ -2426,9 +2437,9 @@ struct Viewport {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var<uniform> uColor : vec4<f32>;
 @group(1) @binding(1) var<uniform> uFixedScale : f32;

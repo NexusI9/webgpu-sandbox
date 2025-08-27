@@ -15,6 +15,9 @@ void viewport_create(Viewport *viewport,
   viewport->width = view_desc->width;
   viewport->height = view_desc->height;
 
+  // may be overriden/free by SSBO later when added to scene
+  viewport->uniform = aligned_alloc(256, sizeof(ViewportUniform));
+
   // init projection matrix
   viewport_update_projection(viewport);
   viewport_uniform_update(viewport);
@@ -33,15 +36,15 @@ void viewport_update_projection(Viewport *viewport) {
 }
 
 ViewportUniform *viewport_uniform(Viewport *viewport) {
-  return &viewport->uniform;
+  return viewport->uniform;
 }
 
 void viewport_uniform_update(Viewport *viewport) {
 
-  viewport->uniform.width = viewport->width,
-  viewport->uniform.height = viewport->height,
+  viewport->uniform->width = viewport->width,
+  viewport->uniform->height = viewport->height,
 
-  glm_mat4_copy(viewport->projection, viewport->uniform.projection);
+  glm_mat4_copy(viewport->projection, viewport->uniform->projection);
 }
 
 mat4 *viewport_projection(Viewport *vp) { return &vp->projection; }

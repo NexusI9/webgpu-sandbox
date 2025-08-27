@@ -30,7 +30,7 @@ static const ShaderPipelineStateObject layout_skybox = {
                                     .type = WGPUBufferBindingType_ReadOnlyStorage,
                                     .hasDynamicOffset = true,
                                     .minBindingSize =
-                                        sizeof(ViewportUniform) * SSBO_CAPACITY,
+                                        sizeof(ViewportUniform),
                                 },
                         },
                         {
@@ -42,7 +42,7 @@ static const ShaderPipelineStateObject layout_skybox = {
                                     .type = WGPUBufferBindingType_ReadOnlyStorage,
                                     .hasDynamicOffset = true,
                                     .minBindingSize =
-                                        sizeof(CameraUniform) * SSBO_CAPACITY,
+                                        sizeof(CameraUniform),
                                 },
                         },
                         {
@@ -54,7 +54,7 @@ static const ShaderPipelineStateObject layout_skybox = {
                                     .type = WGPUBufferBindingType_ReadOnlyStorage,
                                     .hasDynamicOffset = true,
                                     .minBindingSize =
-                                        sizeof(MeshUniform) * SSBO_CAPACITY,
+                                        sizeof(MeshUniform),
                                 },
                         },
                     },

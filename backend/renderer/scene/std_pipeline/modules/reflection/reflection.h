@@ -10,7 +10,7 @@
 #include <webgpu/webgpu.h>
 
 static const ShaderPipelineStateObject layout_reflection = {
-    .label = "Pipeline Bind Groups - PBR",
+    .label = "Pipeline Bind Groups - Reflection",
     .shader_path = "../backend/renderer/scene/std_pipeline/modules/reflection/"
                    "reflection.wgsl",
     .bind_groups_count = 3,
@@ -29,10 +29,10 @@ static const ShaderPipelineStateObject layout_reflection = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .type =
+                                        WGPUBufferBindingType_ReadOnlyStorage,
                                     .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(ViewportUniform) * SSBO_CAPACITY,
+                                    .minBindingSize = sizeof(ViewportUniform),
                                 },
                         },
                         {
@@ -42,10 +42,10 @@ static const ShaderPipelineStateObject layout_reflection = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .type =
+                                        WGPUBufferBindingType_ReadOnlyStorage,
                                     .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(CameraUniform) * SSBO_CAPACITY,
+                                    .minBindingSize = sizeof(CameraUniform),
                                 },
                         },
                         {
@@ -55,10 +55,10 @@ static const ShaderPipelineStateObject layout_reflection = {
                                           WGPUShaderStage_Fragment,
                             .buffer =
                                 (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
+                                    .type =
+                                        WGPUBufferBindingType_ReadOnlyStorage,
                                     .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(MeshUniform) * SSBO_CAPACITY,
+                                    .minBindingSize = sizeof(MeshUniform),
                                 },
                         },
                     },

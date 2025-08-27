@@ -1,8 +1,9 @@
 #include "uniform.h"
 #include "../../utils/system.h"
+#include "core.h"
 #include <string.h>
 
-MeshUniform *mesh_uniform(Mesh *mesh) { return &mesh->uniform; }
+MeshUniform *mesh_uniform(Mesh *mesh) { return mesh->uniform; }
 
 void mesh_uniform_update(Mesh *mesh) {
 
@@ -13,8 +14,8 @@ void mesh_uniform_update(Mesh *mesh) {
       1.0f,
   };
 
-  glm_mat4_copy(mesh->model, mesh->uniform.model);
-  glm_vec4_copy(position, mesh->uniform.position);
+  glm_mat4_copy(mesh->model, mesh->uniform->model);
+  glm_vec4_copy(position, mesh->uniform->position);
 }
 
 void mesh_uniform_model_update_callback(void *callback_mesh, void *entry_data) {
@@ -23,8 +24,8 @@ void mesh_uniform_model_update_callback(void *callback_mesh, void *entry_data) {
   MeshUniform *new_data = (MeshUniform *)entry_data;
 
   //  transfer updated camera values (position and view) to new data
-  glm_mat4_copy(cast_mesh->uniform.model, new_data->model);
-  glm_vec4_copy(cast_mesh->uniform.position, new_data->position);
+  glm_mat4_copy(cast_mesh->uniform->model, new_data->model);
+  glm_vec4_copy(cast_mesh->uniform->position, new_data->position);
 }
 
 bool mesh_uniform_model_compare_callback(void *callback_data,

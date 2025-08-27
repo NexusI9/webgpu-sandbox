@@ -98,7 +98,8 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
     // link bind group
     wgpuRenderPassEncoderSetBindGroup(render_pass, i, bind_group->bind_group,
                                       bind_group->offset.count,
-                                      &bind_group->offset.entries[i]);
+                                      bind_group->offset.entries);
+    
   }
 }
 

@@ -41,6 +41,7 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
                               mesh->device, mesh->queue);
   }
 
+
   // init model matrix and transforms
   glm_mat4_identity(mesh->model);
 
@@ -50,11 +51,13 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation_euler);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
-  // create uniform
+    // alloc uniform (may be replaced by SSBO later when added to the scene)
+  mesh->uniform = aligned_alloc(256, sizeof(MeshUniform));
   mesh_uniform_update(mesh);
 
   // set default pipeline shader
-  mesh_shader(mesh, MeshShader_Texture)->pipeline = std_pipeline(PipelineType_Default);
+  mesh_shader(mesh, MeshShader_Texture)->pipeline =
+      std_pipeline(PipelineType_Default);
 
   // defines default topology override
   mesh_topology_set_override(mesh,

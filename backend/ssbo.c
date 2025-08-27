@@ -120,6 +120,10 @@ WGPUBuffer ssbo_buffer(SSBOManager *manager, const SSBOType type) {
 
 void *ssbo_new_entry(SSBOManager *manager, const SSBOType type, size_t *index) {
   SSBO *ssbo = &manager->buffers[type];
+
+  if (index)
+    *index = ssbo->length;
+
   return stli_new_entry((void *)&ssbo->entries, ssbo->capacity, &ssbo->length,
                         ssbo->type_size, "SSBO Manager");
 }
@@ -138,4 +142,12 @@ size_t ssbo_length(SSBOManager *ssbo, const SSBOType type) {
 void *ssbo_entry(SSBOManager *ssbo, const SSBOType type, size_t index) {
   return (void *)((uint8_t *)ssbo->buffers[type].entries +
                   index * ssbo->buffers[type].type_size);
+}
+
+size_t ssbo_find_index(SSBOManager *manager, const SSBOType type, void *data) {
+  for (size_t i = 0; i < ssbo_length(manager, SSBOType_Mesh); i++)
+    if (ssbo_entry(manager, SSBOType_Mesh, i) == data)
+      return i;
+
+  return SSBO_INDEX_UNFOUND;
 }

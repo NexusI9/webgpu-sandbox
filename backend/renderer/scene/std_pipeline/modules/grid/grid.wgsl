@@ -55,9 +55,9 @@ struct GridData {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport, SSBO_CAPACITY>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera, SSBO_CAPACITY>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var<uniform> uGrid : GridData;
 

@@ -158,16 +158,12 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
                            SSBOManager *ssbo_manager, Camera *camera,
                            Viewport *viewport, bool callbacks) {
 
-  // upload mesh uniform to SSBO
-  ssbo_upload_entry(ssbo_manager, SSBOType_Mesh,
-                    ssbo_length(ssbo_manager, SSBOType_Mesh),
-                    mesh_uniform(mesh));
-
   // retrieve the model-view-projection binding index from the pipeline
   Shader *shader = mesh_shader(mesh, shader_type);
   const PipelineBindingMVP *mvp = &shader->pipeline->bindings.mvp;
-  
-  size_t mesh_offset = ssbo_length(ssbo_manager, SSBOType_Mesh) - 1;
+
+  size_t mesh_offset =
+      ssbo_find_index(ssbo_manager, SSBOType_Mesh, mesh->uniform);
 
   ShaderBindGroupUniformEntry entries[3] = {
       // viewport

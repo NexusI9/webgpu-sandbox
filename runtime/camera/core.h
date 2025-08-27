@@ -47,7 +47,7 @@ typedef struct {
   vec4 lookat;
   uint32_t mode;
   uint32_t _pad[39];
-} __attribute__((aligned(256))) CameraUniform;
+} CameraUniform;
 
 typedef struct Camera {
 
@@ -60,7 +60,7 @@ typedef struct Camera {
   vec3 forward;
   vec3 up;
   vec3 right;
-  CameraUniform uniform;
+  CameraUniform* uniform;
 
   mat4 view;
 

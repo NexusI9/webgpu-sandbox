@@ -18,7 +18,7 @@ struct Mesh {
 }
 
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uMesh : array<Mesh, SSBO_CAPACITY>;
+@group(0) @binding(0) var<storage,read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;
