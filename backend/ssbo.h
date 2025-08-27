@@ -23,14 +23,14 @@ typedef enum {
   SSBOType_SunLight,
   SSBOType_SpotLight,
 } SSBOType;
-
+ 
 typedef struct {
   uint8_t entries[SSBO_CAPACITY * SSBO_MAX_TYPE_SIZE];
   size_t capacity;
   size_t length;
   WGPUBuffer buffer;
   size_t type_size;
-} __attribute__((aligned(16))) SSBO;
+} __attribute__((aligned(256))) SSBO;
 
 typedef struct {
   SSBO buffers[SSBO_TYPE_COUNT];

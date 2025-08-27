@@ -235,18 +235,6 @@ WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *group) {
   return converted_entries;
 }
 
-void shader_bind_group_realize(WGPUBindGroup *bind_group,
-                               const ShaderBindGroupRealize *desc) {
-
-  *bind_group = wgpuDeviceCreateBindGroup(
-      desc->device, &(WGPUBindGroupDescriptor){
-                        .layout = wgpuRenderPipelineGetBindGroupLayout(
-                            *desc->pipeline_handle, desc->group_index),
-                        .entryCount = desc->entryCount,
-                        .entries = desc->entries,
-                    });
-}
-
 void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
   if (shader_bind_group->bind_group != NULL)
     wgpuBindGroupRelease(shader_bind_group->bind_group);
@@ -287,14 +275,13 @@ void shader_bind_group_build(ShaderBindGroup *group,
   WGPUBindGroupEntry *converted_entries = shader_bind_group_convert(group);
 
   // realize bind group
-  shader_bind_group_realize(&group->bind_group,
-                            &(ShaderBindGroupRealize){
-                                .group_index = group_index,
-                                .device = device,
-                                .entryCount = total_length,
-                                .entries = converted_entries,
-                                .pipeline_handle = pipeline,
-                            });
+  group->bind_group = wgpuDeviceCreateBindGroup(
+      device, &(WGPUBindGroupDescriptor){
+                  .layout = wgpuRenderPipelineGetBindGroupLayout(*pipeline,
+                                                                 group_index),
+                  .entryCount = total_length,
+                  .entries = converted_entries,
+              });
 
   // release layouts
   free(converted_entries);

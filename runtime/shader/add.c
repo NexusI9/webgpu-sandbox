@@ -5,6 +5,7 @@
 #include "string.h"
 
 #include "../utils/system.h"
+#include "webgpu/webgpu.h"
 
 /**
    Add uniform of type Default (vec3, float...) into the shader

@@ -58,7 +58,8 @@ typedef struct {
 typedef struct {
   mat4 model;
   vec4 position;
-} __attribute__((aligned(16))) MeshUniform;
+  uint32_t _pad[44];
+} __attribute__((aligned(256))) MeshUniform;
 
 typedef void (*mesh_get_transform_attribute)(Mesh *, vec3 *);
 

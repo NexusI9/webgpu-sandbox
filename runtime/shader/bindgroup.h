@@ -28,7 +28,6 @@ void shader_bind_group_create_from_layout(Shader *,
 WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *);
 void shader_bind_group_build(ShaderBindGroup *, bind_group_index,
                              const WGPUDevice, const WGPURenderPipeline *);
-void shader_bind_group_realize(WGPUBindGroup *, const ShaderBindGroupRealize *);
 void shader_bind_group_release(ShaderBindGroup *);
 void shader_bind_group_refresh(ShaderBindGroup *, bind_group_index,
                                const WGPUDevice, const WGPURenderPipeline *);

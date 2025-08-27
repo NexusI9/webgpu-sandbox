@@ -81,6 +81,7 @@ void shader_destroy(Shader *shader) {
 /**
    Update method called as such: scene update => mesh update => shader update
  */
+static int t = 0;
 void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
 
   // bind pipeline to render
@@ -93,12 +94,22 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
     ShaderBindGroup *bind_group = &dynamic_list->entries[i];
 
     // update bindgroup uniforms data
-    shader_uniform_update(bind_group, shader->queue);
+    // shader_uniform_update(bind_group, shader->queue);
 
     // link bind group
     wgpuRenderPassEncoderSetBindGroup(render_pass, i, bind_group->bind_group,
                                       bind_group->offset.count,
-                                      bind_group->offset.entries);
+                                      &bind_group->offset.entries[i]);
+
+    //DEBUG
+    if (t++ < 20 && bind_group->offset.count > 0) {
+      printf("%u: ", bind_group->offset.count);
+      // DBEUG
+      for (size_t i = 0; i < SHADER_MAX_OFFSET_CAPACITY; i++) {
+        printf(" %d |", bind_group->offset.entries[i]);
+      }
+      printf("\n");
+    }
   }
 }
 

@@ -19,6 +19,16 @@ static const struct {
             sizeof(ViewportUniform),
             "SSBO Projection Buffer",
         },
+    [SSBOType_Mesh] =
+        {
+            sizeof(MeshUniform),
+            "SSBO Mesh Buffer",
+        },
+    [SSBOType_ProbeReflection] =
+        {
+            sizeof(ViewportUniform),
+            "SSBO Mesh Buffer",
+        },
     [SSBOType_PointLight] =
         {
             sizeof(PointLightListUniform),
@@ -70,7 +80,7 @@ SSBOStatus ssbo_update_entry(SSBOManager *manager, const SSBOType type,
   }
 
   SSBO *ssbo = &manager->buffers[type];
-  memcpy((void *)ssbo->entries + index * ssbo->type_size, data,
+  memcpy((char *)ssbo->entries + index * ssbo->type_size, data,
          ssbo->type_size);
 
   // TODO improve index incrementation (currently very unsafe)
@@ -90,8 +100,10 @@ SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
     // update ssbo buffer at index
     SSBO *ssbo = &manager->buffers[type];
     size_t offset = index * ssbo->type_size;
+    printf("writting as offset %lu with size %lu\n", offset, ssbo->type_size);
+
     wgpuQueueWriteBuffer(manager->queue, ssbo->buffer, offset,
-                         ssbo->entries + offset, ssbo->type_size);
+                         (uint8_t *)ssbo->entries + offset, ssbo->type_size);
   }
 
   return stagging_udpate;
@@ -126,5 +138,6 @@ size_t ssbo_length(SSBOManager *ssbo, const SSBOType type) {
 }
 
 void *ssbo_entry(SSBOManager *ssbo, const SSBOType type, size_t index) {
-  return (void *)&ssbo->buffers[type].entries[index];
+  return (void *)((uint8_t *)ssbo->buffers[type].entries +
+                  index * ssbo->buffers[type].type_size);
 }

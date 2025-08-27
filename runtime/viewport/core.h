@@ -8,7 +8,8 @@ typedef struct {
   mat4 projection;
   uint32_t width;
   uint32_t height;
-} __attribute__((aligned(16))) ViewportUniform;
+  uint32_t _pad[46];
+} __attribute__((aligned(256))) ViewportUniform;
 
 typedef struct {
   float fov;

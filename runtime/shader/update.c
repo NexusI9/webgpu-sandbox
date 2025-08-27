@@ -6,6 +6,7 @@
 #include "find.h"
 #include "utils.h"
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 #include <string.h>
 
 #include "../utils/system.h"
@@ -95,9 +96,25 @@ void shader_update_uniform_buffer(Shader *shader,
     if (lifetime == ShaderBufferLifetime_Release)
       wgpuBufferRelease(bound_uniform->buffer);
 
-    bound_uniform->buffer = buffer;
-    bound_uniform->offset = offset;
+    WGPUSupportedLimits limits;
+    wgpuDeviceGetLimits(shader->device, &limits);
+    size_t alignment = limits.limits.minStorageBufferOffsetAlignment;
+    // size_t alignment = 1;
 
+    bound_uniform->buffer = buffer;
+
+    bind_group->offset.entries[index] = offset * alignment;
+    bound_uniform->offset = offset * alignment;
+
+     shader_bind_group_refresh(bind_group, group_index, shader->device,
+                               &shader_pipeline(shader)->handle);
+
+    // DBEUG
+     for(size_t i = 0; i < SHADER_MAX_OFFSET_CAPACITY; i++){
+       printf(" %d |", bind_group->offset.entries[i]);
+     }
+     printf("\n");
+    
   } else {
     VERBOSE_WARNING(
         "Could not find the bound uniform in group: %d, index: %d, make sure "
