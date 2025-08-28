@@ -4,7 +4,7 @@
 #include "../runtime/mesh/mesh.h"
 #include "./core.h"
 
-void gizmo_transform_position_create(MeshRefList *, MeshRefList *,
+void gizmo_position_create(MeshRefList *, MeshRefList *,
                                       const GizmoCreateDescriptor *);
 
 #endif

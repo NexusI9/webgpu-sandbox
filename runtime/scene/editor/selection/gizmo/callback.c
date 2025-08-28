@@ -10,17 +10,17 @@
 
    Utilities function to retrieve the delta or angle
  */
-static inline void gizmo_transform_axis(GizmoTransform *, Camera *, Viewport *,
+static inline void gizmo_transform_axis(Gizmo *, Camera *, Viewport *,
                                         mesh_transform_axis_callback, vec3 *);
 
-static inline void gizmo_transform_angle(GizmoTransform *, Camera *, Viewport *,
+static inline void gizmo_transform_angle(Gizmo *, Camera *, Viewport *,
                                          mesh_transform_axis_callback, vec3 *);
 
 /**
    Generic function to transform gizmo based on axis and provided callback
    (trans/rot/scale)
  */
-void gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera,
+void gizmo_transform_axis(Gizmo *gizmo, Camera *camera,
                           Viewport *viewport,
                           mesh_transform_axis_callback transform_callback,
                           vec3 *delta) {
@@ -49,7 +49,7 @@ void gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera,
   vec3 gizmo_delta;
 
   // EDGE CASE: if scaling on all axis => uniform scale
-  if (gizmo->mode == GizmoTransformMode_Scale && gizmo->axis == Axis_XYZ) {
+  if (gizmo->mode == GizmoMode_Scale && gizmo->axis == Axis_XYZ) {
 
     // calculate offset distance and replace delta
     float dist =
@@ -72,7 +72,7 @@ void gizmo_transform_axis(GizmoTransform *gizmo, Camera *camera,
 /**
    Project a plane orthogonal to the active axis and calculate
  */
-void gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera,
+void gizmo_transform_angle(Gizmo *gizmo, Camera *camera,
                            Viewport *viewport,
                            mesh_transform_axis_callback transform_callback,
                            vec3 *dest) {
@@ -133,7 +133,7 @@ void gizmo_transform_angle(GizmoTransform *gizmo, Camera *camera,
    handled in the scene selection draw callback.
 
  */
-void gizmo_transform_callback_position(GizmoTransform *gizmo, Camera *camera,
+void gizmo_callback_position(Gizmo *gizmo, Camera *camera,
                                         Viewport *viewport, vec3 *delta) {
 
   // transform selection
@@ -142,16 +142,16 @@ void gizmo_transform_callback_position(GizmoTransform *gizmo, Camera *camera,
   // translate gizmo based on cached delta
   vec3 gizmo_offset;
   glm_vec3_add(gizmo->cache.gizmo_init_position, *delta, gizmo_offset);
-  gizmo_transform_set_position(gizmo, gizmo_offset);
+  gizmo_set_position(gizmo, gizmo_offset);
 }
 
-void gizmo_transform_callback_rotation(GizmoTransform *gizmo, Camera *camera,
+void gizmo_callback_rotation(Gizmo *gizmo, Camera *camera,
                                      Viewport *viewport, vec3 *delta) {
 
   gizmo_transform_angle(gizmo, camera, viewport, mesh_set_rotation_axis, delta);
 }
 
-void gizmo_transform_callback_scale(GizmoTransform *gizmo, Camera *camera,
+void gizmo_callback_scale(Gizmo *gizmo, Camera *camera,
                                     Viewport *viewport, vec3 *delta) {
 
   gizmo_transform_axis(gizmo, camera, viewport, mesh_set_scale_axis, delta);

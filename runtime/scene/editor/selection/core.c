@@ -48,7 +48,7 @@ void scene_selection_draw_callback(void *data) {
 
   Scene *scene = (Scene *)data;
   SceneSelection *selection = &scene->editor.selection;
-  GizmoTransform *gizmo = &scene->editor.gizmo.transform;
+  Gizmo *gizmo = &scene->editor.gizmo.transform;
 
   if (gizmo->cache.init_distance != 0.0f) {
 
@@ -81,7 +81,7 @@ void scene_selection_draw_callback(void *data) {
           .transform_mode = gizmo->mode,
           .scene = scene});
 
-      gizmo_transform_update_ssbo(gizmo, &scene->renderer.ssbo);
+      gizmo_update_ssbo(gizmo, &scene->renderer.ssbo);
     }
   }
 }
@@ -139,8 +139,8 @@ bool scene_selection_reset_callback(int eventType,
   Scene *scene = (Scene *)userData;
 
   // clear gizmo cache
-  GizmoTransform *gizmo = &scene->editor.gizmo.transform;
-  gizmo_transform_clear_active(gizmo);
+  Gizmo *gizmo = &scene->editor.gizmo.transform;
+  gizmo_clear_active(gizmo);
 
   // reset selection initial cached attributes
   scene_selection_empty_initial_attributes(&scene->editor.selection);
@@ -219,16 +219,16 @@ void scene_selection_all(SceneSelection *selection) {
    (loc/rot/scale) depending on the gizmo mode.
  */
 static const mesh_get_transform_attribute mesh_transform_attribute[] = {
-    [GizmoTransformMode_Position] = mesh_get_position,
-    [GizmoTransformMode_Rotation] = mesh_get_rotation_euler,
-    [GizmoTransformMode_Scale] = mesh_get_scale,
+    [GizmoMode_Position] = mesh_get_position,
+    [GizmoMode_Rotation] = mesh_get_rotation_euler,
+    [GizmoMode_Scale] = mesh_get_scale,
 };
 
 /**
   Cache all meshes initial attribute based on gizmo mode (pos/rot/scale)
  */
 void scene_selection_cache_initial_attributes(SceneSelection *selection,
-                                              const GizmoTransformMode mode) {
+                                              const GizmoMode mode) {
 
   for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
 

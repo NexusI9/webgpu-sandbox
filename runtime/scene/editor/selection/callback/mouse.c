@@ -82,7 +82,7 @@ void scene_selection_init_mouse_events(Scene *scene) {
 
   // left click raycast on scene main camera (to select gizmo transform)
   SceneLayer *gizmo_layer =
-      scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO_TRANSFORM);
+      scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO);
 
   // map selection gizmo mouse events
   for (uint8_t i = 0; i < 2; i++)
@@ -93,7 +93,7 @@ void scene_selection_init_mouse_events(Scene *scene) {
             .event = selection_gizmo_mouse_events[i].event,
             // use scree-space since gizmo have fixed scale
             .space = CameraRaycastSpace_ScreenSpace,
-            .screen_space_size = GIZMO_TRANSFORM_SIZE, // Gizmo size
+            .screen_space_size = GIZMO_SIZE, // Gizmo size
             .include =
                 {
                     .lists = (MeshRefList *[]){&gizmo_layer->meshes},
@@ -184,7 +184,7 @@ void scene_selection_raycast_mesh_callback(
 
   Scene *scene = cast_user_data->scene;
   SceneSelection *selection = &scene->editor.selection;
-  GizmoTransform *gizmo = &scene->editor.gizmo.transform;
+  Gizmo *gizmo = &scene->editor.gizmo.transform;
 
   // else retrieve first hit only (closest to camera)
   CameraRaycastHit *hit = &cast_data->hits->entries[0];
@@ -239,12 +239,12 @@ void scene_selection_raycast_mesh_callback(
   // handle gizmo
   if (scene_selection_length(&scene->editor.selection) > 0) {
     // get average position
-    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection,
+    scene_gizmo_pos_to_selection(gizmo, &scene->editor.selection,
                                            &scene->renderer.ssbo);
-    scene_gizmo_transform_show(scene);
+    scene_gizmo_show(scene);
   } else {
     // hide from the scene
-    scene_gizmo_transform_hide(scene);
+    scene_gizmo_hide(scene);
   }
 }
 
@@ -264,21 +264,21 @@ void scene_selection_raycast_gizmo_down_callback(
   if (mouseEvent->button == 0 && hit) {
 
     Scene *scene = cast_user_data->scene;
-    GizmoTransform *gizmo = &scene->editor.gizmo.transform;
+    Gizmo *gizmo = &scene->editor.gizmo.transform;
 
     // if init distance > 0, means the gizmo is already active (from the hotkeyh
     // as instance)
     if (gizmo->cache.init_distance == 0.0) {
 
       // map active axis from hit handle pointer
-      gizmo_transform_set_axis_from_mesh(gizmo, hit);
+      gizmo_set_axis_from_mesh(gizmo, hit);
 
       // cache scene selection initial attributes
       scene_selection_cache_initial_attributes(&scene->editor.selection,
                                                gizmo->mode);
 
       // set active handle from current mode and initialize offset
-      gizmo_transform_set_active(gizmo, scene->active_camera, &scene->viewport);
+      gizmo_set_active(gizmo, scene->active_camera, &scene->viewport);
 
     }
   }
@@ -295,7 +295,7 @@ void scene_selection_raycast_gizmo_hover_callback(
 
   SceneSelectionCallbackData *cast_user_data =
       (SceneSelectionCallbackData *)user_data;
-  GizmoTransform *gizmo = &cast_user_data->scene->editor.gizmo.transform;
+  Gizmo *gizmo = &cast_user_data->scene->editor.gizmo.transform;
 
   // for (size_t i = 0; i < cast_data->hits->length; i++)
   CameraRaycastHit *hit = &cast_data->hits->entries[0];
@@ -308,14 +308,14 @@ void scene_selection_raycast_gizmo_hover_callback(
     if (hit->mesh) {
 
       // reset colors
-      gizmo_transform_reset_color_uniform(gizmo);
+      gizmo_reset_color_uniform(gizmo);
 
       // update hovered gizmo color
       shader_update_uniform_data(mesh_shader(hit->mesh, MeshShader_Fixed), 1, 0,
-                                 COLOR_GIZMO_TRANSFORM_HOVER);
+                                 COLOR_GIZMO_HOVER);
 
     } else {
-      gizmo_transform_reset_color_uniform(gizmo);
+      gizmo_reset_color_uniform(gizmo);
     }
   }
 }

@@ -10,7 +10,7 @@
 
    Used to generate each gizmo handles.
  */
-void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
+void gizmo_create_mesh(Mesh *mesh, Primitive *primitive,
                                  const color *rgba, const WGPUQueue queue,
                                  const WGPUDevice device) {
 
@@ -19,7 +19,7 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
                                   .primitive = primitive,
                                   .device = device,
                                   .queue = queue,
-                                  .name = "Gizmo transform",
+                                  .name = "Gizmo",
                               });
 
 
@@ -29,12 +29,12 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
                                .pipeline = std_pipeline(PipelineType_Unlit),
                                .device = device,
                                .queue = queue,
-                               .label = "Gizmo transform shader",
-                               .name = "Gizmo transform shader",
+                               .label = "Gizmo shader",
+                               .name = "Gizmo shader",
                            });
 
   // add color uniform
-  const float fixed_size = GIZMO_TRANSFORM_SIZE;
+  const float fixed_size = GIZMO_SIZE;
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0, (void *)rgba);
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 1, (void *)&fixed_size);
  
@@ -47,9 +47,9 @@ void gizmo_transform_create_mesh(Mesh *mesh, Primitive *primitive,
    Load the transform gizmom meshbinary and automate the shader/ color and angle
    process.
  */
-void gizmo_transform_create_handles(
+void gizmo_create_handles(
     MeshRefList *visual_list, MeshRefList *interactive_list,
-    const GizmoTransformCreateMeshDescriptor *desc) {
+    const GizmoCreateMeshDescriptor *desc) {
 
   // init gizmo reference list
   const size_t gizmo_mesh_count = 3;
@@ -71,7 +71,7 @@ void gizmo_transform_create_handles(
   for (size_t i = 0; i < gizmo_mesh_count; i++) {
     Mesh *mesh = mesh_list_new_mesh(desc->list);
 
-    gizmo_transform_create_mesh(mesh, &mesh_primitive, gizmo_handle_color[i], desc->queue,
+    gizmo_create_mesh(mesh, &mesh_primitive, gizmo_handle_color[i], desc->queue,
                                 desc->device);
 
 
@@ -91,6 +91,6 @@ void gizmo_transform_create_handles(
   primitive_destroy(&mesh_primitive);
 }
 
-void gizmo_transform_origin(GizmoTransform *gizmo, vec3 *position) {
+void gizmo_origin(Gizmo *gizmo, vec3 *position) {
   glm_vec3_copy(gizmo->handles[gizmo->mode].entries[0]->position, *position);
 }

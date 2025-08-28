@@ -4,7 +4,7 @@
 #include "./utils.h"
 #include "webgpu/webgpu.h"
 
-void gizmo_transform_rotation_create(MeshRefList *visual_list,
+void gizmo_rotation_create(MeshRefList *visual_list,
                                    MeshRefList *interactive_list,
                                    const GizmoCreateDescriptor *desc) {
 
@@ -18,7 +18,7 @@ void gizmo_transform_rotation_create(MeshRefList *visual_list,
       .primitive = &sphere_primitive,
   });
 
-  gizmo_transform_create_mesh(sphere, &sphere_primitive,
+  gizmo_create_mesh(sphere, &sphere_primitive,
                               &(color){0.2f, 0.2f, 0.2f, 0.0f}, desc->queue,
                               desc->device);
 
@@ -28,9 +28,9 @@ void gizmo_transform_rotation_create(MeshRefList *visual_list,
   primitive_destroy(&sphere_primitive);
 
   // create axis then
-  gizmo_transform_create_handles(
+  gizmo_create_handles(
       visual_list, interactive_list,
-      &(GizmoTransformCreateMeshDescriptor){
+      &(GizmoCreateMeshDescriptor){
           .device = desc->device,
           .queue = desc->queue,
           .list = desc->list,

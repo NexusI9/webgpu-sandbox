@@ -3,7 +3,7 @@
 
 #include "./core.h"
 
-void gizmo_transform_scale_create(MeshRefList *, MeshRefList *,
+void gizmo_scale_create(MeshRefList *, MeshRefList *,
                                   const GizmoCreateDescriptor *);
 
 #endif

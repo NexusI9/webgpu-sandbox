@@ -88,7 +88,7 @@ void seo_light_point_shadow_set_position(SEOTransformCallback *desc) {
 
     shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
         .light = light,
-	.pass = &desc->seo->scene->lights.point.shadow.pass,
+        .pass = &desc->seo->scene->lights.point.shadow.pass,
         .device = scene_device(desc->seo->scene),
         .queue = scene_queue(desc->seo->scene),
         .layer = desc->mesh->target_list_index,
@@ -100,19 +100,18 @@ void seo_light_point_shadow_set_position(SEOTransformCallback *desc) {
 }
 
 static const seo_transform_axis_callback
-    light_transform_callback[2][GIZMO_TRANSFORM_MODE_COUNT] = {
+    light_transform_callback[2][GIZMO_MODE_COUNT] = {
         [LightShadow_None] =
             {
-                [GizmoTransformMode_Position] = seo_light_point_set_position,
-                [GizmoTransformMode_Rotation] = seo_light_point_set_rotation,
-                [GizmoTransformMode_Scale] = seo_light_point_set_scale,
+                [GizmoMode_Position] = seo_light_point_set_position,
+                [GizmoMode_Rotation] = seo_light_point_set_rotation,
+                [GizmoMode_Scale] = seo_light_point_set_scale,
             },
         [LightShadow_Enabled] =
             {
-                [GizmoTransformMode_Position] =
-                    seo_light_point_shadow_set_position,
-                [GizmoTransformMode_Rotation] = seo_light_point_set_rotation,
-                [GizmoTransformMode_Scale] = seo_light_point_set_scale,
+                [GizmoMode_Position] = seo_light_point_shadow_set_position,
+                [GizmoMode_Rotation] = seo_light_point_set_rotation,
+                [GizmoMode_Scale] = seo_light_point_set_scale,
             },
 };
 
@@ -120,7 +119,7 @@ void seo_light_point_update_transform_callback(SceneEditorObject *seo,
                                                const LightShadow shadow) {
 
   for (size_t i = 0; i < seo->meshes.length; i++)
-    for (GizmoTransformMode j = 0; j < GIZMO_TRANSFORM_MODE_COUNT; j++)
+    for (GizmoMode j = 0; j < GIZMO_MODE_COUNT; j++)
       seo->meshes.entries[i].transform_callback[j] =
           light_transform_callback[shadow][i];
 }

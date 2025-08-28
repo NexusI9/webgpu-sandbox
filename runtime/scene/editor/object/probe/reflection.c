@@ -49,11 +49,11 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
 
   mesh_set_scale(bound_cube->mesh, padded_size);
 
-  bound_cube->transform_callback[GizmoTransformMode_Position] =
+  bound_cube->transform_callback[GizmoMode_Position] =
       seo_probe_reflection_bound_set_position;
-  bound_cube->transform_callback[GizmoTransformMode_Rotation] =
+  bound_cube->transform_callback[GizmoMode_Rotation] =
       seo_probe_reflection_set_rotation;
-  bound_cube->transform_callback[GizmoTransformMode_Scale] =
+  bound_cube->transform_callback[GizmoMode_Scale] =
       seo_probe_reflection_bound_set_scale;
 
   /*
@@ -78,11 +78,11 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
     mesh_set_scale(probe->mesh, (vec3){0.3f, 0.3f, 0.3f});
     mesh_set_position(probe->mesh, grid->probes.entries[i].position);
 
-    probe->transform_callback[GizmoTransformMode_Position] =
+    probe->transform_callback[GizmoMode_Position] =
         seo_probe_reflection_set_position;
-    probe->transform_callback[GizmoTransformMode_Rotation] =
+    probe->transform_callback[GizmoMode_Rotation] =
         seo_probe_reflection_set_rotation;
-    probe->transform_callback[GizmoTransformMode_Scale] =
+    probe->transform_callback[GizmoMode_Scale] =
         seo_probe_reflection_set_scale;
 
     mesh_child_add(bound_cube->mesh, probe->mesh);

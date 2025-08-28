@@ -102,20 +102,18 @@ void seo_light_spot_shadow_set_position(SEOTransformCallback *desc) {
 void seo_light_spot_shadow_set_rotation(SEOTransformCallback *desc) {}
 
 static const seo_transform_axis_callback
-    light_transform_callback[2][GIZMO_TRANSFORM_MODE_COUNT] = {
+    light_transform_callback[2][GIZMO_MODE_COUNT] = {
         [LightShadow_None] =
             {
-                [GizmoTransformMode_Position] = seo_light_spot_set_position,
-                [GizmoTransformMode_Rotation] = seo_light_spot_set_rotation,
-                [GizmoTransformMode_Scale] = seo_light_spot_set_scale,
+                [GizmoMode_Position] = seo_light_spot_set_position,
+                [GizmoMode_Rotation] = seo_light_spot_set_rotation,
+                [GizmoMode_Scale] = seo_light_spot_set_scale,
             },
         [LightShadow_Enabled] =
             {
-                [GizmoTransformMode_Position] =
-                    seo_light_spot_shadow_set_position,
-                [GizmoTransformMode_Rotation] =
-                    seo_light_spot_shadow_set_rotation,
-                [GizmoTransformMode_Scale] = seo_light_spot_set_scale,
+                [GizmoMode_Position] = seo_light_spot_shadow_set_position,
+                [GizmoMode_Rotation] = seo_light_spot_shadow_set_rotation,
+                [GizmoMode_Scale] = seo_light_spot_set_scale,
             },
 };
 
@@ -123,7 +121,7 @@ void seo_light_spot_update_transform_callback(SceneEditorObject *seo,
                                               const LightShadow shadow) {
 
   for (size_t i = 0; i < seo->meshes.length; i++)
-    for (GizmoTransformMode j = 0; j < GIZMO_TRANSFORM_MODE_COUNT; j++)
+    for (GizmoMode j = 0; j < GIZMO_MODE_COUNT; j++)
       seo->meshes.entries[i].transform_callback[j] =
           light_transform_callback[shadow][i];
 }

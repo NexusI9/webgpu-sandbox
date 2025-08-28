@@ -7,33 +7,32 @@
 #include "./utils.h"
 #include <stddef.h>
 
-static const gizmo_transform_create_handles_callback handles_create_func[] = {
-    [GizmoTransformMode_Position] = gizmo_transform_position_create,
-    [GizmoTransformMode_Rotation] = gizmo_transform_rotation_create,
-    [GizmoTransformMode_Scale] = gizmo_transform_scale_create,
+static const gizmo_create_handles_callback handles_create_func[] = {
+    [GizmoMode_Position] = gizmo_position_create,
+    [GizmoMode_Rotation] = gizmo_rotation_create,
+    [GizmoMode_Scale] = gizmo_scale_create,
 };
 
 static const gizmo_transform_callback transform_callback_func[] = {
-    [GizmoTransformMode_Position] = gizmo_transform_callback_position,
-    [GizmoTransformMode_Rotation] = gizmo_transform_callback_rotation,
-    [GizmoTransformMode_Scale] = gizmo_transform_callback_scale,
+    [GizmoMode_Position] = gizmo_callback_position,
+    [GizmoMode_Rotation] = gizmo_callback_rotation,
+    [GizmoMode_Scale] = gizmo_callback_scale,
 };
 
 /**
    Create the three key transform gizmo handles (translate, rotate, scale) and
    set active handle.
  */
-void gizmo_transform_create(GizmoTransform *gizmo,
-                            const GizmoCreateDescriptor *desc) {
+void gizmo_create(Gizmo *gizmo, const GizmoCreateDescriptor *desc) {
 
-  gizmo->mode = GizmoTransformMode_Position;
+  gizmo->mode = GizmoMode_Position;
 
   // init 'cache' attributes
 
   // Use for-loop and lookup tables to map the callbacks functions and creating
   // methods since all handles use the same approach.
   // 0 = Transform, 1 = Rotate, 2 = Scale
-  for (size_t i = 0; i < GIZMO_TRANSFORM_AXIS_COUNT; i++) {
+  for (size_t i = 0; i < GIZMO_AXIS_COUNT; i++) {
 
     // look up transform callbacks that will be called when a handle will be
     // clicked on
@@ -52,11 +51,11 @@ void gizmo_transform_create(GizmoTransform *gizmo,
    mistakes by adding multiple times the same gizmo or having two different ones
    at the same time.
  */
-void gizmo_transform_update_mode(GizmoTransform *gizmo, MeshRefList *dest_list,
-                                 GizmoTransformMode mode) {
+void gizmo_update_mode(Gizmo *gizmo, MeshRefList *dest_list,
+                                 GizmoMode mode) {
 
   // search & remove active handles from the list
-  gizmo_transform_remove(gizmo, dest_list);
+  gizmo_remove(gizmo, dest_list);
 
   // update active handle & mode
   gizmo->mode = mode;
@@ -70,7 +69,7 @@ void gizmo_transform_update_mode(GizmoTransform *gizmo, MeshRefList *dest_list,
    list. Used to make a certain gizmo (translate, rot, scale) disappear in the
    scene (in case the selection went back to 0 as instance).
  */
-void gizmo_transform_remove(GizmoTransform *gizmo, MeshRefList *dest_list) {
+void gizmo_remove(Gizmo *gizmo, MeshRefList *dest_list) {
   for (size_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
     mesh_ref_list_remove(dest_list, gizmo->handles[gizmo->mode].entries[i]);
 }
@@ -79,12 +78,12 @@ void gizmo_transform_remove(GizmoTransform *gizmo, MeshRefList *dest_list) {
    Transform handle, used to set the handles at the center of selection.
  */
 
-void gizmo_transform_set_position(GizmoTransform *gizmo, vec3 position) {
+void gizmo_set_position(Gizmo *gizmo, vec3 position) {
   mesh_ref_list_set_position(&gizmo->handles[gizmo->mode], position);
 }
 
-void gizmo_transform_set_rotation_add(GizmoTransform *gizmo, vec3 value,
-                                const Axis axis) {
+void gizmo_set_rotation_add(Gizmo *gizmo, vec3 value,
+                                      const Axis axis) {
   mesh_ref_list_set_rotation_axis(&gizmo->handles[gizmo->mode], value, axis);
 }
 
@@ -95,8 +94,7 @@ void gizmo_transform_set_rotation_add(GizmoTransform *gizmo, vec3 value,
    Function prmarily used in raycast selection to retrieve the axis depending on
    the clicked gizmo arrow/ scale or rotation handle.
  */
-void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
-                                        const Mesh *mesh) {
+void gizmo_set_axis_from_mesh(Gizmo *gizmo, const Mesh *mesh) {
 
   for (size_t j = 0; j < 3; j++) // axis
     if (gizmo->interactive_handles[gizmo->mode].entries[j] == mesh)
@@ -121,11 +119,11 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *gizmo,
    offset.
 
  */
-void gizmo_transform_set_active(GizmoTransform *gizmo, Camera *camera,
+void gizmo_set_active(Gizmo *gizmo, Camera *camera,
                                 Viewport *viewport) {
 
   // cache gizmo init position
-  gizmo_transform_origin(gizmo, &gizmo->cache.gizmo_init_position);
+  gizmo_origin(gizmo, &gizmo->cache.gizmo_init_position);
 
   // cache axis
   // get direction from camera
@@ -161,7 +159,7 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, Camera *camera,
   gizmo->cache.init_inv_distance = 1.0f / gizmo->cache.init_distance;
 
   // rotation => angle based, so need to project ray to an infinite plane
-  if (gizmo->mode == GizmoTransformMode_Rotation) {
+  if (gizmo->mode == GizmoMode_Rotation) {
 
     // init plane
     inf_plane_create(&gizmo->cache.plane, gizmo->cache.gizmo_init_position,
@@ -177,7 +175,7 @@ void gizmo_transform_set_active(GizmoTransform *gizmo, Camera *camera,
    Clear gizmo cached data. Used on HTML events mouse up so
    during the next mouse down we can repopulate the new data.
  */
-void gizmo_transform_clear_active(GizmoTransform *gizmo) {
+void gizmo_clear_active(Gizmo *gizmo) {
   // reset gizmo initial position and delta
   glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.gizmo_init_position);
   glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.init_delta);
@@ -191,11 +189,11 @@ void gizmo_transform_clear_active(GizmoTransform *gizmo) {
 
    Use a lookup table coupled with a linear search to pick the right pointer.
  */
-void gizmo_transform_reset_color_uniform(GizmoTransform *gizmo) {
+void gizmo_reset_color_uniform(Gizmo *gizmo) {
 
-  for (uint8_t i = 0; i < GIZMO_TRANSFORM_AXIS_COUNT; i++) {
+  for (uint8_t i = 0; i < GIZMO_AXIS_COUNT; i++) {
     Mesh *handle = gizmo->interactive_handles[gizmo->mode].entries[i];
     shader_update_uniform_data(mesh_shader(handle, MeshShader_Fixed), 1, 0,
-                          gizmo_handle_color[i]);
+                               gizmo_handle_color[i]);
   }
 }

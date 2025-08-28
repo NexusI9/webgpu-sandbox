@@ -60,8 +60,8 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
  */
 void scene_editor_gizmo_create_transform(Scene *scene) {
 
-  GizmoTransform *gizmo = &scene->editor.gizmo.transform;
-  gizmo_transform_create(gizmo, &(GizmoCreateDescriptor){
+  Gizmo *gizmo = &scene->editor.gizmo.transform;
+  gizmo_create(gizmo, &(GizmoCreateDescriptor){
                                     .camera = scene->active_camera,
                                     .device = scene_device(scene),
                                     .queue = scene_queue(scene),
@@ -73,7 +73,7 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
     // add the gizmo interactive handles to 'Gizmo Transform' layer as to only
     // include this layer for he raycast selection
     scene_layer_set_insert_mesh_ref_list(&scene->layers,
-                                         SCENE_LAYER_GIZMO_TRANSFORM,
+                                         SCENE_LAYER_GIZMO,
                                          &gizmo->interactive_handles[i]);
 
     // build each guizmo mode mesh ref list

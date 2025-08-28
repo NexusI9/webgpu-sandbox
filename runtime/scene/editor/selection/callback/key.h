@@ -9,7 +9,7 @@ typedef struct {
   size_t length;
   input_keyrec_callback callback;
   Axis axis;
-  GizmoTransformMode mode;
+  GizmoMode mode;
 } SelectionKeySequence;
 
 void scene_selection_init_key_events(Scene *scene);

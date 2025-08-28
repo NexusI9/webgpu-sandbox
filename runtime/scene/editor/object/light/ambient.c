@@ -35,11 +35,11 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
                                    });
 
   // set callback
-  icon->transform_callback[GizmoTransformMode_Position] =
+  icon->transform_callback[GizmoMode_Position] =
       seo_light_ambient_set_position;
-  icon->transform_callback[GizmoTransformMode_Rotation] =
+  icon->transform_callback[GizmoMode_Rotation] =
       seo_light_ambient_set_rotation;
-  icon->transform_callback[GizmoTransformMode_Scale] =
+  icon->transform_callback[GizmoMode_Scale] =
       seo_light_ambient_set_scale;
 
   seo->origin = icon->mesh;

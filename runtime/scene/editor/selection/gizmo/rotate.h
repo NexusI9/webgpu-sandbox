@@ -3,7 +3,7 @@
 
 #include "./core.h"
 
-void gizmo_transform_rotation_create(MeshRefList *, MeshRefList * ,
+void gizmo_rotation_create(MeshRefList *, MeshRefList * ,
                                    const GizmoCreateDescriptor *);
 
 #endif

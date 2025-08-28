@@ -15,10 +15,9 @@ typedef enum {
 } SceneLayerStatus;
 
 static const char *const SCENE_LAYER_DEFAULT = "Default";
-static const char *const SCENE_LAYER_GIZMO_TRANSFORM = "Gizmo Transform";
+static const char *const SCENE_LAYER_GIZMO = "Gizmo";
 static const char *const SCENE_LAYER_GIZMO_SELECTABLE = "Gizmo Selectable";
 static const char *const SCENE_LAYER_UNSELECTABLE = "Unselectable";
-
 
 typedef struct {
   char *name;
@@ -31,7 +30,7 @@ typedef struct {
   SceneLayer *entries;
 } SceneLayerSet;
 
-void scene_layer_init(SceneLayerSet*);
+void scene_layer_init(SceneLayerSet *);
 
 /*Layer*/
 SceneLayerStatus scene_layer_create(SceneLayer *, const char *, size_t);

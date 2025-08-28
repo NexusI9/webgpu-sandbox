@@ -10,9 +10,9 @@
 
  */
 static const mesh_transform_callback transform_callback_mesh[] = {
-    [GizmoTransformMode_Position] = mesh_set_position,
-    [GizmoTransformMode_Rotation] = mesh_set_rotation,
-    [GizmoTransformMode_Scale] = mesh_set_scale,
+    [GizmoMode_Position] = mesh_set_position,
+    [GizmoMode_Rotation] = mesh_set_rotation,
+    [GizmoMode_Scale] = mesh_set_scale,
 };
 
 static inline void

@@ -1,5 +1,5 @@
-#ifndef _GIZMO_TRANSFORM_CORE_H_
-#define _GIZMO_TRANSFORM_CORE_H_
+#ifndef _GIZMO_CORE_H_
+#define _GIZMO_CORE_H_
 
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
@@ -8,10 +8,10 @@
 #include "../utils/vector/vector.h"
 #include <stddef.h>
 
-#define GIZMO_TRANSFORM_SIZE 15.0f
-#define GIZMO_TRANSFORM_POSITION_CAPACITY 128
-#define GIZMO_TRANSFORM_AXIS_COUNT 3
-#define GIZMO_TRANSFORM_MODE_COUNT 3
+#define GIZMO_SIZE 15.0f
+#define GIZMO_POSITION_CAPACITY 128
+#define GIZMO_AXIS_COUNT 3
+#define GIZMO_MODE_COUNT 3
 
 /**
   Gizmo Transform
@@ -97,26 +97,25 @@
                                     '------------------------------------'
  */
 
-typedef struct GizmoTransform GizmoTransform;
+typedef struct Gizmo Gizmo;
 
-typedef void (*gizmo_transform_callback)(GizmoTransform *, Camera *, Viewport *,
-                                         vec3 *);
-
-typedef enum {
-  GizmoTransformMode_Position,
-  GizmoTransformMode_Rotation,
-  GizmoTransformMode_Scale,
-} GizmoTransformMode;
+typedef void (*gizmo_transform_callback)(Gizmo *, Camera *, Viewport *, vec3 *);
 
 typedef enum {
-  GizmoTransformSpace_Global,
-  GizmoTransformSpace_Local,
-} GizmoTransformSpace;
+  GizmoMode_Position,
+  GizmoMode_Rotation,
+  GizmoMode_Scale,
+} GizmoMode;
 
-struct GizmoTransform {
+typedef enum {
+  GizmoSpace_Global,
+  GizmoSpace_Local,
+} GizmoSpace;
 
-  GizmoTransformMode mode;
-  GizmoTransformSpace space;
+struct Gizmo {
+
+  GizmoMode mode;
+  GizmoSpace space;
 
   Axis axis;
 
@@ -124,7 +123,7 @@ struct GizmoTransform {
      Visual Gizmo handles (mesh*) mostly use to hide/show targeted mesh based on
      gizmo mode
    */
-  MeshRefList handles[GIZMO_TRANSFORM_AXIS_COUNT];
+  MeshRefList handles[GIZMO_AXIS_COUNT];
 
   /**
      TODO:
@@ -144,9 +143,9 @@ struct GizmoTransform {
      occluder so is doesn't override the other handle. (Yet to be
      implemented...)
    */
-  MeshRefList interactive_handles[GIZMO_TRANSFORM_AXIS_COUNT];
+  MeshRefList interactive_handles[GIZMO_AXIS_COUNT];
 
-  gizmo_transform_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
+  gizmo_transform_callback transform_callback[GIZMO_MODE_COUNT];
 
   /**
      Cached attribute on transform (click/ hotkey)
@@ -201,36 +200,33 @@ typedef struct {
   MeshList *list; // mesh pool from which gizmo mesh will be created
 } GizmoCreateDescriptor;
 
-static color *gizmo_handle_color[GIZMO_TRANSFORM_AXIS_COUNT] = {
-    &COLOR_GIZMO_TRANSFORM_X,
-    &COLOR_GIZMO_TRANSFORM_Y,
-    &COLOR_GIZMO_TRANSFORM_Z,
+static color *gizmo_handle_color[GIZMO_AXIS_COUNT] = {
+    &COLOR_GIZMO_X,
+    &COLOR_GIZMO_Y,
+    &COLOR_GIZMO_Z,
 };
 
-typedef void (*gizmo_transform_create_handles_callback)(
+typedef void (*gizmo_create_handles_callback)(
     MeshRefList *, MeshRefList *, const GizmoCreateDescriptor *);
 
-void gizmo_transform_create(GizmoTransform *,
-                            const GizmoCreateDescriptor *desc);
+void gizmo_create(Gizmo *, const GizmoCreateDescriptor *desc);
 
-void gizmo_transform_update_mode(GizmoTransform *, MeshRefList *,
-                                 GizmoTransformMode);
+void gizmo_update_mode(Gizmo *, MeshRefList *, GizmoMode);
 
-void gizmo_transform_remove(GizmoTransform *, MeshRefList *);
+void gizmo_remove(Gizmo *, MeshRefList *);
 
-void gizmo_transform_set_position(GizmoTransform *, vec3);
-void gizmo_transform_set_rotation(GizmoTransform *, vec3);
+void gizmo_set_position(Gizmo *, vec3);
+void gizmo_set_rotation(Gizmo *, vec3);
 
-void gizmo_transform_set_active(GizmoTransform *, Camera *, Viewport *);
+void gizmo_set_active(Gizmo *, Camera *, Viewport *);
 
-void gizmo_transform_clear_active(GizmoTransform *);
+void gizmo_clear_active(Gizmo *);
 
-void gizmo_transform_set_axis_from_mesh(GizmoTransform *, const Mesh *);
+void gizmo_set_axis_from_mesh(Gizmo *, const Mesh *);
 
-void gizmo_transform_reset_color_uniform(GizmoTransform *);
+void gizmo_reset_color_uniform(Gizmo *);
 
-static inline void gizmo_transform_update_ssbo(GizmoTransform *gizmo,
-                                               SSBOManager *ssbo) {
+static inline void gizmo_update_ssbo(Gizmo *gizmo, SSBOManager *ssbo) {
   for (uint8_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
     ssbo_update_queue_insert(
         ssbo, SSBOType_Mesh,

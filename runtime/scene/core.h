@@ -55,7 +55,7 @@ struct SceneEditorObjectMesh {
   // index of object (ex in LightList or CameraList), not sure about this
   // flow...
   size_t target_list_index;
-  seo_transform_axis_callback transform_callback[GIZMO_TRANSFORM_MODE_COUNT];
+  seo_transform_axis_callback transform_callback[GIZMO_MODE_COUNT];
 };
 
 typedef struct {
@@ -115,7 +115,7 @@ typedef struct {
   Vec3List *initial_attributes;
   vec3 *delta;
   const Axis axis;
-  const GizmoTransformMode transform_mode;
+  const GizmoMode transform_mode;
   Scene *scene;
 } SceneSelectionTransform;
 
@@ -170,7 +170,7 @@ typedef struct {
   SceneEditorObjectList seo_list; // cam/ lights  lists
 
   struct {
-    GizmoTransform transform; // transform gizmo (unique)
+    Gizmo transform; // transform gizmo (unique)
     Mesh *grid;               // grid gizmo (unique)
   } gizmo;
 

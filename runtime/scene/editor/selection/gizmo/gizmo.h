@@ -1,5 +1,5 @@
-#ifndef _GIZMO_TRANSFORM_H_
-#define _GIZMO_TRANSFORM_H_
+#ifndef _GIZMO_H_
+#define _GIZMO_H_
 
 #include "core.h"
 #include "translate.h"

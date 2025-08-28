@@ -44,11 +44,11 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   });
 
   // set callback
-  icon->transform_callback[GizmoTransformMode_Position] =
+  icon->transform_callback[GizmoMode_Position] =
       seo_camera_set_position;
-  icon->transform_callback[GizmoTransformMode_Rotation] =
+  icon->transform_callback[GizmoMode_Rotation] =
       seo_camera_set_rotation;
-  icon->transform_callback[GizmoTransformMode_Scale] = seo_camera_set_scale;
+  icon->transform_callback[GizmoMode_Scale] = seo_camera_set_scale;
 
   SceneEditorObjectMesh *cube = seo_mesh_list_new_entry(&seo->meshes);
   cube->mesh = scene_new_mesh(desc->scene);
@@ -91,11 +91,11 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   mesh_set_position(cube->mesh, (vec3){0.0f, 1.0f, 0.0f});
 
   // set callback
-  cube->transform_callback[GizmoTransformMode_Position] =
+  cube->transform_callback[GizmoMode_Position] =
       seo_camera_set_position;
-  cube->transform_callback[GizmoTransformMode_Rotation] =
+  cube->transform_callback[GizmoMode_Rotation] =
       seo_camera_set_rotation;
-  cube->transform_callback[GizmoTransformMode_Scale] = seo_camera_set_scale;
+  cube->transform_callback[GizmoMode_Scale] = seo_camera_set_scale;
 
   seo->origin = icon->mesh;
 
