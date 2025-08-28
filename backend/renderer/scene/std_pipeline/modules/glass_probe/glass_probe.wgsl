@@ -61,11 +61,10 @@ const SSBO_CAPACITY : u32 = 32u;
 @group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
 @group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
 
-@group(0) @binding(3) var<uniform> uGlass : Glass;
-@group(0) @binding(4) var<uniform> uProbeReflectionList : ProbeReflectionList;
-
-@group(1) @binding(0) var probe_reflection_maps : texture_cube_array<f32>;
-@group(1) @binding(1) var probe_reflection_sampler : sampler;
+@group(1) @binding(0) var<uniform> uGlass : Glass;
+@group(1) @binding(1) var<uniform> uProbeReflectionList : ProbeReflectionList;
+@group(1) @binding(2) var probe_reflection_maps : texture_cube_array<f32>;
+@group(1) @binding(3) var probe_reflection_sampler : sampler;
 
 //
 //

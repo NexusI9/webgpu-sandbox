@@ -10,45 +10,51 @@
 
 #include <webgpu/webgpu.h>
 
-static const ShaderPipelineStateObject layout_shadow = {
-    .label = "Pipeline Bind Groups - Shadow",
-    .shader_path =
-        "./backend/renderer/scene/std_pipeline/modules/shadow/shadow.wgsl",
-    .bind_groups_count = 1,
-    .bind_groups =
-        (WGPUBindGroupLayoutDescriptor[]){
+static const PipelineBindingMVP shadow_mvp = {
+    .group = 0,
+    .view = 0,
+    .projection = 0,
+    .model = 1,
+};
+
+static const WGPUBindGroupLayoutDescriptor shadowlayout_matrix = {
+    // Group 0: view_projection + uModel
+    .label = "Group 0 - Shadow Matrices",
+    .entryCount = 2,
+    .entries =
+        (WGPUBindGroupLayoutEntry[]){
             {
-                // Group 0: view_projection + uModel
-                .label = "Group 0 - Shadow Matrices",
-                .entryCount = 2,
-                .entries =
-                    (WGPUBindGroupLayoutEntry[]){
-                        {
-                            // view_projection
-                            .binding = 0,
-                            .visibility = WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(mat4),
-                                },
-                        },
-                        {
-                            // uModel
-                            .binding = 1,
-                            .visibility = WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(MeshUniform),
-                                },
-                        },
+                // view_projection
+                .binding = 0,
+                .visibility = WGPUShaderStage_Vertex,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .hasDynamicOffset = false,
+                        .minBindingSize =
+                            sizeof(mat4), // adjust if using a struct
+                    },
+            },
+            {
+                // uModel
+                .binding = 1,
+                .visibility = WGPUShaderStage_Vertex,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .hasDynamicOffset = true,
+                        .minBindingSize = sizeof(MeshUniform),
                     },
             },
         },
+};
+
+static const ShaderPipelineStateObject layout_shadow = {
+    .label = "Pipeline Bind Groups - Shadow",
+    .shader_path = "./backend/renderer/scene/std_pipeline/modules/"
+                   "shadow/shadow.wgsl",
+    .bind_groups_count = 1,
+    .bind_groups = {&shadowlayout_matrix},
     .pipeline_attributes =
         {
             .multisample = PipelineMultisampleCount_1x,
@@ -59,10 +65,10 @@ static const ShaderPipelineStateObject layout_shadow = {
                     .depthCompare = WGPUCompareFunction_Less,
                 },
 
-            /* need to set the cullback to FRONT for point light because the
-             * light POV render is flipped on the X axis to match the cubemap
-             * coordinates, such negative scaling lead to set the cullback to
-             * front.*/
+            /* need to set the cullback to FRONT for point light because
+             * the light POV render is flipped on the X axis to match
+             * the cubemap coordinates, such negative scaling lead to
+             * set the cullback to front.*/
             .primitive_state =
                 (WGPUPrimitiveState){
                     .frontFace = WGPUFrontFace_CCW,
@@ -78,40 +84,7 @@ static const ShaderPipelineStateObject layout_shadow_cullback = {
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/shadow/shadow.wgsl",
     .bind_groups_count = 1,
-    .bind_groups =
-        (WGPUBindGroupLayoutDescriptor[]){
-            {
-                // Group 0: view_projection + uModel
-                .label = "Group 0 - Shadow Matrices",
-                .entryCount = 2,
-                .entries =
-                    (WGPUBindGroupLayoutEntry[]){
-                        {
-                            // view_projection
-                            .binding = 0,
-                            .visibility = WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(
-                                        mat4), // adjust if using a struct
-                                },
-                        },
-                        {
-                            // uModel
-                            .binding = 1,
-                            .visibility = WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize = sizeof(MeshUniform),
-                                },
-                        },
-                    },
-            },
-        },
+    .bind_groups = {&shadowlayout_matrix},
     .pipeline_attributes =
         {
             .multisample = PipelineMultisampleCount_1x,
@@ -134,16 +107,7 @@ static const ShaderPipelineStateObject layout_shadow_cullback = {
                     .stripIndexFormat = WGPUIndexFormat_Undefined,
                 },
         },
-    .bindings =
-        {
-            .mvp =
-                {
-                    .group = 0,
-                    .view = 0,
-                    .projection = 0,
-                    .model = 1,
-                },
-        },
+    .bindings = {.mvp = &shadow_mvp},
 };
 
 #endif

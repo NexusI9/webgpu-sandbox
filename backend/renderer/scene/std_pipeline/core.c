@@ -9,12 +9,12 @@
 #include "./modules/grid/grid.h"
 #include "./modules/line/line.h"
 #include "./modules/pbr/pbr.h"
+#include "./modules/reflection/reflection.h"
 #include "./modules/screen/screen.h"
 #include "./modules/shadow/shadow.h"
 #include "./modules/skybox/skybox.h"
 #include "./modules/solid/solid.h"
 #include "./modules/unlit/unlit.h"
-#include "./modules/reflection/reflection.h"
 
 static const ShaderPipelineStateObject *standard_layouts[PIPELINE_TYPE_COUNT] =
     {

@@ -6,70 +6,34 @@
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
 
+#include "../commons.h"
 #include <webgpu/webgpu.h>
+
+static const WGPUBindGroupLayoutDescriptor line_bind_group = {
+    // Group 1
+    .label = "Group 1 - Color",
+    .entryCount = 1,
+    .entries =
+        (WGPUBindGroupLayoutEntry[]){
+            {
+                .binding = 0, // Color
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .hasDynamicOffset = false,
+                        .minBindingSize = sizeof(color),
+                    },
+            },
+        },
+};
 
 static const ShaderPipelineStateObject layout_line = {
     .label = "Pipeline Bind Groups - Line",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/line/line.wgsl",
-    .bind_groups_count = 1,
-    .bind_groups =
-        (WGPUBindGroupLayoutDescriptor[]){
-            {
-                // Group 0
-                .label = "Group 0 - Viewport, Camera, Mesh",
-                .entryCount = 4,
-                .entries =
-                    (WGPUBindGroupLayoutEntry[]){
-                        {
-                            .binding = 0, // uViewport
-                            .visibility = WGPUShaderStage_Vertex |
-                                          WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(ViewportUniform),
-                                },
-                        },
-                        {
-                            .binding = 1, // uCamera
-                            .visibility = WGPUShaderStage_Vertex |
-                                          WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(CameraUniform),
-                                },
-                        },
-                        {
-                            .binding = 2, // uMesh
-                            .visibility = WGPUShaderStage_Vertex |
-                                          WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(MeshUniform),
-                                },
-                        },
-                        {
-                            .binding = 3, // Color
-                            .visibility = WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(color),
-                                },
-                        },
-                    },
-            },
-        },
+    .bind_groups_count = 2,
+    .bind_groups = {&mvp_layout, &line_bind_group},
     .pipeline_attributes =
         {
             .primitive_state =
@@ -80,16 +44,7 @@ static const ShaderPipelineStateObject layout_line = {
                     .stripIndexFormat = WGPUIndexFormat_Undefined,
                 },
         },
-    .bindings =
-        {
-            .mvp =
-                {
-                    .group = 0,
-                    .projection = 0,
-                    .view = 1,
-                    .model = 2,
-                },
-        },
+    .bindings = {.mvp = &mvp_binding},
 };
 
 #endif

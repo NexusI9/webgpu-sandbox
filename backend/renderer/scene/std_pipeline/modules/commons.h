@@ -7,43 +7,44 @@
 
 #include "webgpu/webgpu.h"
 
+static const WGPUBindGroupLayoutEntry mvp_layout_entry[3] = {
+    {
+        .binding = 0,
+        .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+        .buffer =
+            (WGPUBufferBindingLayout){
+                .type = WGPUBufferBindingType_ReadOnlyStorage,
+                .hasDynamicOffset = true,
+                .minBindingSize = sizeof(ViewportUniform),
+            },
+    },
+    {
+        .binding = 1,
+        .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+        .buffer =
+            (WGPUBufferBindingLayout){
+                .type = WGPUBufferBindingType_ReadOnlyStorage,
+                .hasDynamicOffset = true,
+                .minBindingSize = sizeof(CameraUniform),
+            },
+    },
+    {
+        .binding = 2,
+        .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+        .buffer =
+            (WGPUBufferBindingLayout){
+                .type = WGPUBufferBindingType_ReadOnlyStorage,
+                .hasDynamicOffset = true,
+                .minBindingSize = sizeof(MeshUniform),
+            },
+    },
+};
+
 static const WGPUBindGroupLayoutDescriptor mvp_layout = {
     // Group 0
     .label = "Group 0 (Scene Data)",
     .entryCount = 3,
-    .entries =
-        (WGPUBindGroupLayoutEntry[]){
-            {
-                .binding = 0,
-                .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-                .buffer =
-                    (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
-                        .hasDynamicOffset = true,
-                        .minBindingSize = sizeof(ViewportUniform),
-                    },
-            },
-            {
-                .binding = 1,
-                .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-                .buffer =
-                    (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
-                        .hasDynamicOffset = true,
-                        .minBindingSize = sizeof(CameraUniform),
-                    },
-            },
-            {
-                .binding = 2,
-                .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
-                .buffer =
-                    (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
-                        .hasDynamicOffset = true,
-                        .minBindingSize = sizeof(MeshUniform),
-                    },
-            },
-        },
+    .entries = mvp_layout_entry,
 };
 
 static const PipelineBindingMVP mvp_binding = {

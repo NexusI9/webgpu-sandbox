@@ -325,9 +325,9 @@ void shader_bind_group_create_from_layout(
   // traverse group
   for (size_t i = 0; i < layout->bind_groups_count; i++) {
 
-    for (size_t j = 0; j < layout->bind_groups[i].entryCount; j++) {
+    for (size_t j = 0; j < layout->bind_groups[i]->entryCount; j++) {
       const WGPUBindGroupLayoutEntry *entry =
-          &layout->bind_groups[i].entries[j];
+          &layout->bind_groups[i]->entries[j];
       // Use discriminator to define entry type
 
       // generate uniform/ storage

@@ -95,9 +95,7 @@ typedef struct {
 } PipelineBindingMVP;
 
 typedef struct {
-
-  PipelineBindingMVP mvp;
-
+  const PipelineBindingMVP *mvp;
 } PipelineBinding;
 
 typedef struct {
@@ -105,10 +103,10 @@ typedef struct {
 
   // WGSL file to load module
   const char *shader_path;
+  const WGPUBindGroupLayoutDescriptor *bind_groups[4];
 
   // Shader bind groups layout
   size_t bind_groups_count;
-  const WGPUBindGroupLayoutDescriptor *bind_groups;
 
   struct {
     WGPUVertexState vertex_state;

@@ -29,15 +29,15 @@ void example_glass_box(Scene *scene) {
 
   scene_add_mesh(scene, mesh, NULL);
 
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 0, 3,
-                        &(GlassUniform){
-                            .color = {1.0f, 0.5f, 1.0f, 1.0f},
-                            .roughness = 0.23f,
-                            .frost_scale = 700.0f,
-                            .frost_strength = 0.4f,
-                        });
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
+                             &(GlassUniform){
+                                 .color = {1.0f, 0.5f, 1.0f, 1.0f},
+                                 .roughness = 0.23f,
+                                 .frost_scale = 700.0f,
+                                 .frost_strength = 0.4f,
+                             });
 
-  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 0,
+  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 1,
                              scene->renderer.texture.skybox.cubemap,
                              WGPUTextureFormat_BGRA8Unorm);
 }
@@ -76,24 +76,24 @@ void example_glass_probe(Scene *scene) {
 
   scene_add_mesh(scene, mesh, NULL);
 
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 0, 3,
-                        &(GlassUniform){
-                            .color = {1.0f, 1.0f, 1.0f, 1.0f},
-                            .frost_scale = 1.0f,
-                            .frost_strength = 0.0f,
-                            .roughness = 0.145f,
-                        });
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
+                             &(GlassUniform){
+                                 .color = {1.0f, 1.0f, 1.0f, 1.0f},
+                                 .frost_scale = 1.0f,
+                                 .frost_strength = 0.0f,
+                                 .roughness = 0.145f,
+                             });
 
   // first update each meshes draw list probe list uniform
   ProbeReflectionListUniform list_uniform;
   probe_reflection_grid_list_uniform(&list_uniform, &scene->probes_reflection);
 
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 0, 4,
-                        &list_uniform);
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 1,
+                             &list_uniform);
 
   // swap fallback view with probe render pass view
   shader_update_texture_view(
-      mesh_shader(mesh, MeshShader_Texture), 1, 0,
+      mesh_shader(mesh, MeshShader_Texture), 1, 2,
       scene->probes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
 

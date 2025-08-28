@@ -10,7 +10,7 @@
    pipeline descriptor
  */
 WGPUPipelineLayout shader_pipeline_state_object_create(
-    const WGPUBindGroupLayoutDescriptor *bind_groups, const size_t count,
+    const WGPUBindGroupLayoutDescriptor *const *bind_groups, const size_t count,
     const WGPUDevice device, WGPUBindGroupLayout *outLayout) {
 
   const size_t layout_size = sizeof(WGPUBindGroupLayout) * count;
@@ -18,7 +18,7 @@ WGPUPipelineLayout shader_pipeline_state_object_create(
   WGPUBindGroupLayout *layouts = malloc(layout_size);
 
   for (size_t i = 0; i < count; i++)
-    layouts[i] = wgpuDeviceCreateBindGroupLayout(device, &bind_groups[i]);
+    layouts[i] = wgpuDeviceCreateBindGroupLayout(device, bind_groups[i]);
 
   if (outLayout != NULL)
     memcpy(outLayout, layouts, layout_size);

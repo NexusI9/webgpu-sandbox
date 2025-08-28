@@ -6,6 +6,7 @@
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
 
+#include "../commons.h"
 #include <webgpu/webgpu.h>
 
 static const ShaderPipelineStateObject layout_solid = {
@@ -13,65 +14,8 @@ static const ShaderPipelineStateObject layout_solid = {
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/solid/solid.wgsl",
     .bind_groups_count = 1,
-    .bind_groups =
-        (WGPUBindGroupLayoutDescriptor[]){
-            {
-                // Group 0: Camera, Viewport, Mesh
-                .label = "Group 0 - Camera, Viewport, Mesh",
-                .entryCount = 3,
-                .entries =
-                    (WGPUBindGroupLayoutEntry[]){
-                        {
-                            // uViewport
-                            .binding = 0,
-                            .visibility = WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(ViewportUniform),
-                                },
-                        },
-                        {
-                            // uCamera
-                            .binding = 1,
-                            .visibility = WGPUShaderStage_Fragment |
-                                          WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(CameraUniform),
-                                },
-                        },
-                        {
-                            // uMesh
-                            .binding = 2,
-                            .visibility = WGPUShaderStage_Fragment |
-                                          WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(MeshUniform),
-                                },
-                        },
-                    },
-            },
-        },
-    .bindings =
-        {
-            .mvp =
-                {
-                    .group = 0,
-                    .projection = 0,
-                    .view = 1,
-                    .model = 2,
-                },
-        },
+    .bind_groups = {&mvp_layout},
+    .bindings = {.mvp = &mvp_binding},
 };
 
 #endif

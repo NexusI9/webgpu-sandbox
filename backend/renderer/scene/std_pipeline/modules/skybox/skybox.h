@@ -6,101 +6,55 @@
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
 
+#include "../commons.h"
 #include <webgpu/webgpu.h>
+
+static const WGPUBindGroupLayoutDescriptor skybox_layout_bind_group = {
+    // Group 1: Skybox resources (texture, sampler, blur factor)
+    .label = "Group 1 - Skybox Resources",
+    .entryCount = 3,
+    .entries =
+        (WGPUBindGroupLayoutEntry[]){
+            {
+                // skybox_texture
+                .binding = 0,
+                .visibility = WGPUShaderStage_Fragment,
+                .texture =
+                    (WGPUTextureBindingLayout){
+                        .sampleType = WGPUTextureSampleType_Float,
+                        .viewDimension = WGPUTextureViewDimension_Cube,
+                        .multisampled = false,
+                    },
+            },
+            {
+                // skybox_sampler
+                .binding = 1,
+                .visibility = WGPUShaderStage_Fragment,
+                .sampler =
+                    (WGPUSamplerBindingLayout){
+                        .type = WGPUSamplerBindingType_Filtering,
+                    },
+            },
+            {
+                // skybox_blur (float)
+                .binding = 2,
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .hasDynamicOffset = false,
+                        .minBindingSize = sizeof(float),
+                    },
+            },
+        },
+};
 
 static const ShaderPipelineStateObject layout_skybox = {
     .label = "Pipeline Bind Groups - Skybox",
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/skybox/skybox.wgsl",
     .bind_groups_count = 2,
-    .bind_groups =
-        (WGPUBindGroupLayoutDescriptor[]){
-            {
-                // Group 0: Camera & Mesh data
-                .label = "Group 0 - Camera and Mesh",
-                .entryCount = 3,
-                .entries =
-                    (WGPUBindGroupLayoutEntry[]){
-                        {
-                            // uViewport
-                            .binding = 0,
-                            .visibility = WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(ViewportUniform),
-                                },
-                        },
-                        {
-                            // uCamera
-                            .binding = 1,
-                            .visibility = WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(CameraUniform),
-                                },
-                        },
-                        {
-                            // uMesh
-                            .binding = 2,
-                            .visibility = WGPUShaderStage_Vertex,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_ReadOnlyStorage,
-                                    .hasDynamicOffset = true,
-                                    .minBindingSize =
-                                        sizeof(MeshUniform),
-                                },
-                        },
-                    },
-            },
-            {
-                // Group 1: Skybox resources (texture, sampler, blur factor)
-                .label = "Group 1 - Skybox Resources",
-                .entryCount = 3,
-                .entries =
-                    (WGPUBindGroupLayoutEntry[]){
-                        {
-                            // skybox_texture
-                            .binding = 0,
-                            .visibility = WGPUShaderStage_Fragment,
-                            .texture =
-                                (WGPUTextureBindingLayout){
-                                    .sampleType = WGPUTextureSampleType_Float,
-                                    .viewDimension =
-                                        WGPUTextureViewDimension_Cube,
-                                    .multisampled = false,
-                                },
-                        },
-                        {
-                            // skybox_sampler
-                            .binding = 1,
-                            .visibility = WGPUShaderStage_Fragment,
-                            .sampler =
-                                (WGPUSamplerBindingLayout){
-                                    .type = WGPUSamplerBindingType_Filtering,
-                                },
-                        },
-                        {
-                            // skybox_blur (float)
-                            .binding = 2,
-                            .visibility = WGPUShaderStage_Fragment,
-                            .buffer =
-                                (WGPUBufferBindingLayout){
-                                    .type = WGPUBufferBindingType_Uniform,
-                                    .hasDynamicOffset = false,
-                                    .minBindingSize = sizeof(float),
-                                },
-                        },
-                    },
-            },
-
-        },
+    .bind_groups = {&mvp_layout, &skybox_layout_bind_group},
     .pipeline_attributes =
         {
             // set cull to front face (inside cube)
@@ -119,16 +73,7 @@ static const ShaderPipelineStateObject layout_skybox = {
                     .format = WGPUTextureFormat_Depth24Plus,
                 },
         },
-    .bindings =
-        {
-            .mvp =
-                {
-                    .group = 0,
-                    .projection = 0,
-                    .view = 1,
-                    .model = 2,
-                },
-        },
+    .bindings = {.mvp = &mvp_binding},
 
 };
 
