@@ -12,6 +12,8 @@
 
 #define SSBO_INDEX_UNFOUND UINT32_MAX
 
+typedef size_t ssbo_id_t;
+
 typedef enum {
   SSBOStatus_Success,
   SSBOStatus_OutOfBound,
@@ -34,22 +36,29 @@ typedef struct {
   size_t length;
   WGPUBuffer buffer;
   size_t type_size;
-} __attribute__((aligned(16))) SSBO;
+} SSBO;
 
 typedef struct {
   SSBO buffers[SSBO_TYPE_COUNT];
   WGPUQueue queue;
   WGPUDevice device;
-} SSBOManager __attribute__((aligned(16))) ;
+} SSBOManager;
+
+typedef struct {
+  ssbo_id_t id;
+  void *uniform;
+} SSBOSlot;
 
 void ssbo_init(SSBOManager *, WGPUDevice, WGPUQueue);
-SSBOStatus ssbo_update_entry(SSBOManager *, const SSBOType, size_t, void *);
-SSBOStatus ssbo_upload_entry(SSBOManager *, const SSBOType, size_t, void *);
+SSBOStatus ssbo_update_entry(SSBOManager *, const SSBOType, ssbo_id_t, void *);
+SSBOStatus ssbo_upload_entry(SSBOManager *, const SSBOType, ssbo_id_t, void *);
 void ssbo_upload(SSBOManager *, const SSBOType);
 
-void *ssbo_entry(SSBOManager *, const SSBOType, size_t);
-void *ssbo_new_entry(SSBOManager *, const SSBOType, size_t *);
-StaticListStatus ssbo_remove_entry(SSBOManager *, const SSBOType, size_t);
+SSBOStatus ssbo_insert_slot(SSBOManager *,const SSBOType, SSBOSlot *);
+
+void *ssbo_entry(SSBOManager *, const SSBOType, ssbo_id_t);
+void *ssbo_new_entry(SSBOManager *, const SSBOType, ssbo_id_t *);
+StaticListStatus ssbo_remove_entry(SSBOManager *, const SSBOType, ssbo_id_t);
 
 WGPUBuffer ssbo_buffer(SSBOManager *, const SSBOType);
 size_t ssbo_length(SSBOManager *, const SSBOType);

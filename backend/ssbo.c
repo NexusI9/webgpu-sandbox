@@ -69,7 +69,7 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
 }
 
 SSBOStatus ssbo_update_entry(SSBOManager *manager, const SSBOType type,
-                             size_t index, void *data) {
+                             ssbo_id_t index, void *data) {
 
   if (index >= SSBO_CAPACITY) {
     VERBOSE_WARNING(
@@ -90,7 +90,7 @@ SSBOStatus ssbo_update_entry(SSBOManager *manager, const SSBOType type,
 }
 
 SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
-                             size_t index, void *data) {
+                             ssbo_id_t index, void *data) {
 
   // first update stagging
   SSBOStatus stagging_udpate = ssbo_update_entry(manager, type, index, data);
@@ -118,7 +118,8 @@ WGPUBuffer ssbo_buffer(SSBOManager *manager, const SSBOType type) {
   return manager->buffers[type].buffer;
 }
 
-void *ssbo_new_entry(SSBOManager *manager, const SSBOType type, size_t *index) {
+void *ssbo_new_entry(SSBOManager *manager, const SSBOType type,
+                     ssbo_id_t *index) {
   SSBO *ssbo = &manager->buffers[type];
 
   if (index)
@@ -129,7 +130,7 @@ void *ssbo_new_entry(SSBOManager *manager, const SSBOType type, size_t *index) {
 }
 
 StaticListStatus ssbo_remove_entry(SSBOManager *manager, const SSBOType type,
-                                   size_t index) {
+                                   ssbo_id_t index) {
   SSBO *ssbo = &manager->buffers[type];
   return stli_remove((void *)&ssbo->entries, &ssbo->length, ssbo->type_size,
                      &ssbo->entries[index], "SSBO Manager");
@@ -139,7 +140,7 @@ size_t ssbo_length(SSBOManager *ssbo, const SSBOType type) {
   return ssbo->buffers[type].length;
 }
 
-void *ssbo_entry(SSBOManager *ssbo, const SSBOType type, size_t index) {
+void *ssbo_entry(SSBOManager *ssbo, const SSBOType type, ssbo_id_t index) {
   return (void *)((uint8_t *)ssbo->buffers[type].entries +
                   index * ssbo->buffers[type].type_size);
 }
@@ -150,4 +151,14 @@ size_t ssbo_find_index(SSBOManager *manager, const SSBOType type, void *data) {
       return i;
 
   return SSBO_INDEX_UNFOUND;
+}
+
+/**
+   Transfer the slot data into the SSBO buffer and update the slot id.
+ */
+SSBOStatus ssbo_insert_slot(SSBOManager *manager, const SSBOType type,
+                            SSBOSlot *slot) {
+
+  ssbo_new_entry(manager, type, &slot->id);
+  return ssbo_upload_entry(manager, type, slot->id, slot->uniform);
 }

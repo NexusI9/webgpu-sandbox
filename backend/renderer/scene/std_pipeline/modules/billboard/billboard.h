@@ -7,6 +7,7 @@
 #include "../runtime/viewport/viewport.h"
 
 #include <webgpu/webgpu.h>
+#include "../commons.h"
 
 static const ShaderPipelineStateObject layout_billboard = {
     .label = "Pipeline Bind Groups - Billboard",
