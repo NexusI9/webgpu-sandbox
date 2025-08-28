@@ -2,6 +2,7 @@
 #define _VIEWPORT_CORE_H_
 
 #include "../backend/clock.h"
+#include "../backend/ssbo.h"
 #include <cglm/cglm.h>
 
 typedef struct {
@@ -22,6 +23,7 @@ typedef struct {
 } ViewportCreateDescriptor;
 
 typedef struct {
+  
   float fov;
   float near_clip;
   float far_clip;
@@ -29,8 +31,9 @@ typedef struct {
   uint32_t height;
   float aspect;
   mat4 projection;
-  cclock *clock;
-  ViewportUniform *uniform;
+  
+  SSBOSlot ssbo_slot;
+  
 } Viewport;
 
 void viewport_create(Viewport *, const ViewportCreateDescriptor *);

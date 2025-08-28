@@ -4,6 +4,7 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include <emscripten/html5.h>
+#include "../backend/ssbo.h"
 
 #include <cglm/cglm.h>
 #include <stddef.h>
@@ -60,7 +61,8 @@ typedef struct Camera {
   vec3 forward;
   vec3 up;
   vec3 right;
-  CameraUniform* uniform;
+
+  SSBOSlot ssbo_slot;
 
   mat4 view;
 

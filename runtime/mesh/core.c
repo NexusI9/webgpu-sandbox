@@ -41,7 +41,6 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
                               mesh->device, mesh->queue);
   }
 
-
   // init model matrix and transforms
   glm_mat4_identity(mesh->model);
 
@@ -51,8 +50,8 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation_euler);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
-    // alloc uniform (may be replaced by SSBO later when added to the scene)
-  mesh->uniform = aligned_alloc(256, sizeof(MeshUniform));
+  // alloc uniform (may be replaced by SSBO later when added to the scene)
+  mesh->ssbo_slot.uniform = aligned_alloc(256, sizeof(MeshUniform));
   mesh_uniform_update(mesh);
 
   // set default pipeline shader

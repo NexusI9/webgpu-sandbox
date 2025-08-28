@@ -30,7 +30,7 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->sensitivity = cd->sensitivity;
 
   // may be overriden/free by SSBO later when added to scene
-  cam->uniform = aligned_alloc(256, sizeof(CameraUniform));
+  cam->ssbo_slot.uniform = aligned_alloc(256, sizeof(CameraUniform));
 }
 
 void camera_reset(Camera *c) {
@@ -51,7 +51,7 @@ void camera_reset(Camera *c) {
     vec3 right = {0.0f, 0.0f, 0.0f};
     glm_vec3_copy(right, c->right);
 
-    c->uniform = 0;
+    c->ssbo_slot.uniform = NULL;
   }
 }
 
@@ -79,6 +79,8 @@ void camera_draw(Camera *camera) {
 
   camera_update_view(camera);
   camera_uniform_update(camera);
+  ssbo_upload_entry(camera, SSBOType_View, camera->ssbo_slot.id,
+                    camera->ssbo_slot.uniform);
 }
 
 void camera_set_position(Camera *camera, vec3 new_position) {

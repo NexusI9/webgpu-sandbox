@@ -54,11 +54,11 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
   manager->queue = queue;
 
   for (SSBOType i = 0; i < SSBO_TYPE_COUNT; i++) {
-    SSBO *ssbo = &manager->buffers[i];
+    SSBOBuffer *ssbo = &manager->buffers[i];
     ssbo->type_size = ssbo_type[i].size;
     ssbo->length = 0;
     ssbo->capacity = SSBO_CAPACITY * SSBO_MAX_TYPE_SIZE;
-    ssbo->buffer = wgpuDeviceCreateBuffer(
+    ssbo->handle = wgpuDeviceCreateBuffer(
         device, &(WGPUBufferDescriptor){
                     .size = ssbo->capacity,
                     .mappedAtCreation = false,
@@ -79,7 +79,7 @@ SSBOStatus ssbo_update_entry(SSBOManager *manager, const SSBOType type,
     return SSBOStatus_OutOfBound;
   }
 
-  SSBO *ssbo = &manager->buffers[type];
+  SSBOBuffer *ssbo = &manager->buffers[type];
   memcpy((char *)ssbo->entries + index * ssbo->type_size, data,
          ssbo->type_size);
 
@@ -98,9 +98,9 @@ SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
   if (stagging_udpate == SSBOStatus_Success) {
 
     // update ssbo buffer at index
-    SSBO *ssbo = &manager->buffers[type];
+    SSBOBuffer *ssbo = &manager->buffers[type];
     size_t offset = index * ssbo->type_size;
-    wgpuQueueWriteBuffer(manager->queue, ssbo->buffer, offset,
+    wgpuQueueWriteBuffer(manager->queue, ssbo->handle, offset,
                          (uint8_t *)ssbo->entries + offset, ssbo->type_size);
   }
 
@@ -109,18 +109,18 @@ SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
 
 void ssbo_upload(SSBOManager *manager, const SSBOType type) {
 
-  SSBO *ssbo = &manager->buffers[type];
-  wgpuQueueWriteBuffer(manager->queue, ssbo->buffer, 0, ssbo->entries,
+  SSBOBuffer *ssbo = &manager->buffers[type];
+  wgpuQueueWriteBuffer(manager->queue, ssbo->handle, 0, ssbo->entries,
                        ssbo->type_size * SSBO_CAPACITY);
 }
 
-WGPUBuffer ssbo_buffer(SSBOManager *manager, const SSBOType type) {
-  return manager->buffers[type].buffer;
+WGPUBuffer ssbo_buffer_handle(SSBOManager *manager, const SSBOType type) {
+  return manager->buffers[type].handle;
 }
 
 void *ssbo_new_entry(SSBOManager *manager, const SSBOType type,
                      ssbo_id_t *index) {
-  SSBO *ssbo = &manager->buffers[type];
+  SSBOBuffer *ssbo = &manager->buffers[type];
 
   if (index)
     *index = ssbo->length;
@@ -131,7 +131,7 @@ void *ssbo_new_entry(SSBOManager *manager, const SSBOType type,
 
 StaticListStatus ssbo_remove_entry(SSBOManager *manager, const SSBOType type,
                                    ssbo_id_t index) {
-  SSBO *ssbo = &manager->buffers[type];
+  SSBOBuffer *ssbo = &manager->buffers[type];
   return stli_remove((void *)&ssbo->entries, &ssbo->length, ssbo->type_size,
                      &ssbo->entries[index], "SSBO Manager");
 }

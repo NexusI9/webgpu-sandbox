@@ -2,6 +2,7 @@
 #define _MESH_CORE_H_
 
 #include "../backend/registry.h"
+#include "../backend/ssbo.h"
 #include "../geometry/vertex/vertex.h"
 #include "../primitive/primitive.h"
 #include "../shader/shader.h"
@@ -75,7 +76,8 @@ struct Mesh {
   vec3 scale;
   vec3 rotation_euler;
   versor rotation_quat;
-  MeshUniform* uniform;
+
+  SSBOSlot ssbo_slot;
 
   // wgpu
   WGPUDevice device;

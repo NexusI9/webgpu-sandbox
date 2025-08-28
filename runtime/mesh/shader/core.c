@@ -162,20 +162,17 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
   Shader *shader = mesh_shader(mesh, shader_type);
   const PipelineBindingMVP *mvp = &shader->pipeline->bindings.mvp;
 
-  size_t mesh_offset =
-      ssbo_find_index(ssbo_manager, SSBOType_Mesh, mesh->uniform);
-
   ShaderBindGroupUniformEntry entries[3] = {
       // viewport
       {
           .binding = mvp->projection,
-          .buffer = ssbo_buffer(ssbo_manager, SSBOType_Projection),
+          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Projection),
           .offset = 0, // active vewport index
       },
       // camera
       {
           .binding = mvp->view,
-          .buffer = ssbo_buffer(ssbo_manager, SSBOType_View),
+          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_View),
           .offset = 0, // active camera index
           .update =
               {
@@ -187,8 +184,8 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
       // model
       {
           .binding = mvp->model,
-          .buffer = ssbo_buffer(ssbo_manager, SSBOType_Mesh),
-          .offset = mesh_offset,
+          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Mesh),
+          .offset = mesh->ssbo_slot.id,
           .update =
               {
                   .callback = mesh_uniform_model_update_callback,
@@ -202,7 +199,7 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
     ShaderBindGroupUniformEntry *entry = &entries[i];
     shader_update_uniform_buffer(shader, mvp->group, entry->binding,
                                  entry->buffer, entry->offset,
-                                 ShaderBufferLifetime_Keep);
+                                 ShaderBufferLifetime_Release);
     // if (callbacks)
     //  shader_update_uniform_callback(shader, mvp->group, entry->binding,
     //                                &entry->update);
