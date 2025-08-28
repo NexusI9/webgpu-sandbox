@@ -2,12 +2,12 @@
 #include "../../../show.h"
 #include "../core.h"
 #include "../filter.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "../selection.h"
 #include "../utils.h"
 #include "../utils/color.h"
 #include <stddef.h>
 #include <stdint.h>
-#include "../runtime/mesh/shader/shader.h"
 
 static const struct {
   CameraRaycastEvent event;
@@ -224,7 +224,7 @@ void scene_selection_raycast_mesh_callback(
 
         for (size_t i = 0; i < hit->mesh->children.length; i++)
           scene_selection_filter_set_active(target_filter,
-                                              hit->mesh->children.entries[i]);
+                                            hit->mesh->children.entries[i]);
       }
 
       // transfert source to destination
@@ -239,7 +239,8 @@ void scene_selection_raycast_mesh_callback(
   // handle gizmo
   if (scene_selection_length(&scene->editor.selection) > 0) {
     // get average position
-    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection);
+    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection,
+                                           &scene->renderer.ssbo);
     scene_gizmo_transform_show(scene);
   } else {
     // hide from the scene
@@ -310,7 +311,7 @@ void scene_selection_raycast_gizmo_hover_callback(
 
       // update hovered gizmo color
       shader_update_uniform_data(mesh_shader(hit->mesh, MeshShader_Fixed), 1, 0,
-                            COLOR_GIZMO_TRANSFORM_HOVER);
+                                 COLOR_GIZMO_TRANSFORM_HOVER);
 
     } else {
       gizmo_transform_reset_color_uniform(gizmo);

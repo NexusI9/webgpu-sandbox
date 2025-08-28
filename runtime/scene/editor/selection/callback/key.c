@@ -165,7 +165,8 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
     scene_selection_all(selection);
 
     // show gizmo
-    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection);
+    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection,
+                                           &scene->renderer.ssbo);
     scene_gizmo_transform_show(scene);
   }
 }
@@ -182,7 +183,7 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
   // search for same sequence in static array and assign mode to gizmo
   for (size_t i = 0; i < seq_count_mode; i++)
     if (keyrec_sequence_equal(selection_key_sequences_mode[i].sequence,
-                              seq->sequence, seq->length)){
+                              seq->sequence, seq->length)) {
       gizmo->mode = selection_key_sequences_mode[i].mode;
       // reset hover colored on change mode
       gizmo_transform_reset_color_uniform(gizmo);
@@ -191,7 +192,8 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
   // show gizmo if has selection
   if (scene_selection_length(&scene->editor.selection)) {
     // update location to selection average
-    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection);
+    scene_gizmo_transform_pos_to_selection(gizmo, &scene->editor.selection,
+                                           &scene->renderer.ssbo);
     scene_gizmo_transform_show(scene);
   }
 }

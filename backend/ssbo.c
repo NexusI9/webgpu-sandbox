@@ -188,9 +188,9 @@ void ssbo_draw_callback(void *data) {
 
   for (SSBOType type = 0; type < SSBO_TYPE_COUNT; type++) {
     SSBOBufferUpdateQueue *queue = &manager->buffers[type].update_queue;
-    ssbo_id_t id = queue->entries[0];
 
     while (queue->length > 0) {
+      ssbo_id_t id = queue->entries[0];
       ssbo_upload_entry(manager, type,
                         &(SSBOSlot){
                             .id = id,

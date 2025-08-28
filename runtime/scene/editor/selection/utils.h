@@ -4,7 +4,8 @@
 #include "../../core.h"
 
 /* Gizmo utils */
-void scene_gizmo_transform_pos_to_selection(GizmoTransform *, SceneSelection *);
+void scene_gizmo_transform_pos_to_selection(GizmoTransform *, SceneSelection *,
+                                            SSBOManager *);
 void scene_gizmo_transform_show(Scene *);
 void scene_gizmo_transform_hide(Scene *);
 

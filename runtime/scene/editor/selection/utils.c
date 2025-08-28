@@ -8,6 +8,8 @@ void scene_gizmo_transform_show(Scene *scene) {
   GizmoTransform *gizmo = &scene->editor.gizmo.transform;
   MeshRefList *selection_list =
       scene_pipeline(scene, ScenePipeline_Fixed_Selection);
+
+  // add to render pipeline
   scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                            ScenePipeline_Fixed_Front);
 }
@@ -24,10 +26,17 @@ void scene_gizmo_transform_hide(Scene *scene) {
    Get the selection average position (used to translate the gizmo).
  */
 void scene_gizmo_transform_pos_to_selection(GizmoTransform *gizmo,
-                                            SceneSelection *selection) {
-
+                                            SceneSelection *selection,
+                                            SSBOManager *ssbo) {
   // get average position
   vec3 position;
   scene_selection_average_position(selection, &position);
   gizmo_transform_set_position(gizmo, position);
+
+  // update ssbo matrix buffer
+  for (uint8_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
+    ssbo_update_queue_insert(
+        ssbo, SSBOType_Mesh,
+        gizmo->handles[gizmo->mode].entries[i]->ssbo_slot.id);
+
 }
