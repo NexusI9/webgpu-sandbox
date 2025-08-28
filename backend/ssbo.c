@@ -181,7 +181,6 @@ StaticListStatus ssbo_update_queue_shift(SSBOManager *manager,
                     "SSBO Update Queue");
 }
 
-size_t t = 0;
 void ssbo_draw_callback(void *data) {
 
   SSBOManager *manager = (SSBOManager *)data;

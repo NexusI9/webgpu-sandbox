@@ -34,9 +34,5 @@ void scene_gizmo_transform_pos_to_selection(GizmoTransform *gizmo,
   gizmo_transform_set_position(gizmo, position);
 
   // update ssbo matrix buffer
-  for (uint8_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
-    ssbo_update_queue_insert(
-        ssbo, SSBOType_Mesh,
-        gizmo->handles[gizmo->mode].entries[i]->ssbo_slot.id);
-
+  gizmo_transform_update_ssbo(gizmo, ssbo);
 }

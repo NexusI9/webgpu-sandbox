@@ -229,4 +229,12 @@ void gizmo_transform_set_axis_from_mesh(GizmoTransform *, const Mesh *);
 
 void gizmo_transform_reset_color_uniform(GizmoTransform *);
 
+static inline void gizmo_transform_update_ssbo(GizmoTransform *gizmo,
+                                               SSBOManager *ssbo) {
+  for (uint8_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
+    ssbo_update_queue_insert(
+        ssbo, SSBOType_Mesh,
+        gizmo->handles[gizmo->mode].entries[i]->ssbo_slot.id);
+}
+
 #endif

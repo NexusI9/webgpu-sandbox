@@ -279,6 +279,7 @@ void scene_selection_raycast_gizmo_down_callback(
 
       // set active handle from current mode and initialize offset
       gizmo_transform_set_active(gizmo, scene->active_camera, &scene->viewport);
+
     }
   }
 }

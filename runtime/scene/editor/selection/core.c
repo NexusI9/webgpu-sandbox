@@ -80,6 +80,8 @@ void scene_selection_draw_callback(void *data) {
           .axis = gizmo->axis,
           .transform_mode = gizmo->mode,
           .scene = scene});
+
+      gizmo_transform_update_ssbo(gizmo, &scene->renderer.ssbo);
     }
   }
 }

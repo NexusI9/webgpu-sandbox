@@ -27,6 +27,9 @@ void scene_selection_mesh_transform_core(Mesh *mesh, vec3 *init_attribute,
 
   // transform mesh
   transform_callback_mesh[desc->transform_mode](mesh, offset_attribute);
+
+  ssbo_update_queue_insert(&desc->scene->renderer.ssbo, SSBOType_Mesh,
+                           mesh->ssbo_slot.id);
 }
 
 /* Mesh based transform */
@@ -98,6 +101,9 @@ void scene_selection_seo_transform_core(
       .seo = seo,
       .offset = offset_attribute,
   });
+
+  ssbo_update_queue_insert(&desc->scene->renderer.ssbo, SSBOType_Mesh,
+                           mesh->mesh->ssbo_slot.id);
 }
 
 /*
