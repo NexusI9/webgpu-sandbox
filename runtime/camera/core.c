@@ -55,34 +55,6 @@ void camera_reset(Camera *c) {
   }
 }
 
-void camera_draw(Camera *camera) {
-
-  switch (camera->mode) {
-
-  case CameraMode_Flying:
-    camera_mode_flying_controller(camera);
-    return;
-
-  case CameraMode_Orbit:
-    camera_mode_orbit_controller(camera);
-    return;
-
-  case CameraMode_Edit:
-    camera_mode_edit_controller(camera);
-    return;
-
-  case CameraMode_Fixed:
-    // remove event listeners
-  default:
-    return;
-  }
-
-  camera_update_view(camera);
-  camera_uniform_update(camera);
-  ssbo_upload_entry(camera, SSBOType_View, camera->ssbo_slot.id,
-                    camera->ssbo_slot.uniform);
-}
-
 void camera_set_position(Camera *camera, vec3 new_position) {
   // get the absolute value, need to transfom the new position into
   // the camera coordinate system (relative)

@@ -1,6 +1,8 @@
 #include "mode.h"
 #include "../input/input.h"
+#include "../utils/system.h"
 #include "core.h"
+#include "uniform.h"
 
 static void camera_target_from_yaw_pitch(Camera *, float, float);
 
@@ -68,6 +70,8 @@ void camera_mode_flying_controller(Camera *camera) {
 
   // Update view matrix depending on new position and new target;
   camera_lookat(camera, camera->position, camera->target);
+
+  camera_uniform_update(camera);
 }
 
 /**
@@ -107,6 +111,8 @@ void camera_mode_orbit_controller(Camera *camera) {
 
   // glm_vec3_copy(new_pos, camera->position);
   camera_lookat(camera, camera->position, camera->target);
+
+  camera_uniform_update(camera);
 }
 
 /**
@@ -194,6 +200,8 @@ void camera_mode_edit_controller(Camera *camera) {
   input_wheel_reset();
 
   camera_lookat(camera, camera->position, camera->target);
+
+  camera_uniform_update(camera);
 }
 
 void camera_set_mode(Camera *camera, CameraMode mode) { camera->mode = mode; }

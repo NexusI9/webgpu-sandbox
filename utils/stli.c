@@ -43,6 +43,20 @@ StaticListStatus stli_remove(void *entries, size_t *length, size_t type_size,
   return StaticListStatus_UnfoundEntry;
 }
 
+StaticListStatus stli_shift(void *entries, size_t *length, size_t type_size,
+                          const char *label) {
+
+  if (*length == 0)
+    return StaticListStatus_EmptyList;
+
+  memmove((char *)entries, (char *)entries + type_size,
+          (*length - 1) * type_size);
+
+  (*length)--;
+
+  return StaticListStatus_Success;
+}
+
 StaticListStatus stli_empty(void *entries, size_t *length, size_t type_size,
                             const char *label) {
 

@@ -1,23 +1,26 @@
 #include "event.html.h"
+#include "../runtime/camera/camera.h"
 #include "emscripten/em_types.h"
 
-static void scene_event_html_update_meshes(void *);
+static void scene_event_html_update_meshes(Scene *);
+
+static inline void scene_event_html_commons(Scene *);
 
 bool scene_event_html_mouse(int eventType, const EmscriptenMouseEvent *event,
                             void *data) {
-  scene_event_html_update_meshes(data);
+  scene_event_html_commons((Scene *)data);
   return EM_FALSE;
 }
 
 bool scene_event_html_wheel(int eventType, const EmscriptenWheelEvent *event,
                             void *data) {
-  scene_event_html_update_meshes(data);
+  scene_event_html_commons((Scene *)data);
   return EM_FALSE;
 }
 
 bool scene_event_html_key(int eventType, const EmscriptenKeyboardEvent *event,
                           void *data) {
-  scene_event_html_update_meshes(data);
+  scene_event_html_commons((Scene *)data);
   return EM_FALSE;
 }
 
@@ -52,7 +55,24 @@ void scene_event_html(Scene *scene) {
   });
 }
 
-void scene_event_html_update_meshes(void *data) {
+/**
+   Functions called during all events (key/wheel/mouse)
+ */
+void scene_event_html_commons(Scene *scene) {
+
+  scene_event_html_update_meshes(scene);
+
+  // update camera controls
+  Camera *camera = scene->active_camera;
+  camera_mode_controller[camera->mode](camera);
+  // ssbo_upload_entry(&scene->renderer.ssbo, SSBOType_View,
+  // &camera->ssbo_slot);
+  ssbo_update_queue_insert(&scene->renderer.ssbo, SSBOType_View,
+                           camera->ssbo_slot.id);
+
+}
+
+void scene_event_html_update_meshes(Scene *data) {
   Scene *scene = (Scene *)data;
   /*
     DELETEME ??
@@ -68,18 +88,19 @@ void scene_event_html_update_meshes(void *data) {
       // update bind views of each meshes in each rende pass pipelines
       for (size_t k = 0; k < mesh_lists->meshes->length; k++) {
 
-	// target mesh and shader
+        // target mesh and shader
         Mesh *mesh = mesh_lists->meshes->entries[k];
         Shader *shader = mesh_lists->shader_callback(mesh);
 
-	// get shader relative view index
+        // get shader relative view index
         bind_group_index group_index = shader->pipeline->bindings.mvp.group;
         bind_index view_index = shader->pipeline->bindings.mvp.view;
 
-	// generate new camera
+        // generate new camera
         CameraUniform* cam = camera_uniform(scene->active_camera);
 
-        shader_update_uniform_data(shader, group_index, view_index, (void *)&cam);
+        shader_update_uniform_data(shader, group_index, view_index, (void
+  *)&cam);
       }
     }
   }

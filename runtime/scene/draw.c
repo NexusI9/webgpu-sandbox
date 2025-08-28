@@ -4,6 +4,7 @@
 #include "core.h"
 
 /**
+   DELETME
    Draw callback added to the Scene Renderer draw callbacks.
    Called before the scene renderer draw layouts.
 
@@ -11,10 +12,6 @@
  */
 void scene_camera_draw_callback(void *data) {
 
-  Camera *cast_camera = (Camera *)data;
-
-  // update camera
-  camera_draw(cast_camera);
 }
 
 /**

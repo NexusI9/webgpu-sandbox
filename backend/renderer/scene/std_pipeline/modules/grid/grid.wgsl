@@ -26,9 +26,9 @@ struct Camera {
 };
 // mode flags
 // use bitwise operators to match with C enum
-const CAMERA_MODE_FIXED : u32 = 1u << 0u;
-const CAMERA_MODE_FLYING : u32 = 1u << 1u;
-const CAMERA_MODE_ORBIT : u32 = 1u << 2u;
+const CAMERA_MODE_FIXED : u32 = 0u;
+const CAMERA_MODE_FLYING : u32 = 1u;
+const CAMERA_MODE_ORBIT : u32 = 2u;
 
 struct Viewport {
   projection : mat4x4<f32>, width : u32, height : u32,
@@ -55,9 +55,9 @@ struct GridData {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var<uniform> uGrid : GridData;
 
@@ -103,7 +103,7 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
 
   var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
 
-  if ((camera.mode & CAMERA_MODE_ORBIT) != 0u) {
+  if (camera.mode == CAMERA_MODE_ORBIT) {
     // switch offset to target (lookat) if camera is Orbit mode
     offset.x = camera.lookat.x;
     offset.y = camera.lookat.z;

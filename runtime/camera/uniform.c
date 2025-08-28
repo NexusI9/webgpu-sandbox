@@ -1,5 +1,9 @@
 #include "uniform.h"
+#include <stdint.h>
 #include <string.h>
+
+#include "../utils/system.h"
+#include "core.h"
 
 CameraUniform *camera_uniform(Camera *camera) {
   return (CameraUniform *)camera->ssbo_slot.uniform;
@@ -29,6 +33,7 @@ void camera_uniform_update(Camera *camera) {
   glm_vec4_copy(lookat_uniform, uniform->lookat);
   glm_mat4_copy(camera->view, uniform->view);
   uniform->mode = camera->mode;
+
 }
 
 void camera_uniform_update_matrix_callback(void *callback_camera, void *data) {

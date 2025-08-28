@@ -1,10 +1,12 @@
 #ifndef _CAMERA_CORE_H_
 #define _CAMERA_CORE_H_
 
+#define CAMERA_MODE_COUNT 4
+
 #include "../backend/clock.h"
 #include "../backend/registry.h"
-#include <emscripten/html5.h>
 #include "../backend/ssbo.h"
+#include <emscripten/html5.h>
 
 #include <cglm/cglm.h>
 #include <stddef.h>
@@ -17,10 +19,10 @@ typedef enum {
 } CameraStatus;
 
 typedef enum {
-  CameraMode_Fixed = 1 << 0,
-  CameraMode_Flying = 1 << 1,
-  CameraMode_Orbit = 1 << 2,
-  CameraMode_Edit = 1 << 3,
+  CameraMode_Fixed,
+  CameraMode_Flying,
+  CameraMode_Orbit,
+  CameraMode_Edit
 } CameraMode;
 
 typedef struct {
@@ -75,7 +77,6 @@ typedef struct Camera {
 
 void camera_create(Camera *, const CameraCreateDescriptor *);
 void camera_reset(Camera *);
-void camera_draw(Camera *);
 void camera_lookat(Camera *, vec3, vec3);
 
 // get

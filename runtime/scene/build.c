@@ -48,13 +48,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
   const WGPUDevice device = scene_device(scene);
 
   // bind new mesh uniform to SSBO and copy previous mesh uniform data
-  size_t index;
-  MeshUniform *ssbo_uniform = ssbo_new_entry(ssbo, SSBOType_Mesh, &index);
-  ssbo_upload_entry(ssbo, SSBOType_Mesh, index,
-                    (void *)mesh->ssbo_slot.uniform);
-  free(mesh->ssbo_slot.uniform);
-  mesh->ssbo_slot.uniform = ssbo_uniform;
-  mesh->ssbo_slot.id = index;
+  ssbo_copy_entry(ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
 
   SceneBuildDescriptor build_desc = {
       .mesh = mesh,

@@ -58,6 +58,7 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
     ssbo->type_size = ssbo_type[i].size;
     ssbo->length = 0;
     ssbo->capacity = SSBO_CAPACITY * SSBO_MAX_TYPE_SIZE;
+    ssbo->update_queue.capacity = SSBO_UPDATE_QUEUE_CAPACITY;
     ssbo->handle = wgpuDeviceCreateBuffer(
         device, &(WGPUBufferDescriptor){
                     .size = ssbo->capacity,
@@ -69,42 +70,36 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
 }
 
 SSBOStatus ssbo_update_entry(SSBOManager *manager, const SSBOType type,
-                             ssbo_id_t index, void *data) {
+                             const SSBOSlot *slot) {
 
-  if (index >= SSBO_CAPACITY) {
+  if (slot->id >= SSBO_CAPACITY) {
     VERBOSE_WARNING(
         "Attempting to write into SSBO out of bound index (%lu) max SSBO "
         "capacity is currently set to %d.",
-        index, SSBO_CAPACITY);
+        slot->id, SSBO_CAPACITY);
     return SSBOStatus_OutOfBound;
   }
 
   SSBOBuffer *ssbo = &manager->buffers[type];
-  memcpy((char *)ssbo->entries + index * ssbo->type_size, data,
+  memcpy((char *)ssbo->entries + slot->id * ssbo->type_size, slot->uniform,
          ssbo->type_size);
 
   // TODO improve index incrementation (currently very unsafe)
-  manager->buffers[type].length = index + 1;
+  manager->buffers[type].length = slot->id + 1;
 
   return SSBOStatus_Success;
 }
 
 SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
-                             ssbo_id_t index, void *data) {
+                             const SSBOSlot *slot) {
 
-  // first update stagging
-  SSBOStatus stagging_udpate = ssbo_update_entry(manager, type, index, data);
+  // update ssbo buffer at index
+  SSBOBuffer *ssbo = &manager->buffers[type];
+  size_t offset = slot->id * ssbo->type_size;
+  wgpuQueueWriteBuffer(manager->queue, ssbo->handle, offset,
+                       (uint8_t *)ssbo->entries + offset, ssbo->type_size);
 
-  if (stagging_udpate == SSBOStatus_Success) {
-
-    // update ssbo buffer at index
-    SSBOBuffer *ssbo = &manager->buffers[type];
-    size_t offset = index * ssbo->type_size;
-    wgpuQueueWriteBuffer(manager->queue, ssbo->handle, offset,
-                         (uint8_t *)ssbo->entries + offset, ssbo->type_size);
-  }
-
-  return stagging_udpate;
+  return SSBOStatus_Success;
 }
 
 void ssbo_upload(SSBOManager *manager, const SSBOType type) {
@@ -125,14 +120,14 @@ void *ssbo_new_entry(SSBOManager *manager, const SSBOType type,
   if (index)
     *index = ssbo->length;
 
-  return stli_new_entry((void *)&ssbo->entries, ssbo->capacity, &ssbo->length,
+  return stli_new_entry((void *)ssbo->entries, ssbo->capacity, &ssbo->length,
                         ssbo->type_size, "SSBO Manager");
 }
 
 StaticListStatus ssbo_remove_entry(SSBOManager *manager, const SSBOType type,
                                    ssbo_id_t index) {
   SSBOBuffer *ssbo = &manager->buffers[type];
-  return stli_remove((void *)&ssbo->entries, &ssbo->length, ssbo->type_size,
+  return stli_remove((void *)ssbo->entries, &ssbo->length, ssbo->type_size,
                      &ssbo->entries[index], "SSBO Manager");
 }
 
@@ -156,9 +151,52 @@ size_t ssbo_find_index(SSBOManager *manager, const SSBOType type, void *data) {
 /**
    Transfer the slot data into the SSBO buffer and update the slot id.
  */
-SSBOStatus ssbo_insert_slot(SSBOManager *manager, const SSBOType type,
-                            SSBOSlot *slot) {
+SSBOStatus ssbo_insert_entry(SSBOManager *manager, const SSBOType type,
+                             SSBOSlot *slot) {
 
   ssbo_new_entry(manager, type, &slot->id);
-  return ssbo_upload_entry(manager, type, slot->id, slot->uniform);
+  ssbo_update_entry(manager, type, slot);
+  return ssbo_upload_entry(manager, type, slot);
+}
+
+/**
+   Insert and id of a specific Buffer type (view, mesh...) into the buffer
+   update queue. Each queue is then read during the ssbo_draw to write at the
+   corresponding index.
+   Using a queue prevent having "bool" last minutes flags.
+ */
+StaticListStatus ssbo_update_queue_insert(SSBOManager *manager,
+                                          const SSBOType type,
+                                          const ssbo_id_t id) {
+
+  SSBOBufferUpdateQueue *queue = &manager->buffers[type].update_queue;
+  return stli_insert((void *)queue->entries, &queue->capacity, &queue->length,
+                     sizeof(ssbo_id_t), (void *)&id, "SSBO Update Queue");
+}
+
+StaticListStatus ssbo_update_queue_shift(SSBOManager *manager,
+                                         const SSBOType type) {
+  SSBOBufferUpdateQueue *queue = &manager->buffers[type].update_queue;
+  return stli_shift((void *)queue->entries, &queue->length, sizeof(ssbo_id_t),
+                    "SSBO Update Queue");
+}
+
+size_t t = 0;
+void ssbo_draw_callback(void *data) {
+
+  SSBOManager *manager = (SSBOManager *)data;
+
+  for (SSBOType type = 0; type < SSBO_TYPE_COUNT; type++) {
+    SSBOBufferUpdateQueue *queue = &manager->buffers[type].update_queue;
+    ssbo_id_t id = queue->entries[0];
+
+    while (queue->length > 0) {
+      ssbo_upload_entry(manager, type,
+                        &(SSBOSlot){
+                            .id = id,
+                            .uniform = &manager->buffers[type].entries[id],
+                        });
+      ssbo_update_queue_shift(manager, type);
+    }
+  }
 }

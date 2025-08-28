@@ -16,6 +16,8 @@ StaticListStatus stli_insert(void *, size_t *, size_t *, size_t, void *,
                              const char *);
 StaticListStatus stli_remove(void *, size_t *, size_t, void *, const char *);
 
+StaticListStatus stli_shift(void *, size_t *, size_t, const char *);
+
 StaticListStatus stli_empty(void *, size_t *, size_t, const char *);
 
 void *stli_new_entry(void *, size_t, size_t *, size_t, const char *);

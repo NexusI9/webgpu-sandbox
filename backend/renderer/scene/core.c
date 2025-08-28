@@ -55,6 +55,8 @@ void scene_renderer_create(SceneRenderer *renderer,
 
   ssbo_init(&renderer->ssbo, scene_renderer_device(renderer),
             scene_renderer_queue(renderer));
+  scene_renderer_add_draw_callback(renderer, ssbo_draw_callback,
+                                   (void *)&renderer->ssbo);
 
   // set fallback textures
 

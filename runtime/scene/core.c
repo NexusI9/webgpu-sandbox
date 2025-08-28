@@ -73,8 +73,8 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                         .height = scene_renderer_height(&scene->renderer),
                     });
 
-    ssbo_insert_slot(&scene->renderer.ssbo, SSBOType_Projection,
-                     &scene->viewport.ssbo_slot);
+    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Projection,
+                    &scene->viewport.ssbo_slot);
 
     /*
 
@@ -82,7 +82,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
      */
 
-    // scene_event_html(scene);
+    scene_event_html(scene);
 
     /*
 
@@ -113,15 +113,12 @@ void scene_camera_init(Scene *scene) {
   scene->camera =
       scene_init_main_camera(scene, scene_renderer_clock(&scene->renderer));
 
+  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_View,
+                  &scene->camera->ssbo_slot);
+
   // set scene main camera as active
   scene->active_camera = scene->camera;
 
-  ssbo_insert_slot(&scene->renderer.ssbo, SSBOType_View,
-                   &scene->camera->ssbo_slot);
-
-  // add the camera update callback
-  scene_renderer_add_draw_callback(&scene->renderer, scene_camera_draw_callback,
-                                   (void *)scene->active_camera);
 }
 
 /**
