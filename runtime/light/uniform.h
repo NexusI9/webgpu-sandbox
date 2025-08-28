@@ -81,16 +81,17 @@ typedef struct {
 
  */
 
+//DELETEME
 typedef struct {
   vec3 position;
 } LightComparator;
 
 /* Creator */
 
-void point_light_uniform(PointLightUniform *, PointLight *);
-void ambient_light_uniform(AmbientLightUniform *, AmbientLight *);
-void spot_light_uniform(SpotLightUniform *, SpotLight *);
-void sun_light_uniform(SunLightUniform *, SunLight *);
+void point_light_uniform_update(PointLight *);
+void ambient_light_uniform_update(AmbientLight *);
+void spot_light_uniform_update(SpotLight *);
+void sun_light_uniform_update(SunLight *);
 
 /* Callbacks */
 

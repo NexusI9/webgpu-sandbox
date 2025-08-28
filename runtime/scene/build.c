@@ -171,9 +171,10 @@ void scene_build_mesh_texture(
       (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
 
     // bind lights
-    mesh_shader_texture_update_lights(build_desc->mesh,
-                                      build_texture_desc->lights,
-                                      SHADER_TEXTURE_BINDGROUP_LIGHTS);
+    LightListLength list_length;
+    light_list_length(&list_length, build_texture_desc->lights);
+    mesh_shader_texture_update_lights(build_desc->mesh, &list_length,
+                                      build_desc->ssbo);
   }
 
   // shadow only pipeline

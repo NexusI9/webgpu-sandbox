@@ -27,7 +27,7 @@ typedef enum {
   SSBOType_View,
   SSBOType_Projection,
   SSBOType_Mesh,
-  SSBOType_ProbeReflection,
+  SSBOType_AmbientLight,
   SSBOType_PointLight,
   SSBOType_SunLight,
   SSBOType_SpotLight,

@@ -1,4 +1,6 @@
 #include "create.h"
+#include "uniform.h"
+#include <stdlib.h>
 
 void light_create_point(PointLight *light, PointLightDescriptor *desc) {
 
@@ -13,6 +15,9 @@ void light_create_point(PointLight *light, PointLightDescriptor *desc) {
 
   glm_vec3_copy(desc->position, light->position);
   glm_vec3_copy(desc->color, light->color);
+
+  light->ssbo_slot.uniform = malloc(sizeof(PointLightUniform));
+  point_light_uniform_update(light);
 }
 
 void light_create_spot(SpotLight *light, SpotLightDescriptor *desc) {
@@ -28,6 +33,9 @@ void light_create_spot(SpotLight *light, SpotLightDescriptor *desc) {
   glm_vec3_copy(desc->position, light->position);
   glm_vec3_copy(desc->target, light->target);
   glm_vec3_copy(desc->color, light->color);
+
+  light->ssbo_slot.uniform = malloc(sizeof(SpotLightUniform));
+  spot_light_uniform_update(light);
 }
 
 void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
@@ -39,6 +47,9 @@ void light_create_ambient(AmbientLight *light, AmbientLightDescriptor *desc) {
 
   glm_vec3_copy(desc->color, light->color);
   glm_vec3_copy(desc->position, light->position);
+
+  light->ssbo_slot.uniform = malloc(sizeof(AmbientLightUniform));
+  ambient_light_uniform_update(light);
 }
 
 void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
@@ -51,4 +62,7 @@ void light_create_sun(SunLight *light, SunLightDescriptor *desc) {
 
   glm_vec3_copy(desc->position, light->position);
   glm_vec3_copy(desc->color, light->color);
+
+  light->ssbo_slot.uniform = malloc(sizeof(SunLightUniform));
+  sun_light_uniform_update(light);
 }

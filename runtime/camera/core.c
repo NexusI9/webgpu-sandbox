@@ -30,7 +30,7 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->sensitivity = cd->sensitivity;
 
   // may be overriden/free by SSBO later when added to scene
-  cam->ssbo_slot.uniform = aligned_alloc(256, sizeof(CameraUniform));
+  cam->ssbo_slot.uniform = malloc(sizeof(CameraUniform));
 }
 
 void camera_reset(Camera *c) {

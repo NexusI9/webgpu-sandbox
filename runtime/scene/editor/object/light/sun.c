@@ -54,6 +54,10 @@ void seo_light_sun_set_position(SEOTransformCallback *desc) {
 
   glm_vec3_copy(desc->offset, light->position);
 
+  sun_light_uniform_update(light);
+  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo, SSBOType_SunLight,
+                           light->ssbo_slot.id);
+
   for (size_t i = 0; i < desc->seo->meshes.length; i++)
     mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
 }
@@ -79,6 +83,10 @@ void seo_light_sun_shadow_set_position(SEOTransformCallback *desc) {
 
   glm_vec3_copy(desc->offset, light->position);
 
+  sun_light_uniform_update(light);
+  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo, SSBOType_SunLight,
+                           light->ssbo_slot.id);
+
   for (size_t i = 0; i < desc->seo->meshes.length; i++)
     mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
 
@@ -88,7 +96,7 @@ void seo_light_sun_shadow_set_position(SEOTransformCallback *desc) {
 
     shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
         .light = light,
-	.pass = &desc->seo->scene->lights.spot.shadow.pass,
+        .pass = &desc->seo->scene->lights.spot.shadow.pass,
         .device = scene_device(desc->seo->scene),
         .queue = scene_queue(desc->seo->scene),
         .layer = desc->seo->scene->lights.spot.shadow.length +
@@ -110,8 +118,7 @@ static const seo_transform_axis_callback
             },
         [LightShadow_Enabled] =
             {
-                [GizmoMode_Position] =
-                    seo_light_sun_shadow_set_position,
+                [GizmoMode_Position] = seo_light_sun_shadow_set_position,
                 [GizmoMode_Rotation] = seo_light_sun_set_rotation,
                 [GizmoMode_Scale] = seo_light_sun_set_scale,
             },

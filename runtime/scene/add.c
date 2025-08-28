@@ -39,6 +39,8 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
   // create sun light
   PointLight *new_light = &base_list->entries[base_list->length];
   light_create_point(new_light, desc);
+  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_PointLight,
+                  &new_light->ssbo_slot);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =
@@ -97,6 +99,8 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
   // create sun light
   SpotLight *new_light = &base_list->entries[base_list->length];
   light_create_spot(new_light, desc);
+  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_SpotLight,
+                  &new_light->ssbo_slot);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =
@@ -157,6 +161,8 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
   // create sun light
   AmbientLight *new_light = &list->entries[list->length++];
   light_create_ambient(new_light, desc);
+  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_AmbientLight,
+                  &new_light->ssbo_slot);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =
@@ -190,6 +196,8 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   // create sun light
   SunLight *new_light = &base_list->entries[base_list->length];
   light_create_sun(new_light, desc);
+  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_SunLight,
+                  &new_light->ssbo_slot);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =

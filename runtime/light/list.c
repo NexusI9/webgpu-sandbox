@@ -33,41 +33,45 @@ StaticListStatus light_list_create(LightList *list, size_t capacity) {
 
 StaticListStatus light_list_point_shadow_insert(PointLightListShadow *list,
                                                 PointLight *light) {
-  return stli_insert((void *)list->entries, &list->capacity,
-                     &list->length, sizeof(PointLight *), (void *)&light,
+  return stli_insert((void *)list->entries, &list->capacity, &list->length,
+                     sizeof(PointLight *), (void *)&light,
                      "Point Light List Shadow");
 }
 StaticListStatus light_list_point_shadow_remove(PointLightListShadow *list,
                                                 PointLight *light) {
-  return stli_remove((void *)list->entries, &list->length,
-                     sizeof(PointLight *), (void *)light,
-                     "Point Light List Shadow");
+  return stli_remove((void *)list->entries, &list->length, sizeof(PointLight *),
+                     (void *)light, "Point Light List Shadow");
 }
 
 StaticListStatus light_list_sun_shadow_insert(SunLightListShadow *list,
                                               SunLight *light) {
-  return stli_insert((void *)list->entries, &list->capacity,
-                     &list->length, sizeof(SunLight *), (void *)&light,
+  return stli_insert((void *)list->entries, &list->capacity, &list->length,
+                     sizeof(SunLight *), (void *)&light,
                      "Sun Light List Shadow");
 }
 
 StaticListStatus light_list_sun_shadow_remove(SunLightListShadow *list,
                                               SunLight *light) {
-  return stli_remove((void *)list->entries, &list->length,
-                     sizeof(SunLight *), (void *)&light,
-                     "Sun Light List Shadow");
+  return stli_remove((void *)list->entries, &list->length, sizeof(SunLight *),
+                     (void *)&light, "Sun Light List Shadow");
 }
 
 StaticListStatus light_list_spot_shadow_insert(SpotLightListShadow *list,
                                                SpotLight *light) {
-  return stli_insert((void *)list->entries, &list->capacity,
-                     &list->length, sizeof(SpotLight *), (void *)&light,
+  return stli_insert((void *)list->entries, &list->capacity, &list->length,
+                     sizeof(SpotLight *), (void *)&light,
                      "Spot Light List Shadow");
 }
 
 StaticListStatus light_list_spot_shadow_remove(SpotLightListShadow *list,
                                                SpotLight *light) {
-  return stli_remove((void *)list->entries, &list->length,
-                     sizeof(SpotLight *), (void *)&light,
-                     "Spot Light List Shadow");
+  return stli_remove((void *)list->entries, &list->length, sizeof(SpotLight *),
+                     (void *)&light, "Spot Light List Shadow");
+}
+
+void light_list_length(LightListLength *length, const LightList *list) {
+  length->ambient = list->ambient.length;
+  length->point = list->point.base.length;
+  length->spot = list->spot.base.length;
+  length->sun = list->sun.base.length;
 }

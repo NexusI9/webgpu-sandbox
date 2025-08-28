@@ -6,6 +6,7 @@
 #include "../runtime/light/uniform.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
+#include "../runtime/light/light.h"
 
 #include "../commons.h"
 #include <webgpu/webgpu.h>
@@ -122,7 +123,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_textures_bind_group = {
 static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
     // Group 2: Lights + Shadows
     .label = "Group 2 - Lights and Shadows",
-    .entryCount = 8,
+    .entryCount = 9,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -131,9 +132,9 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_Uniform,
+                        .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(AmbientLightListUniform),
+                        .minBindingSize = sizeof(AmbientLightUniform),
                     },
             },
             {
@@ -142,9 +143,9 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_Uniform,
+                        .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(SpotLightListUniform),
+                        .minBindingSize = sizeof(SpotLightUniform),
                     },
             },
             {
@@ -153,9 +154,9 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_Uniform,
+                        .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(PointLightListUniform),
+                        .minBindingSize = sizeof(PointLightUniform),
                     },
             },
             {
@@ -164,14 +165,25 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .hasDynamicOffset = false,
+                        .minBindingSize = sizeof(SunLightUniform),
+                    },
+            },
+            {
+                // light_list_length
+                .binding = 4,
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(SunLightListUniform),
+                        .minBindingSize = sizeof(LightListLength),
                     },
             },
             {
                 // point_shadow_maps
-                .binding = 4,
+                .binding = 5,
                 .visibility = WGPUShaderStage_Fragment,
                 .texture =
                     (WGPUTextureBindingLayout){
@@ -186,7 +198,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
             },
             {
                 // point_shadow_sampler
-                .binding = 5,
+                .binding = 6,
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){
@@ -199,7 +211,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
             },
             {
                 // directional_shadow_maps
-                .binding = 6,
+                .binding = 7,
                 .visibility = WGPUShaderStage_Fragment,
                 .texture =
                     (WGPUTextureBindingLayout){
@@ -214,7 +226,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
             },
             {
                 // directional_shadow_sampler
-                .binding = 7,
+                .binding = 8,
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){

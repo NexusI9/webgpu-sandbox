@@ -14,9 +14,9 @@ bool light_comparator_different(const LightComparator *a,
 }
 
 /* Uniforms */
-void point_light_uniform(PointLightUniform *uniform, PointLight *light) {
+void point_light_uniform_update(PointLight *light) {
 
-  *uniform = (PointLightUniform){0};
+  PointLightUniform *uniform = light->ssbo_slot.uniform;
   uniform->intensity = light->intensity;
   uniform->cutoff = light->cutoff;
   uniform->inner_cutoff = light->inner_cutoff;
@@ -34,17 +34,18 @@ void point_light_uniform(PointLightUniform *uniform, PointLight *light) {
     glm_mat4_copy(points_views.combined[v], uniform->views[v]);
 }
 
-void ambient_light_uniform(AmbientLightUniform *uniform, AmbientLight *light) {
+void ambient_light_uniform_update(AmbientLight *light) {
 
   // map light to light uniform (including paddings...)
-  *uniform = (AmbientLightUniform){0};
+  AmbientLightUniform *uniform = light->ssbo_slot.uniform;
   uniform->intensity = light->intensity;
   glm_vec3_copy(light->color, uniform->color);
 }
 
-void spot_light_uniform(SpotLightUniform *uniform, SpotLight *light) {
+void spot_light_uniform_update(SpotLight *light) {
 
-  *uniform = (SpotLightUniform){0};
+  SpotLightUniform *uniform = light->ssbo_slot.uniform;
+
   uniform->intensity = light->intensity;
   uniform->cutoff = light->cutoff;
   uniform->inner_cutoff = light->inner_cutoff;
@@ -60,9 +61,10 @@ void spot_light_uniform(SpotLightUniform *uniform, SpotLight *light) {
     glm_mat4_copy(spot_view.combined[v], uniform->view);
 }
 
-void sun_light_uniform(SunLightUniform *uniform, SunLight *light) {
+void sun_light_uniform_update(SunLight *light) {
 
-  *uniform = (SunLightUniform){0};
+  SunLightUniform *uniform = light->ssbo_slot.uniform;
+
   uniform->intensity = light->intensity;
   glm_vec3_copy(light->position, uniform->position);
   glm_vec3_copy(light->color, uniform->color);
@@ -86,7 +88,7 @@ void point_light_list_update_callback(void *callback_data, void *entry_data) {
   PointLightListUniform *uniform = (PointLightListUniform *)entry_data;
 
   for (size_t i = 0; i < list->length; i++)
-    point_light_uniform(&uniform->entries[i], &list->entries[i]);
+    point_light_uniform_update(&list->entries[i]);
 }
 
 /**

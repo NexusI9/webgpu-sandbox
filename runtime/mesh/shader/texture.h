@@ -10,7 +10,7 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *, WGPUTextureView,
                                           WGPUTextureView);
 
 // update
-void mesh_shader_texture_update_lights(Mesh *, LightList *, uint8_t);
+void mesh_shader_texture_update_lights(Mesh *, LightListLength *, SSBOManager *);
 void mesh_shader_texture_update_shadow_maps(Mesh *, WGPUTextureView,
                                             WGPUTextureView);
 

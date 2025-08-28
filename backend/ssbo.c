@@ -24,25 +24,25 @@ static const struct {
             sizeof(MeshUniform),
             "SSBO Mesh Buffer",
         },
-    [SSBOType_ProbeReflection] =
+    [SSBOType_AmbientLight] =
         {
-            sizeof(ViewportUniform),
-            "SSBO Mesh Buffer",
+            sizeof(AmbientLightUniform),
+            "SSBO Ambient Light Buffer",
         },
     [SSBOType_PointLight] =
         {
-            sizeof(PointLightListUniform),
-            "SSBO Point Light List Buffer",
+            sizeof(PointLightUniform),
+            "SSBO Point Light Buffer",
         },
     [SSBOType_SunLight] =
         {
-            sizeof(SunLightListUniform),
-            "SSBO Sun Light List Buffer",
+            sizeof(SunLightUniform),
+            "SSBO Sun Light Buffer",
         },
     [SSBOType_SpotLight] =
         {
-            sizeof(SpotLightListUniform),
-            "SSBO Spot Light List Buffer",
+            sizeof(SpotLightUniform),
+            "SSBO Spot Light Buffer",
         },
 };
 

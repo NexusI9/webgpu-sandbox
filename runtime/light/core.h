@@ -2,6 +2,7 @@
 #define _LIGHT_CORE_H_
 
 #include "../backend/registry.h"
+#include "../backend/ssbo.h"
 #include "../viewport/viewport.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
@@ -28,6 +29,7 @@ typedef struct {
   float inner_cutoff;
   float near;
   float far;
+  SSBOSlot ssbo_slot;
 } PointLight;
 
 typedef struct {
@@ -35,6 +37,7 @@ typedef struct {
   vec3 position; // abstract, for UI purpose only
   vec3 color;
   float intensity;
+  SSBOSlot ssbo_slot;
 } AmbientLight;
 
 typedef struct {
@@ -46,6 +49,7 @@ typedef struct {
   float angle;
   float inner_cutoff;
   float intensity;
+  SSBOSlot ssbo_slot;
 } SpotLight;
 
 typedef struct {
@@ -54,6 +58,7 @@ typedef struct {
   vec3 color;
   float size;
   float intensity;
+  SSBOSlot ssbo_slot;
 } SunLight;
 
 // descriptor type

@@ -3,7 +3,6 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-
 /**
    Clear the texture shader bind groups of mesh
  */
@@ -21,111 +20,25 @@ void mesh_shader_texture_clear_bindings(Mesh *mesh) {
    TODO OPTI: currently we update all the lights on each update, implement a
    more targetted way to update lights based on their index.
   */
-void mesh_shader_texture_update_lights(Mesh *mesh, LightList *light_list,
-                                       uint8_t group_index) {
+void mesh_shader_texture_update_lights(Mesh *mesh,
+                                       LightListLength *light_list_length,
+                                       SSBOManager *ssbo) {
 
-  AmbientLightList *ambient_list = &light_list->ambient;
-  SpotLightListBase *spot_list = &light_list->spot.base;
-  SunLightListBase *sun_list = &light_list->sun.base;
-  PointLightListBase *point_list = &light_list->point.base;
-
-  AmbientLightListUniform ambient_uniform;
-  SpotLightListUniform spot_uniform;
-  PointLightListUniform point_uniform;
-  SunLightListUniform sun_uniform;
-
-  if (ambient_list) {
-    // update length
-    ambient_uniform.length = ambient_list->length;
-    // update entries
-    for (size_t i = 0; i < ambient_uniform.length; i++) {
-      AmbientLight *light = &ambient_list->entries[i];
-      AmbientLightUniform *uniform = &ambient_uniform.entries[i];
-      ambient_light_uniform(uniform, light);
-    }
-  }
-
-  if (spot_list) {
-    // update length
-    spot_uniform.length = spot_list->length;
-    // update entries
-    for (size_t i = 0; i < spot_uniform.length; i++) {
-      SpotLight *light = &spot_list->entries[i];
-      SpotLightUniform *uniform = &spot_uniform.entries[i];
-      spot_light_uniform(uniform, light);
-    }
-  }
-
-  if (point_list) {
-    // update length
-    point_uniform.length = point_list->length;
-    // update entries
-    for (size_t i = 0; i < point_uniform.length; i++) {
-      PointLight *light = &point_list->entries[i];
-      PointLightUniform *uniform = &point_uniform.entries[i];
-      point_light_uniform(uniform, light);
-    }
-  }
-
-  if (sun_list) {
-
-    sun_uniform.length = sun_list->length;
-
-    for (size_t i = 0; i < sun_uniform.length; i++) {
-      SunLight *light = &sun_list->entries[i];
-      SunLightUniform *uniform = &sun_uniform.entries[i];
-      sun_light_uniform(uniform, light);
-    }
-  }
-
-  ShaderBindGroupUniformEntry entries[4] = {
-      // ambient light
-      {
-          .binding = 0,
-          .data = &ambient_uniform,
-          .offset = 0,
-          .size = sizeof(AmbientLightListUniform),
-
-      },
-      // spot light
-      {
-          .binding = 1,
-          .data = &spot_uniform,
-          .offset = 0,
-          .size = sizeof(SpotLightListUniform),
-      },
-      // point light
-      {
-          .binding = 2,
-          .data = &point_uniform,
-          .offset = 0,
-          .size = sizeof(PointLightListUniform),
-          .update =
-              {
-                  .callback = point_light_list_update_callback,
-                  .trigger = point_light_list_trigger_callback,
-                  .data = point_list,
-              },
-      },
-      // sun light
-      {
-          .binding = 3,
-          .data = &sun_uniform,
-          .offset = 0,
-          .size = sizeof(SunLightListUniform),
-      },
+  WGPUBuffer entries[4] = {
+      ssbo_buffer_handle(ssbo, SSBOType_AmbientLight),
+      ssbo_buffer_handle(ssbo, SSBOType_SpotLight),
+      ssbo_buffer_handle(ssbo, SSBOType_PointLight),
+      ssbo_buffer_handle(ssbo, SSBOType_SunLight),
   };
 
-  for (size_t i = 0; i < 4; i++) {
-    ShaderBindGroupUniformEntry *entry = &entries[i];
-    shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), group_index,
-                          entry->binding, entry->data);
+  Shader *shader = mesh_shader(mesh, MeshShader_Texture);
 
-    if (entry->update.callback)
-      shader_update_uniform_callback(mesh_shader(mesh, MeshShader_Texture),
-                                     group_index, entry->binding,
-                                     &entry->update);
-  }
+  for (size_t i = 0; i < 4; i++)
+    shader_update_uniform_buffer(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS, i,
+                                 entries[i], 0, ShaderBufferLifetime_Release);
+
+  shader_update_uniform_data(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS, 4,
+                             light_list_length);
 }
 
 /**
@@ -136,7 +49,7 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
                                           WGPUTextureView point_texture_view,
                                           WGPUTextureView spot_texture_view) {
 
-  const uint8_t sampler_binding = 5;
+  const uint8_t sampler_binding = 6;
   const uint8_t group_index = 2;
 
   // create texture views
@@ -184,11 +97,9 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
 
     Shader *shader = mesh_shader(mesh, shader_types[i]);
 
-    shader_update_sampler(shader, group_index,
-                          sampler_binding, &sampler);
+    shader_update_sampler(shader, group_index, sampler_binding, &sampler);
 
-    shader_update_sampler(shader, group_index,
-                          sampler_binding + 2, &sampler);
+    shader_update_sampler(shader, group_index, sampler_binding + 2, &sampler);
   }
 }
 
