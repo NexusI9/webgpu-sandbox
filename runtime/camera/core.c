@@ -31,6 +31,7 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
   // may be overriden/free by SSBO later when added to scene
   cam->ssbo_slot.uniform = malloc(sizeof(CameraUniform));
+  cam->ssbo_slot.id = SSBO_INDEX_UNFOUND;
 }
 
 void camera_reset(Camera *c) {

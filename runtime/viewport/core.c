@@ -16,6 +16,7 @@ void viewport_create(Viewport *viewport,
 
   // may be overriden/free by SSBO later when added to scene
   viewport->ssbo_slot.uniform = malloc(sizeof(ViewportUniform));
+  viewport->ssbo_slot.id = SSBO_INDEX_UNFOUND;
 
   // init projection matrix
   viewport_update_projection(viewport);
@@ -49,4 +50,11 @@ void viewport_uniform_update(Viewport *viewport) {
 
 mat4 *viewport_projection(Viewport *vp) { return &vp->projection; }
 
-void viewport_destroy(Viewport *vp) { memset(vp, 0, sizeof(Viewport)); }
+void viewport_destroy(Viewport *vp) {
+
+  // means hasn't been assigned in the ssbo
+  if (vp->ssbo_slot.id == SSBO_INDEX_UNFOUND)
+    free(vp->ssbo_slot.uniform);
+
+  memset(vp, 0, sizeof(Viewport));
+}

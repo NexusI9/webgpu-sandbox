@@ -1,4 +1,5 @@
 #include "add.h"
+#include "../backend/ubo.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "./editor/editor.h"
 #include "./editor/object/object.h"
@@ -84,6 +85,10 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
 
   base_list->length++;
 
+  ubo_update_entry(&scene->renderer.ubo, UBOField_PointLightCount,
+                   (UBOValue){base_list->length});
+  ubo_upload(&scene->renderer.ubo);
+
   return seo_light;
 }
 
@@ -146,6 +151,10 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 
   base_list->length++;
 
+  ubo_update_entry(&scene->renderer.ubo, UBOField_SpotLightCount,
+                   (UBOValue){base_list->length});
+  ubo_upload(&scene->renderer.ubo);
+
   return seo_light;
 }
 
@@ -180,6 +189,10 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_seo(scene, seo_light);
+
+  ubo_update_entry(&scene->renderer.ubo, UBOField_AmbientLightCount,
+                   (UBOValue){list->length});
+  ubo_upload(&scene->renderer.ubo);
 
   return seo_light;
 }
@@ -243,6 +256,10 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   scene_add_seo(scene, seo_light);
 
   base_list->length++;
+
+  ubo_update_entry(&scene->renderer.ubo, UBOField_SunLightCount,
+                   (UBOValue){base_list->length});
+  ubo_upload(&scene->renderer.ubo);
 
   return seo_light;
 }

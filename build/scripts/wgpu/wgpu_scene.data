@@ -28,7 +28,6 @@ struct Camera {
                                     _pad : vec3<u32>,
 };
 
-const SSBO_CAPACITY : u32 = 32u;
 @group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
 @group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
 @group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
@@ -914,6 +913,15 @@ struct LightListLength {
   ambient : u32, point : u32, spot : u32, sun : u32
 };
 
+// === UBO ===
+struct LightListCount {
+  point : u32, spot : u32, sun : u32, ambient : u32,
+};
+
+struct UBO {
+  light_count : LightListCount,
+};
+
 // material pbr
 // 1. texture : The actual image data stored in VRAM (pixel colors, normal maps,
 // etc.)
@@ -948,7 +956,7 @@ struct LightListLength {
 @group(2) @binding(1) var<storage, read> spot_light_list : array<SpotLight>;
 @group(2) @binding(2) var<storage, read> point_light_list : array<PointLight>;
 @group(2) @binding(3) var<storage, read> sun_light_list : array<SunLight>;
-@group(2) @binding(4) var<uniform> light_list_length : LightListLength;
+@group(2) @binding(4) var<uniform> ubo : UBO;
 
 
 @group(2) @binding(5) var point_shadow_maps : texture_depth_cube_array;
@@ -1193,14 +1201,14 @@ fn kernel_from_distance(frag_pos : vec3<f32>, cam_pos : vec3<f32>) -> u32 {
 // Combine and compute Point light shadow
 fn point_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
-  if (light_list_length.point == 0u) {
+  if (ubo.light_count.point == 0u) {
     return 0.0f;
   }
 
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.002f;
 
-  for (var l : u32 = 0u; l < light_list_length.point; l++) {
+  for (var l : u32 = 0u; l < ubo.light_count.point; l++) {
 
     let light = point_light_list[l];
     let light_position = light.position;
@@ -1282,14 +1290,14 @@ fn directional_shadow_position(world_position : vec3<f32>,
 
 fn spot_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
-  if (light_list_length.spot == 0u) {
+  if (ubo.light_count.spot == 0u) {
     return 0.0f;
   }
 
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.0005f;
 
-  for (var l : u32 = 0u; l < light_list_length.spot; l++) {
+  for (var l : u32 = 0u; l < ubo.light_count.spot; l++) {
 
     let light = spot_light_list[l];
     let shadow_position =
@@ -1345,16 +1353,16 @@ fn spot_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
 fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
-  if (light_list_length.sun == 0u) {
+  if (ubo.light_count.sun == 0u) {
     return 0.0f;
   }
 
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.005f;
 
-  for (var l : u32 = 0u; l < light_list_length.sun; l++) {
+  for (var l : u32 = 0u; l < ubo.light_count.sun; l++) {
 
-    let layer = light_list_length.spot + l;
+    let layer = ubo.light_count.spot + l;
     let light = sun_light_list[l];
     let shadow_position =
         directional_shadow_position(frag_position, light.view);
@@ -1437,7 +1445,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   var ambient : vec3<f32> = vec3<f32>(0.0f);
 
   // calculate point lights
-  for (var i = 0u; i < light_list_length.point; i++) {
+  for (var i = 0u; i < ubo.light_count.point; i++) {
     let light = point_light_list[i];
     Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
                               light.position, light.color, light.intensity);
@@ -1446,7 +1454,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   // calculate spot lights
   // basically the same a point light, but use a fixed light direction instead
   // of a one per fragment like a point light
-  for (var i = 0u; i < light_list_length.spot; i = i + 1u) {
+  for (var i = 0u; i < ubo.light_count.spot; i = i + 1u) {
     let light = spot_light_list[i];
     let light_direction = -1.0f * light.lookat - light.position;
     Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
@@ -1454,7 +1462,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   }
 
   // calculate sun lights
-  for (var i = 0u; i < light_list_length.sun; i = i + 1u) {
+  for (var i = 0u; i < ubo.light_count.sun; i = i + 1u) {
     let light = sun_light_list[i];
     Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
                               light.position, light.color, light.intensity);
@@ -1462,7 +1470,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
   // calulate ambient lights
   var ambient_intensity = 0.0f;
-  for (var i = 0u; i < light_list_length.ambient; i = i + 1u) {
+  for (var i = 0u; i < ubo.light_count.ambient; i = i + 1u) {
     let light = ambient_light_list[i];
     ambient += compute_ambient_light(material, light.color, light.intensity);
     ambient_intensity += light.intensity;
@@ -1583,6 +1591,15 @@ struct SunLightStorage {
   length : u32, entries : array<SunLight, MAX_LIGHT>,
 };
 
+// === UBO ===
+struct LightListCount {
+  point : u32, spot : u32, sun : u32, ambient : u32,
+};
+
+struct UBO {
+  light_count : LightListCount,
+};
+
 // material pbr
 // 1. texture : The actual image data stored in VRAM (pixel colors, normal maps,
 // etc.)
@@ -1592,9 +1609,9 @@ struct SunLightStorage {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var diffuse_texture : texture_2d<f32>;
 @group(1) @binding(1) var diffuse_sampler : sampler;
@@ -1617,6 +1634,7 @@ const SSBO_CAPACITY : u32 = 32u;
 @group(2) @binding(1) var<uniform> spot_light_list : SpotLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
 @group(2) @binding(3) var<uniform> sun_light_list : SunLightStorage;
+@group(2) @binding(4) var<uniform> ubo : UBO;
 
 
 @group(2) @binding(4) var point_shadow_maps : texture_depth_cube_array;

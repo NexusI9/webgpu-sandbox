@@ -102,6 +102,15 @@ struct SunLightStorage {
   length : u32, entries : array<SunLight, MAX_LIGHT>,
 };
 
+// === UBO ===
+struct LightListCount {
+  point : u32, spot : u32, sun : u32, ambient : u32,
+};
+
+struct UBO {
+  light_count : LightListCount,
+};
+
 // material pbr
 // 1. texture : The actual image data stored in VRAM (pixel colors, normal maps,
 // etc.)
@@ -111,9 +120,9 @@ struct SunLightStorage {
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var diffuse_texture : texture_2d<f32>;
 @group(1) @binding(1) var diffuse_sampler : sampler;
@@ -136,6 +145,7 @@ const SSBO_CAPACITY : u32 = 32u;
 @group(2) @binding(1) var<uniform> spot_light_list : SpotLightStorage;
 @group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
 @group(2) @binding(3) var<uniform> sun_light_list : SunLightStorage;
+@group(2) @binding(4) var<uniform> ubo : UBO;
 
 #ifdef RENDER_SHADOW_AS_COLOR
 @group(2) @binding(4) var point_shadow_maps : texture_cube_array<f32>;

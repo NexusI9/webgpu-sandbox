@@ -68,10 +68,3 @@ StaticListStatus light_list_spot_shadow_remove(SpotLightListShadow *list,
   return stli_remove((void *)list->entries, &list->length, sizeof(SpotLight *),
                      (void *)&light, "Spot Light List Shadow");
 }
-
-void light_list_length(LightListLength *length, const LightList *list) {
-  length->ambient = list->ambient.length;
-  length->point = list->point.base.length;
-  length->spot = list->spot.base.length;
-  length->sun = list->sun.base.length;
-}

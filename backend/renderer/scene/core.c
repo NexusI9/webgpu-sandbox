@@ -53,8 +53,12 @@ void scene_renderer_create(SceneRenderer *renderer,
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, renderer,
                                  false, scene_renderer_resize_callback);
 
+  ubo_init(&renderer->ubo, scene_renderer_queue(renderer),
+           scene_renderer_device(renderer));
+  
   ssbo_init(&renderer->ssbo, scene_renderer_device(renderer),
             scene_renderer_queue(renderer));
+
   scene_renderer_add_draw_callback(renderer, ssbo_draw_callback,
                                    (void *)&renderer->ssbo);
 

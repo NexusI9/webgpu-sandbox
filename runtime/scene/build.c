@@ -17,6 +17,7 @@ typedef struct {
   Camera *camera;
   Viewport *viewport;
   SSBOManager *ssbo;
+  UBOManager *ubo;
 } SceneBuildDescriptor;
 
 // pipeline builders
@@ -42,7 +43,10 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 
   Camera *camera = scene->active_camera;
   Viewport *viewport = &scene->viewport;
+
   SSBOManager *ssbo = &scene->renderer.ssbo;
+  UBOManager *ubo = &scene->renderer.ubo;
+
   const SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
   const WGPUQueue queue = scene_queue(scene);
   const WGPUDevice device = scene_device(scene);
@@ -55,6 +59,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
       .camera = camera,
       .viewport = viewport,
       .ssbo = ssbo,
+      .ubo = ubo,
   };
 
   switch (pipeline) {
@@ -171,9 +176,7 @@ void scene_build_mesh_texture(
       (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
 
     // bind lights
-    LightListLength list_length;
-    light_list_length(&list_length, build_texture_desc->lights);
-    mesh_shader_texture_update_lights(build_desc->mesh, &list_length,
+    mesh_shader_texture_update_lights(build_desc->mesh, build_desc->ubo,
                                       build_desc->ssbo);
   }
 

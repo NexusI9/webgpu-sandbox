@@ -20,25 +20,22 @@ void mesh_shader_texture_clear_bindings(Mesh *mesh) {
    TODO OPTI: currently we update all the lights on each update, implement a
    more targetted way to update lights based on their index.
   */
-void mesh_shader_texture_update_lights(Mesh *mesh,
-                                       LightListLength *light_list_length,
+void mesh_shader_texture_update_lights(Mesh *mesh, UBOManager *ubo,
                                        SSBOManager *ssbo) {
 
-  WGPUBuffer entries[4] = {
+  WGPUBuffer entries[5] = {
       ssbo_buffer_handle(ssbo, SSBOType_AmbientLight),
       ssbo_buffer_handle(ssbo, SSBOType_SpotLight),
       ssbo_buffer_handle(ssbo, SSBOType_PointLight),
       ssbo_buffer_handle(ssbo, SSBOType_SunLight),
+      ubo_buffer_handle(ubo),
   };
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
 
-  for (size_t i = 0; i < 4; i++)
+  for (size_t i = 0; i < 5; i++)
     shader_update_uniform_buffer(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS, i,
                                  entries[i], 0, ShaderBufferLifetime_Release);
-
-  shader_update_uniform_data(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS, 4,
-                             light_list_length);
 }
 
 /**

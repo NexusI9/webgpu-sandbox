@@ -195,6 +195,7 @@ void scene_light_list_init(Scene *scene) {
 
   light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
 
+  
   // init shadow textures
   shadow_map_init(&(ShadowMapInitDescriptor){
       .device = scene_renderer_device(&scene->renderer),

@@ -178,7 +178,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(LightListLength),
+                        .minBindingSize = sizeof(UBOUniform),
                     },
             },
             {

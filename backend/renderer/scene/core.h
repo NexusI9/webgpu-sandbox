@@ -3,6 +3,7 @@
 
 #include "../../clock.h"
 #include "../backend/ssbo.h"
+#include "../backend/ubo.h"
 #include "../runtime/pipeline/pipeline.h"
 #include "../runtime/texture/texture.h"
 #include "./ao_bake/ao_bake.h"
@@ -51,6 +52,7 @@ typedef struct SceneRenderer {
   cclock clock;         // update clock delta on draw
   WGPUColor background; // TODO: put this under context
   SSBOManager ssbo;
+  UBOManager ubo;
 
   struct {
     const char *name;

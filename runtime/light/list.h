@@ -21,10 +21,6 @@ typedef struct {
   mat4 *light_view;
 } LightShadowData;
 
-typedef struct {
-  uint32_t point, ambient, sun, spot;
-} LightListLength;
-
 // light list
 typedef struct {
   size_t length;
@@ -108,5 +104,4 @@ StaticListStatus light_list_spot_shadow_insert(SpotLightListShadow *,
 StaticListStatus light_list_spot_shadow_remove(SpotLightListShadow *,
                                                SpotLight *);
 
-void light_list_length(LightListLength *, const LightList *);
 #endif
