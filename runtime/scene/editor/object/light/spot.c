@@ -117,7 +117,7 @@ void seo_light_spot_shadow_set_position(SEOTransformCallback *desc) {
             .device = scene_device(desc->seo->scene),
             .queue = scene_queue(desc->seo->scene),
             .texture_layer = desc->mesh->target_list_index,
-            .encoder = NULL,
+            .command_encoder = NULL,
         },
         SCENE_DEBUG_UNDEFINED);
   }

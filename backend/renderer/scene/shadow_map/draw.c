@@ -103,7 +103,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
       desc->pass->color.texture, &temp_layer_texture_descriptor_color);
 
   // sometimes pass encoder may be set if we batch update all lights
-  if (desc->encoder == NULL)
+  if (desc->command_encoder == NULL)
     render_pass_command_begin(desc->pass);
   {
 
@@ -119,7 +119,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
                                  .depth = temp_layer_texture_view_depth,
                              });
   }
-  if (desc->encoder == NULL)
+  if (desc->command_encoder == NULL)
     render_pass_command_end(desc->pass);
 
   wgpuTextureViewRelease(temp_layer_texture_view_depth);
@@ -191,82 +191,65 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
   const size_t sun_length = desc->lights->sun.shadow.length;
 
   debug_view_count = 0;
-  /*
-  ==========================================
-
-     I. create Point Light Shadow Mapping
-
-  ==========================================
- */
-
-  // WGPUCommandEncoder shadow_encoder =
-  //     wgpuDeviceCreateCommandEncoder(desc->device, NULL);
-
-  // WGPUCommandBuffer command_buffer;
-
-  for (size_t p = 0; p < point_length; p++)
-    shadow_map_draw_point_light(
-        &(ShadowMapDrawPointLightDescriptor){
-            .texture_layer = p,
-            .light = desc->lights->point.shadow.entries[p],
-            .pass = &desc->lights->point.shadow.pass,
-            .device = desc->device,
-            .queue = desc->queue,
-            .encoder = NULL, // shadow_encoder,
-        },
-        debug);
 
   /*
-    ==================================================
+    ==== Point Lights ====
+    */
+  WGPUCommandEncoder point_encoder =
+      render_pass_command_begin(&desc->lights->point.shadow.pass);
+  {
+    for (size_t p = 0; p < point_length; p++)
+      shadow_map_draw_point_light(
+          &(ShadowMapDrawPointLightDescriptor){
+              .texture_layer = p,
+              .light = desc->lights->point.shadow.entries[p],
+              .pass = &desc->lights->point.shadow.pass,
+              .device = desc->device,
+              .queue = desc->queue,
+              .command_encoder = point_encoder,
+          },
+          debug);
+  }
+  render_pass_command_end(&desc->lights->point.shadow.pass);
 
-       II. create Directional Light Shadow Mapping
+  WGPUCommandEncoder dir_encoder =
+      render_pass_command_begin(&desc->lights->spot.shadow.pass);
+  {
+    /*
+      ==== Spot Lights ====
+    */
+    for (size_t p = 0; p < spot_length; p++)
+      shadow_map_draw_spot_light(
+          &(ShadowMapDrawSpotLightDescriptor){
+              .texture_layer = p,
+              .light = desc->lights->spot.shadow.entries[p],
+              .device = desc->device,
+              .queue = desc->queue,
+              .command_encoder = dir_encoder,
+              .pass = &desc->lights->spot.shadow.pass,
+          },
+          debug);
 
-    ==================================================
-   */
-
-  for (size_t p = 0; p < spot_length; p++)
-    shadow_map_draw_spot_light(
-        &(ShadowMapDrawSpotLightDescriptor){
-            .texture_layer = p,
-            .light = desc->lights->spot.shadow.entries[p],
-            .device = desc->device,
-            .queue = desc->queue,
-            .encoder = NULL,
-            .pass = &desc->lights->spot.shadow.pass,
-        },
-        debug);
-
-  /*
-  ==========================================
-
-     III. create Sun Light Shadow Mapping
-
-  ==========================================
- */
-
-  for (size_t p = 0; p < sun_length; p++)
-    shadow_map_draw_sun_light(
-        &(ShadowMapDrawSunLightDescriptor){
-            // TODO: currently use spot light color_map, maybe make a linked
-            // pointer
-            // to the same map but include it in the sun light list struct
-            // itself.
-            .texture_layer = spot_length + p,
-            .device = desc->device,
-            .queue = desc->queue,
-            .encoder = NULL, // shadow_encoder,
-            .pass = &desc->lights->spot.shadow.pass,
-            .light = desc->lights->sun.shadow.entries[p],
-        },
-        debug);
-
-  // finish encoding command
-  // command_buffer = wgpuCommandEncoderFinish(shadow_encoder, NULL);
-  // wgpuQueueSubmit(desc->queue, 1, &command_buffer);
-
-  // clean up
-  // wgpuCommandBufferRelease(command_buffer);
-  // wgpuCommandEncoderRelease(shadow_encoder);
+    /*
+      ==== Sun Lights ====
+    */
+    for (size_t p = 0; p < sun_length; p++)
+      shadow_map_draw_sun_light(
+          &(ShadowMapDrawSunLightDescriptor){
+              // TODO: currently use spot light color_map, maybe make a linked
+              // pointer
+              // to the same map but include it in the sun light list struct
+              // itself.
+              .texture_layer = spot_length + p,
+              .device = desc->device,
+              .queue = desc->queue,
+              .command_encoder = dir_encoder,
+              .pass = &desc->lights->spot.shadow.pass,
+              .light = desc->lights->sun.shadow.entries[p],
+          },
+          debug);
+  }
+  render_pass_command_end(&desc->lights->spot.shadow.pass);
 }
 
 /**
@@ -285,14 +268,14 @@ void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *desc,
 
     // Render scene (create shadow render pass to texture layer)
     size_t layer = desc->texture_layer * desc->light->views.length + v;
-
+    
     shadow_map_draw(
         &(ShadowMapDrawDescriptor){
             .pass = desc->pass,
             .texture_layer = layer,
             .device = desc->device,
             .queue = desc->queue,
-            .encoder = desc->encoder,
+            .command_encoder = desc->command_encoder,
             .pipeline = std_pipeline(PipelineType_Shadow),
             .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View + v].id,
         },
@@ -315,7 +298,7 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc,
             .ssbo_offset = desc->ssbo_offset,
             .device = desc->device,
             .queue = desc->queue,
-            .encoder = desc->encoder,
+            .command_encoder = desc->command_encoder,
             .pipeline = desc->pipeline,
         },
         debug);
@@ -329,7 +312,7 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc,
           .pass = desc->pass,
           .queue = desc->queue,
           .device = desc->device,
-          .encoder = desc->encoder,
+          .command_encoder = desc->command_encoder,
           .texture_layer = desc->texture_layer,
           .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
           .views = &desc->light->views,
@@ -346,7 +329,7 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc,
           .pass = desc->pass,
           .device = desc->device,
           .queue = desc->queue,
-          .encoder = desc->encoder,
+          .command_encoder = desc->command_encoder,
           .texture_layer = desc->texture_layer,
           .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
           .views = &desc->light->views,

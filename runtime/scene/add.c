@@ -68,7 +68,7 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
     PointLightListShadow *shadow_list = &scene->lights.point.shadow;
 
     seo_desc.target_list_index = shadow_list->length;
-    seo_light_point_create(seo_light, new_light, &seo_desc);
+    seo_light_point_shadow_create(seo_light, new_light, &seo_desc);
 
     light_list_point_shadow_insert(shadow_list, new_light);
 
@@ -82,7 +82,7 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
               .device = scene_device(scene),
               .queue = scene_queue(scene),
               .texture_layer = shadow_list->length,
-              .encoder = NULL,
+              .command_encoder = NULL,
           },
           SCENE_DEBUG_UNDEFINED);
 
@@ -154,7 +154,7 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
               .device = scene_device(scene),
               .queue = scene_queue(scene),
               .texture_layer = shadow_list->length,
-              .encoder = NULL,
+              .command_encoder = NULL,
           },
           SCENE_DEBUG_UNDEFINED);
 
@@ -270,7 +270,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
               .queue = scene_queue(scene),
               .texture_layer =
                   scene->lights.spot.shadow.length + seo_desc.target_list_index,
-              .encoder = NULL,
+              .command_encoder = NULL,
           },
           SCENE_DEBUG_UNDEFINED);
 

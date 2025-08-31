@@ -111,8 +111,9 @@ void seo_light_point_shadow_set_position(SEOTransformCallback *desc) {
     light_point_projection_update(light);
 
     // add to write queue (CPU > GPU)
-    ssbo_update_queue_insert(ssbo, SSBOType_ViewShadow,
-                             light->ssbo_slot[LightSSBOSlot_View].id);
+    for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
+      ssbo_update_queue_insert(ssbo, SSBOType_ViewShadow,
+                               light->ssbo_slot[LightSSBOSlot_View + i].id);
 
     shadow_map_draw_point_light(
         &(ShadowMapDrawPointLightDescriptor){
@@ -121,7 +122,7 @@ void seo_light_point_shadow_set_position(SEOTransformCallback *desc) {
             .device = scene_device(desc->seo->scene),
             .queue = scene_queue(desc->seo->scene),
             .texture_layer = desc->mesh->target_list_index,
-            .encoder = NULL,
+            .command_encoder = NULL,
         },
         SCENE_DEBUG_UNDEFINED);
   }

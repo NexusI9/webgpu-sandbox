@@ -19,7 +19,7 @@ typedef struct {
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  const WGPUCommandEncoder encoder;
+  const WGPUCommandEncoder command_encoder;
   PointLight *light;
   const size_t texture_layer;
   RenderPass *pass;
@@ -33,7 +33,7 @@ typedef struct {
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  const WGPUCommandEncoder encoder;
+  const WGPUCommandEncoder command_encoder;
   SunLight *light;
   const size_t texture_layer;
   RenderPass *pass;
@@ -42,7 +42,7 @@ typedef struct {
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  const WGPUCommandEncoder encoder;
+  const WGPUCommandEncoder command_encoder;
   SpotLight *light;
   const size_t texture_layer;
   RenderPass *pass;
@@ -51,7 +51,7 @@ typedef struct {
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  const WGPUCommandEncoder encoder;
+  const WGPUCommandEncoder command_encoder;
   Projection *views;
   const size_t texture_layer;
   const ssbo_id_t ssbo_offset;
@@ -65,7 +65,7 @@ typedef struct {
   const ssbo_id_t ssbo_offset;
   const WGPUDevice device;
   const WGPUQueue queue;
-  WGPUCommandEncoder encoder;
+  WGPUCommandEncoder command_encoder;
   const Pipeline *pipeline;
 } ShadowMapDrawDescriptor;
 
