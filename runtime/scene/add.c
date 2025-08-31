@@ -10,6 +10,7 @@
 #include "editor/object/list/list.h"
 #include "editor/object/probe/reflection.h"
 #include "editor/selection/core.h"
+#include <stdint.h>
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 
@@ -39,9 +40,11 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
 
   // create sun light
   PointLight *new_light = &base_list->entries[base_list->length];
-  light_create_point(new_light, desc);
+  light_point_create(new_light, desc);
+
+  // transfert Light Uniform to SSBO
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_PointLight,
-                  &new_light->ssbo_slot);
+                  &new_light->ssbo_slot[LightSSBOSlot_List]);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =
@@ -58,6 +61,10 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
 
   if (shadow) {
 
+    for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
+      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewShadow,
+                      &new_light->ssbo_slot[LightSSBOSlot_View + i]);
+
     PointLightListShadow *shadow_list = &scene->lights.point.shadow;
 
     seo_desc.target_list_index = shadow_list->length;
@@ -68,14 +75,17 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
     // recompute shadow map if render mode
     if (scene_renderer_draw_mode(&scene->renderer) ==
         SceneRendererDrawMode_Texture)
-      shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
-          .light = new_light,
-          .pass = &scene->lights.point.shadow.pass,
-          .device = scene_device(scene),
-          .queue = scene_queue(scene),
-          .layer = shadow_list->length,
-          .encoder = NULL,
-      });
+      shadow_map_draw_point_light(
+          &(ShadowMapDrawPointLightDescriptor){
+              .light = new_light,
+              .pass = &scene->lights.point.shadow.pass,
+              .device = scene_device(scene),
+              .queue = scene_queue(scene),
+              .texture_layer = shadow_list->length,
+              .encoder = NULL,
+          },
+          SCENE_DEBUG_UNDEFINED);
+
   } else {
     seo_light_point_create(seo_light, new_light, &seo_desc);
   }
@@ -103,9 +113,11 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 
   // create sun light
   SpotLight *new_light = &base_list->entries[base_list->length];
-  light_create_spot(new_light, desc);
+  light_spot_create(new_light, desc);
+
+  // transfert Light Uniform to SSBO
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_SpotLight,
-                  &new_light->ssbo_slot);
+                  &new_light->ssbo_slot[LightSSBOSlot_List]);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =
@@ -122,6 +134,9 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 
   if (shadow) {
 
+    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewShadow,
+                    &new_light->ssbo_slot[LightSSBOSlot_View]);
+
     SpotLightListShadow *shadow_list = &scene->lights.spot.shadow;
 
     seo_desc.target_list_index = shadow_list->length;
@@ -132,14 +147,16 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
     // recompute shadow map if render mode
     if (scene_renderer_draw_mode(&scene->renderer) ==
         SceneRendererDrawMode_Texture)
-      shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
-          .light = new_light,
-          .pass = &shadow_list->pass,
-          .device = scene_device(scene),
-          .queue = scene_queue(scene),
-          .layer = shadow_list->length,
-          .encoder = NULL,
-      });
+      shadow_map_draw_spot_light(
+          &(ShadowMapDrawSpotLightDescriptor){
+              .light = new_light,
+              .pass = &shadow_list->pass,
+              .device = scene_device(scene),
+              .queue = scene_queue(scene),
+              .texture_layer = shadow_list->length,
+              .encoder = NULL,
+          },
+          SCENE_DEBUG_UNDEFINED);
 
   } else {
 
@@ -169,7 +186,9 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
 
   // create sun light
   AmbientLight *new_light = &list->entries[list->length++];
-  light_create_ambient(new_light, desc);
+  light_ambient_create(new_light, desc);
+
+  // transfert Light Uniform to SSBO
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_AmbientLight,
                   &new_light->ssbo_slot);
 
@@ -208,9 +227,11 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
   // create sun light
   SunLight *new_light = &base_list->entries[base_list->length];
-  light_create_sun(new_light, desc);
+  light_sun_create(new_light, desc);
+
+  // transfert Light Uniform to SSBO
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_SunLight,
-                  &new_light->ssbo_slot);
+                  &new_light->ssbo_slot[LightSSBOSlot_List]);
 
   // create mesh/gizmo
   SceneEditorObject *seo_light =
@@ -227,6 +248,9 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
   if (shadow) {
 
+    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewShadow,
+                    &new_light->ssbo_slot[LightSSBOSlot_View]);
+
     SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
 
     seo_desc.target_list_index = shadow_list->length;
@@ -238,15 +262,17 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
     // recompute shadow map if render mode
     if (scene_renderer_draw_mode(&scene->renderer) ==
         SceneRendererDrawMode_Texture)
-      shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
-          .light = new_light,
-          .pass = &scene->lights.spot.shadow.pass,
-          .device = scene_device(scene),
-          .queue = scene_queue(scene),
-          .layer =
-              scene->lights.spot.shadow.length + seo_desc.target_list_index,
-          .encoder = NULL,
-      });
+      shadow_map_draw_sun_light(
+          &(ShadowMapDrawSunLightDescriptor){
+              .light = new_light,
+              .pass = &scene->lights.spot.shadow.pass,
+              .device = scene_device(scene),
+              .queue = scene_queue(scene),
+              .texture_layer =
+                  scene->lights.spot.shadow.length + seo_desc.target_list_index,
+              .encoder = NULL,
+          },
+          SCENE_DEBUG_UNDEFINED);
 
   } else {
     seo_light_sun_create(seo_light, new_light, &seo_desc);
@@ -399,12 +425,14 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   // Update Shadow maps if added to Dynamic_Lit pipeline
   if (pipeline == ScenePipeline_Dynamic_LitShadow &&
       scene->renderer.draw.mode == SceneRendererDrawMode_Texture) {
-    shadow_map_draw_all(&(ShadowMapDrawAllDescriptor){
-        .device = scene_device(scene),
-        .queue = scene_queue(scene),
-        .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
-        .lights = &scene->lights,
-    });
+    shadow_map_draw_all(
+        &(ShadowMapDrawAllDescriptor){
+            .device = scene_device(scene),
+            .queue = scene_queue(scene),
+            .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+            .lights = &scene->lights,
+        },
+        SCENE_DEBUG_UNDEFINED);
 
     // EDITORONLY
     // add mesh to selection shadow
@@ -442,6 +470,7 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
   // overallx dispatch is unclear.
   const Pipeline *mesh_pipeline =
       mesh_shader(mesh, MeshShader_Texture)->pipeline;
+
   if (mesh_pipeline == std_pipeline(PipelineType_Unlit) ||
       mesh_pipeline == std_pipeline(PipelineType_GlassBox) ||
       mesh_pipeline == std_pipeline(PipelineType_GlassProbe))

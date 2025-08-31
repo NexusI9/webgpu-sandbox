@@ -259,3 +259,30 @@ void shader_update_texture(Shader *shader, const bind_group_index group_index,
         group_index, index, shader->name);
   }
 }
+
+void shader_update_bind_group_offset(Shader *shader,
+                                     const bind_group_index group_index,
+                                     const uint8_t index, const size_t offset) {
+
+  if (group_index > SHADER_MAX_BIND_GROUP) {
+    VERBOSE_WARNING("Attempting to set shader %s bindgroup %u offset, "
+                    "which is beyond bindgroup capacity (%d).",
+                    shader->name, group_index, SHADER_MAX_BIND_GROUP);
+    return;
+  }
+
+  if (index > SHADER_MAX_OFFSET_CAPACITY) {
+    VERBOSE_WARNING(
+        "Attempting to set shader %s bindgroup %u offset at index %u, "
+        "which is beyond offset capacity (%d).",
+        shader->name, group_index, index, SHADER_MAX_OFFSET_CAPACITY);
+    return;
+  }
+
+  WGPUSupportedLimits limits;
+  wgpuDeviceGetLimits(shader->device, &limits);
+  size_t alignment = limits.limits.minStorageBufferOffsetAlignment;
+
+  shader->bind_groups.entries[group_index].offset.entries[index] =
+      offset * alignment;
+}

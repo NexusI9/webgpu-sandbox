@@ -18,7 +18,7 @@ typedef enum {
 
 typedef struct {
   const Pipeline *pipeline;
-  mat4 *light_view;
+  const size_t view_offset;
 } LightShadowData;
 
 // light list

@@ -4,6 +4,7 @@
 #include "string.h"
 
 #include "../utils/system.h"
+#include <stddef.h>
 #include <stdint.h>
 
 /*
@@ -81,6 +82,7 @@ void shader_destroy(Shader *shader) {
 /**
    Update method called as such: scene update => mesh update => shader update
  */
+static int t = 0;
 void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
 
   // bind pipeline to render
@@ -99,7 +101,7 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
     wgpuRenderPassEncoderSetBindGroup(render_pass, i, bind_group->bind_group,
                                       bind_group->offset.count,
                                       bind_group->offset.entries);
-    
+
   }
 }
 

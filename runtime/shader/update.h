@@ -42,4 +42,6 @@ void shader_update_uniform_callback(Shader *, const bind_group_index,
 void shader_update_sampler(Shader *, const bind_group_index, const bind_index,
                            const WGPUSamplerDescriptor *);
 
+void shader_update_bind_group_offset(Shader *, const bind_group_index,
+                                     const uint8_t, const size_t);
 #endif

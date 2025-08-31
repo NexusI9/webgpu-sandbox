@@ -10,8 +10,7 @@ void scene_debug_ray_create(SceneDebug *debug, Mesh **line) {
                          .name = "Debug line mesh",
                      });
 
-  mesh_shader_build_mvp(*line, MeshShader_Fixed, debug->ssbo, debug->camera,
-                        debug->viewport, true);
+  mesh_shader_build_mvp(*line, MeshShader_Fixed, debug->ssbo);
 
   shader_update_uniform_data(mesh_shader(*line, MeshShader_Fixed), 1, 0,
                              &(color){0.0f, 1.0f, 0.0f, 1.0f});

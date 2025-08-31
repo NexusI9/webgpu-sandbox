@@ -15,12 +15,13 @@ typedef struct {
   float inner_cutoff;
   float near;
   float far;
-  float _padding;
+  float _padding[21];
 } __attribute__((aligned(16))) PointLightUniform;
 
 typedef struct {
   vec3 color;
   float intensity;
+  float _padding[60];
 } __attribute__((aligned(16))) AmbientLightUniform;
 
 typedef struct {
@@ -31,6 +32,7 @@ typedef struct {
   vec3 color;
   float intensity;
   mat4 view;
+  float _padding[36];
 } __attribute__((aligned(16))) SpotLightUniform;
 
 typedef struct {
@@ -39,6 +41,7 @@ typedef struct {
   vec3 color;
   float _padding;
   mat4 view;
+  float _padding2[40];
 } __attribute__((aligned(16))) SunLightUniform;
 
 // light uniforms
@@ -63,6 +66,7 @@ typedef struct {
 } __attribute__((aligned(16))) SunLightListUniform;
 
 /*
+  DEPRECATED
   Light comparator is use to map each point light entry and each uniform to
   compare them.
 
@@ -81,30 +85,11 @@ typedef struct {
 
  */
 
-//DELETEME
-typedef struct {
-  vec3 position;
-} LightComparator;
-
 /* Creator */
 
-void point_light_uniform_update(PointLight *);
-void ambient_light_uniform_update(AmbientLight *);
-void spot_light_uniform_update(SpotLight *);
-void sun_light_uniform_update(SunLight *);
-
-/* Callbacks */
-
-void point_light_list_update_callback(void *, void *);
-bool point_light_list_trigger_callback(void *, const void *);
-
-void ambient_light_list_update_callback(void *, void *);
-bool ambient_light_list_trigger_callback(void *, const void *);
-
-void spot_light_list_update_callback(void *, void *);
-bool spot_light_list_trigger_callback(void *, const void *);
-
-void sun_light_list_update_callback(void *, void *);
-bool sun_light_list_trigger_callback(void *, const void *);
+void light_point_uniform_update(PointLight *);
+void light_ambient_uniform_update(AmbientLight *);
+void light_spot_uniform_update(SpotLight *);
+void light_sun_uniform_update(SunLight *);
 
 #endif

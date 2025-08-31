@@ -20,18 +20,22 @@ struct Mesh {
   model : mat4x4<f32>, position : vec4<f32>,
 }
 
-const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<uniform> view_projection : mat4x4<f32>;
+struct Projection {
+  view : mat4x4<f32>, _padding : array<u32, 48>
+};
+
+@group(0) @binding(0) var<storage, read> viewProjection : array<Projection>;
 @group(0) @binding(1) var<storage, read> uMesh : array<Mesh>;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
   let mesh = uMesh[0];
+  let view = viewProjection[0];
 
   var out : VertexOut;
   let model = mesh.model * vec4<f32>(input.aPos, 1.0f);
   out.vFrag = model;
-  out.vPosition = view_projection * model;
+  out.vPosition = view.view * model;
 
   return out;
 }
@@ -47,6 +51,6 @@ const SSBO_CAPACITY : u32 = 32u;
 
   // NOTE: if orthographic projection, don't need to linearize, can simply use z
   // for debugging purpose
-
-  return vec4<f32>(vec3<f32>(in.vPosition.z), 1.0f);
+  return vec4<f32>(0.0f, 1.0f, 0.0f, 1.0f);
+  // return vec4<f32>(vec3<f32>(in.vPosition.z), 1.0f);
 }

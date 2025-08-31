@@ -3,8 +3,10 @@
 
 #include "../runtime/light/light.h"
 #include "../runtime/mesh/mesh.h"
+#include "../runtime/scene/debug/debug.h"
 #include "../utils/projection.h"
 #include <stddef.h>
+#include <stdint.h>
 #include <webgpu/webgpu.h>
 
 typedef struct {
@@ -19,16 +21,21 @@ typedef struct {
   const WGPUQueue queue;
   const WGPUCommandEncoder encoder;
   PointLight *light;
-  const size_t layer;
+  const size_t texture_layer;
   RenderPass *pass;
 } ShadowMapDrawPointLightDescriptor;
+
+typedef struct {
+  SceneDebug *scene_debug;
+  const uint16_t max_views;
+} ShadowMapDebug;
 
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
   const WGPUCommandEncoder encoder;
   SunLight *light;
-  const size_t layer;
+  const size_t texture_layer;
   RenderPass *pass;
 } ShadowMapDrawSunLightDescriptor;
 
@@ -37,7 +44,7 @@ typedef struct {
   const WGPUQueue queue;
   const WGPUCommandEncoder encoder;
   SpotLight *light;
-  const size_t layer;
+  const size_t texture_layer;
   RenderPass *pass;
 } ShadowMapDrawSpotLightDescriptor;
 
@@ -46,25 +53,30 @@ typedef struct {
   const WGPUQueue queue;
   const WGPUCommandEncoder encoder;
   Projection *views;
-  const size_t layer;
+  const size_t texture_layer;
+  const ssbo_id_t ssbo_offset;
   const Pipeline *pipeline;
   RenderPass *pass;
 } ShadowMapDrawDirLightDescriptor;
 
 typedef struct {
   RenderPass *pass;
-  uint32_t layer;
+  const uint32_t texture_layer;
+  const ssbo_id_t ssbo_offset;
   const WGPUDevice device;
   const WGPUQueue queue;
   WGPUCommandEncoder encoder;
   const Pipeline *pipeline;
-  mat4 *light_view;
 } ShadowMapDrawDescriptor;
 
-void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *);
+void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *,
+                         const ShadowMapDebug *);
 
-void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *);
-void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *);
-void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *);
+void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *,
+                                 const ShadowMapDebug *);
+void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *,
+                               const ShadowMapDebug *);
+void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *,
+                                const ShadowMapDebug *);
 
 #endif

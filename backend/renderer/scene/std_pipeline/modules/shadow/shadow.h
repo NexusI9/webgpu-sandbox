@@ -7,16 +7,18 @@
 #include "../runtime/viewport/viewport.h"
 
 #include "../backend/renderer/scene/shadow_map/shadow_map.h"
+#include "../commons.h"
 
 #include <webgpu/webgpu.h>
 
 static const PipelineBindingMVP shadow_mvp = {
     .group = 0,
-    .view = 0,
     .projection = 0,
-    .model = 1,
+    .view = 1,
+    .model = 2,
 };
 
+// DELETEME
 static const WGPUBindGroupLayoutDescriptor shadowlayout_matrix = {
     // Group 0: view_projection + uModel
     .label = "Group 0 - Shadow Matrices",
@@ -29,10 +31,9 @@ static const WGPUBindGroupLayoutDescriptor shadowlayout_matrix = {
                 .visibility = WGPUShaderStage_Vertex,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_Uniform,
-                        .hasDynamicOffset = false,
-                        .minBindingSize =
-                            sizeof(mat4), // adjust if using a struct
+                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .hasDynamicOffset = true,
+                        .minBindingSize = sizeof(ProjectionUniform),
                     },
             },
             {
@@ -107,7 +108,6 @@ static const ShaderPipelineStateObject layout_shadow_cullback = {
                     .stripIndexFormat = WGPUIndexFormat_Undefined,
                 },
         },
-    .bindings = {.mvp = &shadow_mvp},
 };
 
 #endif

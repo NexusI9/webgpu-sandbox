@@ -8,7 +8,7 @@
 #include <string.h>
 #include <webgpu/webgpu.h>
 
-#define SSBO_TYPE_COUNT 7
+#define SSBO_TYPE_COUNT 9
 #define SSBO_CAPACITY 32
 #define SSBO_MAX_TYPE_SIZE 2048
 #define SSBO_UPDATE_QUEUE_CAPACITY 128
@@ -31,6 +31,8 @@ typedef enum {
   SSBOType_PointLight,
   SSBOType_SunLight,
   SSBOType_SpotLight,
+  SSBOType_ViewShadow,
+  SSBOType_ViewProbeReflection,
 } SSBOType;
 
 typedef struct {
@@ -59,6 +61,7 @@ typedef struct {
   WGPUDevice device;
 } SSBOManager;
 
+ 
 void ssbo_draw_callback(void *);
 
 void ssbo_init(SSBOManager *, WGPUDevice, WGPUQueue);
@@ -76,6 +79,16 @@ SSBOStatus ssbo_update_entry(SSBOManager *, const SSBOType, const SSBOSlot *);
 SSBOStatus ssbo_upload_entry(SSBOManager *, const SSBOType, const SSBOSlot *);
 StaticListStatus ssbo_remove_entry(SSBOManager *, const SSBOType, ssbo_id_t);
 void *ssbo_new_entry(SSBOManager *, const SSBOType, ssbo_id_t *);
+
+static inline void ssbo_slot_init_alloc(SSBOSlot *slot, size_t type_size) {
+  slot->uniform = malloc(type_size);
+  slot->id = SSBO_INDEX_UNFOUND;
+}
+
+static inline void ssbo_slot_set_uniform(SSBOSlot *slot, const void *data,
+                                         const size_t type_size) {
+  memcpy(slot->uniform, data, type_size);
+}
 
 static inline SSBOStatus ssbo_copy_entry(SSBOManager *manager,
                                          const SSBOType type, SSBOSlot *slot) {

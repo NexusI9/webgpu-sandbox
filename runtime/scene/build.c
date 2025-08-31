@@ -14,8 +14,6 @@ typedef struct {
 
 typedef struct {
   Mesh *mesh;
-  Camera *camera;
-  Viewport *viewport;
   SSBOManager *ssbo;
   UBOManager *ubo;
 } SceneBuildDescriptor;
@@ -54,13 +52,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
   // bind new mesh uniform to SSBO and copy previous mesh uniform data
   ssbo_copy_entry(ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
 
-  SceneBuildDescriptor build_desc = {
-      .mesh = mesh,
-      .camera = camera,
-      .viewport = viewport,
-      .ssbo = ssbo,
-      .ubo = ubo,
-  };
+  SceneBuildDescriptor build_desc = {.mesh = mesh, .ssbo = ssbo, .ubo = ubo};
 
   switch (pipeline) {
 
@@ -164,12 +156,10 @@ void scene_build_mesh_texture(
                                        &build_desc->mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Texture, build_desc->ssbo,
-                        build_desc->camera, build_desc->viewport, true);
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Texture, build_desc->ssbo);
 
   mesh_shader_build_mvp(build_desc->mesh, MeshShader_Reflection,
-                        build_desc->ssbo, build_desc->camera,
-                        build_desc->viewport, false);
+                        build_desc->ssbo);
 
   // lit and shadow pipeline
   if (build_texture_desc->pipeline &
@@ -192,7 +182,7 @@ void scene_build_mesh_texture(
     mesh_shader_create_shadow(build_desc->mesh);
 
     // bind light and mesh uniform to shadow
-    mesh_shader_shadow_update_mvp(build_desc->mesh);
+    mesh_shader_shadow_build_mvp(build_desc->mesh, build_desc->ssbo);
   }
 
   // set active shader
@@ -214,8 +204,7 @@ void scene_build_mesh_solid(const SceneBuildDescriptor *build_desc) {
   mesh_shader_create_solid(build_desc->mesh);
 
   // bind views
-  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Solid, build_desc->ssbo,
-                        build_desc->camera, build_desc->viewport, true);
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Solid, build_desc->ssbo);
 
   // set active shader
   mesh_shader_set_active(build_desc->mesh, MeshShader_Solid);
@@ -244,8 +233,7 @@ void scene_build_mesh_wireframe(const SceneBuildDescriptor *build_desc) {
 
   // bind views
   mesh_shader_build_mvp(build_desc->mesh, MeshShader_Wireframe,
-                        build_desc->ssbo, build_desc->camera,
-                        build_desc->viewport, true);
+                        build_desc->ssbo);
 
   // set active shader
   mesh_shader_set_active(build_desc->mesh, MeshShader_Wireframe);
@@ -268,8 +256,7 @@ void scene_build_mesh_boundbox(const SceneBuildDescriptor *build_desc) {
 
   // bind views
   mesh_shader_build_mvp(build_desc->mesh, MeshShader_Wireframe,
-                        build_desc->ssbo, build_desc->camera,
-                        build_desc->viewport, true);
+                        build_desc->ssbo);
 
   // set active shader
   mesh_shader_set_active(build_desc->mesh, MeshShader_Wireframe);
@@ -287,8 +274,7 @@ void scene_build_mesh_fixed(const SceneBuildDescriptor *build_desc) {
                                        &build_desc->mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Fixed, build_desc->ssbo,
-                        build_desc->camera, build_desc->viewport, true);
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Fixed, build_desc->ssbo);
 
   // set active shader
   mesh_shader_set_active(build_desc->mesh, MeshShader_Fixed);

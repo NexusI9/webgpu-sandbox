@@ -11,33 +11,29 @@
    [light view] already multiplied together as there is currently no need to
    upload separate views in the shader.
  */
+void mesh_shader_shadow_build_mvp(Mesh *mesh, SSBOManager *ssbo_manager) {
 
-void mesh_shader_shadow_update_mvp(Mesh *mesh) {
+  // retrieve the model-view-projection binding index from the pipeline
+  Shader *shader = mesh_shader(mesh, MeshShader_Shadow);
 
-  MeshUniform *uModel = mesh_uniform(mesh);
+  ShaderBindGroupUniformEntry entries[2] = {
+      // viewport x cam
+      {
+          .binding = 0,
+          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_ViewShadow),
+          .offset = 0,
+      },
+      // model
+      {
+          .binding = 1,
+          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Mesh),
+          .offset = mesh->ssbo_slot.id,
+      },
+  };
 
-
-  // views uniforms (will be replaced during shadow pass)
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Shadow), 0, 0, (void *)0);
-
-  // mesh model matrix
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Shadow), 0, 1, uModel);
-}
-
-void mesh_shader_shadow_update_view(Mesh *mesh, mat4 *view) {
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Shadow), 0, 0, view);
-}
-
-void mesh_shader_shadow_update_model(Mesh *mesh) {
-
-  MeshUniform *uModel = mesh_uniform(mesh);
-  // mesh model matrix
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Shadow), 0, 1, uModel);
-}
-
-/**
-   Clear the shadow shader bind groups of mesh
- */
-void mesh_shader_shadow_clear_bindings(Mesh *mesh) {
-  shader_bind_group_clear(mesh_shader(mesh, MeshShader_Shadow));
+  for (size_t i = 0; i < 2; i++) {
+    ShaderBindGroupUniformEntry *entry = &entries[i];
+    shader_update_uniform_buffer(shader, 0, entry->binding, entry->buffer,
+                                 entry->offset, ShaderBufferLifetime_Release);
+  }
 }

@@ -22,7 +22,7 @@
    encoder
  */
 void render_pass_command_draw(RenderPass *pass,
-                              const RenderPassViewOverride *overrides) {
+                              const RenderPassDrawOptions *overrides) {
 
   WGPUTextureView src_color_view = pass->color.attachment.view;
   WGPUTextureView src_depth_view = pass->depth.attachment.view;
@@ -207,7 +207,7 @@ void render_pass_list_draw_offscreen(RenderPassList *list) {
  */
 
 void render_pass_draw_onscreen_multisample(
-    RenderPass *pass, const RenderPassViewOverride *overrides) {
+    RenderPass *pass, const RenderPassDrawOptions *overrides) {
 
   pass->command_encoder = wgpuDeviceCreateCommandEncoder(pass->device, NULL);
 
@@ -220,7 +220,7 @@ void render_pass_draw_onscreen_multisample(
 }
 
 void render_pass_draw_onscreen_monosample(
-    RenderPass *pass, const RenderPassViewOverride *overrides) {
+    RenderPass *pass, const RenderPassDrawOptions *overrides) {
 
   pass->command_encoder = wgpuDeviceCreateCommandEncoder(pass->device, NULL);
 
@@ -235,7 +235,7 @@ void render_pass_draw_onscreen_monosample(
 }
 
 void render_pass_draw_offscreen(RenderPass *pass,
-                                const RenderPassViewOverride *overrides) {
+                                const RenderPassDrawOptions *overrides) {
 
   pass->command_encoder = wgpuDeviceCreateCommandEncoder(pass->device, NULL);
 
@@ -244,14 +244,14 @@ void render_pass_draw_offscreen(RenderPass *pass,
 }
 
 void render_pass_draw(RenderPass *pass,
-                      const RenderPassViewOverride *overrides) {
+                      const RenderPassDrawOptions *overrides) {
 
   pass->draw_callback(pass, overrides);
 }
 
-void render_pass_command_begin(RenderPass *pass) {
-
+WGPUCommandEncoder render_pass_command_begin(RenderPass *pass) {
   pass->command_encoder = wgpuDeviceCreateCommandEncoder(pass->device, NULL);
+  return pass->command_encoder;
 }
 
 void render_pass_command_end(RenderPass *pass) {

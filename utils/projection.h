@@ -7,6 +7,11 @@
 #define PROJECTION_SUN_DISTANCE 10
 
 typedef struct {
+  mat4 view;
+  uint32_t _pad[48];
+} ProjectionUniform;
+
+typedef struct {
   mat4 projection;
   uint8_t length;
   mat4 views[PROJECTION_VIEW_COUNT];

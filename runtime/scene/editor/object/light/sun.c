@@ -54,9 +54,9 @@ void seo_light_sun_set_position(SEOTransformCallback *desc) {
 
   glm_vec3_copy(desc->offset, light->position);
 
-  sun_light_uniform_update(light);
+  light_sun_uniform_update(light);
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo, SSBOType_SunLight,
-                           light->ssbo_slot.id);
+                           light->ssbo_slot[LightSSBOSlot_List].id);
 
   for (size_t i = 0; i < desc->seo->meshes.length; i++)
     mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
@@ -65,6 +65,19 @@ void seo_light_sun_set_position(SEOTransformCallback *desc) {
 void seo_light_sun_set_rotation(SEOTransformCallback *desc) {}
 
 void seo_light_sun_set_scale(SEOTransformCallback *desc) {}
+
+/**
+
+
+
+    ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▖ ▗▖ ▗▖
+   ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌
+    ▝▀▚▖▐▛▀▜▌▐▛▀▜▌▐▌  █▐▌ ▐▌▐▌ ▐▌
+   ▗▄▄▞▘▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀▝▚▄▞▘▐▙█▟▌
+
+
+
+ */
 
 /**
    Insert Shadowed Sun light gizmo mesh to the list
@@ -80,12 +93,13 @@ void seo_light_sun_shadow_create(SceneEditorObject *seo, SunLight *light,
 void seo_light_sun_shadow_set_position(SEOTransformCallback *desc) {
 
   SunLight *light = (SunLight *)desc->mesh->target;
+  SSBOManager *ssbo = &desc->seo->scene->renderer.ssbo;
 
   glm_vec3_copy(desc->offset, light->position);
 
-  sun_light_uniform_update(light);
+  light_sun_uniform_update(light);
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo, SSBOType_SunLight,
-                           light->ssbo_slot.id);
+                           light->ssbo_slot[LightSSBOSlot_List].id);
 
   for (size_t i = 0; i < desc->seo->meshes.length; i++)
     mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
@@ -94,17 +108,22 @@ void seo_light_sun_shadow_set_position(SEOTransformCallback *desc) {
   if (scene_renderer_draw_mode(&desc->seo->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
 
-    shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
-        .light = light,
-        .pass = &desc->seo->scene->lights.spot.shadow.pass,
-        .device = scene_device(desc->seo->scene),
-        .queue = scene_queue(desc->seo->scene),
-        .layer = desc->seo->scene->lights.spot.shadow.length +
-                 desc->mesh->target_list_index,
-        .encoder = NULL,
-    });
+    light_sun_projection_update(light);
 
-    seo_light_update_shadow_map(desc->seo->scene);
+    ssbo_update_queue_insert(ssbo, SSBOType_ViewShadow,
+                             light->ssbo_slot[LightSSBOSlot_View].id);
+
+    shadow_map_draw_sun_light(
+        &(ShadowMapDrawSunLightDescriptor){
+            .light = light,
+            .pass = &desc->seo->scene->lights.spot.shadow.pass,
+            .device = scene_device(desc->seo->scene),
+            .queue = scene_queue(desc->seo->scene),
+            .texture_layer = desc->seo->scene->lights.spot.shadow.length +
+                             desc->mesh->target_list_index,
+            .encoder = NULL,
+        },
+        SCENE_DEBUG_UNDEFINED);
   }
 }
 

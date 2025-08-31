@@ -60,11 +60,11 @@ struct PointLight {
                                                                  near : f32,
                                                                         far
       : f32,
-        _padding : f32,
+        _padding : array<f32, 21>,
 };
 
 struct AmbientLight {
-  color : vec3<f32>, intensity : f32,
+  color : vec3<f32>, intensity : f32, _padding : array<f32, 60>,
 };
 
 struct SpotLight {
@@ -75,7 +75,8 @@ struct SpotLight {
                                               color : vec3<f32>,
                                                       intensity : f32,
                                                                   view
-      : mat4x4<f32>
+      : mat4x4<f32>,
+        _padding : array<f32, 36>
 };
 
 struct SunLight {
@@ -84,10 +85,7 @@ struct SunLight {
                          color : vec3<f32>,
                                  _padding : f32,
                                             view : mat4x4<f32>,
-};
-
-struct LightListLength {
-  ambient : u32, point : u32, spot : u32, sun : u32
+                                                   _padding2 : array<f32, 40>
 };
 
 // === UBO ===
@@ -663,7 +661,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   // of a one per fragment like a point light
   for (var i = 0u; i < ubo.light_count.spot; i = i + 1u) {
     let light = spot_light_list[i];
-    let light_direction = -1.0f * light.lookat - light.position;
+    let light_direction = light.position - light.lookat;
     Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
                               light_direction, light.color, light.intensity);
   }
@@ -685,11 +683,11 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
   // shadow map computation
   let point_shadow = point_shadow_factor(vFrag, camera.position.xyz);
-  let directional_shadow = spot_shadow_factor(vFrag, camera.position.xyz);
+  let spot_shadow = spot_shadow_factor(vFrag, camera.position.xyz);
   let sun_shadow = sun_shadow_factor(vFrag, camera.position.xyz);
 
   let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
-                            point_shadow + directional_shadow + sun_shadow);
+                            point_shadow + spot_shadow + sun_shadow);
 
   return vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
 }

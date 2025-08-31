@@ -44,6 +44,16 @@ static const struct {
             sizeof(SpotLightUniform),
             "SSBO Spot Light Buffer",
         },
+    [SSBOType_ViewShadow] =
+        {
+            sizeof(ProjectionUniform),
+            "SSBO View Shadow Buffer",
+        },
+    [SSBOType_ViewProbeReflection] =
+        {
+            sizeof(ProjectionUniform),
+            "SSBO View Probe Reflection Buffer",
+        },
 };
 
 void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
@@ -54,6 +64,13 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
   manager->queue = queue;
 
   for (SSBOType i = 0; i < SSBO_TYPE_COUNT; i++) {
+
+    if (ssbo_type[i].size % 256 != 0)
+      VERBOSE_WARNING(
+          "Attempting to set a SSBO buffer (%d) not aligned with 256 "
+          "bytes (%lu). SSBO Buffers require 256 alignment.",
+          i, ssbo_type[i].size);
+
     SSBOBuffer *ssbo = &manager->buffers[i];
     ssbo->type_size = ssbo_type[i].size;
     ssbo->length = 0;
@@ -170,7 +187,7 @@ StaticListStatus ssbo_update_queue_insert(SSBOManager *manager,
                                           const ssbo_id_t id) {
 
   SSBOBufferUpdateQueue *queue = &manager->buffers[type].update_queue;
-  return stli_insert((void *)queue->entries, &queue->capacity, &queue->length,
+  return stli_insert((void *)queue->entries, queue->capacity, &queue->length,
                      sizeof(ssbo_id_t), (void *)&id, "SSBO Update Queue");
 }
 

@@ -7,6 +7,7 @@
 #include "../runtime/viewport/viewport.h"
 
 #define SCENE_DEBUG_MESH_LIST_COUNT 2
+#define SCENE_DEBUG_UNDEFINED 0
 
 typedef enum {
   SceneDebugObject_Ray,

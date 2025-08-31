@@ -8,13 +8,14 @@
 #define RENDER_PASS_COUNT 2
 #define RENDER_PASS_VIEW_CREATE -1
 #define RENDER_PASS_VIEW_OVERRIDE_NONE 0
+#define RENDER_PASS_VIEW_CAPACITY 256
 
 typedef struct RenderPass RenderPass;
 typedef struct RenderPassList RenderPassList;
-typedef struct RenderPassViewOverride RenderPassViewOverride;
+typedef struct RenderPassDrawOptions RenderPassDrawOptions;
 
 typedef void (*render_pass_draw_callback)(RenderPass *,
-                                          const RenderPassViewOverride *);
+                                          const RenderPassDrawOptions *);
 typedef void (*render_pass_mesh_preprocessor_callback)(const RenderPass *,
                                                        Mesh *, void *);
 typedef void (*render_pass_list_draw_callback)(RenderPassList *);
@@ -42,11 +43,15 @@ typedef struct {
 
 typedef struct {
   WGPUTexture texture;
+  WGPUTextureView views[RENDER_PASS_VIEW_CAPACITY];
+  size_t views_length;
   WGPURenderPassColorAttachment attachment;
 } RenderPassColor;
 
 typedef struct {
   WGPUTexture texture;
+  WGPUTextureView views[RENDER_PASS_VIEW_CAPACITY];
+  size_t views_length;
   WGPURenderPassDepthStencilAttachment attachment;
 } RenderPassDepth;
 
@@ -141,7 +146,7 @@ typedef struct {
   const WGPUQueue queue;
 } RenderPassDrawDescriptor;
 
-struct RenderPassViewOverride {
+struct RenderPassDrawOptions {
   WGPUTextureView color, depth;
 };
 
@@ -158,5 +163,14 @@ RenderPassStatus render_pass_update_preprocessor_data(RenderPass *, uint8_t,
                                                       void *);
 
 RenderPassStatus render_pass_update_all_preprocessor_data(RenderPass *, void *);
+
+StaticListStatus render_pass_view_color_insert(RenderPass *, WGPUTextureView);
+StaticListStatus render_pass_view_depth_insert(RenderPass *, WGPUTextureView);
+
+StaticListStatus render_pass_view_color_remove(RenderPass *, WGPUTextureView);
+StaticListStatus render_pass_view_depth_remove(RenderPass *, WGPUTextureView);
+
+WGPUTextureView render_pass_view_color(RenderPass *, size_t);
+WGPUTextureView render_pass_view_depth(RenderPass *, size_t);
 
 #endif

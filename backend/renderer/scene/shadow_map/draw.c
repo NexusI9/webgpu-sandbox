@@ -4,10 +4,14 @@
 #include "./core.h"
 #include "webgpu/webgpu.h"
 
-static inline void shadow_map_draw(const ShadowMapDrawDescriptor *);
+static inline void shadow_map_draw(const ShadowMapDrawDescriptor *,
+                                   const ShadowMapDebug *);
 
 static inline void
-shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *);
+shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *,
+                          const ShadowMapDebug *);
+
+static int debug_view_count = 0;
 
 /**
    The building shadow phase is segmented in numerous steps:
@@ -33,7 +37,8 @@ shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *);
 
   */
 
-void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
+void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
+                     const ShadowMapDebug *debug) {
 
   /*  Create a new "nested" texture view for each layer that points back to the
      texture。Both "global Texture view" and "indexed Texture view" point toward
@@ -69,12 +74,13 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
 
    */
 
+  // TODO: cache those views in the renderpass views
   // create per layer texture views (depth + color)
   WGPUTextureViewDescriptor temp_layer_texture_descriptor_depth = {
       .label = "Shadow per layer texture view - Depth",
       .format = SHADOW_DEPTH_FORMAT,
       .dimension = WGPUTextureViewDimension_2D,
-      .baseArrayLayer = desc->layer,
+      .baseArrayLayer = desc->texture_layer,
       .arrayLayerCount = 1,
       .mipLevelCount = 1,
       .baseMipLevel = 0,
@@ -84,7 +90,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
       .label = "Shadow per layer texture view - Color",
       .format = SHADOW_COLOR_FORMAT,
       .dimension = WGPUTextureViewDimension_2D,
-      .baseArrayLayer = desc->layer,
+      .baseArrayLayer = desc->texture_layer,
       .arrayLayerCount = 1,
       .mipLevelCount = 1,
       .baseMipLevel = 0,
@@ -104,11 +110,11 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
     render_pass_update_preprocessor_data(desc->pass, 0,
                                          &(LightShadowData){
                                              .pipeline = desc->pipeline,
-                                             .light_view = desc->light_view,
+                                             .view_offset = desc->ssbo_offset,
                                          });
 
     render_pass_command_draw(desc->pass,
-                             &(RenderPassViewOverride){
+                             &(RenderPassDrawOptions){
                                  .color = temp_layer_texture_view_color,
                                  .depth = temp_layer_texture_view_depth,
                              });
@@ -117,14 +123,11 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
     render_pass_command_end(desc->pass);
 
   wgpuTextureViewRelease(temp_layer_texture_view_depth);
-  wgpuTextureViewRelease(temp_layer_texture_view_color);
 
-  /*debug_view_add(&debug_view_light,
-                 &(ViewDescriptor){
-                     .texture_view = layer_texture_view_color,
-                     .size = {1.0f, 1.0f * 9.0f / 16.0f},
-                     .position = {0.0f, 0.0f},
-                     });*/
+  if (debug && debug->scene_debug && debug_view_count++ < debug->max_views)
+    scene_debug_view_create(debug->scene_debug, temp_layer_texture_view_color);
+  else
+    wgpuTextureViewRelease(temp_layer_texture_view_color);
 }
 
 /**
@@ -138,7 +141,8 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc) {
     - render each mesh under lights POV
     - render to the shadow array
  */
-void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
+void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
+                         const ShadowMapDebug *debug) {
 
   // VERBOSE_PROCESS("Computing all shadow maps...");
 
@@ -186,6 +190,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
   const size_t spot_length = desc->lights->spot.shadow.length;
   const size_t sun_length = desc->lights->sun.shadow.length;
 
+  debug_view_count = 0;
   /*
   ==========================================
 
@@ -200,14 +205,16 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
   // WGPUCommandBuffer command_buffer;
 
   for (size_t p = 0; p < point_length; p++)
-    shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
-        .layer = p,
-        .light = desc->lights->point.shadow.entries[p],
-        .pass = &desc->lights->point.shadow.pass,
-        .device = desc->device,
-        .queue = desc->queue,
-        .encoder = NULL, // shadow_encoder,
-    });
+    shadow_map_draw_point_light(
+        &(ShadowMapDrawPointLightDescriptor){
+            .texture_layer = p,
+            .light = desc->lights->point.shadow.entries[p],
+            .pass = &desc->lights->point.shadow.pass,
+            .device = desc->device,
+            .queue = desc->queue,
+            .encoder = NULL, // shadow_encoder,
+        },
+        debug);
 
   /*
     ==================================================
@@ -218,14 +225,16 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
    */
 
   for (size_t p = 0; p < spot_length; p++)
-    shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
-        .layer = p,
-        .light = desc->lights->spot.shadow.entries[p],
-        .device = desc->device,
-        .queue = desc->queue,
-        .encoder = NULL,
-        .pass = &desc->lights->spot.shadow.pass,
-    });
+    shadow_map_draw_spot_light(
+        &(ShadowMapDrawSpotLightDescriptor){
+            .texture_layer = p,
+            .light = desc->lights->spot.shadow.entries[p],
+            .device = desc->device,
+            .queue = desc->queue,
+            .encoder = NULL,
+            .pass = &desc->lights->spot.shadow.pass,
+        },
+        debug);
 
   /*
   ==========================================
@@ -236,17 +245,20 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
  */
 
   for (size_t p = 0; p < sun_length; p++)
-    shadow_map_draw_sun_light(&(ShadowMapDrawSunLightDescriptor){
-        // TODO: currently use spot light color_map, maybe make a linked
-        // pointer
-        // to the same map but include it in the sun light list struct itself.
-        .layer = spot_length + p,
-        .device = desc->device,
-        .queue = desc->queue,
-        .encoder = NULL, // shadow_encoder,
-        .pass = &desc->lights->spot.shadow.pass,
-        .light = desc->lights->sun.shadow.entries[p],
-    });
+    shadow_map_draw_sun_light(
+        &(ShadowMapDrawSunLightDescriptor){
+            // TODO: currently use spot light color_map, maybe make a linked
+            // pointer
+            // to the same map but include it in the sun light list struct
+            // itself.
+            .texture_layer = spot_length + p,
+            .device = desc->device,
+            .queue = desc->queue,
+            .encoder = NULL, // shadow_encoder,
+            .pass = &desc->lights->spot.shadow.pass,
+            .light = desc->lights->sun.shadow.entries[p],
+        },
+        debug);
 
   // finish encoding command
   // command_buffer = wgpuCommandEncoderFinish(shadow_encoder, NULL);
@@ -265,90 +277,80 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc) {
 
  */
 
-void shadow_map_draw_point_light(
-    const ShadowMapDrawPointLightDescriptor *desc) {
-
-  // retrieve 6 views of point cube
-  Projection light_views;
-  projection_point(&light_views, desc->light->position, desc->light->near,
-                   desc->light->far);
+void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *desc,
+                                 const ShadowMapDebug *debug) {
 
   // render scene and store depth map for each view
-  for (size_t v = 0; v < light_views.length; v++) {
+  for (size_t v = 0; v < desc->light->views.length; v++) {
 
     // Render scene (create shadow render pass to texture layer)
-    size_t layer = desc->layer * light_views.length + v;
+    size_t layer = desc->texture_layer * desc->light->views.length + v;
 
-    shadow_map_draw(&(ShadowMapDrawDescriptor){
-        .pass = desc->pass,
-        .layer = layer,
-        .device = desc->device,
-        .queue = desc->queue,
-        .encoder = desc->encoder,
-        .light_view = &light_views.combined[v],
-        .pipeline = std_pipeline(PipelineType_Shadow),
-    });
+    shadow_map_draw(
+        &(ShadowMapDrawDescriptor){
+            .pass = desc->pass,
+            .texture_layer = layer,
+            .device = desc->device,
+            .queue = desc->queue,
+            .encoder = desc->encoder,
+            .pipeline = std_pipeline(PipelineType_Shadow),
+            .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View + v].id,
+        },
+        debug);
   }
 }
 
 /**
    Function to handle both spot and sun light drawing
  */
-void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc) {
-
-  /*
-   Cullmode adjustment below:
-   Point Light pipeline use a FRONT CULL combined with a flip the scene on
-   the x axis to match cube map coordinates.
-
-   However since spot light use a casual Texture and doesn't require
-   to flip the scene projection, we set back the cull to BACK.
-   */
+void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc,
+                               const ShadowMapDebug *debug) {
 
   // Render scene (create shadow render pass to texture layer)
   for (size_t v = 0; v < desc->views->length; v++)
-    shadow_map_draw(&(ShadowMapDrawDescriptor){
-        .pass = desc->pass,
-        .layer = desc->layer,
-        .device = desc->device,
-        .queue = desc->queue,
-        .encoder = desc->encoder,
-        .light_view = &desc->views->combined[v],
-        .pipeline = desc->pipeline,
-    });
+    shadow_map_draw(
+        &(ShadowMapDrawDescriptor){
+            .pass = desc->pass,
+            .texture_layer = desc->texture_layer,
+            .ssbo_offset = desc->ssbo_offset,
+            .device = desc->device,
+            .queue = desc->queue,
+            .encoder = desc->encoder,
+            .pipeline = desc->pipeline,
+        },
+        debug);
 }
 
-void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc) {
+void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc,
+                               const ShadowMapDebug *debug) {
 
-  // get each light orthographic view depending on target
-  Projection light_views;
-  projection_sun(&light_views, desc->light->position, desc->light->size);
-
-  shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
-      .pass = desc->pass,
-      .queue = desc->queue,
-      .device = desc->device,
-      .encoder = desc->encoder,
-      .layer = desc->layer,
-      .views = &light_views,
-      .pipeline = std_pipeline(PipelineType_ShadowCullBack),
-  });
+  shadow_map_draw_dir_light(
+      &(ShadowMapDrawDirLightDescriptor){
+          .pass = desc->pass,
+          .queue = desc->queue,
+          .device = desc->device,
+          .encoder = desc->encoder,
+          .texture_layer = desc->texture_layer,
+          .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
+          .views = &desc->light->views,
+          .pipeline = std_pipeline(PipelineType_ShadowCullBack),
+      },
+      debug);
 }
 
-void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc) {
+void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc,
+                                const ShadowMapDebug *debug) {
 
-  // get each light orthographic view depending on target
-  Projection light_views;
-  projection_spot(&light_views, desc->light->position, desc->light->target,
-                  desc->light->angle);
-
-  shadow_map_draw_dir_light(&(ShadowMapDrawDirLightDescriptor){
-      .pass = desc->pass,
-      .device = desc->device,
-      .queue = desc->queue,
-      .encoder = desc->encoder,
-      .layer = desc->layer,
-      .views = &light_views,
-      .pipeline = std_pipeline(PipelineType_ShadowCullBack),
-  });
+  shadow_map_draw_dir_light(
+      &(ShadowMapDrawDirLightDescriptor){
+          .pass = desc->pass,
+          .device = desc->device,
+          .queue = desc->queue,
+          .encoder = desc->encoder,
+          .texture_layer = desc->texture_layer,
+          .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
+          .views = &desc->light->views,
+          .pipeline = std_pipeline(PipelineType_ShadowCullBack),
+      },
+      debug);
 }

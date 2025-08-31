@@ -2,7 +2,6 @@
 #define _SHADOW_MAP_CORE_H_
 
 #include "../runtime/light/light.h"
-#include "../runtime/mesh/mesh.h"
 
 #include <webgpu/webgpu.h>
 

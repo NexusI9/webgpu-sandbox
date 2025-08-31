@@ -104,13 +104,7 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
       .draw_list = desc->draw_list,
   });
 
-  // DEBUG: Add views to scene
-  /*for (size_t v = 0; v < debug_view_length(&debug_view_light); v++) {
-    mesh *view = scene_new_mesh(scene, NULL);
-    mesh *view_mesh = &debug_view_light.mesh[v];
-    memcpy(view, view_mesh, sizeof(mesh));
-    scene_add_mesh(scene, view, ScenePipeline_Dynamic_Unlit, NULL);
-    }*/
+
 }
 
 /**
@@ -217,5 +211,7 @@ void shadow_map_pass_preprocessor_callback(const RenderPass *pass, Mesh *mesh,
   mesh_shader(mesh, MeshShader_Shadow)->pipeline = data->pipeline;
 
   // update each mesh shadow uniforms with current light view
-  mesh_shader_shadow_update_view(mesh, data->light_view);
+  shader_update_bind_group_offset(mesh_shader(mesh, MeshShader_Shadow), 0, 0,
+                                  data->view_offset);
+
 }

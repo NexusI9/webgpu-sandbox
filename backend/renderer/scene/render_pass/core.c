@@ -67,43 +67,47 @@ void render_pass_create(RenderPass *render_pass,
     // assign color attributes
     render_pass->color.texture = desc->color->texture;
 
-    WGPUTextureView color_view;
+    WGPUTextureView *main_color_view = &render_pass->color.views[0];
     if (desc->color->view == NULL &&
         desc->multisample > PipelineMultisampleCount_1x) {
       render_pass_create_multisampling_view(&render_pass->color.texture,
-                                            &color_view, &texture_config);
+                                            main_color_view, &texture_config);
     } else {
-      color_view = desc->color->view;
+      *main_color_view = desc->color->view;
     }
 
     render_pass->color.attachment = (WGPURenderPassColorAttachment){
-        .view = color_view,
+        .view = *main_color_view,
         .clearValue = desc->color->clear_value,
         .depthSlice = desc->color->depth_slice,
         .loadOp = desc->color->load_op,
         .storeOp = desc->color->store_op,
     };
+
+    render_pass->color.views_length = 1;
   }
 
   if (desc->depth) {
     render_pass->depth.texture = desc->depth->texture;
 
-    WGPUTextureView depth_view;
+    WGPUTextureView *main_depth_view = &render_pass->depth.views[0];
     if (desc->depth->view == NULL) {
-      render_pass_create_depth_view(&render_pass->depth.texture, &depth_view,
-                                    &texture_config);
+      render_pass_create_depth_view(&render_pass->depth.texture,
+                                    main_depth_view, &texture_config);
     } else {
-      depth_view = desc->depth->view;
+      *main_depth_view = desc->depth->view;
     }
 
     // assign depth
     render_pass->depth.attachment = (WGPURenderPassDepthStencilAttachment){
-        .view = depth_view,
+        .view = *main_depth_view,
         .depthClearValue = desc->depth->clear_value,
         .depthReadOnly = desc->depth->read_only,
         .depthLoadOp = desc->depth->load_op,
         .depthStoreOp = desc->depth->store_op,
     };
+
+    render_pass->depth.views_length = 1;
   }
 
   /*
@@ -226,4 +230,39 @@ RenderPassStatus render_pass_update_all_preprocessor_data(RenderPass *pass,
       pass->draw_list.entries[i].mesh_preprocessor_data = data;
 
   return RenderPassStatus_Success;
+}
+
+StaticListStatus render_pass_view_color_insert(RenderPass *pass,
+                                               WGPUTextureView view) {
+
+  return stli_insert((void *)pass->color.views, RENDER_PASS_VIEW_CAPACITY,
+                     &pass->color.views_length, sizeof(WGPUTextureView),
+                     (void *)&view, "Render Pass Color View List");
+}
+
+StaticListStatus render_pass_view_depth_insert(RenderPass *pass,
+                                               WGPUTextureView view) {
+  return stli_insert((void *)pass->depth.views, RENDER_PASS_VIEW_CAPACITY,
+                     &pass->depth.views_length, sizeof(WGPUTextureView),
+                     (void *)&view, "Render Pass Depth View List");
+}
+
+StaticListStatus render_pass_view_color_remove(RenderPass *pass,
+                                               WGPUTextureView view) {
+  return stli_remove((void *)pass->color.views, &pass->color.views_length,
+                     sizeof(WGPUTextureView), (void *)view,
+                     "Render Pass Color View List");
+}
+StaticListStatus render_pass_view_depth_remove(RenderPass *pass,
+                                               WGPUTextureView view) {
+  return stli_remove((void *)pass->depth.views, &pass->depth.views_length,
+                     sizeof(WGPUTextureView), (void *)view,
+                     "Render Pass Color View List");
+}
+
+WGPUTextureView render_pass_view_color(RenderPass *pass, size_t index) {
+  return pass->color.views[index];
+}
+WGPUTextureView render_pass_view_depth(RenderPass *pass, size_t index) {
+  return pass->depth.views[index];
 }

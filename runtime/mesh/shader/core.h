@@ -20,7 +20,6 @@ Shader *mesh_shader(Mesh *, const MeshShader);
 
 void mesh_shader_set_active(Mesh *, const MeshShader);
 
-void mesh_shader_build_mvp(Mesh *, const MeshShader, SSBOManager *, Camera *,
-                           Viewport *, bool);
+void mesh_shader_build_mvp(Mesh *, const MeshShader, SSBOManager *);
 
 #endif

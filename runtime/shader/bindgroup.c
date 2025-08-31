@@ -306,6 +306,7 @@ void shader_bind_group_refresh(ShaderBindGroup *group,
   shader_bind_group_build(group, group_index, device, pipeline);
 }
 
+
 /**
    Create empty bind groups for the shader depending on its pipeline layout.
    The function matches the shader pieline from the std pipelines and generate

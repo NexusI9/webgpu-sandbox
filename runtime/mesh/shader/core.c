@@ -155,8 +155,7 @@ void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
    This function is primarily used when a mesh is firstly added to the scene.
  */
 void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
-                           SSBOManager *ssbo_manager, Camera *camera,
-                           Viewport *viewport, bool callbacks) {
+                           SSBOManager *ssbo_manager) {
 
   // retrieve the model-view-projection binding index from the pipeline
   Shader *shader = mesh_shader(mesh, shader_type);
@@ -174,24 +173,12 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
           .binding = mvp->view,
           .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_View),
           .offset = 0, // active camera index
-          .update =
-              {
-                  .callback = camera_uniform_update_matrix_callback,
-                  .trigger = camera_uniform_compare_views_callback,
-                  .data = camera,
-              },
       },
       // model
       {
           .binding = mvp->model,
           .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Mesh),
           .offset = mesh->ssbo_slot.id,
-          .update =
-              {
-                  .callback = mesh_uniform_model_update_callback,
-                  .trigger = mesh_uniform_model_compare_callback,
-                  .data = mesh,
-              },
       },
   };
 
@@ -200,8 +187,5 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
     shader_update_uniform_buffer(shader, mvp->group, entry->binding,
                                  entry->buffer, entry->offset,
                                  ShaderBufferLifetime_Release);
-    // if (callbacks)
-    //  shader_update_uniform_callback(shader, mvp->group, entry->binding,
-    //                                &entry->update);
   }
 }

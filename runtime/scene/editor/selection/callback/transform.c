@@ -52,23 +52,21 @@ void scene_selection_mesh_shadow_transform(SceneSelectionTransform *desc) {
   for (size_t i = 0; i < desc->active_meshes->length; i++) {
     Mesh *mesh = desc->active_meshes->entries[i];
     vec3 *init_attribute = &desc->initial_attributes->entries[i];
-
     // transform mesh
     scene_selection_mesh_transform_core(mesh, init_attribute, desc);
-
-    // update mesh shadow model uniform
-    mesh_shader_shadow_update_model(mesh);
   }
 
   // recalculate shadow maps
   if (desc->scene->renderer.draw.mode == SceneRendererDrawMode_Texture)
-    shadow_map_draw_all(&(ShadowMapDrawAllDescriptor){
-        .device = scene_device(desc->scene),
-        .queue = scene_queue(desc->scene),
-        .mesh_list =
-            scene_pipeline(desc->scene, ScenePipeline_Dynamic_LitShadow),
-        .lights = &desc->scene->lights,
-    });
+    shadow_map_draw_all(
+        &(ShadowMapDrawAllDescriptor){
+            .device = scene_device(desc->scene),
+            .queue = scene_queue(desc->scene),
+            .mesh_list =
+                scene_pipeline(desc->scene, ScenePipeline_Dynamic_LitShadow),
+            .lights = &desc->scene->lights,
+        },
+        SCENE_DEBUG_UNDEFINED);
 }
 
 /**

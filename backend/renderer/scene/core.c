@@ -55,7 +55,7 @@ void scene_renderer_create(SceneRenderer *renderer,
 
   ubo_init(&renderer->ubo, scene_renderer_queue(renderer),
            scene_renderer_device(renderer));
-  
+
   ssbo_init(&renderer->ssbo, scene_renderer_device(renderer),
             scene_renderer_queue(renderer));
 

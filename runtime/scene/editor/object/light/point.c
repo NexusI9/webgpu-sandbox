@@ -56,9 +56,10 @@ void seo_light_point_set_position(SEOTransformCallback *desc) {
 
   glm_vec3_copy(desc->offset, light->position);
 
-  point_light_uniform_update(light);
+  light_point_uniform_update(light);
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
-                           SSBOType_PointLight, light->ssbo_slot.id);
+                           SSBOType_PointLight,
+                           light->ssbo_slot[LightSSBOSlot_List].id);
 
   for (size_t i = 0; i < desc->seo->meshes.length; i++)
     mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
@@ -68,7 +69,18 @@ void seo_light_point_set_rotation(SEOTransformCallback *desc) {}
 
 void seo_light_point_set_scale(SEOTransformCallback *desc) {}
 
-/* shadow */
+/**
+
+
+
+    ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▖ ▗▖ ▗▖
+   ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌
+    ▝▀▚▖▐▛▀▜▌▐▛▀▜▌▐▌  █▐▌ ▐▌▐▌ ▐▌
+   ▗▄▄▞▘▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀▝▚▄▞▘▐▙█▟▌
+
+
+
+ */
 void seo_light_point_shadow_create(SceneEditorObject *seo, PointLight *light,
                                    const SEOCreateDescriptor *desc) {
 
@@ -80,12 +92,13 @@ void seo_light_point_shadow_create(SceneEditorObject *seo, PointLight *light,
 void seo_light_point_shadow_set_position(SEOTransformCallback *desc) {
 
   PointLight *light = (PointLight *)desc->mesh->target;
+  SSBOManager *ssbo = &desc->seo->scene->renderer.ssbo;
 
   glm_vec3_copy(desc->offset, light->position);
 
-  point_light_uniform_update(light);
-  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
-                           SSBOType_PointLight, light->ssbo_slot.id);
+  light_point_uniform_update(light);
+  ssbo_update_queue_insert(ssbo, SSBOType_PointLight,
+                           light->ssbo_slot[LightSSBOSlot_List].id);
 
   for (size_t i = 0; i < desc->seo->meshes.length; i++)
     mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
@@ -94,16 +107,23 @@ void seo_light_point_shadow_set_position(SEOTransformCallback *desc) {
   if (scene_renderer_draw_mode(&desc->seo->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
 
-    shadow_map_draw_point_light(&(ShadowMapDrawPointLightDescriptor){
-        .light = light,
-        .pass = &desc->seo->scene->lights.point.shadow.pass,
-        .device = scene_device(desc->seo->scene),
-        .queue = scene_queue(desc->seo->scene),
-        .layer = desc->mesh->target_list_index,
-        .encoder = NULL,
-    });
+    // update light views properties (CPU) + update SSBO entries
+    light_point_projection_update(light);
 
-    seo_light_update_shadow_map(desc->seo->scene);
+    // add to write queue (CPU > GPU)
+    ssbo_update_queue_insert(ssbo, SSBOType_ViewShadow,
+                             light->ssbo_slot[LightSSBOSlot_View].id);
+
+    shadow_map_draw_point_light(
+        &(ShadowMapDrawPointLightDescriptor){
+            .light = light,
+            .pass = &desc->seo->scene->lights.point.shadow.pass,
+            .device = scene_device(desc->seo->scene),
+            .queue = scene_queue(desc->seo->scene),
+            .texture_layer = desc->mesh->target_list_index,
+            .encoder = NULL,
+        },
+        SCENE_DEBUG_UNDEFINED);
   }
 }
 

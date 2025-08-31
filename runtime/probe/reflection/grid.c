@@ -330,7 +330,7 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
           render_pass_command_begin(&list->pass);
           {
             // draw pass
-            render_pass_command_draw(&list->pass, &(RenderPassViewOverride){
+            render_pass_command_draw(&list->pass, &(RenderPassDrawOptions){
                                                       .color = target_color,
                                                       .depth = target_depth,
                                                   });

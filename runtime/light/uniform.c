@@ -1,22 +1,13 @@
 #include "uniform.h"
 #include "../utils/projection.h"
+#include "core.h"
 #include "list.h"
 #include <string.h>
 
-static inline bool light_comparator_different(const LightComparator *,
-                                              const LightComparator *);
-
-/* Comparator */
-
-bool light_comparator_different(const LightComparator *a,
-                                const LightComparator *b) {
-  return memcmp(a, b, sizeof(LightComparator)) != 0;
-}
-
 /* Uniforms */
-void point_light_uniform_update(PointLight *light) {
+void light_point_uniform_update(PointLight *light) {
 
-  PointLightUniform *uniform = light->ssbo_slot.uniform;
+  PointLightUniform *uniform = light->ssbo_slot[LightSSBOSlot_List].uniform;
   uniform->intensity = light->intensity;
   uniform->cutoff = light->cutoff;
   uniform->inner_cutoff = light->inner_cutoff;
@@ -34,7 +25,7 @@ void point_light_uniform_update(PointLight *light) {
     glm_mat4_copy(points_views.combined[v], uniform->views[v]);
 }
 
-void ambient_light_uniform_update(AmbientLight *light) {
+void light_ambient_uniform_update(AmbientLight *light) {
 
   // map light to light uniform (including paddings...)
   AmbientLightUniform *uniform = light->ssbo_slot.uniform;
@@ -42,9 +33,9 @@ void ambient_light_uniform_update(AmbientLight *light) {
   glm_vec3_copy(light->color, uniform->color);
 }
 
-void spot_light_uniform_update(SpotLight *light) {
+void light_spot_uniform_update(SpotLight *light) {
 
-  SpotLightUniform *uniform = light->ssbo_slot.uniform;
+  SpotLightUniform *uniform = light->ssbo_slot[LightSSBOSlot_List].uniform;
 
   uniform->intensity = light->intensity;
   uniform->cutoff = light->cutoff;
@@ -61,9 +52,9 @@ void spot_light_uniform_update(SpotLight *light) {
     glm_mat4_copy(spot_view.combined[v], uniform->view);
 }
 
-void sun_light_uniform_update(SunLight *light) {
+void light_sun_uniform_update(SunLight *light) {
 
-  SunLightUniform *uniform = light->ssbo_slot.uniform;
+  SunLightUniform *uniform = light->ssbo_slot[LightSSBOSlot_List].uniform;
 
   uniform->intensity = light->intensity;
   glm_vec3_copy(light->position, uniform->position);
@@ -75,73 +66,4 @@ void sun_light_uniform_update(SunLight *light) {
 
   for (uint8_t v = 0; v < sun_view.length; v++)
     glm_mat4_copy(sun_view.combined[v], uniform->view);
-}
-
-/* Callbacks */
-
-/**
-   Map the light into its "uniform version" and replace the entry_data directly
- */
-void point_light_list_update_callback(void *callback_data, void *entry_data) {
-
-  PointLightListBase *list = (PointLightListBase *)callback_data;
-  PointLightListUniform *uniform = (PointLightListUniform *)entry_data;
-
-  for (size_t i = 0; i < list->length; i++)
-    point_light_uniform_update(&list->entries[i]);
-}
-
-/**
-   Compare the each point light from the list with the one from the uniform
- */
-bool point_light_list_trigger_callback(void *callback_data,
-                                       const void *entry_data) {
-
-  PointLightListBase *list = (PointLightListBase *)callback_data;
-  PointLightListUniform *unif = (PointLightListUniform *)entry_data;
-
-  for (size_t i = 0; i < list->length; list++)
-    if (light_comparator_different(
-            &(LightComparator){
-                .position =
-                    {
-                        list->entries[i].position[0],
-                        list->entries[i].position[1],
-                        list->entries[i].position[2],
-                    },
-            },
-            &(LightComparator){
-                .position =
-                    {
-                        unif->entries[i].position[0],
-                        unif->entries[i].position[1],
-                        unif->entries[i].position[2],
-                    },
-            }))
-
-      return true;
-
-  return false;
-}
-
-void ambient_light_list_update_callback(void *callback_data, void *entry_data) {
-
-}
-bool ambient_light_list_trigger_callback(void *callback_data,
-                                         const void *entry_data) {
-  return false;
-}
-
-void spot_light_list_update_callback(void *callback_data, void *entry_data) {}
-
-bool spot_light_list_trigger_callback(void *callback_data,
-                                      const void *entry_data) {
-  return false;
-}
-
-void sun_light_list_update_callback(void *callback_data, void *entry_data) {}
-
-bool sun_light_list_trigger_callback(void *callback_data,
-                                     const void *entry_data) {
-  return false;
 }

@@ -10,9 +10,9 @@ typedef enum {
   StaticListStatus_EmptyList,
 } StaticListStatus;
 
-StaticListStatus stli_create(size_t *, size_t *, size_t, const char *);
+StaticListStatus stli_create(size_t *, size_t *, const size_t, const char *);
 
-StaticListStatus stli_insert(void *, size_t *, size_t *, size_t, void *,
+StaticListStatus stli_insert(void *, size_t, size_t *, size_t, void *,
                              const char *);
 StaticListStatus stli_remove(void *, size_t *, size_t, void *, const char *);
 

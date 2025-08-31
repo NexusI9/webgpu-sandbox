@@ -1,7 +1,7 @@
 #include "stli.h"
 #include <string.h>
 
-StaticListStatus stli_create(size_t *capacity, size_t *length, size_t num,
+StaticListStatus stli_create(size_t *capacity, size_t *length, const size_t num,
                              const char *label) {
 
   *capacity = num;
@@ -10,10 +10,10 @@ StaticListStatus stli_create(size_t *capacity, size_t *length, size_t num,
   return StaticListStatus_Success;
 }
 
-StaticListStatus stli_insert(void *entries, size_t *capacity, size_t *length,
+StaticListStatus stli_insert(void *entries, size_t capacity, size_t *length,
                              size_t type_size, void *entry, const char *label) {
 
-  if (*capacity == *length)
+  if (capacity == *length)
     return StaticListStatus_MaxCapacity;
 
   memcpy((char *)entries + (*length)++ * type_size, (char *)entry, type_size);
@@ -44,7 +44,7 @@ StaticListStatus stli_remove(void *entries, size_t *length, size_t type_size,
 }
 
 StaticListStatus stli_shift(void *entries, size_t *length, size_t type_size,
-                          const char *label) {
+                            const char *label) {
 
   if (*length == 0)
     return StaticListStatus_EmptyList;

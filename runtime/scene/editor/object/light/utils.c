@@ -1,6 +1,8 @@
 #include "./utils.h"
 #include "../runtime/mesh/shader/shader.h"
 
+
+//DELETEME
 void seo_light_update_shadow_map(Scene *scene) {
 
   // update lit and lit shadow meshes light uniforms

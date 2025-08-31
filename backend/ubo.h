@@ -27,8 +27,8 @@ typedef union {
 
 typedef struct {
   UBOValue point;
-  UBOValue sun;
   UBOValue spot;
+  UBOValue sun;
   UBOValue ambient;
 } UBOLightCount;
 

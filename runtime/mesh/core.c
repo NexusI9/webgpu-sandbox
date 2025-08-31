@@ -51,8 +51,7 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
   // alloc uniform (may be replaced by SSBO later when added to the scene)
-  mesh->ssbo_slot.uniform = malloc(sizeof(MeshUniform));
-  mesh->ssbo_slot.id = SSBO_INDEX_UNFOUND;
+  ssbo_slot_init_alloc(&mesh->ssbo_slot, sizeof(MeshUniform));
   mesh_uniform_update(mesh);
 
   // set default pipeline shader

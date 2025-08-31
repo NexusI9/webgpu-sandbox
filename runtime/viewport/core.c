@@ -15,8 +15,7 @@ void viewport_create(Viewport *viewport,
   viewport->height = view_desc->height;
 
   // may be overriden/free by SSBO later when added to scene
-  viewport->ssbo_slot.uniform = malloc(sizeof(ViewportUniform));
-  viewport->ssbo_slot.id = SSBO_INDEX_UNFOUND;
+  ssbo_slot_init_alloc(&viewport->ssbo_slot, sizeof(ViewportUniform));
 
   // init projection matrix
   viewport_update_projection(viewport);

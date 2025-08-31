@@ -55,9 +55,9 @@ void seo_light_spot_set_position(SEOTransformCallback *desc) {
 
   glm_vec3_copy(desc->offset, light->position);
 
-  spot_light_uniform_update(light);
+  light_spot_uniform_update(light);
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo, SSBOType_SpotLight,
-                           light->ssbo_slot.id);
+                           light->ssbo_slot[LightSSBOSlot_List].id);
 
   for (size_t i = 0; i < desc->seo->meshes.length; i++)
     mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
@@ -67,8 +67,18 @@ void seo_light_spot_set_rotation(SEOTransformCallback *desc) {}
 
 void seo_light_spot_set_scale(SEOTransformCallback *desc) {}
 
-/* Shadow */
+/**
 
+
+
+    ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▖ ▗▖ ▗▖
+   ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌
+    ▝▀▚▖▐▛▀▜▌▐▛▀▜▌▐▌  █▐▌ ▐▌▐▌ ▐▌
+   ▗▄▄▞▘▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀▝▚▄▞▘▐▙█▟▌
+
+
+
+ */
 void seo_light_spot_shadow_create(SceneEditorObject *seo, SpotLight *light,
                                   const SEOCreateDescriptor *desc) {
 
@@ -80,12 +90,13 @@ void seo_light_spot_shadow_create(SceneEditorObject *seo, SpotLight *light,
 void seo_light_spot_shadow_set_position(SEOTransformCallback *desc) {
 
   SpotLight *light = (SpotLight *)desc->mesh->target;
+  SSBOManager *ssbo = &desc->seo->scene->renderer.ssbo;
 
   glm_vec3_copy(desc->offset, light->position);
 
-  spot_light_uniform_update(light);
-  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo, SSBOType_SpotLight,
-                           light->ssbo_slot.id);
+  light_spot_uniform_update(light);
+  ssbo_update_queue_insert(ssbo, SSBOType_SpotLight,
+                           light->ssbo_slot[LightSSBOSlot_List].id);
 
   for (size_t i = 0; i < desc->seo->meshes.length; i++)
     mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
@@ -94,16 +105,21 @@ void seo_light_spot_shadow_set_position(SEOTransformCallback *desc) {
   if (scene_renderer_draw_mode(&desc->seo->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
 
-    shadow_map_draw_spot_light(&(ShadowMapDrawSpotLightDescriptor){
-        .light = light,
-        .pass = &desc->seo->scene->lights.spot.shadow.pass,
-        .device = scene_device(desc->seo->scene),
-        .queue = scene_queue(desc->seo->scene),
-        .layer = desc->mesh->target_list_index,
-        .encoder = NULL,
-    });
+    light_spot_projection_update(light);
 
-    seo_light_update_shadow_map(desc->seo->scene);
+    ssbo_update_queue_insert(ssbo, SSBOType_ViewShadow,
+                             light->ssbo_slot[LightSSBOSlot_View].id);
+
+    shadow_map_draw_spot_light(
+        &(ShadowMapDrawSpotLightDescriptor){
+            .light = light,
+            .pass = &desc->seo->scene->lights.spot.shadow.pass,
+            .device = scene_device(desc->seo->scene),
+            .queue = scene_queue(desc->seo->scene),
+            .texture_layer = desc->mesh->target_list_index,
+            .encoder = NULL,
+        },
+        SCENE_DEBUG_UNDEFINED);
   }
 }
 
