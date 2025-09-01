@@ -103,12 +103,20 @@ struct SunLightStorage {
 };
 
 // === UBO ===
-struct LightListCount {
+struct LightCount {
   point : u32, spot : u32, sun : u32, ambient : u32,
 };
 
+struct ProbeCount {
+  reflection : u32, irradiance : u32,
+};
+
 struct UBO {
-  light_count : LightListCount,
+  light_count : LightCount, probe_count : ProbeCount,
+};
+
+struct Projection {
+  view : mat4x4<f32>, _padding : array<u32, 48>
 };
 
 // material pbr
@@ -119,10 +127,8 @@ struct UBO {
 // TODO: combine textures in a texture_2d_array + only use 1 sampler ?
 
 // camera viewport
-const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
-@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
-@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<storage, read> uViewProj : array<Projection>;
+@group(0) @binding(1) var<storage, read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var diffuse_texture : texture_2d<f32>;
 @group(1) @binding(1) var diffuse_sampler : sampler;
@@ -175,14 +181,18 @@ const SSBO_CAPACITY : u32 = 32u;
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
   let mesh = uMesh[0];
-  let camera = uCamera[0];
-  let viewport = uViewport[0];
+  let view_projection = uViewProj[0];
+
+  // DEBUG
+  //let view_projection
+  //    : mat4x4<f32> =
+  //          mat4x4<f32>(0.0, 0.0, 1.001001, 1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0,
+  //                      0.0, 0.0, -3.0, 3.0, 2.902903, 3.0, );
 
   // Final Matrix (Projection * View)
-  var cam : mat4x4<f32> = viewport.projection * camera.view;
   var output : VertexOut;
 
-  output.vPosition = cam * mesh.model * vec4<f32>(input.aPos, 1.0f);
+  output.vPosition = view_projection.view * mesh.model * vec4<f32>(input.aPos, 1.0f);
   output.vNormal = normalize(input.aNorm);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
@@ -634,6 +644,9 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
                      @location(1) vCol : vec3<f32>,
                      @location(2) vUv : vec2<f32>,
                      @location(3) vFrag : vec3<f32>) -> @location(0) vec4<f32> {
+
+  // DEBUG
+  let view_projection = uViewProj[0];
 
   return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
 }

@@ -11,6 +11,7 @@
 #include "editor/object/probe/reflection.h"
 #include "editor/selection/core.h"
 #include <stdint.h>
+#include <stdio.h>
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 
@@ -390,10 +391,44 @@ scene_add_probe_reflection_grid(Scene *scene,
                                   .target_list_index = 0,
                               });
 
+  // add probes to ssbo list
+  for (uint16_t i = 0; i < new_grid->probes.length; i++) {
+    ProbeReflection *probe = &new_grid->probes.entries[i];
+    SSBOManager *ssbo = &scene->renderer.ssbo;
+
+    // add to pos/radius list
+    ssbo_copy_entry(ssbo, SSBOType_ProbeReflection,
+                    &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
+
+    // DEBUG
+    {
+      ProbeReflectionUniform *uni = (ProbeReflectionUniform *)ssbo_entry(
+          ssbo, SSBOType_ProbeReflection,
+          probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
+
+      printf("%i | %lu : ", i,
+             probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
+      print_vec3(uni->position);
+    }
+
+    // add each views
+    for (uint8_t v = 0; v < probe->views.length; v++) {
+      ssbo_copy_entry(ssbo, SSBOType_ViewProbeReflection,
+                      &probe->ssbo_slot[ProbeReflectionSSBOField_View + v]);
+    }
+  }
+
+  // update UBO for probe count
+  ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionCount,
+                   (UBOValue){probe_reflection_grid_list_probe_count(
+                       &scene->probes_reflection)});
+
+  ubo_upload(&scene->renderer.ubo);
+
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_seo(scene, seo_grid);
 
-  return NULL;
+  return seo_grid;
 }
 
 /**

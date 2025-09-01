@@ -12,7 +12,7 @@ void example_light(Scene *scene) {
                             .far = 20.0f,
                             .position = {0.0f, 2.4f, 2.3f},
                         },
-                        LightShadow_Enabled);
+                        LightShadow_None);
 
   scene_add_sun_light(scene,
                       &(SunLightDescriptor){

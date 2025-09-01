@@ -54,4 +54,35 @@ static const PipelineBindingMVP mvp_binding = {
     .model = 2,
 };
 
+static const WGPUBindGroupLayoutDescriptor mp_layout = {
+    // Group 0: view_projection + uModel
+    .label = "Group 0 - ViewProj Model Matrices",
+    .entryCount = 2,
+    .entries =
+        (WGPUBindGroupLayoutEntry[]){
+            {
+                // view_projection
+                .binding = 0,
+                .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .hasDynamicOffset = true,
+                        .minBindingSize = sizeof(ProjectionUniform),
+                    },
+            },
+            {
+                // uModel
+                .binding = 1,
+                .visibility = WGPUShaderStage_Vertex,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .hasDynamicOffset = true,
+                        .minBindingSize = sizeof(MeshUniform),
+                    },
+            },
+        },
+};
+
 #endif

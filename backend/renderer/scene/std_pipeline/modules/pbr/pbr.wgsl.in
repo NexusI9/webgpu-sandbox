@@ -89,12 +89,16 @@ struct SunLight {
 };
 
 // === UBO ===
-struct LightListCount {
+struct LightCount {
   point : u32, spot : u32, sun : u32, ambient : u32,
 };
 
+struct ProbeCount {
+  reflection : u32, irradiance : u32,
+};
+
 struct UBO {
-  light_count : LightListCount,
+  light_count : LightCount, probe_count : ProbeCount,
 };
 
 // material pbr

@@ -3,10 +3,10 @@
 
 #include "../../core.h"
 #include "../runtime/camera/camera.h"
+#include "../runtime/light/light.h"
 #include "../runtime/light/uniform.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
-#include "../runtime/light/light.h"
 
 #include "../commons.h"
 #include <webgpu/webgpu.h>
@@ -134,7 +134,8 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(AmbientLightUniform),
+                        .minBindingSize =
+                            sizeof(AmbientLightUniform) * SSBO_CAPACITY,
                     },
             },
             {
@@ -145,7 +146,8 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(SpotLightUniform),
+                        .minBindingSize =
+                            sizeof(SpotLightUniform) * SSBO_CAPACITY,
                     },
             },
             {
@@ -156,7 +158,8 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(PointLightUniform),
+                        .minBindingSize =
+                            sizeof(PointLightUniform) * SSBO_CAPACITY,
                     },
             },
             {
@@ -167,7 +170,8 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(SunLightUniform),
+                        .minBindingSize =
+                            sizeof(SunLightUniform) * SSBO_CAPACITY,
                     },
             },
             {

@@ -17,6 +17,7 @@ typedef enum {
   UBOField_SunLightCount,
   UBOField_SpotLightCount,
   UBOField_AmbientLightCount,
+  UBOField_ProbeReflectionCount,
   // f32 fields
 } UBOField;
 
@@ -33,7 +34,13 @@ typedef struct {
 } UBOLightCount;
 
 typedef struct {
+  UBOValue reflection;
+  UBOValue irradiance;
+} UBOProbeCount;
+
+typedef struct {
   UBOLightCount light_count;
+  UBOProbeCount probe_count;
 } UBOUniform;
 
 typedef struct {

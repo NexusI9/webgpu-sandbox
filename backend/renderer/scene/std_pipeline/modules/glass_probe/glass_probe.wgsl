@@ -18,7 +18,7 @@ struct VertexOut {
 };
 
 struct Mesh {
-  model : mat4x4<f32>, position : vec4<f32>,
+  model : mat4x4<f32>, position : vec4<f32>, _pad : array<u32, 44>,
 }
 
 struct Camera {
@@ -26,11 +26,11 @@ struct Camera {
          position : vec4<f32>,
                     lookat : vec4<f32>,
                              mode : u32,
-                                    _pad : vec3<u32>,
+                                    _pad : array<u32, 39>,
 };
 
 struct Viewport {
-  projection : mat4x4<f32>, width : u32, height : u32,
+  projection : mat4x4<f32>, width : u32, height : u32, _pad : array<u32, 46>,
 };
 
 struct Glass {
@@ -41,30 +41,33 @@ struct Glass {
                                                     color : vec4<f32>,
 }
 
-const PROBE_RELFECTION_GRID_LIST_CAPACITY : u32 = 8u;
-const PROBE_RELFECTION_MAX_COUNT : u32 = 3u;
-const PROBE_RELFECTION_LIST_MAX_COUNT
-    : u32 = PROBE_RELFECTION_GRID_LIST_CAPACITY * PROBE_RELFECTION_MAX_COUNT *
-            PROBE_RELFECTION_MAX_COUNT * PROBE_RELFECTION_MAX_COUNT;
-
 struct ProbeReflection {
-  position : vec3<f32>, radius : f32
+  position : vec3<f32>, radius : f32, _pad : array<f32, 60>
 }
 
-struct ProbeReflectionList {
-  length : u32,
-           entries : array<ProbeReflection, PROBE_RELFECTION_LIST_MAX_COUNT>,
-}
+// === UBO ===
+struct LightCount {
+  point : u32, spot : u32, sun : u32, ambient : u32,
+};
 
-const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
+struct ProbeCount {
+  reflection : u32, irradiance : u32,
+};
+
+struct UBO {
+  light_count : LightCount, probe_count : ProbeCount,
+};
+
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var<uniform> uGlass : Glass;
-@group(1) @binding(1) var<uniform> uProbeReflectionList : ProbeReflectionList;
-@group(1) @binding(2) var probe_reflection_maps : texture_cube_array<f32>;
-@group(1) @binding(3) var probe_reflection_sampler : sampler;
+@group(1) @binding(1) var<storage, read> uProbeReflectionList
+    : array<ProbeReflection>;
+@group(1) @binding(2) var<uniform> ubo : UBO;
+@group(1) @binding(3) var probe_reflection_maps : texture_cube_array<f32>;
+@group(1) @binding(4) var probe_reflection_sampler : sampler;
 
 //
 //
@@ -195,8 +198,8 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
 
   var closest_probe_index : u32 = 0u;
   var best_dist : f32 = 1e9;
-  for (var i = 0u; i < uProbeReflectionList.length; i += 1u) {
-    let probe_pos = uProbeReflectionList.entries[i].position;
+  for (var i = 0u; i < ubo.probe_count.reflection; i += 1u) {
+    let probe_pos = uProbeReflectionList[i].position;
     let dist = distance(vFrag, probe_pos);
     if (dist < best_dist) {
       best_dist = dist;
@@ -205,14 +208,15 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
   }
 
   let reflection : vec4<f32> = textureSample(probe_reflection_maps,
-                                             probe_reflection_sampler, N,
+                                             probe_reflection_sampler, R,
                                              closest_probe_index);
 
   // let color : vec4<f32> = mix(uGlass.color * reflection, reflection, f.r);
 
   let t = vec4<f32>(
-      vec3<f32>(f32(closest_probe_index) / f32(uProbeReflectionList.length)),
+      vec3<f32>(f32(closest_probe_index) / f32(ubo.probe_count.reflection)),
       1.0f);
 
-  return t / 3.0f + reflection;
+  //return t;
+  return reflection;
 }

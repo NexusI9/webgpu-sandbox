@@ -1,21 +1,37 @@
 #ifndef _PROBE_REFLECTION_PROBE_H_
 #define _PROBE_REFLECTION_PROBE_H_
 
+#include "../backend/ssbo.h"
 #include "../utils/dyli.h"
+#include "../utils/projection.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
 
 #define PROBE_REFLECTION_VIEW_COUNT 6
+#define PROBE_REFLECTION_SSBO_SLOT_COUNT 2
+#define PROBE_REFLECTION_NEAR 0.1f
+#define PROBE_REFLECTION_FAR 100.0f
+
+typedef enum {
+  ProbeReflectionSSBOField_List,
+  ProbeReflectionSSBOField_View,
+} ProbeReflectionSSBOField;
 
 typedef struct {
   vec3 position;
   mat4 view[PROBE_REFLECTION_VIEW_COUNT];
   float radius;
+  float near;
+  float far;
+  // 1 list + (1 + 5 view) like point lights
+  SSBOSlot ssbo_slot[PROBE_REFLECTION_SSBO_SLOT_COUNT + 5];
+  Projection views;
 } ProbeReflection;
 
 typedef struct {
   vec3 position;
   float radius;
+  float _padding[60];
 } __attribute__((aligned(16))) ProbeReflectionUniform;
 
 typedef struct {
@@ -24,7 +40,15 @@ typedef struct {
   size_t capacity;
 } ProbeReflectionList;
 
-/* === Probe List  === */
+/* === Probe Reflection === */
+
+void probe_reflection_create(ProbeReflection *, vec3);
+
+void probe_reflection_update_uniform(ProbeReflection *);
+
+void probe_reflection_update_view(ProbeReflection *);
+
+/* === Probe Reflection List  === */
 
 DynamicListStatus probe_reflection_list_create(ProbeReflectionList *,
                                                const size_t);

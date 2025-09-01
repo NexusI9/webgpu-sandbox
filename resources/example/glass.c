@@ -42,7 +42,7 @@ void example_glass_box(Scene *scene) {
                              WGPUTextureFormat_BGRA8Unorm);
 }
 
-void example_glass_probe(Scene *scene) {
+void example_glass_probe(Scene *scene, bool debug) {
 
   SceneEditorObject *grid_probe =
       scene_add_probe_reflection_grid(scene, &(ProbeReflectionGridDescriptor){
@@ -52,7 +52,7 @@ void example_glass_probe(Scene *scene) {
 
   Mesh *mesh = scene_new_mesh(scene);
 
-  Primitive prim = primitive_icosphere();
+  Primitive prim = primitive_plane();
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &prim,
@@ -76,6 +76,9 @@ void example_glass_probe(Scene *scene) {
 
   scene_add_mesh(scene, mesh, NULL);
 
+  // TODO: Put this in the scene build for automation ?
+
+  // link glass settings
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
                              &(GlassUniform){
                                  .color = {1.0f, 1.0f, 1.0f, 1.0f},
@@ -84,16 +87,20 @@ void example_glass_probe(Scene *scene) {
                                  .roughness = 0.145f,
                              });
 
-  // first update each meshes draw list probe list uniform
-  ProbeReflectionListUniform list_uniform;
-  probe_reflection_grid_list_uniform(&list_uniform, &scene->probes_reflection);
+  // link probe lists (position, radius)
+  shader_update_uniform_buffer(
+      mesh_shader(mesh, MeshShader_Texture), 1, 1,
+      ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbeReflection), 0,
+      ShaderBufferLifetime_Release);
 
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 1,
-                             &list_uniform);
+  // link UBO
+  shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 2,
+                               ubo_buffer_handle(&scene->renderer.ubo), 0,
+                               ShaderBufferLifetime_Release);
 
-  // swap fallback view with probe render pass view
+  // link probe color texture
   shader_update_texture_view(
-      mesh_shader(mesh, MeshShader_Texture), 1, 2,
+      mesh_shader(mesh, MeshShader_Texture), 1, 3,
       scene->probes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
 
@@ -102,5 +109,6 @@ void example_glass_probe(Scene *scene) {
       .max_views = 16,
   };
 
-  probe_reflection_grid_list_draw(&scene->probes_reflection, &debug_options);
+  probe_reflection_grid_list_draw(&scene->probes_reflection,
+                                  debug ? &debug_options : NULL);
 }

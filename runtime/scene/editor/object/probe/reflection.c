@@ -82,8 +82,7 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
         seo_probe_reflection_set_position;
     probe->transform_callback[GizmoMode_Rotation] =
         seo_probe_reflection_set_rotation;
-    probe->transform_callback[GizmoMode_Scale] =
-        seo_probe_reflection_set_scale;
+    probe->transform_callback[GizmoMode_Scale] = seo_probe_reflection_set_scale;
 
     mesh_child_add(bound_cube->mesh, probe->mesh);
   }
@@ -102,7 +101,7 @@ void seo_probe_reflection_bound_set_position(SEOTransformCallback *desc) {
 }
 
 void seo_probe_reflection_bound_set_scale(SEOTransformCallback *desc) {
-  //mesh_set_scale(desc->mesh->mesh, desc->offset);
+  // mesh_set_scale(desc->mesh->mesh, desc->offset);
 }
 
 void seo_probe_reflection_set_position(SEOTransformCallback *desc) {
@@ -111,11 +110,27 @@ void seo_probe_reflection_set_position(SEOTransformCallback *desc) {
 
   ProbeReflection *probe = (ProbeReflection *)desc->mesh->target;
   glm_vec3_copy(desc->mesh->mesh->position, probe->position);
+
+  // update uniform cpu side
+  probe_reflection_update_uniform(probe);
+
+  // add to upload queue
+  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
+                           SSBOType_ProbeReflection,
+                           probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
+
+  // update view cpu side
+  probe_reflection_update_view(probe);
+
+  // add to upload queue
+  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
+                           SSBOType_ViewProbeReflection,
+                           probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
 }
 
 void seo_probe_reflection_set_rotation(SEOTransformCallback *desc) {}
 
 void seo_probe_reflection_set_scale(SEOTransformCallback *desc) {
 
-  //print_vec3(desc->offset);
+  // print_vec3(desc->offset);
 }

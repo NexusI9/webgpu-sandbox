@@ -34,6 +34,7 @@ UBOValue *ubo_field_value(UBOManager *ubo, const UBOField field) {
       [UBOField_SunLightCount] = &ubo->data.light_count.sun,
       [UBOField_SpotLightCount] = &ubo->data.light_count.spot,
       [UBOField_AmbientLightCount] = &ubo->data.light_count.ambient,
+      [UBOField_ProbeReflectionCount] = &ubo->data.probe_count.reflection,
       // f32 fields
   };
 

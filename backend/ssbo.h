@@ -1,6 +1,7 @@
 #ifndef _SHADER_STORAGE_BUFFER_OBJECT_H_
 #define _SHADER_STORAGE_BUFFER_OBJECT_H_
 
+#include "../utils/projection.h"
 #include "../utils/stli.h"
 #include <stdalign.h>
 #include <stdio.h>
@@ -8,12 +9,65 @@
 #include <string.h>
 #include <webgpu/webgpu.h>
 
-#define SSBO_TYPE_COUNT 9
-#define SSBO_CAPACITY 32
+#define SSBO_TYPE_COUNT 10
+#define SSBO_CAPACITY 1024
 #define SSBO_MAX_TYPE_SIZE 2048
 #define SSBO_UPDATE_QUEUE_CAPACITY 128
 
 #define SSBO_INDEX_UNFOUND UINT32_MAX
+
+/**
+
+   SSBO and UBO managers both offer centralized interfaces for memory
+   management. Those entities have fields from which their respective buffers
+   are shared amongst many meshes (ex: Camera/ Viewport matrix).
+
+   Such approach allow to only update 1 shared buffer rather that N independant
+   buffer (hosted by N meshes) which drastically improved performances.
+
+   SSBO offer either the possibility to directly write in GPU or to Queue a
+   specific index (from a given field).
+
+
+   Note regarding the Shader PSO:
+   While UBO relies on Uniform, SSBO relies on Storage coupled with a dynamic
+   offset. Storage are specific buffer type defined in the PSO:
+
+    .--- Shader PSO --------------------------------------------------------.
+    |       ...                                                             |
+    |           (WGPUBufferBindingLayout){                                  |
+    |               .type = WGPUBufferBindingType_ReadOnlyStorage,          |
+    |               .hasDynamicOffset = false,                              |
+    |               .minBindingSize = sizeof(SpotLightUniform),             |
+    |            }                                                          |
+    |       ...                                                             |
+    '-----------------------------------------------------------------------'
+
+    For storage the 'minBindSize' is important as it acts as an range of data
+    available in the shader.
+
+    Meaning in the case above, only 1 SpotLightUniform entry will be available
+   (i.e. 1 x sizeof(SpotLightUniform))
+
+    If we use an offset and only plan to read from 1 item (at index 0) this is
+    fine. However if we plan to read multiple entry from the storage, we need to
+    define the amplitude of available elements, which would give:
+
+    .--- Shader PSO --------------------------------------------------------.
+    |      ...                                                              |
+    |           (WGPUBufferBindingLayout){                                  |
+    |               .type = WGPUBufferBindingType_ReadOnlyStorage,          |
+    |               .hasDynamicOffset = false,                              |
+    |               .minBindingSize = sizeof(SpotLightUniform) * amplitude, |
+    |            }                                                          |
+    |       ...                                                             |
+    '-----------------------------------------------------------------------'
+
+    It's also worth noting that WebGPU seems to clamp the storage indexing,
+   meaning that in case we try to reach an index out of bound, WebGPU will clamp
+   the index to the latest index accesible.
+
+ */
 
 typedef size_t ssbo_id_t;
 
@@ -31,6 +85,7 @@ typedef enum {
   SSBOType_PointLight,
   SSBOType_SunLight,
   SSBOType_SpotLight,
+  SSBOType_ProbeReflection,
   SSBOType_ViewShadow,
   SSBOType_ViewProbeReflection,
 } SSBOType;
@@ -61,7 +116,6 @@ typedef struct {
   WGPUDevice device;
 } SSBOManager;
 
- 
 void ssbo_draw_callback(void *);
 
 void ssbo_init(SSBOManager *, WGPUDevice, WGPUQueue);
@@ -80,6 +134,8 @@ SSBOStatus ssbo_upload_entry(SSBOManager *, const SSBOType, const SSBOSlot *);
 StaticListStatus ssbo_remove_entry(SSBOManager *, const SSBOType, ssbo_id_t);
 void *ssbo_new_entry(SSBOManager *, const SSBOType, ssbo_id_t *);
 
+/* ==== SLOT ====*/
+
 static inline void ssbo_slot_init_alloc(SSBOSlot *slot, size_t type_size) {
   slot->uniform = malloc(type_size);
   slot->id = SSBO_INDEX_UNFOUND;
@@ -90,6 +146,32 @@ static inline void ssbo_slot_set_uniform(SSBOSlot *slot, const void *data,
   memcpy(slot->uniform, data, type_size);
 }
 
+/**
+   Utils function that updates the slot according on the given projection.
+   Since projections often work with an offset system, they requires multiple
+   slots (especially point lights). As a result we also need to pass a field_id
+   which represent the index of the starting slot.
+
+   Using this function assumes that the slot uniform is of type
+   ProjectionUniform.
+
+   Function primarily used for lights and probes since they heavily rely on
+   projections.
+ */
+static inline void ssbo_slot_set_from_projection(SSBOSlot *slot,
+                                                 Projection *views,
+                                                 size_t field_id) {
+  for (uint8_t i = 0; i < views->length; i++) {
+    ProjectionUniform uniform;
+    glm_mat4_copy(views->combined[i], uniform.view);
+    ssbo_slot_set_uniform(&slot[field_id + i], (void *)&uniform,
+                          sizeof(ProjectionUniform));
+  }
+}
+
+/**
+   Transfers the given SSBOSlot to the manager
+ */
 static inline SSBOStatus ssbo_copy_entry(SSBOManager *manager,
                                          const SSBOType type, SSBOSlot *slot) {
 

@@ -171,22 +171,13 @@ void light_spot_create(SpotLight *, SpotLightDescriptor *);
 void light_ambient_create(AmbientLight *, AmbientLightDescriptor *);
 void light_sun_create(SunLight *, SunLightDescriptor *);
 
-static inline void light_projection_uniform_update(SSBOSlot *slot,
-                                                   Projection *views) {
-  for (uint8_t i = 0; i < views->length; i++) {
-    ProjectionUniform uniform;
-    glm_mat4_copy(views->combined[i], uniform.view);
-    ssbo_slot_set_uniform(&slot[LightSSBOSlot_View + i], (void *)&uniform,
-                          sizeof(ProjectionUniform));
-  }
-}
-
 static inline void light_point_projection_update(PointLight *light) {
   // update light projection attribute
   projection_point(&light->views, light->position, light->near, light->far);
 
   // transfert attribute to SSBO slot
-  light_projection_uniform_update(light->ssbo_slot, &light->views);
+  ssbo_slot_set_from_projection(light->ssbo_slot, &light->views,
+                                LightSSBOSlot_View);
 }
 
 static inline void light_spot_projection_update(SpotLight *light) {
@@ -194,7 +185,8 @@ static inline void light_spot_projection_update(SpotLight *light) {
   projection_spot(&light->views, light->position, light->target, light->angle);
 
   // transfert attribute to SSBO slot
-  light_projection_uniform_update(light->ssbo_slot, &light->views);
+  ssbo_slot_set_from_projection(light->ssbo_slot, &light->views,
+                                LightSSBOSlot_View);
 }
 
 static inline void light_sun_projection_update(SunLight *light) {
@@ -202,7 +194,8 @@ static inline void light_sun_projection_update(SunLight *light) {
   projection_sun(&light->views, light->position, light->size);
 
   // transfert attribute to SSBO slot
-  light_projection_uniform_update(light->ssbo_slot, &light->views);
+  ssbo_slot_set_from_projection(light->ssbo_slot, &light->views,
+                                LightSSBOSlot_View);
 }
 
 #endif

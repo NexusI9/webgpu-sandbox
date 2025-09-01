@@ -5,6 +5,6 @@
 
 void example_glass_box(Scene *);
 
-void example_glass_probe(Scene *);
+void example_glass_probe(Scene *, bool);
 
 #endif

@@ -50,8 +50,7 @@ typedef struct {
 } ProbeReflectionGridListDescriptor;
 
 typedef struct {
-  mat4 *projection;
-  mat4 *view;
+  ssbo_id_t view_offset;
 } ProbeReflectionGridListPreprocessorData;
 
 typedef struct {
@@ -96,4 +95,5 @@ void probe_reflection_grid_list_draw_preprocessor(const RenderPass *, Mesh *,
 void probe_reflection_grid_list_uniform(ProbeReflectionListUniform *,
                                         ProbeReflectionGridList *);
 
+size_t probe_reflection_grid_list_probe_count(ProbeReflectionGridList *);
 #endif

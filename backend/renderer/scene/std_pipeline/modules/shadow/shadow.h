@@ -18,44 +18,12 @@ static const PipelineBindingMVP shadow_mvp = {
     .model = 2,
 };
 
-// DELETEME
-static const WGPUBindGroupLayoutDescriptor shadowlayout_matrix = {
-    // Group 0: view_projection + uModel
-    .label = "Group 0 - Shadow Matrices",
-    .entryCount = 2,
-    .entries =
-        (WGPUBindGroupLayoutEntry[]){
-            {
-                // view_projection
-                .binding = 0,
-                .visibility = WGPUShaderStage_Vertex,
-                .buffer =
-                    (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
-                        .hasDynamicOffset = true,
-                        .minBindingSize = sizeof(ProjectionUniform),
-                    },
-            },
-            {
-                // uModel
-                .binding = 1,
-                .visibility = WGPUShaderStage_Vertex,
-                .buffer =
-                    (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
-                        .hasDynamicOffset = true,
-                        .minBindingSize = sizeof(MeshUniform),
-                    },
-            },
-        },
-};
-
 static const ShaderPipelineStateObject layout_shadow = {
     .label = "Pipeline Bind Groups - Shadow",
     .shader_path = "./backend/renderer/scene/std_pipeline/modules/"
                    "shadow/shadow.wgsl",
     .bind_groups_count = 1,
-    .bind_groups = {&shadowlayout_matrix},
+    .bind_groups = {&mp_layout},
     .pipeline_attributes =
         {
             .multisample = PipelineMultisampleCount_1x,
@@ -85,7 +53,7 @@ static const ShaderPipelineStateObject layout_shadow_cullback = {
     .shader_path =
         "./backend/renderer/scene/std_pipeline/modules/shadow/shadow.wgsl",
     .bind_groups_count = 1,
-    .bind_groups = {&shadowlayout_matrix},
+    .bind_groups = {&mp_layout},
     .pipeline_attributes =
         {
             .multisample = PipelineMultisampleCount_1x,

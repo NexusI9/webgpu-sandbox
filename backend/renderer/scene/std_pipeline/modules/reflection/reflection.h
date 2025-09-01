@@ -18,7 +18,7 @@ static const ShaderPipelineStateObject layout_reflection = {
     .bind_groups_count = 3,
     .bind_groups =
         {
-            &mvp_layout,
+            &mp_layout,
             &layout_pbr_textures_bind_group,
             &layout_pbr_lights_bind_group,
         },

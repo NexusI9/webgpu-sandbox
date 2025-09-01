@@ -1,6 +1,7 @@
 #include "ssbo.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/light/light.h"
+#include "../runtime/probe/reflection/probe.h"
 #include "../runtime/viewport/viewport.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -43,6 +44,11 @@ static const struct {
         {
             sizeof(SpotLightUniform),
             "SSBO Spot Light Buffer",
+        },
+    [SSBOType_ProbeReflection] =
+        {
+            sizeof(ProbeReflectionUniform),
+            "SSBO Probe Reflection Buffer",
         },
     [SSBOType_ViewShadow] =
         {
@@ -113,6 +119,7 @@ SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
   // update ssbo buffer at index
   SSBOBuffer *ssbo = &manager->buffers[type];
   size_t offset = slot->id * ssbo->type_size;
+
   wgpuQueueWriteBuffer(manager->queue, ssbo->handle, offset,
                        (uint8_t *)ssbo->entries + offset, ssbo->type_size);
 
