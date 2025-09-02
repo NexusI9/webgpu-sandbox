@@ -1,5 +1,5 @@
-#ifndef _PIPELINE_LAYOUT_GLASS_PROBE_H_
-#define _PIPELINE_LAYOUT_GLASS_PROBE_H_
+#ifndef _PIPELINE_LAYOUT_GLASS_PROBE_PLANE_H_
+#define _PIPELINE_LAYOUT_GLASS_PROBE_PLANE_H_
 
 #include "../../core.h"
 #include "../glass/glass.h"
@@ -10,7 +10,7 @@
 
 #include <webgpu/webgpu.h>
 
-static const WGPUBindGroupLayoutDescriptor glass_probe_bind_group = {
+static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
     // Group 1 (Reflection probes array + sampler)
     .label = "Group 1 (Reflection Probes)",
     .entryCount = 5,
@@ -53,7 +53,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_bind_group = {
                 .texture =
                     (WGPUTextureBindingLayout){
                         .sampleType = WGPUTextureSampleType_Float,
-                        .viewDimension = WGPUTextureViewDimension_CubeArray,
+                        .viewDimension = WGPUTextureViewDimension_2DArray,
                         .multisampled = false,
                     },
             },
@@ -68,12 +68,12 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_bind_group = {
         },
 };
 
-static const ShaderPipelineStateObject layout_glass_probe = {
-    .label = "Pipeline Bind Groups - Glass Probe",
-    .shader_path = "./backend/renderer/scene/std_pipeline/modules/glass_probe/"
-                   "glass_probe.wgsl",
+static const ShaderPipelineStateObject layout_glass_probe_plane = {
+    .label = "Pipeline Bind Groups - Glass Probe Plane",
+    .shader_path = "./backend/renderer/scene/std_pipeline/modules/glass_probe_plane/"
+                   "glass_probe_plane.wgsl",
     .bind_groups_count = 2,
-    .bind_groups = {&mvp_layout, &glass_probe_bind_group},
+    .bind_groups = {&mvp_layout, &glass_probe_plane_bind_group},
     .bindings = {.mvp = &mvp_binding},
 };
 

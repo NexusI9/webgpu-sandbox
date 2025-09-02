@@ -5,8 +5,8 @@
 
 void example_glass_box(Scene *);
 
-void example_glass_probe(Scene *, bool);
+void example_glass_probe_grid(Scene *, bool);
 
-void example_glass_probe_planar(Scene *, bool);
+void example_glass_probe_plane(Scene *, bool);
 
 #endif

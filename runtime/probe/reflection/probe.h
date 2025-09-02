@@ -6,6 +6,7 @@
 #include "../utils/projection.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
+#include "core.h"
 
 // See probe reflection limitations:
 // https://discussions.unity.com/t/reflection-probe-inaccuracy/675384/3
@@ -14,18 +15,9 @@
 
 
 #define PROBE_REFLECTION_VIEW_COUNT 6
-#define PROBE_REFLECTION_SSBO_SLOT_COUNT 2
-#define PROBE_REFLECTION_NEAR 0.1f
-#define PROBE_REFLECTION_FAR 100.0f
-
-typedef enum {
-  ProbeReflectionSSBOField_List,
-  ProbeReflectionSSBOField_View,
-} ProbeReflectionSSBOField;
 
 typedef struct {
   vec3 position;
-  mat4 view[PROBE_REFLECTION_VIEW_COUNT];
   float radius;
   float near;
   float far;

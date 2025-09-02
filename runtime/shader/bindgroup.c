@@ -306,7 +306,6 @@ void shader_bind_group_refresh(ShaderBindGroup *group,
   shader_bind_group_build(group, group_index, device, pipeline);
 }
 
-
 /**
    Create empty bind groups for the shader depending on its pipeline layout.
    The function matches the shader pieline from the std pipelines and generate
@@ -391,6 +390,32 @@ void shader_bind_group_create_from_layout(
                                       // use fallback texture as  placeholder
                                       .texture_view = std_texture_view(
                                           TextureViewType_Float),
+                                  },
+                              },
+                      });
+        }
+
+        // 2D Array
+        if (entry->texture.viewDimension == WGPUTextureViewDimension_2DArray) {
+
+#ifdef VERBOSE_BINDING_PHASE
+          shader_layout_print(i, entry->binding, "2D texture array");
+#endif
+          shader_add_texture_view(
+              shader, &(ShaderCreateTextureViewDescriptor){
+                          .entry_count = 1,
+                          .visibility = entry->visibility,
+                          .group_index = i,
+                          .entries =
+                              (ShaderBindGroupTextureViewEntry[]){
+                                  {
+                                      .binding = entry->binding,
+                                      .dimension = entry->texture.viewDimension,
+                                      .sample_type = entry->texture.sampleType,
+                                      .format = WGPUTextureFormat_R8Unorm,
+                                      // use fallback texture as  placeholder
+                                      .texture_view = std_texture_view(
+                                          TextureViewType_Float2DArray),
                                   },
                               },
                       });

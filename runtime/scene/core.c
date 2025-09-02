@@ -168,7 +168,7 @@ void scene_probe_reflection_init(Scene *scene,
 
   probe_reflection_grid_list_create(
       &scene->probes_reflection,
-      &(ProbeReflectionGridListDescriptor){
+      &(ProbeReflectionListDescriptor){
           .capacity = PROBE_REFLECTION_GRID_LIST_CAPACITY,
           .device = scene_device(scene),
           .queue = scene_queue(scene),

@@ -397,19 +397,8 @@ scene_add_probe_reflection_grid(Scene *scene,
     SSBOManager *ssbo = &scene->renderer.ssbo;
 
     // add to pos/radius list
-    ssbo_copy_entry(ssbo, SSBOType_ProbeReflection,
+    ssbo_copy_entry(ssbo, SSBOType_ProbeGridReflection,
                     &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
-
-    // DEBUG
-    {
-      ProbeReflectionUniform *uni = (ProbeReflectionUniform *)ssbo_entry(
-          ssbo, SSBOType_ProbeReflection,
-          probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
-
-      printf("%i | %lu : ", i,
-             probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
-      print_vec3(uni->position);
-    }
 
     // add each views
     for (uint8_t v = 0; v < probe->views.length; v++) {
@@ -508,7 +497,8 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
 
   if (mesh_pipeline == std_pipeline(PipelineType_Unlit) ||
       mesh_pipeline == std_pipeline(PipelineType_GlassBox) ||
-      mesh_pipeline == std_pipeline(PipelineType_GlassProbe))
+      mesh_pipeline == std_pipeline(PipelineType_GlassProbeGrid) ||
+      mesh_pipeline == std_pipeline(PipelineType_GlassProbePlane))
     pipeline = ScenePipeline_Dynamic_Unlit;
 
   // build mesh depending on pipeline and scene render mode

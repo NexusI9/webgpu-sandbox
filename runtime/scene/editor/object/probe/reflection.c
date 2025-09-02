@@ -116,7 +116,7 @@ void seo_probe_reflection_set_position(SEOTransformCallback *desc) {
 
   // add to upload queue
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
-                           SSBOType_ProbeReflection,
+                           SSBOType_ProbeGridReflection,
                            probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
 
   // update view cpu side

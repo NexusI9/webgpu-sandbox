@@ -1,10 +1,8 @@
 #ifndef _PROBE_GRID_H_
 #define _PROBE_GRID_H_
 
-#include "../backend/renderer/scene/scene.h"
-#include "../utils/vector/vector.h"
+#include "./core.h"
 #include "probe.h"
-#include "webgpu/webgpu.h"
 
 #define PROBE_REFLECTION_RESOLUTION 512
 #define PROBE_REFLECTION_GRID_DIMENSION 3
@@ -40,23 +38,6 @@ typedef struct {
   const WGPUQueue queue;
 } ProbeReflectionGridDescriptor;
 
-typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
-  const RenderPassDrawList *draw_list;
-  const TextureResolution resolution;
-  const size_t capacity;
-  const PipelineMultisampleCount multisample;
-} ProbeReflectionGridListDescriptor;
-
-typedef struct {
-  ssbo_id_t view_offset;
-} ProbeReflectionGridListPreprocessorData;
-
-typedef struct {
-  SceneDebug *scene_debug;
-  const uint8_t max_views;
-} ProbeReflectionGridListDebug;
 
 typedef struct {
   uint32_t length;
@@ -73,7 +54,7 @@ void probe_reflection_grid_destroy(ProbeReflectionGrid *);
 
 DynamicListStatus
 probe_reflection_grid_list_create(ProbeReflectionGridList *,
-                                  const ProbeReflectionGridListDescriptor *);
+                                  const ProbeReflectionListDescriptor *);
 
 DynamicListStatus probe_reflection_grid_list_insert(ProbeReflectionGridList *,
                                                     ProbeReflectionGrid *);
@@ -87,7 +68,7 @@ DynamicListStatus probe_reflection_grid_list_remove(ProbeReflectionGridList *,
 DynamicListStatus probe_reflection_grid_list_destroy(ProbeReflectionGridList *);
 
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *,
-                                     ProbeReflectionGridListDebug *);
+                                     ProbeReflectionListDebug *);
 
 void probe_reflection_grid_list_draw_preprocessor(const RenderPass *, Mesh *,
                                                   void *);

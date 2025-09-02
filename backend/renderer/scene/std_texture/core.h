@@ -3,10 +3,11 @@
 #include <stdbool.h>
 #include <webgpu/webgpu.h>
 
-#define STD_TEXTURE_VIEW_COUNT 6
+#define STD_TEXTURE_VIEW_COUNT 7
 
 typedef enum {
   TextureViewType_Float,
+  TextureViewType_Float2DArray,
   TextureViewType_FloatCube,
   TextureViewType_FloatCubeArray,
   TextureViewType_Depth,
@@ -14,7 +15,7 @@ typedef enum {
   TextureViewType_Depth2DArray,
 } TextureViewType;
 
-typedef WGPUTextureView (*std_texture_view_create)(WGPUTexture*,
+typedef WGPUTextureView (*std_texture_view_create)(WGPUTexture *,
                                                    const WGPUDevice,
                                                    const WGPUQueue);
 

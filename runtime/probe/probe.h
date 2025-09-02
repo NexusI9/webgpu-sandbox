@@ -3,5 +3,6 @@
 
 #include "reflection/probe.h"
 #include "reflection/grid.h"
+#include "reflection/plane.h"
 
 #endif

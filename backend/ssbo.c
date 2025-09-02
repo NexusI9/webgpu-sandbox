@@ -1,7 +1,7 @@
 #include "ssbo.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/light/light.h"
-#include "../runtime/probe/reflection/probe.h"
+#include "../runtime/probe/probe.h"
 #include "../runtime/viewport/viewport.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -45,11 +45,17 @@ static const struct {
             sizeof(SpotLightUniform),
             "SSBO Spot Light Buffer",
         },
-    [SSBOType_ProbeReflection] =
+    [SSBOType_ProbeGridReflection] =
         {
             sizeof(ProbeReflectionUniform),
-            "SSBO Probe Reflection Buffer",
+            "SSBO Probe Grid Reflection Buffer",
         },
+    [SSBOType_ProbePlaneReflection] =
+        {
+            sizeof(ProbeReflectionPlaneUniform),
+            "SSBO Probe Plane Reflection Buffer",
+        },
+    // TODO: Merge all projections together
     [SSBOType_ViewShadow] =
         {
             sizeof(ProjectionUniform),
@@ -58,7 +64,7 @@ static const struct {
     [SSBOType_ViewProbeReflection] =
         {
             sizeof(ProjectionUniform),
-            "SSBO View Probe Reflection Buffer",
+            "SSBO View Probe Grid Reflection Buffer",
         },
 };
 
