@@ -7,6 +7,12 @@
 #include <cglm/cglm.h>
 #include <stddef.h>
 
+// See probe reflection limitations:
+// https://discussions.unity.com/t/reflection-probe-inaccuracy/675384/3
+// tl;rd: Probe Reflections Cubes are more suitable for spherical and complex
+// object where accuracy doesn't really matter.
+
+
 #define PROBE_REFLECTION_VIEW_COUNT 6
 #define PROBE_REFLECTION_SSBO_SLOT_COUNT 2
 #define PROBE_REFLECTION_NEAR 0.1f

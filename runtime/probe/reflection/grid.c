@@ -257,6 +257,7 @@ void probe_reflection_grid_list_draw_preprocessor(const RenderPass *pass,
 
   Shader *shader = mesh_shader(mesh, MeshShader_Reflection);
 
+  shader_update_bind_group_offset(shader, 0, 0, cast_data->view_offset);
 }
 
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,

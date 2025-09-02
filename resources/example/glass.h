@@ -7,4 +7,6 @@ void example_glass_box(Scene *);
 
 void example_glass_probe(Scene *, bool);
 
+void example_glass_probe_planar(Scene *, bool);
+
 #endif

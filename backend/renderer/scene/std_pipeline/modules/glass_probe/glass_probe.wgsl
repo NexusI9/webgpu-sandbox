@@ -193,30 +193,43 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
   let f : vec3<f32> = f0 + (1.0f - f0) * pow(1.0 - NdotV, 5.0f);
 
   // Reflection Direction
-  let R : vec3<f32> = reflect(-V, perturbed_N);
+  let R : vec3<f32> = normalize(reflect(-V, perturbed_N));
   let mip : f32 = uGlass.roughness * f32(MAX_MIP_LEVEL);
 
-  var closest_probe_index : u32 = 0u;
-  var best_dist : f32 = 1e9;
+  // var closest_probe_index : u32 = 0u;
+  // var best_dist : f32 = 1e9;
+  //  for (var i = 0u; i < ubo.probe_count.reflection; i += 1u) {
+  //    let probe_pos = uProbeReflectionList[i].position;
+  //    let dist = distance(vFrag, probe_pos);
+  //    if (dist < best_dist) {
+  //      best_dist = dist;
+  //      closest_probe_index = i;
+  //    }
+  //  }
+  // let reflection : vec4<f32> = textureSample(probe_reflection_maps,
+  //                                            probe_reflection_sampler, R,
+  //                                            closest_probe_index);
+  // let color : vec4<f32> = mix(uGlass.color * reflection, reflection, f.r);
+  // let t = vec4<f32>(
+  //    vec3<f32>(f32(closest_probe_index) / f32(ubo.probe_count.reflection)),
+  //    1.0f);
+  // return t;
+
+  var total_weight : f32 = 0.0;
+  var blended_reflection : vec3<f32> = vec3(0.0);
   for (var i = 0u; i < ubo.probe_count.reflection; i += 1u) {
     let probe_pos = uProbeReflectionList[i].position;
-    let dist = distance(vFrag, probe_pos);
-    if (dist < best_dist) {
-      best_dist = dist;
-      closest_probe_index = i;
-    }
+    let dist = max(distance(vFrag, probe_pos), 0.001);
+    let w = 1.0 / (dist * dist); // inverse square
+    let refl =
+        textureSample(probe_reflection_maps, probe_reflection_sampler, R, i)
+            .rgb;
+
+    blended_reflection += refl * w;
+    total_weight += w;
   }
+  
+  blended_reflection /= total_weight;
 
-  let reflection : vec4<f32> = textureSample(probe_reflection_maps,
-                                             probe_reflection_sampler, R,
-                                             closest_probe_index);
-
-  // let color : vec4<f32> = mix(uGlass.color * reflection, reflection, f.r);
-
-  let t = vec4<f32>(
-      vec3<f32>(f32(closest_probe_index) / f32(ubo.probe_count.reflection)),
-      1.0f);
-
-  //return t;
-  return reflection;
+  return vec4<f32>(blended_reflection, 1.0f);
 }

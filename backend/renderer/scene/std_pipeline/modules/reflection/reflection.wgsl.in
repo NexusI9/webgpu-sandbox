@@ -184,15 +184,17 @@ struct Projection {
   let view_projection = uViewProj[0];
 
   // DEBUG
-  //let view_projection
+  // let view_projection
   //    : mat4x4<f32> =
-  //          mat4x4<f32>(0.0, 0.0, 1.001001, 1.0, 0.0, 1.0, 0.0, 0.0, -1.0, 0.0,
+  //          mat4x4<f32>(0.0, 0.0, 1.001001, 1.0, 0.0, 1.0, 0.0, 0.0, -1.0,
+  //          0.0,
   //                      0.0, 0.0, -3.0, 3.0, 2.902903, 3.0, );
 
   // Final Matrix (Projection * View)
   var output : VertexOut;
 
-  output.vPosition = view_projection.view * mesh.model * vec4<f32>(input.aPos, 1.0f);
+  output.vPosition =
+      view_projection.view * mesh.model * vec4<f32>(input.aPos, 1.0f);
   output.vNormal = normalize(input.aNorm);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
@@ -645,8 +647,62 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
                      @location(2) vUv : vec2<f32>,
                      @location(3) vFrag : vec3<f32>) -> @location(0) vec4<f32> {
 
-  // DEBUG
-  let view_projection = uViewProj[0];
+  // let camera = uCamera[0];
 
-  return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
+  var albedo = textureSample(diffuse_texture, diffuse_sampler, vUv);
+  var metallic = textureSample(metallic_texture, metallic_sampler, vUv);
+  var normal = textureSample(normal_texture, normal_sampler, vUv);
+  var occlusion = textureSample(occlusion_texture, occlusion_sampler, vUv);
+  var emissive = textureSample(emissive_texture, emissive_sampler, vUv);
+
+  let material = create_material(albedo, metallic, normal, occlusion, emissive);
+
+  let coord = vec2<i32>(vUv);
+
+  var light_pos = vec3<f32>(0.0f);
+  var light_color = vec3<f32>(0.0f);
+  var Lo : vec3<f32> = vec3<f32>(0.0f);
+  var ambient : vec3<f32> = vec3<f32>(0.0f);
+
+  // calculate point lights
+  // for (var i = 0u; i < ubo.light_count.point; i++) {
+  //   let light = point_light_list[i];
+  //   Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+  //                             light.position, light.color, light.intensity);
+  // }
+
+  // calculate spot lights
+  // basically the same a point light, but use a fixed light direction instead
+  // of a one per fragment like a point light
+  // for (var i = 0u; i < ubo.light_count.spot; i = i + 1u) {
+  //  let light = spot_light_list[i];
+  //  let light_direction = light.position - light.lookat;
+  //  Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+  //                            light_direction, light.color, light.intensity);
+  //}
+
+  // calculate sun lights
+  // for (var i = 0u; i < ubo.light_count.sun; i = i + 1u) {
+  //  let light = sun_light_list[i];
+  //  Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+  //                            light.position, light.color, light.intensity);
+  //}
+
+  // calulate ambient lights
+  // var ambient_intensity = 0.0f;
+  // for (var i = 0u; i < ubo.light_count.ambient; i = i + 1u) {
+  //  let light = ambient_light_list[i];
+  //  ambient += compute_ambient_light(material, light.color, light.intensity);
+  //  ambient_intensity += light.intensity;
+  //}
+
+  // shadow map computation
+  // let point_shadow = point_shadow_factor(vFrag, camera.position.xyz);
+  // let spot_shadow = spot_shadow_factor(vFrag, camera.position.xyz);
+  // let sun_shadow = sun_shadow_factor(vFrag, camera.position.xyz);
+  //
+  //  let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
+  //                            point_shadow + spot_shadow + sun_shadow);
+
+  return vec4<f32>(albedo);
 }
