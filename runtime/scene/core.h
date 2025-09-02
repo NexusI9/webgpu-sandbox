@@ -4,14 +4,15 @@
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../backend/renderer/renderer.h"
-#include "./debug/debug.h"
 #include "../runtime/probe/probe.h"
+#include "./debug/debug.h"
 #include "./editor/selection/gizmo/gizmo.h"
 #include "./layer.h"
 #include "event/core.h"
 #include <stddef.h>
 
-#define SCENE_MESH_LIST_DEFAULT_CAPACITY 32
+#define SCENE_MESH_LIST_DEFAULT_CAPACITY 1024
+#define SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT 128
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
 #define SCENE_PIPELINE_COUNT 7
@@ -33,7 +34,7 @@ typedef struct Scene Scene;
 
  */
 
-#define SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT 16
+
 
 typedef struct SceneEditorObject SceneEditorObject;
 
@@ -171,7 +172,7 @@ typedef struct {
 
   struct {
     Gizmo transform; // transform gizmo (unique)
-    Mesh *grid;               // grid gizmo (unique)
+    Mesh *grid;      // grid gizmo (unique)
   } gizmo;
 
 } SceneEditor;
@@ -268,6 +269,7 @@ struct Scene {
   LightList lights;
   CameraList cameras;
   ProbeReflectionGridList probes_reflection;
+  ProbeReflectionPlaneList planes_reflection;
 
   // References List (ptr)
   MeshRefList pipelines[SCENE_PIPELINE_COUNT]; // meshes pipelines (for

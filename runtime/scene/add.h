@@ -33,7 +33,8 @@
 
  */
 
-// Scene Editor Objects
+/* === Scene Editor Objects === */
+
 // light
 SceneEditorObject *scene_add_point_light(Scene *, PointLightDescriptor *,
                                          const LightShadow);
@@ -47,10 +48,13 @@ SceneEditorObject *scene_add_ambient_light(Scene *, AmbientLightDescriptor *);
 SceneEditorObject *
 scene_add_probe_reflection_grid(Scene *, ProbeReflectionGridDescriptor *);
 
+SceneEditorObject *
+scene_add_probe_reflection_plane(Scene *, ProbeReflectionPlaneDescriptor *);
+
 // camera
 SceneEditorObject *scene_add_camera(Scene *, const CameraCreateDescriptor *);
 
-// Scene Meshes
+/* ===  Scene Meshes === */
 Mesh *scene_new_mesh(Scene *);
 void scene_add_mesh(Scene *, Mesh *, const char *);
 void scene_add_mesh_ref_list(Scene *, MeshRefList *, const char *);

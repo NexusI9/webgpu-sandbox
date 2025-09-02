@@ -200,7 +200,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
   return 0;
 }
 
-int mbin_main(int argc, char **argv) {
+int main(int argc, char **argv) {
 
   if (argc < 3) {
     fprintf(stderr, "Usage: %s <obj_path1> [<obj_path2> ...] <output_dir>\n",

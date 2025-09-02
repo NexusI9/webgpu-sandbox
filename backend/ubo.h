@@ -17,7 +17,8 @@ typedef enum {
   UBOField_SunLightCount,
   UBOField_SpotLightCount,
   UBOField_AmbientLightCount,
-  UBOField_ProbeReflectionCount,
+  UBOField_ProbeReflectionGridCount,
+  UBOField_ProbeReflectionPlaneCount,
   // f32 fields
 } UBOField;
 
@@ -34,7 +35,8 @@ typedef struct {
 } UBOLightCount;
 
 typedef struct {
-  UBOValue reflection;
+  UBOValue reflection_grid;
+  UBOValue reflection_plane;
   UBOValue irradiance;
 } UBOProbeCount;
 
@@ -44,11 +46,9 @@ typedef struct {
 } UBOUniform;
 
 typedef struct {
-
   UBOUniform data;
   WGPUBuffer handle;
   WGPUQueue queue;
-
 } UBOManager;
 
 void ubo_init(UBOManager *, WGPUQueue, const WGPUDevice);

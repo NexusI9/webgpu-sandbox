@@ -11,72 +11,68 @@ void probe_reflection_list_create_texture(
    */
 
   *desc->color = wgpuDeviceCreateTexture(
-      desc->device,
-      &(WGPUTextureDescriptor){
-          .label = "Probe Reflection Grid List Texture Color Cube Array",
-          .size =
-              (WGPUExtent3D){
-                  .width = desc->resolution,
-                  .height = desc->resolution,
-                  .depthOrArrayLayers = desc->layer_count,
-              },
-          .format = WGPUTextureFormat_BGRA8Unorm,
-          .usage = WGPUTextureUsage_CopyDst |
-                   WGPUTextureUsage_RenderAttachment |
-                   WGPUTextureUsage_TextureBinding,
-          .dimension = WGPUTextureDimension_2D,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-      });
+      desc->device, &(WGPUTextureDescriptor){
+                        .label = "Probe Reflection List Texture Color",
+                        .size =
+                            (WGPUExtent3D){
+                                .width = desc->resolution,
+                                .height = desc->resolution,
+                                .depthOrArrayLayers = desc->layer_count,
+                            },
+                        .format = WGPUTextureFormat_BGRA8Unorm,
+                        .usage = WGPUTextureUsage_CopyDst |
+                                 WGPUTextureUsage_RenderAttachment |
+                                 WGPUTextureUsage_TextureBinding,
+                        .dimension = WGPUTextureDimension_2D,
+                        .mipLevelCount = 1,
+                        .sampleCount = 1,
+                    });
 
   *desc->color_view = wgpuTextureCreateView(
-      *desc->color,
-      &(WGPUTextureViewDescriptor){
-          .label = "Probe Reflection Grid List View Color Cube Array",
-          .format = WGPUTextureFormat_BGRA8Unorm,
-          .dimension = desc->view_dimension,
-          .baseMipLevel = 0,
-          .mipLevelCount = 1,
-          .baseArrayLayer = 0,
-          .arrayLayerCount = desc->layer_count,
-          .aspect = WGPUTextureAspect_Undefined,
-      });
+      *desc->color, &(WGPUTextureViewDescriptor){
+                        .label = "Probe Reflection List View Color",
+                        .format = WGPUTextureFormat_BGRA8Unorm,
+                        .dimension = desc->view_dimension,
+                        .baseMipLevel = 0,
+                        .mipLevelCount = 1,
+                        .baseArrayLayer = 0,
+                        .arrayLayerCount = desc->layer_count,
+                        .aspect = WGPUTextureAspect_Undefined,
+                    });
 
   /*
     === DEPTH ===
    */
 
   *desc->depth = wgpuDeviceCreateTexture(
-      desc->device,
-      &(WGPUTextureDescriptor){
-          .label = "Probe Reflection Grid List Texture Depth Cube Array",
-          .size =
-              (WGPUExtent3D){
-                  .width = desc->resolution,
-                  .height = desc->resolution,
-                  .depthOrArrayLayers = desc->layer_count,
-              },
-          .format = WGPUTextureFormat_Depth24Plus,
-          .usage = WGPUTextureUsage_CopyDst |
-                   WGPUTextureUsage_RenderAttachment |
-                   WGPUTextureUsage_TextureBinding,
-          .dimension = WGPUTextureDimension_2D,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-      });
+      desc->device, &(WGPUTextureDescriptor){
+                        .label = "Probe Reflection List Texture Depth",
+                        .size =
+                            (WGPUExtent3D){
+                                .width = desc->resolution,
+                                .height = desc->resolution,
+                                .depthOrArrayLayers = desc->layer_count,
+                            },
+                        .format = WGPUTextureFormat_Depth24Plus,
+                        .usage = WGPUTextureUsage_CopyDst |
+                                 WGPUTextureUsage_RenderAttachment |
+                                 WGPUTextureUsage_TextureBinding,
+                        .dimension = WGPUTextureDimension_2D,
+                        .mipLevelCount = 1,
+                        .sampleCount = 1,
+                    });
 
   *desc->depth_view = wgpuTextureCreateView(
-      *desc->depth,
-      &(WGPUTextureViewDescriptor){
-          .label = "Probe Reflection Grid List View Depth Cube Array",
-          .dimension = desc->view_dimension,
-          .format = WGPUTextureFormat_Depth24Plus,
-          .baseMipLevel = 0,
-          .mipLevelCount = 1,
-          .baseArrayLayer = 0,
-          .arrayLayerCount = desc->layer_count,
-          .aspect = WGPUTextureAspect_DepthOnly,
-      });
+      *desc->depth, &(WGPUTextureViewDescriptor){
+                        .label = "Probe Reflection List View Depth",
+                        .dimension = desc->view_dimension,
+                        .format = WGPUTextureFormat_Depth24Plus,
+                        .baseMipLevel = 0,
+                        .mipLevelCount = 1,
+                        .baseArrayLayer = 0,
+                        .arrayLayerCount = desc->layer_count,
+                        .aspect = WGPUTextureAspect_DepthOnly,
+                    });
 }
 
 DynamicListStatus
@@ -100,7 +96,7 @@ probe_reflection_list_create_core(const ProbeReflectionCreateCore *desc) {
         .depth_view = &depth_view,
         .resolution = desc->render_pass->resolution,
         .device = desc->device,
-        .view_dimension = WGPUTextureViewDimension_CubeArray,
+        .view_dimension = desc->render_pass->view_dimension,
         .layer_count = desc->render_pass->layer_count,
     });
 

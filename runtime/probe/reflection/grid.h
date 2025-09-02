@@ -21,7 +21,7 @@ typedef struct {
   WGPUTexture texture;
   WGPUTextureView view;
   ivec3 count;
-  vec3 size;
+  vec3 scale;
 } ProbeReflectionGrid;
 
 typedef struct {
@@ -33,7 +33,7 @@ typedef struct {
 
 typedef struct {
   ivec3 count;
-  vec3 size;
+  vec3 scale;
   const WGPUDevice device;
   const WGPUQueue queue;
 } ProbeReflectionGridDescriptor;

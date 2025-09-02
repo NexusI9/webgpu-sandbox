@@ -37,8 +37,11 @@ DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
 
   void *temp = (void *)realloc(*entries, new_capacity * type_size);
 
-  if (temp == NULL)
+  if (temp == NULL) {
+    VERBOSE_ERROR("Couldn't expand list '%s' from %lu to %lu.", label,
+                  *capacity, new_capacity);
     return DynamicListStatus_AllocFail;
+  }
 
   *entries = temp;
   *capacity = new_capacity;
@@ -126,8 +129,15 @@ DynamicListStatus dyli_remove_at_index(void *entries, size_t *length,
 void *dyli_new_entry(void **entries, size_t *capacity, size_t *length,
                      size_t type_size, const char *label) {
 
+
+  if (*entries == NULL || *capacity == 0) {
+    VERBOSE_ERROR("Dynamic list '%s' not initialized, insertion aborted.",
+                  label);
+    return NULL;
+  }
+
   // Ensure capacity first
-  if (*length >= *capacity) {
+  if (*length == *capacity) {
     if (dyli_expand(entries, capacity, length, type_size, 2, label) !=
         DynamicListStatus_Success)
       return NULL;

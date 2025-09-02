@@ -137,3 +137,48 @@ void probe_reflection_plane_list_draw(ProbeReflectionPlaneList *list,
   }
   render_pass_command_end(&list->pass);
 }
+
+void probe_reflection_plane_create(ProbeReflectionPlane *probe,
+                                   ProbeReflectionPlaneDescriptor *desc) {
+
+  // Define init attribute
+  glm_vec3_copy(desc->position, probe->position);
+  glm_vec3_copy(desc->scale, probe->scale);
+  glm_vec3_copy(probe->normal, probe->normal);
+  probe->near = desc->near;
+  probe->far = desc->far;
+
+  // Allocate init shader attribute (uniform/ view)
+  ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_List],
+                       sizeof(ProbeReflectionPlaneUniform));
+
+  probe_reflection_plane_update_uniform(probe);
+
+  ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_View],
+                       sizeof(ProjectionUniform));
+
+  probe_reflection_plane_update_view(probe);
+}
+
+void probe_reflection_plane_update_uniform(ProbeReflectionPlane *probe) {
+
+  ProbeReflectionPlaneUniform *uniform =
+      (ProbeReflectionPlaneUniform *)probe
+          ->ssbo_slot[ProbeReflectionSSBOField_List]
+          .uniform;
+
+  glm_vec3_copy(probe->position, uniform->position);
+  glm_vec3_copy(probe->scale, uniform->scale);
+  glm_vec3_copy(probe->normal, uniform->normal);
+  uniform->near = probe->near;
+  uniform->far = probe->far;
+}
+
+void probe_reflection_plane_update_view(ProbeReflectionPlane *probe) {
+  // update light projection attribute
+  // projection_mirror(&prove->views)
+
+  // transfert attribute to SSBO slot
+  ssbo_slot_set_from_projection(probe->ssbo_slot, &probe->views,
+                                ProbeReflectionSSBOField_View);
+}

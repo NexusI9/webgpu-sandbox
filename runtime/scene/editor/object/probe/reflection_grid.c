@@ -1,11 +1,11 @@
-#include "reflection.h"
+#include "reflection_grid.h"
 #include "../builder/builder.h"
 #include "../resources/loader/loader.mbin.h"
 #include "../runtime/scene/editor/object/object.h"
 #include "../runtime/scene/scene.h"
 #include <stdint.h>
 
-void seo_probe_reflection_create(SceneEditorObject *seo,
+void seo_probe_reflection_grid_create(SceneEditorObject *seo,
                                  ProbeReflectionGrid *grid,
                                  const SEOCreateDescriptor *desc) {
 
@@ -44,17 +44,17 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
   };
 
   vec3 padded_size;
-  glm_vec3_scale(grid->size, 1.2f, padded_size);
+  glm_vec3_scale(grid->scale, 1.2f, padded_size);
   seo_create_wireframe(bound_cube->mesh, &wireframe_desc);
 
   mesh_set_scale(bound_cube->mesh, padded_size);
 
   bound_cube->transform_callback[GizmoMode_Position] =
-      seo_probe_reflection_bound_set_position;
+      seo_probe_reflection_grid_bound_set_position;
   bound_cube->transform_callback[GizmoMode_Rotation] =
-      seo_probe_reflection_set_rotation;
+      seo_probe_reflection_grid_set_rotation;
   bound_cube->transform_callback[GizmoMode_Scale] =
-      seo_probe_reflection_bound_set_scale;
+      seo_probe_reflection_grid_bound_set_scale;
 
   /*
 
@@ -79,10 +79,11 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
     mesh_set_position(probe->mesh, grid->probes.entries[i].position);
 
     probe->transform_callback[GizmoMode_Position] =
-        seo_probe_reflection_set_position;
+        seo_probe_reflection_grid_set_position;
     probe->transform_callback[GizmoMode_Rotation] =
-        seo_probe_reflection_set_rotation;
-    probe->transform_callback[GizmoMode_Scale] = seo_probe_reflection_set_scale;
+        seo_probe_reflection_grid_set_rotation;
+    probe->transform_callback[GizmoMode_Scale] =
+        seo_probe_reflection_grid_set_scale;
 
     mesh_child_add(bound_cube->mesh, probe->mesh);
   }
@@ -94,17 +95,17 @@ void seo_probe_reflection_create(SceneEditorObject *seo,
    Update the position list according to the origin on top the casual mesh
    translation.
  */
-void seo_probe_reflection_bound_set_position(SEOTransformCallback *desc) {
+void seo_probe_reflection_grid_bound_set_position(SEOTransformCallback *desc) {
 
   ProbeReflectionGrid *grid = (ProbeReflectionGrid *)desc->mesh->target;
   mesh_set_position(desc->mesh->mesh, desc->offset);
 }
 
-void seo_probe_reflection_bound_set_scale(SEOTransformCallback *desc) {
+void seo_probe_reflection_grid_bound_set_scale(SEOTransformCallback *desc) {
   // mesh_set_scale(desc->mesh->mesh, desc->offset);
 }
 
-void seo_probe_reflection_set_position(SEOTransformCallback *desc) {
+void seo_probe_reflection_grid_set_position(SEOTransformCallback *desc) {
 
   mesh_set_position(desc->mesh->mesh, desc->offset);
 
@@ -128,9 +129,9 @@ void seo_probe_reflection_set_position(SEOTransformCallback *desc) {
                            probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
 }
 
-void seo_probe_reflection_set_rotation(SEOTransformCallback *desc) {}
+void seo_probe_reflection_grid_set_rotation(SEOTransformCallback *desc) {}
 
-void seo_probe_reflection_set_scale(SEOTransformCallback *desc) {
+void seo_probe_reflection_grid_set_scale(SEOTransformCallback *desc) {
 
   // print_vec3(desc->offset);
 }

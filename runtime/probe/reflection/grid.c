@@ -16,7 +16,7 @@ float probe_reflection_point(size_t x, uint16_t count, float size) {
 void probe_reflection_grid_create(ProbeReflectionGrid *grid,
                                   ProbeReflectionGridDescriptor *desc) {
 
-  glm_vec3_copy(desc->size, grid->size);
+  glm_vec3_copy(desc->scale, grid->scale);
 
   int clamp_count[PROBE_REFLECTION_GRID_DIMENSION]; // prevent overflow
 
@@ -29,13 +29,13 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
   probe_reflection_list_create(&grid->probes, count);
 
   for (size_t x = 0; x < clamp_count[0]; x++) {
-    float x_pos = probe_reflection_point(x, clamp_count[0], desc->size[0]);
+    float x_pos = probe_reflection_point(x, clamp_count[0], desc->scale[0]);
 
     for (size_t y = 0; y < clamp_count[1]; y++) {
-      float y_pos = probe_reflection_point(y, clamp_count[1], desc->size[1]);
+      float y_pos = probe_reflection_point(y, clamp_count[1], desc->scale[1]);
 
       for (size_t z = 0; z < clamp_count[2]; z++) {
-        float z_pos = probe_reflection_point(z, clamp_count[2], desc->size[2]);
+        float z_pos = probe_reflection_point(z, clamp_count[2], desc->scale[2]);
 
         ProbeReflection *probe = probe_reflection_list_new_entry(&grid->probes);
 
@@ -57,7 +57,7 @@ void probe_reflection_grid_destroy(ProbeReflectionGrid *grid) {
   grid->texture = NULL;
 
   glm_ivec3_zero(grid->count);
-  glm_vec3_zero(grid->size);
+  glm_vec3_zero(grid->scale);
 
   probe_reflection_list_destroy(&grid->probes);
 };

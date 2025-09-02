@@ -118,7 +118,6 @@ void scene_camera_init(Scene *scene) {
 
   // set scene main camera as active
   scene->active_camera = scene->camera;
-
 }
 
 /**
@@ -166,16 +165,20 @@ void scene_probe_reflection_init(Scene *scene,
             probe_reflection_grid_list_draw_preprocessor,
     };
 
-  probe_reflection_grid_list_create(
-      &scene->probes_reflection,
-      &(ProbeReflectionListDescriptor){
-          .capacity = PROBE_REFLECTION_GRID_LIST_CAPACITY,
-          .device = scene_device(scene),
-          .queue = scene_queue(scene),
-          .multisample = multisample,
-          .resolution = TextureResolution_512,
-          .draw_list = &reflection_draw_list,
-      });
+  ProbeReflectionListDescriptor reflection_config = {
+      .capacity = PROBE_REFLECTION_GRID_LIST_CAPACITY,
+      .device = scene_device(scene),
+      .queue = scene_queue(scene),
+      .multisample = multisample,
+      .resolution = TextureResolution_512,
+      .draw_list = &reflection_draw_list,
+  };
+
+  probe_reflection_grid_list_create(&scene->probes_reflection,
+                                    &reflection_config);
+
+  probe_reflection_plane_list_create(&scene->planes_reflection,
+                                     &reflection_config);
 }
 
 /**
@@ -195,7 +198,6 @@ void scene_light_list_init(Scene *scene) {
 
   light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
 
-  
   // init shadow textures
   shadow_map_init(&(ShadowMapInitDescriptor){
       .device = scene_renderer_device(&scene->renderer),

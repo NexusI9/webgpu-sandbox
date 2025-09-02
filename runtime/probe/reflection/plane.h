@@ -9,7 +9,7 @@
 
 typedef struct {
   vec3 position;
-  vec3 direction;
+  vec3 normal;
   vec3 scale;
   float near;
   float far;
@@ -19,9 +19,9 @@ typedef struct {
 
 typedef struct {
   vec3 position;
-  float _pad;
-  vec3 direction;
-  float _pad2;
+  float near;
+  vec3 normal;
+  float far;
   vec3 scale;
   float _pad3[53];
 } __attribute__((aligned(16))) ProbeReflectionPlaneUniform;
@@ -33,6 +33,15 @@ typedef struct {
   RenderPass pass;
 } ProbeReflectionPlaneList;
 
+typedef struct {
+  float near;
+  float far;
+  vec3 scale;
+  vec3 normal;
+  vec3 position;
+} ProbeReflectionPlaneDescriptor;
+
+/* === Plane List === */
 DynamicListStatus
 probe_reflection_plane_list_create(ProbeReflectionPlaneList *,
                                    const ProbeReflectionListDescriptor *);
@@ -51,5 +60,11 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *);
 
 void probe_reflection_plane_list_draw(ProbeReflectionPlaneList *,
                                       ProbeReflectionListDebug *);
+/* === Plane === */
+void probe_reflection_plane_create(ProbeReflectionPlane *,
+                                   ProbeReflectionPlaneDescriptor *);
 
+void probe_reflection_plane_update_uniform(ProbeReflectionPlane *);
+
+void probe_reflection_plane_update_view(ProbeReflectionPlane *);
 #endif

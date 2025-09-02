@@ -47,7 +47,7 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   SceneEditorObject *grid_probe =
       scene_add_probe_reflection_grid(scene, &(ProbeReflectionGridDescriptor){
                                                  .count = {3, 3, 3},
-                                                 .size = {30.0f, 30.0f, 30.0f},
+                                                 .scale = {30.0f, 30.0f, 30.0f},
                                              });
 
   Mesh *mesh = scene_new_mesh(scene);
@@ -56,7 +56,7 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &prim,
-                                  .name = "Glass Probe Plane",
+                                  .name = "Glass Probe Sphere",
                                   .device = scene_device(scene),
                                   .queue = scene_queue(scene),
                               });
@@ -64,8 +64,8 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   mesh_shader_create(mesh,
                      &(ShaderCreateDescriptor){
                          .pipeline = std_pipeline(PipelineType_GlassProbeGrid),
-                         .label = "Glass Probe Plane",
-                         .name = "Glass Probe Plane",
+                         .label = "Glass Probe Sphere",
+                         .name = "Glass Probe Sphere",
                          .device = scene_device(scene),
                          .queue = scene_queue(scene),
                      });
@@ -90,8 +90,8 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   // link probe lists (position, radius)
   shader_update_uniform_buffer(
       mesh_shader(mesh, MeshShader_Texture), 1, 1,
-      ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbeGridReflection), 0,
-      ShaderBufferLifetime_Release);
+      ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbeGridReflection),
+      0, ShaderBufferLifetime_Release);
 
   // link UBO
   shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 2,
@@ -115,16 +115,16 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
 
 void example_glass_probe_plane(Scene *scene, bool debug) {
 
-  // SceneEditorObject *grid_probe =
-  //     scene_add_probe_reflection_grid(scene,
-  //     &(ProbeReflectionGridDescriptor){
-  //                                                .count = {3, 3, 3},
-  //                                                .size =
-  //                                                {30.0f, 30.0f, 30.0f},
-  //                                            });
+  SceneEditorObject *plane_probe = scene_add_probe_reflection_plane(
+      scene, &(ProbeReflectionPlaneDescriptor){
+                 .far = 100.0f,
+                 .near = 0.1f,
+                 .normal = {0.0f, 1.0f, 0.0f},
+                 .scale = {12.0f, 12.0f, 12.0f},
+             });
+
 
   Mesh *mesh = scene_new_mesh(scene);
-
   Primitive prim = primitive_plane();
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
@@ -163,8 +163,8 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
   // link probe lists (position, radius)
   shader_update_uniform_buffer(
       mesh_shader(mesh, MeshShader_Texture), 1, 1,
-      ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbeGridReflection), 0,
-      ShaderBufferLifetime_Release);
+      ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbeGridReflection),
+      0, ShaderBufferLifetime_Release);
 
   // link UBO
   shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 2,
@@ -172,7 +172,7 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                                ShaderBufferLifetime_Release);
 
   // link probe color texture
-  //shader_update_texture_view(
+  // shader_update_texture_view(
   //    mesh_shader(mesh, MeshShader_Texture), 1, 3,
   //    scene->probes_reflection.pass.color.attachment.view,
   //    WGPUTextureFormat_BGRA8Unorm);
@@ -182,6 +182,6 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
       .max_views = 4,
   };
 
-  //probe_reflection_grid_list_draw(&scene->probes_reflection,
-  //                                debug ? &debug_options : NULL);
+  // probe_reflection_grid_list_draw(&scene->probes_reflection,
+  //                                 debug ? &debug_options : NULL);
 }

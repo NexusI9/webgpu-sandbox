@@ -8,7 +8,7 @@
 #include "core.h"
 #include "editor/object/light/sun.h"
 #include "editor/object/list/list.h"
-#include "editor/object/probe/reflection.h"
+#include "editor/object/probe/probe.h"
 #include "editor/selection/core.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -381,15 +381,15 @@ scene_add_probe_reflection_grid(Scene *scene,
   SceneEditorObject *seo_grid =
       seo_list_new_entry(scene_editor_object_list(scene));
 
-  seo_probe_reflection_create(seo_grid, new_grid,
-                              &(SEOCreateDescriptor){
-                                  .camera = scene->active_camera,
-                                  .viewport = &scene->viewport,
-                                  .device = scene_device(scene),
-                                  .queue = scene_queue(scene),
-                                  .scene = scene,
-                                  .target_list_index = 0,
-                              });
+  seo_probe_reflection_grid_create(seo_grid, new_grid,
+                                   &(SEOCreateDescriptor){
+                                       .camera = scene->active_camera,
+                                       .viewport = &scene->viewport,
+                                       .device = scene_device(scene),
+                                       .queue = scene_queue(scene),
+                                       .scene = scene,
+                                       .target_list_index = 0,
+                                   });
 
   // add probes to ssbo list
   for (uint16_t i = 0; i < new_grid->probes.length; i++) {
@@ -408,9 +408,58 @@ scene_add_probe_reflection_grid(Scene *scene,
   }
 
   // update UBO for probe count
-  ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionCount,
+  ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionGridCount,
                    (UBOValue){probe_reflection_grid_list_probe_count(
                        &scene->probes_reflection)});
+
+  ubo_upload(&scene->renderer.ubo);
+
+  // transfert gizmo mesh pointers to scene pipeline so they get rendered
+  scene_add_seo(scene, seo_grid);
+
+  return seo_grid;
+}
+
+SceneEditorObject *
+scene_add_probe_reflection_plane(Scene *scene,
+                                 ProbeReflectionPlaneDescriptor *desc) {
+
+  ProbeReflectionPlane *probe =
+      probe_reflection_plane_list_new_entry(&scene->planes_reflection);
+
+  probe_reflection_plane_create(probe, desc);
+
+  // create scene object
+  SceneEditorObject *seo_grid =
+      seo_list_new_entry(scene_editor_object_list(scene));
+
+  probe_reflection_plane_create(probe, desc);
+
+  seo_probe_reflection_plane_create(seo_grid, probe,
+                                    &(SEOCreateDescriptor){
+                                        .camera = scene->active_camera,
+                                        .viewport = &scene->viewport,
+                                        .device = scene_device(scene),
+                                        .queue = scene_queue(scene),
+                                        .scene = scene,
+                                        .target_list_index = 0,
+                                    });
+
+  
+  // add probes to ssbo list
+  SSBOManager *ssbo = &scene->renderer.ssbo;
+
+  // add to pos/radius list
+  ssbo_copy_entry(ssbo, SSBOType_ProbePlaneReflection,
+                  &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
+
+  // add each view
+  ssbo_copy_entry(ssbo, SSBOType_ViewProbeReflection,
+                  &probe->ssbo_slot[ProbeReflectionSSBOField_View]);
+
+  // update UBO for probe count
+  ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionPlaneCount,
+                   (UBOValue){scene->planes_reflection.length});
 
   ubo_upload(&scene->renderer.ubo);
 
