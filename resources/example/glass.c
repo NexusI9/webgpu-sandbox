@@ -82,8 +82,8 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
                              &(GlassUniform){
                                  .color = {1.0f, 1.0f, 1.0f, 1.0f},
-                                 .frost_scale = 1.0f,
-                                 .frost_strength = 0.0f,
+                                 .frost_scale = 80.0f,
+                                 .frost_strength = 10.0f,
                                  .roughness = 0.145f,
                              });
 
@@ -103,6 +103,10 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
       mesh_shader(mesh, MeshShader_Texture), 1, 3,
       scene->probes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
+
+  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 5,
+                             scene->renderer.texture.skybox.cubemap,
+                             WGPUTextureFormat_BGRA8Unorm);
 
   ProbeReflectionListDebug debug_options = {
       .scene_debug = &scene->debug,
@@ -159,8 +163,8 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
                              &(GlassUniform){
                                  .color = {1.0f, 1.0f, 1.0f, 1.0f},
-                                 .frost_scale = 1.0f,
-                                 .frost_strength = 0.0f,
+                                 .frost_scale = 20.0f,
+                                 .frost_strength = 2.0f,
                                  .roughness = 0.145f,
                              });
 
@@ -179,13 +183,6 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
       ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ViewProjection), 0,
       ShaderBufferLifetime_Release);
 
-  // DEBUG
-  {
-    printf("view id: %lu\n", id);
-    mat4 *view = ssbo_entry(&scene->renderer.ssbo, SSBOType_ViewProjection, id);
-    print_mat4(*view);
-  }
-
   shader_update_bind_group_offset(mesh_shader(mesh, MeshShader_Texture), 1, 2,
                                   id);
 
@@ -199,4 +196,8 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
       mesh_shader(mesh, MeshShader_Texture), 1, 4,
       scene->planes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
+
+  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 6,
+                             scene->renderer.texture.skybox.cubemap,
+                             WGPUTextureFormat_BGRA8Unorm);
 }

@@ -350,6 +350,16 @@ fn compute_point_depth(position : f32, near : f32, far : f32) -> f32 {
   return (depth + 1.0f) * 0.5f;
 }
 
+// https://x.com/JKoukourakis/status/1958800134914949268/photo/1
+fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
+    -> f32 {
+
+  let fog_distance : f32 = max(distance - fog_start_distance, 0.0f);
+  let density : f32 = fog_density * 0.001;
+  let exp_factor : f32 = 1.0f - exp(-density * fog_distance);
+  return clamp(exp_factor, 0.0f, 1.0f);
+}
+
 //
 //
 //
@@ -693,5 +703,15 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                             point_shadow + spot_shadow + sun_shadow);
 
-  return vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
+  let combined_pbr = vec4<f32>(ambient + Lo * combined_shadow, 1.0f);
+
+  let fog_start_distance = 70.0f;
+  let fog_density = 1000.0f;
+  let fog_color = vec4<f32>(1.0f, 1.0f, 1.0f, 0.0f);
+  let fog_k = fog_factor(length(vFrag - camera.position.xyz),
+                         fog_start_distance, fog_density);
+
+  let out_color = mix(combined_pbr, fog_color, fog_k);
+
+  return out_color;
 }

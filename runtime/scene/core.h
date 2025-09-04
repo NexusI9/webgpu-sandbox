@@ -7,7 +7,9 @@
 #include "../runtime/probe/probe.h"
 #include "./debug/debug.h"
 #include "./editor/selection/gizmo/gizmo.h"
+#include "./environment/environment.h"
 #include "./layer.h"
+#include "environment/core.h"
 #include "event/core.h"
 #include <stddef.h>
 
@@ -33,7 +35,6 @@ typedef struct Scene Scene;
                 ▝▚▄▞▘▐▙▄▞▘▗▄▄▞▘▐▙▄▄▖▝▚▄▄▖  █
 
  */
-
 
 #define SCENE_EDITOR_OBJECT_TARGET_UNDEFINED UINT32_MAX
 
@@ -281,6 +282,7 @@ struct Scene {
   // will be never seen or used in actually "Game" mode
   SceneEditor editor;
   SceneRenderer renderer;
+  SceneEnvironment environment;
   SceneDebug debug;
 };
 

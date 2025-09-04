@@ -205,6 +205,20 @@ fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
                      @location(3) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
   let camera = uCamera[0];
+
+  let N : vec3<f32> = normalize(vNorm);
+
+  // frost effect
+  let n : f32 = perlin_noise(vUv, uGlass.frost_scale);
+  let perturbed_N : vec3<f32> = normalize(N + n * uGlass.frost_strength);
+
+  let V : vec3<f32> = normalize(camera.position.xyz - vFrag);
+
+  // Fresnel
+  let NdotV : f32 = max(dot(perturbed_N, V), 0.0f);
+  let f0 : vec3<f32> = vec3(0.04); // dielectric default reflectance
+  let f : vec3<f32> = f0 + (1.0f - f0) * pow(1.0 - NdotV, 5.0f);
+
   let plane_index = 0u;
   let plane = uPlaneReflectionList[plane_index];
 
@@ -217,19 +231,15 @@ fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
 
   let reflUV = compute_reflection_uv(vFrag, uProjections[0].view);
 
-  // projection onto tangent/bitangent
-  // let u = dot(local, plane.tangent);
-  // let v = dot(local, plane.bitangent);
-  // normalize by plane size, shift into [0,1]
-  // let uv = vec2<f32>(u / plane.scale.x + 0.5, v / plane.scale.z + 0.5);
+  let skybox : vec4<f32> = textureSample(skybox_map, skybox_sampler, R);
 
   let reflection : vec4<f32> = textureSample(probe_reflection_maps,
                                              probe_reflection_sampler, reflUV,
                                              plane_index);
 
-  //if (uProjections[2].view[0][0] < 0.0f) {
-  //  return vec4<f32>(0.0f, 1.0f, 0.0f, 1.0f);
-  //}
-  //return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
-   return reflection;
+  let composite = mix(skybox, reflection, reflection.a);
+
+  let out_color : vec4<f32> = mix(uGlass.color * composite, composite, f.r);
+
+  return out_color;
 }
