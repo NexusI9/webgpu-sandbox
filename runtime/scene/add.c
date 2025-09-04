@@ -63,7 +63,7 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
   if (shadow) {
 
     for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
-      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewShadow,
+      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewProjection,
                       &new_light->ssbo_slot[LightSSBOSlot_View + i]);
 
     PointLightListShadow *shadow_list = &scene->lights.point.shadow;
@@ -135,7 +135,7 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 
   if (shadow) {
 
-    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewShadow,
+    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewProjection,
                     &new_light->ssbo_slot[LightSSBOSlot_View]);
 
     SpotLightListShadow *shadow_list = &scene->lights.spot.shadow;
@@ -249,7 +249,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
   if (shadow) {
 
-    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewShadow,
+    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewProjection,
                     &new_light->ssbo_slot[LightSSBOSlot_View]);
 
     SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
@@ -402,7 +402,7 @@ scene_add_probe_reflection_grid(Scene *scene,
 
     // add each views
     for (uint8_t v = 0; v < probe->views.length; v++) {
-      ssbo_copy_entry(ssbo, SSBOType_ViewProbeReflection,
+      ssbo_copy_entry(ssbo, SSBOType_ViewProjection,
                       &probe->ssbo_slot[ProbeReflectionSSBOField_View + v]);
     }
   }
@@ -460,7 +460,7 @@ scene_add_probe_reflection_plane(Scene *scene,
                   &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
 
   // add each view
-  ssbo_copy_entry(ssbo, SSBOType_ViewProbeReflection,
+  ssbo_copy_entry(ssbo, SSBOType_ViewProjection,
                   &probe->ssbo_slot[ProbeReflectionSSBOField_View]);
 
   // update UBO for probe count

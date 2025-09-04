@@ -159,7 +159,7 @@ void scene_build_mesh_texture(
   mesh_shader_build_mvp(build_desc->mesh, MeshShader_Texture, build_desc->ssbo);
 
   mesh_shader_build_mp(build_desc->mesh, MeshShader_Reflection,
-                       build_desc->ssbo, SSBOType_ViewProbeReflection);
+                       build_desc->ssbo, SSBOType_ViewProjection);
 
   // lit and shadow pipeline
   if (build_texture_desc->pipeline &
@@ -183,7 +183,7 @@ void scene_build_mesh_texture(
 
     // bind light and mesh uniform to shadow
     mesh_shader_build_mp(build_desc->mesh, MeshShader_Shadow, build_desc->ssbo,
-                         SSBOType_ViewShadow);
+                         SSBOType_ViewProjection);
   }
 
   // set active shader

@@ -77,7 +77,7 @@ void scene_event_html_commons(Scene *scene) {
     
     // add to GPU update Queue
     ssbo_update_queue_insert(
-        &scene->renderer.ssbo, SSBOType_ViewProbeReflection,
+        &scene->renderer.ssbo, SSBOType_ViewProjection,
         probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
   }
 }

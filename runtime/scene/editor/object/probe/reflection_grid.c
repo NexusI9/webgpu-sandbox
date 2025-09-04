@@ -6,8 +6,8 @@
 #include <stdint.h>
 
 void seo_probe_reflection_grid_create(SceneEditorObject *seo,
-                                 ProbeReflectionGrid *grid,
-                                 const SEOCreateDescriptor *desc) {
+                                      ProbeReflectionGrid *grid,
+                                      const SEOCreateDescriptor *desc) {
 
   seo->scene = desc->scene;
 
@@ -125,7 +125,7 @@ void seo_probe_reflection_grid_set_position(SEOTransformCallback *desc) {
 
   // add to upload queue
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
-                           SSBOType_ViewProbeReflection,
+                           SSBOType_ViewProjection,
                            probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
 }
 

@@ -33,9 +33,7 @@ typedef struct {
   vec3 tangent;
   float signed_distance;
   vec3 bitangent;
-  float _pad;
-  mat4 view;
-  float _pad1[28];
+  float _pad1[45];
 } __attribute__((aligned(16))) ProbeReflectionPlaneUniform;
 
 typedef struct {

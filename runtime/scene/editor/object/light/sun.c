@@ -110,7 +110,7 @@ void seo_light_sun_shadow_set_position(SEOTransformCallback *desc) {
 
     light_sun_projection_update(light);
 
-    ssbo_update_queue_insert(ssbo, SSBOType_ViewShadow,
+    ssbo_update_queue_insert(ssbo, SSBOType_ViewProjection,
                              light->ssbo_slot[LightSSBOSlot_View].id);
 
     shadow_map_draw_sun_light(

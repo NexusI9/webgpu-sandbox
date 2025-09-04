@@ -112,7 +112,7 @@ void seo_light_point_shadow_set_position(SEOTransformCallback *desc) {
 
     // add to write queue (CPU > GPU)
     for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
-      ssbo_update_queue_insert(ssbo, SSBOType_ViewShadow,
+      ssbo_update_queue_insert(ssbo, SSBOType_ViewProjection,
                                light->ssbo_slot[LightSSBOSlot_View + i].id);
 
     shadow_map_draw_point_light(

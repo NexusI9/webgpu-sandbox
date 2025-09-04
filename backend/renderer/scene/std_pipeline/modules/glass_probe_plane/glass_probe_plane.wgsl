@@ -41,6 +41,10 @@ struct Glass {
                                                     color : vec4<f32>,
 }
 
+struct Projection {
+  view : mat4x4<f32>, _padding : array<u32, 48>
+};
+
 struct PlaneReflection {
   position : vec3<f32>,
              near : f32,
@@ -52,9 +56,7 @@ struct PlaneReflection {
                                                                 signed_distance
       : f32,
         bitangent : vec3<f32>,
-                    _pad : f32,
-                           view : mat4x4<f32>,
-                                  _pad1 : array<f32, 28>,
+                    _pad1 : array<f32, 45>,
 }
 
 // === UBO ===
@@ -77,9 +79,10 @@ struct UBO {
 @group(1) @binding(0) var<uniform> uGlass : Glass;
 @group(1) @binding(1) var<storage, read> uPlaneReflectionList
     : array<PlaneReflection>;
-@group(1) @binding(2) var<uniform> ubo : UBO;
-@group(1) @binding(3) var probe_reflection_maps : texture_2d_array<f32>;
-@group(1) @binding(4) var probe_reflection_sampler : sampler;
+@group(1) @binding(2) var<storage, read> uProjections : array<Projection>;
+@group(1) @binding(3) var<uniform> ubo : UBO;
+@group(1) @binding(4) var probe_reflection_maps : texture_2d_array<f32>;
+@group(1) @binding(5) var probe_reflection_sampler : sampler;
 
 //
 //
@@ -238,14 +241,14 @@ fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
   let v = dot(local, plane.bitangent);
   var uv = (vec2<f32>(u, v) / plane.scale.xz) * 0.5f + 0.5f;
 
-  let reflUV = compute_reflection_uv(vFrag, plane.view);
+   let reflUV = compute_reflection_uv(vFrag, uProjections[0].view);
 
-  let reflection : vec4<f32> =
-                       textureSample(probe_reflection_maps,
-                                     probe_reflection_sampler, reflUV, plane_index);
-
-  return reflection + vec4<f32>(uv, 1.0f, 1.0f);
-  //  return vec4<f32>(fract(uv), 0.0f, 1.0f);
-  //   return vec4<f32>(abs(plane.bitangent), 1.0f);
-  //     return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
+  let reflection : vec4<f32> = textureSample(probe_reflection_maps,
+                                             probe_reflection_sampler,
+                                             reflUV, plane_index);
+ 
+   return reflection + vec4<f32>(uv, 1.0f, 1.0f);
+   //return vec4<f32>(fract(uv), 0.0f, 1.0f);
+   //return vec4<f32>(abs(plane.bitangent), 1.0f);
+   //return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
 }

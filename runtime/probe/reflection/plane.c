@@ -180,8 +180,6 @@ void probe_reflection_plane_update_uniform(ProbeReflectionPlane *probe) {
   glm_vec3_copy(probe->tangent, uniform->tangent);
   glm_vec3_copy(probe->bitangent, uniform->bitangent);
 
-  glm_mat4_copy(probe->views.combined[0], uniform->view);
-
   uniform->near = probe->near;
   uniform->far = probe->far;
   uniform->distance = probe->distance;

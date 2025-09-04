@@ -170,14 +170,19 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
       ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbePlaneReflection),
       0, ShaderBufferLifetime_Release);
 
+  shader_update_uniform_buffer(
+      mesh_shader(mesh, MeshShader_Texture), 1, 2,
+      ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ViewProjection),
+      0, ShaderBufferLifetime_Release);
+
   // link UBO
-  shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 2,
+  shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 3,
                                ubo_buffer_handle(&scene->renderer.ubo), 0,
                                ShaderBufferLifetime_Release);
 
   // link probe color texture
   shader_update_texture_view(
-      mesh_shader(mesh, MeshShader_Texture), 1, 3,
+      mesh_shader(mesh, MeshShader_Texture), 1, 4,
       scene->planes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
 }

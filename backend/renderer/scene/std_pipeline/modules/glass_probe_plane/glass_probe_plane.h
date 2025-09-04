@@ -13,7 +13,7 @@
 static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
     // Group 1 (Reflection probes array + sampler)
     .label = "Group 1 (Reflection Probes)",
-    .entryCount = 5,
+    .entryCount = 6,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -38,7 +38,18 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 2, // UBO
+                .binding = 2, // uProbeReflectionList
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .hasDynamicOffset = true,
+                        .minBindingSize =
+                            sizeof(ProjectionUniform),
+                    },
+            },
+            {
+                .binding = 3, // UBO
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
@@ -48,7 +59,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 3, // probe_reflection_maps
+                .binding = 4, // probe_reflection_maps
                 .visibility = WGPUShaderStage_Fragment,
                 .texture =
                     (WGPUTextureBindingLayout){
@@ -58,7 +69,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 4, // probe_reflection_sampler
+                .binding = 5, // probe_reflection_sampler
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){
@@ -70,8 +81,9 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
 
 static const ShaderPipelineStateObject layout_glass_probe_plane = {
     .label = "Pipeline Bind Groups - Glass Probe Plane",
-    .shader_path = "./backend/renderer/scene/std_pipeline/modules/glass_probe_plane/"
-                   "glass_probe_plane.wgsl",
+    .shader_path =
+        "./backend/renderer/scene/std_pipeline/modules/glass_probe_plane/"
+        "glass_probe_plane.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &glass_probe_plane_bind_group},
     .bindings = {.mvp = &mvp_binding},

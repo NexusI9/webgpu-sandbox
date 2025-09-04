@@ -8,7 +8,7 @@
 #include <string.h>
 #include <webgpu/webgpu.h>
 
-#define SSBO_TYPE_COUNT 11
+#define SSBO_TYPE_COUNT 10
 #define SSBO_CAPACITY 1024
 #define SSBO_MAX_TYPE_SIZE 2048
 #define SSBO_UPDATE_QUEUE_CAPACITY 128
@@ -86,8 +86,7 @@ typedef enum {
   SSBOType_SpotLight,
   SSBOType_ProbeGridReflection,
   SSBOType_ProbePlaneReflection,
-  SSBOType_ViewShadow,
-  SSBOType_ViewProbeReflection,
+  SSBOType_ViewProjection,
 } SSBOType;
 
 typedef struct {

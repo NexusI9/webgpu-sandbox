@@ -165,7 +165,7 @@ void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
 
   // add to upload queue
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
-                           SSBOType_ViewProbeReflection,
+                           SSBOType_ViewProjection,
                            probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
 }
 

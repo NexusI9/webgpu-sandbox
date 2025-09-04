@@ -55,16 +55,10 @@ static const struct {
             sizeof(ProbeReflectionPlaneUniform),
             "SSBO Probe Plane Reflection Buffer",
         },
-    // TODO: Merge all projections together
-    [SSBOType_ViewShadow] =
+    [SSBOType_ViewProjection] =
         {
             sizeof(ProjectionUniform),
-            "SSBO View Shadow Buffer",
-        },
-    [SSBOType_ViewProbeReflection] =
-        {
-            sizeof(ProjectionUniform),
-            "SSBO View Probe Grid Reflection Buffer",
+            "SSBO View Projection Buffer",
         },
 };
 
