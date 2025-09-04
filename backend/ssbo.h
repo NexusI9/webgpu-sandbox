@@ -1,7 +1,6 @@
 #ifndef _SHADER_STORAGE_BUFFER_OBJECT_H_
 #define _SHADER_STORAGE_BUFFER_OBJECT_H_
 
-#include "../utils/projection.h"
 #include "../utils/stli.h"
 #include <stdalign.h>
 #include <stdio.h>
@@ -147,28 +146,6 @@ static inline void ssbo_slot_set_uniform(SSBOSlot *slot, const void *data,
   memcpy(slot->uniform, data, type_size);
 }
 
-/**
-   Utils function that updates the slot according on the given projection.
-   Since projections often work with an offset system, they requires multiple
-   slots (especially point lights). As a result we also need to pass a field_id
-   which represent the index of the starting slot.
-
-   Using this function assumes that the slot uniform is of type
-   ProjectionUniform.
-
-   Function primarily used for lights and probes since they heavily rely on
-   projections.
- */
-static inline void ssbo_slot_set_from_projection(SSBOSlot *slot,
-                                                 Projection *views,
-                                                 size_t field_id) {
-  for (uint8_t i = 0; i < views->length; i++) {
-    ProjectionUniform uniform;
-    glm_mat4_copy(views->combined[i], uniform.view);
-    ssbo_slot_set_uniform(&slot[field_id + i], (void *)&uniform,
-                          sizeof(ProjectionUniform));
-  }
-}
 
 /**
    Transfers the given SSBOSlot to the manager

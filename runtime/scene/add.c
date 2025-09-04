@@ -424,6 +424,12 @@ SceneEditorObject *
 scene_add_probe_reflection_plane(Scene *scene,
                                  ProbeReflectionPlaneDescriptor *desc) {
 
+  // add draw callback if first probe
+  if (scene->planes_reflection.length == 0)
+    scene_renderer_add_draw_callback(&scene->renderer,
+                                     probe_reflection_plane_list_draw_callback,
+                                     (void *)&scene->planes_reflection);
+
   ProbeReflectionPlane *probe =
       probe_reflection_plane_list_new_entry(&scene->planes_reflection);
 
@@ -435,17 +441,17 @@ scene_add_probe_reflection_plane(Scene *scene,
 
   probe_reflection_plane_create(probe, desc);
 
-  seo_probe_reflection_plane_create(seo_grid, probe,
-                                    &(SEOCreateDescriptor){
-                                        .camera = scene->active_camera,
-                                        .viewport = &scene->viewport,
-                                        .device = scene_device(scene),
-                                        .queue = scene_queue(scene),
-                                        .scene = scene,
-                                        .target_list_index = 0,
-                                    });
+  seo_probe_reflection_plane_create(
+      seo_grid, probe,
+      &(SEOCreateDescriptor){
+          .camera = scene->active_camera,
+          .viewport = &scene->viewport,
+          .device = scene_device(scene),
+          .queue = scene_queue(scene),
+          .scene = scene,
+          .target_list_index = SCENE_EDITOR_OBJECT_TARGET_UNDEFINED,
+      });
 
-  
   // add probes to ssbo list
   SSBOManager *ssbo = &scene->renderer.ssbo;
 

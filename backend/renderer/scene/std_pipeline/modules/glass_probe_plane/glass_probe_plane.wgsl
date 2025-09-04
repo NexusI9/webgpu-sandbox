@@ -41,8 +41,18 @@ struct Glass {
                                                     color : vec4<f32>,
 }
 
-struct ProbeReflection {
-  position : vec3<f32>, radius : f32, _pad : array<f32, 60>
+struct PlaneReflection {
+  position : vec3<f32>,
+             near : f32,
+                    normal : vec3<f32>,
+                             far : f32,
+                                   scale : vec3<f32>,
+                                           distance : f32,
+                                                      tangent : vec3<f32>,
+                                                                signed_distance
+      : f32,
+        bitangent : vec3<f32>,
+                    _pad : array<f32, 45>,
 }
 
 // === UBO ===
@@ -63,8 +73,8 @@ struct UBO {
 @group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var<uniform> uGlass : Glass;
-@group(1) @binding(1) var<storage, read> uProbeReflectionList
-    : array<ProbeReflection>;
+@group(1) @binding(1) var<storage, read> uPlaneReflectionList
+    : array<PlaneReflection>;
 @group(1) @binding(2) var<uniform> ubo : UBO;
 @group(1) @binding(3) var probe_reflection_maps : texture_2d_array<f32>;
 @group(1) @binding(4) var probe_reflection_sampler : sampler;
@@ -157,6 +167,20 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
   return 0.5 + 0.5 * (noise_value / 0.7);
 }
 
+fn ray_intersect_plane(ray_origin : vec3<f32>, ray_dir : vec3<f32>,
+                       plane_normal : vec3<f32>, plane_signed_distance : f32)
+    -> vec3<f32> {
+
+  let denom = dot(plane_normal, ray_dir);
+
+  if (abs(denom) < 1e-6) {
+    return ray_origin;
+  }
+
+  let t = (plane_signed_distance - dot(plane_normal, ray_origin)) / denom;
+  return ray_origin + t * ray_dir;
+}
+
 //
 //
 //
@@ -178,58 +202,38 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
                      @location(3) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
   let camera = uCamera[0];
-
-  let N : vec3<f32> = normalize(vNorm);
-
-  // frost effect
-  let n : f32 = perlin_noise(vUv, uGlass.frost_scale);
-  let perturbed_N : vec3<f32> = normalize(N + n * uGlass.frost_strength);
-
-  let V : vec3<f32> = normalize(camera.position.xyz - vFrag);
-
-  // Fresnel
-  let NdotV : f32 = max(dot(perturbed_N, V), 0.0f);
-  let f0 : vec3<f32> = vec3(0.04); // dielectric default reflectance
-  let f : vec3<f32> = f0 + (1.0f - f0) * pow(1.0 - NdotV, 5.0f);
-
-  // Reflection Direction
-  let R : vec3<f32> = normalize(reflect(-V, perturbed_N));
-  let mip : f32 = uGlass.roughness * f32(MAX_MIP_LEVEL);
-
-  // var closest_probe_index : u32 = 0u;
-  // var best_dist : f32 = 1e9;
-  //  for (var i = 0u; i < ubo.probe_count.reflection; i += 1u) {
-  //    let probe_pos = uProbeReflectionList[i].position;
-  //    let dist = distance(vFrag, probe_pos);
-  //    if (dist < best_dist) {
-  //      best_dist = dist;
-  //      closest_probe_index = i;
-  //    }
+  // var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
+  //
+  //  if ((camera.mode & 2u) != 0u) {
+  //    // fix position to target (lookat) if camera is Orbit mode
+  //    offset.x = camera.lookat.x;
+  //    offset.y = camera.lookat.z;
   //  }
-  // let reflection : vec4<f32> = textureSample(probe_reflection_maps,
-  //                                            probe_reflection_sampler, R,
-  //                                            closest_probe_index);
-  // let color : vec4<f32> = mix(uGlass.color * reflection, reflection, f.r);
-  // let t = vec4<f32>(
-  //    vec3<f32>(f32(closest_probe_index) / f32(ubo.probe_count.reflection)),
-  //    1.0f);
-  // return t;
 
-  var total_weight : f32 = 0.0;
-  var blended_reflection : vec3<f32> = vec3(0.0);
-  for (var i = 0u; i < ubo.probe_count.reflection; i += 1u) {
-    let probe_pos = uProbeReflectionList[i].position;
-    let dist = max(distance(vFrag, probe_pos), 0.001);
-    let w = 1.0 / (dist * dist); // inverse square
-    // let refl =
-    //     textureSample(probe_reflection_maps, probe_reflection_sampler, R, i)
-    //         .rgb;
+  let plane_index = 0u;
 
-    // blended_reflection += refl * w;
-    total_weight += w;
-  }
+  let plane = uPlaneReflectionList[plane_index];
 
-  blended_reflection /= total_weight;
+  let ro = camera.position.xyz;
+  let viewDir = normalize(vFrag - ro);
 
-  return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
+  let R = reflect(viewDir, normalize(plane.normal));
+
+  let I = ray_intersect_plane(ro, R, plane.normal, plane.signed_distance);
+
+  // let local = I - plane.position;
+  let local = vFrag - plane.position;
+
+  let u = dot(local, plane.tangent);
+  let v = dot(local, plane.bitangent);
+  var uv = (vec2<f32>(u,v) / plane.scale.xz) * 0.5f + 0.5f;
+
+  let reflection : vec4<f32> =
+                       textureSample(probe_reflection_maps,
+                                     probe_reflection_sampler, uv, plane_index);
+
+  return reflection + vec4<f32>(uv, 1.0f, 1.0f);
+  //  return vec4<f32>(fract(uv), 0.0f, 1.0f);
+  //   return vec4<f32>(abs(plane.bitangent), 1.0f);
+  //     return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
 }

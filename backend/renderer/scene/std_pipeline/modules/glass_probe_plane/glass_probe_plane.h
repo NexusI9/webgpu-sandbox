@@ -5,7 +5,7 @@
 #include "../glass/glass.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
-#include "../runtime/probe/reflection/grid.h"
+#include "../runtime/probe/reflection/plane.h"
 #include "../runtime/viewport/viewport.h"
 
 #include <webgpu/webgpu.h>
@@ -34,7 +34,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                         .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = false,
                         .minBindingSize =
-                            sizeof(ProbeReflectionUniform) * SSBO_CAPACITY,
+                            sizeof(ProbeReflectionPlaneUniform) * SSBO_CAPACITY,
                     },
             },
             {

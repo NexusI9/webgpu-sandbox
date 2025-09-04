@@ -3,8 +3,6 @@
 
 #include "./core.h"
 
-void scene_camera_draw_callback(void *);
-
 void scene_set_draw_mode(Scene *, const SceneRendererDrawMode);
 
 void scene_update_shadow_map(Scene *, const LightType);

@@ -1,4 +1,5 @@
 #include "plane.h"
+#include "core.h"
 #include "webgpu/webgpu.h"
 
 DynamicListStatus
@@ -67,8 +68,11 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *list) {
   return dyli_free((void *)list->entries, &list->capacity, &list->length);
 }
 
-void probe_reflection_plane_list_draw(ProbeReflectionPlaneList *list,
-                                      ProbeReflectionListDebug *debug) {
+void probe_reflection_plane_list_draw_callback(void *data) {
+
+  // temp
+  ProbeReflectionListDebug *debug = NULL;
+  ProbeReflectionPlaneList *list = (ProbeReflectionPlaneList *)data;
 
   // then update probe list texture cube array based on each probes views
   size_t layer = 0;
@@ -79,60 +83,55 @@ void probe_reflection_plane_list_draw(ProbeReflectionPlaneList *list,
 
       ProbeReflectionPlane *probe = &list->entries[i];
 
-      TIMER("", {
-        VERBOSE_PROCESS("Rendering Probe Reflection Plane %lu/%lu", i + 1,
-                        list->length);
+      Projection *views = &probe->views;
 
-        Projection *views = &probe->views;
+      for (uint8_t k = 0; k < views->length; k++) {
 
-        for (uint8_t k = 0; k < views->length; k++) {
+        // define target layer
+        WGPUTextureView target_color = wgpuTextureCreateView(
+            list->pass.color.texture,
+            &(WGPUTextureViewDescriptor){
+                .label = "Probe Reflection Plane Target Color View",
+                .arrayLayerCount = 1,
+                .baseArrayLayer = layer,
+                .dimension = WGPUTextureViewDimension_2D,
+                .baseMipLevel = 0,
+                .mipLevelCount = 1,
+            });
 
-          // define target layer
-          WGPUTextureView target_color = wgpuTextureCreateView(
-              list->pass.color.texture,
-              &(WGPUTextureViewDescriptor){
-                  .label = "Probe Reflection Plane Target Color View",
-                  .arrayLayerCount = 1,
-                  .baseArrayLayer = layer,
-                  .dimension = WGPUTextureViewDimension_2D,
-                  .baseMipLevel = 0,
-                  .mipLevelCount = 1,
-              });
+        WGPUTextureView target_depth = wgpuTextureCreateView(
+            list->pass.depth.texture,
+            &(WGPUTextureViewDescriptor){
+                .label = "Probe Reflection Plane Target Depth View",
+                .arrayLayerCount = 1,
+                .baseArrayLayer = layer,
+                .dimension = WGPUTextureViewDimension_2D,
+                .baseMipLevel = 0,
+                .mipLevelCount = 1,
+            });
 
-          WGPUTextureView target_depth = wgpuTextureCreateView(
-              list->pass.depth.texture,
-              &(WGPUTextureViewDescriptor){
-                  .label = "Probe Reflection Plane Target Depth View",
-                  .arrayLayerCount = 1,
-                  .baseArrayLayer = layer,
-                  .dimension = WGPUTextureViewDimension_2D,
-                  .baseMipLevel = 0,
-                  .mipLevelCount = 1,
-              });
+        // update each mesh views/projections matrix
+        render_pass_update_all_preprocessor_data(
+            &list->pass,
+            &(ProbeReflectionListPreprocessorData){
+                .view_offset =
+                    probe->ssbo_slot[ProbeReflectionSSBOField_View].id,
+            });
 
-          // update each mesh views/projections matrix
-          render_pass_update_all_preprocessor_data(
-              &list->pass,
-              &(ProbeReflectionListPreprocessorData){
-                  .view_offset =
-                      probe->ssbo_slot[ProbeReflectionSSBOField_View].id,
-              });
+        // draw pass
+        render_pass_command_draw(&list->pass, &(RenderPassDrawOptions){
+                                                  .color = target_color,
+                                                  .depth = target_depth,
+                                              });
 
-          // draw pass
-          render_pass_command_draw(&list->pass, &(RenderPassDrawOptions){
-                                                    .color = target_color,
-                                                    .depth = target_depth,
-                                                });
+        if (debug && layer < debug->max_views)
+          scene_debug_view_create(debug->scene_debug, target_color);
+        else
+          wgpuTextureViewRelease(target_color);
 
-          if (debug && layer < debug->max_views)
-            scene_debug_view_create(debug->scene_debug, target_color);
-          else
-            wgpuTextureViewRelease(target_color);
-
-          wgpuTextureViewRelease(target_depth);
-          layer++;
-        }
-      });
+        wgpuTextureViewRelease(target_depth);
+        layer++;
+      }
     }
   }
   render_pass_command_end(&list->pass);
@@ -144,9 +143,17 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
   // Define init attribute
   glm_vec3_copy(desc->position, probe->position);
   glm_vec3_copy(desc->scale, probe->scale);
-  glm_vec3_copy(probe->normal, probe->normal);
+  glm_vec3_copy(desc->normal, probe->normal);
+
+  vec3_tangent(probe->normal, probe->tangent);
+  vec3_bitangent(probe->normal, probe->tangent, probe->bitangent);
+
   probe->near = desc->near;
   probe->far = desc->far;
+  probe->distance = desc->distance;
+  probe->camera = desc->camera;
+  probe->viewport = desc->viewport;
+  probe->signed_distance = glm_dot(probe->normal, probe->position);
 
   // Allocate init shader attribute (uniform/ view)
   ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_List],
@@ -170,15 +177,21 @@ void probe_reflection_plane_update_uniform(ProbeReflectionPlane *probe) {
   glm_vec3_copy(probe->position, uniform->position);
   glm_vec3_copy(probe->scale, uniform->scale);
   glm_vec3_copy(probe->normal, uniform->normal);
+  glm_vec3_copy(probe->tangent, uniform->tangent);
+  glm_vec3_copy(probe->bitangent, uniform->bitangent);
+
   uniform->near = probe->near;
   uniform->far = probe->far;
+  uniform->distance = probe->distance;
+  uniform->signed_distance = probe->signed_distance;
 }
 
 void probe_reflection_plane_update_view(ProbeReflectionPlane *probe) {
   // update light projection attribute
-  // projection_mirror(&prove->views)
+  projection_mirror(&probe->views, probe->normal, probe->signed_distance,
+                    probe->camera, probe->viewport);
 
   // transfert attribute to SSBO slot
-  ssbo_slot_set_from_projection(probe->ssbo_slot, &probe->views,
-                                ProbeReflectionSSBOField_View);
+  projection_update_ssbo_slot(probe->ssbo_slot, &probe->views,
+                              ProbeReflectionSSBOField_View);
 }

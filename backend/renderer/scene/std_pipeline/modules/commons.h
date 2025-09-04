@@ -4,6 +4,7 @@
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
+#include "../utils/projection.h"
 
 #include "webgpu/webgpu.h"
 

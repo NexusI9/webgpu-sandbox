@@ -35,6 +35,7 @@ typedef struct Scene Scene;
  */
 
 
+#define SCENE_EDITOR_OBJECT_TARGET_UNDEFINED UINT32_MAX
 
 typedef struct SceneEditorObject SceneEditorObject;
 

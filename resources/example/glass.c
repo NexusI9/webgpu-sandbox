@@ -115,14 +115,18 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
 
 void example_glass_probe_plane(Scene *scene, bool debug) {
 
+  const float scale = 20.0f;
+
   SceneEditorObject *plane_probe = scene_add_probe_reflection_plane(
       scene, &(ProbeReflectionPlaneDescriptor){
                  .far = 100.0f,
                  .near = 0.1f,
                  .normal = {0.0f, 1.0f, 0.0f},
-                 .scale = {12.0f, 12.0f, 12.0f},
+                 .scale = {scale, scale, scale},
+                 .distance = 3.0f,
+                 .camera = scene->active_camera,
+                 .viewport = &scene->viewport,
              });
-
 
   Mesh *mesh = scene_new_mesh(scene);
   Primitive prim = primitive_plane();
@@ -145,7 +149,7 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
 
   mesh_set_position(mesh, (vec3){0.0f, 0.2f, 0.0f});
   mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});
-  mesh_set_scale(mesh, (vec3){10.0f, 10.0f, 10.0f});
+  mesh_set_scale(mesh, (vec3){scale, scale, scale});
 
   scene_add_mesh(scene, mesh, NULL);
 
@@ -163,7 +167,7 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
   // link probe lists (position, radius)
   shader_update_uniform_buffer(
       mesh_shader(mesh, MeshShader_Texture), 1, 1,
-      ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbeGridReflection),
+      ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbePlaneReflection),
       0, ShaderBufferLifetime_Release);
 
   // link UBO
@@ -172,16 +176,8 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                                ShaderBufferLifetime_Release);
 
   // link probe color texture
-  // shader_update_texture_view(
-  //    mesh_shader(mesh, MeshShader_Texture), 1, 3,
-  //    scene->probes_reflection.pass.color.attachment.view,
-  //    WGPUTextureFormat_BGRA8Unorm);
-
-  ProbeReflectionListDebug debug_options = {
-      .scene_debug = &scene->debug,
-      .max_views = 4,
-  };
-
-  // probe_reflection_grid_list_draw(&scene->probes_reflection,
-  //                                 debug ? &debug_options : NULL);
+  shader_update_texture_view(
+      mesh_shader(mesh, MeshShader_Texture), 1, 3,
+      scene->planes_reflection.pass.color.attachment.view,
+      WGPUTextureFormat_BGRA8Unorm);
 }

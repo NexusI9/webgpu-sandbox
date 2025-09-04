@@ -46,7 +46,7 @@ void probe_reflection_update_view(ProbeReflection *probe) {
   projection_point(&probe->views, probe->position, probe->near, probe->far);
 
   // transfert attribute to SSBO slot
-  ssbo_slot_set_from_projection(probe->ssbo_slot, &probe->views,
+  projection_update_ssbo_slot(probe->ssbo_slot, &probe->views,
                                 ProbeReflectionSSBOField_View);
 }
 

@@ -113,7 +113,7 @@ probe_reflection_list_create_core(const ProbeReflectionCreateCore *desc) {
                            .swapchain = NULL,
                            .color =
                                &(RenderPassColorAttachment){
-                                   .clear_value = {0.3f, 0.3f, 0.5f, 1.0f},
+                                   .clear_value = {0},
                                    .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
                                    .load_op = WGPULoadOp_Clear,
                                    .store_op = WGPUStoreOp_Store,

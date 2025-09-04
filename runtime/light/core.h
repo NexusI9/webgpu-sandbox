@@ -176,7 +176,7 @@ static inline void light_point_projection_update(PointLight *light) {
   projection_point(&light->views, light->position, light->near, light->far);
 
   // transfert attribute to SSBO slot
-  ssbo_slot_set_from_projection(light->ssbo_slot, &light->views,
+  projection_update_ssbo_slot(light->ssbo_slot, &light->views,
                                 LightSSBOSlot_View);
 }
 
@@ -185,7 +185,7 @@ static inline void light_spot_projection_update(SpotLight *light) {
   projection_spot(&light->views, light->position, light->target, light->angle);
 
   // transfert attribute to SSBO slot
-  ssbo_slot_set_from_projection(light->ssbo_slot, &light->views,
+  projection_update_ssbo_slot(light->ssbo_slot, &light->views,
                                 LightSSBOSlot_View);
 }
 
@@ -194,7 +194,7 @@ static inline void light_sun_projection_update(SunLight *light) {
   projection_sun(&light->views, light->position, light->size);
 
   // transfert attribute to SSBO slot
-  ssbo_slot_set_from_projection(light->ssbo_slot, &light->views,
+  projection_update_ssbo_slot(light->ssbo_slot, &light->views,
                                 LightSSBOSlot_View);
 }
 

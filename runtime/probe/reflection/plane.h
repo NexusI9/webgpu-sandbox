@@ -10,11 +10,17 @@
 typedef struct {
   vec3 position;
   vec3 normal;
+  float signed_distance;
   vec3 scale;
+  vec3 tangent;
+  vec3 bitangent;
   float near;
   float far;
+  float distance;
   SSBOSlot ssbo_slot[PROBE_REFLECTION_SSBO_SLOT_COUNT];
   Projection views;
+  Camera const *camera;
+  Viewport const *viewport;
 } ProbeReflectionPlane;
 
 typedef struct {
@@ -23,7 +29,11 @@ typedef struct {
   vec3 normal;
   float far;
   vec3 scale;
-  float _pad3[53];
+  float distance;
+  vec3 tangent;
+  float signed_distance;
+  vec3 bitangent;
+  float _pad[45];
 } __attribute__((aligned(16))) ProbeReflectionPlaneUniform;
 
 typedef struct {
@@ -39,6 +49,9 @@ typedef struct {
   vec3 scale;
   vec3 normal;
   vec3 position;
+  float distance;
+  Camera const *camera;
+  Viewport const *viewport;
 } ProbeReflectionPlaneDescriptor;
 
 /* === Plane List === */
@@ -58,8 +71,7 @@ DynamicListStatus probe_reflection_plane_list_remove(ProbeReflectionPlaneList *,
 DynamicListStatus
 probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *);
 
-void probe_reflection_plane_list_draw(ProbeReflectionPlaneList *,
-                                      ProbeReflectionListDebug *);
+void probe_reflection_plane_list_draw_callback(void *);
 /* === Plane === */
 void probe_reflection_plane_create(ProbeReflectionPlane *,
                                    ProbeReflectionPlaneDescriptor *);
@@ -67,4 +79,5 @@ void probe_reflection_plane_create(ProbeReflectionPlane *,
 void probe_reflection_plane_update_uniform(ProbeReflectionPlane *);
 
 void probe_reflection_plane_update_view(ProbeReflectionPlane *);
+
 #endif

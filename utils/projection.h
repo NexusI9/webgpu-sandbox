@@ -1,6 +1,7 @@
 #ifndef _UTILS_VIEW_H_
 #define _UTILS_VIEW_H_
 
+#include "../runtime/camera/camera.h"
 #include <cglm/cglm.h>
 
 #define PROJECTION_VIEW_COUNT 6
@@ -19,8 +20,33 @@ typedef struct {
 } Projection;
 
 // projections/view computing
-void projection_point(Projection *, vec3, float, float);
-void projection_spot(Projection *, vec3, vec3, float);
-void projection_sun(Projection *, vec3, float);
+void projection_mirror(Projection *, const vec3, const float, const Camera *,
+                       const Viewport *);
+void projection_point(Projection *, const vec3, const float, const float);
+void projection_spot(Projection *, const vec3, const vec3, const float);
+void projection_sun(Projection *, const vec3, const float);
+
+/**
+   Utils function that updates the slot according on the given projection.
+   Since projections often work with an offset system, they requires multiple
+   slots (especially point lights). As a result we also need to pass a field_id
+   which represent the index of the starting slot.
+
+   Using this function assumes that the slot uniform is of type
+   ProjectionUniform.
+
+   Function primarily used for lights and probes since they heavily rely on
+   projections.
+ */
+static inline void projection_update_ssbo_slot(SSBOSlot *slot,
+                                               Projection *views,
+                                               size_t field_id) {
+  for (uint8_t i = 0; i < views->length; i++) {
+    ProjectionUniform uniform;
+    glm_mat4_copy(views->combined[i], uniform.view);
+    ssbo_slot_set_uniform(&slot[field_id + i], (void *)&uniform,
+                          sizeof(ProjectionUniform));
+  }
+}
 
 #endif

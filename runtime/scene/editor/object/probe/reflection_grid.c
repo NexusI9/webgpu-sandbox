@@ -44,7 +44,7 @@ void seo_probe_reflection_grid_create(SceneEditorObject *seo,
   };
 
   vec3 padded_size;
-  glm_vec3_scale(grid->scale, 1.2f, padded_size);
+  glm_vec3_scale(grid->scale, 2.2f, padded_size);
   seo_create_wireframe(bound_cube->mesh, &wireframe_desc);
 
   mesh_set_scale(bound_cube->mesh, padded_size);
@@ -75,7 +75,7 @@ void seo_probe_reflection_grid_create(SceneEditorObject *seo,
 
     seo_create_wireframe(probe->mesh, &wireframe_desc);
 
-    mesh_set_scale(probe->mesh, (vec3){0.3f, 0.3f, 0.3f});
+    mesh_set_scale(probe->mesh, (vec3){0.6f, 0.6f, 0.6f});
     mesh_set_position(probe->mesh, grid->probes.entries[i].position);
 
     probe->transform_callback[GizmoMode_Position] =

@@ -173,7 +173,7 @@ void scene_renderer_add_draw_callback(SceneRenderer *renderer,
 
   // do not add if max hook reached
   if (renderer->draw.callbacks.length == SCENE_RENDERER_MAX_HOOK) {
-    VERBOSE_WARNING("Max hook reached.\n");
+    VERBOSE_WARNING("Max draw hook reached.\n");
     return;
   }
 

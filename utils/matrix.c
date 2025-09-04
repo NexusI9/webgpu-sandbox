@@ -2,13 +2,12 @@
 #include "string.h"
 #include "system.h"
 
+/**
+   Update camera view as well as forward, up and right vector.
+ */
 void matrix_lookat(UtilsMatrixLookatDescriptor *desc) {
 
-  // update camera view
-  // TODO : look like glm_..._copy is flawed
-  // Can be related to alignment issue
-  // Try with : alignas(16) mat4 view;
-  memcpy(*desc->dest_position, desc->position, sizeof(vec3));
+  glm_vec3_copy(desc->position, *desc->dest_position);
 
   vec3 *forward = desc->forward;
   vec3 *up = desc->up;

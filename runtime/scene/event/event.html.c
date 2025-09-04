@@ -65,11 +65,21 @@ void scene_event_html_commons(Scene *scene) {
   // update camera controls
   Camera *camera = scene->active_camera;
   camera_mode_controller[camera->mode](camera);
-  // ssbo_upload_entry(&scene->renderer.ssbo, SSBOType_View,
-  // &camera->ssbo_slot);
   ssbo_update_queue_insert(&scene->renderer.ssbo, SSBOType_View,
                            camera->ssbo_slot.id);
 
+  // update planar reflections probes views
+  for (size_t i = 0; i < scene->planes_reflection.length; i++) {
+    ProbeReflectionPlane *probe = &scene->planes_reflection.entries[i];
+    
+    // update CPU side
+    probe_reflection_plane_update_view(probe);
+    
+    // add to GPU update Queue
+    ssbo_update_queue_insert(
+        &scene->renderer.ssbo, SSBOType_ViewProbeReflection,
+        probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
+  }
 }
 
 void scene_event_html_update_meshes(Scene *data) {
