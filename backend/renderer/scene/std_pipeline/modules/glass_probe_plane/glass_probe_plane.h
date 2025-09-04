@@ -13,7 +13,7 @@
 static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
     // Group 1 (Reflection probes array + sampler)
     .label = "Group 1 (Reflection Probes)",
-    .entryCount = 6,
+    .entryCount = 8,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -44,8 +44,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = true,
-                        .minBindingSize =
-                            sizeof(ProjectionUniform),
+                        .minBindingSize = sizeof(ProjectionUniform),
                     },
             },
             {
@@ -70,6 +69,24 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
             },
             {
                 .binding = 5, // probe_reflection_sampler
+                .visibility = WGPUShaderStage_Fragment,
+                .sampler =
+                    (WGPUSamplerBindingLayout){
+                        .type = WGPUSamplerBindingType_Filtering,
+                    },
+            },
+            {
+                .binding = 6, // env_map
+                .visibility = WGPUShaderStage_Fragment,
+                .texture =
+                    (WGPUTextureBindingLayout){
+                        .sampleType = WGPUTextureSampleType_Float,
+                        .viewDimension = WGPUTextureViewDimension_Cube,
+                        .multisampled = false,
+                    },
+            },
+            {
+                .binding = 7, // env_sampler
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){

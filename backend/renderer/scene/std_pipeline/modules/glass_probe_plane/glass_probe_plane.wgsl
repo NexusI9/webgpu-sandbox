@@ -83,6 +83,8 @@ struct UBO {
 @group(1) @binding(3) var<uniform> ubo : UBO;
 @group(1) @binding(4) var probe_reflection_maps : texture_2d_array<f32>;
 @group(1) @binding(5) var probe_reflection_sampler : sampler;
+@group(1) @binding(6) var skybox_map : texture_cube<f32>;
+@group(1) @binding(7) var skybox_sampler : sampler;
 
 //
 //
@@ -172,25 +174,11 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
   return 0.5 + 0.5 * (noise_value / 0.7);
 }
 
-fn ray_intersect_plane(ray_origin : vec3<f32>, ray_dir : vec3<f32>,
-                       plane_normal : vec3<f32>, plane_signed_distance : f32)
-    -> vec3<f32> {
-
-  let denom = dot(plane_normal, ray_dir);
-
-  if (abs(denom) < 1e-6) {
-    return ray_origin;
-  }
-
-  let t = (plane_signed_distance - dot(plane_normal, ray_origin)) / denom;
-  return ray_origin + t * ray_dir;
-}
-
 fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
     -> vec2<f32> {
   let clip = r_view * vec4<f32>(frag_pos, 1.0);
   let ndc = clip.xyz / clip.w;            // [-1, 1] space
-  let uv = ndc.xy * 0.5 + vec2<f32>(0.5); // [0, 1] space
+  let uv = ndc.xy * vec2<f32>(0.5f, -0.5f) + vec2<f32>(0.5f); // [0, 1] space
   return uv;
 }
 
@@ -215,16 +203,7 @@ fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
                      @location(3) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
   let camera = uCamera[0];
-  // var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
-  //
-  //  if ((camera.mode & 2u) != 0u) {
-  //    // fix position to target (lookat) if camera is Orbit mode
-  //    offset.x = camera.lookat.x;
-  //    offset.y = camera.lookat.z;
-  //  }
-
   let plane_index = 0u;
-
   let plane = uPlaneReflectionList[plane_index];
 
   let ro = camera.position.xyz;
@@ -232,23 +211,13 @@ fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
 
   let R = reflect(viewDir, normalize(plane.normal));
 
-  let I = ray_intersect_plane(ro, R, plane.normal, plane.signed_distance);
-
-  // let local = I - plane.position;
   let local = vFrag - plane.position;
 
-  let u = dot(local, plane.tangent);
-  let v = dot(local, plane.bitangent);
-  var uv = (vec2<f32>(u, v) / plane.scale.xz) * 0.5f + 0.5f;
-
-   let reflUV = compute_reflection_uv(vFrag, uProjections[0].view);
+  let reflUV = compute_reflection_uv(vFrag, uProjections[0].view);
 
   let reflection : vec4<f32> = textureSample(probe_reflection_maps,
-                                             probe_reflection_sampler,
-                                             reflUV, plane_index);
- 
-   return reflection + vec4<f32>(uv, 1.0f, 1.0f);
-   //return vec4<f32>(fract(uv), 0.0f, 1.0f);
-   //return vec4<f32>(abs(plane.bitangent), 1.0f);
-   //return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
+                                             probe_reflection_sampler, reflUV,
+                                             plane_index);
+
+  return reflection;
 }

@@ -13,7 +13,7 @@
 static const WGPUBindGroupLayoutDescriptor glass_probe_grid_bind_group = {
     // Group 1 (Reflection probes array + sampler)
     .label = "Group 1 (Reflection Probes)",
-    .entryCount = 5,
+    .entryCount = 7,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -65,13 +65,32 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_grid_bind_group = {
                         .type = WGPUSamplerBindingType_Filtering,
                     },
             },
+            {
+                .binding = 5, // env_map
+                .visibility = WGPUShaderStage_Fragment,
+                .texture =
+                    (WGPUTextureBindingLayout){
+                        .sampleType = WGPUTextureSampleType_Float,
+                        .viewDimension = WGPUTextureViewDimension_Cube,
+                        .multisampled = false,
+                    },
+            },
+            {
+                .binding = 6, // env_sampler
+                .visibility = WGPUShaderStage_Fragment,
+                .sampler =
+                    (WGPUSamplerBindingLayout){
+                        .type = WGPUSamplerBindingType_Filtering,
+                    },
+            },
         },
 };
 
 static const ShaderPipelineStateObject layout_glass_probe_grid = {
     .label = "Pipeline Bind Groups - Glass Probe Grid",
-    .shader_path = "./backend/renderer/scene/std_pipeline/modules/glass_probe_grid/"
-                   "glass_probe_grid.wgsl",
+    .shader_path =
+        "./backend/renderer/scene/std_pipeline/modules/glass_probe_grid/"
+        "glass_probe_grid.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &glass_probe_grid_bind_group},
     .bindings = {.mvp = &mvp_binding},

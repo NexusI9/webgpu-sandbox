@@ -68,6 +68,8 @@ struct UBO {
 @group(1) @binding(2) var<uniform> ubo : UBO;
 @group(1) @binding(3) var probe_reflection_maps : texture_cube_array<f32>;
 @group(1) @binding(4) var probe_reflection_sampler : sampler;
+@group(1) @binding(5) var skybox_map : texture_cube<f32>;
+@group(1) @binding(6) var skybox_sampler : sampler;
 
 //
 //

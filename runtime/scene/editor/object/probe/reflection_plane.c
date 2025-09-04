@@ -146,7 +146,8 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
 
 void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
 
-  mesh_set_position(desc->mesh->mesh, desc->offset);
+  for (size_t i = 0; i < desc->seo->meshes.length; i++)
+    mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
 
   ProbeReflectionPlane *probe = (ProbeReflectionPlane *)desc->mesh->target;
   glm_vec3_copy(desc->mesh->mesh->position, probe->position);
