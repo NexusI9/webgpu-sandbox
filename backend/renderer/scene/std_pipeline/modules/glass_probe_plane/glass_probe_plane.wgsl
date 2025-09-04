@@ -52,7 +52,9 @@ struct PlaneReflection {
                                                                 signed_distance
       : f32,
         bitangent : vec3<f32>,
-                    _pad : array<f32, 45>,
+                    _pad : f32,
+                           view : mat4x4<f32>,
+                                  _pad1 : array<f32, 28>,
 }
 
 // === UBO ===
@@ -181,6 +183,14 @@ fn ray_intersect_plane(ray_origin : vec3<f32>, ray_dir : vec3<f32>,
   return ray_origin + t * ray_dir;
 }
 
+fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
+    -> vec2<f32> {
+  let clip = r_view * vec4<f32>(frag_pos, 1.0);
+  let ndc = clip.xyz / clip.w;            // [-1, 1] space
+  let uv = ndc.xy * 0.5 + vec2<f32>(0.5); // [0, 1] space
+  return uv;
+}
+
 //
 //
 //
@@ -226,11 +236,13 @@ fn ray_intersect_plane(ray_origin : vec3<f32>, ray_dir : vec3<f32>,
 
   let u = dot(local, plane.tangent);
   let v = dot(local, plane.bitangent);
-  var uv = (vec2<f32>(u,v) / plane.scale.xz) * 0.5f + 0.5f;
+  var uv = (vec2<f32>(u, v) / plane.scale.xz) * 0.5f + 0.5f;
+
+  let reflUV = compute_reflection_uv(vFrag, plane.view);
 
   let reflection : vec4<f32> =
                        textureSample(probe_reflection_maps,
-                                     probe_reflection_sampler, uv, plane_index);
+                                     probe_reflection_sampler, reflUV, plane_index);
 
   return reflection + vec4<f32>(uv, 1.0f, 1.0f);
   //  return vec4<f32>(fract(uv), 0.0f, 1.0f);

@@ -156,15 +156,15 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
   probe->signed_distance = glm_dot(probe->normal, probe->position);
 
   // Allocate init shader attribute (uniform/ view)
-  ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_List],
-                       sizeof(ProbeReflectionPlaneUniform));
-
-  probe_reflection_plane_update_uniform(probe);
-
   ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_View],
                        sizeof(ProjectionUniform));
 
   probe_reflection_plane_update_view(probe);
+
+  ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_List],
+                       sizeof(ProbeReflectionPlaneUniform));
+
+  probe_reflection_plane_update_uniform(probe);
 }
 
 void probe_reflection_plane_update_uniform(ProbeReflectionPlane *probe) {
@@ -179,6 +179,8 @@ void probe_reflection_plane_update_uniform(ProbeReflectionPlane *probe) {
   glm_vec3_copy(probe->normal, uniform->normal);
   glm_vec3_copy(probe->tangent, uniform->tangent);
   glm_vec3_copy(probe->bitangent, uniform->bitangent);
+
+  glm_mat4_copy(probe->views.combined[0], uniform->view);
 
   uniform->near = probe->near;
   uniform->far = probe->far;

@@ -139,7 +139,7 @@ void projection_mirror(Projection *projection, const vec3 n, const float d,
 
   // copy initial viewport
   glm_mat4_copy((float(*)[])viewport->projection, projection->projection);
-  
+
   // create combined view
   glm_mat4_mul(projection->projection, projection->views[0],
                projection->combined[0]);
