@@ -15,91 +15,78 @@ static inline void scene_camera_init(Scene *);
 static inline void scene_probe_reflection_init(Scene *,
                                                const PipelineMultisampleCount);
 
+static inline void scene_mesh_list_init(Scene *);
+
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   TIMER("Scene Load", {
     scene->id = reg_register((void *)scene, RegEntryType_Scene);
 
-    /*
+    {
+      /*  ===== SCENE RENDER =====   */
+      scene_renderer_init(&scene->renderer, desc->renderer);
+      scene_environment_init(&scene->environment);
+      scene_draw_layouts_init(scene, desc->renderer->multisampling_count);
+    }
 
-      ===== SCENE RENDER =====
+    {
+      /*  ===== LISTS ===== */
+      scene_mesh_list_init(scene);
+      scene_layer_init(&scene->layers);
+      scene_light_list_init(scene);
+      scene_probe_reflection_init(scene, desc->renderer->multisampling_count);
+    }
 
-     */
+    {
+      /*  ===== CAMERA & VIEWPORT =====  */
+      scene_camera_init(scene);
 
-    // set renderer
-    scene_renderer_create(&scene->renderer, desc->renderer);
+      viewport_create(&scene->viewport,
+                      &(ViewportCreateDescriptor){
+                          .fov = desc->viewport->fov,
+                          .near_clip = desc->viewport->near_clip,
+                          .far_clip = desc->viewport->far_clip,
+                          .aspect = desc->viewport->aspect,
+                          .width = scene_renderer_width(&scene->renderer),
+                          .height = scene_renderer_height(&scene->renderer),
+                      });
 
-    // init draw callbacks configuration (kinda sketchy to pass the renderer
-    // desc attribute here)
-    scene_init_draw_layouts(scene, desc->renderer->multisampling_count);
+      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Projection,
+                      &scene->viewport.ssbo_slot);
+    }
 
-    /*
+    {
+      /*  ===== EVENT =====  */
+      scene_event_html(scene);
+    }
 
-      ===== LISTS =====
+    {
+      /*  ===== EDITOR =====  */
+      scene_editor_init(scene); // EDITORONLY
 
-     */
-
-    // init mesh pipelines
-    for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
-      mesh_ref_list_create(scene_pipeline(scene, flag),
-                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
-
-    scene_layer_init(&scene->layers);
-
-    scene_light_list_init(scene);
-
-    mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
-
-    scene_probe_reflection_init(scene, desc->renderer->multisampling_count);
-
-    /*
-
-      ===== CAMERA & VIEWPORT =====
-
-     */
-
-    // init camera lists and set main/active camera
-    scene_camera_init(scene);
-
-    // set viewport (using renderer width/height)
-    viewport_create(&scene->viewport,
-                    &(ViewportCreateDescriptor){
-                        .fov = desc->viewport->fov,
-                        .near_clip = desc->viewport->near_clip,
-                        .far_clip = desc->viewport->far_clip,
-                        .aspect = desc->viewport->aspect,
-                        .width = scene_renderer_width(&scene->renderer),
-                        .height = scene_renderer_height(&scene->renderer),
-                    });
-
-    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Projection,
-                    &scene->viewport.ssbo_slot);
-
-    /*
-
-    ===== EVENT =====
-
-     */
-
-    scene_event_html(scene);
-
-    /*
-
-      ===== EDITOR =====
-
-     */
-    // EDITORONLY
-    scene_editor_init(scene);
-
-    scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
-                                        .camera = scene->active_camera,
-                                        .device = scene_device(scene),
-                                        .queue = scene_queue(scene),
-                                        .viewport = &scene->viewport,
-                                        .pool = &scene->meshes,
-                                        .ssbo = &scene->renderer.ssbo,
-                                    });
+      scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
+                                          .camera = scene->active_camera,
+                                          .device = scene_device(scene),
+                                          .queue = scene_queue(scene),
+                                          .viewport = &scene->viewport,
+                                          .pool = &scene->meshes,
+                                          .ssbo = &scene->renderer.ssbo,
+                                      });
+    }
   });
+}
+
+/**
+   Initialize scene mesh pool as well as pipelines
+ */
+void scene_mesh_list_init(Scene *scene) {
+
+  // init mesh pipelines
+  for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
+    mesh_ref_list_create(scene_pipeline(scene, flag),
+                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
+
+  mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 }
 
 /**
@@ -160,8 +147,7 @@ void scene_probe_reflection_init(Scene *scene,
         .shader = MeshShader_Reflection,
         .topology_callback = mesh_topology_base,
         .meshes = scene_pipeline(scene, reflection_pipelines[i]),
-        .mesh_preprocessor_callback =
-            probe_reflection_list_draw_preprocessor,
+        .mesh_preprocessor_callback = probe_reflection_list_draw_preprocessor,
     };
 
   ProbeReflectionListDescriptor reflection_config = {

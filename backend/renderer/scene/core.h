@@ -42,11 +42,6 @@ typedef struct {
   ssize_t length;
 } SceneRendererDrawCallbackList;
 
-typedef struct {
-  WGPUTexture texture;
-  WGPUTextureView cubemap;
-} SceneRendererTextureSkybox;
-
 typedef struct SceneRenderer {
 
   cclock clock;         // update clock delta on draw
@@ -73,7 +68,6 @@ typedef struct SceneRenderer {
   // cached texture shared throughout parent scene objects
   struct {
     SceneRendererTextureAO ambient_occlusion;
-    SceneRendererTextureSkybox skybox;
   } texture; // TODO Make a TextureManager
 
   struct {
@@ -88,7 +82,7 @@ typedef struct {
   SceneRenderer *renderer;
 } SceneRendererRenderDescriptor;
 
-void scene_renderer_create(SceneRenderer *,
+void scene_renderer_init(SceneRenderer *,
                            const SceneRendererCreateDescriptor *);
 
 void scene_renderer_set_draw_mode(SceneRenderer *, const SceneRendererDrawMode);

@@ -3,9 +3,9 @@
 #include "../../../include/stb/stb_image.h"
 #include "../../primitive/cube.h"
 #include "../../texture/texture.h"
+#include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
-#include "../runtime/mesh/shader/shader.h"
 
 static inline WGPUTexture prefab_skybox_texture(const WGPUDevice, const size_t);
 
@@ -139,9 +139,11 @@ void prefab_skybox_create(Scene *scene,
                           const PrefabSkyboxCreateDescriptor *desc) {
 
   // create global texture
-  WGPUTexture *skybox_texture = &scene->renderer.texture.skybox.texture;
-  WGPUTextureView *skybox_cubemap_view =
-      &scene->renderer.texture.skybox.cubemap;
+  SceneEnvironmentSkybox *scene_skybox =
+      scene_environment_skybox(&scene->environment);
+
+  WGPUTexture *skybox_texture = &scene_skybox->texture;
+  WGPUTextureView *skybox_cubemap_view = &scene_skybox->view;
 
   texture_create_cubemap_from_file(skybox_texture,
                                    &(TextureCreateCubeMapDescriptor){
@@ -162,9 +164,11 @@ void prefab_skybox_create(Scene *scene,
 void prefab_skybox_gradient_create(
     Scene *scene, const PrefabSkyboxGradientCreateDescriptor *desc) {
 
-  WGPUTexture *skybox_texture = &scene->renderer.texture.skybox.texture;
-  WGPUTextureView *skybox_cubemap_view =
-      &scene->renderer.texture.skybox.cubemap;
+  SceneEnvironmentSkybox *scene_skybox =
+      scene_environment_skybox(&scene->environment);
+
+  WGPUTexture *skybox_texture = &scene_skybox->texture;
+  WGPUTextureView *skybox_cubemap_view = &scene_skybox->view;
 
   // create global texture
   *skybox_texture =

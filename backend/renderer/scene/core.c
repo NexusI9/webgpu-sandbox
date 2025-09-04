@@ -21,7 +21,7 @@ static double scene_renderer_dpi(double);
 static inline WGPUSwapChain
 scene_renderer_create_swapchain(const SceneRenderer *);
 
-void scene_renderer_create(SceneRenderer *renderer,
+void scene_renderer_init(SceneRenderer *renderer,
                            const SceneRendererCreateDescriptor *rd) {
 
   renderer->context.name = rd->name;
@@ -68,9 +68,6 @@ void scene_renderer_create(SceneRenderer *renderer,
     scene_renderer_init_fallback_textures(scene_renderer_device(renderer),
                                           scene_renderer_queue(renderer));
   });
-
-  renderer->texture.skybox.cubemap =
-      std_texture_view(TextureViewType_FloatCube);
 
   // init standards shaders
   standard_pipelines_init(scene_renderer_device(renderer),

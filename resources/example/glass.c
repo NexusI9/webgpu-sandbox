@@ -37,9 +37,10 @@ void example_glass_box(Scene *scene) {
                                  .frost_strength = 0.4f,
                              });
 
-  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 1,
-                             scene->renderer.texture.skybox.cubemap,
-                             WGPUTextureFormat_BGRA8Unorm);
+  shader_update_texture_view(
+      mesh_shader(mesh, MeshShader_Texture), 1, 1,
+      scene_environment_skybox(&scene->environment)->view,
+      WGPUTextureFormat_BGRA8Unorm);
 }
 
 void example_glass_probe_grid(Scene *scene, bool debug) {
@@ -104,9 +105,10 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
       scene->probes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
 
-  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 5,
-                             scene->renderer.texture.skybox.cubemap,
-                             WGPUTextureFormat_BGRA8Unorm);
+  shader_update_texture_view(
+      mesh_shader(mesh, MeshShader_Texture), 1, 5,
+      scene_environment_skybox(&scene->environment)->view,
+      WGPUTextureFormat_BGRA8Unorm);
 
   ProbeReflectionListDebug debug_options = {
       .scene_debug = &scene->debug,
@@ -197,7 +199,8 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
       scene->planes_reflection.pass.color.attachment.view,
       WGPUTextureFormat_BGRA8Unorm);
 
-  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 6,
-                             scene->renderer.texture.skybox.cubemap,
-                             WGPUTextureFormat_BGRA8Unorm);
+  shader_update_texture_view(
+      mesh_shader(mesh, MeshShader_Texture), 1, 6,
+      scene_environment_skybox(&scene->environment)->view,
+      WGPUTextureFormat_BGRA8Unorm);
 }

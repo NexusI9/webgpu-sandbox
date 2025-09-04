@@ -18,7 +18,7 @@
                L the mesh list with this shader and this topology.
  */
 static inline void
-scene_init_draw_layouts(Scene *scene,
+scene_draw_layouts_init(Scene *scene,
                         const PipelineMultisampleCount multisample) {
 
   // Common gizmo draw list configuration
