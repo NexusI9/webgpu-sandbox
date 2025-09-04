@@ -81,8 +81,10 @@ struct UBO {
     : array<PlaneReflection>;
 @group(1) @binding(2) var<storage, read> uProjections : array<Projection>;
 @group(1) @binding(3) var<uniform> ubo : UBO;
+
 @group(1) @binding(4) var probe_reflection_maps : texture_2d_array<f32>;
 @group(1) @binding(5) var probe_reflection_sampler : sampler;
+
 @group(1) @binding(6) var skybox_map : texture_cube<f32>;
 @group(1) @binding(7) var skybox_sampler : sampler;
 
@@ -177,7 +179,7 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
 fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
     -> vec2<f32> {
   let clip = r_view * vec4<f32>(frag_pos, 1.0);
-  let ndc = clip.xyz / clip.w;            // [-1, 1] space
+  let ndc = clip.xyz / clip.w;                                // [-1, 1] space
   let uv = ndc.xy * vec2<f32>(0.5f, -0.5f) + vec2<f32>(0.5f); // [0, 1] space
   return uv;
 }
@@ -215,9 +217,19 @@ fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
 
   let reflUV = compute_reflection_uv(vFrag, uProjections[0].view);
 
+  // projection onto tangent/bitangent
+  // let u = dot(local, plane.tangent);
+  // let v = dot(local, plane.bitangent);
+  // normalize by plane size, shift into [0,1]
+  // let uv = vec2<f32>(u / plane.scale.x + 0.5, v / plane.scale.z + 0.5);
+
   let reflection : vec4<f32> = textureSample(probe_reflection_maps,
                                              probe_reflection_sampler, reflUV,
                                              plane_index);
 
-  return reflection;
+  //if (uProjections[2].view[0][0] < 0.0f) {
+  //  return vec4<f32>(0.0f, 1.0f, 0.0f, 1.0f);
+  //}
+  //return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
+   return reflection;
 }

@@ -1,6 +1,5 @@
 #include "grid.h"
 #include "../backend/renderer/scene/std_texture/std_texture.h"
-#include "../runtime/mesh/shader/shader.h"
 #include "core.h"
 #include "probe.h"
 #include "webgpu/webgpu.h"
@@ -138,17 +137,6 @@ probe_reflection_grid_list_remove(ProbeReflectionGridList *list,
 DynamicListStatus
 probe_reflection_grid_list_destroy(ProbeReflectionGridList *list) {
   return dyli_free((void *)list->entries, &list->capacity, &list->length);
-}
-
-void probe_reflection_grid_list_draw_preprocessor(const RenderPass *pass,
-                                                  Mesh *mesh, void *data) {
-
-  ProbeReflectionListPreprocessorData *cast_data =
-      (ProbeReflectionListPreprocessorData *)data;
-
-  Shader *shader = mesh_shader(mesh, MeshShader_Reflection);
-
-  shader_update_bind_group_offset(shader, 0, 0, cast_data->view_offset);
 }
 
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,

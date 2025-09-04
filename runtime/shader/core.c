@@ -82,13 +82,25 @@ void shader_destroy(Shader *shader) {
 /**
    Update method called as such: scene update => mesh update => shader update
  */
-static int t = 0;
+
+
+#ifdef VERBOSE_SHADER_BIND_GROUP_OFFSET
+static int bg_offset_count = 0;
+static const inst bg_print_count = 800;
+#endif
 void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
 
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(render_pass, shader->pipeline->handle);
 
   ShaderBindGroupList *dynamic_list = &shader->bind_groups;
+
+#ifdef VERBOSE_SHADER_BIND_GROUP_OFFSET
+  {
+    if (bg_offset_count++ < bg_print_count)
+      printf("shader:%s\n", shader->name);
+  }
+#endif
 
   for (int i = 0; i < dynamic_list->length; i++) {
 
@@ -102,6 +114,16 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
                                       bind_group->offset.count,
                                       bind_group->offset.entries);
 
+#ifdef VERBOSE_SHADER_BIND_GROUP_OFFSET
+    {
+      if (bg_offset_count < bg_print_count) {
+        printf("[%d | %d]", i, bind_group->offset.count);
+        for (uint8_t j = 0; j < SHADER_MAX_OFFSET_CAPACITY; j++)
+          printf(" %u |", bind_group->offset.entries[j]);
+        printf("\n");
+      }
+    }
+#endif
   }
 }
 

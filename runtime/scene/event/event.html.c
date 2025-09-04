@@ -71,10 +71,10 @@ void scene_event_html_commons(Scene *scene) {
   // update planar reflections probes views
   for (size_t i = 0; i < scene->planes_reflection.length; i++) {
     ProbeReflectionPlane *probe = &scene->planes_reflection.entries[i];
-    
+
     // update CPU side
     probe_reflection_plane_update_view(probe);
-    
+
     // add to GPU update Queue
     ssbo_update_queue_insert(
         &scene->renderer.ssbo, SSBOType_ViewProjection,

@@ -327,8 +327,6 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
       &material->occlusion_texture,
   };
 
-  ShaderBindGroupSamplerEntry samplers[texture_length];
-
   uint8_t binding = 0;
 
   // get the cached fallback texture view from renderer

@@ -38,13 +38,14 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 2, // uProbeReflectionList
+                .binding = 2,
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_ReadOnlyStorage,
                         .hasDynamicOffset = true,
-                        .minBindingSize = sizeof(ProjectionUniform),
+                        .minBindingSize =
+                            sizeof(ProjectionUniform),
                     },
             },
             {

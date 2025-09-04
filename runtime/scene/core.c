@@ -7,7 +7,6 @@
 #include "event/event.html.h"
 
 #include "../utils/system.h"
-#include <stdint.h>
 
 // initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
@@ -162,7 +161,7 @@ void scene_probe_reflection_init(Scene *scene,
         .topology_callback = mesh_topology_base,
         .meshes = scene_pipeline(scene, reflection_pipelines[i]),
         .mesh_preprocessor_callback =
-            probe_reflection_grid_list_draw_preprocessor,
+            probe_reflection_list_draw_preprocessor,
     };
 
   ProbeReflectionListDescriptor reflection_config = {

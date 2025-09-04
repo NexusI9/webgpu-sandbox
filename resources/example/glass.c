@@ -170,6 +170,10 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
       ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbePlaneReflection),
       0, ShaderBufferLifetime_Release);
 
+  const size_t id =
+      scene->planes_reflection.entries->ssbo_slot[ProbeReflectionSSBOField_View]
+          .id;
+
   shader_update_uniform_buffer(
       mesh_shader(mesh, MeshShader_Texture), 1, 2,
       ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ViewProjection), 0,
@@ -177,19 +181,13 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
 
   // DEBUG
   {
-    const size_t id = scene->planes_reflection.entries
-                          ->ssbo_slot[ProbeReflectionSSBOField_View]
-                          .id;
     printf("view id: %lu\n", id);
-
     mat4 *view = ssbo_entry(&scene->renderer.ssbo, SSBOType_ViewProjection, id);
     print_mat4(*view);
   }
 
-  shader_update_bind_group_offset(
-      mesh_shader(mesh, MeshShader_Texture), 1, 2,
-      scene->planes_reflection.entries->ssbo_slot[ProbeReflectionSSBOField_View]
-          .id);
+  shader_update_bind_group_offset(mesh_shader(mesh, MeshShader_Texture), 1, 2,
+                                  id);
 
   // link UBO
   shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 3,

@@ -30,29 +30,41 @@ void shader_add_uniform(Shader *shader,
         - Store buffer reference into Uniform object (CPU side)
       */
 
-    ShaderBindGroup *current_bind_group =
+    ShaderBindGroup *bind_group =
         shader_get_bind_group(shader, bd->group_index);
 
-    current_bind_group->visibility = bd->visibility | WGPUShaderStage_Vertex;
+    bind_group->visibility = bd->visibility | WGPUShaderStage_Vertex;
 
     // combine argument entries with uniform buffer
     for (int i = 0; i < bd->entry_count; i++) {
 
-      ShaderBindGroupUniformEntry *current_entry = &bd->entries[i];
+      ShaderBindGroupUniformEntryDescriptor *src = &bd->entries[i];
+      ShaderBindGroupUniformEntry *dest =
+          &bind_group->uniforms.entries[bind_group->uniforms.length++];
+
+      // copy common attributes
+      dest->binding = src->binding;
+      dest->size = src->size;
+      dest->offset = src->offset;
+      dest->data = src->data;
+      dest->usage = src->usage;
+      dest->update = src->update;
 
       // assign buffer to entry
-      buffer_create(&bd->entries[i].buffer,
-                    &(CreateBufferDescriptor){
-                        .label = "Initial Shader Buffer",
-                        .queue = shader->queue,
-                        .device = shader->device,
-                        .data = (void *)current_entry->data,
-                        .size = current_entry->size,
-                        .usage = current_entry->usage,
-                        .mappedAtCreation = false,
-                    });
+      buffer_create(&dest->buffer, &(CreateBufferDescriptor){
+                                       .label = "Initial Shader Buffer",
+                                       .queue = shader->queue,
+                                       .device = shader->device,
+                                       .data = (void *)dest->data,
+                                       .size = dest->size,
+                                       .usage = dest->usage,
+                                       .mappedAtCreation = false,
+                                   });
 
       /*
+
+        === CALLBACK HANDLE ===
+
         Need to dynamically allocate the uniform if it has a callback function,
         cause when we use its pointer during the shader draw process, it
         prevents conflicts if two uniform data have the same address.
@@ -68,16 +80,53 @@ void shader_add_uniform(Shader *shader,
         [mesh_2] uCamera => 0x48fd23
 
       */
-      if (current_entry->update.callback) {
-        void *temp_data = current_entry->data;
-        current_entry->data = malloc(current_entry->size);
-        memcpy(current_entry->data, temp_data, current_entry->size);
+      if (dest->update.callback) {
+        void *temp_data = dest->data;
+        dest->data = malloc(dest->size);
+        memcpy(dest->data, temp_data, dest->size);
       }
 
-      // transfer entry to shader bind group list
-      // current_bind_group->uniforms.length++
-      current_bind_group->uniforms
-          .entries[current_bind_group->uniforms.length++] = *current_entry;
+      /*
+        === Define dynamic offset ===
+
+        Some shader may use SSBO or UBO global buffer, such approach involve the
+        use of dynamic offsets.
+
+        Basically on draw, when the setBindGroup function is called, we provied
+        the bindgroup number of entries that use dynamic offset as well as the
+        offset list.
+
+        The tricky part is that this array and the indexes are mapped depending
+        on the uniforms that have a have the "hasDynamicOffset" set to true.
+        Meaning if you have:
+
+          uni_1 : true
+          uni_2 : false        =======>     [uni_1, uni_3]  (no uni_2)
+          uni_3 : true
+
+        So when we apply the offset, we can't simply use the inform binding as
+        index since the setBindGroup only lookup dynamic uniforms.
+
+        As a result if the uniform buffer is marked as "hasDynamicOffset" we
+        link the bindgroup offset list relative index pointer to directly update
+        it later.
+
+                   .-------- index 0 * --------.
+                   v                           |
+          uni_1 : true                         |
+          uni_2 : false        =======>     [uni_1, uni_3]
+          uni_3 : true                                |
+                   ^                                  |
+                   '-----------index 1 * -------------'
+
+       */
+
+      if (src->hasDynamicOffset &&
+          bind_group->offset.count < SHADER_MAX_OFFSET_CAPACITY) {
+
+        dest->dynamic_offset_entry =
+            &bind_group->offset.entries[bind_group->offset.count++];
+      }
     }
   }
 }
@@ -108,23 +157,35 @@ void shader_add_texture(Shader *shader,
         break;
       }
 
-      ShaderBindGroupTextureEntry *current_entry = &desc->entries[i];
+      ShaderBindGroupTextureEntryDescriptor *src = &desc->entries[i];
+      ShaderBindGroupTextureEntry *dest =
+          &current_bind_group->textures
+               .entries[current_bind_group->textures.length++];
+
+      // copy common attributes
+      dest->binding = src->binding;
+      dest->channels = src->channels;
+      dest->data = src->data;
+      dest->dimension = src->dimension;
+      dest->sample_type = src->sample_type;
+      dest->format = src->format;
+      dest->width = src->width;
+      dest->height = src->height;
+      dest->size = src->size;
+
       // generate texture + texture view from data & size
-      buffer_create_texture(&current_entry->texture_view,
+      buffer_create_texture(&dest->texture_view,
                             &(CreateTextureDescriptor){
-                                .width = current_entry->width,
-                                .height = current_entry->height,
-                                .data = current_entry->data,
-                                .size = current_entry->size,
+                                .width = dest->width,
+                                .height = dest->height,
+                                .data = dest->data,
+                                .size = dest->size,
                                 .device = shader->device,
                                 .queue = shader->queue,
-                                .format = current_entry->format,
-                                .channels = current_entry->channels,
+                                .format = dest->format,
+                                .channels = dest->channels,
                             },
                             BufferTextureMemory_Free);
-
-      current_bind_group->textures
-          .entries[current_bind_group->textures.length++] = *current_entry;
     }
   }
 }
@@ -157,7 +218,8 @@ void shader_add_texture_view(Shader *shader,
       }
 
       // map the entry to bind group
-      ShaderBindGroupTextureViewEntry *current_entry = &desc->entries[i];
+      ShaderBindGroupTextureViewEntryDescriptor *current_entry =
+          &desc->entries[i];
       current_bind_group->textures
           .entries[current_bind_group->textures.length++] =
           (ShaderBindGroupTextureEntry){
@@ -193,21 +255,31 @@ void shader_add_sampler(Shader *shader,
       }
 
       // generate texture + sampler + texture view from data & size
-      ShaderBindGroupSamplerEntry *current_entry = &desc->entries[i];
+      ShaderBindGroupSamplerEntryDescriptor *src = &desc->entries[i];
+      ShaderBindGroupSamplerEntry *dest =
+          &current_bind_group->samplers
+               .entries[current_bind_group->samplers.length++];
+
+      // copy common attributes
+      dest->binding = src->binding;
+      dest->addressModeU = src->addressModeU;
+      dest->addressModeV = src->addressModeV;
+      dest->addressModeW = src->addressModeW;
+      dest->minFilter = src->minFilter;
+      dest->magFilter = src->magFilter;
+      dest->type = src->type;
+      dest->compare = src->compare;
 
       // creating sampler by mapping desc configuration
-      current_entry->sampler = wgpuDeviceCreateSampler(
+      dest->sampler = wgpuDeviceCreateSampler(
           shader->device, &(WGPUSamplerDescriptor){
-                              .compare = current_entry->compare,
-                              .addressModeU = current_entry->addressModeU,
-                              .addressModeV = current_entry->addressModeV,
-                              .addressModeW = current_entry->addressModeW,
-                              .minFilter = current_entry->minFilter,
-                              .magFilter = current_entry->magFilter,
+                              .compare = dest->compare,
+                              .addressModeU = dest->addressModeU,
+                              .addressModeV = dest->addressModeV,
+                              .addressModeW = dest->addressModeW,
+                              .minFilter = dest->minFilter,
+                              .magFilter = dest->magFilter,
                           });
-
-      current_bind_group->samplers
-          .entries[current_bind_group->samplers.length++] = *current_entry;
     }
   }
 }

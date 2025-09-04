@@ -70,8 +70,6 @@ DynamicListStatus probe_reflection_grid_list_destroy(ProbeReflectionGridList *);
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *,
                                      ProbeReflectionListDebug *);
 
-void probe_reflection_grid_list_draw_preprocessor(const RenderPass *, Mesh *,
-                                                  void *);
 
 void probe_reflection_grid_list_uniform(ProbeReflectionListUniform *,
                                         ProbeReflectionGridList *);

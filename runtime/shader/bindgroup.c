@@ -328,6 +328,7 @@ void shader_bind_group_create_from_layout(
     for (size_t j = 0; j < layout->bind_groups[i]->entryCount; j++) {
       const WGPUBindGroupLayoutEntry *entry =
           &layout->bind_groups[i]->entries[j];
+
       // Use discriminator to define entry type
 
       // generate uniform/ storage
@@ -336,13 +337,6 @@ void shader_bind_group_create_from_layout(
         shader_layout_print(i, entry->binding, "uniform");
 #endif
 
-        if (entry->buffer.hasDynamicOffset) {
-          ShaderBindGroup *bind_group = shader_get_bind_group(shader, i);
-          if (bind_group &&
-              bind_group->offset.count < SHADER_MAX_OFFSET_CAPACITY)
-            bind_group->offset.count++;
-        }
-
         shader_add_uniform(
             shader,
             &(ShaderCreateUniformDescriptor){
@@ -350,8 +344,9 @@ void shader_bind_group_create_from_layout(
                 .visibility = entry->visibility,
                 .group_index = i,
                 .entries =
-                    (ShaderBindGroupUniformEntry[]){
+                    (ShaderBindGroupUniformEntryDescriptor[]){
                         {
+                            .hasDynamicOffset = entry->buffer.hasDynamicOffset,
                             .usage =
                                 (entry->buffer.type ==
                                          WGPUBufferBindingType_ReadOnlyStorage
@@ -381,7 +376,7 @@ void shader_bind_group_create_from_layout(
                           .visibility = entry->visibility,
                           .group_index = i,
                           .entries =
-                              (ShaderBindGroupTextureViewEntry[]){
+                              (ShaderBindGroupTextureViewEntryDescriptor[]){
                                   {
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
@@ -407,7 +402,7 @@ void shader_bind_group_create_from_layout(
                           .visibility = entry->visibility,
                           .group_index = i,
                           .entries =
-                              (ShaderBindGroupTextureViewEntry[]){
+                              (ShaderBindGroupTextureViewEntryDescriptor[]){
                                   {
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
@@ -432,7 +427,7 @@ void shader_bind_group_create_from_layout(
                           .visibility = entry->visibility,
                           .group_index = i,
                           .entries =
-                              (ShaderBindGroupTextureViewEntry[]){
+                              (ShaderBindGroupTextureViewEntryDescriptor[]){
                                   {
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
@@ -459,7 +454,7 @@ void shader_bind_group_create_from_layout(
                           .visibility = entry->visibility,
                           .group_index = i,
                           .entries =
-                              (ShaderBindGroupTextureViewEntry[]){
+                              (ShaderBindGroupTextureViewEntryDescriptor[]){
                                   {
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
@@ -489,7 +484,7 @@ void shader_bind_group_create_from_layout(
                           .visibility = entry->visibility,
                           .group_index = i,
                           .entries =
-                              (ShaderBindGroupTextureViewEntry[]){
+                              (ShaderBindGroupTextureViewEntryDescriptor[]){
                                   {
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
@@ -516,7 +511,7 @@ void shader_bind_group_create_from_layout(
                           .visibility = entry->visibility,
                           .group_index = i,
                           .entries =
-                              (ShaderBindGroupTextureViewEntry[]){
+                              (ShaderBindGroupTextureViewEntryDescriptor[]){
                                   {
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
@@ -542,7 +537,7 @@ void shader_bind_group_create_from_layout(
                           .visibility = entry->visibility,
                           .group_index = i,
                           .entries =
-                              (ShaderBindGroupTextureViewEntry[]){
+                              (ShaderBindGroupTextureViewEntryDescriptor[]){
                                   {
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
@@ -568,7 +563,7 @@ void shader_bind_group_create_from_layout(
                         .visibility = entry->visibility,
                         .group_index = i,
                         .entries =
-                            (ShaderBindGroupSamplerEntry[]){
+                            (ShaderBindGroupSamplerEntryDescriptor[]){
                                 {
                                     .binding = entry->binding,
                                     .type = entry->sampler.type,
@@ -589,7 +584,7 @@ void shader_bind_group_create_from_layout(
                         .visibility = entry->visibility,
                         .group_index = i,
                         .entries =
-                            (ShaderBindGroupSamplerEntry[]){
+                            (ShaderBindGroupSamplerEntryDescriptor[]){
                                 {
                                     .binding = entry->binding,
                                     .type = entry->sampler.type,

@@ -107,10 +107,12 @@ typedef struct {
   void *data;
 } ShaderUniformUpdate;
 
+/* === Constructors === */
 typedef struct {
   uint32_t binding;
   uint64_t size;
-  uint64_t offset;
+  uint64_t offset; // DELETEME ?
+  uint32_t *dynamic_offset_entry;
   void *data;
   WGPUBuffer buffer;
   WGPUBufferUsage usage;
@@ -127,7 +129,6 @@ typedef struct {
   WGPUTextureViewDimension dimension;
   WGPUTextureFormat format;
   WGPUTextureSampleType sample_type;
-  // private
   WGPUTextureView texture_view;
 } ShaderBindGroupTextureEntry;
 
@@ -148,9 +149,50 @@ typedef struct {
   WGPUFilterMode magFilter;
   WGPUSamplerBindingType type;
   WGPUCompareFunction compare;
-  // private
   WGPUSampler sampler;
 } ShaderBindGroupSamplerEntry;
+
+/* === Descriptor ===*/
+typedef struct {
+  uint32_t binding;
+  uint64_t size;
+  uint64_t offset; // DELETEME ?
+  WGPUBool hasDynamicOffset;
+  void *data;
+  WGPUBufferUsage usage;
+  ShaderUniformUpdate update;
+} ShaderBindGroupUniformEntryDescriptor;
+
+typedef struct {
+  shader_binding_t binding;
+  int width;
+  int height;
+  unsigned char *data;
+  size_t size;
+  uint8_t channels;
+  WGPUTextureViewDimension dimension;
+  WGPUTextureFormat format;
+  WGPUTextureSampleType sample_type;
+} ShaderBindGroupTextureEntryDescriptor;
+
+typedef struct {
+  shader_binding_t binding;
+  WGPUTextureViewDimension dimension;
+  WGPUTextureView texture_view;
+  WGPUTextureFormat format;
+  WGPUTextureSampleType sample_type;
+} ShaderBindGroupTextureViewEntryDescriptor;
+
+typedef struct {
+  shader_binding_t binding;
+  WGPUAddressMode addressModeU;
+  WGPUAddressMode addressModeV;
+  WGPUAddressMode addressModeW;
+  WGPUFilterMode minFilter;
+  WGPUFilterMode magFilter;
+  WGPUSamplerBindingType type;
+  WGPUCompareFunction compare;
+} ShaderBindGroupSamplerEntryDescriptor;
 
 // uniform / texture / sampler array
 typedef struct {
@@ -222,28 +264,28 @@ typedef struct {
 typedef struct {
   shader_bindgroup_t group_index;
   shader_bindgroup_t entry_count;
-  ShaderBindGroupUniformEntry *entries;
+  ShaderBindGroupUniformEntryDescriptor *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateUniformDescriptor;
 
 typedef struct {
   shader_bindgroup_t group_index;
   shader_bindgroup_t entry_count;
-  ShaderBindGroupTextureEntry *entries;
+  ShaderBindGroupTextureEntryDescriptor *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateTextureDescriptor;
 
 typedef struct {
   shader_bindgroup_t group_index;
   shader_bindgroup_t entry_count;
-  ShaderBindGroupTextureViewEntry *entries;
+  ShaderBindGroupTextureViewEntryDescriptor *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateTextureViewDescriptor;
 
 typedef struct {
   shader_bindgroup_t group_index;
   shader_bindgroup_t entry_count;
-  ShaderBindGroupSamplerEntry *entries;
+  ShaderBindGroupSamplerEntryDescriptor *entries;
   WGPUShaderStageFlags visibility;
 } ShaderCreateSamplerDescriptor;
 

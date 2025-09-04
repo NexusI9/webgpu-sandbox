@@ -96,9 +96,7 @@ void shader_update_uniform_buffer(Shader *shader,
     if (lifetime == ShaderBufferLifetime_Release)
       wgpuBufferRelease(bound_uniform->buffer);
 
-    WGPUSupportedLimits limits;
-    wgpuDeviceGetLimits(shader->device, &limits);
-    size_t alignment = limits.limits.minStorageBufferOffsetAlignment;
+    size_t alignment = shader_device_storage_alignment(shader->device);
 
     bound_uniform->buffer = buffer;
 
@@ -279,10 +277,10 @@ void shader_update_bind_group_offset(Shader *shader,
     return;
   }
 
-  WGPUSupportedLimits limits;
-  wgpuDeviceGetLimits(shader->device, &limits);
-  size_t alignment = limits.limits.minStorageBufferOffsetAlignment;
+  size_t alignment = shader_device_storage_alignment(shader->device);
 
-  shader->bind_groups.entries[group_index].offset.entries[index] =
-      offset * alignment;
+  ShaderBindGroupUniformEntry *uniform =
+      &shader->bind_groups.entries[group_index].uniforms.entries[index];
+
+  *uniform->dynamic_offset_entry = offset * alignment;
 }
