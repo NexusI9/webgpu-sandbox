@@ -77,8 +77,8 @@ typedef enum {
 } SSBOStatus;
 
 typedef enum {
-  SSBOType_View,
-  SSBOType_Projection,
+  SSBOType_Camera,
+  SSBOType_Viewport,
   SSBOType_Mesh,
   SSBOType_AmbientLight,
   SSBOType_PointLight,

@@ -3,6 +3,24 @@
 #include "system.h"
 #include "vector/core.h"
 
+const vec3 projection_cubemaps_directions[PROJECTION_VIEW_COUNT] = {
+    {1.0f, 0.0f, 0.0f},  // +x (right)
+    {-1.0f, 0.0f, 0.0f}, // -x (left)
+    {0.0f, 1.0f, 0.0f},  // +y (top)
+    {0.0f, -1.0f, 0.0f}, // -y (bottom)
+    {0.0f, 0.0f, 1.0f},  // +z (front)
+    {0.0f, 0.0f, -1.0f}, // -z (back)
+};
+
+const vec3 projection_cubemaps_ups[PROJECTION_VIEW_COUNT] = {
+    {0.0f, 1.0f, 0.0f},  // +x (right)
+    {0.0f, 1.0f, 0.0f},  // -x (left)
+    {0.0f, 0.0f, -1.0f}, // +y (top)
+    {0.0f, 0.0f, 1.0f},  // -y (bottom)
+    {0.0f, 1.0f, 0.0f},  // +z (front)
+    {0.0f, 1.0f, 0.0f},  // -z (back)
+};
+
 /**
    Compute point view for Point light
    Point lights use 6 views, each pointing to different directions
@@ -11,24 +29,6 @@ void projection_point(Projection *views, const vec3 light_position,
                       const float near, const float far) {
 
   views->length = PROJECTION_VIEW_COUNT;
-
-  vec3 directions[PROJECTION_VIEW_COUNT] = {
-      {1.0f, 0.0f, 0.0f},  // +x (right)
-      {-1.0f, 0.0f, 0.0f}, // -x (left)
-      {0.0f, 1.0f, 0.0f},  // +y (top)
-      {0.0f, -1.0f, 0.0f}, // -y (bottom)
-      {0.0f, 0.0f, 1.0f},  // +z (front)
-      {0.0f, 0.0f, -1.0f}, // -z (back)
-  };
-
-  vec3 ups[PROJECTION_VIEW_COUNT] = {
-      {0.0f, 1.0f, 0.0f},  // +x (right)
-      {0.0f, 1.0f, 0.0f},  // -x (left)
-      {0.0f, 0.0f, -1.0f}, // +y (top)
-      {0.0f, 0.0f, 1.0f},  // -y (bottom)
-      {0.0f, 1.0f, 0.0f},  // +z (front)
-      {0.0f, 1.0f, 0.0f},  // -z (back)
-  };
 
   mat4 projection;
   glm_perspective(glm_rad(90.0f), 1.0f, near, far, projection);
@@ -44,10 +44,12 @@ void projection_point(Projection *views, const vec3 light_position,
   for (int v = 0; v < views->length; v++) {
 
     vec3 direction;
-    glm_vec3_add((float *)light_position, directions[v], direction);
+    glm_vec3_add((float *)light_position,
+                 (float *)projection_cubemaps_directions[v], direction);
 
     mat4 view;
-    glm_lookat((float *)light_position, direction, ups[v], view);
+    glm_lookat((float *)light_position, direction,
+               (float *)projection_cubemaps_ups[v], view);
 
     glm_mat4_copy(view, views->views[v]);
     glm_mat4_mul(projection, view, views->combined[v]);

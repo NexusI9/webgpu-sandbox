@@ -121,11 +121,11 @@ void seo_probe_reflection_grid_set_position(SEOTransformCallback *desc) {
                            probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
 
   // update view cpu side
-  probe_reflection_update_view(probe);
+  probe_reflection_update_camera(probe);
 
   // add to upload queue
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
-                           SSBOType_ViewProjection,
+                           SSBOType_Camera,
                            probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
 }
 

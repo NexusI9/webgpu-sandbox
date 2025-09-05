@@ -7,6 +7,9 @@
 #define PROJECTION_VIEW_COUNT 6
 #define PROJECTION_SUN_DISTANCE 10
 
+extern const vec3 projection_cubemaps_directions[PROJECTION_VIEW_COUNT];
+extern const vec3 projection_cubemaps_ups[PROJECTION_VIEW_COUNT];
+
 typedef struct {
   mat4 view;
   uint32_t _pad[48];

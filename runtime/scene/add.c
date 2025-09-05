@@ -401,8 +401,8 @@ scene_add_probe_reflection_grid(Scene *scene,
                     &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
 
     // add each views
-    for (uint8_t v = 0; v < probe->views.length; v++) {
-      ssbo_copy_entry(ssbo, SSBOType_ViewProjection,
+    for (uint8_t v = 0; v < PROBE_REFLECTION_VIEW_COUNT; v++) {
+      ssbo_copy_entry(ssbo, SSBOType_Camera,
                       &probe->ssbo_slot[ProbeReflectionSSBOField_View + v]);
     }
   }
@@ -456,13 +456,16 @@ scene_add_probe_reflection_plane(Scene *scene,
   // add probes to ssbo list
   SSBOManager *ssbo = &scene->renderer.ssbo;
 
+  // add each view
+  ssbo_copy_entry(ssbo, SSBOType_Camera,
+                  &probe->ssbo_slot[ProbeReflectionSSBOField_View]);
+
+  // update uniform to update camera/view ssbo id
+  probe_reflection_plane_update_uniform(probe);
+
   // add to pos/radius list
   ssbo_copy_entry(ssbo, SSBOType_ProbePlaneReflection,
                   &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
-
-  // add each view
-  ssbo_copy_entry(ssbo, SSBOType_ViewProjection,
-                  &probe->ssbo_slot[ProbeReflectionSSBOField_View]);
 
   // update UBO for probe count
   ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionPlaneCount,

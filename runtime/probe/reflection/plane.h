@@ -18,9 +18,8 @@ typedef struct {
   float far;
   float distance;
   SSBOSlot ssbo_slot[PROBE_REFLECTION_SSBO_SLOT_COUNT];
-  Projection views;
-  Camera const *camera;
-  Viewport const *viewport;
+  Camera camera;
+  Camera const *ref_camera;
 } ProbeReflectionPlane;
 
 typedef struct {
@@ -33,7 +32,8 @@ typedef struct {
   vec3 tangent;
   float signed_distance;
   vec3 bitangent;
-  float _pad1[45];
+  uint32_t camera_ssbo_index;
+  float _pad1[44];
 } __attribute__((aligned(16))) ProbeReflectionPlaneUniform;
 
 typedef struct {
@@ -51,7 +51,6 @@ typedef struct {
   vec3 position;
   float distance;
   Camera const *camera;
-  Viewport const *viewport;
 } ProbeReflectionPlaneDescriptor;
 
 /* === Plane List === */
@@ -78,6 +77,6 @@ void probe_reflection_plane_create(ProbeReflectionPlane *,
 
 void probe_reflection_plane_update_uniform(ProbeReflectionPlane *);
 
-void probe_reflection_plane_update_view(ProbeReflectionPlane *);
+void probe_reflection_plane_update_camera(ProbeReflectionPlane *);
 
 #endif

@@ -121,7 +121,7 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
 
 void example_glass_probe_plane(Scene *scene, bool debug) {
 
-  const float scale = 100.0f;
+  const float scale = 20.0f;
 
   SceneEditorObject *plane_probe = scene_add_probe_reflection_plane(
       scene, &(ProbeReflectionPlaneDescriptor){
@@ -131,7 +131,6 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                  .scale = {scale, scale, scale},
                  .distance = 3.0f,
                  .camera = scene->active_camera,
-                 .viewport = &scene->viewport,
              });
 
   Mesh *mesh = scene_new_mesh(scene);

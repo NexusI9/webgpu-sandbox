@@ -19,11 +19,9 @@
 typedef struct {
   vec3 position;
   float radius;
-  float near;
-  float far;
   // 1 list + (1 + 5 view) like point lights
   SSBOSlot ssbo_slot[PROBE_REFLECTION_SSBO_SLOT_COUNT + 5];
-  Projection views;
+  Camera camera[PROBE_REFLECTION_VIEW_COUNT];
 } ProbeReflection;
 
 typedef struct {
@@ -44,7 +42,7 @@ void probe_reflection_create(ProbeReflection *, vec3);
 
 void probe_reflection_update_uniform(ProbeReflection *);
 
-void probe_reflection_update_view(ProbeReflection *);
+void probe_reflection_update_camera(ProbeReflection *);
 
 /* === Probe Reflection List  === */
 

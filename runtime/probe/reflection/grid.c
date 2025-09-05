@@ -158,9 +158,8 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
         for (size_t j = 0; j < grid->probes.length; j++) {
 
           ProbeReflection *probe = &grid->probes.entries[j];
-          Projection *views = &probe->views;
 
-          for (uint8_t k = 0; k < views->length; k++) {
+          for (uint8_t k = 0; k < PROBE_REFLECTION_VIEW_COUNT; k++) {
 
             // define target layer
             WGPUTextureView target_color = wgpuTextureCreateView(

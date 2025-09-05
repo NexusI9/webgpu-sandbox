@@ -55,7 +55,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                           .height = scene_renderer_height(&scene->renderer),
                       });
 
-      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Projection,
+      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Viewport,
                       &scene->viewport.ssbo_slot);
     }
 
@@ -103,7 +103,7 @@ void scene_camera_init(Scene *scene) {
   scene->camera =
       scene_init_main_camera(scene, scene_renderer_clock(&scene->renderer));
 
-  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_View,
+  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Camera,
                   &scene->camera->ssbo_slot);
 
   // set scene main camera as active

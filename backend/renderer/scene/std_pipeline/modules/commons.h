@@ -28,7 +28,7 @@ static const WGPUBindGroupLayoutEntry mvp_layout_entry[3] = {
             (WGPUBufferBindingLayout){
                 .type = WGPUBufferBindingType_ReadOnlyStorage,
                 .hasDynamicOffset = true,
-                .minBindingSize = sizeof(CameraUniform),
+                .minBindingSize = sizeof(CameraUniform) * SSBO_CAPACITY,
             },
     },
     {

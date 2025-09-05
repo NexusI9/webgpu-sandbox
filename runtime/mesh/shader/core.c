@@ -165,13 +165,13 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
       // viewport
       {
           .binding = mvp->projection,
-          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Projection),
+          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Viewport),
           .offset = 0, // active vewport index
       },
       // camera
       {
           .binding = mvp->view,
-          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_View),
+          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Camera),
           .offset = 0, // active camera index
       },
       // model

@@ -10,15 +10,15 @@ static const struct {
   const size_t size;
   const char *label;
 } ssbo_type[SSBO_TYPE_COUNT] = {
-    [SSBOType_View] =
+    [SSBOType_Camera] =
         {
             sizeof(CameraUniform),
-            "SSBO View Buffer",
+            "SSBO Camera Buffer",
         },
-    [SSBOType_Projection] =
+    [SSBOType_Viewport] =
         {
             sizeof(ViewportUniform),
-            "SSBO Projection Buffer",
+            "SSBO Viewport Buffer",
         },
     [SSBOType_Mesh] =
         {

@@ -75,8 +75,7 @@ typedef struct {
 DynamicListStatus
 probe_reflection_list_create_core(const ProbeReflectionCreateCore *);
 
-
 void probe_reflection_list_draw_preprocessor(const RenderPass *, Mesh *,
-                                                  void *);
+                                             void *);
 
 #endif

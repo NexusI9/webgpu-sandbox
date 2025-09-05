@@ -56,7 +56,8 @@ struct PlaneReflection {
                                                                 signed_distance
       : f32,
         bitangent : vec3<f32>,
-                    _pad1 : array<f32, 45>,
+                    camera_ssbo_index : u32,
+                                        _pad1 : array<f32, 45>,
 }
 
 // === UBO ===
@@ -182,7 +183,7 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
 
 fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
     -> vec2<f32> {
-  let clip = r_view * vec4<f32>(frag_pos, 1.0);
+  let clip = uViewport[0].projection * r_view * vec4<f32>(frag_pos, 1.0);
   let ndc = clip.xyz / clip.w;                                // [-1, 1] space
   let uv = ndc.xy * vec2<f32>(0.5f, -0.5f) + vec2<f32>(0.5f); // [0, 1] space
   return uv;
@@ -242,7 +243,8 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
 
   let local = vFrag - plane.position;
 
-  let reflUV = compute_reflection_uv(vFrag, uProjections[0].view);
+  let reflUV =
+      compute_reflection_uv(vFrag, uCamera[plane.camera_ssbo_index].view);
 
   let skybox : vec4<f32> = textureSample(skybox_map, skybox_sampler, R);
 
@@ -258,4 +260,13 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
   let combined : vec4<f32> = mix(uGlass.color * composite, composite, f.r);
   let out_color = mix(combined, ubo.fog.color, fog_k);
   return out_color;
+  // return vec4<f32>(f32(plane.camera_ssbo_index), 0.0f, 0.0f, 1.0f);
+  //return vec4<f32>(abs(uCamera[1].view[0][0]), 0.0f, 0.0f,
+  //                 1.0f);
+
+  //if(plane.camera_ssbo_index == 1u){
+  //    return vec4<f32>(0.0f, 1.0f, 0.0f, 1.0f);
+  //}else{
+  //    return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);      
+  //}
 }

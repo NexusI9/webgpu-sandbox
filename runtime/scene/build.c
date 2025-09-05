@@ -157,9 +157,8 @@ void scene_build_mesh_texture(
 
   // bind views
   mesh_shader_build_mvp(build_desc->mesh, MeshShader_Texture, build_desc->ssbo);
-
-  mesh_shader_build_mp(build_desc->mesh, MeshShader_Reflection,
-                       build_desc->ssbo, SSBOType_ViewProjection);
+  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Reflection,
+                        build_desc->ssbo);
 
   // lit and shadow pipeline
   if (build_texture_desc->pipeline &
