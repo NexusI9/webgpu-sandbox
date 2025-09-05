@@ -229,7 +229,7 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
   let V : vec3<f32> = normalize(camera.position.xyz - vFrag);
 
   // Fresnel
-  let NdotV : f32 = max(dot(perturbed_N, V), 0.0f);
+  let NdotV : f32 = max(dot(N, V), 0.0f);
   let f0 : vec3<f32> = vec3(0.04); // dielectric default reflectance
   let f : vec3<f32> = f0 + (1.0f - f0) * pow(1.0 - NdotV, 5.0f);
 
@@ -248,25 +248,17 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
 
   let skybox : vec4<f32> = textureSample(skybox_map, skybox_sampler, R);
 
-  let reflection : vec4<f32> = textureSample(probe_reflection_maps,
-                                             probe_reflection_sampler, reflUV,
-                                             plane_index);
+  var reflection : vec4<f32> = textureSampleLevel(probe_reflection_maps,
+                                                  probe_reflection_sampler,
+                                                  reflUV, plane_index, 2.0f);
 
+  reflection.a /= 1.3f;
   let composite = mix(skybox, reflection, reflection.a);
 
   let fog_k = fog_factor(length(vFrag - camera.position.xyz),
                          ubo.fog.start_distance, ubo.fog.density);
 
   let combined : vec4<f32> = mix(uGlass.color * composite, composite, f.r);
-  let out_color = mix(combined, ubo.fog.color, fog_k);
+  let out_color = mix(combined, ubo.fog.color, vec4<f32>(fog_k));
   return out_color;
-  // return vec4<f32>(f32(plane.camera_ssbo_index), 0.0f, 0.0f, 1.0f);
-  //return vec4<f32>(abs(uCamera[1].view[0][0]), 0.0f, 0.0f,
-  //                 1.0f);
-
-  //if(plane.camera_ssbo_index == 1u){
-  //    return vec4<f32>(0.0f, 1.0f, 0.0f, 1.0f);
-  //}else{
-  //    return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);      
-  //}
 }
