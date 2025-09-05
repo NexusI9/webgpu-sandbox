@@ -1851,7 +1851,7 @@ struct VertexOut {
 };
 
 struct Mesh {
-  model : mat4x4<f32>, position : vec4<f32>,
+  model : mat4x4<f32>, position : vec4<f32>, _pad : array<u32, 44>,
 }
 
 struct Camera {
@@ -1859,11 +1859,11 @@ struct Camera {
          position : vec4<f32>,
                     lookat : vec4<f32>,
                              mode : u32,
-                                    _pad : vec3<u32>,
+                                    _pad : array<u32, 39>,
 };
 
 struct Viewport {
-  projection : mat4x4<f32>, width : u32, height : u32,
+  projection : mat4x4<f32>, width : u32, height : u32, _pad : array<u32, 46>,
 };
 
 struct Material {
@@ -1886,11 +1886,11 @@ struct PointLight {
                                                                  near : f32,
                                                                         far
       : f32,
-        _padding : f32,
+        _padding : array<f32, 21>,
 };
 
 struct AmbientLight {
-  color : vec3<f32>, intensity : f32,
+  color : vec3<f32>, intensity : f32, _padding : array<f32, 60>,
 };
 
 struct SpotLight {
@@ -1901,7 +1901,8 @@ struct SpotLight {
                                               color : vec3<f32>,
                                                       intensity : f32,
                                                                   view
-      : mat4x4<f32>
+      : mat4x4<f32>,
+        _padding : array<f32, 36>
 };
 
 struct SunLight {
@@ -1910,22 +1911,7 @@ struct SunLight {
                          color : vec3<f32>,
                                  _padding : f32,
                                             view : mat4x4<f32>,
-};
-
-struct AmbientLightStorage {
-  length : u32, entries : array<AmbientLight, MAX_LIGHT>,
-};
-
-struct PointLightStorage {
-  length : u32, entries : array<PointLight, MAX_LIGHT>,
-};
-
-struct SpotLightStorage {
-  length : u32, entries : array<SpotLight, MAX_LIGHT>,
-};
-
-struct SunLightStorage {
-  length : u32, entries : array<SunLight, MAX_LIGHT>,
+                                                   _padding2 : array<f32, 40>
 };
 
 // === UBO ===
@@ -1934,15 +1920,15 @@ struct LightCount {
 };
 
 struct ProbeCount {
-  reflection : u32, irradiance : u32,
+  reflection : u32, plane : u32, irradiance : u32, _pad : u32,
+};
+
+struct Fog {
+  color : vec4<f32>, start_distance : f32, density : f32, _pad : vec2<f32>,
 };
 
 struct UBO {
-  light_count : LightCount, probe_count : ProbeCount,
-};
-
-struct Projection {
-  view : mat4x4<f32>, _padding : array<u32, 48>
+  light_count : LightCount, probe_count : ProbeCount, fog : Fog,
 };
 
 // material pbr
@@ -1974,17 +1960,18 @@ struct Projection {
 
 // light
 // TODO: using uniform for now, but check the storage type
-@group(2) @binding(0) var<uniform> ambient_light_list : AmbientLightStorage;
-@group(2) @binding(1) var<uniform> spot_light_list : SpotLightStorage;
-@group(2) @binding(2) var<uniform> point_light_list : PointLightStorage;
-@group(2) @binding(3) var<uniform> sun_light_list : SunLightStorage;
+@group(2) @binding(0) var<storage, read> ambient_light_list
+    : array<AmbientLight>;
+@group(2) @binding(1) var<storage, read> spot_light_list : array<SpotLight>;
+@group(2) @binding(2) var<storage, read> point_light_list : array<PointLight>;
+@group(2) @binding(3) var<storage, read> sun_light_list : array<SunLight>;
 @group(2) @binding(4) var<uniform> ubo : UBO;
 
 
-@group(2) @binding(4) var point_shadow_maps : texture_depth_cube_array;
-@group(2) @binding(5) var point_shadow_sampler : sampler_comparison;
-@group(2) @binding(6) var directional_shadow_maps : texture_depth_2d_array;
-@group(2) @binding(7) var directional_shadow_sampler : sampler_comparison;
+@group(2) @binding(5) var point_shadow_maps : texture_depth_cube_array;
+@group(2) @binding(6) var point_shadow_sampler : sampler_comparison;
+@group(2) @binding(7) var directional_shadow_maps : texture_depth_2d_array;
+@group(2) @binding(8) var directional_shadow_sampler : sampler_comparison;
 
 
 //
@@ -2006,18 +1993,22 @@ struct Projection {
   let camera = uCamera[0];
   let viewport = uViewport[0];
 
-  // DEBUG
-  // let view_projection
-  //   : mat4x4<f32> =
-  //         mat4x4<f32>(0.0, 0.0, 1.001001, 1.0, 0.0, 1.0, 0.0, 0.0, -1.0,
-  //         0.0,
-  //                     0.0, 0.0, -3.0, 3.0, 2.902903, 3.0, );
+  let proj : mat4x4<f32> = mat4x4<f32>(vec4<f32>(1.961671, 0.0, 0.0, 0.0),
+                                       vec4<f32>(0.0, 3.487414, 0.0, 0.0),
+                                       vec4<f32>(0.0, 0.0, -1.001001, -1.0),
+                                       vec4<f32>(0.0, 0.0, -0.100100, 0.0));
+
+  let view : mat4x4<f32> =
+                 mat4x4<f32>(vec4<f32>(0.707107, -0.408248, 0.577350, 0.0),
+                             vec4<f32>(0.0, 0.816496, 0.577350, 0.0),
+                             vec4<f32>(-0.707107, -0.408248, 0.577350, 0.0),
+                             vec4<f32>(-0.0, -0.0, -34.641010, 1.0));
 
   // Final Matrix (Projection * View)
+  var cam : mat4x4<f32> = viewport.projection * camera.view;
   var output : VertexOut;
-
-  output.vPosition = viewport.projection * camera.view * mesh.model *
-                     vec4<f32>(input.aPos, 1.0f);
+  // mesh.model
+  output.vPosition = cam * mesh.model * vec4<f32>(input.aPos, 1.0f);
   output.vNormal = normalize(input.aNorm);
   output.vCol = input.aCol;
   output.vUv = input.aUv;
@@ -2184,6 +2175,16 @@ fn compute_point_depth(position : f32, near : f32, far : f32) -> f32 {
   return (depth + 1.0f) * 0.5f;
 }
 
+// https://x.com/JKoukourakis/status/1958800134914949268/photo/1
+fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
+    -> f32 {
+
+  let fog_distance : f32 = max(distance - fog_start_distance, 0.0f);
+  let density : f32 = fog_density * 0.001;
+  let exp_factor : f32 = 1.0f - exp(-density * fog_distance);
+  return clamp(exp_factor, 0.0f, 1.0f);
+}
+
 //
 //
 //
@@ -2219,16 +2220,16 @@ fn kernel_from_distance(frag_pos : vec3<f32>, cam_pos : vec3<f32>) -> u32 {
 // Combine and compute Point light shadow
 fn point_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
-  if (point_light_list.length == 0u) {
+  if (ubo.light_count.point == 0u) {
     return 0.0f;
   }
 
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.002f;
 
-  for (var l : u32 = 0u; l < point_light_list.length; l++) {
+  for (var l : u32 = 0u; l < ubo.light_count.point; l++) {
 
-    let light = point_light_list.entries[l];
+    let light = point_light_list[l];
     let light_position = light.position;
 
     var frag_to_light = frag_position - light_position.xyz;
@@ -2308,16 +2309,16 @@ fn directional_shadow_position(world_position : vec3<f32>,
 
 fn spot_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
-  if (spot_light_list.length == 0u) {
+  if (ubo.light_count.spot == 0u) {
     return 0.0f;
   }
 
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.0005f;
 
-  for (var l : u32 = 0u; l < spot_light_list.length; l++) {
+  for (var l : u32 = 0u; l < ubo.light_count.spot; l++) {
 
-    let light = spot_light_list.entries[l];
+    let light = spot_light_list[l];
     let shadow_position =
         directional_shadow_position(frag_position, light.view);
 
@@ -2371,17 +2372,17 @@ fn spot_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
 fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
-  if (sun_light_list.length == 0u) {
+  if (ubo.light_count.sun == 0u) {
     return 0.0f;
   }
 
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.005f;
 
-  for (var l : u32 = 0u; l < sun_light_list.length; l++) {
+  for (var l : u32 = 0u; l < ubo.light_count.sun; l++) {
 
-    let layer = spot_light_list.length + l;
-    let light = sun_light_list.entries[l];
+    let layer = ubo.light_count.spot + l;
+    let light = sun_light_list[l];
     let shadow_position =
         directional_shadow_position(frag_position, light.view);
 
@@ -2464,10 +2465,10 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
   // calculate point lights
   // for (var i = 0u; i < ubo.light_count.point; i++) {
-  //   let light = point_light_list[i];
-  //   Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
-  //                             light.position, light.color, light.intensity);
-  // }
+  //  let light = point_light_list[i];
+  //  Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+  //                            light.position, light.color, light.intensity);
+  //}
 
   // calculate spot lights
   // basically the same a point light, but use a fixed light direction instead
@@ -2502,7 +2503,13 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   //  let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
   //                            point_shadow + spot_shadow + sun_shadow);
 
-  return vec4<f32>(albedo);
+  let combined = vec4<f32>(albedo.rgb, 1.0f);
+
+  let fog_k = fog_factor(length(vFrag - camera.position.xyz),
+                         ubo.fog.start_distance, ubo.fog.density);
+
+  let out_color = mix(combined, ubo.fog.color, fog_k);
+  return out_color;
 }
 
 // attribute/uniform decls

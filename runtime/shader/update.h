@@ -21,27 +21,34 @@ typedef struct {
   WGPUTextureFormat format;
 } ShaderUpdateTexture;
 
-void shader_update_texture(Shader *, const bind_group_index, const bind_index,
-                           const ShaderUpdateTexture *);
+ShaderBindGroupTextureEntry *shader_update_texture(Shader *,
+                                                   const bind_group_index,
+                                                   const bind_index,
+                                                   const ShaderUpdateTexture *);
 
-void shader_update_texture_view(Shader *, const bind_group_index,
-                                const bind_index, WGPUTextureView,
-                                WGPUTextureFormat);
+ShaderBindGroupTextureEntry *
+shader_update_texture_view(Shader *, const bind_group_index, const bind_index,
+                           WGPUTextureView, WGPUTextureFormat);
 
-void shader_update_uniform_data(Shader *, const bind_group_index,
-                                const bind_index, void *);
+ShaderBindGroupUniformEntry *shader_update_uniform_data(Shader *,
+                                                        const bind_group_index,
+                                                        const bind_index,
+                                                        void *);
 
-void shader_update_uniform_buffer(Shader *, const bind_group_index,
-                                  const bind_index, WGPUBuffer, const size_t,
-                                  const ShaderBufferLifetime);
+ShaderBindGroupUniformEntry *
+shader_update_uniform_buffer(Shader *, const bind_group_index, const bind_index,
+                             WGPUBuffer, const size_t,
+                             const ShaderBufferLifetime);
 
-void shader_update_uniform_callback(Shader *, const bind_group_index,
-                                    const bind_index,
-                                    const ShaderUniformUpdate *);
+ShaderBindGroupUniformEntry *
+shader_update_uniform_callback(Shader *, const bind_group_index,
+                               const bind_index, const ShaderUniformUpdate *);
 
-void shader_update_sampler(Shader *, const bind_group_index, const bind_index,
-                           const WGPUSamplerDescriptor *);
+ShaderBindGroupSamplerEntry *
+shader_update_sampler(Shader *, const bind_group_index, const bind_index,
+                      const WGPUSamplerDescriptor *);
 
-void shader_update_bind_group_offset(Shader *, const bind_group_index,
-                                     const uint8_t, const size_t);
+ShaderBindGroup *shader_update_bind_group_offset(Shader *,
+                                                 const bind_group_index,
+                                                 const uint8_t, const size_t);
 #endif

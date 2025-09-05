@@ -157,6 +157,7 @@ void scene_build_mesh_texture(
 
   // bind views
   mesh_shader_build_mvp(build_desc->mesh, MeshShader_Texture, build_desc->ssbo);
+  
   mesh_shader_build_mvp(build_desc->mesh, MeshShader_Reflection,
                         build_desc->ssbo);
 
@@ -165,8 +166,11 @@ void scene_build_mesh_texture(
       (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
 
     // bind lights
-    mesh_shader_texture_update_lights(build_desc->mesh, build_desc->ubo,
-                                      build_desc->ssbo);
+    mesh_shader_texture_update_lights(build_desc->mesh, MeshShader_Texture,
+                                      build_desc->ubo, build_desc->ssbo);
+    
+    mesh_shader_texture_update_lights(build_desc->mesh, MeshShader_Reflection,
+                                      build_desc->ubo, build_desc->ssbo);
   }
 
   // shadow only pipeline

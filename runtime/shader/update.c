@@ -13,10 +13,10 @@
 
 /*TODO: BATCH UPDATE : like add, take a bunch of entry and ONLY REBUILD at the
  * end of update*/
-void shader_update_texture_view(Shader *shader,
-                                const bind_group_index group_index,
-                                const bind_index index, WGPUTextureView view,
-                                WGPUTextureFormat format) {
+ShaderBindGroupTextureEntry *
+shader_update_texture_view(Shader *shader, const bind_group_index group_index,
+                           const bind_index index, WGPUTextureView view,
+                           WGPUTextureFormat format) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupTextureEntry *bound_texture =
@@ -43,11 +43,13 @@ void shader_update_texture_view(Shader *shader,
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
   }
+
+  return bound_texture;
 }
 
-void shader_update_uniform_data(Shader *shader,
-                                const bind_group_index group_index,
-                                const bind_index index, void *data) {
+ShaderBindGroupUniformEntry *
+shader_update_uniform_data(Shader *shader, const bind_group_index group_index,
+                           const bind_index index, void *data) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
@@ -78,13 +80,15 @@ void shader_update_uniform_data(Shader *shader,
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
   }
+
+  return bound_uniform;
 }
 
-void shader_update_uniform_buffer(Shader *shader,
-                                  const bind_group_index group_index,
-                                  const bind_index index, WGPUBuffer buffer,
-                                  const size_t offset,
-                                  const ShaderBufferLifetime lifetime) {
+ShaderBindGroupUniformEntry *
+shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
+                             const bind_index index, WGPUBuffer buffer,
+                             const size_t offset,
+                             const ShaderBufferLifetime lifetime) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
@@ -115,15 +119,16 @@ void shader_update_uniform_buffer(Shader *shader,
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
   }
+
+  return bound_uniform;
 }
 
 /**
    Update uniform callback autocheck
  */
-void shader_update_uniform_callback(Shader *shader,
-                                    const bind_group_index group_index,
-                                    const bind_index index,
-                                    const ShaderUniformUpdate *update) {
+ShaderBindGroupUniformEntry *shader_update_uniform_callback(
+    Shader *shader, const bind_group_index group_index, const bind_index index,
+    const ShaderUniformUpdate *update) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
@@ -186,11 +191,14 @@ void shader_update_uniform_callback(Shader *shader,
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
   }
+
+  return bound_uniform;
 }
 
-void shader_update_sampler(Shader *shader, const bind_group_index group_index,
-                           const bind_index index,
-                           const WGPUSamplerDescriptor *sampler) {
+ShaderBindGroupSamplerEntry *
+shader_update_sampler(Shader *shader, const bind_group_index group_index,
+                      const bind_index index,
+                      const WGPUSamplerDescriptor *sampler) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupSamplerEntry *bound_sampler =
@@ -220,11 +228,14 @@ void shader_update_sampler(Shader *shader, const bind_group_index group_index,
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
   }
+
+  return bound_sampler;
 }
 
-void shader_update_texture(Shader *shader, const bind_group_index group_index,
-                           const bind_index index,
-                           const ShaderUpdateTexture *texture) {
+ShaderBindGroupTextureEntry *
+shader_update_texture(Shader *shader, const bind_group_index group_index,
+                      const bind_index index,
+                      const ShaderUpdateTexture *texture) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupTextureEntry *bound_texture =
@@ -256,17 +267,22 @@ void shader_update_texture(Shader *shader, const bind_group_index group_index,
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
   }
+
+  return bound_texture;
 }
 
-void shader_update_bind_group_offset(Shader *shader,
-                                     const bind_group_index group_index,
-                                     const uint8_t index, const size_t offset) {
+ShaderBindGroup *
+shader_update_bind_group_offset(Shader *shader,
+                                const bind_group_index group_index,
+                                const uint8_t index, const size_t offset) {
+
+  ShaderBindGroup *bind_group = &shader->bind_groups.entries[group_index];
 
   if (group_index > SHADER_MAX_BIND_GROUP) {
     VERBOSE_WARNING("Attempting to set shader %s bindgroup %u offset, "
                     "which is beyond bindgroup capacity (%d).",
                     shader->name, group_index, SHADER_MAX_BIND_GROUP);
-    return;
+    return bind_group;
   }
 
   if (index > SHADER_MAX_OFFSET_CAPACITY) {
@@ -274,7 +290,7 @@ void shader_update_bind_group_offset(Shader *shader,
         "Attempting to set shader %s bindgroup %u offset at index %u, "
         "which is beyond offset capacity (%d).",
         shader->name, group_index, index, SHADER_MAX_OFFSET_CAPACITY);
-    return;
+    return bind_group;
   }
 
   size_t alignment = shader_device_storage_alignment(shader->device);
@@ -283,4 +299,6 @@ void shader_update_bind_group_offset(Shader *shader,
       &shader->bind_groups.entries[group_index].uniforms.entries[index];
 
   *uniform->dynamic_offset_entry = offset * alignment;
+
+  return bind_group;
 }

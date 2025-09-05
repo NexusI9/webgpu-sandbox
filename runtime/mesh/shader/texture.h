@@ -11,7 +11,8 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *, WGPUTextureView,
                                           WGPUTextureView);
 
 // update
-void mesh_shader_texture_update_lights(Mesh *, UBOManager *, SSBOManager *);
+void mesh_shader_texture_update_lights(Mesh *, const MeshShader, UBOManager *,
+                                       SSBOManager *);
 void mesh_shader_texture_update_shadow_maps(Mesh *, WGPUTextureView,
                                             WGPUTextureView);
 

@@ -2,6 +2,7 @@
 #include "../backend/renderer/scene/std_texture/std_texture.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
@@ -30,7 +31,7 @@ static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
 
 // shader utils
 
-static void loader_gltf_bind_uniforms(Shader *, cgltf_material *,
+static void loader_gltf_bind_uniforms(Mesh *, cgltf_material *,
                                       const LoaderGLTFOptions *);
 
 static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
@@ -291,8 +292,7 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                              .queue = queue,
                          });
 
-      loader_gltf_bind_uniforms(mesh_shader(target_mesh, MeshShader_Texture), material,
-                                options);
+      loader_gltf_bind_uniforms(target_mesh, material, options);
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
@@ -311,7 +311,7 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
   Bind PBR textures
   store the texture_views (hold pointer to actual texture + other data)
  */
-void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
+void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
                                const LoaderGLTFOptions *options) {
 
   const uint8_t texture_length = 5;
@@ -346,29 +346,40 @@ void loader_gltf_bind_uniforms(Shader *shader, cgltf_material *material,
             options->max_texture_size) == LoaderGLTFStatus_TextureFound) {
 
       // send texture + sampler to shader
-      shader_update_texture(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
-                            &(ShaderUpdateTexture){
-                                .data = data,
-                                .size = size,
-                                .width = width,
-                                .height = height,
-                                .dimension = WGPUTextureViewDimension_2D,
-                                .format = WGPUTextureFormat_BGRA8Unorm,
-                                .channels = TextureChannel_RGBA,
-                            });
+      ShaderBindGroupTextureEntry *shader_texture =
+          shader_update_texture(mesh_shader(mesh, MeshShader_Texture),
+                                SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
+                                &(ShaderUpdateTexture){
+                                    .data = data,
+                                    .size = size,
+                                    .width = width,
+                                    .height = height,
+                                    .dimension = WGPUTextureViewDimension_2D,
+                                    .format = WGPUTextureFormat_BGRA8Unorm,
+                                    .channels = TextureChannel_RGBA,
+                                });
+
+      // transfert texture view to reflection shader (reuse resource), however
+      // need to be careful with shared ownership. Here it shouldn't be to much
+      // trouble since reflection and texture shader lifetime are mostly linked.
+      shader_update_texture_view(mesh_shader(mesh, MeshShader_Reflection),
+                                 SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
+                                 shader_texture->texture_view,
+                                 shader_texture->format);
     }
 
+    // DELETEME
     // update sampler entry from generated array
-    shader_update_sampler(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
-                          binding + 1,
-                          &(WGPUSamplerDescriptor){
-                              .addressModeU = WGPUAddressMode_ClampToEdge,
-                              .addressModeV = WGPUAddressMode_ClampToEdge,
-                              .addressModeW = WGPUAddressMode_ClampToEdge,
-                              .minFilter = WGPUFilterMode_Linear,
-                              .magFilter = WGPUFilterMode_Linear,
-                              .compare = WGPUCompareFunction_Undefined,
-                          });
+    //    shader_update_sampler(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
+    //                          binding + 1,
+    //                          &(WGPUSamplerDescriptor){
+    //                              .addressModeU = WGPUAddressMode_ClampToEdge,
+    //                              .addressModeV = WGPUAddressMode_ClampToEdge,
+    //                              .addressModeW = WGPUAddressMode_ClampToEdge,
+    //                              .minFilter = WGPUFilterMode_Linear,
+    //                              .magFilter = WGPUFilterMode_Linear,
+    //                              .compare = WGPUCompareFunction_Undefined,
+    //                          });
     binding += 2;
   }
 }
