@@ -115,7 +115,7 @@ typedef struct {
     WGPUPrimitiveState primitive_state;
     WGPUDepthStencilState stencil_state;
     WGPUBlendState blend_state;
-    PipelineMultisampleCount multisample;
+    WGPUMultisampleState multisample_state;
   } pipeline_attributes;
 
   PipelineBinding bindings;
@@ -138,7 +138,7 @@ typedef struct {
   WGPUDepthStencilState stencil_state;
   WGPUColorTargetState color_state;
   WGPUBlendState blend_state;
-  PipelineMultisampleCount sampling;
+  WGPUMultisampleState multisample_state;
 
   // layout
   WGPURenderPipelineDescriptor descriptor;

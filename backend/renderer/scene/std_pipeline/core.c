@@ -95,10 +95,10 @@ void standard_pipelines_init(const WGPUDevice device,
                          &layout->pipeline_attributes.blend_state);
 
     // if sampling set in custom attbutes, apply the config one
-    if (layout->pipeline_attributes.multisample !=
+    if (layout->pipeline_attributes.multisample_state.count !=
         PipelineMultisampleCount_Undefined) {
-      pipeline_set_sampling(cached_pipeline,
-                            layout->pipeline_attributes.multisample);
+      pipeline_set_multisample(cached_pipeline,
+                               &layout->pipeline_attributes.multisample_state);
     } else {
       // else use the renderer one
       pipeline_set_sampling(cached_pipeline, multisample);

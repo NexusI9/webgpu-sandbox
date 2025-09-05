@@ -26,7 +26,7 @@ void init_scene() {
                    .renderer =
                        &(SceneRendererCreateDescriptor){
                            .name = "canvas",
-                           .multisampling_count = PipelineMultisampleCount_1x,
+                           .multisampling_count = PipelineMultisampleCount_4x,
                            .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f},
                            .dpi = 1.0,
                        },

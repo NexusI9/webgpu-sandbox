@@ -17,7 +17,6 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 
   // Define core data
   pipeline->device = desc->device;
-  pipeline->sampling = PipelineMultisampleCount_1x;
   pipeline->handle = NULL;
   pipeline->label = desc->label;
   pipeline_set_vertex_layout(pipeline);
@@ -30,7 +29,7 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
   // compile shader module intro GPU device
   buffer_create_shader(&pipeline->module, pipeline->device, source,
                        pipeline->label);
-  
+
   /*
     DEFINE PIPELINE CACHED ATTRIBUTES
     Define default layout, the default layout correspond to the texture shader
@@ -90,6 +89,12 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
       .format = WGPUTextureFormat_Depth24Plus,
       .depthWriteEnabled = true,
       .depthCompare = WGPUCompareFunction_Less,
+  };
+
+  pipeline->multisample_state = (WGPUMultisampleState){
+      .count = PipelineMultisampleCount_1x,
+      .mask = 0xFFFFFFFF,
+      .alphaToCoverageEnabled = false,
   };
 }
 
@@ -152,12 +157,7 @@ void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
       .label = pipeline->label,
       .vertex = pipeline->vertex_state,
       .primitive = pipeline->primitive_state,
-      .multisample =
-          {
-              .count = pipeline->sampling,
-              .mask = 0xFFFFFFFF,
-              .alphaToCoverageEnabled = false,
-          },
+      .multisample = pipeline->multisample_state,
   };
 
   // add optional fragment or vertex
@@ -194,5 +194,5 @@ void pipeline_destroy(Pipeline *pipeline) {
 
 void pipeline_set_sampling(Pipeline *pipeline,
                            PipelineMultisampleCount sampling) {
-  pipeline->sampling = sampling;
+  pipeline->multisample_state.count = sampling;
 }

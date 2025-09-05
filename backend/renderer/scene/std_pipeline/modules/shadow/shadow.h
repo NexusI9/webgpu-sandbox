@@ -26,7 +26,12 @@ static const ShaderPipelineStateObject layout_shadow = {
     .bind_groups = {&mp_layout},
     .pipeline_attributes =
         {
-            .multisample = PipelineMultisampleCount_1x,
+            .multisample_state =
+                (WGPUMultisampleState){
+                    .alphaToCoverageEnabled = false,
+                    .mask = 0xFFFFFFFF,
+                    .count = PipelineMultisampleCount_1x,
+                },
             .stencil_state =
                 (WGPUDepthStencilState){
                     .format = SHADOW_DEPTH_FORMAT,
@@ -56,7 +61,12 @@ static const ShaderPipelineStateObject layout_shadow_cullback = {
     .bind_groups = {&mp_layout},
     .pipeline_attributes =
         {
-            .multisample = PipelineMultisampleCount_1x,
+            .multisample_state =
+                (WGPUMultisampleState){
+                    .alphaToCoverageEnabled = false,
+                    .mask = 0xFFFFFFFF,
+                    .count = PipelineMultisampleCount_1x,
+                },
             .stencil_state =
                 (WGPUDepthStencilState){
                     .format = SHADOW_DEPTH_FORMAT,

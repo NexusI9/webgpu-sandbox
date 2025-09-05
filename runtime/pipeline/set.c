@@ -69,3 +69,8 @@ void pipeline_set_blend(Pipeline *pipeline, const WGPUBlendState *state) {
   pipeline->color_state.blend = &pipeline->blend_state;
   pipeline->fragment_state.targets = &pipeline->color_state;
 }
+
+void pipeline_set_multisample(Pipeline *pipeline,
+                              const WGPUMultisampleState* state) {
+  pipeline->multisample_state = *state;
+}

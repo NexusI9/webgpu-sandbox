@@ -104,13 +104,13 @@ probe_reflection_list_create_core(const ProbeReflectionCreateCore *desc) {
     // create render pass preset
     render_pass_create(desc->render_pass->handle,
                        &(RenderPassCreateDescriptor){
-                           .label = "Probe Reflection Grid List",
+                           .label = "Probe Reflection List Render Pass",
                            .device = desc->device,
                            .queue = desc->queue,
                            .height = desc->render_pass->resolution,
                            .width = desc->render_pass->resolution,
                            .draw_list = desc->render_pass->draw_list,
-                           .multisample = desc->render_pass->multisample,
+                           .multisample = PipelineMultisampleCount_1x,
                            .swapchain = NULL,
                            .color =
                                &(RenderPassColorAttachment){
