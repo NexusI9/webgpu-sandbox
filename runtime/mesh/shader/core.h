@@ -8,13 +8,13 @@
 #include "../runtime/viewport/viewport.h"
 
 /* custom */
-void mesh_shader_create(Mesh *, const ShaderCreateDescriptor *);
-void mesh_shader_create_fixed(Mesh *, const ShaderCreateDescriptor *);
+MeshStatus mesh_shader_create(Mesh *, const ShaderCreateDescriptor *);
+MeshStatus mesh_shader_create_fixed(Mesh *, const ShaderCreateDescriptor *);
 
-/* builtins*/
-void mesh_shader_create_shadow(Mesh *);
-void mesh_shader_create_wireframe(Mesh *);
-void mesh_shader_create_solid(Mesh *);
+/* builtins */
+MeshStatus mesh_shader_create_shadow(Mesh *);
+MeshStatus mesh_shader_create_wireframe(Mesh *);
+MeshStatus mesh_shader_create_solid(Mesh *);
 
 Shader *mesh_shader(Mesh *, const MeshShader);
 

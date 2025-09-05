@@ -426,7 +426,8 @@ scene_add_probe_reflection_plane(Scene *scene,
                                  ProbeReflectionPlaneDescriptor *desc) {
 
   // add draw callback if first probe
-  if (scene->planes_reflection.length == 0)
+  if (scene->planes_reflection.length == 0 &&
+      scene->renderer.draw.mode == SceneRendererDrawMode_Texture)
     scene_renderer_add_draw_callback(&scene->renderer,
                                      probe_reflection_plane_list_draw_callback,
                                      (void *)&scene->planes_reflection);

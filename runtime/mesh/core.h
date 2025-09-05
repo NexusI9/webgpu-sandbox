@@ -23,6 +23,8 @@ typedef struct Mesh Mesh;
 typedef enum {
   MeshStatus_Success,
   MeshStatus_AllocFail,
+  MeshStatus_AlreadyCreated,
+  MeshStatus_UndefError,
 } MeshStatus;
 
 typedef struct {

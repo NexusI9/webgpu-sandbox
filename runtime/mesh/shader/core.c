@@ -32,10 +32,18 @@ void mesh_shader_set_active(Mesh *mesh, const MeshShader shader) {
    The init shadow shader doesn't belong to the material API as it is a
    necessary component set by default on mesh creation.
  */
-void mesh_shader_create_shadow(Mesh *mesh) {
+MeshStatus mesh_shader_create_shadow(Mesh *mesh) {
 
   // import shadow shader
   Shader *shadow_shader = mesh_shader(mesh, MeshShader_Shadow);
+
+  if (shadow_shader->name != NULL) {
+    VERBOSE_INFO(
+        "Shadow shader for %s is already created, skip shader creation.",
+        mesh->name);
+    return MeshStatus_AlreadyCreated;
+  }
+
   shader_create(shadow_shader,
                 &(ShaderCreateDescriptor){
                     .pipeline = std_pipeline(PipelineType_Shadow),
@@ -44,6 +52,8 @@ void mesh_shader_create_shadow(Mesh *mesh) {
                     .queue = mesh->queue,
                     .name = "Mesh shadow shader",
                 });
+
+  return MeshStatus_Success;
 }
 
 /**
@@ -61,7 +71,7 @@ void mesh_shader_create_shadow(Mesh *mesh) {
      3. Upload data to GPU buffer
      4. Create wireframe shader
  */
-void mesh_shader_create_wireframe(Mesh *mesh) {
+MeshStatus mesh_shader_create_wireframe(Mesh *mesh) {
 
   Shader *wireframe_shader = mesh_shader(mesh, MeshShader_Wireframe);
 
@@ -70,7 +80,7 @@ void mesh_shader_create_wireframe(Mesh *mesh) {
     VERBOSE_INFO(
         "Wireframe shader for %s is already created, skip shader creation.",
         mesh->name);
-    return;
+    return MeshStatus_AlreadyCreated;
   }
 
   // create shader
@@ -85,14 +95,23 @@ void mesh_shader_create_wireframe(Mesh *mesh) {
 
   shader_update_uniform_data(wireframe_shader, 1, 0,
                              &(color){randf(), randf(), randf(), 1.0f});
+
+  return MeshStatus_Success;
 }
 
 /**
    Initialize solid shader
  */
-void mesh_shader_create_solid(Mesh *mesh) {
+MeshStatus mesh_shader_create_solid(Mesh *mesh) {
 
   Shader *solid_shader = mesh_shader(mesh, MeshShader_Solid);
+
+  if (solid_shader->name != NULL) {
+    VERBOSE_INFO(
+        "Solid shader for %s is already created, skip shader creation.",
+        mesh->name);
+    return MeshStatus_AlreadyCreated;
+  }
 
   // create shader
   shader_create(solid_shader, &(ShaderCreateDescriptor){
@@ -102,14 +121,26 @@ void mesh_shader_create_solid(Mesh *mesh) {
                                   .queue = mesh->queue,
                                   .name = "Mesh solid shader",
                               });
+
+  return MeshStatus_Success;
 }
 
 /**
    Set texture shader.
  */
-void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
+MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
+
+  Shader *texture_shader = mesh_shader(mesh, MeshShader_Texture);
+
+  if (texture_shader->name != NULL) {
+    VERBOSE_INFO(
+        "Texture shader for %s is already created, skip shader creation.",
+        mesh->name);
+    return MeshStatus_AlreadyCreated;
+  }
+
   // create texture shader as default
-  shader_create(mesh_shader(mesh, MeshShader_Texture), desc);
+  shader_create(texture_shader, desc);
 
   // also initialise the reflection shader (basically a copy of the texture)
   shader_create(mesh_shader(mesh, MeshShader_Reflection),
@@ -123,16 +154,31 @@ void mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
 
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Texture);
+
+  return MeshStatus_Success;
 }
 
 /**
    Set texture shader.
  */
-void mesh_shader_create_fixed(Mesh *mesh, const ShaderCreateDescriptor *desc) {
+MeshStatus mesh_shader_create_fixed(Mesh *mesh,
+                                    const ShaderCreateDescriptor *desc) {
+
+  Shader *fixed_shader = mesh_shader(mesh, MeshShader_Texture);
+
+  if (fixed_shader->name != NULL) {
+    VERBOSE_INFO(
+        "Fixed shader for %s is already created, skip shader creation.",
+        mesh->name);
+    return MeshStatus_AlreadyCreated;
+  }
+
   // alias to shader_create
   shader_create(mesh_shader(mesh, MeshShader_Fixed), desc);
   // set active shader
   mesh_shader_set_active(mesh, MeshShader_Fixed);
+
+  return MeshStatus_Success;
 }
 
 /**

@@ -105,6 +105,8 @@ void render_pass_command_draw(RenderPass *pass,
       +-----------+     +-----------+
 
  */
+
+static int t = 0;
 void render_pass_list_draw_onscreen_multisample(RenderPassList *list) {
 
   /*
@@ -126,6 +128,8 @@ void render_pass_list_draw_onscreen_multisample(RenderPassList *list) {
   // Go through and draw each mode render pass
   for (size_t i = 0; i < list->length; i++) {
     list->passes[i].command_encoder = render_encoder;
+    // render each passes to commmon msaa texture
+    list->passes[i].color.attachment.view = list->resolve_view;
     render_pass_command_draw(&list->passes[i], RENDER_PASS_VIEW_OVERRIDE_NONE);
   }
 
@@ -141,7 +145,7 @@ void render_pass_list_draw_onscreen_multisample(RenderPassList *list) {
                                   .view = list->resolve_view,
                                   .resolveTarget = swapchain_view, // 1x sampled
                                   .loadOp = WGPULoadOp_Load,
-                                  .storeOp = WGPUStoreOp_Store,
+                                  .storeOp = WGPUStoreOp_Discard,
                               },
                       });
   wgpuRenderPassEncoderEnd(resolve_pass);
@@ -174,6 +178,7 @@ void render_pass_list_draw_onscreen_monosample(RenderPassList *list) {
   // Go through and draw each mode render pass
   for (size_t i = 0; i < list->length; i++) {
     list->passes[i].command_encoder = render_encoder;
+    // render each passes directly to swapchain
     list->passes[i].color.attachment.view = swapchain_view;
     render_pass_command_draw(&list->passes[i], RENDER_PASS_VIEW_OVERRIDE_NONE);
   }

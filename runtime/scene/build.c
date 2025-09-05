@@ -157,7 +157,7 @@ void scene_build_mesh_texture(
 
   // bind views
   mesh_shader_build_mvp(build_desc->mesh, MeshShader_Texture, build_desc->ssbo);
-  
+
   mesh_shader_build_mvp(build_desc->mesh, MeshShader_Reflection,
                         build_desc->ssbo);
 
@@ -168,7 +168,7 @@ void scene_build_mesh_texture(
     // bind lights
     mesh_shader_texture_update_lights(build_desc->mesh, MeshShader_Texture,
                                       build_desc->ubo, build_desc->ssbo);
-    
+
     mesh_shader_texture_update_lights(build_desc->mesh, MeshShader_Reflection,
                                       build_desc->ubo, build_desc->ssbo);
   }
@@ -233,11 +233,9 @@ void scene_build_mesh_wireframe(const SceneBuildDescriptor *build_desc) {
                                  build_desc->mesh->queue);
 
   // create meshes' wireframe shader
-  mesh_shader_create_wireframe(build_desc->mesh);
-
-  // bind views
-  mesh_shader_build_mvp(build_desc->mesh, MeshShader_Wireframe,
-                        build_desc->ssbo);
+  if (mesh_shader_create_wireframe(build_desc->mesh) == MeshStatus_Success)
+    mesh_shader_build_mvp(build_desc->mesh, MeshShader_Wireframe,
+                          build_desc->ssbo);
 
   // set active shader
   mesh_shader_set_active(build_desc->mesh, MeshShader_Wireframe);
