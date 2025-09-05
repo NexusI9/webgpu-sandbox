@@ -3,7 +3,6 @@
 #include "../resources/loader/loader.mbin.h"
 #include "../runtime/scene/editor/object/object.h"
 #include "../runtime/scene/scene.h"
-#include "./utils.h"
 
 static inline void seo_light_point_create_common(SceneEditorObject *,
                                                  PointLight *,

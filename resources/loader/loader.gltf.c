@@ -150,7 +150,6 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   for (size_t i = 0; i < index_count; i++)
     index_data[i] = (vindex_t)raw_index_data[i];
 
-  // DELETEME: print_list_uint32(index_data, index_count, 1);
   return (VertexIndex){
       .entries = index_data,
       .capacity = index_count,
@@ -240,9 +239,6 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
           break;
         }
       }
-
-      // DELETEME: print_list_float(vert_attr.data,
-      // vert_attr.length, VERTEX_STRIDE);
 
       // load index
       vert_index = loader_gltf_index(&current_primitive);

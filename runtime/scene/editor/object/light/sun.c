@@ -2,7 +2,6 @@
 #include "../builder/builder.h"
 #include "../runtime/scene/editor/object/object.h"
 #include "../runtime/scene/scene.h"
-#include "./utils.h"
 
 static inline void seo_light_sun_create_common(SceneEditorObject *, SunLight *,
                                                const SEOCreateDescriptor *);
