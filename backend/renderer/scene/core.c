@@ -22,7 +22,7 @@ static inline WGPUSwapChain
 scene_renderer_create_swapchain(const SceneRenderer *);
 
 void scene_renderer_init(SceneRenderer *renderer,
-                           const SceneRendererCreateDescriptor *rd) {
+                         const SceneRendererCreateDescriptor *rd) {
 
   renderer->context.name = rd->name;
   renderer->background = rd->background;
@@ -267,4 +267,11 @@ WGPUSwapChain scene_renderer_create_swapchain(const SceneRenderer *renderer) {
           .height = scene_renderer_height(renderer),
           .presentMode = WGPUPresentMode_Fifo,
       });
+}
+
+SSBOManager *scene_renderer_ssbo(SceneRenderer *renderer) {
+  return &renderer->ssbo;
+}
+UBOManager *scene_renderer_ubo(SceneRenderer *renderer) {
+  return &renderer->ubo;
 }

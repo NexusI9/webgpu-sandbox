@@ -65,11 +65,15 @@ struct LightCount {
 };
 
 struct ProbeCount {
-  reflection : u32, irradiance : u32,
+  reflection : u32, plane : u32, irradiance : u32, _pad : u32,
+};
+
+struct Fog {
+  color : vec4<f32>, start_distance : f32, density : f32, _pad : vec2<f32>,
 };
 
 struct UBO {
-  light_count : LightCount, probe_count : ProbeCount,
+  light_count : LightCount, probe_count : ProbeCount, fog : Fog,
 };
 
 @group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
@@ -184,6 +188,15 @@ fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
   return uv;
 }
 
+fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
+    -> f32 {
+
+  let fog_distance : f32 = max(distance - fog_start_distance, 0.0f);
+  let density : f32 = fog_density * 0.001;
+  let exp_factor : f32 = 1.0f - exp(-density * fog_distance);
+  return clamp(exp_factor, 0.0f, 1.0f);
+}
+
 //
 //
 //
@@ -239,7 +252,10 @@ fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
 
   let composite = mix(skybox, reflection, reflection.a);
 
-  let out_color : vec4<f32> = mix(uGlass.color * composite, composite, f.r);
+  let fog_k = fog_factor(length(vFrag - camera.position.xyz),
+                         ubo.fog.start_distance, ubo.fog.density);
 
+  let combined : vec4<f32> = mix(uGlass.color * composite, composite, f.r);
+  let out_color = mix(combined, ubo.fog.color, fog_k);
   return out_color;
 }

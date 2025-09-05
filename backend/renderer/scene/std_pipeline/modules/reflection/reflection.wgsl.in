@@ -127,8 +127,10 @@ struct Projection {
 // TODO: combine textures in a texture_2d_array + only use 1 sampler ?
 
 // camera viewport
-@group(0) @binding(0) var<storage, read> uViewProj : array<Projection>;
-@group(0) @binding(1) var<storage, read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
+@group(0) @binding(3) var<storage, read> uViewProj : array<Projection>;
 
 @group(1) @binding(0) var diffuse_texture : texture_2d<f32>;
 @group(1) @binding(1) var diffuse_sampler : sampler;
@@ -647,7 +649,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
                      @location(2) vUv : vec2<f32>,
                      @location(3) vFrag : vec3<f32>) -> @location(0) vec4<f32> {
 
-  // let camera = uCamera[0];
+  let camera = uCamera[0];
 
   var albedo = textureSample(diffuse_texture, diffuse_sampler, vUv);
   var metallic = textureSample(metallic_texture, metallic_sampler, vUv);

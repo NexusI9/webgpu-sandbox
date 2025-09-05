@@ -11,6 +11,7 @@
 #include "../pbr/pbr.h"
 #include <webgpu/webgpu.h>
 
+
 static const ShaderPipelineStateObject layout_reflection = {
     .label = "Pipeline Bind Groups - Reflection",
     .shader_path = "../backend/renderer/scene/std_pipeline/modules/reflection/"
@@ -18,7 +19,7 @@ static const ShaderPipelineStateObject layout_reflection = {
     .bind_groups_count = 3,
     .bind_groups =
         {
-            &mp_layout,
+            &mvp_layout,
             &layout_pbr_textures_bind_group,
             &layout_pbr_lights_bind_group,
         },

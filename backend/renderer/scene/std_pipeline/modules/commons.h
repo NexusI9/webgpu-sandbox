@@ -8,6 +8,8 @@
 
 #include "webgpu/webgpu.h"
 
+
+
 static const WGPUBindGroupLayoutEntry mvp_layout_entry[3] = {
     {
         .binding = 0,
@@ -40,6 +42,8 @@ static const WGPUBindGroupLayoutEntry mvp_layout_entry[3] = {
             },
     },
 };
+
+
 
 static const WGPUBindGroupLayoutDescriptor mvp_layout = {
     // Group 0

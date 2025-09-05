@@ -25,8 +25,12 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     {
       /*  ===== SCENE RENDER =====   */
       scene_renderer_init(&scene->renderer, desc->renderer);
-      scene_environment_init(&scene->environment);
       scene_draw_layouts_init(scene, desc->renderer->multisampling_count);
+      scene_environment_init(&scene->environment,
+                             &(SceneEnvironmentDescriptor){
+                                 .ssbo = &scene->renderer.ssbo,
+                                 .ubo = &scene->renderer.ubo,
+                             });
     }
 
     {

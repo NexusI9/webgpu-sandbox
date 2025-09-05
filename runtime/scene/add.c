@@ -97,7 +97,7 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
   base_list->length++;
 
   ubo_update_entry(&scene->renderer.ubo, UBOField_PointLightCount,
-                   (UBOValue){base_list->length});
+                   (void *)&base_list->length);
   ubo_upload(&scene->renderer.ubo);
 
   return seo_light;
@@ -170,7 +170,7 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
   base_list->length++;
 
   ubo_update_entry(&scene->renderer.ubo, UBOField_SpotLightCount,
-                   (UBOValue){base_list->length});
+                   (void *)&base_list->length);
   ubo_upload(&scene->renderer.ubo);
 
   return seo_light;
@@ -211,7 +211,7 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
   scene_add_seo(scene, seo_light);
 
   ubo_update_entry(&scene->renderer.ubo, UBOField_AmbientLightCount,
-                   (UBOValue){list->length});
+                   (void *)&list->length);
   ubo_upload(&scene->renderer.ubo);
 
   return seo_light;
@@ -285,7 +285,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   base_list->length++;
 
   ubo_update_entry(&scene->renderer.ubo, UBOField_SunLightCount,
-                   (UBOValue){base_list->length});
+                   (void *)&base_list->length);
   ubo_upload(&scene->renderer.ubo);
 
   return seo_light;
@@ -408,9 +408,10 @@ scene_add_probe_reflection_grid(Scene *scene,
   }
 
   // update UBO for probe count
+  size_t probe_count =
+      probe_reflection_grid_list_probe_count(&scene->probes_reflection);
   ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionGridCount,
-                   (UBOValue){probe_reflection_grid_list_probe_count(
-                       &scene->probes_reflection)});
+                   (void *)&probe_count);
 
   ubo_upload(&scene->renderer.ubo);
 
@@ -465,7 +466,7 @@ scene_add_probe_reflection_plane(Scene *scene,
 
   // update UBO for probe count
   ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionPlaneCount,
-                   (UBOValue){scene->planes_reflection.length});
+                   (void *)&scene->planes_reflection.length);
 
   ubo_upload(&scene->renderer.ubo);
 

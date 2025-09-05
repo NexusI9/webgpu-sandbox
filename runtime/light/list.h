@@ -89,6 +89,13 @@ typedef struct {
   AmbientLightList ambient;
 } LightList;
 
+typedef struct {
+  uint32_t point;
+  uint32_t spot;
+  uint32_t sun;
+  uint32_t ambient;
+} LightCountUniform;
+
 StaticListStatus light_list_create(LightList *, size_t);
 
 StaticListStatus light_list_point_shadow_insert(PointLightListShadow *,
