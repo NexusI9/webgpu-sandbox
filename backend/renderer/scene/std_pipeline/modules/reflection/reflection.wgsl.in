@@ -668,36 +668,36 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   var ambient : vec3<f32> = vec3<f32>(0.0f);
 
   // calculate point lights
-  // for (var i = 0u; i < ubo.light_count.point; i++) {
-  //  let light = point_light_list[i];
-  //  Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
-  //                            light.position, light.color, light.intensity);
-  //}
+  for (var i = 0u; i < ubo.light_count.point; i++) {
+    let light = point_light_list[i];
+    Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+                              light.position, light.color, light.intensity);
+  }
 
   // calculate spot lights
   // basically the same a point light, but use a fixed light direction instead
   // of a one per fragment like a point light
-  // for (var i = 0u; i < ubo.light_count.spot; i = i + 1u) {
-  //  let light = spot_light_list[i];
-  //  let light_direction = light.position - light.lookat;
-  //  Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
-  //                            light_direction, light.color, light.intensity);
-  //}
+  for (var i = 0u; i < ubo.light_count.spot; i = i + 1u) {
+    let light = spot_light_list[i];
+    let light_direction = light.position - light.lookat;
+    Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+                              light_direction, light.color, light.intensity);
+  }
 
   // calculate sun lights
-  // for (var i = 0u; i < ubo.light_count.sun; i = i + 1u) {
-  //  let light = sun_light_list[i];
-  //  Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
-  //                            light.position, light.color, light.intensity);
-  //}
+  for (var i = 0u; i < ubo.light_count.sun; i = i + 1u) {
+    let light = sun_light_list[i];
+    Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+                              light.position, light.color, light.intensity);
+  }
 
   // calulate ambient lights
-  // var ambient_intensity = 0.0f;
-  // for (var i = 0u; i < ubo.light_count.ambient; i = i + 1u) {
-  //  let light = ambient_light_list[i];
-  //  ambient += compute_ambient_light(material, light.color, light.intensity);
-  //  ambient_intensity += light.intensity;
-  //}
+  var ambient_intensity = 0.0f;
+  for (var i = 0u; i < ubo.light_count.ambient; i = i + 1u) {
+    let light = ambient_light_list[i];
+    ambient += compute_ambient_light(material, light.color, light.intensity);
+    ambient_intensity += light.intensity;
+  }
 
   // shadow map computation
   // let point_shadow = point_shadow_factor(vFrag, camera.position.xyz);
@@ -707,7 +707,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   //  let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
   //                            point_shadow + spot_shadow + sun_shadow);
 
-  let combined = vec4<f32>(albedo.rgb, 1.0f);
+  let combined = vec4<f32>(ambient + Lo, 1.0f);
 
   let fog_k = fog_factor(length(vFrag - camera.position.xyz),
                          ubo.fog.start_distance, ubo.fog.density);

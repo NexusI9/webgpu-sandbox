@@ -367,19 +367,7 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
                                  shader_texture->texture_view,
                                  shader_texture->format);
     }
-
-    // DELETEME
-    // update sampler entry from generated array
-    //    shader_update_sampler(shader, SHADER_TEXTURE_BINDGROUP_TEXTURES,
-    //                          binding + 1,
-    //                          &(WGPUSamplerDescriptor){
-    //                              .addressModeU = WGPUAddressMode_ClampToEdge,
-    //                              .addressModeV = WGPUAddressMode_ClampToEdge,
-    //                              .addressModeW = WGPUAddressMode_ClampToEdge,
-    //                              .minFilter = WGPUFilterMode_Linear,
-    //                              .magFilter = WGPUFilterMode_Linear,
-    //                              .compare = WGPUCompareFunction_Undefined,
-    //                          });
+    
     binding += 2;
   }
 }
