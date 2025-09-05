@@ -1,5 +1,6 @@
 #include "core.h"
-#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../backend/std_pipeline/std_pipeline.h"
+#include "../utils/color.h"
 #include "../utils/math.h"
 
 /**

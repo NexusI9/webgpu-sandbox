@@ -1,5 +1,5 @@
 #include "grid.h"
-#include "../backend/renderer/scene/std_texture/std_texture.h"
+#include "../backend/std_texture/std_texture.h"
 #include "core.h"
 #include "probe.h"
 #include "webgpu/webgpu.h"

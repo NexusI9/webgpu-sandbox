@@ -3,7 +3,6 @@
 
 #include "../backend/clock.h"
 #include "../backend/registry.h"
-#include "../backend/renderer/renderer.h"
 #include "../runtime/probe/probe.h"
 #include "./debug/debug.h"
 #include "./editor/selection/gizmo/gizmo.h"

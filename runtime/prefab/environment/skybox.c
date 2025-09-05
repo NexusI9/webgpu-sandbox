@@ -1,8 +1,9 @@
 #include "skybox.h"
-#include "../../../backend/buffer.h"
-#include "../../../include/stb/stb_image.h"
-#include "../../primitive/cube.h"
-#include "../../texture/texture.h"
+#include "../backend/buffer.h"
+#include "../backend/std_pipeline/std_pipeline.h"
+#include "../include/stb/stb_image.h"
+#include "../runtime/primitive/cube.h"
+#include "../runtime/texture/texture.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>

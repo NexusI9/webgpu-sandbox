@@ -8,6 +8,7 @@
 #include "core.h"
 #include "editor/object/light/sun.h"
 #include "editor/object/list/list.h"
+#include "../backend/std_pipeline/std_pipeline.h"
 #include "editor/object/probe/probe.h"
 #include "editor/selection/core.h"
 #include <stdint.h>

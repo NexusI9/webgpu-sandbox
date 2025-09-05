@@ -36,7 +36,7 @@ MACROS := \
        -DAO_BAKE_HIT_COUNT 
 
 # Preprocess cwgsl shader to wgsl Shader files
-SHADER_DIR := ./backend/renderer/scene/std_pipeline/modules/
+SHADER_DIR := ./backend/std_pipeline/modules/
 CUSTOM_WGSL_EXT = .wgsl.in
 CUSTOM_WGSL_IN := $(shell find $(SHADER_DIR) -type f -name "*$(CUSTOM_WGSL_EXT)")
 COMPILE_WGSL := $(CUSTOM_WGSL_IN:$(CUSTOM_WGSL_EXT)=.wgsl)

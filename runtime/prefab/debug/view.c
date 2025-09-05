@@ -1,7 +1,7 @@
 #include "view.h"
 #include "../../../runtime/camera/camera.h"
 #include "../../../runtime/viewport/viewport.h"
-#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../backend/std_pipeline/std_pipeline.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "../runtime/primitive/plane.h"
 #include "../utils/system.h"

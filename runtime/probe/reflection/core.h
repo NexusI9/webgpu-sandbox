@@ -1,7 +1,7 @@
 #ifndef _PROBE_REFLECTION_CORE_H_
 #define _PROBE_REFLECTION_CORE_H_
 
-#include "../backend/renderer/scene/scene.h"
+#include "../runtime/scene/renderer/renderer.h"
 #include "../utils/vector/vector.h"
 #include "webgpu/webgpu.h"
 

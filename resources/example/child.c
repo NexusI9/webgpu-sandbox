@@ -1,5 +1,6 @@
 #include "child.h"
 #include "primitive.h"
+#include "../backend/std_pipeline/std_pipeline.h"
 
 void example_child(Scene *scene) {
 

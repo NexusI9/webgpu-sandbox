@@ -1,6 +1,6 @@
 #ifndef _LIGHT_LIST_H_
 #define _LIGHT_LIST_H_
-#include "../backend/renderer/scene/render_pass/render_pass.h"
+#include "../runtime/scene/renderer/render_pass/render_pass.h"
 #include "../utils/stli.h"
 #include "core.h"
 #include "webgpu/webgpu.h"

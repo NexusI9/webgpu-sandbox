@@ -1,6 +1,6 @@
 #include "update.h"
 #include "../backend/buffer.h"
-#include "../backend/renderer/scene/std_texture/std_texture.h"
+#include "../backend/std_texture/std_texture.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "find.h"

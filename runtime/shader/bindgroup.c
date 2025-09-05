@@ -1,5 +1,5 @@
 #include "bindgroup.h"
-#include "../backend/renderer/scene/std_texture/std_texture.h"
+#include "../backend/std_texture/std_texture.h"
 #include "./utils.h"
 #include "add.h"
 #include "core.h"

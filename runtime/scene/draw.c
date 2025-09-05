@@ -1,5 +1,4 @@
 #include "draw.h"
-#include "../backend/renderer/renderer.h"
 #include "../camera/camera.h"
 #include "core.h"
 
@@ -22,8 +21,3 @@ void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
   scene_renderer_set_draw_mode(&scene->renderer, mode);
 }
 
-/**
-   Update textures of all certain type of lights (Point, Sun, Spot...)
-   Function used when an object is added to the scene.
- */
-void scene_update_shadow_map(Scene *scene, const LightType light_type) {}

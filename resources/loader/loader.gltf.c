@@ -1,5 +1,6 @@
 #include "loader.gltf.h"
-#include "../backend/renderer/scene/std_texture/std_texture.h"
+#include "../backend/std_pipeline/std_pipeline.h"
+#include "../backend/std_texture/std_texture.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>

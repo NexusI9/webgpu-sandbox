@@ -1,5 +1,5 @@
 #include "view.h"
-#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../backend/std_pipeline/std_pipeline.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "core.h"
 

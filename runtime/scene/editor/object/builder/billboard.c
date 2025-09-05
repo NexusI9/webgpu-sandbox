@@ -1,5 +1,5 @@
 #include "billboard.h"
-#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../backend/std_pipeline/std_pipeline.h"
 #include "../runtime/primitive/plane.h"
 #include "../runtime/texture/texture.h"
 #include "webgpu/webgpu.h"

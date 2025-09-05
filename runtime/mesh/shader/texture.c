@@ -1,7 +1,7 @@
 #include "texture.h"
-#include "../backend/renderer/scene/scene.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
+#include "../runtime/light/shadow_map/core.h"
 
 /**
    Clear the texture shader bind groups of mesh

@@ -1,7 +1,6 @@
 #ifndef _SCENE_PASS_CONFIG_H_
 #define _SCENE_PASS_CONFIG_H_
 
-#include "../backend/renderer/scene/scene.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "./core.h"
 #include "debug/core.h"

@@ -3,9 +3,6 @@
 //  https://developer.chrome.com/docs/web-platform/webgpu/build-app?hl=en
 //  https://stackoverflow.com/questions/23997312/how-do-i-read-a-user-specified-file-in-an-emscripten-compiled-library
 
-#include "backend/renderer/renderer.h"
-#include "backend/renderer/scene/ao_bake/core.h"
-#include "backend/renderer/scene/core.h"
 #include "resources/example/example.h"
 #include <emscripten/emscripten.h>
 

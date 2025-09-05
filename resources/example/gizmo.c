@@ -1,5 +1,5 @@
 #include "gizmo.h"
-#include "../backend/renderer/scene/scene.h"
+#include "../backend/std_pipeline/std_pipeline.h"
 #include "../resources/loader/loader.mbin.h"
 #include "../runtime/mesh/shader/shader.h"
 

@@ -4,12 +4,10 @@
 #include "../backend/registry.h"
 #include "../backend/ssbo.h"
 #include "../utils/projection.h"
-#include "../viewport/viewport.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <stdint.h>
 
-#include "../camera/camera.h"
 
 #define LIGHT_POINT_VIEWS 6
 #define LIGHT_SPOT_VIEW 1

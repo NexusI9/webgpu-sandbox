@@ -1,5 +1,6 @@
 #include "glass.h"
-#include "../backend/renderer/scene/std_pipeline/modules/glass/glass.h"
+#include "../backend/std_pipeline/std_pipeline.h"
+#include "../backend/std_pipeline/modules/glass/glass.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
 

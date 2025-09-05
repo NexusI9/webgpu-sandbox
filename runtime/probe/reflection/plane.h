@@ -1,7 +1,7 @@
 #ifndef _PROBE_REFLECTION_PLANE_H_
 #define _PROBE_REFLECTION_PLANE_H_
 
-#include "../backend/renderer/scene/render_pass/render_pass.h"
+#include "../runtime/scene/renderer/render_pass/render_pass.h"
 #include "./core.h"
 #include "cglm/cglm.h"
 

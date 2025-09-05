@@ -1,7 +1,7 @@
 #include "wireframe.h"
+#include "../backend/std_pipeline/std_pipeline.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
-
 /**
    Setup a wireframe mesh with the given vertex/index attributes and color.
    Since gizmo is part of the Fixed pipeline. It's necessary to :
@@ -42,7 +42,8 @@ void seo_create_wireframe(Mesh *mesh,
                                .pipeline = std_pipeline(PipelineType_Line),
                            });
 
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0, desc->color);
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
+                             desc->color);
 
   // set override topology and shader as wireframe
   mesh_topology_set_override(mesh, mesh_topology_wireframe(mesh));

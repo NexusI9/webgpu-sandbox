@@ -1,6 +1,6 @@
 #include "./core.h"
 #include "../backend/buffer.h"
-#include "../backend/renderer/scene/std_pipeline/std_pipeline.h"
+#include "../backend/std_pipeline/std_pipeline.h"
 #include "../utils/dyli.h"
 #include "../utils/matrix.h"
 #include "shader/core.h"
