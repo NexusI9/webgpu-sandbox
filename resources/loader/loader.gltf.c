@@ -5,6 +5,8 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
+#include "../utils/system.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
 
@@ -45,12 +47,16 @@ void loader_gltf_load(const GLTFLoadDescriptor *desc) {
   VERBOSE_IMPORT("GLTF file: %s", desc->path);
 
   cgltf_data *data = NULL;
+  cgltf_result result;
+
   // load json structure
-  cgltf_result result =
-      cgltf_parse_file(desc->cgltf_options, desc->path, &data);
+  TIMER("GLTF Parse file",
+        { result = cgltf_parse_file(desc->cgltf_options, desc->path, &data); });
 
   // load actual gltf buffer data
-  result = cgltf_load_buffers(desc->cgltf_options, data, desc->path);
+  TIMER("GLTF Load Buffer", {
+    result = cgltf_load_buffers(desc->cgltf_options, data, desc->path);
+  });
 
   switch (result) {
 
@@ -244,6 +250,7 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       // load index
       vert_index = loader_gltf_index(&current_primitive);
 
+  
       // target current mesh itself if primitive == 0
       struct Mesh *target_mesh = scene_mesh;
 
@@ -364,7 +371,7 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
                                  shader_texture->texture_view,
                                  shader_texture->format);
     }
-    
+
     binding += 2;
   }
 }

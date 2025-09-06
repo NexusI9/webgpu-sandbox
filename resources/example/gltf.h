@@ -5,4 +5,6 @@
 
 void example_gltf(Scene *);
 
+void example_gltf_podium(Scene *);
+
 #endif

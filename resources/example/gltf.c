@@ -14,3 +14,18 @@ void example_gltf(Scene *scene) {
           },
   });
 }
+
+
+void example_gltf_podium(Scene *scene) {
+  loader_gltf_load(&(GLTFLoadDescriptor){
+      .scene = scene,
+      .path = "./resources/assets/gltf/podium.gltf",
+      .device = scene_device(scene),
+      .queue = scene_queue(scene),
+      .cgltf_options = &(cgltf_options){0},
+      .options =
+          &(LoaderGLTFOptions){
+              .max_texture_size = TextureResolution_512,
+          },
+  });
+}
