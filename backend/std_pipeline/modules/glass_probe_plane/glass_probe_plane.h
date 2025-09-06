@@ -2,11 +2,12 @@
 #define _PIPELINE_LAYOUT_GLASS_PROBE_PLANE_H_
 
 #include "../../core.h"
-#include "../glass/glass.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/probe/reflection/plane.h"
 #include "../runtime/viewport/viewport.h"
+
+#include "../glass_probe_grid/glass_probe_grid.h"
 
 #include <webgpu/webgpu.h>
 

@@ -62,7 +62,7 @@ typedef struct {
 } PipelineCreateDescriptor;
 
 // Standards pipelines
-#define PIPELINE_TYPE_COUNT 15
+#define PIPELINE_TYPE_COUNT 14
 
 typedef enum {
   PipelineType_Billboard,
@@ -76,7 +76,6 @@ typedef enum {
   PipelineType_Skybox,
   PipelineType_Solid,
   PipelineType_Unlit,
-  PipelineType_GlassBox,
   PipelineType_GlassProbeGrid,
   PipelineType_GlassProbePlane,
   PipelineType_Reflection,

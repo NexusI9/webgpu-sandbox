@@ -557,7 +557,6 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
       mesh_shader(mesh, MeshShader_Texture)->pipeline;
 
   if (mesh_pipeline == std_pipeline(PipelineType_Unlit) ||
-      mesh_pipeline == std_pipeline(PipelineType_GlassBox) ||
       mesh_pipeline == std_pipeline(PipelineType_GlassProbeGrid) ||
       mesh_pipeline == std_pipeline(PipelineType_GlassProbePlane))
     pipeline = ScenePipeline_Dynamic_Unlit;

@@ -127,8 +127,8 @@ void scene_renderer_resize(SceneRenderer *renderer) {
   emscripten_set_element_css_size(renderer->context.name, w, h);
 
   if (renderer->wgpu.swapchain) {
-    wgpuSwapChainRelease(renderer->wgpu.swapchain);
-    renderer->wgpu.swapchain = NULL;
+    //wgpuSwapChainRelease(renderer->wgpu.swapchain);
+    //renderer->wgpu.swapchain = NULL;
   }
 
   renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);

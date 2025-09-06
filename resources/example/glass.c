@@ -1,48 +1,10 @@
 #include "glass.h"
 #include "../backend/std_pipeline/std_pipeline.h"
-#include "../backend/std_pipeline/modules/glass/glass.h"
+
+#include "../backend/std_pipeline/modules/glass_probe_grid/glass_probe_grid.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
 
-void example_glass_box(Scene *scene) {
-  Mesh *mesh = scene_new_mesh(scene);
-
-  Primitive prim = primitive_icosphere();
-
-  mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
-                                  .primitive = &prim,
-                                  .name = "Glass Box Mesh",
-                                  .device = scene_device(scene),
-                                  .queue = scene_queue(scene),
-                              });
-
-  mesh_shader_create(mesh, &(ShaderCreateDescriptor){
-                               .pipeline = std_pipeline(PipelineType_GlassBox),
-                               .label = "Glass Box",
-                               .name = "Glass Box",
-                               .device = scene_device(scene),
-                               .queue = scene_queue(scene),
-                           });
-
-  mesh_set_position(mesh, (vec3){2.0f, 4.4f, -3.0f});
-  mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});
-  mesh_set_scale(mesh, (vec3){2.0f, 2.0f, 2.0f});
-
-  scene_add_mesh(scene, mesh, NULL);
-
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
-                             &(GlassUniform){
-                                 .color = {1.0f, 0.5f, 1.0f, 1.0f},
-                                 .roughness = 0.23f,
-                                 .frost_scale = 700.0f,
-                                 .frost_strength = 0.4f,
-                             });
-
-  shader_update_texture_view(
-      mesh_shader(mesh, MeshShader_Texture), 1, 1,
-      scene_environment_skybox(&scene->environment)->view,
-      WGPUTextureFormat_BGRA8Unorm);
-}
 
 void example_glass_probe_grid(Scene *scene, bool debug) {
 

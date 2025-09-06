@@ -2,13 +2,23 @@
 #define _PIPELINE_LAYOUT_GLASS_PROBE_GRID_H_
 
 #include "../../core.h"
-#include "../glass/glass.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/probe/reflection/grid.h"
 #include "../runtime/viewport/viewport.h"
 
+#include "../commons.h"
+
 #include <webgpu/webgpu.h>
+
+typedef struct {
+  float roughness;
+  float frost_scale;
+  float frost_strength;
+  float _pad;
+  color color;
+  vec4 _pad1;
+} __attribute__((aligned(16))) GlassUniform;
 
 static const WGPUBindGroupLayoutDescriptor glass_probe_grid_bind_group = {
     // Group 1 (Reflection probes array + sampler)

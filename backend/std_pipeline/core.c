@@ -4,7 +4,6 @@
 
 #include "./modules/billboard/billboard.h"
 #include "./modules/default/default.h"
-#include "./modules/glass/glass.h"
 #include "./modules/glass_probe_grid/glass_probe_grid.h"
 #include "./modules/grid/grid.h"
 #include "./modules/line/line.h"
@@ -30,7 +29,6 @@ static const ShaderPipelineStateObject *standard_layouts[PIPELINE_TYPE_COUNT] =
         [PipelineType_ShadowCullBack] = &layout_shadow_cullback,
         [PipelineType_Skybox] = &layout_skybox,
         [PipelineType_Solid] = &layout_solid,
-        [PipelineType_GlassBox] = &layout_glass,
         [PipelineType_GlassProbeGrid] = &layout_glass_probe_grid,
         [PipelineType_GlassProbePlane] = &layout_glass_probe_plane,
         [PipelineType_Reflection] = &layout_reflection,

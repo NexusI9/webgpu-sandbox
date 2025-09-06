@@ -65,7 +65,7 @@ int main(int argc, const char *argv[]) {
   
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);
-  example_glass_probe_grid(&main_scene, false);
+  //example_glass_probe_grid(&main_scene, false);
   example_glass_probe_plane(&main_scene, false);
   
   // Update Loop
