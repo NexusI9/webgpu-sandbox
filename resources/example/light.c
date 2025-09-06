@@ -4,7 +4,7 @@ void example_light(Scene *scene) {
 
   scene_add_point_light(scene,
                         &(PointLightDescriptor){
-                            .color = {1.0f, 0.0f, 0.3f},
+                            .color = {0.0f, 0.3f, 1.0f},
                             .intensity = 4.0f,
                             .cutoff = 20.0f,
                             .inner_cutoff = 50.0f,
@@ -25,7 +25,7 @@ void example_light(Scene *scene) {
 
   scene_add_spot_light(scene,
                        &(SpotLightDescriptor){
-                           .color = {1.0f, 0.0f, 0.4f},
+                           .color = {1.0f, 1.0f, 1.0f},
                            .intensity = 2.0f,
                            .cutoff = 45.0f,
                            .angle = 90.0f,

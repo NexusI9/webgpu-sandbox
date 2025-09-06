@@ -250,7 +250,6 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       // load index
       vert_index = loader_gltf_index(&current_primitive);
 
-  
       // target current mesh itself if primitive == 0
       struct Mesh *target_mesh = scene_mesh;
 
@@ -396,7 +395,9 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
     cgltf_image *image = texture_view->texture->image;
     if (image->uri) {
       cgltf_decode_uri(image->uri);
-      *data = stbi_load(image->uri, width, height, channels, forced_channel);
+      TIMER("GLTF Load Texture", {
+        *data = stbi_load(image->uri, width, height, channels, forced_channel);
+      });
 
     } else if (image->buffer_view) {
 
@@ -407,8 +408,11 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
       // use stbi to convert gltf image from RGB(A) to RGBA, ensuring 4 channels
       // TODO: more flexible texture upload (RGB/RGBA, large texture
       // handling...)
-      *data = stbi_load_from_memory(gltf_data, image->buffer_view->buffer->size,
-                                    width, height, channels, forced_channel);
+      TIMER("GLTF Load Texture", {
+        *data =
+            stbi_load_from_memory(gltf_data, image->buffer_view->buffer->size,
+                                  width, height, channels, forced_channel);
+      });
 
     } else {
       VERBOSE_PRINT(
@@ -416,6 +420,9 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
           "default texture");
       return LoaderGLTFStatus_LoadError;
     }
+
+    // DEBUG
+    printf("%u | %u \n", *width, *height);
 
     if (*data != NULL) {
 
