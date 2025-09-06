@@ -351,10 +351,10 @@ void mesh_topology_anchor_list_destroy(MeshTopologyAnchorList *list) {
 
    If index 0 and 2 and 7 share the same position:
 
-   Before:
+   Before: (hashed)
      hash(0|2|7) => [a,b,c,d,e,f]
 
-   After:
+   After: (mapped)
      [0] => [a,b,c,d,e,f]
      [2] => [a,b,c,d,e,f]
      [7] => [a,b,c,d,e,f]
@@ -364,6 +364,12 @@ void mesh_topology_anchor_list_destroy(MeshTopologyAnchorList *list) {
 void mesh_topology_anchor_list_map(MeshTopologyAnchorList *hashed,
                                    MeshTopology *base,
                                    MeshTopologyAnchorList *mapped) {
+
+
+  // expand the initial mapped list if capacity cannot hold the index count
+  while (base->index->length > mapped->capacity)
+    dyli_expand((void *)&mapped->entries, &mapped->capacity, &mapped->length,
+                sizeof(MeshTopologyAnchor), 2, "Mesh Base Mapped Anchors");
 
   // get each base index position
   for (size_t i = 0; i < base->index->length; i++) {
