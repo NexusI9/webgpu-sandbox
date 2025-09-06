@@ -2,12 +2,12 @@
 #define _PIPELINE_LAYOUT_PBR_H_
 
 #include "../../core.h"
+#include "../backend/ubo.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/light/light.h"
 #include "../runtime/light/uniform.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
-#include "../backend/ubo.h"
 
 #include "../commons.h"
 #include <webgpu/webgpu.h>
@@ -15,7 +15,7 @@
 static const WGPUBindGroupLayoutDescriptor layout_pbr_textures_bind_group = {
     // Group 1: Material Textures
     .label = "Group 1 - Material Textures",
-    .entryCount = 10,
+    .entryCount = 12,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -112,6 +112,24 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_textures_bind_group = {
             {
                 // occlusion_sampler
                 .binding = 9,
+                .visibility = WGPUShaderStage_Fragment,
+                .sampler =
+                    (WGPUSamplerBindingLayout){
+                        .type = WGPUSamplerBindingType_Filtering,
+                    },
+            },
+            {
+                .binding = 10, // skybox_texture
+                .visibility = WGPUShaderStage_Fragment,
+                .texture =
+                    (WGPUTextureBindingLayout){
+                        .sampleType = WGPUTextureSampleType_Float,
+                        .viewDimension = WGPUTextureViewDimension_Cube,
+                        .multisampled = false,
+                    },
+            },
+            {
+                .binding = 11, // skybox_sampler
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){
@@ -247,8 +265,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
 
 static const ShaderPipelineStateObject layout_pbr = {
     .label = "Pipeline Bind Groups - PBR",
-    .shader_path =
-        "../backend/std_pipeline/modules/pbr/pbr.wgsl",
+    .shader_path = "../backend/std_pipeline/modules/pbr/pbr.wgsl",
     .bind_groups_count = 3,
     .bind_groups =
         {

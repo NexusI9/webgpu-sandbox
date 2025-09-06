@@ -295,7 +295,13 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                              .queue = queue,
                          });
 
+      // load and bind gltf textures
       loader_gltf_bind_uniforms(target_mesh, material, options);
+
+      // link skybox texture view
+      shader_update_texture_view(mesh_shader(target_mesh, MeshShader_Texture),
+                                 1, 10, scene->environment.skybox.view,
+                                 WGPUTextureFormat_BGRA8Unorm);
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
