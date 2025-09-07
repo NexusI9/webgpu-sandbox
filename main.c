@@ -8,6 +8,7 @@
 
 // runtime
 #include "resources/example/glass.h"
+#include "resources/example/gltf.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/scene/scene.h"

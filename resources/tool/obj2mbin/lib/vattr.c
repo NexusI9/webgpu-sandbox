@@ -6,10 +6,7 @@
 
 void mbin_vertex_attribute_print(VertexAttributeList *list) {
 
-  if (list->length == 0)
-    return;
-
-  printf("Attributes: \n");
+  printf("Attributes: %s\n", list->label);
   for (size_t l = 0; l < list->length; l++) {
     printf("%f\t", list->entries[l]);
     if (l % list->dimension == list->dimension - 1)
@@ -18,8 +15,9 @@ void mbin_vertex_attribute_print(VertexAttributeList *list) {
   printf("\n");
 }
 
-VertexAttributeListStatus mbin_vertex_attribute_list_insert(VertexAttributeList *list,
-                                 mbin_vertex_t *value, size_t count) {
+VertexAttributeListStatus
+mbin_vertex_attribute_list_insert(VertexAttributeList *list,
+                                  mbin_vertex_t *value, size_t count) {
 
   // init list
   if (list->entries == NULL) {
@@ -61,28 +59,20 @@ void mbin_vertex_attribute_from_line(const char *line, void *data) {
 
   size_t prefix_len = strlen(desc->list->prefix);
   size_t line_len = strlen(line);
+  size_t content_len = line_len - prefix_len;
   // retrieve values from line
-  char values[line_len];
-  strncpy(values, &line[prefix_len], line_len - prefix_len);
+  char values[content_len + 1]; // + null term
+
+  memcpy(values, &line[prefix_len], content_len);
+  values[content_len] = '\0'; // null terminate
+  
   // split values
   char *token = strtok(values, VERTEX_SEPARATOR);
   while (token) {
     // convert char to float
     float value = strtof(token, NULL);
     mbin_vertex_attribute_list_insert(desc->list, &value, 1);
-    token = strtok(0, VERTEX_SEPARATOR);
-  }
-}
-
-void mbin_vertex_attribute_cache(FILE *file, VertexAttributeList **list) {
-
-  // cache attributes in their respective array
-  for (int v = 0; v < 3; v++) {
-    VertexAttributeList *list_attr = list[v];
-    file_read_line_prefix(file, list_attr->prefix, mbin_vertex_attribute_from_line,
-                          &(VertexAttributeCallbackDescriptor){
-                              .list = list_attr,
-                          });
+    token = strtok(NULL, VERTEX_SEPARATOR);
   }
 }
 
@@ -99,7 +89,9 @@ void mbin_vertex_attribute_free(VertexAttributeList *list) {
   }
 }
 
-VertexAttributeListStatus mbin_vertex_attribute_copy(VertexAttributeList *src, VertexAttributeList *dest) {
+VertexAttributeListStatus
+mbin_vertex_attribute_copy(VertexAttributeList *src,
+                           VertexAttributeList *dest) {
   dest->capacity = src->capacity;
   dest->length = src->length;
   dest->dimension = src->dimension;
@@ -122,4 +114,34 @@ VertexAttributeListStatus mbin_vertex_attribute_copy(VertexAttributeList *src, V
   memcpy(dest->entries, src->entries, dest->length * sizeof(mbin_vertex_t));
 
   return VertexAttributeListStatus_Success;
+}
+
+void mbin_vertex_attribute_set_line_uv(VertexAttributeList *list) {
+
+  const size_t new_uv_length = 8;
+  const float A_mul = 1.0f;
+  const float B_mul = -1.0f;
+
+  static mbin_vertex_t uv_line_data[] = {
+      // A +1
+      1.0f,  // side
+      A_mul, // direction mul
+
+      // A -1
+      -1.0f, // side
+      A_mul, // direction mul
+
+      // B +1
+      1.0f,  // side
+      B_mul, // direction mul
+
+      // B -1
+      -1.0f, // side
+      B_mul, // direction mul
+  };
+
+  list->capacity = new_uv_length;
+  list->length = 0;
+  list->entries = uv_line_data;
+  list->dimension = 2;
 }

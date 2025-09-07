@@ -2,6 +2,7 @@
 #define _PIPELINE_CORE_H_
 
 #include "webgpu/webgpu.h"
+#include "../runtime/geometry/vertex/vertex.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -152,7 +153,7 @@ typedef struct {
 
   // vertex data
   struct {
-    WGPUVertexAttribute attribute[4];
+    WGPUVertexAttribute attribute[VERTEX_ATTRIBUTE_COUNT];
     WGPUVertexBufferLayout buffer;
   } vertex_layout;
 

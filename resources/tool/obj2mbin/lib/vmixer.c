@@ -1,10 +1,11 @@
 #include "vmixer.h"
 #include "string.h"
+#include "vattr.h"
 #include "vhash.h"
 #include "vindex.h"
 
 static void vmixer_index_create_vertex_set(IndexAttributeList *,
-                                           VertexAttributeList **,
+                                           VertexAttributeList *,
                                            VertexHashTable *, VertexBuffer *,
                                            IndexBuffer *);
 
@@ -54,7 +55,7 @@ static void vmixer_index_create_vertex_set(IndexAttributeList *,
                   '------  Index
  */
 void vmixer_index_create_vertex_set(IndexAttributeList *index_list,
-                                    VertexAttributeList **attr_list,
+                                    VertexAttributeList *attr_list,
                                     VertexHashTable *table, VertexBuffer *vb,
                                     IndexBuffer *ib) {
 
@@ -66,36 +67,19 @@ void vmixer_index_create_vertex_set(IndexAttributeList *index_list,
     // attributes
     for (size_t g = 0; g < group->length; g++) {
 
-      IndexAttribute *attributes = &group->entries[g];
+      index_attribute *indexes = &group->entries[g];
 
       // create the vertex list based on the index attributes
       mbin_vertex_t vertices[VERTEX_STRIDE];
       size_t offset = 0;
 
-      // define position
-      size_t p = attributes->position;
-      VertexAttributeList *p_list = attr_list[0];
-      memcpy(vertices + offset, &p_list->entries[p * p_list->dimension],
-             p_list->dimension * sizeof(mbin_vertex_t));
-      offset += p_list->dimension;
-
-      // define normal
-      size_t n = attributes->normal;
-      VertexAttributeList *n_list = attr_list[1];
-      memcpy(vertices + offset, &n_list->entries[n * n_list->dimension],
-             n_list->dimension * sizeof(mbin_vertex_t));
-      offset += n_list->dimension;
-
-      // define color
-      memcpy(vertices + offset, (mbin_vertex_t[3]){0.0f, 0.0f, 0.0f},
-             3 * sizeof(mbin_vertex_t));
-      offset += 3;
-
-      // define uv
-      size_t u = attributes->uv;
-      VertexAttributeList *u_list = attr_list[2];
-      memcpy(vertices + offset, &u_list->entries[u * u_list->dimension],
-             u_list->dimension * sizeof(mbin_vertex_t));
+      for (VertexAttribute j = 0; j < VERTEX_ATTRIBUTE_COUNT; j++) {
+        size_t attr_index = *indexes[j];
+        VertexAttributeList attr = attr_list[j];
+        memcpy(vertices + offset, &attr.entries[attr_index * attr.dimension],
+               attr.dimension * sizeof(mbin_vertex_t));
+        offset += attr.dimension;
+      }
 
       mbin_index_t index;
       int insert_result = vhash_insert(table, vertices, &index);
@@ -118,14 +102,14 @@ void vmixer_index_create_vertex_set(IndexAttributeList *index_list,
    Read each index group from the list,
  */
 int vmixer_index_compose_from_vertex(IndexAttributeList *index_list,
-                                     VertexAttributeList **attr_list,
+                                     VertexAttributeList *attr_list,
                                      VertexBuffer *vb, IndexBuffer *ib) {
 
   VertexHashTable table;
-  if (vhash_create(&table, VHASH_BASE_CAPACITY) == 0) {
+  if (vhash_create(&table, VHASH_BASE_CAPACITY) == VHashStatus_Success) {
     vmixer_index_create_vertex_set(index_list, attr_list, &table, vb, ib);
   } else {
-    perror("Couldn't create hash table for index composing\n");
+    perror("Couldn't create hash table for index composing.\n");
     return VIndexStatus_AllocFail;
   }
 

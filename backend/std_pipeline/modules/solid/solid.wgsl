@@ -11,9 +11,10 @@ const PCF_KERNEL_SIZE : u32 = 2u;
 struct VertexIn {
   @location(0) aPos : vec3<f32>,
                       @location(1) aNorm : vec3<f32>,
-                                           @location(2) aCol : vec3<f32>,
-                                                               @location(3) aUv
-      : vec2<f32>,
+                                           @location(2) aTan : vec3<f32>,
+                                                               @location(3) aCol
+      : vec3<f32>,
+        @location(4) aUv : vec2<f32>,
 };
 
 struct VertexOut {

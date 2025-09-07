@@ -5,7 +5,7 @@
 
 #include "../utils/system.h"
 
-static void vertex_attribute_replace(VertexAttribute *, float *, VertexOffset,
+static void vertex_attribute_replace(VertexAttribute *, float *, VertexAttributeOffset,
                                      size_t);
 
 void vertex_attribute_print(VertexAttribute *va) {
@@ -20,8 +20,8 @@ void vertex_attribute_print(VertexAttribute *va) {
    Replace the attributes of a vertex attribute list starting at a certain index
  */
 void vertex_attribute_replace(VertexAttribute *va, float *val,
-                              VertexOffset offset, size_t type_size) {
-  for (size_t i = offset; i < va->length; i += VertexOffset_End)
+                              VertexAttributeOffset offset, size_t type_size) {
+  for (size_t i = offset; i < va->length; i += VertexAttributeOffset_End)
     memcpy(&va->entries[i], val, type_size);
 }
 
@@ -29,7 +29,7 @@ void vertex_attribute_replace(VertexAttribute *va, float *val,
    Replace the color attributes of a vertex attribute list
  */
 void vertex_attribute_set_color(VertexAttribute *va, vertex_color *color) {
-  vertex_attribute_replace(va, *color, VertexOffset_Color,
+  vertex_attribute_replace(va, *color, VertexAttributeOffset_Color,
                            sizeof(vertex_color));
 }
 
@@ -38,7 +38,7 @@ void vertex_attribute_set_color(VertexAttribute *va, vertex_color *color) {
  */
 void vertex_attribute_set_position(VertexAttribute *va,
                                    vertex_position *position) {
-  vertex_attribute_replace(va, *position, VertexOffset_Position,
+  vertex_attribute_replace(va, *position, VertexAttributeOffset_Position,
                            sizeof(vertex_position));
 }
 
@@ -46,7 +46,7 @@ void vertex_attribute_set_position(VertexAttribute *va,
    Replace the color attributes of a vertex attribute list
  */
 void vertex_attribute_set_normal(VertexAttribute *va, vertex_normal *normal) {
-  vertex_attribute_replace(va, *normal, VertexOffset_Normal,
+  vertex_attribute_replace(va, *normal, VertexAttributeOffset_Normal,
                            sizeof(vertex_normal));
 }
 
@@ -54,7 +54,7 @@ void vertex_attribute_set_normal(VertexAttribute *va, vertex_normal *normal) {
    Replace the uv attributes of a vertex attribute list
  */
 void vertex_attribute_set_uv(VertexAttribute *va, vertex_uv *uv) {
-  vertex_attribute_replace(va, *uv, VertexOffset_Uv, sizeof(vertex_uv));
+  vertex_attribute_replace(va, *uv, VertexAttributeOffset_Uv, sizeof(vertex_uv));
 }
 
 VertexStatus vertex_attribute_copy(VertexAttribute *src,
@@ -92,10 +92,12 @@ void vertex_attribute_destroy(VertexAttribute *va) {
 /**
    Find a vertex with the same given attributes in a vertex attribute array
    Output null if no equivalent found or a list of matching vertex
+
+   (Unused)
  */
 void vertex_attribute_find_equal_attr(Vertex *source,
                                       VertexAttribute *vertex_attribute,
-                                      VertexAttributeName attribute,
+                                      VertexAttributeType attribute,
                                       VertexAttribute *destination) {
 
   for (size_t i = 0; i < vertex_attribute->length; i += VERTEX_STRIDE) {
@@ -108,7 +110,7 @@ void vertex_attribute_find_equal_attr(Vertex *source,
     float *v_dest = &destination->entries[destination->length];
 
     // position match
-    if (attribute & VertexAttributeName_Position &&
+    if (attribute == VertexAttributeType_Position &&
         vec3_equal(source->position, compare.position)) {
       vertex_copy(v_src, v_dest);
       destination->length += VERTEX_STRIDE;
@@ -116,15 +118,23 @@ void vertex_attribute_find_equal_attr(Vertex *source,
     }
 
     // normal match
-    if (attribute & VertexAttributeName_Normal &&
+    if (attribute == VertexAttributeType_Normal &&
         vec3_equal(source->normal, compare.normal)) {
       vertex_copy(v_src, v_dest);
       destination->length += VERTEX_STRIDE;
       continue;
     }
 
+    // tangent match
+    if (attribute == VertexAttributeType_Tangent &&
+        vec3_equal(source->tangent, compare.tangent)) {
+      vertex_copy(v_src, v_dest);
+      destination->length += VERTEX_STRIDE;
+      continue;
+    }
+
     // color match
-    if (attribute & VertexAttributeName_Color &&
+    if (attribute == VertexAttributeType_Color &&
         vec3_equal(source->color, compare.color)) {
       vertex_copy(v_src, v_dest);
       destination->length += VERTEX_STRIDE;
@@ -132,7 +142,7 @@ void vertex_attribute_find_equal_attr(Vertex *source,
     }
 
     // uv match
-    if (attribute & VertexAttributeName_Uv &&
+    if (attribute == VertexAttributeType_Uv &&
         vec2_equal(source->uv, compare.uv)) {
       vertex_copy(v_src, v_dest);
       destination->length += VERTEX_STRIDE;

@@ -2,9 +2,10 @@
 struct VertexIn {
   @location(0) aPos : vec3<f32>,
                       @location(1) aNorm : vec3<f32>,
-                                           @location(2) aCol : vec3<f32>,
-                                                               @location(3) aUv
-      : vec2<f32>,
+                                           @location(2) aTan : vec3<f32>,
+                                                               @location(3) aCol
+      : vec3<f32>,
+        @location(4) aUv : vec2<f32>,
 };
 
 struct VertexOut {
@@ -18,7 +19,7 @@ struct Mesh {
 }
 
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<storage, read> uMesh : array<Mesh>;
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;

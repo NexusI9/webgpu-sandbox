@@ -2,9 +2,10 @@
 struct VertexIn {
   @location(0) aPosA : vec3<f32>,
                        @location(1) aPosB : vec3<f32>,
-                                            @location(2) aCol
+                                            @location(2) aUnused
       : vec3<f32>,
-        @location(3) aSide : vec2<f32>,
+        @location(3) aCol : vec3<f32>,
+                            @location(4) aSide : vec2<f32>,
 };
 
 struct VertexOut {
@@ -33,9 +34,9 @@ const thickness : f32 = 0.0015f;
 
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
+@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
+@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
 @group(1) @binding(0) var<uniform> uColor : vec4<f32>;
 
 // vertex shader

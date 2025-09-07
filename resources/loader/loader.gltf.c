@@ -122,22 +122,22 @@ void loader_gltf_init_vertex_lists(VertexAttribute *attributes,
 
   // init vertex data (interleaved attributes)
   // list->count is the number of vertex used by index array
-  // need to multiply by 3
+  // need to multiply by stride
   attributes->length = list->count * VERTEX_STRIDE;
   attributes->capacity = attributes->length;
-  attributes->entries = (float *)calloc(attributes->capacity, sizeof(float));
+  attributes->entries =
+      (vattr_t *)calloc(attributes->capacity, sizeof(vattr_t));
 }
 
 static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
-                                          float *destination, uint8_t count) {
+                                          float *destination,
+                                          uint8_t dimension) {
 
   float *attributes = loader_gltf_attributes(accessor);
   size_t index = 0;
-  for (size_t a = 0; a < accessor->count; a++) {
-    for (uint8_t u = 0; u < count; u++) {
-      destination[index++] = attributes[a * count + u];
-    }
-  }
+  for (size_t a = 0; a < accessor->count; a++)
+    for (uint8_t u = 0; u < dimension; u++)
+      destination[index++] = attributes[a * dimension + u];
 }
 
 VertexIndex loader_gltf_index(cgltf_primitive *source) {
@@ -206,52 +206,70 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       loader_gltf_init_vertex_lists(
           &vert_attr, &vert_list, current_primitive.attributes[0].data->count);
 
+      static const struct {
+        VertexAttributeType type;
+        VertexAttributeDimension dimension;
+        VertexAttributeOffset offset;
+      } type_vertex_map[cgltf_attribute_type_max_enum] = {
+          [cgltf_attribute_type_position] =
+              {
+                  .type = VertexAttributeType_Position,
+                  .dimension = VertexAttributeDimension_Position,
+                  .offset = VertexAttributeOffset_Position,
+              },
+          [cgltf_attribute_type_normal] =
+              {
+                  .type = VertexAttributeType_Normal,
+                  .dimension = VertexAttributeDimension_Normal,
+                  .offset = VertexAttributeOffset_Normal,
+              },
+          [cgltf_attribute_type_tangent] =
+              {
+                  .type = VertexAttributeType_Tangent,
+                  .dimension = VertexAttributeDimension_Tangent,
+                  .offset = VertexAttributeOffset_Tangent,
+              },
+          [cgltf_attribute_type_color] =
+              {
+                  .type = VertexAttributeType_Color,
+                  .dimension = VertexAttributeDimension_Color,
+                  .offset = VertexAttributeOffset_Color,
+              },
+          [cgltf_attribute_type_texcoord] =
+              {
+                  .type = VertexAttributeType_Uv,
+                  .dimension = VertexAttributeDimension_Uv,
+                  .offset = VertexAttributeOffset_Uv,
+              },
+      };
+
       for (size_t a = 0; a < current_primitive.attributes_count; a++) {
 
         cgltf_attribute *attribute = &current_primitive.attributes[a];
-        cgltf_accessor *accessor = current_primitive.attributes[a].data;
+        cgltf_accessor *accessor = attribute->data;
+        cgltf_attribute_type type = attribute->type;
+	
+        if (type_vertex_map[type].dimension == 0)
+          continue;
 
-        switch (attribute->type) {
+        // first concat each attribute in their respective list (all pos
+        // together etc.)
+        loader_gltf_accessor_to_array(
+            accessor, vert_list.attributes[type_vertex_map[type].type],
+            type_vertex_map[type].dimension);
 
-          // position
-        case cgltf_attribute_type_position:
-          loader_gltf_accessor_to_array(accessor, vert_list.position, 3);
-          // interleave vertex data
-          loader_gltf_add_vertex_attribute(&vert_attr, vert_list.position, 0,
-                                           vert_list.count, 3);
-          break;
-
-          // normals
-        case cgltf_attribute_type_normal:
-          loader_gltf_accessor_to_array(accessor, vert_list.normal, 3);
-          loader_gltf_add_vertex_attribute(&vert_attr, vert_list.normal, 3,
-                                           vert_list.count, 3);
-          break;
-
-          // color
-        case cgltf_attribute_type_color:
-          loader_gltf_accessor_to_array(accessor, vert_list.color, 3);
-          loader_gltf_add_vertex_attribute(&vert_attr, vert_list.color, 6,
-                                           vert_list.count, 3);
-          break;
-
-          // uv
-        case cgltf_attribute_type_texcoord:
-          loader_gltf_accessor_to_array(accessor, vert_list.uv, 2);
-          loader_gltf_add_vertex_attribute(&vert_attr, vert_list.uv, 9,
-                                           vert_list.count, 2);
-          break;
-
-        default:
-          break;
-        }
+        // interleave vertex data ( create pattern pos / norm / tan / uv...)
+        loader_gltf_add_vertex_attribute(
+            &vert_attr, vert_list.attributes[type_vertex_map[type].type],
+            type_vertex_map[type].offset, vert_list.count,
+            type_vertex_map[type].dimension);
       }
 
       // load index
       vert_index = loader_gltf_index(&current_primitive);
 
       // target current mesh itself if primitive == 0
-      struct Mesh *target_mesh = scene_mesh;
+      Mesh *target_mesh = scene_mesh;
 
       // add child to parent mesh if current primitive > 0
       // and set it as target mesh
@@ -369,8 +387,9 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
                                 });
 
       // transfert texture view to reflection shader (reuse resource), however
-      // need to be careful with shared ownership. Here it shouldn't be to much
-      // trouble since reflection and texture shader lifetime are mostly linked.
+      // need to be careful with shared ownership. Here it shouldn't be to
+      // much trouble since reflection and texture shader lifetime are mostly
+      // linked.
       shader_update_texture_view(mesh_shader(mesh, MeshShader_Reflection),
                                  SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
                                  shader_texture->texture_view,
@@ -411,7 +430,8 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
           (unsigned char *)image->buffer_view->buffer->data +
           image->buffer_view->offset;
 
-      // use stbi to convert gltf image from RGB(A) to RGBA, ensuring 4 channels
+      // use stbi to convert gltf image from RGB(A) to RGBA, ensuring 4
+      // channels
       // TODO: more flexible texture upload (RGB/RGBA, large texture
       // handling...)
       TIMER("GLTF Load Texture", {

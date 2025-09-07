@@ -1,8 +1,8 @@
 #include "file.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
-#include <stdbool.h>
-
+#include "./vattr.h"
 
 void namefile_from_path(const char *path, char *dest, size_t max_length) {
 
@@ -31,6 +31,10 @@ void file_read_line_prefix(FILE *file, const char *prefix,
                            file_read_line_prefix_callback callback,
                            void *callback_data) {
 
+  if (prefix == VERTEX_LINE_PREFIX_UNDEFINED) {
+    return;
+  }
+
   // get length of attribute based on list prefix
   char line[512];
   size_t prefix_len = strlen(prefix);
@@ -53,6 +57,3 @@ void file_read_line_prefix(FILE *file, const char *prefix,
   }
   rewind(file);
 }
-
-
-

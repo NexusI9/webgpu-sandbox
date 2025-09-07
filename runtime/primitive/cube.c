@@ -1,18 +1,19 @@
 #include "cube.h"
 
 static vattr_t cube_vertex_data[] = {
-    // Front face
-    -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 0.0f,   0.0f, 1.0f, 1.0f,   0.0f, 0.0f, // Bottom-left
-     0.5f, -0.5f,  0.5f,   1.0f, 0.0f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom-right
-     0.5f,  0.5f,  0.5f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f, // Top-right
-    -0.5f,  0.5f,  0.5f,   0.0f, 1.0f, 0.0f,   0.0f, 1.0f, 1.0f,   1.0f, 0.0f, // Top-left
+    // Front face (tangent along +X)
+    -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 1.0f,   0.0f, 0.0f, // Bottom-left
+     0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom-right
+     0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 0.0f,   0.0f, 1.0f, // Top-right
+    -0.5f,  0.5f,  0.5f,   0.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f, 1.0f,   1.0f, 0.0f, // Top-left
 
-    // Back face
-    -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, 0.0f,   0.0f, -1.0f, 1.0f,  0.0f, 1.0f, // Bottom-left
-     0.5f, -0.5f, -0.5f,   1.0f, 0.0f, 0.0f,   0.0f, -1.0f, 0.0f,  1.0f, 1.0f, // Bottom-right
-     0.5f,  0.5f, -0.5f,   1.0f, 1.0f, 0.0f,   0.0f, -1.0f, 1.0f,  1.0f, 1.0f, // Top-right
-    -0.5f,  0.5f, -0.5f,   0.0f, 1.0f, 0.0f,   0.0f, -1.0f, 0.5f,  0.5f, 0.5f, // Top-left
+    // Back face (tangent along -X)
+    -0.5f, -0.5f, -0.5f,   0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 1.0f,  0.0f, 1.0f, // Bottom-left
+     0.5f, -0.5f, -0.5f,   0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  1.0f, 1.0f, // Bottom-right
+     0.5f,  0.5f, -0.5f,   0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 1.0f,  1.0f, 1.0f, // Top-right
+    -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.5f,  0.5f, 0.5f, // Top-left
 };
+
 
 
 static vindex_t cube_index_data[] = { // Front face

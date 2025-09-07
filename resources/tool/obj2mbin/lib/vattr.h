@@ -2,29 +2,32 @@
 #define _VATTR_H_
 
 #include "mbin.h"
-#include "vindex.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 #define VERTEX_LIST_CAPACITY 64
 #define VERTEX_COLOR {0.0f, 0.0f, 0.0f}
-#define VERTEX_POSITION_LINE_PREFIX "v "
-#define VERTEX_NORMAL_LINE_PREFIX "vn "
-#define VERTEX_UV_LINE_PREFIX "vt "
+#define VERTEX_LINE_PREFIX_POSITION "v "
+#define VERTEX_LINE_PREFIX_NORMAL "vn "
+#define VERTEX_LINE_PREFIX_UV "vt "
+#define VERTEX_LINE_PREFIX_UNDEFINED 0
 #define VERTEX_SEPARATOR " "
-#define VERTEX_STRIDE 11
+#define VERTEX_STRIDE 14
+#define VERTEX_ATTRIBUTE_COUNT 5
 
-typedef enum{
+typedef enum {
   VertexAttributeListStatus_Success,
   VertexAttributeListStatus_AllocFail,
   VertexAttributeListStatus_UndefError,
 } VertexAttributeListStatus;
 
 typedef enum {
-  VertexAttributeListIndex_Position = 0,
-  VertexAttributeListIndex_Normal = 1,
-  VertexAttributeListIndex_Uv = 2,
-} VertexAttributeListIndex;
+  VertexAttribute_Position = 0,
+  VertexAttribute_Normal = 1,
+  VertexAttribute_Tangent = 2,
+  VertexAttribute_Color = 3,
+  VertexAttribute_Uv = 4,
+} VertexAttribute;
 
 typedef struct {
   size_t capacity;
@@ -32,6 +35,7 @@ typedef struct {
   vec_dimension_t dimension;
   mbin_vertex_t *entries;
   char *prefix;
+  const char *label;
 } VertexAttributeList;
 
 typedef struct {
@@ -39,12 +43,15 @@ typedef struct {
 } VertexAttributeCallbackDescriptor;
 
 void mbin_vertex_attribute_print(VertexAttributeList *);
-VertexAttributeListStatus mbin_vertex_attribute_list_insert(VertexAttributeList *, mbin_vertex_t *,
-                                 size_t);
+VertexAttributeListStatus
+mbin_vertex_attribute_list_insert(VertexAttributeList *, mbin_vertex_t *,
+                                  size_t);
 void mbin_vertex_attribute_from_line(const char *, void *);
-void mbin_vertex_attribute_cache(FILE *, VertexAttributeList **);
 
 void mbin_vertex_attribute_free(VertexAttributeList *);
-VertexAttributeListStatus mbin_vertex_attribute_copy(VertexAttributeList *, VertexAttributeList *);
+VertexAttributeListStatus mbin_vertex_attribute_copy(VertexAttributeList *,
+                                                     VertexAttributeList *);
+
+void mbin_vertex_attribute_set_line_uv(VertexAttributeList *);
 
 #endif

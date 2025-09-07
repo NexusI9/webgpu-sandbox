@@ -6,6 +6,7 @@
 #include "vattr.h"
 #include "vhash.h"
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -24,7 +25,7 @@
  */
 
 static IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *);
-static IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *);
+static index_attribute *index_attribute_new_attribute(IndexAttributeGroup *);
 static VIndexStatus index_attribute_insert_group(char *, IndexAttributeGroup *,
                                                  const char *);
 static void index_attribute_from_line(const char *, void *);
@@ -35,47 +36,40 @@ void index_attribute_print(const IndexAttributeList *list) {
   printf("Index: \n");
   for (size_t g = 0; g < list->length; g++) {
     for (size_t i = 0; i < list->entries[g].length; i++) {
-      IndexAttribute *attr = &list->entries[g].entries[i];
-      printf("%d,%d,%d\t", attr->position, attr->normal, attr->uv);
+      index_attribute *attr = &list->entries[g].entries[i];
+      for (VertexAttribute a = 0; a < VERTEX_ATTRIBUTE_COUNT; a++)
+        printf("%d ", (*attr)[a]);
+      printf("\t");
     }
     printf("\n");
   }
 }
 
+/*
+  split values and push them into the current list
+  ""1/3/4 1/9/4 3/2/1" => [ [1/3/4] , [1/9/4] , [3/2/1] ]
+ */
 VIndexStatus index_attribute_insert_group(char *line, IndexAttributeGroup *list,
                                           const char *pattern) {
 
-  // split values and push them into the current list
-  // "1/3/4 1/9/4 3/2/1" => [ [1/3/4] , [1/9/4] , [3/2/1] ]
   char *index_group = strtok(line, VINDEX_GROUP_SEPARATOR);
 
   while (index_group) {
 
-    // store attributes in an array since pattern may no necessarily match 3,
-    // need 0 as initial value
-    const size_t attr_count = 3;
-    mbin_index_t idx_attr[3] = {0, 0, 0}; // position/ uv / normal
-    mbin_index_t *iPos = &idx_attr[0];
-    mbin_index_t *iUv = &idx_attr[1];
-    mbin_index_t *iNrm = &idx_attr[2];
-
-    int scan_length = sscanf(index_group, pattern, iPos, iUv, iNrm);
-
     // get new entry pointer
-    IndexAttribute *new_attribute = index_attribute_new_attribute(list);
-    if (new_attribute) {
-      mbin_index_t *new_attr_idx[3] = {
-          &new_attribute->position,
-          &new_attribute->uv,
-          &new_attribute->normal,
-      };
+    index_attribute *new_attr = index_attribute_new_attribute(list);
+    if (new_attr) {
 
-      // parallel assign idx_attr to new_attr_idx
-      for (size_t i = 0; i < scan_length; i++)
-        // -1 cause obj index starts at 1, but array c 0
-        *new_attr_idx[i] = idx_attr[i] - 1;
+      int scan_length = sscanf(
+          index_group, pattern, new_attr[VertexAttribute_Position],
+          new_attr[VertexAttribute_Uv], new_attr[VertexAttribute_Normal]);
+
+      // decrement each index since obj index starts at 1 (instead of 0)
+      for (uint8_t i = 0; i < VERTEX_ATTRIBUTE_COUNT; i++)
+        *new_attr[i] = (*new_attr[i] > 0) ? (*new_attr[i] - 1) : 0;
     }
 
+    // flush
     index_group = strtok(0, VINDEX_GROUP_SEPARATOR);
   }
 
@@ -88,7 +82,7 @@ IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *list) {
   if (list->entries == NULL) {
     list->capacity = VINDEX_DEFAULT_CAPACITY;
     list->length = 0;
-    list->entries = malloc(sizeof(IndexAttributeGroup) * list->capacity);
+    list->entries = calloc(list->capacity, sizeof(IndexAttributeGroup));
     if (list->entries == NULL) {
       perror("Couldn't create list\n");
       return NULL;
@@ -112,13 +106,13 @@ IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *list) {
   return &list->entries[list->length++];
 }
 
-IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
+index_attribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
 
   // check entries existence
   if (list->entries == NULL) {
     list->capacity = VINDEX_DEFAULT_CAPACITY;
     list->length = 0;
-    list->entries = malloc(sizeof(IndexAttribute) * list->capacity);
+    list->entries = calloc(list->capacity, sizeof(index_attribute));
     if (list->entries == NULL) {
       perror("Couldn't create list\n");
       return NULL;
@@ -128,7 +122,7 @@ IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
   // check capacity reach
   if (list->length == list->capacity) {
     size_t new_capacity = 2 * list->capacity;
-    void *temp = realloc(list->entries, sizeof(IndexAttribute) * new_capacity);
+    void *temp = realloc(list->entries, sizeof(index_attribute) * new_capacity);
     if (temp) {
       list->entries = temp;
       list->capacity = new_capacity;
@@ -142,14 +136,18 @@ IndexAttribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
 }
 
 void index_attribute_from_line(const char *line, void *data) {
+
   VertexIndexCallbackDescriptor *cast_data =
       (VertexIndexCallbackDescriptor *)data;
 
   size_t prefix_len = strlen(VINDEX_ATTRIBUTE_LINE_PREFIX);
   size_t line_len = strlen(line);
+  ssize_t content_len = line_len - prefix_len;
+
   // retrieve values from line
-  char values[line_len];
-  strncpy(values, &line[prefix_len], line_len);
+  char values[content_len + 1];
+  memcpy(values, &line[prefix_len], content_len);
+  values[content_len] = '\0';
 
   // add new index group to list and populate it
   IndexAttributeGroup *new_group = index_attribute_new_group(cast_data->list);
@@ -198,7 +196,7 @@ VIndexStatus index_attribute_triangulate(IndexAttributeList *list) {
 
     size_t capacity = (group->length - 2) * 3;
     IndexAttributeGroup new_group = {
-        .entries = malloc(sizeof(IndexAttribute) * capacity),
+        .entries = malloc(sizeof(index_attribute) * capacity),
         .capacity = capacity,
         .length = 0,
     };
@@ -209,30 +207,25 @@ VIndexStatus index_attribute_triangulate(IndexAttributeList *list) {
     }
 
     // fan triangle
-    IndexAttribute *A = &group->entries[0];
+    index_attribute *A = &group->entries[0];
     for (size_t a = 1; a < group->length - 1; a++) {
-      IndexAttribute *B = &group->entries[a];
-      IndexAttribute *C = &group->entries[a + 1];
-      memcpy(&new_group.entries[new_group.length++], A, sizeof(IndexAttribute));
-      memcpy(&new_group.entries[new_group.length++], B, sizeof(IndexAttribute));
-      memcpy(&new_group.entries[new_group.length++], C, sizeof(IndexAttribute));
+      index_attribute *B = &group->entries[a];
+      index_attribute *C = &group->entries[a + 1];
+      memcpy(&new_group.entries[new_group.length++], A,
+             sizeof(index_attribute));
+      memcpy(&new_group.entries[new_group.length++], B,
+             sizeof(index_attribute));
+      memcpy(&new_group.entries[new_group.length++], C,
+             sizeof(index_attribute));
     }
 
     memcpy(group->entries, new_group.entries,
-           sizeof(IndexAttribute) * new_group.length);
+           sizeof(index_attribute) * new_group.length);
     group->length = new_group.length;
     group->capacity = new_group.capacity;
   }
   return VIndexStatus_Success;
 }
-
-/**
-   Retrieve the index position in each group entries and output it in the
-   destination.
- */
-void index_attribute_position_list(IndexAttributeGroup *list,
-                                   mbin_index_t *dest, size_t *length,
-                                   size_t *typesize) {}
 
 /**
    Lines index list follow this specific pattern:
@@ -267,16 +260,12 @@ void index_attribute_line_set_opposite(IndexAttributeList *list) {
 
   for (size_t i = 0; i < list->length; i++) {
 
-    IndexAttribute *p1 = &list->entries[i].entries[0];
-    IndexAttribute *p2 = &list->entries[i].entries[1];
+    index_attribute *p1 = &list->entries[i].entries[0];
+    index_attribute *p2 = &list->entries[i].entries[1];
 
-    p1->normal = p2->position;
-    p2->normal = p1->position;
+    (*p1)[VertexAttribute_Normal] = (*p2)[VertexAttribute_Position];
+    (*p2)[VertexAttribute_Normal] = (*p1)[VertexAttribute_Position];
   }
-}
-
-void index_attribute_copy(IndexAttribute *src, IndexAttribute *dest) {
-  memcpy(dest, src, sizeof(IndexAttribute));
 }
 
 /**
@@ -293,27 +282,27 @@ void index_attribute_line_set_doublon(IndexAttributeList *list) {
 
     IndexAttributeGroup *current_group = &list->entries[i];
 
-    IndexAttribute new_attributes[2];
+    index_attribute new_attributes[2];
     for (size_t c = 0; c < 2; c++) {
-      IndexAttribute *src_attribute = &current_group->entries[c];
-      // IndexAttribute *new_attribute =
-      //     index_attribute_new_attribute(current_group);
+      index_attribute *src_attribute = &current_group->entries[c];
+
       //  copy source (0 & 1) to new attribute
-      IndexAttribute *new_attribute = &new_attributes[c];
+      index_attribute *new_attribute = &new_attributes[c];
 
       index_attribute_copy(src_attribute, new_attribute);
       // set uv to 1 (i.e. opposite side)
       // patter A / B/ A / B
-      src_attribute->uv = c * 2;
-      new_attribute->uv = c * 2 + 1;
+      (*src_attribute)[VertexAttribute_Uv] = c * 2;
+      (*new_attribute)[VertexAttribute_Uv] = c * 2 + 1;
+
     }
 
     // swap
-    IndexAttribute *new_attribute_a =
+    index_attribute *new_attribute_a =
         index_attribute_new_attribute(current_group);
     index_attribute_copy(&new_attributes[1], new_attribute_a);
 
-    IndexAttribute *new_attribute_b =
+    index_attribute *new_attribute_b =
         index_attribute_new_attribute(current_group);
     index_attribute_copy(&new_attributes[0], new_attribute_b);
   }

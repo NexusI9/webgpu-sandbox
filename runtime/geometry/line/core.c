@@ -78,14 +78,19 @@ void line_set_vertex(const vec3 base, const vec3 opposite, const vec4 color,
   data[offset + 4] = opposite[1];
   data[offset + 5] = opposite[2];
 
+  // set tengant (unused)
+  data[offset + 6] = 0.0f;
+  data[offset + 7] = 0.0f;
+  data[offset + 8] = 0.0f;
+
   // set color
-  data[offset + 6] = color[0];
-  data[offset + 7] = color[1];
-  data[offset + 8] = color[2];
+  data[offset + 9] = color[0];
+  data[offset + 10] = color[1];
+  data[offset + 11] = color[2];
 
   // set UV
-  data[offset + 9] = extra[0];
-  data[offset + 10] = extra[1];
+  data[offset + 12] = extra[0];
+  data[offset + 13] = extra[1];
 }
 
 void line_create_plane(const LineCreatePlaneDescriptor *desc) {

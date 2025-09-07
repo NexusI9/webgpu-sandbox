@@ -19,8 +19,8 @@
    3. compose
  */
 void cache_faces(IndexAttributeList *cached_faces_index,
-                 VertexAttributeList **cached_attributes, VertexBuffer *vb,
-                 IndexBuffer *ib, FILE *file) {
+                 VertexAttributeList *cached_vertex_attributes,
+                 VertexBuffer *vb, IndexBuffer *ib, FILE *file) {
 
   index_attribute_cache(file, cached_faces_index, "f ", "%d/%d/%d");
 
@@ -28,8 +28,8 @@ void cache_faces(IndexAttributeList *cached_faces_index,
   index_attribute_triangulate(cached_faces_index);
 
   // compose faces
-  vmixer_index_compose_from_vertex(cached_faces_index, cached_attributes, vb,
-                                   ib);
+  vmixer_index_compose_from_vertex(cached_faces_index, cached_vertex_attributes,
+                                   vb, ib);
 
 #ifdef VERBOSE
   index_attribute_print(cached_faces_index);
@@ -45,57 +45,34 @@ void cache_faces(IndexAttributeList *cached_faces_index,
    4. duplicate each group attributes (doublon) and assign uv to 1 so it has
    opposite sides
 
-   By doing so we can simply reuse the same trigangulatio and composition
+   By doing so we can simply reuse the same trigangulation and composition
    functions (initially used for the faces)
  */
 void cache_lines(IndexAttributeList *cached_lines_index,
-                 VertexAttributeList **cached_attributes, VertexBuffer *vb,
+                 VertexAttributeList *cached_attributes, VertexBuffer *vb,
                  IndexBuffer *ib, FILE *file, MBINIndexCacheMethod method) {
 
   index_attribute_cache(file, cached_lines_index, "l ", "%d");
 
   if (cached_lines_index->length) {
 
-    // copy vertex  attribute to line normal
-    VertexAttributeList cached_line_normal;
+    // initial vertex attributes
     VertexAttributeList *cached_position =
-        cached_attributes[VertexAttributeListIndex_Position];
+        &cached_attributes[VertexAttribute_Position];
+    VertexAttributeList *cached_tangent =
+        &cached_attributes[VertexAttribute_Tangent];
+    VertexAttributeList *cached_color =
+        &cached_attributes[VertexAttribute_Color];
 
+    /*  === TRANSFORM TO LINE ATTRIBUTES=== */
+
+    // copy vertex attribute to line normal
+    VertexAttributeList cached_line_normal;
     mbin_vertex_attribute_copy(cached_position, &cached_line_normal);
 
-    // create uv attributes
-    const size_t new_uv_length = 8;
-    VertexAttributeList cached_line_uv = {
-        .capacity = new_uv_length,
-        .length = 0,
-        .entries = NULL,
-        .dimension = 2,
-    };
-
-    const float thickness = 0.005f;
-    const float A_mul = 1.0f;
-    const float B_mul = -1.0f;
-    mbin_vertex_t new_uv[8] = {
-
-        // A +1
-        1.0f,  // side
-        A_mul, // direction mul
-
-        // A -1
-        -1.0f, // side
-        A_mul, // direction mul
-
-        // B +1
-        1.0f,  // side
-        B_mul, // direction mul
-
-        // B -1
-        -1.0f, // side
-        B_mul, // direction mul
-
-    };
-
-    mbin_vertex_attribute_list_insert(&cached_line_uv, new_uv, new_uv_length);
+    // manually create uv attributes
+    VertexAttributeList cached_line_uv;
+    mbin_vertex_attribute_set_line_uv(&cached_line_uv);
 
     // set line opposite vertex
     index_attribute_line_set_opposite(cached_lines_index);
@@ -104,25 +81,31 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     if (method == MBINIndexCacheMethod_Wireframe)
       index_attribute_line_set_doublon(cached_lines_index);
 
-    // compose
-    // create a dedicated new vertex attribute list for the lines with the
-    // replaced "normals" as well a mock uv
-    VertexAttributeList *cached_lines_attributes[3] = {
-        cached_attributes[VertexAttributeListIndex_Position],
-        &cached_line_normal, // replace normal list with new one (position)
-        &cached_line_uv,
+#ifdef VERBOSE
+    index_attribute_print(cached_lines_index);
+#endif
+
+    /* === COMPOSE === */
+
+    // Since lines use a different "vertex data structure" than faces we create
+    // a copy of the initial cahced list and populate the attributes
+    // accordingly:
+    // 1. replace normal list with the opposite position
+    // 2. replace the uv with side extrustion data
+    VertexAttributeList *cached_lines_attributes[VERTEX_ATTRIBUTE_COUNT] = {
+        [VertexAttribute_Position] = cached_position,
+        [VertexAttribute_Normal] = &cached_line_normal,
+        [VertexAttribute_Tangent] = cached_tangent,
+        [VertexAttribute_Color] = cached_color,
+        [VertexAttribute_Uv] = &cached_line_uv,
     };
 
     // trianglify face index list
     if (method == MBINIndexCacheMethod_Wireframe)
       index_attribute_triangulate(cached_lines_index);
 
-#ifdef VERBOSE
-    index_attribute_print(cached_lines_index);
-#endif
-
     vmixer_index_compose_from_vertex(cached_lines_index,
-                                     cached_lines_attributes, vb, ib);
+                                     cached_lines_attributes[0], vb, ib);
   }
 }
 
@@ -142,44 +125,72 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
     return FILE_OPEN_FAIL;
   }
 
-  VertexAttributeList cached_position = {
-      .entries = NULL,
-      .capacity = VERTEX_LIST_CAPACITY,
-      .prefix = VERTEX_POSITION_LINE_PREFIX,
-      .dimension = 3,
-  };
-
-  VertexAttributeList cached_normal = {
-      .entries = NULL,
-      .capacity = VERTEX_LIST_CAPACITY,
-      .prefix = VERTEX_NORMAL_LINE_PREFIX,
-      .dimension = 3,
-  };
-
-  VertexAttributeList cached_uv = {
-      .entries = NULL,
-      .capacity = VERTEX_LIST_CAPACITY,
-      .prefix = VERTEX_UV_LINE_PREFIX,
-      .dimension = 2,
-  };
-
   // traverse obj file and cache vertex attributes
-  VertexAttributeList *cached_attributes[3];
-  cached_attributes[VertexAttributeListIndex_Position] = &cached_position;
-  cached_attributes[VertexAttributeListIndex_Normal] = &cached_normal;
-  cached_attributes[VertexAttributeListIndex_Uv] = &cached_uv;
+  VertexAttributeList cached_attributes[VERTEX_ATTRIBUTE_COUNT] = {
+      [VertexAttribute_Position] =
+          {
+              .label = "position",
+              .capacity = VERTEX_LIST_CAPACITY,
+              .prefix = VERTEX_LINE_PREFIX_POSITION,
+              .dimension = 3,
+          },
+      [VertexAttribute_Normal] =
+          {
+              .label = "normal",
+              .capacity = VERTEX_LIST_CAPACITY,
+              .prefix = VERTEX_LINE_PREFIX_NORMAL,
+              .dimension = 3,
+          },
+      [VertexAttribute_Tangent] =
+          {
+              .label = "tangent",
+              .capacity = VERTEX_LIST_CAPACITY,
+              .prefix = VERTEX_LINE_PREFIX_UNDEFINED,
+              .dimension = 3,
+          },
+      [VertexAttribute_Color] =
+          {
+              .label = "color",
+              .capacity = VERTEX_LIST_CAPACITY,
+              .prefix = VERTEX_LINE_PREFIX_UNDEFINED,
+              .dimension = 3,
+          },
+      [VertexAttribute_Uv] =
+          {
+              .label = "uv",
+              .capacity = VERTEX_LIST_CAPACITY,
+              .prefix = VERTEX_LINE_PREFIX_UV,
+              .dimension = 2,
+          },
+  };
 
-  mbin_vertex_attribute_cache(f, cached_attributes);
+  // Cache attributes in their respective array depending on the list prefix
+  for (int v = 0; v < VERTEX_ATTRIBUTE_COUNT; v++) {
+
+    VertexAttributeList *list = &cached_attributes[v];
+
+    // init dynamic lists (replace with Dyli)
+    list->entries = malloc(sizeof(mbin_vertex_t) * list->capacity);
+    
+    file_read_line_prefix(f, list->prefix, mbin_vertex_attribute_from_line,
+                          &(VertexAttributeCallbackDescriptor){.list = list});
+
+    // populate with 0 as fallback if no pattern found
+    if (list->length == 0) {
+      memset(list->entries, 0.0f, list->dimension * sizeof(mbin_vertex_t));
+      list->length = list->dimension;
+    }
+  }
 
 #ifdef VERBOSE
-  for (int v = 0; v < 3; v++)
-    mbin_vertex_attribute_print(cached_attributes[v]);
+  for (int v = 0; v < VERTEX_ATTRIBUTE_COUNT; v++)
+    mbin_vertex_attribute_print(&cached_attributes[v]);
 #endif
 
   // cache faces index
   IndexAttributeList cached_faces_index = {
       .entries = NULL,
-      .capacity = 0,
+      .capacity = VINDEX_DEFAULT_CAPACITY,
       .length = 0,
   };
 
@@ -188,7 +199,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
   // case line index
   IndexAttributeList cached_lines_index = {
       .entries = NULL,
-      .capacity = 0,
+      .capacity = VINDEX_DEFAULT_CAPACITY,
       .length = 0,
   };
 

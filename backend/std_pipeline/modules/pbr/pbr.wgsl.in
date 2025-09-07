@@ -10,9 +10,10 @@ const MAX_LIGHT : u32 = 16u;
 struct VertexIn {
   @location(0) aPos : vec3<f32>,
                       @location(1) aNorm : vec3<f32>,
-                                           @location(2) aCol : vec3<f32>,
-                                                               @location(3) aUv
-      : vec2<f32>,
+                                           @location(2) aTan : vec3<f32>,
+                                                               @location(3) aCol
+      : vec3<f32>,
+        @location(4) aUv : vec2<f32>,
 };
 
 struct VertexOut {
@@ -708,7 +709,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   //
   //
 
-  var N : vec3<f32> = material.normal;             // surface normal
+  var N : vec3<f32> = material.normal;                        // surface normal
   var V : vec3<f32> = normalize(camera.position.xyz - vFrag); // view vector
   let R : vec3<f32> = normalize(reflect(-V, N));
 

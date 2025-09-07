@@ -1,6 +1,7 @@
 #ifndef _VERTEX_LIST_H_
 #define _VERTEX_LIST_H_
 
+#include "attribute.h"
 #include "core.h"
 #include "index.h"
 
@@ -9,11 +10,7 @@
  */
 typedef struct {
 
-  float *position;
-  float *normal;
-  float *color;
-  float *uv;
-
+  vattr_t *attributes[VERTEX_ATTRIBUTE_COUNT];
   vindex_t *index;
   size_t count;
 

@@ -28,7 +28,7 @@ void vertex_transform_set_scale(const VertexGroup *index,
 
     // get position pointer according to index
     float *position =
-        vertex_transform_attribute(id, attribute, VertexOffset_Position);
+        vertex_transform_attribute(id, attribute, VertexAttributeOffset_Position);
 
     // get direction
     vec3 direction;
@@ -55,7 +55,7 @@ void vertex_transform_set_position(const VertexGroup *index,
 
     // get position pointer according to index
     float *position =
-        vertex_transform_attribute(id, attribute, VertexOffset_Position);
+        vertex_transform_attribute(id, attribute, VertexAttributeOffset_Position);
 
     glm_vec3_add(position, *translation, position);
   }
@@ -92,7 +92,7 @@ static void vertex_transform_origin(const VertexGroup *index,
 
     // get position from index
     float *position =
-        vertex_transform_attribute(id, attribute, VertexOffset_Position);
+        vertex_transform_attribute(id, attribute, VertexAttributeOffset_Position);
 
     // add
     glm_vec3_add(*dest, position, *dest);

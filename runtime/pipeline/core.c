@@ -110,35 +110,42 @@ void pipeline_set_vertex_layout(Pipeline *pipeline) {
   // set x,y,z
   pipeline->vertex_layout.attribute[0] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
-      .offset = 0,
+      .offset = VertexAttributeOffset_Position,
       .shaderLocation = 0,
   };
 
   // set normals
   pipeline->vertex_layout.attribute[1] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
-      .offset = 3 * sizeof(float),
+      .offset = VertexAttributeOffset_Normal * sizeof(float),
       .shaderLocation = 1,
   };
 
-  // set r,g,b
+  // set tangent
   pipeline->vertex_layout.attribute[2] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
-      .offset = 6 * sizeof(float),
+      .offset = VertexAttributeOffset_Tangent * sizeof(float),
       .shaderLocation = 2,
   };
 
-  // set u,v
+  // set r,g,b
   pipeline->vertex_layout.attribute[3] = (WGPUVertexAttribute){
-      .format = WGPUVertexFormat_Float32x2,
-      .offset = 9 * sizeof(float),
+      .format = WGPUVertexFormat_Float32x3,
+      .offset = VertexAttributeOffset_Color * sizeof(float),
       .shaderLocation = 3,
+  };
+
+  // set u,v
+  pipeline->vertex_layout.attribute[4] = (WGPUVertexAttribute){
+      .format = WGPUVertexFormat_Float32x2,
+      .offset = VertexAttributeOffset_Uv * sizeof(float),
+      .shaderLocation = 4,
   };
 
   // define layout from attributes above
   pipeline->vertex_layout.buffer = (WGPUVertexBufferLayout){
       .arrayStride = VERTEX_STRIDE * sizeof(float),
-      .attributeCount = 4,
+      .attributeCount = VERTEX_ATTRIBUTE_COUNT,
       .attributes = pipeline->vertex_layout.attribute,
   };
 }

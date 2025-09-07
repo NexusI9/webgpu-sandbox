@@ -12,7 +12,7 @@ typedef struct {
 } VertexAttribute;
 
 void vertex_attribute_find_equal_attr(Vertex *, VertexAttribute *,
-                                      VertexAttributeName, VertexAttribute *);
+                                      VertexAttributeType, VertexAttribute *);
 void vertex_attribute_print(VertexAttribute *);
 
 void vertex_attribute_set_position(VertexAttribute *, vertex_position *);
