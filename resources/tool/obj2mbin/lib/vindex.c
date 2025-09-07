@@ -37,7 +37,7 @@ void index_attribute_print(const IndexAttributeList *list) {
   for (size_t g = 0; g < list->length; g++) {
     for (size_t i = 0; i < list->entries[g].length; i++) {
       index_attribute *attr = &list->entries[g].entries[i];
-      for (VertexAttribute a = 0; a < VERTEX_ATTRIBUTE_COUNT; a++)
+      for (VertexAttributeType a = 0; a < VERTEX_ATTRIBUTE_COUNT; a++)
         printf("%d ", (*attr)[a]);
       printf("\t");
     }
@@ -60,13 +60,14 @@ VIndexStatus index_attribute_insert_group(char *line, IndexAttributeGroup *list,
     index_attribute *new_attr = index_attribute_new_attribute(list);
     if (new_attr) {
 
-      int scan_length = sscanf(
-          index_group, pattern, new_attr[VertexAttribute_Position],
-          new_attr[VertexAttribute_Uv], new_attr[VertexAttribute_Normal]);
+      int scan_length =
+          sscanf(index_group, pattern, new_attr[VertexAttributeType_Position],
+                 new_attr[VertexAttributeType_Uv],
+                 new_attr[VertexAttributeType_Normal]);
 
       // decrement each index since obj index starts at 1 (instead of 0)
       for (uint8_t i = 0; i < VERTEX_ATTRIBUTE_COUNT; i++)
-        *new_attr[i] = (*new_attr[i] > 0) ? (*new_attr[i] - 1) : 0;
+        (*new_attr)[i] = (*new_attr[i] > 0) ? (*new_attr[i] - 1) : 0;
     }
 
     // flush
@@ -77,6 +78,8 @@ VIndexStatus index_attribute_insert_group(char *line, IndexAttributeGroup *list,
 }
 
 IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *list) {
+
+ 
 
   // check entries existence
   if (list->entries == NULL) {
@@ -94,8 +97,13 @@ IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *list) {
     size_t new_capacity = 2 * list->capacity;
     void *temp =
         realloc(list->entries, sizeof(IndexAttributeGroup) * new_capacity);
+
     if (temp) {
       list->entries = temp;
+
+      memset(&list->entries[list->capacity], 0,
+             (new_capacity - list->capacity) * sizeof(IndexAttributeGroup));
+
       list->capacity = new_capacity;
     } else {
       perror("Couldn't create list\n");
@@ -132,9 +140,16 @@ index_attribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
     }
   }
 
+  //printf("group: %p\n", list->entries);
+  //printf("length: %lu\n", list->length);
+  //printf("capacity: %lu\n", list->capacity);
+
   return &list->entries[list->length++];
 }
 
+/*
+  Read the file attribute line ('f 3/2') and store it as in a new group.
+ */
 void index_attribute_from_line(const char *line, void *data) {
 
   VertexIndexCallbackDescriptor *cast_data =
@@ -263,8 +278,8 @@ void index_attribute_line_set_opposite(IndexAttributeList *list) {
     index_attribute *p1 = &list->entries[i].entries[0];
     index_attribute *p2 = &list->entries[i].entries[1];
 
-    (*p1)[VertexAttribute_Normal] = (*p2)[VertexAttribute_Position];
-    (*p2)[VertexAttribute_Normal] = (*p1)[VertexAttribute_Position];
+    (*p1)[VertexAttributeType_Normal] = (*p2)[VertexAttributeType_Position];
+    (*p2)[VertexAttributeType_Normal] = (*p1)[VertexAttributeType_Position];
   }
 }
 
@@ -292,9 +307,8 @@ void index_attribute_line_set_doublon(IndexAttributeList *list) {
       index_attribute_copy(src_attribute, new_attribute);
       // set uv to 1 (i.e. opposite side)
       // patter A / B/ A / B
-      (*src_attribute)[VertexAttribute_Uv] = c * 2;
-      (*new_attribute)[VertexAttribute_Uv] = c * 2 + 1;
-
+      (*src_attribute)[VertexAttributeType_Uv] = c * 2;
+      (*new_attribute)[VertexAttributeType_Uv] = c * 2 + 1;
     }
 
     // swap

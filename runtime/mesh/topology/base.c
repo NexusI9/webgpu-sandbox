@@ -132,11 +132,13 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
   for (size_t i = 0; i < base->index.length; i++) {
     vindex_t base_index = base->index.entries[i];
     vattr_t *base_vertex = &base->attribute.entries[base_index * VERTEX_STRIDE];
+
     vec3 position;
     memcpy(&position, base_vertex, sizeof(vertex_position));
 
     mesh_topology_anchor_list_insert(&hashed_list, &position, &base_index, 1);
   }
+
 
   // 2. remmap based on index (linear)
   MeshTopologyAnchorList *mapped_list = &base->siblings;
@@ -153,8 +155,8 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
   mesh_topology_anchor_list_map(&hashed_list, &base_topo, mapped_list);
 }
 
-void mesh_topology_base_set_scale(MeshTopologyBase *base, const VertexGroup *select,
-                              vec3 *scale) {
+void mesh_topology_base_set_scale(MeshTopologyBase *base,
+                                  const VertexGroup *select, vec3 *scale) {
 
   // combine all anchors
   MeshTopologyAnchor combined_anchor;
@@ -180,7 +182,8 @@ void mesh_topology_base_set_scale(MeshTopologyBase *base, const VertexGroup *sel
 }
 
 void mesh_topology_base_set_position(MeshTopologyBase *base,
-                                  const VertexGroup *select, vec3 *translate) {
+                                     const VertexGroup *select,
+                                     vec3 *translate) {
 
   // combine all anchors
   MeshTopologyAnchor combined_anchor;

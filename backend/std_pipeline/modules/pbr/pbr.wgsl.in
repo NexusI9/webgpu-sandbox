@@ -10,7 +10,7 @@ const MAX_LIGHT : u32 = 16u;
 struct VertexIn {
   @location(0) aPos : vec3<f32>,
                       @location(1) aNorm : vec3<f32>,
-                                           @location(2) aTan : vec3<f32>,
+                                           @location(2) aTan : vec4<f32>,
                                                                @location(3) aCol
       : vec3<f32>,
         @location(4) aUv : vec2<f32>,
@@ -191,9 +191,14 @@ struct UBO {
 
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = viewport.projection * camera.view;
+
+  let normal = normalize((mesh.model * vec4<f32>(input.aNorm.xyz, 0.0f)).xyz);
+  let tangent = normalize((mesh.model * vec4<f32>(input.aTan.xyz, 0.0f)).xyz);
+  let bitangent = cross(normal, tangent);
+
   var output : VertexOut;
   output.vPosition = cam * mesh.model * vec4<f32>(input.aPos, 1.0f);
-  output.vNormal = normalize(input.aNorm);
+  output.vNormal = input.aNorm;
   output.vCol = input.aCol;
   output.vUv = input.aUv;
 
@@ -740,5 +745,8 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
                          ubo.fog.start_distance, ubo.fog.density);
 
   let out_color = mix(combined, ubo.fog.color, fog_k);
-  return out_color;
+
+  return vec4<f32>(vNormal, 1.0f);
+
+  // return out_color;
 }

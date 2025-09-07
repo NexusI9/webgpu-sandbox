@@ -12,7 +12,8 @@
 #define VERTEX_LINE_PREFIX_UV "vt "
 #define VERTEX_LINE_PREFIX_UNDEFINED 0
 #define VERTEX_SEPARATOR " "
-#define VERTEX_STRIDE 14
+
+#define VERTEX_STRIDE 15
 #define VERTEX_ATTRIBUTE_COUNT 5
 
 typedef enum {
@@ -22,12 +23,20 @@ typedef enum {
 } VertexAttributeListStatus;
 
 typedef enum {
-  VertexAttribute_Position = 0,
-  VertexAttribute_Normal = 1,
-  VertexAttribute_Tangent = 2,
-  VertexAttribute_Color = 3,
-  VertexAttribute_Uv = 4,
-} VertexAttribute;
+  VertexAttributeType_Position,
+  VertexAttributeType_Normal,
+  VertexAttributeType_Tangent,
+  VertexAttributeType_Color,
+  VertexAttributeType_Uv,
+} VertexAttributeType;
+
+typedef enum {
+  VertexAttributeDimension_Position = 3,
+  VertexAttributeDimension_Normal = 3,
+  VertexAttributeDimension_Tangent = 4,
+  VertexAttributeDimension_Color = 3,
+  VertexAttributeDimension_Uv = 2,
+} VertexAttributeDimension;
 
 typedef struct {
   size_t capacity;

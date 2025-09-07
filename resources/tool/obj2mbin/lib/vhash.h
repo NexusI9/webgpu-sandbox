@@ -20,7 +20,6 @@
   7)
  */
 #define VHASH_BASE_CAPACITY 127
-#define VERTEX_STRIDE 14
 
 typedef enum {
   VHashStatus_Success,

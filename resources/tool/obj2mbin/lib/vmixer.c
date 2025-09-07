@@ -73,11 +73,14 @@ void vmixer_index_create_vertex_set(IndexAttributeList *index_list,
       mbin_vertex_t vertices[VERTEX_STRIDE];
       size_t offset = 0;
 
-      for (VertexAttribute j = 0; j < VERTEX_ATTRIBUTE_COUNT; j++) {
-        size_t attr_index = *indexes[j];
-        VertexAttributeList attr = attr_list[j];
-        memcpy(vertices + offset, &attr.entries[attr_index * attr.dimension],
+      for (VertexAttributeType type = 0; type < VERTEX_ATTRIBUTE_COUNT; type++) {
+
+        size_t attr_index = (*indexes)[type];
+        VertexAttributeList attr = attr_list[type];
+
+        memcpy(&vertices[offset], &attr.entries[attr_index],
                attr.dimension * sizeof(mbin_vertex_t));
+
         offset += attr.dimension;
       }
 

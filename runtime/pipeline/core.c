@@ -107,6 +107,7 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
  */
 void pipeline_set_vertex_layout(Pipeline *pipeline) {
 
+  
   // set x,y,z
   pipeline->vertex_layout.attribute[0] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
@@ -123,7 +124,7 @@ void pipeline_set_vertex_layout(Pipeline *pipeline) {
 
   // set tangent
   pipeline->vertex_layout.attribute[2] = (WGPUVertexAttribute){
-      .format = WGPUVertexFormat_Float32x3,
+      .format = WGPUVertexFormat_Float32x4,
       .offset = VertexAttributeOffset_Tangent * sizeof(float),
       .shaderLocation = 2,
   };

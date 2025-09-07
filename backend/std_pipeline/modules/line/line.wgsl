@@ -3,7 +3,7 @@ struct VertexIn {
   @location(0) aPosA : vec3<f32>,
                        @location(1) aPosB : vec3<f32>,
                                             @location(2) aUnused
-      : vec3<f32>,
+      : vec4<f32>,
         @location(3) aCol : vec3<f32>,
                             @location(4) aSide : vec2<f32>,
 };
