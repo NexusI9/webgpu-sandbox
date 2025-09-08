@@ -78,16 +78,15 @@ void vmixer_index_create_vertex_set(IndexAttributeList *index_list,
         size_t attr_index = (*indexes)[type];
         VertexAttributeList *attr = &attr_list[type];
 
-        /*printf("[%p][%d] reading: %lu | %lu => %f\n",
-               &attr->entries[attr_index], type, attr_index, attr->length,
-               attr->entries[attr_index]);*/
-
-        printf("<%p> [%d] ", attr, type);
+#ifdef VERBOSE_MIX
+        printf("<%p> [%d:%d] ", attr, type, attr->offset);
         for (VertexAttributeDimension d = 0; d < attr->dimension; d++)
-          printf("%f\t", attr->entries[attr_index + d]);
+          printf("%f  ", attr->entries[attr_index * attr->dimension + d]);
         printf("(%lu)\n", attr_index);
+#endif
 
-        memcpy(&vertices[attr->offset], &attr->entries[attr_index],
+        memcpy(vertices + attr->offset,
+               &attr->entries[attr_index * attr->dimension],
                attr->dimension * sizeof(mbin_vertex_t));
       }
 

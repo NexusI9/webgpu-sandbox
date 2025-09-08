@@ -77,6 +77,8 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     mbin_vertex_attribute_copy(&cached_attributes[VertexAttributeType_Position],
                                &cached_attributes[VertexAttributeType_Normal],
                                VertexAttributeCopy_Shallow);
+    cached_attributes[VertexAttributeType_Normal].offset = VertexAttributeOffset_Normal;
+    cached_attributes[VertexAttributeOffset_Normal].label = "normal (copied positions)";
 
     // manually create uv attributes
     mbin_vertex_attribute_set_line_uv(
