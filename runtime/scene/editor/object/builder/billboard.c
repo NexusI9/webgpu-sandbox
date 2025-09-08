@@ -58,7 +58,7 @@ void seo_create_billboard(Mesh *mesh,
                             .size = light_texture.size,
                             .channels = light_texture.channels,
                             .dimension = WGPUTextureViewDimension_2D,
-                            .format = WGPUTextureFormat_RGBA8Unorm,
+                            .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
                         });
 
   shader_update_sampler(mesh_shader(mesh, MeshShader_Fixed), 1, 1,

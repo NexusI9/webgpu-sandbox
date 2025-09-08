@@ -41,7 +41,7 @@ void render_pass_create_multisampling_view(
                   .height = desc->height,
                   .depthOrArrayLayers = 1,
               },
-          .format = WGPUTextureFormat_BGRA8Unorm, // swapchain format
+          .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT, // swapchain format
           .sampleCount = desc->multisample,
           .mipLevelCount = 1,
       });

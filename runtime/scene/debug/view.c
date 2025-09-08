@@ -49,7 +49,7 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
 
   // bind texture view
   shader_update_texture_view(mesh_shader(mesh, MeshShader_Fixed), 1, 0, view,
-                             WGPUTextureFormat_BGRA8Unorm);
+                             TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
 
   mesh_ref_list_insert(&debug->object_list[SceneDebugObject_View], mesh);
 }

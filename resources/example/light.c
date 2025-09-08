@@ -16,7 +16,7 @@ void example_light(Scene *scene) {
 
   scene_add_sun_light(scene,
                       &(SunLightDescriptor){
-                          .position = {-2.0f, 2.0f, 2.0f},
+                          .position = {15.0f, 15.0f, 15.0f},
                           .color = {1.0f, 1.0f, 1.0f},
                           .intensity = 2.0f,
                           .size = 10.0f,

@@ -323,7 +323,7 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       // link skybox texture view
       shader_update_texture_view(mesh_shader(target_mesh, MeshShader_Texture),
                                  1, 10, scene->environment.skybox.view,
-                                 WGPUTextureFormat_BGRA8Unorm);
+                                 TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
@@ -386,7 +386,7 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
                                     .width = width,
                                     .height = height,
                                     .dimension = WGPUTextureViewDimension_2D,
-                                    .format = WGPUTextureFormat_BGRA8Unorm,
+                                    .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
                                     .channels = TextureChannel_RGBA,
                                 });
 

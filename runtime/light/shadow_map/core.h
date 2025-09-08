@@ -6,7 +6,7 @@
 #include <webgpu/webgpu.h>
 
 #define SHADOW_DEPTH_FORMAT WGPUTextureFormat_Depth32Float
-#define SHADOW_COLOR_FORMAT WGPUTextureFormat_BGRA8Unorm
+#define SHADOW_COLOR_FORMAT TEXTURE_FORMAT_ONSCREEN_DEFAULT
 #define SHADOW_MAP_SIZE 512
 
 typedef struct {

@@ -20,7 +20,7 @@ static inline void prefab_skybox_create_from_texture(Scene *, const WGPUTexture,
                                                      const size_t, const float);
 
 static const int layer_count = 6;
-static const WGPUTextureFormat format = WGPUTextureFormat_RGBA8Unorm;
+static const WGPUTextureFormat format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT;
 
 /**
    Upload the skybox side to the gpu

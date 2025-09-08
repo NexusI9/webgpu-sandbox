@@ -20,7 +20,7 @@ void probe_reflection_list_create_texture(
                                 .height = desc->resolution,
                                 .depthOrArrayLayers = desc->layer_count,
                             },
-                        .format = WGPUTextureFormat_BGRA8Unorm,
+                        .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT,
                         .usage = WGPUTextureUsage_CopyDst |
                                  WGPUTextureUsage_RenderAttachment |
                                  WGPUTextureUsage_TextureBinding,
@@ -32,7 +32,7 @@ void probe_reflection_list_create_texture(
   *desc->color_view = wgpuTextureCreateView(
       *desc->color, &(WGPUTextureViewDescriptor){
                         .label = "Probe Reflection List View Color",
-                        .format = WGPUTextureFormat_BGRA8Unorm,
+                        .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT,
                         .dimension = desc->view_dimension,
                         .baseMipLevel = 0,
                         .mipLevelCount = 1,

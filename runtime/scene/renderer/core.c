@@ -262,7 +262,7 @@ WGPUSwapChain scene_renderer_create_swapchain(const SceneRenderer *renderer) {
       renderer->wgpu.device, surface,
       &(WGPUSwapChainDescriptor){
           .usage = WGPUTextureUsage_RenderAttachment,
-          .format = WGPUTextureFormat_BGRA8Unorm,
+          .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT,
           .width = scene_renderer_width(renderer),
           .height = scene_renderer_height(renderer),
           .presentMode = WGPUPresentMode_Fifo,

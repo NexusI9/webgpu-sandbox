@@ -66,12 +66,12 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture), 1, 3,
       scene->probes_reflection.pass.color.attachment.view,
-      WGPUTextureFormat_BGRA8Unorm);
+      TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
 
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture), 1, 5,
       scene_environment_skybox(&scene->environment)->view,
-      WGPUTextureFormat_BGRA8Unorm);
+      TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
 
   ProbeReflectionListDebug debug_options = {
       .scene_debug = &scene->debug,
@@ -159,10 +159,10 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture), 1, 4,
       scene->planes_reflection.pass.color.attachment.view,
-      WGPUTextureFormat_BGRA8Unorm);
+      TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
 
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture), 1, 6,
       scene_environment_skybox(&scene->environment)->view,
-      WGPUTextureFormat_BGRA8Unorm);
+      TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
 }

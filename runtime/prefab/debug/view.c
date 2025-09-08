@@ -98,7 +98,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   // bind texture view
   shader_update_texture_view(mesh_shader(new_view, MeshShader_Fixed), 1, 0,
-                             view->texture_view, WGPUTextureFormat_BGRA8Unorm);
+                             view->texture_view, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
 
   // bind sampler
   /*shader_update_sampler(mesh_shader(new_view, MeshShader_Fixed), 1, 1,

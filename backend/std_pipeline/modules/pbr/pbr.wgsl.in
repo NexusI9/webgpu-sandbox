@@ -265,7 +265,7 @@ fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
 
   var material : Material;
   material.albedo = diffuse.rgb;
-  material.metallic = metallic.g;
+  material.metallic = metallic.r;
   material.roughness = metallic.g;                     // roughness in G channel
   material.normal = normalize(normal.rgb * 2.0 - 1.0); // convert to [-1,+1]
   material.occlusion = occlusion.r;
@@ -647,7 +647,11 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
   // TBN is actually NBT, for unkown reason (for Vulkan as well...)
   // https://gamedev.stackexchange.com/questions/128867/simplst-possible-tbn-matrix-giving-weird-results
-  let TBN = mat3x3<f32>(vNormal, vBitangent, vTangent);
+  // Update: It's related to the texture format encoding:
+  // When encoding (probably the normal) texture to:
+  //     1. BGRA8Uint -> NBT
+  //     2. RGBA8Uint -> TBN
+  let TBN = mat3x3<f32>(vTangent, vBitangent, vNormal);
 
   var albedo = textureSample(diffuse_texture, diffuse_sampler, vUv);
   var metallic = textureSample(metallic_texture, metallic_sampler, vUv);
@@ -739,4 +743,5 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   let out_color = mix(combined, ubo.fog.color, fog_k);
 
   return out_color;
+  //return vec4<f32>(world_normal, 1.0f);
 }

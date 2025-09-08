@@ -70,7 +70,7 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
 
   // Color State
   pipeline->color_state = (WGPUColorTargetState){
-      .format = WGPUTextureFormat_BGRA8Unorm,
+      .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT,
       .writeMask = WGPUColorWriteMask_All,
       .blend = &pipeline->blend_state,
   };
