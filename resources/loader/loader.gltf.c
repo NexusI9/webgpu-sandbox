@@ -248,7 +248,7 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
         cgltf_attribute *attribute = &current_primitive.attributes[a];
         cgltf_accessor *accessor = attribute->data;
         cgltf_attribute_type type = attribute->type;
-	
+
         if (type_vertex_map[type].dimension == 0)
           continue;
 
@@ -257,6 +257,10 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
         loader_gltf_accessor_to_array(
             accessor, vert_list.attributes[type_vertex_map[type].type],
             type_vertex_map[type].dimension);
+
+	// DELETEME
+        //print_list_float(vert_list.attributes[type_vertex_map[type].type],
+        //                 vert_list.count, type_vertex_map[type].dimension);
 
         // interleave vertex data ( create pattern pos / norm / tan / uv...)
         loader_gltf_add_vertex_attribute(
