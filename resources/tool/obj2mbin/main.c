@@ -28,12 +28,19 @@ void cache_faces(IndexAttributeList *cached_faces_index,
   // trianglify face index list
   index_attribute_triangulate(cached_faces_index);
 
+#ifdef VERBOSE
+  if (cached_faces_index->length) {
+    for (int v = 0; v < VERTEX_ATTRIBUTE_COUNT; v++)
+      mbin_vertex_attribute_print(&cached_vertex_attributes[v]);
+
+    index_attribute_print(cached_faces_index);
+  }
+#endif
+
   // compose faces
   vmixer_index_compose_from_vertex(cached_faces_index, cached_vertex_attributes,
                                    vb, ib);
-#ifdef VERBOSE
-  index_attribute_print(cached_faces_index);
-#endif
+
   printf("> Faces done\n");
 }
 
@@ -71,6 +78,7 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     // copy vertex attribute to line normal
     VertexAttributeList cached_line_normal;
     mbin_vertex_attribute_copy(cached_position, &cached_line_normal);
+    cached_line_normal.label = "normal (copied positions)";
 
     // manually create uv attributes
     VertexAttributeList cached_line_uv;
@@ -82,10 +90,6 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     // set doublon
     if (method == MBINIndexCacheMethod_Wireframe)
       index_attribute_line_set_doublon(cached_lines_index);
-
-#ifdef VERBOSE
-    index_attribute_print(cached_lines_index);
-#endif
 
     /* === COMPOSE === */
 
@@ -105,6 +109,15 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     // trianglify face index list
     if (method == MBINIndexCacheMethod_Wireframe)
       index_attribute_triangulate(cached_lines_index);
+
+#ifdef VERBOSE
+    if (cached_lines_index->length) {
+      for (int v = 0; v < VERTEX_ATTRIBUTE_COUNT; v++)
+        mbin_vertex_attribute_print(cached_lines_attributes[v]);
+
+      index_attribute_print(cached_lines_index);
+    }
+#endif
 
     vmixer_index_compose_from_vertex(cached_lines_index,
                                      cached_lines_attributes[0], vb, ib);
@@ -137,6 +150,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
               .capacity = VERTEX_LIST_CAPACITY,
               .prefix = VERTEX_LINE_PREFIX_POSITION,
               .dimension = VertexAttributeDimension_Position,
+              .offset = VertexAttributeOffset_Position,
           },
       [VertexAttributeType_Normal] =
           {
@@ -144,6 +158,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
               .capacity = VERTEX_LIST_CAPACITY,
               .prefix = VERTEX_LINE_PREFIX_NORMAL,
               .dimension = VertexAttributeDimension_Normal,
+              .offset = VertexAttributeOffset_Normal,
           },
       [VertexAttributeType_Tangent] =
           {
@@ -151,6 +166,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
               .capacity = VERTEX_LIST_CAPACITY,
               .prefix = VERTEX_LINE_PREFIX_UNDEFINED,
               .dimension = VertexAttributeDimension_Tangent,
+              .offset = VertexAttributeOffset_Tangent,
           },
       [VertexAttributeType_Color] =
           {
@@ -158,6 +174,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
               .capacity = VERTEX_LIST_CAPACITY,
               .prefix = VERTEX_LINE_PREFIX_UNDEFINED,
               .dimension = VertexAttributeDimension_Color,
+              .offset = VertexAttributeOffset_Color,
           },
       [VertexAttributeType_Uv] =
           {
@@ -165,6 +182,7 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
               .capacity = VERTEX_LIST_CAPACITY,
               .prefix = VERTEX_LINE_PREFIX_UV,
               .dimension = VertexAttributeDimension_Uv,
+              .offset = VertexAttributeOffset_Uv,
           },
   };
 
@@ -189,11 +207,6 @@ int convert_obj_to_mbin(const char *in_path, const char *out_dir,
       list->length = list->dimension;
     }
   }
-
-#ifdef VERBOSE
-  for (int v = 0; v < VERTEX_ATTRIBUTE_COUNT; v++)
-    mbin_vertex_attribute_print(&cached_attributes[v]);
-#endif
 
   // cache faces index
   IndexAttributeList cached_faces_index = {

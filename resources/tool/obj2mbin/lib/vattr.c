@@ -7,6 +7,9 @@
 void mbin_vertex_attribute_print(VertexAttributeList *list) {
 
   printf("Attributes: %s\n", list->label);
+  printf("Length: %lu\n", list->length);
+  printf("Capacity: %lu\n", list->capacity);
+  printf("Data: \n");
   for (size_t l = 0; l < list->length; l++) {
     printf("%f\t", list->entries[l]);
     if (l % list->dimension == list->dimension - 1)
@@ -65,7 +68,7 @@ void mbin_vertex_attribute_from_line(const char *line, void *data) {
 
   memcpy(values, &line[prefix_len], content_len);
   values[content_len] = '\0'; // null terminate
-  
+
   // split values
   char *token = strtok(values, VERTEX_SEPARATOR);
   while (token) {
@@ -92,11 +95,10 @@ void mbin_vertex_attribute_free(VertexAttributeList *list) {
 VertexAttributeListStatus
 mbin_vertex_attribute_copy(VertexAttributeList *src,
                            VertexAttributeList *dest) {
-  dest->capacity = src->capacity;
-  dest->length = src->length;
-  dest->dimension = src->dimension;
-  dest->prefix = strdup(src->prefix);
 
+  memcpy(dest, src, sizeof(VertexAttributeList));
+
+  dest->prefix = src->prefix;
   dest->entries = malloc(dest->capacity * sizeof(mbin_vertex_t));
 
   if (dest->entries == NULL) {
@@ -105,9 +107,8 @@ mbin_vertex_attribute_copy(VertexAttributeList *src,
     dest->capacity = 0;
     dest->length = 0;
     dest->dimension = 0;
-
-    free(dest->prefix);
     dest->prefix = NULL;
+    
     return VertexAttributeListStatus_AllocFail;
   }
 
@@ -140,8 +141,10 @@ void mbin_vertex_attribute_set_line_uv(VertexAttributeList *list) {
       B_mul, // direction mul
   };
 
+  list->label = "uv";
+  list->offset = VertexAttributeOffset_Uv;
+  list->dimension = VertexAttributeDimension_Uv;
   list->capacity = new_uv_length;
-  list->length = 0;
+  list->length = new_uv_length;
   list->entries = uv_line_data;
-  list->dimension = 2;
 }

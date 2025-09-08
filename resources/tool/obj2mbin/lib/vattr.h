@@ -38,9 +38,19 @@ typedef enum {
   VertexAttributeDimension_Uv = 2,
 } VertexAttributeDimension;
 
+typedef enum {
+  VertexAttributeOffset_Position = 0,
+  VertexAttributeOffset_Normal = 3,
+  VertexAttributeOffset_Tangent = 6,
+  VertexAttributeOffset_Color = 10,
+  VertexAttributeOffset_Uv = 13,
+  VertexAttributeOffset_End = VERTEX_STRIDE,
+} VertexAttributeOffset;
+
 typedef struct {
   size_t capacity;
   size_t length;
+  VertexAttributeOffset offset;
   vec_dimension_t dimension;
   mbin_vertex_t *entries;
   char *prefix;

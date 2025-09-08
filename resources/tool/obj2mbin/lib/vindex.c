@@ -36,6 +36,7 @@ void index_attribute_print(const IndexAttributeList *list) {
   printf("Index: \n");
   for (size_t g = 0; g < list->length; g++) {
     for (size_t i = 0; i < list->entries[g].length; i++) {
+
       index_attribute *attr = &list->entries[g].entries[i];
       for (VertexAttributeType a = 0; a < VERTEX_ATTRIBUTE_COUNT; a++)
         printf("%d ", (*attr)[a]);
@@ -60,26 +61,29 @@ VIndexStatus index_attribute_insert_group(char *line, IndexAttributeGroup *list,
     index_attribute *new_attr = index_attribute_new_attribute(list);
     if (new_attr) {
 
-      int scan_length =
-          sscanf(index_group, pattern, new_attr[VertexAttributeType_Position],
-                 new_attr[VertexAttributeType_Uv],
-                 new_attr[VertexAttributeType_Normal]);
+      int scan_length = sscanf(index_group, pattern,
+                               &(*new_attr)[VertexAttributeType_Position],
+                               &(*new_attr)[VertexAttributeType_Uv],
+                               &(*new_attr)[VertexAttributeType_Normal]);
 
       // decrement each index since obj index starts at 1 (instead of 0)
-      for (uint8_t i = 0; i < VERTEX_ATTRIBUTE_COUNT; i++)
-        (*new_attr)[i] = (*new_attr[i] > 0) ? (*new_attr[i] - 1) : 0;
-    }
+      // printf("%s (%s) => ", index_group, pattern);
+      for (VertexAttributeType i = 0; i < VERTEX_ATTRIBUTE_COUNT; i++) {
+        if ((*new_attr)[i] > 0)
+          (*new_attr)[i] -= 1;
 
+        // printf("%d ", (*new_attr)[i]);
+      }
+      // printf("\n");
+    }
     // flush
-    index_group = strtok(0, VINDEX_GROUP_SEPARATOR);
+    index_group = strtok(NULL, VINDEX_GROUP_SEPARATOR);
   }
 
   return VIndexStatus_Success;
 }
 
 IndexAttributeGroup *index_attribute_new_group(IndexAttributeList *list) {
-
- 
 
   // check entries existence
   if (list->entries == NULL) {
@@ -139,10 +143,6 @@ index_attribute *index_attribute_new_attribute(IndexAttributeGroup *list) {
       return NULL;
     }
   }
-
-  //printf("group: %p\n", list->entries);
-  //printf("length: %lu\n", list->length);
-  //printf("capacity: %lu\n", list->capacity);
 
   return &list->entries[list->length++];
 }
@@ -234,8 +234,11 @@ VIndexStatus index_attribute_triangulate(IndexAttributeList *list) {
              sizeof(index_attribute));
     }
 
-    memcpy(group->entries, new_group.entries,
-           sizeof(index_attribute) * new_group.length);
+    // free previous entries
+    free(group->entries);
+
+    // overwrite initial group entries
+    group->entries = new_group.entries;
     group->length = new_group.length;
     group->capacity = new_group.capacity;
   }
