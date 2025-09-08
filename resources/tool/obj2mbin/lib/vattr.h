@@ -23,6 +23,11 @@ typedef enum {
 } VertexAttributeListStatus;
 
 typedef enum {
+  VertexAttributeCopy_Deep,
+  VertexAttributeCopy_Shallow,
+} VertexAttributeCopy;
+
+typedef enum {
   VertexAttributeType_Position,
   VertexAttributeType_Normal,
   VertexAttributeType_Tangent,
@@ -69,7 +74,8 @@ void mbin_vertex_attribute_from_line(const char *, void *);
 
 void mbin_vertex_attribute_free(VertexAttributeList *);
 VertexAttributeListStatus mbin_vertex_attribute_copy(VertexAttributeList *,
-                                                     VertexAttributeList *);
+                                                     VertexAttributeList *,
+                                                     const VertexAttributeCopy);
 
 void mbin_vertex_attribute_set_line_uv(VertexAttributeList *);
 

@@ -6,7 +6,7 @@
 
 void mbin_vertex_attribute_print(VertexAttributeList *list) {
 
-  printf("Attributes: %s\n", list->label);
+  printf("Attributes: %s <%p>\n", list->label, list);
   printf("Length: %lu\n", list->length);
   printf("Capacity: %lu\n", list->capacity);
   printf("Data: \n");
@@ -93,26 +93,27 @@ void mbin_vertex_attribute_free(VertexAttributeList *list) {
 }
 
 VertexAttributeListStatus
-mbin_vertex_attribute_copy(VertexAttributeList *src,
-                           VertexAttributeList *dest) {
+mbin_vertex_attribute_copy(VertexAttributeList *src, VertexAttributeList *dest,
+                           const VertexAttributeCopy copy_type) {
 
   memcpy(dest, src, sizeof(VertexAttributeList));
 
-  dest->prefix = src->prefix;
-  dest->entries = malloc(dest->capacity * sizeof(mbin_vertex_t));
-
+  if (copy_type == VertexAttributeCopy_Deep) {
+    dest->entries = malloc(dest->capacity * sizeof(mbin_vertex_t));
+    dest->label = strdup(src->label);
+  }
+  
   if (dest->entries == NULL) {
     perror("Couldn't copy list\n");
-
     dest->capacity = 0;
     dest->length = 0;
     dest->dimension = 0;
     dest->prefix = NULL;
-    
     return VertexAttributeListStatus_AllocFail;
   }
 
-  memcpy(dest->entries, src->entries, dest->length * sizeof(mbin_vertex_t));
+  if (copy_type == VertexAttributeCopy_Deep)
+    memcpy(dest->entries, src->entries, dest->length * sizeof(mbin_vertex_t));
 
   return VertexAttributeListStatus_Success;
 }

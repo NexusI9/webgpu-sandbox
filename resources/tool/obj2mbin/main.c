@@ -65,46 +65,30 @@ void cache_lines(IndexAttributeList *cached_lines_index,
 
   if (cached_lines_index->length) {
 
-    // initial vertex attributes
-    VertexAttributeList *cached_position =
-        &cached_attributes[VertexAttributeType_Position];
-    VertexAttributeList *cached_tangent =
-        &cached_attributes[VertexAttributeType_Tangent];
-    VertexAttributeList *cached_color =
-        &cached_attributes[VertexAttributeType_Color];
+    /* === Define Vertex Attributes ===
+    Since lines use a different "vertex data structure" than faces we
+    create a copy of the initial cahced list and populate the
+    attributes accordingly:
+       1. replace normal list with the opposite position
+       2. replace the uv with side extrustion data
+     */
 
-    /*  === TRANSFORM TO LINE ATTRIBUTES=== */
-
-    // copy vertex attribute to line normal
-    VertexAttributeList cached_line_normal;
-    mbin_vertex_attribute_copy(cached_position, &cached_line_normal);
-    cached_line_normal.label = "normal (copied positions)";
+    // position =>  normals
+    mbin_vertex_attribute_copy(&cached_attributes[VertexAttributeType_Position],
+                               &cached_attributes[VertexAttributeType_Normal],
+                               VertexAttributeCopy_Shallow);
 
     // manually create uv attributes
-    VertexAttributeList cached_line_uv;
-    mbin_vertex_attribute_set_line_uv(&cached_line_uv);
+    mbin_vertex_attribute_set_line_uv(
+        &cached_attributes[VertexAttributeType_Uv]);
 
-    // set line opposite vertex
+    /* === Define Index Attributes === */
+
     index_attribute_line_set_opposite(cached_lines_index);
 
     // set doublon
     if (method == MBINIndexCacheMethod_Wireframe)
       index_attribute_line_set_doublon(cached_lines_index);
-
-    /* === COMPOSE === */
-
-    // Since lines use a different "vertex data structure" than faces we create
-    // a copy of the initial cahced list and populate the attributes
-    // accordingly:
-    // 1. replace normal list with the opposite position
-    // 2. replace the uv with side extrustion data
-    VertexAttributeList *cached_lines_attributes[VERTEX_ATTRIBUTE_COUNT] = {
-        [VertexAttributeType_Position] = cached_position,
-        [VertexAttributeType_Normal] = &cached_line_normal,
-        [VertexAttributeType_Tangent] = cached_tangent,
-        [VertexAttributeType_Color] = cached_color,
-        [VertexAttributeType_Uv] = &cached_line_uv,
-    };
 
     // trianglify face index list
     if (method == MBINIndexCacheMethod_Wireframe)
@@ -113,14 +97,16 @@ void cache_lines(IndexAttributeList *cached_lines_index,
 #ifdef VERBOSE
     if (cached_lines_index->length) {
       for (int v = 0; v < VERTEX_ATTRIBUTE_COUNT; v++)
-        mbin_vertex_attribute_print(cached_lines_attributes[v]);
+        mbin_vertex_attribute_print(&cached_attributes[v]);
 
       index_attribute_print(cached_lines_index);
     }
 #endif
 
+    /* === COMPOSE === */
+
     vmixer_index_compose_from_vertex(cached_lines_index,
-                                     cached_lines_attributes[0], vb, ib);
+                                     cached_attributes, vb, ib);
   }
 
   printf("> Lines done\n");

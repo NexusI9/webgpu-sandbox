@@ -82,7 +82,7 @@ void vmixer_index_create_vertex_set(IndexAttributeList *index_list,
                &attr->entries[attr_index], type, attr_index, attr->length,
                attr->entries[attr_index]);*/
 
-        printf("[%d] ", type);
+        printf("<%p> [%d] ", attr, type);
         for (VertexAttributeDimension d = 0; d < attr->dimension; d++)
           printf("%f\t", attr->entries[attr_index + d]);
         printf("(%lu)\n", attr_index);
