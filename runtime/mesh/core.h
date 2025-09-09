@@ -64,6 +64,7 @@ typedef struct {
   uint32_t _pad[44];
 } MeshUniform;
 
+
 typedef void (*mesh_get_transform_attribute)(Mesh *, vec3 *);
 
 // Core

@@ -10,7 +10,7 @@
 #include <webgpu/webgpu.h>
 
 typedef enum {
-  UBOStatus_Success,
+  UBOStatus_Success, 
   UBOStatus_OutOfBound,
   UBOStatus_FieldValueUnfound,
   UBOStatus_UndefError,
