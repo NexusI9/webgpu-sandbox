@@ -95,6 +95,8 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
   mesh_set_scale(probe_plane->mesh, probe->scale);
   mesh_set_position(probe_plane->mesh, probe->position);
 
+  mesh_child_add(probe_cube->mesh, probe_plane->mesh);
+
   probe_plane->transform_callback[GizmoMode_Position] =
       seo_probe_reflection_plane_set_position;
   probe_plane->transform_callback[GizmoMode_Rotation] =
@@ -134,6 +136,8 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
   seo_create_wireframe(probe_arrow->mesh, &wireframe_arrow_desc);
   mesh_set_position(probe_arrow->mesh, probe->position);
 
+  mesh_child_add(probe_cube->mesh, probe_arrow->mesh);
+
   probe_arrow->transform_callback[GizmoMode_Position] =
       seo_probe_reflection_plane_set_position;
   probe_arrow->transform_callback[GizmoMode_Rotation] =
@@ -146,8 +150,7 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
 
 void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
 
-  for (size_t i = 0; i < desc->seo->meshes.length; i++)
-    mesh_set_position(desc->seo->meshes.entries[i].mesh, desc->offset);
+  mesh_set_position(desc->mesh->mesh, desc->offset);
 
   ProbeReflectionPlane *probe = (ProbeReflectionPlane *)desc->mesh->target;
   glm_vec3_copy(desc->mesh->mesh->position, probe->position);
@@ -165,8 +168,7 @@ void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
   probe_reflection_plane_update_camera(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
-                           SSBOType_Camera,
+  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo, SSBOType_Camera,
                            probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
 }
 
