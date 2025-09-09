@@ -65,32 +65,24 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
 void line_set_vertex(const vec3 base, const vec3 opposite, const vec4 color,
                      const vec2 extra, const size_t offset, float *data) {
 
-  // build up a new vertex with null normals and uv, but valid colors and
-  // position
-
   // set position
-  data[offset + 0] = base[0];
-  data[offset + 1] = base[1];
-  data[offset + 2] = base[2];
+  memcpy(&data[offset + VertexAttributeOffset_Position], base,
+         sizeof(vertex_position));
 
   // set normal
-  data[offset + 3] = opposite[0];
-  data[offset + 4] = opposite[1];
-  data[offset + 5] = opposite[2];
+  memcpy(&data[offset + VertexAttributeOffset_Normal], opposite,
+         sizeof(vertex_normal));
 
   // set tengant (unused)
-  data[offset + 6] = 0.0f;
-  data[offset + 7] = 0.0f;
-  data[offset + 8] = 0.0f;
+  memcpy(&data[offset + VertexAttributeOffset_Tangent], GLM_VEC4_ZERO,
+         sizeof(vertex_tangent));
 
   // set color
-  data[offset + 9] = color[0];
-  data[offset + 10] = color[1];
-  data[offset + 11] = color[2];
+  memcpy(&data[offset + VertexAttributeOffset_Color], color,
+         sizeof(vertex_color));
 
   // set UV
-  data[offset + 12] = extra[0];
-  data[offset + 13] = extra[1];
+  memcpy(&data[offset + VertexAttributeOffset_Uv], extra, sizeof(vertex_uv));
 }
 
 void line_create_plane(const LineCreatePlaneDescriptor *desc) {
@@ -163,9 +155,10 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
                     VertexAttribute *vertex_attribute,
                     VertexIndex *vertex_index) {
 
-  if (vertex_attribute->length / VERTEX_STRIDE / LINE_VERTEX_COUNT ==
-      LINE_MAX_POINTS - LINE_VERTEX_COUNT - 1)
+  if (vertex_attribute->length == vertex_attribute->capacity) {
+    VERBOSE_WARNING("Line vertex attribute reached max capacity.");
     return;
+  }
 
   // update vertex array
   for (int p = 0; p < LINE_VERTEX_COUNT; p++) {

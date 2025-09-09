@@ -77,8 +77,10 @@ void cache_lines(IndexAttributeList *cached_lines_index,
     mbin_vertex_attribute_copy(&cached_attributes[VertexAttributeType_Position],
                                &cached_attributes[VertexAttributeType_Normal],
                                VertexAttributeCopy_Shallow);
-    cached_attributes[VertexAttributeType_Normal].offset = VertexAttributeOffset_Normal;
-    cached_attributes[VertexAttributeOffset_Normal].label = "normal (copied positions)";
+    cached_attributes[VertexAttributeType_Normal].offset =
+        VertexAttributeOffset_Normal;
+    cached_attributes[VertexAttributeOffset_Normal].label =
+        "normal (copied positions)";
 
     // manually create uv attributes
     mbin_vertex_attribute_set_line_uv(
@@ -88,13 +90,12 @@ void cache_lines(IndexAttributeList *cached_lines_index,
 
     index_attribute_line_set_opposite(cached_lines_index);
 
-    // set doublon
-    if (method == MBINIndexCacheMethod_Wireframe)
+    if (method == MBINIndexCacheMethod_Wireframe) {
+      // set doublon
       index_attribute_line_set_doublon(cached_lines_index);
-
-    // trianglify face index list
-    if (method == MBINIndexCacheMethod_Wireframe)
+      // trianglify face index list
       index_attribute_triangulate(cached_lines_index);
+    }
 
 #ifdef VERBOSE
     if (cached_lines_index->length) {
@@ -107,8 +108,8 @@ void cache_lines(IndexAttributeList *cached_lines_index,
 
     /* === COMPOSE === */
 
-    vmixer_index_compose_from_vertex(cached_lines_index,
-                                     cached_attributes, vb, ib);
+    vmixer_index_compose_from_vertex(cached_lines_index, cached_attributes, vb,
+                                     ib);
   }
 
   printf("> Lines done\n");

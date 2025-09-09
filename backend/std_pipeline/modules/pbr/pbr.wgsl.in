@@ -647,7 +647,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
   // TBN is actually NBT, for unkown reason (for Vulkan as well...)
   // https://gamedev.stackexchange.com/questions/128867/simplst-possible-tbn-matrix-giving-weird-results
-  // Update: It's related to the texture format encoding:
+  // Update: It s related to the texture format encoding:
   // When encoding (probably the normal) texture to:
   //     1. BGRA8Uint -> NBT
   //     2. RGBA8Uint -> TBN

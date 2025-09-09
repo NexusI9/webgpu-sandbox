@@ -1,7 +1,7 @@
 #ifndef _MBIN_H_
 #define _MBIN_H_
 
-typedef enum{
+typedef enum {
   MBINStatus_Success,
   MBINStatus_AllocFail,
 } MBINStatus;
@@ -21,7 +21,12 @@ typedef union {
   mbin_vertex_t f;
 } MBIN_U32Float;
 
-//  Cache method "wireframe" automatically build triangles from the line
+/*
+   Cache method "wireframe" automatically build triangles from the line
+   However in the engine we handle the wireframe automatically (see
+   "runtime/geometry/line"). So the Wireframe method here is just here for
+   legacy purpose but is not actually used to generate engine's mbin.
+ */
 typedef enum {
   MBINIndexCacheMethod_Default,
   MBINIndexCacheMethod_Wireframe,

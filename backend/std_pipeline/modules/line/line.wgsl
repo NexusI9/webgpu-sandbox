@@ -105,5 +105,5 @@ const SSBO_CAPACITY : u32 = 32u;
 // fragment shader
 @fragment fn fs_main(@location(0) vCol : vec3<f32>) -> @location(0) vec4<f32> {
 
-  return uColor;
+    return uColor;
 }
