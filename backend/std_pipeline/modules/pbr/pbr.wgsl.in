@@ -38,7 +38,7 @@ struct Mesh {
                                    probe_reflection_grid_count : u32,
                                                                  _pad
       : array<u32, 40>,
-}
+};
 
 struct Camera {
   view : mat4x4<f32>,
@@ -147,6 +147,14 @@ struct UBO {
 @group(1) @binding(10) var skybox_texture : texture_cube<f32>;
 @group(1) @binding(11) var skybox_sampler : sampler;
 
+@group(1) @binding(12) var probe_reflection_plane_texture
+    : texture_2d_array<f32>;
+@group(1) @binding(13) var probe_reflection_plane_sampler : sampler;
+
+@group(1) @binding(14) var probe_reflection_grid_texture
+    : texture_cube_array<f32>;
+@group(1) @binding(15) var probe_reflection_grid_sampler : sampler;
+
 // light
 // TODO: using uniform for now, but check the storage type
 @group(2) @binding(0) var<storage, read> ambient_light_list
@@ -188,17 +196,17 @@ struct UBO {
   let viewport = uViewport[0];
 
   // DEBUG
-  let proj : mat4x4<f32> = mat4x4<f32>(vec4<f32>(1.961671, 0.0, 0.0, 0.0),
-                                       vec4<f32>(0.0, 3.487414, 0.0, 0.0),
-                                       vec4<f32>(0.0, 0.0, -1.001001, -1.0),
-                                       vec4<f32>(0.0, 0.0, -0.100100, 0.0));
+  // let proj : mat4x4<f32> = mat4x4<f32>(vec4<f32>(1.961671, 0.0, 0.0, 0.0),
+  //                                     vec4<f32>(0.0, 3.487414, 0.0, 0.0),
+  //                                     vec4<f32>(0.0, 0.0, -1.001001, -1.0),
+  //                                     vec4<f32>(0.0, 0.0, -0.100100, 0.0));
 
   // DEBUG
-  let view : mat4x4<f32> =
-                 mat4x4<f32>(vec4<f32>(0.707107, -0.408248, 0.577350, 0.0),
-                             vec4<f32>(0.0, 0.816496, 0.577350, 0.0),
-                             vec4<f32>(-0.707107, -0.408248, 0.577350, 0.0),
-                             vec4<f32>(-0.0, -0.0, -34.641010, 1.0));
+  // let view : mat4x4<f32> =
+  //               mat4x4<f32>(vec4<f32>(0.707107, -0.408248, 0.577350, 0.0),
+  //                           vec4<f32>(0.0, 0.816496, 0.577350, 0.0),
+  //                           vec4<f32>(-0.707107, -0.408248, 0.577350, 0.0),
+  //                           vec4<f32>(-0.0, -0.0, -34.641010, 1.0));
 
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = viewport.projection * camera.view;
