@@ -16,6 +16,7 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
                                   ProbeReflectionGridDescriptor *desc) {
 
   glm_vec3_copy(desc->scale, grid->scale);
+  glm_vec3_copy(desc->position, grid->position);
 
   int clamp_count[PROBE_REFLECTION_GRID_DIMENSION]; // prevent overflow
 
@@ -44,7 +45,9 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
     }
   }
 
+  
   grid->view = std_texture_view(TextureViewType_FloatCubeArray);
+  probe_reflection_grid_update_boundbox(grid);
 }
 
 void probe_reflection_grid_destroy(ProbeReflectionGrid *grid) {
@@ -238,4 +241,16 @@ probe_reflection_grid_list_probe_count(ProbeReflectionGridList *grid_list) {
     count += grid_list->entries[i].probes.length;
 
   return count;
+}
+
+
+void probe_reflection_grid_update_boundbox(ProbeReflectionGrid * grid){
+
+  vec3 half;
+  glm_vec3_scale(grid->scale, 0.5f, half);
+
+  glm_vec3_add(grid->position, half, grid->boundbox.max);
+  glm_vec3_sub(grid->position, half, grid->boundbox.min);
+  
+  
 }

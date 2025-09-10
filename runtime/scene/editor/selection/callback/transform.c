@@ -18,11 +18,6 @@ static const mesh_transform_callback transform_callback_mesh[] = {
 static inline void
 scene_selection_mesh_transform_core(Mesh *, vec3 *, SceneSelectionTransform *);
 
-static inline void
-scene_selection_mesh_update_probe_uniform(Mesh *, ProbeReflectionGridList *,
-                                          ProbeReflectionPlaneList *,
-                                          SSBOManager *);
-
 /**
    Update the mesh probes uniform (planar and grid) if the mesh goes within or
    out of the probe bounds/radius

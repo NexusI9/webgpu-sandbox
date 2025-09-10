@@ -164,6 +164,7 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
                        sizeof(ProbeReflectionPlaneUniform));
 
   probe_reflection_plane_update_uniform(probe);
+  probe_reflection_plane_update_boundbox(probe);
 }
 
 void probe_reflection_plane_update_uniform(ProbeReflectionPlane *probe) {

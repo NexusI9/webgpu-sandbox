@@ -91,7 +91,7 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                  .far = 100.0f,
                  .near = 0.1f,
                  .normal = {0.0f, 1.0f, 0.0f},
-                 .scale = {scale, scale, scale},
+                 .scale = {scale + 5.0f, scale + 5.0f, scale + 5.0f},
                  .distance = 3.0f,
                  .camera = scene->active_camera,
              });

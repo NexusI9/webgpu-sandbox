@@ -22,6 +22,7 @@ typedef struct {
   WGPUTextureView view;
   ivec3 count;
   vec3 scale;
+  vec3 position;
   AABB boundbox;
 } ProbeReflectionGrid;
 
@@ -35,6 +36,7 @@ typedef struct {
 typedef struct {
   ivec3 count;
   vec3 scale;
+  vec3 position;
   const WGPUDevice device;
   const WGPUQueue queue;
 } ProbeReflectionGridDescriptor;

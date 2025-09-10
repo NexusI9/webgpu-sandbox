@@ -1,4 +1,5 @@
 #include "add.h"
+#include "../backend/std_pipeline/std_pipeline.h"
 #include "../backend/ubo.h"
 #include "../runtime/mesh/shader/shader.h"
 #include "./editor/editor.h"
@@ -8,11 +9,11 @@
 #include "core.h"
 #include "editor/object/light/sun.h"
 #include "editor/object/list/list.h"
-#include "../backend/std_pipeline/std_pipeline.h"
 #include "editor/object/probe/probe.h"
 #include "editor/selection/core.h"
 #include <stdint.h>
 #include <stdio.h>
+#include "./editor/selection/callback/transform.h"
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 
@@ -439,13 +440,12 @@ scene_add_probe_reflection_plane(Scene *scene,
   probe_reflection_plane_create(probe, desc);
 
   // create scene object
-  SceneEditorObject *seo_grid =
-      seo_list_new_entry(scene_editor_object_list(scene));
+  SceneEditorObject *seo = seo_list_new_entry(scene_editor_object_list(scene));
 
   probe_reflection_plane_create(probe, desc);
 
   seo_probe_reflection_plane_create(
-      seo_grid, probe,
+      seo, probe,
       &(SEOCreateDescriptor){
           .camera = scene->active_camera,
           .viewport = &scene->viewport,
@@ -475,10 +475,12 @@ scene_add_probe_reflection_plane(Scene *scene,
 
   ubo_upload(&scene->renderer.ubo);
 
-  // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_seo(scene, seo_grid);
+  seo_probe_reflection_plane_update_mesh_uniform(seo);
 
-  return seo_grid;
+  // transfert gizmo mesh pointers to scene pipeline so they get rendered
+  scene_add_seo(scene, seo);
+
+  return seo;
 }
 
 /**
@@ -563,6 +565,10 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
 
   // build mesh depending on pipeline and scene render mode
   scene_build_mesh(scene, mesh, pipeline);
+
+  scene_selection_mesh_update_probe_uniform(mesh, &scene->probes_reflection,
+                                            &scene->planes_reflection,
+                                            &scene->renderer.ssbo);
 
   scene_add_mesh_any(scene, mesh, pipeline, layer);
 }

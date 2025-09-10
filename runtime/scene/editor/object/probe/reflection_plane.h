@@ -11,6 +11,6 @@ void seo_probe_reflection_plane_create(SceneEditorObject *,
 void seo_probe_reflection_plane_set_position(SEOTransformCallback *);
 void seo_probe_reflection_plane_set_rotation(SEOTransformCallback *);
 void seo_probe_reflection_plane_set_scale(SEOTransformCallback *);
-
+void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *);
 
 #endif

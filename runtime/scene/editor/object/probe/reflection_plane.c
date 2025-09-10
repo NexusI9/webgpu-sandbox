@@ -5,9 +5,6 @@
 #include "../runtime/scene/scene.h"
 #include <stdint.h>
 
-static inline void
-seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *);
-
 void seo_probe_reflection_plane_create(SceneEditorObject *seo,
                                        ProbeReflectionPlane *probe,
                                        const SEOCreateDescriptor *desc) {

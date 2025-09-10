@@ -26,10 +26,11 @@ void probe_reflection_create(ProbeReflection *probe, vec3 position) {
 
     ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_View + i],
                          sizeof(CameraUniform));
+    
     // shallow camera
     Camera *cam = &probe->camera[i];
     camera_create(cam, &(CameraCreateDescriptor){0});
-    
+
     glm_vec3_copy((float *)probe->position, cam->position);
     glm_vec3_copy((float *)projection_cubemaps_directions[i], cam->forward);
     glm_vec3_copy((float *)projection_cubemaps_ups[i], cam->up);
@@ -56,7 +57,7 @@ void probe_reflection_update_camera(ProbeReflection *probe) {
     camera_set_position(cam, probe->position);
 
     glm_vec3_add(cam->position, cam->forward, cam->target);
-    
+
     glm_lookat(cam->position, cam->target, cam->up, cam->view);
     camera_uniform_update(cam);
 
