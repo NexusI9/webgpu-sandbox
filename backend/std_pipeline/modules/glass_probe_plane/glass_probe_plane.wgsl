@@ -19,10 +19,16 @@ struct VertexOut {
 };
 
 struct Mesh {
-  model : mat4x4<f32>, position : vec4<f32>, _pad : array<u32, 44>,
-}
-
-struct Camera {
+  model : mat4x4<f32>,
+          position : vec4<f32>,
+                     probe_reflection_plane_id : u32,
+                                                 probe_reflection_plane_count
+      : u32,
+        probe_reflection_grid_id : u32,
+                                   probe_reflection_grid_count : u32,
+                                                                 _pad
+      : array<u32, 40>,
+} struct Camera {
   view : mat4x4<f32>,
          position : vec4<f32>,
                     lookat : vec4<f32>,
@@ -220,6 +226,7 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
                      @location(3) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
   let camera = uCamera[0];
+  let mesh = uMesh[0];
 
   let N : vec3<f32> = normalize(vNorm);
 
@@ -234,26 +241,32 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
   let f0 : vec3<f32> = vec3(0.04); // dielectric default reflectance
   let f : vec3<f32> = f0 + (1.0f - f0) * pow(1.0 - NdotV, 5.0f);
 
-  let plane_index = 0u;
-  let plane = uPlaneReflectionList[plane_index];
-
   let ro = camera.position.xyz;
   let viewDir = normalize(vFrag - ro);
+  var R = reflect(viewDir, normalize(vNorm));
+  var reflection : vec4<f32> = vec4<f32>(0.0f);
 
-  let R = reflect(viewDir, normalize(plane.normal));
+  for (var i : u32 = 0u; i < mesh.probe_reflection_plane_count; i++) {
 
-  let local = vFrag - plane.position;
+    let plane_index = mesh.probe_reflection_plane_id;
+    let plane = uPlaneReflectionList[plane_index];
 
-  let reflUV =
-      compute_reflection_uv(vFrag, uCamera[plane.camera_ssbo_index].view);
+    let local = vFrag - plane.position;
+
+    let reflUV =
+        compute_reflection_uv(vFrag, uCamera[plane.camera_ssbo_index].view);
+
+    R = reflect(viewDir, normalize(plane.normal));
+
+    reflection =
+        textureSampleLevel(probe_reflection_maps, probe_reflection_sampler,
+                           reflUV, plane_index, 2.0f);
+
+    reflection.a /= 1.3f;
+  }
 
   let skybox : vec4<f32> = textureSample(skybox_map, skybox_sampler, R);
 
-  var reflection : vec4<f32> = textureSampleLevel(probe_reflection_maps,
-                                                  probe_reflection_sampler,
-                                                  reflUV, plane_index, 2.0f);
-
-  reflection.a /= 1.3f;
   let composite = mix(skybox, reflection, reflection.a);
 
   let fog_k = fog_factor(length(vFrag - camera.position.xyz),

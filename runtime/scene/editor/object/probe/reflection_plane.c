@@ -5,6 +5,9 @@
 #include "../runtime/scene/scene.h"
 #include <stdint.h>
 
+static inline void
+seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *);
+
 void seo_probe_reflection_plane_create(SceneEditorObject *seo,
                                        ProbeReflectionPlane *probe,
                                        const SEOCreateDescriptor *desc) {
@@ -148,6 +151,59 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
   seo->origin = probe_plane->mesh;
 }
 
+/**
+   Detects which scene meshes are within the probe radius/bound-box and update
+   each meshes uniform so subscribe or clear the probes index and count so the
+   mesh shader can reference the right probe index for the reflection computing.
+
+   By default the meshes reflection only reflecte the skybox. However if a mesh
+   is within a probe reflection bound/radius, it takes the probe ID as to render
+   the respective reflection texture in the shader.
+
+   Note that only one reflection plane or grid can be active per mesh.
+ */
+void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *seo) {
+
+  const ScenePipeline target_pipelines[3] = {
+      ScenePipeline_Dynamic_Unlit,
+      ScenePipeline_Dynamic_Lit,
+      ScenePipeline_Dynamic_LitShadow,
+  };
+
+  SceneEditorObjectMesh *probe_bound_box = &seo->meshes.entries[0];
+  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)probe_bound_box->target;
+  SSBOManager *ssbo = &seo->scene->renderer.ssbo;
+
+  for (ScenePipeline i = 0; i < 3; i++) {
+
+    const MeshRefList *pipeline =
+        scene_pipeline(seo->scene, target_pipelines[i]);
+
+    for (size_t j = 0; j < pipeline->length; j++) {
+
+      Mesh *pipeline_mesh = pipeline->entries[j];
+      MeshUniform *uniform = mesh_uniform(pipeline_mesh);
+      bool intersect =
+          aabb_intersect(&probe_bound_box->mesh->topology.boundbox.world,
+                         &pipeline_mesh->topology.boundbox.world);
+
+      if (intersect && uniform->probe_reflection_plane_count == 0) {
+
+        uniform->probe_reflection_plane_count = 1;
+        uniform->probe_reflection_plane_id =
+            probe->ssbo_slot[ProbeReflectionSSBOField_List].id;
+
+        ssbo_upload_entry(ssbo, SSBOType_Mesh, &pipeline_mesh->ssbo_slot);
+
+      } else if (!intersect && uniform->probe_reflection_plane_count == 1) {
+
+        uniform->probe_reflection_plane_count = 0;
+        ssbo_upload_entry(ssbo, SSBOType_Mesh, &pipeline_mesh->ssbo_slot);
+      }
+    }
+  }
+}
+
 void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
 
   mesh_set_position(desc->mesh->mesh, desc->offset);
@@ -170,6 +226,10 @@ void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
   // add to upload queue
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo, SSBOType_Camera,
                            probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
+
+  // update scene meshes uniform to define which ones are within the probe area
+  // for reflection
+  seo_probe_reflection_plane_update_mesh_uniform(desc->seo);
 }
 
 void seo_probe_reflection_plane_set_rotation(SEOTransformCallback *desc) {}

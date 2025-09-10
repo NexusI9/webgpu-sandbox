@@ -137,6 +137,7 @@ void *ssbo_new_entry(SSBOManager *, const SSBOType, ssbo_id_t *);
 
 static inline void ssbo_slot_init_alloc(SSBOSlot *slot, size_t type_size) {
   slot->uniform = malloc(type_size);
+  memset(slot->uniform, 0, type_size);
   slot->id = SSBO_INDEX_UNFOUND;
 }
 
@@ -144,7 +145,6 @@ static inline void ssbo_slot_set_uniform(SSBOSlot *slot, const void *data,
                                          const size_t type_size) {
   memcpy(slot->uniform, data, type_size);
 }
-
 
 /**
    Transfers the given SSBOSlot to the manager

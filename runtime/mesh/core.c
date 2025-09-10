@@ -53,6 +53,7 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   // alloc uniform (may be replaced by SSBO later when added to the scene)
   ssbo_slot_init_alloc(&mesh->ssbo_slot, sizeof(MeshUniform));
   mesh_uniform_update(mesh);
+  MeshUniform *uniform = mesh_uniform(mesh);
 
   // set default pipeline shader
   mesh_shader(mesh, MeshShader_Texture)->pipeline =
