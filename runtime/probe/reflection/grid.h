@@ -22,6 +22,7 @@ typedef struct {
   WGPUTextureView view;
   ivec3 count;
   vec3 scale;
+  AABB boundbox;
 } ProbeReflectionGrid;
 
 typedef struct {
@@ -38,7 +39,6 @@ typedef struct {
   const WGPUQueue queue;
 } ProbeReflectionGridDescriptor;
 
-
 typedef struct {
   uint32_t length;
   ProbeReflectionUniform entries[PROBE_REFLECTION_GRID_LIST_CAPACITY *
@@ -49,6 +49,8 @@ void probe_reflection_grid_create(ProbeReflectionGrid *,
                                   ProbeReflectionGridDescriptor *);
 
 void probe_reflection_grid_destroy(ProbeReflectionGrid *);
+
+void probe_reflection_grid_update_boundbox(ProbeReflectionGrid *);
 
 /* === Probe Grid List  === */
 
@@ -69,7 +71,6 @@ DynamicListStatus probe_reflection_grid_list_destroy(ProbeReflectionGridList *);
 
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *,
                                      ProbeReflectionListDebug *);
-
 
 void probe_reflection_grid_list_uniform(ProbeReflectionListUniform *,
                                         ProbeReflectionGridList *);

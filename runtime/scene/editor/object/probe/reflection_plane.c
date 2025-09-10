@@ -164,42 +164,32 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
  */
 void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *seo) {
 
-  const ScenePipeline target_pipelines[3] = {
-      ScenePipeline_Dynamic_Unlit,
-      ScenePipeline_Dynamic_Lit,
-      ScenePipeline_Dynamic_LitShadow,
-  };
+  MeshRefList *pipeline_mesh_list[SCENE_PIPELINE_REFLECTION_COUNT];
+  scene_reflection_pipeline_meshes(seo->scene, pipeline_mesh_list);
 
   SceneEditorObjectMesh *probe_bound_box = &seo->meshes.entries[0];
   ProbeReflectionPlane *probe = (ProbeReflectionPlane *)probe_bound_box->target;
   SSBOManager *ssbo = &seo->scene->renderer.ssbo;
 
-  for (ScenePipeline i = 0; i < 3; i++) {
+  probe_reflection_plane_update_boundbox(probe);
 
-    const MeshRefList *pipeline =
-        scene_pipeline(seo->scene, target_pipelines[i]);
+  for (ScenePipeline i = 0; i < SCENE_PIPELINE_REFLECTION_COUNT; i++) {
+
+    const MeshRefList *pipeline = pipeline_mesh_list[i];
 
     for (size_t j = 0; j < pipeline->length; j++) {
 
       Mesh *pipeline_mesh = pipeline->entries[j];
       MeshUniform *uniform = mesh_uniform(pipeline_mesh);
-      bool intersect =
-          aabb_intersect(&probe_bound_box->mesh->topology.boundbox.world,
-                         &pipeline_mesh->topology.boundbox.world);
+      bool intersect = aabb_intersect(&probe->boundbox,
+                                      &pipeline_mesh->topology.boundbox.world);
 
-      if (intersect && uniform->probe_reflection_plane_count == 0) {
-
-        uniform->probe_reflection_plane_count = 1;
-        uniform->probe_reflection_plane_id =
-            probe->ssbo_slot[ProbeReflectionSSBOField_List].id;
-
-        ssbo_upload_entry(ssbo, SSBOType_Mesh, &pipeline_mesh->ssbo_slot);
-
-      } else if (!intersect && uniform->probe_reflection_plane_count == 1) {
-
-        uniform->probe_reflection_plane_count = 0;
-        ssbo_upload_entry(ssbo, SSBOType_Mesh, &pipeline_mesh->ssbo_slot);
-      }
+      if (intersect)
+        mesh_uniform_set_probe_reflection_plane(
+            pipeline_mesh, probe->ssbo_slot[ProbeReflectionSSBOField_List].id,
+            ssbo);
+      else
+        mesh_uniform_clear_probe_reflection_plane(pipeline_mesh, ssbo);
     }
   }
 }

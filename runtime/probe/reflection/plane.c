@@ -1,6 +1,7 @@
 #include "plane.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 
 DynamicListStatus
 probe_reflection_plane_list_create(ProbeReflectionPlaneList *list,
@@ -212,4 +213,64 @@ void probe_reflection_plane_update_camera(ProbeReflectionPlane *probe) {
   CameraUniform *uniform = camera_uniform(&probe->camera);
   ssbo_slot_set_uniform(&probe->ssbo_slot[ProbeReflectionSSBOField_View],
                         (void *)uniform, sizeof(CameraUniform));
+}
+
+void probe_reflection_plane_update_boundbox(ProbeReflectionPlane *probe) {
+
+  vec3 half = {
+      probe->scale[0] * 0.5f,
+      probe->distance * 0.5f,
+      probe->scale[1] * 0.5f,
+  };
+
+  // if probe is aligned to axis (faster that oriented)
+  if (fabsf(glm_vec3_dot(probe->normal, (vec3){1.0f, 0.0f, 0.0f})) > 0.999f ||
+      fabsf(glm_vec3_dot(probe->normal, (vec3){0.0f, 1.0f, 0.0f})) > 0.999f ||
+      fabsf(glm_vec3_dot(probe->normal, (vec3){0.0f, 0.0f, 1.0f})) > 0.999f) {
+
+    glm_vec3_copy(probe->position, probe->boundbox.min);
+    glm_vec3_copy(probe->position, probe->boundbox.max);
+
+    glm_vec3_sub(probe->position, half, probe->boundbox.min);
+    glm_vec3_add(probe->position, half, probe->boundbox.max);
+
+  } else {
+
+    vec3 inv_half;
+    glm_vec3_scale(half, -1.0f, inv_half);
+
+    // build transform matrix for TBN
+    mat3 tbn;
+
+    glm_vec3_copy(probe->tangent, tbn[0]);
+    glm_vec3_copy(probe->bitangent, tbn[1]);
+    glm_vec3_copy(probe->normal, tbn[2]);
+
+    mat4 matrix;
+    glm_mat4_identity(matrix);
+    glm_mat4_ins3(tbn, matrix);
+    glm_translate(matrix, probe->position);
+
+    glm_vec3_copy((vec3){FLT_MAX, FLT_MAX, FLT_MAX}, probe->boundbox.min);
+    glm_vec3_copy((vec3){FLT_MIN, FLT_MIN, FLT_MIN}, probe->boundbox.max);
+
+    for (uint8_t x = 0; x < 2; x++) {
+      for (uint8_t y = 0; y < 2; y++) {
+        for (uint8_t z = 0; z < 2; z++) {
+
+          vec3 local_corner = {
+              x ? half[0] : inv_half[0],
+              y ? half[1] : inv_half[1],
+              z ? half[2] : inv_half[2],
+          };
+
+          vec3 world_corner;
+          glm_mat4_mulv3(matrix, local_corner, 1.0f, world_corner);
+
+          glm_vec3_minv(probe->boundbox.min, world_corner, probe->boundbox.min);
+          glm_vec3_minv(probe->boundbox.max, world_corner, probe->boundbox.max);
+        }
+      }
+    }
+  }
 }

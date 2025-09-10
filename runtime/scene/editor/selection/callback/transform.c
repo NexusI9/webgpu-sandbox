@@ -18,6 +18,45 @@ static const mesh_transform_callback transform_callback_mesh[] = {
 static inline void
 scene_selection_mesh_transform_core(Mesh *, vec3 *, SceneSelectionTransform *);
 
+static inline void
+scene_selection_mesh_update_probe_uniform(Mesh *, ProbeReflectionGridList *,
+                                          ProbeReflectionPlaneList *,
+                                          SSBOManager *);
+
+/**
+   Update the mesh probes uniform (planar and grid) if the mesh goes within or
+   out of the probe bounds/radius
+ */
+void scene_selection_mesh_update_probe_uniform(
+    Mesh *mesh, ProbeReflectionGridList *grid_list,
+    ProbeReflectionPlaneList *plane_list, SSBOManager *ssbo) {
+  size_t i = 0;
+
+  MeshUniform *uniform = mesh_uniform(mesh);
+
+  for (i = 0; i < plane_list->length; i++) {
+
+    ProbeReflectionPlane *probe = &plane_list->entries[i];
+    bool intersect =
+        aabb_intersect(&mesh->topology.boundbox.world, &probe->boundbox);
+
+    if (intersect)
+      mesh_uniform_set_probe_reflection_plane(
+          mesh, probe->ssbo_slot[ProbeReflectionSSBOField_List].id, ssbo);
+    else
+      mesh_uniform_clear_probe_reflection_plane(mesh, ssbo);
+  }
+
+  for (i = 0; i < grid_list->length; i++) {
+
+    ProbeReflectionGrid *grid = &grid_list->entries[i];
+    bool intersect =
+        aabb_intersect(&mesh->topology.boundbox.world, &grid->boundbox);
+
+    // if (intersect)
+  }
+}
+
 void scene_selection_mesh_transform_core(Mesh *mesh, vec3 *init_attribute,
                                          SceneSelectionTransform *desc) {
 
@@ -30,6 +69,10 @@ void scene_selection_mesh_transform_core(Mesh *mesh, vec3 *init_attribute,
 
   ssbo_update_queue_insert(&desc->scene->renderer.ssbo, SSBOType_Mesh,
                            mesh->ssbo_slot.id);
+
+  scene_selection_mesh_update_probe_uniform(
+      mesh, &desc->scene->probes_reflection, &desc->scene->planes_reflection,
+      &desc->scene->renderer.ssbo);
 }
 
 /* Mesh based transform */

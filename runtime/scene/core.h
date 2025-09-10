@@ -17,6 +17,7 @@
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
 #define SCENE_PIPELINE_COUNT 7
+#define SCENE_PIPELINE_REFLECTION_COUNT 3
 
 typedef uint8_t shader_bind_t;
 
@@ -307,6 +308,19 @@ static inline MeshRefList *scene_pipeline(Scene *scene,
                                           const ScenePipeline pipeline) {
   // take lower bit
   return &scene->pipelines[__builtin_ctz(pipeline)];
+}
+
+static inline void scene_reflection_pipeline_meshes(
+    Scene *scene, MeshRefList *pipelines[SCENE_PIPELINE_REFLECTION_COUNT]) {
+
+  const ScenePipeline target_pipelines[SCENE_PIPELINE_REFLECTION_COUNT] = {
+      ScenePipeline_Dynamic_Unlit,
+      ScenePipeline_Dynamic_Lit,
+      ScenePipeline_Dynamic_LitShadow,
+  };
+
+  for (uint8_t i = 0; i < SCENE_PIPELINE_REFLECTION_COUNT; i++)
+    pipelines[i] = scene_pipeline(scene, target_pipelines[i]);
 }
 
 #endif

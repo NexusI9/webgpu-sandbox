@@ -42,3 +42,4 @@ bool mesh_uniform_model_compare_callback(void *callback_data,
 
   return memcmp(cast_mesh->model, cast_uniform->model, sizeof(mat4)) != 0;
 }
+
