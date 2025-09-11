@@ -15,13 +15,17 @@ struct VertexIn {
       : vec3<f32>,
         @location(4) aUv : vec2<f32>,
 };
+
 struct VertexOut {
   @builtin(position) vPosition : vec4<f32>,
                                  @location(0) vNormal : vec3<f32>,
-                                                        @location(1) vCol
+                                                        @location(1) vTangent
       : vec3<f32>,
-        @location(2) vUv : vec2<f32>,
-                           @location(3) vFrag : vec3<f32>,
+        @location(2) vBitangent : vec3<f32>,
+                                  @location(3) vCol : vec3<f32>,
+                                                      @location(4) vUv
+      : vec2<f32>,
+        @location(5) vFrag : vec3<f32>,
 };
 
 struct Mesh {
@@ -227,18 +231,18 @@ const ARRAY_CAPACITY : u32 = 128u;
 
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = viewport.projection * camera.view;
-  //var cam : mat4x4<f32> = proj * view;
+
+  let normal = normalize((mesh.model * vec4<f32>(input.aNorm.xyz, 0.0f)).xyz);
+  let tangent = normalize((mesh.model * vec4<f32>(input.aTan.xyz, 0.0f)).xyz);
+  let bitangent = cross(normal, tangent) * input.aTan.w;
+
   var output : VertexOut;
-  // mesh.model
   output.vPosition = cam * mesh.model * vec4<f32>(input.aPos, 1.0f);
-  output.vNormal = normalize(input.aNorm);
+  output.vNormal = normal;
+  output.vTangent = tangent;
+  output.vBitangent = bitangent;
   output.vCol = input.aCol;
   output.vUv = input.aUv;
-
-  // transform vertex position (object local position) to world space
-  // used for lightning to know where the vertex is in the world space
-  // if only used model, vertex position is "constriained" its own local space
-  output.vFrag = (mesh.model * vec4<f32>(input.aPos, 1.0f)).xyz;
 
   return output;
 }
@@ -302,41 +306,19 @@ fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
   return material;
 }
 
-//
-//
-//
-// ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▖ ▗▖▗▄▄▄▖▗▄▄▖
-// ▐▌     █  ▐▌   ▐▌ ▐▌  █ ▐▌
-// ▐▌     █  ▐▌▝▜▌▐▛▀▜▌  █  ▝▀▚▖
-// ▐▙▄▄▖▗▄█▄▖▝▚▄▞▘▐▌ ▐▌  █ ▗▄▄▞▘
-//
-//
-//
-//
-//
-
 fn compute_point_light(material : Material, fragment_position : vec3<f32>,
-                       vertex_normal : vec3<f32>, camera_position : vec3<f32>,
+                       world_normal : vec3<f32>, camera_position : vec3<f32>,
                        light_position : vec3<f32>, light_color : vec3<f32>,
                        light_intensity : f32) -> vec3<f32> {
-
-  let mesh = uMesh;
+let mesh = uMesh;
 
   // compute light base on Cook-Torrance BRDF Model
 
   // 1. Normalize key vectors
-  var N : vec3<f32> = normalize(material.normal); // surface normal
   var V : vec3<f32> =
               normalize(camera_position - fragment_position); // view vector
-
-  // transform normal to worldspace
-  let world_normal = (mesh.model * vec4<f32>(vertex_normal, 0.0f)).xyz;
-
-  // make dot product to check if normal point towards light or not
-  var L : vec3<f32> =
-              vec3<f32>(dot(normalize(world_normal),
-                            normalize(light_position - fragment_position)));
-
+  let L_distance = light_position - fragment_position;
+  var L : vec3<f32> = normalize(L_distance);
   var H : vec3<f32> = normalize(V + L); // halfway vector
 
   // 2. Fresnel effect
@@ -347,34 +329,32 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
 
   // 3. Normal Distribution Function - NDF (GGX/ Trowbridge-Reitz)
   // Determine how surface distribute microfacet (i.e. bumps)
-  var NdotH : f32 = dot_max(N, H);
+  var NdotH : f32 = dot_max(world_normal, H);
   var D : f32 = distribution_GGX(NdotH, material.roughness);
 
   // 4.Geometry Function (Schlick-GGX)
   //  Handles shadow and masking
-  var NdotV : f32 = dot_max(N, V);
-  var NdotL : f32 = dot_max(N, L);
+  var NdotV : f32 = dot_max(world_normal, V);
+  var NdotL : f32 = dot_max(world_normal, L);
   var G = geo_smith(NdotV, NdotL, material.roughness);
 
   // 5. Define Cook-Torrance Specular Reflection
-  var specular : vec3<f32> = (D * F * G) / max(4.0f * NdotV * NdotL, 0.001);
+  var specular : vec3<f32> = (D * F * G) / (4.0f * NdotV * NdotL + 0.001);
 
   // 6. Compute Diffuse & Final lighting
   // Metallic surface only use the specular term
   // Non-Metallic surface use both diffuse + specular
-  var kS = F;
-  var kD = vec3(1.0f) - kS;
-  kD *= 1.0f - material.metallic;
+  var kD = (vec3(1.0f) - F) * (1.0f - material.metallic);
 
   var diffuse : vec3<f32> = (material.albedo / PI);
-
   var Lo : vec3<f32> = (kD * diffuse + specular) * light_color *
                        light_intensity * NdotL;
 
-  // 7. Apply AO //0.03f
+  // 8. Apply AO //0.03f
   // change first operator to alter ambient light
+  // L / L_distance * L_distance;
+  return Lo;
 
-  return vec3<f32>(Lo);
 }
 
 fn compute_ambient_light(material : Material, light_color : vec3<f32>,
@@ -689,11 +669,15 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
 // fragment shader
 @fragment fn fs_main(@location(0) vNormal : vec3<f32>,
-                     @location(1) vCol : vec3<f32>,
-                     @location(2) vUv : vec2<f32>,
-                     @location(3) vFrag : vec3<f32>) -> @location(0) vec4<f32> {
+                     @location(1) vTangent : vec3<f32>,
+                     @location(2) vBitangent : vec3<f32>,
+                     @location(3) vCol : vec3<f32>,
+                     @location(4) vUv : vec2<f32>,
+                     @location(5) vFrag : vec3<f32>) -> @location(0) vec4<f32> {
 
   let camera = uCamera;
+
+  let TBN = mat3x3<f32>(vTangent, vBitangent, vNormal);
 
   var albedo = textureSample(diffuse_texture, diffuse_sampler, vUv);
   var metallic = textureSample(metallic_texture, metallic_sampler, vUv);
@@ -702,6 +686,8 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   var emissive = textureSample(emissive_texture, emissive_sampler, vUv);
 
   let material = create_material(albedo, metallic, normal, occlusion, emissive);
+
+  let world_normal = normalize(TBN * material.normal);
 
   let coord = vec2<i32>(vUv);
 
@@ -713,7 +699,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   // calculate point lights
   for (var i = 0u; i < ubo.light_count.point; i++) {
     let light = point_light_list[i];
-    Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+    Lo += compute_point_light(material, vFrag, world_normal, camera.position.xyz,
                               light.position, light.color, light.intensity);
   }
 
@@ -723,14 +709,14 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   for (var i = 0u; i < ubo.light_count.spot; i = i + 1u) {
     let light = spot_light_list[i];
     let light_direction = light.position - light.lookat;
-    Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+    Lo += compute_point_light(material, vFrag, world_normal, camera.position.xyz,
                               light_direction, light.color, light.intensity);
   }
 
   // calculate sun lights
   for (var i = 0u; i < ubo.light_count.sun; i = i + 1u) {
     let light = sun_light_list[i];
-    Lo += compute_point_light(material, vFrag, vNormal, camera.position.xyz,
+    Lo += compute_point_light(material, vFrag, world_normal, camera.position.xyz,
                               light.position, light.color, light.intensity);
   }
 

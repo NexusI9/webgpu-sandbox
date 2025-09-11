@@ -11,7 +11,7 @@ typedef struct {
   float cutoff;
   vec3 color;
   float intensity;
-  mat4 views[LIGHT_POINT_VIEWS]; // TODO: move the views into projection SSBO
+  mat4 views[LIGHT_POINT_VIEWS];
   float inner_cutoff;
   float near;
   float far;
