@@ -26,20 +26,14 @@ struct Mesh {
       : u32,
         probe_reflection_grid_id : u32,
                                    probe_reflection_grid_count : u32,
-                                                                 _pad
-      : array<u32, 40>,
 }
-    
+
 struct Camera {
-  view : mat4x4<f32>,
-         position : vec4<f32>,
-                    lookat : vec4<f32>,
-                             mode : u32,
-                                    _pad : array<u32, 39>,
+  view : mat4x4<f32>, position : vec4<f32>, lookat : vec4<f32>, mode : u32,
 };
 
 struct Viewport {
-  projection : mat4x4<f32>, width : u32, height : u32, _pad : array<u32, 46>,
+  projection : mat4x4<f32>, width : u32, height : u32,
 };
 
 struct Glass {
@@ -51,7 +45,7 @@ struct Glass {
 }
 
 struct ProbeReflection {
-  position : vec3<f32>, radius : f32, _pad : array<f32, 60>
+  position : vec3<f32>, radius : f32,
 }
 
 // === UBO ===
@@ -60,24 +54,23 @@ struct LightCount {
 };
 
 struct ProbeCount {
-  reflection : u32, plane : u32, irradiance : u32, _pad : u32,
+  reflection : u32, plane : u32, irradiance : u32,
 };
 
 struct Fog {
-  color : vec4<f32>, start_distance : f32, density : f32, _pad : vec2<f32>,
+  color : vec4<f32>, start_distance : f32, density : f32,
 };
 
 struct UBO {
   light_count : LightCount, probe_count : ProbeCount, fog : Fog,
 };
 
-@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
-@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
-@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<uniform> uViewport : Viewport;
+@group(0) @binding(1) var<uniform> uCamera : Camera;
+@group(0) @binding(2) var<uniform> uMesh : Mesh;
 
 @group(1) @binding(0) var<uniform> uGlass : Glass;
-@group(1) @binding(1) var<storage, read> uProbeReflectionList
-    : array<ProbeReflection>;
+@group(1) @binding(1) var<uniform> uProbeReflectionList : ProbeReflection;
 @group(1) @binding(2) var<uniform> ubo : UBO;
 
 @group(1) @binding(3) var probe_reflection_maps : texture_cube_array<f32>;
@@ -101,9 +94,9 @@ struct UBO {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
-  let mesh = uMesh[0];
-  let camera = uCamera[0];
-  let viewport = uViewport[0];
+  let mesh = uMesh;
+  let camera = uCamera;
+  let viewport = uViewport;
 
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = viewport.projection * camera.view;
@@ -203,7 +196,7 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
                      @location(2) vFrag : vec3<f32>,
                      @location(3) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
-  let camera = uCamera[0];
+  let camera = uCamera;
 
   let N : vec3<f32> = normalize(vNorm);
 
@@ -226,21 +219,22 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
   var reflection : vec4<f32> = vec4<f32>(0.0f, 0.0f, 0.0f, 1.0f);
 
   // Clip based proximity
-  {
-    var closest_probe_index : u32 = 0u;
-    var best_dist : f32 = 1e9;
-    for (var i = 0u; i < ubo.probe_count.reflection; i += 1u) {
-      let probe_pos = uProbeReflectionList[i].position;
-      let dist = distance(vFrag, probe_pos);
-      if (dist < best_dist) {
-        best_dist = dist;
-        closest_probe_index = i;
-      }
-    }
-
-    reflection = textureSample(probe_reflection_maps, probe_reflection_sampler,
-                               R, closest_probe_index);
-  }
+  //{
+  //  var closest_probe_index : u32 = 0u;
+  //  var best_dist : f32 = 1e9;
+  //  for (var i = 0u; i < ubo.probe_count.reflection; i += 1u) {
+  //    let probe_pos = uProbeReflectionList[i].position;
+  //    let dist = distance(vFrag, probe_pos);
+  //    if (dist < best_dist) {
+  //      best_dist = dist;
+  //      closest_probe_index = i;
+  //    }
+  //  }
+  //
+  //    reflection = textureSample(probe_reflection_maps,
+  //    probe_reflection_sampler,
+  //                               R, closest_probe_index);
+  //  }
 
   // Weight based proximity
   //{

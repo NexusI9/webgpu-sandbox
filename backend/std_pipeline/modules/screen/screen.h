@@ -21,7 +21,7 @@ static const WGPUBindGroupLayoutDescriptor screen_layout_mesh = {
                 .visibility = WGPUShaderStage_Vertex | WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = true,
                         .minBindingSize = sizeof(MeshUniform),
                     },

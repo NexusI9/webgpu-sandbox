@@ -58,7 +58,7 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
     switch (draw_mode) {
 
     case SceneRendererDrawMode_Boundbox:
-      scene_build_mesh_boundbox(scene, mesh, pipeline);
+      // scene_build_mesh_boundbox(scene, mesh, pipeline);
       break;
 
     case SceneRendererDrawMode_Solid:
@@ -112,37 +112,27 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
 
   // bind views
   mesh_shader_build_mvp(mesh, MeshShader_Texture, ssbo);
-
   mesh_shader_build_mvp(mesh, MeshShader_Reflection, ssbo);
 
   // lit and shadow pipeline
   if (pipeline &
       (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
-
-    // bind lights
     mesh_shader_texture_update_lights(mesh, MeshShader_Texture, ubo, ssbo);
-
     mesh_shader_texture_update_lights(mesh, MeshShader_Reflection, ubo, ssbo);
   }
 
   // shadow only pipeline
   if (pipeline == ScenePipeline_Dynamic_LitShadow) {
 
-    // create binding for shadow maps (using fallback texture)
     mesh_shader_texture_bind_shadow_maps(
         mesh, scene->lights.point.shadow.pass.depth.attachment.view,
         scene->lights.spot.shadow.pass.depth.attachment.view);
 
     // create mesh shadow shader
     mesh_shader_create_shadow(mesh);
-
-    // bind light and mesh uniform to shadow
     mesh_shader_build_mp(mesh, MeshShader_Shadow, ssbo,
                          SSBOType_ViewProjection);
   }
-
-  // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Texture);
 }
 
 /**
@@ -165,9 +155,6 @@ void scene_build_mesh_solid(Scene *scene, Mesh *mesh,
 
   // bind views
   mesh_shader_build_mvp(mesh, MeshShader_Solid, &scene->renderer.ssbo);
-
-  // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Solid);
 }
 
 /**
@@ -194,9 +181,6 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
   // create meshes' wireframe shader
   if (mesh_shader_create_wireframe(mesh) == MeshStatus_Success)
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
-
-  // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Wireframe);
 }
 
 /**
@@ -220,9 +204,6 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
 
   // bind views
   mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
-
-  // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Wireframe);
 }
 
 /**
@@ -242,7 +223,4 @@ void scene_build_mesh_fixed(Scene *scene, Mesh *mesh,
 
   // bind views
   mesh_shader_build_mvp(mesh, MeshShader_Fixed, &scene->renderer.ssbo);
-
-  // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Fixed);
 }

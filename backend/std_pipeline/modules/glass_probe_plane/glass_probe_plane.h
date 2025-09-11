@@ -32,10 +32,10 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
                         .minBindingSize =
-                            sizeof(ProbeReflectionPlaneUniform) * SSBO_CAPACITY,
+                            sizeof(ProbeReflectionPlaneUniform),
                     },
             },
             {
@@ -43,10 +43,10 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = true,
                         .minBindingSize =
-                            sizeof(ProjectionUniform),
+                            sizeof(ProjectionUniform) * SSBO_CAPACITY,
                     },
             },
             {

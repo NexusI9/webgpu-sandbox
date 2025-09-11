@@ -34,7 +34,7 @@ typedef struct {
   float signed_distance;
   vec3 bitangent;
   uint32_t camera_ssbo_index;
-  float _pad1[44];
+  float _pad[44];
 } __attribute__((aligned(16))) ProbeReflectionPlaneUniform;
 
 typedef struct {

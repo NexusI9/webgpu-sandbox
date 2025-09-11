@@ -12,7 +12,7 @@ extern const vec3 projection_cubemaps_ups[PROJECTION_VIEW_COUNT];
 
 typedef struct {
   mat4 view;
-  uint32_t _pad[48];
+  float _pad[48];
 } ProjectionUniform;
 
 typedef struct {

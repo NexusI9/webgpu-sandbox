@@ -1,8 +1,8 @@
 #ifndef _PIPELINE_CORE_H_
 #define _PIPELINE_CORE_H_
 
-#include "webgpu/webgpu.h"
 #include "../runtime/geometry/vertex/vertex.h"
+#include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -88,6 +88,8 @@ typedef struct {
   WGPUBlendState blend_state;
 } PipelineFragmentDescriptor;
 
+#define PIPELINE_BINDING_UNDEFINED UINT16_MAX
+
 typedef struct {
   uint8_t group;
   uint16_t model;
@@ -96,7 +98,36 @@ typedef struct {
 } PipelineBindingMVP;
 
 typedef struct {
+  uint8_t group;
+  uint16_t ambient;
+  uint16_t spot;
+  uint16_t point;
+  uint16_t sun;
+  uint16_t point_texture;
+  uint16_t directional_texture;
+} PipelineBindingLightList;
+
+typedef struct {
+  uint8_t group;
+
+  uint16_t reflection_plane;
+  uint16_t reflection_plane_texture;
+  uint16_t reflection_plane_sampler;
+
+  uint16_t reflection_grid;
+  uint16_t reflection_grid_texture;
+  uint16_t reflection_grid_sampler;
+
+  uint16_t irradiance;
+  uint16_t irradiance_texture;
+  uint16_t irradiance_sampler;
+
+} PipelineBindingProbe;
+
+typedef struct {
   const PipelineBindingMVP *mvp;
+  const PipelineBindingLightList *light_list;
+  const PipelineBindingProbe *probe;
 } PipelineBinding;
 
 typedef struct {

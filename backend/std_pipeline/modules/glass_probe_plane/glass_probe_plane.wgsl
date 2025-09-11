@@ -26,18 +26,14 @@ struct Mesh {
       : u32,
         probe_reflection_grid_id : u32,
                                    probe_reflection_grid_count : u32,
-                                                                 _pad
-      : array<u32, 40>,
-} struct Camera {
-  view : mat4x4<f32>,
-         position : vec4<f32>,
-                    lookat : vec4<f32>,
-                             mode : u32,
-                                    _pad : array<u32, 39>,
+}
+
+struct Camera {
+  view : mat4x4<f32>, position : vec4<f32>, lookat : vec4<f32>, mode : u32,
 };
 
 struct Viewport {
-  projection : mat4x4<f32>, width : u32, height : u32, _pad : array<u32, 46>,
+  projection : mat4x4<f32>, width : u32, height : u32
 };
 
 struct Glass {
@@ -49,7 +45,7 @@ struct Glass {
 }
 
 struct Projection {
-  view : mat4x4<f32>, _padding : array<u32, 48>
+  view : mat4x4<f32>
 };
 
 struct PlaneReflection {
@@ -64,7 +60,6 @@ struct PlaneReflection {
       : f32,
         bitangent : vec3<f32>,
                     camera_ssbo_index : u32,
-                                        _pad1 : array<f32, 45>,
 }
 
 // === UBO ===
@@ -73,25 +68,26 @@ struct LightCount {
 };
 
 struct ProbeCount {
-  reflection : u32, plane : u32, irradiance : u32, _pad : u32,
+  reflection : u32, plane : u32, irradiance : u32,
 };
 
 struct Fog {
-  color : vec4<f32>, start_distance : f32, density : f32, _pad : vec2<f32>,
+  color : vec4<f32>, start_distance : f32, density : f32,
 };
 
 struct UBO {
   light_count : LightCount, probe_count : ProbeCount, fog : Fog,
 };
 
-@group(0) @binding(0) var<storage, read> uViewport : array<Viewport>;
-@group(0) @binding(1) var<storage, read> uCamera : array<Camera>;
-@group(0) @binding(2) var<storage, read> uMesh : array<Mesh>;
+const ARRAY_COUNT : u32 = 128u;
+@group(0) @binding(0) var<uniform> uViewport : Viewport;
+@group(0) @binding(1) var<uniform> uCamera : Camera;
+@group(0) @binding(2) var<uniform> uMesh : Mesh;
 
 @group(1) @binding(0) var<uniform> uGlass : Glass;
-@group(1) @binding(1) var<storage, read> uPlaneReflectionList
-    : array<PlaneReflection>;
-@group(1) @binding(2) var<storage, read> uProjections : array<Projection>;
+@group(1) @binding(1) var<uniform> uPlaneReflectionList : PlaneReflection;
+@group(1) @binding(2) var<uniform> uProjections
+    : array<Projection, ARRAY_COUNT>;
 @group(1) @binding(3) var<uniform> ubo : UBO;
 
 @group(1) @binding(4) var probe_reflection_maps : texture_2d_array<f32>;
@@ -115,9 +111,9 @@ struct UBO {
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
-  let mesh = uMesh[0];
-  let camera = uCamera[0];
-  let viewport = uViewport[0];
+  let mesh = uMesh;
+  let camera = uCamera;
+  let viewport = uViewport;
 
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = viewport.projection * camera.view;
@@ -190,7 +186,7 @@ fn perlin_noise(uv : vec2<f32>, cells_count : f32) -> f32 {
 
 fn compute_reflection_uv(frag_pos : vec3<f32>, r_view : mat4x4<f32>)
     -> vec2<f32> {
-  let clip = uViewport[0].projection * r_view * vec4<f32>(frag_pos, 1.0);
+  let clip = uViewport.projection * r_view * vec4<f32>(frag_pos, 1.0);
   let ndc = clip.xyz / clip.w;                                // [-1, 1] space
   let uv = ndc.xy * vec2<f32>(0.5f, -0.5f) + vec2<f32>(0.5f); // [0, 1] space
   return uv;
@@ -225,8 +221,8 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
                      @location(2) vFrag : vec3<f32>,
                      @location(3) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
-  let camera = uCamera[0];
-  let mesh = uMesh[0];
+  let camera = uCamera;
+  let mesh = uMesh;
 
   let N : vec3<f32> = normalize(vNorm);
 
@@ -249,12 +245,12 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
   for (var i : u32 = 0u; i < mesh.probe_reflection_plane_count; i++) {
 
     let plane_index = mesh.probe_reflection_plane_id;
-    let plane = uPlaneReflectionList[plane_index];
+    let plane = uPlaneReflectionList;
 
     let local = vFrag - plane.position;
 
-    let reflUV =
-        compute_reflection_uv(vFrag, uCamera[plane.camera_ssbo_index].view);
+    let reflUV = compute_reflection_uv(
+        vFrag, uProjections[plane.camera_ssbo_index].view);
 
     R = reflect(viewDir, normalize(plane.normal));
 

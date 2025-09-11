@@ -18,8 +18,6 @@ MeshStatus mesh_shader_create_solid(Mesh *);
 
 Shader *mesh_shader(Mesh *, const MeshShader);
 
-void mesh_shader_set_active(Mesh *, const MeshShader);
-
 void mesh_shader_build_mvp(Mesh *, const MeshShader, SSBOManager *);
 void mesh_shader_build_mp(Mesh *, const MeshShader, SSBOManager *,
                           const SSBOType);

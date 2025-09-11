@@ -7,6 +7,7 @@
 #include "../runtime/light/light.h"
 #include "../runtime/light/uniform.h"
 #include "../runtime/mesh/mesh.h"
+#include "../runtime/probe/probe.h"
 #include "../runtime/viewport/viewport.h"
 
 #include "../commons.h"
@@ -139,10 +140,36 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_textures_bind_group = {
         },
 };
 
+static const PipelineBindingLightList pbr_light_list = {
+    .group = 2,
+    .ambient = 0,
+    .spot = 1,
+    .point = 2,
+    .sun = 3,
+    .point_texture = 5,
+    .directional_texture = 7,
+};
+
+static const PipelineBindingProbe pbr_probe = {
+    .group = 2,
+
+    .reflection_plane = 10,
+    .reflection_plane_texture = 12,
+    .reflection_plane_sampler = 13,
+
+    .reflection_grid = 11,
+    .reflection_grid_texture = 14,
+    .reflection_grid_sampler = 15,
+
+    .irradiance = PIPELINE_BINDING_UNDEFINED,
+    .irradiance_sampler = PIPELINE_BINDING_UNDEFINED,
+    .irradiance_texture = PIPELINE_BINDING_UNDEFINED,
+};
+
 static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
     // Group 2: Lights + Shadows
     .label = "Group 2 - Lights and Shadows",
-    .entryCount = 9,
+    .entryCount = 16,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -151,7 +178,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
                         .minBindingSize =
                             sizeof(AmbientLightUniform) * SSBO_CAPACITY,
@@ -163,7 +190,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
                         .minBindingSize =
                             sizeof(SpotLightUniform) * SSBO_CAPACITY,
@@ -175,7 +202,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
                         .minBindingSize =
                             sizeof(PointLightUniform) * SSBO_CAPACITY,
@@ -187,7 +214,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
                         .minBindingSize =
                             sizeof(SunLightUniform) * SSBO_CAPACITY,
@@ -260,6 +287,75 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
 #endif
                     },
             },
+            {
+                .binding = 9,
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .hasDynamicOffset = true,
+                        .minBindingSize = sizeof(ProjectionUniform) * SSBO_CAPACITY,
+                    },
+            },
+            {
+                .binding = 10, // uProbeReflectionList
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .hasDynamicOffset = false,
+                        .minBindingSize =
+                            sizeof(ProbeReflectionPlaneUniform),
+                    },
+            },
+            {
+                .binding = 11, // uProbeReflectionList
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .hasDynamicOffset = false,
+                        .minBindingSize =
+                            sizeof(ProbeReflectionUniform),
+                    },
+            },
+            {
+                .binding = 12, // Probe Plane Texture
+                .visibility = WGPUShaderStage_Fragment,
+                .texture =
+                    (WGPUTextureBindingLayout){
+                        .sampleType = WGPUTextureSampleType_Float,
+                        .viewDimension = WGPUTextureViewDimension_2DArray,
+                        .multisampled = false,
+                    },
+            },
+            {
+                .binding = 13, // Probe Plane Sampler
+                .visibility = WGPUShaderStage_Fragment,
+                .sampler =
+                    (WGPUSamplerBindingLayout){
+                        .type = WGPUSamplerBindingType_Filtering,
+                    },
+            },
+            {
+                .binding = 14, // Probe Grid Texture
+                .visibility = WGPUShaderStage_Fragment,
+                .texture =
+                    (WGPUTextureBindingLayout){
+                        .sampleType = WGPUTextureSampleType_Float,
+                        .viewDimension = WGPUTextureViewDimension_CubeArray,
+                        .multisampled = false,
+                    },
+            },
+            {
+                .binding = 15, // Probe Grid Texture
+                .visibility = WGPUShaderStage_Fragment,
+                .sampler =
+                    (WGPUSamplerBindingLayout){
+                        .type = WGPUSamplerBindingType_Filtering,
+                    },
+            },
+
         },
 };
 
@@ -273,7 +369,12 @@ static const ShaderPipelineStateObject layout_pbr = {
             &layout_pbr_textures_bind_group,
             &layout_pbr_lights_bind_group,
         },
-    .bindings = {.mvp = &mvp_binding},
+    .bindings =
+        {
+            .mvp = &mvp_binding,
+            .light_list = &pbr_light_list,
+            .probe = &pbr_probe,
+        },
 };
 
 #endif

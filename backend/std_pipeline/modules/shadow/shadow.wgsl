@@ -18,20 +18,27 @@ struct VertexOut {
 };
 
 struct Mesh {
-  model : mat4x4<f32>, position : vec4<f32>,
+  model : mat4x4<f32>,
+          position : vec4<f32>,
+                     probe_reflection_plane_id : u32,
+                                                 probe_reflection_plane_count
+      : u32,
+        probe_reflection_grid_id : u32,
+                                   probe_reflection_grid_count : u32,
 }
 
+
 struct Projection {
-  view : mat4x4<f32>, _padding : array<u32, 48>
+  view : mat4x4<f32>,
 };
 
-@group(0) @binding(0) var<storage, read> viewProjection : array<Projection>;
-@group(0) @binding(1) var<storage, read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<uniform> viewProjection : Projection;
+@group(0) @binding(1) var<uniform> uMesh : Mesh;
 
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
-  let mesh = uMesh[0];
-  let view = viewProjection[0];
+  let mesh = uMesh;
+  let view = viewProjection;
 
   var out : VertexOut;
   let model = mesh.model * vec4<f32>(input.aPos, 1.0f);

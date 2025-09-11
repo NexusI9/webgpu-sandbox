@@ -20,10 +20,6 @@ Shader *mesh_shader(Mesh *mesh, const MeshShader shader) {
   return &mesh->shader.standard[shader];
 }
 
-void mesh_shader_set_active(Mesh *mesh, const MeshShader shader) {
-  mesh->shader.active = &mesh->shader.standard[shader];
-}
-
 /**
    Init mesh shadow shader.
    By default all mesh have a shadow shader to generate shadow map
@@ -153,9 +149,6 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
                     .queue = mesh->queue,
                 });
 
-  // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Texture);
-
   return MeshStatus_Success;
 }
 
@@ -176,8 +169,6 @@ MeshStatus mesh_shader_create_fixed(Mesh *mesh,
 
   // alias to shader_create
   shader_create(mesh_shader(mesh, MeshShader_Fixed), desc);
-  // set active shader
-  mesh_shader_set_active(mesh, MeshShader_Fixed);
 
   return MeshStatus_Success;
 }

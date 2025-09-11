@@ -86,7 +86,7 @@ void shader_destroy(Shader *shader) {
 
 #ifdef VERBOSE_SHADER_BIND_GROUP_OFFSET
 static int bg_offset_count = 0;
-static const inst bg_print_count = 800;
+static const int bg_print_count = 800;
 #endif
 void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
 

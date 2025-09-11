@@ -13,13 +13,11 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *, WGPUTextureView,
 // update
 void mesh_shader_texture_update_lights(Mesh *, const MeshShader, UBOManager *,
                                        SSBOManager *);
+
 void mesh_shader_texture_update_shadow_maps(Mesh *, WGPUTextureView,
                                             WGPUTextureView);
 
-// pipelines
-void mesh_shader_texture_double_sided(Mesh *);
-
-// clear
-void mesh_shader_texture_clear_bindings(Mesh *);
+void mesh_shader_texture_update_probes(Mesh *, WGPUTextureView,
+                                       WGPUTextureView, SSBOManager *);
 
 #endif

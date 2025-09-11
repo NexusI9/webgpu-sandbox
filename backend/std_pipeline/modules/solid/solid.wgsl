@@ -27,15 +27,17 @@ struct VertexOut {
 };
 
 struct Mesh {
-  model : mat4x4<f32>, position : vec4<f32>,
+  model : mat4x4<f32>,
+          position : vec4<f32>,
+                     probe_reflection_plane_id : u32,
+                                                 probe_reflection_plane_count
+      : u32,
+        probe_reflection_grid_id : u32,
+                                   probe_reflection_grid_count : u32,
 }
 
 struct Camera {
-  view : mat4x4<f32>,
-         position : vec4<f32>,
-                    lookat : vec4<f32>,
-                             mode : u32,
-                                    _pad : vec3<u32>,
+  view : mat4x4<f32>, position : vec4<f32>, lookat : vec4<f32>, mode : u32,
 };
 
 struct Viewport {
@@ -61,17 +63,16 @@ struct SunLight {
 };
 
 // camera viewport
-const SSBO_CAPACITY : u32 = 32u;
-@group(0) @binding(0) var<storage,read> uViewport : array<Viewport>;
-@group(0) @binding(1) var<storage,read> uCamera : array<Camera>;
-@group(0) @binding(2) var<storage,read> uMesh : array<Mesh>;
+@group(0) @binding(0) var<uniform> uViewport : Viewport;
+@group(0) @binding(1) var<uniform> uCamera : Camera;
+@group(0) @binding(2) var<uniform> uMesh : Mesh;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
 
-  let mesh = uMesh[0];
-  let camera = uCamera[0];
-  let viewport = uViewport[0];
+  let mesh = uMesh;
+  let camera = uCamera;
+  let viewport = uViewport;
 
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = viewport.projection * camera.view;
@@ -95,7 +96,7 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
                        light_color : vec3<f32>, light_intensity : f32)
     -> vec3<f32> {
 
-  let mesh = uMesh[0];
+  let mesh = uMesh;
 
   // 1. Normalize key vectors
   var V : vec3<f32> =
@@ -118,7 +119,7 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
                      @location(2) vUv : vec2<f32>,
                      @location(3) vFrag : vec3<f32>) -> @location(0) vec4<f32> {
 
-  let camera = uCamera[0];
+  let camera = uCamera;
 
   let coord = vec2<i32>(vUv);
   var Lo : vec3<f32> = vec3<f32>(0.0f);

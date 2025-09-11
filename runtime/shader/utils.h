@@ -16,4 +16,10 @@ static inline size_t shader_device_storage_alignment(WGPUDevice device) {
   return limits.limits.minStorageBufferOffsetAlignment;
 }
 
+static inline size_t shader_device_uniform_alignment(WGPUDevice device) {
+  WGPUSupportedLimits limits;
+  wgpuDeviceGetLimits(device, &limits);
+  return limits.limits.minUniformBufferOffsetAlignment;
+}
+
 #endif

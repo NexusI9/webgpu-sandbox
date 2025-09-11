@@ -100,7 +100,7 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
     if (lifetime == ShaderBufferLifetime_Release)
       wgpuBufferRelease(bound_uniform->buffer);
 
-    size_t alignment = shader_device_storage_alignment(shader->device);
+    size_t alignment = shader_device_uniform_alignment(shader->device);
 
     bound_uniform->buffer = buffer;
 
@@ -293,7 +293,7 @@ shader_update_bind_group_offset(Shader *shader,
     return bind_group;
   }
 
-  size_t alignment = shader_device_storage_alignment(shader->device);
+  size_t alignment = shader_device_uniform_alignment(shader->device);
 
   ShaderBindGroupUniformEntry *uniform =
       &shader->bind_groups.entries[group_index].uniforms.entries[index];

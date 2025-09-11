@@ -69,14 +69,26 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
   manager->device = device;
   manager->queue = queue;
 
+  const uint16_t alignment = 256;
+  const uint16_t min_size = 256;
+
   for (SSBOType i = 0; i < SSBO_TYPE_COUNT; i++) {
 
-    if (ssbo_type[i].size % 256 != 0)
+    if (ssbo_type[i].size % alignment != 0)
       VERBOSE_WARNING(
-          "Attempting to set a SSBO buffer (%d) not aligned with 256 "
+          "Attempting to set a SSBO buffer (%d) not aligned with %hu "
           "bytes (%lu). SSBO Buffers require 256 alignment.",
-          i, ssbo_type[i].size);
+          i, alignment, ssbo_type[i].size);
 
+    if (ssbo_type[i].size < min_size)
+      VERBOSE_WARNING(
+          "Attempting to set a buffer (%d) not with a type size inferior to %hu"
+          "bytes (%lu).",
+          i, min_size, ssbo_type[i].size);
+
+    // DEBUG
+    printf("[%d] %lu\n", i, ssbo_type[i].size);
+    
     SSBOBuffer *ssbo = &manager->buffers[i];
     ssbo->type_size = ssbo_type[i].size;
     ssbo->length = 0;
@@ -86,7 +98,7 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
         device, &(WGPUBufferDescriptor){
                     .size = ssbo->capacity,
                     .mappedAtCreation = false,
-                    .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Storage,
+                    .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Uniform,
                     .label = ssbo_type[i].label,
                 });
   }

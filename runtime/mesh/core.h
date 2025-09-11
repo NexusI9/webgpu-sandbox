@@ -66,7 +66,7 @@ typedef struct {
   uint32_t probe_reflection_grid_id;
   uint32_t probe_reflection_grid_count;
   uint32_t _pad[40];
-} MeshUniform;
+} __attribute__((aligned(16))) MeshUniform;
 
 typedef void (*mesh_get_transform_attribute)(Mesh *, vec3 *);
 

@@ -41,10 +41,10 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_grid_bind_group = {
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_ReadOnlyStorage,
+                        .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
                         .minBindingSize =
-                            sizeof(ProbeReflectionUniform) * SSBO_CAPACITY,
+                            sizeof(ProbeReflectionUniform),
                     },
             },
             {

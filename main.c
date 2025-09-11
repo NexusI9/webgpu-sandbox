@@ -11,6 +11,7 @@
 #include "resources/example/gltf.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
+#include "runtime/scene/renderer/core.h"
 #include "runtime/scene/scene.h"
 static Scene main_scene;
 

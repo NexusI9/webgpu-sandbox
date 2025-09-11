@@ -31,7 +31,12 @@ static const ShaderPipelineStateObject layout_reflection = {
                     .count = PipelineMultisampleCount_1x,
                 },
         },
-    .bindings = {.mvp = &mvp_binding},
+    .bindings =
+        {
+            .mvp = &mvp_binding,
+            .light_list = &pbr_light_list,
+            .probe = NULL,
+        },
 };
 
 #endif

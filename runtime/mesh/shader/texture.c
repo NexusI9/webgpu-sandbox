@@ -1,7 +1,7 @@
 #include "texture.h"
+#include "../runtime/light/shadow_map/core.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
-#include "../runtime/light/shadow_map/core.h"
 
 /**
    Clear the texture shader bind groups of mesh
@@ -16,12 +16,9 @@ void mesh_shader_texture_clear_bindings(Mesh *mesh) {
    are already set at <light_list>[12], init them all to 0
    by default we will upload all the lights (point, ambient, spot)
    within a defined group
-
-   TODO OPTI: currently we update all the lights on each update, implement a
-   more targetted way to update lights based on their index.
   */
 void mesh_shader_texture_update_lights(Mesh *mesh, const MeshShader shader_type,
-                               UBOManager *ubo, SSBOManager *ssbo) {
+                                       UBOManager *ubo, SSBOManager *ssbo) {
 
   WGPUBuffer entries[5] = {
       ssbo_buffer_handle(ssbo, SSBOType_AmbientLight),
@@ -46,10 +43,11 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
                                           WGPUTextureView spot_texture_view) {
 
   const uint8_t sampler_binding = 6;
-  const uint8_t group_index = 2;
+
+  Shader *shader = mesh_shader(mesh, MeshShader_Texture);
+  const PipelineBinding *bindings = &shader->pipeline->bindings;
 
   // create texture views
-
 #ifdef RENDER_SHADOW_AS_COLOR
   const WGPUTextureFormat texture_format = SHADOW_COLOR_FORMAT;
   const WGPUTextureSampleType texture_sample_type = WGPUTextureSampleType_Float;
@@ -63,40 +61,14 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
 #endif
 
   // add multi-layered texture to default shader
-  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), group_index,
-                             SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
+  shader_update_texture_view(shader, bindings->light_list->group,
+                             bindings->light_list->point_texture,
                              point_texture_view, texture_format);
 
-  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), group_index,
-                             SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP,
+  shader_update_texture_view(shader, bindings->light_list->group,
+                             bindings->light_list->directional_texture,
                              spot_texture_view, texture_format);
 
-  // add related sampler to default shader
-  // NOTE: With depth texture need to use a special sampler type:
-  // Comparison
-
-  WGPUSamplerDescriptor sampler = {
-      .addressModeU = WGPUAddressMode_ClampToEdge,
-      .addressModeV = WGPUAddressMode_ClampToEdge,
-      .addressModeW = WGPUAddressMode_ClampToEdge,
-      .magFilter = WGPUFilterMode_Nearest,
-      .minFilter = WGPUFilterMode_Nearest,
-      .compare = sample_compare,
-  };
-
-  const MeshShader shader_types[2] = {
-      MeshShader_Texture,
-      MeshShader_Reflection,
-  };
-
-  for (uint8_t i = 0; i < 2; i++) {
-
-    Shader *shader = mesh_shader(mesh, shader_types[i]);
-
-    shader_update_sampler(shader, group_index, sampler_binding, &sampler);
-
-    shader_update_sampler(shader, group_index, sampler_binding + 2, &sampler);
-  }
 }
 
 void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
@@ -113,32 +85,21 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
   for (uint8_t i = 0; i < 2; i++) {
 
     Shader *shader = mesh_shader(mesh, shader_types[i]);
+    const PipelineBinding *bindings = &shader->pipeline->bindings;
 
     // update point texture
-    shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
-                               SHADER_TEXTURE_BINDING_POINT_TEXTURE_MAP,
-                               point_map, SHADOW_DEPTH_FORMAT);
+    shader_update_texture_view(shader, bindings->light_list->group,
+                               bindings->light_list->point_texture, point_map,
+                               SHADOW_DEPTH_FORMAT);
 
     // update dir texture
-    shader_update_texture_view(shader, SHADER_TEXTURE_BINDGROUP_LIGHTS,
-                               SHADER_TEXTURE_BINDING_DIR_TEXTURE_MAP, spot_map,
-                               SHADOW_DEPTH_FORMAT);
+    shader_update_texture_view(shader, bindings->light_list->group,
+                               bindings->light_list->directional_texture,
+                               spot_map, SHADOW_DEPTH_FORMAT);
   }
 }
 
-/**
-  update pipeline for double-sided
- */
-void mesh_shader_texture_double_sided(Mesh *mesh) {
-
-  /* STDPIPELINE TEXTURE
-  pipeline_set_primitive(shader_pipeline(mesh_shader(mesh, MeshShader_Texture)),
-                         (WGPUPrimitiveState){
-                             .frontFace = WGPUFrontFace_CCW,
-                             .cullMode = WGPUCullMode_None,
-                             .topology = WGPUPrimitiveTopology_TriangleList,
-                             .stripIndexFormat = WGPUIndexFormat_Undefined,
-                         });
-
-  */
-}
+void mesh_shader_texture_update_probes(Mesh *mesh,
+                                       WGPUTextureView plane_texture,
+                                       WGPUTextureView grid_texture,
+                                       SSBOManager *ssbo) {}

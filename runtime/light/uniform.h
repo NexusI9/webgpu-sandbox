@@ -11,7 +11,7 @@ typedef struct {
   float cutoff;
   vec3 color;
   float intensity;
-  mat4 views[LIGHT_POINT_VIEWS];
+  mat4 views[LIGHT_POINT_VIEWS]; // TODO: move the views into projection SSBO
   float inner_cutoff;
   float near;
   float far;
@@ -21,7 +21,7 @@ typedef struct {
 typedef struct {
   vec3 color;
   float intensity;
-  float _padding[60];
+  float _pad[60];
 } __attribute__((aligned(16))) AmbientLightUniform;
 
 typedef struct {
@@ -32,7 +32,7 @@ typedef struct {
   vec3 color;
   float intensity;
   mat4 view;
-  float _padding[36];
+  float _pad[36];
 } __attribute__((aligned(16))) SpotLightUniform;
 
 typedef struct {
@@ -41,7 +41,7 @@ typedef struct {
   vec3 color;
   float _padding;
   mat4 view;
-  float _padding2[40];
+  float _pad[40];
 } __attribute__((aligned(16))) SunLightUniform;
 
 // light uniforms

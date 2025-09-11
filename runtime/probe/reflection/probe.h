@@ -27,7 +27,7 @@ typedef struct {
 typedef struct {
   vec3 position;
   float radius;
-  float _padding[60];
+  float _pad[60];
 } __attribute__((aligned(16))) ProbeReflectionUniform;
 
 typedef struct {

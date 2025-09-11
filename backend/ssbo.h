@@ -9,7 +9,7 @@
 #include <webgpu/webgpu.h>
 
 #define SSBO_TYPE_COUNT 10
-#define SSBO_CAPACITY 1024
+#define SSBO_CAPACITY 128
 #define SSBO_MAX_TYPE_SIZE 2048
 #define SSBO_UPDATE_QUEUE_CAPACITY 128
 
