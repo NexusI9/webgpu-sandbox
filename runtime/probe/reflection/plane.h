@@ -20,7 +20,9 @@ typedef struct {
   SSBOSlot ssbo_slot[PROBE_REFLECTION_SSBO_SLOT_COUNT];
   Camera camera;
   Camera const *ref_camera;
+  Viewport const *ref_viewport;
   AABB boundbox;
+  uint32_t texture_layer;
 } ProbeReflectionPlane;
 
 typedef struct {
@@ -33,8 +35,9 @@ typedef struct {
   vec3 tangent;
   float signed_distance;
   vec3 bitangent;
-  uint32_t camera_ssbo_index;
-  float _pad[44];
+  uint32_t texture_layer;
+  mat4 view;
+  float _pad1[28];
 } __attribute__((aligned(16))) ProbeReflectionPlaneUniform;
 
 typedef struct {
@@ -52,6 +55,7 @@ typedef struct {
   vec3 position;
   float distance;
   Camera const *camera;
+  Viewport const *viewport;
 } ProbeReflectionPlaneDescriptor;
 
 /* === Plane List === */

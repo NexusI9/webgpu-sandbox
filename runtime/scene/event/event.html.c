@@ -74,11 +74,17 @@ void scene_event_html_commons(Scene *scene) {
 
     // update CPU side
     probe_reflection_plane_update_camera(probe);
+    probe_reflection_plane_update_uniform(probe);
 
     // add to GPU update Queue
     ssbo_update_queue_insert(
         &scene->renderer.ssbo, SSBOType_Camera,
-        probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
+        probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
+
+    // add to GPU update Queue
+    ssbo_update_queue_insert(
+        &scene->renderer.ssbo, SSBOType_ProbePlaneReflection,
+        probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
   }
 }
 

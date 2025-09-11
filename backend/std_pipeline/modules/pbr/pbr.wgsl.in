@@ -124,7 +124,8 @@ struct PlaneReflection {
                                                                 signed_distance
       : f32,
         bitangent : vec3<f32>,
-                    camera_ssbo_index : u32,
+                    texture_layer : u32,
+                                    view : mat4x4<f32>,
 
 }
 
@@ -187,18 +188,16 @@ const ARRAY_CAPACITY : u32 = 128u;
 @group(2) @binding(8) var directional_shadow_sampler : sampler_comparison;
 #endif
 
-@group(2) @binding(9) var<uniform> projection
-    : array<Projection, ARRAY_CAPACITY>;
-@group(2) @binding(10) var<uniform> probe_relfection_plane : PlaneReflection;
-@group(2) @binding(11) var<uniform> probe_reflection_grid : ProbeReflection;
+@group(2) @binding(9) var<uniform> probe_relfection_plane : PlaneReflection;
+@group(2) @binding(10) var<uniform> probe_reflection_grid : ProbeReflection;
 
-@group(2) @binding(12) var probe_reflection_plane_texture
+@group(2) @binding(11) var probe_reflection_plane_texture
     : texture_2d_array<f32>;
-@group(2) @binding(13) var probe_reflection_plane_sampler : sampler;
+@group(2) @binding(12) var probe_reflection_plane_sampler : sampler;
 
-@group(2) @binding(14) var probe_reflection_grid_texture
+@group(2) @binding(13) var probe_reflection_grid_texture
     : texture_cube_array<f32>;
-@group(2) @binding(15) var probe_reflection_grid_sampler : sampler;
+@group(2) @binding(14) var probe_reflection_grid_sampler : sampler;
 
 //
 //

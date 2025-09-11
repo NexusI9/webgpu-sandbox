@@ -136,13 +136,13 @@ probe_reflection_list_create_core(const ProbeReflectionCreateCore *desc) {
   return create;
 }
 
-void probe_reflection_list_draw_preprocessor(const RenderPass *pass,
-                                                  Mesh *mesh, void *data) {
+void probe_reflection_list_draw_preprocessor(const RenderPass *pass, Mesh *mesh,
+                                             void *data) {
 
   ProbeReflectionListPreprocessorData *cast_data =
       (ProbeReflectionListPreprocessorData *)data;
 
-  Shader *shader = mesh_shader(mesh, MeshShader_Reflection);
 
-  shader_update_bind_group_offset(shader, 0, 1, cast_data->view_offset);
+  Shader *shader = mesh_shader(mesh, MeshShader_Reflection);  
+  shader_update_bind_group_offset(shader, 0, 1, cast_data->camera_offset);
 }

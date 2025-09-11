@@ -59,7 +59,8 @@ struct PlaneReflection {
                                                                 signed_distance
       : f32,
         bitangent : vec3<f32>,
-                    camera_ssbo_index : u32,
+                    texture_layer : u32,
+                                    view : mat4x4<f32>,
 }
 
 // === UBO ===
@@ -85,16 +86,14 @@ const ARRAY_COUNT : u32 = 128u;
 @group(0) @binding(2) var<uniform> uMesh : Mesh;
 
 @group(1) @binding(0) var<uniform> uGlass : Glass;
-@group(1) @binding(1) var<uniform> uPlaneReflectionList : PlaneReflection;
-@group(1) @binding(2) var<uniform> uProjections
-    : array<Projection, ARRAY_COUNT>;
-@group(1) @binding(3) var<uniform> ubo : UBO;
+@group(1) @binding(1) var<uniform> uPlaneReflection : PlaneReflection;
+@group(1) @binding(2) var<uniform> ubo : UBO;
 
-@group(1) @binding(4) var probe_reflection_maps : texture_2d_array<f32>;
-@group(1) @binding(5) var probe_reflection_sampler : sampler;
+@group(1) @binding(3) var probe_reflection_maps : texture_2d_array<f32>;
+@group(1) @binding(4) var probe_reflection_sampler : sampler;
 
-@group(1) @binding(6) var skybox_map : texture_cube<f32>;
-@group(1) @binding(7) var skybox_sampler : sampler;
+@group(1) @binding(5) var skybox_map : texture_cube<f32>;
+@group(1) @binding(6) var skybox_sampler : sampler;
 
 //
 //
@@ -244,19 +243,15 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
 
   for (var i : u32 = 0u; i < mesh.probe_reflection_plane_count; i++) {
 
-    let plane_index = mesh.probe_reflection_plane_id;
-    let plane = uPlaneReflectionList;
+    let local = vFrag - uPlaneReflection.position;
 
-    let local = vFrag - plane.position;
+    let reflUV = compute_reflection_uv(vFrag, uPlaneReflection.view);
 
-    let reflUV = compute_reflection_uv(
-        vFrag, uProjections[plane.camera_ssbo_index].view);
-
-    R = reflect(viewDir, normalize(plane.normal));
+    R = reflect(viewDir, normalize(uPlaneReflection.normal));
 
     reflection =
         textureSampleLevel(probe_reflection_maps, probe_reflection_sampler,
-                           reflUV, plane_index, 2.0f);
+                           reflUV, uPlaneReflection.texture_layer, 2.0f);
 
     reflection.a /= 1.3f;
   }
@@ -270,5 +265,6 @@ fn fog_factor(distance : f32, fog_start_distance : f32, fog_density : f32)
 
   let combined : vec4<f32> = mix(uGlass.color * composite, composite, f.r);
   let out_color = mix(combined, ubo.fog.color, vec4<f32>(fog_k));
+
   return out_color;
 }

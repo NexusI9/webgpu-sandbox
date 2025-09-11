@@ -14,7 +14,7 @@
 static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
     // Group 1 (Reflection probes array + sampler)
     .label = "Group 1 (Reflection Probes)",
-    .entryCount = 8,
+    .entryCount = 7,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -39,18 +39,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 2,
-                .visibility = WGPUShaderStage_Fragment,
-                .buffer =
-                    (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_Uniform,
-                        .hasDynamicOffset = true,
-                        .minBindingSize =
-                            sizeof(ProjectionUniform) * SSBO_CAPACITY,
-                    },
-            },
-            {
-                .binding = 3, // UBO
+                .binding = 2, // UBO
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
@@ -60,7 +49,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 4, // probe_reflection_maps
+                .binding = 3, // probe_reflection_maps
                 .visibility = WGPUShaderStage_Fragment,
                 .texture =
                     (WGPUTextureBindingLayout){
@@ -70,7 +59,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 5, // probe_reflection_sampler
+                .binding = 4, // probe_reflection_sampler
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){
@@ -78,7 +67,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 6, // env_map
+                .binding = 5, // env_map
                 .visibility = WGPUShaderStage_Fragment,
                 .texture =
                     (WGPUTextureBindingLayout){
@@ -88,7 +77,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 7, // env_sampler
+                .binding = 6, // env_sampler
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){

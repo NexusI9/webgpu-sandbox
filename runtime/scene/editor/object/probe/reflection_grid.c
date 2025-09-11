@@ -126,7 +126,7 @@ void seo_probe_reflection_grid_set_position(SEOTransformCallback *desc) {
   // add to upload queue
   ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
                            SSBOType_Camera,
-                           probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
+                           probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
 }
 
 void seo_probe_reflection_grid_set_rotation(SEOTransformCallback *desc) {}

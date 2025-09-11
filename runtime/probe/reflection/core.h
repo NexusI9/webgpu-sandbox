@@ -11,7 +11,7 @@
 
 typedef enum {
   ProbeReflectionSSBOField_List,
-  ProbeReflectionSSBOField_View,
+  ProbeReflectionSSBOField_Camera,
 } ProbeReflectionSSBOField;
 
 typedef struct {
@@ -29,7 +29,7 @@ typedef struct {
 } ProbeReflectionListDebug;
 
 typedef struct {
-  ssbo_id_t view_offset;
+  ssbo_id_t camera_offset;
 } ProbeReflectionListPreprocessorData;
 
 typedef struct {

@@ -41,7 +41,6 @@ typedef struct {
 void probe_reflection_create(ProbeReflection *, vec3);
 
 void probe_reflection_update_uniform(ProbeReflection *);
-
 void probe_reflection_update_camera(ProbeReflection *);
 
 /* === Probe Reflection List  === */

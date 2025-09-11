@@ -4,6 +4,7 @@
 #include "../runtime/mesh/shader/shader.h"
 #include "./editor/editor.h"
 #include "./editor/object/object.h"
+#include "./editor/selection/callback/transform.h"
 #include "./editor/selection/selection.h"
 #include "build.h"
 #include "core.h"
@@ -13,7 +14,6 @@
 #include "editor/selection/core.h"
 #include <stdint.h>
 #include <stdio.h>
-#include "./editor/selection/callback/transform.h"
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 
@@ -404,8 +404,9 @@ scene_add_probe_reflection_grid(Scene *scene,
 
     // add each views
     for (uint8_t v = 0; v < PROBE_REFLECTION_VIEW_COUNT; v++) {
-      ssbo_copy_entry(ssbo, SSBOType_Camera,
-                      &probe->ssbo_slot[ProbeReflectionSSBOField_View + v]);
+      ssbo_copy_entry(
+          ssbo, SSBOType_Camera,
+          &probe->ssbo_slot[ProbeReflectionSSBOField_Camera + v]);
     }
   }
 
@@ -458,16 +459,17 @@ scene_add_probe_reflection_plane(Scene *scene,
   // add probes to ssbo list
   SSBOManager *ssbo = &scene->renderer.ssbo;
 
-  // add each view
   ssbo_copy_entry(ssbo, SSBOType_Camera,
-                  &probe->ssbo_slot[ProbeReflectionSSBOField_View]);
+                  &probe->ssbo_slot[ProbeReflectionSSBOField_Camera]);
 
-  // update uniform to update camera/view ssbo id
-  probe_reflection_plane_update_uniform(probe);
+  {
+    // update uniform to update camera/view ssbo id
+    probe_reflection_plane_update_uniform(probe);
 
-  // add to pos/radius list
-  ssbo_copy_entry(ssbo, SSBOType_ProbePlaneReflection,
-                  &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
+    // add to pos/radius list
+    ssbo_copy_entry(ssbo, SSBOType_ProbePlaneReflection,
+                    &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
+  }
 
   // update UBO for probe count
   ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionPlaneCount,

@@ -51,9 +51,13 @@ probe_reflection_plane_list_new_entry(ProbeReflectionPlaneList *list) {
   if (list->length == PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT)
     return NULL;
 
-  return (ProbeReflectionPlane *)dyli_new_entry(
+  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)dyli_new_entry(
       (void *)&list->entries, &list->capacity, &list->length,
       sizeof(ProbeReflectionPlane), "Probe Reflection Grid list");
+
+  probe->texture_layer = list->length - 1;
+
+  return probe;
 }
 
 DynamicListStatus
@@ -76,7 +80,6 @@ void probe_reflection_plane_list_draw_callback(void *data) {
   ProbeReflectionPlaneList *list = (ProbeReflectionPlaneList *)data;
 
   // then update probe list texture cube array based on each probes views
-  size_t layer = 0;
 
   render_pass_command_begin(&list->pass);
   {
@@ -90,7 +93,7 @@ void probe_reflection_plane_list_draw_callback(void *data) {
           &(WGPUTextureViewDescriptor){
               .label = "Probe Reflection Plane Target Color View",
               .arrayLayerCount = 1,
-              .baseArrayLayer = layer,
+              .baseArrayLayer = probe->texture_layer,
               .dimension = WGPUTextureViewDimension_2D,
               .baseMipLevel = 0,
               .mipLevelCount = 1,
@@ -101,7 +104,7 @@ void probe_reflection_plane_list_draw_callback(void *data) {
           &(WGPUTextureViewDescriptor){
               .label = "Probe Reflection Plane Target Depth View",
               .arrayLayerCount = 1,
-              .baseArrayLayer = layer,
+              .baseArrayLayer = probe->texture_layer,
               .dimension = WGPUTextureViewDimension_2D,
               .baseMipLevel = 0,
               .mipLevelCount = 1,
@@ -111,7 +114,8 @@ void probe_reflection_plane_list_draw_callback(void *data) {
       render_pass_update_all_preprocessor_data(
           &list->pass,
           &(ProbeReflectionListPreprocessorData){
-              .view_offset = probe->ssbo_slot[ProbeReflectionSSBOField_View].id,
+              .camera_offset =
+                  probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id,
           });
 
       // draw pass
@@ -120,13 +124,12 @@ void probe_reflection_plane_list_draw_callback(void *data) {
                                                 .depth = target_depth,
                                             });
 
-      if (debug && layer < debug->max_views)
+      if (debug && probe->texture_layer < debug->max_views)
         scene_debug_view_create(debug->scene_debug, target_color);
       else
         wgpuTextureViewRelease(target_color);
 
       wgpuTextureViewRelease(target_depth);
-      layer++;
     }
   }
   render_pass_command_end(&list->pass);
@@ -147,6 +150,7 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
   probe->far = desc->far;
   probe->distance = desc->distance;
   probe->ref_camera = desc->camera;
+  probe->ref_viewport = desc->viewport;
   probe->signed_distance = glm_dot(probe->normal, probe->position);
 
   // create "fake camera" that will actually just copy the reference camera
@@ -154,15 +158,16 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
   // attributes
   camera_create(&probe->camera, &(CameraCreateDescriptor){0});
 
-  // Allocate init shader attribute (uniform/ view)
-  ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_View],
-                       sizeof(CameraUniform));
+  static const size_t probe_ssbo_slot_size[PROBE_REFLECTION_SSBO_SLOT_COUNT] = {
+      [ProbeReflectionSSBOField_List] = sizeof(ProbeReflectionPlaneUniform),
+      [ProbeReflectionSSBOField_Camera] = sizeof(CameraUniform),
+  };
+
+  for (ProbeReflectionSSBOField i = 0; i < PROBE_REFLECTION_SSBO_SLOT_COUNT;
+       i++)
+    ssbo_slot_init_alloc(&probe->ssbo_slot[i], probe_ssbo_slot_size[i]);
 
   probe_reflection_plane_update_camera(probe);
-
-  ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_List],
-                       sizeof(ProbeReflectionPlaneUniform));
-
   probe_reflection_plane_update_uniform(probe);
   probe_reflection_plane_update_boundbox(probe);
 }
@@ -180,8 +185,9 @@ void probe_reflection_plane_update_uniform(ProbeReflectionPlane *probe) {
   glm_vec3_copy(probe->tangent, uniform->tangent);
   glm_vec3_copy(probe->bitangent, uniform->bitangent);
 
-  uniform->camera_ssbo_index =
-      probe->ssbo_slot[ProbeReflectionSSBOField_View].id;
+  glm_mat4_copy(probe->camera.view, uniform->view);
+
+  uniform->texture_layer = probe->texture_layer;
   uniform->near = probe->near;
   uniform->far = probe->far;
   uniform->distance = probe->distance;
@@ -212,7 +218,7 @@ void probe_reflection_plane_update_camera(ProbeReflectionPlane *probe) {
 
   // transfert attribute to SSBO slot
   CameraUniform *uniform = camera_uniform(&probe->camera);
-  ssbo_slot_set_uniform(&probe->ssbo_slot[ProbeReflectionSSBOField_View],
+  ssbo_slot_set_uniform(&probe->ssbo_slot[ProbeReflectionSSBOField_Camera],
                         (void *)uniform, sizeof(CameraUniform));
 }
 

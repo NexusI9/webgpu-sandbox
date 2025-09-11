@@ -191,8 +191,8 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
             render_pass_update_all_preprocessor_data(
                 &list->pass,
                 &(ProbeReflectionListPreprocessorData){
-                    .view_offset =
-                        probe->ssbo_slot[ProbeReflectionSSBOField_View + k].id,
+                    .camera_offset =
+                        probe->ssbo_slot[ProbeReflectionSSBOField_Camera + k].id,
                 });
 
             // draw pass

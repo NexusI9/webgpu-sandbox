@@ -169,7 +169,7 @@ static const PipelineBindingProbe pbr_probe = {
 static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
     // Group 2: Lights + Shadows
     .label = "Group 2 - Lights and Shadows",
-    .entryCount = 16,
+    .entryCount = 15,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -288,17 +288,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     },
             },
             {
-                .binding = 9,
-                .visibility = WGPUShaderStage_Fragment,
-                .buffer =
-                    (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_Uniform,
-                        .hasDynamicOffset = true,
-                        .minBindingSize = sizeof(ProjectionUniform) * SSBO_CAPACITY,
-                    },
-            },
-            {
-                .binding = 10, // uProbeReflectionList
+                .binding = 9, // uProbeReflectionList
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
@@ -309,7 +299,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     },
             },
             {
-                .binding = 11, // uProbeReflectionList
+                .binding = 10, // uProbeReflectionList
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
@@ -320,7 +310,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     },
             },
             {
-                .binding = 12, // Probe Plane Texture
+                .binding = 11, // Probe Plane Texture
                 .visibility = WGPUShaderStage_Fragment,
                 .texture =
                     (WGPUTextureBindingLayout){
@@ -330,7 +320,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     },
             },
             {
-                .binding = 13, // Probe Plane Sampler
+                .binding = 12, // Probe Plane Sampler
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){
@@ -338,7 +328,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     },
             },
             {
-                .binding = 14, // Probe Grid Texture
+                .binding = 13, // Probe Grid Texture
                 .visibility = WGPUShaderStage_Fragment,
                 .texture =
                     (WGPUTextureBindingLayout){
@@ -348,7 +338,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                     },
             },
             {
-                .binding = 15, // Probe Grid Texture
+                .binding = 14, // Probe Grid Texture
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){

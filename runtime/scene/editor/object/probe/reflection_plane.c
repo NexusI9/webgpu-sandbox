@@ -211,8 +211,10 @@ void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
   probe_reflection_plane_update_camera(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo, SSBOType_Camera,
-                           probe->ssbo_slot[ProbeReflectionSSBOField_View].id);
+  ssbo_update_queue_insert(
+      &desc->seo->scene->renderer.ssbo, SSBOType_Camera,
+      probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
+
 
   // update scene meshes uniform to define which ones are within the probe area
   // for reflection
