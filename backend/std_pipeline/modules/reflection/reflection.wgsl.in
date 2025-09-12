@@ -31,11 +31,9 @@ struct VertexOut {
 struct Mesh {
   model : mat4x4<f32>,
           position : vec4<f32>,
-                     probe_reflection_plane_id : u32,
-                                                 probe_reflection_plane_count
+                     probe_reflection_plane_count : u32,
+                                                    probe_reflection_grid_count
       : u32,
-        probe_reflection_grid_id : u32,
-                                   probe_reflection_grid_count : u32,
 }
 
 struct Camera {
@@ -310,7 +308,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
                        world_normal : vec3<f32>, camera_position : vec3<f32>,
                        light_position : vec3<f32>, light_color : vec3<f32>,
                        light_intensity : f32) -> vec3<f32> {
-let mesh = uMesh;
+  let mesh = uMesh;
 
   // compute light base on Cook-Torrance BRDF Model
 
@@ -354,7 +352,6 @@ let mesh = uMesh;
   // change first operator to alter ambient light
   // L / L_distance * L_distance;
   return Lo;
-
 }
 
 fn compute_ambient_light(material : Material, light_color : vec3<f32>,
@@ -699,8 +696,9 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   // calculate point lights
   for (var i = 0u; i < ubo.light_count.point; i++) {
     let light = point_light_list[i];
-    Lo += compute_point_light(material, vFrag, world_normal, camera.position.xyz,
-                              light.position, light.color, light.intensity);
+    Lo +=
+        compute_point_light(material, vFrag, world_normal, camera.position.xyz,
+                            light.position, light.color, light.intensity);
   }
 
   // calculate spot lights
@@ -709,15 +707,17 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   for (var i = 0u; i < ubo.light_count.spot; i = i + 1u) {
     let light = spot_light_list[i];
     let light_direction = light.position - light.lookat;
-    Lo += compute_point_light(material, vFrag, world_normal, camera.position.xyz,
-                              light_direction, light.color, light.intensity);
+    Lo +=
+        compute_point_light(material, vFrag, world_normal, camera.position.xyz,
+                            light_direction, light.color, light.intensity);
   }
 
   // calculate sun lights
   for (var i = 0u; i < ubo.light_count.sun; i = i + 1u) {
     let light = sun_light_list[i];
-    Lo += compute_point_light(material, vFrag, world_normal, camera.position.xyz,
-                              light.position, light.color, light.intensity);
+    Lo +=
+        compute_point_light(material, vFrag, world_normal, camera.position.xyz,
+                            light.position, light.color, light.intensity);
   }
 
   // calulate ambient lights

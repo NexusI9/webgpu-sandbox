@@ -153,13 +153,13 @@ static const PipelineBindingLightList pbr_light_list = {
 static const PipelineBindingProbe pbr_probe = {
     .group = 2,
 
-    .reflection_plane = 10,
-    .reflection_plane_texture = 12,
-    .reflection_plane_sampler = 13,
+    .reflection_plane = 9,
+    .reflection_plane_texture = 11,
+    .reflection_plane_sampler = 12,
 
-    .reflection_grid = 11,
-    .reflection_grid_texture = 14,
-    .reflection_grid_sampler = 15,
+    .reflection_grid = 10,
+    .reflection_grid_texture = 13,
+    .reflection_grid_sampler = 14,
 
     .irradiance = PIPELINE_BINDING_UNDEFINED,
     .irradiance_sampler = PIPELINE_BINDING_UNDEFINED,
@@ -293,9 +293,8 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .buffer =
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_Uniform,
-                        .hasDynamicOffset = false,
-                        .minBindingSize =
-                            sizeof(ProbeReflectionPlaneUniform),
+                        .hasDynamicOffset = true,
+                        .minBindingSize = sizeof(ProbeReflectionPlaneUniform),
                     },
             },
             {
@@ -304,9 +303,8 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
                 .buffer =
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_Uniform,
-                        .hasDynamicOffset = false,
-                        .minBindingSize =
-                            sizeof(ProbeReflectionUniform),
+                        .hasDynamicOffset = true,
+                        .minBindingSize = sizeof(ProbeReflectionUniform),
                     },
             },
             {

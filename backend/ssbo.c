@@ -85,9 +85,6 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
           "Attempting to set a buffer (%d) not with a type size inferior to %hu"
           "bytes (%lu).",
           i, min_size, ssbo_type[i].size);
-
-    // DEBUG
-    printf("[%d] %lu\n", i, ssbo_type[i].size);
     
     SSBOBuffer *ssbo = &manager->buffers[i];
     ssbo->type_size = ssbo_type[i].size;

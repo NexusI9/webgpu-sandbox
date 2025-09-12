@@ -68,7 +68,6 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
   shader_update_texture_view(shader, bindings->light_list->group,
                              bindings->light_list->directional_texture,
                              spot_texture_view, texture_format);
-
 }
 
 void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
@@ -102,4 +101,36 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
 void mesh_shader_texture_update_probes(Mesh *mesh,
                                        WGPUTextureView plane_texture,
                                        WGPUTextureView grid_texture,
-                                       SSBOManager *ssbo) {}
+                                       SSBOManager *ssbo) {
+
+  printf("mesh: %s\n", mesh->name);
+
+  Shader *shader = mesh_shader(mesh, MeshShader_Texture);
+  const PipelineBinding *bindings = &shader->pipeline->bindings;
+
+  printf("group: %u\n", bindings->probe->group);
+  printf("plane: %u\n", bindings->probe->reflection_plane);
+  printf("grid: %u\n", bindings->probe->reflection_grid);
+  printf("buffer: %p\n",
+         ssbo_buffer_handle(ssbo, SSBOType_ProbePlaneReflection));
+
+  shader_update_uniform_buffer(
+      shader, bindings->probe->group, bindings->probe->reflection_plane,
+      ssbo_buffer_handle(ssbo, SSBOType_ProbePlaneReflection), 0,
+      ShaderBufferLifetime_Release);
+
+  shader_update_uniform_buffer(
+      shader, bindings->probe->group, bindings->probe->reflection_grid,
+      ssbo_buffer_handle(ssbo, SSBOType_ProbeGridReflection), 0,
+      ShaderBufferLifetime_Release);
+
+  // update plane texture
+  shader_update_texture_view(shader, bindings->probe->group,
+                             bindings->probe->reflection_plane_texture,
+                             plane_texture, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+
+  // update grid texture
+  shader_update_texture_view(shader, bindings->probe->group,
+                             bindings->probe->reflection_grid_texture,
+                             grid_texture, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+}

@@ -302,8 +302,10 @@ void shader_bind_group_refresh(ShaderBindGroup *group,
 #ifdef VERBOSE_BINDING_PHASE
   VERBOSE_PRINT("\t\t\t(refresh)");
 #endif
+  
   shader_bind_group_release(group);
   shader_bind_group_build(group, group_index, device, pipeline);
+
 }
 
 /**

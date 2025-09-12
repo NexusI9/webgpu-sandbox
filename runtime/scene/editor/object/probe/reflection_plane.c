@@ -182,9 +182,7 @@ void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *seo) {
                                       &pipeline_mesh->topology.boundbox.world);
 
       if (intersect)
-        mesh_uniform_set_probe_reflection_plane(
-            pipeline_mesh, probe->ssbo_slot[ProbeReflectionSSBOField_List].id,
-            ssbo);
+        mesh_uniform_set_probe_reflection_plane(pipeline_mesh, ssbo);
       else
         mesh_uniform_clear_probe_reflection_plane(pipeline_mesh, ssbo);
     }
@@ -214,7 +212,6 @@ void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
   ssbo_update_queue_insert(
       &desc->seo->scene->renderer.ssbo, SSBOType_Camera,
       probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
-
 
   // update scene meshes uniform to define which ones are within the probe area
   // for reflection

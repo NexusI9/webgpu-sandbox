@@ -21,11 +21,9 @@ struct VertexOut {
 struct Mesh {
   model : mat4x4<f32>,
           position : vec4<f32>,
-                     probe_reflection_plane_id : u32,
-                                                 probe_reflection_plane_count
+                     probe_reflection_plane_count : u32,
+                                                    probe_reflection_grid_count
       : u32,
-        probe_reflection_grid_id : u32,
-                                   probe_reflection_grid_count : u32,
 }
 
 struct Camera {

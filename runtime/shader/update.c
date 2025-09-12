@@ -95,6 +95,8 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
   size_t uniform_list_index;
   ShaderBindGroupUniformEntry *bound_uniform =
       shader_find_uniform(shader, group_index, index, &uniform_list_index);
+
+
   if (bound_uniform != NULL) {
 
     if (lifetime == ShaderBufferLifetime_Release)
@@ -103,6 +105,10 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
     size_t alignment = shader_device_uniform_alignment(shader->device);
 
     bound_uniform->buffer = buffer;
+
+    if (index > SHADER_MAX_OFFSET_CAPACITY)
+      VERBOSE_WARNING(
+          "Trying to set a index offset to the shader offset array capacity.");
 
     bind_group->offset.entries[index] = offset * alignment;
 

@@ -34,6 +34,8 @@ ShaderBindGroupUniformEntry *shader_find_uniform(Shader *shader,
     return NULL;
   }
 
+
+
   ShaderBindGroupUniforms *uniforms = &bind_group->uniforms;
 
   if (uniforms->entries == NULL) {
@@ -41,13 +43,14 @@ ShaderBindGroupUniformEntry *shader_find_uniform(Shader *shader,
                     group_index, shader->name);
     return NULL;
   }
-
-  for (size_t i = 0; i < uniforms->length; i++)
+  
+  for (size_t i = 0; i < uniforms->length; i++) {
     if (uniforms->entries[i].binding == index) {
       if (list_index)
         *list_index = i;
       return &uniforms->entries[i];
     }
+  }
 
   return NULL;
 }

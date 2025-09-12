@@ -111,19 +111,26 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
                                        &mesh->topology.boundbox);
 
   // bind views
+  printf(" ===== update mvp\n");
   mesh_shader_build_mvp(mesh, MeshShader_Texture, ssbo);
   mesh_shader_build_mvp(mesh, MeshShader_Reflection, ssbo);
 
   // lit and shadow pipeline
   if (pipeline &
       (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
+    printf(" ===== update probes\n");
+    mesh_shader_texture_update_probes(
+        mesh, scene->planes_reflection.pass.color.attachment.view,
+        scene->probes_reflection.pass.color.attachment.view, ssbo);
+
+    printf(" ===== update light\n");
     mesh_shader_texture_update_lights(mesh, MeshShader_Texture, ubo, ssbo);
     mesh_shader_texture_update_lights(mesh, MeshShader_Reflection, ubo, ssbo);
   }
 
   // shadow only pipeline
   if (pipeline == ScenePipeline_Dynamic_LitShadow) {
-
+    printf(" ===== update shadow maps\n");
     mesh_shader_texture_bind_shadow_maps(
         mesh, scene->lights.point.shadow.pass.depth.attachment.view,
         scene->lights.spot.shadow.pass.depth.attachment.view);
