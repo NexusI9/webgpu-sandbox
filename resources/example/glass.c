@@ -93,7 +93,6 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                  .scale = {scale + 5.0f, scale + 5.0f, scale + 5.0f},
                  .distance = 3.0f,
                  .camera = scene->active_camera,
-                 .viewport = &scene->viewport,
              });
 
   Mesh *mesh = scene_new_mesh(scene);

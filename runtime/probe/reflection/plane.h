@@ -20,7 +20,6 @@ typedef struct {
   SSBOSlot ssbo_slot[PROBE_REFLECTION_SSBO_SLOT_COUNT];
   Camera camera;
   Camera const *ref_camera;
-  Viewport const *ref_viewport;
   AABB boundbox;
   uint32_t texture_layer;
 } ProbeReflectionPlane;
@@ -55,7 +54,6 @@ typedef struct {
   vec3 position;
   float distance;
   Camera const *camera;
-  Viewport const *viewport;
 } ProbeReflectionPlaneDescriptor;
 
 /* === Plane List === */

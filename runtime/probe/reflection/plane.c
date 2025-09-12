@@ -150,7 +150,6 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
   probe->far = desc->far;
   probe->distance = desc->distance;
   probe->ref_camera = desc->camera;
-  probe->ref_viewport = desc->viewport;
   probe->signed_distance = glm_dot(probe->normal, probe->position);
 
   // create "fake camera" that will actually just copy the reference camera
