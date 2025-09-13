@@ -87,14 +87,16 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
     const PipelineBinding *bindings = &shader->pipeline->bindings;
 
     // update point texture
-    shader_update_texture_view(shader, bindings->light_list->group,
-                               bindings->light_list->point_texture, point_map,
-                               SHADOW_DEPTH_FORMAT);
+    if (bindings->light_list->point_texture != PIPELINE_BINDING_UNDEFINED)
+      shader_update_texture_view(shader, bindings->light_list->group,
+                                 bindings->light_list->point_texture, point_map,
+                                 SHADOW_DEPTH_FORMAT);
 
     // update dir texture
-    shader_update_texture_view(shader, bindings->light_list->group,
-                               bindings->light_list->directional_texture,
-                               spot_map, SHADOW_DEPTH_FORMAT);
+    if (bindings->light_list->directional_texture != PIPELINE_BINDING_UNDEFINED)
+      shader_update_texture_view(shader, bindings->light_list->group,
+                                 bindings->light_list->directional_texture,
+                                 spot_map, SHADOW_DEPTH_FORMAT);
   }
 }
 
@@ -103,34 +105,53 @@ void mesh_shader_texture_update_probes(Mesh *mesh,
                                        WGPUTextureView grid_texture,
                                        SSBOManager *ssbo) {
 
-  printf("mesh: %s\n", mesh->name);
+  Shader *shader = mesh_shader(mesh, MeshShader_Texture);
+  const PipelineBinding *bindings = &shader->pipeline->bindings;
+
+  // update plane texture
+  if (bindings->probe->reflection_plane_texture != PIPELINE_BINDING_UNDEFINED)
+    shader_update_texture_view(shader, bindings->probe->group,
+                               bindings->probe->reflection_plane_texture,
+                               plane_texture, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+
+  // update grid texture
+  if (bindings->probe->reflection_grid_texture != PIPELINE_BINDING_UNDEFINED)
+    shader_update_texture_view(shader, bindings->probe->group,
+                               bindings->probe->reflection_grid_texture,
+                               grid_texture, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+}
+
+void mesh_shader_texture_update_environment(Mesh *mesh,
+                                            WGPUTextureView skybox_texture,
+                                            SSBOManager *ssbo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
   const PipelineBinding *bindings = &shader->pipeline->bindings;
 
-  printf("group: %u\n", bindings->probe->group);
-  printf("plane: %u\n", bindings->probe->reflection_plane);
-  printf("grid: %u\n", bindings->probe->reflection_grid);
-  printf("buffer: %p\n",
-         ssbo_buffer_handle(ssbo, SSBOType_ProbePlaneReflection));
+  // update skybox texture
+  if (bindings->probe->skybox_texture != PIPELINE_BINDING_UNDEFINED)
+    shader_update_texture_view(shader, bindings->probe->group,
+                               bindings->probe->skybox_texture, skybox_texture,
+                               TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+}
 
-  shader_update_uniform_buffer(
-      shader, bindings->probe->group, bindings->probe->reflection_plane,
-      ssbo_buffer_handle(ssbo, SSBOType_ProbePlaneReflection), 0,
-      ShaderBufferLifetime_Release);
+void mesh_shader_texture_bind_probe(Mesh *mesh,
+                                    const ProbeReflectionPlane *plane,
+                                    SSBOManager *ssbo) {
 
-  shader_update_uniform_buffer(
-      shader, bindings->probe->group, bindings->probe->reflection_grid,
-      ssbo_buffer_handle(ssbo, SSBOType_ProbeGridReflection), 0,
-      ShaderBufferLifetime_Release);
+  Shader *shader = mesh_shader(mesh, MeshShader_Texture);
+  const Pipeline *pipeline = shader_pipeline(shader);
 
-  // update plane texture
-  shader_update_texture_view(shader, bindings->probe->group,
-                             bindings->probe->reflection_plane_texture,
-                             plane_texture, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+    shader_update_uniform_buffer(
+        shader, pipeline->bindings.probe->group,
+        pipeline->bindings.probe->reflection_plane,
+        ssbo_buffer_handle(ssbo, SSBOType_ProbePlaneReflection),
+        plane->ssbo_slot[ProbeReflectionSSBOField_List].id,
+        ShaderBufferLifetime_Release);
 
-  // update grid texture
-  shader_update_texture_view(shader, bindings->probe->group,
-                             bindings->probe->reflection_grid_texture,
-                             grid_texture, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+  {
+    MeshUniform *uniform = mesh_uniform(mesh);
+    uniform->probe_reflection_plane_count = 1;
+    ssbo_update_queue_insert(ssbo, SSBOType_Mesh, mesh->ssbo_slot.id);
+  }
 }

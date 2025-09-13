@@ -64,9 +64,6 @@ void scene_selection_mesh_transform_core(Mesh *mesh, vec3 *init_attribute,
   ssbo_update_queue_insert(&desc->scene->renderer.ssbo, SSBOType_Mesh,
                            mesh->ssbo_slot.id);
 
-  scene_selection_mesh_update_probe_uniform(
-      mesh, &desc->scene->probes_reflection, &desc->scene->planes_reflection,
-      &desc->scene->renderer.ssbo);
 }
 
 /* Mesh based transform */

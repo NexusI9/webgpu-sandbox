@@ -122,10 +122,15 @@ MeshStatus mesh_ref_list_transfert(const MeshRefList *src, MeshRefList *dest,
  */
 MeshStatus mesh_ref_list_copy(const MeshRefList *src, MeshRefList *dest) {
 
+  if (src->capacity == 0 || src->entries == NULL)
+    VERBOSE_ERROR(
+        "Attempting to copy an unitialized list, entries: %p, capacity: %lu.",
+        src->entries, src->capacity);
+
   // copy length
   dest->length = src->length;
   dest->capacity = src->capacity;
-  dest->entries = malloc(dest->length * sizeof(Mesh *));
+  dest->entries = malloc(dest->capacity * sizeof(Mesh *));
 
   if (dest->entries == NULL) {
     VERBOSE_ERROR("Couldn't allocate memory for mesh reference list copy.");

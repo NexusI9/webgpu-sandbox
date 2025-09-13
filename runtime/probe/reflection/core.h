@@ -17,7 +17,7 @@ typedef enum {
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  const RenderPassDrawList *draw_list;
+  const RenderPassDrawListDescriptor *draw_list;
   const TextureResolution resolution;
   const size_t capacity;
   const PipelineMultisampleCount multisample;
@@ -57,7 +57,7 @@ typedef struct {
   const size_t layer_count;
   const WGPUTextureViewDimension view_dimension;
   const TextureResolution resolution;
-  const RenderPassDrawList *draw_list;
+  const RenderPassDrawListDescriptor *draw_list;
   const PipelineMultisampleCount multisample;
   RenderPass *handle;
 } ProbeReflectionCreateCorePass;

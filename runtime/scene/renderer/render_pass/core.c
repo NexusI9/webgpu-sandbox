@@ -116,7 +116,7 @@ void render_pass_create(RenderPass *render_pass,
 
    */
   if (desc->draw_list)
-    render_pass_set_draw_list(render_pass, desc->draw_list);
+    render_pass_draw_list_copy(desc->draw_list, &render_pass->draw_list);
 }
 
 void render_pass_list_create(RenderPassList *list,
@@ -187,7 +187,8 @@ void render_pass_list_insert_pass(RenderPassList *list,
           L Render Pass 2
                L Length
                L Draw Layouts[]
-                    L Mesh List
+                    L Stored Mesh List * (linked with scene)
+                    L Drawn Mesh List
                     L Shader Callback
                     L Topo Callback
 
@@ -198,13 +199,26 @@ void render_pass_list_insert_pass(RenderPassList *list,
    By following this order, we can simply map the right array entry depending on
    the scene render mode.
  */
-void render_pass_set_draw_list(RenderPass *pass,
-                               const RenderPassDrawList *draw_list) {
+void render_pass_draw_list_copy(const RenderPassDrawListDescriptor *src,
+                                RenderPassDrawList *dest) {
 
-  size_t length = glm_imin(draw_list->length, RENDER_PASS_MAX_DRAW_LIST);
-  pass->draw_list.length = length;
-  memcpy(pass->draw_list.entries, draw_list->entries,
-         sizeof(RenderPassDrawLayout) * length);
+  size_t length = glm_imin(src->length, RENDER_PASS_MAX_DRAW_LIST);
+  dest->length = length;
+
+  for (size_t i = 0; i < length; i++) {
+
+    const RenderPassDrawLayoutDescriptor *s = &src->entries[i];
+    RenderPassDrawLayout *d = &dest->entries[i];
+
+    d->shader = s->shader;
+    d->topology_callback = s->topology_callback;
+    d->mesh_preprocessor_callback = s->mesh_preprocessor_callback;
+    d->mesh_preprocessor_data = s->mesh_preprocessor_data;
+    d->src_meshes = s->meshes;
+
+    // initialize the drawn_meshes for each passes
+    mesh_ref_list_copy(s->meshes, &d->drawn_meshes);
+  }
 }
 
 RenderPassStatus render_pass_update_preprocessor_data(RenderPass *pass,
@@ -265,4 +279,102 @@ WGPUTextureView render_pass_view_color(RenderPass *pass, size_t index) {
 }
 WGPUTextureView render_pass_view_depth(RenderPass *pass, size_t index) {
   return pass->depth.views[index];
+}
+
+/*
+  Target the right render pass draw layout based on the provided ref list
+  pointer
+ */
+RenderPassDrawLayout *
+render_pass_find_draw_layout_from_mesh_list(RenderPassDrawList *list,
+                                            const MeshRefList *target_list) {
+
+  for (uint16_t i = 0; i < list->length; i++)
+    if (list->entries[i].src_meshes == target_list)
+      return &list->entries[i];
+
+  return NULL;
+}
+
+/**
+   Sync the source mesh list with the actual draw list of the pass.
+   We cannot draw directly the source mesh list (linked from the scene pipeline)
+   because in some cases we need to hide of show some meshes in individual
+   render pass.
+
+   As instance, for probe reflection we may want to prevent self reflection and
+   need to remove somes meshes from the pass. However if we remove those meshes
+   from the source mesh list, then it means we also remove it from ALL the other
+   passes that uses this same source list, which is not what we want (we still
+   want them to be rendered on the main or shadow pass).
+
+   Thus each draw list has two mesh list:
+   1. the source mesh (const): which is the Source Of Truth, the actually list
+   linked from thescene pipeline (Lit/ Unlit)
+   2. the draw mesh: the more dynamic list from which we can enable or disable
+   some meshes from the main list.
+
+                      .----------.----------.----------.----------.----------.
+   Scene Pipeline:    |  Mesh 1  |  Mesh 2  |  Mesh 3  |  Mesh 4  |  Mesh 5  |
+                      '----------'----------'----------'----------'----------'
+                                         └[ Linked ]┐
+                      .----------.----------.----------.----------.----------.
+   Source list:       |  Mesh 1  |  Mesh 2  |  Mesh 3  |  Mesh 4  |  Mesh 5  |
+                      '----------'----------'----------'----------'----------'
+                      .----------.----------.----------.
+   Draw list:         |  Mesh 1  |  Mesh 3  |  Mesh 4  |
+                      '----------'----------'----------'
+
+   The caveats to this double layer list is that we need to make sure to sync
+   the draw list when we add or remove mesh from the scene.
+ */
+RenderPassStatus render_pass_draw_list_enable_mesh(RenderPass *pass,
+                                                   const MeshRefList *reflist,
+                                                   Mesh *mesh) {
+
+  RenderPassDrawLayout *target_layout =
+      render_pass_find_draw_layout_from_mesh_list(&pass->draw_list, reflist);
+
+  if (target_layout == NULL)
+    return RenderPassStatus_LayoutUnfound;
+
+  if (mesh_ref_list_insert(&target_layout->drawn_meshes, mesh) !=
+      DynamicListStatus_Success)
+    return RenderPassStatus_DrawListUpdateError;
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_draw_list_disable_mesh(RenderPass *pass,
+                                                    const MeshRefList *reflist,
+                                                    Mesh *mesh) {
+  RenderPassDrawLayout *target_layout =
+      render_pass_find_draw_layout_from_mesh_list(&pass->draw_list, reflist);
+
+  if (target_layout == NULL)
+    return RenderPassStatus_LayoutUnfound;
+
+  else if (mesh_ref_list_remove(&target_layout->drawn_meshes, mesh) !=
+           DynamicListStatus_Success)
+    return RenderPassStatus_DrawListUpdateError;
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus
+render_pass_list_draw_list_enable_mesh(RenderPassList *list,
+                                       const MeshRefList *reflist, Mesh *mesh) {
+
+  for (uint8_t i = 0; i < list->length; i++)
+    render_pass_draw_list_enable_mesh(&list->passes[i], reflist, mesh);
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_list_draw_list_disable_mesh(
+    RenderPassList *list, const MeshRefList *reflist, Mesh *mesh) {
+  for (uint8_t i = 0; i < list->length; i++)
+    render_pass_draw_list_disable_mesh(&list->passes[i], reflist, mesh);
+
+  return RenderPassStatus_Success;
 }

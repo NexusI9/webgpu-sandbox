@@ -12,10 +12,14 @@
 #include "editor/object/list/list.h"
 #include "editor/object/probe/probe.h"
 #include "editor/selection/core.h"
+#include "renderer/core.h"
+#include "renderer/render_pass/core.h"
 #include <stdint.h>
 #include <stdio.h>
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
+static inline void
+scene_render_pass_draw_list_enable_mesh(Scene *, const MeshRefList *, Mesh *);
 
 /**
     ▗▄▄▖ ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖    ▗▄▄▄▖▗▄▄▄ ▗▄▄▄▖▗▄▄▄▖▗▄▖ ▗▄▄▖
@@ -33,7 +37,8 @@ static inline void scene_add_seo(Scene *, SceneEditorObject *);
  */
 SceneEditorObject *scene_add_point_light(Scene *scene,
                                          PointLightDescriptor *desc,
-                                         const LightShadow shadow) {
+                                         const LightShadow shadow,
+                                         PointLight **dest) {
 
   PointLightListBase *base_list = &scene->lights.point.base;
   if (base_list->length == base_list->capacity) {
@@ -44,6 +49,9 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
   // create sun light
   PointLight *new_light = &base_list->entries[base_list->length];
   light_point_create(new_light, desc);
+
+  if (dest)
+    *dest = new_light;
 
   // transfert Light Uniform to SSBO
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_PointLight,
@@ -106,7 +114,8 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
 }
 
 SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
-                                        const LightShadow shadow) {
+                                        const LightShadow shadow,
+                                        SpotLight **dest) {
 
   SpotLightListBase *base_list = &scene->lights.spot.base;
   if (base_list->length == base_list->capacity) {
@@ -117,6 +126,9 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
   // create sun light
   SpotLight *new_light = &base_list->entries[base_list->length];
   light_spot_create(new_light, desc);
+
+  if (dest)
+    *dest = new_light;
 
   // transfert Light Uniform to SSBO
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_SpotLight,
@@ -179,7 +191,8 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 }
 
 SceneEditorObject *scene_add_ambient_light(Scene *scene,
-                                           AmbientLightDescriptor *desc) {
+                                           AmbientLightDescriptor *desc,
+                                           AmbientLight **dest) {
 
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
@@ -190,6 +203,9 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
   // create sun light
   AmbientLight *new_light = &list->entries[list->length++];
   light_ambient_create(new_light, desc);
+
+  if (dest)
+    *dest = new_light;
 
   // transfert Light Uniform to SSBO
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_AmbientLight,
@@ -220,7 +236,8 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
 }
 
 SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
-                                       const LightShadow shadow) {
+                                       const LightShadow shadow,
+                                       SunLight **dest) {
 
   SunLightListBase *base_list = &scene->lights.sun.base;
   if (base_list->length == base_list->capacity) {
@@ -231,6 +248,9 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   // create sun light
   SunLight *new_light = &base_list->entries[base_list->length];
   light_sun_create(new_light, desc);
+
+  if (dest)
+    *dest = new_light;
 
   // transfert Light Uniform to SSBO
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_SunLight,
@@ -314,11 +334,15 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
  */
 SceneEditorObject *scene_add_camera(Scene *scene,
-                                    const CameraCreateDescriptor *desc) {
+                                    const CameraCreateDescriptor *desc,
+                                    Camera **dest) {
 
   // init scene camera
   Camera *new_cam = camera_list_new_camera(&scene->cameras);
   camera_create(new_cam, desc);
+
+  if (dest)
+    *dest = new_cam;
 
   // create gizmo
   SceneEditorObject *seo_cam =
@@ -357,11 +381,15 @@ SceneEditorObject *scene_add_camera(Scene *scene,
  */
 void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
 
+  MeshRefList *pipeline_mesh_list = scene_pipeline(scene, ScenePipeline_Fixed);
+
   for (size_t i = 0; i < seo->meshes.length; i++) {
     Mesh *mesh = seo->meshes.entries[i].mesh;
     // build mesh depending on pipeline and scene render mode
     scene_build_mesh(scene, mesh, ScenePipeline_Fixed);
-    mesh_ref_list_insert(scene_pipeline(scene, ScenePipeline_Fixed), mesh);
+    mesh_ref_list_insert(pipeline_mesh_list, mesh);
+
+    scene_render_pass_draw_list_enable_mesh(scene, pipeline_mesh_list, mesh);
 
     // add the SEO into the right selection branch/ filter and link the SEO as
     // extra
@@ -372,12 +400,16 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
 
 SceneEditorObject *
 scene_add_probe_reflection_grid(Scene *scene,
-                                ProbeReflectionGridDescriptor *desc) {
+                                ProbeReflectionGridDescriptor *desc,
+                                ProbeReflectionGrid **dest) {
 
   ProbeReflectionGrid *new_grid =
       probe_reflection_grid_list_new_entry(&scene->probes_reflection);
 
   probe_reflection_grid_create(new_grid, desc);
+
+  if (dest)
+    *dest = new_grid;
 
   // create scene object
   SceneEditorObject *seo_grid =
@@ -404,9 +436,8 @@ scene_add_probe_reflection_grid(Scene *scene,
 
     // add each views
     for (uint8_t v = 0; v < PROBE_REFLECTION_VIEW_COUNT; v++) {
-      ssbo_copy_entry(
-          ssbo, SSBOType_Camera,
-          &probe->ssbo_slot[ProbeReflectionSSBOField_Camera + v]);
+      ssbo_copy_entry(ssbo, SSBOType_Camera,
+                      &probe->ssbo_slot[ProbeReflectionSSBOField_Camera + v]);
     }
   }
 
@@ -426,7 +457,8 @@ scene_add_probe_reflection_grid(Scene *scene,
 
 SceneEditorObject *
 scene_add_probe_reflection_plane(Scene *scene,
-                                 ProbeReflectionPlaneDescriptor *desc) {
+                                 ProbeReflectionPlaneDescriptor *desc,
+                                 ProbeReflectionPlane **dest) {
 
   // add draw callback if first probe
   if (scene->planes_reflection.length == 0 &&
@@ -437,6 +469,9 @@ scene_add_probe_reflection_plane(Scene *scene,
 
   ProbeReflectionPlane *probe =
       probe_reflection_plane_list_new_entry(&scene->planes_reflection);
+
+  if (dest)
+    *dest = probe;
 
   probe_reflection_plane_create(probe, desc);
 
@@ -477,8 +512,6 @@ scene_add_probe_reflection_plane(Scene *scene,
 
   ubo_upload(&scene->renderer.ubo);
 
-  seo_probe_reflection_plane_update_mesh_uniform(seo);
-
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_seo(scene, seo);
 
@@ -508,8 +541,10 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
     layer = SCENE_LAYER_DEFAULT;
   scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
 
+  MeshRefList *pipeline_mesh_list = scene_pipeline(scene, pipeline);
+
   // add mesh pointer to the right pipeline
-  mesh_ref_list_insert(scene_pipeline(scene, pipeline), mesh);
+  mesh_ref_list_insert(pipeline_mesh_list, mesh);
 
   // Update Shadow maps if added to Dynamic_Lit pipeline
   if (pipeline == ScenePipeline_Dynamic_LitShadow &&
@@ -518,22 +553,41 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
         &(ShadowMapDrawAllDescriptor){
             .device = scene_device(scene),
             .queue = scene_queue(scene),
-            .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+            .mesh_list = pipeline_mesh_list,
             .lights = &scene->lights,
         },
         SCENE_DEBUG_UNDEFINED);
 
-    // EDITORONLY
-    // add mesh to selection shadow
+    // EDITORONLY (add mesh to selection shadow)
     scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
                              SceneSelectionType_MeshShadow);
 
   } else {
-    // EDITORONLY
-    // add mesh to selection
+    // EDITORONLY (add mesh to selection)
     scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
                              SceneSelectionType_Mesh);
   }
+
+  scene_render_pass_draw_list_enable_mesh(scene, pipeline_mesh_list, mesh);
+}
+
+/**
+  Update passes draw list (sync with their respective scene pipeline)
+ */
+void scene_render_pass_draw_list_enable_mesh(
+    Scene *scene, const MeshRefList *pipeline_mesh_list, Mesh *mesh) {
+
+  for (SceneRendererDrawMode i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
+    render_pass_list_draw_list_enable_mesh(&scene->renderer.draw.pass[i],
+                                           pipeline_mesh_list, mesh);
+  render_pass_draw_list_enable_mesh(&scene->probes_reflection.pass,
+                                    pipeline_mesh_list, mesh);
+  render_pass_draw_list_enable_mesh(&scene->planes_reflection.pass,
+                                    pipeline_mesh_list, mesh);
+  render_pass_draw_list_enable_mesh(&scene->lights.point.shadow.pass,
+                                    pipeline_mesh_list, mesh);
+  render_pass_draw_list_enable_mesh(&scene->lights.spot.shadow.pass,
+                                    pipeline_mesh_list, mesh);
 }
 
 /**
@@ -567,10 +621,6 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
 
   // build mesh depending on pipeline and scene render mode
   scene_build_mesh(scene, mesh, pipeline);
-
-  scene_selection_mesh_update_probe_uniform(mesh, &scene->probes_reflection,
-                                            &scene->planes_reflection,
-                                            &scene->renderer.ssbo);
 
   scene_add_mesh_any(scene, mesh, pipeline, layer);
 }

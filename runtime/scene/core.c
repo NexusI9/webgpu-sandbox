@@ -7,6 +7,7 @@
 #include "event/event.html.h"
 
 #include "../utils/system.h"
+#include "renderer/render_pass/core.h"
 
 // initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
@@ -25,7 +26,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     {
       /*  ===== SCENE RENDER =====   */
       scene_renderer_init(&scene->renderer, desc->renderer);
-      scene_draw_layouts_init(scene, desc->renderer->multisampling_count);
       scene_environment_init(&scene->environment,
                              &(SceneEnvironmentDescriptor){
                                  .ssbo = &scene->renderer.ssbo,
@@ -60,11 +60,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     }
 
     {
-      /*  ===== EVENT =====  */
-      scene_event_html(scene);
-    }
-
-    {
       /*  ===== EDITOR =====  */
       scene_editor_init(scene); // EDITORONLY
 
@@ -76,6 +71,12 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                                           .pool = &scene->meshes,
                                           .ssbo = &scene->renderer.ssbo,
                                       });
+    }
+
+    {
+      /*  ===== EVENT =====  */
+      scene_event_html(scene);
+      scene_draw_layouts_init(scene, desc->renderer->multisampling_count);
     }
   });
 }
@@ -90,6 +91,7 @@ void scene_mesh_list_init(Scene *scene) {
     mesh_ref_list_create(scene_pipeline(scene, flag),
                          SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
+  // init pool
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 }
 
@@ -145,9 +147,9 @@ void scene_probe_reflection_init(Scene *scene,
       ScenePipeline_Dynamic_Lit,
   };
 
-  RenderPassDrawList reflection_draw_list = {.length = 2};
+  RenderPassDrawListDescriptor reflection_draw_list = {.length = 2};
   for (uint8_t i = 0; i < 2; i++)
-    reflection_draw_list.entries[i] = (RenderPassDrawLayout){
+    reflection_draw_list.entries[i] = (RenderPassDrawLayoutDescriptor){
         .shader = MeshShader_Reflection,
         .topology_callback = mesh_topology_base,
         .meshes = scene_pipeline(scene, reflection_pipelines[i]),
@@ -193,7 +195,7 @@ void scene_light_list_init(Scene *scene) {
       .queue = scene_renderer_queue(&scene->renderer),
       .lights = &scene->lights,
       .draw_list =
-          &(RenderPassDrawList){
+          &(RenderPassDrawListDescriptor){
               .length = 1,
               .entries =
                   {

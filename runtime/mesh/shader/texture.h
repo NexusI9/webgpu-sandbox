@@ -3,6 +3,7 @@
 #include "../backend/ubo.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/light/light.h"
+#include "../runtime/probe/reflection/plane.h"
 #include "core.h"
 #include <stddef.h>
 
@@ -17,7 +18,13 @@ void mesh_shader_texture_update_lights(Mesh *, const MeshShader, UBOManager *,
 void mesh_shader_texture_update_shadow_maps(Mesh *, WGPUTextureView,
                                             WGPUTextureView);
 
-void mesh_shader_texture_update_probes(Mesh *, WGPUTextureView,
-                                       WGPUTextureView, SSBOManager *);
+void mesh_shader_texture_update_probes(Mesh *, WGPUTextureView, WGPUTextureView,
+                                       SSBOManager *);
+
+void mesh_shader_texture_update_environment(Mesh *, WGPUTextureView,
+                                            SSBOManager *);
+
+void mesh_shader_texture_bind_probe(Mesh *, const ProbeReflectionPlane *,
+                                    SSBOManager *);
 
 #endif

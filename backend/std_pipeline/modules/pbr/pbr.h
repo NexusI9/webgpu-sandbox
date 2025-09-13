@@ -16,7 +16,7 @@
 static const WGPUBindGroupLayoutDescriptor layout_pbr_textures_bind_group = {
     // Group 1: Material Textures
     .label = "Group 1 - Material Textures",
-    .entryCount = 12,
+    .entryCount = 10,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -119,24 +119,6 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_textures_bind_group = {
                         .type = WGPUSamplerBindingType_Filtering,
                     },
             },
-            {
-                .binding = 10, // skybox_texture
-                .visibility = WGPUShaderStage_Fragment,
-                .texture =
-                    (WGPUTextureBindingLayout){
-                        .sampleType = WGPUTextureSampleType_Float,
-                        .viewDimension = WGPUTextureViewDimension_Cube,
-                        .multisampled = false,
-                    },
-            },
-            {
-                .binding = 11, // skybox_sampler
-                .visibility = WGPUShaderStage_Fragment,
-                .sampler =
-                    (WGPUSamplerBindingLayout){
-                        .type = WGPUSamplerBindingType_Filtering,
-                    },
-            },
         },
 };
 
@@ -164,12 +146,15 @@ static const PipelineBindingProbe pbr_probe = {
     .irradiance = PIPELINE_BINDING_UNDEFINED,
     .irradiance_sampler = PIPELINE_BINDING_UNDEFINED,
     .irradiance_texture = PIPELINE_BINDING_UNDEFINED,
+
+    .skybox_texture = 15,
+    .skybox_sampler = 16,
 };
 
 static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
     // Group 2: Lights + Shadows
     .label = "Group 2 - Lights and Shadows",
-    .entryCount = 15,
+    .entryCount = 17,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -337,6 +322,24 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
             },
             {
                 .binding = 14, // Probe Grid Texture
+                .visibility = WGPUShaderStage_Fragment,
+                .sampler =
+                    (WGPUSamplerBindingLayout){
+                        .type = WGPUSamplerBindingType_Filtering,
+                    },
+            },
+            {
+                .binding = 15, // skybox_texture
+                .visibility = WGPUShaderStage_Fragment,
+                .texture =
+                    (WGPUTextureBindingLayout){
+                        .sampleType = WGPUTextureSampleType_Float,
+                        .viewDimension = WGPUTextureViewDimension_Cube,
+                        .multisampled = false,
+                    },
+            },
+            {
+                .binding = 16, // skybox_sampler
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){

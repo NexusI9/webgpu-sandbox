@@ -280,3 +280,20 @@ void probe_reflection_plane_update_boundbox(ProbeReflectionPlane *probe) {
     }
   }
 }
+
+/**
+   Remove the given mesh from the plane list render pass lists.
+
+   We need to remove some meshes from the initial draw list to prevent self
+   reflection.
+
+  This function is primarily used when the probe reflection or a mesh is moving
+  and we compute if a mesh is included in the probe list.
+ */
+void probe_reflection_plane_list_disable_mesh(ProbeReflectionPlaneList *list,
+                                              Mesh *mesh) {
+  
+}
+
+void probe_reflection_plane_list_enable_mesh(ProbeReflectionPlaneList *list,
+                                             Mesh *mesh) {}

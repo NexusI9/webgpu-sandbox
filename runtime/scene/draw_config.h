@@ -4,6 +4,8 @@
 #include "../runtime/mesh/shader/shader.h"
 #include "./core.h"
 #include "debug/core.h"
+#include "renderer/core.h"
+#include "renderer/render_pass/core.h"
 #include <stdint.h>
 
 /**
@@ -21,7 +23,7 @@ scene_draw_layouts_init(Scene *scene,
                         const PipelineMultisampleCount multisample) {
 
   // Common gizmo draw list configuration
-  const RenderPassDrawList gizmo_draw_list = {
+  const RenderPassDrawListDescriptor gizmo_draw_list = {
       .length = 1,
       .entries =
           {
@@ -35,7 +37,7 @@ scene_draw_layouts_init(Scene *scene,
   };
 
   // Texture draw configuration
-  const RenderPassDrawList texture_draw_list = {
+  const RenderPassDrawListDescriptor texture_draw_list = {
       .length = 8,
       .entries =
           {
@@ -88,7 +90,7 @@ scene_draw_layouts_init(Scene *scene,
   };
 
   // Solid draw configuration
-  const RenderPassDrawList solid_draw_list = {
+  const RenderPassDrawListDescriptor solid_draw_list = {
       .length = 7,
       .entries =
           {
@@ -137,7 +139,7 @@ scene_draw_layouts_init(Scene *scene,
   };
 
   // Wireframe draw configuration
-  const RenderPassDrawList wireframe_draw_list = {
+  const RenderPassDrawListDescriptor wireframe_draw_list = {
       .length = 7,
       .entries =
           {
@@ -185,7 +187,7 @@ scene_draw_layouts_init(Scene *scene,
   };
 
   // Boundbox draw configuration
-  const RenderPassDrawList boundbox_draw_list = {
+  const RenderPassDrawListDescriptor boundbox_draw_list = {
       .length = 7,
       .entries =
           {
@@ -239,13 +241,14 @@ scene_draw_layouts_init(Scene *scene,
 
 
    */
-
-  const RenderPassDrawList *scene_draw_list[SCENE_RENDERER_DRAW_MODE_COUNT] = {
-      [SceneRendererDrawMode_Texture] = &texture_draw_list,
-      [SceneRendererDrawMode_Solid] = &solid_draw_list,
-      [SceneRendererDrawMode_Wireframe] = &wireframe_draw_list,
-      [SceneRendererDrawMode_Boundbox] = &boundbox_draw_list,
-  };
+  
+  const RenderPassDrawListDescriptor
+      *scene_draw_list[SCENE_RENDERER_DRAW_MODE_COUNT] = {
+          [SceneRendererDrawMode_Texture] = &texture_draw_list,
+          [SceneRendererDrawMode_Solid] = &solid_draw_list,
+          [SceneRendererDrawMode_Wireframe] = &wireframe_draw_list,
+          [SceneRendererDrawMode_Boundbox] = &boundbox_draw_list,
+      };
 
   RenderPassList *pass_list = scene->renderer.draw.pass;
 

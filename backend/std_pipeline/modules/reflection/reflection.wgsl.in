@@ -159,9 +159,6 @@ const ARRAY_CAPACITY : u32 = 128u;
 @group(1) @binding(8) var occlusion_texture : texture_2d<f32>;
 @group(1) @binding(9) var occlusion_sampler : sampler;
 
-@group(1) @binding(10) var skybox_texture : texture_cube<f32>;
-@group(1) @binding(11) var skybox_sampler : sampler;
-
 // light
 // TODO: using uniform for now, but check the storage type
 @group(2) @binding(0) var<uniform> ambient_light_list
@@ -196,6 +193,8 @@ const ARRAY_CAPACITY : u32 = 128u;
 @group(2) @binding(13) var probe_reflection_grid_texture
     : texture_cube_array<f32>;
 @group(2) @binding(14) var probe_reflection_grid_sampler : sampler;
+@group(2) @binding(15) var skybox_texture : texture_cube<f32>;
+@group(2) @binding(16) var skybox_sampler : sampler;
 
 //
 //

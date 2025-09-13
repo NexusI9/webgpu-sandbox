@@ -96,7 +96,6 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
   ShaderBindGroupUniformEntry *bound_uniform =
       shader_find_uniform(shader, group_index, index, &uniform_list_index);
 
-
   if (bound_uniform != NULL) {
 
     if (lifetime == ShaderBufferLifetime_Release)
@@ -110,7 +109,8 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
       VERBOSE_WARNING(
           "Trying to set a index offset to the shader offset array capacity.");
 
-    bind_group->offset.entries[index] = offset * alignment;
+    if (bound_uniform->dynamic_offset_entry)
+      *bound_uniform->dynamic_offset_entry = offset * alignment;
 
     // TODO SEARCH: why setting the uniform offset equal to the bindgroup offset
     // messes up everything (have an idea why but not exactly)

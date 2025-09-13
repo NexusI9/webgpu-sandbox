@@ -320,11 +320,6 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       // load and bind gltf textures
       loader_gltf_bind_uniforms(target_mesh, material, options);
 
-      // link skybox texture view
-      shader_update_texture_view(mesh_shader(target_mesh, MeshShader_Texture),
-                                 1, 10, scene->environment.skybox.view,
-                                 TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
-
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
                                 &vert_index, target_mesh->device,
@@ -450,9 +445,6 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
           "default texture");
       return LoaderGLTFStatus_LoadError;
     }
-
-    // DEBUG
-    printf("%u | %u \n", *width, *height);
 
     if (*data != NULL) {
 

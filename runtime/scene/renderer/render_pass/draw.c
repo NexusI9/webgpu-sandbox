@@ -54,7 +54,7 @@ void render_pass_command_draw(RenderPass *pass,
       MeshShader target_shader = list->shader;
       render_pass_mesh_preprocessor_callback mesh_preprocessor =
           list->mesh_preprocessor_callback;
-      MeshRefList *meshes = list->meshes;
+      MeshRefList *meshes = &list->drawn_meshes;
 
       // draw mesh with layout callbacks
       for (size_t k = 0; k < meshes->length; k++) {

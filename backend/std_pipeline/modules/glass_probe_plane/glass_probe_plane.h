@@ -34,8 +34,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
-                        .minBindingSize =
-                            sizeof(ProbeReflectionPlaneUniform),
+                        .minBindingSize = sizeof(ProbeReflectionPlaneUniform),
                     },
             },
             {
@@ -87,14 +86,33 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
         },
 };
 
+static const PipelineBindingProbe glass_probe_plane = {
+    .group = 1,
+
+    .reflection_plane = 1,
+    .reflection_plane_texture = 3,
+    .reflection_plane_sampler = 4,
+
+    .reflection_grid = PIPELINE_BINDING_UNDEFINED,
+    .reflection_grid_texture = PIPELINE_BINDING_UNDEFINED,
+    .reflection_grid_sampler = PIPELINE_BINDING_UNDEFINED,
+
+    .irradiance = PIPELINE_BINDING_UNDEFINED,
+    .irradiance_sampler = PIPELINE_BINDING_UNDEFINED,
+    .irradiance_texture = PIPELINE_BINDING_UNDEFINED,
+
+    .skybox_texture = 5,
+    .skybox_sampler = 6,
+
+};
+
 static const ShaderPipelineStateObject layout_glass_probe_plane = {
     .label = "Pipeline Bind Groups - Glass Probe Plane",
-    .shader_path =
-        "./backend/std_pipeline/modules/glass_probe_plane/"
-        "glass_probe_plane.wgsl",
+    .shader_path = "./backend/std_pipeline/modules/glass_probe_plane/"
+                   "glass_probe_plane.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &glass_probe_plane_bind_group},
-    .bindings = {.mvp = &mvp_binding},
+    .bindings = {.mvp = &mvp_binding, .probe = &glass_probe_plane},
 };
 
 #endif

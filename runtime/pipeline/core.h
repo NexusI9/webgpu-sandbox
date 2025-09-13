@@ -122,6 +122,9 @@ typedef struct {
   uint16_t irradiance_texture;
   uint16_t irradiance_sampler;
 
+  uint16_t skybox_texture;
+  uint16_t skybox_sampler;
+
 } PipelineBindingProbe;
 
 typedef struct {

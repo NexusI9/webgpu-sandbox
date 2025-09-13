@@ -12,7 +12,7 @@
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  const RenderPassDrawList *draw_list;
+  const RenderPassDrawListDescriptor *draw_list;
   LightList *lights;
 } ShadowMapInitDescriptor;
 
@@ -31,7 +31,7 @@ typedef struct {
   const WGPUQueue queue;
   const WGPUTextureViewDimension dimension;
   RenderPass *pass;
-  const RenderPassDrawList *draw_list;
+  const RenderPassDrawListDescriptor *draw_list;
 } ShadowPassTextureDescriptor;
 
 

@@ -44,6 +44,7 @@ typedef struct {
   size_t capacity;
   size_t length;
   RenderPass pass;
+  RenderPassDrawList unfiltered_draw_list;
 } ProbeReflectionPlaneList;
 
 typedef struct {
@@ -74,6 +75,11 @@ DynamicListStatus
 probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *);
 
 void probe_reflection_plane_list_draw_callback(void *);
+
+void probe_reflection_plane_list_disable_mesh(ProbeReflectionPlaneList *,
+                                              Mesh *);
+void probe_reflection_plane_list_enable_mesh(ProbeReflectionPlaneList *,
+                                             Mesh *);
 
 /* === Plane === */
 void probe_reflection_plane_create(ProbeReflectionPlane *,

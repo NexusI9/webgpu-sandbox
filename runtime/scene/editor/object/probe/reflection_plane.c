@@ -158,6 +158,15 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
    the respective reflection texture in the shader.
 
    Note that only one reflection plane or grid can be active per mesh.
+
+   NOTE:
+   Currently this function in unused as automatically assigning reflected meshes
+   cause various issue in deciding if a mesh should be self-reflected or not, it
+   uselessly complexify the overall process.
+
+   As a solution to this we directly assign/ bind each mesh a probe directly to
+   have more efficient and optimized control on the probe reflection handle and
+   self reflection.
  */
 void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *seo) {
 
@@ -181,10 +190,15 @@ void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *seo) {
       bool intersect = aabb_intersect(&probe->boundbox,
                                       &pipeline_mesh->topology.boundbox.world);
 
-      if (intersect)
+      if (intersect) {
         mesh_uniform_set_probe_reflection_plane(pipeline_mesh, ssbo);
-      else
+        render_pass_draw_list_disable_mesh(&seo->scene->planes_reflection.pass,
+                                           pipeline, pipeline_mesh);
+      } else {
         mesh_uniform_clear_probe_reflection_plane(pipeline_mesh, ssbo);
+        render_pass_draw_list_enable_mesh(&seo->scene->planes_reflection.pass,
+                                          pipeline, pipeline_mesh);
+      }
     }
   }
 }
@@ -212,10 +226,6 @@ void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
   ssbo_update_queue_insert(
       &desc->seo->scene->renderer.ssbo, SSBOType_Camera,
       probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
-
-  // update scene meshes uniform to define which ones are within the probe area
-  // for reflection
-  seo_probe_reflection_plane_update_mesh_uniform(desc->seo);
 }
 
 void seo_probe_reflection_plane_set_rotation(SEOTransformCallback *desc) {}
