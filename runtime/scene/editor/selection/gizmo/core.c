@@ -61,7 +61,7 @@ void gizmo_update_mode(Gizmo *gizmo, MeshRefList *dest_list,
   gizmo->mode = mode;
 
   // insert new handles
-  mesh_ref_list_transfert(&gizmo->handles[gizmo->mode], dest_list, NULL);
+  mesh_ref_list_append(&gizmo->handles[gizmo->mode], dest_list, NULL);
 }
 
 /**

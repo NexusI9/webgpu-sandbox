@@ -73,6 +73,8 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *list) {
   return dyli_free((void *)list->entries, &list->capacity, &list->length);
 }
 
+// DEBUG
+static int y = 0;
 void probe_reflection_plane_list_draw_callback(void *data) {
 
   // temp
@@ -86,6 +88,16 @@ void probe_reflection_plane_list_draw_callback(void *data) {
     for (size_t i = 0; i < list->length; i++) {
 
       ProbeReflectionPlane *probe = &list->entries[i];
+
+      // DEBUG
+      if (y++ < 20) {
+        printf("[%lu] probe: %u\n", i, probe->texture_layer);
+        printf("excluded mesh: %lu\n", probe->excluded_meshes.length);
+      }
+
+      // prevent self reflection
+      render_pass_draw_list_disable_mesh_ref_list(&list->pass, NULL,
+                                                  &probe->excluded_meshes);
 
       // define target layer
       WGPUTextureView target_color = wgpuTextureCreateView(
@@ -130,6 +142,9 @@ void probe_reflection_plane_list_draw_callback(void *data) {
         wgpuTextureViewRelease(target_color);
 
       wgpuTextureViewRelease(target_depth);
+
+      // re-enable all meshes for next draw (dirty......)
+      render_pass_draw_list_enable_all(&list->pass);
     }
   }
   render_pass_command_end(&list->pass);
@@ -151,6 +166,8 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
   probe->distance = desc->distance;
   probe->ref_camera = desc->camera;
   probe->signed_distance = glm_dot(probe->normal, probe->position);
+
+  mesh_ref_list_create(&probe->excluded_meshes, 128);
 
   // create "fake camera" that will actually just copy the reference camera
   // reflected position/ angle, thus we don't need to pass "sensitivy"/ "mode"
@@ -289,11 +306,22 @@ void probe_reflection_plane_update_boundbox(ProbeReflectionPlane *probe) {
 
   This function is primarily used when the probe reflection or a mesh is moving
   and we compute if a mesh is included in the probe list.
+
+   TODO:
+   Since currently all plane shared a common list render pass, we need for each
+  plane to create a "black list" of meshes that then will be removed each render
+  pass.
+   Maybe another solution would be to create a dedicated renderpass to each
+  plane. Cause rn every draw call we have to enable/disable dynamically each
+  plane meshes which is probably costy.
+
  */
-void probe_reflection_plane_list_disable_mesh(ProbeReflectionPlaneList *list,
-                                              Mesh *mesh) {
-  
+void probe_reflection_plane_disable_mesh(ProbeReflectionPlane *plane,
+                                         Mesh *mesh) {
+  mesh_ref_list_insert(&plane->excluded_meshes, mesh);
 }
 
-void probe_reflection_plane_list_enable_mesh(ProbeReflectionPlaneList *list,
-                                             Mesh *mesh) {}
+void probe_reflection_plane_enable_mesh(ProbeReflectionPlane *plane,
+                                        Mesh *mesh) {
+  mesh_ref_list_remove(&plane->excluded_meshes, mesh);
+}

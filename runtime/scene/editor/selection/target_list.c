@@ -40,10 +40,10 @@ scene_selection_target_list_free(SceneSelectionTargetList *list) {
 }
 
 DynamicListStatus
-scene_selection_target_list_transfert(const SceneSelectionTargetList *src,
+scene_selection_target_list_append(const SceneSelectionTargetList *src,
                                       SceneSelectionTargetList *dest) {
 
-  return dyli_transfert((void *)src->entries, src->length,
+  return dyli_append((void *)src->entries, src->length,
                         (void *)&dest->entries, &dest->capacity, &dest->length,
                         sizeof(scene_selection_target_t),
                         "Scene selection target list");

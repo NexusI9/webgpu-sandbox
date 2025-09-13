@@ -24,7 +24,7 @@ void mesh_shader_texture_update_probes(Mesh *, WGPUTextureView, WGPUTextureView,
 void mesh_shader_texture_update_environment(Mesh *, WGPUTextureView,
                                             SSBOManager *);
 
-void mesh_shader_texture_bind_probe(Mesh *, const ProbeReflectionPlane *,
+void mesh_shader_texture_bind_probe(Mesh *, ProbeReflectionPlane *,
                                     SSBOManager *);
 
 #endif

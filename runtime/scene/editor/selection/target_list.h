@@ -13,7 +13,7 @@ scene_selection_target_list_insert(SceneSelectionTargetList *,
 
 DynamicListStatus scene_selection_target_remove_at_index(SceneSelectionTargetList*, size_t);
 
-DynamicListStatus scene_selection_target_list_transfert(const SceneSelectionTargetList *,
+DynamicListStatus scene_selection_target_list_append(const SceneSelectionTargetList *,
                                            SceneSelectionTargetList *);
 
 scene_selection_target_t

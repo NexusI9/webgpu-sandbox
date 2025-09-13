@@ -9,7 +9,7 @@ void scene_selection_filter_set_all_active(SceneSelectionFilter *filter) {
   mesh_ref_list_empty(&filter->meshes[SceneSelectionState_Selected]);
 
   // transfert all filter meshes as active
-  mesh_ref_list_transfert(&filter->meshes[SceneSelectionState_Default],
+  mesh_ref_list_append(&filter->meshes[SceneSelectionState_Default],
                           &filter->meshes[SceneSelectionState_Selected], NULL);
 
   // empty active targets first
@@ -17,7 +17,7 @@ void scene_selection_filter_set_all_active(SceneSelectionFilter *filter) {
       &filter->targets[SceneSelectionState_Selected]);
 
   // transfert all targets as active
-  scene_selection_target_list_transfert(
+  scene_selection_target_list_append(
       &filter->targets[SceneSelectionState_Default],
       &filter->targets[SceneSelectionState_Selected]);
 

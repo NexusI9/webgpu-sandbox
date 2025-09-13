@@ -33,7 +33,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                 .buffer =
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_Uniform,
-                        .hasDynamicOffset = false,
+                        .hasDynamicOffset = true,
                         .minBindingSize = sizeof(ProbeReflectionPlaneUniform),
                     },
             },

@@ -128,7 +128,6 @@ DynamicListStatus dyli_remove_at_index(void *entries, size_t *length,
 void *dyli_new_entry(void **entries, size_t *capacity, size_t *length,
                      size_t type_size, const char *label) {
 
-
   if (*entries == NULL || *capacity == 0) {
     VERBOSE_ERROR("Dynamic list '%s' not initialized, insertion aborted.",
                   label);
@@ -154,7 +153,7 @@ void *dyli_new_entry(void **entries, size_t *capacity, size_t *length,
   return slot;
 }
 
-DynamicListStatus dyli_transfert(const void *src_entries,
+DynamicListStatus dyli_append(const void *src_entries,
                                  const size_t src_length, void **dest_entries,
                                  size_t *dest_capacity, size_t *dest_length,
                                  size_t type_size, const char *label) {
@@ -180,6 +179,35 @@ DynamicListStatus dyli_transfert(const void *src_entries,
          src_length * type_size);
 
   *dest_length += src_length;
+
+  return DynamicListStatus_Success;
+}
+
+DynamicListStatus dyli_replace(const void *src_entries, const size_t src_length,
+                               void **dest_entries, size_t *dest_capacity,
+                               size_t *dest_length, size_t type_size,
+                               const char *label) {
+
+  while (src_length > *dest_capacity) {
+
+    size_t new_capacity =
+        (*dest_capacity > 0) ? 2 * *dest_capacity : src_length;
+
+    void *temp_entries = realloc(*dest_entries, new_capacity * type_size);
+
+    if (temp_entries) {
+      *dest_capacity = new_capacity;
+      *dest_entries = temp_entries;
+
+    } else {
+      VERBOSE_ERROR("Couldn't transfert to %s.", label);
+      return DynamicListStatus_AllocFail;
+    }
+  }
+
+  memcpy((char *)(*dest_entries), src_entries, src_length * type_size);
+
+  *dest_length = src_length;
 
   return DynamicListStatus_Success;
 }

@@ -28,12 +28,16 @@ DynamicListStatus dyli_expand(void **, size_t *, size_t *, size_t, size_t,
 DynamicListStatus dyli_insert(void **, size_t *, size_t *, size_t, void *,
                               size_t, const char *);
 
-DynamicListStatus dyli_transfert(const void *, const size_t, void **, size_t *,
-				 size_t *, size_t, const char *);
+DynamicListStatus dyli_append(const void *, const size_t, void **, size_t *,
+                                 size_t *, size_t, const char *);
+
+DynamicListStatus dyli_replace(const void *, const size_t, void **, size_t *,
+                                 size_t *, size_t, const char *);
 
 DynamicListStatus dyli_remove(void *, size_t *, size_t, void *, const char *);
 
-DynamicListStatus dyli_remove_at_index(void *, size_t *, size_t, const size_t, const char *);
+DynamicListStatus dyli_remove_at_index(void *, size_t *, size_t, const size_t,
+                                       const char *);
 
 DynamicListStatus dyli_empty(void *, size_t *, size_t);
 

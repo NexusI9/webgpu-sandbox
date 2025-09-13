@@ -26,12 +26,13 @@ void mesh_ref_list_free(MeshRefList *);
 Mesh *mesh_ref_list_find_by_name(const MeshRefList *, const char *);
 
 // transferts
-MeshStatus mesh_ref_list_transfert(const MeshRefList *, MeshRefList *,
+MeshStatus mesh_ref_list_append(const MeshRefList *, MeshRefList *,
                                    MeshRefList *);
-MeshStatus mesh_ref_list_copy(const MeshRefList *, MeshRefList *);
+MeshStatus mesh_ref_list_replace(const MeshRefList *, MeshRefList *);
+MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *, MeshRefList *);
 
 // utils
-Mesh *mesh_ref_list_find(const MeshRefList *, Mesh *, size_t *);
+Mesh *mesh_ref_list_find(const MeshRefList *, const Mesh *, size_t *);
 
 // debug
 void mesh_ref_list_print(MeshRefList *);

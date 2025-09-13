@@ -4,7 +4,7 @@ void scene_selection_mesh_highlight(MeshRefList *list, void *data) {
 
   Scene *scene = (Scene *)data;
   mesh_ref_list_empty(scene_pipeline(scene, ScenePipeline_Fixed_Selection));
-  mesh_ref_list_transfert(
+  mesh_ref_list_append(
       list, scene_pipeline(scene, ScenePipeline_Fixed_Selection), NULL);
 };
 

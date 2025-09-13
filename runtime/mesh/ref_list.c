@@ -57,7 +57,8 @@ DynamicListStatus mesh_ref_list_remove_at_index(MeshRefList *list,
 /**
    Linearily traverse the list and compare mesh id to find match
  */
-Mesh *mesh_ref_list_find(const MeshRefList *list, Mesh *mesh, size_t *index) {
+Mesh *mesh_ref_list_find(const MeshRefList *list, const Mesh *mesh,
+                         size_t *index) {
 
   for (size_t i = 0; i < list->length; i++)
     if (list->entries[i] == mesh) {
@@ -72,7 +73,7 @@ Mesh *mesh_ref_list_find(const MeshRefList *list, Mesh *mesh, size_t *index) {
 /**
    Copy mesh pointers from one list to another
  */
-MeshStatus mesh_ref_list_transfert(const MeshRefList *src, MeshRefList *dest,
+MeshStatus mesh_ref_list_append(const MeshRefList *src, MeshRefList *dest,
                                    MeshRefList *exclude) {
 
   // expand if destination is too small
@@ -117,11 +118,13 @@ MeshStatus mesh_ref_list_transfert(const MeshRefList *src, MeshRefList *dest,
   return MeshStatus_Success;
 }
 
+
+
 /**
    Create a copy of a Gizmo Mesh list from a source to a given desination.
    It allocate memory for the new src.
  */
-MeshStatus mesh_ref_list_copy(const MeshRefList *src, MeshRefList *dest) {
+MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *src, MeshRefList *dest) {
 
   if (src->capacity == 0 || src->entries == NULL)
     VERBOSE_ERROR(

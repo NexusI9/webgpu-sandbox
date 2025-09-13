@@ -87,7 +87,7 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
 
   const float scale = 20.0f;
 
-  ProbeReflectionPlane* plane;
+  ProbeReflectionPlane *plane;
   SceneEditorObject *plane_probe = scene_add_probe_reflection_plane(
       scene,
       &(ProbeReflectionPlaneDescriptor){

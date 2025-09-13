@@ -217,7 +217,7 @@ void render_pass_draw_list_copy(const RenderPassDrawListDescriptor *src,
     d->src_meshes = s->meshes;
 
     // initialize the drawn_meshes for each passes
-    mesh_ref_list_copy(s->meshes, &d->drawn_meshes);
+    mesh_ref_list_create_and_copy(s->meshes, &d->drawn_meshes);
   }
 }
 
@@ -286,8 +286,20 @@ WGPUTextureView render_pass_view_depth(RenderPass *pass, size_t index) {
   pointer
  */
 RenderPassDrawLayout *
-render_pass_find_draw_layout_from_mesh_list(RenderPassDrawList *list,
-                                            const MeshRefList *target_list) {
+render_pass_find_draw_layout_from_mesh(RenderPassDrawList *list,
+                                       const Mesh *mesh) {
+
+  for (uint16_t i = 0; i < list->length; i++) {
+    const MeshRefList *ref_list = list->entries[i].src_meshes;
+    if (mesh_ref_list_find(ref_list, mesh, NULL) != NULL)
+      return &list->entries[i];
+  }
+
+  return NULL;
+}
+
+RenderPassDrawLayout *render_pass_find_draw_layout_from_mesh_ref_list(
+    RenderPassDrawList *list, const MeshRefList *target_list) {
 
   for (uint16_t i = 0; i < list->length; i++)
     if (list->entries[i].src_meshes == target_list)
@@ -298,15 +310,15 @@ render_pass_find_draw_layout_from_mesh_list(RenderPassDrawList *list,
 
 /**
    Sync the source mesh list with the actual draw list of the pass.
-   We cannot draw directly the source mesh list (linked from the scene pipeline)
-   because in some cases we need to hide of show some meshes in individual
-   render pass.
+   We cannot draw directly the source mesh list (linked from the scene
+   pipeline) because in some cases we need to hide of show some meshes in
+   individual render pass.
 
-   As instance, for probe reflection we may want to prevent self reflection and
-   need to remove somes meshes from the pass. However if we remove those meshes
-   from the source mesh list, then it means we also remove it from ALL the other
-   passes that uses this same source list, which is not what we want (we still
-   want them to be rendered on the main or shadow pass).
+   As instance, for probe reflection we may want to prevent self reflection
+   and need to remove somes meshes from the pass. However if we remove those
+   meshes from the source mesh list, then it means we also remove it from ALL
+   the other passes that uses this same source list, which is not what we want
+   (we still want them to be rendered on the main or shadow pass).
 
    Thus each draw list has two mesh list:
    1. the source mesh (const): which is the Source Of Truth, the actually list
@@ -332,15 +344,24 @@ RenderPassStatus render_pass_draw_list_enable_mesh(RenderPass *pass,
                                                    const MeshRefList *reflist,
                                                    Mesh *mesh) {
 
-  RenderPassDrawLayout *target_layout =
-      render_pass_find_draw_layout_from_mesh_list(&pass->draw_list, reflist);
+  RenderPassDrawLayout *target_layout = NULL;
+  {
+    if (reflist != NULL)
+      target_layout = render_pass_find_draw_layout_from_mesh_ref_list(
+          &pass->draw_list, reflist);
+    else
+      target_layout =
+          render_pass_find_draw_layout_from_mesh(&pass->draw_list, mesh);
+  }
 
-  if (target_layout == NULL)
-    return RenderPassStatus_LayoutUnfound;
+  {
+    if (target_layout == NULL)
+      return RenderPassStatus_LayoutUnfound;
 
-  if (mesh_ref_list_insert(&target_layout->drawn_meshes, mesh) !=
-      DynamicListStatus_Success)
-    return RenderPassStatus_DrawListUpdateError;
+    if (mesh_ref_list_insert(&target_layout->drawn_meshes, mesh) !=
+        DynamicListStatus_Success)
+      return RenderPassStatus_DrawListUpdateError;
+  }
 
   return RenderPassStatus_Success;
 }
@@ -348,15 +369,24 @@ RenderPassStatus render_pass_draw_list_enable_mesh(RenderPass *pass,
 RenderPassStatus render_pass_draw_list_disable_mesh(RenderPass *pass,
                                                     const MeshRefList *reflist,
                                                     Mesh *mesh) {
-  RenderPassDrawLayout *target_layout =
-      render_pass_find_draw_layout_from_mesh_list(&pass->draw_list, reflist);
+  RenderPassDrawLayout *target_layout = NULL;
+  {
+    if (reflist != NULL)
+      target_layout = render_pass_find_draw_layout_from_mesh_ref_list(
+          &pass->draw_list, reflist);
+    else
+      target_layout =
+          render_pass_find_draw_layout_from_mesh(&pass->draw_list, mesh);
+  }
 
-  if (target_layout == NULL)
-    return RenderPassStatus_LayoutUnfound;
+  {
+    if (target_layout == NULL)
+      return RenderPassStatus_LayoutUnfound;
 
-  else if (mesh_ref_list_remove(&target_layout->drawn_meshes, mesh) !=
-           DynamicListStatus_Success)
-    return RenderPassStatus_DrawListUpdateError;
+    else if (mesh_ref_list_remove(&target_layout->drawn_meshes, mesh) !=
+             DynamicListStatus_Success)
+      return RenderPassStatus_DrawListUpdateError;
+  }
 
   return RenderPassStatus_Success;
 }
@@ -375,6 +405,90 @@ RenderPassStatus render_pass_list_draw_list_disable_mesh(
     RenderPassList *list, const MeshRefList *reflist, Mesh *mesh) {
   for (uint8_t i = 0; i < list->length; i++)
     render_pass_draw_list_disable_mesh(&list->passes[i], reflist, mesh);
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_draw_list_enable_mesh_ref_list(
+    RenderPass *pass, const MeshRefList *reflist, MeshRefList *meshes) {
+
+  for (size_t i = 0; i < meshes->length; i++)
+    render_pass_draw_list_enable_mesh(pass, reflist, meshes->entries[i]);
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_draw_list_disable_mesh_ref_list(
+    RenderPass *pass, const MeshRefList *reflist, MeshRefList *meshes) {
+
+  for (size_t i = 0; i < meshes->length; i++)
+    render_pass_draw_list_disable_mesh(pass, reflist, meshes->entries[i]);
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_list_draw_list_enable_mesh_ref_list(
+    RenderPassList *list, const MeshRefList *reflist, MeshRefList *meshes) {
+
+  for (uint8_t i = 0; i < list->length; i++)
+    for (size_t j = 0; j < meshes->length; j++)
+      render_pass_draw_list_enable_mesh(&list->passes[i], reflist,
+                                        meshes->entries[j]);
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_list_draw_list_disable_mesh_ref_list(
+    RenderPassList *list, const MeshRefList *reflist, MeshRefList *meshes) {
+
+  for (uint8_t i = 0; i < list->length; i++)
+    for (size_t j = 0; j < meshes->length; j++)
+      render_pass_draw_list_enable_mesh(&list->passes[i], reflist,
+                                        meshes->entries[j]);
+
+  return RenderPassStatus_Success;
+}
+
+static int t = 0;
+RenderPassStatus render_pass_draw_list_enable_all(RenderPass *pass) {
+
+  for (uint16_t i = 0; i < pass->draw_list.length; i++) {
+    RenderPassDrawLayout *layout = &pass->draw_list.entries[i];
+    const MeshRefList *src = layout->src_meshes;
+    MeshRefList *dest = &layout->drawn_meshes;
+
+    dyli_replace((void *)src->entries, src->length, (void *)&dest->entries,
+                 &dest->capacity, &dest->length, sizeof(Mesh *),
+                 "Render pass draw layout");
+  }
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_draw_list_disable_all(RenderPass *pass) {
+
+  for (uint16_t i = 0; i < pass->draw_list.length; i++) {
+    RenderPassDrawLayout *layout = &pass->draw_list.entries[i];
+    MeshRefList *dest = &layout->drawn_meshes;
+
+    dyli_empty((void *)dest->entries, &dest->length, sizeof(Mesh *));
+  }
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_list_draw_list_disable_all(RenderPassList *list) {
+
+  for (uint16_t i = 0; i < list->length; i++)
+    render_pass_draw_list_disable_all(&list->passes[i]);
+
+  return RenderPassStatus_Success;
+}
+
+RenderPassStatus render_pass_list_draw_list_enable_all(RenderPassList *list) {
+
+  for (uint16_t i = 0; i < list->length; i++)
+    render_pass_draw_list_enable_all(&list->passes[i]);
 
   return RenderPassStatus_Success;
 }

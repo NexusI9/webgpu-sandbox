@@ -138,14 +138,12 @@ void mesh_shader_texture_update_environment(Mesh *mesh,
 /**
    Link one mesh texture to a reflection probe.
  */
-void mesh_shader_texture_bind_probe(Mesh *mesh,
-                                    const ProbeReflectionPlane *plane,
+void mesh_shader_texture_bind_probe(Mesh *mesh, ProbeReflectionPlane *plane,
                                     SSBOManager *ssbo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
   const Pipeline *pipeline = shader_pipeline(shader);
 
-  
   shader_update_uniform_buffer(
       shader, pipeline->bindings.probe->group,
       pipeline->bindings.probe->reflection_plane,
@@ -158,4 +156,7 @@ void mesh_shader_texture_bind_probe(Mesh *mesh,
     uniform->probe_reflection_plane_count = 1;
     ssbo_update_queue_insert(ssbo, SSBOType_Mesh, mesh->ssbo_slot.id);
   }
+
+  // prevent self reflection by removing the mesh from the plane draw list
+  probe_reflection_plane_disable_mesh(plane, mesh);
 }

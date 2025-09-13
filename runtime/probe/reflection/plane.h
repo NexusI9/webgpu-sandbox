@@ -22,7 +22,7 @@ typedef struct {
   Camera const *ref_camera;
   AABB boundbox;
   uint32_t texture_layer;
-  //RenderPassDrawList *draw_list;
+  MeshRefList excluded_meshes;
 } ProbeReflectionPlane;
 
 typedef struct {
@@ -76,14 +76,14 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *);
 
 void probe_reflection_plane_list_draw_callback(void *);
 
-void probe_reflection_plane_list_disable_mesh(ProbeReflectionPlaneList *,
-                                              Mesh *);
-void probe_reflection_plane_list_enable_mesh(ProbeReflectionPlaneList *,
-                                             Mesh *);
-
 /* === Plane === */
 void probe_reflection_plane_create(ProbeReflectionPlane *,
                                    ProbeReflectionPlaneDescriptor *);
+
+void probe_reflection_plane_disable_mesh(ProbeReflectionPlane *,
+                                              Mesh *);
+void probe_reflection_plane_enable_mesh(ProbeReflectionPlane *,
+                                             Mesh *);
 
 void probe_reflection_plane_update_uniform(ProbeReflectionPlane *);
 void probe_reflection_plane_update_camera(ProbeReflectionPlane *);

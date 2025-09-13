@@ -60,20 +60,6 @@ void example_gltf_podium(Scene *scene) {
       },
       podium_name);
 
-  if (podium) {
-    shader_update_uniform_data(mesh_shader(podium, MeshShader_Texture), 1, 0,
-                               &(GlassUniform){
-                                   .color = {1.0f, 1.0f, 1.0f, 1.0f},
-                                   .frost_scale = 20.0f,
-                                   .frost_strength = 2.0f,
-                                   .roughness = 0.145f,
-                               });
-
-    printf("plane id: %lu\n",
-           plane->ssbo_slot[ProbeReflectionSSBOField_List].id);
-
-    printf("plane texture layer: %u\n", plane->texture_layer);
-
+  if (podium)
     mesh_shader_texture_bind_probe(podium, plane, &scene->renderer.ssbo);
-  }
 }
