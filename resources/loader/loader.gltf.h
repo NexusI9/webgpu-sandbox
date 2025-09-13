@@ -11,6 +11,9 @@ typedef enum {
   LoaderGLTFStatus_TextureFound,
   LoaderGLTFStatus_TextureUnfound,
   LoaderGLTFStatus_LoadError,
+  LoaderGLTFStatus_OutOfBoundMemory,
+  LoaderGLTFStatus_FileUnfound,
+  LoaderGLTFStatus_JSONInvalid,
 } LoaderGLTFStatus;
 
 typedef struct {
@@ -25,6 +28,22 @@ typedef struct {
   const TextureResolution max_texture_size;
 } LoaderGLTFOptions;
 
+#define LOADER_GLTF_RESULT_MESH_COUNT 128
+
+typedef struct {
+
+  struct {
+    size_t vertex_count;
+    size_t mesh_count;
+  } stats;
+
+  struct {
+    Mesh *entries[LOADER_GLTF_RESULT_MESH_COUNT];
+    size_t length;
+  } meshes;
+
+} LoaderGLTFResult;
+
 typedef struct {
   Scene *scene;
   const char *path;
@@ -34,6 +53,6 @@ typedef struct {
   const cgltf_options *cgltf_options;
 } GLTFLoadDescriptor;
 
-void loader_gltf_load(const GLTFLoadDescriptor *);
+LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *, LoaderGLTFResult *);
 
 #endif

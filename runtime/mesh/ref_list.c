@@ -1,5 +1,6 @@
 #include "ref_list.h"
 #include "core.h"
+#include <stdint.h>
 #include <string.h>
 
 #include "../utils/system.h"
@@ -166,4 +167,13 @@ Mesh *mesh_ref_list_new_entry(MeshRefList *list) {
   return (Mesh *)dyli_new_entry((void *)&list->entries, &list->capacity,
                                 &list->length, sizeof(Mesh *),
                                 "Mesh reference list");
+}
+
+Mesh *mesh_ref_list_find_by_name(const MeshRefList *list, const char *name) {
+
+  for (size_t i = 0; i < list->length; i++)
+    if (strcmp(list->entries[i]->name, name) == 0)
+      return list->entries[i];
+
+  return NULL;
 }

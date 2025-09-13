@@ -135,6 +135,9 @@ void mesh_shader_texture_update_environment(Mesh *mesh,
                                TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
 }
 
+/**
+   Link one mesh texture to a reflection probe.
+ */
 void mesh_shader_texture_bind_probe(Mesh *mesh,
                                     const ProbeReflectionPlane *plane,
                                     SSBOManager *ssbo) {
@@ -142,12 +145,13 @@ void mesh_shader_texture_bind_probe(Mesh *mesh,
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
   const Pipeline *pipeline = shader_pipeline(shader);
 
-    shader_update_uniform_buffer(
-        shader, pipeline->bindings.probe->group,
-        pipeline->bindings.probe->reflection_plane,
-        ssbo_buffer_handle(ssbo, SSBOType_ProbePlaneReflection),
-        plane->ssbo_slot[ProbeReflectionSSBOField_List].id,
-        ShaderBufferLifetime_Release);
+  
+  shader_update_uniform_buffer(
+      shader, pipeline->bindings.probe->group,
+      pipeline->bindings.probe->reflection_plane,
+      ssbo_buffer_handle(ssbo, SSBOType_ProbePlaneReflection),
+      plane->ssbo_slot[ProbeReflectionSSBOField_List].id,
+      ShaderBufferLifetime_Release);
 
   {
     MeshUniform *uniform = mesh_uniform(mesh);

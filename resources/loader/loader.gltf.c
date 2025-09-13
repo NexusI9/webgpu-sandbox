@@ -28,8 +28,10 @@ static void loader_gltf_add_vertex_attribute(VertexAttribute *, float *, size_t,
 static void loader_gltf_init_vertex_lists(VertexAttribute *, VertexList *,
                                           size_t);
 // mesh utils
-static void loader_gltf_create_mesh(Scene *, const WGPUDevice, const WGPUQueue,
-                                    cgltf_data *, const LoaderGLTFOptions *);
+static LoaderGLTFStatus loader_gltf_create_mesh(Scene *, const WGPUDevice,
+                                                const WGPUQueue, cgltf_data *,
+                                                const LoaderGLTFOptions *,
+                                                LoaderGLTFResult *);
 static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
 
 // shader utils
@@ -42,7 +44,8 @@ static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
                                                     int *, int *,
                                                     TextureResolution);
 
-void loader_gltf_load(const GLTFLoadDescriptor *desc) {
+LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
+                                  LoaderGLTFResult *dest) {
 
   VERBOSE_IMPORT("GLTF file: %s", desc->path);
 
@@ -58,35 +61,37 @@ void loader_gltf_load(const GLTFLoadDescriptor *desc) {
     result = cgltf_load_buffers(desc->cgltf_options, data, desc->path);
   });
 
+  if (dest)
+    *dest = (LoaderGLTFResult){0};
+
   switch (result) {
 
   case cgltf_result_invalid_json:
     VERBOSE_ERROR("Invalid GLTF JSON.");
-    exit(1);
+    return LoaderGLTFStatus_JSONInvalid;
     break;
 
   case cgltf_result_success:
-    loader_gltf_create_mesh(desc->scene, desc->device, desc->queue, data,
-                            desc->options);
+    return loader_gltf_create_mesh(desc->scene, desc->device, desc->queue, data,
+                                   desc->options, dest);
     break;
 
   case cgltf_result_file_not_found:
     VERBOSE_ERROR("GLTF file not found.");
-    exit(1);
-    break;
+    return LoaderGLTFStatus_FileUnfound;
 
   case cgltf_result_out_of_memory:
     VERBOSE_ERROR("GLTF loading aborted, out of memory.");
-    exit(1);
-    break;
+    return LoaderGLTFStatus_OutOfBoundMemory;
 
   default:
     VERBOSE_ERROR("GLTF loading aborted, unhanded error.");
-    exit(1);
-    break;
+    return LoaderGLTFStatus_UndefError;
   }
 
   cgltf_free(data);
+
+  return LoaderGLTFStatus_Success;
 }
 
 void loader_gltf_add_vertex_attribute(VertexAttribute *vert_attribute,
@@ -164,9 +169,11 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   };
 }
 
-void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
-                             const WGPUQueue queue, cgltf_data *data,
-                             const LoaderGLTFOptions *options) {
+LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
+                                         const WGPUQueue queue,
+                                         cgltf_data *data,
+                                         const LoaderGLTFOptions *options,
+                                         LoaderGLTFResult *result) {
 
   // data->meshes
   for (size_t m = 0; m < data->meshes_count; m++) {
@@ -258,8 +265,8 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
             accessor, vert_list.attributes[type_vertex_map[type].type],
             type_vertex_map[type].dimension);
 
-	// DELETEME
-        //print_list_float(vert_list.attributes[type_vertex_map[type].type],
+        // DELETEME
+        // print_list_float(vert_list.attributes[type_vertex_map[type].type],
         //                 vert_list.count, type_vertex_map[type].dimension);
 
         // interleave vertex data ( create pattern pos / norm / tan / uv...)
@@ -329,8 +336,20 @@ void loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       loader_gltf_mesh_position(scene_mesh, gl_mesh.name, data);
 
       scene_add_mesh(scene, target_mesh, NULL);
+
+      // update stats
+      if (result) {
+        result->stats.mesh_count++;
+        result->stats.vertex_count +=
+            target_mesh->topology.base.attribute.length / VERTEX_STRIDE;
+
+        if (result->meshes.length < LOADER_GLTF_RESULT_MESH_COUNT)
+          result->meshes.entries[result->meshes.length++] = target_mesh;
+      }
     }
   }
+
+  return LoaderGLTFStatus_Success;
 }
 
 /**

@@ -23,6 +23,7 @@ DynamicListStatus mesh_ref_list_remove(MeshRefList *, Mesh *);
 DynamicListStatus mesh_ref_list_remove_at_index(MeshRefList *, size_t);
 void mesh_ref_list_empty(MeshRefList *);
 void mesh_ref_list_free(MeshRefList *);
+Mesh *mesh_ref_list_find_by_name(const MeshRefList *, const char *);
 
 // transferts
 MeshStatus mesh_ref_list_transfert(const MeshRefList *, MeshRefList *,

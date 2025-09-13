@@ -22,6 +22,7 @@ typedef struct {
   Camera const *ref_camera;
   AABB boundbox;
   uint32_t texture_layer;
+  //RenderPassDrawList *draw_list;
 } ProbeReflectionPlane;
 
 typedef struct {
@@ -44,7 +45,6 @@ typedef struct {
   size_t capacity;
   size_t length;
   RenderPass pass;
-  RenderPassDrawList unfiltered_draw_list;
 } ProbeReflectionPlaneList;
 
 typedef struct {
