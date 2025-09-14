@@ -16,10 +16,6 @@ void scene_selection_init_filters(Scene *scene);
  */
 void scene_selection_init(Scene *scene) {
 
-  // init selection list
-  mesh_ref_list_create(scene_pipeline(scene, ScenePipeline_Fixed_Selection),
-                       SCENE_MESH_LIST_DEFAULT_CAPACITY);
-
   // configure editor selections list (fixed)
   scene_selection_init_filters(scene);
 

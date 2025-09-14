@@ -1,5 +1,6 @@
 #include "show.h"
 #include "core.h"
+#include "renderer/render_pass/core.h"
 
 /**
    Show the mesh by pushing it to the pipeline ref list
@@ -7,12 +8,9 @@
 SceneStatus scene_show_mesh(Scene *scene, Mesh *mesh,
                             const ScenePipeline pipeline) {
 
-  // prevent duplicate
-  if (mesh_ref_list_find(scene_pipeline(scene, pipeline), mesh, NULL) != NULL)
-    return SceneStatus_MeshAlreadyExists;
-
-  if (mesh_ref_list_insert(scene_pipeline(scene, pipeline), mesh) == NULL)
-    return SceneStatus_MeshInsertFail;
+  render_pass_list_draw_list_enable_mesh(
+      &scene->renderer.draw.pass[scene->renderer.draw.mode], mesh,
+      scene_pipeline(scene, pipeline));
 
   return SceneStatus_Success;
 }
@@ -22,8 +20,10 @@ SceneStatus scene_show_mesh(Scene *scene, Mesh *mesh,
  */
 SceneStatus scene_hide_mesh(Scene *scene, Mesh *mesh,
                             const ScenePipeline pipeline) {
-  DynamicListStatus remove =
-      mesh_ref_list_remove(scene_pipeline(scene, pipeline), mesh);
+
+  render_pass_list_draw_list_disable_mesh(
+      &scene->renderer.draw.pass[scene->renderer.draw.mode], mesh,
+      scene_pipeline(scene, pipeline));
 
   return SceneStatus_Success;
 }
@@ -31,26 +31,19 @@ SceneStatus scene_hide_mesh(Scene *scene, Mesh *mesh,
 SceneStatus scene_show_mesh_ref_list(Scene *scene, MeshRefList *list,
                                      const ScenePipeline pipeline) {
 
-  SceneStatus status = SceneStatus_Success;
+  render_pass_list_draw_list_enable_mesh_ref_list(
+      &scene->renderer.draw.pass[scene->renderer.draw.mode], list,
+      scene_pipeline(scene, pipeline));
 
-  for (size_t i = 0; i < list->length; i++) {
-    SceneStatus show = scene_show_mesh(scene, list->entries[i], pipeline);
-    if (show != SceneStatus_Success)
-      status = show;
-  }
-
-  return status;
+  return SceneStatus_Success;
 }
 
 SceneStatus scene_hide_mesh_ref_list(Scene *scene, MeshRefList *list,
                                      const ScenePipeline pipeline) {
-  SceneStatus status = SceneStatus_Success;
 
-  for (size_t i = 0; i < list->length; i++) {
-    SceneStatus show = scene_hide_mesh(scene, list->entries[i], pipeline);
-    if (show != SceneStatus_Success)
-      status = show;
-  }
+  render_pass_list_draw_list_enable_mesh_ref_list(
+      &scene->renderer.draw.pass[scene->renderer.draw.mode], list,
+      scene_pipeline(scene, pipeline));
 
-  return status;
+  return SceneStatus_Success;
 }

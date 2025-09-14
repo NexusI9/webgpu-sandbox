@@ -174,7 +174,6 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-
     seo_light_spot_create(seo_light, new_light, &seo_desc);
   }
 
@@ -578,16 +577,16 @@ void scene_render_pass_draw_list_enable_mesh(
     Scene *scene, const MeshRefList *pipeline_mesh_list, Mesh *mesh) {
 
   for (SceneRendererDrawMode i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
-    render_pass_list_draw_list_enable_mesh(&scene->renderer.draw.pass[i],
-                                           pipeline_mesh_list, mesh);
-  render_pass_draw_list_enable_mesh(&scene->probes_reflection.pass,
-                                    pipeline_mesh_list, mesh);
-  render_pass_draw_list_enable_mesh(&scene->planes_reflection.pass,
-                                    pipeline_mesh_list, mesh);
-  render_pass_draw_list_enable_mesh(&scene->lights.point.shadow.pass,
-                                    pipeline_mesh_list, mesh);
-  render_pass_draw_list_enable_mesh(&scene->lights.spot.shadow.pass,
-                                    pipeline_mesh_list, mesh);
+    render_pass_list_draw_list_enable_mesh(&scene->renderer.draw.pass[i], mesh,
+                                           pipeline_mesh_list);
+  render_pass_draw_list_enable_mesh(&scene->probes_reflection.pass, mesh,
+                                    pipeline_mesh_list);
+  render_pass_draw_list_enable_mesh(&scene->planes_reflection.pass, mesh,
+                                    pipeline_mesh_list);
+  render_pass_draw_list_enable_mesh(&scene->lights.point.shadow.pass, mesh,
+                                    pipeline_mesh_list);
+  render_pass_draw_list_enable_mesh(&scene->lights.spot.shadow.pass, mesh,
+                                    pipeline_mesh_list);
 }
 
 /**

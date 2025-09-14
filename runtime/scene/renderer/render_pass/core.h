@@ -173,17 +173,19 @@ void render_pass_list_insert_pass(RenderPassList *,
                                   const RenderPassListInsert *);
 
 RenderPassStatus render_pass_list_draw_list_enable_mesh(RenderPassList *,
-                                                        const MeshRefList *,
-                                                        Mesh *);
-RenderPassStatus render_pass_list_draw_list_disable_mesh(RenderPassList *,
-                                                         const MeshRefList *,
-                                                         Mesh *);
+                                                        Mesh *,
+                                                        const MeshRefList *);
 
-RenderPassStatus render_pass_list_draw_list_enable_mesh_ref_list(
-    RenderPassList *, const MeshRefList *, MeshRefList *);
+RenderPassStatus render_pass_list_draw_list_disable_mesh(RenderPassList *,
+                                                         Mesh *,
+                                                         const MeshRefList *);
+
+RenderPassStatus
+render_pass_list_draw_list_enable_mesh_ref_list(RenderPassList *, MeshRefList *,
+                                                const MeshRefList *);
 
 RenderPassStatus render_pass_list_draw_list_disable_mesh_ref_list(
-    RenderPassList *, const MeshRefList *, MeshRefList *);
+    RenderPassList *, MeshRefList *, const MeshRefList *);
 
 RenderPassStatus render_pass_list_draw_list_enable_all(RenderPassList *);
 RenderPassStatus render_pass_list_draw_list_disable_all(RenderPassList *);
@@ -208,21 +210,21 @@ StaticListStatus render_pass_view_depth_remove(RenderPass *, WGPUTextureView);
 WGPUTextureView render_pass_view_color(RenderPass *, size_t);
 WGPUTextureView render_pass_view_depth(RenderPass *, size_t);
 
-RenderPassStatus render_pass_draw_list_enable_mesh(RenderPass *,
-                                                   const MeshRefList *, Mesh *);
-RenderPassStatus
-render_pass_draw_list_disable_mesh(RenderPass *, const MeshRefList *, Mesh *);
+RenderPassStatus render_pass_draw_list_enable_mesh(RenderPass *, Mesh *,
+                                                   const MeshRefList *);
 
-RenderPassStatus render_pass_draw_list_enable_mesh_ref_list(RenderPass *,
-                                                            const MeshRefList *,
-                                                            MeshRefList *);
+RenderPassStatus render_pass_draw_list_disable_mesh(RenderPass *, Mesh *,
+                                                    const MeshRefList *);
+
 RenderPassStatus
-render_pass_draw_list_disable_mesh_ref_list(RenderPass *, const MeshRefList *,
-                                            MeshRefList *);
+render_pass_draw_list_enable_mesh_ref_list(RenderPass *, MeshRefList *,
+                                           const MeshRefList *);
+RenderPassStatus
+render_pass_draw_list_disable_mesh_ref_list(RenderPass *, MeshRefList *,
+                                            const MeshRefList *);
 
 RenderPassDrawLayout *
 render_pass_find_draw_layout_from_mesh(RenderPassDrawList *, const Mesh *);
-
 
 RenderPassStatus render_pass_draw_list_enable_all(RenderPass *);
 RenderPassStatus render_pass_draw_list_disable_all(RenderPass *);

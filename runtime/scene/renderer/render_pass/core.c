@@ -340,9 +340,8 @@ RenderPassDrawLayout *render_pass_find_draw_layout_from_mesh_ref_list(
    The caveats to this double layer list is that we need to make sure to sync
    the draw list when we add or remove mesh from the scene.
  */
-RenderPassStatus render_pass_draw_list_enable_mesh(RenderPass *pass,
-                                                   const MeshRefList *reflist,
-                                                   Mesh *mesh) {
+RenderPassStatus render_pass_draw_list_enable_mesh(RenderPass *pass, Mesh *mesh,
+                                                   const MeshRefList *reflist) {
 
   RenderPassDrawLayout *target_layout = NULL;
   {
@@ -366,9 +365,10 @@ RenderPassStatus render_pass_draw_list_enable_mesh(RenderPass *pass,
   return RenderPassStatus_Success;
 }
 
-RenderPassStatus render_pass_draw_list_disable_mesh(RenderPass *pass,
-                                                    const MeshRefList *reflist,
-                                                    Mesh *mesh) {
+RenderPassStatus
+render_pass_draw_list_disable_mesh(RenderPass *pass, Mesh *mesh,
+                                   const MeshRefList *reflist) {
+
   RenderPassDrawLayout *target_layout = NULL;
   {
     if (reflist != NULL)
@@ -392,59 +392,60 @@ RenderPassStatus render_pass_draw_list_disable_mesh(RenderPass *pass,
 }
 
 RenderPassStatus
-render_pass_list_draw_list_enable_mesh(RenderPassList *list,
-                                       const MeshRefList *reflist, Mesh *mesh) {
+render_pass_list_draw_list_enable_mesh(RenderPassList *list, Mesh *mesh,
+                                       const MeshRefList *reflist) {
 
   for (uint8_t i = 0; i < list->length; i++)
-    render_pass_draw_list_enable_mesh(&list->passes[i], reflist, mesh);
+    render_pass_draw_list_enable_mesh(&list->passes[i], mesh, reflist);
 
   return RenderPassStatus_Success;
 }
 
-RenderPassStatus render_pass_list_draw_list_disable_mesh(
-    RenderPassList *list, const MeshRefList *reflist, Mesh *mesh) {
+RenderPassStatus
+render_pass_list_draw_list_disable_mesh(RenderPassList *list, Mesh *mesh,
+                                        const MeshRefList *reflist) {
   for (uint8_t i = 0; i < list->length; i++)
-    render_pass_draw_list_disable_mesh(&list->passes[i], reflist, mesh);
+    render_pass_draw_list_disable_mesh(&list->passes[i], mesh, reflist);
 
   return RenderPassStatus_Success;
 }
 
 RenderPassStatus render_pass_draw_list_enable_mesh_ref_list(
-    RenderPass *pass, const MeshRefList *reflist, MeshRefList *meshes) {
+    RenderPass *pass, MeshRefList *meshes, const MeshRefList *reflist) {
 
   for (size_t i = 0; i < meshes->length; i++)
-    render_pass_draw_list_enable_mesh(pass, reflist, meshes->entries[i]);
+    render_pass_draw_list_enable_mesh(pass, meshes->entries[i], reflist);
 
   return RenderPassStatus_Success;
 }
 
 RenderPassStatus render_pass_draw_list_disable_mesh_ref_list(
-    RenderPass *pass, const MeshRefList *reflist, MeshRefList *meshes) {
+    RenderPass *pass, MeshRefList *meshes, const MeshRefList *reflist) {
 
   for (size_t i = 0; i < meshes->length; i++)
-    render_pass_draw_list_disable_mesh(pass, reflist, meshes->entries[i]);
+    render_pass_draw_list_disable_mesh(pass, meshes->entries[i], reflist);
 
   return RenderPassStatus_Success;
 }
 
 RenderPassStatus render_pass_list_draw_list_enable_mesh_ref_list(
-    RenderPassList *list, const MeshRefList *reflist, MeshRefList *meshes) {
+    RenderPassList *list, MeshRefList *meshes, const MeshRefList *reflist) {
 
   for (uint8_t i = 0; i < list->length; i++)
     for (size_t j = 0; j < meshes->length; j++)
-      render_pass_draw_list_enable_mesh(&list->passes[i], reflist,
-                                        meshes->entries[j]);
+      render_pass_draw_list_enable_mesh(&list->passes[i], meshes->entries[j],
+                                        reflist);
 
   return RenderPassStatus_Success;
 }
 
 RenderPassStatus render_pass_list_draw_list_disable_mesh_ref_list(
-    RenderPassList *list, const MeshRefList *reflist, MeshRefList *meshes) {
+    RenderPassList *list, MeshRefList *meshes, const MeshRefList *reflist) {
 
   for (uint8_t i = 0; i < list->length; i++)
     for (size_t j = 0; j < meshes->length; j++)
-      render_pass_draw_list_enable_mesh(&list->passes[i], reflist,
-                                        meshes->entries[j]);
+      render_pass_draw_list_enable_mesh(&list->passes[i], meshes->entries[j],
+                                        reflist);
 
   return RenderPassStatus_Success;
 }

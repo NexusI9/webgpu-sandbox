@@ -89,9 +89,9 @@ void probe_reflection_plane_list_draw_callback(void *data) {
 
       ProbeReflectionPlane *probe = &list->entries[i];
 
-      // prevent self reflection
-      render_pass_draw_list_disable_mesh_ref_list(&list->pass, NULL,
-                                                  &probe->excluded_meshes);
+      // prevent self reflection by disabling probe meshes from the render pass
+      render_pass_draw_list_disable_mesh_ref_list(
+          &list->pass, &probe->excluded_meshes, NULL);
 
       // define target layer
       WGPUTextureView target_color = wgpuTextureCreateView(
