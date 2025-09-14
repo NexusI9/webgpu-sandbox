@@ -193,11 +193,11 @@ void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *seo) {
       if (intersect) {
         mesh_uniform_set_probe_reflection_plane(pipeline_mesh, ssbo);
         render_pass_draw_list_disable_mesh(&seo->scene->planes_reflection.pass,
-                                           pipeline, pipeline_mesh);
+                                           pipeline_mesh, pipeline);
       } else {
         mesh_uniform_clear_probe_reflection_plane(pipeline_mesh, ssbo);
         render_pass_draw_list_enable_mesh(&seo->scene->planes_reflection.pass,
-                                          pipeline, pipeline_mesh);
+                                          pipeline_mesh, pipeline);
       }
     }
   }

@@ -63,6 +63,7 @@ TEXTURE_FILES := $(shell find ./resources/assets/texture \( -name "*.png" -o -na
 DEV_FLAGS := \
 	-fsanitize=address \
 	-fsanitize=undefined \
+	-ftime-trace \
 	-g \
 	-sALLOW_MEMORY_GROWTH=1 \
 	-sMAXIMUM_MEMORY=1073741824 \
