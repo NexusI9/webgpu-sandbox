@@ -770,7 +770,6 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
   // plane reflection
   var plane_reflection : vec4<f32> = vec4<f32>(0.0f);
-  let viewDir = normalize(vFrag - camera.position.xyz);
 
   for (var i = 0u; i < uMesh.probe_reflection_plane_count; i++) {
 
@@ -780,22 +779,21 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
     let reflUV = compute_reflection_uv(vFrag, uPlaneReflection.view);
 
-    R = reflect(viewDir, normalize(uPlaneReflection.normal));
-
     plane_reflection = textureSampleLevel(
         probe_reflection_plane_texture, probe_reflection_plane_sampler, reflUV,
         uPlaneReflection.texture_layer, 2.0f);
 
     plane_reflection.a *= align;
-    // plane_reflection.a /= 1.3f;
+    plane_reflection.a /= 1.3f;
   }
-
-  let reflection_composite =
-      mix(diffuseIBL, plane_reflection.rgb, plane_reflection.a);
 
   let specularIBL =
       textureSampleLevel(skybox_texture, skybox_sampler, R, lod).rgb * F;
-  let IBL = kD * reflection_composite + specularIBL;
+
+  let specular_composite =
+      mix(specularIBL, plane_reflection.rgb, plane_reflection.a);
+
+  let IBL = kD * diffuseIBL + specular_composite;
 
   // shadow map computation
   let point_shadow = point_shadow_factor(vFrag, camera.position.xyz);
@@ -812,7 +810,6 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
   let out_color = mix(combined, ubo.fog.color, fog_k);
 
-  return vec4<f32>(plane_reflection);
-  // return vec4<f32>(uPlaneReflection.scale, 1.0f);
-  //   return out_color;
+  // return vec4<f32>();
+  return out_color;
 }

@@ -89,12 +89,6 @@ void probe_reflection_plane_list_draw_callback(void *data) {
 
       ProbeReflectionPlane *probe = &list->entries[i];
 
-      // DEBUG
-      if (y++ < 20) {
-        printf("[%lu] probe: %u\n", i, probe->texture_layer);
-        printf("excluded mesh: %lu\n", probe->excluded_meshes.length);
-      }
-
       // prevent self reflection
       render_pass_draw_list_disable_mesh_ref_list(&list->pass, NULL,
                                                   &probe->excluded_meshes);

@@ -546,6 +546,8 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   // add mesh pointer to the right pipeline
   mesh_ref_list_insert(pipeline_mesh_list, mesh);
 
+  scene_render_pass_draw_list_enable_mesh(scene, pipeline_mesh_list, mesh);
+
   // Update Shadow maps if added to Dynamic_Lit pipeline
   if (pipeline == ScenePipeline_Dynamic_LitShadow &&
       scene->renderer.draw.mode == SceneRendererDrawMode_Texture) {
@@ -567,8 +569,6 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
     scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
                              SceneSelectionType_Mesh);
   }
-
-  scene_render_pass_draw_list_enable_mesh(scene, pipeline_mesh_list, mesh);
 }
 
 /**
