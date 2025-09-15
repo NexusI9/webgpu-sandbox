@@ -63,7 +63,6 @@ TEXTURE_FILES := $(shell find ./resources/assets/texture \( -name "*.png" -o -na
 DEV_FLAGS := \
 	-fsanitize=address \
 	-fsanitize=undefined \
-	-ftime-trace \
 	-g \
 	-sALLOW_MEMORY_GROWTH=1 \
 	-sMAXIMUM_MEMORY=1073741824 \
@@ -93,7 +92,7 @@ clean_shader:
 	@echo "done"
 
 wasm:
-	@emcc $(DEV_FLAGS) $(MACROS) $(C_FILES) -o $(OUTPUT) \
+	emcc $(DEV_FLAGS) $(MACROS) $(C_FILES) -o $(OUTPUT) \
 		-I include \
 		-s NO_EXIT_RUNTIME=1 \
 		-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
