@@ -17,12 +17,12 @@ void example_skybox(Scene *scene) {
           .resolution = TextureResolution_512,
           .path =
               {
-                  .right = "./resources/assets/texture/skybox/lake/right.png",
-                  .left = "./resources/assets/texture/skybox/lake/left.png",
-                  .top = "./resources/assets/texture/skybox/lake/top.png",
-                  .bottom = "./resources/assets/texture/skybox/lake/bottom.png",
-                  .front = "./resources/assets/texture/skybox/lake/front.png",
-                  .back = "./resources/assets/texture/skybox/lake/back.png",
+                  .right = "./resources/assets/texture/skybox/lake/right.jpg",
+                  .left = "./resources/assets/texture/skybox/lake/left.jpg",
+                  .top = "./resources/assets/texture/skybox/lake/top.jpg",
+                  .bottom = "./resources/assets/texture/skybox/lake/bottom.jpg",
+                  .front = "./resources/assets/texture/skybox/lake/front.jpg",
+                  .back = "./resources/assets/texture/skybox/lake/back.jpg",
               },
       });
 }
