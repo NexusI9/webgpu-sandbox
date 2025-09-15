@@ -4,11 +4,6 @@
 #include <emscripten/html5.h>
 #include <stdbool.h>
 
-#include "../../raycast/raycast.h"
-#include "../../viewport/viewport.h"
-#include "../core.h"
-#include "./hit_list.h"
-
 bool camera_raycast_event_callback_center(int, const EmscriptenMouseEvent *,
                                           void *);
 bool camera_raycast_event_callback_mouse(int, const EmscriptenMouseEvent *,

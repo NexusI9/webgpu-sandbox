@@ -5,7 +5,7 @@
 #include <webgpu/webgpu.h>
 
 #include "core.h"
-#include "../runtime/pipeline/core.h"
+#include "runtime/pipeline/core.h"
 
 typedef uint16_t bind_index;
 typedef uint8_t bind_group_index;

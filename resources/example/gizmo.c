@@ -3,15 +3,15 @@
 #include <cglm/types.h>
 #include <stddef.h>
 
-#include "../resources/loader/loader.mbin.h"
-#include "../backend/std_pipeline/core.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/mesh/shader/core.h"
-#include "../runtime/mesh/transform.h"
-#include "../runtime/pipeline/core.h"
-#include "../runtime/primitive/core.h"
-#include "../runtime/shader/core.h"
-#include "../runtime/scene/add.h"
+#include "resources/loader/loader.mbin.h"
+#include "backend/std_pipeline/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/shader/core.h"
+#include "runtime/mesh/transform.h"
+#include "runtime/pipeline/core.h"
+#include "runtime/primitive/core.h"
+#include "runtime/shader/core.h"
+#include "runtime/scene/add.h"
 
 void example_gizmo(Scene *scene) {
 

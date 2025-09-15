@@ -2,13 +2,13 @@
 
 #include <stddef.h>
 
-#include "../runtime/mesh/transform.h"
-#include "../runtime/scene/add.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/scene/editor/object/builder/billboard.h"
-#include "../runtime/scene/editor/object/list/list.h"
-#include "../runtime/scene/editor/selection/gizmo/core.h"
-#include "../runtime/light/core.h"
+#include "runtime/mesh/transform.h"
+#include "runtime/scene/add.h"
+#include "runtime/scene/core.h"
+#include "runtime/scene/editor/object/builder/billboard.h"
+#include "runtime/scene/editor/object/list/list.h"
+#include "runtime/scene/editor/selection/gizmo/core.h"
+#include "runtime/light/core.h"
 
 /**
    Insert Ambient light gizmo mesh to the list

@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 #include "transform.h"
-#include "../utils/vector/core.h"
+#include "utils/vector/core.h"
 
 /**
    Apply scale to mesh transform matrix

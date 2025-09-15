@@ -8,9 +8,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../vertex/vertex.h"
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/vertex.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/attribute.h"
 
 // Axis-Aligned Bounding Box
 typedef struct {

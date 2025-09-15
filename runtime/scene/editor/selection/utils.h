@@ -1,8 +1,8 @@
 #ifndef _SCENE_EDITOR_SELECTION_UTILS_H_
 #define _SCENE_EDITOR_SELECTION_UTILS_H_
 
-#include "../../core.h"
-#include "../backend/ssbo.h"
+#include "runtime/scene/core.h"
+#include "backend/ssbo.h"
 #include "gizmo/core.h"
 
 /* Gizmo utils */

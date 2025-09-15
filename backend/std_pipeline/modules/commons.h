@@ -1,10 +1,10 @@
 #ifndef _STD_PIPELINE_MODULES_COMMONS_H_
 #define _STD_PIPELINE_MODULES_COMMONS_H_
 
-#include "../runtime/camera/camera.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/viewport/viewport.h"
-#include "../utils/projection.h"
+#include "runtime/camera/camera.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/viewport/viewport.h"
+#include "utils/projection.h"
 
 #include "webgpu/webgpu.h"
 

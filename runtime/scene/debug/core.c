@@ -1,6 +1,6 @@
 #include "core.h"
 
-#include "../runtime/mesh/ref_list.h"
+#include "runtime/mesh/ref_list.h"
 
 void scene_debug_init(SceneDebug *debug, const SceneDebugDescriptor *desc) {
 

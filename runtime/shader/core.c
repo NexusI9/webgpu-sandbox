@@ -6,7 +6,7 @@
 
 #include "string.h"
 #include "bindgroup.h"
-#include "../runtime/pipeline/core.h"
+#include "runtime/pipeline/core.h"
 
 /*
 

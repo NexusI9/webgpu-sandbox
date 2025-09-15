@@ -4,13 +4,13 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../backend/buffer.h"
-#include "../utils/math.h"
+#include "backend/buffer.h"
+#include "utils/math.h"
 #include "anchor.h"
 #include "string.h"
-#include "../runtime/geometry/edge/core.h"
-#include "../runtime/geometry/line/core.h"
-#include "../runtime/geometry/vertex/core.h"
+#include "runtime/geometry/edge/core.h"
+#include "runtime/geometry/line/core.h"
+#include "runtime/geometry/vertex/core.h"
 
 static bool mesh_topology_wireframe_is_face(VertexIndex *);
 

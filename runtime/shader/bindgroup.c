@@ -7,10 +7,10 @@
 #include "add.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
-#include "../utils/system.h"
-#include "../backend/std_texture/core.h"
-#include "../utils/dyli.h"
-#include "../runtime/pipeline/core.h"
+#include "utils/system.h"
+#include "backend/std_texture/core.h"
+#include "utils/dyli.h"
+#include "runtime/pipeline/core.h"
 
 static inline void shader_convert_uniforms(ShaderBindGroup *,
                                            WGPUBindGroupEntry *, bind_index *);

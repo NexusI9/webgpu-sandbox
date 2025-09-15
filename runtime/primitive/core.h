@@ -3,11 +3,11 @@
 
 #include <webgpu/webgpu.h>
 
-#include "../geometry/vertex/vertex.h"
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/index.h"
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/vertex.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/index.h"
 
 typedef struct {
 

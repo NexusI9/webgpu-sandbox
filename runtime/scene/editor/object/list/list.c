@@ -1,7 +1,7 @@
 #include "list.h"
 
-#include "../runtime/scene/core.h"
-#include "../utils/dyli.h"
+#include "runtime/scene/core.h"
+#include "utils/dyli.h"
 
 DynamicListStatus seo_list_create(SceneEditorObjectList *list,
                                   size_t capacity) {

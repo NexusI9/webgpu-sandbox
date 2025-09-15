@@ -3,13 +3,13 @@
 #include <stddef.h>
 #include <webgpu/webgpu.h>
 
-#include "../backend/ubo.h"
-#include "../runtime/camera/camera.h"
-#include "../runtime/light/light.h"
-#include "../runtime/probe/reflection/plane.h"
+#include "backend/ubo.h"
+#include "runtime/camera/camera.h"
+#include "runtime/light/light.h"
+#include "runtime/probe/reflection/plane.h"
 #include "core.h"
-#include "../backend/ssbo.h"
-#include "../runtime/mesh/core.h"
+#include "backend/ssbo.h"
+#include "runtime/mesh/core.h"
 
 // first bind
 void mesh_shader_texture_bind_shadow_maps(Mesh *, WGPUTextureView,

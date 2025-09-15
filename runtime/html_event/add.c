@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "../utils/system.h"
+#include "utils/system.h"
 #include "core.h"
 #include "listener.h"
 

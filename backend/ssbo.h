@@ -8,7 +8,7 @@
 #include <webgpu/webgpu.h>
 #include <stdint.h>
 
-#include "../utils/stli.h"
+#include "utils/stli.h"
 
 #define SSBO_TYPE_COUNT 10
 #define SSBO_CAPACITY 128

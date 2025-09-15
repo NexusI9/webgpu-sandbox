@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "../runtime/scene/core.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/scene/core.h"
+#include "runtime/mesh/core.h"
 
 typedef enum {
   SceneSelectionFilterStatus_Success,

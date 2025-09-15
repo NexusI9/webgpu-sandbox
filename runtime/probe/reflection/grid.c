@@ -8,12 +8,12 @@
 #include "core.h"
 #include "probe.h"
 #include "webgpu/webgpu.h"
-#include "../backend/std_texture/core.h"
-#include "../runtime/scene/debug/view.h"
-#include "../runtime/scene/renderer/render_pass/draw.h"
-#include "../utils/system.h"
-#include "../runtime/scene/renderer/render_pass/core.h"
-#include "../utils/dyli.h"
+#include "backend/std_texture/core.h"
+#include "runtime/scene/debug/view.h"
+#include "runtime/scene/renderer/render_pass/draw.h"
+#include "utils/system.h"
+#include "runtime/scene/renderer/render_pass/core.h"
+#include "utils/dyli.h"
 
 static inline float probe_reflection_point(size_t x, uint16_t count,
                                            float size);

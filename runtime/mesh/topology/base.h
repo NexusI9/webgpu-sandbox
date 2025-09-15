@@ -3,15 +3,15 @@
 #include <cglm/types.h>
 #include <webgpu/webgpu.h>
 
-#include "../../geometry/vertex/vertex.h"
+#include "runtime/geometry/vertex/vertex.h"
 #include "anchor.h"
 #include "core.h"
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/group.h"
-#include "../runtime/geometry/vertex/index.h"
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/group.h"
-#include "../runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/group.h"
+#include "runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/group.h"
+#include "runtime/geometry/vertex/index.h"
 
 typedef enum {
   MeshTopologyBaseStatus_Success,

@@ -3,13 +3,13 @@
 
 #include <webgpu/webgpu.h>
 
-#include "../runtime/camera/camera.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/viewport/viewport.h"
-#include "../utils/color.h"
-#include "../runtime/camera/core.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/viewport/core.h"
+#include "runtime/camera/camera.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/viewport/viewport.h"
+#include "utils/color.h"
+#include "runtime/camera/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/viewport/core.h"
 
 typedef struct {
   color color;

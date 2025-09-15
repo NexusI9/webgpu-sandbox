@@ -7,9 +7,9 @@
 #include "./utils.h"
 #include "core.h"
 #include "hit_list.h"
-#include "../runtime/geometry/aabb/aabb.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/raycast/core.h"
+#include "runtime/geometry/aabb/aabb.h"
+#include "runtime/mesh/core.h"
+#include "runtime/raycast/core.h"
 
 /**
    ▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖     ▗▄▄▖ ▗▄▖ ▗▖   ▗▖   ▗▄▄▖  ▗▄▖  ▗▄▄▖▗▖ ▗▖ ▗▄▄▖

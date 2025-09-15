@@ -8,8 +8,8 @@
 #include <webgpu/webgpu.h>
 #include <cglm/types.h>
 
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/mesh/core.h"
 
 typedef struct {
   vec3 *position;

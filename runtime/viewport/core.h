@@ -5,8 +5,8 @@
 #include <cglm/types.h>
 #include <stdint.h>
 
-#include "../backend/clock.h"
-#include "../backend/ssbo.h"
+#include "backend/clock.h"
+#include "backend/ssbo.h"
 
 typedef struct {
   mat4 projection;

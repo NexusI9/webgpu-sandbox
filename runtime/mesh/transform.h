@@ -3,9 +3,9 @@
 
 #include <cglm/types.h>
 
-#include "../utils/vector/vector.h"
+#include "utils/vector/vector.h"
 #include "core.h"
-#include "../utils/vector/core.h"
+#include "utils/vector/core.h"
 
 typedef void (*mesh_transform_axis_callback)(Mesh *, vec3, const Axis);
 typedef void (*mesh_transform_uni_axis_callback)(Mesh *, vec3);

@@ -6,19 +6,19 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "../runtime/camera/camera.h"
-#include "../runtime/geometry/triangle/triangle.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/scene/debug/debug.h"
-#include "../runtime/texture/texture.h"
-#include "../runtime/viewport/viewport.h"
-#include "../utils/color.h"
+#include "runtime/camera/camera.h"
+#include "runtime/geometry/triangle/triangle.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/scene/debug/debug.h"
+#include "runtime/texture/texture.h"
+#include "runtime/viewport/viewport.h"
+#include "utils/color.h"
 #include "webgpu/webgpu.h"
-#include "../runtime/geometry/triangle/core.h"
-#include "../runtime/geometry/vertex/core.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/scene/debug/core.h"
-#include "../runtime/texture/core.h"
+#include "runtime/geometry/triangle/core.h"
+#include "runtime/geometry/vertex/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/scene/debug/core.h"
+#include "runtime/texture/core.h"
 
 // AO Texture
 #define AO_TEXTURE_RESOLUTION TextureResolution_128

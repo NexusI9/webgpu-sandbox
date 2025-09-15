@@ -2,7 +2,7 @@
 
 #include "core.h"
 #include "transform.h"
-#include "../utils/dyli.h"
+#include "utils/dyli.h"
 
 DynamicListStatus mesh_list_create(MeshList *list, size_t capacity) {
 

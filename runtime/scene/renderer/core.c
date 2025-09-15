@@ -3,19 +3,19 @@
 #include <string.h>
 #include <emscripten/emscripten.h>
 
-#include "../backend/ao_bake/core.h"
-#include "../utils/system.h"
+#include "backend/ao_bake/core.h"
+#include "utils/system.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "webgpu/webgpu.h"
-#include "../backend/clock.h"
-#include "../backend/ssbo.h"
-#include "../backend/std_pipeline/core.h"
-#include "../backend/std_texture/core.h"
-#include "../backend/ubo.h"
-#include "../runtime/html_event/core.h"
-#include "../runtime/input/core.h"
-#include "../runtime/texture/core.h"
+#include "backend/clock.h"
+#include "backend/ssbo.h"
+#include "backend/std_pipeline/core.h"
+#include "backend/std_texture/core.h"
+#include "backend/ubo.h"
+#include "runtime/html_event/core.h"
+#include "runtime/input/core.h"
+#include "runtime/texture/core.h"
 #include "render_pass/draw.h"
 
 static void scene_renderer_resize(SceneRenderer *);

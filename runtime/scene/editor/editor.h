@@ -1,7 +1,7 @@
 #ifndef _SCENE_EDITOR_H_
 #define _SCENE_EDITOR_H_
 
-#include "../core.h"
+#include "runtime/scene/core.h"
 #include "object/list/list.h"
 
 void scene_editor_init(Scene *);

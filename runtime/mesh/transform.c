@@ -8,11 +8,11 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
-#include "../utils/matrix.h"
+#include "utils/matrix.h"
 #include "core.h"
 #include "uniform.h"
 #include "topology/boundbox.h"
-#include "../utils/vector/core.h"
+#include "utils/vector/core.h"
 
 static void mesh_update_model_matrix(Mesh *);
 

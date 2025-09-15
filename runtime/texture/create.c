@@ -2,10 +2,10 @@
 
 #include <stdlib.h>
 
-#include "../../include/stb/stb_image.h"
-#include "../backend/buffer.h"
-#include "../include/stb/stb_image_resize2.h"
-#include "../utils/system.h"
+#include "include/stb/stb_image.h"
+#include "backend/buffer.h"
+#include "include/stb/stb_image_resize2.h"
+#include "utils/system.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
 #include "write.h"

@@ -1,15 +1,15 @@
 #ifndef _CAMERA_RAYCAST_METHOD_H_
 #define _CAMERA_RAYCAST_METHOD_H_
 
-#include "../../raycast/raycast.h"
-#include "../../viewport/viewport.h"
-#include "../core.h"
+#include "runtime/raycast/raycast.h"
+#include "runtime/viewport/viewport.h"
+#include "core.h"
 #include "./callback.h"
 #include "./hit_list.h"
-#include "../runtime/raycast/core.h"
-#include "../runtime/viewport/core.h"
-#include "../runtime/raycast/core.h"
-#include "../runtime/viewport/core.h"
+#include "runtime/raycast/core.h"
+#include "runtime/viewport/core.h"
+#include "runtime/raycast/core.h"
+#include "runtime/viewport/core.h"
 
 typedef void (*camera_raycast_cast_method)(Raycast *, Camera *, Viewport *);
 

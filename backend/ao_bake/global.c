@@ -6,15 +6,15 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
-#include "../utils/system.h"
+#include "utils/system.h"
 #include "./utils.h"
 #include "core.h"
 #include "texture_list.h"
-#include "../runtime/geometry/aabb/aabb.h"
-#include "../runtime/geometry/triangle/core.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/scene/debug/ray.h"
-#include "../runtime/texture/core.h"
+#include "runtime/geometry/aabb/aabb.h"
+#include "runtime/geometry/triangle/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/scene/debug/ray.h"
+#include "runtime/texture/core.h"
 
 /**
    Bake global ambient occlusion to texture, meaning occlusion based on

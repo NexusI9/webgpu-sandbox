@@ -3,11 +3,11 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../../backend/buffer.h"
+#include "backend/buffer.h"
 #include "./utils.h"
 #include "core.h"
 #include "string.h"
-#include "../utils/system.h"
+#include "utils/system.h"
 #include "webgpu/webgpu.h"
 #include "bindgroup.h"
 

@@ -1,11 +1,11 @@
 #ifndef _PIPELINE_LAYOUT_REFLECTION_H_
 #define _PIPELINE_LAYOUT_REFLECTION_H_
 
-#include "../../core.h"
-#include "../runtime/camera/camera.h"
-#include "../runtime/light/uniform.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/viewport/viewport.h"
+#include "runtime/pipeline/pipeline.h"
+#include "runtime/camera/camera.h"
+#include "runtime/light/uniform.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
 #include "../pbr/pbr.h"

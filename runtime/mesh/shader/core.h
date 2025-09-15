@@ -1,12 +1,12 @@
 #ifndef _MESH_SHADER_C_
 #define _MESH_SHADER_C_
 
-#include "../backend/ssbo.h"
-#include "../runtime/camera/camera.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/shader/shader.h"
-#include "../runtime/viewport/viewport.h"
-#include "../runtime/shader/core.h"
+#include "backend/ssbo.h"
+#include "runtime/camera/camera.h"
+#include "runtime/mesh/core.h"
+#include "runtime/shader/shader.h"
+#include "runtime/viewport/viewport.h"
+#include "runtime/shader/core.h"
 
 /* custom */
 MeshStatus mesh_shader_create(Mesh *, const ShaderCreateDescriptor *);

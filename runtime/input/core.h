@@ -6,7 +6,7 @@
 
 #include "./keyrecord.h"
 #include "emscripten/html5.h"
-#include "../backend/registry.h"
+#include "backend/registry.h"
 
 #define INPUT_KEY_FORWARD_FR 90
 #define INPUT_KEY_BACKWARD_FR 83

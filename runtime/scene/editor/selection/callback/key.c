@@ -5,11 +5,11 @@
 
 #include "../core.h"
 #include "../utils.h"
-#include "../runtime/input/core.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/input/keyrecord.h"
-#include "../runtime/scene/core.h"
-#include "../utils/vector/core.h"
+#include "runtime/input/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/input/keyrecord.h"
+#include "runtime/scene/core.h"
+#include "utils/vector/core.h"
 
 const uint8_t seq_count_select = 1;
 const uint8_t seq_count_mode = 3;

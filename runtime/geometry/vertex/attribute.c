@@ -5,8 +5,8 @@
 
 #include "core.h"
 #include "string.h"
-#include "../utils/system.h"
-#include "../utils/vector/core.h"
+#include "utils/system.h"
+#include "utils/vector/core.h"
 
 static void vertex_attribute_replace(VertexAttribute *, float *, VertexAttributeOffset,
                                      size_t);

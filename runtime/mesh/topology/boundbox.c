@@ -3,12 +3,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../backend/buffer.h"
+#include "backend/buffer.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
-#include "../runtime/geometry/line/core.h"
-#include "../runtime/geometry/aabb/aabb.h"
-#include "../runtime/geometry/vertex/core.h"
+#include "runtime/geometry/line/core.h"
+#include "runtime/geometry/aabb/aabb.h"
+#include "runtime/geometry/vertex/core.h"
 
 static void mesh_topology_boundbox_cube(MeshTopologyBoundbox *);
 

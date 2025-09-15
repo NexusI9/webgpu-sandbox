@@ -6,16 +6,16 @@
 #include <stdbool.h>
 #include <sys/types.h>
 
-#include "../backend/clock.h"
-#include "../backend/ssbo.h"
-#include "../backend/ubo.h"
-#include "../runtime/pipeline/pipeline.h"
-#include "../runtime/texture/texture.h"
-#include "../backend/ao_bake/ao_bake.h"
+#include "backend/clock.h"
+#include "backend/ssbo.h"
+#include "backend/ubo.h"
+#include "runtime/pipeline/pipeline.h"
+#include "runtime/texture/texture.h"
+#include "backend/ao_bake/ao_bake.h"
 #include "./render_pass/render_pass.h"
 #include "webgpu/webgpu.h"
-#include "../backend/ao_bake/core.h"
-#include "../runtime/pipeline/core.h"
+#include "backend/ao_bake/core.h"
+#include "runtime/pipeline/core.h"
 #include "render_pass/core.h"
 
 #define SCENE_RENDERER_MAX_HOOK 6

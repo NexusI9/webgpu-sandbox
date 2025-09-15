@@ -2,7 +2,7 @@
 #define _HTML_EVENT_REMOVE_H_
 
 #include "core.h"
-#include "../backend/registry.h"
+#include "backend/registry.h"
 
 // mouse events
 void html_event_remove_mouse_down(reg_id_t);

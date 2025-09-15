@@ -1,7 +1,7 @@
 #ifndef SCENE_ENVIRONMENT_FOG_H_
 #define SCENE_ENVIRONMENT_FOG_H_
 
-#include "../utils/color.h"
+#include "utils/color.h"
 
 typedef struct {
   color color;

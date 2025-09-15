@@ -4,9 +4,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../utils/hash.h"
+#include "utils/hash.h"
 #include "index.h"
-#include "../utils/system.h"
+#include "utils/system.h"
 
 /**
 ▗▖  ▗▖▗▄▄▄▖▗▄▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖     ▗▄▄▖▗▄▄▖  ▗▄▖ ▗▖ ▗▖▗▄▄▖

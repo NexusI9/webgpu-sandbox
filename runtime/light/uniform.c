@@ -3,7 +3,7 @@
 #include <cglm/mat4.h>
 #include <cglm/vec3.h>
 
-#include "../utils/projection.h"
+#include "utils/projection.h"
 #include "core.h"
 
 /* Uniforms */

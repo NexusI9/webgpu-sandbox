@@ -5,8 +5,8 @@
 #include <cglm/ivec2.h>
 #include <stdlib.h>
 
-#include "../utils/system.h"
-#include "../utils/vector/core.h"
+#include "utils/system.h"
+#include "utils/vector/core.h"
 
 static size_t edge_key_hash(EdgeKey key, size_t capacity) {
   /*

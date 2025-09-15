@@ -4,7 +4,7 @@
 #include <cglm/mat4.h>
 #include <float.h>
 
-#include "../runtime/geometry/vertex/core.h"
+#include "runtime/geometry/vertex/core.h"
 
 bool aabb_within_distance(const AABB *a, const AABB *b, const float distance,
                           float *dest) {

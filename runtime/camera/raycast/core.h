@@ -3,22 +3,22 @@
 
 #include <string.h>
 
-#include "../../mesh/mesh.h"
-#include "../../raycast/raycast.h"
-#include "../../viewport/viewport.h"
-#include "../../html_event/html_event.h"
-#include "../../input/input.h"
-#include "../core.h"
-#include "../utils/system.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/camera/core.h"
+#include "runtime/raycast/raycast.h"
+#include "runtime/viewport/viewport.h"
+#include "runtime/html_event/html_event.h"
+#include "runtime/input/input.h"
+#include "utils/system.h"
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
 #include "./hit_list.h"
-#include "../runtime/mesh/ref_list.h"
-#include "../runtime/raycast/core.h"
-#include "../runtime/viewport/core.h"
-#include "../runtime/mesh/ref_list.h"
-#include "../runtime/raycast/core.h"
-#include "../runtime/viewport/core.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/raycast/core.h"
+#include "runtime/viewport/core.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/raycast/core.h"
+#include "runtime/viewport/core.h"
 
 /**
    2 different types of raycast methods:

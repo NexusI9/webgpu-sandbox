@@ -8,9 +8,9 @@
 
 #include "./core.h"
 #include "probe.h"
-#include "../runtime/geometry/aabb/aabb.h"
-#include "../runtime/scene/renderer/render_pass/core.h"
-#include "../utils/dyli.h"
+#include "runtime/geometry/aabb/aabb.h"
+#include "runtime/scene/renderer/render_pass/core.h"
+#include "utils/dyli.h"
 
 #define PROBE_REFLECTION_RESOLUTION 512
 #define PROBE_REFLECTION_GRID_DIMENSION 3

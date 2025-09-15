@@ -1,14 +1,14 @@
 #include "core.h"
 
-#include "../utils/math.h"
-#include "../utils/system.h"
-#include "../runtime/light/core.h"
-#include "../runtime/light/list.h"
-#include "../runtime/mesh/shader/core.h"
-#include "../runtime/pipeline/core.h"
-#include "../runtime/shader/update.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/scene/renderer/render_pass/core.h"
+#include "utils/math.h"
+#include "utils/system.h"
+#include "runtime/light/core.h"
+#include "runtime/light/list.h"
+#include "runtime/mesh/shader/core.h"
+#include "runtime/pipeline/core.h"
+#include "runtime/shader/update.h"
+#include "runtime/mesh/core.h"
+#include "runtime/scene/renderer/render_pass/core.h"
 
 // static DebugView debug_view_light;
 /**

@@ -3,7 +3,7 @@
 #include <cglm/types.h>
 #include <stddef.h>
 
-#include "../utils/dyli.h"
+#include "utils/dyli.h"
 #include "core.h"
 
 #define MESH_REF_LIST_CAPACITY 24

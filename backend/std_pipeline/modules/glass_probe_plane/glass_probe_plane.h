@@ -1,11 +1,11 @@
 #ifndef _PIPELINE_LAYOUT_GLASS_PROBE_PLANE_H_
 #define _PIPELINE_LAYOUT_GLASS_PROBE_PLANE_H_
 
-#include "../../core.h"
-#include "../runtime/camera/camera.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/probe/reflection/plane.h"
-#include "../runtime/viewport/viewport.h"
+#include "runtime/pipeline/pipeline.h"
+#include "runtime/camera/camera.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/probe/reflection/plane.h"
+#include "runtime/viewport/viewport.h"
 
 #include "../glass_probe_grid/glass_probe_grid.h"
 

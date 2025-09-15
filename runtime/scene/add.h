@@ -1,14 +1,14 @@
 #ifndef _SCENE_ADD_H_
 #define _SCENE_ADD_H_
 
-#include "../runtime/probe/probe.h"
+#include "runtime/probe/probe.h"
 #include "core.h"
-#include "../runtime/camera/core.h"
-#include "../runtime/light/core.h"
-#include "../runtime/light/list.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/probe/reflection/grid.h"
-#include "../runtime/probe/reflection/plane.h"
+#include "runtime/camera/core.h"
+#include "runtime/light/core.h"
+#include "runtime/light/list.h"
+#include "runtime/mesh/core.h"
+#include "runtime/probe/reflection/grid.h"
+#include "runtime/probe/reflection/plane.h"
 
 /**
    Key methods to add, remove, hide or show an item in the scene. Below are some

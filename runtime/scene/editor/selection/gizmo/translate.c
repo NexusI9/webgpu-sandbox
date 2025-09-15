@@ -2,7 +2,7 @@
 
 #include "./utils.h"
 #include "core.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/core.h"
 
 void gizmo_position_create(MeshRefList *list, MeshRefList *interactive_list,
                            const GizmoCreateDescriptor *desc) {

@@ -1,7 +1,7 @@
 #include "list.h"
 
 #include "core.h"
-#include "../utils/dyli.h"
+#include "utils/dyli.h"
 
 /**
    Init camera list

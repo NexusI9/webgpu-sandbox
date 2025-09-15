@@ -1,7 +1,7 @@
 #include "target_list.h"
 
-#include "../runtime/scene/core.h"
-#include "../utils/dyli.h"
+#include "runtime/scene/core.h"
+#include "utils/dyli.h"
 
 DynamicListStatus
 scene_selection_target_list_create(SceneSelectionTargetList *list,

@@ -3,7 +3,7 @@
 
 #include <cglm/cglm.h>
 
-#include "../runtime/geometry/vertex/vertex.h"
+#include "runtime/geometry/vertex/vertex.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) < (b) ? (b) : (a))

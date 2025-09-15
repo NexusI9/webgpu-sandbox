@@ -1,5 +1,5 @@
 #include "find.h"
-#include "../utils/system.h"
+#include "utils/system.h"
 #include "core.h"
 
 /**

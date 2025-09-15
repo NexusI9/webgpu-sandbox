@@ -16,10 +16,10 @@
 #include "./modules/solid/solid.h"
 #include "./modules/unlit/unlit.h"
 #include "modules/glass_probe_plane/glass_probe_plane.h"
-#include "../runtime/pipeline/layout.h"
-#include "../runtime/pipeline/set.h"
-#include "../utils/system.h"
-#include "../runtime/pipeline/core.h"
+#include "runtime/pipeline/layout.h"
+#include "runtime/pipeline/set.h"
+#include "utils/system.h"
+#include "runtime/pipeline/core.h"
 
 static const ShaderPipelineStateObject *standard_layouts[PIPELINE_TYPE_COUNT] =
     {

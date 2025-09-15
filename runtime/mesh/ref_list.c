@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 #include "core.h"
-#include "../utils/system.h"
-#include "../utils/dyli.h"
+#include "utils/system.h"
+#include "utils/dyli.h"
 
 DynamicListStatus mesh_ref_list_create(MeshRefList *list,
                                        const size_t capacity) {

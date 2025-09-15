@@ -5,21 +5,21 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
-#include "../resources/loader/loader.mbin.h"
-#include "../backend/ssbo.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/mesh/transform.h"
-#include "../runtime/primitive/core.h"
-#include "../runtime/probe/reflection/core.h"
-#include "../runtime/probe/reflection/probe.h"
-#include "../runtime/scene/add.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/scene/editor/object/builder/wireframe.h"
-#include "../runtime/scene/editor/object/list/list.h"
-#include "../runtime/scene/editor/selection/gizmo/core.h"
-#include "../utils/color.h"
-#include "../utils/system.h"
-#include "../runtime/probe/reflection/grid.h"
+#include "resources/loader/loader.mbin.h"
+#include "backend/ssbo.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/transform.h"
+#include "runtime/primitive/core.h"
+#include "runtime/probe/reflection/core.h"
+#include "runtime/probe/reflection/probe.h"
+#include "runtime/scene/add.h"
+#include "runtime/scene/core.h"
+#include "runtime/scene/editor/object/builder/wireframe.h"
+#include "runtime/scene/editor/object/list/list.h"
+#include "runtime/scene/editor/selection/gizmo/core.h"
+#include "utils/color.h"
+#include "utils/system.h"
+#include "runtime/probe/reflection/grid.h"
 
 void seo_probe_reflection_grid_create(SceneEditorObject *seo,
                                       ProbeReflectionGrid *grid,

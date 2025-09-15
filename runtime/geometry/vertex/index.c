@@ -6,7 +6,7 @@
 
 #include "core.h"
 #include "string.h"
-#include "../utils/system.h"
+#include "utils/system.h"
 
 VertexStatus vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
 

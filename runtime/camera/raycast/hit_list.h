@@ -3,9 +3,9 @@
 
 #include <stddef.h>
 
-#include "../../mesh/mesh.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/core.h"
 
 typedef enum {
   CameraRaycastHitListStatus_Success,

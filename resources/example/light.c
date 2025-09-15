@@ -2,10 +2,10 @@
 
 #include <stddef.h>
 
-#include "../runtime/light/core.h"
-#include "../runtime/light/list.h"
-#include "../runtime/scene/add.h"
-#include "../runtime/scene/core.h"
+#include "runtime/light/core.h"
+#include "runtime/light/list.h"
+#include "runtime/scene/add.h"
+#include "runtime/scene/core.h"
 
 void example_light(Scene *scene) {
 

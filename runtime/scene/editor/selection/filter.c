@@ -1,9 +1,9 @@
 #include "filter.h"
 
 #include "target_list.h"
-#include "../runtime/mesh/ref_list.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/scene/core.h"
+#include "runtime/mesh/core.h"
 
 /**
    Transfert all the filter objects to meshes[SceneSelectionState_Selected].

@@ -5,8 +5,8 @@
 #include <webgpu/webgpu.h>
 #include <cglm/types.h>
 
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/mesh/core.h"
 /**
    Debug View allows to display on screen an array of textures (i.e.renders)
  */

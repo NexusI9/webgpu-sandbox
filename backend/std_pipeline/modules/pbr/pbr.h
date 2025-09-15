@@ -1,14 +1,14 @@
 #ifndef _PIPELINE_LAYOUT_PBR_H_
 #define _PIPELINE_LAYOUT_PBR_H_
 
-#include "../../core.h"
-#include "../backend/ubo.h"
-#include "../runtime/camera/camera.h"
-#include "../runtime/light/light.h"
-#include "../runtime/light/uniform.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/probe/probe.h"
-#include "../runtime/viewport/viewport.h"
+#include "runtime/pipeline/pipeline.h"
+#include "backend/ubo.h"
+#include "runtime/camera/camera.h"
+#include "runtime/light/light.h"
+#include "runtime/light/uniform.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/probe/probe.h"
+#include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
 #include <webgpu/webgpu.h>

@@ -3,14 +3,14 @@
 #include <stdbool.h>
 #include <webgpu/webgpu.h>
 
-#include "../runtime/mesh/shader/core.h"
-#include "../runtime/shader/core.h"
-#include "../runtime/shader/update.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/pipeline/core.h"
-#include "../runtime/scene/renderer/render_pass/core.h"
-#include "../runtime/texture/core.h"
-#include "../utils/dyli.h"
+#include "runtime/mesh/shader/core.h"
+#include "runtime/shader/core.h"
+#include "runtime/shader/update.h"
+#include "runtime/mesh/core.h"
+#include "runtime/pipeline/core.h"
+#include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/texture/core.h"
+#include "utils/dyli.h"
 
 static inline void
 probe_reflection_list_create_texture(const ProbeReflectionTextureDescriptor *);

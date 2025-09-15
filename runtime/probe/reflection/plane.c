@@ -10,16 +10,16 @@
 
 #include "core.h"
 #include "webgpu/webgpu.h"
-#include "../runtime/camera/uniform.h"
-#include "../runtime/mesh/ref_list.h"
-#include "../runtime/scene/debug/view.h"
-#include "../runtime/scene/renderer/render_pass/draw.h"
-#include "../utils/vector/core.h"
-#include "../backend/ssbo.h"
-#include "../runtime/camera/core.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/scene/renderer/render_pass/core.h"
-#include "../utils/dyli.h"
+#include "runtime/camera/uniform.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/scene/debug/view.h"
+#include "runtime/scene/renderer/render_pass/draw.h"
+#include "utils/vector/core.h"
+#include "backend/ssbo.h"
+#include "runtime/camera/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/scene/renderer/render_pass/core.h"
+#include "utils/dyli.h"
 
 DynamicListStatus
 probe_reflection_plane_list_create(ProbeReflectionPlaneList *list,

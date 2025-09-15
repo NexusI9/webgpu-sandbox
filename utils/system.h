@@ -7,8 +7,8 @@
 #include <cglm/types.h>
 #include <stdint.h>
 
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/mesh/core.h"
 
 #ifdef VERBOSE
 

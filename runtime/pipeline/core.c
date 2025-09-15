@@ -2,11 +2,11 @@
 
 #include <stdbool.h>
 
-#include "../backend/buffer.h"
-#include "../utils/file.h"
+#include "backend/buffer.h"
+#include "utils/file.h"
 #include "webgpu/webgpu.h"
-#include "../runtime/texture/core.h"
-#include "../runtime/geometry/vertex/core.h"
+#include "runtime/texture/core.h"
+#include "runtime/geometry/vertex/core.h"
 
 static inline void pipeline_set_vertex_layout(Pipeline *);
 

@@ -4,8 +4,8 @@
 #include <emscripten/html5.h>
 #include <stdbool.h>
 
-#include "../../../core.h"
-#include "../runtime/camera/raycast/core.h"
+#include "runtime/scene/core.h"
+#include "runtime/camera/raycast/core.h"
 
 void scene_selection_init_mouse_events(Scene* scene);
 

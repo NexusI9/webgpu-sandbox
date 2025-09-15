@@ -5,9 +5,9 @@
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
-#include "../runtime/scene/environment/fog.h"
-#include "../runtime/light/list.h"
-#include "../runtime/probe/core.h"
+#include "runtime/scene/environment/fog.h"
+#include "runtime/light/list.h"
+#include "runtime/probe/core.h"
 
 typedef enum {
   UBOStatus_Success, 

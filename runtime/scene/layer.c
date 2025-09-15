@@ -4,10 +4,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../../utils/hash.h"
-#include "../../utils/system.h"
-#include "../runtime/mesh/ref_list.h"
-#include "../utils/dyli.h"
+#include "utils/hash.h"
+#include "utils/system.h"
+#include "runtime/mesh/ref_list.h"
+#include "utils/dyli.h"
 
 static const char *standard_layers[SCENE_STD_LAYER_COUNT] = {
     SCENE_LAYER_DEFAULT,

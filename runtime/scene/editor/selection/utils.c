@@ -2,11 +2,11 @@
 
 #include <cglm/types.h>
 
-#include "../../show.h"
+#include "runtime/scene/show.h"
 #include "./core.h"
-#include "../runtime/mesh/core.h"
-#include "../backend/ssbo.h"
-#include "../runtime/scene/core.h"
+#include "runtime/mesh/core.h"
+#include "backend/ssbo.h"
+#include "runtime/scene/core.h"
 
 void scene_gizmo_show(Scene *scene) {
   Gizmo *gizmo = &scene->editor.gizmo.transform;

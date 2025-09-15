@@ -5,12 +5,12 @@
 #include <stdint.h>
 
 #include "core.h"
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/core.h"
-#include "../runtime/geometry/vertex/index.h"
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/core.h"
-#include "../runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/core.h"
+#include "runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/core.h"
+#include "runtime/geometry/vertex/index.h"
 
 #define MESH_TOPOLOGY_ANCHOR_LIST_DEFAULT_CAPACITY 1023
 #define MESH_TOPOLOGY_ANCHOR_DEFAULT_CAPACITY 32

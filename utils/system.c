@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/core.h"
 
 void print_ivec3(const ivec3 vector) {
   printf("%d\t%d\t%d\n", vector[0], vector[1], vector[2]);

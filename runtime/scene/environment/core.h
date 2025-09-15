@@ -3,10 +3,10 @@
 
 #include <webgpu/webgpu.h>
 
-#include "../backend/ssbo.h"
-#include "../backend/ubo.h"
+#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "./fog.h"
-#include "../utils/color.h"
+#include "utils/color.h"
 #include "fog.h"
 
 typedef struct {

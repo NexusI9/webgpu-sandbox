@@ -5,12 +5,12 @@
 #include <math.h>
 
 #include "core.h"
-#include "../runtime/input/core.h"
-#include "../runtime/mesh/transform.h"
-#include "../runtime/raycast/core.h"
-#include "../utils/vector/core.h"
-#include "../runtime/camera/core.h"
-#include "../runtime/viewport/core.h"
+#include "runtime/input/core.h"
+#include "runtime/mesh/transform.h"
+#include "runtime/raycast/core.h"
+#include "utils/vector/core.h"
+#include "runtime/camera/core.h"
+#include "runtime/viewport/core.h"
 
 /**
    ▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▄▖

@@ -1,7 +1,7 @@
 #include "hit_list.h"
 #include "string.h"
 #include <stdlib.h>
-#include "../utils/system.h"
+#include "utils/system.h"
 
 static int camera_raycast_hit_list_sort_func(const void *a, const void *b) {
 

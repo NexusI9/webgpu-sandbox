@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "core.h"
-#include "../backend/ssbo.h"
+#include "backend/ssbo.h"
 
 MeshUniform *mesh_uniform(Mesh *);
 

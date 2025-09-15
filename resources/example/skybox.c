@@ -2,9 +2,9 @@
 
 #include <stdint.h>
 
-#include "../../runtime/prefab/environment/skybox.h"
-#include "../runtime/texture/core.h"
-#include "../runtime/texture/write.h"
+#include "runtime/prefab/environment/skybox.h"
+#include "runtime/texture/core.h"
+#include "runtime/texture/write.h"
 
 /**
    Create a picture based skybox in the given scene

@@ -3,20 +3,20 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
-#include "../resources/loader/loader.mbin.h"
+#include "resources/loader/loader.mbin.h"
 #include "./core.h"
 #include "webgpu/webgpu.h"
-#include "../backend/std_pipeline/core.h"
-#include "../runtime/mesh/ref_list.h"
-#include "../runtime/mesh/shader/core.h"
-#include "../runtime/mesh/transform.h"
-#include "../runtime/pipeline/core.h"
-#include "../runtime/shader/core.h"
-#include "../runtime/shader/update.h"
-#include "../utils/color.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/mesh/list.h"
-#include "../runtime/primitive/core.h"
+#include "backend/std_pipeline/core.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/mesh/shader/core.h"
+#include "runtime/mesh/transform.h"
+#include "runtime/pipeline/core.h"
+#include "runtime/shader/core.h"
+#include "runtime/shader/update.h"
+#include "utils/color.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/list.h"
+#include "runtime/primitive/core.h"
 
 /**
    Create a gizmo transform mesh with the solid pipeline and the other relative

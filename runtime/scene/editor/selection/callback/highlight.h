@@ -3,8 +3,7 @@
 
 #include <cglm/cglm.h>
 
-#include "../../../core.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/list.h"
 
 void scene_selection_mesh_highlight(MeshRefList *, void *);
 

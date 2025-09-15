@@ -1,5 +1,5 @@
 #include "registry.h"
-#include "../utils/system.h"
+#include "utils/system.h"
 #include <stdio.h>
 
 

@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include "string.h"
-#include "../backend/ssbo.h"
+#include "backend/ssbo.h"
 
 void viewport_create(Viewport *viewport,
                      const ViewportCreateDescriptor *view_desc) {

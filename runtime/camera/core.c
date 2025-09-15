@@ -4,11 +4,11 @@
 #include <cglm/mat4.h>
 #include <cglm/vec3.h>
 
-#include "../../utils/matrix.h"
+#include "utils/matrix.h"
 #include "./uniform.h"
 #include "math.h"
-#include "../backend/registry.h"
-#include "../backend/ssbo.h"
+#include "backend/registry.h"
+#include "backend/ssbo.h"
 
 void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 

@@ -5,19 +5,19 @@
 #include <stddef.h>
 
 #include "core.h"
-#include "../backend/std_pipeline/core.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/mesh/list.h"
-#include "../runtime/mesh/ref_list.h"
-#include "../runtime/mesh/shader/core.h"
-#include "../runtime/mesh/transform.h"
-#include "../runtime/mesh/uniform.h"
-#include "../runtime/pipeline/core.h"
-#include "../runtime/primitive/core.h"
-#include "../runtime/primitive/plane.h"
-#include "../runtime/shader/core.h"
-#include "../runtime/shader/update.h"
-#include "../runtime/texture/core.h"
+#include "backend/std_pipeline/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/list.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/mesh/shader/core.h"
+#include "runtime/mesh/transform.h"
+#include "runtime/mesh/uniform.h"
+#include "runtime/pipeline/core.h"
+#include "runtime/primitive/core.h"
+#include "runtime/primitive/plane.h"
+#include "runtime/shader/core.h"
+#include "runtime/shader/update.h"
+#include "runtime/texture/core.h"
 
 static inline void scene_debug_view_compute_position(MeshRefList *, vec3);
 

@@ -6,11 +6,11 @@
 #include <cglm/types.h>
 #include <stddef.h>
 
-#include "../runtime/mesh/mesh.h"
-#include "../vertex/vertex.h"
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/index.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/geometry/vertex/vertex.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/index.h"
+#include "runtime/mesh/core.h"
 
 #define LINE_MAX_POINTS 1024
 #define LINE_THICKNESS 0.005

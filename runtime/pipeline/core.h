@@ -4,9 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../runtime/geometry/vertex/vertex.h"
+#include "runtime/geometry/vertex/vertex.h"
 #include "webgpu/webgpu.h"
-#include "../runtime/geometry/vertex/core.h"
+#include "runtime/geometry/vertex/core.h"
 
 /**
    ============================== PIPELINE ==============================

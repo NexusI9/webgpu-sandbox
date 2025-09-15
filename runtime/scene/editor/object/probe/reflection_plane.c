@@ -6,22 +6,22 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "../resources/loader/loader.mbin.h"
-#include "../backend/ssbo.h"
-#include "../runtime/geometry/aabb/aabb.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/mesh/transform.h"
-#include "../runtime/mesh/uniform.h"
-#include "../runtime/primitive/core.h"
-#include "../runtime/probe/reflection/core.h"
-#include "../runtime/scene/add.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/scene/editor/object/builder/wireframe.h"
-#include "../runtime/scene/editor/object/list/list.h"
-#include "../runtime/scene/editor/selection/gizmo/core.h"
-#include "../runtime/scene/renderer/render_pass/core.h"
-#include "../utils/color.h"
-#include "../runtime/probe/reflection/plane.h"
+#include "resources/loader/loader.mbin.h"
+#include "backend/ssbo.h"
+#include "runtime/geometry/aabb/aabb.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/transform.h"
+#include "runtime/mesh/uniform.h"
+#include "runtime/primitive/core.h"
+#include "runtime/probe/reflection/core.h"
+#include "runtime/scene/add.h"
+#include "runtime/scene/core.h"
+#include "runtime/scene/editor/object/builder/wireframe.h"
+#include "runtime/scene/editor/object/list/list.h"
+#include "runtime/scene/editor/selection/gizmo/core.h"
+#include "runtime/scene/renderer/render_pass/core.h"
+#include "utils/color.h"
+#include "runtime/probe/reflection/plane.h"
 
 void seo_probe_reflection_plane_create(SceneEditorObject *seo,
                                        ProbeReflectionPlane *probe,

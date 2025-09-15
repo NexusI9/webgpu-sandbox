@@ -5,7 +5,7 @@
 #include <cglm/vec2.h>
 #include <cglm/vec3.h>
 
-#include "../utils/math.h"
+#include "utils/math.h"
 
 static void triangle_rand_dist_trilinear(float, float, float, vec3, vec3, vec3,
                                          vec3);

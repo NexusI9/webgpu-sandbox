@@ -1,13 +1,13 @@
 #ifndef _SCENE_EDITOR_CAMERA_H_
 #define _SCENE_EDITOR_CAMERA_H_
 
-#include "../runtime/camera/camera.h"
+#include "runtime/camera/camera.h"
 
 #include <cglm/types.h>
 
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/camera/core.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/scene/core.h"
+#include "runtime/camera/core.h"
 
 void seo_camera_create(SceneEditorObject *, Camera *,
                        const SEOCreateDescriptor *);

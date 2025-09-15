@@ -1,7 +1,7 @@
 #include "method.h"
 
-#include "../runtime/input/core.h"
-#include "../runtime/camera/core.h"
+#include "runtime/input/core.h"
+#include "runtime/camera/core.h"
 
 /**
    ▗▄▄▖ ▗▄▖  ▗▄▄▖▗▄▄▄▖    ▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▄▖

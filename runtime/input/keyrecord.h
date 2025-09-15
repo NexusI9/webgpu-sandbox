@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "../backend/registry.h"
+#include "backend/registry.h"
 #include "emscripten/html5.h"
 
 #define INPUT_KEY_RECORD_MAX_KEYS 256

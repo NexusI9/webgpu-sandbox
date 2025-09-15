@@ -2,7 +2,7 @@
 #define _GIZMO_SCALE_H_
 
 #include "./core.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/core.h"
 
 void gizmo_scale_create(MeshRefList *, MeshRefList *,
                                   const GizmoCreateDescriptor *);

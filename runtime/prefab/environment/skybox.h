@@ -3,16 +3,16 @@
 
 #include <stddef.h>
 
-#include "../../texture/texture.h"
-#include "../prefab.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/texture/core.h"
-#include "../runtime/texture/create.h"
-#include "../runtime/texture/write.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/texture/core.h"
-#include "../runtime/texture/create.h"
-#include "../runtime/texture/write.h"
+#include "runtime/texture/texture.h"
+#include "runtime/prefab/prefab.h"
+#include "runtime/scene/core.h"
+#include "runtime/texture/core.h"
+#include "runtime/texture/create.h"
+#include "runtime/texture/write.h"
+#include "runtime/scene/core.h"
+#include "runtime/texture/core.h"
+#include "runtime/texture/create.h"
+#include "runtime/texture/write.h"
 
 typedef struct {
   float blur;

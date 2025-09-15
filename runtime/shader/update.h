@@ -4,11 +4,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../runtime/texture/texture.h"
+#include "runtime/texture/texture.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
-#include "../runtime/texture/core.h"
+#include "runtime/texture/core.h"
 
 typedef enum {
   ShaderBufferLifetime_Keep,

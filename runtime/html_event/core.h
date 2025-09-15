@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "../backend/registry.h"
+#include "backend/registry.h"
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
 

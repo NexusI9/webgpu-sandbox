@@ -4,12 +4,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../backend/buffer.h"
+#include "backend/buffer.h"
 #include "anchor.h"
-#include "../utils/system.h"
+#include "utils/system.h"
 #include "webgpu/webgpu.h"
-#include "../runtime/geometry/vertex/core.h"
-#include "../runtime/geometry/vertex/transform.h"
+#include "runtime/geometry/vertex/core.h"
+#include "runtime/geometry/vertex/transform.h"
 
 static void mesh_topology_base_create_anchor(MeshTopologyBase *);
 

@@ -5,9 +5,9 @@
 #include <stdint.h>
 #include <cglm/types.h>
 
-#include "../backend/registry.h"
-#include "../backend/ssbo.h"
-#include "../utils/projection.h"
+#include "backend/registry.h"
+#include "backend/ssbo.h"
+#include "utils/projection.h"
 #include "webgpu/webgpu.h"
 
 

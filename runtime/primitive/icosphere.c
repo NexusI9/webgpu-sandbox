@@ -1,7 +1,7 @@
 #include "icosphere.h"
 
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/index.h"
 
 // golden ratio constants
 static const float X = 0.525731112119133606f;

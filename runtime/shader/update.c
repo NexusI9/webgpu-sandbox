@@ -4,15 +4,15 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../backend/buffer.h"
+#include "backend/buffer.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "find.h"
 #include "utils.h"
 #include "webgpu/webgpu.h"
-#include "../utils/system.h"
-#include "../backend/std_texture/core.h"
-#include "../utils/dyli.h"
+#include "utils/system.h"
+#include "backend/std_texture/core.h"
+#include "utils/dyli.h"
 
 /*TODO: BATCH UPDATE : like add, take a bunch of entry and ONLY REBUILD at the
  * end of update*/

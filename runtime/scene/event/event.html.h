@@ -3,7 +3,7 @@
 
 #include <stdbool.h>
 
-#include "../core.h"
+#include "runtime/scene/core.h"
 #include "emscripten/html5.h"
 
 void scene_event_html(Scene *);

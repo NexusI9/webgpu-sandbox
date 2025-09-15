@@ -1,7 +1,7 @@
 #ifndef _SCENE_SELECTION_CONFIG_H_
 #define _SCENE_SELECTION_CONFIG_H_
 
-#include "../../core.h"
+#include "runtime/scene/core.h"
 #include "./callback/highlight.h"
 #include "./callback/transform.h"
 

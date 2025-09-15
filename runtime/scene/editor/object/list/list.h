@@ -3,9 +3,9 @@
 
 #include <stddef.h>
 
-#include "../runtime/scene/scene.h"
-#include "../runtime/scene/core.h"
-#include "../utils/dyli.h"
+#include "runtime/scene/scene.h"
+#include "runtime/scene/core.h"
+#include "utils/dyli.h"
 
 /*
   GIZMO LIST

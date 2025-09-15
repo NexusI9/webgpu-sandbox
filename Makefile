@@ -1,11 +1,8 @@
 #!/bin/bash
 
-# C files
-C_EXCLUDE := ./resources/tool
-PRUNE_ARGS := $(foreach dir,$(C_EXCLUDE),-path $(dir) -prune -o)
-C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
-
-# Macros:
+# ======================
+#
+# MACROS
 #
 #   - ENGINE_EDITOR : allow editor mode related functionnalities (gizmo...)
 #
@@ -28,6 +25,8 @@ C_FILES := $(shell find . $(PRUNE_ARGS) -name "*.c" -print)
 #   - DEBUG_MALLOC : print each allocation size
 #   - DEBUG_TIME : show marked functions execution time
 #
+# ======================
+
 MACROS := \
        -DCGLM_FORCE_DEPTH_ZERO_TO_ONE \
        -DVERBOSE \
@@ -35,26 +34,41 @@ MACROS := \
        -DDEBUG_TIME \
        -DAO_BAKE_HIT_COUNT
 
+# ======================
+#
+#     FILES GETTERS
+#
+# =======================
+
+# C files
+C_EXCLUDE := ./resources/tool
+PRUNE_ARGS := $(foreach dir,$(C_EXCLUDE),-path $(dir) -prune -o)
+FILES_C := $(shell find . -name "*.c" $(foreach dir,$(C_EXCLUDE), ! -path "$(dir)/*"))
+
 # Preprocess cwgsl shader to wgsl Shader files
-SHADER_DIR := ./backend/std_pipeline/modules/
+PATH_WGSL := ./backend/std_pipeline/modules/
 CUSTOM_WGSL_EXT = .wgsl.in
-CUSTOM_WGSL_IN := $(shell find $(SHADER_DIR) -type f -name "*$(CUSTOM_WGSL_EXT)")
+CUSTOM_WGSL_IN := $(shell find $(PATH_WGSL) -type f -name "*$(CUSTOM_WGSL_EXT)")
 COMPILE_WGSL := $(CUSTOM_WGSL_IN:$(CUSTOM_WGSL_EXT)=.wgsl)
 
 # Get default wgsl files
-WGSL_FILES := $(shell find $(SHADER_DIR) -type f -name "*.wgsl")
+FILES_WGSL := $(shell find $(PATH_WGSL) -type f -name "*.wgsl")
 
 # Shader wgsl files
-SHADER_FILES := $(addprefix --preload-file , $(COMPILE_WGSL) $(WGSL_FILES))  
+FILES_SHADER := $(addprefix --preload-file , $(COMPILE_WGSL) $(FILES_WGSL))  
 
-# GLTF files
-GLTF_FILES := $(shell find ./resources/assets/gltf -type f -name "*.gltf" | sed 's/^/--preload-file /')
 
-# MBIN files
-MBIN_FILES := $(shell find ./resources/assets/mbin -type f -name "*.mbin" | sed 's/^/--preload-file /')
+PATH_GLTF := ./resources/assets/gltf
+PATH_MBIN := ./resources/assets/mbin
+PATH_TEXTURE := ./resources/assets/texture
 
-# Textures files
-TEXTURE_FILES := $(shell find ./resources/assets/texture \( -name "*.png" -o -name "*.jpg" \) -type f | sed 's/^/--preload-file /')
+PATH_VIRTUAL_GLTF := gltf   # no leading slash
+PATH_VIRTUAL_MBIN := mbin
+PATH_VIRTUAL_TEXTURE := texture
+
+FILES_GLTF := $(shell find $(PATH_GLTF) -type f -name "*.gltf" | sed "s|^|--preload-file &|")
+FILES_MBIN := $(shell find $(PATH_MBIN) -type f -name "*.mbin" | sed "s|^|--preload-file &|")
+FILES_TEXTURE := $(shell find $(PATH_TEXTURE) \( -name "*.png" -o -name "*.jpg" \) -type f | sed "s|^|--preload-file &|")
 
 # Dev mode
 # Need to allow memory growth since ASan shadow memory
@@ -63,27 +77,46 @@ TEXTURE_FILES := $(shell find ./resources/assets/texture \( -name "*.png" -o -na
 DEV_FLAGS := \
 	-fsanitize=address \
 	-fsanitize=undefined \
+	-ferror-limit=0 \
 	-g \
 	-sALLOW_MEMORY_GROWTH=1 \
 	-sMAXIMUM_MEMORY=1073741824 \
 	-sINITIAL_MEMORY=67108864 
 
+# ======================
+#
+#      BUILD PATH
+#
+# =======================
+
 # Main output build script
-OUTPUT := build/wasm/scripts/wgpu/wgpu_scene.js
+PATH_WEBSITE_ROOT := build/wasm
+PATH_WEBSITE_WGPU := $(PATH_WEBSITE_ROOT)/scripts/wgpu
+PATH_WEBSITE_SHADER := $(PATH_WEBSITE_WGPU)/wgpu_shader
+PATH_WEBSITE_TEXTURE := $(PATH_WEBSITE_WGPU)/wgpu_texture
+PATH_WEBSITE_GLTF := $(PATH_WEBSITE_WGPU)/wgpu_gltf
+PATH_WEBSITE_MBIN := $(PATH_WEBSITE_WGPU)/wgpu_mbin
+OUTPUT_WEBSITE_WGPU := $(PATH_WEBSITE_WGPU)/wgpu_scene.js
+
+# ======================
+#
+# COMPILATION COMMANDS
+#
+# =======================
 
 all:
 	@start=$$(date +%s); \
 	echo "=== COMPILING SHADERS ==="; \
 	make compile_shader; \
-	echo; \
+	echo ""; \
 	echo "=== COMPILING TO WASM ==="; \
 	make wasm; \
-	echo; \
+	echo ""; \
 	echo "=== CLEANING SHADERS ==="; \
 	make clean_shader; \
 	end=$$(date +%s); \
 	elapsed=$$((end - start)); \
-	echo; \
+	echo ""; \
 	echo ">> Build time: $${elapsed}s"
 
 
@@ -96,26 +129,41 @@ clean_shader:
 	@rm -f $(COMPILE_WGSL)
 	@echo "done"
 
-wasm:
-	@emcc $(DEV_FLAGS) $(MACROS) $(C_FILES) -o $(OUTPUT) \
-		-I include \
-		-s NO_EXIT_RUNTIME=1 \
-		-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
-		-s EXPORTED_FUNCTIONS="['_main']" \
-		-s USE_WEBGPU=1 \
-		-s SINGLE_FILE  \
-		$(SHADER_FILES) \
-		$(GLTF_FILES) \
-		$(MBIN_FILES) \
-		$(TEXTURE_FILES)
 
-	@echo "Compilation completed: $(OUTPUT)"
+#$PATH_WEBSITE_SHADER/wgpu_shader.js  $PATH_WEBSITE_SHADER/wgpu_shader.data bundle_shader:
+#	@echo "Generating Shader.data..."
+#	$(shell mkdir -p $(PATH_WEBSITE_SHADER))
+#	@start=$$(date +%s)
+#	emcc $(FILES_PRELOAD_SHADER:%=--preload-file %@/shaders) \
+#		-o $PATH_WEBSITE_SHADER/wgpu_shader.js
+#	end=$$(date +%s)
+#	elapsed=$$((end - start))
+#	@echo ">> Done ($${elapsed}s)"
+
+
+wasm:
+	$(shell mkdir -p $(PATH_WEBSITE_WGPU))
+	emcc $(DEV_FLAGS) $(MACROS) $(FILES_C) -o $(OUTPUT_WEBSITE_WGPU) \
+	     -I include \
+	     -I . \
+	     -s NO_EXIT_RUNTIME=1 \
+	     -s "EXPORTED_RUNTIME_METHODS=['ccall']" \
+	     -s EXPORTED_FUNCTIONS="['_main']" \
+	     -s USE_WEBGPU=1 \
+	     -s SINGLE_FILE  \
+	     $(FILES_SHADER) \
+	     $(FILES_GLTF) \
+	     $(FILES_MBIN) \
+	     $(FILES_TEXTURE)
+
+	@echo "Compilation completed: $(OUTPUT_WEBSITE_WGPU)"
 
 serve:
-	cd ./build/wasm
+	cd $(PATH_WEBSITE_ROOT)
 	python -m http.server
-
-
+	
+	
+	
 %.wgsl: %$(CUSTOM_WGSL_EXT)
 	cpp -P $(MACROS) $< > $@
 

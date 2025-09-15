@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../utils/system.h"
-#include "../resources/tool/obj2mbin/lib/mbin.h"
+#include "utils/system.h"
+#include "resources/tool/obj2mbin/lib/mbin.h"
 #include "string.h"
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/index.h"
 
 #ifdef __unix__
 #include <fcntl.h>

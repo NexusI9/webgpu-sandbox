@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "../utils/system.h"
+#include "utils/system.h"
 #include <stdint.h>
 /**
    Returns the sum of group uniforms, textures and samplers.

@@ -1,9 +1,9 @@
 #include "texture_list.h"
 
 #include "core.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/texture/core.h"
-#include "../utils/dyli.h"
+#include "runtime/mesh/core.h"
+#include "runtime/texture/core.h"
+#include "utils/dyli.h"
 
 DynamicListStatus ao_bake_texture_list_create(AOBakeTextureList *list,
                                               size_t capacity) {

@@ -3,7 +3,7 @@
 #include <float.h>
 #include <math.h>
 
-#include "../../utils/math.h"
+#include "utils/math.h"
 
 /**
    Blur algorithm

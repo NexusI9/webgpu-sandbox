@@ -6,7 +6,7 @@
 #include <webgpu/webgpu.h>
 #include <stddef.h>
 
-#include "../utils/vector/vector.h"
+#include "utils/vector/vector.h"
 
 #define TEXTURE_MIN_SIZE 64
 #define TEXTURE_FORMAT_OFFSCREEN_DEFAULT WGPUTextureFormat_RGBA8Unorm

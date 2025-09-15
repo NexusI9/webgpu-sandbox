@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include "./core.h"
-#include "../utils/dyli.h"
+#include "utils/dyli.h"
 
 typedef struct {
   struct Mesh *entries;

@@ -6,19 +6,19 @@
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
-#include "../runtime/camera/camera.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/viewport/viewport.h"
-#include "../utils/color.h"
-#include "../utils/vector/vector.h"
-#include "../backend/ssbo.h"
-#include "../runtime/camera/core.h"
-#include "../runtime/geometry/plane/core.h"
-#include "../runtime/input/keyrecord.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/mesh/list.h"
-#include "../runtime/viewport/core.h"
-#include "../utils/vector/core.h"
+#include "runtime/camera/camera.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/viewport/viewport.h"
+#include "utils/color.h"
+#include "utils/vector/vector.h"
+#include "backend/ssbo.h"
+#include "runtime/camera/core.h"
+#include "runtime/geometry/plane/core.h"
+#include "runtime/input/keyrecord.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/list.h"
+#include "runtime/viewport/core.h"
+#include "utils/vector/core.h"
 
 #define GIZMO_SIZE 15.0f
 #define GIZMO_POSITION_CAPACITY 128

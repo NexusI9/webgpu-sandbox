@@ -5,18 +5,18 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "../runtime/geometry/aabb/aabb.h"
-#include "../runtime/light/shadow_map/draw.h"
-#include "../runtime/mesh/transform.h"
-#include "../runtime/mesh/uniform.h"
-#include "../runtime/scene/debug/core.h"
-#include "../runtime/scene/renderer/core.h"
-#include "../backend/ssbo.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/probe/reflection/grid.h"
-#include "../runtime/probe/reflection/plane.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/scene/editor/selection/gizmo/core.h"
+#include "runtime/geometry/aabb/aabb.h"
+#include "runtime/light/shadow_map/draw.h"
+#include "runtime/mesh/transform.h"
+#include "runtime/mesh/uniform.h"
+#include "runtime/scene/debug/core.h"
+#include "runtime/scene/renderer/core.h"
+#include "backend/ssbo.h"
+#include "runtime/mesh/core.h"
+#include "runtime/probe/reflection/grid.h"
+#include "runtime/probe/reflection/plane.h"
+#include "runtime/scene/core.h"
+#include "runtime/scene/editor/selection/gizmo/core.h"
 
 /**
 

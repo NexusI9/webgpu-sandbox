@@ -1,11 +1,11 @@
 #ifndef _SCENE_EDITOR_OBJECT_POINT_LIGHT_H_
 #define _SCENE_EDITOR_OBJECT_POINT_LIGHT_H_
 
-#include "../runtime/light/light.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/light/core.h"
-#include "../runtime/light/list.h"
+#include "runtime/light/light.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/scene/core.h"
+#include "runtime/light/core.h"
+#include "runtime/light/list.h"
 
 /* base */
 void seo_light_point_create(SceneEditorObject *, PointLight *,

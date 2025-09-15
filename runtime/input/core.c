@@ -5,11 +5,11 @@
 #include <emscripten/em_types.h>
 #include <emscripten/html5.h>
 
-#include "../utils/math.h"
+#include "utils/math.h"
 #include "keyrecord.h"
-#include "../runtime/html_event/add.h"
-#include "../runtime/html_event/core.h"
-#include "../backend/registry.h"
+#include "runtime/html_event/add.h"
+#include "runtime/html_event/core.h"
+#include "backend/registry.h"
 
 Input g_input = {0};
 

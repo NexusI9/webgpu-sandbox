@@ -2,7 +2,7 @@
 #define _SCENE_SHOW_H_
 
 #include "./core.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/core.h"
 
 /**
 

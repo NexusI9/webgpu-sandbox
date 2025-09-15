@@ -4,20 +4,20 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../backend/ssbo.h"
-#include "../runtime/light/shadow_map/draw.h"
-#include "../runtime/light/uniform.h"
-#include "../runtime/mesh/transform.h"
-#include "../runtime/scene/add.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/scene/debug/core.h"
-#include "../runtime/scene/editor/object/builder/billboard.h"
-#include "../runtime/scene/editor/object/list/list.h"
-#include "../runtime/scene/editor/selection/gizmo/core.h"
-#include "../runtime/scene/renderer/core.h"
-#include "../utils/projection.h"
-#include "../runtime/light/core.h"
-#include "../runtime/light/list.h"
+#include "backend/ssbo.h"
+#include "runtime/light/shadow_map/draw.h"
+#include "runtime/light/uniform.h"
+#include "runtime/mesh/transform.h"
+#include "runtime/scene/add.h"
+#include "runtime/scene/core.h"
+#include "runtime/scene/debug/core.h"
+#include "runtime/scene/editor/object/builder/billboard.h"
+#include "runtime/scene/editor/object/list/list.h"
+#include "runtime/scene/editor/selection/gizmo/core.h"
+#include "runtime/scene/renderer/core.h"
+#include "utils/projection.h"
+#include "runtime/light/core.h"
+#include "runtime/light/list.h"
 
 static inline void seo_light_point_create_common(SceneEditorObject *,
                                                  PointLight *,

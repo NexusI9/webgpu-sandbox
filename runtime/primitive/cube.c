@@ -1,7 +1,7 @@
 #include "cube.h"
 
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/index.h"
 
 static vattr_t cube_vertex_data[] = {
     // Front face (tangent along +X, w=1)

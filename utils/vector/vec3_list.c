@@ -1,6 +1,6 @@
 #include "vec3_list.h"
 
-#include "../utils/dyli.h"
+#include "utils/dyli.h"
 
 DynamicListStatus vec3_list_create(Vec3List *list, size_t capacity) {
   return dyli_create((void *)&list->entries, &list->capacity, &list->length,

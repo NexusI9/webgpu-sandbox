@@ -3,9 +3,9 @@
 
 #include <cglm/types.h>
 
-#include "../utils/vector/vector.h"
+#include "utils/vector/vector.h"
 #include "ref_list.h"
-#include "../utils/vector/core.h"
+#include "utils/vector/core.h"
 #include "core.h"
 
 // scale

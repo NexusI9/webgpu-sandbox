@@ -1,11 +1,11 @@
 #ifndef _PIPELINE_LAYOUT_LINE_H_
 #define _PIPELINE_LAYOUT_LINE_H_
 
-#include "../../core.h"
-#include "../runtime/camera/camera.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/viewport/viewport.h"
-#include "../utils/color.h"
+#include "runtime/pipeline/pipeline.h"
+#include "runtime/camera/camera.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/viewport/viewport.h"
+#include "utils/color.h"
 
 #include "../commons.h"
 #include <webgpu/webgpu.h>

@@ -6,11 +6,11 @@
 
 #include "callback.h"
 #include "hit_list.h"
-#include "../utils/system.h"
-#include "../runtime/camera/core.h"
-#include "../runtime/html_event/add.h"
-#include "../runtime/html_event/core.h"
-#include "../runtime/mesh/core.h"
+#include "utils/system.h"
+#include "runtime/camera/core.h"
+#include "runtime/html_event/add.h"
+#include "runtime/html_event/core.h"
+#include "runtime/mesh/core.h"
 
 /**
     ▗▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄▖

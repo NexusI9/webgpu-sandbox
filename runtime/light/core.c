@@ -6,9 +6,9 @@
 #include <math.h>
 
 #include "uniform.h"
-#include "../backend/registry.h"
-#include "../backend/ssbo.h"
-#include "../utils/projection.h"
+#include "backend/registry.h"
+#include "backend/ssbo.h"
+#include "utils/projection.h"
 
 void light_point_create(PointLight *light, PointLightDescriptor *desc) {
 

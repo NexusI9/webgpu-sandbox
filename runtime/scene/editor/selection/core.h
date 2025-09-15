@@ -1,13 +1,13 @@
 #ifndef _SCENE_EDITOR_SELECTION_CORE_H_
 #define _SCENE_EDITOR_SELECTION_CORE_H_
 
-#include "../../core.h"
+#include "runtime/scene/core.h"
 
 #include <cglm/types.h>
 #include <stddef.h>
 
 #include "emscripten/html5.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/core.h"
 #include "gizmo/core.h"
 
 typedef struct {

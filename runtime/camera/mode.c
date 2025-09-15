@@ -9,7 +9,7 @@
 
 #include "core.h"
 #include "uniform.h"
-#include "../runtime/input/core.h"
+#include "runtime/input/core.h"
 
 static void camera_target_from_yaw_pitch(Camera *, float, float);
 

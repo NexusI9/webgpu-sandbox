@@ -1,13 +1,13 @@
 #include "rotate.h"
 
-#include "../resources/loader/loader.mbin.h"
-#include "../utils/color.h"
+#include "resources/loader/loader.mbin.h"
+#include "utils/color.h"
 #include "./utils.h"
-#include "../runtime/mesh/list.h"
-#include "../runtime/mesh/ref_list.h"
-#include "../runtime/primitive/core.h"
+#include "runtime/mesh/list.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/primitive/core.h"
 #include "core.h"
-#include "../runtime/mesh/core.h"
+#include "runtime/mesh/core.h"
 
 void gizmo_rotation_create(MeshRefList *visual_list,
                                    MeshRefList *interactive_list,

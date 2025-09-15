@@ -1,7 +1,7 @@
 #include "plane.h"
 
-#include "../runtime/geometry/vertex/attribute.h"
-#include "../runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/index.h"
 
 static vattr_t plane_vertex_data[] = {
     // Positions          // Normals           // Tangents           // Colors          // UVs

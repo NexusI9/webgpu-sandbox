@@ -1,11 +1,11 @@
 #ifndef _PIPELINE_LAYOUT_GRID_H_
 #define _PIPELINE_LAYOUT_GRID_H_
 
-#include "../../core.h"
-#include "../runtime/camera/camera.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/scene/editor/object/grid/grid.h"
-#include "../runtime/viewport/viewport.h"
+#include "runtime/pipeline/pipeline.h"
+#include "runtime/camera/camera.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/scene/editor/object/grid/grid.h"
+#include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
 

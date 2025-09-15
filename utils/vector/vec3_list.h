@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <cglm/types.h>
 
-#include "../dyli.h"
+#include "utils/dyli.h"
 
 typedef struct {
   vec3 *entries;

@@ -6,8 +6,8 @@
 #include <math.h>
 
 #include "vector/core.h"
-#include "../runtime/camera/core.h"
-#include "../runtime/viewport/core.h"
+#include "runtime/camera/core.h"
+#include "runtime/viewport/core.h"
 
 const vec3 projection_cubemaps_directions[PROJECTION_VIEW_COUNT] = {
     {1.0f, 0.0f, 0.0f},  // +x (right)

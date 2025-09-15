@@ -2,8 +2,8 @@
 
 #include <stddef.h>
 
-#include "../utils/system.h"
-#include "../runtime/texture/core.h"
+#include "utils/system.h"
+#include "runtime/texture/core.h"
 
 
 /**

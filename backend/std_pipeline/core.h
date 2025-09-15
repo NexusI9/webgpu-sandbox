@@ -3,8 +3,8 @@
 
 #include <webgpu/webgpu.h>
 
-#include "../runtime/pipeline/pipeline.h"
-#include "../runtime/pipeline/core.h"
+#include "runtime/pipeline/pipeline.h"
+#include "runtime/pipeline/core.h"
 
 extern Pipeline g_std_pipelines[PIPELINE_TYPE_COUNT];
 

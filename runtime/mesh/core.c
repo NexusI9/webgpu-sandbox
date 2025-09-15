@@ -7,15 +7,15 @@
 #include <stdlib.h>
 #include <webgpu/webgpu.h>
 
-#include "../utils/dyli.h"
+#include "utils/dyli.h"
 #include "shader/core.h"
 #include "topology/boundbox.h"
-#include "../utils/system.h"
+#include "utils/system.h"
 #include "uniform.h"
-#include "../backend/registry.h"
-#include "../backend/ssbo.h"
-#include "../backend/std_pipeline/core.h"
-#include "../runtime/pipeline/core.h"
+#include "backend/registry.h"
+#include "backend/ssbo.h"
+#include "backend/std_pipeline/core.h"
+#include "runtime/pipeline/core.h"
 
 // Shadow map is implicitely handled withing mesh
 static inline Mesh *mesh_children_list_check_init(Mesh *);

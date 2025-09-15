@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../utils/system.h"
+#include "utils/system.h"
 
 /**
    Allocate necessary resource for dynamic list and update the capacity and

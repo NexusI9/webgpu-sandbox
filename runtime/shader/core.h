@@ -6,9 +6,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "../runtime/pipeline/pipeline.h"
+#include "runtime/pipeline/pipeline.h"
 #include "webgpu/webgpu.h"
-#include "../runtime/pipeline/core.h"
+#include "runtime/pipeline/core.h"
 
 // commons
 #define SHADER_MAX_BIND_GROUP 4

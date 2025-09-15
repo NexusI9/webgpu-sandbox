@@ -5,8 +5,8 @@
 #include <stdlib.h>
 
 #include "string.h"
-#include "../utils/system.h"
-#include "../utils/dyli.h"
+#include "utils/system.h"
+#include "utils/dyli.h"
 
 /**
      ▗▄▖ ▗▖  ▗▖ ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▖

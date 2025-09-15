@@ -6,8 +6,8 @@
 
 #include "stdbool.h"
 #include "string.h"
-#include "../runtime/scene/environment/fog.h"
-#include "../utils/system.h"
+#include "runtime/scene/environment/fog.h"
+#include "utils/system.h"
 
 typedef struct {
   void *data;

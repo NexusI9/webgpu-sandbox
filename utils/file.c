@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../utils/system.h"
+#include "utils/system.h"
 
 void store_file(char **buffer, const char *path) {
 

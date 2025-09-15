@@ -2,15 +2,15 @@
 
 #include <stddef.h>
 
-#include "../utils/color.h"
-#include "../utils/math.h"
-#include "../backend/ssbo.h"
-#include "../backend/std_pipeline/core.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/pipeline/core.h"
-#include "../runtime/shader/update.h"
-#include "../utils/system.h"
-#include "../runtime/shader/core.h"
+#include "utils/color.h"
+#include "utils/math.h"
+#include "backend/ssbo.h"
+#include "backend/std_pipeline/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/pipeline/core.h"
+#include "runtime/shader/update.h"
+#include "utils/system.h"
+#include "runtime/shader/core.h"
 
 /**
    ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖

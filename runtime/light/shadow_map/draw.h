@@ -5,17 +5,17 @@
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
-#include "../runtime/light/light.h"
-#include "../runtime/mesh/mesh.h"
-#include "../runtime/scene/debug/debug.h"
-#include "../utils/projection.h"
-#include "../backend/ssbo.h"
-#include "../runtime/light/core.h"
-#include "../runtime/light/list.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/pipeline/core.h"
-#include "../runtime/scene/debug/core.h"
-#include "../runtime/scene/renderer/render_pass/core.h"
+#include "runtime/light/light.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/scene/debug/debug.h"
+#include "utils/projection.h"
+#include "backend/ssbo.h"
+#include "runtime/light/core.h"
+#include "runtime/light/list.h"
+#include "runtime/mesh/core.h"
+#include "runtime/pipeline/core.h"
+#include "runtime/scene/debug/core.h"
+#include "runtime/scene/renderer/render_pass/core.h"
 
 typedef struct {
   const WGPUDevice device;

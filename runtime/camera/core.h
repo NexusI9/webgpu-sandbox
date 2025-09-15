@@ -9,9 +9,9 @@
 #include <stdint.h>
 #include <cglm/types.h>
 
-#include "../backend/clock.h"
-#include "../backend/registry.h"
-#include "../backend/ssbo.h"
+#include "backend/clock.h"
+#include "backend/registry.h"
+#include "backend/ssbo.h"
 
 typedef enum {
   CameraStatus_Success,

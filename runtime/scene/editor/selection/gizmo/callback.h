@@ -4,8 +4,8 @@
 #include <cglm/types.h>
 
 #include "core.h"
-#include "../runtime/camera/core.h"
-#include "../runtime/viewport/core.h"
+#include "runtime/camera/core.h"
+#include "runtime/viewport/core.h"
 
 void gizmo_callback_position(Gizmo *, Camera *, Viewport *, vec3 *);
 

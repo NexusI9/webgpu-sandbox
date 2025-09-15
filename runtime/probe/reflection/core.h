@@ -4,16 +4,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../runtime/scene/renderer/renderer.h"
-#include "../utils/vector/vector.h"
+#include "runtime/scene/renderer/renderer.h"
+#include "utils/vector/vector.h"
 #include "webgpu/webgpu.h"
-#include "../backend/ssbo.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/pipeline/core.h"
-#include "../runtime/scene/debug/core.h"
-#include "../runtime/scene/renderer/render_pass/core.h"
-#include "../runtime/texture/core.h"
-#include "../utils/dyli.h"
+#include "backend/ssbo.h"
+#include "runtime/mesh/core.h"
+#include "runtime/pipeline/core.h"
+#include "runtime/scene/debug/core.h"
+#include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/texture/core.h"
+#include "utils/dyli.h"
 
 #define PROBE_REFLECTION_SSBO_SLOT_COUNT 2
 #define PROBE_REFLECTION_NEAR 0.1f

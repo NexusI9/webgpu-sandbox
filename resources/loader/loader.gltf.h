@@ -4,11 +4,11 @@
 #include <webgpu/webgpu.h>
 #include <stddef.h>
 
-#include "../runtime/scene/scene.h"
+#include "runtime/scene/scene.h"
 #include "cgltf/cgltf.h"
-#include "../runtime/mesh/core.h"
-#include "../runtime/scene/core.h"
-#include "../runtime/texture/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/scene/core.h"
+#include "runtime/texture/core.h"
 
 typedef enum {
   LoaderGLTFStatus_Success,

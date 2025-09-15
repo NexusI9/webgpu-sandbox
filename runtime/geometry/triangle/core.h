@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include <cglm/types.h>
 
-#include "../vertex/vertex.h"
-#include "../runtime/geometry/vertex/core.h"
-#include "../runtime/geometry/vertex/core.h"
+#include "runtime/geometry/vertex/vertex.h"
+#include "runtime/geometry/vertex/core.h"
+#include "runtime/geometry/vertex/core.h"
 
 typedef struct {
   Vertex a;

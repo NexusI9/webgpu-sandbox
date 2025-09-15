@@ -1,9 +1,9 @@
 #include "ao.h"
 
-#include "../backend/ao_bake/core.h"
-#include "../runtime/scene/renderer/core.h"
-#include "../utils/color.h"
-#include "../runtime/scene/core.h"
+#include "backend/ao_bake/core.h"
+#include "runtime/scene/renderer/core.h"
+#include "utils/color.h"
+#include "runtime/scene/core.h"
 
 void example_ao(Scene *scene, bool debug) {
 

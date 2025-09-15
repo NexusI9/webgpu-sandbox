@@ -5,11 +5,11 @@
 #include <stddef.h>
 #include <cglm/types.h>
 
-#include "../backend/ssbo.h"
-#include "../utils/dyli.h"
-#include "../utils/projection.h"
+#include "backend/ssbo.h"
+#include "utils/dyli.h"
+#include "utils/projection.h"
 #include "core.h"
-#include "../runtime/camera/core.h"
+#include "runtime/camera/core.h"
 
 // See probe reflection limitations:
 // https://discussions.unity.com/t/reflection-probe-inaccuracy/675384/3
