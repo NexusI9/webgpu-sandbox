@@ -72,14 +72,19 @@ DEV_FLAGS := \
 OUTPUT := build/scripts/wgpu/wgpu_scene.js
 
 all:
-	@echo "=== COMPILING SHADERS ==="
-	@make compile_shader
-	@echo
-	@echo "=== COMPILING TO WASM ==="
-	@make wasm
-	@echo	
-	@echo "=== CLEANING SHADERS ==="
-	@make clean_shader
+	@start=$$(date +%s); \
+	echo "=== COMPILING SHADERS ==="; \
+	make compile_shader; \
+	echo; \
+	echo "=== COMPILING TO WASM ==="; \
+	make wasm; \
+	echo; \
+	echo "=== CLEANING SHADERS ==="; \
+	make clean_shader; \
+	end=$$(date +%s); \
+	elapsed=$$((end - start)); \
+	echo; \
+	echo ">> Build time: $${elapsed}s"
 
 
 mbin:
@@ -92,7 +97,7 @@ clean_shader:
 	@echo "done"
 
 wasm:
-	emcc $(DEV_FLAGS) $(MACROS) $(C_FILES) -o $(OUTPUT) \
+	@emcc $(DEV_FLAGS) $(MACROS) $(C_FILES) -o $(OUTPUT) \
 		-I include \
 		-s NO_EXIT_RUNTIME=1 \
 		-s "EXPORTED_RUNTIME_METHODS=['ccall']" \
