@@ -71,7 +71,7 @@ typedef void (*mesh_get_transform_attribute)(Mesh *, vec3 *);
 // Core
 struct Mesh {
 
-  id_t id;
+  reg_id_t id;
   char *name;
 
   // transforms

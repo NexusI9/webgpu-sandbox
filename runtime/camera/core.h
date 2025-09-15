@@ -55,7 +55,7 @@ typedef struct {
 typedef struct Camera {
 
   cclock *clock;
-  id_t id;
+  reg_id_t id;
 
   vec3 position;
   vec3 euler_rotation;

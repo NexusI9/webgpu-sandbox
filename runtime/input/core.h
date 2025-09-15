@@ -75,5 +75,5 @@ void input_mouse_NDC(const float, const float, const int, const int, float *,
                      float *);
 
 KeyRecordStatus input_key_sequence_add(KeyRecordSequence *);
-KeyRecordStatus input_key_sequence_destroy_by_id(id_t);
+KeyRecordStatus input_key_sequence_destroy_by_id(reg_id_t);
 #endif

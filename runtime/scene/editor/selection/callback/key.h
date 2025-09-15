@@ -5,7 +5,7 @@
 #include "../runtime/input/input.h"
 
 typedef struct {
-  key_t sequence[3];
+  keyrec_t sequence[3];
   size_t length;
   input_keyrec_callback callback;
   Axis axis;

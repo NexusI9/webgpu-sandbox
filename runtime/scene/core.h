@@ -257,7 +257,7 @@ typedef enum {
 
 struct Scene {
 
-  id_t id;
+  reg_id_t id;
 
   // camera
   Camera *camera;

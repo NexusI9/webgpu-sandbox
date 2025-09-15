@@ -35,7 +35,7 @@ typedef struct {
   void *destructor;
   html_event_data data;
   size_t size;
-  id_t owner;
+  reg_id_t owner;
 } HTMLEventVoid;
 
 // mouse events
@@ -44,7 +44,7 @@ typedef struct {
   html_event_destructor_callback destructor;
   html_event_data data;
   size_t size;
-  id_t owner;
+  reg_id_t owner;
 } HTMLEventMouse;
 
 typedef struct {
@@ -59,7 +59,7 @@ typedef struct {
   html_event_destructor_callback destructor;
   html_event_data data;
   size_t size;
-  id_t owner;
+  reg_id_t owner;
 } HTMLEventWheel;
 
 typedef struct {
@@ -74,7 +74,7 @@ typedef struct {
   html_event_destructor_callback destructor;
   html_event_data data;
   size_t size;
-  id_t owner;
+  reg_id_t owner;
 } HTMLEventKey;
 
 typedef struct {

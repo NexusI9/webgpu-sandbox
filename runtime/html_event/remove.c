@@ -56,7 +56,7 @@ void html_event_traverse_remove(void *entries, size_t *length, size_t id,
 }
 
 // mouse events
-void html_event_remove_mouse_down(id_t id) {
+void html_event_remove_mouse_down(reg_id_t id) {
 
   void *entries = g_html_event.mouse_down.entries;
   size_t *length = &g_html_event.mouse_down.length;
@@ -65,7 +65,7 @@ void html_event_remove_mouse_down(id_t id) {
   html_event_traverse_remove(entries, length, id, type_size);
 }
 
-void html_event_remove_mouse_up(id_t id) {
+void html_event_remove_mouse_up(reg_id_t id) {
 
   void *entries = g_html_event.mouse_down.entries;
   size_t *length = &g_html_event.mouse_down.length;
@@ -74,7 +74,7 @@ void html_event_remove_mouse_up(id_t id) {
   html_event_traverse_remove(entries, length, id, type_size);
 }
 
-void html_event_remove_mouse_move(id_t id) {
+void html_event_remove_mouse_move(reg_id_t id) {
 
   void *entries = g_html_event.mouse_move.entries;
   size_t *length = &g_html_event.mouse_move.length;
@@ -84,7 +84,7 @@ void html_event_remove_mouse_move(id_t id) {
 }
 
 // wheel events
-void html_event_remove_wheel(id_t id) {
+void html_event_remove_wheel(reg_id_t id) {
 
   void *entries = g_html_event.wheel.entries;
   size_t *length = &g_html_event.wheel.length;
@@ -94,7 +94,7 @@ void html_event_remove_wheel(id_t id) {
 }
 
 // key events
-void html_event_remove_key_down(id_t id) {
+void html_event_remove_key_down(reg_id_t id) {
 
   void *entries = g_html_event.key_down.entries;
   size_t *length = &g_html_event.key_down.length;
@@ -102,7 +102,7 @@ void html_event_remove_key_down(id_t id) {
 
   html_event_traverse_remove(entries, length, id, type_size);
 }
-void html_event_remove_key_up(id_t id) {
+void html_event_remove_key_up(reg_id_t id) {
 
   void *entries = g_html_event.key_up.entries;
   size_t *length = &g_html_event.key_up.length;

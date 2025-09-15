@@ -44,12 +44,12 @@ typedef enum {
    string based history.
  */
 
-typedef uint8_t key_t;
+typedef uint8_t keyrec_t;
 
 typedef struct KeyRecordSequence KeyRecordSequence;
 
 typedef struct {
-  key_t key[INPUT_KEY_RECORD_MAX_KEYS];
+  keyrec_t key[INPUT_KEY_RECORD_MAX_KEYS];
 } KeyRecord;
 
 /**
@@ -64,11 +64,11 @@ typedef struct {
 typedef void (*input_keyrec_callback)(KeyRecordSequence *, void *);
 
 struct KeyRecordSequence {
-  key_t *sequence;
+  keyrec_t *sequence;
   size_t length;
   input_keyrec_callback callback;
   void *data;
-  id_t owner;
+  reg_id_t owner;
 };
 
 typedef struct {
@@ -94,7 +94,7 @@ KeyRecordStatus keyrec_destroy_sequence(KeyRecordSequenceList *,
                                               KeyRecordSequence *);
 
 KeyRecordSequenceListResult
-keyrec_find_sequence_by_id(KeyRecordSequenceList *, id_t);
+keyrec_find_sequence_by_id(KeyRecordSequenceList *, reg_id_t);
 
 // HTML Callbacks
 bool keyrec_html_keydown_callback(int, const EmscriptenKeyboardEvent *,
@@ -102,6 +102,6 @@ bool keyrec_html_keydown_callback(int, const EmscriptenKeyboardEvent *,
 
 void keyrec_flush(KeyRecord*);
 
-bool keyrec_sequence_equal(key_t*, key_t*, size_t);
+bool keyrec_sequence_equal(keyrec_t*, keyrec_t*, size_t);
 
 #endif

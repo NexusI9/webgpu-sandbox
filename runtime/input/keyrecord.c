@@ -9,8 +9,8 @@
 
 #include "../utils/system.h"
 
-static void keyrec_update(KeyRecord *, const key_t, bool);
-static bool keyrec_match(KeyRecord *, const key_t *, const size_t);
+static void keyrec_update(KeyRecord *, const keyrec_t, bool);
+static bool keyrec_match(KeyRecord *, const keyrec_t *, const size_t);
 
 /**
    Create a new html input callback and update the key record according to the
@@ -40,14 +40,14 @@ KeyRecordStatus keyrec_add_sequence(KeyRecordSequenceList *listener,
                                     KeyRecordSequence *seq) {
 
   // duplicate sequence keys
-  key_t *temp = (key_t *)malloc(sizeof(key_t) * seq->length);
+  keyrec_t *temp = (keyrec_t *)malloc(sizeof(keyrec_t) * seq->length);
 
   if (temp == NULL) {
     VERBOSE_WARNING("Could not allocate memory for Key Record sequence.");
     return KeyRecordStatus_AllocFail;
   }
 
-  memcpy(temp, seq->sequence, sizeof(key_t) * seq->length);
+  memcpy(temp, seq->sequence, sizeof(keyrec_t) * seq->length);
   seq->sequence = temp;
 
   // insert in sequence list
@@ -111,7 +111,7 @@ bool keyrec_html_keydown_callback(int enventType,
   return EM_FALSE;
 }
 
-void keyrec_update(KeyRecord *record, const key_t key, bool pressed) {
+void keyrec_update(KeyRecord *record, const keyrec_t key, bool pressed) {
 
   for (size_t i = 0; i < INPUT_KEY_RECORD_MAX_KEYS; i++)
     // shift the timeline by 1 bit
@@ -141,17 +141,17 @@ void keyrec_update(KeyRecord *record, const key_t key, bool pressed) {
 
  */
 
-bool keyrec_match(KeyRecord *record, const key_t *seq, const size_t length) {
+bool keyrec_match(KeyRecord *record, const keyrec_t *seq, const size_t length) {
 
-  const key_t mask = 0x01;
-  key_t cursor = 0;
+  const keyrec_t mask = 0x01;
+  keyrec_t cursor = 0;
 
   for (size_t i = length; i-- > 0;) {
 
-    key_t current_char = seq[i];
+    keyrec_t current_char = seq[i];
 
     // shift by i the record key to the right
-    key_t shift_val = record->key[(size_t)current_char] >> cursor;
+    keyrec_t shift_val = record->key[(size_t)current_char] >> cursor;
 
     // compare with the mask
     // if shifted value is 0 (0x01) means not match returns false
@@ -166,7 +166,7 @@ bool keyrec_match(KeyRecord *record, const key_t *seq, const size_t length) {
 }
 
 KeyRecordSequenceListResult
-keyrec_find_sequence_by_id(KeyRecordSequenceList *list, id_t id) {
+keyrec_find_sequence_by_id(KeyRecordSequenceList *list, reg_id_t id) {
 
   KeyRecordSequenceListResult result = {0};
 
@@ -179,9 +179,9 @@ keyrec_find_sequence_by_id(KeyRecordSequenceList *list, id_t id) {
 }
 
 void keyrec_flush(KeyRecord *record) {
-  memset(record->key, 0, INPUT_KEY_RECORD_MAX_KEYS * sizeof(key_t));
+  memset(record->key, 0, INPUT_KEY_RECORD_MAX_KEYS * sizeof(keyrec_t));
 }
 
-bool keyrec_sequence_equal(key_t *a, key_t *b, size_t length) {
-  return memcmp(a, b, length * sizeof(key_t)) == 0;
+bool keyrec_sequence_equal(keyrec_t *a, keyrec_t *b, size_t length) {
+  return memcmp(a, b, length * sizeof(keyrec_t)) == 0;
 }

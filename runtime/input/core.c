@@ -154,7 +154,7 @@ KeyRecordStatus input_key_sequence_add(KeyRecordSequence *seq) {
   return keyrec_add_sequence(&g_input.sequence_listener, seq);
 }
 
-KeyRecordStatus input_key_sequence_destroy_by_id(id_t id) {
+KeyRecordStatus input_key_sequence_destroy_by_id(reg_id_t id) {
 
   // seach all sequence with the owner id
   KeyRecordSequenceListResult result =

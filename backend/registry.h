@@ -4,7 +4,7 @@
 #define REG_MAX_OBJECTS 1024
 #define REG_OWNER_UNDEFINED -1
 
-typedef int id_t;
+typedef int reg_id_t;
 typedef enum {
   RegEntryType_Mesh,
   RegEntryType_Camera,
@@ -17,15 +17,15 @@ typedef enum {
 } RegEntryType;
 
 typedef struct {
-  id_t id;
+  reg_id_t id;
   RegEntryType type;
   void *ptr;
 } RegEntry;
 
 static RegEntry g_reg[REG_MAX_OBJECTS] = {0};
 
-id_t reg_register(void *, RegEntryType);
+reg_id_t reg_register(void *, RegEntryType);
 
-void *reg_lookup(id_t);
+void *reg_lookup(reg_id_t);
 
 #endif

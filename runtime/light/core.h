@@ -29,7 +29,7 @@ typedef enum {
 
 // core type
 typedef struct {
-  id_t id;
+  reg_id_t id;
   vec3 position;
   vec3 color;
   float intensity;
@@ -42,7 +42,7 @@ typedef struct {
 } PointLight;
 
 typedef struct {
-  id_t id;
+  reg_id_t id;
   vec3 position; // abstract, for UI purpose only
   vec3 color;
   float intensity;
@@ -51,7 +51,7 @@ typedef struct {
 } AmbientLight;
 
 typedef struct {
-  id_t id;
+  reg_id_t id;
   vec3 position;
   vec3 target;
   vec3 color;
@@ -64,7 +64,7 @@ typedef struct {
 } SpotLight;
 
 typedef struct {
-  id_t id;
+  reg_id_t id;
   vec3 position;
   vec3 color;
   float size;
