@@ -1,8 +1,10 @@
 #include "remove.h"
-#include "core.h"
-#include <string.h>
 
-#include "../utils/system.h"
+#include <string.h>
+#include <stdlib.h>
+
+#include "core.h"
+#include "../backend/registry.h"
 
 static void html_event_remove(void *, size_t *, size_t, size_t);
 static void html_event_traverse_remove(void *, size_t *, size_t, size_t);

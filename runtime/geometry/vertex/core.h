@@ -4,6 +4,7 @@
 #include <cglm/cglm.h>
 #include <stddef.h>
 #include <webgpu/webgpu.h>
+#include <cglm/types.h>
 
 #define VERTEX_STRIDE 15
 #define VERTEX_ATTRIBUTE_COUNT 5

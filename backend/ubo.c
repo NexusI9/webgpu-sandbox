@@ -1,10 +1,13 @@
 #include "ubo.h"
-#include "../utils/system.h"
-#include "stdbool.h"
-#include "string.h"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <webgpu/webgpu.h>
+
+#include "stdbool.h"
+#include "string.h"
+#include "../runtime/scene/environment/fog.h"
+#include "../utils/system.h"
 
 typedef struct {
   void *data;

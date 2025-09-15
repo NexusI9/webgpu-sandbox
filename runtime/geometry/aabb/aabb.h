@@ -1,8 +1,16 @@
 #ifndef _AABB_H_
 #define _AABB_H_
 
-#include "../vertex/vertex.h"
 #include <cglm/cglm.h>
+#include <cglm/types.h>
+#include <cglm/vec3.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "../vertex/vertex.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/attribute.h"
 
 // Axis-Aligned Bounding Box
 typedef struct {

@@ -1,4 +1,8 @@
 #include "point.h"
+
+#include <cglm/vec3.h>
+#include <math.h>
+
 #include "math.h"
 
 /**

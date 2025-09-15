@@ -1,8 +1,10 @@
 #include "uniform.h"
+
+#include <cglm/mat4.h>
+#include <cglm/vec3.h>
+
 #include "../utils/projection.h"
 #include "core.h"
-#include "list.h"
-#include <string.h>
 
 /* Uniforms */
 void light_point_uniform_update(PointLight *light) {

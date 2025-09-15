@@ -1,10 +1,14 @@
 #ifndef _SHADER_UPDATE_H_
 #define _SHADER_UPDATE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #include "../runtime/texture/texture.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
+#include "../runtime/texture/core.h"
 
 typedef enum {
   ShaderBufferLifetime_Keep,

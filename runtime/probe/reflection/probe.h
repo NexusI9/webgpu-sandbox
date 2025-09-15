@@ -1,12 +1,15 @@
 #ifndef _PROBE_REFLECTION_PROBE_H_
 #define _PROBE_REFLECTION_PROBE_H_
 
+#include <cglm/cglm.h>
+#include <stddef.h>
+#include <cglm/types.h>
+
 #include "../backend/ssbo.h"
 #include "../utils/dyli.h"
 #include "../utils/projection.h"
-#include <cglm/cglm.h>
-#include <stddef.h>
 #include "core.h"
+#include "../runtime/camera/core.h"
 
 // See probe reflection limitations:
 // https://discussions.unity.com/t/reflection-probe-inaccuracy/675384/3

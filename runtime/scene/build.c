@@ -1,9 +1,20 @@
 #include "build.h"
-#include "../runtime/mesh/shader/shader.h"
-#include "../utils/system.h"
+
+#include <stddef.h>
+
 #include "core.h"
-#include "webgpu/webgpu.h"
-#include <stdint.h>
+#include "../backend/ssbo.h"
+#include "../backend/ubo.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/mesh/shader/texture.h"
+#include "../runtime/mesh/topology/base.h"
+#include "../runtime/mesh/topology/boundbox.h"
+#include "../runtime/mesh/topology/core.h"
+#include "../runtime/mesh/topology/wireframe.h"
+#include "../runtime/pipeline/core.h"
+#include "renderer/core.h"
+#include "renderer/render_pass/core.h"
+#include "../runtime/mesh/core.h"
 
 typedef void (*scene_builder_callback)(Scene *, Mesh *, const Pipeline *);
 

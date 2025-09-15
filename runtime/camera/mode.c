@@ -1,8 +1,15 @@
 #include "mode.h"
-#include "../input/input.h"
-#include "../utils/system.h"
+
+#include <cglm/affine.h>
+#include <cglm/mat4.h>
+#include <cglm/quat.h>
+#include <cglm/types.h>
+#include <cglm/vec3.h>
+#include <stdint.h>
+
 #include "core.h"
 #include "uniform.h"
+#include "../runtime/input/core.h"
 
 static void camera_target_from_yaw_pitch(Camera *, float, float);
 

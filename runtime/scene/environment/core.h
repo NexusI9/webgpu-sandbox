@@ -1,12 +1,13 @@
 #ifndef SCENE_ENVIRONMENT_CORE_H_
 #define SCENE_ENVIRONMENT_CORE_H_
 
+#include <webgpu/webgpu.h>
+
 #include "../backend/ssbo.h"
 #include "../backend/ubo.h"
 #include "./fog.h"
-
 #include "../utils/color.h"
-#include <webgpu/webgpu.h>
+#include "fog.h"
 
 typedef struct {
   WGPUTexture texture;

@@ -1,6 +1,8 @@
 #ifndef _VERTEX_LIST_H_
 #define _VERTEX_LIST_H_
 
+#include <stddef.h>
+
 #include "attribute.h"
 #include "core.h"
 #include "index.h"

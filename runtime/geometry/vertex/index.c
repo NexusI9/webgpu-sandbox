@@ -1,8 +1,11 @@
 #include "index.h"
+
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "core.h"
 #include "string.h"
-#include <stddef.h>
-
 #include "../utils/system.h"
 
 VertexStatus vertex_index_copy(VertexIndex *src, VertexIndex *dest) {

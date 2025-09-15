@@ -1,6 +1,9 @@
 #ifndef _TEXTURE_CREATE_H_
 #define _TEXTURE_CREATE_H_
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "core.h"
 #include "webgpu/webgpu.h"
 

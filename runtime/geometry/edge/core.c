@@ -1,10 +1,12 @@
 #include "core.h"
-#include "../utils/vector/vector.h"
+
 #include <stddef.h>
-#include <stdio.h>
 #include <string.h>
+#include <cglm/ivec2.h>
+#include <stdlib.h>
 
 #include "../utils/system.h"
+#include "../utils/vector/core.h"
 
 static size_t edge_key_hash(EdgeKey key, size_t capacity) {
   /*

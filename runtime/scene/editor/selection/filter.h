@@ -1,7 +1,11 @@
 #ifndef _SCENE_EDITOR_SELECTION_FILTER_H_
 #define _SCENE_EDITOR_SELECTION_FILTER_H_
 
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "../runtime/scene/core.h"
+#include "../runtime/mesh/core.h"
 
 typedef enum {
   SceneSelectionFilterStatus_Success,

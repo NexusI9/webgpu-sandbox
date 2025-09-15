@@ -1,9 +1,14 @@
 #include "boundbox.h"
-#include "../../geometry/line/line.h"
+
+#include <stdbool.h>
+#include <stdlib.h>
+
 #include "../backend/buffer.h"
-#include "../utils/system.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
+#include "../runtime/geometry/line/core.h"
+#include "../runtime/geometry/aabb/aabb.h"
+#include "../runtime/geometry/vertex/core.h"
 
 static void mesh_topology_boundbox_cube(MeshTopologyBoundbox *);
 

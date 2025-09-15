@@ -1,7 +1,11 @@
 #include "uniform.h"
-#include "../../utils/system.h"
-#include "core.h"
+
 #include <string.h>
+#include <cglm/mat4.h>
+#include <cglm/types.h>
+#include <cglm/vec4.h>
+
+#include "core.h"
 
 MeshUniform *mesh_uniform(Mesh *mesh) {
   return (MeshUniform *)mesh->ssbo_slot.uniform;

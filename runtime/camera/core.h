@@ -3,14 +3,15 @@
 
 #define CAMERA_MODE_COUNT 4
 
-#include "../backend/clock.h"
-#include "../backend/registry.h"
-#include "../backend/ssbo.h"
 #include <emscripten/html5.h>
-
 #include <cglm/cglm.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <cglm/types.h>
+
+#include "../backend/clock.h"
+#include "../backend/registry.h"
+#include "../backend/ssbo.h"
 
 typedef enum {
   CameraStatus_Success,

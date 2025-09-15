@@ -1,12 +1,12 @@
 #include "core.h"
+
+#include <stdbool.h>
+
 #include "../backend/buffer.h"
 #include "../utils/file.h"
-#include "../utils/system.h"
-#include "emscripten/emscripten.h"
-#include "string.h"
 #include "webgpu/webgpu.h"
-#include <stdbool.h>
-#include <stdio.h>
+#include "../runtime/texture/core.h"
+#include "../runtime/geometry/vertex/core.h"
 
 static inline void pipeline_set_vertex_layout(Pipeline *);
 

@@ -1,7 +1,11 @@
 #ifndef _SCENE_EDTIOR_OBJECT_LIST_H_
 #define _SCENE_EDTIOR_OBJECT_LIST_H_
 
+#include <stddef.h>
+
 #include "../runtime/scene/scene.h"
+#include "../runtime/scene/core.h"
+#include "../utils/dyli.h"
 
 /*
   GIZMO LIST

@@ -1,9 +1,12 @@
 #ifndef _HTML_EVENT_CORE_H_
 #define _HTML_EVENT_CORE_H_
+#include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "../backend/registry.h"
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
-#include <stdint.h>
 
 
 typedef enum{

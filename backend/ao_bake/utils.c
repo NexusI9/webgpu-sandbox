@@ -1,7 +1,23 @@
 #include "utils.h"
-#include "../runtime/geometry/line/line.h"
-#include "../utils/point.h"
+
 #include <stdint.h>
+#include <cglm/mat4.h>
+#include <cglm/types.h>
+#include <cglm/util.h>
+#include <cglm/vec2.h>
+#include <cglm/vec3.h>
+
+#include "../utils/point.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/core.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "../runtime/scene/debug/ray.h"
+#include "../runtime/texture/processing.h"
+#include "../runtime/texture/write.h"
+#include "core.h"
+#include "../runtime/geometry/triangle/core.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/texture/core.h"
 
 #ifdef AO_BAKE_HIT_COUNT
 int g_debug_ao_bake_hit_count = 0;

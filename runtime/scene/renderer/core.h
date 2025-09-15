@@ -1,6 +1,11 @@
 #ifndef _SCENE_RENDERER_CORE_H_
 #define _SCENE_RENDERER_CORE_H_
 
+#include <stdint.h>
+#include <emscripten/html5.h>
+#include <stdbool.h>
+#include <sys/types.h>
+
 #include "../backend/clock.h"
 #include "../backend/ssbo.h"
 #include "../backend/ubo.h"
@@ -9,7 +14,9 @@
 #include "../backend/ao_bake/ao_bake.h"
 #include "./render_pass/render_pass.h"
 #include "webgpu/webgpu.h"
-#include <stdint.h>
+#include "../backend/ao_bake/core.h"
+#include "../runtime/pipeline/core.h"
+#include "render_pass/core.h"
 
 #define SCENE_RENDERER_MAX_HOOK 6
 #define SCENE_RENDERER_DPI_AUTO 0

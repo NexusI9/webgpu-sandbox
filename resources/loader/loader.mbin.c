@@ -1,13 +1,19 @@
 #include "loader.mbin.h"
-#include "../utils/system.h"
-#include "string.h"
+
 #include <stddef.h>
 #include <stdio.h>
-#include <sys/stat.h>
+#include <stdlib.h>
+
+#include "../utils/system.h"
+#include "../resources/tool/obj2mbin/lib/mbin.h"
+#include "string.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
 
 #ifdef __unix__
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 

@@ -1,6 +1,7 @@
 #include "draw.h"
-#include "../camera/camera.h"
+
 #include "core.h"
+#include "../runtime/mesh/core.h"
 
 /**
    The function handles the dynamic change for draw mode.

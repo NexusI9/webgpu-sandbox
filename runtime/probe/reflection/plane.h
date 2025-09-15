@@ -1,9 +1,19 @@
 #ifndef _PROBE_REFLECTION_PLANE_H_
 #define _PROBE_REFLECTION_PLANE_H_
 
+#include <cglm/types.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include "../runtime/scene/renderer/render_pass/render_pass.h"
 #include "./core.h"
 #include "cglm/cglm.h"
+#include "../backend/ssbo.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/geometry/aabb/aabb.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/scene/renderer/render_pass/core.h"
+#include "../utils/dyli.h"
 
 #define PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT 32
 

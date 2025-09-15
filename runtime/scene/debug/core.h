@@ -1,10 +1,16 @@
 #ifndef _SCENE_DEBUG_CORE_H_
 #define _SCENE_DEBUG_CORE_H_
 
+#include <webgpu/webgpu.h>
+
 #include "../backend/ssbo.h"
 #include "../runtime/camera/camera.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/viewport/viewport.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/mesh/list.h"
+#include "../runtime/viewport/core.h"
 
 #define SCENE_DEBUG_MESH_LIST_COUNT 2
 #define SCENE_DEBUG_UNDEFINED 0

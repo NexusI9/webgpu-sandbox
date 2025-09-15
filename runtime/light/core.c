@@ -1,7 +1,14 @@
 #include "core.h"
-#include "uniform.h"
+
 #include <stdint.h>
-#include <stdlib.h>
+#include <cglm/util.h>
+#include <cglm/vec3.h>
+#include <math.h>
+
+#include "uniform.h"
+#include "../backend/registry.h"
+#include "../backend/ssbo.h"
+#include "../utils/projection.h"
 
 void light_point_create(PointLight *light, PointLightDescriptor *desc) {
 

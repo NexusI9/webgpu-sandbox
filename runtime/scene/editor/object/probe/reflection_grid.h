@@ -3,6 +3,7 @@
 
 #include "../runtime/probe/probe.h"
 #include "../runtime/scene/core.h"
+#include "../runtime/probe/reflection/grid.h"
 
 void seo_probe_reflection_grid_create(SceneEditorObject *, ProbeReflectionGrid *,
                                  const SEOCreateDescriptor *);

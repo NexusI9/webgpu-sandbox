@@ -1,5 +1,9 @@
 #include "utils.h"
 
+#include <cglm/types.h>
+#include <cglm/vec3.h>
+#include <stddef.h>
+
 /**
    Traverse all the mesh ref lists and determine if a mesh if found in it.
    Returns True if found. This skip the current mesh during the raycast hit test

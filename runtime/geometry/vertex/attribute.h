@@ -1,5 +1,8 @@
 #ifndef _VERTEX_ATTRIBUTE_H_
 #define _VERTEX_ATTRIBUTE_H_
+#include <stddef.h>
+#include <webgpu/webgpu.h>
+
 #include "core.h"
 
 typedef float vattr_t;

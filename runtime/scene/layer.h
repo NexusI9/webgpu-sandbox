@@ -1,7 +1,12 @@
 #ifndef _SCENE_LAYER_
 #define _SCENE_LAYER_
 
+#include <stddef.h>
+
 #include "../mesh/mesh.h"
+#include "../runtime/mesh/core.h"
+#include "../utils/dyli.h"
+#include "../runtime/mesh/core.h"
 
 #define SCENE_LAYER_CAPACITY 16
 #define SCENE_LAYER_SET_CAPACITY 128

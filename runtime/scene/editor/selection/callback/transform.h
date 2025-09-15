@@ -1,8 +1,13 @@
 #ifndef _SCENE_EDITOR_CALLBACK_TRANSFORM_H_
 #define _SCENE_EDITOR_CALLBACK_TRANSFORM_H_
 
-#include "../../../core.h"
 #include <cglm/cglm.h>
+
+#include "../../../core.h"
+#include "../backend/ssbo.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/probe/reflection/grid.h"
+#include "../runtime/probe/reflection/plane.h"
 
 // mesh transform
 void scene_selection_mesh_transform(SceneSelectionTransform *);

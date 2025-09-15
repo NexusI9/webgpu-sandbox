@@ -1,8 +1,16 @@
 #include "editor.h"
-#include "../scene.h"
-#include "./selection/selection.h"
-#include "object/object.h"
+
 #include <stddef.h>
+
+#include "../runtime/mesh/ref_list.h"
+#include "../runtime/scene/add.h"
+#include "../runtime/scene/build.h"
+#include "object/grid/grid.h"
+#include "object/list/list.h"
+#include "selection/core.h"
+#include "selection/gizmo/core.h"
+#include "../runtime/scene/core.h"
+#include "../runtime/scene/layer.h"
 
 static inline void scene_editor_gizmo_create_grid(Scene *);
 static inline void scene_editor_gizmo_create_transform(Scene *);

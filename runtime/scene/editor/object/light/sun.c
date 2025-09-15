@@ -1,7 +1,21 @@
 #include "sun.h"
-#include "../builder/builder.h"
-#include "../runtime/scene/editor/object/object.h"
-#include "../runtime/scene/scene.h"
+
+#include <cglm/vec3.h>
+#include <stddef.h>
+
+#include "../backend/ssbo.h"
+#include "../runtime/light/shadow_map/draw.h"
+#include "../runtime/light/uniform.h"
+#include "../runtime/mesh/transform.h"
+#include "../runtime/scene/add.h"
+#include "../runtime/scene/core.h"
+#include "../runtime/scene/debug/core.h"
+#include "../runtime/scene/editor/object/builder/billboard.h"
+#include "../runtime/scene/editor/object/list/list.h"
+#include "../runtime/scene/editor/selection/gizmo/core.h"
+#include "../runtime/scene/renderer/core.h"
+#include "../runtime/light/core.h"
+#include "../runtime/light/list.h"
 
 static inline void seo_light_sun_create_common(SceneEditorObject *, SunLight *,
                                                const SEOCreateDescriptor *);

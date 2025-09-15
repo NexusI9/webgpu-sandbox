@@ -1,9 +1,11 @@
 #ifndef _VECTOR_UTILS_VEC3_LIST_H_
 #define _VECTOR_UTILS_VEC3_LIST_H_
 
-#include "../dyli.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
+#include <cglm/types.h>
+
+#include "../dyli.h"
 
 typedef struct {
   vec3 *entries;

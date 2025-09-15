@@ -1,8 +1,16 @@
 #include "grid.h"
-#include "../backend/std_pipeline/std_pipeline.h"
-#include "../runtime/mesh/shader/shader.h"
+
+#include <cglm/types.h>
+
 #include "../runtime/primitive/plane.h"
-#include "webgpu/webgpu.h"
+#include "../backend/std_pipeline/core.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/mesh/transform.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/primitive/core.h"
+#include "../runtime/shader/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/mesh/core.h"
 
 void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
 

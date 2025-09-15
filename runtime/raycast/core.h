@@ -1,10 +1,16 @@
 #ifndef _RAYCAST_CORE_H_
 #define _RAYCAST_CORE_H_
 
+#include <cglm/cglm.h>
+#include <cglm/types.h>
+#include <stdbool.h>
+
 #include "../geometry/aabb/aabb.h"
 #include "../geometry/plane/plane.h"
 #include "../utils/vector/vector.h"
-#include <cglm/cglm.h>
+#include "../runtime/geometry/plane/core.h"
+#include "../utils/vector/core.h"
+#include "../runtime/geometry/plane/core.h"
 
 #define RAYCAST_DISTANCE_INF 1000.0f
 

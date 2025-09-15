@@ -1,9 +1,11 @@
 #include "group.h"
+
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
 #include "../utils/hash.h"
 #include "index.h"
-#include <stdint.h>
-#include <string.h>
-
 #include "../utils/system.h"
 
 /**

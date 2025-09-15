@@ -1,6 +1,10 @@
 #include "draw.h"
-#include "../runtime/mesh/shader/shader.h"
+
+#include <stddef.h>
+
 #include "webgpu/webgpu.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/mesh/shader/core.h"
 
 /**
 

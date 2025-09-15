@@ -1,6 +1,10 @@
 #ifndef _VERTEX_INDEX_H_
 #define _VERTEX_INDEX_H_
 
+#include <stddef.h>
+#include <stdint.h>
+#include <webgpu/webgpu.h>
+
 #include "core.h"
 
 /*

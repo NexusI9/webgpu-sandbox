@@ -1,5 +1,8 @@
 #ifndef _MESH_REF_LIST_H_
 #define _MESH_REF_LIST_H_
+#include <cglm/types.h>
+#include <stddef.h>
+
 #include "../utils/dyli.h"
 #include "core.h"
 

@@ -1,9 +1,14 @@
 #ifndef _SHADOW_MAP_CORE_H_
 #define _SHADOW_MAP_CORE_H_
 
-#include "../runtime/light/list.h"
-
 #include <webgpu/webgpu.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "../runtime/light/list.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/scene/renderer/render_pass/core.h"
+#include "../runtime/texture/core.h"
 
 #define SHADOW_DEPTH_FORMAT WGPUTextureFormat_Depth32Float
 #define SHADOW_COLOR_FORMAT TEXTURE_FORMAT_ONSCREEN_DEFAULT

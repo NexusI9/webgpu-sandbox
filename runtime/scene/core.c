@@ -1,13 +1,29 @@
 #include "core.h"
-#include "./draw.h"
+
 #include "./draw_config.h"
 #include "./editor/editor.h"
 #include "./layer.h"
 #include "debug/core.h"
 #include "event/event.html.h"
-
 #include "../utils/system.h"
 #include "renderer/render_pass/core.h"
+#include "../backend/clock.h"
+#include "../backend/registry.h"
+#include "../backend/ssbo.h"
+#include "../runtime/camera/list.h"
+#include "../runtime/light/core.h"
+#include "../runtime/light/shadow_map/core.h"
+#include "../runtime/mesh/ref_list.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/probe/reflection/core.h"
+#include "../runtime/texture/core.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/light/list.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/mesh/list.h"
+#include "../runtime/probe/reflection/grid.h"
+#include "../runtime/probe/reflection/plane.h"
+#include "../runtime/viewport/core.h"
 
 // initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);

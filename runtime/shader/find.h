@@ -1,6 +1,8 @@
 #ifndef _SHADER_FIND_H_
 #define _SHADER_FIND_H_
 
+#include <stddef.h>
+
 #include "bindgroup.h"
 #include "core.h"
 

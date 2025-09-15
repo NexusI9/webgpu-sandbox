@@ -1,10 +1,18 @@
 #include "ssbo.h"
-#include "../runtime/camera/camera.h"
-#include "../runtime/light/light.h"
-#include "../runtime/probe/probe.h"
-#include "../runtime/viewport/viewport.h"
-#include "webgpu/webgpu.h"
+
 #include <stdint.h>
+#include <stdbool.h>
+
+#include "webgpu/webgpu.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/light/uniform.h"
+#include "../runtime/probe/reflection/plane.h"
+#include "../runtime/probe/reflection/probe.h"
+#include "../utils/stli.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/viewport/core.h"
+#include "../utils/projection.h"
+#include "../utils/system.h"
 
 static const struct {
   const size_t size;

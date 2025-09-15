@@ -1,9 +1,18 @@
 #include "./local.h"
-#include "../runtime/geometry/line/line.h"
-#include "../runtime/mesh/shader/shader.h"
+
+#include <cglm/types.h>
+#include <cglm/vec2.h>
+#include <stddef.h>
+
 #include "../utils/system.h"
 #include "./utils.h"
 #include "core.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/core.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/scene/debug/ray.h"
+#include "../runtime/texture/write.h"
 
 /**
    Bake local ambient occlusion to texture, meaning occlusion based on mesh own

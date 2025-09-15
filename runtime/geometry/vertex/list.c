@@ -1,4 +1,7 @@
 #include "list.h"
+
+#include <stdlib.h>
+
 #include "core.h"
 
 void vertex_list_create(VertexList *list, size_t capacity) {

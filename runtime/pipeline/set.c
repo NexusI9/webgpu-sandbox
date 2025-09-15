@@ -1,6 +1,6 @@
 #include "set.h"
+
 #include "webgpu/webgpu.h"
-#include <stdio.h>
 
 /**
    Define custom vertex state for pipeline prior building it

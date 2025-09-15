@@ -1,6 +1,9 @@
 #include "texture.h"
 
+#include <stddef.h>
+
 #include "../utils/system.h"
+#include "../runtime/texture/core.h"
 
 
 /**

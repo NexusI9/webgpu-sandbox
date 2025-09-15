@@ -1,6 +1,8 @@
 #ifndef _CAMERA_UNIFORM_H_
 #define _CAMERA_UNIFORM_H_
 
+#include <stdbool.h>
+
 #include "core.h"
 
 CameraUniform *camera_uniform(Camera *);

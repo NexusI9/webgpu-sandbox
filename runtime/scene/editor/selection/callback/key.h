@@ -1,8 +1,14 @@
 #ifndef _SCENE_EDITOR_CALLBACK_KEY_H_
 #define _SCENE_EDITOR_CALLBACK_KEY_H_
 
+#include <stddef.h>
+
 #include "../../../core.h"
 #include "../runtime/input/input.h"
+#include "../runtime/input/keyrecord.h"
+#include "../runtime/scene/editor/selection/gizmo/core.h"
+#include "../utils/vector/core.h"
+#include "../runtime/scene/editor/selection/gizmo/core.h"
 
 typedef struct {
   keyrec_t sequence[3];

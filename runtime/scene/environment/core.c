@@ -1,6 +1,10 @@
 #include "core.h"
-#include "../backend/std_texture/std_texture.h"
+
+#include <cglm/vec4.h>
+
 #include "fog.h"
+#include "../backend/std_texture/core.h"
+#include "../backend/ubo.h"
 
 void scene_environment_init(SceneEnvironment *env,
                             const SceneEnvironmentDescriptor *desc) {

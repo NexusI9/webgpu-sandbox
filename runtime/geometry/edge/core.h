@@ -2,6 +2,9 @@
 #define _EDGE_CORE_H_
 
 #include <cglm/cglm.h>
+#include <cglm/types.h>
+#include <stdbool.h>
+#include <stddef.h>
 
 typedef struct {
   ivec3 a;

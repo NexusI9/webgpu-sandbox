@@ -1,7 +1,10 @@
 #ifndef _MESH_UNIFORM_H_
 #define _MESH_UNIFORM_H_
 
+#include <stdbool.h>
+
 #include "core.h"
+#include "../backend/ssbo.h"
 
 MeshUniform *mesh_uniform(Mesh *);
 

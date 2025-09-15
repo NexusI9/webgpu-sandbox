@@ -1,13 +1,13 @@
 #ifndef _SHADER_UNIFORM_BUFFER_OBJECT_H_
 #define _SHADER_UNIFORM_BUFFER_OBJECT_H_
 
-#include "../runtime/scene/environment/fog.h"
-#include "../runtime/light/list.h"
-#include "../runtime/probe/core.h"
-
 #include <cglm/cglm.h>
 #include <stdint.h>
 #include <webgpu/webgpu.h>
+
+#include "../runtime/scene/environment/fog.h"
+#include "../runtime/light/list.h"
+#include "../runtime/probe/core.h"
 
 typedef enum {
   UBOStatus_Success, 

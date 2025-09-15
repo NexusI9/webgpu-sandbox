@@ -1,16 +1,21 @@
 #include "./core.h"
-#include "../backend/buffer.h"
-#include "../backend/std_pipeline/std_pipeline.h"
-#include "../utils/dyli.h"
-#include "../utils/matrix.h"
-#include "shader/core.h"
-#include "shader/shader.h"
-#include "shader/texture.h"
-#include "topology/boundbox.h"
-#include <string.h>
 
+#include <string.h>
+#include <cglm/mat4.h>
+#include <cglm/quat.h>
+#include <cglm/vec3.h>
+#include <stdlib.h>
+#include <webgpu/webgpu.h>
+
+#include "../utils/dyli.h"
+#include "shader/core.h"
+#include "topology/boundbox.h"
 #include "../utils/system.h"
 #include "uniform.h"
+#include "../backend/registry.h"
+#include "../backend/ssbo.h"
+#include "../backend/std_pipeline/core.h"
+#include "../runtime/pipeline/core.h"
 
 // Shadow map is implicitely handled withing mesh
 static inline Mesh *mesh_children_list_check_init(Mesh *);

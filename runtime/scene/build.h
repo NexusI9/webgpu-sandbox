@@ -1,6 +1,7 @@
 #ifndef _SCENE_MESH_BUILD_H_
 #define _SCENE_MESH_BUILD_H_
 #include "core.h"
+#include "../runtime/mesh/core.h"
 
 /**
    Mesh Building process:

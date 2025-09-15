@@ -1,7 +1,8 @@
 #include "translate.h"
-#include "../resources/loader/loader.mbin.h"
+
 #include "./utils.h"
-#include "webgpu/webgpu.h"
+#include "core.h"
+#include "../runtime/mesh/core.h"
 
 void gizmo_position_create(MeshRefList *list, MeshRefList *interactive_list,
                            const GizmoCreateDescriptor *desc) {

@@ -1,6 +1,9 @@
 #include "show.h"
+
 #include "core.h"
 #include "renderer/render_pass/core.h"
+#include "renderer/core.h"
+#include "../runtime/mesh/core.h"
 
 /**
    Show the mesh by pushing it to the pipeline ref list

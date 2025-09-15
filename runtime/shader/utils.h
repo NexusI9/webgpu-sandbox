@@ -1,8 +1,13 @@
 #ifndef _SHADER_UTILS_H_
 #define _SHADER_UTILS_H_
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include "core.h"
 #include "webgpu/webgpu.h"
+
 #define SHADER_BIND_VALID 0
 #define SHADER_BIND_UNVALID 1
 

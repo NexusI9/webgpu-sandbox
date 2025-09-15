@@ -1,9 +1,8 @@
 #include "list.h"
-#include "../../utils/system.h"
+
 #include "core.h"
-#include "string.h"
 #include "transform.h"
-#include <stdlib.h>
+#include "../utils/dyli.h"
 
 DynamicListStatus mesh_list_create(MeshList *list, size_t capacity) {
 

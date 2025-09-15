@@ -1,12 +1,14 @@
 #ifndef _LIGHT_CORE_H_
 #define _LIGHT_CORE_H_
 
+#include <cglm/cglm.h>
+#include <stdint.h>
+#include <cglm/types.h>
+
 #include "../backend/registry.h"
 #include "../backend/ssbo.h"
 #include "../utils/projection.h"
 #include "webgpu/webgpu.h"
-#include <cglm/cglm.h>
-#include <stdint.h>
 
 
 #define LIGHT_POINT_VIEWS 6

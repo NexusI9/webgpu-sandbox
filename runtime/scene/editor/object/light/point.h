@@ -4,6 +4,8 @@
 #include "../runtime/light/light.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/scene/core.h"
+#include "../runtime/light/core.h"
+#include "../runtime/light/list.h"
 
 /* base */
 void seo_light_point_create(SceneEditorObject *, PointLight *,

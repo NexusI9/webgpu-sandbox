@@ -1,10 +1,12 @@
 #ifndef _TEXTURE_CORE_H_
 #define _TEXTURE_CORE_H_
 
-#include "../utils/vector/vector.h"
 #include <cglm/cglm.h>
 #include <stdint.h>
 #include <webgpu/webgpu.h>
+#include <stddef.h>
+
+#include "../utils/vector/vector.h"
 
 #define TEXTURE_MIN_SIZE 64
 #define TEXTURE_FORMAT_OFFSCREEN_DEFAULT WGPUTextureFormat_RGBA8Unorm

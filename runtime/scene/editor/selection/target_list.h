@@ -1,7 +1,10 @@
 #ifndef _SCENE_EDITOR_SELECTION_TARGET_LIST_H_
 #define _SCENE_EDITOR_SELECTION_TARGET_LIST_H_
 
+#include <stddef.h>
+
 #include "../runtime/scene/core.h"
+#include "../utils/dyli.h"
 
 /* Object List */
 DynamicListStatus scene_selection_target_list_create(SceneSelectionTargetList *,

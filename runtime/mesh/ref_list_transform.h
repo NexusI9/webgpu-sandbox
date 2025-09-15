@@ -1,8 +1,12 @@
 #ifndef _MESH_REFERENCE_LIST_TRANSFORM_H_
 #define _MESH_REFERENCE_LIST_TRANSFORM_H_
 
+#include <cglm/types.h>
+
 #include "../utils/vector/vector.h"
 #include "ref_list.h"
+#include "../utils/vector/core.h"
+#include "core.h"
 
 // scale
 void mesh_ref_list_set_scale(MeshRefList *, vec3);

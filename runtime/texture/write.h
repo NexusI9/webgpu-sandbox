@@ -1,8 +1,11 @@
 #ifndef _TEXTURE_WRITE_H_
 #define _TEXTURE_WRITE_H_
 
-#include "core.h"
 #include <stdint.h>
+#include <cglm/types.h>
+#include <stddef.h>
+
+#include "core.h"
 
 typedef enum {
   TextureWriteMethod_Replace,

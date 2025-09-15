@@ -1,6 +1,14 @@
 #include "ray.h"
-#include "../runtime/geometry/line/line.h"
-#include "../runtime/mesh/shader/shader.h"
+
+#include <stdio.h>
+
+#include "../runtime/geometry/line/core.h"
+#include "../runtime/mesh/list.h"
+#include "../runtime/mesh/ref_list.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/shader/update.h"
+#include "../utils/color.h"
+#include "../runtime/mesh/core.h"
 
 void scene_debug_ray_create(SceneDebug *debug, Mesh **line) {
   *line = mesh_list_new_mesh(debug->pool);

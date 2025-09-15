@@ -1,13 +1,24 @@
 #include "mouse.h"
-#include "../../../show.h"
-#include "../core.h"
-#include "../filter.h"
-#include "../runtime/mesh/shader/shader.h"
-#include "../selection.h"
-#include "../utils.h"
-#include "../utils/color.h"
+
 #include <stddef.h>
 #include <stdint.h>
+
+#include "../core.h"
+#include "../filter.h"
+#include "../utils.h"
+#include "../utils/color.h"
+#include "../runtime/camera/raycast/hit_list.h"
+#include "../runtime/html_event/add.h"
+#include "../runtime/html_event/core.h"
+#include "../runtime/input/core.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/scene/renderer/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/camera/raycast/core.h"
+#include "../runtime/scene/core.h"
+#include "../runtime/scene/editor/selection/gizmo/core.h"
+#include "../runtime/scene/layer.h"
 
 static const struct {
   CameraRaycastEvent event;

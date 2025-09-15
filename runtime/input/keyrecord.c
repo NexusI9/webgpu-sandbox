@@ -1,13 +1,16 @@
 #include "keyrecord.h"
-#include "../html_event/html_event.h"
+
+#include <stddef.h>
+#include <emscripten/html5.h>
+#include <stdlib.h>
+
 #include "../utils/dyli.h"
 #include "../utils/system.h"
 #include "emscripten/em_types.h"
 #include "string.h"
-#include <stddef.h>
-#include <stdint.h>
-
-#include "../utils/system.h"
+#include "../backend/registry.h"
+#include "../runtime/html_event/add.h"
+#include "../runtime/html_event/core.h"
 
 static void keyrec_update(KeyRecord *, const keyrec_t, bool);
 static bool keyrec_match(KeyRecord *, const keyrec_t *, const size_t);

@@ -1,10 +1,14 @@
 #ifndef _SYSTEM_UTILS_H_
 #define _SYSTEM_UTILS_H_
 
-#include "../runtime/mesh/mesh.h"
 #include <cglm/cglm.h>
 #include <stdio.h>
 #include <time.h>
+#include <cglm/types.h>
+#include <stdint.h>
+
+#include "../runtime/mesh/mesh.h"
+#include "../runtime/mesh/core.h"
 
 #ifdef VERBOSE
 

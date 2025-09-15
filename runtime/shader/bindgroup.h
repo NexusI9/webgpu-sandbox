@@ -1,8 +1,11 @@
 #ifndef _SHADER_BIND_H_
 #define _SHADER_BIND_H_
-#include "core.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <webgpu/webgpu.h>
+
+#include "core.h"
+#include "../runtime/pipeline/core.h"
 
 typedef uint16_t bind_index;
 typedef uint8_t bind_group_index;

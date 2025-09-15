@@ -1,8 +1,13 @@
 #include "core.h"
-#include "../input/input.h"
-#include "../utils/system.h"
+
 #include <float.h>
 #include <math.h>
+#include <cglm/mat4.h>
+#include <cglm/vec3.h>
+
+#include "../runtime/input/core.h"
+#include "../runtime/geometry/aabb/aabb.h"
+#include "../utils/vector/core.h"
 
 bool raycast_hit_aabb(const Raycast *ray, const AABB *box, float *distance) {
 

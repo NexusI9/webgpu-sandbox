@@ -1,5 +1,9 @@
 #include "ref_list_transform.h"
+
+#include <stddef.h>
+
 #include "transform.h"
+#include "../utils/vector/core.h"
 
 /**
    Apply scale to mesh transform matrix

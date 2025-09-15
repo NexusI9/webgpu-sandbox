@@ -1,9 +1,19 @@
 #include "grid.h"
-#include "../backend/std_texture/std_texture.h"
+
+#include <stdint.h>
+#include <cglm/ivec3.h>
+#include <cglm/util.h>
+#include <cglm/vec3.h>
+
 #include "core.h"
 #include "probe.h"
 #include "webgpu/webgpu.h"
-#include <stdint.h>
+#include "../backend/std_texture/core.h"
+#include "../runtime/scene/debug/view.h"
+#include "../runtime/scene/renderer/render_pass/draw.h"
+#include "../utils/system.h"
+#include "../runtime/scene/renderer/render_pass/core.h"
+#include "../utils/dyli.h"
 
 static inline float probe_reflection_point(size_t x, uint16_t count,
                                            float size);

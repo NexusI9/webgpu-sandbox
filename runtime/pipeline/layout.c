@@ -1,9 +1,9 @@
 #include "layout.h"
-#include "string.h"
-#include "webgpu/webgpu.h"
+
 #include <stdlib.h>
 
-#include "../utils/system.h"
+#include "string.h"
+#include "webgpu/webgpu.h"
 
 /**
    Transforms bindgroups into pipeline layouts and returns the generated

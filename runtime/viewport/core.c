@@ -1,8 +1,13 @@
 #include "core.h"
-#include "string.h"
-#include <cglm/cglm.h>
 
-#include "../utils/system.h"
+#include <cglm/cam.h>
+#include <cglm/mat4.h>
+#include <cglm/util.h>
+#include <math.h>
+#include <stdlib.h>
+
+#include "string.h"
+#include "../backend/ssbo.h"
 
 void viewport_create(Viewport *viewport,
                      const ViewportCreateDescriptor *view_desc) {

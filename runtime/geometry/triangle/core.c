@@ -1,10 +1,12 @@
 #include "core.h"
-#include "../utils/math.h"
-#include "../utils/system.h"
-#include <float.h>
+
 #include <math.h>
 #include <stdint.h>
-#include <stdlib.h>
+#include <cglm/vec2.h>
+#include <cglm/vec3.h>
+
+#include "../utils/math.h"
+
 static void triangle_rand_dist_trilinear(float, float, float, vec3, vec3, vec3,
                                          vec3);
 

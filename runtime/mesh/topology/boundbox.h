@@ -1,8 +1,16 @@
 #ifndef _MESH_TOPOLOGY_BOUNDBOX_H_
 #define _MESH_TOPOLOGY_BOUNDBOX_H_
+#include <cglm/types.h>
+#include <webgpu/webgpu.h>
+
 #include "../../geometry/aabb/aabb.h"
 #include "anchor.h"
 #include "base.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "core.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
 
 typedef enum {
   MeshTopologyBoundboxStatus_Success,

@@ -1,8 +1,18 @@
 #include "transform.h"
+
+#include <cglm/affine-pre.h>
+#include <cglm/affine.h>
+#include <cglm/euler.h>
+#include <cglm/mat4.h>
+#include <cglm/quat.h>
+#include <cglm/vec3.h>
+#include <stddef.h>
+
 #include "../utils/matrix.h"
-#include "./shader/shader.h"
 #include "core.h"
 #include "uniform.h"
+#include "topology/boundbox.h"
+#include "../utils/vector/core.h"
 
 static void mesh_update_model_matrix(Mesh *);
 

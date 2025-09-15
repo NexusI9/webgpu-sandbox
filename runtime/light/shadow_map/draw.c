@@ -1,8 +1,15 @@
 #include "draw.h"
-#include "../backend/std_pipeline/std_pipeline.h"
-#include "../runtime/mesh/shader/shader.h"
-#include "./core.h"
+
 #include "webgpu/webgpu.h"
+#include "../backend/std_pipeline/core.h"
+#include "../runtime/scene/debug/view.h"
+#include "../runtime/scene/renderer/render_pass/draw.h"
+#include "core.h"
+#include "../runtime/light/core.h"
+#include "../runtime/light/list.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/scene/renderer/render_pass/core.h"
 
 static inline void shadow_map_draw(const ShadowMapDrawDescriptor *,
                                    const ShadowMapDebug *);

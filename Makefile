@@ -69,7 +69,7 @@ DEV_FLAGS := \
 	-sINITIAL_MEMORY=67108864 
 
 # Main output build script
-OUTPUT := build/scripts/wgpu/wgpu_scene.js
+OUTPUT := build/wasm/scripts/wgpu/wgpu_scene.js
 
 all:
 	@start=$$(date +%s); \
@@ -112,7 +112,7 @@ wasm:
 	@echo "Compilation completed: $(OUTPUT)"
 
 serve:
-	cd ./build
+	cd ./build/wasm
 	python -m http.server
 
 

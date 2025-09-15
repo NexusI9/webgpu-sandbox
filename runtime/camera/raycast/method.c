@@ -1,5 +1,7 @@
 #include "method.h"
-#include "../../input/input.h"
+
+#include "../runtime/input/core.h"
+#include "../runtime/camera/core.h"
 
 /**
    ▗▄▄▖ ▗▄▖  ▗▄▄▖▗▄▄▄▖    ▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▄▖

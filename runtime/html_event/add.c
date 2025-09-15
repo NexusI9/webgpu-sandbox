@@ -1,11 +1,15 @@
 #include "add.h"
+
+#include <stdio.h>
+#include <string.h>
+#include <emscripten/html5.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdlib.h>
+
 #include "../utils/system.h"
 #include "core.h"
 #include "listener.h"
-#include <stdio.h>
-#include <string.h>
-
-#include "../utils/system.h"
 
 // Listener Flags
 static inline uint8_t html_event_listener_flag(HTMLEventType);

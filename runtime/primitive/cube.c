@@ -1,5 +1,8 @@
 #include "cube.h"
 
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
+
 static vattr_t cube_vertex_data[] = {
     // Front face (tangent along +X, w=1)
     -0.5f, -0.5f,  0.5f,   0.0f, 0.0f, 1.0f,    1.0f, 0.0f, 0.0f, 1.0f,    0.0f, 1.0f, 1.0f,   0.0f, 0.0f, // Bottom-left

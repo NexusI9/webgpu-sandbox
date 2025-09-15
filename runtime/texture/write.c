@@ -1,8 +1,12 @@
 #include "write.h"
+
+#include <stdint.h>
+#include <math.h>
+
 #include "../utils/math.h"
 #include "core.h"
 #include "string.h"
-#include <stdint.h>
+#include "../utils/vector/core.h"
 
 /**
    Replace the texture value based on a float list.

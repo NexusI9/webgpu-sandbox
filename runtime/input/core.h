@@ -1,10 +1,12 @@
 #ifndef _INPUT_CORE_H_
 #define _INPUT_CORE_H_
 
-#include "./keyrecord.h"
-#include "emscripten/html5.h"
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "./keyrecord.h"
+#include "emscripten/html5.h"
+#include "../backend/registry.h"
 
 #define INPUT_KEY_FORWARD_FR 90
 #define INPUT_KEY_BACKWARD_FR 83

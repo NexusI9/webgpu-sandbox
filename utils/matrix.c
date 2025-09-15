@@ -1,6 +1,12 @@
 #include "matrix.h"
+
+#include <cglm/cam.h>
+#include <cglm/mat4.h>
+#include <cglm/vec3.h>
+#include <math.h>
+#include <stddef.h>
+
 #include "string.h"
-#include "system.h"
 
 /**
    Update camera view as well as forward, up and right vector.

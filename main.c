@@ -3,8 +3,8 @@
 //  https://developer.chrome.com/docs/web-platform/webgpu/build-app?hl=en
 //  https://stackoverflow.com/questions/23997312/how-do-i-read-a-user-specified-file-in-an-emscripten-compiled-library
 
-#include "resources/example/example.h"
-#include <emscripten/emscripten.h>
+#include <stdbool.h>
+#include <webgpu/webgpu.h>
 
 // runtime
 #include "resources/example/glass.h"
@@ -12,7 +12,11 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/scene/renderer/core.h"
-#include "runtime/scene/scene.h"
+#include "resources/example/light.h"
+#include "resources/example/skybox.h"
+#include "runtime/pipeline/core.h"
+#include "runtime/viewport/core.h"
+
 static Scene main_scene;
 
 // callback

@@ -1,10 +1,12 @@
 #ifndef _PIPELINE_CORE_H_
 #define _PIPELINE_CORE_H_
 
-#include "../runtime/geometry/vertex/vertex.h"
-#include "webgpu/webgpu.h"
 #include <stddef.h>
 #include <stdint.h>
+
+#include "../runtime/geometry/vertex/vertex.h"
+#include "webgpu/webgpu.h"
+#include "../runtime/geometry/vertex/core.h"
 
 /**
    ============================== PIPELINE ==============================

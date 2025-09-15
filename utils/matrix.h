@@ -2,6 +2,7 @@
 #define _UTILS_MATRIX_H_
 
 #include <cglm/cglm.h>
+#include <cglm/types.h>
 
 typedef struct {
   float *position;

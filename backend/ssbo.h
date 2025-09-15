@@ -1,12 +1,14 @@
 #ifndef _SHADER_STORAGE_BUFFER_OBJECT_H_
 #define _SHADER_STORAGE_BUFFER_OBJECT_H_
 
-#include "../utils/stli.h"
 #include <stdalign.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <webgpu/webgpu.h>
+#include <stdint.h>
+
+#include "../utils/stli.h"
 
 #define SSBO_TYPE_COUNT 10
 #define SSBO_CAPACITY 128

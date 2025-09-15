@@ -1,10 +1,20 @@
 #include "billboard.h"
-#include "../backend/std_pipeline/std_pipeline.h"
-#include "../runtime/primitive/plane.h"
-#include "../runtime/texture/texture.h"
-#include "webgpu/webgpu.h"
+
 #include <stdint.h>
-#include "../runtime/mesh/shader/shader.h"
+#include <stdbool.h>
+
+#include "../runtime/primitive/plane.h"
+#include "webgpu/webgpu.h"
+#include "../backend/std_pipeline/core.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/mesh/transform.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/primitive/core.h"
+#include "../runtime/shader/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/texture/core.h"
+#include "../runtime/texture/create.h"
+#include "../runtime/mesh/core.h"
 
 /**
    Create a plane mesh with a billboard shader

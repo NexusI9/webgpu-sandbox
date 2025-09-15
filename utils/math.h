@@ -1,8 +1,9 @@
 #ifndef _UTILS_MATH_H_
 #define _UTILS_MATH_H_
 
-#include "../runtime/geometry/vertex/vertex.h"
 #include <cglm/cglm.h>
+
+#include "../runtime/geometry/vertex/vertex.h"
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) < (b) ? (b) : (a))

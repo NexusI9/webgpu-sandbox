@@ -2,6 +2,7 @@
 #define _HTML_EVENT_LISTENER_H_
 
 #include <emscripten/html5.h>
+#include <stdbool.h>
 
 // mouse listeners
 bool html_event_listener_mouse_move(int, const EmscriptenMouseEvent *, void *);

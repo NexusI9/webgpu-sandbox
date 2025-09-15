@@ -1,11 +1,13 @@
 #ifndef _INPUT_KEY_RECORD_H_
 #define _INPUT_KEY_RECORD_H_
 
-#include "../backend/registry.h"
-#include "emscripten/html5.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
+
+#include "../backend/registry.h"
+#include "emscripten/html5.h"
 
 #define INPUT_KEY_RECORD_MAX_KEYS 256
 #define INPUT_KEY_RECORD_SEQUENCE_MAX_KEY 4

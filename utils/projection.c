@@ -1,7 +1,13 @@
 #include "projection.h"
-#include "../utils/vector/vector.h"
-#include "system.h"
+
+#include <cglm/cam.h>
+#include <cglm/util.h>
+#include <cglm/vec3.h>
+#include <math.h>
+
 #include "vector/core.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/viewport/core.h"
 
 const vec3 projection_cubemaps_directions[PROJECTION_VIEW_COUNT] = {
     {1.0f, 0.0f, 0.0f},  // +x (right)

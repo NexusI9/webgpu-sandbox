@@ -1,6 +1,8 @@
 #ifndef _CAMERA_LIST_H_
 #define _CAMERA_LIST_H_
 
+#include <stddef.h>
+
 #include "../utils/dyli.h"
 #include "core.h"
 

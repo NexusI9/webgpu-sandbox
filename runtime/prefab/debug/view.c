@@ -1,12 +1,24 @@
 #include "view.h"
-#include "../../../runtime/camera/camera.h"
-#include "../../../runtime/viewport/viewport.h"
-#include "../backend/std_pipeline/std_pipeline.h"
-#include "../runtime/mesh/shader/shader.h"
+
+#include <stddef.h>
+#include <cglm/cam.h>
+#include <cglm/vec3.h>
+
 #include "../runtime/primitive/plane.h"
 #include "../utils/system.h"
-#include "webgpu/webgpu.h"
-#include <stddef.h>
+#include "../backend/std_pipeline/core.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/mesh/transform.h"
+#include "../runtime/mesh/uniform.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/primitive/core.h"
+#include "../runtime/scene/debug/view.h"
+#include "../runtime/shader/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/texture/core.h"
+#include "../runtime/viewport/core.h"
+#include "../runtime/mesh/core.h"
 
 static void debug_view_compute_position(DebugView *, vec3);
 

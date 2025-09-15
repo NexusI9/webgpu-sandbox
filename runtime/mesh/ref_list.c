@@ -1,9 +1,12 @@
 #include "ref_list.h"
-#include "core.h"
-#include <stdint.h>
-#include <string.h>
 
+#include <string.h>
+#include <cglm/vec3.h>
+#include <stdlib.h>
+
+#include "core.h"
 #include "../utils/system.h"
+#include "../utils/dyli.h"
 
 DynamicListStatus mesh_ref_list_create(MeshRefList *list,
                                        const size_t capacity) {

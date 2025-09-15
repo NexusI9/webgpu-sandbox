@@ -1,6 +1,7 @@
 #include "core.h"
-#include "emscripten/em_asm.h"
+
 #include <string.h>
+#include <emscripten/html5.h>
 
 /**
 

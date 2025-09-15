@@ -1,13 +1,19 @@
 #include "./core.h"
-#include "../backend/buffer.h"
-#include "../runtime/mesh/shader/shader.h"
+
 #include "../utils/system.h"
 #include "./global.h"
 #include "./local.h"
 #include "./texture_list.h"
-#include "string.h"
 #include "utils.h"
 #include "webgpu/webgpu.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/shader/bindgroup.h"
+#include "../runtime/shader/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/texture/create.h"
+#include "../utils/dyli.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/texture/core.h"
 
 /**
    Create and cache Ambient Occlusion main array texture.

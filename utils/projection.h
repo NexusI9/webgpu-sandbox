@@ -1,8 +1,17 @@
 #ifndef _UTILS_VIEW_H_
 #define _UTILS_VIEW_H_
 
-#include "../runtime/camera/camera.h"
 #include <cglm/cglm.h>
+#include <cglm/mat4.h>
+#include <cglm/types.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "../runtime/camera/camera.h"
+#include "../backend/ssbo.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/viewport/core.h"
+#include "../backend/ssbo.h"
 
 #define PROJECTION_VIEW_COUNT 6
 #define PROJECTION_SUN_DISTANCE 10

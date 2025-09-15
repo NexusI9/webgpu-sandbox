@@ -1,7 +1,15 @@
 #include "gltf.h"
+
+#include <cgltf/cgltf.h>
+#include <stddef.h>
+
 #include "../../resources/loader/loader.gltf.h"
-#include "../backend/std_pipeline/modules/glass_probe_plane/glass_probe_plane.h"
-#include "../runtime/mesh/shader/shader.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/mesh/ref_list.h"
+#include "../runtime/mesh/shader/texture.h"
+#include "../runtime/probe/reflection/plane.h"
+#include "../runtime/texture/core.h"
+#include "../runtime/scene/add.h"
 
 void example_gltf(Scene *scene) {
   loader_gltf_load(

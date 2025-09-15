@@ -1,12 +1,21 @@
 #include "core.h"
-#include "../../show.h"
+
+#include <cglm/util.h>
+#include <cglm/vec3.h>
+#include <emscripten/html5.h>
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "./callback/key.h"
 #include "./callback/mouse.h"
 #include "./config.h"
 #include "./filter.h"
-#include "./utils.h"
 #include "emscripten/em_types.h"
 #include "target_list.h"
+#include "../runtime/mesh/ref_list.h"
+#include "../utils/vector/vec3_list.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/scene/core.h"
 
 void scene_selection_init_filters(Scene *scene);
 

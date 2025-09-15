@@ -1,10 +1,12 @@
 #include "transform.h"
-#include "../utils/system.h"
+
+#include <stdint.h>
+#include <string.h>
+#include <cglm/vec3.h>
+
 #include "attribute.h"
 #include "core.h"
 #include "index.h"
-#include <stdint.h>
-#include <string.h>
 
 static void vertex_transform_origin(const VertexGroup *,
                                     const VertexAttribute *, vec3 *);

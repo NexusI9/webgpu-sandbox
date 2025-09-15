@@ -1,6 +1,11 @@
 #ifndef _SCENE_CORE_H_
 #define _SCENE_CORE_H_
 
+#include <stddef.h>
+#include <cglm/types.h>
+#include <stdint.h>
+#include <webgpu/webgpu.h>
+
 #include "../backend/clock.h"
 #include "../backend/registry.h"
 #include "../runtime/probe/probe.h"
@@ -10,7 +15,18 @@
 #include "./layer.h"
 #include "environment/core.h"
 #include "event/core.h"
-#include <stddef.h>
+#include "../runtime/camera/core.h"
+#include "../runtime/light/list.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/mesh/list.h"
+#include "../runtime/probe/reflection/grid.h"
+#include "../runtime/probe/reflection/plane.h"
+#include "../runtime/viewport/core.h"
+#include "../utils/vector/core.h"
+#include "../utils/vector/vec3_list.h"
+#include "debug/core.h"
+#include "editor/selection/gizmo/core.h"
+#include "renderer/core.h"
 
 #define SCENE_MESH_LIST_DEFAULT_CAPACITY 1024
 #define SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT 128

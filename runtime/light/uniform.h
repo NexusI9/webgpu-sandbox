@@ -1,6 +1,9 @@
 #ifndef _LIGHT_LIST_UNIFORM_H_
 #define _LIGHT_LIST_UNIFORM_H_
 
+#include <cglm/types.h>
+#include <stdint.h>
+
 #include "core.h"
 
 // light type

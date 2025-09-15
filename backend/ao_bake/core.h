@@ -1,6 +1,11 @@
 #ifndef _AO_BAKE_CORE_H_
 #define _AO_BAKE_CORE_H_
 
+#include <stdint.h>
+#include <cglm/types.h>
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "../runtime/camera/camera.h"
 #include "../runtime/geometry/triangle/triangle.h"
 #include "../runtime/mesh/mesh.h"
@@ -9,7 +14,11 @@
 #include "../runtime/viewport/viewport.h"
 #include "../utils/color.h"
 #include "webgpu/webgpu.h"
-#include <stdint.h>
+#include "../runtime/geometry/triangle/core.h"
+#include "../runtime/geometry/vertex/core.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/scene/debug/core.h"
+#include "../runtime/texture/core.h"
 
 // AO Texture
 #define AO_TEXTURE_RESOLUTION TextureResolution_128

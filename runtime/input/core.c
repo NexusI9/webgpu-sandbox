@@ -1,10 +1,15 @@
 #include "core.h"
-#include "../html_event/html_event.h"
-#include "../utils/math.h"
-#include "keyrecord.h"
-#include <math.h>
+
 #include <stdio.h>
 #include <string.h>
+#include <emscripten/em_types.h>
+#include <emscripten/html5.h>
+
+#include "../utils/math.h"
+#include "keyrecord.h"
+#include "../runtime/html_event/add.h"
+#include "../runtime/html_event/core.h"
+#include "../backend/registry.h"
 
 Input g_input = {0};
 

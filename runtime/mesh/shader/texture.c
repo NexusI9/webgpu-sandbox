@@ -1,7 +1,23 @@
 #include "texture.h"
+
+#include <stdint.h>
+#include <stddef.h>
+
 #include "../runtime/light/shadow_map/core.h"
 #include "webgpu/webgpu.h"
-#include <stdint.h>
+#include "../backend/ubo.h"
+#include "../runtime/mesh/uniform.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/probe/reflection/core.h"
+#include "../runtime/probe/reflection/plane.h"
+#include "../runtime/shader/bindgroup.h"
+#include "../runtime/shader/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/texture/core.h"
+#include "../utils/system.h"
+#include "core.h"
+#include "../backend/ssbo.h"
+#include "../runtime/mesh/core.h"
 
 /**
    Clear the texture shader bind groups of mesh

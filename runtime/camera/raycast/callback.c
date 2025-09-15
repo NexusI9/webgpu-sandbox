@@ -1,10 +1,15 @@
 #include "callback.h"
+
+#include <emscripten/em_types.h>
+#include <stdlib.h>
+
 #include "./method.h"
 #include "./utils.h"
 #include "core.h"
 #include "hit_list.h"
-
-#include "../utils/system.h"
+#include "../runtime/geometry/aabb/aabb.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/raycast/core.h"
 
 /**
    ▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖     ▗▄▄▖ ▗▄▖ ▗▖   ▗▖   ▗▄▄▖  ▗▄▖  ▗▄▄▖▗▖ ▗▖ ▗▄▄▖

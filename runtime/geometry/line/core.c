@@ -1,11 +1,20 @@
 #include "core.h"
-#include "../backend/std_pipeline/std_pipeline.h"
-#include "../runtime/mesh/shader/shader.h"
+
+#include <cglm/vec4.h>
+#include <stdbool.h>
+#include <stdlib.h>
+
 #include "../utils/system.h"
 #include "string.h"
-#include "webgpu/webgpu.h"
-#include <stdint.h>
-#include <stdio.h>
+#include "../backend/std_pipeline/core.h"
+#include "../runtime/geometry/vertex/core.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/mesh/topology/base.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/shader/core.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "../runtime/mesh/core.h"
 
 static void line_create_plane(const LineCreatePlaneDescriptor *);
 

@@ -1,7 +1,11 @@
 #ifndef _CAMERA_RAYCAST_HIT_LIST_H_
 #define _CAMERA_RAYCAST_HIT_LIST_H_
 
+#include <stddef.h>
+
 #include "../../mesh/mesh.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/mesh/core.h"
 
 typedef enum {
   CameraRaycastHitListStatus_Success,

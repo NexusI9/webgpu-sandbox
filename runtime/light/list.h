@@ -1,9 +1,14 @@
 #ifndef _LIGHT_LIST_H_
 #define _LIGHT_LIST_H_
+#include <stddef.h>
+#include <stdint.h>
+
 #include "../runtime/scene/renderer/render_pass/render_pass.h"
 #include "../utils/stli.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/scene/renderer/render_pass/core.h"
 
 typedef enum {
   LightListStatus_Success,

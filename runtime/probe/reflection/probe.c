@@ -1,6 +1,16 @@
 #include "probe.h"
+
+#include <cglm/cam.h>
+#include <cglm/vec3.h>
+#include <stdint.h>
+
 #include "core.h"
 #include "grid.h"
+#include "../backend/ssbo.h"
+#include "../runtime/camera/uniform.h"
+#include "../utils/dyli.h"
+#include "../utils/projection.h"
+#include "../runtime/camera/core.h"
 
 /*
 

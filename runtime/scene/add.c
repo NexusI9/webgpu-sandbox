@@ -1,21 +1,43 @@
 #include "add.h"
-#include "../backend/std_pipeline/std_pipeline.h"
+
+#include <stdint.h>
+#include <stdio.h>
+
 #include "../backend/ubo.h"
-#include "../runtime/mesh/shader/shader.h"
 #include "./editor/editor.h"
-#include "./editor/object/object.h"
-#include "./editor/selection/callback/transform.h"
-#include "./editor/selection/selection.h"
 #include "build.h"
 #include "core.h"
 #include "editor/object/light/sun.h"
 #include "editor/object/list/list.h"
-#include "editor/object/probe/probe.h"
 #include "editor/selection/core.h"
 #include "renderer/core.h"
 #include "renderer/render_pass/core.h"
-#include <stdint.h>
-#include <stdio.h>
+#include "../backend/ssbo.h"
+#include "../backend/std_pipeline/core.h"
+#include "../runtime/camera/list.h"
+#include "../runtime/light/shadow_map/draw.h"
+#include "../runtime/mesh/list.h"
+#include "../runtime/mesh/ref_list.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/probe/reflection/core.h"
+#include "../runtime/probe/reflection/probe.h"
+#include "../utils/projection.h"
+#include "../utils/system.h"
+#include "debug/core.h"
+#include "editor/object/camera/camera.h"
+#include "editor/object/light/ambient.h"
+#include "editor/object/light/point.h"
+#include "editor/object/light/spot.h"
+#include "editor/object/probe/reflection_grid.h"
+#include "editor/object/probe/reflection_plane.h"
+#include "layer.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/light/core.h"
+#include "../runtime/light/list.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/probe/reflection/grid.h"
+#include "../runtime/probe/reflection/plane.h"
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 static inline void

@@ -1,6 +1,10 @@
 #ifndef _MESH_CORE_H_
 #define _MESH_CORE_H_
 
+#include <stddef.h>
+#include <stdint.h>
+#include <cglm/types.h>
+
 #include "../backend/registry.h"
 #include "../backend/ssbo.h"
 #include "../geometry/vertex/vertex.h"
@@ -10,8 +14,17 @@
 #include "topology/core.h"
 #include "topology/topology.h"
 #include "webgpu/webgpu.h"
-#include <stddef.h>
-#include <stdint.h>
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "../runtime/primitive/core.h"
+#include "../runtime/shader/core.h"
+#include "../utils/dyli.h"
+#include "topology/base.h"
+#include "topology/wireframe.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "../runtime/primitive/core.h"
+#include "../runtime/shader/core.h"
 
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64

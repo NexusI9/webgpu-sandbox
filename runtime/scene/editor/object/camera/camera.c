@@ -1,14 +1,25 @@
 #include "camera.h"
-#include "../builder/builder.h"
-#include "../resources/loader/loader.mbin.h"
-#include "../runtime/geometry/line/line.h"
-#include "../runtime/geometry/vertex/vertex.h"
-#include "../runtime/scene/editor/object/object.h"
-#include "../runtime/scene/scene.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../utils/system.h"
+#include "../resources/loader/loader.mbin.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/group.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/mesh/topology/base.h"
+#include "../runtime/mesh/topology/wireframe.h"
+#include "../runtime/mesh/transform.h"
+#include "../runtime/primitive/core.h"
+#include "../runtime/scene/add.h"
+#include "../runtime/scene/core.h"
+#include "../runtime/scene/editor/object/builder/billboard.h"
+#include "../runtime/scene/editor/object/builder/wireframe.h"
+#include "../runtime/scene/editor/object/list/list.h"
+#include "../runtime/scene/editor/selection/gizmo/core.h"
+#include "../utils/color.h"
+#include "../runtime/camera/core.h"
 
 void seo_camera_create(SceneEditorObject *seo, Camera *camera,
                        const SEOCreateDescriptor *desc) {

@@ -2,6 +2,7 @@
 #define _PLANE_CORE_H_
 
 #include <cglm/cglm.h>
+#include <cglm/types.h>
 
 typedef struct {
   vec3 normal;

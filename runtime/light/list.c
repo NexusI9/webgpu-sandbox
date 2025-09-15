@@ -1,5 +1,7 @@
 #include "list.h"
+
 #include "core.h"
+#include "../utils/stli.h"
 
 StaticListStatus light_list_create(LightList *list, size_t capacity) {
 

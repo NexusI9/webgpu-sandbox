@@ -1,6 +1,9 @@
 #include "listener.h"
-#include "core.h"
+
 #include <stdio.h>
+#include <emscripten/em_types.h>
+
+#include "core.h"
 
 /**
 

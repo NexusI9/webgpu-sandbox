@@ -1,12 +1,18 @@
 #include "skybox.h"
+
 #include "../backend/buffer.h"
-#include "../backend/std_pipeline/std_pipeline.h"
 #include "../include/stb/stb_image.h"
 #include "../runtime/primitive/cube.h"
-#include "../runtime/texture/texture.h"
-#include "../runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
-#include <stdint.h>
+#include "../backend/std_pipeline/core.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/primitive/core.h"
+#include "../runtime/shader/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/scene/add.h"
+#include "../runtime/scene/environment/core.h"
 
 static inline WGPUTexture prefab_skybox_texture(const WGPUDevice, const size_t);
 

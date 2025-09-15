@@ -1,19 +1,24 @@
 #ifndef _CAMERA_RAYCAST_CORE_H_
 #define _CAMERA_RAYCAST_CORE_H_
 
+#include <string.h>
+
 #include "../../mesh/mesh.h"
 #include "../../raycast/raycast.h"
 #include "../../viewport/viewport.h"
-
 #include "../../html_event/html_event.h"
 #include "../../input/input.h"
 #include "../core.h"
 #include "../utils/system.h"
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
-#include <string.h>
-
 #include "./hit_list.h"
+#include "../runtime/mesh/ref_list.h"
+#include "../runtime/raycast/core.h"
+#include "../runtime/viewport/core.h"
+#include "../runtime/mesh/ref_list.h"
+#include "../runtime/raycast/core.h"
+#include "../runtime/viewport/core.h"
 
 /**
    2 different types of raycast methods:

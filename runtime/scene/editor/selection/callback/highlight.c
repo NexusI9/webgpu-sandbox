@@ -1,5 +1,11 @@
 #include "highlight.h"
 
+#include <stddef.h>
+
+#include "../runtime/mesh/ref_list.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/scene/core.h"
+
 void scene_selection_mesh_highlight(MeshRefList *list, void *data) {
 
   Scene *scene = (Scene *)data;

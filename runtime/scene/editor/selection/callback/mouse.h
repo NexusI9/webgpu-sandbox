@@ -1,7 +1,11 @@
 #ifndef _SCENE_EDITOR_CALLBACK_MOUSE_H_
 #define _SCENE_EDITOR_CALLBACK_MOUSE_H_
 
+#include <emscripten/html5.h>
+#include <stdbool.h>
+
 #include "../../../core.h"
+#include "../runtime/camera/raycast/core.h"
 
 void scene_selection_init_mouse_events(Scene* scene);
 

@@ -1,6 +1,17 @@
 #include "event.html.h"
-#include "../runtime/camera/camera.h"
+
+#include <emscripten/html5.h>
+#include <stddef.h>
+
 #include "emscripten/em_types.h"
+#include "../backend/ssbo.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/camera/mode.h"
+#include "../runtime/html_event/add.h"
+#include "../runtime/html_event/core.h"
+#include "../runtime/probe/reflection/core.h"
+#include "../runtime/probe/reflection/plane.h"
+#include "../runtime/scene/core.h"
 
 static void scene_event_html_update_meshes(Scene *);
 

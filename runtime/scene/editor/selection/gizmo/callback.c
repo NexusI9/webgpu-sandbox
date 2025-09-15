@@ -1,6 +1,16 @@
 #include "callback.h"
+
+#include <cglm/util.h>
+#include <cglm/vec3.h>
+#include <math.h>
+
 #include "core.h"
-#include "utils.h"
+#include "../runtime/input/core.h"
+#include "../runtime/mesh/transform.h"
+#include "../runtime/raycast/core.h"
+#include "../utils/vector/core.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/viewport/core.h"
 
 /**
    ▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▄▖

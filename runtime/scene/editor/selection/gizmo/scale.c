@@ -1,5 +1,8 @@
 #include "scale.h"
+
 #include "./utils.h"
+#include "core.h"
+#include "../runtime/mesh/core.h"
 
 void gizmo_scale_create(MeshRefList *visual_list,
                                   MeshRefList *interactive_list,

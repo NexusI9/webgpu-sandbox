@@ -1,11 +1,14 @@
 #ifndef _SHADER_CORE_H_
 #define _SHADER_CORE_H_
 
-#include "../runtime/pipeline/pipeline.h"
-#include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
+
+#include "../runtime/pipeline/pipeline.h"
+#include "webgpu/webgpu.h"
+#include "../runtime/pipeline/core.h"
 
 // commons
 #define SHADER_MAX_BIND_GROUP 4

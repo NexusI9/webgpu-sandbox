@@ -1,7 +1,14 @@
 #ifndef _RENDER_PASS_CORE_H_
 #define _RENDER_PASS_CORE_H_
-#include "../runtime/mesh/mesh.h"
 #include <webgpu/webgpu.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "../runtime/mesh/mesh.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/pipeline/core.h"
+#include "../utils/stli.h"
 
 #define RENDER_PASS_DRAW_LAYOUT_MAX_MESH_LIST 6
 #define RENDER_PASS_MAX_DRAW_LIST 12

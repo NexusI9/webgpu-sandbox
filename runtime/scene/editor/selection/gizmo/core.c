@@ -1,11 +1,24 @@
 #include "core.h"
-#include "../runtime/mesh/shader/shader.h"
+
+#include <stddef.h>
+#include <cglm/vec3.h>
+
 #include "./callback.h"
 #include "./rotate.h"
 #include "./scale.h"
 #include "./translate.h"
 #include "./utils.h"
-#include <stddef.h>
+#include "../runtime/input/core.h"
+#include "../runtime/mesh/ref_list.h"
+#include "../runtime/mesh/ref_list_transform.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/raycast/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/camera/core.h"
+#include "../runtime/geometry/plane/core.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/viewport/core.h"
+#include "../utils/vector/core.h"
 
 static const gizmo_create_handles_callback handles_create_func[] = {
     [GizmoMode_Position] = gizmo_position_create,

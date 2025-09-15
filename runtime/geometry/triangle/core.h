@@ -1,8 +1,12 @@
 #ifndef _TRIANGLE_CORE_H_
 #define _TRIANGLE_CORE_H_
 
-#include "../vertex/vertex.h"
 #include <stdint.h>
+#include <cglm/types.h>
+
+#include "../vertex/vertex.h"
+#include "../runtime/geometry/vertex/core.h"
+#include "../runtime/geometry/vertex/core.h"
 
 typedef struct {
   Vertex a;

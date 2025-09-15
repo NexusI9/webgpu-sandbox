@@ -2,6 +2,8 @@
 #define _SCENE_EDITOR_SELECTION_UTILS_H_
 
 #include "../../core.h"
+#include "../backend/ssbo.h"
+#include "gizmo/core.h"
 
 /* Gizmo utils */
 void scene_gizmo_pos_to_selection(Gizmo *, SceneSelection *, SSBOManager *);

@@ -2,6 +2,7 @@
 #define _STATIC_LIST_UTILS_H_
 
 #include <webgpu/webgpu.h>
+#include <stddef.h>
 
 typedef enum {
   StaticListStatus_Success,

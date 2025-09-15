@@ -1,6 +1,9 @@
 #include "processing.h"
+
+#include <float.h>
+#include <math.h>
+
 #include "../../utils/math.h"
-#include "string.h"
 
 /**
    Blur algorithm

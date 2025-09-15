@@ -1,20 +1,14 @@
 #include "core.h"
-#include "../../utils/math.h"
-#include "../../utils/matrix.h"
-#include "../../utils/system.h"
-#include "../input/input.h"
-#include "./mode.h"
-#include "./uniform.h"
-#include "emscripten/html5.h"
-#include "math.h"
-#include "string.h"
-#include <cglm/cglm.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 
-#include "../utils/system.h"
+#include <stddef.h>
+#include <cglm/mat4.h>
+#include <cglm/vec3.h>
+
+#include "../../utils/matrix.h"
+#include "./uniform.h"
+#include "math.h"
+#include "../backend/registry.h"
+#include "../backend/ssbo.h"
 
 void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 

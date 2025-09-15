@@ -1,10 +1,15 @@
 #include "key.h"
-#include "../../../show.h"
-#include "../core.h"
-#include "../filter.h"
-#include "../utils.h"
+
 #include <stddef.h>
 #include <stdint.h>
+
+#include "../core.h"
+#include "../utils.h"
+#include "../runtime/input/core.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/input/keyrecord.h"
+#include "../runtime/scene/core.h"
+#include "../utils/vector/core.h"
 
 const uint8_t seq_count_select = 1;
 const uint8_t seq_count_mode = 3;

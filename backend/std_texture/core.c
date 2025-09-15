@@ -1,9 +1,11 @@
 #include "core.h"
 
-#include "../runtime/light/shadow_map/shadow_map.h"
+#include <stdint.h>
+#include <stddef.h>
+
 #include "../utils/system.h"
 #include "webgpu/webgpu.h"
-#include <stdint.h>
+#include "../runtime/light/shadow_map/core.h"
 
 WGPUTextureView g_std_texture_view[STD_TEXTURE_VIEW_COUNT] = {0};
 WGPUTexture g_std_texture[STD_TEXTURE_VIEW_COUNT] = {0};

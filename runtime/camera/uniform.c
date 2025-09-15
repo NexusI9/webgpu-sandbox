@@ -1,8 +1,10 @@
 #include "uniform.h"
-#include <stdint.h>
-#include <string.h>
 
-#include "../utils/system.h"
+#include <string.h>
+#include <cglm/mat4.h>
+#include <cglm/types.h>
+#include <cglm/vec4.h>
+
 #include "core.h"
 
 CameraUniform *camera_uniform(Camera *camera) {

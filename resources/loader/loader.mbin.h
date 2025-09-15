@@ -1,10 +1,14 @@
 #ifndef _LOADER_MBIN_H_
 #define _LOADER_MBIN_H_
 
+#include <stdint.h>
+
 #include "../runtime/geometry/vertex/vertex.h"
 #include "../runtime/primitive/primitive.h"
-#include <stdint.h>
 #include "../resources/tool/obj2mbin/lib/mbin.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "../runtime/primitive/core.h"
 
 typedef uint32_t mbin_length_t;
 

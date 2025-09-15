@@ -1,11 +1,15 @@
 #include "add.h"
+
+#include <stdbool.h>
+#include <stdlib.h>
+
 #include "../../backend/buffer.h"
 #include "./utils.h"
 #include "core.h"
 #include "string.h"
-
 #include "../utils/system.h"
 #include "webgpu/webgpu.h"
+#include "bindgroup.h"
 
 /**
    Add uniform of type Default (vec3, float...) into the shader

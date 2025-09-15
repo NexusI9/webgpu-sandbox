@@ -6,6 +6,10 @@
 #include "../core.h"
 #include "./callback.h"
 #include "./hit_list.h"
+#include "../runtime/raycast/core.h"
+#include "../runtime/viewport/core.h"
+#include "../runtime/raycast/core.h"
+#include "../runtime/viewport/core.h"
 
 typedef void (*camera_raycast_cast_method)(Raycast *, Camera *, Viewport *);
 

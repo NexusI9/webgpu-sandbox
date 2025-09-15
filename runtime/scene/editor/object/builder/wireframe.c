@@ -1,7 +1,14 @@
 #include "wireframe.h"
-#include "../backend/std_pipeline/std_pipeline.h"
-#include "../runtime/mesh/shader/shader.h"
-#include "webgpu/webgpu.h"
+
+#include "../backend/std_pipeline/core.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/mesh/topology/core.h"
+#include "../runtime/mesh/topology/wireframe.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/shader/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/mesh/core.h"
+
 /**
    Setup a wireframe mesh with the given vertex/index attributes and color.
    Since gizmo is part of the Fixed pipeline. It's necessary to :

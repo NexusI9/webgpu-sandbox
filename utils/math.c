@@ -1,5 +1,6 @@
 #include "math.h"
-#include "../utils/system.h"
+
+#include <stdlib.h>
 
 /**
    Return a number between 0 and 1 (0 excluded)

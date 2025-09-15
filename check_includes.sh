@@ -58,5 +58,13 @@ iwyu_tool.py -p . > "$IWYU_REPORT" 2>&1 || true
 echo "IWYU analysis complete. Report saved to $IWYU_REPORT."
 
 echo "Running Fix Includes..."
-cat "$IWYU_REPORT" | fix_includes.py -n -p .
+cat "$IWYU_REPORT" | fix_includes.py -p .
+echo "Done."
+
+echo "Replacing paths with relative access..."
+find . -type f \( -name "*.c" -o -name "*.h" \) -exec sed -i '' 's|#include "/Users/elkhantour/Documents/C/webgpu-expe/|#include "../|g' {} +
+echo "Done."
+
+echo "Cleaning..."
+rm $COMPILE_JSON
 echo "Done."

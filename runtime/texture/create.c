@@ -1,15 +1,14 @@
 #include "create.h"
 
+#include <stdlib.h>
+
 #include "../../include/stb/stb_image.h"
 #include "../backend/buffer.h"
-
 #include "../include/stb/stb_image_resize2.h"
-
 #include "../utils/system.h"
-#include "./write.h"
 #include "core.h"
-#include "string.h"
 #include "webgpu/webgpu.h"
+#include "write.h"
 
 void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
 

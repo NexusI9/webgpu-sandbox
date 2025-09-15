@@ -1,11 +1,30 @@
 #include "loader.gltf.h"
-#include "../backend/std_pipeline/std_pipeline.h"
-#include "../backend/std_texture/std_texture.h"
-#include "../runtime/mesh/shader/shader.h"
-#include "webgpu/webgpu.h"
-#include <stdint.h>
 
+#include <stdint.h>
+#include <cglm/types.h>
+#include <cglm/util.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "webgpu/webgpu.h"
 #include "../utils/system.h"
+#include "../backend/std_pipeline/core.h"
+#include "../backend/std_texture/core.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/core.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "../runtime/geometry/vertex/list.h"
+#include "../runtime/mesh/shader/core.h"
+#include "../runtime/mesh/topology/base.h"
+#include "../runtime/mesh/transform.h"
+#include "../runtime/pipeline/core.h"
+#include "../runtime/scene/add.h"
+#include "../runtime/shader/core.h"
+#include "../runtime/shader/update.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/scene/core.h"
+#include "../runtime/texture/core.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"

@@ -4,6 +4,7 @@
 #include "../runtime/light/light.h"
 #include "../runtime/mesh/mesh.h"
 #include "../runtime/scene/core.h"
+#include "../runtime/light/core.h"
 
 void seo_light_ambient_create(SceneEditorObject *, AmbientLight *,
                               const SEOCreateDescriptor *);

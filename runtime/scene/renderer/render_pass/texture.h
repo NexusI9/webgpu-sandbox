@@ -1,6 +1,8 @@
 #ifndef _RENDER_PASS_TEXTURE_H_
 #define _RENDER_PASS_TEXTURE_H_
 
+#include <webgpu/webgpu.h>
+
 #include "core.h"
 
 void render_pass_create_color_multisample(RenderPass *);

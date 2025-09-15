@@ -1,8 +1,13 @@
 #ifndef _PRIMITIVE_CORE_H_
 #define _PRIMITIVE_CORE_H_
 
-#include "../geometry/vertex/vertex.h"
 #include <webgpu/webgpu.h>
+
+#include "../geometry/vertex/vertex.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
+#include "../runtime/geometry/vertex/attribute.h"
+#include "../runtime/geometry/vertex/index.h"
 
 typedef struct {
 

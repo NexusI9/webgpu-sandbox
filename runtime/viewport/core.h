@@ -1,9 +1,12 @@
 #ifndef _VIEWPORT_CORE_H_
 #define _VIEWPORT_CORE_H_
 
+#include <cglm/cglm.h>
+#include <cglm/types.h>
+#include <stdint.h>
+
 #include "../backend/clock.h"
 #include "../backend/ssbo.h"
-#include <cglm/cglm.h>
 
 typedef struct {
   mat4 projection;

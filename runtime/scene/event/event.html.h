@@ -1,6 +1,8 @@
 #ifndef _SCENE_EVENT_CAMERA_H_
 #define _SCENE_EVENT_CAMERA_H_
 
+#include <stdbool.h>
+
 #include "../core.h"
 #include "emscripten/html5.h"
 

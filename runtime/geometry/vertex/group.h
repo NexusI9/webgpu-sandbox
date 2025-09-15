@@ -1,9 +1,10 @@
 #ifndef _VERTEX_GROUP_H_
 #define _VERTEX_GROUP_H_
-#include "core.h"
-#include "index.h"
 #include <stddef.h>
 #include <stdint.h>
+
+#include "core.h"
+#include "index.h"
 
 #define VERTEX_GROUP_CAPACITY_DEFAULT 53
 

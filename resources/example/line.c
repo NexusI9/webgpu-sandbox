@@ -1,6 +1,12 @@
 #include "line.h"
 
-#include "../../runtime/geometry/line/line.h"
+#include <cglm/types.h>
+#include <stddef.h>
+
+#include "../runtime/geometry/line/core.h"
+#include "../runtime/mesh/core.h"
+#include "../runtime/scene/add.h"
+#include "../runtime/scene/core.h"
 
 void example_line(Scene *scene) {
   Mesh *line = scene_new_mesh(scene);

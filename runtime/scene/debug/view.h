@@ -1,6 +1,8 @@
 #ifndef _SCENE_DEBUG_VIEW_H_
 #define _SCENE_DEBUG_VIEW_H_
 
+#include <webgpu/webgpu.h>
+
 #include "core.h"
 
 #define VIEW_MARGIN 10
