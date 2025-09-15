@@ -54,5 +54,9 @@ echo "$COMPILE_JSON generated."
 # 3. Run IWYU
 # ==========================
 echo "Running IWYU..."
-iwyu_tool.py -p . > "$IWYU_REPORT" 2>&1
+iwyu_tool.py -p . > "$IWYU_REPORT" 2>&1 || true
 echo "IWYU analysis complete. Report saved to $IWYU_REPORT."
+
+echo "Running Fix Includes..."
+cat "$IWYU_REPORT" | fix_includes.py -n
+echo "Done."
