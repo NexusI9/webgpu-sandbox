@@ -1,0 +1,45 @@
+#include "uniform.h"
+#include "../../utils/system.h"
+#include "core.h"
+#include <string.h>
+
+MeshUniform *mesh_uniform(Mesh *mesh) {
+  return (MeshUniform *)mesh->ssbo_slot.uniform;
+}
+
+void mesh_uniform_update(Mesh *mesh) {
+
+  vec4 position = {
+      mesh->position[0],
+      mesh->position[1],
+      mesh->position[2],
+      1.0f,
+  };
+
+  MeshUniform *uniform = (MeshUniform *)mesh->ssbo_slot.uniform;
+
+  glm_mat4_copy(mesh->model, uniform->model);
+  glm_vec4_copy(position, uniform->position);
+}
+
+void mesh_uniform_model_update_callback(void *callback_mesh, void *entry_data) {
+
+  Mesh *cast_mesh = (Mesh *)callback_mesh;
+
+  MeshUniform *updated_data = (MeshUniform *)cast_mesh->ssbo_slot.uniform;
+  MeshUniform *new_data = (MeshUniform *)entry_data;
+
+  //  transfer updated camera values (position and view) to new data
+  glm_mat4_copy(updated_data->model, new_data->model);
+  glm_vec4_copy(updated_data->position, new_data->position);
+}
+
+bool mesh_uniform_model_compare_callback(void *callback_data,
+                                         const void *entry_data) {
+
+  Mesh *cast_mesh = (Mesh *)callback_data;
+  MeshUniform *cast_uniform = (MeshUniform *)entry_data;
+
+  return memcmp(cast_mesh->model, cast_uniform->model, sizeof(mat4)) != 0;
+}
+

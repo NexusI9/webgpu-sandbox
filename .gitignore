@@ -1,0 +1,10 @@
+*.wasm
+_ignore/
+./build/
+*.data
+*.gltf
+*.glb
+*.obj
+*.mbin
+wgpu_scene.js
+.cache/
