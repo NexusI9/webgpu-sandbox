@@ -1,22 +1,32 @@
 #ifndef _PIPELINE_LAYOUT_PBR_H_
 #define _PIPELINE_LAYOUT_PBR_H_
 
-#include "runtime/pipeline/pipeline.h"
 #include "backend/ubo.h"
 #include "runtime/camera/camera.h"
 #include "runtime/light/light.h"
 #include "runtime/light/uniform.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/pipeline.h"
 #include "runtime/probe/probe.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
 #include <webgpu/webgpu.h>
 
+typedef struct {
+  vec4 base_color_factor;
+  vec3 emissive_factor;
+  float metallic_factor;
+  float roughness_factor;
+  float specular_factor;
+  float normal_scale;
+  float occlusion_strength;
+} PBRMaterialUniform;
+
 static const WGPUBindGroupLayoutDescriptor layout_pbr_textures_bind_group = {
     // Group 1: Material Textures
     .label = "Group 1 - Material Textures",
-    .entryCount = 10,
+    .entryCount = 11,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -118,6 +128,16 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_textures_bind_group = {
                     (WGPUSamplerBindingLayout){
                         .type = WGPUSamplerBindingType_Filtering,
                     },
+            },
+            {
+                // PBR_uniform
+                .binding = 10,
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .hasDynamicOffset = false,
+                        .minBindingSize = sizeof(PBRMaterialUniform)},
             },
         },
 };

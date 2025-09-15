@@ -45,7 +45,7 @@ struct Viewport {
 };
 
 struct Material {
-  albedo : vec3<f32>,
+  albedo : vec4<f32>,
            metallic : f32,
                       roughness : f32,
                                   normal : vec3<f32>,
@@ -131,6 +131,18 @@ struct ProbeReflection {
   position : vec3<f32>, radius : f32,
 }
 
+struct PBRMaterial {
+  base_color_factor : vec4<f32>,
+                      emissive_factor : vec3<f32>,
+                                        metallic_factor : f32,
+                                                          roughness_factor
+      : f32,
+        specular_factor : f32,
+                          normal_scale : f32,
+                                         occlusion_strength : f32,
+
+}
+
 // material pbr
 // 1. texture : The actual image data stored in VRAM (pixel colors, normal maps,
 // etc.)
@@ -157,6 +169,8 @@ struct ProbeReflection {
 
 @group(1) @binding(8) var occlusion_texture : texture_2d<f32>;
 @group(1) @binding(9) var occlusion_sampler : sampler;
+
+@group(1) @binding(10) var<uniform> uPBR : PBRMaterial;
 
 // light
 // TODO: using uniform for now, but check the storage type
@@ -296,15 +310,17 @@ fn dot_max(A : vec3<f32>, B : vec3<f32>) -> f32 { return max(dot(A, B), 0.0f); }
 
 fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
                    normal : vec4<f32>, occlusion : vec4<f32>,
-                   emissive : vec4<f32>) -> Material {
+                   emissive : vec4<f32>, factors : PBRMaterial) -> Material {
 
   var material : Material;
-  material.albedo = diffuse.rgb;
-  material.metallic = metallic.r;
-  material.roughness = metallic.g;                     // roughness in G channel
-  material.normal = normalize(normal.rgb * 2.0 - 1.0); // convert to [-1,+1]
-  material.occlusion = occlusion.r;
-  material.emissive = emissive.rgb;
+  material.albedo = diffuse * factors.base_color_factor;
+  material.metallic = metallic.r * factors.metallic_factor;
+  material.roughness =
+      metallic.g * factors.roughness_factor; // roughness in G channel
+  material.normal = normalize(normal.rgb * 2.0 - 1.0) *
+                    factors.normal_scale; // convert to [-1,+1]
+  material.occlusion = occlusion.r * factors.occlusion_strength;
+  material.emissive = emissive.rgb * factors.emissive_factor;
 
   return material;
 }
@@ -328,7 +344,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   // 2. Fresnel effect
   // Determines how much light reflects vs. refracts
   var HdotV : f32 = dot_max(H, V);
-  var F0 : vec3<f32> = mix(vec3(0.04), material.albedo, material.metallic);
+  var F0 : vec3<f32> = mix(vec3(0.04), material.albedo.rgb, material.metallic);
   var F : vec3<f32> = f_schlick(F0, HdotV);
 
   // 3. Normal Distribution Function - NDF (GGX/ Trowbridge-Reitz)
@@ -350,7 +366,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   // Non-Metallic surface use both diffuse + specular
   var kD = (vec3(1.0f) - F) * (1.0f - material.metallic);
 
-  var diffuse : vec3<f32> = (material.albedo / PI);
+  var diffuse : vec3<f32> = (material.albedo.rgb / PI);
   var Lo : vec3<f32> = (kD * diffuse + specular) * light_color *
                        light_intensity * NdotL;
 
@@ -362,7 +378,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
 
 fn compute_ambient_light(material : Material, light_color : vec3<f32>,
                          light_intensity : f32) -> vec3<f32> {
-  return vec3(light_intensity) * material.albedo * material.occlusion;
+  return vec3(light_intensity) * material.albedo.rgb * material.occlusion;
 }
 
 fn compute_point_depth(position : f32, near : f32, far : f32) -> f32 {
@@ -702,7 +718,8 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   var occlusion = textureSample(occlusion_texture, occlusion_sampler, vUv);
   var emissive = textureSample(emissive_texture, emissive_sampler, vUv);
 
-  let material = create_material(albedo, metallic, normal, occlusion, emissive);
+  let material =
+      create_material(albedo, metallic, normal, occlusion, emissive, uPBR);
 
   let world_normal = normalize(TBN * material.normal);
 
@@ -764,9 +781,8 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   let f0 : vec3<f32> = vec3(0.04); // dielectric default reflectance
   let F : vec3<f32> = f0 + (1.0f - f0) * pow(1.0 - NdotV, 5.0f);
   let kD = (vec3(1.0f) - F) * (1.0f - material.metallic);
-  let diffuseIBL =
-      textureSample(skybox_texture, skybox_sampler, world_normal).rgb *
-      material.albedo;
+  let diffuseIBL = textureSample(skybox_texture, skybox_sampler, world_normal) *
+                   material.albedo;
 
   // plane reflection
   var plane_reflection : vec4<f32> = vec4<f32>(0.0f);
@@ -793,7 +809,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   let specular_composite =
       mix(specularIBL, plane_reflection.rgb, plane_reflection.a);
 
-  let IBL = kD * diffuseIBL + specular_composite;
+  let IBL = kD * diffuseIBL.rgb + specular_composite;
 
   // shadow map computation
   let point_shadow = point_shadow_factor(vFrag, camera.position.xyz);
@@ -803,13 +819,15 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
                             point_shadow + spot_shadow + sun_shadow);
 
-  let combined = vec4<f32>(ambient + Lo + IBL * combined_shadow, 1.0f);
+  let combined =
+      vec4<f32>(ambient + Lo + IBL * combined_shadow, uPBR.base_color_factor.a);
 
   let fog_k = fog_factor(length(vFrag - camera.position.xyz),
                          ubo.fog.start_distance, ubo.fog.density);
 
   let out_color = mix(combined, ubo.fog.color, fog_k);
 
-  // return vec4<f32>();
+  // return vec4<f32>(f32(uMesh.probe_reflection_plane_count), 0.0f,
+  // 0.0f, 1.0f);
   return out_color;
 }

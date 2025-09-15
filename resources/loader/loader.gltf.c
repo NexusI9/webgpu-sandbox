@@ -1,30 +1,31 @@
 #include "loader.gltf.h"
 
-#include <stdint.h>
 #include <cglm/types.h>
 #include <cglm/util.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "webgpu/webgpu.h"
-#include "utils/system.h"
 #include "backend/std_pipeline/core.h"
+#include "backend/std_pipeline/modules/pbr/pbr.h"
 #include "backend/std_texture/core.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/core.h"
 #include "runtime/geometry/vertex/index.h"
 #include "runtime/geometry/vertex/list.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/topology/base.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/pipeline/core.h"
 #include "runtime/scene/add.h"
+#include "runtime/scene/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
-#include "runtime/mesh/core.h"
-#include "runtime/scene/core.h"
 #include "runtime/texture/core.h"
+#include "utils/system.h"
+#include "webgpu/webgpu.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb/stb_image.h"
@@ -54,9 +55,11 @@ static LoaderGLTFStatus loader_gltf_create_mesh(Scene *, const WGPUDevice,
 static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
 
 // shader utils
+static inline void loader_gltf_bind_textures(Mesh *, cgltf_material *,
+                                             const LoaderGLTFOptions *);
 
-static void loader_gltf_bind_uniforms(Mesh *, cgltf_material *,
-                                      const LoaderGLTFOptions *);
+static inline void loader_gltf_bind_uniforms(Mesh *, cgltf_material *,
+                                             const LoaderGLTFOptions *);
 
 static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
                                                     void **, size_t *, int *,
@@ -284,10 +287,6 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
             accessor, vert_list.attributes[type_vertex_map[type].type],
             type_vertex_map[type].dimension);
 
-        // DELETEME
-        // print_list_float(vert_list.attributes[type_vertex_map[type].type],
-        //                 vert_list.count, type_vertex_map[type].dimension);
-
         // interleave vertex data ( create pattern pos / norm / tan / uv...)
         loader_gltf_add_vertex_attribute(
             &vert_attr, vert_list.attributes[type_vertex_map[type].type],
@@ -344,6 +343,7 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                          });
 
       // load and bind gltf textures
+      loader_gltf_bind_textures(target_mesh, material, options);
       loader_gltf_bind_uniforms(target_mesh, material, options);
 
       // define mesh vertex attribute
@@ -375,7 +375,7 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
   Bind PBR textures
   store the texture_views (hold pointer to actual texture + other data)
  */
-void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
+void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
                                const LoaderGLTFOptions *options) {
 
   const uint8_t texture_length = 5;
@@ -434,6 +434,44 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
     }
 
     binding += 2;
+  }
+}
+
+/**
+   Read material factors and load it in the PBRUniform
+ */
+void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
+                               const LoaderGLTFOptions *options) {
+
+  Shader *texture_shader = mesh_shader(mesh, MeshShader_Texture);
+  Shader *reflection_shader = mesh_shader(mesh, MeshShader_Reflection);
+
+  PBRMaterialUniform pbr = {0};
+
+  pbr.metallic_factor = material->pbr_metallic_roughness.metallic_factor;
+  pbr.roughness_factor = material->pbr_metallic_roughness.roughness_factor;
+  pbr.specular_factor = material->specular.specular_factor;
+  pbr.normal_scale = material->normal_texture.scale;
+  pbr.occlusion_strength = material->occlusion_texture.scale;
+  glm_vec3_copy(material->emissive_factor, pbr.emissive_factor);
+  glm_vec4_copy(material->pbr_metallic_roughness.base_color_factor,
+                pbr.base_color_factor);
+
+  shader_update_uniform_data(texture_shader, 1, 10, &pbr);
+  shader_update_uniform_data(reflection_shader, 1, 10, &pbr);
+
+  {
+    // DEBUG
+    printf("[[%s]]\n", material->name);
+    printf("\tmetallic: %f\n", pbr.metallic_factor);
+    printf("\troughness: %f\n", pbr.roughness_factor);
+    printf("\tocclusion: %f\n", pbr.occlusion_strength);
+    printf("\tspecular: %f\n", pbr.roughness_factor);
+    printf("\tnormal: %f\n", pbr.normal_scale);
+    printf("\temissive:");
+    print_vec3(pbr.emissive_factor);
+    printf("\tbase color:");
+    print_vec4(pbr.base_color_factor);
   }
 }
 

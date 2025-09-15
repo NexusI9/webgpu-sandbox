@@ -8,8 +8,8 @@
 #include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/shader/texture.h"
 #include "runtime/probe/reflection/plane.h"
-#include "runtime/texture/core.h"
 #include "runtime/scene/add.h"
+#include "runtime/texture/core.h"
 
 void example_gltf(Scene *scene) {
   loader_gltf_load(
@@ -59,7 +59,7 @@ void example_gltf_podium(Scene *scene) {
                                        },
                                        &plane);
 
-  const char *podium_name = "Circle.001";
+  const char *podium_name = "podium";
   Mesh *podium = mesh_ref_list_find_by_name(
       &(MeshRefList){
           .capacity = gltf_result.meshes.length,

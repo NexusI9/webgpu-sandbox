@@ -81,7 +81,11 @@ DEV_FLAGS := \
 	-g \
 	-sALLOW_MEMORY_GROWTH=1 \
 	-sMAXIMUM_MEMORY=1073741824 \
-	-sINITIAL_MEMORY=67108864 
+	-sINITIAL_MEMORY=67108864
+
+PROD_FLAGS := \
+	   -Os \
+	   --closure 1
 
 # ======================
 #
@@ -96,7 +100,13 @@ PATH_WEBSITE_SHADER := $(PATH_WEBSITE_WGPU)/wgpu_shader
 PATH_WEBSITE_TEXTURE := $(PATH_WEBSITE_WGPU)/wgpu_texture
 PATH_WEBSITE_GLTF := $(PATH_WEBSITE_WGPU)/wgpu_gltf
 PATH_WEBSITE_MBIN := $(PATH_WEBSITE_WGPU)/wgpu_mbin
+
 OUTPUT_WEBSITE_WGPU := $(PATH_WEBSITE_WGPU)/wgpu_scene.js
+OUTPUT_WEBSITE_SHADER := $(PATH_WEBSITE_SHADER)/wgpu_shader.js
+OUTPUT_WEBSITE_TEXTURE := $(PATH_WEBSITE_TEXTURE)/wgpu_texture.js
+OUTPUT_WEBSITE_GLTF := $(PATH_WEBSITE_GLTF)/wgpu_gltf.js
+OUTPUT_WEBSITE_MBIN := $(PATH_WEBSITE_MBIN)/wgpu_mbin.js
+
 
 # ======================
 #
@@ -130,15 +140,15 @@ clean_shader:
 	@echo "done"
 
 
-#$PATH_WEBSITE_SHADER/wgpu_shader.js  $PATH_WEBSITE_SHADER/wgpu_shader.data bundle_shader:
-#	@echo "Generating Shader.data..."
-#	$(shell mkdir -p $(PATH_WEBSITE_SHADER))
-#	@start=$$(date +%s)
-#	emcc $(FILES_PRELOAD_SHADER:%=--preload-file %@/shaders) \
-#		-o $PATH_WEBSITE_SHADER/wgpu_shader.js
-#	end=$$(date +%s)
-#	elapsed=$$((end - start))
-#	@echo ">> Done ($${elapsed}s)"
+bundle_shader:
+	@echo "Bundling Shader Data..."; \
+	make compile_shader; \
+    	start=$$(date +%s); \
+	mkdir -p $(PATH_WEBSITE_SHADER); \
+	emcc $(FILES_SHADER) -o $OUTPUT_WEBSITE_SHADER; \
+	end=$$(date +%s); \
+	elapsed=$$((end - start)); \
+	echo ">> Done ($${elapsed}s)"
 
 
 wasm:
