@@ -1,11 +1,12 @@
 #include "core.h"
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
+#include "runtime/light/shadow_map/core.h"
+#include "runtime/texture/core.h"
 #include "utils/system.h"
 #include "webgpu/webgpu.h"
-#include "runtime/light/shadow_map/core.h"
 
 WGPUTextureView g_std_texture_view[STD_TEXTURE_VIEW_COUNT] = {0};
 WGPUTexture g_std_texture[STD_TEXTURE_VIEW_COUNT] = {0};
@@ -92,7 +93,7 @@ WGPUTextureView scene_renderer_create_fallback_float(WGPUTexture *texture,
                   .height = 1,
                   .depthOrArrayLayers = 1,
               },
-          .format = WGPUTextureFormat_R8Unorm,
+          .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
           .mipLevelCount = 1,
           .sampleCount = 1,
           .dimension = WGPUTextureDimension_2D,
@@ -106,10 +107,10 @@ WGPUTextureView scene_renderer_create_fallback_float(WGPUTexture *texture,
                             .origin = {0, 0, 0},
                             .aspect = WGPUTextureAspect_All,
                         },
-                        (uint8_t[]){255}, sizeof(uint32_t),
+                        pixel, 4 * sizeof(uint32_t),
                         &(WGPUTextureDataLayout){
                             .offset = 0,
-                            .bytesPerRow = 1,
+                            .bytesPerRow = 4,
                             .rowsPerImage = 1,
                         },
                         &(WGPUExtent3D){1, 1, 1});

@@ -12,7 +12,7 @@
 
 #define SHADOW_DEPTH_FORMAT WGPUTextureFormat_Depth32Float
 #define SHADOW_COLOR_FORMAT TEXTURE_FORMAT_ONSCREEN_DEFAULT
-#define SHADOW_MAP_SIZE 128
+#define SHADOW_MAP_SIZE 512
 
 typedef struct {
   const WGPUDevice device;

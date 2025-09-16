@@ -11,20 +11,20 @@ void example_light(Scene *scene) {
 
   scene_add_point_light(scene,
                         &(PointLightDescriptor){
-                            .color = {0.0f, 0.3f, 1.0f},
-                            .intensity = 4.0f,
+                            .color = {0.4f, 0.0f, 1.0f},
+                            .intensity = 7.0f,
                             .cutoff = 20.0f,
                             .inner_cutoff = 50.0f,
                             .near = 0.1,
                             .far = 20.0f,
-                            .position = {0.0f, 2.4f, 2.3f},
+                            .position = {0.0f, 3.5f, 0.0f},
                         },
                         LightShadow_None, NULL);
 
   scene_add_sun_light(scene,
                       &(SunLightDescriptor){
                           .position = {15.0f, 15.0f, 15.0f},
-                          .color = {1.0f, 1.0f, 1.0f},
+                          .color = {0.0f, 0.4f, 1.0f},
                           .intensity = 2.0f,
                           .size = 10.0f,
                       },

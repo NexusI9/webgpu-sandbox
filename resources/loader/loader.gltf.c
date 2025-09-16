@@ -321,8 +321,6 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       // and set it as target mesh
       if (p > 0) {
         target_mesh = scene_new_mesh(scene);
-
-        // add target mesh pointer to parent mesh children list
         mesh_child_add(scene_mesh, target_mesh);
 
         /*
@@ -345,23 +343,27 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                                  });
       }
 
-      // load shader
-      // Use default pbr shader as default
-      // TODO: Add a custom path for different shader in loader configuration
-      cgltf_material *material = current_primitive.material;
+      // === CREATE SHADER AND BIND TEXTURE/UNIFORMS
+      {
+        // Use default pbr shader as default
+        // TODO: Add a custom path for different shader in loader configuration
+        cgltf_material *material = current_primitive.material;
 
-      mesh_shader_create(target_mesh,
-                         &(ShaderCreateDescriptor){
-                             .pipeline = std_pipeline(PipelineType_PBR),
-                             .label = material->name,
-                             .name = material->name,
-                             .device = device,
-                             .queue = queue,
-                         });
+        printf("mesh: %s <=> material: %s\n", target_mesh->name,
+               material->name);
+        mesh_shader_create(target_mesh,
+                           &(ShaderCreateDescriptor){
+                               .pipeline = std_pipeline(PipelineType_PBR),
+                               .label = material->name,
+                               .name = material->name,
+                               .device = device,
+                               .queue = queue,
+                           });
 
-      // load and bind gltf textures
-      loader_gltf_bind_textures(target_mesh, material, options);
-      loader_gltf_bind_uniforms(target_mesh, material, options);
+        // load and bind gltf textures
+        loader_gltf_bind_textures(target_mesh, material, options);
+        loader_gltf_bind_uniforms(target_mesh, material, options);
+      }
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
@@ -373,14 +375,16 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
 
       scene_add_mesh(scene, target_mesh, NULL);
 
-      // update stats
-      if (result) {
-        result->stats.mesh_count++;
-        result->stats.vertex_count +=
-            target_mesh->topology.base.attribute.length / VERTEX_STRIDE;
+      // ==== UPDATE STATS ===
+      {
+        if (result) {
+          result->stats.mesh_count++;
+          result->stats.vertex_count +=
+              target_mesh->topology.base.attribute.length / VERTEX_STRIDE;
 
-        if (result->meshes.length < LOADER_GLTF_RESULT_MESH_COUNT)
-          result->meshes.entries[result->meshes.length++] = target_mesh;
+          if (result->meshes.length < LOADER_GLTF_RESULT_MESH_COUNT)
+            result->meshes.entries[result->meshes.length++] = target_mesh;
+        }
       }
     }
   }
@@ -479,16 +483,16 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
 
   {
     // DELETE ME DEBUG
-    // printf("[[%s]]\n", material->name);
-    // printf("\tmetallic: %f\n", pbr.metallic_factor);
-    // printf("\troughness: %f\n", pbr.roughness_factor);
-    // printf("\tocclusion: %f\n", pbr.occlusion_strength);
-    // printf("\tspecular: %f\n", pbr.roughness_factor);
-    // printf("\tnormal: %f\n", pbr.normal_scale);
-    // printf("\temissive:");
-    // print_vec3(pbr.emissive_factor);
-    // printf("\tbase color:");
-    // print_vec4(pbr.base_color_factor);
+    printf("[[%s]]\n", material->name);
+    printf("\tmetallic: %f\n", pbr.metallic_factor);
+    printf("\troughness: %f\n", pbr.roughness_factor);
+    printf("\tocclusion: %f\n", pbr.occlusion_strength);
+    printf("\tspecular: %f\n", pbr.roughness_factor);
+    printf("\tnormal: %f\n", pbr.normal_scale);
+    printf("\temissive:");
+    print_vec3(pbr.emissive_factor);
+    printf("\tbase color:");
+    print_vec4(pbr.base_color_factor);
   }
 }
 

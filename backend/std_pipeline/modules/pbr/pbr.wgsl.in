@@ -797,7 +797,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
     plane_reflection = textureSampleLevel(
         probe_reflection_plane_texture, probe_reflection_plane_sampler, reflUV,
-        uPlaneReflection.texture_layer, 2.0f);
+        uPlaneReflection.texture_layer, 0.0f);
 
     plane_reflection.a *= align;
     plane_reflection.a /= 1.3f;
@@ -830,4 +830,5 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   // return vec4<f32>(f32(uMesh.probe_reflection_plane_count), 0.0f,
   // 0.0f, 1.0f);
   return out_color;
+  //return vec4<f32>(emissive.rgb, 1.0f);
 }

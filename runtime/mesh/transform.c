@@ -8,10 +8,10 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
-#include "utils/matrix.h"
 #include "core.h"
-#include "uniform.h"
 #include "topology/boundbox.h"
+#include "uniform.h"
+#include "utils/matrix.h"
 #include "utils/vector/core.h"
 
 static void mesh_update_model_matrix(Mesh *);
@@ -40,13 +40,10 @@ void mesh_update_model_matrix(Mesh *mesh) {
   mesh_topology_boundbox_update(&mesh->topology.base, mesh->model,
                                 &mesh->topology.boundbox, mesh->queue);
 
-  
   // Automatically updated via trigger/callback model
   // See ./runtime/scene/event/event.h for more info
   mesh_uniform_update(mesh);
-
 }
-
 
 /**
    Apply scale to mesh transform matrix
@@ -55,6 +52,10 @@ void mesh_set_scale(Mesh *mesh, vec3 scale) {
   glm_vec3_copy(scale, mesh->scale);
 
   mesh_update_model_matrix(mesh);
+
+  // update children
+  for (size_t i = 0; i < mesh->children.length; i++)
+    mesh_set_scale(mesh->children.entries[i], scale);
 }
 
 void mesh_set_scale_axis(Mesh *mesh, vec3 value, const Axis axis) {
@@ -71,6 +72,10 @@ void mesh_set_position(Mesh *mesh, vec3 position) {
   glm_vec3_copy(position, mesh->position);
 
   mesh_update_model_matrix(mesh);
+
+  // update children
+  for (size_t i = 0; i < mesh->children.length; i++)
+    mesh_set_position(mesh->children.entries[i], position);
 }
 
 void mesh_set_position_axis(Mesh *mesh, vec3 value, const Axis axis) {
@@ -95,6 +100,10 @@ void mesh_set_rotation(Mesh *mesh, vec3 rotation) {
 
   // recompute model matrix
   mesh_update_model_matrix(mesh);
+
+  // update children
+  for (size_t i = 0; i < mesh->children.length; i++)
+    mesh_set_rotation(mesh->children.entries[i], rotation);
 }
 
 void mesh_set_rotation_axis(Mesh *mesh, vec3 value, const Axis axis) {
@@ -122,6 +131,10 @@ void mesh_set_rotation_quat(Mesh *mesh, versor rotation) {
 
   // recompute model matrix
   mesh_update_model_matrix(mesh);
+
+  // update children
+  for (size_t i = 0; i < mesh->children.length; i++)
+    mesh_set_rotation_quat(mesh->children.entries[i], rotation);
 }
 
 /**

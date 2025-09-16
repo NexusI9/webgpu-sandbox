@@ -52,7 +52,7 @@ void example_gltf_podium(Scene *scene) {
                                            .far = 100.0f,
                                            .near = 0.1f,
                                            .normal = {0.0f, 1.0f, 0.0f},
-                                           .position = {0.0f, 2.0f, 0.0f},
+                                           .position = {0.0f, 1.0f, 0.0f},
                                            .scale = {10.0f, 10.0f, 10.0f},
                                            .distance = 1.0f,
                                            .camera = scene->active_camera,
