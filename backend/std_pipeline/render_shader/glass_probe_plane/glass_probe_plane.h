@@ -106,7 +106,7 @@ static const PipelineBindingProbe glass_probe_plane = {
 
 };
 
-static const ShaderPipelineStateObject layout_glass_probe_plane = {
+static const RenderPipelineStateObject layout_glass_probe_plane = {
     .label = "Pipeline Bind Groups - Glass Probe Plane",
     .shader_path = "./backend/std_pipeline/render_shader/glass_probe_plane/"
                    "glass_probe_plane.wgsl",

@@ -9,7 +9,7 @@
 #include "../commons.h"
 #include <webgpu/webgpu.h>
 
-static const ShaderPipelineStateObject layout_default = {
+static const RenderPipelineStateObject layout_default = {
     .label = "Pipeline Bind Groups - Default",
     .shader_path =
         "./backend/std_pipeline/render_shader/default/default.wgsl",

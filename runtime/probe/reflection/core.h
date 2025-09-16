@@ -30,7 +30,7 @@ typedef struct {
   const RenderPassDrawListDescriptor *draw_list;
   const TextureResolution resolution;
   const size_t capacity;
-  const PipelineMultisampleCount multisample;
+  const RenderPipelineMultisampleCount multisample;
 } ProbeReflectionListDescriptor;
 
 typedef struct {
@@ -68,7 +68,7 @@ typedef struct {
   const WGPUTextureViewDimension view_dimension;
   const TextureResolution resolution;
   const RenderPassDrawListDescriptor *draw_list;
-  const PipelineMultisampleCount multisample;
+  const RenderPipelineMultisampleCount multisample;
   RenderPass *handle;
 } ProbeReflectionCreateCorePass;
 

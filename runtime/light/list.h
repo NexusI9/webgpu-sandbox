@@ -22,7 +22,7 @@ typedef enum {
 } LightShadow;
 
 typedef struct {
-  const Pipeline *pipeline;
+  const RenderPipeline *pipeline;
   const size_t view_offset;
 } LightShadowData;
 

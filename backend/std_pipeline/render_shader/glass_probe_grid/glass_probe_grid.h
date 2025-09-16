@@ -96,7 +96,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_grid_bind_group = {
         },
 };
 
-static const ShaderPipelineStateObject layout_glass_probe_grid = {
+static const RenderPipelineStateObject layout_glass_probe_grid = {
     .label = "Pipeline Bind Groups - Glass Probe Grid",
     .shader_path =
         "./backend/std_pipeline/render_shader/glass_probe_grid/"

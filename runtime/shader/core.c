@@ -134,7 +134,7 @@ void shader_module_release(Shader *shader) {
   wgpuShaderModuleRelease(shader->pipeline->module);
 }
 
-const Pipeline *shader_pipeline(Shader *shader) { return shader->pipeline; }
+const RenderPipeline *shader_pipeline(Shader *shader) { return shader->pipeline; }
 
 /**
    Access all uniforms from a bind group and check if it requires any update.

@@ -16,7 +16,7 @@
 #include "renderer/render_pass/core.h"
 #include "runtime/mesh/core.h"
 
-typedef void (*scene_builder_callback)(Scene *, Mesh *, const Pipeline *);
+typedef void (*scene_builder_callback)(Scene *, Mesh *, const RenderPipeline *);
 
 // pipeline builders
 static inline void scene_build_mesh_texture(Scene *, Mesh *,

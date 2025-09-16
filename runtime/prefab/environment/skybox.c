@@ -133,7 +133,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
   shader_update_uniform_data(shader, 1, 2, (void *)&blur);
 
   // alter pipeline (no depth test)
-  const Pipeline *pipeline = shader_pipeline(shader);
+  const RenderPipeline *pipeline = shader_pipeline(shader);
 
   scene_add_mesh_fixed(scene, skybox_mesh, ScenePipeline_Fixed_Background,
                        NULL);

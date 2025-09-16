@@ -11,7 +11,7 @@
 #include "../pbr/pbr.h"
 #include <webgpu/webgpu.h>
 
-static const ShaderPipelineStateObject layout_reflection = {
+static const RenderPipelineStateObject layout_reflection = {
     .label = "Pipeline Bind Groups - Reflection",
     .shader_path = "../backend/std_pipeline/render_shader/reflection/"
                    "reflection.wgsl",

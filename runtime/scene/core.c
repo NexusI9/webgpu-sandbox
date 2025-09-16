@@ -30,7 +30,7 @@ static inline Camera *scene_init_main_camera(Scene *, cclock *);
 static inline void scene_light_list_init(Scene *);
 static inline void scene_camera_init(Scene *);
 static inline void scene_probe_reflection_init(Scene *,
-                                               const PipelineMultisampleCount);
+                                               const RenderPipelineMultisampleCount);
 
 static inline void scene_mesh_list_init(Scene *);
 
@@ -156,7 +156,7 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 }
 
 void scene_probe_reflection_init(Scene *scene,
-                                 const PipelineMultisampleCount multisample) {
+                                 const RenderPipelineMultisampleCount multisample) {
 
   const ScenePipeline reflection_pipelines[2] = {
       ScenePipeline_Dynamic_LitShadow,

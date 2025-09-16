@@ -5,15 +5,16 @@
 /**
    Define custom vertex state for pipeline prior building it
  */
-void pipeline_set_vertex(Pipeline *pipeline, const WGPUVertexState state) {
+void render_pipeline_set_vertex(RenderPipeline *pipeline,
+                                const WGPUVertexState state) {
   pipeline->vertex_state = state;
 }
 
 /**
    Define custom fragment state for pipeline prior building it
  */
-void pipeline_set_fragment(Pipeline *pipeline,
-                           const PipelineFragmentDescriptor *state) {
+void render_pipeline_set_fragment(
+    RenderPipeline *pipeline, const RenderPipelineFragmentDescriptor *state) {
 
   // cache attributes
   pipeline->color_state = state->color_state;
@@ -46,20 +47,21 @@ void pipeline_set_fragment(Pipeline *pipeline,
 /**
    Define custom primitive state for pipeline prior building it
  */
-void pipeline_set_primitive(Pipeline *pipeline,
-                            const WGPUPrimitiveState state) {
+void render_pipeline_set_primitive(RenderPipeline *pipeline,
+                                   const WGPUPrimitiveState state) {
   pipeline->primitive_state = state;
 }
 
 /**
    Define custom stencil state for pipeline prior building it
  */
-void pipeline_set_stencil(Pipeline *pipeline,
-                          const WGPUDepthStencilState state) {
+void render_pipeline_set_stencil(RenderPipeline *pipeline,
+                                 const WGPUDepthStencilState state) {
   pipeline->stencil_state = state;
 }
 
-void pipeline_set_blend(Pipeline *pipeline, const WGPUBlendState *state) {
+void render_pipeline_set_blend(RenderPipeline *pipeline,
+                               const WGPUBlendState *state) {
 
   pipeline->blend_state = (WGPUBlendState){
       .color = state->color,
@@ -70,7 +72,7 @@ void pipeline_set_blend(Pipeline *pipeline, const WGPUBlendState *state) {
   pipeline->fragment_state.targets = &pipeline->color_state;
 }
 
-void pipeline_set_multisample(Pipeline *pipeline,
-                              const WGPUMultisampleState* state) {
+void render_pipeline_set_multisample(RenderPipeline *pipeline,
+                                     const WGPUMultisampleState *state) {
   pipeline->multisample_state = *state;
 }

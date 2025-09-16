@@ -49,7 +49,7 @@ static const WGPUBindGroupLayoutDescriptor skybox_layout_bind_group = {
         },
 };
 
-static const ShaderPipelineStateObject layout_skybox = {
+static const RenderPipelineStateObject layout_skybox = {
     .label = "Pipeline Bind Groups - Skybox",
     .shader_path =
         "./backend/std_pipeline/render_shader/skybox/skybox.wgsl",

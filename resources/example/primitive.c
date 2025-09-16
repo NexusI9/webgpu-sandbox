@@ -12,7 +12,7 @@
 #include "runtime/scene/add.h"
 
 void example_primitive(Mesh *cube, vec3 position, Scene *scene,
-                       const Pipeline *pipeline) {
+                       const RenderPipeline *pipeline) {
 
   Primitive cube_prim = primitive_cube();
   // cube = scene_new_mesh(scene);

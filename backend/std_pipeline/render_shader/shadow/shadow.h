@@ -18,7 +18,7 @@ static const PipelineBindingMVP shadow_mvp = {
     .model = 2,
 };
 
-static const ShaderPipelineStateObject layout_shadow = {
+static const RenderPipelineStateObject layout_shadow = {
     .label = "Pipeline Bind Groups - Shadow",
     .shader_path = "./backend/std_pipeline/render_shader/"
                    "shadow/shadow.wgsl",
@@ -53,7 +53,7 @@ static const ShaderPipelineStateObject layout_shadow = {
         },
 };
 
-static const ShaderPipelineStateObject layout_shadow_cullback = {
+static const RenderPipelineStateObject layout_shadow_cullback = {
     .label = "Pipeline Bind Groups - Shadow Cullback",
     .shader_path =
         "./backend/std_pipeline/render_shader/shadow/shadow.wgsl",

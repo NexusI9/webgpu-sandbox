@@ -58,7 +58,7 @@ static const WGPUBindGroupLayoutDescriptor screen_layout_texture = {
         },
 };
 
-static const ShaderPipelineStateObject layout_screen = {
+static const RenderPipelineStateObject layout_screen = {
     .label = "Pipeline Bind Groups - Screen",
     .shader_path = "./backend/std_pipeline/render_shader/"
                    "screen/screen.wgsl",

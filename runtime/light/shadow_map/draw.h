@@ -63,7 +63,7 @@ typedef struct {
   Projection *views;
   const size_t texture_layer;
   const ssbo_id_t ssbo_offset;
-  const Pipeline *pipeline;
+  const RenderPipeline *pipeline;
   RenderPass *pass;
 } ShadowMapDrawDirLightDescriptor;
 
@@ -74,7 +74,7 @@ typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
   WGPUCommandEncoder command_encoder;
-  const Pipeline *pipeline;
+  const RenderPipeline *pipeline;
 } ShadowMapDrawDescriptor;
 
 void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *,

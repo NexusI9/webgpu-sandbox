@@ -3,8 +3,8 @@
 
 #include <webgpu/webgpu.h>
 
-#include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/core.h"
+#include "runtime/pipeline/pipeline.h"
 
 // Standards pipelines
 #define RENDER_PIPELINE_TYPE_COUNT 14
@@ -31,13 +31,13 @@ typedef enum {
   ComputePipelineType_Mipmaps,
 } ComputePipelineType;
 
+extern RenderPipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT];
+extern ComputePipeline g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT];
 
-extern Pipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT];
-extern Pipeline g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT];
+void standard_render_pipelines_init(const WGPUDevice,
+                                    const RenderPipelineMultisampleCount);
 
-void standard_pipelines_init(const WGPUDevice, const PipelineMultisampleCount);
-
-const Pipeline *std_render_pipeline(const RenderPipelineType);
-const Pipeline *std_compute_pipeline(const RenderPipelineType);
+const RenderPipeline *std_render_pipeline(const RenderPipelineType);
+const ComputePipeline *std_compute_pipeline(const RenderPipelineType);
 
 #endif

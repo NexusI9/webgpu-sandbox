@@ -30,7 +30,7 @@ static const WGPUBindGroupLayoutDescriptor grid_bind_group = {
         },
 };
 
-static const ShaderPipelineStateObject layout_grid = {
+static const RenderPipelineStateObject layout_grid = {
     .label = "Pipeline Bind Groups - Grid",
     .shader_path =
         "./backend/std_pipeline/render_shader/grid/grid.wgsl",

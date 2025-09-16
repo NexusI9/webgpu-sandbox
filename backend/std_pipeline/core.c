@@ -24,7 +24,7 @@ static inline WGPUPipelineLayout shader_pipeline_state_object_create(
     const WGPUBindGroupLayoutDescriptor *const *, const size_t,
     const WGPUDevice, WGPUBindGroupLayout *);
 
-static const ShaderPipelineStateObject
+static const RenderPipelineStateObject
     *standard_layouts[RENDER_PIPELINE_TYPE_COUNT] = {
         [RenderPipelineType_Billboard] = &layout_billboard,
         [RenderPipelineType_Default] = &layout_default,
@@ -42,7 +42,7 @@ static const ShaderPipelineStateObject
         [RenderPipelineType_Reflection] = &layout_reflection,
 };
 
-Pipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
+RenderPipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
 
 /**
    Initialize standards shaders and build pipelines layout for each of them.
@@ -50,18 +50,18 @@ Pipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
                  [ PSO ] ===> [ WGPUPipeline ]
 
  */
-void standard_pipelines_init(const WGPUDevice device,
-                             const PipelineMultisampleCount multisample) {
+void standard_render_pipelines_init(const WGPUDevice device,
+                             const RenderPipelineMultisampleCount multisample) {
 
   VERBOSE_PROCESS("Initializing standards pipelines...");
 
   for (size_t i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++) {
 
-    const ShaderPipelineStateObject *layout = standard_layouts[i];
-    Pipeline *cached_pipeline = &g_std_render_pipelines[i];
+    const RenderPipelineStateObject *layout = standard_layouts[i];
+    RenderPipeline *cached_pipeline = &g_std_render_pipelines[i];
 
     // create pipeline
-    pipeline_create(cached_pipeline, &(PipelineCreateDescriptor){
+    render_pipeline_create(cached_pipeline, &(RenderPipelineCreateDescriptor){
                                          .device = device,
                                          .label = layout->label,
                                          .path = layout->shader_path,
@@ -75,39 +75,39 @@ void standard_pipelines_init(const WGPUDevice device,
 
     // vertex state
     if (layout->pipeline_attributes.vertex_state.module != NULL)
-      pipeline_set_vertex(cached_pipeline,
+      render_pipeline_set_vertex(cached_pipeline,
                           layout->pipeline_attributes.vertex_state);
 
     // fragment state
     if (layout->pipeline_attributes.fragment_state.color_state.format !=
         WGPUTextureFormat_Undefined)
-      pipeline_set_fragment(cached_pipeline,
+      render_pipeline_set_fragment(cached_pipeline,
                             &layout->pipeline_attributes.fragment_state);
 
     // primitive state
     if (layout->pipeline_attributes.primitive_state.cullMode !=
         WGPUCullMode_Undefined)
-      pipeline_set_primitive(cached_pipeline,
+      render_pipeline_set_primitive(cached_pipeline,
                              layout->pipeline_attributes.primitive_state);
     // stencil state
     if (layout->pipeline_attributes.stencil_state.format !=
         WGPUTextureFormat_Undefined)
-      pipeline_set_stencil(cached_pipeline,
+      render_pipeline_set_stencil(cached_pipeline,
                            layout->pipeline_attributes.stencil_state);
 
     // blend state
     if (layout->pipeline_attributes.blend_state.alpha.dstFactor)
-      pipeline_set_blend(cached_pipeline,
+      render_pipeline_set_blend(cached_pipeline,
                          &layout->pipeline_attributes.blend_state);
 
     // if sampling set in custom attbutes, apply the config one
     if (layout->pipeline_attributes.multisample_state.count !=
         PipelineMultisampleCount_Undefined) {
-      pipeline_set_multisample(cached_pipeline,
+      render_pipeline_set_multisample(cached_pipeline,
                                &layout->pipeline_attributes.multisample_state);
     } else {
       // else use the renderer one
-      pipeline_set_sampling(cached_pipeline, multisample);
+      render_pipeline_set_sampling(cached_pipeline, multisample);
     }
 
     // copy std bindings (mvp)
@@ -117,11 +117,11 @@ void standard_pipelines_init(const WGPUDevice device,
     WGPUPipelineLayout temp_layout = shader_pipeline_state_object_create(
         layout->bind_groups, layout->bind_groups_count, device, NULL);
 
-    pipeline_build(cached_pipeline, &temp_layout);
+    render_pipeline_build(cached_pipeline, &temp_layout);
   }
 }
 
-const Pipeline *std_render_pipeline(const RenderPipelineType type) {
+const RenderPipeline *std_render_pipeline(const RenderPipelineType type) {
   return &g_std_render_pipelines[type];
 }
 

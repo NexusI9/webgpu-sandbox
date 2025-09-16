@@ -88,7 +88,7 @@ struct RenderPass {
   WGPUQueue queue;
   RenderPassColor color;
   RenderPassDepth depth;
-  PipelineMultisampleCount multisample;
+  RenderPipelineMultisampleCount multisample;
   WGPUSwapChain swapchain;
   RenderPassDrawList draw_list;
   render_pass_draw_callback draw_callback;
@@ -109,7 +109,7 @@ struct RenderPassList {
 typedef struct {
   const int width;
   const int height;
-  const PipelineMultisampleCount multisample;
+  const RenderPipelineMultisampleCount multisample;
   const WGPUDevice device;
 } RenderPassTextureDescriptor;
 
@@ -140,7 +140,7 @@ typedef struct {
   const WGPUQueue queue;
   int width;
   int height;
-  PipelineMultisampleCount multisample;
+  RenderPipelineMultisampleCount multisample;
   const RenderPassDrawListDescriptor *draw_list;
 } RenderPassCreateDescriptor;
 
@@ -148,7 +148,7 @@ typedef struct {
   const char *label;
   RenderPassColorAttachment *color;
   RenderPassDepthAttachment *depth;
-  PipelineMultisampleCount multisample;
+  RenderPipelineMultisampleCount multisample;
   int width;
   int height;
   const RenderPassDrawListDescriptor *draw_list;
@@ -161,7 +161,7 @@ typedef struct {
   WGPUSwapChain swapchain;
   int width;
   int height;
-  PipelineMultisampleCount multisample;
+  RenderPipelineMultisampleCount multisample;
 } RenderPassListCreate;
 
 typedef struct {

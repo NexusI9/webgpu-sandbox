@@ -9,7 +9,7 @@
 #include "../commons.h"
 #include <webgpu/webgpu.h>
 
-static const ShaderPipelineStateObject layout_solid = {
+static const RenderPipelineStateObject layout_solid = {
     .label = "Pipeline Bind Groups - Solid",
     .shader_path =
         "./backend/std_pipeline/render_shader/solid/solid.wgsl",

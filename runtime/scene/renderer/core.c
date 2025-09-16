@@ -76,7 +76,7 @@ void scene_renderer_init(SceneRenderer *renderer,
   });
 
   // init standards shaders
-  standard_pipelines_init(scene_renderer_device(renderer),
+  standard_render_pipelines_init(scene_renderer_device(renderer),
                           rd->multisampling_count);
 
   /*

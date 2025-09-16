@@ -38,7 +38,7 @@ static const WGPUBindGroupLayoutDescriptor unlint_layout_bind_group = {
         },
 };
 
-static const ShaderPipelineStateObject layout_unlit = {
+static const RenderPipelineStateObject layout_unlit = {
     .label = "Pipeline Bind Groups - Unlit",
     .shader_path =
         "./backend/std_pipeline/render_shader/unlit/unlit.wgsl",

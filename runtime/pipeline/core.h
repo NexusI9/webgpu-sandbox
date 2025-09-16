@@ -56,19 +56,19 @@ typedef enum {
   PipelineMultisampleCount_Undefined = 0,
   PipelineMultisampleCount_1x = 1,
   PipelineMultisampleCount_4x = 4
-} PipelineMultisampleCount;
+} RenderPipelineMultisampleCount;
 
 typedef struct {
   WGPUDevice device;
   const char *label;
   const char *path;
-} PipelineCreateDescriptor;
+} RenderPipelineCreateDescriptor;
 
 typedef struct {
   WGPUFragmentState fragment_state;
   WGPUColorTargetState color_state;
   WGPUBlendState blend_state;
-} PipelineFragmentDescriptor;
+} RenderPipelineFragmentDescriptor;
 
 #define PIPELINE_BINDING_UNDEFINED UINT16_MAX
 
@@ -113,7 +113,7 @@ typedef struct {
   const PipelineBindingMVP *mvp;
   const PipelineBindingLightList *light_list;
   const PipelineBindingProbe *probe;
-} PipelineBinding;
+} RenderPipelineBinding;
 
 typedef struct {
   const char *label;
@@ -127,16 +127,16 @@ typedef struct {
 
   struct {
     WGPUVertexState vertex_state;
-    PipelineFragmentDescriptor fragment_state;
+    RenderPipelineFragmentDescriptor fragment_state;
     WGPUPrimitiveState primitive_state;
     WGPUDepthStencilState stencil_state;
     WGPUBlendState blend_state;
     WGPUMultisampleState multisample_state;
   } pipeline_attributes;
 
-  PipelineBinding bindings;
+  RenderPipelineBinding bindings;
 
-} ShaderPipelineStateObject;
+} RenderPipelineStateObject;
 
 typedef struct {
 
@@ -162,10 +162,10 @@ typedef struct {
   WGPUPipelineLayout layout;
 
   // initial layout
-  const ShaderPipelineStateObject *shader_pso;
+  const RenderPipelineStateObject *shader_pso;
 
   // pipeline std bindings
-  PipelineBinding bindings;
+  RenderPipelineBinding bindings;
 
   // vertex data
   struct {
@@ -173,19 +173,23 @@ typedef struct {
     WGPUVertexBufferLayout buffer;
   } vertex_layout;
 
-} Pipeline;
+} RenderPipeline;
 
-void pipeline_standards_create(Pipeline *);
+typedef struct{
+
+} ComputePipeline;
+
+void render_pipeline_standards_create(RenderPipeline *);
 
 // init pipeline
-void pipeline_create(Pipeline *, const PipelineCreateDescriptor *);
+void render_pipeline_create(RenderPipeline *, const RenderPipelineCreateDescriptor *);
 
 // build pipeline layout
-void pipeline_build(Pipeline *, const WGPUPipelineLayout *);
+void render_pipeline_build(RenderPipeline *, const WGPUPipelineLayout *);
 
 // destroyer
-void pipeline_destroy(Pipeline *);
+void render_pipeline_destroy(RenderPipeline *);
 
-void pipeline_set_sampling(Pipeline *, PipelineMultisampleCount);
+void render_pipeline_set_sampling(RenderPipeline *, RenderPipelineMultisampleCount);
 
 #endif

@@ -61,7 +61,7 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
   const uint8_t sampler_binding = 6;
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  const PipelineBinding *bindings = &shader->pipeline->bindings;
+  const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
 
   // create texture views
 #ifdef RENDER_SHADOW_AS_COLOR
@@ -100,7 +100,7 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
   for (uint8_t i = 0; i < 2; i++) {
 
     Shader *shader = mesh_shader(mesh, shader_types[i]);
-    const PipelineBinding *bindings = &shader->pipeline->bindings;
+    const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
 
     // update point texture
     if (bindings->light_list->point_texture != PIPELINE_BINDING_UNDEFINED)
@@ -122,7 +122,7 @@ void mesh_shader_texture_update_probes(Mesh *mesh,
                                        SSBOManager *ssbo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  const PipelineBinding *bindings = &shader->pipeline->bindings;
+  const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
 
   // update plane texture
   if (bindings->probe->reflection_plane_texture != PIPELINE_BINDING_UNDEFINED)
@@ -142,7 +142,7 @@ void mesh_shader_texture_update_environment(Mesh *mesh,
                                             SSBOManager *ssbo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  const PipelineBinding *bindings = &shader->pipeline->bindings;
+  const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
 
   // update skybox texture
   if (bindings->probe->skybox_texture != PIPELINE_BINDING_UNDEFINED)
@@ -158,7 +158,7 @@ void mesh_shader_texture_bind_probe(Mesh *mesh, ProbeReflectionPlane *plane,
                                     SSBOManager *ssbo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  const Pipeline *pipeline = shader_pipeline(shader);
+  const RenderPipeline *pipeline = shader_pipeline(shader);
 
   shader_update_uniform_buffer(
       shader, pipeline->bindings.probe->group,

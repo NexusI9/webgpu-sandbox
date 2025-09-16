@@ -20,7 +20,7 @@
  */
 static inline void
 scene_draw_layouts_init(Scene *scene,
-                        const PipelineMultisampleCount multisample) {
+                        const RenderPipelineMultisampleCount multisample) {
 
   // Common gizmo draw list configuration
   const RenderPassDrawListDescriptor gizmo_draw_list = {

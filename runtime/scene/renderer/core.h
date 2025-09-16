@@ -32,7 +32,7 @@ typedef enum {
 typedef struct {
   const char *name;
   cclock *clock;
-  PipelineMultisampleCount multisampling_count;
+  RenderPipelineMultisampleCount multisampling_count;
   WGPUColor background;
   double dpi;
 } SceneRendererCreateDescriptor;

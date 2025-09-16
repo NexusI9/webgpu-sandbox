@@ -8,18 +8,18 @@
 #include "runtime/texture/core.h"
 #include "runtime/geometry/vertex/core.h"
 
-static inline void pipeline_set_vertex_layout(Pipeline *);
+static inline void render_pipeline_set_vertex_layout(RenderPipeline *);
 
 /**
   Initialize the default pipeline with a preset descriptor
  */
-void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
+void render_pipeline_create(RenderPipeline *pipeline, const RenderPipelineCreateDescriptor *desc) {
 
   // Define core data
   pipeline->device = desc->device;
   pipeline->handle = NULL;
   pipeline->label = desc->label;
-  pipeline_set_vertex_layout(pipeline);
+  render_pipeline_set_vertex_layout(pipeline);
 
   char *source; // shader source code
 
@@ -105,7 +105,7 @@ void pipeline_create(Pipeline *pipeline, const PipelineCreateDescriptor *desc) {
    3. Color (vec3)
    4. Texture Coordinate (vec2)
  */
-void pipeline_set_vertex_layout(Pipeline *pipeline) {
+void render_pipeline_set_vertex_layout(RenderPipeline *pipeline) {
 
   
   // set x,y,z
@@ -154,7 +154,7 @@ void pipeline_set_vertex_layout(Pipeline *pipeline) {
 /**
    Release pipeline if exists and create i new one
  */
-void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
+void render_pipeline_build(RenderPipeline *pipeline, const WGPUPipelineLayout *layout) {
 
   // update bind group layout
   pipeline->layout = *layout;
@@ -176,7 +176,7 @@ void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
     pipeline->descriptor.depthStencil = &pipeline->stencil_state;
 
   if (pipeline->handle)
-    pipeline_destroy(pipeline);
+    render_pipeline_destroy(pipeline);
 
   pipeline->handle =
       wgpuDeviceCreateRenderPipeline(pipeline->device, &pipeline->descriptor);
@@ -185,7 +185,7 @@ void pipeline_build(Pipeline *pipeline, const WGPUPipelineLayout *layout) {
 /**
    Release pipeline and set back the handle to null
  */
-void pipeline_destroy(Pipeline *pipeline) {
+void render_pipeline_destroy(RenderPipeline *pipeline) {
 
   // clearing module
   wgpuShaderModuleRelease(pipeline->module);
@@ -200,7 +200,7 @@ void pipeline_destroy(Pipeline *pipeline) {
   pipeline->layout = NULL;
 }
 
-void pipeline_set_sampling(Pipeline *pipeline,
-                           PipelineMultisampleCount sampling) {
+void render_pipeline_set_sampling(RenderPipeline *pipeline,
+                           RenderPipelineMultisampleCount sampling) {
   pipeline->multisample_state.count = sampling;
 }

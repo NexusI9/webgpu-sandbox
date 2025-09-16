@@ -29,7 +29,7 @@ static const WGPUBindGroupLayoutDescriptor line_bind_group = {
         },
 };
 
-static const ShaderPipelineStateObject layout_line = {
+static const RenderPipelineStateObject layout_line = {
     .label = "Pipeline Bind Groups - Line",
     .shader_path =
         "./backend/std_pipeline/render_shader/line/line.wgsl",

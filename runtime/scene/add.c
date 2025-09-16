@@ -632,7 +632,7 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
 
   // TODO: find a cleaner way to define if mesh is Shadowed or not.. the
   // overallx dispatch is unclear.
-  const Pipeline *mesh_pipeline =
+  const RenderPipeline *mesh_pipeline =
       mesh_shader(mesh, MeshShader_Texture)->pipeline;
 
   if (mesh_pipeline == std_render_pipeline(RenderPipelineType_Unlit) ||

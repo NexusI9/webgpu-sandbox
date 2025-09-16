@@ -43,7 +43,7 @@ typedef struct {
   WGPUDevice device;
   WGPUQueue queue;
   const char *name;
-  const Pipeline *pipeline;
+  const RenderPipeline *pipeline;
 } ShaderCreateDescriptor;
 
 // bind group
@@ -301,7 +301,7 @@ typedef struct {
   WGPUQueue queue;
 
   // pipelines
-  const Pipeline *pipeline;
+  const RenderPipeline *pipeline;
 
   ShaderBindGroupList bind_groups;
 
@@ -317,7 +317,7 @@ void shader_draw(Shader *, WGPURenderPassEncoder);
 void shader_uniform_update(ShaderBindGroup *, const WGPUQueue);
 
 void shader_module_release(Shader *);
-const Pipeline *shader_pipeline(Shader *);
+const RenderPipeline *shader_pipeline(Shader *);
 void shader_pipeline_release_layout(Shader *);
 
 #endif
