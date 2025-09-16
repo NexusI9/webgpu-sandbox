@@ -461,17 +461,17 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
   shader_update_uniform_data(reflection_shader, 1, 10, &pbr);
 
   {
-    // DEBUG
-    printf("[[%s]]\n", material->name);
-    printf("\tmetallic: %f\n", pbr.metallic_factor);
-    printf("\troughness: %f\n", pbr.roughness_factor);
-    printf("\tocclusion: %f\n", pbr.occlusion_strength);
-    printf("\tspecular: %f\n", pbr.roughness_factor);
-    printf("\tnormal: %f\n", pbr.normal_scale);
-    printf("\temissive:");
-    print_vec3(pbr.emissive_factor);
-    printf("\tbase color:");
-    print_vec4(pbr.base_color_factor);
+    // DELETE ME DEBUG
+    //printf("[[%s]]\n", material->name);
+    //printf("\tmetallic: %f\n", pbr.metallic_factor);
+    //printf("\troughness: %f\n", pbr.roughness_factor);
+    //printf("\tocclusion: %f\n", pbr.occlusion_strength);
+    //printf("\tspecular: %f\n", pbr.roughness_factor);
+    //printf("\tnormal: %f\n", pbr.normal_scale);
+    //printf("\temissive:");
+    //print_vec3(pbr.emissive_factor);
+    //printf("\tbase color:");
+    //print_vec4(pbr.base_color_factor);
   }
 }
 
