@@ -40,7 +40,7 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
   // set view texture
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
-                               .pipeline = std_pipeline(PipelineType_Screen),
+                               .pipeline = std_render_pipeline(RenderPipelineType_Screen),
                                .name = "Debug view billboard shader",
                                .label = "Debug view billboard shader",
                                .device = debug->device,

@@ -25,7 +25,7 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
 
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
-                               .pipeline = std_pipeline(PipelineType_Grid),
+                               .pipeline = std_render_pipeline(RenderPipelineType_Grid),
                                .label = "grid",
                                .name = "grid",
                                .device = gd->device,

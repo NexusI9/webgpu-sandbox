@@ -52,7 +52,7 @@ MeshStatus mesh_shader_create_shadow(Mesh *mesh) {
 
   shader_create(shadow_shader,
                 &(ShaderCreateDescriptor){
-                    .pipeline = std_pipeline(PipelineType_Shadow),
+                    .pipeline = std_render_pipeline(RenderPipelineType_Shadow),
                     .label = "Mesh shadow shader",
                     .device = mesh->device,
                     .queue = mesh->queue,
@@ -92,7 +92,7 @@ MeshStatus mesh_shader_create_wireframe(Mesh *mesh) {
   // create shader
   shader_create(wireframe_shader,
                 &(ShaderCreateDescriptor){
-                    .pipeline = std_pipeline(PipelineType_Line),
+                    .pipeline = std_render_pipeline(RenderPipelineType_Line),
                     .label = "Mesh wireframe shader",
                     .device = mesh->device,
                     .queue = mesh->queue,
@@ -121,7 +121,7 @@ MeshStatus mesh_shader_create_solid(Mesh *mesh) {
 
   // create shader
   shader_create(solid_shader, &(ShaderCreateDescriptor){
-                                  .pipeline = std_pipeline(PipelineType_Solid),
+                                  .pipeline = std_render_pipeline(RenderPipelineType_Solid),
                                   .label = "Mesh solid shader",
                                   .device = mesh->device,
                                   .queue = mesh->queue,
@@ -151,7 +151,7 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   // also initialise the reflection shader (basically a copy of the texture)
   shader_create(mesh_shader(mesh, MeshShader_Reflection),
                 &(ShaderCreateDescriptor){
-                    .pipeline = std_pipeline(PipelineType_Reflection),
+                    .pipeline = std_render_pipeline(RenderPipelineType_Reflection),
                     .label = "Mesh Reflection shader",
                     .name = "Mesh Reflection shader",
                     .device = mesh->device,

@@ -40,7 +40,7 @@ void gizmo_create_mesh(Mesh *mesh, Primitive *primitive,
   // add shader
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
-                               .pipeline = std_pipeline(PipelineType_Unlit),
+                               .pipeline = std_render_pipeline(RenderPipelineType_Unlit),
                                .device = device,
                                .queue = queue,
                                .label = "Gizmo shader",

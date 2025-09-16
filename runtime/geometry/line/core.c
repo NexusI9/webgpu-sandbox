@@ -55,7 +55,7 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
 
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
-                               .pipeline = std_pipeline(PipelineType_Line),
+                               .pipeline = std_render_pipeline(RenderPipelineType_Line),
                                .label = "Line",
                                .name = "Line",
                                .device = desc->device,

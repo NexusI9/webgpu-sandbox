@@ -46,7 +46,7 @@ void seo_create_wireframe(Mesh *mesh,
                                .queue = desc->queue,
                                .label = "SEO wireframe shader",
                                .name = "SEO wireframe shader",
-                               .pipeline = std_pipeline(PipelineType_Line),
+                               .pipeline = std_render_pipeline(RenderPipelineType_Line),
                            });
 
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,

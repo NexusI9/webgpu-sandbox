@@ -39,7 +39,7 @@ void seo_create_billboard(Mesh *mesh,
                                .queue = desc->queue,
                                .label = "SEO billboard shader",
                                .name = "SEO billboard shader",
-                               .pipeline = std_pipeline(PipelineType_Billboard),
+                               .pipeline = std_render_pipeline(RenderPipelineType_Billboard),
                            });
 
   // set mesh position to light position

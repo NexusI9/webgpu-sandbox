@@ -6,10 +6,10 @@
 #include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/core.h"
 
-extern Pipeline g_std_pipelines[PIPELINE_TYPE_COUNT];
+extern Pipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT];
 
 void standard_pipelines_init(const WGPUDevice, const PipelineMultisampleCount);
 
-const Pipeline *std_pipeline(const PipelineType);
+const Pipeline *std_render_pipeline(const RenderPipelineType);
 
 #endif

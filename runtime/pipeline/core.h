@@ -65,24 +65,24 @@ typedef struct {
 } PipelineCreateDescriptor;
 
 // Standards pipelines
-#define PIPELINE_TYPE_COUNT 14
+#define RENDER_PIPELINE_TYPE_COUNT 14
 
 typedef enum {
-  PipelineType_Billboard,
-  PipelineType_Default,
-  PipelineType_Grid,
-  PipelineType_Line,
-  PipelineType_PBR,
-  PipelineType_Screen,
-  PipelineType_Shadow,
-  PipelineType_ShadowCullBack,
-  PipelineType_Skybox,
-  PipelineType_Solid,
-  PipelineType_Unlit,
-  PipelineType_GlassProbeGrid,
-  PipelineType_GlassProbePlane,
-  PipelineType_Reflection,
-} PipelineType;
+  RenderPipelineType_Billboard,
+  RenderPipelineType_Default,
+  RenderPipelineType_Grid,
+  RenderPipelineType_Line,
+  RenderPipelineType_PBR,
+  RenderPipelineType_Screen,
+  RenderPipelineType_Shadow,
+  RenderPipelineType_ShadowCullBack,
+  RenderPipelineType_Skybox,
+  RenderPipelineType_Solid,
+  RenderPipelineType_Unlit,
+  RenderPipelineType_GlassProbeGrid,
+  RenderPipelineType_GlassProbePlane,
+  RenderPipelineType_Reflection,
+} RenderPipelineType;
 
 typedef struct {
   WGPUFragmentState fragment_state;

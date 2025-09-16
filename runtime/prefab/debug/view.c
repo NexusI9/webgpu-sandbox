@@ -52,7 +52,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
   // set view texture
   mesh_shader_create_fixed(new_view,
                            &(ShaderCreateDescriptor){
-                               .pipeline = std_pipeline(PipelineType_Screen),
+                               .pipeline = std_render_pipeline(RenderPipelineType_Screen),
                                .name = "Debug view billboard shader",
                                .label = "Debug view billboard shader",
                                .device = debug_view->device,

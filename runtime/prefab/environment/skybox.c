@@ -113,7 +113,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
                                .queue = scene_queue(scene),
                                .label = "skybox shader",
                                .name = "skybox shader",
-                               .pipeline = std_pipeline(PipelineType_Skybox),
+                               .pipeline = std_render_pipeline(RenderPipelineType_Skybox),
                            });
 
   // update texture and sampler

@@ -61,7 +61,7 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
   // set default pipeline shader
   mesh_shader(mesh, MeshShader_Texture)->pipeline =
-      std_pipeline(PipelineType_Default);
+      std_render_pipeline(RenderPipelineType_Default);
 
   // defines default topology override
   mesh_topology_set_override(mesh,

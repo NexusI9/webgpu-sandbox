@@ -3,9 +3,9 @@
 #include <cglm/types.h>
 #include <stddef.h>
 
-#include "backend/std_pipeline/modules/glass_probe_grid/glass_probe_grid.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
+#include "backend/std_pipeline/modules/glass_probe_grid/glass_probe_grid.h"
 #include "backend/ubo.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
@@ -19,12 +19,12 @@
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/add.h"
+#include "runtime/scene/core.h"
 #include "runtime/scene/environment/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
-#include "runtime/scene/core.h"
 
 void example_glass_probe_grid(Scene *scene, bool debug) {
 
@@ -47,14 +47,14 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
                                   .queue = scene_queue(scene),
                               });
 
-  mesh_shader_create(mesh,
-                     &(ShaderCreateDescriptor){
-                         .pipeline = std_pipeline(PipelineType_GlassProbeGrid),
-                         .label = "Glass Probe Sphere",
-                         .name = "Glass Probe Sphere",
-                         .device = scene_device(scene),
-                         .queue = scene_queue(scene),
-                     });
+  mesh_shader_create(mesh, &(ShaderCreateDescriptor){
+                               .pipeline = std_render_pipeline(
+                                   RenderPipelineType_GlassProbeGrid),
+                               .label = "Glass Probe Sphere",
+                               .name = "Glass Probe Sphere",
+                               .device = scene_device(scene),
+                               .queue = scene_queue(scene),
+                           });
 
   mesh_set_position(mesh, (vec3){0.0f, 6.0f, 0.0f});
   mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});
@@ -131,14 +131,14 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                                   .queue = scene_queue(scene),
                               });
 
-  mesh_shader_create(mesh,
-                     &(ShaderCreateDescriptor){
-                         .pipeline = std_pipeline(PipelineType_GlassProbePlane),
-                         .label = "Glass Probe Plane",
-                         .name = "Glass Probe Plane",
-                         .device = scene_device(scene),
-                         .queue = scene_queue(scene),
-                     });
+  mesh_shader_create(
+      mesh, &(ShaderCreateDescriptor){
+                .pipeline = std_render_pipeline(RenderPipelineType_GlassProbePlane),
+                .label = "Glass Probe Plane",
+                .name = "Glass Probe Plane",
+                .device = scene_device(scene),
+                .queue = scene_queue(scene),
+            });
 
   mesh_set_position(mesh, (vec3){0.0f, 0.2f, 0.0f});
   mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});

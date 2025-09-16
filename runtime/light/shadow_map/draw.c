@@ -283,7 +283,7 @@ void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *desc,
             .device = desc->device,
             .queue = desc->queue,
             .command_encoder = desc->command_encoder,
-            .pipeline = std_pipeline(PipelineType_Shadow),
+            .pipeline = std_render_pipeline(RenderPipelineType_Shadow),
             .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View + v].id,
         },
         debug);
@@ -323,7 +323,7 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc,
           .texture_layer = desc->texture_layer,
           .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
           .views = &desc->light->views,
-          .pipeline = std_pipeline(PipelineType_ShadowCullBack),
+          .pipeline = std_render_pipeline(RenderPipelineType_ShadowCullBack),
       },
       debug);
 }
@@ -340,7 +340,7 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc,
           .texture_layer = desc->texture_layer,
           .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
           .views = &desc->light->views,
-          .pipeline = std_pipeline(PipelineType_ShadowCullBack),
+          .pipeline = std_render_pipeline(RenderPipelineType_ShadowCullBack),
       },
       debug);
 }

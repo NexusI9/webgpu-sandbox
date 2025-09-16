@@ -351,14 +351,14 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
 
         printf("mesh: %s <=> material: %s\n", target_mesh->name,
                material->name);
-        mesh_shader_create(target_mesh,
-                           &(ShaderCreateDescriptor){
-                               .pipeline = std_pipeline(PipelineType_PBR),
-                               .label = material->name,
-                               .name = material->name,
-                               .device = device,
-                               .queue = queue,
-                           });
+        mesh_shader_create(target_mesh, &(ShaderCreateDescriptor){
+                                            .pipeline = std_render_pipeline(
+                                                RenderPipelineType_PBR),
+                                            .label = material->name,
+                                            .name = material->name,
+                                            .device = device,
+                                            .queue = queue,
+                                        });
 
         // load and bind gltf textures
         loader_gltf_bind_textures(target_mesh, material, options);

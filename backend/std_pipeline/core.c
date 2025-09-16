@@ -21,25 +21,25 @@
 #include "utils/system.h"
 #include "runtime/pipeline/core.h"
 
-static const ShaderPipelineStateObject *standard_layouts[PIPELINE_TYPE_COUNT] =
+static const ShaderPipelineStateObject *standard_layouts[RENDER_PIPELINE_TYPE_COUNT] =
     {
-        [PipelineType_Billboard] = &layout_billboard,
-        [PipelineType_Default] = &layout_default,
-        [PipelineType_Line] = &layout_line,
-        [PipelineType_Unlit] = &layout_unlit,
-        [PipelineType_Grid] = &layout_grid,
-        [PipelineType_PBR] = &layout_pbr,
-        [PipelineType_Screen] = &layout_screen,
-        [PipelineType_Shadow] = &layout_shadow,
-        [PipelineType_ShadowCullBack] = &layout_shadow_cullback,
-        [PipelineType_Skybox] = &layout_skybox,
-        [PipelineType_Solid] = &layout_solid,
-        [PipelineType_GlassProbeGrid] = &layout_glass_probe_grid,
-        [PipelineType_GlassProbePlane] = &layout_glass_probe_plane,
-        [PipelineType_Reflection] = &layout_reflection,
+        [RenderPipelineType_Billboard] = &layout_billboard,
+        [RenderPipelineType_Default] = &layout_default,
+        [RenderPipelineType_Line] = &layout_line,
+        [RenderPipelineType_Unlit] = &layout_unlit,
+        [RenderPipelineType_Grid] = &layout_grid,
+        [RenderPipelineType_PBR] = &layout_pbr,
+        [RenderPipelineType_Screen] = &layout_screen,
+        [RenderPipelineType_Shadow] = &layout_shadow,
+        [RenderPipelineType_ShadowCullBack] = &layout_shadow_cullback,
+        [RenderPipelineType_Skybox] = &layout_skybox,
+        [RenderPipelineType_Solid] = &layout_solid,
+        [RenderPipelineType_GlassProbeGrid] = &layout_glass_probe_grid,
+        [RenderPipelineType_GlassProbePlane] = &layout_glass_probe_plane,
+        [RenderPipelineType_Reflection] = &layout_reflection,
 };
 
-Pipeline g_std_pipelines[PIPELINE_TYPE_COUNT] = {0};
+Pipeline g_std_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
 
 /**
    Initialize standards shaders and build pipelines layout for each of them.
@@ -52,7 +52,7 @@ void standard_pipelines_init(const WGPUDevice device,
 
   VERBOSE_PROCESS("Initializing standards pipelines...");
 
-  for (size_t i = 0; i < PIPELINE_TYPE_COUNT; i++) {
+  for (size_t i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++) {
 
     const ShaderPipelineStateObject *layout = standard_layouts[i];
     Pipeline *cached_pipeline = &g_std_pipelines[i];
@@ -118,6 +118,6 @@ void standard_pipelines_init(const WGPUDevice device,
   }
 }
 
-const Pipeline *std_pipeline(const PipelineType type) {
+const Pipeline *std_render_pipeline(const RenderPipelineType type) {
   return &g_std_pipelines[type];
 }
