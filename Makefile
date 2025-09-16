@@ -46,7 +46,7 @@ PRUNE_ARGS := $(foreach dir,$(C_EXCLUDE),-path $(dir) -prune -o)
 FILES_C := $(shell find . -name "*.c" $(foreach dir,$(C_EXCLUDE), ! -path "$(dir)/*"))
 
 # Preprocess cwgsl shader to wgsl Shader files
-PATH_WGSL := ./backend/std_pipeline/modules/
+PATH_WGSL := ./backend/std_pipeline/render_shader/
 CUSTOM_WGSL_EXT = .wgsl.in
 CUSTOM_WGSL_IN := $(shell find $(PATH_WGSL) -type f -name "*$(CUSTOM_WGSL_EXT)")
 COMPILE_WGSL := $(CUSTOM_WGSL_IN:$(CUSTOM_WGSL_EXT)=.wgsl)

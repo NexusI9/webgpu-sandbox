@@ -13,7 +13,7 @@
 
 static const ShaderPipelineStateObject layout_reflection = {
     .label = "Pipeline Bind Groups - Reflection",
-    .shader_path = "../backend/std_pipeline/modules/reflection/"
+    .shader_path = "../backend/std_pipeline/render_shader/reflection/"
                    "reflection.wgsl",
     .bind_groups_count = 3,
     .bind_groups =

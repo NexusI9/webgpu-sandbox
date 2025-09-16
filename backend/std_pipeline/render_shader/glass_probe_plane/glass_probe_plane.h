@@ -108,7 +108,7 @@ static const PipelineBindingProbe glass_probe_plane = {
 
 static const ShaderPipelineStateObject layout_glass_probe_plane = {
     .label = "Pipeline Bind Groups - Glass Probe Plane",
-    .shader_path = "./backend/std_pipeline/modules/glass_probe_plane/"
+    .shader_path = "./backend/std_pipeline/render_shader/glass_probe_plane/"
                    "glass_probe_plane.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &glass_probe_plane_bind_group},

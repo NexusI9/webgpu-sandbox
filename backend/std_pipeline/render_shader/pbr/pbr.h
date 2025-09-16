@@ -372,7 +372,7 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
 
 static const ShaderPipelineStateObject layout_pbr = {
     .label = "Pipeline Bind Groups - PBR",
-    .shader_path = "../backend/std_pipeline/modules/pbr/pbr.wgsl",
+    .shader_path = "../backend/std_pipeline/render_shader/pbr/pbr.wgsl",
     .bind_groups_count = 3,
     .bind_groups =
         {

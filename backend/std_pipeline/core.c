@@ -2,27 +2,30 @@
 
 #include <stddef.h>
 
-#include "webgpu/webgpu.h"
-#include "./modules/billboard/billboard.h"
-#include "./modules/default/default.h"
-#include "./modules/glass_probe_grid/glass_probe_grid.h"
-#include "./modules/grid/grid.h"
-#include "./modules/line/line.h"
-#include "./modules/pbr/pbr.h"
-#include "./modules/reflection/reflection.h"
-#include "./modules/screen/screen.h"
-#include "./modules/shadow/shadow.h"
-#include "./modules/skybox/skybox.h"
-#include "./modules/solid/solid.h"
-#include "./modules/unlit/unlit.h"
-#include "modules/glass_probe_plane/glass_probe_plane.h"
-#include "runtime/pipeline/layout.h"
+#include "./render_shader/billboard/billboard.h"
+#include "./render_shader/default/default.h"
+#include "./render_shader/glass_probe_grid/glass_probe_grid.h"
+#include "./render_shader/glass_probe_plane/glass_probe_plane.h"
+#include "./render_shader/grid/grid.h"
+#include "./render_shader/line/line.h"
+#include "./render_shader/pbr/pbr.h"
+#include "./render_shader/reflection/reflection.h"
+#include "./render_shader/screen/screen.h"
+#include "./render_shader/shadow/shadow.h"
+#include "./render_shader/skybox/skybox.h"
+#include "./render_shader/solid/solid.h"
+#include "./render_shader/unlit/unlit.h"
+#include "runtime/pipeline/core.h"
 #include "runtime/pipeline/set.h"
 #include "utils/system.h"
-#include "runtime/pipeline/core.h"
+#include "webgpu/webgpu.h"
 
-static const ShaderPipelineStateObject *standard_layouts[RENDER_PIPELINE_TYPE_COUNT] =
-    {
+static inline WGPUPipelineLayout shader_pipeline_state_object_create(
+    const WGPUBindGroupLayoutDescriptor *const *, const size_t,
+    const WGPUDevice, WGPUBindGroupLayout *);
+
+static const ShaderPipelineStateObject
+    *standard_layouts[RENDER_PIPELINE_TYPE_COUNT] = {
         [RenderPipelineType_Billboard] = &layout_billboard,
         [RenderPipelineType_Default] = &layout_default,
         [RenderPipelineType_Line] = &layout_line,
@@ -39,12 +42,12 @@ static const ShaderPipelineStateObject *standard_layouts[RENDER_PIPELINE_TYPE_CO
         [RenderPipelineType_Reflection] = &layout_reflection,
 };
 
-Pipeline g_std_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
+Pipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
 
 /**
    Initialize standards shaders and build pipelines layout for each of them.
 
-                 [ BLUEPRINT ] ===> [ WGPUPipeline ]
+                 [ PSO ] ===> [ WGPUPipeline ]
 
  */
 void standard_pipelines_init(const WGPUDevice device,
@@ -55,7 +58,7 @@ void standard_pipelines_init(const WGPUDevice device,
   for (size_t i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++) {
 
     const ShaderPipelineStateObject *layout = standard_layouts[i];
-    Pipeline *cached_pipeline = &g_std_pipelines[i];
+    Pipeline *cached_pipeline = &g_std_render_pipelines[i];
 
     // create pipeline
     pipeline_create(cached_pipeline, &(PipelineCreateDescriptor){
@@ -119,5 +122,36 @@ void standard_pipelines_init(const WGPUDevice device,
 }
 
 const Pipeline *std_render_pipeline(const RenderPipelineType type) {
-  return &g_std_pipelines[type];
+  return &g_std_render_pipelines[type];
 }
+
+/**
+   Transforms bindgroups into pipeline layouts and returns the generated
+   pipeline descriptor
+ */
+WGPUPipelineLayout shader_pipeline_state_object_create(
+    const WGPUBindGroupLayoutDescriptor *const *bind_groups, const size_t count,
+    const WGPUDevice device, WGPUBindGroupLayout *outLayout) {
+
+  const size_t layout_size = sizeof(WGPUBindGroupLayout) * count;
+
+  WGPUBindGroupLayout *layouts = malloc(layout_size);
+
+  for (size_t i = 0; i < count; i++)
+    layouts[i] = wgpuDeviceCreateBindGroupLayout(device, bind_groups[i]);
+
+  if (outLayout != NULL)
+    memcpy(outLayout, layouts, layout_size);
+
+  WGPUPipelineLayout pipeline_layout =
+      wgpuDeviceCreatePipelineLayout(device, &(WGPUPipelineLayoutDescriptor){
+                                                 .bindGroupLayoutCount = count,
+                                                 .bindGroupLayouts = layouts,
+                                             });
+
+  free(layouts);
+  layouts = NULL;
+
+  return pipeline_layout;
+}
+

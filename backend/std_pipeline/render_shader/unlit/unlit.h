@@ -41,7 +41,7 @@ static const WGPUBindGroupLayoutDescriptor unlint_layout_bind_group = {
 static const ShaderPipelineStateObject layout_unlit = {
     .label = "Pipeline Bind Groups - Unlit",
     .shader_path =
-        "./backend/std_pipeline/modules/unlit/unlit.wgsl",
+        "./backend/std_pipeline/render_shader/unlit/unlit.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &unlint_layout_bind_group},
     .bindings = {.mvp = &mvp_binding},

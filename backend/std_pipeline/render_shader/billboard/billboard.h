@@ -49,7 +49,7 @@ static const WGPUBindGroupLayoutDescriptor billboard_material_bind_group = {
 
 static const ShaderPipelineStateObject layout_billboard = {
     .label = "Pipeline Bind Groups - Billboard",
-    .shader_path = "./backend/std_pipeline/modules/billboard/"
+    .shader_path = "./backend/std_pipeline/render_shader/billboard/"
                    "billboard.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &billboard_material_bind_group},

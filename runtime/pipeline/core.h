@@ -64,26 +64,6 @@ typedef struct {
   const char *path;
 } PipelineCreateDescriptor;
 
-// Standards pipelines
-#define RENDER_PIPELINE_TYPE_COUNT 14
-
-typedef enum {
-  RenderPipelineType_Billboard,
-  RenderPipelineType_Default,
-  RenderPipelineType_Grid,
-  RenderPipelineType_Line,
-  RenderPipelineType_PBR,
-  RenderPipelineType_Screen,
-  RenderPipelineType_Shadow,
-  RenderPipelineType_ShadowCullBack,
-  RenderPipelineType_Skybox,
-  RenderPipelineType_Solid,
-  RenderPipelineType_Unlit,
-  RenderPipelineType_GlassProbeGrid,
-  RenderPipelineType_GlassProbePlane,
-  RenderPipelineType_Reflection,
-} RenderPipelineType;
-
 typedef struct {
   WGPUFragmentState fragment_state;
   WGPUColorTargetState color_state;

@@ -5,7 +5,7 @@
 
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
-#include "backend/std_pipeline/modules/glass_probe_grid/glass_probe_grid.h"
+#include "backend/std_pipeline/render_shader/glass_probe_grid/glass_probe_grid.h"
 #include "backend/ubo.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
