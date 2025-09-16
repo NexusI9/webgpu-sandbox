@@ -39,14 +39,19 @@
 // gltf utils
 static float *loader_gltf_attributes(cgltf_accessor *);
 static void loader_gltf_accessor_to_array(cgltf_accessor *, float *, uint8_t);
-static VertexIndex loader_gltf_index(cgltf_primitive *);
 
 // vertex buffer utils
-static void loader_gltf_add_vertex_attribute(VertexAttribute *, float *, size_t,
-                                             size_t, uint8_t);
+static void loader_gltf_primitive_vertex_index(VertexIndex *,
+                                               cgltf_primitive *);
+static inline void loader_gltf_primitive_vertex_attribute_add(VertexAttribute *,
+                                                              float *, size_t,
+                                                              size_t, uint8_t);
+static inline void
+loader_gltf_primitive_vertex_attribute_create(VertexList *, VertexAttribute *,
+                                              cgltf_primitive *);
+static inline void loader_gltf_primitie_vertex_lists_init(VertexAttribute *,
+                                                          VertexList *, size_t);
 
-static void loader_gltf_init_vertex_lists(VertexAttribute *, VertexList *,
-                                          size_t);
 // mesh utils
 static LoaderGLTFStatus loader_gltf_create_mesh(Scene *, const WGPUDevice,
                                                 const WGPUQueue, cgltf_data *,
@@ -116,9 +121,10 @@ LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
   return LoaderGLTFStatus_Success;
 }
 
-void loader_gltf_add_vertex_attribute(VertexAttribute *vert_attribute,
-                                      float *data, size_t offset, size_t count,
-                                      uint8_t dimension) {
+void loader_gltf_primitive_vertex_attribute_add(VertexAttribute *vert_attribute,
+                                                float *data, size_t offset,
+                                                size_t count,
+                                                uint8_t dimension) {
   size_t row = 0;
   for (size_t i = 0; i < count * dimension; i += dimension) {
     size_t row_offset = row * VERTEX_STRIDE + offset;
@@ -141,8 +147,8 @@ float *loader_gltf_attributes(cgltf_accessor *accessor) {
   return (float *)((uint8_t *)buffer_view->buffer->data + offset);
 }
 
-void loader_gltf_init_vertex_lists(VertexAttribute *attributes,
-                                   VertexList *list, size_t count) {
+void loader_gltf_primitive_vertex_lists_init(VertexAttribute *attributes,
+                                             VertexList *list, size_t count) {
 
   // init vertex list
   vertex_list_create(list, count);
@@ -156,6 +162,71 @@ void loader_gltf_init_vertex_lists(VertexAttribute *attributes,
       (vattr_t *)calloc(attributes->capacity, sizeof(vattr_t));
 }
 
+static inline void
+loader_gltf_primitive_vertex_attribute_create(VertexList *vert_list,
+                                              VertexAttribute *vert_attr,
+                                              cgltf_primitive *primitive) {
+
+  static const struct {
+    VertexAttributeType type;
+    VertexAttributeDimension dimension;
+    VertexAttributeOffset offset;
+  } type_vertex_map[cgltf_attribute_type_max_enum] = {
+      [cgltf_attribute_type_position] =
+          {
+              .type = VertexAttributeType_Position,
+              .dimension = VertexAttributeDimension_Position,
+              .offset = VertexAttributeOffset_Position,
+          },
+      [cgltf_attribute_type_normal] =
+          {
+              .type = VertexAttributeType_Normal,
+              .dimension = VertexAttributeDimension_Normal,
+              .offset = VertexAttributeOffset_Normal,
+          },
+      [cgltf_attribute_type_tangent] =
+          {
+              .type = VertexAttributeType_Tangent,
+              .dimension = VertexAttributeDimension_Tangent,
+              .offset = VertexAttributeOffset_Tangent,
+          },
+      [cgltf_attribute_type_color] =
+          {
+              .type = VertexAttributeType_Color,
+              .dimension = VertexAttributeDimension_Color,
+              .offset = VertexAttributeOffset_Color,
+          },
+      [cgltf_attribute_type_texcoord] =
+          {
+              .type = VertexAttributeType_Uv,
+              .dimension = VertexAttributeDimension_Uv,
+              .offset = VertexAttributeOffset_Uv,
+          },
+  };
+
+  for (size_t a = 0; a < primitive->attributes_count; a++) {
+
+    cgltf_attribute *attribute = &primitive->attributes[a];
+    cgltf_accessor *accessor = attribute->data;
+    cgltf_attribute_type type = attribute->type;
+
+    if (type_vertex_map[type].dimension == 0)
+      continue;
+
+    // first concat each attribute in their respective list (all pos
+    // together etc.)
+    loader_gltf_accessor_to_array(
+        accessor, vert_list->attributes[type_vertex_map[type].type],
+        type_vertex_map[type].dimension);
+
+    // interleave vertex data ( create pattern pos / norm / tan / uv...)
+    loader_gltf_primitive_vertex_attribute_add(
+        vert_attr, vert_list->attributes[type_vertex_map[type].type],
+        type_vertex_map[type].offset, vert_list->count,
+        type_vertex_map[type].dimension);
+  }
+}
+
 static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
                                           float *destination,
                                           uint8_t dimension) {
@@ -167,7 +238,8 @@ static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
       destination[index++] = attributes[a * dimension + u];
 }
 
-VertexIndex loader_gltf_index(cgltf_primitive *source) {
+void loader_gltf_primitive_vertex_index(VertexIndex *vert_index,
+                                        cgltf_primitive *source) {
 
   // index
   cgltf_accessor *index_accessor = source->indices;
@@ -184,7 +256,7 @@ VertexIndex loader_gltf_index(cgltf_primitive *source) {
   for (size_t i = 0; i < index_count; i++)
     index_data[i] = (vindex_t)raw_index_data[i];
 
-  return (VertexIndex){
+  *vert_index = (VertexIndex){
       .entries = index_data,
       .capacity = index_count,
       .length = index_count,
@@ -232,70 +304,15 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       // Initialize vertex lists with 0.0:
       // need fallback values in case no color or uv coordinates
       // ensure to maintain correct standaridzed structure for shaders
-      loader_gltf_init_vertex_lists(
-          &vert_attr, &vert_list, current_primitive.attributes[0].data->count);
+      {
+        loader_gltf_primitive_vertex_lists_init(
+            &vert_attr, &vert_list,
+            current_primitive.attributes[0].data->count);
 
-      static const struct {
-        VertexAttributeType type;
-        VertexAttributeDimension dimension;
-        VertexAttributeOffset offset;
-      } type_vertex_map[cgltf_attribute_type_max_enum] = {
-          [cgltf_attribute_type_position] =
-              {
-                  .type = VertexAttributeType_Position,
-                  .dimension = VertexAttributeDimension_Position,
-                  .offset = VertexAttributeOffset_Position,
-              },
-          [cgltf_attribute_type_normal] =
-              {
-                  .type = VertexAttributeType_Normal,
-                  .dimension = VertexAttributeDimension_Normal,
-                  .offset = VertexAttributeOffset_Normal,
-              },
-          [cgltf_attribute_type_tangent] =
-              {
-                  .type = VertexAttributeType_Tangent,
-                  .dimension = VertexAttributeDimension_Tangent,
-                  .offset = VertexAttributeOffset_Tangent,
-              },
-          [cgltf_attribute_type_color] =
-              {
-                  .type = VertexAttributeType_Color,
-                  .dimension = VertexAttributeDimension_Color,
-                  .offset = VertexAttributeOffset_Color,
-              },
-          [cgltf_attribute_type_texcoord] =
-              {
-                  .type = VertexAttributeType_Uv,
-                  .dimension = VertexAttributeDimension_Uv,
-                  .offset = VertexAttributeOffset_Uv,
-              },
-      };
-
-      for (size_t a = 0; a < current_primitive.attributes_count; a++) {
-
-        cgltf_attribute *attribute = &current_primitive.attributes[a];
-        cgltf_accessor *accessor = attribute->data;
-        cgltf_attribute_type type = attribute->type;
-
-        if (type_vertex_map[type].dimension == 0)
-          continue;
-
-        // first concat each attribute in their respective list (all pos
-        // together etc.)
-        loader_gltf_accessor_to_array(
-            accessor, vert_list.attributes[type_vertex_map[type].type],
-            type_vertex_map[type].dimension);
-
-        // interleave vertex data ( create pattern pos / norm / tan / uv...)
-        loader_gltf_add_vertex_attribute(
-            &vert_attr, vert_list.attributes[type_vertex_map[type].type],
-            type_vertex_map[type].offset, vert_list.count,
-            type_vertex_map[type].dimension);
+        loader_gltf_primitive_vertex_attribute_create(&vert_list, &vert_attr,
+                                                      &current_primitive);
+        loader_gltf_primitive_vertex_index(&vert_index, &current_primitive);
       }
-
-      // load index
-      vert_index = loader_gltf_index(&current_primitive);
 
       // target current mesh itself if primitive == 0
       Mesh *target_mesh = scene_mesh;
@@ -462,16 +479,16 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
 
   {
     // DELETE ME DEBUG
-    //printf("[[%s]]\n", material->name);
-    //printf("\tmetallic: %f\n", pbr.metallic_factor);
-    //printf("\troughness: %f\n", pbr.roughness_factor);
-    //printf("\tocclusion: %f\n", pbr.occlusion_strength);
-    //printf("\tspecular: %f\n", pbr.roughness_factor);
-    //printf("\tnormal: %f\n", pbr.normal_scale);
-    //printf("\temissive:");
-    //print_vec3(pbr.emissive_factor);
-    //printf("\tbase color:");
-    //print_vec4(pbr.base_color_factor);
+    // printf("[[%s]]\n", material->name);
+    // printf("\tmetallic: %f\n", pbr.metallic_factor);
+    // printf("\troughness: %f\n", pbr.roughness_factor);
+    // printf("\tocclusion: %f\n", pbr.occlusion_strength);
+    // printf("\tspecular: %f\n", pbr.roughness_factor);
+    // printf("\tnormal: %f\n", pbr.normal_scale);
+    // printf("\temissive:");
+    // print_vec3(pbr.emissive_factor);
+    // printf("\tbase color:");
+    // print_vec4(pbr.base_color_factor);
   }
 }
 

@@ -746,7 +746,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
     ambient_intensity += light.intensity;
   }
 
-  let combined = vec4<f32>(ambient + Lo, 1.0f);
+  let combined = vec4<f32>(ambient + Lo + material.emissive, 1.0f);
 
   let fog_k = fog_factor(length(vFrag - camera.position.xyz),
                          ubo.fog.start_distance, ubo.fog.density);
