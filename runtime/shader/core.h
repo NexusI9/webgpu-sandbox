@@ -2,13 +2,13 @@
 #define _SHADER_CORE_H_
 
 #include <cglm/cglm.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "runtime/pipeline/pipeline.h"
+#include "runtime/pipeline/render.h"
 #include "webgpu/webgpu.h"
-#include "runtime/pipeline/core.h"
 
 // commons
 #define SHADER_MAX_BIND_GROUP 4
@@ -153,6 +153,7 @@ typedef struct {
   WGPUSamplerBindingType type;
   WGPUCompareFunction compare;
   WGPUSampler sampler;
+  WGPUMipmapFilterMode mipmapFilter;
 } ShaderBindGroupSamplerEntry;
 
 /* === Descriptor ===*/
@@ -193,6 +194,7 @@ typedef struct {
   WGPUAddressMode addressModeW;
   WGPUFilterMode minFilter;
   WGPUFilterMode magFilter;
+  WGPUMipmapFilterMode mipMapFilter;
   WGPUSamplerBindingType type;
   WGPUCompareFunction compare;
 } ShaderBindGroupSamplerEntryDescriptor;

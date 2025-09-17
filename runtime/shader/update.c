@@ -224,7 +224,8 @@ shader_update_sampler(Shader *shader, const bind_group_index group_index,
     bound_sampler->addressModeW = sampler->addressModeW;
     bound_sampler->minFilter = sampler->minFilter;
     bound_sampler->magFilter = sampler->magFilter;
-
+    bound_sampler->mipmapFilter = sampler->mipmapFilter;
+    
     bound_sampler->sampler = wgpuDeviceCreateSampler(shader->device, sampler);
 
     // rebuild group

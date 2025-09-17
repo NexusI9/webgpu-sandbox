@@ -4,7 +4,7 @@
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/topology/core.h"
 #include "runtime/mesh/topology/wireframe.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/mesh/core.h"

@@ -7,7 +7,7 @@
 
 #include "runtime/mesh/mesh.h"
 #include "runtime/mesh/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "utils/stli.h"
 
 #define RENDER_PASS_DRAW_LAYOUT_MAX_MESH_LIST 6

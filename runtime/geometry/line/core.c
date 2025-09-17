@@ -10,7 +10,7 @@
 #include "runtime/geometry/vertex/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/topology/base.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/shader/core.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/index.h"

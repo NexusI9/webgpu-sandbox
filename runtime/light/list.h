@@ -7,7 +7,7 @@
 #include "utils/stli.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 
 typedef enum {

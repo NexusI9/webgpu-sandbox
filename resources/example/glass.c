@@ -11,7 +11,7 @@
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/shader/texture.h"
 #include "runtime/mesh/transform.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/primitive/core.h"
 #include "runtime/primitive/icosphere.h"
 #include "runtime/primitive/plane.h"

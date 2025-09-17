@@ -7,7 +7,7 @@
 #include "webgpu/webgpu.h"
 #include "backend/ubo.h"
 #include "runtime/mesh/uniform.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/core.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/shader/bindgroup.h"

@@ -13,17 +13,17 @@
 #include "runtime/texture/core.h"
 #include "runtime/texture/create.h"
 #include "runtime/texture/write.h"
+#include "backend/mipmap/mipmap.h"
 
 typedef struct {
-  float blur;
-  TextureResolution resolution;
-  CubeMapPath path;
-
+  const mip_t blur;
+  const TextureResolution resolution;
+  const CubeMapPath path;
 } PrefabSkyboxCreateDescriptor;
 
 typedef struct {
-  size_t resolution;
-  TextureGradient stops;
+  const size_t resolution;
+  const TextureGradient stops;
 } PrefabSkyboxGradientCreateDescriptor;
 
 void prefab_skybox_create(Scene *, const PrefabSkyboxCreateDescriptor *);

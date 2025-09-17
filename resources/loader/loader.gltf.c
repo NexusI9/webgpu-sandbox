@@ -18,7 +18,7 @@
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/topology/base.h"
 #include "runtime/mesh/transform.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
 #include "runtime/shader/core.h"

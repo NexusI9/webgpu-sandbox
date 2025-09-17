@@ -13,7 +13,7 @@
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/scene/debug/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 

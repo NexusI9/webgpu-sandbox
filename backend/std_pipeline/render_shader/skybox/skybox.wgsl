@@ -49,25 +49,27 @@ struct Viewport {
 
 @fragment fn fs_main(@location(0) vDir : vec3<f32>) -> @location(0) vec4<f32> {
 
-  if (skybox_blur == 0.0f) {
-    return textureSample(skybox_texture, skybox_sampler, normalize(vDir));
-  } else {
+  // if (skybox_blur == 0.0f) {
+  //
+  //  } else {
+  //
+  //    var color = vec4<f32>(0.0f);
+  //    let blur_sample = 8i;
+  //
+  //    var offsets = array<vec3<f32>, 8>(
+  //        vec3<f32>(0.0, 0.4, 0.1), vec3<f32>(0.3, -0.3, 0.2),
+  //        vec3<f32>(-0.4, -0.1, 0.0), vec3<f32>(-0.2, 0.5, -0.3),
+  //        vec3<f32>(0.5, 0.2, -0.1), vec3<f32>(-0.1, -0.5, 0.3),
+  //        vec3<f32>(0.2, -0.2, -0.4), vec3<f32>(-0.3, 0.3, 0.4));
+  //
+  //    for (var i = 0; i < blur_sample; i++) {
+  //      let offset = offsets[i % 8];
+  //      let sample_dir = normalize(vDir + offset * skybox_blur);
+  //      color += textureSample(skybox_texture, skybox_sampler, sample_dir);
+  //    }
+  //
+  //    //return color / f32(blur_sample);
+  //  }
 
-    var color = vec4<f32>(0.0f);
-    let blur_sample = 8i;
-
-    var offsets = array<vec3<f32>, 8>(
-        vec3<f32>(0.0, 0.4, 0.1), vec3<f32>(0.3, -0.3, 0.2),
-        vec3<f32>(-0.4, -0.1, 0.0), vec3<f32>(-0.2, 0.5, -0.3),
-        vec3<f32>(0.5, 0.2, -0.1), vec3<f32>(-0.1, -0.5, 0.3),
-        vec3<f32>(0.2, -0.2, -0.4), vec3<f32>(-0.3, 0.3, 0.4));
-
-    for (var i = 0; i < blur_sample; i++) {
-      let offset = offsets[i % 8];
-      let sample_dir = normalize(vDir + offset * skybox_blur);
-      color += textureSample(skybox_texture, skybox_sampler, sample_dir);
-    }
-
-    return color / f32(blur_sample);
-  }
+  return textureSample(skybox_texture, skybox_sampler, normalize(vDir));
 }

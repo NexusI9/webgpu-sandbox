@@ -15,7 +15,7 @@
 #include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 
 // Shadow map is implicitely handled withing mesh
 static inline Mesh *mesh_children_list_check_init(Mesh *);

@@ -5,7 +5,7 @@
 
 #include "runtime/scene/scene.h"
 #include "runtime/mesh/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/core.h"
 

@@ -15,7 +15,7 @@
 #include "./render_pass/render_pass.h"
 #include "webgpu/webgpu.h"
 #include "backend/ao_bake/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "render_pass/core.h"
 
 #define SCENE_RENDERER_MAX_HOOK 6

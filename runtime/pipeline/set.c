@@ -76,3 +76,9 @@ void render_pipeline_set_multisample(RenderPipeline *pipeline,
                                      const WGPUMultisampleState *state) {
   pipeline->multisample_state = *state;
 }
+
+
+void render_pipeline_set_sampling(RenderPipeline *pipeline,
+                           RenderPipelineMultisampleCount sampling) {
+  pipeline->multisample_state.count = sampling;
+}

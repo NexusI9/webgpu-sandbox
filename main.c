@@ -14,7 +14,7 @@
 #include "runtime/scene/renderer/core.h"
 #include "resources/example/light.h"
 #include "resources/example/skybox.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/viewport/core.h"
 
 static Scene main_scene;

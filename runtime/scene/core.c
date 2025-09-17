@@ -14,7 +14,7 @@
 #include "runtime/light/core.h"
 #include "runtime/light/shadow_map/core.h"
 #include "runtime/mesh/ref_list.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/core.h"
 #include "runtime/texture/core.h"
 #include "runtime/camera/core.h"

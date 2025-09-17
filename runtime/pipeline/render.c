@@ -1,4 +1,4 @@
-#include "core.h"
+#include "render.h"
 
 #include <stdbool.h>
 
@@ -19,6 +19,8 @@ void render_pipeline_create(RenderPipeline *pipeline, const RenderPipelineCreate
   pipeline->device = desc->device;
   pipeline->handle = NULL;
   pipeline->label = desc->label;
+  pipeline->shader_pso = desc->pso;
+  pipeline->bindings = pipeline->shader_pso->bindings;
   render_pipeline_set_vertex_layout(pipeline);
 
   char *source; // shader source code
@@ -198,9 +200,4 @@ void render_pipeline_destroy(RenderPipeline *pipeline) {
   // probably cause the layout is still in use
   // wgpuPipelineLayoutRelease(pipeline->layout);
   pipeline->layout = NULL;
-}
-
-void render_pipeline_set_sampling(RenderPipeline *pipeline,
-                           RenderPipelineMultisampleCount sampling) {
-  pipeline->multisample_state.count = sampling;
 }

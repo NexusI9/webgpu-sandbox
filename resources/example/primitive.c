@@ -8,7 +8,7 @@
 #include "runtime/primitive/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/mesh/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/scene/add.h"
 
 void example_primitive(Mesh *cube, vec3 position, Scene *scene,

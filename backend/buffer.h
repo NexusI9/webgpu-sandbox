@@ -35,7 +35,7 @@ typedef struct {
 
 typedef struct {
   const WGPUQueue queue;
-  const WGPUTexture *texture;
+  const WGPUTexture texture;
   unsigned char *data;
   uint32_t width;
   uint32_t height;

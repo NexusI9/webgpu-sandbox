@@ -11,7 +11,7 @@
 #include "runtime/mesh/ref_list.h"
 #include "utils/dyli.h"
 #include "runtime/mesh/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "utils/stli.h"
 
 static inline void render_pass_draw_pass(RenderPass *, WGPUCommandEncoder);

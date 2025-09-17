@@ -10,7 +10,7 @@
 #include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/transform.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "utils/color.h"

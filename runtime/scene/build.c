@@ -11,7 +11,7 @@
 #include "runtime/mesh/topology/boundbox.h"
 #include "runtime/mesh/topology/core.h"
 #include "runtime/mesh/topology/wireframe.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "renderer/core.h"
 #include "renderer/render_pass/core.h"
 #include "runtime/mesh/core.h"

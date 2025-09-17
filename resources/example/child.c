@@ -5,7 +5,7 @@
 #include "primitive.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/mesh/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 
 void example_child(Scene *scene) {
 

@@ -2,11 +2,11 @@
 
 #include <stdlib.h>
 
-#include "include/stb/stb_image.h"
 #include "backend/buffer.h"
+#include "core.h"
+#include "include/stb/stb_image.h"
 #include "include/stb/stb_image_resize2.h"
 #include "utils/system.h"
-#include "core.h"
 #include "webgpu/webgpu.h"
 #include "write.h"
 
@@ -62,7 +62,6 @@ texture_create_from_file(Texture *texture,
     return TextureStatus_FileError;
   }
 
-
   // resize if width and height are provided in the descriptor
   if ((desc->width > TextureResolution_Undefined && width > desc->width) ||
       (desc->height > TextureResolution_Undefined && height > desc->height)) {
@@ -96,30 +95,13 @@ texture_create_from_file(Texture *texture,
   return TextureStatus_Success;
 }
 
-static const int layer_count = 6;
 
 TextureStatus
-texture_create_cubemap_from_file(WGPUTexture *gpu_texture,
+texture_create_cubemap_from_file(Texture texture[TEXTURE_CUBE_LAYER],
                                  const TextureCreateCubeMapDescriptor *desc) {
 
-  *gpu_texture = wgpuDeviceCreateTexture(
-      desc->device,
-      &(WGPUTextureDescriptor){
-          .dimension = WGPUTextureDimension_2D,
-          .format = desc->format,
-          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-          .sampleCount = 1,
-          .mipLevelCount = 1,
-          .size =
-              (WGPUExtent3D){
-                  .width = desc->resolution,
-                  .height = desc->resolution,
-                  .depthOrArrayLayers = layer_count,
-              },
-      });
-
   // put path in order
-  const char *path_sort[6] = {
+  const char *path_sort[TEXTURE_CUBE_LAYER] = {
       desc->path->right,  // +X
       desc->path->left,   // -X
       desc->path->top,    // +Y
@@ -129,11 +111,10 @@ texture_create_cubemap_from_file(WGPUTexture *gpu_texture,
   };
 
   // load image to layer textures
-  for (size_t i = 0; i < layer_count; i++) {
+  for (size_t i = 0; i < TEXTURE_CUBE_LAYER; i++) {
     const char *path = path_sort[i];
-    
-    Texture layer_texture;
-    if (texture_create_from_file(&layer_texture,
+
+    if (texture_create_from_file(&texture[i],
                                  &(TextureCreateFileDescriptor){
                                      .channels = TextureChannel_Undefined,
                                      .height = desc->resolution,
@@ -141,21 +122,6 @@ texture_create_cubemap_from_file(WGPUTexture *gpu_texture,
                                      .flip = false,
                                      .path = path,
                                  }) == TextureStatus_Success) {
-
-      // upload image to gpu and update relative layer texture
-      buffer_create_texture_cube(
-          &(CreateTextureCubeDescriptor){
-              .texture = gpu_texture,
-              .queue = desc->queue,
-              .width = layer_texture.width,
-              .height = layer_texture.height,
-              .size = layer_texture.size,
-              .data = layer_texture.data,
-              .channels = layer_texture.channels,
-              .format = desc->format,
-              .layer = i,
-          },
-          BufferTextureMemory_Free);
 
     } else {
       VERBOSE_ERROR("Couldn't read cubemap texture.");

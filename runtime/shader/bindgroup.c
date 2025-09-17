@@ -5,12 +5,12 @@
 
 #include "./utils.h"
 #include "add.h"
-#include "core.h"
-#include "webgpu/webgpu.h"
-#include "utils/system.h"
 #include "backend/std_texture/core.h"
+#include "core.h"
+#include "runtime/pipeline/render.h"
 #include "utils/dyli.h"
-#include "runtime/pipeline/core.h"
+#include "utils/system.h"
+#include "webgpu/webgpu.h"
 
 static inline void shader_convert_uniforms(ShaderBindGroup *,
                                            WGPUBindGroupEntry *, bind_index *);
@@ -305,10 +305,9 @@ void shader_bind_group_refresh(ShaderBindGroup *group,
 #ifdef VERBOSE_BINDING_PHASE
   VERBOSE_PRINT("\t\t\t(refresh)");
 #endif
-  
+
   shader_bind_group_release(group);
   shader_bind_group_build(group, group_index, device, pipeline);
-
 }
 
 /**
@@ -573,6 +572,9 @@ void shader_bind_group_create_from_layout(
                                     .binding = entry->binding,
                                     .type = entry->sampler.type,
                                     .compare = WGPUCompareFunction_Undefined,
+                                    .minFilter = WGPUFilterMode_Linear,
+                                    .magFilter = WGPUFilterMode_Linear,
+				    .mipMapFilter = WGPUMipmapFilterMode_Linear,
                                 },
                             },
                     });

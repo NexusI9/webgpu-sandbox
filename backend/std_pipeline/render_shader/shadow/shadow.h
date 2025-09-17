@@ -1,7 +1,7 @@
 #ifndef _PIPELINE_LAYOUT_SHADOW_H_
 #define _PIPELINE_LAYOUT_SHADOW_H_
 
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/viewport/viewport.h"

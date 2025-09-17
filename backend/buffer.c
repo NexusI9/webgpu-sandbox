@@ -5,6 +5,8 @@
 #include "stb/stb_image.h"
 #include "webgpu/webgpu.h"
 
+#include "utils/system.h"
+
 /**
    Buffer methods are in charge to upload data to the GPU
  */
@@ -105,8 +107,12 @@ void buffer_create_texture(WGPUTextureView *texture_view,
                         },
                         &(WGPUExtent3D){tx->width, tx->height, 1});
 
-  if (free)
-    stbi_image_free(tx->data);
+  if (free) {
+    if (tx->data == NULL)
+      VERBOSE_WARNING("Trying to free a non allocated texture.");
+    else
+      stbi_image_free(tx->data);
+  }
 
   // create texture view (used in binding process)
   // TODO: Check put texture desc instead of NULL
@@ -122,7 +128,7 @@ void buffer_create_texture_cube(const CreateTextureCubeDescriptor *tx,
   // upload texture to GPU
   wgpuQueueWriteTexture(tx->queue,
                         &(WGPUImageCopyTexture){
-                            .texture = *tx->texture,
+                            .texture = tx->texture,
                             .mipLevel = 0,
                             .origin = {0, 0, tx->layer},
                             .aspect = WGPUTextureAspect_All,
@@ -135,6 +141,10 @@ void buffer_create_texture_cube(const CreateTextureCubeDescriptor *tx,
                         },
                         &(WGPUExtent3D){tx->width, tx->height, 1});
 
-  if (free)
-    stbi_image_free(tx->data);
+  if (free) {
+    if (tx->data == NULL)
+      VERBOSE_WARNING("Trying to free a non allocated texture.");
+    else
+      stbi_image_free(tx->data);
+  }
 }

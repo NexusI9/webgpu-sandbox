@@ -1,22 +1,22 @@
 #include "core.h"
 
-#include <string.h>
 #include <emscripten/emscripten.h>
+#include <string.h>
 
 #include "backend/ao_bake/core.h"
-#include "utils/system.h"
-#include "emscripten/html5.h"
-#include "emscripten/html5_webgpu.h"
-#include "webgpu/webgpu.h"
 #include "backend/clock.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
 #include "backend/ubo.h"
+#include "emscripten/html5.h"
+#include "emscripten/html5_webgpu.h"
+#include "render_pass/draw.h"
 #include "runtime/html_event/core.h"
 #include "runtime/input/core.h"
 #include "runtime/texture/core.h"
-#include "render_pass/draw.h"
+#include "utils/system.h"
+#include "webgpu/webgpu.h"
 
 static void scene_renderer_resize(SceneRenderer *);
 
@@ -46,7 +46,7 @@ void scene_renderer_init(SceneRenderer *renderer,
   // define context size
   scene_renderer_resize(renderer);
 
-  TIMER("", {
+  TIMER("AO Bake", {
     ao_bake_init(&renderer->texture.ambient_occlusion,
                  &(AOBakeInitDescriptor){
                      .size = AO_TEXTURE_RESOLUTION,
@@ -68,16 +68,18 @@ void scene_renderer_init(SceneRenderer *renderer,
   scene_renderer_add_draw_callback(renderer, ssbo_draw_callback,
                                    (void *)&renderer->ssbo);
 
-  // set fallback textures
 
-  TIMER("", {
+  TIMER("Fallback Textures", {
     scene_renderer_init_fallback_textures(scene_renderer_device(renderer),
                                           scene_renderer_queue(renderer));
   });
 
-  // init standards shaders
-  standard_render_pipelines_init(scene_renderer_device(renderer),
-                          rd->multisampling_count);
+
+  TIMER("Standard Shaders", {
+    standard_render_pipelines_init(scene_renderer_device(renderer),
+                                   rd->multisampling_count);
+    standard_compute_pipelines_init(scene_renderer_device(renderer));
+  });
 
   /*
 
@@ -101,7 +103,6 @@ void scene_renderer_init(SceneRenderer *renderer,
    renderer mode (texture/solid/wireframe).
  */
 void scene_renderer_draw_layout_callback(void *data) {
-
   SceneRenderer *renderer = (SceneRenderer *)data;
 
   // retrieve render mode
@@ -112,14 +113,12 @@ void scene_renderer_draw_layout_callback(void *data) {
 bool scene_renderer_resize_callback(int event_type,
                                     const EmscriptenUiEvent *ui_event,
                                     void *user_data) {
-
   SceneRenderer *renderer = (SceneRenderer *)user_data;
   scene_renderer_resize(renderer);
   return 1;
 }
 
 void scene_renderer_resize(SceneRenderer *renderer) {
-
   double w, h;
 
   // retrieve canvas dimension
@@ -133,15 +132,14 @@ void scene_renderer_resize(SceneRenderer *renderer) {
   emscripten_set_element_css_size(renderer->context.name, w, h);
 
   if (renderer->wgpu.swapchain) {
-    //wgpuSwapChainRelease(renderer->wgpu.swapchain);
-    //renderer->wgpu.swapchain = NULL;
+    // wgpuSwapChainRelease(renderer->wgpu.swapchain);
+    // renderer->wgpu.swapchain = NULL;
   }
 
   renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
 }
 
 double scene_renderer_dpi(double value) {
-
   // request dpi
   if (value == SCENE_RENDERER_DPI_AUTO)
     return emscripten_get_device_pixel_ratio();
@@ -173,7 +171,6 @@ void scene_renderer_close(const SceneRenderer *renderer) {
 void scene_renderer_add_draw_callback(SceneRenderer *renderer,
                                       scene_renderer_draw_callback callback,
                                       void *data) {
-
   // do not add if max hook reached
   if (renderer->draw.callbacks.length == SCENE_RENDERER_MAX_HOOK) {
     VERBOSE_WARNING("Max draw hook reached.\n");
@@ -189,7 +186,6 @@ void scene_renderer_add_draw_callback(SceneRenderer *renderer,
 }
 
 void scene_renderer_render(void *desc) {
-
   SceneRendererRenderDescriptor *config = (SceneRendererRenderDescriptor *)desc;
 
   // Call draw callbacks
@@ -210,7 +206,6 @@ void scene_renderer_render(void *desc) {
    with it (ao, shadow mapping...). Also call the main loop.
  */
 void scene_renderer_draw(SceneRenderer *renderer) {
-
   // set draw layouts callback
   if (renderer->draw.pass->length == 0) {
     VERBOSE_WARNING("No render pass were provided for the scene renderer.");

@@ -1,15 +1,16 @@
-#ifndef _PIPELINE_CORE_H_
-#define _PIPELINE_CORE_H_
+#ifndef _PIPELINE_RENDER_H_
+#define _PIPELINE_RENDER_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
+#include "runtime/geometry/vertex/core.h"
 #include "runtime/geometry/vertex/vertex.h"
 #include "webgpu/webgpu.h"
-#include "runtime/geometry/vertex/core.h"
 
 /**
-   ============================== PIPELINE ==============================
+   !!! DEPRECATED !!!
+   ========================= RENDER PIPELINE ==============================
 
    Provide functions to create a pipeline and edit it.
    Since pipelines are differents depending on their purpose (depth/ color)
@@ -57,12 +58,6 @@ typedef enum {
   PipelineMultisampleCount_1x = 1,
   PipelineMultisampleCount_4x = 4
 } RenderPipelineMultisampleCount;
-
-typedef struct {
-  WGPUDevice device;
-  const char *label;
-  const char *path;
-} RenderPipelineCreateDescriptor;
 
 typedef struct {
   WGPUFragmentState fragment_state;
@@ -175,21 +170,18 @@ typedef struct {
 
 } RenderPipeline;
 
-typedef struct{
+typedef struct {
+  WGPUDevice device;
+  const char *label;
+  const char *path;
+  const RenderPipelineStateObject *pso;
+} RenderPipelineCreateDescriptor;
 
-} ComputePipeline;
+void render_pipeline_create(RenderPipeline *,
+                            const RenderPipelineCreateDescriptor *);
 
-void render_pipeline_standards_create(RenderPipeline *);
-
-// init pipeline
-void render_pipeline_create(RenderPipeline *, const RenderPipelineCreateDescriptor *);
-
-// build pipeline layout
 void render_pipeline_build(RenderPipeline *, const WGPUPipelineLayout *);
 
-// destroyer
 void render_pipeline_destroy(RenderPipeline *);
-
-void render_pipeline_set_sampling(RenderPipeline *, RenderPipelineMultisampleCount);
 
 #endif

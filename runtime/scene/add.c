@@ -19,7 +19,7 @@
 #include "runtime/mesh/list.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/shader/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/core.h"
 #include "runtime/probe/reflection/probe.h"
 #include "utils/projection.h"

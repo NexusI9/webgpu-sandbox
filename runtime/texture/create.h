@@ -7,6 +7,8 @@
 #include "core.h"
 #include "webgpu/webgpu.h"
 
+#define TEXTURE_CUBE_LAYER 6
+
 typedef struct {
   const int width;
   const int height;
@@ -43,7 +45,7 @@ void texture_create(Texture *, const TextureCreateDescriptor *);
 TextureStatus texture_create_from_file(Texture *,
                                        const TextureCreateFileDescriptor *);
 TextureStatus
-texture_create_cubemap_from_file(WGPUTexture *,
+texture_create_cubemap_from_file(Texture[TEXTURE_CUBE_LAYER],
                                  const TextureCreateCubeMapDescriptor *);
 
 #endif

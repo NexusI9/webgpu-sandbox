@@ -1,52 +1,53 @@
 #include "skybox.h"
 
 #include "backend/buffer.h"
-#include "include/stb/stb_image.h"
-#include "runtime/primitive/cube.h"
-#include "webgpu/webgpu.h"
+#include "backend/mipmap/core.h"
 #include "backend/std_pipeline/core.h"
+#include "include/stb/stb_image.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
-#include "runtime/pipeline/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/primitive/core.h"
+#include "runtime/primitive/cube.h"
+#include "runtime/scene/add.h"
+#include "runtime/scene/core.h"
+#include "runtime/scene/environment/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
-#include "runtime/scene/add.h"
-#include "runtime/scene/environment/core.h"
+#include "runtime/texture/core.h"
+#include "utils/system.h"
+#include "webgpu/webgpu.h"
+#include <stdint.h>
 
 static inline WGPUTexture prefab_skybox_texture(const WGPUDevice, const size_t);
 
-static inline void prefab_skybox_create_layer(const WGPUTexture,
+static inline void prefab_skybox_upload_layer(const WGPUTexture,
                                               const Texture *, const size_t,
                                               const WGPUQueue,
                                               BufferTextureMemory);
 
 static inline void prefab_skybox_create_from_texture(Scene *, const WGPUTexture,
                                                      WGPUTextureView *,
-                                                     const size_t, const float);
-
-static const int layer_count = 6;
-static const WGPUTextureFormat format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT;
+                                                     const size_t, const mip_t);
 
 /**
-   Upload the skybox side to the gpu
+   Upload the skybox side to the gpu (write to texture at given layer index)
  */
-static inline void prefab_skybox_create_layer(const WGPUTexture texture,
+static inline void prefab_skybox_upload_layer(const WGPUTexture texture,
                                               const Texture *layer_texture,
                                               const size_t layer_index,
                                               const WGPUQueue queue,
                                               BufferTextureMemory free) {
-
   buffer_create_texture_cube(
       &(CreateTextureCubeDescriptor){
-          .texture = &texture,
+          .texture = texture,
           .queue = queue,
           .width = layer_texture->width,
           .height = layer_texture->height,
           .size = layer_texture->size,
           .data = layer_texture->data,
           .channels = layer_texture->channels,
-          .format = format,
+          .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
           .layer = layer_index,
       },
       free);
@@ -57,19 +58,23 @@ static inline void prefab_skybox_create_layer(const WGPUTexture texture,
  */
 WGPUTexture prefab_skybox_texture(const WGPUDevice device,
                                   const size_t resolution) {
+
   return wgpuDeviceCreateTexture(
       device,
       &(WGPUTextureDescriptor){
           .dimension = WGPUTextureDimension_2D,
-          .format = format,
-          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+          .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+          .usage = WGPUTextureUsage_TextureBinding   // read texturen in shader
+                   | WGPUTextureUsage_StorageBinding // write texture in shader
+                   | WGPUTextureUsage_CopyDst        // upload the input data
+                   | WGPUTextureUsage_RenderAttachment,
           .sampleCount = 1,
-          .mipLevelCount = 1,
+          .mipLevelCount = mipmap_count(resolution, resolution),
           .size =
               (WGPUExtent3D){
                   .width = resolution,
                   .height = resolution,
-                  .depthOrArrayLayers = layer_count,
+                  .depthOrArrayLayers = TEXTURE_CUBE_LAYER,
               },
       });
 }
@@ -80,23 +85,52 @@ WGPUTexture prefab_skybox_texture(const WGPUDevice device,
 void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
                                        WGPUTextureView *view,
                                        const size_t resolution,
-                                       const float blur) {
+                                       const mip_t blur) {
+
+  // mipmap generated texture
+  mipmap_create(texture, &(MipmapCreateDescriptor){
+                             .device = scene_device(scene),
+                             .queue = scene_queue(scene),
+                             .dimension = WGPUTextureViewDimension_Cube,
+                             .height = resolution,
+                             .width = resolution,
+                             .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+                         });
 
   // create global texture view
+  const mip_t mip_count = mipmap_count(resolution, resolution);
+
+  if (blur > mip_count)
+    VERBOSE_WARNING("Attempting to set a skybox blur factor (%u) superior to "
+                    "the available Mip count (%u)",
+                    blur, mip_count);
+
+  /* TODO:
+
+  Looks like the textureSampleLevel is broken on Intel Mac:
+   - https://issues.chromium.org/issues/372283570
+   - https://github.com/gpuweb/gpuweb/issues/4818
+
+  So we basically only make 1 mipmap view available to the shader.
+  Maybe check in the future if this solution has been resolved.
+
+   */
+
   *view = wgpuTextureCreateView(texture,
                                 &(WGPUTextureViewDescriptor){
                                     .dimension = WGPUTextureViewDimension_Cube,
-                                    .format = format,
-                                    .arrayLayerCount = layer_count,
+                                    .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+                                    .arrayLayerCount = TEXTURE_CUBE_LAYER,
                                     .baseArrayLayer = 0,
                                     .mipLevelCount = 1,
-                                    .baseMipLevel = 0,
+                                    .baseMipLevel = glm_min(blur, mip_count),
                                 });
 
-  // get mesh from scene mesh pool
-  /* TODO OPTI: Currently use default box primitive which include
-   * normal/uv/color, but we actually only need position for the skybox, so
-   * maybe can use a "position-only" version to save a bit of memory */
+  /* TODO OPTI:
+     Currently use default box primitive which include
+     normal/uv/color, but we actually only need position for the skybox, so
+     maybe can use a "position-only" version to save a bit of memory
+   */
   Primitive box_primitive = primitive_cube();
   Mesh *skybox_mesh = scene_new_mesh(scene);
   mesh_create_primitive(skybox_mesh, &(MeshCreatePrimitiveDescriptor){
@@ -107,27 +141,19 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
                                      });
 
   // assign shader
-  mesh_shader_create_fixed(skybox_mesh,
-                           &(ShaderCreateDescriptor){
-                               .device = scene_device(scene),
-                               .queue = scene_queue(scene),
-                               .label = "skybox shader",
-                               .name = "skybox shader",
-                               .pipeline = std_render_pipeline(RenderPipelineType_Skybox),
-                           });
+  mesh_shader_create_fixed(skybox_mesh, &(ShaderCreateDescriptor){
+                                            .device = scene_device(scene),
+                                            .queue = scene_queue(scene),
+                                            .label = "skybox shader",
+                                            .name = "skybox shader",
+                                            .pipeline = std_render_pipeline(
+                                                RenderPipelineType_Skybox),
+                                        });
 
   // update texture and sampler
   Shader *shader = mesh_shader(skybox_mesh, MeshShader_Fixed);
-  shader_update_texture_view(shader, 1, 0, *view, format);
-  shader_update_sampler(shader, 1, 1,
-                        &(WGPUSamplerDescriptor){
-                            .addressModeU = WGPUAddressMode_ClampToEdge,
-                            .addressModeV = WGPUAddressMode_ClampToEdge,
-                            .addressModeW = WGPUAddressMode_ClampToEdge,
-                            .minFilter = WGPUFilterMode_Linear,
-                            .magFilter = WGPUFilterMode_Linear,
-                            .compare = WGPUCompareFunction_Undefined,
-                        });
+  shader_update_texture_view(shader, 1, 0, *view,
+                             TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
 
   // add blur uniform
   shader_update_uniform_data(shader, 1, 2, (void *)&blur);
@@ -152,14 +178,22 @@ void prefab_skybox_create(Scene *scene,
   WGPUTexture *skybox_texture = &scene_skybox->texture;
   WGPUTextureView *skybox_cubemap_view = &scene_skybox->view;
 
-  texture_create_cubemap_from_file(skybox_texture,
-                                   &(TextureCreateCubeMapDescriptor){
-                                       .device = scene_device(scene),
-                                       .queue = scene_queue(scene),
-                                       .path = &desc->path,
-                                       .format = format,
-                                       .resolution = desc->resolution,
-                                   });
+  *skybox_texture =
+      prefab_skybox_texture(scene_device(scene), desc->resolution);
+
+  Texture skybox_sides[TEXTURE_CUBE_LAYER];
+  texture_create_cubemap_from_file(
+      skybox_sides, &(TextureCreateCubeMapDescriptor){
+                        .device = scene_device(scene),
+                        .queue = scene_queue(scene),
+                        .path = &desc->path,
+                        .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+                        .resolution = desc->resolution,
+                    });
+
+  for (uint8_t i = 0; i < TEXTURE_CUBE_LAYER; i++)
+    prefab_skybox_upload_layer(*skybox_texture, &skybox_sides[i], i,
+                               scene_queue(scene), BufferTextureMemory_Keep);
 
   prefab_skybox_create_from_texture(scene, *skybox_texture, skybox_cubemap_view,
                                     desc->resolution, desc->blur);
@@ -217,7 +251,7 @@ void prefab_skybox_gradient_create(
      4 - front
      5 - back
    */
-  for (size_t i = 0; i < layer_count; i++) {
+  for (size_t i = 0; i < TEXTURE_CUBE_LAYER; i++) {
 
     Texture layer_texture;
     Texture *final_texture;
@@ -254,7 +288,7 @@ void prefab_skybox_gradient_create(
     }
 
     // upload texture
-    prefab_skybox_create_layer(*skybox_texture, final_texture, i,
+    prefab_skybox_upload_layer(*skybox_texture, final_texture, i,
                                scene_queue(scene), free_texture);
   }
 
