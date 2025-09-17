@@ -1,22 +1,23 @@
 #ifndef _SCENE_RENDERER_CORE_H_
 #define _SCENE_RENDERER_CORE_H_
 
-#include <stdint.h>
 #include <emscripten/html5.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <sys/types.h>
 
+#include "./render_pass/render_pass.h"
+#include "backend/ao_bake/ao_bake.h"
+#include "backend/ao_bake/core.h"
 #include "backend/clock.h"
 #include "backend/ssbo.h"
 #include "backend/ubo.h"
-#include "runtime/pipeline/pipeline.h"
-#include "runtime/texture/texture.h"
-#include "backend/ao_bake/ao_bake.h"
-#include "./render_pass/render_pass.h"
-#include "webgpu/webgpu.h"
-#include "backend/ao_bake/core.h"
-#include "runtime/pipeline/render.h"
 #include "render_pass/core.h"
+#include "runtime/pipeline/pipeline.h"
+#include "runtime/pipeline/render.h"
+#include "runtime/texture/core.h"
+#include "runtime/texture/texture.h"
+#include "webgpu/webgpu.h"
 
 #define SCENE_RENDERER_MAX_HOOK 6
 #define SCENE_RENDERER_DPI_AUTO 0
@@ -32,9 +33,9 @@ typedef enum {
 typedef struct {
   const char *name;
   cclock *clock;
-  RenderPipelineMultisampleCount multisampling_count;
   WGPUColor background;
-  double dpi;
+  const double dpi;
+  const  RenderPipelineMultisampleCount multisampling_count;
 } SceneRendererCreateDescriptor;
 
 typedef void (*scene_renderer_draw_callback)(void *);
@@ -90,7 +91,7 @@ typedef struct {
 } SceneRendererRenderDescriptor;
 
 void scene_renderer_init(SceneRenderer *,
-                           const SceneRendererCreateDescriptor *);
+                         const SceneRendererCreateDescriptor *);
 
 void scene_renderer_set_draw_mode(SceneRenderer *, const SceneRendererDrawMode);
 
@@ -107,8 +108,8 @@ WGPUQueue scene_renderer_queue(SceneRenderer *);
 WGPUSwapChain scene_renderer_swapchain(SceneRenderer *);
 int scene_renderer_width(const SceneRenderer *);
 int scene_renderer_height(const SceneRenderer *);
-SSBOManager* scene_renderer_ssbo(SceneRenderer*);
-UBOManager* scene_renderer_ubo(SceneRenderer*);
+SSBOManager *scene_renderer_ssbo(SceneRenderer *);
+UBOManager *scene_renderer_ubo(SceneRenderer *);
 // PipelineMultisampleCount scene_renderer_multisample(const SceneRenderer *);
 
 const char *scene_renderer_target(SceneRenderer *);
