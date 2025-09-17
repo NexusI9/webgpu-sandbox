@@ -17,9 +17,9 @@ static inline void mipmap_dispatch(WGPUComputePassEncoder,
 MipmapStatus mipmap_create(WGPUTexture texture,
                            const MipmapCreateDescriptor *desc) {
 
-  VERBOSE_PROCESS("Generating mipmaps...");
-
-  TIMER("Mipmap Generation", { mipmap_draw(texture, desc); });
+  // VERBOSE_PROCESS("Generating mipmaps...");
+  // TIMER("Mipmap Generation", {});
+  mipmap_draw(texture, desc);
 
   return MipmapStatus_Success;
 }
@@ -34,9 +34,6 @@ void mipmap_draw(WGPUTexture texture, const MipmapCreateDescriptor *desc) {
   const WGPUComputePipeline mipmap_pipeline =
       std_compute_pipeline(ComputePipelineType_Mipmap)->handle;
 
-  const uint32_t layer_count =
-      desc->dimension == WGPUTextureViewDimension_Cube ? 6 : 1;
-
   WGPUSampler mipmap_sampler = wgpuDeviceCreateSampler(
       desc->device, &(WGPUSamplerDescriptor){
                         .label = "Mipmap sampler",
@@ -50,7 +47,7 @@ void mipmap_draw(WGPUTexture texture, const MipmapCreateDescriptor *desc) {
                         .lodMaxClamp = (float)mip_count,
                     });
 
-  for (uint32_t i = 0; i < layer_count; i++) {
+  for (uint32_t i = 0; i < desc->layer_count; i++) {
     for (mip_t j = 1; j < mip_count; j++) {
 
       /* === PASS  BEGIN === */
@@ -62,7 +59,7 @@ void mipmap_draw(WGPUTexture texture, const MipmapCreateDescriptor *desc) {
 
       /* === BIND TARGET VIEWS === */
       WGPUTextureViewDescriptor src_view_desc = {
-          .format = desc->format,
+          .format = wgpuTextureGetFormat(texture),
           .dimension = WGPUTextureViewDimension_2D,
           .baseMipLevel = j - 1,
           .mipLevelCount = 1,
@@ -92,7 +89,8 @@ void mipmap_draw(WGPUTexture texture, const MipmapCreateDescriptor *desc) {
 
       wgpuComputePassEncoderSetBindGroup(compute_pass, 0, bind_group, 0, NULL);
 
-      mipmap_dispatch(compute_pass, desc->width, desc->height, j);
+      mipmap_dispatch(compute_pass, wgpuTextureGetWidth(texture),
+                      wgpuTextureGetHeight(texture), j);
 
       /* === PASS END === */
       wgpuComputePassEncoderEnd(compute_pass);

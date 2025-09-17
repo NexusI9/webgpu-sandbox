@@ -122,11 +122,12 @@ typedef struct {
 
   struct {
     WGPUVertexState vertex_state;
-    RenderPipelineFragmentDescriptor fragment_state;
+    WGPUFragmentState fragment_state;
     WGPUPrimitiveState primitive_state;
     WGPUDepthStencilState stencil_state;
     WGPUBlendState blend_state;
     WGPUMultisampleState multisample_state;
+    WGPUColorTargetState color_state;
   } pipeline_attributes;
 
   RenderPipelineBinding bindings;

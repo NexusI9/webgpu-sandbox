@@ -66,8 +66,7 @@ WGPUTexture prefab_skybox_texture(const WGPUDevice device,
           .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
           .usage = WGPUTextureUsage_TextureBinding   // read texturen in shader
                    | WGPUTextureUsage_StorageBinding // write texture in shader
-                   | WGPUTextureUsage_CopyDst        // upload the input data
-                   | WGPUTextureUsage_RenderAttachment,
+                   | WGPUTextureUsage_CopyDst,       // upload the input data
           .sampleCount = 1,
           .mipLevelCount = mipmap_count(resolution, resolution),
           .size =
@@ -91,10 +90,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
   mipmap_create(texture, &(MipmapCreateDescriptor){
                              .device = scene_device(scene),
                              .queue = scene_queue(scene),
-                             .dimension = WGPUTextureViewDimension_Cube,
-                             .height = resolution,
-                             .width = resolution,
-                             .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+                             .layer_count = TEXTURE_CUBE_LAYER,
                          });
 
   // create global texture view

@@ -1,25 +1,27 @@
 #include "plane.h"
 
-#include <stdint.h>
 #include <cglm/affine-pre.h>
 #include <cglm/cam.h>
 #include <cglm/mat4.h>
 #include <cglm/vec3.h>
 #include <float.h>
 #include <math.h>
+#include <stdint.h>
 
+#include "backend/mipmap/core.h"
+#include "backend/ssbo.h"
 #include "core.h"
-#include "webgpu/webgpu.h"
+#include "runtime/camera/core.h"
 #include "runtime/camera/uniform.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/debug/view.h"
-#include "runtime/scene/renderer/render_pass/draw.h"
-#include "utils/vector/core.h"
-#include "backend/ssbo.h"
-#include "runtime/camera/core.h"
-#include "runtime/mesh/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/scene/renderer/render_pass/draw.h"
+#include "runtime/texture/core.h"
 #include "utils/dyli.h"
+#include "utils/vector/core.h"
+#include "webgpu/webgpu.h"
 
 DynamicListStatus
 probe_reflection_plane_list_create(ProbeReflectionPlaneList *list,
@@ -160,6 +162,14 @@ void probe_reflection_plane_list_draw_callback(void *data) {
     }
   }
   render_pass_command_end(&list->pass);
+
+  // create mipmap
+  mipmap_create(list->pass.color.texture,
+                &(MipmapCreateDescriptor){
+                    .device = list->pass.device,
+                    .queue = list->pass.queue,
+		    .layer_count = list->length,
+                });
 }
 
 void probe_reflection_plane_create(ProbeReflectionPlane *probe,
@@ -316,16 +326,15 @@ void probe_reflection_plane_update_boundbox(ProbeReflectionPlane *probe) {
    We need to remove some meshes from the initial draw list to prevent self
    reflection.
 
-  This function is primarily used when the probe reflection or a mesh is moving
-  and we compute if a mesh is included in the probe list.
+  This function is primarily used when the probe reflection or a mesh is
+  moving and we compute if a mesh is included in the probe list.
 
    TODO:
-   Since currently all plane shared a common list render pass, we need for each
-  plane to create a "black list" of meshes that then will be removed each render
-  pass.
-   Maybe another solution would be to create a dedicated renderpass to each
-  plane. Cause rn every draw call we have to enable/disable dynamically each
-  plane meshes which is probably costy.
+   Since currently all plane shared a common list render pass, we need for
+  each plane to create a "black list" of meshes that then will be removed each
+  render pass. Maybe another solution would be to create a dedicated
+  renderpass to each plane. Cause rn every draw call we have to enable/disable
+  dynamically each plane meshes which is probably costy.
 
  */
 void probe_reflection_plane_disable_mesh(ProbeReflectionPlane *plane,

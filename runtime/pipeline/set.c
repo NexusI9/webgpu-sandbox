@@ -13,35 +13,20 @@ void render_pipeline_set_vertex(RenderPipeline *pipeline,
 /**
    Define custom fragment state for pipeline prior building it
  */
-void render_pipeline_set_fragment(
-    RenderPipeline *pipeline, const RenderPipelineFragmentDescriptor *state) {
+void render_pipeline_set_fragment(RenderPipeline *pipeline,
+                                  const WGPUFragmentState *state) {
+  pipeline->fragment_state = *state;
+}
 
-  // cache attributes
-  pipeline->color_state = state->color_state;
-  pipeline->blend_state = state->blend_state;
+void render_pipeline_set_color(RenderPipeline *pipeline,
+                               const WGPUColorTargetState *state) {
 
-  // set base attributes
-  pipeline->fragment_state = (WGPUFragmentState){
-      .module = state->fragment_state.module,
-      .entryPoint = state->fragment_state.entryPoint,
-      .targetCount = state->fragment_state.targetCount,
-  };
+  pipeline->color_state = *state;
 
-  if (pipeline->color_state.format != 0) {
+  if (pipeline->color_state.blend == NULL)
+    pipeline->color_state.blend = &pipeline->blend_state;
 
-    // set color base (dirty)
-    pipeline->color_state = (WGPUColorTargetState){
-        .format = state->color_state.format,
-        .writeMask = state->color_state.writeMask,
-    };
-
-    // 1. plug blend -> color state
-    if (pipeline->blend_state.alpha.operation != 0)
-      pipeline->color_state.blend = &pipeline->blend_state;
-
-    // 2. plug color state -> pipeline
-    pipeline->fragment_state.targets = &pipeline->color_state;
-  }
+  pipeline->fragment_state.targets = &pipeline->color_state;
 }
 
 /**
@@ -77,8 +62,7 @@ void render_pipeline_set_multisample(RenderPipeline *pipeline,
   pipeline->multisample_state = *state;
 }
 
-
 void render_pipeline_set_sampling(RenderPipeline *pipeline,
-                           RenderPipelineMultisampleCount sampling) {
+                                  RenderPipelineMultisampleCount sampling) {
   pipeline->multisample_state.count = sampling;
 }

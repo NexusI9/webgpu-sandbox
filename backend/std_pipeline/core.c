@@ -84,8 +84,7 @@ void standard_render_pipelines_init(
                                    layout->pipeline_attributes.vertex_state);
 
       // fragment state
-      if (layout->pipeline_attributes.fragment_state.color_state.format !=
-          WGPUTextureFormat_Undefined)
+      if (layout->pipeline_attributes.fragment_state.entryPoint != NULL)
         render_pipeline_set_fragment(
             cached_pipeline, &layout->pipeline_attributes.fragment_state);
 
@@ -94,11 +93,18 @@ void standard_render_pipelines_init(
           WGPUCullMode_Undefined)
         render_pipeline_set_primitive(
             cached_pipeline, layout->pipeline_attributes.primitive_state);
+
       // stencil state
       if (layout->pipeline_attributes.stencil_state.format !=
           WGPUTextureFormat_Undefined)
         render_pipeline_set_stencil(cached_pipeline,
                                     layout->pipeline_attributes.stencil_state);
+
+      // color state
+      if (layout->pipeline_attributes.color_state.format !=
+          WGPUTextureFormat_Undefined)
+        render_pipeline_set_color(cached_pipeline,
+                                  &layout->pipeline_attributes.color_state);
 
       // blend state
       if (layout->pipeline_attributes.blend_state.alpha.dstFactor)

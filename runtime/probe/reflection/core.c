@@ -3,12 +3,12 @@
 #include <stdbool.h>
 #include <webgpu/webgpu.h>
 
-#include "runtime/mesh/shader/core.h"
-#include "runtime/shader/core.h"
-#include "runtime/shader/update.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/shader/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/shader/core.h"
+#include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
 #include "utils/dyli.h"
 
@@ -23,29 +23,32 @@ void probe_reflection_list_create_texture(
    */
 
   *desc->color = wgpuDeviceCreateTexture(
-      desc->device, &(WGPUTextureDescriptor){
-                        .label = "Probe Reflection List Texture Color",
-                        .size =
-                            (WGPUExtent3D){
-                                .width = desc->resolution,
-                                .height = desc->resolution,
-                                .depthOrArrayLayers = desc->layer_count,
-                            },
-                        .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT,
-                        .usage = WGPUTextureUsage_CopyDst |
-                                 WGPUTextureUsage_RenderAttachment |
-                                 WGPUTextureUsage_TextureBinding,
-                        .dimension = WGPUTextureDimension_2D,
-                        .mipLevelCount = 1,
-                        .sampleCount = 1,
-                    });
+      desc->device,
+      &(WGPUTextureDescriptor){
+          .label = "Probe Reflection List Texture Color",
+          .size =
+              (WGPUExtent3D){
+                  .width = desc->resolution,
+                  .height = desc->resolution,
+                  .depthOrArrayLayers = desc->layer_count,
+              },
+          .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+          .usage = WGPUTextureUsage_TextureBinding   // read texture in shader
+                   | WGPUTextureUsage_StorageBinding // write texture in shader
+                   | WGPUTextureUsage_CopyDst        // upload the input data
+                   | WGPUTextureUsage_RenderAttachment,
+          .dimension = WGPUTextureDimension_2D,
+          .mipLevelCount = PROBE_REFLECTION_MIPMAP_COUNT,
+          .sampleCount = 1,
+      });
 
   *desc->color_view = wgpuTextureCreateView(
       *desc->color, &(WGPUTextureViewDescriptor){
                         .label = "Probe Reflection List View Color",
-                        .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT,
+                        .format = wgpuTextureGetFormat(*desc->color),
                         .dimension = desc->view_dimension,
-                        .baseMipLevel = 0,
+                        .baseMipLevel = PROBE_REFLECTION_MIPMAP_COUNT -
+                                        1, // Use level 1 for blurriness
                         .mipLevelCount = 1,
                         .baseArrayLayer = 0,
                         .arrayLayerCount = desc->layer_count,
@@ -78,7 +81,7 @@ void probe_reflection_list_create_texture(
       *desc->depth, &(WGPUTextureViewDescriptor){
                         .label = "Probe Reflection List View Depth",
                         .dimension = desc->view_dimension,
-                        .format = WGPUTextureFormat_Depth24Plus,
+                        .format = wgpuTextureGetFormat(*desc->depth),
                         .baseMipLevel = 0,
                         .mipLevelCount = 1,
                         .baseArrayLayer = 0,
@@ -112,7 +115,6 @@ probe_reflection_list_create_core(const ProbeReflectionCreateCore *desc) {
         .layer_count = desc->render_pass->layer_count,
     });
 
-    
     // create render pass preset
     render_pass_create(desc->render_pass->handle,
                        &(RenderPassCreateDescriptor){
@@ -154,7 +156,6 @@ void probe_reflection_list_draw_preprocessor(const RenderPass *pass, Mesh *mesh,
   ProbeReflectionListPreprocessorData *cast_data =
       (ProbeReflectionListPreprocessorData *)data;
 
-
-  Shader *shader = mesh_shader(mesh, MeshShader_Reflection);  
+  Shader *shader = mesh_shader(mesh, MeshShader_Reflection);
   shader_update_bind_group_offset(shader, 0, 1, cast_data->camera_offset);
 }

@@ -1,14 +1,16 @@
 #ifndef _PIPELINE_LAYOUT_REFLECTION_H_
 #define _PIPELINE_LAYOUT_REFLECTION_H_
 
-#include "runtime/pipeline/pipeline.h"
 #include "runtime/camera/camera.h"
 #include "runtime/light/uniform.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/pipeline.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
 #include "../pbr/pbr.h"
+#include "runtime/texture/texture.h"
 #include <webgpu/webgpu.h>
 
 static const RenderPipelineStateObject layout_reflection = {
@@ -29,6 +31,12 @@ static const RenderPipelineStateObject layout_reflection = {
                     .alphaToCoverageEnabled = false,
                     .mask = 0xFFFFFFFF,
                     .count = PipelineMultisampleCount_1x,
+                },
+            .color_state =
+                (WGPUColorTargetState){
+                    .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+                    .writeMask = WGPUColorWriteMask_All,
+                    .blend = NULL,
                 },
         },
     .bindings =

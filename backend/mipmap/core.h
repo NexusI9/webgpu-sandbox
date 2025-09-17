@@ -16,10 +16,7 @@ typedef uint32_t mip_t;
 typedef struct {
   const WGPUDevice device;
   const WGPUQueue queue;
-  const WGPUTextureViewDimension dimension;
-  const WGPUTextureFormat format;
-  const TextureResolution width;
-  const TextureResolution height;
+  const size_t layer_count;
 } MipmapCreateDescriptor;
 
 MipmapStatus mipmap_create(WGPUTexture, const MipmapCreateDescriptor *);
