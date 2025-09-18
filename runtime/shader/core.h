@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "runtime/pipeline/compute.h"
 #include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/render.h"
 #include "webgpu/webgpu.h"

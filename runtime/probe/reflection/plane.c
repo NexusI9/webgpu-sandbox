@@ -8,7 +8,8 @@
 #include <math.h>
 #include <stdint.h>
 
-#include "backend/mipmap/core.h"
+#include "backend/compute/kawase.h"
+#include "backend/compute/mipmap.h"
 #include "backend/ssbo.h"
 #include "core.h"
 #include "runtime/camera/core.h"
@@ -22,6 +23,8 @@
 #include "utils/dyli.h"
 #include "utils/vector/core.h"
 #include "webgpu/webgpu.h"
+
+#include "runtime/scene/scene.h"
 
 DynamicListStatus
 probe_reflection_plane_list_create(ProbeReflectionPlaneList *list,
@@ -99,7 +102,9 @@ void probe_reflection_plane_list_draw_callback(void *data) {
 
   // temp
   ProbeReflectionListDebug *debug = NULL;
-  ProbeReflectionPlaneList *list = (ProbeReflectionPlaneList *)data;
+  
+  Scene *scene = (Scene *)data;
+  ProbeReflectionPlaneList *list = &scene->planes_reflection;
 
   // then update probe list texture cube array based on each probes views
 
@@ -161,15 +166,17 @@ void probe_reflection_plane_list_draw_callback(void *data) {
       render_pass_draw_list_enable_all(&list->pass);
     }
   }
+
   render_pass_command_end(&list->pass);
 
-  // create mipmap
-  mipmap_create(list->pass.color.texture,
-                &(MipmapCreateDescriptor){
-                    .device = list->pass.device,
-                    .queue = list->pass.queue,
-		    .layer_count = list->length,
-                });
+  //compute_pass_kawase(&scene->renderer.draw.compute_pass,
+  //                    &(KawaseDescriptor){
+  //                        .texture = list->pass.color.texture,
+  //                        .device = list->pass.device,
+  //                        .queue = list->pass.queue,
+  //                        .layer_count = list->length,
+  //                        .pass_count = 1,
+  //                    });
 }
 
 void probe_reflection_plane_create(ProbeReflectionPlane *probe,

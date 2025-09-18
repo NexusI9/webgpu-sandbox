@@ -10,6 +10,7 @@
 #include "backend/ao_bake/ao_bake.h"
 #include "backend/ao_bake/core.h"
 #include "backend/clock.h"
+#include "backend/compute/core.h"
 #include "backend/ssbo.h"
 #include "backend/ubo.h"
 #include "render_pass/core.h"
@@ -81,7 +82,8 @@ typedef struct SceneRenderer {
   struct {
     SceneRendererDrawMode mode;
     SceneRendererDrawCallbackList callbacks;
-    RenderPassList pass[SCENE_RENDERER_DRAW_MODE_COUNT];
+    RenderPassList render_pass[SCENE_RENDERER_DRAW_MODE_COUNT];
+    ComputePass compute_pass;
   } draw;
 
 } SceneRenderer;

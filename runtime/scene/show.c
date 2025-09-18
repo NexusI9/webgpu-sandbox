@@ -12,7 +12,7 @@ SceneStatus scene_show_mesh(Scene *scene, Mesh *mesh,
                             const ScenePipeline pipeline) {
 
   render_pass_list_draw_list_enable_mesh(
-      &scene->renderer.draw.pass[scene->renderer.draw.mode], mesh,
+      &scene->renderer.draw.render_pass[scene->renderer.draw.mode], mesh,
       scene_pipeline(scene, pipeline));
 
   return SceneStatus_Success;
@@ -25,7 +25,7 @@ SceneStatus scene_hide_mesh(Scene *scene, Mesh *mesh,
                             const ScenePipeline pipeline) {
 
   render_pass_list_draw_list_disable_mesh(
-      &scene->renderer.draw.pass[scene->renderer.draw.mode], mesh,
+      &scene->renderer.draw.render_pass[scene->renderer.draw.mode], mesh,
       scene_pipeline(scene, pipeline));
 
   return SceneStatus_Success;
@@ -35,7 +35,7 @@ SceneStatus scene_show_mesh_ref_list(Scene *scene, MeshRefList *list,
                                      const ScenePipeline pipeline) {
 
   render_pass_list_draw_list_enable_mesh_ref_list(
-      &scene->renderer.draw.pass[scene->renderer.draw.mode], list,
+      &scene->renderer.draw.render_pass[scene->renderer.draw.mode], list,
       scene_pipeline(scene, pipeline));
 
   return SceneStatus_Success;
@@ -45,7 +45,7 @@ SceneStatus scene_hide_mesh_ref_list(Scene *scene, MeshRefList *list,
                                      const ScenePipeline pipeline) {
 
   render_pass_list_draw_list_enable_mesh_ref_list(
-      &scene->renderer.draw.pass[scene->renderer.draw.mode], list,
+      &scene->renderer.draw.render_pass[scene->renderer.draw.mode], list,
       scene_pipeline(scene, pipeline));
 
   return SceneStatus_Success;

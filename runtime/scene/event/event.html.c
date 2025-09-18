@@ -3,8 +3,8 @@
 #include <emscripten/html5.h>
 #include <stddef.h>
 
-#include "emscripten/em_types.h"
 #include "backend/ssbo.h"
+#include "emscripten/em_types.h"
 #include "runtime/camera/core.h"
 #include "runtime/camera/mode.h"
 #include "runtime/html_event/add.h"
@@ -97,6 +97,7 @@ void scene_event_html_commons(Scene *scene) {
         &scene->renderer.ssbo, SSBOType_ProbePlaneReflection,
         probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
   }
+
 }
 
 void scene_event_html_update_meshes(Scene *data) {

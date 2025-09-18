@@ -24,9 +24,10 @@ typedef enum {
   RenderPipelineType_Reflection,
 } RenderPipelineType;
 
-#define COMPUTE_PIPELINE_TYPE_COUNT 1
+#define COMPUTE_PIPELINE_TYPE_COUNT 2
 typedef enum {
   ComputePipelineType_Mipmap,
+  ComputePipelineType_Kawase,
 } ComputePipelineType;
 
 extern RenderPipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT];

@@ -250,7 +250,7 @@ scene_draw_layouts_init(Scene *scene,
           [SceneRendererDrawMode_Boundbox] = &boundbox_draw_list,
       };
 
-  RenderPassList *pass_list = scene->renderer.draw.pass;
+  RenderPassList *pass_list = scene->renderer.draw.render_pass;
 
   for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
 

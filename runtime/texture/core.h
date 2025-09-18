@@ -2,9 +2,9 @@
 #define _TEXTURE_CORE_H_
 
 #include <cglm/cglm.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <webgpu/webgpu.h>
-#include <stddef.h>
 
 #include "utils/vector/vector.h"
 
@@ -49,6 +49,8 @@ typedef struct {
   TextureChannel channels;
   uint8_t value;
 } Texture;
+
+extern const float g_texture_resolution_texel_size[TextureResolution_2048 + 1];
 
 void texture_save(Texture *, const char *);
 void texture_free(Texture *);

@@ -14,5 +14,5 @@
                textureLoad(src_texture, 2u * id.xy + offset.yy, 0)) *
               0.25f;
 
-  textureStore(dst_texture, vec2<i32>(i32(id.x), i32(id.y)), color);
+  textureStore(dst_texture, vec2<i32>(id.xy), color);
 }

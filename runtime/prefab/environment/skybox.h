@@ -13,7 +13,7 @@
 #include "runtime/texture/core.h"
 #include "runtime/texture/create.h"
 #include "runtime/texture/write.h"
-#include "backend/mipmap/mipmap.h"
+#include "backend/compute/mipmap.h"
 
 typedef struct {
   const mip_t blur;

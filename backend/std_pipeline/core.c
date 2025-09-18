@@ -15,6 +15,7 @@
 #include "./render_shader/skybox/skybox.h"
 #include "./render_shader/solid/solid.h"
 #include "./render_shader/unlit/unlit.h"
+#include "backend/std_pipeline/compute_shader/kawase/kawase.h"
 #include "backend/std_pipeline/compute_shader/mipmap/mipmap.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/pipeline/set.h"
@@ -50,6 +51,7 @@ static const RenderPipelineStateObject
 static const ComputePipelineStateObject
     *standard_compute_layouts[COMPUTE_PIPELINE_TYPE_COUNT] = {
         [ComputePipelineType_Mipmap] = &layout_mipmap,
+        [ComputePipelineType_Kawase] = &layout_kawase,
 };
 
 /**

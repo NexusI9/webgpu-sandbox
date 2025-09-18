@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
+#include "runtime/scene/environment/fog.h"
 #include "stdbool.h"
 #include "string.h"
-#include "runtime/scene/environment/fog.h"
 #include "utils/system.h"
 
 typedef struct {
@@ -15,6 +15,9 @@ typedef struct {
 } UBOEntry;
 
 void ubo_init(UBOManager *ubo, WGPUQueue queue, const WGPUDevice device) {
+  
+  VERBOSE_PROCESS("Initializing UBO Manager");
+
   ubo->queue = queue;
   ubo->handle = wgpuDeviceCreateBuffer(
       device, &(WGPUBufferDescriptor){

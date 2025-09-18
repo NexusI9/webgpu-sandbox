@@ -1,6 +1,7 @@
-#ifndef _MIPMAP_CORE_H_
-#define _MIPMAP_CORE_H_
+#ifndef _COMPUTE_MIPMAP_H_
+#define _COMPUTE_MIPMAP_H_
 
+#include "core.h"
 #include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
 
@@ -14,12 +15,13 @@ typedef enum {
 typedef uint32_t mip_t;
 
 typedef struct {
+  WGPUTexture texture;
   const WGPUDevice device;
   const WGPUQueue queue;
   const size_t layer_count;
-} MipmapCreateDescriptor;
+} MipmapDescriptor;
 
-MipmapStatus mipmap_create(WGPUTexture, const MipmapCreateDescriptor *);
+MipmapStatus compute_pass_mipmap(ComputePass *, const MipmapDescriptor *);
 
 static inline mip_t mipmap_count(const TextureResolution width,
                                  const TextureResolution height) {

@@ -5,6 +5,7 @@
 
 #include "backend/ao_bake/core.h"
 #include "backend/clock.h"
+#include "backend/compute/core.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
@@ -59,21 +60,30 @@ void scene_renderer_init(SceneRenderer *renderer,
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, renderer,
                                  false, scene_renderer_resize_callback);
 
-  ubo_init(&renderer->ubo, scene_renderer_queue(renderer),
-           scene_renderer_device(renderer));
+  {
+    // init various buffers
+    compute_pass_init(&renderer->draw.compute_pass,
+                      &(ComputePassDescriptor){
+                          .device = renderer->wgpu.device,
+                          .queue = renderer->wgpu.queue,
+                          .max_height = renderer->context.height,
+                          .max_width = renderer->context.width,
+                      });
+    
+    ubo_init(&renderer->ubo, scene_renderer_queue(renderer),
+             scene_renderer_device(renderer));
 
-  ssbo_init(&renderer->ssbo, scene_renderer_device(renderer),
-            scene_renderer_queue(renderer));
+    ssbo_init(&renderer->ssbo, scene_renderer_device(renderer),
+              scene_renderer_queue(renderer));
+  }
 
   scene_renderer_add_draw_callback(renderer, ssbo_draw_callback,
                                    (void *)&renderer->ssbo);
-
 
   TIMER("Fallback Textures", {
     scene_renderer_init_fallback_textures(scene_renderer_device(renderer),
                                           scene_renderer_queue(renderer));
   });
-
 
   TIMER("Standard Shaders", {
     standard_render_pipelines_init(scene_renderer_device(renderer),
@@ -107,7 +117,7 @@ void scene_renderer_draw_layout_callback(void *data) {
 
   // retrieve render mode
   const SceneRendererDrawMode mode = renderer->draw.mode;
-  render_pass_list_draw(&renderer->draw.pass[mode]);
+  render_pass_list_draw(&renderer->draw.render_pass[mode]);
 }
 
 bool scene_renderer_resize_callback(int event_type,
@@ -207,7 +217,7 @@ void scene_renderer_render(void *desc) {
  */
 void scene_renderer_draw(SceneRenderer *renderer) {
   // set draw layouts callback
-  if (renderer->draw.pass->length == 0) {
+  if (renderer->draw.render_pass->length == 0) {
     VERBOSE_WARNING("No render pass were provided for the scene renderer.");
   } else {
     scene_renderer_add_draw_callback(

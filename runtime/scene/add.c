@@ -3,41 +3,41 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "backend/ubo.h"
 #include "./editor/editor.h"
-#include "build.h"
-#include "core.h"
-#include "editor/object/light/sun.h"
-#include "editor/object/list/list.h"
-#include "editor/selection/core.h"
-#include "renderer/core.h"
-#include "renderer/render_pass/core.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
-#include "runtime/camera/list.h"
-#include "runtime/light/shadow_map/draw.h"
-#include "runtime/mesh/list.h"
-#include "runtime/mesh/ref_list.h"
-#include "runtime/mesh/shader/core.h"
-#include "runtime/pipeline/render.h"
-#include "runtime/probe/reflection/core.h"
-#include "runtime/probe/reflection/probe.h"
-#include "utils/projection.h"
-#include "utils/system.h"
+#include "backend/ubo.h"
+#include "build.h"
+#include "core.h"
 #include "debug/core.h"
 #include "editor/object/camera/camera.h"
 #include "editor/object/light/ambient.h"
 #include "editor/object/light/point.h"
 #include "editor/object/light/spot.h"
+#include "editor/object/light/sun.h"
+#include "editor/object/list/list.h"
 #include "editor/object/probe/reflection_grid.h"
 #include "editor/object/probe/reflection_plane.h"
+#include "editor/selection/core.h"
 #include "layer.h"
+#include "renderer/core.h"
+#include "renderer/render_pass/core.h"
 #include "runtime/camera/core.h"
+#include "runtime/camera/list.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
+#include "runtime/light/shadow_map/draw.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/list.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/mesh/shader/core.h"
+#include "runtime/pipeline/render.h"
+#include "runtime/probe/reflection/core.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
+#include "runtime/probe/reflection/probe.h"
+#include "utils/projection.h"
+#include "utils/system.h"
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 static inline void
@@ -486,7 +486,7 @@ scene_add_probe_reflection_plane(Scene *scene,
       scene->renderer.draw.mode == SceneRendererDrawMode_Texture)
     scene_renderer_add_draw_callback(&scene->renderer,
                                      probe_reflection_plane_list_draw_callback,
-                                     (void *)&scene->planes_reflection);
+                                     (void *)scene);
 
   ProbeReflectionPlane *probe =
       probe_reflection_plane_list_new_entry(&scene->planes_reflection);
@@ -599,8 +599,8 @@ void scene_render_pass_draw_list_enable_mesh(
     Scene *scene, const MeshRefList *pipeline_mesh_list, Mesh *mesh) {
 
   for (SceneRendererDrawMode i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
-    render_pass_list_draw_list_enable_mesh(&scene->renderer.draw.pass[i], mesh,
-                                           pipeline_mesh_list);
+    render_pass_list_draw_list_enable_mesh(&scene->renderer.draw.render_pass[i],
+                                           mesh, pipeline_mesh_list);
   render_pass_draw_list_enable_mesh(&scene->probes_reflection.pass, mesh,
                                     pipeline_mesh_list);
   render_pass_draw_list_enable_mesh(&scene->planes_reflection.pass, mesh,

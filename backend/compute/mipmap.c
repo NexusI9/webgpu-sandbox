@@ -1,4 +1,4 @@
-#include "core.h"
+#include "mipmap.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
@@ -8,44 +8,34 @@
 #include <math.h>
 #include <stdint.h>
 
-static inline void mipmap_draw(WGPUTexture, const MipmapCreateDescriptor *);
+static inline void compute_pass_mipmap_draw(ComputePass *,
+                                            const MipmapDescriptor *);
 
-static inline void mipmap_dispatch(WGPUComputePassEncoder,
-                                   const TextureResolution,
-                                   const TextureResolution, const mip_t);
+static inline void compute_pass_mipmap_dispatch(WGPUComputePassEncoder,
+                                                const TextureResolution,
+                                                const TextureResolution,
+                                                const mip_t);
 
-MipmapStatus mipmap_create(WGPUTexture texture,
-                           const MipmapCreateDescriptor *desc) {
+MipmapStatus compute_pass_mipmap(ComputePass *pass,
+                                 const MipmapDescriptor *desc) {
 
   // VERBOSE_PROCESS("Generating mipmaps...");
   // TIMER("Mipmap Generation", {});
-  mipmap_draw(texture, desc);
+  compute_pass_mipmap_draw(pass, desc);
 
   return MipmapStatus_Success;
 }
 
-void mipmap_draw(WGPUTexture texture, const MipmapCreateDescriptor *desc) {
+void compute_pass_mipmap_draw(ComputePass *pass, const MipmapDescriptor *desc) {
 
   WGPUCommandEncoder command_encoder =
       wgpuDeviceCreateCommandEncoder(desc->device, NULL);
 
-  const mip_t mip_count = wgpuTextureGetMipLevelCount(texture);
+  const mip_t mip_count = wgpuTextureGetMipLevelCount(desc->texture);
 
   const WGPUComputePipeline mipmap_pipeline =
       std_compute_pipeline(ComputePipelineType_Mipmap)->handle;
 
-  WGPUSampler mipmap_sampler = wgpuDeviceCreateSampler(
-      desc->device, &(WGPUSamplerDescriptor){
-                        .label = "Mipmap sampler",
-                        .addressModeU = WGPUAddressMode_ClampToEdge,
-                        .addressModeV = WGPUAddressMode_ClampToEdge,
-                        .addressModeW = WGPUAddressMode_ClampToEdge,
-                        .magFilter = WGPUFilterMode_Linear,
-                        .minFilter = WGPUFilterMode_Linear,
-                        .mipmapFilter = WGPUMipmapFilterMode_Linear,
-                        .lodMinClamp = 0.0f,
-                        .lodMaxClamp = (float)mip_count,
-                    });
 
   for (uint32_t i = 0; i < desc->layer_count; i++) {
     for (mip_t j = 1; j < mip_count; j++) {
@@ -59,7 +49,7 @@ void mipmap_draw(WGPUTexture texture, const MipmapCreateDescriptor *desc) {
 
       /* === BIND TARGET VIEWS === */
       WGPUTextureViewDescriptor src_view_desc = {
-          .format = wgpuTextureGetFormat(texture),
+          .format = wgpuTextureGetFormat(desc->texture),
           .dimension = WGPUTextureViewDimension_2D,
           .baseMipLevel = j - 1,
           .mipLevelCount = 1,
@@ -67,15 +57,16 @@ void mipmap_draw(WGPUTexture texture, const MipmapCreateDescriptor *desc) {
           .arrayLayerCount = 1,
       };
 
+
       WGPUTextureViewDescriptor dst_view_desc = src_view_desc;
       dst_view_desc.baseMipLevel = j;
 
-      WGPUTextureView src_view = wgpuTextureCreateView(texture, &src_view_desc);
-      WGPUTextureView dst_view = wgpuTextureCreateView(texture, &dst_view_desc);
+      WGPUTextureView src_view = wgpuTextureCreateView(desc->texture, &src_view_desc);
+      WGPUTextureView dst_view = wgpuTextureCreateView(desc->texture, &dst_view_desc);
 
       WGPUBindGroupEntry entries[3] = {
           {.binding = 0, .textureView = src_view},
-          {.binding = 1, .sampler = mipmap_sampler},
+          {.binding = 1, .sampler = pass->sampler},
           {.binding = 2, .textureView = dst_view},
       };
 
@@ -89,8 +80,8 @@ void mipmap_draw(WGPUTexture texture, const MipmapCreateDescriptor *desc) {
 
       wgpuComputePassEncoderSetBindGroup(compute_pass, 0, bind_group, 0, NULL);
 
-      mipmap_dispatch(compute_pass, wgpuTextureGetWidth(texture),
-                      wgpuTextureGetHeight(texture), j);
+      compute_pass_mipmap_dispatch(compute_pass, wgpuTextureGetWidth(desc->texture),
+                                   wgpuTextureGetHeight(desc->texture), j);
 
       /* === PASS END === */
       wgpuComputePassEncoderEnd(compute_pass);
@@ -109,11 +100,12 @@ void mipmap_draw(WGPUTexture texture, const MipmapCreateDescriptor *desc) {
 
   wgpuCommandEncoderRelease(command_encoder);
   wgpuCommandBufferRelease(compute_buffer);
-  wgpuSamplerRelease(mipmap_sampler);
 }
 
-void mipmap_dispatch(WGPUComputePassEncoder pass, const TextureResolution width,
-                     const TextureResolution height, const mip_t mip) {
+void compute_pass_mipmap_dispatch(WGPUComputePassEncoder pass,
+                                  const TextureResolution width,
+                                  const TextureResolution height,
+                                  const mip_t mip) {
 
   mip_t mip_width = glm_max(1, width >> mip);
   mip_t mip_height = glm_max(1, height >> mip);
