@@ -97,7 +97,6 @@ void scene_event_html_commons(Scene *scene) {
         &scene->renderer.ssbo, SSBOType_ProbePlaneReflection,
         probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
   }
-
 }
 
 void scene_event_html_update_meshes(Scene *data) {

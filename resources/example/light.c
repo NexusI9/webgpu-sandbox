@@ -30,18 +30,19 @@ void example_light(Scene *scene) {
                       },
                       LightShadow_Enabled, NULL);
 
-  scene_add_spot_light(scene,
-                       &(SpotLightDescriptor){
-                           .color = {1.0f, 1.0f, 1.0f},
-                           .intensity = 2.0f,
-                           .cutoff = 45.0f,
-                           .angle = 90.0f,
-                           .inner_cutoff = 30.0f,
-                           .target = {0.0f, 0.0f, 0.0f},
-                           .position = {3.0f, 4.0f, -4.0f},
-                       },
-                       LightShadow_Enabled, NULL);
-
+  /*
+    scene_add_spot_light(scene,
+                         &(SpotLightDescriptor){
+                             .color = {1.0f, 1.0f, 1.0f},
+                             .intensity = 2.0f,
+                             .cutoff = 45.0f,
+                             .angle = 90.0f,
+                             .inner_cutoff = 30.0f,
+                             .target = {0.0f, 0.0f, 0.0f},
+                             .position = {3.0f, 4.0f, -4.0f},
+                         },
+                         LightShadow_Enabled, NULL);
+  */
   scene_add_ambient_light(scene,
                           &(AmbientLightDescriptor){
                               .color = {1.0f, 1.0f, 1.0f},

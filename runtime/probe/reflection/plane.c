@@ -169,14 +169,14 @@ void probe_reflection_plane_list_draw_callback(void *data) {
 
   render_pass_command_end(&list->pass);
 
-  //compute_pass_kawase(&scene->renderer.draw.compute_pass,
-  //                    &(KawaseDescriptor){
-  //                        .texture = list->pass.color.texture,
-  //                        .device = list->pass.device,
-  //                        .queue = list->pass.queue,
-  //                        .layer_count = list->length,
-  //                        .pass_count = 1,
-  //                    });
+  compute_pass_kawase(&scene->renderer.draw.compute_pass,
+                      &(KawaseDescriptor){
+                          .texture = list->pass.color.texture,
+                          .device = list->pass.device,
+                          .queue = list->pass.queue,
+                          .layer_count = list->length,
+                          .pass_count = 1,
+                      });
 }
 
 void probe_reflection_plane_create(ProbeReflectionPlane *probe,
