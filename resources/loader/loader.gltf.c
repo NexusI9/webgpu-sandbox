@@ -349,8 +349,6 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
         // TODO: Add a custom path for different shader in loader configuration
         cgltf_material *material = current_primitive.material;
 
-        printf("mesh: %s <=> material: %s\n", target_mesh->name,
-               material->name);
         mesh_shader_create(target_mesh, &(ShaderCreateDescriptor){
                                             .pipeline = std_render_pipeline(
                                                 RenderPipelineType_PBR),
@@ -483,16 +481,16 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
 
   {
     // DELETE ME DEBUG
-    printf("[[%s]]\n", material->name);
-    printf("\tmetallic: %f\n", pbr.metallic_factor);
-    printf("\troughness: %f\n", pbr.roughness_factor);
-    printf("\tocclusion: %f\n", pbr.occlusion_strength);
-    printf("\tspecular: %f\n", pbr.roughness_factor);
-    printf("\tnormal: %f\n", pbr.normal_scale);
-    printf("\temissive:");
-    print_vec3(pbr.emissive_factor);
-    printf("\tbase color:");
-    print_vec4(pbr.base_color_factor);
+    //printf("[[%s]]\n", material->name);
+    //printf("\tmetallic: %f\n", pbr.metallic_factor);
+    //printf("\troughness: %f\n", pbr.roughness_factor);
+    //printf("\tocclusion: %f\n", pbr.occlusion_strength);
+    //printf("\tspecular: %f\n", pbr.roughness_factor);
+    //printf("\tnormal: %f\n", pbr.normal_scale);
+    //printf("\temissive:");
+    //print_vec3(pbr.emissive_factor);
+    //printf("\tbase color:");
+    //print_vec4(pbr.base_color_factor);
   }
 }
 

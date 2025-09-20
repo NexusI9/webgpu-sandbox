@@ -24,7 +24,6 @@ static Scene main_scene;
 static void init_scene();
 
 void init_scene() {
-
   scene_create(&main_scene,
                &(SceneCreateDescriptor){
                    .renderer =

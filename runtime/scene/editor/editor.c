@@ -2,15 +2,17 @@
 
 #include <stddef.h>
 
+#include "object/grid/grid.h"
+#include "object/list/list.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/build.h"
-#include "object/grid/grid.h"
-#include "object/list/list.h"
+#include "runtime/scene/core.h"
+#include "runtime/scene/editor/ui/core.h"
+#include "runtime/scene/layer.h"
+#include "runtime/scene/renderer/core.h"
 #include "selection/core.h"
 #include "selection/gizmo/core.h"
-#include "runtime/scene/core.h"
-#include "runtime/scene/layer.h"
 
 static inline void scene_editor_gizmo_create_grid(Scene *);
 static inline void scene_editor_gizmo_create_transform(Scene *);
@@ -23,6 +25,13 @@ void scene_editor_init(Scene *scene) {
 
   // init selection list & related events
   scene_selection_init(scene);
+
+  scene_editor_ui_init(&scene->editor.ui, &(SceneEditorUIDescriptor){
+                                              .height = &scene->viewport.height,
+                                              .width = &scene->viewport.width,
+                                          });
+  scene_renderer_add_draw_callback(
+      &scene->renderer, scene_editor_ui_draw_callback, (void *)scene);
 
   // init editor related gizmos
   scene_editor_gizmo_create_grid(scene);
@@ -70,18 +79,17 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
 
   Gizmo *gizmo = &scene->editor.gizmo.transform;
   gizmo_create(gizmo, &(GizmoCreateDescriptor){
-                                    .camera = scene->active_camera,
-                                    .device = scene_device(scene),
-                                    .queue = scene_queue(scene),
-                                    .viewport = &scene->viewport,
-                                    .list = &scene->meshes,
-                                });
+                          .camera = scene->active_camera,
+                          .device = scene_device(scene),
+                          .queue = scene_queue(scene),
+                          .viewport = &scene->viewport,
+                          .list = &scene->meshes,
+                      });
 
   for (size_t i = 0; i < 3; i++) {
     // add the gizmo interactive handles to 'Gizmo Transform' layer as to only
     // include this layer for he raycast selection
-    scene_layer_set_insert_mesh_ref_list(&scene->layers,
-                                         SCENE_LAYER_GIZMO,
+    scene_layer_set_insert_mesh_ref_list(&scene->layers, SCENE_LAYER_GIZMO,
                                          &gizmo->interactive_handles[i]);
 
     // build each guizmo mode mesh ref list

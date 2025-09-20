@@ -2,16 +2,23 @@
 #define _SCENE_EDITOR_UI_CORE_H_
 
 typedef enum {
-  SceneUIStatus_Success,
-  SceneUIStatus_UndefError,
+  SceneEditorUIStatus_Success,
+  SceneEditorUIStatus_UndefError,
 } SceneEditorUIStatus;
 
 typedef struct {
-
+  int *width;
+  int *height;
 } SceneEditorUI;
 
-SceneEditorUIStatus scene_ui_init(SceneEditorUI *);
+typedef struct {
+  int *width;
+  int *height;
+} SceneEditorUIDescriptor;
 
-void scene_ui_draw_callback(void *);
+SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *,
+                                         const SceneEditorUIDescriptor *);
+
+void scene_editor_ui_draw_callback(void *);
 
 #endif

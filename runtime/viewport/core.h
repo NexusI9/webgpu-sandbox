@@ -20,8 +20,8 @@ typedef struct {
   float near_clip;
   float far_clip;
   float aspect;
-  uint32_t width;
-  uint32_t height;
+  int width;
+  int height;
   cclock *clock;
 } ViewportCreateDescriptor;
 
@@ -30,8 +30,8 @@ typedef struct {
   float fov;
   float near_clip;
   float far_clip;
-  uint32_t width;
-  uint32_t height;
+  int width;
+  int height;
   float aspect;
   mat4 projection;
   

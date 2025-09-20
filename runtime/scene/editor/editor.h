@@ -8,6 +8,7 @@
 #include "runtime/mesh/list.h"
 #include "runtime/scene/core.h"
 
+/* DELETEME
 typedef struct {
 
   WGPUDevice device;
@@ -34,6 +35,7 @@ typedef struct {
   } gizmo;
 
 } SceneEditorDescriptor;
+*/
 
 void scene_editor_init(Scene *);
 

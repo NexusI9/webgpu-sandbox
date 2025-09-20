@@ -96,8 +96,7 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *list) {
   return dyli_free((void *)list->entries, &list->capacity, &list->length);
 }
 
-// DEBUG
-static int y = 0;
+
 void probe_reflection_plane_list_draw_callback(void *data) {
 
   // temp
