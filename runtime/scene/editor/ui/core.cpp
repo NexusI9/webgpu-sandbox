@@ -3,6 +3,7 @@
 #include "runtime/texture/core.h"
 #include "stdio.h"
 
+#include "./style/style.neon.hpp"
 #include "include/imgui/imgui.h"
 #include "include/imgui/imgui_impl_wgpu.h"
 #include "webgpu/webgpu.h"
@@ -13,6 +14,7 @@
 ImGuiContext *g_imgui_context;
 
 static inline void scene_editor_ui_create_texture(SceneEditorUI *);
+static inline void scene_editor_ui_create_scene_tree(SceneEditorUI *, Scene *);
 
 SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
                                          const SceneEditorUIDescriptor *desc) {
@@ -33,6 +35,8 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   {
     g_imgui_context = ImGui::CreateContext();
     ImGui::SetCurrentContext(g_imgui_context);
+    scene_editor_ui_style_neon();
+    
     ImGui_ImplWGPU_InitInfo info;
 
     info.Device = ui->device;
@@ -46,8 +50,6 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   return SceneEditorUIStatus_Success;
 }
 
-// DEBUG
-static int t = 0;
 void scene_editor_ui_draw_callback(void *data) {
   Scene *scene = (Scene *)data;
   SceneEditorUI *ui = &scene->editor.ui;
@@ -95,9 +97,7 @@ void scene_editor_ui_draw_callback(void *data) {
   {
     ImGui_ImplWGPU_NewFrame();
     ImGui::NewFrame();
-
-    ImGui::Button("Click me");
-
+    scene_editor_ui_create_scene_tree(ui, scene);
     ImGui::Render();
     ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), ui->pass_encoder);
   }
@@ -142,5 +142,30 @@ void scene_editor_ui_create_texture(SceneEditorUI *ui) {
   };
 
   ui->depth_view = wgpuTextureCreateView(ui->depth_texture, &view_desc);
+}
 
+static const int tree_width = 300;
+static const int tree_height = 400;
+void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
+
+  ImGui::SetNextWindowPos(ImVec2(*ui->width - tree_width, 0));
+  ImGui::SetNextWindowSize(ImVec2(tree_width, tree_height));
+  ImGui::Begin("Scene", nullptr,
+               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoMove);
+  {
+    size_t i;
+    // === Meshes ===
+    for (i = 0; i < scene->meshes.length; i++) {
+      Mesh *mesh = &scene->meshes.entries[i];
+      ImGuiTreeNodeFlags flags =
+          ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+      ImGui::TreeNodeEx(mesh->name, flags);
+    }
+
+    // === Lights ===
+
+    // === Probes ===
+  }
+  ImGui::End();
 }
