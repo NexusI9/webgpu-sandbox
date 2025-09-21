@@ -181,9 +181,13 @@ bundle_shader:
 	echo ">> Done ($${elapsed}s)"
 
 
-wasm: $(OBJS_C) $(OBJS_CXX) $(LIB_OBJS)
+build_objects: $(OBJS_C) $(OBJS_CXX) $(LIB_OBJS)
+	
+	
+wasm:
+	make build_objects
 	$(shell mkdir -p $(PATH_WEBSITE_WGPU))
-	em++ $(DEV_FLAGS) $(OBJS_C) $(OBJS_CXX) \
+	em++ $(DEV_FLAGS) $(OBJS_C) $(OBJS_CXX) $(LIB_OBJS)\
 	     -o $(OUTPUT_WEBSITE_WGPU) \
 	     $(WASM_FLAGS) \
 	     $(ASAN) \

@@ -26,12 +26,15 @@ void scene_editor_init(Scene *scene) {
   // init selection list & related events
   scene_selection_init(scene);
 
-  scene_editor_ui_init(&scene->editor.ui, &(SceneEditorUIDescriptor){
-                                              .height = &scene->viewport.height,
-                                              .width = &scene->viewport.width,
-                                          });
-  scene_renderer_add_draw_callback(
-      &scene->renderer, scene_editor_ui_draw_callback, (void *)scene);
+  scene_editor_ui_init(&scene->editor.ui,
+                       &(SceneEditorUIDescriptor){
+                           .height = &scene->viewport.height,
+                           .width = &scene->viewport.width,
+                           .swapchain = &scene->renderer.wgpu.swapchain,
+                           .device = scene_device(scene),
+                           .queue = scene_queue(scene),
+                           .clock = &scene->renderer.clock,
+                       });
 
   // init editor related gizmos
   scene_editor_gizmo_create_grid(scene);

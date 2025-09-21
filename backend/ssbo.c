@@ -136,7 +136,7 @@ SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
   // update ssbo buffer at index
   SSBOBuffer *ssbo = &manager->buffers[type];
   size_t offset = slot->id * ssbo->type_size;
-
+  
   wgpuQueueWriteBuffer(manager->queue, ssbo->handle, offset,
                        (uint8_t *)ssbo->entries + offset, ssbo->type_size);
 

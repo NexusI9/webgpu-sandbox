@@ -69,7 +69,7 @@ void scene_renderer_init(SceneRenderer *renderer,
                           .max_height = renderer->context.height,
                           .max_width = renderer->context.width,
                       });
-    
+
     ubo_init(&renderer->ubo, scene_renderer_queue(renderer),
              scene_renderer_device(renderer));
 
@@ -216,14 +216,6 @@ void scene_renderer_render(void *desc) {
    with it (ao, shadow mapping...). Also call the main loop.
  */
 void scene_renderer_draw(SceneRenderer *renderer) {
-  // set draw layouts callback
-  if (renderer->draw.render_pass->length == 0) {
-    VERBOSE_WARNING("No render pass were provided for the scene renderer.");
-  } else {
-    scene_renderer_add_draw_callback(
-        renderer, scene_renderer_draw_layout_callback, (void *)renderer);
-  }
-
   // call main loop
   emscripten_set_main_loop_arg(
       scene_renderer_render,
