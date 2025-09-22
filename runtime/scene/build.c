@@ -42,7 +42,7 @@ static inline void scene_build_mesh_boundbox(Scene *, Mesh *,
    which the mesh will be added to.
  */
 void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
-
+  
   SSBOManager *ssbo = &scene->renderer.ssbo;
   UBOManager *ubo = &scene->renderer.ubo;
 

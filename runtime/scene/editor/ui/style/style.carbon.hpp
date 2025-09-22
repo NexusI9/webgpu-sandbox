@@ -25,8 +25,8 @@ inline void scene_editor_ui_style_carbon() {
   style.Colors[ImGuiCol_Border] = ImVec4(1.00f, 1.00f, 1.00f, 0.65f);
   style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
   style.Colors[ImGuiCol_FrameBg] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
-  style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.80f, 0.80f, 0.80f, 0.27f);
-  style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.80f, 0.81f, 0.86f, 0.66f);
+  style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
+  style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
   style.Colors[ImGuiCol_TitleBg] = ImVec4(0.03f, 0.03f, 0.03f, 1.0f);
   style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.54f);
   style.Colors[ImGuiCol_TitleBgActive] = ImVec4(1.00f, 1.00f, 1.00f, 0.27f);

@@ -1,3 +1,4 @@
+
 //  RESOURCES
 //  https://github.com/seyhajin/webgpu-wasm-c
 //  https://developer.chrome.com/docs/web-platform/webgpu/build-app?hl=en
@@ -42,7 +43,7 @@ void init_scene() {
                        },
                });
 
-  example_light(&main_scene);
+  //example_light(&main_scene);
 }
 
 int main(int argc, const char *argv[]) {
