@@ -1,20 +1,29 @@
 #include "core.h"
-#include "runtime/scene/core.h"
-#include "runtime/texture/core.h"
-#include "stdio.h"
-
-#include "./style/style.neon.hpp"
+#include "./style/style.carbon.hpp"
 #include "include/imgui/imgui.h"
 #include "include/imgui/imgui_impl_wgpu.h"
-#include "webgpu/webgpu.h"
+#include "runtime/input/core.h"
+#include "runtime/scene/core.h"
+#include "runtime/scene/editor/selection/gizmo/core.h"
+#include "runtime/scene/editor/selection/utils.h"
+#include "runtime/texture/core.h"
+#include "stdio.h"
 
 /* TODO: make context available in the scene editor ui, but may interfere witht
  * the "pure C" approach since SceneEditorUI is included in Scene.
  */
-ImGuiContext *g_imgui_context;
+static ImGuiContext *imgui_context;
 
+static inline void scene_editor_ui_set_icon_cell(SceneEditorUI *);
 static inline void scene_editor_ui_create_texture(SceneEditorUI *);
+
+static inline bool scene_editor_ui_create_button_icon(SceneEditorUI *,
+                                                      const SceneEditorUIIcon,
+                                                      const char *, ImVec2);
 static inline void scene_editor_ui_create_scene_tree(SceneEditorUI *, Scene *);
+static inline void scene_editor_ui_create_gizmo(SceneEditorUI *, Scene *);
+static inline void scene_editor_ui_create_top_bar(SceneEditorUI *, Scene *);
+static inline void scene_editor_ui_create_left_panel(SceneEditorUI *, Scene *);
 
 SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
                                          const SceneEditorUIDescriptor *desc) {
@@ -24,19 +33,21 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   {
     ui->width = desc->width;
     ui->height = desc->height;
+    ui->dpi = desc->dpi;
     ui->swapchain = desc->swapchain;
     ui->device = desc->device;
     ui->clock = desc->clock;
     ui->queue = desc->queue;
 
     scene_editor_ui_create_texture(ui);
+    scene_editor_ui_set_icon_cell(ui);
   }
 
   {
-    g_imgui_context = ImGui::CreateContext();
-    ImGui::SetCurrentContext(g_imgui_context);
-    scene_editor_ui_style_neon();
-    
+    imgui_context = ImGui::CreateContext();
+    ImGui::SetCurrentContext(imgui_context);
+    scene_editor_ui_style_carbon();
+
     ImGui_ImplWGPU_InitInfo info;
 
     info.Device = ui->device;
@@ -92,12 +103,22 @@ void scene_editor_ui_draw_callback(void *data) {
     io.DisplaySize.x = (float)*ui->width;
     io.DisplaySize.y = (float)*ui->height;
     io.DeltaTime = ui->clock->delta;
+    io.DisplayFramebufferScale.x = 1.0f;
+    io.DisplayFramebufferScale.y = 1.0f;
+    io.FontGlobalScale = 1.0f;
+    io.MousePos = ImVec2(g_input.mouse.x, g_input.mouse.y);
+    io.MouseDown[0] = g_input.mouse.state;
+    io.MouseWheel = g_input.mouse.wheel.deltaX;
   }
 
   {
     ImGui_ImplWGPU_NewFrame();
     ImGui::NewFrame();
-    scene_editor_ui_create_scene_tree(ui, scene);
+    {
+      scene_editor_ui_create_top_bar(ui, scene);
+      scene_editor_ui_create_scene_tree(ui, scene);
+      scene_editor_ui_create_gizmo(ui, scene);
+    }
     ImGui::Render();
     ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), ui->pass_encoder);
   }
@@ -111,41 +132,96 @@ void scene_editor_ui_draw_callback(void *data) {
   }
 }
 
-void scene_editor_ui_create_texture(SceneEditorUI *ui) {
+void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
 
-  WGPUTextureDescriptor tex_desc = {
-      .label = "Scene UI Depth Texture",
-      .dimension = WGPUTextureDimension_2D,
-      .size =
-          {
-              .width = (uint32_t)*ui->width,
-              .height = (uint32_t)*ui->height,
-              .depthOrArrayLayers = 1,
-          },
-      .mipLevelCount = 1,
-      .sampleCount = 1,
-      .format = TEXTURE_FORMAT_DEPTH_DEFAULT,
-      .usage = WGPUTextureUsage_RenderAttachment,
-  };
+  // define icon position on atlas
+  ui->icon_uv[SceneEditorUIIcon_RenderMode_Boundbox] = {.cell = {5, 0}};
+  ui->icon_uv[SceneEditorUIIcon_RenderMode_Wireframe] = {.cell = {6, 0}};
+  ui->icon_uv[SceneEditorUIIcon_RenderMode_Solid] = {.cell = {7, 0}};
+  ui->icon_uv[SceneEditorUIIcon_RenderMode_Texture] = {.cell = {8, 0}};
+  ui->icon_uv[SceneEditorUIIcon_Gizmo_Position] = {.cell = {9, 0}};
+  ui->icon_uv[SceneEditorUIIcon_Gizmo_Rotate] = {.cell = {10, 0}};
+  ui->icon_uv[SceneEditorUIIcon_Gizmo_Scale] = {.cell = {11, 0}};
 
-  ui->depth_texture = wgpuDeviceCreateTexture(ui->device, &tex_desc);
-
-  WGPUTextureViewDescriptor view_desc = {
-      .label = "Scene UI Depth View",
-      .format = TEXTURE_FORMAT_DEPTH_DEFAULT,
-      .dimension = WGPUTextureViewDimension_2D,
-      .aspect = WGPUTextureAspect_DepthOnly,
-      .baseMipLevel = 0,
-      .mipLevelCount = 1,
-      .baseArrayLayer = 0,
-      .arrayLayerCount = 1,
-  };
-
-  ui->depth_view = wgpuTextureCreateView(ui->depth_texture, &view_desc);
+  // generate uvs
+  for (uint8_t i = 0; i < SCENE_EDITOR_UI_ICON_COUNT; i++)
+    texture_atlas_cell_uv(&ui->atlas_texture, ui->icon_uv[i].cell,
+                          ui->icon_uv[i].uv0, ui->icon_uv[i].uv1);
 }
 
+void scene_editor_ui_create_texture(SceneEditorUI *ui) {
+
+  // Depth texture
+  {
+    WGPUTextureDescriptor tex_desc = {
+        .label = "Scene UI Depth Texture",
+        .dimension = WGPUTextureDimension_2D,
+        .size =
+            {
+                .width = (uint32_t)*ui->width,
+                .height = (uint32_t)*ui->height,
+                .depthOrArrayLayers = 1,
+            },
+        .mipLevelCount = 1,
+        .sampleCount = 1,
+        .format = TEXTURE_FORMAT_DEPTH_DEFAULT,
+        .usage = WGPUTextureUsage_RenderAttachment,
+    };
+
+    ui->depth_texture = wgpuDeviceCreateTexture(ui->device, &tex_desc);
+
+    WGPUTextureViewDescriptor view_desc = {
+        .label = "Scene UI Depth View",
+        .format = TEXTURE_FORMAT_DEPTH_DEFAULT,
+        .dimension = WGPUTextureViewDimension_2D,
+        .aspect = WGPUTextureAspect_DepthOnly,
+        .baseMipLevel = 0,
+        .mipLevelCount = 1,
+        .baseArrayLayer = 0,
+        .arrayLayerCount = 1,
+    };
+
+    ui->depth_view = wgpuTextureCreateView(ui->depth_texture, &view_desc);
+  }
+
+  // Icon Atlas
+  {
+    TextureAtlasDescriptor atlas_desc = {
+        .cell_count = {16, 16},
+        .cell_size = {128, 128},
+        .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+        .device = ui->device,
+        .queue = ui->queue,
+        .label = "Scene UI Icon Atlas",
+        .path = "./resources/assets/texture/ui/icon_atlas.png",
+    };
+    texture_atlas_create(&ui->atlas_texture, &atlas_desc);
+  }
+}
+
+bool scene_editor_ui_create_button_icon(SceneEditorUI *ui,
+                                        const SceneEditorUIIcon icon,
+                                        const char *id, ImVec2 scale) {
+
+  SceneEditorUIIconUV *uv = &ui->icon_uv[icon];
+  return ImGui::ImageButton(id, (ImTextureRef)ui->atlas_texture.view, scale,
+                            ImVec2(uv->uv0[0], uv->uv0[1]),
+                            ImVec2(uv->uv1[0], uv->uv1[1]));
+}
+
+/* ===  SIZES === */
 static const int tree_width = 300;
 static const int tree_height = 400;
+
+static const int top_bar_height = 30;
+
+static const int gizmo_width = 100;
+static const int gizmo_height = 400;
+static const int gizmo_margin = 20;
+
+static const int button_render_mode_size = 15;
+static const int button_gizmo_size = 30;
+
 void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
 
   ImGui::SetNextWindowPos(ImVec2(*ui->width - tree_width, 0));
@@ -160,12 +236,89 @@ void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
       Mesh *mesh = &scene->meshes.entries[i];
       ImGuiTreeNodeFlags flags =
           ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+      ImGui::PushID(mesh->id);
       ImGui::TreeNodeEx(mesh->name, flags);
+      ImGui::PopID();
     }
 
     // === Lights ===
 
     // === Probes ===
+  }
+  ImGui::End();
+}
+
+void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
+
+  ImGui::SetNextWindowPos(
+      ImVec2(gizmo_margin, (int)(*ui->height / 2) - (int)(gizmo_height / 2)));
+  ImGui::SetNextWindowSize(ImVec2(gizmo_width, gizmo_height));
+  ImGui::Begin("Gizmo", nullptr,
+               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+                   ImGuiWindowFlags_NoScrollbar |
+                   ImGuiWindowFlags_NoBackground);
+  {
+    if (scene_editor_ui_create_button_icon(
+            ui, SceneEditorUIIcon_Gizmo_Position, "Position",
+					   ImVec2(button_gizmo_size, button_gizmo_size))) {
+      printf("click\n");
+      scene_gizmo_hide(scene);
+      scene->editor.gizmo.transform.mode = GizmoMode_Position;
+      scene_gizmo_show(scene);
+    }
+
+    ImGui::Spacing();
+
+    if (scene_editor_ui_create_button_icon(
+            ui, SceneEditorUIIcon_Gizmo_Rotate, "Rotate",
+            ImVec2(button_gizmo_size, button_gizmo_size))) {
+      scene_gizmo_hide(scene);
+      scene->editor.gizmo.transform.mode = GizmoMode_Rotation;
+      scene_gizmo_show(scene);
+    }
+
+    ImGui::Spacing();
+
+    if (scene_editor_ui_create_button_icon(
+            ui, SceneEditorUIIcon_Gizmo_Scale, "Scale",
+            ImVec2(button_gizmo_size, button_gizmo_size))) {
+      scene_gizmo_hide(scene);
+      scene->editor.gizmo.transform.mode = GizmoMode_Scale;
+      scene_gizmo_show(scene);
+    }
+  }
+  ImGui::End();
+}
+
+void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
+  ImGui::SetNextWindowPos(ImVec2(0, 0));
+  ImGui::SetNextWindowSize(ImVec2(*ui->width - tree_width, top_bar_height));
+  ImGui::Begin("Top bar", nullptr,
+               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+  {
+    scene_editor_ui_create_button_icon(
+        ui, SceneEditorUIIcon_RenderMode_Boundbox, "Boundbox",
+        ImVec2(button_render_mode_size, button_render_mode_size));
+
+    ImGui::SameLine();
+
+    scene_editor_ui_create_button_icon(
+        ui, SceneEditorUIIcon_RenderMode_Wireframe, "Wireframe",
+        ImVec2(button_render_mode_size, button_render_mode_size));
+
+    ImGui::SameLine();
+
+    scene_editor_ui_create_button_icon(
+        ui, SceneEditorUIIcon_RenderMode_Solid, "Solid",
+        ImVec2(button_render_mode_size, button_render_mode_size));
+
+    ImGui::SameLine();
+
+    scene_editor_ui_create_button_icon(
+        ui, SceneEditorUIIcon_RenderMode_Texture, "Texture",
+        ImVec2(button_render_mode_size, button_render_mode_size));
   }
   ImGui::End();
 }

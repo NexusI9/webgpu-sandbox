@@ -6,8 +6,8 @@
 #include "../core.h"
 #include "../utils.h"
 #include "runtime/input/core.h"
-#include "runtime/mesh/core.h"
 #include "runtime/input/keyrecord.h"
+#include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "utils/vector/core.h"
 
@@ -171,7 +171,7 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
 
     // show gizmo
     scene_gizmo_pos_to_selection(gizmo, &scene->editor.selection,
-                                           &scene->renderer.ssbo);
+                                 &scene->renderer.ssbo);
     scene_gizmo_show(scene);
   }
 }
@@ -182,9 +182,6 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
   Scene *scene = (Scene *)data;
   Gizmo *gizmo = &scene->editor.gizmo.transform;
 
-  // hide gizmo
-  scene_gizmo_hide(scene);
-
   // search for same sequence in static array and assign mode to gizmo
   for (size_t i = 0; i < seq_count_mode; i++)
     if (keyrec_sequence_equal(selection_key_sequences_mode[i].sequence,
@@ -194,11 +191,14 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
       gizmo_reset_color_uniform(gizmo);
     }
 
+  // hide gizmo
+  scene_gizmo_hide(scene);
+
   // show gizmo if has selection
   if (scene_selection_length(&scene->editor.selection)) {
     // update location to selection average
     scene_gizmo_pos_to_selection(gizmo, &scene->editor.selection,
-                                           &scene->renderer.ssbo);
+                                 &scene->renderer.ssbo);
     scene_gizmo_show(scene);
   }
 }

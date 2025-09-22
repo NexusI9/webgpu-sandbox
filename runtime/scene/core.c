@@ -55,14 +55,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
       scene_layer_init(&scene->layers);
       scene_light_list_init(scene);
       scene_probe_reflection_init(scene, desc->renderer->multisampling_count);
-      scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
-                                          .camera = scene->active_camera,
-                                          .device = scene_device(scene),
-                                          .queue = scene_queue(scene),
-                                          .viewport = &scene->viewport,
-                                          .pool = &scene->meshes,
-                                          .ssbo = &scene->renderer.ssbo,
-                                      });
     }
 
     {
@@ -86,6 +78,14 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     {
       /*  ===== EDITOR =====  */
       scene_editor_init(scene); // EDITORONLY
+      scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
+                                          .camera = scene->active_camera,
+                                          .device = scene_device(scene),
+                                          .queue = scene_queue(scene),
+                                          .viewport = &scene->viewport,
+                                          .pool = &scene->meshes,
+                                          .ssbo = &scene->renderer.ssbo,
+                                      });
     }
 
     {

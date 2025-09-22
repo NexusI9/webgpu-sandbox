@@ -1,5 +1,5 @@
-#ifndef _SCENE_EDITOR_UI_STYLE_NEON_
-#define _SCENE_EDITOR_UI_STYLE_NEON_
+#ifndef _SCENE_EDITOR_UI_STYLE_NEON_H_
+#define _SCENE_EDITOR_UI_STYLE_NEON_H_
 
 // https://github.com/GraphicsProgramming/dear-imgui-styles?tab=readme-ov-file
 

@@ -8,7 +8,8 @@
 
 #include "utils/vector/vector.h"
 
-#define TEXTURE_MIN_SIZE 64
+#define TEXTURE_HEIGHT_AUTO 0
+#define TEXTURE_WIDTH_AUTO 0
 #define TEXTURE_FORMAT_OFFSCREEN_DEFAULT WGPUTextureFormat_RGBA8Unorm
 #define TEXTURE_FORMAT_ONSCREEN_DEFAULT WGPUTextureFormat_BGRA8Unorm
 #define TEXTURE_FORMAT_DEPTH_DEFAULT WGPUTextureFormat_Depth24Plus
@@ -38,6 +39,8 @@ typedef enum {
   TextureStatus_Success,
   TextureStatus_AllocFail,
   TextureStatus_FileError,
+  TextureStatus_CellOutOfBound,
+  TextureStatus_UndefError,
 } TextureStatus;
 
 typedef unsigned char *texture_data;

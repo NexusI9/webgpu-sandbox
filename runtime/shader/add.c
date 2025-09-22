@@ -176,9 +176,10 @@ void shader_add_texture(Shader *shader,
       dest->width = src->width;
       dest->height = src->height;
       dest->size = src->size;
-
+ 
       // generate texture + texture view from data & size
-      buffer_create_texture(&dest->texture_view,
+      WGPUTexture tmp_texture;
+      buffer_create_texture(&tmp_texture, &dest->texture_view,
                             &(CreateTextureDescriptor){
                                 .width = dest->width,
                                 .height = dest->height,

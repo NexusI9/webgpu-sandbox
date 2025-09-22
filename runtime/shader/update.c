@@ -1,18 +1,18 @@
 #include "update.h"
 
 #include <stdint.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "backend/buffer.h"
+#include "backend/std_texture/core.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "find.h"
 #include "utils.h"
-#include "webgpu/webgpu.h"
-#include "utils/system.h"
-#include "backend/std_texture/core.h"
 #include "utils/dyli.h"
+#include "utils/system.h"
+#include "webgpu/webgpu.h"
 
 /*TODO: BATCH UPDATE : like add, take a bunch of entry and ONLY REBUILD at the
  * end of update*/
@@ -225,7 +225,7 @@ shader_update_sampler(Shader *shader, const bind_group_index group_index,
     bound_sampler->minFilter = sampler->minFilter;
     bound_sampler->magFilter = sampler->magFilter;
     bound_sampler->mipmapFilter = sampler->mipmapFilter;
-    
+
     bound_sampler->sampler = wgpuDeviceCreateSampler(shader->device, sampler);
 
     // rebuild group
@@ -255,7 +255,8 @@ shader_update_texture(Shader *shader, const bind_group_index group_index,
 
     // generate texture + texture view from data & size
     WGPUTextureView new_view;
-    buffer_create_texture(&new_view,
+    WGPUTexture gpu_texture;
+    buffer_create_texture(&gpu_texture, &new_view,
                           &(CreateTextureDescriptor){
                               .width = texture->width,
                               .height = texture->height,

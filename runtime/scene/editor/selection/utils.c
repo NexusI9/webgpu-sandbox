@@ -20,8 +20,11 @@ void scene_gizmo_show(Scene *scene) {
 
 void scene_gizmo_hide(Scene *scene) {
   Gizmo *gizmo = &scene->editor.gizmo.transform;
+  
   MeshRefList *selection_list =
-      scene_pipeline(scene, ScenePipeline_Fixed_Selection);
+    scene_pipeline(scene, ScenePipeline_Fixed_Selection);
+
+  
   scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
                            ScenePipeline_Fixed_Front);
 }

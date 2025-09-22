@@ -1,22 +1,22 @@
 #include "core.h"
 
-#include <stddef.h>
 #include <cglm/vec3.h>
+#include <stddef.h>
 
 #include "./callback.h"
 #include "./rotate.h"
 #include "./scale.h"
 #include "./translate.h"
 #include "./utils.h"
+#include "runtime/camera/core.h"
+#include "runtime/geometry/plane/core.h"
 #include "runtime/input/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/ref_list_transform.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/raycast/core.h"
 #include "runtime/shader/update.h"
-#include "runtime/camera/core.h"
-#include "runtime/geometry/plane/core.h"
-#include "runtime/mesh/core.h"
 #include "runtime/viewport/core.h"
 #include "utils/vector/core.h"
 
@@ -64,8 +64,7 @@ void gizmo_create(Gizmo *gizmo, const GizmoCreateDescriptor *desc) {
    mistakes by adding multiple times the same gizmo or having two different ones
    at the same time.
  */
-void gizmo_update_mode(Gizmo *gizmo, MeshRefList *dest_list,
-                                 GizmoMode mode) {
+void gizmo_update_mode(Gizmo *gizmo, MeshRefList *dest_list, GizmoMode mode) {
 
   // search & remove active handles from the list
   gizmo_remove(gizmo, dest_list);
@@ -95,8 +94,7 @@ void gizmo_set_position(Gizmo *gizmo, vec3 position) {
   mesh_ref_list_set_position(&gizmo->handles[gizmo->mode], position);
 }
 
-void gizmo_set_rotation_add(Gizmo *gizmo, vec3 value,
-                                      const Axis axis) {
+void gizmo_set_rotation_add(Gizmo *gizmo, vec3 value, const Axis axis) {
   mesh_ref_list_set_rotation_axis(&gizmo->handles[gizmo->mode], value, axis);
 }
 
@@ -132,8 +130,7 @@ void gizmo_set_axis_from_mesh(Gizmo *gizmo, const Mesh *mesh) {
    offset.
 
  */
-void gizmo_set_active(Gizmo *gizmo, Camera *camera,
-                                Viewport *viewport) {
+void gizmo_set_active(Gizmo *gizmo, Camera *camera, Viewport *viewport) {
 
   // cache gizmo init position
   gizmo_origin(gizmo, &gizmo->cache.gizmo_init_position);

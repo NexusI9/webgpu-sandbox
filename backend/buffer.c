@@ -63,7 +63,7 @@ void buffer_create(WGPUBuffer *buffer, const CreateBufferDescriptor *bf) {
   wgpuQueueWriteBuffer(bf->queue, *buffer, 0, bf->data, bf->size);
 }
 
-void buffer_create_texture(WGPUTextureView *texture_view,
+void buffer_create_texture(WGPUTexture *texture, WGPUTextureView *view,
                            const CreateTextureDescriptor *tx,
                            BufferTextureMemory free) {
 
@@ -74,7 +74,8 @@ void buffer_create_texture(WGPUTextureView *texture_view,
 
   // create GPU texture handle (used for binding as texture view argument/
   // "texture gpu reference")
-  WGPUTexture texture = wgpuDeviceCreateTexture(
+  
+  *texture = wgpuDeviceCreateTexture(
       tx->device,
       &(WGPUTextureDescriptor){
           .size =
@@ -94,7 +95,7 @@ void buffer_create_texture(WGPUTextureView *texture_view,
   // upload texture to GPU
   wgpuQueueWriteTexture(tx->queue,
                         &(WGPUImageCopyTexture){
-                            .texture = texture,
+                            .texture = *texture,
                             .mipLevel = 0,
                             .origin = {0, 0, 0},
                             .aspect = WGPUTextureAspect_All,
@@ -116,7 +117,7 @@ void buffer_create_texture(WGPUTextureView *texture_view,
 
   // create texture view (used in binding process)
   // TODO: Check put texture desc instead of NULL
-  *texture_view = wgpuTextureCreateView(texture, NULL);
+  *view = wgpuTextureCreateView(*texture, NULL);
 }
 
 /**
