@@ -416,7 +416,10 @@ void scene_editor_ui_create_log(SceneEditorUI *ui, Scene *scene) {
                      ImVec2(uv->uv1[0], uv->uv1[1]));
         ImGui::SameLine();
         ImGui::TextColored((ImVec4 &)*text_color, "%s", g_logger.messages[i]);
-      } 
+      }
+
+      if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+        ImGui::SetScrollHereY(1.0f);
     }
     ImGui::EndChild();
   }
@@ -543,7 +546,9 @@ void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
 
 void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
   ImGui::SetNextWindowPos(ImVec2(top_bar_margin, top_bar_margin));
-
+  ImGui::PushStyleColor(ImGuiCol_WindowBg,
+                        (ImVec4 &)*theme_default_color
+                            [THEME_DEFAULT_COLOR_BACKGROUND_BLANKET_MEDIUM]);
   ImGui::SetNextWindowSize(ImVec2(
       *ui->width - right_panel_width - 2 * top_bar_margin, top_bar_height));
   ImGui::Begin("Top bar", nullptr,
@@ -573,4 +578,6 @@ void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
         ImVec2(button_render_mode_size, button_render_mode_size));
   }
   ImGui::End();
+
+  ImGui::PopStyleColor();
 }
