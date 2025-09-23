@@ -15,6 +15,7 @@
 #include "renderer/core.h"
 #include "renderer/render_pass/core.h"
 #include "runtime/mesh/core.h"
+#include "backend/logger.h"
 
 typedef void (*scene_builder_callback)(Scene *, Mesh *, const RenderPipeline *);
 
@@ -111,7 +112,7 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
                               const ScenePipeline pipeline) {
 
 #ifdef VERBOSE_BUILDING_PHASE
-  VERBOSE_MESH_BUILD("Texture %s", mesh->name);
+  logger_add(LoggerFlag_MeshBuild, "Texture %s", mesh->name);
 #endif
 
   SSBOManager *ssbo = &scene->renderer.ssbo;
@@ -162,7 +163,7 @@ void scene_build_mesh_solid(Scene *scene, Mesh *mesh,
                             const ScenePipeline pipeline) {
 
 #ifdef VERBOSE_BUILDING_PHASE
-  VERBOSE_MESH_BUILD("Solid %s", mesh->name);
+  logger_add(LoggerFlag_MeshBuild, "Solid %s", mesh->name);
 #endif
 
   // compute boundbox bounds for collisions (lightweight)
@@ -184,7 +185,7 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
                                 const ScenePipeline pipeline) {
 
 #ifdef VERBOSE_BUILDING_PHASE
-  VERBOSE_MESH_BUILD("Wireframe %s", mesh->name);
+  logger_add(LoggerFlag_MeshBuild, "Wireframe %s", mesh->name);
 #endif
 
   // compute boundbox bounds for collisions (lightweight)
@@ -210,7 +211,7 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
                                const ScenePipeline pipeline) {
 
 #ifdef VERBOSE_BUILDING_PHASE
-  VERBOSE_MESH_BUILD("Boundbox %s", mesh->name);
+  logger_add(LoggerFlag_MeshBuild, "Boundbox %s", mesh->name);
 #endif
 
   // create full boundbox topology
@@ -233,7 +234,7 @@ void scene_build_mesh_fixed(Scene *scene, Mesh *mesh,
                             const ScenePipeline pipeline) {
 
 #ifdef VERBOSE_BUILDING_PHASE
-  VERBOSE_MESH_BUILD("Fixed %s", mesh->name);
+  logger_add(LoggerFlag_MeshBuild, "Fixed %s", mesh->name);
 #endif
 
   // compute boundbox bounds for collisions (lightweight)

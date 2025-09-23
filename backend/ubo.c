@@ -7,7 +7,7 @@
 #include "runtime/scene/environment/fog.h"
 #include "stdbool.h"
 #include "string.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 
 typedef struct {
   void *data;
@@ -16,7 +16,7 @@ typedef struct {
 
 void ubo_init(UBOManager *ubo, WGPUQueue queue, const WGPUDevice device) {
   
-  VERBOSE_PROCESS("Initializing UBO Manager");
+  logger_add(LoggerFlag_Process, "Initializing UBO Manager");
 
   ubo->queue = queue;
   ubo->handle = wgpuDeviceCreateBuffer(
@@ -43,7 +43,7 @@ UBOStatus ubo_field_entry(UBOManager *ubo, const UBOField field,
                           UBOEntry *endpoint) {
 
   if (field > UBO_FIELD_COUNT) {
-    VERBOSE_WARNING("Attempting to alter an out of bound UBO Field (%d).",
+    logger_add(LoggerFlag_Warning, "Attempting to alter an out of bound UBO Field (%d).",
                     field);
     return UBOStatus_OutOfBound;
   }
@@ -105,7 +105,7 @@ UBOStatus ubo_update_entry(UBOManager *ubo, const UBOField field, void *value) {
     memcpy(ubo_entry.data, value, ubo_entry.type_size);
     return UBOStatus_Success;
   } else {
-    VERBOSE_WARNING("UBO requested value for field %d returned NULL. This "
+    logger_add(LoggerFlag_Warning, "UBO requested value for field %d returned NULL. This "
                     "means that either "
                     "you are attempting to reach and out of bound field index "
                     "or that the lookup "

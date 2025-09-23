@@ -14,7 +14,7 @@
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "core.h"
 #include "backend/ssbo.h"
 #include "runtime/mesh/core.h"
@@ -90,7 +90,7 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
                                             WGPUTextureView point_map,
                                             WGPUTextureView spot_map) {
 
-  VERBOSE_PROCESS("Update shadow map: %s", mesh->name);
+  logger_add(LoggerFlag_Process, "Update shadow map: %s", mesh->name);
 
   const MeshShader shader_types[2] = {
       MeshShader_Texture,

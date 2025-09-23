@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "utils/system.h"
+#include "backend/logger.h"
 
 void store_file(char **buffer, const char *path) {
 
@@ -13,7 +13,7 @@ void store_file(char **buffer, const char *path) {
   fp = fopen(path, "rb");
 
   if (!fp) {
-    VERBOSE_ERROR("Couldn't load file: %s.", path);
+    logger_add(LoggerFlag_Error, "Couldn't load file: %s.", path);
     exit(1);
   }
 

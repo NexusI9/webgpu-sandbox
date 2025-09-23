@@ -6,7 +6,7 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "./utils.h"
 #include "core.h"
 #include "texture_list.h"
@@ -28,7 +28,7 @@ void ao_bake_global(SceneRendererTextureAO *ao,
     scene_debug_ray_create(desc->debug->debug_scene, &line);
 
   Mesh *mesh = desc->mesh;
-  VERBOSE_PROCESS("Baking Global AO for mesh: %s", mesh->name);
+  logger_add(LoggerFlag_Process, "Baking Global AO for mesh: %s", mesh->name);
 
   // COMPARE MESH
   for (size_t c = 0; c < desc->mesh_list->length; c++) {
@@ -112,7 +112,7 @@ void ao_bake_global(SceneRendererTextureAO *ao,
   }
 
 #ifdef AO_BAKE_HIT_COUNT
-  VERBOSE_DEBUG("%s hits: %d", mesh->name, g_debug_ao_bake_hit_count);
+  logger_add(LoggerFlag_Debug, "%s hits: %d", mesh->name, g_debug_ao_bake_hit_count);
   g_debug_ao_bake_hit_count = 0;
 #endif
 }

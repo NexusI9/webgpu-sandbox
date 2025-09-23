@@ -8,7 +8,7 @@
 #include "bindgroup.h"
 #include "core.h"
 #include "string.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 /**
@@ -157,7 +157,7 @@ void shader_add_texture(Shader *shader,
 
       if (current_bind_group->textures.length ==
           current_bind_group->textures.capacity) {
-        VERBOSE_PRINT("Texture array reached maximum capacity\n");
+        logger_add(LoggerFlag_Print, "Texture array reached maximum capacity\n");
         break;
       }
 
@@ -218,7 +218,7 @@ void shader_add_texture_view(Shader *shader,
 
       if (current_bind_group->textures.length ==
           current_bind_group->textures.capacity) {
-        VERBOSE_PRINT("Texture array reached maximum capacity\n");
+        logger_add(LoggerFlag_Print, "Texture array reached maximum capacity\n");
         break;
       }
 
@@ -255,7 +255,7 @@ void shader_add_sampler(Shader *shader,
 
       if (current_bind_group->samplers.length ==
           current_bind_group->samplers.capacity) {
-        VERBOSE_PRINT("Sampler array reached maximum capacity\n");
+        logger_add(LoggerFlag_Print, "Sampler array reached maximum capacity\n");
         break;
       }
 

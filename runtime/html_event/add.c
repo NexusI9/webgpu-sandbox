@@ -6,8 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "core.h"
 #include "listener.h"
 
@@ -111,7 +110,7 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
     *entries = malloc(type_size * (*capacity));
 
     if (*entries == NULL) {
-      VERBOSE_ERROR("Couldn't allocate html event.");
+      logger_add(LoggerFlag_Error, "Couldn't allocate html event.");
       *capacity = 0;
       return HTMLEventStatus_AllocFail;
     }
@@ -127,7 +126,7 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
       *entries = temp;
       *capacity = new_capacity;
     } else {
-      VERBOSE_ERROR("Coudln't reallocate html event.");
+      logger_add(LoggerFlag_Error, "Coudln't reallocate html event.");
       return HTMLEventStatus_AllocFail;
     }
   }
@@ -150,7 +149,7 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
       cast_entry->data = stored_data;
       memcpy(cast_entry->data, event->data, event->size);
     } else {
-      VERBOSE_ERROR("Coudln't allocate memory for html event data.");
+      logger_add(LoggerFlag_Error, "Coudln't allocate memory for html event data.");
       return HTMLEventStatus_AllocFail;
     }
   }

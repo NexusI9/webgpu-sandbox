@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "utils/system.h"
+#include "backend/logger.h"
 
 /**
    Allocate necessary resource for dynamic list and update the capacity and
@@ -17,7 +17,7 @@ DynamicListStatus dyli_create(void **entries, size_t *capacity, size_t *length,
   *length = 0;
 
   if (*entries == NULL) {
-    VERBOSE_ERROR("Couldn't create new dynamic list: %s\n", label);
+    logger_add(LoggerFlag_Error, "Couldn't create new dynamic list: %s\n", label);
     *capacity = 0;
     return DynamicListStatus_AllocFail;
   }
@@ -37,7 +37,7 @@ DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
   void *temp = (void *)realloc(*entries, new_capacity * type_size);
 
   if (temp == NULL) {
-    VERBOSE_ERROR("Couldn't expand list '%s' from %lu to %lu.", label,
+    logger_add(LoggerFlag_Error, "Couldn't expand list '%s' from %lu to %lu.", label,
                   *capacity, new_capacity);
     return DynamicListStatus_AllocFail;
   }
@@ -53,7 +53,7 @@ DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
                               const char *label) {
 
   if (*entries == NULL || *capacity == 0) {
-    VERBOSE_ERROR("Dynamic list '%s' not initialized, insertion aborted.",
+    logger_add(LoggerFlag_Error, "Dynamic list '%s' not initialized, insertion aborted.",
                   label);
     return DynamicListStatus_NotInit;
   }
@@ -129,7 +129,7 @@ void *dyli_new_entry(void **entries, size_t *capacity, size_t *length,
                      size_t type_size, const char *label) {
 
   if (*entries == NULL || *capacity == 0) {
-    VERBOSE_ERROR("Dynamic list '%s' not initialized, insertion aborted.",
+    logger_add(LoggerFlag_Error, "Dynamic list '%s' not initialized, insertion aborted.",
                   label);
     return NULL;
   }
@@ -170,7 +170,7 @@ DynamicListStatus dyli_append(const void *src_entries,
       *dest_entries = temp_entries;
 
     } else {
-      VERBOSE_ERROR("Couldn't transfert to %s.", label);
+      logger_add(LoggerFlag_Error, "Couldn't transfert to %s.", label);
       return DynamicListStatus_AllocFail;
     }
   }
@@ -200,7 +200,7 @@ DynamicListStatus dyli_replace(const void *src_entries, const size_t src_length,
       *dest_entries = temp_entries;
 
     } else {
-      VERBOSE_ERROR("Couldn't transfert to %s.", label);
+      logger_add(LoggerFlag_Error, "Couldn't transfert to %s.", label);
       return DynamicListStatus_AllocFail;
     }
   }

@@ -37,7 +37,7 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
 #include "utils/projection.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 static inline void
@@ -64,7 +64,7 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
 
   PointLightListBase *base_list = &scene->lights.point.base;
   if (base_list->length == base_list->capacity) {
-    VERBOSE_ERROR("Scene point light capacity reached maximum.");
+    logger_add(LoggerFlag_Error, "Scene point light capacity reached maximum.");
     return 0;
   }
 
@@ -141,7 +141,7 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 
   SpotLightListBase *base_list = &scene->lights.spot.base;
   if (base_list->length == base_list->capacity) {
-    VERBOSE_ERROR("Scene spot light capacity reached maximum.");
+    logger_add(LoggerFlag_Error, "Scene spot light capacity reached maximum.");
     return 0;
   }
 
@@ -217,7 +217,7 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
 
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
-    VERBOSE_ERROR("Scene ambient light capacity reached maximum.");
+    logger_add(LoggerFlag_Error, "Scene ambient light capacity reached maximum.");
     return 0;
   }
 
@@ -262,7 +262,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
   SunLightListBase *base_list = &scene->lights.sun.base;
   if (base_list->length == base_list->capacity) {
-    VERBOSE_ERROR("Scene sun light capacity reached maximum.");
+    logger_add(LoggerFlag_Error, "Scene sun light capacity reached maximum.");
     return NULL;
   }
 

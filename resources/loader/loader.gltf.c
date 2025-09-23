@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "backend/logger.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_pipeline/render_shader/pbr/pbr.h"
 #include "backend/std_texture/core.h"
@@ -24,7 +25,6 @@
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
-#include "utils/system.h"
 #include "webgpu/webgpu.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -74,7 +74,7 @@ static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
 LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
                                   LoaderGLTFResult *dest) {
 
-  VERBOSE_IMPORT("GLTF file: %s", desc->path);
+  logger_add(LoggerFlag_Import, "GLTF file: %s", desc->path);
 
   cgltf_data *data = NULL;
   cgltf_result result;
@@ -94,7 +94,7 @@ LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
   switch (result) {
 
   case cgltf_result_invalid_json:
-    VERBOSE_ERROR("Invalid GLTF JSON.");
+    logger_add(LoggerFlag_Error, "Invalid GLTF JSON.");
     return LoaderGLTFStatus_JSONInvalid;
     break;
 
@@ -104,15 +104,15 @@ LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
     break;
 
   case cgltf_result_file_not_found:
-    VERBOSE_ERROR("GLTF file not found.");
+    logger_add(LoggerFlag_Error, "GLTF file not found.");
     return LoaderGLTFStatus_FileUnfound;
 
   case cgltf_result_out_of_memory:
-    VERBOSE_ERROR("GLTF loading aborted, out of memory.");
+    logger_add(LoggerFlag_Error, "GLTF loading aborted, out of memory.");
     return LoaderGLTFStatus_OutOfBoundMemory;
 
   default:
-    VERBOSE_ERROR("GLTF loading aborted, unhanded error.");
+    logger_add(LoggerFlag_Error, "GLTF loading aborted, unhanded error.");
     return LoaderGLTFStatus_UndefError;
   }
 
@@ -481,16 +481,16 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
 
   {
     // DELETE ME DEBUG
-    //printf("[[%s]]\n", material->name);
-    //printf("\tmetallic: %f\n", pbr.metallic_factor);
-    //printf("\troughness: %f\n", pbr.roughness_factor);
-    //printf("\tocclusion: %f\n", pbr.occlusion_strength);
-    //printf("\tspecular: %f\n", pbr.roughness_factor);
-    //printf("\tnormal: %f\n", pbr.normal_scale);
-    //printf("\temissive:");
-    //print_vec3(pbr.emissive_factor);
-    //printf("\tbase color:");
-    //print_vec4(pbr.base_color_factor);
+    // printf("[[%s]]\n", material->name);
+    // printf("\tmetallic: %f\n", pbr.metallic_factor);
+    // printf("\troughness: %f\n", pbr.roughness_factor);
+    // printf("\tocclusion: %f\n", pbr.occlusion_strength);
+    // printf("\tspecular: %f\n", pbr.roughness_factor);
+    // printf("\tnormal: %f\n", pbr.normal_scale);
+    // printf("\temissive:");
+    // print_vec3(pbr.emissive_factor);
+    // printf("\tbase color:");
+    // print_vec4(pbr.base_color_factor);
   }
 }
 
@@ -535,9 +535,9 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
       });
 
     } else {
-      VERBOSE_PRINT(
-          "Loader GLTF: Texture found but couldn't be loaded, loading "
-          "default texture");
+      //logger_add(LoggerFlag_Print, 
+      //    "Loader GLTF: Texture found but couldn't be loaded, loading "
+      //    "default texture");
       return LoaderGLTFStatus_LoadError;
     }
 
@@ -559,12 +559,14 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
         unsigned char *n_data = malloc(n_w * n_h * forced_channel);
 
         if (n_data == NULL) {
-          VERBOSE_WARNING(
+          logger_add(
+              LoggerFlag_Warning,
               "GLTF Loader couldn't allocate resources for resize texture.");
         } else if (stbir_resize_uint8_srgb(*data, *width, *height, 0, n_data,
                                            n_w, n_h, 0,
                                            (uint8_t)forced_channel) == NULL) {
-          VERBOSE_WARNING("GLTF Loader STBI resize texture fail.");
+          logger_add(LoggerFlag_Warning,
+                     "GLTF Loader STBI resize texture fail.");
         } else {
 
           *width = n_w;
@@ -584,7 +586,7 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
     }
 
   } else {
-    VERBOSE_PRINT(
+    logger_add(LoggerFlag_Print, 
         "Loader GLTF: Couldn't find texture, loading default texture");
     return LoaderGLTFStatus_TextureUnfound;
   }

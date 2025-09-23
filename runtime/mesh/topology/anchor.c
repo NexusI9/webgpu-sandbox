@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include "string.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "utils/dyli.h"
 
 /**
@@ -37,7 +37,7 @@ int mesh_topology_anchor_insert(MeshTopologyAnchor *anchor, vindex_t *index,
   // check anchor entries capacity
   if (anchor->capacity <= anchor->length + length &&
       mesh_topology_anchor_expand(anchor) != MeshTopologyAnchorStatus_Success) {
-    VERBOSE_ERROR("Couldn't allocate memory for wireframe anchor.");
+    logger_add(LoggerFlag_Error, "Couldn't allocate memory for wireframe anchor.");
     return MeshTopologyAnchorStatus_AllocFail;
   }
 
@@ -64,7 +64,7 @@ int mesh_topology_anchor_expand(MeshTopologyAnchor *anchor) {
       (vindex_t *)realloc(anchor->entries, sizeof(vindex_t) * new_capacity);
 
   if (temp == NULL) {
-    VERBOSE_ERROR("Couldn't expand line mesh anchor list.");
+    logger_add(LoggerFlag_Error, "Couldn't expand line mesh anchor list.");
     return MeshTopologyAnchorStatus_AllocFail;
   }
 
@@ -81,7 +81,7 @@ int mesh_topology_anchor_create(MeshTopologyAnchor *anchor, size_t capacity) {
   anchor->length = 0;
 
   if (anchor->entries == NULL) {
-    VERBOSE_ERROR("Couldn't create new line mesh anchor.");
+    logger_add(LoggerFlag_Error, "Couldn't create new line mesh anchor.");
     anchor->capacity = 0;
     return MeshTopologyAnchorStatus_AllocFail;
   }
@@ -205,7 +205,7 @@ int mesh_topology_anchor_list_expand(MeshTopologyAnchorList *list) {
       list->entries, sizeof(MeshTopologyAnchor) * new_capacity);
 
   if (temp == NULL) {
-    VERBOSE_ERROR("Couldn't expand line mesh anchor list");
+    logger_add(LoggerFlag_Error, "Couldn't expand line mesh anchor list");
     return MeshTopologyAnchorStatus_AllocFail;
   }
 
@@ -223,7 +223,7 @@ int mesh_topology_anchor_list_create(MeshTopologyAnchorList *list,
   list->entries = calloc(capacity, sizeof(MeshTopologyAnchor));
 
   if (list->entries == NULL) {
-    VERBOSE_ERROR("Couldn't create new line mesh anchor list.");
+    logger_add(LoggerFlag_Error, "Couldn't create new line mesh anchor list.");
     list->capacity = 0;
     return MeshTopologyAnchorStatus_AllocFail;
   }
@@ -269,7 +269,7 @@ int mesh_topology_anchor_list_insert(MeshTopologyAnchorList *list,
       mesh_topology_anchor_insert(new_anchor, index, length);
 
     } else {
-      VERBOSE_ERROR("Couldn't add new anchor in wireframe anchor list.");
+      logger_add(LoggerFlag_Error, "Couldn't add new anchor in wireframe anchor list.");
       return MeshTopologyAnchorStatus_UndefError;
     }
   }
@@ -288,7 +288,7 @@ mesh_topology_anchor_list_new_hash(MeshTopologyAnchorList *list,
   if (list->length >= list->capacity * 0.75 &&
       mesh_topology_anchor_list_expand(list) !=
           MeshTopologyAnchorStatus_Success) {
-    VERBOSE_ERROR("Couldn't expand wireframe anchor list.");
+    logger_add(LoggerFlag_Error, "Couldn't expand wireframe anchor list.");
     return NULL;
   }
 
@@ -308,7 +308,7 @@ mesh_topology_anchor_list_new_index(MeshTopologyAnchorList *list,
   // check capacity
   if (list->capacity < index && mesh_topology_anchor_list_expand(list) !=
                                     MeshTopologyAnchorStatus_Success) {
-    VERBOSE_ERROR("Couldn't expand wireframe anchor list.");
+    logger_add(LoggerFlag_Error, "Couldn't expand wireframe anchor list.");
     return NULL;
   }
 

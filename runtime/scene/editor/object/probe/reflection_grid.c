@@ -18,7 +18,7 @@
 #include "runtime/scene/editor/object/list/list.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "utils/color.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "runtime/probe/reflection/grid.h"
 
 void seo_probe_reflection_grid_create(SceneEditorObject *seo,
@@ -85,7 +85,7 @@ void seo_probe_reflection_grid_create(SceneEditorObject *seo,
     probe->target_list_index = i;
 
     if (probe == NULL) {
-      VERBOSE_WARNING("Couldn't create new mesh for probe SEO.");
+      logger_add(LoggerFlag_Warning, "Couldn't create new mesh for probe SEO.");
       break;
     }
 

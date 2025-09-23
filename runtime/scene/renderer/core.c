@@ -16,7 +16,7 @@
 #include "runtime/html_event/core.h"
 #include "runtime/input/core.h"
 #include "runtime/texture/core.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 static void scene_renderer_resize(SceneRenderer *);
@@ -183,7 +183,7 @@ void scene_renderer_add_draw_callback(SceneRenderer *renderer,
                                       void *data) {
   // do not add if max hook reached
   if (renderer->draw.callbacks.length == SCENE_RENDERER_MAX_HOOK) {
-    VERBOSE_WARNING("Max draw hook reached.\n");
+    logger_add(LoggerFlag_Warning, "Max draw hook reached.\n");
     return;
   }
 

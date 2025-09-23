@@ -151,7 +151,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
 void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
                          const ShadowMapDebug *debug) {
 
-  // VERBOSE_PROCESS("Computing all shadow maps...");
+  // logger_add(LoggerFlag_Process, "Computing all shadow maps...");
 
   /* TODO :
      When using "global" shadow encoder and passing it through all the passes

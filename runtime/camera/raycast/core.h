@@ -9,7 +9,6 @@
 #include "runtime/viewport/viewport.h"
 #include "runtime/html_event/html_event.h"
 #include "runtime/input/input.h"
-#include "utils/system.h"
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
 #include "./hit_list.h"

@@ -7,7 +7,7 @@
 #include "draw.h"
 #include "texture.h"
 #include "webgpu/webgpu.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "runtime/mesh/ref_list.h"
 #include "utils/dyli.h"
 #include "runtime/mesh/core.h"
@@ -155,7 +155,7 @@ void render_pass_list_insert_pass(RenderPassList *list,
                                   const RenderPassListInsert *desc) {
 
   if (list->length == RENDER_PASS_MAX_DRAW_LIST) {
-    VERBOSE_WARNING("Render pass list reached maxed capacity (%d)",
+    logger_add(LoggerFlag_Warning, "Render pass list reached maxed capacity (%d)",
                     RENDER_PASS_MAX_DRAW_LIST);
     return;
   }
@@ -231,7 +231,7 @@ RenderPassStatus render_pass_update_preprocessor_data(RenderPass *pass,
                                                       uint8_t index,
                                                       void *data) {
   if (index > pass->draw_list.length) {
-    VERBOSE_WARNING("Trying to update an out of bound (%d) render pass "
+    logger_add(LoggerFlag_Warning, "Trying to update an out of bound (%d) render pass "
                     "preprocessor data. Target render pass has %lu draw lists.",
                     index, pass->draw_list.length);
     return RenderPassStatus_OutOfBoundDrawIndex;

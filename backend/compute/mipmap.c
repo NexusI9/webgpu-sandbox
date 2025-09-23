@@ -2,7 +2,7 @@
 #include "backend/std_pipeline/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <math.h>
@@ -19,7 +19,7 @@ static inline void compute_pass_mipmap_dispatch(WGPUComputePassEncoder,
 MipmapStatus compute_pass_mipmap(ComputePass *pass,
                                  const MipmapDescriptor *desc) {
 
-  // VERBOSE_PROCESS("Generating mipmaps...");
+  // logger_add(LoggerFlag_Process, "Generating mipmaps...");
   // TIMER("Mipmap Generation", {});
   compute_pass_mipmap_draw(pass, desc);
 

@@ -1,6 +1,6 @@
 #include "./core.h"
 
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "./global.h"
 #include "./local.h"
 #include "./texture_list.h"
@@ -21,7 +21,7 @@
 void ao_bake_init(SceneRendererTextureAO *ao,
                   const AOBakeInitDescriptor *desc) {
 
-  VERBOSE_PROCESS("Initializing Ambient Occlusion Texture...");
+  logger_add(LoggerFlag_Process, "Initializing Ambient Occlusion Texture...");
 
   ao->layer_count = desc->layer_count;
   ao->size = desc->size;
@@ -48,7 +48,7 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
 
   // temp
   if (layer != DYLI_INVALID_INDEX && layer >= (int)ao->layer_count) {
-    VERBOSE_WARNING(
+    logger_add(LoggerFlag_Warning, 
         "AO Texture Layer reached max capacity, AO Baking aborted.");
     return;
   }
@@ -81,7 +81,7 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
       shader_bind_group_refresh(bind_group, AO_group, desc->device,
                                 &shader->pipeline->handle);
     } else {
-      VERBOSE_WARNING("New AO texture couldn't be created, AO Bake aborted.");
+      logger_add(LoggerFlag_Warning, "New AO texture couldn't be created, AO Bake aborted.");
       return;
     }
   }

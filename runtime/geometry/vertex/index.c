@@ -6,7 +6,7 @@
 
 #include "core.h"
 #include "string.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 
 VertexStatus vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
 
@@ -20,7 +20,7 @@ VertexStatus vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
   size_t length = dest->length * sizeof(vindex_t);
   dest->entries = malloc(length);
   if (dest->entries == NULL) {
-    VERBOSE_ERROR("Couldn't allocate memory for vertex index.");
+    logger_add(LoggerFlag_Error, "Couldn't allocate memory for vertex index.");
     dest->buffer = NULL;
     dest->capacity = 0;
     dest->length = 0;
@@ -54,7 +54,7 @@ VertexStatus vertex_index_create(VertexIndex *vi, size_t capacity,
   vi->buffer = buffer;
 
   if (vi->entries == NULL) {
-    VERBOSE_ERROR("Could't create vertex index.");
+    logger_add(LoggerFlag_Error, "Could't create vertex index.");
     vi->capacity = 0;
     vi->buffer = NULL;
     return VertexStatus_AllocFail;
@@ -76,7 +76,7 @@ VertexStatus vertex_index_insert(VertexIndex *vi, vindex_t *index_list,
       vi->capacity = new_capacity;
       vi->entries = temp;
     } else {
-      VERBOSE_ERROR("Could't reallocate vertex index.");
+      logger_add(LoggerFlag_Error, "Could't reallocate vertex index.");
       return VertexStatus_AllocFail;
     }
   }

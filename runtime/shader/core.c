@@ -7,6 +7,7 @@
 #include "string.h"
 #include "bindgroup.h"
 #include "runtime/pipeline/render.h"
+#include "backend/logger.h"
 
 /*
 
@@ -53,7 +54,7 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
   shader->name = strdup(sd->name);
 
 #ifdef VERBOSE_CREATING_PHASE
-  VERBOSE_SHADER_CREATE("%s", shader->name);
+  logger_add(LoggerFlag_ShaderCreate, "%s", shader->name);
 #endif
 
   shader->device = sd->device;
@@ -177,7 +178,7 @@ void shader_build(Shader *shader) {
 
   // clear pipeline if existing
 #ifdef VERBOSE_BINDING_PHASE
-  VERBOSE_PRINT("\t\t└ Binding Shader: %s", shader->name);
+  logger_add(LoggerFlag_Print, "\t\t└ Binding Shader: %s", shader->name);
 #endif
 
   // build bind group entries for each individual group index
@@ -198,7 +199,7 @@ void shader_build(Shader *shader) {
       continue;
 
 #ifdef VERBOSE_BINDING_PHASE
-    VERBOSE_PRINT("\t\t\t└ Bingroup: %d", i);
+    logger_add(LoggerFlag_Print, "\t\t\t└ Bingroup: %d", i);
 #endif
     shader_bind_group_build(group, i, shader->device,
                             &shader->pipeline->handle);

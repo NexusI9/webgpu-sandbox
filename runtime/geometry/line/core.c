@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "string.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/geometry/vertex/core.h"
@@ -165,7 +165,7 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
                     VertexIndex *vertex_index) {
 
   if (vertex_attribute->length == vertex_attribute->capacity) {
-    VERBOSE_WARNING("Line vertex attribute reached max capacity.");
+    logger_add(LoggerFlag_Warning, "Line vertex attribute reached max capacity.");
     return;
   }
 

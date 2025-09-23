@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include "utils/dyli.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "emscripten/em_types.h"
 #include "string.h"
 #include "backend/registry.h"
@@ -46,7 +46,7 @@ KeyRecordStatus keyrec_add_sequence(KeyRecordSequenceList *listener,
   keyrec_t *temp = (keyrec_t *)malloc(sizeof(keyrec_t) * seq->length);
 
   if (temp == NULL) {
-    VERBOSE_WARNING("Could not allocate memory for Key Record sequence.");
+    logger_add(LoggerFlag_Warning, "Could not allocate memory for Key Record sequence.");
     return KeyRecordStatus_AllocFail;
   }
 
@@ -59,7 +59,7 @@ KeyRecordStatus keyrec_add_sequence(KeyRecordSequenceList *listener,
       sizeof(KeyRecordSequence), (void *)seq, 1, "Key Record Sequence List");
 
   if (insert != DynamicListStatus_Success) {
-    VERBOSE_PRINT("Could not add new sequence to the key record");
+    logger_add(LoggerFlag_Print, "Could not add new sequence to the key record");
     return KeyRecordStatus_InsertFail;
   }
 
@@ -82,7 +82,7 @@ KeyRecordStatus keyrec_destroy_sequence(KeyRecordSequenceList *list,
                   sizeof(KeyRecordSequence), seq, "Key Record Sequence List");
 
   if (remove != DynamicListStatus_Success) {
-    VERBOSE_WARNING("Could not properly destroy and remove the sequence from "
+    logger_add(LoggerFlag_Warning, "Could not properly destroy and remove the sequence from "
                     "the key record list.");
     return KeyRecordStatus_RemoveFail;
   }

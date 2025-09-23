@@ -11,7 +11,7 @@
 #include "backend/std_texture/core.h"
 #include "runtime/scene/debug/view.h"
 #include "runtime/scene/renderer/render_pass/draw.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "utils/dyli.h"
 
@@ -165,7 +165,7 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
       ProbeReflectionGrid *grid = &list->entries[i];
 
       TIMER("", {
-        VERBOSE_PROCESS("Rendering Probe Reflection Grid %lu/%lu", i + 1,
+        logger_add(LoggerFlag_Process, "Rendering Probe Reflection Grid %lu/%lu", i + 1,
                         list->length);
 
         for (size_t j = 0; j < grid->probes.length; j++) {

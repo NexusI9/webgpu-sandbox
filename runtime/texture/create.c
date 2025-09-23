@@ -6,7 +6,7 @@
 #include "core.h"
 #include "include/stb/stb_image.h"
 #include "include/stb/stb_image_resize2.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 #include "write.h"
 
@@ -23,7 +23,7 @@ void texture_create(Texture *texture, const TextureCreateDescriptor *desc) {
       (void *)calloc(texture->width * texture->height, texture->channels);
 
   if (texture->data == NULL) {
-    VERBOSE_ERROR("Could not create texture.");
+    logger_add(LoggerFlag_Error, "Could not create texture.");
     return;
   }
 
@@ -38,7 +38,7 @@ TextureStatus
 texture_create_from_file(Texture *texture,
                          const TextureCreateFileDescriptor *desc) {
 
-  VERBOSE_IMPORT("texture: %s", desc->path);
+  logger_add(LoggerFlag_Import, "texture: %s", desc->path);
 
   if (desc->channels == TextureChannel_Undefined)
     texture->channels = TextureChannel_RGBA;
@@ -53,7 +53,7 @@ texture_create_from_file(Texture *texture,
       stbi_load(desc->path, &width, &height, &channels, texture->channels);
 
   if (data == NULL) {
-    VERBOSE_ERROR("Couldn't load texture from file.");
+    logger_add(LoggerFlag_Error, "Couldn't load texture from file.");
     texture->data = NULL;
     texture->width = 0;
     texture->height = 0;
@@ -70,11 +70,11 @@ texture_create_from_file(Texture *texture,
         malloc(desc->width * desc->height * texture->channels);
 
     if (n_data == NULL) {
-      VERBOSE_WARNING("Couldn't allocate resources for resize texture.");
+      logger_add(LoggerFlag_Warning, "Couldn't allocate resources for resize texture.");
     } else if (stbir_resize_uint8_srgb(data, width, height, 0, n_data,
                                        desc->width, desc->height, 0,
                                        (uint8_t)texture->channels) == NULL) {
-      VERBOSE_WARNING("STBI resize texture fail.");
+      logger_add(LoggerFlag_Warning, "STBI resize texture fail.");
     } else {
 
       // free old texture
@@ -124,7 +124,7 @@ texture_create_cubemap_from_file(Texture texture[TEXTURE_CUBE_LAYER],
                                  }) == TextureStatus_Success) {
 
     } else {
-      VERBOSE_ERROR("Couldn't read cubemap texture.");
+      logger_add(LoggerFlag_Error, "Couldn't read cubemap texture.");
       return TextureStatus_FileError;
     }
   }

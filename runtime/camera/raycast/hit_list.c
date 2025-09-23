@@ -1,7 +1,7 @@
 #include "hit_list.h"
 #include "string.h"
 #include <stdlib.h>
-#include "utils/system.h"
+#include "backend/logger.h"
 
 static int camera_raycast_hit_list_sort_func(const void *a, const void *b) {
 
@@ -27,7 +27,7 @@ CameraRaycastHitListStatus camera_raycast_hit_list_create(CameraRaycastHitList *
   list->length = 0;
 
   if (list->entries == NULL) {
-    VERBOSE_ERROR("Couldn't allocate camera raycast hit list entries.");
+    logger_add(LoggerFlag_Error, "Couldn't allocate camera raycast hit list entries.");
     list->capacity = 0;
     list->length = 0;
     return CameraRaycastHitListStatus_AllocFail;

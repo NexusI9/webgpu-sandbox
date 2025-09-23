@@ -6,7 +6,7 @@
 
 #include "callback.h"
 #include "hit_list.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "runtime/camera/core.h"
 #include "runtime/html_event/add.h"
 #include "runtime/html_event/core.h"
@@ -65,7 +65,7 @@ void camera_raycast_create_event(Camera *cam,
 
   if ((desc->include.length > 0 && alloc_include == NULL) ||
       (desc->exclude.length > 0 && alloc_exclude == NULL)) {
-    VERBOSE_WARNING("Couldn't allocate raycast mesh ref list.\n");
+    logger_add(LoggerFlag_Warning, "Couldn't allocate raycast mesh ref list.\n");
     return;
   }
 
@@ -74,14 +74,14 @@ void camera_raycast_create_event(Camera *cam,
   if (hits_list == NULL || camera_raycast_hit_list_create(
                                hits_list, CAMERA_RAYCAST_HIT_LIST_MAX_HIT) !=
                                CameraRaycastHitListStatus_Success) {
-    VERBOSE_ERROR("Couldn't allocate camera raycast 'hit list'\n");
+    logger_add(LoggerFlag_Error, "Couldn't allocate camera raycast 'hit list'\n");
     return;
   }
 
   // === ALLOCATE USER DATA ===
   void *alloc_data = malloc(desc->size);
   if (alloc_data == NULL) {
-    VERBOSE_ERROR("Couldn't allocate camera raycast 'data'\n");
+    logger_add(LoggerFlag_Error, "Couldn't allocate camera raycast 'data'\n");
     return;
   }
   memcpy(alloc_data, desc->data, desc->size);

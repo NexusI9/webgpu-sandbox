@@ -12,7 +12,7 @@
 #include "runtime/mesh/core.h"
 #include "runtime/viewport/core.h"
 #include "utils/projection.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 
 static const struct {
   const size_t size;
@@ -72,7 +72,7 @@ static const struct {
 
 void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
 
-  VERBOSE_PROCESS("Initializing SSBO Manager");
+  logger_add(LoggerFlag_Process, "Initializing SSBO Manager");
 
   manager->device = device;
   manager->queue = queue;
@@ -83,13 +83,13 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
   for (SSBOType i = 0; i < SSBO_TYPE_COUNT; i++) {
 
     if (ssbo_type[i].size % alignment != 0)
-      VERBOSE_WARNING(
+      logger_add(LoggerFlag_Warning, 
           "Attempting to set a SSBO buffer (%d) not aligned with %hu "
           "bytes (%lu). SSBO Buffers require 256 alignment.",
           i, alignment, ssbo_type[i].size);
 
     if (ssbo_type[i].size < min_size)
-      VERBOSE_WARNING(
+      logger_add(LoggerFlag_Warning, 
           "Attempting to set a buffer (%d) not with a type size inferior to %hu"
           "bytes (%lu).",
           i, min_size, ssbo_type[i].size);
@@ -113,7 +113,7 @@ SSBOStatus ssbo_update_entry(SSBOManager *manager, const SSBOType type,
                              const SSBOSlot *slot) {
 
   if (slot->id >= SSBO_CAPACITY) {
-    VERBOSE_WARNING(
+    logger_add(LoggerFlag_Warning, 
         "Attempting to write into SSBO out of bound index (%lu) max SSBO "
         "capacity is currently set to %d.",
         slot->id, SSBO_CAPACITY);

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "resources/tool/obj2mbin/lib/mbin.h"
 #include "string.h"
 #include "runtime/geometry/vertex/attribute.h"
@@ -24,7 +24,7 @@ static void *loader_mbin_read(const char *, size_t *);
 
 MBINLoaderStatus loader_mbin_load(MBINFile **file, const char *path) {
 
-  VERBOSE_IMPORT("MBIN file: %s", path);
+  logger_add(LoggerFlag_Import, "MBIN file: %s", path);
   // directly map data into memory for unix environments
   // open: directly communicate with linux kernel
   // fopen: provide FILE, does not depend on OS kernel
@@ -37,7 +37,7 @@ MBINLoaderStatus loader_mbin_load(MBINFile **file, const char *path) {
 #endif
 
   if (file == NULL) {
-    VERBOSE_ERROR("Error while loading Mesh Binary file\n");
+    logger_add(LoggerFlag_Error, "Error while loading Mesh Binary file\n");
     return MBINLoaderStatus_UndefError;
   }
 
@@ -53,13 +53,13 @@ static void *loader_mbin_mmap(const char *path, size_t *size) {
   int fd = open(path, O_RDONLY);
 
   if (fd < 0) {
-    VERBOSE_ERROR("Could not open file\n");
+    logger_add(LoggerFlag_Error, "Could not open file\n");
     return NULL;
   }
 
   struct stat st;
   if (fstat(fd, &st)) {
-    VERBOSE_ERROR("Could not read file\n");
+    logger_add(LoggerFlag_Error, "Could not read file\n");
     close(fd);
     return NULL;
   }
@@ -68,7 +68,7 @@ static void *loader_mbin_mmap(const char *path, size_t *size) {
   close(fd);
 
   if (data == MAP_FAILED) {
-    VERBOSE_ERROR("Mapped failed\n");
+    logger_add(LoggerFlag_Error, "Mapped failed\n");
     return NULL;
   }
 
@@ -89,7 +89,7 @@ static void *loader_mbin_read(const char *path, size_t *size) {
   FILE *f = fopen(path, "rb");
 
   if (!f) {
-    VERBOSE_ERROR("Could not load file\n");
+    logger_add(LoggerFlag_Error, "Could not load file\n");
     return NULL;
   }
 
@@ -101,7 +101,7 @@ static void *loader_mbin_read(const char *path, size_t *size) {
   // allocate memory
   void *data = malloc(file_size);
   if (!data) {
-    VERBOSE_ERROR("Could not allocate memory\n");
+    logger_add(LoggerFlag_Error, "Could not allocate memory\n");
     fclose(f);
     return NULL;
   }
@@ -109,7 +109,7 @@ static void *loader_mbin_read(const char *path, size_t *size) {
   // read file to buffer
   size_t read = fread(data, 1, file_size, f);
   if (read != file_size) {
-    VERBOSE_ERROR("Could not read the entire file\n");
+    logger_add(LoggerFlag_Error, "Could not read the entire file\n");
     free(data);
     fclose(f);
     return NULL;
@@ -131,7 +131,7 @@ MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
   MBINFile *mbin;
 
   if (loader_mbin_load(&mbin, desc->path)) {
-    VERBOSE_ERROR("Error while loading Mesh Binary file to Primitive.");
+    logger_add(LoggerFlag_Error, "Error while loading Mesh Binary file to Primitive.");
     return MBINLoaderStatus_UndefError;
   }
 
@@ -143,7 +143,7 @@ MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
   vert_attr->entries = malloc(sizeof(vattr_t) * vert_attr->length);
 
   if (vert_attr->entries == NULL) {
-    VERBOSE_ERROR("Couldn't allocate memory for vertex attribute");
+    logger_add(LoggerFlag_Error, "Couldn't allocate memory for vertex attribute");
     return MBINLoaderStatus_AllocFail;
   }
 
@@ -162,7 +162,7 @@ MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
   index_attr->entries = malloc(sizeof(vindex_t) * mbin->index_length);
 
   if (index_attr->entries == NULL) {
-    VERBOSE_ERROR("Couldn't allocate memory for vertex attribute\n");
+    logger_add(LoggerFlag_Error, "Couldn't allocate memory for vertex attribute\n");
     return MBINLoaderStatus_AllocFail;
   }
 

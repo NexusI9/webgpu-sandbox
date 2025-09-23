@@ -1,5 +1,5 @@
 #include "utils.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include <stdint.h>
 /**
    Returns the sum of group uniforms, textures and samplers.
@@ -23,12 +23,12 @@ uint16_t shader_bind_group_entries_count(const ShaderBindGroup *group) {
 bool shader_validate_binding(Shader *shader) {
 
   if (shader->device == NULL || shader->queue == NULL) {
-    VERBOSE_ERROR("Shader has no device or queue.");
+    logger_add(LoggerFlag_Error, "Shader has no device or queue.");
     return SHADER_BIND_UNVALID;
   }
 
   if (shader->bind_groups.length >= SHADER_MAX_BIND_GROUP) {
-    VERBOSE_ERROR("Bind group list at full capacity.");
+    logger_add(LoggerFlag_Error, "Bind group list at full capacity.");
     return SHADER_BIND_UNVALID;
   }
 

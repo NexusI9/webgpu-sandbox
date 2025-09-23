@@ -9,7 +9,7 @@
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/shader/update.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "runtime/shader/core.h"
 
 /**
@@ -44,7 +44,7 @@ MeshStatus mesh_shader_create_shadow(Mesh *mesh) {
   Shader *shadow_shader = mesh_shader(mesh, MeshShader_Shadow);
 
   if (shadow_shader->name != NULL) {
-    VERBOSE_INFO(
+    logger_add(LoggerFlag_Info, 
         "Shadow shader for %s is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
@@ -83,7 +83,7 @@ MeshStatus mesh_shader_create_wireframe(Mesh *mesh) {
 
   // skip if already created
   if (wireframe_shader->name != NULL) {
-    VERBOSE_INFO(
+    logger_add(LoggerFlag_Info, 
         "Wireframe shader for %s is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
@@ -113,7 +113,7 @@ MeshStatus mesh_shader_create_solid(Mesh *mesh) {
   Shader *solid_shader = mesh_shader(mesh, MeshShader_Solid);
 
   if (solid_shader->name != NULL) {
-    VERBOSE_INFO(
+    logger_add(LoggerFlag_Info, 
         "Solid shader for %s is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
@@ -139,7 +139,7 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   Shader *texture_shader = mesh_shader(mesh, MeshShader_Texture);
 
   if (texture_shader->name != NULL) {
-    VERBOSE_INFO(
+    logger_add(LoggerFlag_Info, 
         "Texture shader for %s is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
@@ -170,7 +170,7 @@ MeshStatus mesh_shader_create_fixed(Mesh *mesh,
   Shader *fixed_shader = mesh_shader(mesh, MeshShader_Texture);
 
   if (fixed_shader->name != NULL) {
-    VERBOSE_INFO(
+    logger_add(LoggerFlag_Info, 
         "Fixed shader for %s is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;

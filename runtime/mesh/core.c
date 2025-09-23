@@ -10,7 +10,7 @@
 #include "utils/dyli.h"
 #include "shader/core.h"
 #include "topology/boundbox.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "uniform.h"
 #include "backend/registry.h"
 #include "backend/ssbo.h"
@@ -26,7 +26,7 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   mesh_set_name(mesh, md->name);
 
 #ifdef VERBOSE_CREATING_PHASE
-  VERBOSE_MESH_CREATE("%s", mesh->name);
+  logger_add(LoggerFlag_MeshCreate, "%s", mesh->name);
 #endif
 
   mesh->id = reg_register((void *)mesh, RegEntryType_Mesh);
@@ -140,7 +140,7 @@ Mesh *mesh_child_new(Mesh *parent) {
       &parent->children.length, sizeof(Mesh *), "Mesh child list");
 
   if (child == NULL) {
-    VERBOSE_WARNING("Couldn't create new entry in mesh child list.");
+    logger_add(LoggerFlag_Warning, "Couldn't create new entry in mesh child list.");
     return NULL;
   }
 

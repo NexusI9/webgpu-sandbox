@@ -5,7 +5,7 @@
 #include <cglm/ivec2.h>
 #include <stdlib.h>
 
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "utils/vector/core.h"
 
 static size_t edge_key_hash(EdgeKey key, size_t capacity) {
@@ -30,7 +30,7 @@ void edge_hash_set_create(EdgeHashSet *set, size_t capacity) {
   set->length = 0;
 
   if (set->entries == NULL) {
-    VERBOSE_PRINT("Couldn't allocate memory for new hash set.\n");
+    logger_add(LoggerFlag_Print, "Couldn't allocate memory for new hash set.\n");
     set->capacity = 0;
     return;
   }
@@ -77,7 +77,7 @@ bool edge_hash_set_insert(EdgeHashSet *set, EdgeKey key) {
 
       set->capacity = new_capacity;
     } else {
-      VERBOSE_PRINT(
+      logger_add(LoggerFlag_Print, 
           "Couldn't allocate memory for new hash set, new entry insertion "
           "aborted.\n");
       return false;

@@ -5,7 +5,7 @@
 
 #include "runtime/light/shadow_map/core.h"
 #include "runtime/texture/core.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 WGPUTextureView g_std_texture_view[STD_TEXTURE_VIEW_COUNT] = {0};
@@ -72,7 +72,7 @@ static const std_texture_view_create texture_creator[STD_TEXTURE_VIEW_COUNT] = {
 void scene_renderer_init_fallback_textures(const WGPUDevice device,
                                            const WGPUQueue queue) {
 
-  VERBOSE_PROCESS("Caching fallback textures...");
+  logger_add(LoggerFlag_Process, "Caching fallback textures...");
 
   for (TextureViewType i = 0; i < STD_TEXTURE_VIEW_COUNT; i++)
     g_std_texture_view[i] =

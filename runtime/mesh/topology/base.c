@@ -6,7 +6,7 @@
 
 #include "backend/buffer.h"
 #include "anchor.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 #include "runtime/geometry/vertex/core.h"
 #include "runtime/geometry/vertex/transform.h"
@@ -63,7 +63,7 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
 
   if (base->attribute.length) {
     if (device == NULL || queue == NULL)
-      VERBOSE_ERROR("Mesh has no device or queue.");
+      logger_add(LoggerFlag_Error, "Mesh has no device or queue.");
 
     buffer_create(&base->attribute.buffer,
                   &(CreateBufferDescriptor){
@@ -104,7 +104,7 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(
   if (base->index.length) {
 
     if (device == NULL || queue == NULL)
-      VERBOSE_ERROR("Mesh has no device or queue.");
+      logger_add(LoggerFlag_Error, "Mesh has no device or queue.");
 
     buffer_create(&base->index.buffer,
                   &(CreateBufferDescriptor){

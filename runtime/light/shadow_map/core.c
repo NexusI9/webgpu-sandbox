@@ -1,7 +1,7 @@
 #include "core.h"
 
 #include "utils/math.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/shader/core.h"
@@ -68,7 +68,7 @@
 
 void shadow_map_init(const ShadowMapInitDescriptor *desc) {
 
-  VERBOSE_PROCESS("Creating scene shadow map textures...");
+  logger_add(LoggerFlag_Process, "Creating scene shadow map textures...");
 
   /*debug_view_create(&debug_view_light, &(DebugViewCreateDescriptor){
                                            .device = &device,

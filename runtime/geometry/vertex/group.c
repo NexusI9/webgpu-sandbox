@@ -6,7 +6,7 @@
 
 #include "utils/hash.h"
 #include "index.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 
 /**
 ▗▖  ▗▖▗▄▄▄▖▗▄▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖     ▗▄▄▖▗▄▄▖  ▗▄▖ ▗▖ ▗▖▗▄▄▖
@@ -24,7 +24,7 @@ VertexGroupStatus vertex_group_expand(VertexGroup *group) {
       (vindex_t *)realloc(group->entries, new_capacity * sizeof(vindex_t));
 
   if (temp == NULL) {
-    VERBOSE_ERROR("Couldn't expand new vertex group.");
+    logger_add(LoggerFlag_Error, "Couldn't expand new vertex group.");
     return VertexGroupStatus_AllocFail;
   }
 
@@ -42,7 +42,7 @@ VertexGroupStatus vertex_group_create(VertexGroup *group, size_t capacity, const
   group->name = strdup(name);
 
   if (group->entries == NULL || group->name == NULL) {
-    VERBOSE_ERROR("Couldn't create new vertex group.");
+    logger_add(LoggerFlag_Error, "Couldn't create new vertex group.");
     group->capacity = 0;
     return VertexGroupStatus_AllocFail;
   }
@@ -55,7 +55,7 @@ VertexGroup *vertex_group_insert(VertexGroup *group, vindex_t *index_list,
 
   while (group->length + length > group->capacity) {
     if (vertex_group_expand(group) != VertexGroupStatus_Success) {
-      VERBOSE_ERROR("Couldn't insert new vertex group value.");
+      logger_add(LoggerFlag_Error, "Couldn't insert new vertex group value.");
       return NULL;
     }
   }
@@ -99,7 +99,7 @@ VertexGroupStatus vertex_group_set_expand(VertexGroupSet *set) {
       (VertexGroup *)realloc(set->entries, new_capacity * sizeof(VertexGroup));
 
   if (temp == NULL) {
-    VERBOSE_ERROR("Couldn't expand new vertex group set.");
+    logger_add(LoggerFlag_Error, "Couldn't expand new vertex group set.");
     return VertexGroupStatus_AllocFail;
   }
 
@@ -116,7 +116,7 @@ VertexGroupStatus vertex_group_set_create(VertexGroupSet *set, size_t capacity) 
   set->capacity = capacity;
 
   if (set->entries == NULL) {
-    VERBOSE_ERROR("Couldn't create new vertex group set.");
+    logger_add(LoggerFlag_Error, "Couldn't create new vertex group set.");
     set->capacity = 0;
     return VertexGroupStatus_AllocFail;
   }

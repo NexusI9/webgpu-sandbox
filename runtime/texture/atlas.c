@@ -3,7 +3,7 @@
 
 #include "backend/buffer.h"
 #include "runtime/texture/create.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 TextureStatus texture_atlas_create(TextureAtlas *atlas,
@@ -11,7 +11,7 @@ TextureStatus texture_atlas_create(TextureAtlas *atlas,
 
   if (desc->cell_count[0] > TEXTURE_ATLAS_MAX_ROW ||
       desc->cell_count[1] > TEXTURE_ATLAS_MAX_COL) {
-    VERBOSE_ERROR("Attempting to set a cell count out of maximum allowed cell "
+    logger_add(LoggerFlag_Error, "Attempting to set a cell count out of maximum allowed cell "
            "count: [%d,%d], trying to set [%d, %d].",
            TEXTURE_ATLAS_MAX_ROW, TEXTURE_ATLAS_MAX_COL, desc->cell_count[0],
            desc->cell_count[1]);
@@ -29,7 +29,7 @@ TextureStatus texture_atlas_create(TextureAtlas *atlas,
                                          });
 
   if (create != TextureStatus_Success) {
-    VERBOSE_ERROR("Couldn't create texture atlas %s.", desc->label);
+    logger_add(LoggerFlag_Error, "Couldn't create texture atlas %s.", desc->label);
     return create;
   }
 

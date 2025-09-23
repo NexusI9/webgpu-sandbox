@@ -1,13 +1,31 @@
 #ifndef _LOGGER_H_
 #define _LOGGER_H_
 
+#include "utils/color.h"
+#include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
 #include <webgpu/webgpu.h>
 
 #define LOGGER_MAX_ENTRY 2048
-#define LOGGER_ENTRY_TYPE_COUNT 12
-#define LOGGER_ENTRY_MESSAGE_LENGTH 256
+#define LOGGER_FLAG_COUNT 11
+#define LOGGER_MESSAGE_LENGTH 256
+
+#ifdef VERBOSE
+#ifdef VERBOSE_LINE
+#define PRINT_LINE(...) printf(" (%s:%d)\n", __FILE__, __LINE__)
+#else
+#define PRINT_LINE() printf("\n")
+#endif
+
+#define VERBOSE_PRINT(...)                                                     \
+  do {                                                                         \
+    printf(__VA_ARGS__);                                                       \
+    PRINT_LINE();                                                              \
+  } while (0)
+#else
+#define VERBOSE_PRINT(...) // no-op
+#endif                     // VERBOSE
 
 typedef enum {
   LoggerFlag_Print,
@@ -21,11 +39,10 @@ typedef enum {
   LoggerFlag_Import,
   LoggerFlag_Success,
   LoggerFlag_Process,
-  LoggerFlag_Header,
 } LoggerFlag;
 
 typedef struct {
-  char messages[LOGGER_MAX_ENTRY][LOGGER_ENTRY_MESSAGE_LENGTH];
+  char messages[LOGGER_MAX_ENTRY][LOGGER_MESSAGE_LENGTH];
   uint64_t timestamps[LOGGER_MAX_ENTRY];
   LoggerFlag flags[LOGGER_MAX_ENTRY];
   size_t length;
@@ -33,15 +50,39 @@ typedef struct {
 
 extern Logger g_logger;
 
-static inline void logger_add(const char *message, const LoggerFlag flag) {
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-  size_t index = (g_logger.length++) % LOGGER_MAX_ENTRY;
+void logger_add(const LoggerFlag, const char *, ...);
 
-  g_logger.flags[index] = flag;
-  strncpy(g_logger.messages[index], message, LOGGER_ENTRY_MESSAGE_LENGTH - 1);
-  g_logger.messages[index][LOGGER_ENTRY_MESSAGE_LENGTH - 1] = '\0';
-
-  
+#ifdef __cplusplus
 }
+#endif
+
+/*
+
+  DEBUG_TIME
+
+ */
+
+#ifdef DEBUG_TIME
+
+#define TIMER(name, code)                                                      \
+  do {                                                                         \
+    struct timespec _start, _end;                                              \
+    clock_gettime(CLOCK_MONOTONIC, &_start);                                   \
+    code clock_gettime(CLOCK_MONOTONIC, &_end);                                \
+    double _elapsed = (_end.tv_sec - _start.tv_sec) * 1000.0 +                 \
+                      (_end.tv_nsec - _start.tv_nsec) / 1000000.0;             \
+    logger_add(LoggerFlag_Print, "%s > %.3f ms", name, _elapsed);              \
+  } while (0)
+
+#else
+#define TIMER(name, code)                                                      \
+  do {                                                                         \
+    code                                                                       \
+  } while (0)
+#endif
 
 #endif

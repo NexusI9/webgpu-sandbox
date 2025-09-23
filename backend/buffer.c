@@ -5,7 +5,7 @@
 #include "stb/stb_image.h"
 #include "webgpu/webgpu.h"
 
-#include "utils/system.h"
+#include "backend/logger.h"
 
 /**
    Buffer methods are in charge to upload data to the GPU
@@ -110,7 +110,7 @@ void buffer_create_texture(WGPUTexture *texture, WGPUTextureView *view,
 
   if (free) {
     if (tx->data == NULL)
-      VERBOSE_WARNING("Trying to free a non allocated texture.");
+      logger_add(LoggerFlag_Warning, "Trying to free a non allocated texture.");
     else
       stbi_image_free(tx->data);
   }
@@ -144,7 +144,7 @@ void buffer_create_texture_cube(const CreateTextureCubeDescriptor *tx,
 
   if (free) {
     if (tx->data == NULL)
-      VERBOSE_WARNING("Trying to free a non allocated texture.");
+      logger_add(LoggerFlag_Warning, "Trying to free a non allocated texture.");
     else
       stbi_image_free(tx->data);
   }

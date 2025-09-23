@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include "core.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "utils/dyli.h"
 
 DynamicListStatus mesh_ref_list_create(MeshRefList *list,
@@ -90,7 +90,7 @@ MeshStatus mesh_ref_list_append(const MeshRefList *src, MeshRefList *dest,
       dest->entries = temp_entries;
 
     } else {
-      VERBOSE_ERROR("Couldn't reallocate and expand mesh indexed list.");
+      logger_add(LoggerFlag_Error, "Couldn't reallocate and expand mesh indexed list.");
       return MeshStatus_AllocFail;
     }
   }
@@ -130,7 +130,7 @@ MeshStatus mesh_ref_list_append(const MeshRefList *src, MeshRefList *dest,
 MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *src, MeshRefList *dest) {
 
   if (src->capacity == 0 || src->entries == NULL)
-    VERBOSE_ERROR(
+    logger_add(LoggerFlag_Error, 
         "Attempting to copy an unitialized list, entries: %p, capacity: %lu.",
         src->entries, src->capacity);
 
@@ -140,7 +140,7 @@ MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *src, MeshRefList *de
   dest->entries = malloc(dest->capacity * sizeof(Mesh *));
 
   if (dest->entries == NULL) {
-    VERBOSE_ERROR("Couldn't allocate memory for mesh reference list copy.");
+    logger_add(LoggerFlag_Error, "Couldn't allocate memory for mesh reference list copy.");
     dest->length = 0;
     return MeshStatus_AllocFail;
   }
@@ -153,7 +153,7 @@ MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *src, MeshRefList *de
 void mesh_ref_list_print(MeshRefList *list) {
 
   for (size_t i = 0; i < list->length; i++)
-    VERBOSE_DEBUG("[%p] %s", list->entries[i], list->entries[i]->name);
+    logger_add(LoggerFlag_Debug, "[%p] %s", list->entries[i], list->entries[i]->name);
 }
 
 void mesh_ref_list_average_position(MeshRefList *list, vec3 *dest) {

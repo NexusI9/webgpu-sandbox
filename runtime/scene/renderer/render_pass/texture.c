@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "runtime/texture/core.h"
 
 
@@ -27,7 +27,7 @@ void render_pass_create_multisampling_view(
     const RenderPassTextureDescriptor *desc) {
 
   if (desc->multisample == 0) {
-    VERBOSE_WARNING("Multisample provided is not valid (%d), make sure the "
+    logger_add(LoggerFlag_Warning, "Multisample provided is not valid (%d), make sure the "
                     "render pass is correctly initialised.",
                     desc->multisample);
     return;

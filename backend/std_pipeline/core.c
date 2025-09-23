@@ -19,7 +19,7 @@
 #include "backend/std_pipeline/compute_shader/mipmap/mipmap.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/pipeline/set.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 // Global definitions
@@ -63,7 +63,7 @@ static const ComputePipelineStateObject
 void standard_render_pipelines_init(
     const WGPUDevice device, const RenderPipelineMultisampleCount multisample) {
 
-  VERBOSE_PROCESS("Initializing Standard Render Pipelines...");
+  logger_add(LoggerFlag_Process, "Initializing Standard Render Pipelines...");
 
   for (RenderPipelineType i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++) {
 
@@ -134,7 +134,7 @@ void standard_render_pipelines_init(
 
 void standard_compute_pipelines_init(const WGPUDevice device) {
 
-  VERBOSE_PROCESS("Initializing Standard Compute Pipelines...");
+  logger_add(LoggerFlag_Process, "Initializing Standard Compute Pipelines...");
 
   for (ComputePipelineType i = 0; i < COMPUTE_PIPELINE_TYPE_COUNT; i++) {
 

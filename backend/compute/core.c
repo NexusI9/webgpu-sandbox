@@ -1,7 +1,7 @@
 #include "core.h"
 #include "backend/buffer.h"
 #include "runtime/texture/core.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 #include <string.h>
 
@@ -18,7 +18,7 @@
 ComputePassStatus compute_pass_init(ComputePass *pass,
                                     const ComputePassDescriptor *desc) {
 
-  VERBOSE_PROCESS("Initializing Renderer Compute Pass");
+  logger_add(LoggerFlag_Process, "Initializing Renderer Compute Pass");
 
   pass->sampler = wgpuDeviceCreateSampler(
       desc->device, &(WGPUSamplerDescriptor){

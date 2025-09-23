@@ -9,7 +9,7 @@
 #include "core.h"
 #include "runtime/pipeline/render.h"
 #include "utils/dyli.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 static inline void shader_convert_uniforms(ShaderBindGroup *,
@@ -25,7 +25,7 @@ static inline void shader_layout_print(bind_group_index group, bind_index index,
 #ifdef VERBOSE_BINDING_PHASE
 void shader_layout_print(bind_group_index group, bind_index index,
                          const char *type) {
-  VERBOSE_PRINT("\t\t\t└ group: %u | binding: %u | '%s'", group, index, type);
+  logger_add(LoggerFlag_Print, "\t\t\t└ group: %u | binding: %u | '%s'", group, index, type);
 }
 #endif
 
@@ -39,7 +39,7 @@ void shader_layout_print(bind_group_index group, bind_index index,
 void shader_bind_group_create(Shader *shader, bind_group_index index) {
 
   if (index > SHADER_MAX_BIND_GROUP) {
-    VERBOSE_WARNING("Cannot initialize a group index > %d.",
+    logger_add(LoggerFlag_Warning, "Cannot initialize a group index > %d.",
                     SHADER_MAX_BIND_GROUP);
     return;
   }
@@ -201,7 +201,7 @@ ShaderBindGroup *shader_get_bind_group(Shader *shader,
 
   // check if group within acceptable range
   if (group_index >= SHADER_MAX_BIND_GROUP) {
-    VERBOSE_ERROR("WebGPU is unable to create more than 4 bind groups.");
+    logger_add(LoggerFlag_Error, "WebGPU is unable to create more than 4 bind groups.");
     return NULL;
   }
 
@@ -268,7 +268,7 @@ void shader_bind_group_build(ShaderBindGroup *group,
   uint16_t total_length = shader_bind_group_entries_count(group);
 
 #ifdef VERBOSE_BINDING_PHASE
-  VERBOSE_PRINT("\t\t\t\t└ Uniforms: %lu\n\t\t\t\t└ Textures: "
+  logger_add(LoggerFlag_Print, "\t\t\t\t└ Uniforms: %lu\n\t\t\t\t└ Textures: "
                 "%lu\n\t\t\t\t└ Samplers: %lu",
                 group->uniforms.length, group->textures.length,
                 group->samplers.length);
@@ -303,7 +303,7 @@ void shader_bind_group_refresh(ShaderBindGroup *group,
                                const WGPUDevice device,
                                const WGPURenderPipeline *pipeline) {
 #ifdef VERBOSE_BINDING_PHASE
-  VERBOSE_PRINT("\t\t\t(refresh)");
+  logger_add(LoggerFlag_Print, "\t\t\t(refresh)");
 #endif
 
   shader_bind_group_release(group);
@@ -323,7 +323,7 @@ void shader_bind_group_create_from_layout(
     Shader *shader, const RenderPipelineStateObject *layout) {
 
 #ifdef VERBOSE_BINDING_PHASE
-  VERBOSE_PRINT("\t\t└ Initialize bindgroups from PSO with default values:");
+  logger_add(LoggerFlag_Print, "\t\t└ Initialize bindgroups from PSO with default values:");
 #endif
 
   // traverse group

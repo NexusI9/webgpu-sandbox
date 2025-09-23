@@ -23,7 +23,7 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 
 // initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);

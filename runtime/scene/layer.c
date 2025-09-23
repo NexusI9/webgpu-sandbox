@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 #include "utils/hash.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "runtime/mesh/ref_list.h"
 #include "utils/dyli.h"
 
@@ -240,7 +240,7 @@ Mesh *scene_layer_set_insert_mesh(SceneLayerSet *set, const char *name,
 
   // if layer creationg fail, finally return NULL object
   if (layer == NULL) {
-    VERBOSE_ERROR("Couldn't insert new mesh in scene layer: %s\n", name);
+    logger_add(LoggerFlag_Error, "Couldn't insert new mesh in scene layer: %s\n", name);
     return NULL;
   }
 
@@ -262,10 +262,10 @@ void scene_layer_set_print_layer(SceneLayerSet *set, const char *name) {
   SceneLayer *layer = scene_layer_set_find(set, name);
 
   if (layer == NULL) {
-    VERBOSE_WARNING("Couldn't find any layer with name: %s", name);
+    logger_add(LoggerFlag_Warning, "Couldn't find any layer with name: %s", name);
     return;
   }
 
-  VERBOSE_DEBUG("Layer meshes %s:", name);
+  logger_add(LoggerFlag_Debug, "Layer meshes %s:", name);
   mesh_ref_list_print(&layer->meshes);
 }

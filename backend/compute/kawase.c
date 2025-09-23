@@ -3,7 +3,6 @@
 #include "backend/std_pipeline/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
-#include "utils/system.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <math.h>

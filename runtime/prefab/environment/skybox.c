@@ -15,7 +15,7 @@
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
@@ -99,7 +99,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
   const mip_t mip_count = mipmap_count(resolution, resolution);
 
   if (blur > mip_count)
-    VERBOSE_WARNING("Attempting to set a skybox blur factor (%u) superior to "
+    logger_add(LoggerFlag_Warning, "Attempting to set a skybox blur factor (%u) superior to "
                     "the available Mip count (%u)",
                     blur, mip_count);
 

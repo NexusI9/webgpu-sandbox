@@ -4,7 +4,7 @@
 #include <cglm/vec2.h>
 #include <stddef.h>
 
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "./utils.h"
 #include "core.h"
 #include "runtime/geometry/vertex/attribute.h"
@@ -29,7 +29,7 @@ void ao_bake_local(SceneRendererTextureAO *ao,
 
   Mesh *mesh = desc->mesh;
 
-  VERBOSE_PROCESS("Baking Local AO for mesh: %s", mesh->name);
+  logger_add(LoggerFlag_Process, "Baking Local AO for mesh: %s", mesh->name);
 
   VertexAttribute *mesh_vertex = &mesh->topology.base.attribute;
   VertexIndex *mesh_index = &mesh->topology.base.index;
@@ -145,7 +145,7 @@ void ao_bake_local(SceneRendererTextureAO *ao,
     scene_debug_ray_build(desc->debug->debug_scene, line);
 
 #ifdef AO_BAKE_HIT_COUNT
-  VERBOSE_DEBUG("%s hits: %d", mesh->name, g_debug_ao_bake_hit_count);
+  logger_add(LoggerFlag_Debug, "%s hits: %d", mesh->name, g_debug_ao_bake_hit_count);
   g_debug_ao_bake_hit_count = 0;
 #endif
 }

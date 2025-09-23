@@ -5,7 +5,7 @@
 #include <cglm/vec3.h>
 
 #include "runtime/primitive/plane.h"
-#include "utils/system.h"
+#include "backend/logger.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/camera/core.h"
 #include "runtime/mesh/shader/core.h"
@@ -33,7 +33,7 @@ void debug_view_create(DebugView *debug_view,
 void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   if (debug_view->length == debug_view->capacity) {
-    VERBOSE_PRINT("Debug view Currently holding max capacity, no more views "
+    logger_add(LoggerFlag_Print, "Debug view Currently holding max capacity, no more views "
                   "can be added\n");
     return;
   }

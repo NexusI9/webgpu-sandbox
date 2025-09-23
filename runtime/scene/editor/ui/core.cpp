@@ -1,12 +1,15 @@
 #include "core.h"
-#include "./style/style.carbon.hpp"
+#include "./imgui_style/style.carbon.hpp"
+#include "backend/logger.h"
 #include "include/imgui/imgui.h"
 #include "include/imgui/imgui_impl_wgpu.h"
+#include "resources/tool/css2h/output/theme.default.h"
 #include "runtime/input/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/editor/selection/utils.h"
+#include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
 #include "stdio.h"
 
@@ -36,7 +39,7 @@ static inline void scene_editor_ui_create_monitor(SceneEditorUI *, Scene *);
 SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
                                          const SceneEditorUIDescriptor *desc) {
 
-  VERBOSE_PROCESS("Intitializing Editor UI");
+  logger_add(LoggerFlag_Process, "Intitializing Editor UI");
 
   {
     ui->width = desc->width;
@@ -145,13 +148,33 @@ void scene_editor_ui_draw_callback(void *data) {
 void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
 
   // define icon position on atlas
-  ui->icon_uv[SceneEditorUIIcon_RenderMode_Boundbox] = {.cell = {5, 0}};
-  ui->icon_uv[SceneEditorUIIcon_RenderMode_Wireframe] = {.cell = {6, 0}};
-  ui->icon_uv[SceneEditorUIIcon_RenderMode_Solid] = {.cell = {7, 0}};
-  ui->icon_uv[SceneEditorUIIcon_RenderMode_Texture] = {.cell = {8, 0}};
-  ui->icon_uv[SceneEditorUIIcon_Gizmo_Position] = {.cell = {9, 0}};
-  ui->icon_uv[SceneEditorUIIcon_Gizmo_Rotate] = {.cell = {10, 0}};
-  ui->icon_uv[SceneEditorUIIcon_Gizmo_Scale] = {.cell = {11, 0}};
+
+  ui->icon_uv[SceneEditorUIIcon_Null] = {.cell = {15, 15}};
+
+  {
+    // render modes
+    ui->icon_uv[SceneEditorUIIcon_RenderMode_Boundbox] = {.cell = {5, 0}};
+    ui->icon_uv[SceneEditorUIIcon_RenderMode_Wireframe] = {.cell = {6, 0}};
+    ui->icon_uv[SceneEditorUIIcon_RenderMode_Solid] = {.cell = {7, 0}};
+    ui->icon_uv[SceneEditorUIIcon_RenderMode_Texture] = {.cell = {8, 0}};
+  }
+
+  {
+    // gizmo
+    ui->icon_uv[SceneEditorUIIcon_Gizmo_Position] = {.cell = {9, 0}};
+    ui->icon_uv[SceneEditorUIIcon_Gizmo_Rotate] = {.cell = {10, 0}};
+    ui->icon_uv[SceneEditorUIIcon_Gizmo_Scale] = {.cell = {11, 0}};
+  }
+
+  {
+    // log
+    ui->icon_uv[SceneEditorUIIcon_Log_Error] = {.cell = {12, 0}};
+    ui->icon_uv[SceneEditorUIIcon_Log_Warning] = {.cell = {13, 0}};
+    ui->icon_uv[SceneEditorUIIcon_Log_Info] = {.cell = {14, 0}};
+    ui->icon_uv[SceneEditorUIIcon_Log_Success] = {.cell = {15, 0}};
+    ui->icon_uv[SceneEditorUIIcon_Log_Import] = {.cell = {0, 1}};
+    ui->icon_uv[SceneEditorUIIcon_Log_Process] = {.cell = {1, 1}};
+  }
 
   // generate uvs
   for (uint8_t i = 0; i < SCENE_EDITOR_UI_ICON_COUNT; i++)
@@ -273,11 +296,129 @@ void scene_editor_ui_create_bottom_panel(SceneEditorUI *ui, Scene *scene) {
   ImGui::End();
 }
 
+typedef struct {
+  const ThemeDefaultColor text;
+  const ThemeDefaultColor timestamp;
+  const ThemeDefaultColor background;
+  SceneEditorUIIcon icon;
+} LoggerLook;
+
+static const LoggerLook logger_looks[LOGGER_FLAG_COUNT] = {
+    [LoggerFlag_Print] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
+            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
+            .icon = SceneEditorUIIcon_Null,
+        },
+    [LoggerFlag_Info] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
+            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
+            .icon = SceneEditorUIIcon_Log_Info,
+        },
+    [LoggerFlag_Error] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_DANGER_ON_DANGER,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_DANGER_SUBTLE,
+            .background = THEME_DEFAULT_COLOR_BACKGROUND_DANGER_STRONG_DARK,
+            .icon = SceneEditorUIIcon_Log_Error,
+        },
+    [LoggerFlag_Warning] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_WARNING_ON_WARNING,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_WARNING_SUBTLE,
+            .background = THEME_DEFAULT_COLOR_BACKGROUND_WARNING_STRONG_DARK,
+            .icon = SceneEditorUIIcon_Log_Warning,
+        },
+    [LoggerFlag_Debug] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
+            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
+            .icon = SceneEditorUIIcon_Null,
+        },
+    [LoggerFlag_ShaderCreate] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
+            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
+            .icon = SceneEditorUIIcon_Null,
+        },
+    [LoggerFlag_MeshBuild] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
+            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
+            .icon = SceneEditorUIIcon_Null,
+        },
+    [LoggerFlag_MeshCreate] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
+            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
+            .icon = SceneEditorUIIcon_Null,
+        },
+    [LoggerFlag_Import] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_INFORMATION_ON_INFORMATION,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_INFORMATION_SUBTLE,
+            .background =
+                THEME_DEFAULT_COLOR_BACKGROUND_INFORMATION_STRONG_DARK,
+            .icon = SceneEditorUIIcon_Log_Import,
+        },
+    [LoggerFlag_Success] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_SUCCESS_ON_SUCCESS,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUCCESS_SUBTLE,
+            .background = THEME_DEFAULT_COLOR_BACKGROUND_SUCCESS_STRONG_DARK,
+            .icon = SceneEditorUIIcon_Log_Success,
+        },
+    [LoggerFlag_Process] =
+        {
+            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
+            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
+            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
+            .icon = SceneEditorUIIcon_Log_Process,
+        },
+};
+
+static ImVec2 log_icon_scale = ImVec2(16, 16);
+
 void scene_editor_ui_create_log(SceneEditorUI *ui, Scene *scene) {
   ImGui::BeginChild("Logs", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0),
                     true);
   {
     ImGui::Text("Logs");
+    ImGui::BeginChild("Logs entries", ImVec2(0, 0), true);
+    {
+      for (size_t i = 0; i < g_logger.length; i++) {
+
+        const LoggerLook *look = &logger_looks[g_logger.flags[i]];
+        const SceneEditorUIIconUV *uv = &ui->icon_uv[look->icon];
+        const color *background_color = &theme_default_color[look->background];
+        const color *timestamp_color = &theme_default_color[look->timestamp];
+        const color *text_color = &theme_default_color[look->text];
+        const char *message = g_logger.messages[i];
+
+        ImVec2 pos = ImGui::GetCursorScreenPos();
+
+        float row_height = ImGui::GetTextLineHeightWithSpacing();
+        float row_width = ImGui::GetContentRegionAvail().x;
+
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            pos, ImVec2(pos.x + row_width, pos.y + row_height),
+            ImGui::ColorConvertFloat4ToU32((ImVec4 &)*background_color));
+
+        ImGui::Image((ImTextureRef)ui->atlas_texture.view, log_icon_scale,
+                     ImVec2(uv->uv0[0], uv->uv0[1]),
+                     ImVec2(uv->uv1[0], uv->uv1[1]));
+        ImGui::SameLine();
+        ImGui::TextColored((ImVec4 &)*text_color, "%s", g_logger.messages[i]);
+      } 
+    }
+    ImGui::EndChild();
   }
   ImGui::EndChild();
 }
