@@ -60,10 +60,12 @@ FILES_WGSL := $(shell find $(PATH_WGSL) -type f -name "*.wgsl")
 # Shader wgsl files
 FILES_SHADER := $(addprefix --preload-file , $(COMPILE_WGSL) $(FILES_WGSL))  
 
+PATH_FONT := ./resources/assets/font
 PATH_GLTF := ./resources/assets/gltf
 PATH_MBIN := ./resources/assets/mbin
 PATH_TEXTURE := ./resources/assets/texture
 
+FILES_FONT := $(shell find $(PATH_FONT) -type f -name "*.ttf" | sed "s|^|--preload-file &|")
 FILES_GLTF := $(shell find $(PATH_GLTF) -type f -name "*.gltf" | sed "s|^|--preload-file &|")
 FILES_MBIN := $(shell find $(PATH_MBIN) -type f -name "*.mbin" | sed "s|^|--preload-file &|")
 FILES_TEXTURE := $(shell find $(PATH_TEXTURE) \( -name "*.png" -o -name "*.jpg" \) -type f | sed "s|^|--preload-file &|")
@@ -192,6 +194,7 @@ wasm:
 	     $(WASM_FLAGS) \
 	     $(ASAN) \
 	     $(FILES_SHADER) \
+	     $(FILES_FONT) \
 	     $(FILES_GLTF) \
 	     $(FILES_MBIN) \
 	     $(FILES_TEXTURE)

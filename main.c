@@ -68,12 +68,12 @@ int main(int argc, const char *argv[]) {
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
   example_skybox(&main_scene);
-  example_gltf_podium(&main_scene);
+  example_gltf(&main_scene);
 
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);
   // example_glass_probe_grid(&main_scene, false);
-  example_glass_probe_plane(&main_scene, false);
+  //example_glass_probe_plane(&main_scene, false);
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);

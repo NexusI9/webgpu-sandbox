@@ -18,12 +18,19 @@
  */
 static ImGuiContext *imgui_context;
 
+typedef enum {
+  SceneEditorUIDisplay_Layout = 1 << 0,
+  SceneEditorUIDisplay_Activity = 1 << 1,
+} SceneEditorUIDisplay;
+
 static inline void scene_editor_ui_set_icon_cell(SceneEditorUI *);
 static inline void scene_editor_ui_create_texture(SceneEditorUI *);
 
 static inline bool scene_editor_ui_create_button_icon(SceneEditorUI *,
                                                       const SceneEditorUIIcon,
                                                       const char *, ImVec2);
+
+static inline void scene_editor_ui_create_display(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_scene_tree(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_properties(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_gizmo(SceneEditorUI *, Scene *);
@@ -72,6 +79,7 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   return SceneEditorUIStatus_Success;
 }
 
+int display = SceneEditorUIDisplay_Activity | SceneEditorUIDisplay_Layout;
 void scene_editor_ui_draw_callback(void *data) {
   Scene *scene = (Scene *)data;
   SceneEditorUI *ui = &scene->editor.ui;
@@ -114,23 +122,31 @@ void scene_editor_ui_draw_callback(void *data) {
     io.DisplaySize.x = (float)*ui->width;
     io.DisplaySize.y = (float)*ui->height;
     io.DeltaTime = ui->clock->delta;
-    io.DisplayFramebufferScale.x = 1.0f;
-    io.DisplayFramebufferScale.y = 1.0f;
     io.FontGlobalScale = 1.0f;
+    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
     io.MousePos = ImVec2(g_input.mouse.x, g_input.mouse.y);
     io.MouseDown[0] = g_input.mouse.state;
-    io.MouseWheel = g_input.mouse.wheel.deltaX;
+    io.MouseWheel = g_input.mouse.wheel.deltaX; 
+    io.Fonts->AddFontFromFileTTF("./resources/assets/font/GolosText-Regular.ttf", 14.0f);
   }
-
+ 
   {
     ImGui_ImplWGPU_NewFrame();
     ImGui::NewFrame();
     {
-      scene_editor_ui_create_top_bar(ui, scene);
-      scene_editor_ui_create_right_panel(ui, scene);
-      scene_editor_ui_create_bottom_panel(ui, scene);
-      scene_editor_ui_create_gizmo(ui, scene);
-      scene_editor_ui_create_monitor(ui, scene);
+
+      if (display & SceneEditorUIDisplay_Layout) {
+        scene_editor_ui_create_top_bar(ui, scene);
+        scene_editor_ui_create_right_panel(ui, scene);
+        scene_editor_ui_create_bottom_panel(ui, scene);
+        scene_editor_ui_create_gizmo(ui, scene);
+      }
+
+      if (display & SceneEditorUIDisplay_Activity) {
+        scene_editor_ui_create_monitor(ui, scene);
+      }
+
+      scene_editor_ui_create_display(ui, scene);
     }
     ImGui::Render();
     ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), ui->pass_encoder);
@@ -174,6 +190,12 @@ void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
     ui->icon_uv[SceneEditorUIIcon_Log_Success] = {.cell = {15, 0}};
     ui->icon_uv[SceneEditorUIIcon_Log_Import] = {.cell = {0, 1}};
     ui->icon_uv[SceneEditorUIIcon_Log_Process] = {.cell = {1, 1}};
+  }
+
+  {
+    // bool
+    ui->icon_uv[SceneEditorUIIcon_Layout] = {.cell = {2, 1}};
+    ui->icon_uv[SceneEditorUIIcon_Activity] = {.cell = {3, 1}};
   }
 
   // generate uvs
@@ -276,6 +298,38 @@ void scene_editor_ui_create_right_panel(SceneEditorUI *ui, Scene *scene) {
     scene_editor_ui_create_properties(ui, scene);
   }
 
+  ImGui::End();
+}
+
+static int button_display_size = 24;
+void scene_editor_ui_create_display(SceneEditorUI *ui, Scene *scene) {
+
+  ImGui::SetNextWindowPos(ImVec2(gizmo_margin, 0), ImGuiCond_Always);
+  ImGui::Begin("Display Frame", nullptr,
+               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+                   ImGuiWindowFlags_NoBackground);
+
+  // remove backgrounds & padding
+  ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));
+  ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+  {
+    if (scene_editor_ui_create_button_icon(
+            ui, SceneEditorUIIcon_Layout, "Layout",
+            ImVec2(button_display_size, button_display_size)))
+      display ^= SceneEditorUIDisplay_Layout;
+
+    ImGui::SameLine();
+
+    if (scene_editor_ui_create_button_icon(
+            ui, SceneEditorUIIcon_Activity, "Activity",
+            ImVec2(button_display_size, button_display_size)))
+      display ^= SceneEditorUIDisplay_Activity;
+  }
+  ImGui::PopStyleColor(3);
+  ImGui::PopStyleVar();
   ImGui::End();
 }
 
@@ -545,15 +599,23 @@ void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
 }
 
 void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
+
+  const int top_bar_width = *ui->width - right_panel_width;
+  const int button_count = 8;
+  const int padding = 1;
+
   ImGui::SetNextWindowPos(ImVec2(top_bar_margin, top_bar_margin));
   ImGui::PushStyleColor(ImGuiCol_WindowBg,
                         (ImVec4 &)*theme_default_color
                             [THEME_DEFAULT_COLOR_BACKGROUND_BLANKET_MEDIUM]);
-  ImGui::SetNextWindowSize(ImVec2(
-      *ui->width - right_panel_width - 2 * top_bar_margin, top_bar_height));
+  ImGui::SetNextWindowSize(ImVec2(top_bar_width, top_bar_height));
   ImGui::Begin("Top bar", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+                   ImGuiWindowFlags_NoBringToFrontOnFocus);
+
+  ImGui::SetCursorPosX(top_bar_width -
+                       button_count * (button_render_mode_size + padding));
   {
     scene_editor_ui_create_button_icon(
         ui, SceneEditorUIIcon_RenderMode_Boundbox, "Boundbox",
