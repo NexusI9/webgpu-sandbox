@@ -371,7 +371,7 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
       // set mesh position
       loader_gltf_mesh_position(scene_mesh, gl_mesh.name, data);
 
-      scene_add_mesh(scene, target_mesh, NULL);
+      scene_add_mesh(scene, target_mesh, NULL, SceneAddFlag_None);
 
       // ==== UPDATE STATS ===
       {

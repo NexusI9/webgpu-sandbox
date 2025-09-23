@@ -1,12 +1,12 @@
 #ifndef _SCENE_ADD_H_
 #define _SCENE_ADD_H_
 
-#include "runtime/probe/probe.h"
 #include "core.h"
 #include "runtime/camera/core.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
+#include "runtime/probe/probe.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 
@@ -39,6 +39,12 @@
 
  */
 
+typedef enum {
+  SceneAddFlag_None = 1 << 0,
+  SceneAddFlag_Hide = 1 << 1,
+  SceneAddFlag_Unselectable = 1 << 2,
+} SceneAddFlag;
+
 /* === Scene Editor Objects === */
 
 // light
@@ -66,12 +72,14 @@ SceneEditorObject *scene_add_camera(Scene *, const CameraCreateDescriptor *,
 
 /* ===  Scene Meshes === */
 Mesh *scene_new_mesh(Scene *);
-void scene_add_mesh(Scene *, Mesh *, const char *);
-void scene_add_mesh_ref_list(Scene *, MeshRefList *, const char *);
+void scene_add_mesh(Scene *, Mesh *, const char *, const SceneAddFlag);
+void scene_add_mesh_ref_list(Scene *, MeshRefList *, const char *,
+                             const SceneAddFlag);
 
-void scene_add_mesh_fixed(Scene *, Mesh *, const ScenePipeline, const char *);
+void scene_add_mesh_fixed(Scene *, Mesh *, const ScenePipeline, const char *,
+                          const SceneAddFlag);
 void scene_add_mesh_fixed_ref_list(Scene *, MeshRefList *, const ScenePipeline,
-                                   const char *);
+                                   const char *, const SceneAddFlag);
 
 void scene_remove_mesh(Scene *, Mesh *, const ScenePipeline);
 void scene_remove_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);

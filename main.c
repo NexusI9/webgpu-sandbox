@@ -66,7 +66,7 @@ int main(int argc, const char *argv[]) {
    */
 
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
-
+ 
   example_skybox(&main_scene);
   example_gltf(&main_scene);
 

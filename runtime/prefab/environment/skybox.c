@@ -160,7 +160,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
   const RenderPipeline *pipeline = shader_pipeline(shader);
 
   scene_add_mesh_fixed(scene, skybox_mesh, ScenePipeline_Fixed_Background,
-                       NULL);
+                       NULL, SceneAddFlag_Unselectable);
 }
 
 /**

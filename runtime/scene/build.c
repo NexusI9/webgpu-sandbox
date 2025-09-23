@@ -49,9 +49,6 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
 
   const SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
 
-  // bind new mesh uniform to SSBO and copy previous mesh uniform data
-  ssbo_copy_entry(ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
-
   // Fixed rendering (NOT part of shader/topology creation automation, meaning
   // it's the developer responsibility to create the relative topology and
   // shaders.)

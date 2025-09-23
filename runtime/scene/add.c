@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "./editor/editor.h"
+#include "backend/logger.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/ubo.h"
@@ -37,7 +38,6 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
 #include "utils/projection.h"
-#include "backend/logger.h"
 
 static inline void scene_add_seo(Scene *, SceneEditorObject *);
 static inline void
@@ -204,9 +204,12 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 
   base_list->length++;
 
-  ubo_update_entry(&scene->renderer.ubo, UBOField_SpotLightCount,
-                   (void *)&base_list->length);
-  ubo_upload(&scene->renderer.ubo);
+  {
+    // update UBO
+    ubo_update_entry(&scene->renderer.ubo, UBOField_SpotLightCount,
+                     (void *)&base_list->length);
+    ubo_upload(&scene->renderer.ubo);
+  }
 
   return seo_light;
 }
@@ -217,7 +220,8 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
 
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
-    logger_add(LoggerFlag_Error, "Scene ambient light capacity reached maximum.");
+    logger_add(LoggerFlag_Error,
+               "Scene ambient light capacity reached maximum.");
     return 0;
   }
 
@@ -407,15 +411,8 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
   for (size_t i = 0; i < seo->meshes.length; i++) {
     Mesh *mesh = seo->meshes.entries[i].mesh;
     // build mesh depending on pipeline and scene render mode
-    scene_build_mesh(scene, mesh, ScenePipeline_Fixed);
-    mesh_ref_list_insert(pipeline_mesh_list, mesh);
-
-    scene_render_pass_draw_list_enable_mesh(scene, pipeline_mesh_list, mesh);
-
-    // add the SEO into the right selection branch/ filter and link the SEO as
-    // extra
-    scene_selection_add_mesh(&scene->editor.selection, mesh, seo,
-                             SceneSelectionType_SEO);
+    scene_add_mesh_fixed(scene, mesh, ScenePipeline_Fixed, NULL,
+                         SceneAddFlag_None);
   }
 }
 
@@ -552,24 +549,29 @@ Mesh *scene_new_mesh(Scene *scene) {
 }
 
 static void scene_add_mesh_any(Scene *, Mesh *, const ScenePipeline,
-                               const char *);
+                               const char *, const SceneAddFlag);
 
 void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
-                        const char *layer) {
+                        const char *layer, const SceneAddFlag flag) {
 
-  // add to scene layers ('Default' layer if NULL)
-  if (layer == NULL)
-    layer = SCENE_LAYER_DEFAULT;
-  scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
+  {
+    // add to scene layers ('Default' layer if NULL)
+    if (layer == NULL)
+      layer = SCENE_LAYER_DEFAULT;
+    scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
+  }
 
   MeshRefList *pipeline_mesh_list = scene_pipeline(scene, pipeline);
 
-  // add mesh pointer to the right pipeline
-  mesh_ref_list_insert(pipeline_mesh_list, mesh);
-
-  scene_render_pass_draw_list_enable_mesh(scene, pipeline_mesh_list, mesh);
+  // actually show the mesh
+  if ((flag & SceneAddFlag_Hide) == 0) {
+    mesh_ref_list_insert(pipeline_mesh_list, mesh);
+    scene_render_pass_draw_list_enable_mesh(scene, pipeline_mesh_list, mesh);
+  }
 
   // Update Shadow maps if added to Dynamic_Lit pipeline
+  SceneSelectionType selection_pipeline = SceneSelectionType_Mesh;
+
   if (pipeline == ScenePipeline_Dynamic_LitShadow &&
       scene->renderer.draw.mode == SceneRendererDrawMode_Texture) {
     shadow_map_draw_all(
@@ -581,15 +583,13 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
         },
         SCENE_DEBUG_UNDEFINED);
 
-    // EDITORONLY (add mesh to selection shadow)
-    scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
-                             SceneSelectionType_MeshShadow);
-
-  } else {
-    // EDITORONLY (add mesh to selection)
-    scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
-                             SceneSelectionType_Mesh);
+    selection_pipeline = SceneSelectionType_MeshShadow;
   }
+
+  // EDITORONLY (add mesh to selection)
+  if ((flag & SceneAddFlag_Unselectable) == 0)
+    scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
+                             selection_pipeline);
 }
 
 /**
@@ -625,7 +625,8 @@ void scene_render_pass_draw_list_enable_mesh(
    one will add dynamic assets to the scene, compared to the fixed elements
    which are only used by the editor itself.
  */
-void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
+void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
+                    const SceneAddFlag flag) {
 
   // dispatch mesh based on their global pipeline address (lit by default)
   ScenePipeline pipeline = ScenePipeline_Dynamic_LitShadow;
@@ -640,10 +641,13 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
       mesh_pipeline == std_render_pipeline(RenderPipelineType_GlassProbePlane))
     pipeline = ScenePipeline_Dynamic_Unlit;
 
+  // bind new mesh uniform to SSBO and copy previous mesh uniform data
+  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
+
   // build mesh depending on pipeline and scene render mode
   scene_build_mesh(scene, mesh, pipeline);
 
-  scene_add_mesh_any(scene, mesh, pipeline, layer);
+  scene_add_mesh_any(scene, mesh, pipeline, layer, flag);
 }
 
 /**
@@ -651,18 +655,28 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
    pipeline. Meaning each meshes are going to be build depending on the pipeline
    and the current render mode.
  */
-void scene_add_mesh_ref_list(Scene *scene, MeshRefList *list,
-                             const char *layer) {
+void scene_add_mesh_ref_list(Scene *scene, MeshRefList *list, const char *layer,
+                             const SceneAddFlag flag) {
   for (size_t i = 0; i < list->length; i++)
-    scene_add_mesh(scene, list->entries[i], layer);
+    scene_add_mesh(scene, list->entries[i], layer, flag);
 }
 
+/**
+   Function mostly used for Scene Editor Objects like Gizmo, Lights and Camera.
+   Casual Meshes go through the scene_add_mesh(...) function.
+
+   The key difference is that the scen_add_mesh will dispatch/ define the mesh
+   to the scene pipeline automatically based on the pipeline pointer (if
+   pipeline == pbr, then goes to lit shadow scene list). However in this fixed
+   method, we provide the scene pipeline so it will stay the same no matter the
+   render draw mode.
+ */
 void scene_add_mesh_fixed(Scene *scene, Mesh *mesh,
-                          const ScenePipeline pipeline, const char *layer) {
-
+                          const ScenePipeline pipeline, const char *layer,
+                          const SceneAddFlag flag) {
+  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
   scene_build_mesh(scene, mesh, pipeline);
-
-  scene_add_mesh_any(scene, mesh, pipeline, layer);
+  scene_add_mesh_any(scene, mesh, pipeline, layer, flag);
 }
 
 /**
@@ -672,7 +686,7 @@ void scene_add_mesh_fixed(Scene *scene, Mesh *mesh,
  */
 void scene_add_mesh_fixed_ref_list(Scene *scene, MeshRefList *list,
                                    const ScenePipeline pipeline,
-                                   const char *layer) {
+                                   const char *layer, const SceneAddFlag flag) {
   for (size_t i = 0; i < list->length; i++)
-    scene_add_mesh_any(scene, list->entries[i], pipeline, layer);
+    scene_add_mesh_any(scene, list->entries[i], pipeline, layer, flag);
 }

@@ -34,5 +34,5 @@ void example_primitive(Mesh *cube, vec3 position, Scene *scene,
 
   mesh_set_position(cube, position);
 
-  scene_add_mesh(scene, cube, NULL);
+  scene_add_mesh(scene, cube, NULL, SceneAddFlag_None);
 }

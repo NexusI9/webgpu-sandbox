@@ -60,7 +60,7 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});
   mesh_set_scale(mesh, (vec3){3.0f, 3.0f, 3.0f});
 
-  scene_add_mesh(scene, mesh, NULL);
+  scene_add_mesh(scene, mesh, NULL, SceneAddFlag_None);
 
   // TODO: Put this in the scene build for automation ?
 
@@ -144,7 +144,7 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
   mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});
   mesh_set_scale(mesh, (vec3){scale, scale, scale});
 
-  scene_add_mesh(scene, mesh, NULL);
+  scene_add_mesh(scene, mesh, NULL, SceneAddFlag_None);
 
   // link glass settings
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,

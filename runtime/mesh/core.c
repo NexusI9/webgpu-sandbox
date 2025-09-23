@@ -1,21 +1,21 @@
 #include "./core.h"
 
-#include <string.h>
 #include <cglm/mat4.h>
 #include <cglm/quat.h>
 #include <cglm/vec3.h>
 #include <stdlib.h>
+#include <string.h>
 #include <webgpu/webgpu.h>
 
-#include "utils/dyli.h"
-#include "shader/core.h"
-#include "topology/boundbox.h"
 #include "backend/logger.h"
-#include "uniform.h"
 #include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/pipeline/render.h"
+#include "shader/core.h"
+#include "topology/boundbox.h"
+#include "uniform.h"
+#include "utils/dyli.h"
 
 // Shadow map is implicitely handled withing mesh
 static inline Mesh *mesh_children_list_check_init(Mesh *);
@@ -140,7 +140,8 @@ Mesh *mesh_child_new(Mesh *parent) {
       &parent->children.length, sizeof(Mesh *), "Mesh child list");
 
   if (child == NULL) {
-    logger_add(LoggerFlag_Warning, "Couldn't create new entry in mesh child list.");
+    logger_add(LoggerFlag_Warning,
+               "Couldn't create new entry in mesh child list.");
     return NULL;
   }
 

@@ -24,5 +24,5 @@ void example_line(Scene *scene) {
                  (vec3){0.0f, 1.0f, 0.0f}, &line->topology.base.attribute,
                  &line->topology.base.index);
 
-  scene_add_mesh_fixed(scene, line, ScenePipeline_Fixed, NULL);
+  scene_add_mesh_fixed(scene, line, ScenePipeline_Fixed, NULL, SceneAddFlag_Unselectable);
 }
