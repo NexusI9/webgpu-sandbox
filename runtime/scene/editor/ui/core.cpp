@@ -66,6 +66,10 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
     ImGui::SetCurrentContext(imgui_context);
     scene_editor_ui_style_carbon();
 
+    ImGuiIO &io = ImGui::GetIO();
+    io.Fonts->AddFontFromFileTTF(
+        "./resources/assets/font/GolosText-Regular.ttf", 14.0f);
+
     ImGui_ImplWGPU_InitInfo info;
 
     info.Device = ui->device;
@@ -126,10 +130,9 @@ void scene_editor_ui_draw_callback(void *data) {
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
     io.MousePos = ImVec2(g_input.mouse.x, g_input.mouse.y);
     io.MouseDown[0] = g_input.mouse.state;
-    io.MouseWheel = g_input.mouse.wheel.deltaX; 
-    io.Fonts->AddFontFromFileTTF("./resources/assets/font/GolosText-Regular.ttf", 14.0f);
+    io.MouseWheel = g_input.mouse.wheel.deltaX;
   }
- 
+
   {
     ImGui_ImplWGPU_NewFrame();
     ImGui::NewFrame();
