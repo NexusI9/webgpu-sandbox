@@ -35,6 +35,7 @@ typedef struct {
   double *dpi;
   WGPURenderPassEncoder pass_encoder;
   WGPUSwapChain *swapchain;
+  WGPUQuerySet query;
   WGPUDevice device;
   WGPUQueue queue;
   WGPUTexture depth_texture;

@@ -17,6 +17,7 @@ inline void scene_editor_ui_style_carbon() {
   style.WindowBorderSize = 0.0f;
   style.ChildBorderSize = 0.0f;
   style.FrameBorderSize = 0.0f;
+  style.PopupBorderSize = 0.0f;
 
   style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
   style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.40f, 0.40f, 0.41f, 1.00f);
@@ -24,7 +25,7 @@ inline void scene_editor_ui_style_carbon() {
   style.Colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
   style.Colors[ImGuiCol_Border] = ImVec4(1.00f, 1.00f, 1.00f, 0.65f);
   style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
-  style.Colors[ImGuiCol_FrameBg] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
+  style.Colors[ImGuiCol_FrameBg] = ImVec4(0.10f, 0.10f, 0.10f, 0.6f);
   style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
   style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
   style.Colors[ImGuiCol_TitleBg] = ImVec4(0.03f, 0.03f, 0.03f, 1.0f);
@@ -64,7 +65,8 @@ inline void scene_editor_ui_style_carbon() {
   style.Colors[ImGuiCol_PlotHistogramHovered] =
       ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
   style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.22f);
-  // style.Colors[ImGuiCol_TooltipBg] = ImVec4(0.00f, 0.13f, 0.13f, 0.90f);
+  style.Colors[ImGuiCol_PopupBg] = ImVec4(0.04f, 0.04f, 0.04f, 0.50f);
+
   // style.Colors[ImGuiCol_ModalWindowDarkening] =
   //    ImVec4(0.10f, 0.10f, 0.09f, 0.51f);
 }

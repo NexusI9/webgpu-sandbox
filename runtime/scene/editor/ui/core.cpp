@@ -3,6 +3,7 @@
 #include "include/imgui/imgui.h"
 #include "include/imgui/imgui_impl_wgpu.h"
 #include "runtime/input/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/editor/selection/utils.h"
@@ -21,9 +22,16 @@ static inline bool scene_editor_ui_create_button_icon(SceneEditorUI *,
                                                       const SceneEditorUIIcon,
                                                       const char *, ImVec2);
 static inline void scene_editor_ui_create_scene_tree(SceneEditorUI *, Scene *);
+static inline void scene_editor_ui_create_properties(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_gizmo(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_top_bar(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_left_panel(SceneEditorUI *, Scene *);
+static inline void scene_editor_ui_create_right_panel(SceneEditorUI *, Scene *);
+static inline void scene_editor_ui_create_bottom_panel(SceneEditorUI *,
+                                                       Scene *);
+static inline void scene_editor_ui_create_log(SceneEditorUI *, Scene *);
+static inline void scene_editor_ui_create_inspector(SceneEditorUI *, Scene *);
+static inline void scene_editor_ui_create_monitor(SceneEditorUI *, Scene *);
 
 SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
                                          const SceneEditorUIDescriptor *desc) {
@@ -116,8 +124,10 @@ void scene_editor_ui_draw_callback(void *data) {
     ImGui::NewFrame();
     {
       scene_editor_ui_create_top_bar(ui, scene);
-      scene_editor_ui_create_scene_tree(ui, scene);
+      scene_editor_ui_create_right_panel(ui, scene);
+      scene_editor_ui_create_bottom_panel(ui, scene);
       scene_editor_ui_create_gizmo(ui, scene);
+      scene_editor_ui_create_monitor(ui, scene);
     }
     ImGui::Render();
     ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), ui->pass_encoder);
@@ -210,41 +220,141 @@ bool scene_editor_ui_create_button_icon(SceneEditorUI *ui,
 }
 
 /* ===  SIZES === */
-static const int tree_width = 300;
+static const int right_panel_width = 250;
 static const int tree_height = 400;
 
-static const int top_bar_height = 30;
+static const int top_bar_height = 40;
+static const int top_bar_margin = 0;
 
 static const int gizmo_width = 100;
 static const int gizmo_height = 400;
-static const int gizmo_margin = 20;
+static const int gizmo_margin = 10;
 
 static const int button_render_mode_size = 15;
 static const int button_gizmo_size = 30;
 
+static const int bottom_panel_height = 200;
+
+static const ScenePipeline tree_meshes[3] = {
+    ScenePipeline_Dynamic_Lit,
+    ScenePipeline_Dynamic_LitShadow,
+    ScenePipeline_Dynamic_Unlit,
+};
+
+void scene_editor_ui_create_right_panel(SceneEditorUI *ui, Scene *scene) {
+
+  ImGui::SetNextWindowPos(ImVec2(*ui->width - right_panel_width, 0));
+  ImGui::SetNextWindowSize(ImVec2(right_panel_width, *ui->height));
+  ImGui::Begin("Left Panel", nullptr,
+               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+  {
+    scene_editor_ui_create_scene_tree(ui, scene);
+    scene_editor_ui_create_properties(ui, scene);
+  }
+
+  ImGui::End();
+}
+
+void scene_editor_ui_create_bottom_panel(SceneEditorUI *ui, Scene *scene) {
+
+  ImGui::SetNextWindowPos(ImVec2(0, *ui->height - bottom_panel_height));
+  ImGui::SetNextWindowSize(
+      ImVec2(*ui->width - right_panel_width, bottom_panel_height));
+  ImGui::Begin("Bottom Panel", nullptr,
+               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+  {
+    scene_editor_ui_create_log(ui, scene);
+    ImGui::SameLine();
+    scene_editor_ui_create_inspector(ui, scene);
+  }
+
+  ImGui::End();
+}
+
+void scene_editor_ui_create_log(SceneEditorUI *ui, Scene *scene) {
+  ImGui::BeginChild("Logs", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0),
+                    true);
+  {
+    ImGui::Text("Logs");
+  }
+  ImGui::EndChild();
+}
+
+void scene_editor_ui_create_inspector(SceneEditorUI *ui, Scene *scene) {
+  ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
+  {
+    ImGui::Text("Inspector");
+  }
+  ImGui::EndChild();
+}
+
+void scene_editor_ui_create_properties(SceneEditorUI *ui, Scene *scene) {
+  ImGui::BeginChild("Properties", ImVec2(0, 0), true);
+  {
+    ImGui::Separator();
+    ImGui::Text("Properties");
+  }
+  ImGui::EndChild();
+}
+
 void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
 
-  ImGui::SetNextWindowPos(ImVec2(*ui->width - tree_width, 0));
-  ImGui::SetNextWindowSize(ImVec2(tree_width, tree_height));
-  ImGui::Begin("Scene", nullptr,
-               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                   ImGuiWindowFlags_NoMove);
+  ImGui::BeginChild("Tree", ImVec2(0, ImGui::GetContentRegionAvail().y * 0.3f),
+                    true);
+  ImGui::Text("Scene Inspector");
   {
-    size_t i;
     // === Meshes ===
-    for (i = 0; i < scene->meshes.length; i++) {
-      Mesh *mesh = &scene->meshes.entries[i];
-      ImGuiTreeNodeFlags flags =
-          ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-      ImGui::PushID(mesh->id);
-      ImGui::TreeNodeEx(mesh->name, flags);
-      ImGui::PopID();
+    for (int i = 0; i < 3; i++) {
+      MeshRefList *meshes = scene_pipeline(scene, tree_meshes[i]);
+      for (int j = 0; j < meshes->length; j++) {
+        Mesh *mesh = meshes->entries[j];
+        ImGuiTreeNodeFlags flags =
+            ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+        if (mesh->children.length == 0)
+          flags |= ImGuiTreeNodeFlags_Leaf;
+
+        ImGui::PushID(mesh->id);
+        ImGui::TreeNodeEx(mesh->name, flags);
+        ImGui::PopID();
+
+        if (mesh->children.length == 0)
+          ImGui::TreePop();
+      }
     }
 
     // === Lights ===
 
     // === Probes ===
   }
+  ImGui::EndChild();
+}
+
+static float values[90] = {};
+static int values_offset = 0;
+void scene_editor_ui_create_monitor(SceneEditorUI *ui, Scene *scene) {
+
+  ImGui::SetNextWindowPos(ImVec2(gizmo_margin, top_bar_height + 10));
+  ImGui::SetNextWindowSize(ImVec2(300, 100));
+  ImGui::Begin("Monitor", nullptr,
+               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
+                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+                   ImGuiWindowFlags_NoBackground);
+  // === FPS ===
+  {
+    float fps = ImGui::GetIO().Framerate;
+    values[values_offset] = fps;
+    values_offset = (values_offset + 1) % IM_ARRAYSIZE(values);
+
+    char buf[64];
+    snprintf(buf, sizeof(buf), "FPS: %.0f", fps);
+
+    ImGui::PlotLines(buf, values, IM_ARRAYSIZE(values), values_offset, nullptr,
+                     0.0f, 120.0f, ImVec2(0, 80));
+  }
+
   ImGui::End();
 }
 
@@ -261,8 +371,7 @@ void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
   {
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_Gizmo_Position, "Position",
-					   ImVec2(button_gizmo_size, button_gizmo_size))) {
-      printf("click\n");
+            ImVec2(button_gizmo_size, button_gizmo_size))) {
       scene_gizmo_hide(scene);
       scene->editor.gizmo.transform.mode = GizmoMode_Position;
       scene_gizmo_show(scene);
@@ -292,8 +401,10 @@ void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
 }
 
 void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
-  ImGui::SetNextWindowPos(ImVec2(0, 0));
-  ImGui::SetNextWindowSize(ImVec2(*ui->width - tree_width, top_bar_height));
+  ImGui::SetNextWindowPos(ImVec2(top_bar_margin, top_bar_margin));
+
+  ImGui::SetNextWindowSize(ImVec2(
+      *ui->width - right_panel_width - 2 * top_bar_margin, top_bar_height));
   ImGui::Begin("Top bar", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
