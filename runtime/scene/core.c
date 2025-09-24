@@ -4,6 +4,7 @@
 #include "./editor/editor.h"
 #include "./layer.h"
 #include "backend/clock.h"
+#include "backend/logger.h"
 #include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "debug/core.h"
@@ -21,9 +22,9 @@
 #include "runtime/probe/reflection/core.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
+#include "runtime/scene/renderer/core.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
-#include "backend/logger.h"
 
 // initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
@@ -114,6 +115,11 @@ void scene_mesh_list_init(Scene *scene) {
   // init mesh pipelines
   for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
     mesh_ref_list_create(scene_pipeline(scene, flag),
+                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
+
+  // init built mesh cache
+  for (SceneRendererDrawMode m = 0; m < SCENE_RENDERER_DRAW_MODE_COUNT; m++)
+    mesh_ref_list_create(&scene->built_mesh[m],
                          SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   // init pool

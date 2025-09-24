@@ -256,6 +256,7 @@ typedef enum {
   SceneStatus_MeshUnfound,
   SceneStatus_MeshAlreadyExists,
   SceneStatus_MeshInsertFail,
+  SceneStatus_MeshAlreadyBuilt,
   SceneStatuc_UndefError,
 } SceneStatus;
 
@@ -291,8 +292,9 @@ struct Scene {
   ProbeReflectionPlaneList planes_reflection;
 
   // References List (ptr)
-  MeshRefList pipelines[SCENE_PIPELINE_COUNT]; // meshes pipelines (for
-                                               // render logic)
+  MeshRefList pipelines[SCENE_PIPELINE_COUNT];
+  MeshRefList built_mesh[SCENE_RENDERER_DRAW_MODE_COUNT];
+
   SceneLayerSet layers; // meshes layer (for interaction logic)
 
   // TODO: only enable selection/gizmo related function for "Editor" mode since

@@ -45,7 +45,7 @@ MeshStatus mesh_shader_create_shadow(Mesh *mesh) {
 
   if (shadow_shader->name != NULL) {
     logger_add(LoggerFlag_Info, 
-        "Shadow shader for %s is already created, skip shader creation.",
+        "Shadow shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
   }
@@ -84,7 +84,7 @@ MeshStatus mesh_shader_create_wireframe(Mesh *mesh) {
   // skip if already created
   if (wireframe_shader->name != NULL) {
     logger_add(LoggerFlag_Info, 
-        "Wireframe shader for %s is already created, skip shader creation.",
+        "Wireframe shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
   }
@@ -114,7 +114,7 @@ MeshStatus mesh_shader_create_solid(Mesh *mesh) {
 
   if (solid_shader->name != NULL) {
     logger_add(LoggerFlag_Info, 
-        "Solid shader for %s is already created, skip shader creation.",
+        "Solid shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
   }
@@ -140,7 +140,7 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
 
   if (texture_shader->name != NULL) {
     logger_add(LoggerFlag_Info, 
-        "Texture shader for %s is already created, skip shader creation.",
+        "Texture shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
   }
@@ -171,7 +171,7 @@ MeshStatus mesh_shader_create_fixed(Mesh *mesh,
 
   if (fixed_shader->name != NULL) {
     logger_add(LoggerFlag_Info, 
-        "Fixed shader for %s is already created, skip shader creation.",
+        "Fixed shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
   }

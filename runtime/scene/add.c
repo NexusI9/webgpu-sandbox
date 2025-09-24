@@ -645,7 +645,7 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
 
   // build mesh depending on pipeline and scene render mode
-  scene_build_mesh(scene, mesh, pipeline);
+  scene_build_mesh(scene, mesh, pipeline, scene->renderer.draw.mode);
 
   scene_add_mesh_any(scene, mesh, pipeline, layer, flag);
 }
@@ -675,7 +675,7 @@ void scene_add_mesh_fixed(Scene *scene, Mesh *mesh,
                           const ScenePipeline pipeline, const char *layer,
                           const SceneAddFlag flag) {
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
-  scene_build_mesh(scene, mesh, pipeline);
+  scene_build_mesh(scene, mesh, pipeline, scene->renderer.draw.mode);
   scene_add_mesh_any(scene, mesh, pipeline, layer, flag);
 }
 

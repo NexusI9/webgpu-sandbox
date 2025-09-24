@@ -103,7 +103,8 @@ MACROS := \
        -DVERBOSE \
        -DENGINE_EDITOR \
        -DDEBUG_TIME \
-       -DAO_BAKE_HIT_COUNT
+       -DAO_BAKE_HIT_COUNT \
+       -DVERBOSE_BUILDING_PHASE
 
 ASAN := \
 	-fsanitize=address \

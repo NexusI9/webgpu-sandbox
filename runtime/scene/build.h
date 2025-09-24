@@ -2,6 +2,7 @@
 #define _SCENE_MESH_BUILD_H_
 #include "core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/scene/renderer/core.h"
 
 /**
    Mesh Building process:
@@ -40,6 +41,8 @@
 
  */
 
-void scene_build_mesh(Scene*, Mesh*, const ScenePipeline);
-void scene_build_mesh_ref_list(Scene*, MeshRefList*, const ScenePipeline);
+SceneStatus scene_build_mesh(Scene *, Mesh *, const ScenePipeline,
+                             const SceneRendererDrawMode);
+void scene_build_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline,
+                               const SceneRendererDrawMode);
 #endif

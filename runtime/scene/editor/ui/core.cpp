@@ -7,8 +7,10 @@
 #include "runtime/input/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/draw.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/editor/selection/utils.h"
+#include "runtime/scene/renderer/core.h"
 #include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
 #include "stdio.h"
@@ -620,27 +622,31 @@ void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
   ImGui::SetCursorPosX(top_bar_width -
                        button_count * (button_render_mode_size + padding));
   {
-    scene_editor_ui_create_button_icon(
-        ui, SceneEditorUIIcon_RenderMode_Boundbox, "Boundbox",
-        ImVec2(button_render_mode_size, button_render_mode_size));
+    if (scene_editor_ui_create_button_icon(
+            ui, SceneEditorUIIcon_RenderMode_Boundbox, "Boundbox",
+            ImVec2(button_render_mode_size, button_render_mode_size)))
+      scene_set_draw_mode(scene, SceneRendererDrawMode_Boundbox);
 
     ImGui::SameLine();
 
-    scene_editor_ui_create_button_icon(
-        ui, SceneEditorUIIcon_RenderMode_Wireframe, "Wireframe",
-        ImVec2(button_render_mode_size, button_render_mode_size));
+    if (scene_editor_ui_create_button_icon(
+            ui, SceneEditorUIIcon_RenderMode_Wireframe, "Wireframe",
+            ImVec2(button_render_mode_size, button_render_mode_size)))
+      scene_set_draw_mode(scene, SceneRendererDrawMode_Wireframe);
 
     ImGui::SameLine();
 
-    scene_editor_ui_create_button_icon(
-        ui, SceneEditorUIIcon_RenderMode_Solid, "Solid",
-        ImVec2(button_render_mode_size, button_render_mode_size));
+    if (scene_editor_ui_create_button_icon(
+            ui, SceneEditorUIIcon_RenderMode_Solid, "Solid",
+            ImVec2(button_render_mode_size, button_render_mode_size)))
+      scene_set_draw_mode(scene, SceneRendererDrawMode_Solid);
 
     ImGui::SameLine();
 
-    scene_editor_ui_create_button_icon(
-        ui, SceneEditorUIIcon_RenderMode_Texture, "Texture",
-        ImVec2(button_render_mode_size, button_render_mode_size));
+    if (scene_editor_ui_create_button_icon(
+            ui, SceneEditorUIIcon_RenderMode_Texture, "Texture",
+            ImVec2(button_render_mode_size, button_render_mode_size)))
+      scene_set_draw_mode(scene, SceneRendererDrawMode_Texture);
   }
   ImGui::End();
 

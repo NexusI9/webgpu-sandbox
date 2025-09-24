@@ -2,9 +2,14 @@
 
 #include <stddef.h>
 
-#include "core.h"
+#include "backend/logger.h"
 #include "backend/ssbo.h"
 #include "backend/ubo.h"
+#include "core.h"
+#include "renderer/core.h"
+#include "renderer/render_pass/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/shader/texture.h"
 #include "runtime/mesh/topology/base.h"
@@ -12,10 +17,6 @@
 #include "runtime/mesh/topology/core.h"
 #include "runtime/mesh/topology/wireframe.h"
 #include "runtime/pipeline/render.h"
-#include "renderer/core.h"
-#include "renderer/render_pass/core.h"
-#include "runtime/mesh/core.h"
-#include "backend/logger.h"
 
 typedef void (*scene_builder_callback)(Scene *, Mesh *, const RenderPipeline *);
 
@@ -42,19 +43,33 @@ static inline void scene_build_mesh_boundbox(Scene *, Mesh *,
    Build the mesh according to the current scene rendere mode and pipeline in
    which the mesh will be added to.
  */
-void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
-  
+SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
+                             const ScenePipeline pipeline,
+                             const SceneRendererDrawMode draw_mode) {
+
   SSBOManager *ssbo = &scene->renderer.ssbo;
   UBOManager *ubo = &scene->renderer.ubo;
 
-  const SceneRendererDrawMode draw_mode = scene->renderer.draw.mode;
-
-  // Fixed rendering (NOT part of shader/topology creation automation, meaning
-  // it's the developer responsibility to create the relative topology and
-  // shaders.)
   if (pipeline >= ScenePipeline_Fixed_Background) {
+    // === Fixed rendering ===
+    // (NOT part of shader/topology creation automation, meaning
+    // it's the developer responsibility to create the relative topology and
+    // shaders.)
+
     scene_build_mesh_fixed(scene, mesh, pipeline);
+
   } else {
+
+    // === Dynamic rendering ===
+
+    {
+      // flag mesh as built to make sure we don't build it twice (for dynamic
+      // rendering)
+      MeshRefList *cache_built = &scene->built_mesh[draw_mode];
+      if (mesh_ref_list_find(cache_built, mesh, NULL) != NULL)
+        return SceneStatus_MeshAlreadyBuilt;
+      mesh_ref_list_insert(&scene->built_mesh[draw_mode], mesh);
+    }
 
     {
       // EDITORONLY
@@ -83,17 +98,15 @@ void scene_build_mesh(Scene *scene, Mesh *mesh, const ScenePipeline pipeline) {
       break;
     }
   }
+
+  return SceneStatus_Success;
 }
 
-/**
-   Build a mesh reference list. Useful for gizmos or any ref list in which
-   objects fit in the same pipeline.
- */
 void scene_build_mesh_ref_list(Scene *scene, MeshRefList *list,
-                               const ScenePipeline pipeline) {
-
+                               const ScenePipeline pipeline,
+                               const SceneRendererDrawMode draw_mode) {
   for (size_t i = 0; i < list->length; i++)
-    scene_build_mesh(scene, list->entries[i], pipeline);
+    scene_build_mesh(scene, list->entries[i], pipeline, draw_mode);
 }
 
 /**
@@ -140,7 +153,7 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
     mesh_shader_texture_update_lights(mesh, MeshShader_Texture, ubo, ssbo);
     mesh_shader_texture_update_lights(mesh, MeshShader_Reflection, ubo, ssbo);
   }
-  if (pipeline == ScenePipeline_Dynamic_LitShadow) {
+  if (pipeline & ScenePipeline_Dynamic_LitShadow) {
     mesh_shader_texture_bind_shadow_maps(
         mesh, scene->lights.point.shadow.pass.depth.attachment.view,
         scene->lights.spot.shadow.pass.depth.attachment.view);
@@ -196,6 +209,13 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
                                  mesh->queue);
 
   // create meshes' wireframe shader
+  // usually we don't need to check if the shader is already created cause we
+  // cache each mesh ptr in the mesh_built list to check if it's already been
+  // built based on the render mode or not.
+  // However the wireframe shader is used for the boundbox and the wireframe, so
+  // we need to add this extra precaution here.
+  // Finally, when we switch from the current "boundbox" selection highlight to
+  // the "outline" based one we should be able to remove this extra condition
   if (mesh_shader_create_wireframe(mesh) == MeshStatus_Success)
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
 }
@@ -217,10 +237,8 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
                                 mesh->device, mesh->queue);
 
   // create meshes' wireframe shader
-  mesh_shader_create_wireframe(mesh);
-
-  // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
+  if (mesh_shader_create_wireframe(mesh) == MeshStatus_Success)
+    mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
 }
 
 /**
