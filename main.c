@@ -23,7 +23,7 @@ static Scene main_scene;
 
 // callback
 static void init_scene();
-
+ 
 void init_scene() {
   scene_create(&main_scene,
                &(SceneCreateDescriptor){
@@ -42,8 +42,6 @@ void init_scene() {
                            .aspect = 16.0f / 9.0f,
                        },
                });
-
-  //example_light(&main_scene);
 }
 
 int main(int argc, const char *argv[]) {
@@ -51,6 +49,11 @@ int main(int argc, const char *argv[]) {
 
   // set scene
   init_scene();
+  scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Solid);
+
+  example_light(&main_scene);
+  example_skybox(&main_scene);
+  example_gltf_podium(&main_scene);
 
   // add gizmo camera
   /*GizmoCamera *new_cam =
@@ -65,15 +68,10 @@ int main(int argc, const char *argv[]) {
                       (vec3){0.0f, 0.0f, 0.0f});
    */
 
-  scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
- 
-  example_skybox(&main_scene);
-  example_gltf(&main_scene);
-
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);
   // example_glass_probe_grid(&main_scene, false);
-  //example_glass_probe_plane(&main_scene, false);
+  // example_glass_probe_plane(&main_scene, false);
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);
