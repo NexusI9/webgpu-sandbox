@@ -601,16 +601,36 @@ void scene_render_pass_draw_list_enable_mesh(
    one will add dynamic assets to the scene, compared to the fixed elements
    which are only used by the editor itself.
  */
+
+const static ScenePipeline scene_pipeline_dispatch[RENDER_PIPELINE_TYPE_COUNT] =
+    {
+        [RenderPipelineType_Billboard] = ScenePipeline_Dynamic_Unlit,
+        [RenderPipelineType_Default] = ScenePipeline_Dynamic_LitShadow,
+        [RenderPipelineType_Grid] = ScenePipeline_Fixed,
+        [RenderPipelineType_Line] = ScenePipeline_Fixed,
+        [RenderPipelineType_PBR] = ScenePipeline_Dynamic_LitShadow,
+        [RenderPipelineType_Screen] = ScenePipeline_Fixed,
+        [RenderPipelineType_Shadow] = ScenePipeline_Fixed,
+        [RenderPipelineType_ShadowCullBack] = ScenePipeline_Fixed,
+        [RenderPipelineType_Skybox] = ScenePipeline_Fixed_Background,
+        [RenderPipelineType_Solid] = ScenePipeline_Fixed,
+        [RenderPipelineType_Unlit] = ScenePipeline_Dynamic_Unlit,
+        [RenderPipelineType_GlassProbeGrid] = ScenePipeline_Dynamic_Unlit,
+        [RenderPipelineType_GlassProbePlane] = ScenePipeline_Dynamic_Unlit,
+        [RenderPipelineType_Reflection] = ScenePipeline_Dynamic_Lit,
+        [RenderPipelineType_Blit] = ScenePipeline_Fixed,
+};
+
 void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
                     const SceneAddFlag flag) {
-
-  // dispatch mesh based on their global pipeline address (lit by default)
-  ScenePipeline pipeline = ScenePipeline_Dynamic_LitShadow;
 
   // TODO: find a cleaner way to define if mesh is Shadowed or not.. the
   // overallx dispatch is unclear.
   const RenderPipeline *mesh_pipeline =
       mesh_shader(mesh, MeshShader_Texture)->pipeline;
+
+  // dispatch mesh based on their global pipeline address (lit by default)
+  ScenePipeline pipeline = ScenePipeline_Dynamic_LitShadow;
 
   if (mesh_pipeline == std_render_pipeline(RenderPipelineType_Unlit) ||
       mesh_pipeline == std_render_pipeline(RenderPipelineType_GlassProbeGrid) ||
