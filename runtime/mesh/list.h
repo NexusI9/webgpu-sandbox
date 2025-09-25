@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include "./core.h"
-#include "utils/dyli.h"
+#include "transform.h"
 
 typedef struct {
   struct Mesh *entries;
@@ -12,12 +12,22 @@ typedef struct {
   size_t length;
 } MeshList;
 
-DynamicListStatus mesh_list_create(MeshList *, size_t);
-Mesh *mesh_list_new_mesh(MeshList *);
+static inline void mesh_list_set_position(MeshList *list, vec3 position) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_set_position(&list->entries[i], position);
+}
 
-void mesh_list_set_position(MeshList *, vec3);
-void mesh_list_set_rotation(MeshList *, vec3);
-void mesh_list_set_rotation_quat(MeshList *, versor);
-void mesh_list_set_scale(MeshList *, vec3);
+static inline void mesh_list_set_rotation(MeshList *list, vec3 rotation) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_set_rotation(&list->entries[i], rotation);
+}
+static inline void mesh_list_set_rotation_quat(MeshList *list, versor quat) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_set_rotation_quat(&list->entries[i], quat);
+}
+static inline void mesh_list_set_scale(MeshList *list, vec3 scale) {
+  for (size_t i = 0; i < list->length; i++)
+    mesh_set_scale(&list->entries[i], scale);
+}
 
 #endif
