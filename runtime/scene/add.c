@@ -382,7 +382,7 @@ SceneEditorObject *scene_add_camera(Scene *scene,
 
    As a result in order to add them to the scene we need to add their meshes
    list in the scene pool, but need to add them in a different "branch" of the
-   selection system.
+   selection system (SceneSelectionType_SEO).
 
    We use the below function to do such operation.
  */
@@ -392,9 +392,25 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
 
   for (size_t i = 0; i < seo->meshes.length; i++) {
     Mesh *mesh = seo->meshes.entries[i].mesh;
-    // build mesh depending on pipeline and scene render mode
-    scene_add_mesh_fixed(scene, mesh, ScenePipeline_Fixed, NULL,
-                         SceneAddFlag_None);
+
+    {
+      // build mesh depending on pipeline and scene render mode
+      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
+      scene_build_mesh(scene, mesh, ScenePipeline_Fixed,
+                       scene->renderer.draw.mode);
+    }
+
+    {
+      // insert to scene pipeline and show it
+      mesh_ref_list_insert(pipeline_mesh_list, mesh);
+      scene_render_pass_draw_list_enable_mesh(scene, pipeline_mesh_list, mesh);
+    }
+
+    {
+      // add to scene selection (SEO pipeline) with target
+      scene_selection_add_mesh(&scene->editor.selection, mesh, (void *)seo,
+                               SceneSelectionType_SEO);
+    }
   }
 }
 
@@ -526,8 +542,8 @@ Mesh *scene_new_mesh(Scene *scene) {
   return mesh_list_new_mesh(&scene->meshes);
 }
 
-static void scene_add_mesh_any(Scene *, Mesh *, const ScenePipeline,
-                               const char *, const SceneAddFlag);
+static inline void scene_add_mesh_any(Scene *, Mesh *, const ScenePipeline,
+                                      const char *, const SceneAddFlag);
 
 void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
                         const char *layer, const SceneAddFlag flag) {
