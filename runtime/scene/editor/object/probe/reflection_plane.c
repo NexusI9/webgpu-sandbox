@@ -1,27 +1,27 @@
 #include "reflection_plane.h"
 
-#include <stdint.h>
 #include <cglm/types.h>
 #include <cglm/vec3.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
-#include "resources/loader/loader.mbin.h"
 #include "backend/ssbo.h"
+#include "resources/loader/loader.mbin.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/mesh/uniform.h"
 #include "runtime/primitive/core.h"
 #include "runtime/probe/reflection/core.h"
+#include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor/object/builder/wireframe.h"
 #include "runtime/scene/editor/object/list/list.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
-#include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/scene/renderer/render_pass/visibility.h"
 #include "utils/color.h"
-#include "runtime/probe/reflection/plane.h"
 
 void seo_probe_reflection_plane_create(SceneEditorObject *seo,
                                        ProbeReflectionPlane *probe,
@@ -198,12 +198,12 @@ void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *seo) {
 
       if (intersect) {
         mesh_uniform_set_probe_reflection_plane(pipeline_mesh, ssbo);
-        render_pass_draw_list_disable_mesh(&seo->scene->planes_reflection.pass,
-                                           pipeline_mesh, pipeline);
+        render_pass_disable_mesh(&seo->scene->planes_reflection.pass,
+                                 pipeline_mesh);
       } else {
         mesh_uniform_clear_probe_reflection_plane(pipeline_mesh, ssbo);
-        render_pass_draw_list_enable_mesh(&seo->scene->planes_reflection.pass,
-                                          pipeline_mesh, pipeline);
+        render_pass_enable_mesh(&seo->scene->planes_reflection.pass,
+                                pipeline_mesh);
       }
     }
   }

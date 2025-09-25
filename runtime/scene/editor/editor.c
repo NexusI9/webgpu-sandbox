@@ -62,7 +62,7 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
                   });
 
   scene_add_mesh_fixed(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
-                       SCENE_LAYER_UNSELECTABLE, SceneAddFlag_Unselectable);
+                       NULL, SceneAddFlag_Unselectable);
 }
 
 /**
@@ -81,7 +81,8 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
     for (size_t j = 0; j < gizmo->interactive_handles[i].length; j++) {
       Mesh *mesh = gizmo->interactive_handles[i].entries[j];
       scene_add_mesh_fixed(scene, mesh, ScenePipeline_Fixed_Front,
-                           SCENE_LAYER_GIZMO, SceneAddFlag_Hide);
+                           SCENE_LAYER_GIZMO,
+                           SceneAddFlag_Hide | SceneAddFlag_Unselectable);
     }
   }
 }

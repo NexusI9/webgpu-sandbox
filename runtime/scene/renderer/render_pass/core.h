@@ -85,7 +85,6 @@ typedef struct {
 */
 struct RenderPass {
   const char *label;
-
   RenderPassColor color;
   RenderPassDepth depth;
   RenderPipelineMultisampleCount multisample;
@@ -101,7 +100,6 @@ struct RenderPass {
 };
 
 struct RenderPassList {
-
   WGPUSwapChain swapchain;
   RenderPass passes[RENDER_PASS_MAX_DRAW_LIST];
   size_t length;
@@ -112,7 +110,6 @@ typedef struct {
   const int width;
   const int height;
   const RenderPipelineMultisampleCount multisample;
-  
 } RenderPassTextureDescriptor;
 
 typedef struct {
@@ -138,7 +135,6 @@ typedef struct {
   RenderPassColorAttachment *color;
   RenderPassDepthAttachment *depth;
   WGPUSwapChain swapchain;
-
   int width;
   int height;
   RenderPipelineMultisampleCount multisample;
@@ -157,7 +153,6 @@ typedef struct {
 
 typedef struct {
   const char *label;
-
   WGPUSwapChain swapchain;
   int width;
   int height;
@@ -178,24 +173,6 @@ void render_pass_list_create(RenderPassList *, const RenderPassListCreate *);
 void render_pass_list_insert_pass(RenderPassList *,
                                   const RenderPassListInsert *);
 
-RenderPassStatus render_pass_list_draw_list_enable_mesh(RenderPassList *,
-                                                        Mesh *,
-                                                        const MeshRefList *);
-
-RenderPassStatus render_pass_list_draw_list_disable_mesh(RenderPassList *,
-                                                         Mesh *,
-                                                         const MeshRefList *);
-
-RenderPassStatus
-render_pass_list_draw_list_enable_mesh_ref_list(RenderPassList *, MeshRefList *,
-                                                const MeshRefList *);
-
-RenderPassStatus render_pass_list_draw_list_disable_mesh_ref_list(
-    RenderPassList *, MeshRefList *, const MeshRefList *);
-
-RenderPassStatus render_pass_list_draw_list_enable_all(RenderPassList *);
-RenderPassStatus render_pass_list_draw_list_disable_all(RenderPassList *);
-
 /* === Pass === */
 
 void render_pass_draw_list_copy(const RenderPassDrawListDescriptor *,
@@ -215,27 +192,4 @@ StaticListStatus render_pass_view_depth_remove(RenderPass *, WGPUTextureView);
 
 WGPUTextureView render_pass_view_color(RenderPass *, size_t);
 WGPUTextureView render_pass_view_depth(RenderPass *, size_t);
-
-RenderPassStatus render_pass_draw_list_enable_mesh(RenderPass *, Mesh *,
-                                                   const MeshRefList *);
-
-RenderPassStatus render_pass_draw_list_disable_mesh(RenderPass *, Mesh *,
-                                                    const MeshRefList *);
-
-RenderPassStatus
-render_pass_draw_list_enable_mesh_ref_list(RenderPass *, MeshRefList *,
-                                           const MeshRefList *);
-RenderPassStatus
-render_pass_draw_list_disable_mesh_ref_list(RenderPass *, MeshRefList *,
-                                            const MeshRefList *);
-
-RenderPassDrawLayout *
-render_pass_find_draw_layout_from_mesh(RenderPassDrawList *, const Mesh *);
-
-RenderPassStatus render_pass_draw_list_enable_all(RenderPass *);
-RenderPassStatus render_pass_draw_list_disable_all(RenderPass *);
-
-RenderPassDrawLayout *
-render_pass_find_draw_layout_from_mesh_ref_list(RenderPassDrawList *,
-                                                const MeshRefList *);
 #endif

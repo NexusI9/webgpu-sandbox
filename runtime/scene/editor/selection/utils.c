@@ -2,38 +2,45 @@
 
 #include <cglm/types.h>
 
-#include "runtime/scene/show.h"
 #include "./core.h"
-#include "runtime/mesh/core.h"
 #include "backend/ssbo.h"
+#include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/scene/renderer/render_pass/visibility.h"
+#include "runtime/scene/show.h"
 
 void scene_gizmo_show(Scene *scene) {
   Gizmo *gizmo = &scene->editor.gizmo.transform;
-  MeshRefList *selection_list =
-      scene_pipeline(scene, ScenePipeline_Fixed_Selection);
 
-  // add to render pipeline
-  scene_show_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                           ScenePipeline_Fixed_Front);
+  RenderPassList *pass_list = scene_renderer_active_pass_list(&scene->renderer);
+  RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
+      &pass_list->passes[ScenePass_Gizmo],
+      scene_pipeline(scene, ScenePipeline_Fixed_Front));
+
+  if (layout)
+    render_pass_layout_enable_mesh_ref_list(
+        layout, &gizmo->interactive_handles[gizmo->mode]);
 }
 
 void scene_gizmo_hide(Scene *scene) {
   Gizmo *gizmo = &scene->editor.gizmo.transform;
-  
-  MeshRefList *selection_list =
-    scene_pipeline(scene, ScenePipeline_Fixed_Selection);
 
-  scene_hide_mesh_ref_list(scene, &gizmo->handles[gizmo->mode],
-                           ScenePipeline_Fixed_Front);
+  RenderPassList *pass_list = scene_renderer_active_pass_list(&scene->renderer);
+  RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
+      &pass_list->passes[ScenePass_Gizmo],
+      scene_pipeline(scene, ScenePipeline_Fixed_Front));
+
+  if (layout)
+    render_pass_layout_disable_mesh_ref_list(
+        layout, &gizmo->interactive_handles[gizmo->mode]);
 }
 
 /**
    Get the selection average position (used to translate the gizmo).
  */
-void scene_gizmo_pos_to_selection(Gizmo *gizmo,
-                                            SceneSelection *selection,
-                                            SSBOManager *ssbo) {
+void scene_gizmo_pos_to_selection(Gizmo *gizmo, SceneSelection *selection,
+                                  SSBOManager *ssbo) {
   // get average position
   vec3 position;
   scene_selection_average_position(selection, &position);

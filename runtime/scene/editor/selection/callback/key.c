@@ -215,7 +215,7 @@ void scene_selection_key_sequence_callback_transform(
     return;
 
   // cache scene selection initial attributes
-  scene_selection_empty_initial_attributes(&scene->editor.selection);
+  scene_selection_clear_initial_attributes(&scene->editor.selection);
 
   for (size_t i = 0; i < seq_count_transform; i++) {
 

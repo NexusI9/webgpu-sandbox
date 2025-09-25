@@ -22,7 +22,7 @@
 #include "editor/selection/core.h"
 #include "layer.h"
 #include "renderer/core.h"
-#include "renderer/render_pass/core.h"
+#include "runtime/scene/renderer/render_pass/visibility.h"
 #include "runtime/camera/core.h"
 #include "runtime/camera/list.h"
 #include "runtime/light/core.h"
@@ -591,16 +591,12 @@ void scene_render_pass_draw_list_enable_mesh(
     Scene *scene, const MeshRefList *pipeline_mesh_list, Mesh *mesh) {
 
   for (SceneRendererDrawMode i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
-    render_pass_list_draw_list_enable_mesh(&scene->renderer.draw.render_pass[i],
-                                           mesh, pipeline_mesh_list);
-  render_pass_draw_list_enable_mesh(&scene->probes_reflection.pass, mesh,
-                                    pipeline_mesh_list);
-  render_pass_draw_list_enable_mesh(&scene->planes_reflection.pass, mesh,
-                                    pipeline_mesh_list);
-  render_pass_draw_list_enable_mesh(&scene->lights.point.shadow.pass, mesh,
-                                    pipeline_mesh_list);
-  render_pass_draw_list_enable_mesh(&scene->lights.spot.shadow.pass, mesh,
-                                    pipeline_mesh_list);
+    render_pass_list_enable_mesh(&scene->renderer.draw.render_pass[i], mesh);
+
+  render_pass_enable_mesh(&scene->probes_reflection.pass, mesh);
+  render_pass_enable_mesh(&scene->planes_reflection.pass, mesh);
+  render_pass_enable_mesh(&scene->lights.point.shadow.pass, mesh);
+  render_pass_enable_mesh(&scene->lights.spot.shadow.pass, mesh);
 }
 
 /**

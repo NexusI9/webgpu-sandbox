@@ -17,7 +17,8 @@ DynamicListStatus dyli_create(void **entries, size_t *capacity, size_t *length,
   *length = 0;
 
   if (*entries == NULL) {
-    logger_add(LoggerFlag_Error, "Couldn't create new dynamic list: %s\n", label);
+    logger_add(LoggerFlag_Error, "Couldn't create new dynamic list: %s\n",
+               label);
     *capacity = 0;
     return DynamicListStatus_AllocFail;
   }
@@ -37,8 +38,8 @@ DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
   void *temp = (void *)realloc(*entries, new_capacity * type_size);
 
   if (temp == NULL) {
-    logger_add(LoggerFlag_Error, "Couldn't expand list '%s' from %lu to %lu.", label,
-                  *capacity, new_capacity);
+    logger_add(LoggerFlag_Error, "Couldn't expand list '%s' from %lu to %lu.",
+               label, *capacity, new_capacity);
     return DynamicListStatus_AllocFail;
   }
 
@@ -53,8 +54,10 @@ DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
                               const char *label) {
 
   if (*entries == NULL || *capacity == 0) {
-    logger_add(LoggerFlag_Error, "Dynamic list '%s' not initialized, insertion aborted.",
-                  label);
+    logger_add(LoggerFlag_Error,
+               "Dynamic list '%s' not initialized, insertion aborted. "
+               "(Entries: <%p>, capacity: %lu, length: %lu)",
+               label, *entries, *capacity, *length);
     return DynamicListStatus_NotInit;
   }
 
@@ -88,7 +91,7 @@ DynamicListStatus dyli_free(void **entries, size_t *capacity, size_t *length) {
 
   return DynamicListStatus_Success;
 }
-
+ 
 DynamicListStatus dyli_remove(void *entries, size_t *length, size_t type_size,
                               void *entry, const char *label) {
 
@@ -129,8 +132,10 @@ void *dyli_new_entry(void **entries, size_t *capacity, size_t *length,
                      size_t type_size, const char *label) {
 
   if (*entries == NULL || *capacity == 0) {
-    logger_add(LoggerFlag_Error, "Dynamic list '%s' not initialized, insertion aborted.",
-                  label);
+    logger_add(LoggerFlag_Error,
+               "Dynamic list '%s' not initialized, new entry aborted. "
+               "(Entries: <%p>, capacity: %lu, length: %lu)",
+               label, *entries, *capacity, *length);
     return NULL;
   }
 
@@ -153,10 +158,10 @@ void *dyli_new_entry(void **entries, size_t *capacity, size_t *length,
   return slot;
 }
 
-DynamicListStatus dyli_append(const void *src_entries,
-                                 const size_t src_length, void **dest_entries,
-                                 size_t *dest_capacity, size_t *dest_length,
-                                 size_t type_size, const char *label) {
+DynamicListStatus dyli_append(const void *src_entries, const size_t src_length,
+                              void **dest_entries, size_t *dest_capacity,
+                              size_t *dest_length, size_t type_size,
+                              const char *label) {
 
   while (*dest_length + src_length >= *dest_capacity) {
 

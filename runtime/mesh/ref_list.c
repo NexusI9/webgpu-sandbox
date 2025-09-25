@@ -1,11 +1,11 @@
 #include "ref_list.h"
 
-#include <string.h>
 #include <cglm/vec3.h>
 #include <stdlib.h>
+#include <string.h>
 
-#include "core.h"
 #include "backend/logger.h"
+#include "core.h"
 #include "utils/dyli.h"
 
 DynamicListStatus mesh_ref_list_create(MeshRefList *list,
@@ -70,6 +70,9 @@ Mesh *mesh_ref_list_find(const MeshRefList *list, const Mesh *mesh,
       return list->entries[i];
     }
 
+  if (index)
+    *index = MESH_REF_LIST_UNFOUND_ENTRY;
+
   return NULL;
 }
 
@@ -77,7 +80,7 @@ Mesh *mesh_ref_list_find(const MeshRefList *list, const Mesh *mesh,
    Copy mesh pointers from one list to another
  */
 MeshStatus mesh_ref_list_append(const MeshRefList *src, MeshRefList *dest,
-                                   MeshRefList *exclude) {
+                                MeshRefList *exclude) {
 
   // expand if destination is too small
   while (dest->length + src->length >= dest->capacity) {
@@ -90,7 +93,8 @@ MeshStatus mesh_ref_list_append(const MeshRefList *src, MeshRefList *dest,
       dest->entries = temp_entries;
 
     } else {
-      logger_add(LoggerFlag_Error, "Couldn't reallocate and expand mesh indexed list.");
+      logger_add(LoggerFlag_Error,
+                 "Couldn't reallocate and expand mesh indexed list.");
       return MeshStatus_AllocFail;
     }
   }
@@ -125,10 +129,12 @@ MeshStatus mesh_ref_list_append(const MeshRefList *src, MeshRefList *dest,
    Create a copy of a Gizmo Mesh list from a source to a given desination.
    It allocate memory for the new src.
  */
-MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *src, MeshRefList *dest) {
+MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *src,
+                                         MeshRefList *dest) {
 
   if (src->capacity == 0 || src->entries == NULL)
-    logger_add(LoggerFlag_Error, 
+    logger_add(
+        LoggerFlag_Error,
         "Attempting to copy an unitialized list, entries: %p, capacity: %lu.",
         src->entries, src->capacity);
 
@@ -138,7 +144,8 @@ MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *src, MeshRefList *de
   dest->entries = malloc(dest->capacity * sizeof(Mesh *));
 
   if (dest->entries == NULL) {
-    logger_add(LoggerFlag_Error, "Couldn't allocate memory for mesh reference list copy.");
+    logger_add(LoggerFlag_Error,
+               "Couldn't allocate memory for mesh reference list copy.");
     dest->length = 0;
     return MeshStatus_AllocFail;
   }
@@ -151,7 +158,8 @@ MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *src, MeshRefList *de
 void mesh_ref_list_print(MeshRefList *list) {
 
   for (size_t i = 0; i < list->length; i++)
-    logger_add(LoggerFlag_Debug, "[%p] %s", list->entries[i], list->entries[i]->name);
+    logger_add(LoggerFlag_Debug, "[%p] %s", list->entries[i],
+               list->entries[i]->name);
 }
 
 void mesh_ref_list_average_position(MeshRefList *list, vec3 *dest) {

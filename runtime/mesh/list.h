@@ -12,6 +12,19 @@ typedef struct {
   size_t length;
 } MeshList;
 
+
+static inline DynamicListStatus mesh_list_create(MeshList *list, size_t capacity) {
+
+  return dyli_create((void **)&list->entries, &list->capacity, &list->length,
+                     sizeof(Mesh), capacity, "Mesh list");
+}
+
+static inline Mesh *mesh_list_new_mesh(MeshList *list) {
+  return (Mesh *)dyli_new_entry((void **)&list->entries, &list->capacity,
+                                &list->length, sizeof(Mesh), "Mesh list");
+}
+
+
 static inline void mesh_list_set_position(MeshList *list, vec3 position) {
   for (size_t i = 0; i < list->length; i++)
     mesh_set_position(&list->entries[i], position);

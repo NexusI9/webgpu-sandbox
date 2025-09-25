@@ -8,6 +8,7 @@
 
 #define MESH_REF_LIST_CAPACITY 24
 #define MESH_REF_LIST_ARRAY_CAPACITY 6
+#define MESH_REF_LIST_UNFOUND_ENTRY SIZE_MAX
 
 typedef struct {
   MeshRefList **lists;

@@ -30,9 +30,9 @@
 
  */
 
-SceneStatus scene_show_mesh(Scene *, Mesh *, const ScenePipeline);
-SceneStatus scene_hide_mesh(Scene *, Mesh *, const ScenePipeline);
-SceneStatus scene_show_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);
-SceneStatus scene_hide_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);
+SceneStatus scene_show_mesh(Scene *, Mesh *);
+SceneStatus scene_hide_mesh(Scene *, Mesh *);
+SceneStatus scene_show_mesh_ref_list(Scene *, MeshRefList *);
+SceneStatus scene_hide_mesh_ref_list(Scene *, MeshRefList *);
 
 #endif

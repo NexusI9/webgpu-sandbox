@@ -119,9 +119,21 @@ typedef struct {
 
 #define SCENE_SELECTION_LIST_CAPACITY 6
 #define SCENE_SELECTION_TYPE_COUNT 3
-#define SCENE_SELECTION_STATE_COUNT 2
 
 typedef void *scene_selection_target_t;
+
+typedef struct {
+  Mesh *mesh;
+  scene_selection_target_t target;
+  vec3 initial_attribute;
+} SceneSelectionObject;
+
+typedef struct {
+  SceneSelectionObject *entries;
+  size_t capacity;
+  size_t length;
+} SceneSelectionObjectList;
+
 typedef struct {
   scene_selection_target_t *entries;
   size_t length;
@@ -129,9 +141,7 @@ typedef struct {
 } SceneSelectionTargetList;
 
 typedef struct {
-  MeshRefList *active_meshes;
-  SceneSelectionTargetList *target_list;
-  Vec3List *initial_attributes;
+  SceneSelectionObjectList *selection;
   vec3 *delta;
   const Axis axis;
   const GizmoMode transform_mode;
@@ -141,12 +151,9 @@ typedef struct {
 /* Callbacks */
 typedef void (*scene_selection_transform_callback)(SceneSelectionTransform *);
 
-typedef void (*scene_selection_highlight_callback)(MeshRefList *, void *);
-
-typedef enum {
-  SceneSelectionState_Default,
-  SceneSelectionState_Selected,
-} SceneSelectionState;
+typedef void (*scene_selection_highlight_callback)(MeshRefList *,
+                                                   SceneSelectionObjectList *,
+                                                   void *);
 
 typedef enum {
   SceneSelectionType_Mesh,
@@ -155,10 +162,10 @@ typedef enum {
 } SceneSelectionType;
 
 typedef struct {
-  // linked attribtutes ( mesh[i] <> targets[i] <> init_attr[i] )
-  MeshRefList meshes[SCENE_SELECTION_STATE_COUNT];
-  SceneSelectionTargetList targets[SCENE_SELECTION_STATE_COUNT];
-  Vec3List initial_attributes;
+  // linked attribtutes ( mesh[i] + targets[i] => Selection Object )
+  MeshRefList meshes;
+  SceneSelectionTargetList targets;
+  SceneSelectionObjectList selection;
 
   scene_selection_highlight_callback highlight_callback;
   void *highlight_data;
@@ -270,6 +277,11 @@ typedef enum {
   ScenePipeline_Fixed_Front = 1 << 6,
   ScenePipeline_Fixed_UI = 1 << 7,
 } ScenePipeline;
+
+typedef enum {
+  ScenePass_Default,
+  ScenePass_Gizmo,
+} ScenePass;
 
 struct Scene {
 

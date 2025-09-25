@@ -11,11 +11,12 @@
 #include "./config.h"
 #include "./filter.h"
 #include "emscripten/em_types.h"
-#include "target_list.h"
-#include "runtime/mesh/ref_list.h"
-#include "utils/vector/vec3_list.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/ref_list.h"
 #include "runtime/scene/core.h"
+#include "target_list.h"
+#include "utils/dyli.h"
+#include "utils/vector/vec3_list.h"
 
 void scene_selection_init_filters(Scene *scene);
 
@@ -58,7 +59,7 @@ void scene_selection_draw_callback(void *data) {
   if (gizmo->cache.init_distance != 0.0f) {
 
     // use each selection filters transform callbacks on their respective meshes
-    for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+    for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
 
       vec3 delta;
 
@@ -77,14 +78,12 @@ void scene_selection_draw_callback(void *data) {
       scene_selection_transform_callback mesh_transform_callback =
           filter->transform_callback;
 
-      mesh_transform_callback(&(SceneSelectionTransform){
-          .active_meshes = &filter->meshes[SceneSelectionState_Selected],
-          .target_list = &filter->targets[SceneSelectionState_Selected],
-          .initial_attributes = &filter->initial_attributes,
-          .delta = &delta,
-          .axis = gizmo->axis,
-          .transform_mode = gizmo->mode,
-          .scene = scene});
+      mesh_transform_callback(
+          &(SceneSelectionTransform){.selection = &filter->selection,
+                                     .delta = &delta,
+                                     .axis = gizmo->axis,
+                                     .transform_mode = gizmo->mode,
+                                     .scene = scene});
 
       gizmo_update_ssbo(gizmo, &scene->renderer.ssbo);
     }
@@ -104,21 +103,23 @@ void scene_selection_init_filters(Scene *scene) {
   scene_selection_config(scene);
 
   // create filters source list
-  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
-
+  for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
     SceneSelectionFilter *filter = &scene->editor.selection.filters[i];
 
-    for (size_t j = 0; j < SCENE_SELECTION_STATE_COUNT; j++) {
-      // init active list
-      mesh_ref_list_create(&filter->meshes[j], MESH_REF_LIST_CAPACITY);
+    // init active list
+    mesh_ref_list_create(&filter->meshes, MESH_REF_LIST_CAPACITY);
 
-      // init target list
-      scene_selection_target_list_create(&filter->targets[j],
-                                         MESH_REF_LIST_CAPACITY);
-    }
+    // init target list
+    scene_selection_target_list_create(&filter->targets,
+                                       MESH_REF_LIST_CAPACITY);
 
-    // init initial attribute list
-    vec3_list_create(&filter->initial_attributes, MESH_REF_LIST_CAPACITY);
+    dyli_create((void *)&filter->selection.entries, &filter->selection.capacity,
+                &filter->selection.length, sizeof(SceneSelectionObject),
+                MESH_REF_LIST_CAPACITY, "Scene Selection Object List");
+
+    // DEBUG
+    printf("[%d] %p | %lu | %lu\n", i, filter->meshes.entries,
+           filter->meshes.capacity, filter->meshes.length);
   }
 }
 
@@ -148,7 +149,7 @@ bool scene_selection_reset_callback(int eventType,
   gizmo_clear_active(gizmo);
 
   // reset selection initial cached attributes
-  scene_selection_empty_initial_attributes(&scene->editor.selection);
+  scene_selection_clear_initial_attributes(&scene->editor.selection);
 
   return EM_FALSE;
 }
@@ -162,35 +163,31 @@ void scene_selection_average_position(SceneSelection *selection, vec3 *dest) {
 
   uint8_t denom = 0;
 
-  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+  for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
     SceneSelectionFilter *filter = &selection->filters[i];
     vec3 filter_avg;
-    mesh_ref_list_average_position(
-        &filter->meshes[SceneSelectionState_Selected], &filter_avg);
+    glm_vec3_zero(filter_avg);
+
+    for (size_t j = 0; j < filter->selection.length; j++) {
+      SceneSelectionObject *object = &filter->selection.entries[j];
+      glm_vec3_add(object->mesh->position, filter_avg, filter_avg);
+    }
+    glm_vec3_scale(filter_avg, 1.0f / glm_max(filter->selection.length, 1),
+                   filter_avg);
+
     glm_vec3_add(*dest, filter_avg, *dest);
 
-    if (filter->meshes[SceneSelectionState_Selected].length > 0)
+    if (filter->selection.length > 0)
       denom++;
   }
 
   glm_vec3_scale(*dest, 1.0f / glm_max(denom, 1), *dest);
 }
 
-void scene_selection_meshes_lists(SceneSelection *selection,
-                                  MeshRefList *list[SCENE_SELECTION_TYPE_COUNT],
-                                  size_t *length) {
-
-  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
-    list[i] = &selection[i].filters->meshes[SceneSelectionState_Selected];
-
-  *length = SCENE_SELECTION_TYPE_COUNT;
-}
-
 size_t scene_selection_length(SceneSelection *selection) {
-
   size_t length = 0;
-  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
-    length += selection->filters[i].meshes[SceneSelectionState_Selected].length;
+  for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
+    length += selection->filters[i].selection.length;
 
   return length;
 }
@@ -200,7 +197,7 @@ size_t scene_selection_length(SceneSelection *selection) {
  */
 void scene_selection_empty(SceneSelection *selection) {
 
-  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+  for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
     SceneSelectionFilter *filter = &selection->filters[i];
     scene_selection_filter_set_all_inactive(filter);
   }
@@ -210,7 +207,7 @@ void scene_selection_empty(SceneSelection *selection) {
    Select all objects in each filters and update their highlight callbacks
  */
 void scene_selection_all(SceneSelection *selection) {
-  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+  for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
     SceneSelectionFilter *filter = &selection->filters[i];
     scene_selection_filter_set_all_active(filter);
   }
@@ -239,13 +236,11 @@ void scene_selection_cache_initial_attributes(SceneSelection *selection,
 
     SceneSelectionFilter *filter = &selection->filters[i];
 
-    for (size_t j = 0; j < filter->meshes[SceneSelectionState_Selected].length;
-         j++) {
-
-      Mesh *mesh = filter->meshes[SceneSelectionState_Selected].entries[j];
+    for (size_t j = 0; j < filter->selection.length; j++) {
+      SceneSelectionObject *object = &filter->selection.entries[j];
       vec3 attribute;
-      mesh_transform_attribute[mode](mesh, &attribute);
-      vec3_list_insert(&filter->initial_attributes, attribute);
+      mesh_transform_attribute[mode](object->mesh, &attribute);
+      glm_vec3_copy(attribute, object->initial_attribute);
     }
   }
 }
@@ -253,28 +248,38 @@ void scene_selection_cache_initial_attributes(SceneSelection *selection,
 /**
   Empty all meshes initial attribute based on gizmo mode (pos/rot/scale)
  */
-void scene_selection_empty_initial_attributes(SceneSelection *selection) {
-  for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
-    vec3_list_empty(&selection->filters[i].initial_attributes);
+void scene_selection_clear_initial_attributes(SceneSelection *selection) {
+  for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
+    for (size_t j = 0; j < selection->filters[i].selection.length; j++)
+      glm_vec3_zero(
+          selection->filters[i].selection.entries[j].initial_attribute);
 }
 
+/**
+   Add a mesh to a specific selection pipeline (= type).
+   Each type/pipeline has its own highlight and transform callback.
+   Currently we defined 3 types:
+   - Mesh Shadow
+   - Mesh
+   - Scene Editor Objects (SEO)
+ */
 void scene_selection_add_mesh(SceneSelection *selection, Mesh *mesh,
                               void *extra, const SceneSelectionType type) {
 
   // insert mesh to selection meshes
-  mesh_ref_list_insert(
-      &selection->filters[type].meshes[SceneSelectionState_Default], mesh);
+  mesh_ref_list_insert(&selection->filters[type].meshes, mesh);
 
   // push extra
-  scene_selection_target_list_insert(
-      &selection->filters[type].targets[SceneSelectionState_Default], extra);
+  SceneSelectionTargetList *target_list = &selection->filters[type].targets;
+
+  dyli_insert((void *)&target_list->entries, &target_list->capacity,
+              &target_list->length, sizeof(scene_selection_target_t),
+              (void *)&extra, 1, "Scene Selection Target");
 }
 
 void scene_selection_add_mesh_ref_list(SceneSelection *selection,
                                        MeshRefList *list, void *extra,
                                        const SceneSelectionType type) {
-
-  for (size_t i = 0; i < list->length; i++) {
+  for (size_t i = 0; i < list->length; i++)
     scene_selection_add_mesh(selection, list->entries[i], extra, type);
-  }
 }

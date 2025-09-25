@@ -17,7 +17,7 @@
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/debug/view.h"
-#include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/scene/renderer/render_pass/visibility.h"
 #include "runtime/scene/renderer/render_pass/draw.h"
 #include "runtime/texture/core.h"
 #include "utils/dyli.h"
@@ -98,7 +98,7 @@ void probe_reflection_plane_list_draw_callback(void *data) {
 
   // temp
   ProbeReflectionListDebug *debug = NULL;
-  
+
   Scene *scene = (Scene *)data;
   ProbeReflectionPlaneList *list = &scene->planes_reflection;
 
@@ -111,8 +111,7 @@ void probe_reflection_plane_list_draw_callback(void *data) {
       ProbeReflectionPlane *probe = &list->entries[i];
 
       // prevent self reflection by disabling probe meshes from the render pass
-      render_pass_draw_list_disable_mesh_ref_list(
-          &list->pass, &probe->excluded_meshes, NULL);
+      render_pass_disable_mesh_ref_list(&list->pass, &probe->excluded_meshes);
 
       // define target layer
       WGPUTextureView target_color = wgpuTextureCreateView(
@@ -159,7 +158,7 @@ void probe_reflection_plane_list_draw_callback(void *data) {
       wgpuTextureViewRelease(target_depth);
 
       // re-enable all meshes for next draw (dirty......)
-      render_pass_draw_list_enable_all(&list->pass);
+      render_pass_enable_all_mesh(&list->pass);
     }
   }
 

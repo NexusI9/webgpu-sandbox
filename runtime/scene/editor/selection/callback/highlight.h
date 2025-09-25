@@ -4,9 +4,12 @@
 #include <cglm/cglm.h>
 
 #include "runtime/mesh/list.h"
+#include "runtime/scene/core.h"
 
-void scene_selection_mesh_highlight(MeshRefList *, void *);
+void scene_selection_mesh_highlight(MeshRefList *, SceneSelectionObjectList *,
+                                     void *);
 
-void scene_selection_seo_highlight(MeshRefList *, void *);
+void scene_selection_seo_highlight(MeshRefList *, SceneSelectionObjectList *,
+                                    void *);
 
 #endif

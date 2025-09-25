@@ -61,8 +61,8 @@ typedef struct SceneRenderer {
   } context;
 
   struct {
-    WGPURenderPipeline pipeline; // ??
-    WGPURenderPassEncoder render_pass; // TODO: Move to draw 
+    WGPURenderPipeline pipeline;       // ??
+    WGPURenderPassEncoder render_pass; // TODO: Move to draw
   } wgpu;
 
   // cached texture shared throughout parent scene objects
@@ -96,12 +96,25 @@ void scene_renderer_draw(SceneRenderer *);
 void scene_renderer_close(const SceneRenderer *);
 
 // getters
-SSBOManager *scene_renderer_ssbo(SceneRenderer *);
-UBOManager *scene_renderer_ubo(SceneRenderer *);
+static inline SSBOManager *scene_renderer_ssbo(SceneRenderer *renderer) {
+  return &renderer->ssbo;
+}
+static inline UBOManager *scene_renderer_ubo(SceneRenderer *renderer) {
+  return &renderer->ubo;
+}
 
-const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *);
+static inline const SceneRendererDrawMode
+scene_renderer_draw_mode(SceneRenderer *renderer) {
+  return renderer->draw.mode;
+}
 
-bool scene_renderer_resize_callback(int, const EmscriptenUiEvent *, void *);
-cclock *scene_renderer_clock(SceneRenderer *);
+static inline cclock *scene_renderer_clock(SceneRenderer *renderer) {
+  return &renderer->clock;
+}
+
+static inline RenderPassList *
+scene_renderer_active_pass_list(SceneRenderer *renderer) {
+  return &renderer->draw.render_pass[renderer->draw.mode];
+}
 
 #endif

@@ -114,7 +114,7 @@ void scene_renderer_add_draw_callback(SceneRenderer *renderer,
 
 void scene_renderer_render(void *desc) {
   SceneRendererRenderDescriptor *config = (SceneRendererRenderDescriptor *)desc;
-
+ 
   // Call draw callbacks
   for (size_t i = 0; i < config->renderer->draw.callbacks.length; i++) {
     SceneRendererDrawCallback *cb =
@@ -145,17 +145,4 @@ void scene_renderer_set_draw_mode(SceneRenderer *renderer,
   renderer->draw.mode = mode;
 }
 
-const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *renderer) {
-  return renderer->draw.mode;
-}
 
-cclock *scene_renderer_clock(SceneRenderer *renderer) {
-  return &renderer->clock;
-}
-
-SSBOManager *scene_renderer_ssbo(SceneRenderer *renderer) {
-  return &renderer->ssbo;
-}
-UBOManager *scene_renderer_ubo(SceneRenderer *renderer) {
-  return &renderer->ubo;
-}

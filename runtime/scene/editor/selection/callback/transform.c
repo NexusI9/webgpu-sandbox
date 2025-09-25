@@ -5,18 +5,18 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "backend/ssbo.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/light/shadow_map/draw.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/mesh/uniform.h"
-#include "runtime/scene/debug/core.h"
-#include "runtime/scene/renderer/core.h"
-#include "backend/ssbo.h"
-#include "runtime/mesh/core.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/debug/core.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
+#include "runtime/scene/renderer/core.h"
 
 /**
 
@@ -80,15 +80,14 @@ void scene_selection_mesh_transform_core(Mesh *mesh, vec3 *init_attribute,
 
   ssbo_update_queue_insert(&desc->scene->renderer.ssbo, SSBOType_Mesh,
                            mesh->ssbo_slot.id);
-
 }
 
 /* Mesh based transform */
 void scene_selection_mesh_transform(SceneSelectionTransform *desc) {
 
-  for (size_t i = 0; i < desc->active_meshes->length; i++) {
-    Mesh *mesh = desc->active_meshes->entries[i];
-    vec3 *init_attribute = &desc->initial_attributes->entries[i];
+  for (size_t i = 0; i < desc->selection->length; i++) {
+    Mesh *mesh = desc->selection->entries[i].mesh;
+    vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
 
     // transform mesh
     scene_selection_mesh_transform_core(mesh, init_attribute, desc);
@@ -100,9 +99,9 @@ void scene_selection_mesh_transform(SceneSelectionTransform *desc) {
  */
 void scene_selection_mesh_shadow_transform(SceneSelectionTransform *desc) {
 
-  for (size_t i = 0; i < desc->active_meshes->length; i++) {
-    Mesh *mesh = desc->active_meshes->entries[i];
-    vec3 *init_attribute = &desc->initial_attributes->entries[i];
+  for (size_t i = 0; i < desc->selection->length; i++) {
+    Mesh *mesh = desc->selection->entries[i].mesh;
+    vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
     // transform mesh
     scene_selection_mesh_transform_core(mesh, init_attribute, desc);
   }
@@ -169,12 +168,11 @@ void scene_selection_seo_transform(SceneSelectionTransform *desc) {
 
   size_t offset = 0;
 
-  for (size_t i = 0; i < desc->active_meshes->length; i++) {
+  for (size_t i = 0; i < desc->selection->length; i++) {
 
-    vec3 *init_attribute = &desc->initial_attributes->entries[i];
-    Mesh *mesh = desc->active_meshes->entries[i];
-
-    SceneEditorObject *seo = (SceneEditorObject *)desc->target_list->entries[i];
+    vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
+    Mesh *mesh = desc->selection->entries[i].mesh;
+    SceneEditorObject *seo = (SceneEditorObject *)desc->selection->entries[i].target;
 
     /* For now each SEO mesh has its own entry
      However the selection only works with a flat array of mesh, thus we need

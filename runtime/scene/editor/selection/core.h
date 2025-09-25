@@ -22,10 +22,6 @@ void scene_selection_add(MeshRefList *, Mesh *);
 
 void scene_selection_average_position(SceneSelection *, vec3 *);
 
-void scene_selection_meshes_lists(SceneSelection *,
-                                  MeshRefList *[SCENE_SELECTION_TYPE_COUNT],
-                                  size_t *);
-
 size_t scene_selection_length(SceneSelection *);
 
 void scene_selection_add_mesh_ref_list(SceneSelection *, MeshRefList *, void *,
@@ -38,6 +34,6 @@ void scene_selection_empty(SceneSelection *);
 void scene_selection_all(SceneSelection *);
 void scene_selection_cache_initial_attributes(SceneSelection *,
                                               const GizmoMode);
-void scene_selection_empty_initial_attributes(SceneSelection *);
+void scene_selection_clear_initial_attributes(SceneSelection *);
 
 #endif
