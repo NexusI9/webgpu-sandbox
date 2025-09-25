@@ -1,11 +1,13 @@
 #ifndef _SCENE_PASS_CONFIG_H_
 #define _SCENE_PASS_CONFIG_H_
 
-#include "runtime/mesh/shader/shader.h"
 #include "./core.h"
+#include "backend/context.h"
 #include "debug/core.h"
 #include "renderer/core.h"
 #include "renderer/render_pass/core.h"
+#include "runtime/mesh/shader/shader.h"
+#include "webgpu/webgpu.h"
 #include <stdint.h>
 
 /**
@@ -236,12 +238,10 @@ scene_draw_layouts_init(Scene *scene,
 
   /*
 
-
     Below configuration won't be used in runtime out of debug purpose.
 
-
    */
-  
+
   const RenderPassDrawListDescriptor
       *scene_draw_list[SCENE_RENDERER_DRAW_MODE_COUNT] = {
           [SceneRendererDrawMode_Texture] = &texture_draw_list,
@@ -252,21 +252,23 @@ scene_draw_layouts_init(Scene *scene,
 
   RenderPassList *pass_list = scene->renderer.draw.render_pass;
 
+  const double ratio = scene->renderer.context.dpi;
+  const int render_width = context_width() * ratio;
+  const int render_height = context_height() * ratio;
+
   for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
 
     RenderPassListCreate list_config = {
-        .device = scene_renderer_device(&scene->renderer),
-        .queue = scene_renderer_queue(&scene->renderer),
-        .swapchain = scene_renderer_swapchain(&scene->renderer),
+        .swapchain = context_swapchain(),
         .multisample = multisample,
-        .width = scene_renderer_width(&scene->renderer),
-        .height = scene_renderer_height(&scene->renderer),
+        .width = render_width,
+        .height = render_height,
     };
 
     render_pass_list_create(&pass_list[i], &list_config);
 
     RenderPassColorAttachment scene_color_attachment = {
-        .view = pass_list->resolve_view,
+        .view = NULL,
         .clear_value = scene->renderer.background,
         .load_op = WGPULoadOp_Clear,
         .store_op = WGPUStoreOp_Store,
@@ -289,8 +291,8 @@ scene_draw_layouts_init(Scene *scene,
     const RenderPassListInsert scene_pass = {
         .label = "Scene Render Pass",
         .multisample = multisample,
-        .width = scene_renderer_width(&scene->renderer),
-        .height = scene_renderer_height(&scene->renderer),
+        .width = render_width,
+        .height = render_height,
         .color = &scene_color_attachment,
         .depth = &scene_depth_attachment,
         .draw_list = scene_draw_list[i],
@@ -301,10 +303,10 @@ scene_draw_layouts_init(Scene *scene,
     // add gizmo draw list
 
     RenderPassColorAttachment gizmo_color_attachment = {
-        .view = pass_list->resolve_view,
+        .view = NULL,
         .clear_value = 0,
         .load_op = WGPULoadOp_Load,
-        .store_op = WGPUStoreOp_Store,
+        .store_op = WGPUStoreOp_Discard,
         .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
     };
 
@@ -321,8 +323,8 @@ scene_draw_layouts_init(Scene *scene,
     const RenderPassListInsert gizmo_pass = {
         .label = "Gizmo Render Pass",
         .multisample = multisample,
-        .width = scene_renderer_width(&scene->renderer),
-        .height = scene_renderer_height(&scene->renderer),
+        .width = render_width,
+        .height = render_height,
         .color = &gizmo_color_attachment,
         .depth = &gizmo_depth_attachment,
         .draw_list = &gizmo_draw_list,

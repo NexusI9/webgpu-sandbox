@@ -53,8 +53,8 @@ static inline void loader_gltf_primitie_vertex_lists_init(VertexAttribute *,
                                                           VertexList *, size_t);
 
 // mesh utils
-static LoaderGLTFStatus loader_gltf_create_mesh(Scene *, const WGPUDevice,
-                                                const WGPUQueue, cgltf_data *,
+static LoaderGLTFStatus loader_gltf_create_mesh(Scene *,
+                                                cgltf_data *,
                                                 const LoaderGLTFOptions *,
                                                 LoaderGLTFResult *);
 static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
@@ -99,7 +99,7 @@ LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
     break;
 
   case cgltf_result_success:
-    return loader_gltf_create_mesh(desc->scene, desc->device, desc->queue, data,
+    return loader_gltf_create_mesh(desc->scene, data,
                                    desc->options, dest);
     break;
 
@@ -263,8 +263,7 @@ void loader_gltf_primitive_vertex_index(VertexIndex *vert_index,
   };
 }
 
-LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
-                                         const WGPUQueue queue,
+LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene,
                                          cgltf_data *data,
                                          const LoaderGLTFOptions *options,
                                          LoaderGLTFResult *result) {
@@ -276,8 +275,6 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
 
     struct Mesh *scene_mesh = scene_new_mesh(scene);
     mesh_create(scene_mesh, &(MeshCreateDescriptor){
-                                .device = device,
-                                .queue = queue,
                                 .name = gl_mesh.name,
                                 .vertex = (VertexAttribute){0},
                                 .index = (VertexIndex){0},
@@ -335,8 +332,6 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
         char *mesh_name;
         asprintf(&mesh_name, "%s %lu", gl_mesh.name, p);
         mesh_create(target_mesh, &(MeshCreateDescriptor){
-                                     .device = device,
-                                     .queue = queue,
                                      .name = mesh_name,
                                      .vertex = (VertexAttribute){0},
                                      .index = (VertexIndex){0},
@@ -354,8 +349,6 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
                                                 RenderPipelineType_PBR),
                                             .label = material->name,
                                             .name = material->name,
-                                            .device = device,
-                                            .queue = queue,
                                         });
 
         // load and bind gltf textures
@@ -365,8 +358,7 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, const WGPUDevice device,
 
       // define mesh vertex attribute
       mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
-                                &vert_index, target_mesh->device,
-                                target_mesh->queue);
+                                &vert_index);
 
       // set mesh position
       loader_gltf_mesh_position(scene_mesh, gl_mesh.name, data);

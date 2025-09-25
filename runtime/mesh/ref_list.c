@@ -121,8 +121,6 @@ MeshStatus mesh_ref_list_append(const MeshRefList *src, MeshRefList *dest,
   return MeshStatus_Success;
 }
 
-
-
 /**
    Create a copy of a Gizmo Mesh list from a source to a given desination.
    It allocate memory for the new src.

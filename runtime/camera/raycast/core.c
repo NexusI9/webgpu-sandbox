@@ -25,7 +25,6 @@ static inline void camera_raycast_create_event(Camera *,
                                                em_mouse_callback_func,
                                                html_event_mouse);
 
-
 static inline MeshRefList **malloc_reflist(MeshRefList **, size_t);
 
 /**
@@ -137,7 +136,6 @@ void camera_raycast_create_event(Camera *cam,
 
    Link to the camera a raycast system with the mouse position as raycast
    target. Useful for Edit mode.
-
 
     ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▄▄▖
    ▐▌   ▐▌   ▐▛▚▖▐▌  █  ▐▌   ▐▌ ▐▌

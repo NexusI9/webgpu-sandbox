@@ -3,6 +3,7 @@
 #include <cglm/types.h>
 #include <stddef.h>
 
+#include "backend/context.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_pipeline/render_shader/glass_probe_grid/glass_probe_grid.h"
@@ -43,8 +44,6 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &prim,
                                   .name = "Glass Probe Sphere",
-                                  .device = scene_device(scene),
-                                  .queue = scene_queue(scene),
                               });
 
   mesh_shader_create(mesh, &(ShaderCreateDescriptor){
@@ -52,8 +51,6 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
                                    RenderPipelineType_GlassProbeGrid),
                                .label = "Glass Probe Sphere",
                                .name = "Glass Probe Sphere",
-                               .device = scene_device(scene),
-                               .queue = scene_queue(scene),
                            });
 
   mesh_set_position(mesh, (vec3){0.0f, 6.0f, 0.0f});
@@ -127,8 +124,6 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &prim,
                                   .name = "Glass Probe Plane",
-                                  .device = scene_device(scene),
-                                  .queue = scene_queue(scene),
                               });
 
   mesh_shader_create(
@@ -136,8 +131,6 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                 .pipeline = std_render_pipeline(RenderPipelineType_GlassProbePlane),
                 .label = "Glass Probe Plane",
                 .name = "Glass Probe Plane",
-                .device = scene_device(scene),
-                .queue = scene_queue(scene),
             });
 
   mesh_set_position(mesh, (vec3){0.0f, 0.2f, 0.0f});

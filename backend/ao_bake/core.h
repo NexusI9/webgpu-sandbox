@@ -63,7 +63,7 @@ typedef struct {
 } AOBakeSettings;
 
 typedef struct {
-  const WGPUDevice device;
+  
   uint16_t size;
   uint16_t layer_count;
 } AOBakeInitDescriptor;
@@ -78,8 +78,7 @@ typedef struct {
   MeshRefList *mesh_list;
   AOBakeSettings local;
   AOBakeSettings global;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   AOBakeDrawDebug *debug;
 } AOBakeDrawDescriptor;
 
@@ -87,8 +86,7 @@ typedef struct {
   MeshRefList *mesh_list;
   Mesh *mesh;
   size_t layer;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const AOBakeSettings *settings;
   Texture *texture;
   AOBakeDrawDebug *debug;
@@ -96,8 +94,7 @@ typedef struct {
 
 typedef struct {
   Mesh *mesh;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const AOBakeSettings *settings;
   Texture *texture;
   AOBakeDrawDebug *debug;

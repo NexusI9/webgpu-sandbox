@@ -54,8 +54,6 @@ scene_render_pass_draw_list_enable_mesh(Scene *, const MeshRefList *, Mesh *);
              ▐▌ ▐▌▐▛▀▚▖   ▐▌▐▛▀▀▘▐▌     █  ▝▀▚▖
              ▝▚▄▞▘▐▙▄▞▘▗▄▄▞▘▐▙▄▄▖▝▚▄▄▖  █ ▗▄▄▞▘
 
-
-
  */
 SceneEditorObject *scene_add_point_light(Scene *scene,
                                          PointLightDescriptor *desc,
@@ -86,8 +84,6 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
   SEOCreateDescriptor seo_desc = {
       .camera = scene->active_camera,
       .viewport = &scene->viewport,
-      .device = scene_device(scene),
-      .queue = scene_queue(scene),
       .scene = scene,
       .target_list_index = 0,
   };
@@ -112,8 +108,6 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
           &(ShadowMapDrawPointLightDescriptor){
               .light = new_light,
               .pass = &scene->lights.point.shadow.pass,
-              .device = scene_device(scene),
-              .queue = scene_queue(scene),
               .texture_layer = shadow_list->length,
               .command_encoder = NULL,
           },
@@ -163,8 +157,6 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
   SEOCreateDescriptor seo_desc = {
       .camera = scene->active_camera,
       .viewport = &scene->viewport,
-      .device = scene_device(scene),
-      .queue = scene_queue(scene),
       .scene = scene,
       .target_list_index = 0,
   };
@@ -188,8 +180,6 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
           &(ShadowMapDrawSpotLightDescriptor){
               .light = new_light,
               .pass = &shadow_list->pass,
-              .device = scene_device(scene),
-              .queue = scene_queue(scene),
               .texture_layer = shadow_list->length,
               .command_encoder = NULL,
           },
@@ -244,8 +234,6 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
                            &(SEOCreateDescriptor){
                                .camera = scene->active_camera,
                                .viewport = &scene->viewport,
-                               .device = scene_device(scene),
-                               .queue = scene_queue(scene),
                                .scene = scene,
                                .target_list_index = list->length - 1,
                            });
@@ -288,8 +276,6 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   SEOCreateDescriptor seo_desc = {
       .camera = scene->active_camera,
       .viewport = &scene->viewport,
-      .device = scene_device(scene),
-      .queue = scene_queue(scene),
       .scene = scene,
       .target_list_index = 0,
   };
@@ -314,8 +300,6 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
           &(ShadowMapDrawSunLightDescriptor){
               .light = new_light,
               .pass = &scene->lights.spot.shadow.pass,
-              .device = scene_device(scene),
-              .queue = scene_queue(scene),
               .texture_layer =
                   scene->lights.spot.shadow.length + seo_desc.target_list_index,
               .command_encoder = NULL,
@@ -377,8 +361,6 @@ SceneEditorObject *scene_add_camera(Scene *scene,
                     &(SEOCreateDescriptor){
                         .camera = scene->active_camera,
                         .viewport = &scene->viewport,
-                        .device = scene_device(scene),
-                        .queue = scene_queue(scene),
                         .scene = scene,
                         .target_list_index = scene->cameras.length - 1,
                     });
@@ -437,8 +419,6 @@ scene_add_probe_reflection_grid(Scene *scene,
                                    &(SEOCreateDescriptor){
                                        .camera = scene->active_camera,
                                        .viewport = &scene->viewport,
-                                       .device = scene_device(scene),
-                                       .queue = scene_queue(scene),
                                        .scene = scene,
                                        .target_list_index = 0,
                                    });
@@ -503,8 +483,6 @@ scene_add_probe_reflection_plane(Scene *scene,
       &(SEOCreateDescriptor){
           .camera = scene->active_camera,
           .viewport = &scene->viewport,
-          .device = scene_device(scene),
-          .queue = scene_queue(scene),
           .scene = scene,
           .target_list_index = SCENE_EDITOR_OBJECT_TARGET_UNDEFINED,
       });
@@ -576,8 +554,6 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
       scene->renderer.draw.mode == SceneRendererDrawMode_Texture) {
     shadow_map_draw_all(
         &(ShadowMapDrawAllDescriptor){
-            .device = scene_device(scene),
-            .queue = scene_queue(scene),
             .mesh_list = pipeline_mesh_list,
             .lights = &scene->lights,
         },

@@ -3,6 +3,7 @@
 #include <cgltf/cgltf.h>
 #include <stddef.h>
 
+#include "backend/context.h"
 #include "resources/loader/loader.gltf.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
@@ -16,8 +17,6 @@ void example_gltf(Scene *scene) {
       &(GLTFLoadDescriptor){
           .scene = scene,
           .path = "./resources/assets/gltf/cube.gltf",
-          .device = scene_device(scene),
-          .queue = scene_queue(scene),
           .cgltf_options = &(cgltf_options){0},
           .options =
               &(LoaderGLTFOptions){
@@ -34,8 +33,6 @@ void example_gltf_podium(Scene *scene) {
       &(GLTFLoadDescriptor){
           .scene = scene,
           .path = "./resources/assets/gltf/podium.gltf",
-          .device = scene_device(scene),
-          .queue = scene_queue(scene),
           .cgltf_options = &(cgltf_options){0},
           .options =
               &(LoaderGLTFOptions){

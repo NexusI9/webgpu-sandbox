@@ -5,13 +5,14 @@
 #include <string.h>
 
 #include "backend/buffer.h"
+#include "backend/context.h"
+#include "backend/logger.h"
 #include "backend/std_texture/core.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "find.h"
 #include "utils.h"
 #include "utils/dyli.h"
-#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 /*TODO: BATCH UPDATE : like add, take a bunch of entry and ONLY REBUILD at the
@@ -36,11 +37,12 @@ shader_update_texture_view(Shader *shader, const bind_group_index group_index,
     bound_texture->format = format;
 
     // rebuild group
-    shader_bind_group_refresh(bind_group, group_index, shader->device,
+    shader_bind_group_refresh(bind_group, group_index,
                               &shader_pipeline(shader)->handle);
 
   } else {
-    logger_add(LoggerFlag_Warning, 
+    logger_add(
+        LoggerFlag_Warning,
         "Could not find the bound texture view in group: %d, index: %d, make "
         "sure "
         "the shader is correctly initialised with all bounds (shader: %s)",
@@ -68,7 +70,7 @@ shader_update_uniform_data(Shader *shader, const bind_group_index group_index,
     else
       bound_uniform->data = data;
 
-    wgpuQueueWriteBuffer(shader->queue, bound_uniform->buffer,
+    wgpuQueueWriteBuffer(context_queue(), bound_uniform->buffer,
                          bound_uniform->offset, bound_uniform->data,
                          bound_uniform->size);
 
@@ -78,7 +80,8 @@ shader_update_uniform_data(Shader *shader, const bind_group_index group_index,
     //                          &shader_pipeline(shader)->handle);
 
   } else {
-    logger_add(LoggerFlag_Warning, 
+    logger_add(
+        LoggerFlag_Warning,
         "Could not find the bound uniform in group: %d, index: %d, make sure "
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
@@ -104,12 +107,13 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
     if (lifetime == ShaderBufferLifetime_Release)
       wgpuBufferRelease(bound_uniform->buffer);
 
-    size_t alignment = shader_device_uniform_alignment(shader->device);
+    size_t alignment = shader_device_uniform_alignment();
 
     bound_uniform->buffer = buffer;
 
     if (index > SHADER_MAX_OFFSET_CAPACITY)
-      logger_add(LoggerFlag_Warning, 
+      logger_add(
+          LoggerFlag_Warning,
           "Trying to set a index offset to the shader offset array capacity.");
 
     if (bound_uniform->dynamic_offset_entry)
@@ -119,11 +123,12 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
     // messes up everything (have an idea why but not exactly)
     bound_uniform->offset = 0;
 
-    shader_bind_group_refresh(bind_group, group_index, shader->device,
+    shader_bind_group_refresh(bind_group, group_index,
                               &shader_pipeline(shader)->handle);
 
   } else {
-    logger_add(LoggerFlag_Warning, 
+    logger_add(
+        LoggerFlag_Warning,
         "Could not find the bound uniform in group: %d, index: %d, make sure "
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
@@ -195,7 +200,8 @@ ShaderBindGroupUniformEntry *shader_update_uniform_callback(
       };
     }
   } else {
-    logger_add(LoggerFlag_Warning, 
+    logger_add(
+        LoggerFlag_Warning,
         "Could not find the bound uniform in group: %d, index: %d, make sure "
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
@@ -226,14 +232,15 @@ shader_update_sampler(Shader *shader, const bind_group_index group_index,
     bound_sampler->magFilter = sampler->magFilter;
     bound_sampler->mipmapFilter = sampler->mipmapFilter;
 
-    bound_sampler->sampler = wgpuDeviceCreateSampler(shader->device, sampler);
+    bound_sampler->sampler = wgpuDeviceCreateSampler(context_device(), sampler);
 
     // rebuild group
-    shader_bind_group_refresh(bind_group, group_index, shader->device,
+    shader_bind_group_refresh(bind_group, group_index,
                               &shader_pipeline(shader)->handle);
 
   } else {
-    logger_add(LoggerFlag_Warning, 
+    logger_add(
+        LoggerFlag_Warning,
         "Could not find the bound sampler in group: %d, index: %d, make sure "
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
@@ -262,8 +269,6 @@ shader_update_texture(Shader *shader, const bind_group_index group_index,
                               .height = texture->height,
                               .data = texture->data,
                               .size = texture->size,
-                              .device = shader->device,
-                              .queue = shader->queue,
                               .format = texture->format,
                               .channels = texture->channels,
                           },
@@ -273,7 +278,8 @@ shader_update_texture(Shader *shader, const bind_group_index group_index,
                                bound_texture->format);
 
   } else {
-    logger_add(LoggerFlag_Warning, 
+    logger_add(
+        LoggerFlag_Warning,
         "Could not find the bound texture in group: %d, index: %d, make sure "
         "the shader is correctly initialised with all bounds (shader: %s)",
         group_index, index, shader->name);
@@ -290,21 +296,22 @@ shader_update_bind_group_offset(Shader *shader,
   ShaderBindGroup *bind_group = &shader->bind_groups.entries[group_index];
 
   if (group_index > SHADER_MAX_BIND_GROUP) {
-    logger_add(LoggerFlag_Warning, "Attempting to set shader %s bindgroup %u offset, "
-                    "which is beyond bindgroup capacity (%d).",
-                    shader->name, group_index, SHADER_MAX_BIND_GROUP);
+    logger_add(LoggerFlag_Warning,
+               "Attempting to set shader %s bindgroup %u offset, "
+               "which is beyond bindgroup capacity (%d).",
+               shader->name, group_index, SHADER_MAX_BIND_GROUP);
     return bind_group;
   }
 
   if (index > SHADER_MAX_OFFSET_CAPACITY) {
-    logger_add(LoggerFlag_Warning, 
-        "Attempting to set shader %s bindgroup %u offset at index %u, "
-        "which is beyond offset capacity (%d).",
-        shader->name, group_index, index, SHADER_MAX_OFFSET_CAPACITY);
+    logger_add(LoggerFlag_Warning,
+               "Attempting to set shader %s bindgroup %u offset at index %u, "
+               "which is beyond offset capacity (%d).",
+               shader->name, group_index, index, SHADER_MAX_OFFSET_CAPACITY);
     return bind_group;
   }
 
-  size_t alignment = shader_device_uniform_alignment(shader->device);
+  size_t alignment = shader_device_uniform_alignment();
 
   ShaderBindGroupUniformEntry *uniform =
       &shader->bind_groups.entries[group_index].uniforms.entries[index];

@@ -10,7 +10,6 @@
 #include "utils/projection.h"
 #include "webgpu/webgpu.h"
 
-
 #define LIGHT_POINT_VIEWS 6
 #define LIGHT_SPOT_VIEW 1
 #define LIGHT_MAX_CAPACITY 16
@@ -159,7 +158,6 @@ typedef struct {
                   *****************
                   * Render pass 2 *
                   *****************
-
 
   ===========================================================================
 

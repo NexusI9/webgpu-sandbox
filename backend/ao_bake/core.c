@@ -1,19 +1,20 @@
 #include "./core.h"
 
-#include "backend/logger.h"
 #include "./global.h"
 #include "./local.h"
 #include "./texture_list.h"
-#include "utils.h"
-#include "webgpu/webgpu.h"
+#include "backend/context.h"
+#include "backend/logger.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/shader/bindgroup.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
-#include "runtime/texture/create.h"
-#include "utils/dyli.h"
-#include "runtime/mesh/core.h"
 #include "runtime/texture/core.h"
+#include "runtime/texture/create.h"
+#include "utils.h"
+#include "utils/dyli.h"
+#include "webgpu/webgpu.h"
 
 /**
    Create and cache Ambient Occlusion main array texture.
@@ -26,7 +27,7 @@ void ao_bake_init(SceneRendererTextureAO *ao,
   ao->layer_count = desc->layer_count;
   ao->size = desc->size;
   ao->texture = wgpuDeviceCreateTexture(
-      desc->device,
+      context_device(),
       &(WGPUTextureDescriptor){
           .size = {ao->size, ao->size, desc->layer_count},
           .format = AO_TEXTURE_FORMAT,
@@ -48,8 +49,8 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
 
   // temp
   if (layer != DYLI_INVALID_INDEX && layer >= (int)ao->layer_count) {
-    logger_add(LoggerFlag_Warning, 
-        "AO Texture Layer reached max capacity, AO Baking aborted.");
+    logger_add(LoggerFlag_Warning,
+               "AO Texture Layer reached max capacity, AO Baking aborted.");
     return;
   }
 
@@ -73,15 +74,16 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
                        });
 
       const bind_group_index AO_group = 1;
-      shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), AO_group, 8,
-                                 layer_view, AO_TEXTURE_FORMAT);
+      shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture),
+                                 AO_group, 8, layer_view, AO_TEXTURE_FORMAT);
 
       Shader *shader = mesh_shader(mesh, MeshShader_Texture);
       ShaderBindGroup *bind_group = shader_get_bind_group(shader, AO_group);
-      shader_bind_group_refresh(bind_group, AO_group, desc->device,
+      shader_bind_group_refresh(bind_group, AO_group,
                                 &shader->pipeline->handle);
     } else {
-      logger_add(LoggerFlag_Warning, "New AO texture couldn't be created, AO Bake aborted.");
+      logger_add(LoggerFlag_Warning,
+                 "New AO texture couldn't be created, AO Bake aborted.");
       return;
     }
   }
@@ -97,8 +99,6 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
   if (desc->global.sample_amount)
     TIMER("Done", {
       ao_bake_global(ao, &(AOBakeGlobalDescriptor){
-                             .device = desc->device,
-                             .queue = desc->queue,
                              .mesh_list = desc->mesh_list,
                              .settings = &desc->global,
                              .mesh = mesh,
@@ -111,8 +111,6 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
   if (desc->local.sample_amount)
     TIMER("Done", {
       ao_bake_local(ao, &(AOBakeLocalDescriptor){
-                            .device = desc->device,
-                            .queue = desc->queue,
                             .settings = &desc->local,
                             .mesh = mesh,
                             .texture = texture,
@@ -124,7 +122,7 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
 
     ao_bake_process_texture(texture);
 
-    wgpuQueueWriteTexture(desc->queue,
+    wgpuQueueWriteTexture(context_queue(),
                           &(WGPUImageCopyTexture){
                               .texture = ao->texture,
                               .mipLevel = 0,
@@ -157,7 +155,7 @@ void ao_bake_draw_list(SceneRendererTextureAO *ao,
     // sampling factor the dots a too clearly visible)
     ao_bake_process_texture(texture);
 
-    wgpuQueueWriteTexture(desc->queue,
+    wgpuQueueWriteTexture(context_queue(),
                           &(WGPUImageCopyTexture){
                               .texture = ao->texture,
                               .mipLevel = 0,

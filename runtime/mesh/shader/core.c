@@ -54,8 +54,6 @@ MeshStatus mesh_shader_create_shadow(Mesh *mesh) {
                 &(ShaderCreateDescriptor){
                     .pipeline = std_render_pipeline(RenderPipelineType_Shadow),
                     .label = "Mesh shadow shader",
-                    .device = mesh->device,
-                    .queue = mesh->queue,
                     .name = "Mesh shadow shader",
                 });
 
@@ -94,8 +92,6 @@ MeshStatus mesh_shader_create_wireframe(Mesh *mesh) {
                 &(ShaderCreateDescriptor){
                     .pipeline = std_render_pipeline(RenderPipelineType_Line),
                     .label = "Mesh wireframe shader",
-                    .device = mesh->device,
-                    .queue = mesh->queue,
                     .name = "Mesh wireframe shader",
                 });
 
@@ -123,8 +119,6 @@ MeshStatus mesh_shader_create_solid(Mesh *mesh) {
   shader_create(solid_shader, &(ShaderCreateDescriptor){
                                   .pipeline = std_render_pipeline(RenderPipelineType_Solid),
                                   .label = "Mesh solid shader",
-                                  .device = mesh->device,
-                                  .queue = mesh->queue,
                                   .name = "Mesh solid shader",
                               });
 
@@ -154,8 +148,6 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
                     .pipeline = std_render_pipeline(RenderPipelineType_Reflection),
                     .label = "Mesh Reflection shader",
                     .name = "Mesh Reflection shader",
-                    .device = mesh->device,
-                    .queue = mesh->queue,
                 });
 
   return MeshStatus_Success;

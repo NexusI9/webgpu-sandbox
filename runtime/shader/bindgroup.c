@@ -5,11 +5,12 @@
 
 #include "./utils.h"
 #include "add.h"
+#include "backend/context.h"
+#include "backend/logger.h"
 #include "backend/std_texture/core.h"
 #include "core.h"
 #include "runtime/pipeline/render.h"
 #include "utils/dyli.h"
-#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 static inline void shader_convert_uniforms(ShaderBindGroup *,
@@ -25,7 +26,8 @@ static inline void shader_layout_print(bind_group_index group, bind_index index,
 #ifdef VERBOSE_BINDING_PHASE
 void shader_layout_print(bind_group_index group, bind_index index,
                          const char *type) {
-  logger_add(LoggerFlag_Print, "\t\t\t└ group: %u | binding: %u | '%s'", group, index, type);
+  logger_add(LoggerFlag_Print, "\t\t\t└ group: %u | binding: %u | '%s'", group,
+             index, type);
 }
 #endif
 
@@ -40,7 +42,7 @@ void shader_bind_group_create(Shader *shader, bind_group_index index) {
 
   if (index > SHADER_MAX_BIND_GROUP) {
     logger_add(LoggerFlag_Warning, "Cannot initialize a group index > %d.",
-                    SHADER_MAX_BIND_GROUP);
+               SHADER_MAX_BIND_GROUP);
     return;
   }
 
@@ -201,7 +203,8 @@ ShaderBindGroup *shader_get_bind_group(Shader *shader,
 
   // check if group within acceptable range
   if (group_index >= SHADER_MAX_BIND_GROUP) {
-    logger_add(LoggerFlag_Error, "WebGPU is unable to create more than 4 bind groups.");
+    logger_add(LoggerFlag_Error,
+               "WebGPU is unable to create more than 4 bind groups.");
     return NULL;
   }
 
@@ -262,16 +265,16 @@ void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
  */
 void shader_bind_group_build(ShaderBindGroup *group,
                              bind_group_index group_index,
-                             const WGPUDevice device,
                              const WGPURenderPipeline *pipeline) {
 
   uint16_t total_length = shader_bind_group_entries_count(group);
 
 #ifdef VERBOSE_BINDING_PHASE
-  logger_add(LoggerFlag_Print, "\t\t\t\t└ Uniforms: %lu\n\t\t\t\t└ Textures: "
-                "%lu\n\t\t\t\t└ Samplers: %lu",
-                group->uniforms.length, group->textures.length,
-                group->samplers.length);
+  logger_add(LoggerFlag_Print,
+             "\t\t\t\t└ Uniforms: %lu\n\t\t\t\t└ Textures: "
+             "%lu\n\t\t\t\t└ Samplers: %lu",
+             group->uniforms.length, group->textures.length,
+             group->samplers.length);
 #endif
 
   // convert shader bind group to WGPU bind group
@@ -279,12 +282,12 @@ void shader_bind_group_build(ShaderBindGroup *group,
 
   // realize bind group
   group->bind_group = wgpuDeviceCreateBindGroup(
-      device, &(WGPUBindGroupDescriptor){
-                  .layout = wgpuRenderPipelineGetBindGroupLayout(*pipeline,
-                                                                 group_index),
-                  .entryCount = total_length,
-                  .entries = converted_entries,
-              });
+      context_device(), &(WGPUBindGroupDescriptor){
+                            .layout = wgpuRenderPipelineGetBindGroupLayout(
+                                *pipeline, group_index),
+                            .entryCount = total_length,
+                            .entries = converted_entries,
+                        });
 
   // release layouts
   free(converted_entries);
@@ -300,14 +303,13 @@ void shader_bind_group_build(ShaderBindGroup *group,
  */
 void shader_bind_group_refresh(ShaderBindGroup *group,
                                bind_group_index group_index,
-                               const WGPUDevice device,
                                const WGPURenderPipeline *pipeline) {
 #ifdef VERBOSE_BINDING_PHASE
   logger_add(LoggerFlag_Print, "\t\t\t(refresh)");
 #endif
 
   shader_bind_group_release(group);
-  shader_bind_group_build(group, group_index, device, pipeline);
+  shader_bind_group_build(group, group_index, pipeline);
 }
 
 /**
@@ -323,7 +325,8 @@ void shader_bind_group_create_from_layout(
     Shader *shader, const RenderPipelineStateObject *layout) {
 
 #ifdef VERBOSE_BINDING_PHASE
-  logger_add(LoggerFlag_Print, "\t\t└ Initialize bindgroups from PSO with default values:");
+  logger_add(LoggerFlag_Print,
+             "\t\t└ Initialize bindgroups from PSO with default values:");
 #endif
 
   // traverse group
@@ -574,7 +577,7 @@ void shader_bind_group_create_from_layout(
                                     .compare = WGPUCompareFunction_Undefined,
                                     .minFilter = WGPUFilterMode_Linear,
                                     .magFilter = WGPUFilterMode_Linear,
-				    .mipMapFilter = WGPUMipmapFilterMode_Linear,
+                                    .mipMapFilter = WGPUMipmapFilterMode_Linear,
                                 },
                             },
                     });

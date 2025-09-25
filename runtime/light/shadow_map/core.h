@@ -15,8 +15,7 @@
 #define SHADOW_MAP_SIZE 512
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const RenderPassDrawListDescriptor *draw_list;
   LightList *lights;
 } ShadowMapInitDescriptor;
@@ -25,20 +24,18 @@ typedef struct {
   WGPUTexture color_texture;
   WGPUTexture depth_texture;
   uint32_t layer;
-  const WGPUQueue queue;
+  
 } ShadowPassFallbackToTextureDescriptor;
 
 typedef struct {
   const int width;
   const int height;
   const size_t layer_count;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const WGPUTextureViewDimension dimension;
   RenderPass *pass;
   const RenderPassDrawListDescriptor *draw_list;
 } ShadowPassTextureDescriptor;
-
 
 void shadow_map_init(const ShadowMapInitDescriptor *);
 

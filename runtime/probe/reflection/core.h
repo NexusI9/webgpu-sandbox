@@ -26,8 +26,7 @@ typedef enum {
 } ProbeReflectionSSBOField;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const RenderPassDrawListDescriptor *draw_list;
   const TextureResolution resolution;
   const size_t capacity;
@@ -49,7 +48,7 @@ typedef struct {
   WGPUTextureView *color_view;
   WGPUTextureView *depth_view;
   const TextureResolution resolution;
-  const WGPUDevice device;
+  
   const size_t layer_count;
   const WGPUTextureViewDimension view_dimension;
 } ProbeReflectionTextureDescriptor;
@@ -74,9 +73,6 @@ typedef struct {
 } ProbeReflectionCreateCorePass;
 
 typedef struct {
-
-  const WGPUDevice device;
-  const WGPUQueue queue;
 
   ProbeReflectionCreateCoreList *probe_list;
   ProbeReflectionCreateCorePass *render_pass;

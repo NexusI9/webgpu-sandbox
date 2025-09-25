@@ -21,16 +21,14 @@ typedef struct {
 } ViewDescriptor;
 
 typedef struct {
-  WGPUDevice device;
-  WGPUQueue queue;
+
 } DebugViewCreateDescriptor;
 
 typedef struct {
   Mesh mesh[VIEW_MAX_CAPACITY];
   size_t length;
   size_t capacity;
-  WGPUDevice device;
-  WGPUQueue queue;
+
 } DebugView;
 
 void debug_view_create(DebugView *, const DebugViewCreateDescriptor *);

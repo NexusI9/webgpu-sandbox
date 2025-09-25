@@ -15,7 +15,6 @@ typedef enum {
   VertexGroupStatus_SetUnfound,
 } VertexGroupStatus;
 
-
 typedef const char *vgroup_key;
 typedef uint32_t vgroup_hash;
 

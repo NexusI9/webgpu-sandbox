@@ -7,8 +7,6 @@ void scene_debug_init(SceneDebug *debug, const SceneDebugDescriptor *desc) {
   debug->camera = desc->camera;
   debug->viewport = desc->viewport;
   debug->pool = desc->pool;
-  debug->queue = desc->queue;
-  debug->device = desc->device;
   debug->ssbo = desc->ssbo;
 
   for (SceneDebugObject i = 0; i < SCENE_DEBUG_MESH_LIST_COUNT; i++)

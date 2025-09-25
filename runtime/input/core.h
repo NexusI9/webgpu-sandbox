@@ -5,8 +5,8 @@
 #include <stdint.h>
 
 #include "./keyrecord.h"
-#include "emscripten/html5.h"
 #include "backend/registry.h"
+#include "emscripten/html5.h"
 
 #define INPUT_KEY_FORWARD_FR 90
 #define INPUT_KEY_BACKWARD_FR 83
@@ -21,8 +21,6 @@
 #define INPUT_EVENT_DEFAULT_TARGET "body"
 #define INPUT_KEY_LENGTH 128
 #define INPUT_MAX_MOVEMENT 20
-#define INPUT_MOUSE_SENSITIVITY 0.02f
-#define INPUT_WHEEL_SENSITIVITY 0.02f
 
 typedef enum {
   InputMouseState_Up,
@@ -38,6 +36,7 @@ typedef struct {
 
     int x, y;
     InputMouseState state;
+    float sensitivity;
 
     struct {
       int x, y;
@@ -49,6 +48,7 @@ typedef struct {
 
     struct {
       double deltaX, deltaY;
+      float sensitivity;
     } wheel;
 
   } mouse;
@@ -57,10 +57,15 @@ typedef struct {
 
 extern Input g_input;
 
+typedef struct {
+  float mouse_sensitivity;
+  float wheel_sensitivity;
+} InputDescriptor;
+
 void input_set_key(unsigned int, bool);
 void input_disable_all_keys();
 
-void input_listen();
+void input_init(const InputDescriptor*);
 
 bool input_key(unsigned int);
 

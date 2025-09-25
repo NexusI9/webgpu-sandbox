@@ -24,8 +24,7 @@ void gizmo_rotation_create(MeshRefList *visual_list,
   });
 
   gizmo_create_mesh(sphere, &sphere_primitive,
-                              &(color){0.2f, 0.2f, 0.2f, 0.0f}, desc->queue,
-                              desc->device);
+                              &(color){0.2f, 0.2f, 0.2f, 0.0f});
 
   mesh_ref_list_insert(visual_list, sphere);
 
@@ -36,11 +35,8 @@ void gizmo_rotation_create(MeshRefList *visual_list,
   gizmo_create_handles(
       visual_list, interactive_list,
       &(GizmoCreateMeshDescriptor){
-          .device = desc->device,
-          .queue = desc->queue,
           .list = desc->list,
           .mbin_path = "./resources/assets/mbin/rotate.mbin",
       });
-
 
 }

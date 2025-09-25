@@ -41,7 +41,6 @@ static int debug_view_count = 0;
   "default shader" as a texture and sampler to be read and reused for calculate
   the shadow
 
-
   */
 
 void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
@@ -73,7 +72,6 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
     |  2. Shader<texture 2D array>  |
     '-------------------------------'
         Bind the Array to shader
-
 
         In our case we create 2 layer views: one for color, and another for
       depth. The color one will mostly be used for debugging purpose, whereas
@@ -188,7 +186,6 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
 
       4. Draw the mesh with the same offset (wgpuRenderPassEncoderSetBindGroup)
 
-
    */
 
   MeshRefList *target_mesh_list = desc->mesh_list;
@@ -211,8 +208,6 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
               .texture_layer = p,
               .light = desc->lights->point.shadow.entries[p],
               .pass = &desc->lights->point.shadow.pass,
-              .device = desc->device,
-              .queue = desc->queue,
               .command_encoder = point_encoder,
           },
           debug);
@@ -230,8 +225,6 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
           &(ShadowMapDrawSpotLightDescriptor){
               .texture_layer = p,
               .light = desc->lights->spot.shadow.entries[p],
-              .device = desc->device,
-              .queue = desc->queue,
               .command_encoder = dir_encoder,
               .pass = &desc->lights->spot.shadow.pass,
           },
@@ -248,8 +241,6 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
               // to the same map but include it in the sun light list struct
               // itself.
               .texture_layer = spot_length + p,
-              .device = desc->device,
-              .queue = desc->queue,
               .command_encoder = dir_encoder,
               .pass = &desc->lights->spot.shadow.pass,
               .light = desc->lights->sun.shadow.entries[p],
@@ -280,8 +271,6 @@ void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *desc,
         &(ShadowMapDrawDescriptor){
             .pass = desc->pass,
             .texture_layer = layer,
-            .device = desc->device,
-            .queue = desc->queue,
             .command_encoder = desc->command_encoder,
             .pipeline = std_render_pipeline(RenderPipelineType_Shadow),
             .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View + v].id,
@@ -303,8 +292,6 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc,
             .pass = desc->pass,
             .texture_layer = desc->texture_layer,
             .ssbo_offset = desc->ssbo_offset,
-            .device = desc->device,
-            .queue = desc->queue,
             .command_encoder = desc->command_encoder,
             .pipeline = desc->pipeline,
         },
@@ -317,8 +304,6 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc,
   shadow_map_draw_dir_light(
       &(ShadowMapDrawDirLightDescriptor){
           .pass = desc->pass,
-          .queue = desc->queue,
-          .device = desc->device,
           .command_encoder = desc->command_encoder,
           .texture_layer = desc->texture_layer,
           .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
@@ -334,8 +319,6 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc,
   shadow_map_draw_dir_light(
       &(ShadowMapDrawDirLightDescriptor){
           .pass = desc->pass,
-          .device = desc->device,
-          .queue = desc->queue,
           .command_encoder = desc->command_encoder,
           .texture_layer = desc->texture_layer,
           .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,

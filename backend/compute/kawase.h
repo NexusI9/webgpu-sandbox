@@ -22,8 +22,7 @@ typedef struct {
 
 typedef struct {
   WGPUTexture texture;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const size_t layer_count;
   const uint32_t pass_count;
 } KawaseDescriptor;

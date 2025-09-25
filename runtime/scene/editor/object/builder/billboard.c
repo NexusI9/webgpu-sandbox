@@ -27,16 +27,12 @@ void seo_create_billboard(Mesh *mesh,
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &plane,
-                                  .device = desc->device,
-                                  .queue = desc->queue,
                                   .name = "SEO Billboard",
                               });
 
   // assign billboard shader
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
-                               .device = desc->device,
-                               .queue = desc->queue,
                                .label = "SEO billboard shader",
                                .name = "SEO billboard shader",
                                .pipeline = std_render_pipeline(RenderPipelineType_Billboard),

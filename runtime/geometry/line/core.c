@@ -5,24 +5,22 @@
 #include <stdlib.h>
 
 #include "backend/logger.h"
-#include "string.h"
 #include "backend/std_pipeline/core.h"
+#include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/core.h"
+#include "runtime/geometry/vertex/index.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/topology/base.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/shader/core.h"
-#include "runtime/geometry/vertex/attribute.h"
-#include "runtime/geometry/vertex/index.h"
-#include "runtime/mesh/core.h"
+#include "string.h"
 
 static void line_create_plane(const LineCreatePlaneDescriptor *);
 
 void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
 
   mesh_create(mesh, &(MeshCreateDescriptor){
-                        .device = desc->device,
-                        .queue = desc->queue,
                         .vertex = (VertexAttribute){0},
                         .index = (VertexIndex){0},
                         .name = desc->name,
@@ -38,8 +36,7 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
                                                  .entries = vertex_attributes,
                                                  .length = 0,
                                                  .capacity = attribute_capacity,
-                                             },
-                                             desc->device, desc->queue);
+                                             });
 
   // crate vertex index
   size_t index_capacity = LINE_MAX_POINTS * LINE_INDEX_COUNT;
@@ -50,17 +47,14 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
                                              .entries = vertex_index,
                                              .length = 0,
                                              .capacity = index_capacity,
-                                         },
-                                         desc->device, desc->queue);
+                                         });
 
-  mesh_shader_create_fixed(mesh,
-                           &(ShaderCreateDescriptor){
-                               .pipeline = std_render_pipeline(RenderPipelineType_Line),
-                               .label = "Line",
-                               .name = "Line",
-                               .device = desc->device,
-                               .queue = desc->queue,
-                           });
+  mesh_shader_create_fixed(
+      mesh, &(ShaderCreateDescriptor){
+                .pipeline = std_render_pipeline(RenderPipelineType_Line),
+                .label = "Line",
+                .name = "Line",
+            });
 }
 
 /** Define vertex data from a vertex array.
@@ -111,7 +105,6 @@ void line_create_plane(const LineCreatePlaneDescriptor *desc) {
         ||          '- |
         +--------------+
        D (p2)	        C (p2-thickness)
-
 
    */
 
@@ -165,7 +158,8 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
                     VertexIndex *vertex_index) {
 
   if (vertex_attribute->length == vertex_attribute->capacity) {
-    logger_add(LoggerFlag_Warning, "Line vertex attribute reached max capacity.");
+    logger_add(LoggerFlag_Warning,
+               "Line vertex attribute reached max capacity.");
     return;
   }
 
@@ -201,6 +195,5 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
 
 void line_update_buffer(Mesh *mesh) {
   // update mesh vertex + index buffers
-  mesh_topology_base_update_buffer(&mesh->topology.base, mesh->device,
-                                   mesh->queue);
+  mesh_topology_base_update_buffer(&mesh->topology.base);
 }

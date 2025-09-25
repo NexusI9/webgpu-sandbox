@@ -11,7 +11,7 @@ typedef uint16_t bind_index;
 typedef uint8_t bind_group_index;
 
 typedef struct {
-  const WGPUDevice device;
+
   const WGPURenderPipeline *pipeline_handle;
   bind_group_index group_index;
   uint16_t entryCount;
@@ -30,12 +30,11 @@ void shader_bind_group_create_from_layout(Shader *,
 
 WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *);
 void shader_bind_group_build(ShaderBindGroup *, bind_group_index,
-                             const WGPUDevice, const WGPURenderPipeline *);
+                             const WGPURenderPipeline *);
 void shader_bind_group_release(ShaderBindGroup *);
 void shader_bind_group_refresh(ShaderBindGroup *, bind_group_index,
-                               const WGPUDevice, const WGPURenderPipeline *);
+                               const WGPURenderPipeline *);
 
 ShaderBindGroup *shader_get_bind_group(Shader *, bind_group_index);
 
 #endif
-

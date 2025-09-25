@@ -41,8 +41,6 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   // create icon mesh
   seo_create_billboard(icon->mesh, &(SEOCreateBillboardDescriptor){
                                        .texture_path = texture_path,
-                                       .device = desc->device,
-                                       .queue = desc->queue,
                                        .position = &camera->position,
                                        .scale = &SEO_BILLBOARD_SCALE,
                                    });
@@ -68,8 +66,6 @@ void seo_camera_create(SceneEditorObject *seo, Camera *camera,
   // mesh topology generation isn't automatically handled.
   seo_create_wireframe(cube->mesh,
                        &(SEOCreateWireframeDescriptor){
-                           .device = desc->device,
-                           .queue = desc->queue,
                            .color = &(color){1.0f, 0.7f, 0.4f, 1.0f},
                            .thickness = SEO_WIREFRAME_LINE_THICKNESS,
                            .vertex = &cube_primitive.vertex,
@@ -180,5 +176,5 @@ void seo_camera_fov(SceneEditorObject *seo, float fov) {
 
   // update wireframe topology according to base
   mesh_topology_wireframe_update(&cube->topology.base,
-                                 &cube->topology.wireframe, cube->queue);
+                                 &cube->topology.wireframe);
 }

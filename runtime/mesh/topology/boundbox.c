@@ -43,7 +43,6 @@ static void mesh_topology_boundbox_cube(MeshTopologyBoundbox *);
    2. mesh_topology_boundbox_create(): takes care of the bound calculation AND
    visual representation (cube wireframe)
 
-
    The compute bound function (1) will be called in the default render mode
    (texture/ wireframe...)
    Since in these mode we actually only care about the bound data itself (for
@@ -75,8 +74,7 @@ void mesh_topology_boundbox_compute_bound(const MeshTopologyBase *base,
 
 MeshTopologyBoundboxStatus
 mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
-                              MeshTopologyBoundbox *bound,
-                              const WGPUDevice device, const WGPUQueue queue) {
+                              MeshTopologyBoundbox *bound) {
 
   // allocate vertex + index attribute
   // 12 edges * 4 vertex (/edges)
@@ -107,8 +105,6 @@ mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
   // upload to gpu
   buffer_create(&bound->index.buffer,
                 &(CreateBufferDescriptor){
-                    .queue = queue,
-                    .device = device,
                     .data = (void *)bound->index.entries,
                     .size = bound->index.length * sizeof(vindex_t),
                     .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
@@ -117,8 +113,6 @@ mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
 
   buffer_create(&bound->attribute.buffer,
                 &(CreateBufferDescriptor){
-                    .queue = queue,
-                    .device = device,
                     .data = (void *)bound->attribute.entries,
                     .size = bound->attribute.length * sizeof(vattr_t),
                     .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
@@ -163,8 +157,7 @@ MeshTopology mesh_topology_boundbox_vertex(MeshTopologyBoundbox *bound) {
 
 MeshTopologyBoundboxStatus
 mesh_topology_boundbox_update(const MeshTopologyBase *base, mat4 model,
-                              MeshTopologyBoundbox *bound,
-                              const WGPUQueue queue) {
+                              MeshTopologyBoundbox *bound) {
 
   // get base min max
   mesh_topology_boundbox_compute_bound(base, model, bound);

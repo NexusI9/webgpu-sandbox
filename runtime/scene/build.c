@@ -205,8 +205,7 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
   // create wireframe topology
   MeshTopology src_topo = mesh_topology_base_vertex(&mesh->topology.base);
   MeshTopologyWireframe *dest_topo = &mesh->topology.wireframe;
-  mesh_topology_wireframe_create(&src_topo, dest_topo, mesh->device,
-                                 mesh->queue);
+  mesh_topology_wireframe_create(&src_topo, dest_topo);
 
   // create meshes' wireframe shader
   // usually we don't need to check if the shader is already created cause we
@@ -233,8 +232,7 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
 
   // create full boundbox topology
   MeshTopologyBoundbox *dest_topo = &mesh->topology.boundbox;
-  mesh_topology_boundbox_create(&mesh->topology.base, mesh->model, dest_topo,
-                                mesh->device, mesh->queue);
+  mesh_topology_boundbox_create(&mesh->topology.base, mesh->model, dest_topo);
 
   // create meshes' wireframe shader
   if (mesh_shader_create_wireframe(mesh) == MeshStatus_Success)

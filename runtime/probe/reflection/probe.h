@@ -16,7 +16,6 @@
 // tl;rd: Probe Reflections Cubes are more suitable for spherical and complex
 // object where accuracy doesn't really matter.
 
-
 #define PROBE_REFLECTION_VIEW_COUNT 6
 
 typedef struct {

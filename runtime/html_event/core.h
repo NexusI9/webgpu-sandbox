@@ -8,7 +8,6 @@
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
 
-
 typedef enum{
   HTMLEventStatus_Success,
   HTMLEventStatus_AllocFail,

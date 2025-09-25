@@ -3,20 +3,21 @@
 #include <stdbool.h>
 
 #include "backend/buffer.h"
+#include "backend/context.h"
+#include "runtime/geometry/vertex/core.h"
+#include "runtime/texture/core.h"
 #include "utils/file.h"
 #include "webgpu/webgpu.h"
-#include "runtime/texture/core.h"
-#include "runtime/geometry/vertex/core.h"
 
 static inline void render_pipeline_set_vertex_layout(RenderPipeline *);
 
 /**
   Initialize the default pipeline with a preset descriptor
  */
-void render_pipeline_create(RenderPipeline *pipeline, const RenderPipelineCreateDescriptor *desc) {
+void render_pipeline_create(RenderPipeline *pipeline,
+                            const RenderPipelineCreateDescriptor *desc) {
 
   // Define core data
-  pipeline->device = desc->device;
   pipeline->handle = NULL;
   pipeline->label = desc->label;
   pipeline->shader_pso = desc->pso;
@@ -29,8 +30,7 @@ void render_pipeline_create(RenderPipeline *pipeline, const RenderPipelineCreate
   store_file(&source, desc->path);
 
   // compile shader module intro GPU device
-  buffer_create_shader(&pipeline->module, pipeline->device, source,
-                       pipeline->label);
+  buffer_create_shader(&pipeline->module, source, pipeline->label);
 
   /*
     DEFINE PIPELINE CACHED ATTRIBUTES
@@ -66,7 +66,7 @@ void render_pipeline_create(RenderPipeline *pipeline, const RenderPipelineCreate
           {
               .operation = WGPUBlendOperation_Add,
               .srcFactor = WGPUBlendFactor_One,
-              .dstFactor = WGPUBlendFactor_Zero,
+              .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha,
           },
   };
 
@@ -109,7 +109,6 @@ void render_pipeline_create(RenderPipeline *pipeline, const RenderPipelineCreate
  */
 void render_pipeline_set_vertex_layout(RenderPipeline *pipeline) {
 
-  
   // set x,y,z
   pipeline->vertex_layout.attribute[0] = (WGPUVertexAttribute){
       .format = WGPUVertexFormat_Float32x3,
@@ -156,7 +155,8 @@ void render_pipeline_set_vertex_layout(RenderPipeline *pipeline) {
 /**
    Release pipeline if exists and create i new one
  */
-void render_pipeline_build(RenderPipeline *pipeline, const WGPUPipelineLayout *layout) {
+void render_pipeline_build(RenderPipeline *pipeline,
+                           const WGPUPipelineLayout *layout) {
 
   // update bind group layout
   pipeline->layout = *layout;
@@ -181,7 +181,7 @@ void render_pipeline_build(RenderPipeline *pipeline, const WGPUPipelineLayout *l
     render_pipeline_destroy(pipeline);
 
   pipeline->handle =
-      wgpuDeviceCreateRenderPipeline(pipeline->device, &pipeline->descriptor);
+      wgpuDeviceCreateRenderPipeline(context_device(), &pipeline->descriptor);
 }
 
 /**

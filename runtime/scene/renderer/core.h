@@ -32,11 +32,9 @@ typedef enum {
 } SceneRendererDrawMode;
 
 typedef struct {
-  const char *name;
   cclock *clock;
   WGPUColor background;
   const double dpi;
-  const  RenderPipelineMultisampleCount multisampling_count;
 } SceneRendererCreateDescriptor;
 
 typedef void (*scene_renderer_draw_callback)(void *);
@@ -59,19 +57,12 @@ typedef struct SceneRenderer {
   UBOManager ubo;
 
   struct {
-    const char *name;
-    int width;
-    int height;
     double dpi;
   } context;
 
   struct {
-    WGPUInstance instance;
-    WGPUDevice device;
-    WGPUQueue queue;
-    WGPURenderPipeline pipeline;
-    WGPUSwapChain swapchain;
-    WGPURenderPassEncoder render_pass;
+    WGPURenderPipeline pipeline; // ??
+    WGPURenderPassEncoder render_pass; // TODO: Move to draw 
   } wgpu;
 
   // cached texture shared throughout parent scene objects
@@ -105,16 +96,8 @@ void scene_renderer_draw(SceneRenderer *);
 void scene_renderer_close(const SceneRenderer *);
 
 // getters
-WGPUDevice scene_renderer_device(SceneRenderer *);
-WGPUQueue scene_renderer_queue(SceneRenderer *);
-WGPUSwapChain scene_renderer_swapchain(SceneRenderer *);
-int scene_renderer_width(const SceneRenderer *);
-int scene_renderer_height(const SceneRenderer *);
 SSBOManager *scene_renderer_ssbo(SceneRenderer *);
 UBOManager *scene_renderer_ubo(SceneRenderer *);
-// PipelineMultisampleCount scene_renderer_multisample(const SceneRenderer *);
-
-const char *scene_renderer_target(SceneRenderer *);
 
 const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *);
 

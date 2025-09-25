@@ -34,9 +34,7 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
 
   /*
 
-
      === Distance Cube ===
-
 
    */
   SceneEditorObjectMesh *probe_cube = seo_mesh_list_new_entry(&seo->meshes);
@@ -53,8 +51,6 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
 
   SEOCreateWireframeDescriptor wireframe_cube_desc = {
       .color = &(color){1.0f, 0.0f, 0.0f, 1.0f},
-      .device = desc->device,
-      .queue = desc->queue,
       .index = &primitive_cube.index,
       .vertex = &primitive_cube.vertex,
       .name = "seo probe reflection plane",
@@ -79,9 +75,7 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
 
   /*
 
-
     === Main refletion plane ===
-
 
    */
   SceneEditorObjectMesh *probe_plane = seo_mesh_list_new_entry(&seo->meshes);
@@ -100,8 +94,6 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
 
   SEOCreateWireframeDescriptor wireframe_desc = {
       .color = &(color){1.0f, 0.0f, 0.0f, 1.0f},
-      .device = desc->device,
-      .queue = desc->queue,
       .index = &primitive.index,
       .vertex = &primitive.vertex,
       .name = "seo probe reflection plane",
@@ -124,9 +116,7 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
 
   /*
 
-
    === Normal Arrow ===
-
 
  */
   SceneEditorObjectMesh *probe_arrow = seo_mesh_list_new_entry(&seo->meshes);
@@ -143,8 +133,6 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
 
   SEOCreateWireframeDescriptor wireframe_arrow_desc = {
       .color = &(color){1.0f, 0.0f, 0.0f, 1.0f},
-      .device = desc->device,
-      .queue = desc->queue,
       .index = &primitive_arrow.index,
       .vertex = &primitive_arrow.vertex,
       .name = "seo probe reflection plane",

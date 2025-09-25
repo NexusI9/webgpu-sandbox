@@ -4,6 +4,7 @@
 #include "./editor/editor.h"
 #include "./layer.h"
 #include "backend/clock.h"
+#include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/registry.h"
 #include "backend/ssbo.h"
@@ -55,7 +56,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
       scene_mesh_list_init(scene);
       scene_layer_init(&scene->layers);
       scene_light_list_init(scene);
-      scene_probe_reflection_init(scene, desc->renderer->multisampling_count);
+      scene_probe_reflection_init(scene, context_multisample());
     }
 
     {
@@ -68,8 +69,8 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                           .near_clip = desc->viewport->near_clip,
                           .far_clip = desc->viewport->far_clip,
                           .aspect = desc->viewport->aspect,
-                          .width = scene_renderer_width(&scene->renderer),
-                          .height = scene_renderer_height(&scene->renderer),
+                          .width = context_width(),
+                          .height = context_height(),
                       });
 
       ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Viewport,
@@ -81,8 +82,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
       scene_editor_init(scene); // EDITORONLY
       scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
                                           .camera = scene->active_camera,
-                                          .device = scene_device(scene),
-                                          .queue = scene_queue(scene),
                                           .viewport = &scene->viewport,
                                           .pool = &scene->meshes,
                                           .ssbo = &scene->renderer.ssbo,
@@ -92,7 +91,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     {
       /*  ===== EVENT =====  */
       scene_event_html(scene);
-      scene_draw_layouts_init(scene, desc->renderer->multisampling_count);
+      scene_draw_layouts_init(scene, context_multisample());
     }
 
     {
@@ -189,8 +188,6 @@ void scene_probe_reflection_init(
 
   ProbeReflectionListDescriptor reflection_config = {
       .capacity = PROBE_REFLECTION_GRID_LIST_CAPACITY,
-      .device = scene_device(scene),
-      .queue = scene_queue(scene),
       .multisample = multisample,
       .resolution = TextureResolution_512,
       .draw_list = &reflection_draw_list,
@@ -222,8 +219,6 @@ void scene_light_list_init(Scene *scene) {
 
   // init shadow textures
   shadow_map_init(&(ShadowMapInitDescriptor){
-      .device = scene_renderer_device(&scene->renderer),
-      .queue = scene_renderer_queue(&scene->renderer),
       .lights = &scene->lights,
       .draw_list =
           &(RenderPassDrawListDescriptor){
@@ -248,13 +243,3 @@ void scene_light_list_init(Scene *scene) {
    Return pointer to scene mesh pool
  */
 MeshList *scene_mesh_list(Scene *scene) { return &scene->meshes; }
-
-/**
-   Return nested queue from the scene renderer
- */
-WGPUQueue scene_queue(Scene *scene) { return scene->renderer.wgpu.queue; }
-
-/**
-   Return nested device from the scene renderer
- */
-WGPUDevice scene_device(Scene *scene) { return scene->renderer.wgpu.device; }

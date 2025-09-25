@@ -36,15 +36,9 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   mesh->children.capacity = MESH_CHILD_LENGTH;
   mesh->children.entries = NULL;
 
-  // set wgpu
-  mesh->device = md->device;
-  mesh->queue = md->queue;
-
   // set vertices & index for base topology
-  if (md->vertex.length > 0 && md->index.length) {
-    mesh_topology_base_create(&mesh->topology.base, &md->vertex, &md->index,
-                              mesh->device, mesh->queue);
-  }
+  if (md->vertex.length > 0 && md->index.length)
+    mesh_topology_base_create(&mesh->topology.base, &md->vertex, &md->index);
 
   // init model matrix and transforms
   glm_mat4_identity(mesh->model);
@@ -78,8 +72,6 @@ void mesh_create_primitive(Mesh *mesh,
                            const MeshCreatePrimitiveDescriptor *md) {
 
   mesh_create(mesh, &(MeshCreateDescriptor){
-                        .queue = md->queue,
-                        .device = md->device,
                         .index = md->primitive->index,
                         .vertex = md->primitive->vertex,
                         .name = md->name,

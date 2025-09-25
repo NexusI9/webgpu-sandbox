@@ -11,6 +11,9 @@ void render_pass_create_color_monosample(RenderPass *);
 void render_pass_create_multisampling_view(WGPUTexture *, WGPUTextureView *,
                                            const RenderPassTextureDescriptor *);
 
+void render_pass_create_resolve_view(WGPUTexture *, WGPUTextureView *,
+                                     const RenderPassTextureDescriptor *);
+
 void render_pass_create_depth_view(WGPUTexture *, WGPUTextureView *,
                                    const RenderPassTextureDescriptor *);
 

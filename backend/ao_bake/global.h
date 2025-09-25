@@ -5,5 +5,4 @@
 
 void ao_bake_global(SceneRendererTextureAO *, const AOBakeGlobalDescriptor *desc);
 
-
 #endif

@@ -52,8 +52,6 @@ typedef struct {
 typedef struct {
   Scene *scene;
   const char *path;
-  const WGPUDevice device;
-  const WGPUQueue queue;
   const LoaderGLTFOptions *options;
   const cgltf_options *cgltf_options;
 } GLTFLoadDescriptor;

@@ -142,7 +142,6 @@ void scene_selection_init_mouse_events(Scene *scene) {
    ▐▌   ▐▛▀▜▌▐▌   ▐▌   ▐▛▀▚▖▐▛▀▜▌▐▌   ▐▛▚▖  ▝▀▚▖
    ▝▚▄▄▖▐▌ ▐▌▐▙▄▄▖▐▙▄▄▖▐▙▄▞▘▐▌ ▐▌▝▚▄▄▖▐▌ ▐▌▗▄▄▞▘
 
-
    Callback called during the scene main camera raycast mouse click.
    Define the logic for the selection process such as:
    - Adding / Removing meshes from the selection pipeline

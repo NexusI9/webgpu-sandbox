@@ -17,14 +17,13 @@ static void mesh_topology_base_create_anchor(MeshTopologyBase *);
    Handle the base topology creation as well as anchor generation
  */
 void mesh_topology_base_create(MeshTopologyBase *base,
-                               const VertexAttribute *va, const VertexIndex *vi,
-                               const WGPUDevice device, const WGPUQueue queue) {
+                               const VertexAttribute *va, const VertexIndex *vi) {
 
   // create vertex attributes
-  mesh_topology_base_create_vertex_attribute(base, va, device, queue);
+  mesh_topology_base_create_vertex_attribute(base, va);
 
   // create index attributes
-  mesh_topology_base_create_vertex_index(base, vi, device, queue);
+  mesh_topology_base_create_vertex_index(base, vi);
 
   // create anchors
   mesh_topology_base_create_anchor(base);
@@ -44,8 +43,7 @@ MeshTopology mesh_topology_base_vertex(MeshTopologyBase *topo) {
    Create the base vertex attributes and upload data to buffer
  */
 MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
-    MeshTopologyBase *base, const VertexAttribute *va, const WGPUDevice device,
-    const WGPUQueue queue) {
+    MeshTopologyBase *base, const VertexAttribute *va) {
 
   // reset buffer
   if (base->attribute.buffer) {
@@ -62,13 +60,9 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
   memcpy(base->attribute.entries, va->entries, vattr_size);
 
   if (base->attribute.length) {
-    if (device == NULL || queue == NULL)
-      logger_add(LoggerFlag_Error, "Mesh has no device or queue.");
 
     buffer_create(&base->attribute.buffer,
                   &(CreateBufferDescriptor){
-                      .queue = queue,
-                      .device = device,
                       .data = (void *)base->attribute.entries,
                       .size = base->attribute.length * sizeof(vindex_t),
                       .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
@@ -85,8 +79,7 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_attribute(
    Create the base index attributes and upload data to buffer
  */
 MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(
-    MeshTopologyBase *base, const VertexIndex *vi, const WGPUDevice device,
-    const WGPUQueue queue) {
+    MeshTopologyBase *base, const VertexIndex *vi) {
 
   // reset buffer
   if (base->index.buffer) {
@@ -102,14 +95,8 @@ MeshTopologyBaseStatus mesh_topology_base_create_vertex_index(
   memcpy(base->index.entries, vi->entries, vindex_size);
 
   if (base->index.length) {
-
-    if (device == NULL || queue == NULL)
-      logger_add(LoggerFlag_Error, "Mesh has no device or queue.");
-
     buffer_create(&base->index.buffer,
                   &(CreateBufferDescriptor){
-                      .queue = queue,
-                      .device = device,
                       .data = (void *)base->index.entries,
                       .size = base->index.length * sizeof(vindex_t),
                       .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
@@ -143,7 +130,6 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
 
     mesh_topology_anchor_list_insert(&hashed_list, &position, &base_index, 1);
   }
-
 
   // 2. remmap based on index (linear)
   MeshTopologyAnchorList *mapped_list = &base->siblings;
@@ -218,17 +204,13 @@ void mesh_topology_base_set_position(MeshTopologyBase *base,
   Used if vertex and index changes and need to update the buffer to reflect new
   data.
  */
-void mesh_topology_base_update_buffer(MeshTopologyBase *topo,
-                                      const WGPUDevice device,
-                                      const WGPUQueue queue) {
+void mesh_topology_base_update_buffer(MeshTopologyBase *topo) {
 
   if (topo->attribute.buffer)
     wgpuBufferRelease(topo->attribute.buffer);
 
   buffer_create(&topo->attribute.buffer,
                 &(CreateBufferDescriptor){
-                    .queue = queue,
-                    .device = device,
                     .data = (void *)topo->attribute.entries,
                     .size = topo->attribute.length * sizeof(vindex_t),
                     .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
@@ -240,8 +222,6 @@ void mesh_topology_base_update_buffer(MeshTopologyBase *topo,
 
   buffer_create(&topo->index.buffer,
                 &(CreateBufferDescriptor){
-                    .queue = queue,
-                    .device = device,
                     .data = (void *)topo->index.entries,
                     .size = topo->index.length * sizeof(vindex_t),
                     .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,

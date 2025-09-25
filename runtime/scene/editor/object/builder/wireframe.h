@@ -11,8 +11,7 @@
 #define SEO_WIREFRAME_LINE_THICKNESS 0.001f
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   VertexAttribute *vertex;
   VertexIndex *index;
   color *color;

@@ -1,14 +1,15 @@
 #include "core.h"
 
-#include "utils/math.h"
+#include "backend/context.h"
 #include "backend/logger.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/pipeline/render.h"
-#include "runtime/shader/update.h"
-#include "runtime/mesh/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/shader/update.h"
+#include "utils/math.h"
 
 // static DebugView debug_view_light;
 /**
@@ -34,8 +35,6 @@
                             .---------------------.
                             | Light Texture Array |
                             '---------------------'
-
-
 
       Spot and Sun lights are all together stacked up in the same "directional
       light" texture array.
@@ -63,7 +62,6 @@
       |   Layer 6    |      |
       '--------------' -----'
 
-
    */
 
 void shadow_map_init(const ShadowMapInitDescriptor *desc) {
@@ -71,8 +69,6 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
   logger_add(LoggerFlag_Process, "Creating scene shadow map textures...");
 
   /*debug_view_create(&debug_view_light, &(DebugViewCreateDescriptor){
-                                           .device = &device,
-                                           .queue = &queue,
                                            });*/
 
   // create multi layered light texture (passed to the renderpass)
@@ -85,8 +81,6 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
       .dimension = WGPUTextureViewDimension_CubeArray, // Cube array
       .layer_count =
           MAX(point_light_length, LIGHT_MAX_CAPACITY) * LIGHT_POINT_VIEWS,
-      .device = desc->device,
-      .queue = desc->queue,
       .width = SHADOW_MAP_SIZE,
       .height = SHADOW_MAP_SIZE,
       .pass = &desc->lights->point.shadow.pass,
@@ -98,15 +92,11 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
       .dimension = WGPUTextureViewDimension_2DArray, // 2D Array
       .layer_count =
           MAX(spot_light_length + sun_light_length, LIGHT_MAX_CAPACITY),
-      .device = desc->device,
-      .queue = desc->queue,
       .width = SHADOW_MAP_SIZE,
       .height = SHADOW_MAP_SIZE,
       .pass = &desc->lights->spot.shadow.pass,
       .draw_list = desc->draw_list,
   });
-
-
 }
 
 /**
@@ -143,7 +133,7 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
 
   // Create color texture
   WGPUTexture color_texture =
-      wgpuDeviceCreateTexture(desc->device, &texture_descriptor_color);
+      wgpuDeviceCreateTexture(context_device(), &texture_descriptor_color);
   WGPUTextureView color_view = wgpuTextureCreateView(
       color_texture, &(WGPUTextureViewDescriptor){
                          .label = "Light Shadow: global texture view - Color",
@@ -160,7 +150,7 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
 
   // Create depth texture
   WGPUTexture depth_texture =
-      wgpuDeviceCreateTexture(desc->device, &texture_descriptor_depth);
+      wgpuDeviceCreateTexture(context_device(), &texture_descriptor_depth);
   WGPUTextureView depth_view = wgpuTextureCreateView(
       depth_texture, &(WGPUTextureViewDescriptor){
                          .label = "Light Shadow: global texture view - Depth",
@@ -194,8 +184,6 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
                                  .load_op = WGPULoadOp_Clear,
                                  .store_op = WGPUStoreOp_Store,
                              },
-                         .device = desc->device,
-                         .queue = desc->queue,
                          .height = desc->height,
                          .width = desc->width,
                          .swapchain = NULL,
@@ -215,5 +203,4 @@ void shadow_map_pass_preprocessor_callback(const RenderPass *pass, Mesh *mesh,
   // update each mesh shadow uniforms with current light view
   shader_update_bind_group_offset(mesh_shader(mesh, MeshShader_Shadow), 0, 0,
                                   data->view_offset);
-
 }

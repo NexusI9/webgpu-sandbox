@@ -1,18 +1,19 @@
 #include "ssbo.h"
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "webgpu/webgpu.h"
+#include "backend/context.h"
+#include "backend/logger.h"
 #include "runtime/camera/core.h"
 #include "runtime/light/uniform.h"
+#include "runtime/mesh/core.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
-#include "utils/stli.h"
-#include "runtime/mesh/core.h"
 #include "runtime/viewport/core.h"
 #include "utils/projection.h"
-#include "backend/logger.h"
+#include "utils/stli.h"
+#include "webgpu/webgpu.h"
 
 static const struct {
   const size_t size;
@@ -70,12 +71,9 @@ static const struct {
         },
 };
 
-void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
+void ssbo_init(SSBOManager *manager) {
 
   logger_add(LoggerFlag_Process, "Initializing SSBO Manager");
-
-  manager->device = device;
-  manager->queue = queue;
 
   const uint16_t alignment = 256;
   const uint16_t min_size = 256;
@@ -83,29 +81,31 @@ void ssbo_init(SSBOManager *manager, WGPUDevice device, WGPUQueue queue) {
   for (SSBOType i = 0; i < SSBO_TYPE_COUNT; i++) {
 
     if (ssbo_type[i].size % alignment != 0)
-      logger_add(LoggerFlag_Warning, 
-          "Attempting to set a SSBO buffer (%d) not aligned with %hu "
-          "bytes (%lu). SSBO Buffers require 256 alignment.",
-          i, alignment, ssbo_type[i].size);
+      logger_add(LoggerFlag_Warning,
+                 "Attempting to set a SSBO buffer (%d) not aligned with %hu "
+                 "bytes (%lu). SSBO Buffers require 256 alignment.",
+                 i, alignment, ssbo_type[i].size);
 
     if (ssbo_type[i].size < min_size)
-      logger_add(LoggerFlag_Warning, 
+      logger_add(
+          LoggerFlag_Warning,
           "Attempting to set a buffer (%d) not with a type size inferior to %hu"
           "bytes (%lu).",
           i, min_size, ssbo_type[i].size);
-    
+
     SSBOBuffer *ssbo = &manager->buffers[i];
     ssbo->type_size = ssbo_type[i].size;
     ssbo->length = 0;
     ssbo->capacity = SSBO_CAPACITY * SSBO_MAX_TYPE_SIZE;
     ssbo->update_queue.capacity = SSBO_UPDATE_QUEUE_CAPACITY;
     ssbo->handle = wgpuDeviceCreateBuffer(
-        device, &(WGPUBufferDescriptor){
-                    .size = ssbo->capacity,
-                    .mappedAtCreation = false,
-                    .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Uniform,
-                    .label = ssbo_type[i].label,
-                });
+        context_device(),
+        &(WGPUBufferDescriptor){
+            .size = ssbo->capacity,
+            .mappedAtCreation = false,
+            .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Uniform,
+            .label = ssbo_type[i].label,
+        });
   }
 }
 
@@ -113,7 +113,8 @@ SSBOStatus ssbo_update_entry(SSBOManager *manager, const SSBOType type,
                              const SSBOSlot *slot) {
 
   if (slot->id >= SSBO_CAPACITY) {
-    logger_add(LoggerFlag_Warning, 
+    logger_add(
+        LoggerFlag_Warning,
         "Attempting to write into SSBO out of bound index (%lu) max SSBO "
         "capacity is currently set to %d.",
         slot->id, SSBO_CAPACITY);
@@ -136,8 +137,8 @@ SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
   // update ssbo buffer at index
   SSBOBuffer *ssbo = &manager->buffers[type];
   size_t offset = slot->id * ssbo->type_size;
-  
-  wgpuQueueWriteBuffer(manager->queue, ssbo->handle, offset,
+
+  wgpuQueueWriteBuffer(context_queue(), ssbo->handle, offset,
                        (uint8_t *)ssbo->entries + offset, ssbo->type_size);
 
   return SSBOStatus_Success;
@@ -146,7 +147,7 @@ SSBOStatus ssbo_upload_entry(SSBOManager *manager, const SSBOType type,
 void ssbo_upload(SSBOManager *manager, const SSBOType type) {
 
   SSBOBuffer *ssbo = &manager->buffers[type];
-  wgpuQueueWriteBuffer(manager->queue, ssbo->handle, 0, ssbo->entries,
+  wgpuQueueWriteBuffer(context_queue(), ssbo->handle, 0, ssbo->entries,
                        ssbo->type_size * SSBO_CAPACITY);
 }
 

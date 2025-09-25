@@ -35,8 +35,6 @@ void seo_light_ambient_create(SceneEditorObject *seo, AmbientLight *light,
   // create gizmo mesh
   seo_create_billboard(icon->mesh, &(SEOCreateBillboardDescriptor){
                                        .texture_path = texture_path,
-                                       .device = desc->device,
-                                       .queue = desc->queue,
                                        .position = &light->position,
                                        .scale = &SEO_BILLBOARD_SCALE,
                                    });

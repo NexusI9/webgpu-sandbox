@@ -29,7 +29,6 @@ static void vmixer_index_create_vertex_set(IndexAttributeList *,
       '- normal:    0.1f 1.0f 0.4f 0.1f 0.3f 0.2f 1.0f 0.4f 1.3f...
                    '-----[0]-----'
 
-
    Set:
    .--------------------------------------------------------------------------.
    |  Key |                            Value                            | Id  |

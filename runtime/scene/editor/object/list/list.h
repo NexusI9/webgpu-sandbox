@@ -13,7 +13,6 @@
   struct). As a result gizmos meshes and data are gathered under the
   GizmoList struct.
 
-
       Mesh Pool
      .----------.
      |  Mesh 1  | -----------.

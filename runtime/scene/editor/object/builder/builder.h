@@ -4,5 +4,4 @@
 #include "billboard.h"
 #include "wireframe.h"
 
-
 #endif

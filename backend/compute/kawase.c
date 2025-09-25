@@ -1,5 +1,6 @@
 #include "kawase.h"
 #include "backend/buffer.h"
+#include "backend/context.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
@@ -22,11 +23,10 @@ KawaseStatus compute_pass_kawase(ComputePass *pass,
   return KawaseStatus_Success;
 }
 
-
 void compute_pass_kawase_draw(ComputePass *pass, const KawaseDescriptor *desc) {
 
   WGPUCommandEncoder command_encoder =
-      wgpuDeviceCreateCommandEncoder(desc->device, NULL);
+      wgpuDeviceCreateCommandEncoder(context_device(), NULL);
 
   const ComputePipeline *compute_pipeline =
       std_compute_pipeline(ComputePipelineType_Kawase);
@@ -75,21 +75,21 @@ void compute_pass_kawase_draw(ComputePass *pass, const KawaseDescriptor *desc) {
     };
 
     // cache 2 bind groups per layer
-    WGPUBindGroup bind_group_a =
-        wgpuDeviceCreateBindGroup(desc->device, &(WGPUBindGroupDescriptor){
-                                                    .layout = bind_group_layout,
-                                                    .entryCount = 4,
-                                                    .entries = entries,
-                                                });
+    WGPUBindGroup bind_group_a = wgpuDeviceCreateBindGroup(
+        context_device(), &(WGPUBindGroupDescriptor){
+                              .layout = bind_group_layout,
+                              .entryCount = 4,
+                              .entries = entries,
+                          });
 
     entries[0].textureView = b_view;
     entries[2].textureView = a_view;
-    WGPUBindGroup bind_group_b =
-        wgpuDeviceCreateBindGroup(desc->device, &(WGPUBindGroupDescriptor){
-                                                    .layout = bind_group_layout,
-                                                    .entryCount = 4,
-                                                    .entries = entries,
-                                                });
+    WGPUBindGroup bind_group_b = wgpuDeviceCreateBindGroup(
+        context_device(), &(WGPUBindGroupDescriptor){
+                              .layout = bind_group_layout,
+                              .entryCount = 4,
+                              .entries = entries,
+                          });
 
     for (uint32_t j = 0; j < desc->pass_count; j++) {
 
@@ -101,7 +101,7 @@ void compute_pass_kawase_draw(ComputePass *pass, const KawaseDescriptor *desc) {
       wgpuComputePassEncoderSetPipeline(compute_pass, pipeline);
 
       // update offset uniform
-      wgpuQueueWriteBuffer(desc->queue, pass->buffer, 0, &uniform,
+      wgpuQueueWriteBuffer(context_queue(), pass->buffer, 0, &uniform,
                            sizeof(KawaseUniform));
 
       wgpuComputePassEncoderSetBindGroup(
@@ -144,7 +144,7 @@ void compute_pass_kawase_draw(ComputePass *pass, const KawaseDescriptor *desc) {
   WGPUCommandBuffer compute_buffer =
       wgpuCommandEncoderFinish(command_encoder, NULL);
 
-  wgpuQueueSubmit(desc->queue, 1, &compute_buffer);
+  wgpuQueueSubmit(context_queue(), 1, &compute_buffer);
 
   wgpuCommandEncoderRelease(command_encoder);
   wgpuCommandBufferRelease(compute_buffer);

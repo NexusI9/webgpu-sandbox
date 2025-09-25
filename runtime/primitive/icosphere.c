@@ -7,7 +7,6 @@
 static const float X = 0.525731112119133606f;
 static const float Z = 0.850650808352039932f;
 
-
 static vattr_t icosphere_vertex_data[] = {
     // pos (x,y,z),       normal (nx,ny,nz),       tangent (tx,ty,tz,w),    color (r,g,b),       uv (u,v)
 
@@ -24,7 +23,6 @@ static vattr_t icosphere_vertex_data[] = {
      Z, -X, 0.0f,   -Z, X, 0.0f,    0.0f,0.0f,1.0f, 1.0f,       0.0f,1.0f,0.5f,   1.0f,0.5f, 
     -Z, -X, 0.0f,    Z, X, 0.0f,    0.0f,0.0f,1.0f, 1.0f,       0.5f,0.5f,0.5f,   0.0f,0.5f, 
 };
-
 
 static vindex_t icosphere_index_data[] = {
     0, 1, 4,   0, 4, 9,   9, 4, 5,   4, 8, 5,   4, 1, 8,

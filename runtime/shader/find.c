@@ -34,8 +34,6 @@ ShaderBindGroupUniformEntry *shader_find_uniform(Shader *shader,
     return NULL;
   }
 
-
-
   ShaderBindGroupUniforms *uniforms = &bind_group->uniforms;
 
   if (uniforms->entries == NULL) {

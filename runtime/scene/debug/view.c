@@ -32,8 +32,6 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &plane,
-                                  .device = debug->device,
-                                  .queue = debug->queue,
                                   .name = "Scene debug view",
                               });
 
@@ -43,8 +41,6 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
                                .pipeline = std_render_pipeline(RenderPipelineType_Screen),
                                .name = "Debug view billboard shader",
                                .label = "Debug view billboard shader",
-                               .device = debug->device,
-                               .queue = debug->queue,
                            });
 
   float ratio = debug->viewport->aspect * 9.0f / 16.0f;

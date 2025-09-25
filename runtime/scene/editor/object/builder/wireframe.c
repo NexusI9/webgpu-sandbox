@@ -26,8 +26,6 @@ void seo_create_wireframe(Mesh *mesh,
 
   // create mesh from vertex/index attributes
   mesh_create(mesh, &(MeshCreateDescriptor){
-                        .device = desc->device,
-                        .queue = desc->queue,
                         .index = *desc->index,
                         .vertex = *desc->vertex,
                         .name = desc->name,
@@ -36,14 +34,11 @@ void seo_create_wireframe(Mesh *mesh,
   // generate wirerfame topology
   MeshTopology base_topo = mesh_topology_base(mesh);
   MeshTopologyWireframe *wireframe_topo = &mesh->topology.wireframe;
-  mesh_topology_wireframe_create(&base_topo, wireframe_topo, desc->device,
-                                 desc->queue);
+  mesh_topology_wireframe_create(&base_topo, wireframe_topo);
 
   // set wireframe shader
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
-                               .device = desc->device,
-                               .queue = desc->queue,
                                .label = "SEO wireframe shader",
                                .name = "SEO wireframe shader",
                                .pipeline = std_render_pipeline(RenderPipelineType_Line),

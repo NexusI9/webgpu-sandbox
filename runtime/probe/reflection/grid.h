@@ -45,8 +45,7 @@ typedef struct {
   ivec3 count;
   vec3 scale;
   vec3 position;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
 } ProbeReflectionGridDescriptor;
 
 typedef struct {

@@ -25,24 +25,18 @@
    Used to generate each gizmo handles.
  */
 void gizmo_create_mesh(Mesh *mesh, Primitive *primitive,
-                                 const color *rgba, const WGPUQueue queue,
-                                 const WGPUDevice device) {
+                                 const color *rgba) {
 
   // init mesh
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = primitive,
-                                  .device = device,
-                                  .queue = queue,
                                   .name = "Gizmo",
                               });
-
 
   // add shader
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
                                .pipeline = std_render_pipeline(RenderPipelineType_Unlit),
-                               .device = device,
-                               .queue = queue,
                                .label = "Gizmo shader",
                                .name = "Gizmo shader",
                            });
@@ -51,7 +45,6 @@ void gizmo_create_mesh(Mesh *mesh, Primitive *primitive,
   const float fixed_size = GIZMO_SIZE;
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0, (void *)rgba);
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 1, (void *)&fixed_size);
- 
 
   // scale gizmo (cpu side as well, so the hitbox are correct dimension)
   // mesh_set_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});
@@ -85,9 +78,7 @@ void gizmo_create_handles(
   for (size_t i = 0; i < gizmo_mesh_count; i++) {
     Mesh *mesh = mesh_list_new_mesh(desc->list);
 
-    gizmo_create_mesh(mesh, &mesh_primitive, gizmo_handle_color[i], desc->queue,
-                                desc->device);
-
+    gizmo_create_mesh(mesh, &mesh_primitive, gizmo_handle_color[i]);
 
     // rotate
     mesh_set_rotation(mesh, (vec3){

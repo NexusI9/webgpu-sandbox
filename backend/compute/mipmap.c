@@ -1,8 +1,9 @@
 #include "mipmap.h"
+#include "backend/context.h"
+#include "backend/logger.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
-#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 #include <cglm/cglm.h>
 #include <math.h>
@@ -29,13 +30,12 @@ MipmapStatus compute_pass_mipmap(ComputePass *pass,
 void compute_pass_mipmap_draw(ComputePass *pass, const MipmapDescriptor *desc) {
 
   WGPUCommandEncoder command_encoder =
-      wgpuDeviceCreateCommandEncoder(desc->device, NULL);
+      wgpuDeviceCreateCommandEncoder(context_device(), NULL);
 
   const mip_t mip_count = wgpuTextureGetMipLevelCount(desc->texture);
 
   const WGPUComputePipeline mipmap_pipeline =
       std_compute_pipeline(ComputePipelineType_Mipmap)->handle;
-
 
   for (uint32_t i = 0; i < desc->layer_count; i++) {
     for (mip_t j = 1; j < mip_count; j++) {
@@ -57,12 +57,13 @@ void compute_pass_mipmap_draw(ComputePass *pass, const MipmapDescriptor *desc) {
           .arrayLayerCount = 1,
       };
 
-
       WGPUTextureViewDescriptor dst_view_desc = src_view_desc;
       dst_view_desc.baseMipLevel = j;
 
-      WGPUTextureView src_view = wgpuTextureCreateView(desc->texture, &src_view_desc);
-      WGPUTextureView dst_view = wgpuTextureCreateView(desc->texture, &dst_view_desc);
+      WGPUTextureView src_view =
+          wgpuTextureCreateView(desc->texture, &src_view_desc);
+      WGPUTextureView dst_view =
+          wgpuTextureCreateView(desc->texture, &dst_view_desc);
 
       WGPUBindGroupEntry entries[3] = {
           {.binding = 0, .textureView = src_view},
@@ -71,16 +72,17 @@ void compute_pass_mipmap_draw(ComputePass *pass, const MipmapDescriptor *desc) {
       };
 
       WGPUBindGroup bind_group = wgpuDeviceCreateBindGroup(
-          desc->device, &(WGPUBindGroupDescriptor){
-                            .layout = wgpuComputePipelineGetBindGroupLayout(
-                                mipmap_pipeline, 0),
-                            .entryCount = 3,
-                            .entries = entries,
-                        });
+          context_device(), &(WGPUBindGroupDescriptor){
+                                .layout = wgpuComputePipelineGetBindGroupLayout(
+                                    mipmap_pipeline, 0),
+                                .entryCount = 3,
+                                .entries = entries,
+                            });
 
       wgpuComputePassEncoderSetBindGroup(compute_pass, 0, bind_group, 0, NULL);
 
-      compute_pass_mipmap_dispatch(compute_pass, wgpuTextureGetWidth(desc->texture),
+      compute_pass_mipmap_dispatch(compute_pass,
+                                   wgpuTextureGetWidth(desc->texture),
                                    wgpuTextureGetHeight(desc->texture), j);
 
       /* === PASS END === */
@@ -96,7 +98,7 @@ void compute_pass_mipmap_draw(ComputePass *pass, const MipmapDescriptor *desc) {
   WGPUCommandBuffer compute_buffer =
       wgpuCommandEncoderFinish(command_encoder, NULL);
 
-  wgpuQueueSubmit(desc->queue, 1, &compute_buffer);
+  wgpuQueueSubmit(context_queue(), 1, &compute_buffer);
 
   wgpuCommandEncoderRelease(command_encoder);
   wgpuCommandBufferRelease(compute_buffer);

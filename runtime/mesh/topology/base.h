@@ -3,15 +3,12 @@
 #include <cglm/types.h>
 #include <webgpu/webgpu.h>
 
-#include "runtime/geometry/vertex/vertex.h"
 #include "anchor.h"
 #include "core.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/group.h"
 #include "runtime/geometry/vertex/index.h"
-#include "runtime/geometry/vertex/attribute.h"
-#include "runtime/geometry/vertex/group.h"
-#include "runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/vertex.h"
 
 typedef enum {
   MeshTopologyBaseStatus_Success,
@@ -30,23 +27,20 @@ typedef struct {
 MeshTopology mesh_topology_base_vertex(MeshTopologyBase *);
 
 void mesh_topology_base_create(MeshTopologyBase *, const VertexAttribute *,
-                               const VertexIndex *, const WGPUDevice,
-                               const WGPUQueue);
+                               const VertexIndex *);
 
 MeshTopologyBaseStatus
 mesh_topology_base_create_vertex_attribute(MeshTopologyBase *,
-                                           const VertexAttribute *,
-                                           const WGPUDevice, const WGPUQueue);
+                                           const VertexAttribute *);
 
 MeshTopologyBaseStatus
-mesh_topology_base_create_vertex_index(MeshTopologyBase *, const VertexIndex *,
-                                       const WGPUDevice, const WGPUQueue);
+mesh_topology_base_create_vertex_index(MeshTopologyBase *, const VertexIndex *);
 
-void mesh_topology_base_set_scale(MeshTopologyBase *, const VertexGroup *, vec3 *);
-
-void mesh_topology_base_set_position(MeshTopologyBase *, const VertexGroup *,
+void mesh_topology_base_set_scale(MeshTopologyBase *, const VertexGroup *,
                                   vec3 *);
 
-void mesh_topology_base_update_buffer(MeshTopologyBase *, const WGPUDevice,
-                                      const WGPUQueue);
+void mesh_topology_base_set_position(MeshTopologyBase *, const VertexGroup *,
+                                     vec3 *);
+
+void mesh_topology_base_update_buffer(MeshTopologyBase *);
 #endif

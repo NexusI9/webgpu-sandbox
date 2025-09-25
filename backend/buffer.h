@@ -13,8 +13,6 @@ typedef enum {
 } BufferTextureMemory;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
   void *data;
   size_t size;
   WGPUBufferUsage usage;
@@ -23,8 +21,6 @@ typedef struct {
 } CreateBufferDescriptor;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
   uint32_t width;
   uint32_t height;
   unsigned char *data;
@@ -34,7 +30,6 @@ typedef struct {
 } CreateTextureDescriptor;
 
 typedef struct {
-  const WGPUQueue queue;
   const WGPUTexture texture;
   unsigned char *data;
   uint32_t width;
@@ -45,11 +40,11 @@ typedef struct {
   size_t size;
 } CreateTextureCubeDescriptor;
 
-void buffer_create_shader(WGPUShaderModule *, const WGPUDevice, char *,
-                          const char *);
+void buffer_create_shader(WGPUShaderModule *, char *, const char *);
 void buffer_create(WGPUBuffer *, const CreateBufferDescriptor *);
 
-void buffer_create_texture(WGPUTexture*, WGPUTextureView *, const CreateTextureDescriptor *,
+void buffer_create_texture(WGPUTexture *, WGPUTextureView *,
+                           const CreateTextureDescriptor *,
                            BufferTextureMemory);
 
 void buffer_create_texture_cube(const CreateTextureCubeDescriptor *,

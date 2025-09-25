@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "backend/context.h"
 #include "object/grid/grid.h"
 #include "object/list/list.h"
 #include "runtime/mesh/ref_list.h"
@@ -26,16 +27,10 @@ void scene_editor_init(Scene *scene) {
   // init selection list & related events
   scene_selection_init(scene);
 
-  scene_editor_ui_init(&scene->editor.ui,
-                       &(SceneEditorUIDescriptor){
-                           .height = &scene->renderer.context.height,
-                           .width = &scene->renderer.context.width,
-                           .dpi = &scene->renderer.context.dpi,
-                           .swapchain = &scene->renderer.wgpu.swapchain,
-                           .device = scene_device(scene),
-                           .queue = scene_queue(scene),
-                           .clock = &scene->renderer.clock,
-                       });
+  scene_editor_ui_init(&scene->editor.ui, &(SceneEditorUIDescriptor){
+                                              .clock = &scene->renderer.clock,
+                                              .dpi = context_dpi(),
+                                          });
 
   // init editor related gizmos
   scene_editor_gizmo_create_grid(scene);
@@ -57,8 +52,6 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
 
   seo_grid_create(scene->editor.gizmo.grid,
                   &(GizmoGridCreateDescriptor){
-                      .device = scene_device(scene),
-                      .queue = scene_queue(scene),
                       .uniform =
                           (GizmoGridUniform){
                               .size = 100.0f,
@@ -80,8 +73,6 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
   Gizmo *gizmo = &scene->editor.gizmo.transform;
   gizmo_create(gizmo, &(GizmoCreateDescriptor){
                           .camera = scene->active_camera,
-                          .device = scene_device(scene),
-                          .queue = scene_queue(scene),
                           .viewport = &scene->viewport,
                           .list = &scene->meshes,
                       });

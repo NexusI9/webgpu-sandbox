@@ -1,7 +1,8 @@
 #include "core.h"
 #include "backend/buffer.h"
-#include "runtime/texture/core.h"
+#include "backend/context.h"
 #include "backend/logger.h"
+#include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
 #include <string.h>
 
@@ -21,19 +22,19 @@ ComputePassStatus compute_pass_init(ComputePass *pass,
   logger_add(LoggerFlag_Process, "Initializing Renderer Compute Pass");
 
   pass->sampler = wgpuDeviceCreateSampler(
-      desc->device, &(WGPUSamplerDescriptor){
-                        .label = "Compute Pass Common Sampler",
-                        .addressModeU = WGPUAddressMode_ClampToEdge,
-                        .addressModeV = WGPUAddressMode_ClampToEdge,
-                        .addressModeW = WGPUAddressMode_ClampToEdge,
-                        .magFilter = WGPUFilterMode_Linear,
-                        .minFilter = WGPUFilterMode_Linear,
-                        .mipmapFilter = WGPUMipmapFilterMode_Linear,
-                    });
+      context_device(), &(WGPUSamplerDescriptor){
+                            .label = "Compute Pass Common Sampler",
+                            .addressModeU = WGPUAddressMode_ClampToEdge,
+                            .addressModeV = WGPUAddressMode_ClampToEdge,
+                            .addressModeW = WGPUAddressMode_ClampToEdge,
+                            .magFilter = WGPUFilterMode_Linear,
+                            .minFilter = WGPUFilterMode_Linear,
+                            .mipmapFilter = WGPUMipmapFilterMode_Linear,
+                        });
 
   const int max_dim = glm_max(desc->max_width, desc->max_height);
   pass->destination_texture = wgpuDeviceCreateTexture(
-      desc->device,
+      context_device(),
       &(WGPUTextureDescriptor){
           .label = "Compute Pass Destination Texture",
           .dimension = WGPUTextureDimension_2D,
@@ -47,11 +48,8 @@ ComputePassStatus compute_pass_init(ComputePass *pass,
 
       });
 
-
   buffer_create(&pass->buffer,
                 &(CreateBufferDescriptor){
-                    .device = desc->device,
-                    .queue = desc->queue,
                     .label = "Compute Pass Common Buffer",
                     .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
                     .mappedAtCreation = false,

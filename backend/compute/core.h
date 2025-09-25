@@ -12,8 +12,6 @@ typedef enum {
 
 typedef struct {
 
-  WGPUDevice device;
-  WGPUQueue queue;
   int max_width;
   int max_height;
 
@@ -24,8 +22,7 @@ typedef struct {
 } ComputePass;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const int max_width;
   const int max_height;
 } ComputePassDescriptor;

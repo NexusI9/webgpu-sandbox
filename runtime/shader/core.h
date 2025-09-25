@@ -41,8 +41,7 @@
 typedef struct {
   const char *path;
   const char *label;
-  WGPUDevice device;
-  WGPUQueue queue;
+
   const char *name;
   const RenderPipeline *pipeline;
 } ShaderCreateDescriptor;
@@ -300,8 +299,6 @@ typedef struct {
   char *name;
 
   // wgpu
-  WGPUDevice device;
-  WGPUQueue queue;
 
   // pipelines
   const RenderPipeline *pipeline;
@@ -317,7 +314,7 @@ void shader_build(Shader *);
 
 // on update
 void shader_draw(Shader *, WGPURenderPassEncoder);
-void shader_uniform_update(ShaderBindGroup *, const WGPUQueue);
+void shader_uniform_update(ShaderBindGroup *);
 
 void shader_module_release(Shader *);
 const RenderPipeline *shader_pipeline(Shader *);

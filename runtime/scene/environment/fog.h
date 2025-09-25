@@ -16,5 +16,4 @@ typedef struct {
   vec2 _pad;
 } SceneEnvironmentFogUniform;
 
-
 #endif

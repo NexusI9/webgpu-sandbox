@@ -149,7 +149,6 @@ void scene_selection_init_key_events(Scene *scene) {
 ▐▌   ▐▛▀▜▌▐▌   ▐▌   ▐▛▀▚▖▐▛▀▜▌▐▌   ▐▛▚▖  ▝▀▚▖
 ▝▚▄▄▖▐▌ ▐▌▐▙▄▄▖▐▙▄▄▖▐▙▄▞▘▐▌ ▐▌▝▚▄▄▖▐▌ ▐▌▗▄▄▞▘
 
-
  */
 void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
                                                       void *data) {

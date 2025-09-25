@@ -3,22 +3,18 @@
 
 #include <webgpu/webgpu.h>
 
-#include "runtime/geometry/vertex/vertex.h"
 #include "anchor.h"
 #include "base.h"
 #include "core.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/index.h"
-#include "runtime/geometry/vertex/attribute.h"
-#include "runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/vertex.h"
 
-
-typedef enum{
+typedef enum {
   MeshTopologyWireframeStatus_Success,
   MeshTopologyWireframeStatus_AllocFail,
   MeshTopologyWireframeStatus_UnderError,
 } MeshTopologyWireframeStatus;
-
 
 typedef struct {
   VertexIndex index;
@@ -26,12 +22,11 @@ typedef struct {
   MeshTopologyAnchorList anchors;
 } MeshTopologyWireframe;
 
-int mesh_topology_wireframe_create(MeshTopology *, MeshTopologyWireframe *,
-                                   const WGPUDevice, const WGPUQueue);
+int mesh_topology_wireframe_create(MeshTopology *, MeshTopologyWireframe *);
 
 MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *);
 
 int mesh_topology_wireframe_update(const MeshTopologyBase *,
-                                   MeshTopologyWireframe *, const WGPUQueue);
+                                   MeshTopologyWireframe *);
 
 #endif

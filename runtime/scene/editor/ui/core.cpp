@@ -1,5 +1,6 @@
 #include "core.h"
 #include "./imgui_style/style.carbon.hpp"
+#include "backend/context.h"
 #include "backend/logger.h"
 #include "include/imgui/imgui.h"
 #include "include/imgui/imgui_impl_wgpu.h"
@@ -25,7 +26,48 @@ typedef enum {
   SceneEditorUIDisplay_Activity = 1 << 1,
 } SceneEditorUIDisplay;
 
+/* ===  SIZES === */
+#define SCENE_EDITOR_UI_SIZE_COUNT 16
+typedef enum {
+  SceneEditorUISize_Screen_Width,
+  SceneEditorUISize_Screen_Height,
+  SceneEditorUISize_RightPanel_Width,
+  SceneEditorUISize_Tree_Height,
+  SceneEditorUISize_TopBar_Height,
+  SceneEditorUISize_TopBar_Margin,
+  SceneEditorUISize_Gizmo_Width,
+  SceneEditorUISize_Gizmo_Height,
+  SceneEditorUISize_Gizmo_Margin,
+  SceneEditorUISize_Button_RenderModeSize,
+  SceneEditorUISize_Button_GizmoSize,
+  SceneEditorUISize_Button_DisplaySize,
+  SceneEditorUISize_BottomPanel_Height,
+  SceneEditorUISize_Log_IconScale,
+  SceneEditorUISize_Monitor_Width,
+  SceneEditorUISize_Monitor_Height,
+} SceneEditorUISize;
+
+static int ui_size[SCENE_EDITOR_UI_SIZE_COUNT] = {
+    [SceneEditorUISize_Screen_Width] = 0,
+    [SceneEditorUISize_Screen_Height] = 0,
+    [SceneEditorUISize_RightPanel_Width] = 250,
+    [SceneEditorUISize_Tree_Height] = 400,
+    [SceneEditorUISize_TopBar_Height] = 40,
+    [SceneEditorUISize_TopBar_Margin] = 0,
+    [SceneEditorUISize_Gizmo_Width] = 100,
+    [SceneEditorUISize_Gizmo_Height] = 400,
+    [SceneEditorUISize_Gizmo_Margin] = 10,
+    [SceneEditorUISize_Button_RenderModeSize] = 15,
+    [SceneEditorUISize_Button_GizmoSize] = 30,
+    [SceneEditorUISize_Button_DisplaySize] = 24,
+    [SceneEditorUISize_BottomPanel_Height] = 200,
+    [SceneEditorUISize_Log_IconScale] = 16,
+    [SceneEditorUISize_Monitor_Width] = 300,
+    [SceneEditorUISize_Monitor_Height] = 100,
+};
+
 static inline void scene_editor_ui_set_icon_cell(SceneEditorUI *);
+static inline void scene_editor_ui_scale_size(SceneEditorUI *);
 static inline void scene_editor_ui_create_texture(SceneEditorUI *);
 
 static inline bool scene_editor_ui_create_button_icon(SceneEditorUI *,
@@ -51,15 +93,10 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   logger_add(LoggerFlag_Process, "Intitializing Editor UI");
 
   {
-    ui->width = desc->width;
-    ui->height = desc->height;
-    ui->dpi = desc->dpi;
-    ui->swapchain = desc->swapchain;
-    ui->device = desc->device;
     ui->clock = desc->clock;
-    ui->queue = desc->queue;
-
+    ui->dpi = desc->dpi;
     scene_editor_ui_create_texture(ui);
+    scene_editor_ui_scale_size(ui);
     scene_editor_ui_set_icon_cell(ui);
   }
 
@@ -74,7 +111,7 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
 
     ImGui_ImplWGPU_InitInfo info;
 
-    info.Device = ui->device;
+    info.Device = context_device();
     info.RenderTargetFormat = TEXTURE_FORMAT_ONSCREEN_DEFAULT;
     info.DepthStencilFormat = TEXTURE_FORMAT_DEPTH_DEFAULT;
     info.NumFramesInFlight = 3;
@@ -92,10 +129,10 @@ void scene_editor_ui_draw_callback(void *data) {
 
   WGPUCommandEncoderDescriptor com_enc_desc = {.label = "Scene UI Command"};
   WGPUCommandEncoder command_encoder =
-      wgpuDeviceCreateCommandEncoder(ui->device, &com_enc_desc);
+      wgpuDeviceCreateCommandEncoder(context_device(), &com_enc_desc);
 
   WGPUTextureView swapchain_view =
-      wgpuSwapChainGetCurrentTextureView(*ui->swapchain);
+      wgpuSwapChainGetCurrentTextureView(context_swapchain());
 
   WGPURenderPassColorAttachment color_attachment = {
       .view = swapchain_view,
@@ -125,10 +162,10 @@ void scene_editor_ui_draw_callback(void *data) {
 
   {
     ImGuiIO &io = ImGui::GetIO();
-    io.DisplaySize.x = (float)*ui->width;
-    io.DisplaySize.y = (float)*ui->height;
+    io.DisplaySize.x = (float)context_width() * ui->dpi;
+    io.DisplaySize.y = (float)context_height() * ui->dpi;
     io.DeltaTime = ui->clock->delta;
-    io.FontGlobalScale = 1.0f;
+    io.FontGlobalScale = 2.0f;
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
     io.MousePos = ImVec2(g_input.mouse.x, g_input.mouse.y);
     io.MouseDown[0] = g_input.mouse.state;
@@ -161,9 +198,18 @@ void scene_editor_ui_draw_callback(void *data) {
     wgpuRenderPassEncoderEnd(ui->pass_encoder);
     WGPUCommandBuffer command_buffer =
         wgpuCommandEncoderFinish(command_encoder, NULL);
-    wgpuQueueSubmit(ui->queue, 1, &command_buffer);
+    wgpuQueueSubmit(context_queue(), 1, &command_buffer);
     wgpuTextureViewRelease(swapchain_view);
   }
+}
+
+void scene_editor_ui_scale_size(SceneEditorUI *ui) {
+
+  ui_size[SceneEditorUISize_Screen_Width] = context_width();
+  ui_size[SceneEditorUISize_Screen_Height] = context_height();
+
+  for (uint16_t i = 0; i < SCENE_EDITOR_UI_SIZE_COUNT; i++)
+    ui_size[i] *= ui->dpi;
 }
 
 void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
@@ -218,8 +264,8 @@ void scene_editor_ui_create_texture(SceneEditorUI *ui) {
         .dimension = WGPUTextureDimension_2D,
         .size =
             {
-                .width = (uint32_t)*ui->width,
-                .height = (uint32_t)*ui->height,
+                .width = (uint32_t)(context_width() * ui->dpi),
+                .height = (uint32_t)(context_height() * ui->dpi),
                 .depthOrArrayLayers = 1,
             },
         .mipLevelCount = 1,
@@ -228,7 +274,7 @@ void scene_editor_ui_create_texture(SceneEditorUI *ui) {
         .usage = WGPUTextureUsage_RenderAttachment,
     };
 
-    ui->depth_texture = wgpuDeviceCreateTexture(ui->device, &tex_desc);
+    ui->depth_texture = wgpuDeviceCreateTexture(context_device(), &tex_desc);
 
     WGPUTextureViewDescriptor view_desc = {
         .label = "Scene UI Depth View",
@@ -250,8 +296,6 @@ void scene_editor_ui_create_texture(SceneEditorUI *ui) {
         .cell_count = {16, 16},
         .cell_size = {128, 128},
         .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
-        .device = ui->device,
-        .queue = ui->queue,
         .label = "Scene UI Icon Atlas",
         .path = "./resources/assets/texture/ui/icon_atlas.png",
     };
@@ -269,22 +313,6 @@ bool scene_editor_ui_create_button_icon(SceneEditorUI *ui,
                             ImVec2(uv->uv1[0], uv->uv1[1]));
 }
 
-/* ===  SIZES === */
-static const int right_panel_width = 250;
-static const int tree_height = 400;
-
-static const int top_bar_height = 40;
-static const int top_bar_margin = 0;
-
-static const int gizmo_width = 100;
-static const int gizmo_height = 400;
-static const int gizmo_margin = 10;
-
-static const int button_render_mode_size = 15;
-static const int button_gizmo_size = 30;
-
-static const int bottom_panel_height = 200;
-
 static const ScenePipeline tree_meshes[3] = {
     ScenePipeline_Dynamic_Lit,
     ScenePipeline_Dynamic_LitShadow,
@@ -293,8 +321,14 @@ static const ScenePipeline tree_meshes[3] = {
 
 void scene_editor_ui_create_right_panel(SceneEditorUI *ui, Scene *scene) {
 
-  ImGui::SetNextWindowPos(ImVec2(*ui->width - right_panel_width, 0));
-  ImGui::SetNextWindowSize(ImVec2(right_panel_width, *ui->height));
+  ImGui::SetNextWindowPos(
+      ImVec2(ui_size[SceneEditorUISize_Screen_Width] -
+                 ui_size[SceneEditorUISize_RightPanel_Width],
+             0));
+
+  ImGui::SetNextWindowSize(ImVec2(ui_size[SceneEditorUISize_RightPanel_Width],
+                                  ui_size[SceneEditorUISize_Screen_Height]));
+
   ImGui::Begin("Left Panel", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
@@ -306,10 +340,10 @@ void scene_editor_ui_create_right_panel(SceneEditorUI *ui, Scene *scene) {
   ImGui::End();
 }
 
-static int button_display_size = 24;
 void scene_editor_ui_create_display(SceneEditorUI *ui, Scene *scene) {
 
-  ImGui::SetNextWindowPos(ImVec2(gizmo_margin, 0), ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(ui_size[SceneEditorUISize_Gizmo_Margin], 0),
+                          ImGuiCond_Always);
   ImGui::Begin("Display Frame", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
@@ -323,14 +357,16 @@ void scene_editor_ui_create_display(SceneEditorUI *ui, Scene *scene) {
   {
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_Layout, "Layout",
-            ImVec2(button_display_size, button_display_size)))
+            ImVec2(ui_size[SceneEditorUISize_Button_DisplaySize],
+                   ui_size[SceneEditorUISize_Button_DisplaySize])))
       display ^= SceneEditorUIDisplay_Layout;
 
     ImGui::SameLine();
 
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_Activity, "Activity",
-            ImVec2(button_display_size, button_display_size)))
+            ImVec2(ui_size[SceneEditorUISize_Button_DisplaySize],
+                   ui_size[SceneEditorUISize_Button_DisplaySize])))
       display ^= SceneEditorUIDisplay_Activity;
   }
   ImGui::PopStyleColor(3);
@@ -340,9 +376,15 @@ void scene_editor_ui_create_display(SceneEditorUI *ui, Scene *scene) {
 
 void scene_editor_ui_create_bottom_panel(SceneEditorUI *ui, Scene *scene) {
 
-  ImGui::SetNextWindowPos(ImVec2(0, *ui->height - bottom_panel_height));
+  ImGui::SetNextWindowPos(
+      ImVec2(0, ui_size[SceneEditorUISize_Screen_Height] -
+                    ui_size[SceneEditorUISize_BottomPanel_Height]));
+
   ImGui::SetNextWindowSize(
-      ImVec2(*ui->width - right_panel_width, bottom_panel_height));
+      ImVec2(ui_size[SceneEditorUISize_Screen_Width] -
+                 ui_size[SceneEditorUISize_RightPanel_Width],
+             ui_size[SceneEditorUISize_BottomPanel_Height]));
+
   ImGui::Begin("Bottom Panel", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
@@ -443,9 +485,12 @@ static const LoggerLook logger_looks[LOGGER_FLAG_COUNT] = {
         },
 };
 
-static ImVec2 log_icon_scale = ImVec2(16, 16);
-
 void scene_editor_ui_create_log(SceneEditorUI *ui, Scene *scene) {
+
+  static ImVec2 log_icon_scale =
+      ImVec2(ui_size[SceneEditorUISize_Log_IconScale],
+             ui_size[SceneEditorUISize_Log_IconScale]);
+
   ImGui::BeginChild("Logs", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0),
                     true);
   {
@@ -520,11 +565,12 @@ void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
           flags |= ImGuiTreeNodeFlags_Leaf;
 
         ImGui::PushID(mesh->id);
-        ImGui::TreeNodeEx(mesh->name, flags);
-        ImGui::PopID();
+        if (ImGui::TreeNodeEx(mesh->name, flags)) {
 
-        if (mesh->children.length == 0)
-          ImGui::TreePop();
+          if (mesh->children.length == 0)
+            ImGui::TreePop();
+        }
+        ImGui::PopID();
       }
     }
 
@@ -539,8 +585,12 @@ static float values[90] = {};
 static int values_offset = 0;
 void scene_editor_ui_create_monitor(SceneEditorUI *ui, Scene *scene) {
 
-  ImGui::SetNextWindowPos(ImVec2(gizmo_margin, top_bar_height + 10));
-  ImGui::SetNextWindowSize(ImVec2(300, 100));
+  ImGui::SetNextWindowPos(
+      ImVec2(ui_size[SceneEditorUISize_Gizmo_Margin],
+             ui_size[SceneEditorUISize_TopBar_Height] + 10));
+  ImGui::SetNextWindowSize(ImVec2(ui_size[SceneEditorUISize_Monitor_Width],
+                                  ui_size[SceneEditorUISize_Monitor_Height]));
+
   ImGui::Begin("Monitor", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
@@ -564,8 +614,12 @@ void scene_editor_ui_create_monitor(SceneEditorUI *ui, Scene *scene) {
 void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
 
   ImGui::SetNextWindowPos(
-      ImVec2(gizmo_margin, (int)(*ui->height / 2) - (int)(gizmo_height / 2)));
-  ImGui::SetNextWindowSize(ImVec2(gizmo_width, gizmo_height));
+      ImVec2(ui_size[SceneEditorUISize_Gizmo_Margin],
+             (int)(ui_size[SceneEditorUISize_Screen_Height] / 2) -
+                 (int)(ui_size[SceneEditorUISize_Gizmo_Height] / 2)));
+
+  ImGui::SetNextWindowSize(ImVec2(ui_size[SceneEditorUISize_Gizmo_Width],
+                                  ui_size[SceneEditorUISize_Gizmo_Height]));
   ImGui::Begin("Gizmo", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
@@ -574,7 +628,8 @@ void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
   {
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_Gizmo_Position, "Position",
-            ImVec2(button_gizmo_size, button_gizmo_size))) {
+            ImVec2(ui_size[SceneEditorUISize_Button_GizmoSize],
+                   ui_size[SceneEditorUISize_Button_GizmoSize]))) {
       scene_gizmo_hide(scene);
       scene->editor.gizmo.transform.mode = GizmoMode_Position;
       scene_gizmo_show(scene);
@@ -584,7 +639,8 @@ void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
 
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_Gizmo_Rotate, "Rotate",
-            ImVec2(button_gizmo_size, button_gizmo_size))) {
+            ImVec2(ui_size[SceneEditorUISize_Button_GizmoSize],
+                   ui_size[SceneEditorUISize_Button_GizmoSize]))) {
       scene_gizmo_hide(scene);
       scene->editor.gizmo.transform.mode = GizmoMode_Rotation;
       scene_gizmo_show(scene);
@@ -594,7 +650,8 @@ void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
 
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_Gizmo_Scale, "Scale",
-            ImVec2(button_gizmo_size, button_gizmo_size))) {
+            ImVec2(ui_size[SceneEditorUISize_Button_GizmoSize],
+                   ui_size[SceneEditorUISize_Button_GizmoSize]))) {
       scene_gizmo_hide(scene);
       scene->editor.gizmo.transform.mode = GizmoMode_Scale;
       scene_gizmo_show(scene);
@@ -605,47 +662,57 @@ void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
 
 void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
 
-  const int top_bar_width = *ui->width - right_panel_width;
+  const int top_bar_width = ui_size[SceneEditorUISize_Screen_Width] -
+                            ui_size[SceneEditorUISize_RightPanel_Width];
   const int button_count = 8;
-  const int padding = 1;
+  const int padding = 1 * ui->dpi;
 
-  ImGui::SetNextWindowPos(ImVec2(top_bar_margin, top_bar_margin));
+  ImGui::SetNextWindowPos(ImVec2(ui_size[SceneEditorUISize_TopBar_Margin],
+                                 ui_size[SceneEditorUISize_TopBar_Margin]));
+
   ImGui::PushStyleColor(ImGuiCol_WindowBg,
                         (ImVec4 &)*theme_default_color
                             [THEME_DEFAULT_COLOR_BACKGROUND_BLANKET_MEDIUM]);
-  ImGui::SetNextWindowSize(ImVec2(top_bar_width, top_bar_height));
+  ImGui::SetNextWindowSize(
+      ImVec2(top_bar_width, ui_size[SceneEditorUISize_TopBar_Height]));
   ImGui::Begin("Top bar", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
                    ImGuiWindowFlags_NoBringToFrontOnFocus);
 
-  ImGui::SetCursorPosX(top_bar_width -
-                       button_count * (button_render_mode_size + padding));
+  ImGui::SetCursorPosX(
+      top_bar_width -
+      button_count *
+          (ui_size[SceneEditorUISize_Button_RenderModeSize] + padding));
   {
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_RenderMode_Boundbox, "Boundbox",
-            ImVec2(button_render_mode_size, button_render_mode_size)))
+            ImVec2(ui_size[SceneEditorUISize_Button_RenderModeSize],
+                   ui_size[SceneEditorUISize_Button_RenderModeSize])))
       scene_set_draw_mode(scene, SceneRendererDrawMode_Boundbox);
 
     ImGui::SameLine();
 
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_RenderMode_Wireframe, "Wireframe",
-            ImVec2(button_render_mode_size, button_render_mode_size)))
+            ImVec2(ui_size[SceneEditorUISize_Button_RenderModeSize],
+                   ui_size[SceneEditorUISize_Button_RenderModeSize])))
       scene_set_draw_mode(scene, SceneRendererDrawMode_Wireframe);
 
     ImGui::SameLine();
 
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_RenderMode_Solid, "Solid",
-            ImVec2(button_render_mode_size, button_render_mode_size)))
+            ImVec2(ui_size[SceneEditorUISize_Button_RenderModeSize],
+                   ui_size[SceneEditorUISize_Button_RenderModeSize])))
       scene_set_draw_mode(scene, SceneRendererDrawMode_Solid);
 
     ImGui::SameLine();
 
     if (scene_editor_ui_create_button_icon(
             ui, SceneEditorUIIcon_RenderMode_Texture, "Texture",
-            ImVec2(button_render_mode_size, button_render_mode_size)))
+            ImVec2(ui_size[SceneEditorUISize_Button_RenderModeSize],
+                   ui_size[SceneEditorUISize_Button_RenderModeSize])))
       scene_set_draw_mode(scene, SceneRendererDrawMode_Texture);
   }
   ImGui::End();

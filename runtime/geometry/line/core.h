@@ -22,8 +22,7 @@
 #define LINE_INDEX_COUNT 6
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const char *name;
 } LineCreateDescriptor;
 

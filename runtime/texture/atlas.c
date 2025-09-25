@@ -40,11 +40,9 @@ TextureStatus texture_atlas_create(TextureAtlas *atlas,
                         &(CreateTextureDescriptor){
                             .channels = texture.channels,
                             .data = texture.data,
-                            .device = desc->device,
                             .format = desc->format,
                             .height = texture.height,
                             .width = texture.width,
-                            .queue = desc->queue,
                             .size = texture.size,
                         },
                         BufferTextureMemory_Free);

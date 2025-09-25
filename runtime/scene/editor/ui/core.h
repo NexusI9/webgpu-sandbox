@@ -38,15 +38,15 @@ typedef struct {
 } SceneEditorUIIconUV;
 
 typedef struct {
-  int *width;
-  int *height;
+  const double dpi;
+} SceneEditorUIConfig;
+
+typedef struct {
   cclock *clock;
-  double *dpi;
+  double dpi;
   WGPURenderPassEncoder pass_encoder;
-  WGPUSwapChain *swapchain;
   WGPUQuerySet query;
-  WGPUDevice device;
-  WGPUQueue queue;
+
   WGPUTexture depth_texture;
   WGPUTextureView depth_view;
   TextureAtlas atlas_texture;
@@ -54,13 +54,8 @@ typedef struct {
 } SceneEditorUI;
 
 typedef struct {
-  int *width;
-  int *height;
-  double *dpi;
   cclock *clock;
-  WGPUSwapChain *swapchain;
-  WGPUDevice device;
-  WGPUQueue queue;
+  double dpi;
 } SceneEditorUIDescriptor;
 
 // prevent c++ mangling

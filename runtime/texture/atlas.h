@@ -26,8 +26,6 @@ typedef struct {
   ivec2 cell_count;
   ivec2 cell_size;
   WGPUTextureFormat format;
-  WGPUDevice device;
-  WGPUQueue queue;
 } TextureAtlasDescriptor;
 
 #ifdef __cplusplus

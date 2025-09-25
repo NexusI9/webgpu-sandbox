@@ -1,5 +1,6 @@
 #include "compute.h"
 #include "backend/buffer.h"
+#include "backend/context.h"
 #include "utils/file.h"
 #include "webgpu/webgpu.h"
 
@@ -10,7 +11,6 @@ void compute_pipeline_create(ComputePipeline *pipeline,
                              const ComputePipelineCreateDescriptor *desc) {
 
   // Define core data
-  pipeline->device = desc->device;
   pipeline->handle = NULL;
   pipeline->label = desc->label;
   pipeline->shader_pso = desc->pso;
@@ -22,8 +22,7 @@ void compute_pipeline_create(ComputePipeline *pipeline,
   store_file(&source, desc->path);
 
   // compile shader module intro GPU device
-  buffer_create_shader(&pipeline->module, pipeline->device, source,
-                       pipeline->label);
+  buffer_create_shader(&pipeline->module, source, pipeline->label);
 }
 
 /**
@@ -39,7 +38,7 @@ void compute_pipeline_build(ComputePipeline *pipeline,
     compute_pipeline_destroy(pipeline);
 
   pipeline->handle = wgpuDeviceCreateComputePipeline(
-      pipeline->device, &(WGPUComputePipelineDescriptor){
+      context_device(), &(WGPUComputePipelineDescriptor){
                             .label = pipeline->label,
                             .layout = pipeline->layout,
                             .compute =

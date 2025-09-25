@@ -11,8 +11,6 @@ void gizmo_scale_create(MeshRefList *visual_list,
   gizmo_create_handles(
       visual_list, interactive_list,
       &(GizmoCreateMeshDescriptor){
-          .device = desc->device,
-          .queue = desc->queue,
           .list = desc->list,
           .mbin_path = "./resources/assets/mbin/scale.mbin",
       });

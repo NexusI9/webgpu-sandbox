@@ -17,8 +17,6 @@ static vattr_t cube_vertex_data[] = {
     -0.5f,  0.5f, -0.5f,   0.0f, 0.0f, -1.0f,   -1.0f, 0.0f, 0.0f, 1.0f,    0.0f, -1.0f, 0.5f,  0.5f, 0.5f, // Top-left
 };
 
-
-
 static vindex_t cube_index_data[] = { // Front face
     0, 1, 2, 0, 2, 3,
 

@@ -95,7 +95,6 @@ texture_create_from_file(Texture *texture,
   return TextureStatus_Success;
 }
 
-
 TextureStatus
 texture_create_cubemap_from_file(Texture texture[TEXTURE_CUBE_LAYER],
                                  const TextureCreateCubeMapDescriptor *desc) {

@@ -47,5 +47,4 @@ static const ComputePipelineStateObject layout_mipmap = {
     .bind_groups = { &mipmap_bind_group },
 };
 
-
 #endif

@@ -17,7 +17,6 @@ typedef uint32_t mbin_length_t;
    2. or provide data to create scene mesh (++ flexibility)
  */
 
-
 typedef enum {
   MBINLoaderStatus_Success,
   MBINLoaderStatus_AllocFail,

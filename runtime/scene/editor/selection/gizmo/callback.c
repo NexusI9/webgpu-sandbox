@@ -135,7 +135,6 @@ void gizmo_transform_angle(Gizmo *gizmo, Camera *camera,
    ▐▌   ▐▛▀▜▌▐▌   ▐▌   ▐▛▀▚▖▐▛▀▜▌▐▌   ▐▛▚▖  ▝▀▚▖
    ▝▚▄▄▖▐▌ ▐▌▐▙▄▄▖▐▙▄▄▖▐▙▄▞▘▐▌ ▐▌▝▚▄▄▖▐▌ ▐▌▗▄▄▞▘
 
-
    Gizmo transforms callback are mostly use to project the curso to world space
    and calculate the delta depending on the given axis.
 

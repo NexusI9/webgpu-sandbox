@@ -29,7 +29,6 @@
    SSBO offer either the possibility to directly write in GPU or to Queue a
    specific index (from a given field).
 
-
    Note regarding the Shader PSO:
    While UBO relies on Uniform, SSBO relies on Storage coupled with a dynamic
    offset. Storage are specific buffer type defined in the PSO:
@@ -113,13 +112,12 @@ typedef struct {
 
 typedef struct {
   SSBOBuffer buffers[SSBO_TYPE_COUNT];
-  WGPUQueue queue;
-  WGPUDevice device;
+
 } SSBOManager;
 
 void ssbo_draw_callback(void *);
 
-void ssbo_init(SSBOManager *, WGPUDevice, WGPUQueue);
+void ssbo_init(SSBOManager *);
 void ssbo_upload(SSBOManager *, const SSBOType);
 
 /* ==== GETTERS ==== */

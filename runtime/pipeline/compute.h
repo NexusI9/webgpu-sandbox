@@ -31,8 +31,6 @@ typedef struct {
   const char *label;
   const char *path;
 
-  // core
-  WGPUDevice device;
   WGPUShaderModule module;
 
   // layout
@@ -48,7 +46,6 @@ typedef struct {
 } ComputePipeline;
 
 typedef struct {
-  WGPUDevice device;
   const char *label;
   const char *path;
   const ComputePipelineStateObject *pso;

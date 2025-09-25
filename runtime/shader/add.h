@@ -9,5 +9,4 @@ void shader_add_texture_view(Shader *,
                              const ShaderCreateTextureViewDescriptor *);
 void shader_add_sampler(Shader *, const ShaderCreateSamplerDescriptor *);
 
-
 #endif

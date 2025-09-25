@@ -979,7 +979,6 @@ static int jsmn_parse(jsmn_parser *parser, const char *js, size_t len, jsmntok_t
  * -- jsmn.h end --
  */
 
-
 #ifndef CGLTF_CONSTS
 #define GlbHeaderSize 12
 #define GlbChunkHeaderSize 8
@@ -4370,7 +4369,6 @@ static int cgltf_parse_json_anisotropy(cgltf_options* options, jsmntok_t const* 
 	int size = tokens[i].size;
 	++i;
 
-
 	for (int j = 0; j < size; ++j)
 	{
 		CGLTF_CHECK_KEY(tokens[i]);
@@ -4410,7 +4408,6 @@ static int cgltf_parse_json_dispersion(jsmntok_t const* tokens, int i, const uin
 	CGLTF_CHECK_TOKTYPE(tokens[i], JSMN_OBJECT);
 	int size = tokens[i].size;
 	++i;
-
 
 	for (int j = 0; j < size; ++j)
 	{

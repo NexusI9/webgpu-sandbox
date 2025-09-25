@@ -51,8 +51,6 @@ void seo_probe_reflection_grid_create(SceneEditorObject *seo,
 
   SEOCreateWireframeDescriptor wireframe_desc = {
       .color = &(color){1.0f, 0.0f, 0.0f, 1.0f},
-      .device = desc->device,
-      .queue = desc->queue,
       .index = &cube_primitive.index,
       .vertex = &cube_primitive.vertex,
       .name = "seo probe reflection bound",

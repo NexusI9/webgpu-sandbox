@@ -31,8 +31,6 @@ probe_reflection_plane_list_create(ProbeReflectionPlaneList *list,
                                    const ProbeReflectionListDescriptor *desc) {
 
   return probe_reflection_list_create_core(&(ProbeReflectionCreateCore){
-      .device = desc->device,
-      .queue = desc->queue,
       .probe_list =
           &(ProbeReflectionCreateCoreList){
               .entries = (void *)&list->entries,
@@ -95,7 +93,6 @@ DynamicListStatus
 probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *list) {
   return dyli_free((void *)list->entries, &list->capacity, &list->length);
 }
-
 
 void probe_reflection_plane_list_draw_callback(void *data) {
 
@@ -171,8 +168,6 @@ void probe_reflection_plane_list_draw_callback(void *data) {
   compute_pass_kawase(&scene->renderer.draw.compute_pass,
                       &(KawaseDescriptor){
                           .texture = list->pass.color.texture,
-                          .device = list->pass.device,
-                          .queue = list->pass.queue,
                           .layer_count = list->length,
                           .pass_count = 1,
                       });

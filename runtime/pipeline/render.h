@@ -140,7 +140,6 @@ typedef struct {
   const char *path;
 
   // core
-  WGPUDevice device;
   WGPUShaderModule module;
 
   // cached attributes
@@ -172,7 +171,6 @@ typedef struct {
 } RenderPipeline;
 
 typedef struct {
-  WGPUDevice device;
   const char *label;
   const char *path;
   const RenderPipelineStateObject *pso;

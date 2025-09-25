@@ -4,10 +4,11 @@
 #include <stdlib.h>
 #include <webgpu/webgpu.h>
 
-#include "string.h"
+#include "backend/context.h"
+#include "backend/logger.h"
 #include "bindgroup.h"
 #include "runtime/pipeline/render.h"
-#include "backend/logger.h"
+#include "string.h"
 
 /*
 
@@ -45,7 +46,6 @@
                   | Bind Samplers    |
                   '------------------'
 
-
  */
 
 void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
@@ -56,9 +56,6 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 #ifdef VERBOSE_CREATING_PHASE
   logger_add(LoggerFlag_ShaderCreate, "%s", shader->name);
 #endif
-
-  shader->device = sd->device;
-  shader->queue = sd->queue;
   shader->pipeline = sd->pipeline;
 
   // define bind groups length
@@ -85,7 +82,6 @@ void shader_destroy(Shader *shader) {
    Update method called as such: scene update => mesh update => shader update
  */
 
-
 #ifdef VERBOSE_SHADER_BIND_GROUP_OFFSET
 static int bg_offset_count = 0;
 static const int bg_print_count = 800;
@@ -109,7 +105,7 @@ void shader_draw(Shader *shader, WGPURenderPassEncoder render_pass) {
     ShaderBindGroup *bind_group = &dynamic_list->entries[i];
 
     // update bindgroup uniforms data
-    shader_uniform_update(bind_group, shader->queue);
+    shader_uniform_update(bind_group);
 
     // link bind group
     wgpuRenderPassEncoderSetBindGroup(render_pass, i, bind_group->bind_group,
@@ -135,14 +131,16 @@ void shader_module_release(Shader *shader) {
   wgpuShaderModuleRelease(shader->pipeline->module);
 }
 
-const RenderPipeline *shader_pipeline(Shader *shader) { return shader->pipeline; }
+const RenderPipeline *shader_pipeline(Shader *shader) {
+  return shader->pipeline;
+}
 
 /**
    Access all uniforms from a bind group and check if it requires any update.
    If the trigger returns true, then it update the gpu buffer with the new data
    output from the callback
  */
-void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue queue) {
+void shader_uniform_update(ShaderBindGroup *group) {
 
   // update bindgroup entries (callback)
   ShaderBindGroupUniformsDynamics *dynamic_uniforms = &group->uniforms_dynamics;
@@ -164,8 +162,9 @@ void shader_uniform_update(ShaderBindGroup *group, const WGPUQueue queue) {
       uniform_update->callback(uniform_update->data, current_entry->data);
 
       // rewrite uniform to GPU
-      wgpuQueueWriteBuffer(queue, current_entry->buffer, current_entry->offset,
-                           current_entry->data, current_entry->size);
+      wgpuQueueWriteBuffer(context_queue(), current_entry->buffer,
+                           current_entry->offset, current_entry->data,
+                           current_entry->size);
     }
   }
 }
@@ -201,8 +200,7 @@ void shader_build(Shader *shader) {
 #ifdef VERBOSE_BINDING_PHASE
     logger_add(LoggerFlag_Print, "\t\t\t└ Bingroup: %d", i);
 #endif
-    shader_bind_group_build(group, i, shader->device,
-                            &shader->pipeline->handle);
+    shader_bind_group_build(group, i, &shader->pipeline->handle);
   }
 
   // TODO: properly release pipeline when deleting mesh

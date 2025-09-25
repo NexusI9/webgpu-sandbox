@@ -36,8 +36,7 @@ typedef struct {
 typedef struct {
   const TextureResolution resolution;
   const WGPUTextureFormat format;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const CubeMapPath *path;
 } TextureCreateCubeMapDescriptor;
 

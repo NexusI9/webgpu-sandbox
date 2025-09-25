@@ -25,7 +25,6 @@
     |_______|              '--'_______'--'
     B       C              B |________| C
 
-
    The lines get extruded during the shader, the vertex structure is the
    following:
 
@@ -50,7 +49,6 @@
           ;                            |       ;      |
           x                            x-------;------x
          C,D                          C <---      ---> D
-
 
     Such approach complexify the initial mesh structure by adding N*2
     more vertex per edges.

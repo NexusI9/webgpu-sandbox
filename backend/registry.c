@@ -2,7 +2,6 @@
 #include "backend/logger.h"
 #include <stdio.h>
 
-
 static reg_id_t g_reg_id = 1;
 
 static inline reg_id_t gen_id();

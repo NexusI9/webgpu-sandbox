@@ -1,15 +1,15 @@
 #include "core.h"
 
-#include <stdio.h>
-#include <string.h>
 #include <emscripten/em_types.h>
 #include <emscripten/html5.h>
+#include <stdio.h>
+#include <string.h>
 
-#include "utils/math.h"
+#include "backend/registry.h"
 #include "keyrecord.h"
 #include "runtime/html_event/add.h"
 #include "runtime/html_event/core.h"
-#include "backend/registry.h"
+#include "utils/math.h"
 
 Input g_input = {0};
 
@@ -79,7 +79,10 @@ void input_disable_all_keys() { memset(g_input.keys, 0, sizeof(g_input.keys)); }
    Update input global attributes. Useful to retrieves
    those attributes during the draw.
  */
-void input_listen() {
+void input_init(const InputDescriptor *desc) {
+
+  g_input.mouse.sensitivity = desc->mouse_sensitivity;
+  g_input.mouse.wheel.sensitivity = desc->wheel_sensitivity;
 
   // key down/up event listener
   html_event_add_key_down(&(HTMLEventKey){

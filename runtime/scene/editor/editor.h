@@ -11,9 +11,6 @@
 /* DELETEME
 typedef struct {
 
-  WGPUDevice device;
-  WGPUQueue queue;
-
   MeshList *mesh_list;
   SceneEditorObjectList *seo_list; // cam/ lights  lists
 

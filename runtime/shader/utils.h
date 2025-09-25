@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "backend/context.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
 
@@ -15,15 +16,15 @@ uint16_t shader_bind_group_entries_count(const ShaderBindGroup *);
 
 bool shader_validate_binding(Shader *);
 
-static inline size_t shader_device_storage_alignment(WGPUDevice device) {
+static inline size_t shader_device_storage_alignment() {
   WGPUSupportedLimits limits;
-  wgpuDeviceGetLimits(device, &limits);
+  wgpuDeviceGetLimits(context_device(), &limits);
   return limits.limits.minStorageBufferOffsetAlignment;
 }
 
-static inline size_t shader_device_uniform_alignment(WGPUDevice device) {
+static inline size_t shader_device_uniform_alignment() {
   WGPUSupportedLimits limits;
-  wgpuDeviceGetLimits(device, &limits);
+  wgpuDeviceGetLimits(context_device(), &limits);
   return limits.limits.minUniformBufferOffsetAlignment;
 }
 

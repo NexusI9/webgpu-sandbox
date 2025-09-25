@@ -127,8 +127,6 @@ void mesh_topology_anchor_merge(const MeshTopologyAnchorList *list,
      [2] Xc Yc Zc ... ----------'          | 0 | 1 | 2 |
                                            '---'---'---'
 
-
-
      ================== 2. MAPPING PHASE ==================
 
      Now that base indexes are clustered based on their positions
@@ -369,7 +367,6 @@ void mesh_topology_anchor_list_destroy(MeshTopologyAnchorList *list) {
 void mesh_topology_anchor_list_map(MeshTopologyAnchorList *hashed,
                                    MeshTopology *base,
                                    MeshTopologyAnchorList *mapped) {
-
 
   // expand the initial mapped list if capacity cannot hold the index count
   while (base->index->length > mapped->capacity)

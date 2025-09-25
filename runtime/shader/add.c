@@ -5,10 +5,11 @@
 
 #include "./utils.h"
 #include "backend/buffer.h"
+#include "backend/context.h"
+#include "backend/logger.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "string.h"
-#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 /**
@@ -57,8 +58,6 @@ void shader_add_uniform(Shader *shader,
       // assign buffer to entry
       buffer_create(&dest->buffer, &(CreateBufferDescriptor){
                                        .label = "Initial Shader Buffer",
-                                       .queue = shader->queue,
-                                       .device = shader->device,
                                        .data = (void *)dest->data,
                                        .size = dest->size,
                                        .usage = dest->usage,
@@ -157,7 +156,8 @@ void shader_add_texture(Shader *shader,
 
       if (current_bind_group->textures.length ==
           current_bind_group->textures.capacity) {
-        logger_add(LoggerFlag_Print, "Texture array reached maximum capacity\n");
+        logger_add(LoggerFlag_Print,
+                   "Texture array reached maximum capacity\n");
         break;
       }
 
@@ -176,7 +176,7 @@ void shader_add_texture(Shader *shader,
       dest->width = src->width;
       dest->height = src->height;
       dest->size = src->size;
- 
+
       // generate texture + texture view from data & size
       WGPUTexture tmp_texture;
       buffer_create_texture(&tmp_texture, &dest->texture_view,
@@ -185,8 +185,6 @@ void shader_add_texture(Shader *shader,
                                 .height = dest->height,
                                 .data = dest->data,
                                 .size = dest->size,
-                                .device = shader->device,
-                                .queue = shader->queue,
                                 .format = dest->format,
                                 .channels = dest->channels,
                             },
@@ -218,7 +216,8 @@ void shader_add_texture_view(Shader *shader,
 
       if (current_bind_group->textures.length ==
           current_bind_group->textures.capacity) {
-        logger_add(LoggerFlag_Print, "Texture array reached maximum capacity\n");
+        logger_add(LoggerFlag_Print,
+                   "Texture array reached maximum capacity\n");
         break;
       }
 
@@ -255,7 +254,8 @@ void shader_add_sampler(Shader *shader,
 
       if (current_bind_group->samplers.length ==
           current_bind_group->samplers.capacity) {
-        logger_add(LoggerFlag_Print, "Sampler array reached maximum capacity\n");
+        logger_add(LoggerFlag_Print,
+                   "Sampler array reached maximum capacity\n");
         break;
       }
 
@@ -278,15 +278,15 @@ void shader_add_sampler(Shader *shader,
 
       // creating sampler by mapping desc configuration
       dest->sampler = wgpuDeviceCreateSampler(
-          shader->device, &(WGPUSamplerDescriptor){
-                              .compare = dest->compare,
-                              .addressModeU = dest->addressModeU,
-                              .addressModeV = dest->addressModeV,
-                              .addressModeW = dest->addressModeW,
-                              .minFilter = dest->minFilter,
-                              .magFilter = dest->magFilter,
-			      .mipmapFilter = dest->mipmapFilter,
-                          });
+          context_device(), &(WGPUSamplerDescriptor){
+                                .compare = dest->compare,
+                                .addressModeU = dest->addressModeU,
+                                .addressModeV = dest->addressModeV,
+                                .addressModeW = dest->addressModeW,
+                                .minFilter = dest->minFilter,
+                                .magFilter = dest->magFilter,
+                                .mipmapFilter = dest->mipmapFilter,
+                            });
     }
   }
 }

@@ -30,13 +30,12 @@ void mesh_topology_boundbox_compute_bound(const MeshTopologyBase *, mat4,
                                           MeshTopologyBoundbox *);
 
 MeshTopologyBoundboxStatus
-mesh_topology_boundbox_create(MeshTopologyBase *, mat4, MeshTopologyBoundbox *,
-                              const WGPUDevice, const WGPUQueue);
+mesh_topology_boundbox_create(MeshTopologyBase *, mat4, MeshTopologyBoundbox *);
 
 MeshTopology mesh_topology_boundbox_vertex(MeshTopologyBoundbox *);
 
 MeshTopologyBoundboxStatus
 mesh_topology_boundbox_update(const MeshTopologyBase *, mat4,
-                              MeshTopologyBoundbox *, const WGPUQueue);
+                              MeshTopologyBoundbox *);
 
 #endif

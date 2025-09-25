@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "backend/buffer.h"
+#include "backend/context.h"
 #include "utils/math.h"
 #include "anchor.h"
 #include "string.h"
@@ -44,8 +45,6 @@ static void mesh_topology_wireframe_create_points(EdgeHashSet *,
 
                Data Attributes + Hash = Index
 
-
-
     =================== 2. CLUSTER PHASE ==================
 
     Create anchors hash set with base position as key:
@@ -58,8 +57,6 @@ static void mesh_topology_wireframe_create_points(EdgeHashSet *,
      [1] Xb Yb Zb ... -------------------> |---.---.---|
      [2] Xc Yc Zc ... ----------'          | 0 | 1 | 2 |
                                            '---'---'---'
-
-
 
      ================== 3. MAPPING PHASE ==================
 
@@ -101,12 +98,9 @@ static void mesh_topology_wireframe_create_points(EdgeHashSet *,
      This extra step is due to the fact that out cluster list is created based
    on unique edges, which doesn't include all the base index topology.
 
-
  */
 int mesh_topology_wireframe_create(MeshTopology *src_topo,
-                                   MeshTopologyWireframe *dest_topo,
-                                   const WGPUDevice device,
-                                   const WGPUQueue queue) {
+                                   MeshTopologyWireframe *dest_topo) {
 
   // reset existing wireframe buffer if exists
   // DELETEME:
@@ -164,8 +158,6 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
   // upload vertex attributes
   buffer_create(&dest_topo->attribute.buffer,
                 &(CreateBufferDescriptor){
-                    .queue = queue,
-                    .device = device,
                     .data = (void *)dest_topo->attribute.entries,
                     .size = dest_topo->attribute.length * sizeof(vattr_t),
                     .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
@@ -175,8 +167,6 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
   // upload vertex index
   buffer_create(&dest_topo->index.buffer,
                 &(CreateBufferDescriptor){
-                    .queue = queue,
-                    .device = device,
                     .data = (void *)dest_topo->index.entries,
                     .size = dest_topo->index.length * sizeof(vindex_t),
                     .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
@@ -201,8 +191,7 @@ MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *topo) {
    wireframe vertex attribute based on achor's index.
  */
 int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
-                                   MeshTopologyWireframe *dest_topo,
-                                   const WGPUQueue queue) {
+                                   MeshTopologyWireframe *dest_topo) {
 
   for (size_t b = 0; b < base_topo->index.length; b++) {
 
@@ -230,7 +219,7 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
   }
 
   // update buffer or use map_write for direct link with CPU
-  wgpuQueueWriteBuffer(queue, dest_topo->attribute.buffer, 0,
+  wgpuQueueWriteBuffer(context_queue(), dest_topo->attribute.buffer, 0,
                        dest_topo->attribute.entries,
                        dest_topo->attribute.length * sizeof(vattr_t));
 

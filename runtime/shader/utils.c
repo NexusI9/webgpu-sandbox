@@ -22,11 +22,6 @@ uint16_t shader_bind_group_entries_count(const ShaderBindGroup *group) {
 // if it doesn't overflow with max accepted length
 bool shader_validate_binding(Shader *shader) {
 
-  if (shader->device == NULL || shader->queue == NULL) {
-    logger_add(LoggerFlag_Error, "Shader has no device or queue.");
-    return SHADER_BIND_UNVALID;
-  }
-
   if (shader->bind_groups.length >= SHADER_MAX_BIND_GROUP) {
     logger_add(LoggerFlag_Error, "Bind group list at full capacity.");
     return SHADER_BIND_UNVALID;

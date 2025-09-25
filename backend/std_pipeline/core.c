@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "./render_shader/billboard/billboard.h"
+#include "./render_shader/blit/blit.h"
 #include "./render_shader/default/default.h"
 #include "./render_shader/glass_probe_grid/glass_probe_grid.h"
 #include "./render_shader/glass_probe_plane/glass_probe_plane.h"
@@ -15,11 +16,13 @@
 #include "./render_shader/skybox/skybox.h"
 #include "./render_shader/solid/solid.h"
 #include "./render_shader/unlit/unlit.h"
+#include "backend/context.h"
+#include "backend/logger.h"
 #include "backend/std_pipeline/compute_shader/kawase/kawase.h"
 #include "backend/std_pipeline/compute_shader/mipmap/mipmap.h"
+#include "backend/std_pipeline/render_shader/blit/blit.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/pipeline/set.h"
-#include "backend/logger.h"
 #include "webgpu/webgpu.h"
 
 // Global definitions
@@ -28,7 +31,7 @@ ComputePipeline g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT] = {0};
 
 static inline WGPUPipelineLayout shader_pipeline_state_object_create(
     const WGPUBindGroupLayoutDescriptor *const *, const size_t,
-    const WGPUDevice, WGPUBindGroupLayout *);
+    WGPUBindGroupLayout *);
 
 static const RenderPipelineStateObject
     *standard_render_layouts[RENDER_PIPELINE_TYPE_COUNT] = {
@@ -46,6 +49,7 @@ static const RenderPipelineStateObject
         [RenderPipelineType_GlassProbeGrid] = &layout_glass_probe_grid,
         [RenderPipelineType_GlassProbePlane] = &layout_glass_probe_plane,
         [RenderPipelineType_Reflection] = &layout_reflection,
+        [RenderPipelineType_Blit] = &layout_blit,
 };
 
 static const ComputePipelineStateObject
@@ -61,7 +65,7 @@ static const ComputePipelineStateObject
 
  */
 void standard_render_pipelines_init(
-    const WGPUDevice device, const RenderPipelineMultisampleCount multisample) {
+    const RenderPipelineMultisampleCount multisample) {
 
   logger_add(LoggerFlag_Process, "Initializing Standard Render Pipelines...");
 
@@ -72,7 +76,6 @@ void standard_render_pipelines_init(
 
     // create pipeline
     render_pipeline_create(cached_pipeline, &(RenderPipelineCreateDescriptor){
-                                                .device = device,
                                                 .label = layout->label,
                                                 .path = layout->shader_path,
                                                 .pso = layout,
@@ -81,7 +84,7 @@ void standard_render_pipelines_init(
     {
       /* ===  CHECK CUSTOM ATTRIBUTES (weak check) === */
       // vertex state
-      if (layout->pipeline_attributes.vertex_state.module != NULL)
+      if (layout->pipeline_attributes.vertex_state.entryPoint != NULL)
         render_pipeline_set_vertex(cached_pipeline,
                                    layout->pipeline_attributes.vertex_state);
 
@@ -98,7 +101,9 @@ void standard_render_pipelines_init(
 
       // stencil state
       if (layout->pipeline_attributes.stencil_state.format !=
-          WGPUTextureFormat_Undefined)
+              WGPUTextureFormat_Undefined ||
+          layout->pipeline_attributes.stencil_state.depthCompare !=
+              WGPUCompareFunction_Undefined)
         render_pipeline_set_stencil(cached_pipeline,
                                     layout->pipeline_attributes.stencil_state);
 
@@ -126,13 +131,13 @@ void standard_render_pipelines_init(
 
     // build layout based on bindgroup description
     WGPUPipelineLayout temp_layout = shader_pipeline_state_object_create(
-        layout->bind_groups, layout->bind_groups_count, device, NULL);
+        layout->bind_groups, layout->bind_groups_count, NULL);
 
     render_pipeline_build(cached_pipeline, &temp_layout);
   }
 }
 
-void standard_compute_pipelines_init(const WGPUDevice device) {
+void standard_compute_pipelines_init() {
 
   logger_add(LoggerFlag_Process, "Initializing Standard Compute Pipelines...");
 
@@ -143,7 +148,6 @@ void standard_compute_pipelines_init(const WGPUDevice device) {
 
     // create pipeline
     compute_pipeline_create(cached_pipeline, &(ComputePipelineCreateDescriptor){
-                                                 .device = device,
                                                  .label = layout->label,
                                                  .path = layout->shader_path,
                                                  .pso = layout,
@@ -151,7 +155,7 @@ void standard_compute_pipelines_init(const WGPUDevice device) {
 
     // build layout based on bindgroup description
     WGPUPipelineLayout temp_layout = shader_pipeline_state_object_create(
-        layout->bind_groups, layout->bind_groups_count, device, NULL);
+        layout->bind_groups, layout->bind_groups_count, NULL);
 
     compute_pipeline_build(cached_pipeline, &temp_layout);
   }
@@ -163,23 +167,24 @@ void standard_compute_pipelines_init(const WGPUDevice device) {
  */
 WGPUPipelineLayout shader_pipeline_state_object_create(
     const WGPUBindGroupLayoutDescriptor *const *bind_groups, const size_t count,
-    const WGPUDevice device, WGPUBindGroupLayout *outLayout) {
+    WGPUBindGroupLayout *outLayout) {
 
   const size_t layout_size = sizeof(WGPUBindGroupLayout) * count;
 
   WGPUBindGroupLayout *layouts = malloc(layout_size);
 
   for (size_t i = 0; i < count; i++)
-    layouts[i] = wgpuDeviceCreateBindGroupLayout(device, bind_groups[i]);
+    layouts[i] =
+        wgpuDeviceCreateBindGroupLayout(context_device(), bind_groups[i]);
 
   if (outLayout != NULL)
     memcpy(outLayout, layouts, layout_size);
 
-  WGPUPipelineLayout pipeline_layout =
-      wgpuDeviceCreatePipelineLayout(device, &(WGPUPipelineLayoutDescriptor){
-                                                 .bindGroupLayoutCount = count,
-                                                 .bindGroupLayouts = layouts,
-                                             });
+  WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
+      context_device(), &(WGPUPipelineLayoutDescriptor){
+                            .bindGroupLayoutCount = count,
+                            .bindGroupLayouts = layouts,
+                        });
 
   free(layouts);
   layouts = NULL;

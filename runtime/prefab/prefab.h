@@ -4,5 +4,4 @@
 #include "runtime/scene/scene.h"
 #include <webgpu/webgpu.h>
 
-
 #endif

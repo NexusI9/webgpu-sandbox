@@ -111,8 +111,6 @@ void scene_selection_mesh_shadow_transform(SceneSelectionTransform *desc) {
   if (desc->scene->renderer.draw.mode == SceneRendererDrawMode_Texture)
     shadow_map_draw_all(
         &(ShadowMapDrawAllDescriptor){
-            .device = scene_device(desc->scene),
-            .queue = scene_queue(desc->scene),
             .mesh_list =
                 scene_pipeline(desc->scene, ScenePipeline_Dynamic_LitShadow),
             .lights = &desc->scene->lights,

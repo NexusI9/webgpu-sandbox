@@ -4,32 +4,33 @@
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
+#include "backend/context.h"
+#include "backend/logger.h"
 #include "runtime/scene/environment/fog.h"
 #include "stdbool.h"
 #include "string.h"
-#include "backend/logger.h"
 
 typedef struct {
   void *data;
   size_t type_size;
 } UBOEntry;
 
-void ubo_init(UBOManager *ubo, WGPUQueue queue, const WGPUDevice device) {
-  
+void ubo_init(UBOManager *ubo) {
+
   logger_add(LoggerFlag_Process, "Initializing UBO Manager");
 
-  ubo->queue = queue;
   ubo->handle = wgpuDeviceCreateBuffer(
-      device, &(WGPUBufferDescriptor){
-                  .size = sizeof(UBOUniform),
-                  .mappedAtCreation = false,
-                  .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Uniform,
-                  .label = "UBO",
-              });
+      context_device(),
+      &(WGPUBufferDescriptor){
+          .size = sizeof(UBOUniform),
+          .mappedAtCreation = false,
+          .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Uniform,
+          .label = "UBO",
+      });
 }
 
 UBOStatus ubo_upload(UBOManager *ubo) {
-  wgpuQueueWriteBuffer(ubo->queue, ubo->handle, 0, &ubo->data,
+  wgpuQueueWriteBuffer(context_queue(), ubo->handle, 0, &ubo->data,
                        sizeof(UBOUniform));
   return UBOStatus_Success;
 }
@@ -43,8 +44,8 @@ UBOStatus ubo_field_entry(UBOManager *ubo, const UBOField field,
                           UBOEntry *endpoint) {
 
   if (field > UBO_FIELD_COUNT) {
-    logger_add(LoggerFlag_Warning, "Attempting to alter an out of bound UBO Field (%d).",
-                    field);
+    logger_add(LoggerFlag_Warning,
+               "Attempting to alter an out of bound UBO Field (%d).", field);
     return UBOStatus_OutOfBound;
   }
 
@@ -105,12 +106,13 @@ UBOStatus ubo_update_entry(UBOManager *ubo, const UBOField field, void *value) {
     memcpy(ubo_entry.data, value, ubo_entry.type_size);
     return UBOStatus_Success;
   } else {
-    logger_add(LoggerFlag_Warning, "UBO requested value for field %d returned NULL. This "
-                    "means that either "
-                    "you are attempting to reach and out of bound field index "
-                    "or that the lookup "
-                    "UBO hasn't a value for this field yet.",
-                    field);
+    logger_add(LoggerFlag_Warning,
+               "UBO requested value for field %d returned NULL. This "
+               "means that either "
+               "you are attempting to reach and out of bound field index "
+               "or that the lookup "
+               "UBO hasn't a value for this field yet.",
+               field);
     return UBOStatus_FieldValueUnfound;
   }
 }

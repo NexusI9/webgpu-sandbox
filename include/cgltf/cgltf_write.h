@@ -585,7 +585,6 @@ static void cgltf_write_buffer_view(cgltf_write_context* context, const cgltf_bu
 	cgltf_write_line(context, "}");
 }
 
-
 static void cgltf_write_buffer(cgltf_write_context* context, const cgltf_buffer* buffer)
 {
 	cgltf_write_line(context, "{");

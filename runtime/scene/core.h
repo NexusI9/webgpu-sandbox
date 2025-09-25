@@ -96,8 +96,7 @@ struct SceneEditorObject {
 typedef struct {
   Scene *scene;
   size_t target_list_index;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   Camera *camera;
   Viewport *viewport;
 } SEOCreateDescriptor;
@@ -226,7 +225,6 @@ typedef struct {
                       '-------> | 0x3e2baf |
                                 '----------'
 
-
    Render pass and Scene Mesh Lists work hand in hand.
    Meaning by pushing a mesh in a certain Scene Mesh List it will go through a
    predefined Renderer pipeline.
@@ -308,6 +306,7 @@ struct Scene {
 typedef struct {
   const ViewportCreateDescriptor *viewport;
   const SceneRendererCreateDescriptor *renderer;
+  const SceneEditorUIConfig *ui;
 } SceneCreateDescriptor;
 
 typedef void (*scene_draw_callback)(Scene *, WGPURenderPassEncoder *);
@@ -320,8 +319,6 @@ MeshList *scene_mesh_list(Scene *);
 
 // scene layer quick access
 MeshRefList *scene_layer_meshes(Scene *, const char *);
-WGPUQueue scene_queue(Scene *);
-WGPUDevice scene_device(Scene *);
 
 static inline MeshRefList *scene_pipeline(Scene *scene,
                                           const ScenePipeline pipeline) {

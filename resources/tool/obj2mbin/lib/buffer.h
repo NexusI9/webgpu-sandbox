@@ -11,7 +11,6 @@ typedef enum {
   MBINBufferStatus_AllocFail,
 } MBINBufferStatus;
 
-
 typedef struct {
   size_t capacity;
   size_t length;

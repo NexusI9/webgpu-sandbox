@@ -55,7 +55,6 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
     }
   }
 
-  
   grid->view = std_texture_view(TextureViewType_FloatCubeArray);
   probe_reflection_grid_update_boundbox(grid);
 }
@@ -76,12 +75,10 @@ void probe_reflection_grid_destroy(ProbeReflectionGrid *grid) {
 
 /*
 
-
  ▗▄▄▖▗▄▄▖ ▗▄▄▄▖▗▄▄▄     ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
 ▐▌   ▐▌ ▐▌  █  ▐▌  █    ▐▌     █  ▐▌     █
 ▐▌▝▜▌▐▛▀▚▖  █  ▐▌  █    ▐▌     █   ▝▀▚▖  █
 ▝▚▄▞▘▐▌ ▐▌▗▄█▄▖▐▙▄▄▀    ▐▙▄▄▖▗▄█▄▖▗▄▄▞▘  █
-
 
  */
 
@@ -90,8 +87,6 @@ probe_reflection_grid_list_create(ProbeReflectionGridList *list,
                                   const ProbeReflectionListDescriptor *desc) {
 
   return probe_reflection_list_create_core(&(ProbeReflectionCreateCore){
-      .device = desc->device,
-      .queue = desc->queue,
       .probe_list =
           &(ProbeReflectionCreateCoreList){
               .entries = (void *)&list->entries,
@@ -253,7 +248,6 @@ probe_reflection_grid_list_probe_count(ProbeReflectionGridList *grid_list) {
   return count;
 }
 
-
 void probe_reflection_grid_update_boundbox(ProbeReflectionGrid * grid){
 
   vec3 half;
@@ -261,6 +255,5 @@ void probe_reflection_grid_update_boundbox(ProbeReflectionGrid * grid){
 
   glm_vec3_add(grid->position, half, grid->boundbox.max);
   glm_vec3_sub(grid->position, half, grid->boundbox.min);
-  
-  
+
 }

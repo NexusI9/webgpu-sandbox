@@ -57,16 +57,12 @@ typedef enum {
 
 // Builder Pattern | Descriptor Pattern
 typedef struct {
-  WGPUDevice device;
-  WGPUQueue queue;
   VertexAttribute vertex;
   VertexIndex index;
   const char *name;
 } MeshCreateDescriptor;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
   Primitive *primitive;
   const char *name;
 } MeshCreatePrimitiveDescriptor;
@@ -95,10 +91,6 @@ struct Mesh {
   versor rotation_quat;
 
   SSBOSlot ssbo_slot;
-
-  // wgpu
-  WGPUDevice device;
-  WGPUQueue queue;
 
   // vertex data & buffer topology
   struct mesh_topology {
@@ -136,8 +128,7 @@ Mesh *mesh_child_get_by_id(Mesh *, size_t);
 
 // topology
 typedef MeshTopology (*mesh_get_topology_callback)(Mesh *);
-typedef int (*mesh_topology_create_callback)(MeshTopology *, MeshTopology *,
-                                             const WGPUDevice, const WGPUQueue);
+typedef int (*mesh_topology_create_callback)(MeshTopology *, MeshTopology *);
 
 MeshTopology mesh_topology_base(Mesh *);
 MeshTopology mesh_topology_wireframe(Mesh *);

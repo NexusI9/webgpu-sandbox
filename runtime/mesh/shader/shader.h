@@ -1,7 +1,6 @@
 #ifndef _MESH_SHADER_H_
 #define _MESH_SHADER_H_
 
-
 /**
    ============================= MATERIAL API ================================
 
@@ -31,12 +30,10 @@
       | Viewport  |---'                            '---> | Wireframe Shader |
       '-----------'                                      '------------------'
 
-
  */
 
 #include "core.h"
 #include "shadow.h"
 #include "texture.h"
-
 
 #endif

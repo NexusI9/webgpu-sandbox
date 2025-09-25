@@ -6,6 +6,9 @@
 #include "backend/ao_bake/core.h"
 #include "backend/clock.h"
 #include "backend/compute/core.h"
+#include "backend/context.h"
+#include "backend/logger.h"
+#include "backend/postfx/core.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
@@ -13,99 +16,46 @@
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "render_pass/draw.h"
-#include "runtime/html_event/core.h"
 #include "runtime/input/core.h"
 #include "runtime/texture/core.h"
-#include "backend/logger.h"
 #include "webgpu/webgpu.h"
-
-static void scene_renderer_resize(SceneRenderer *);
 
 static void scene_renderer_render(void *);
 
 static double scene_renderer_dpi(double);
 
-static inline WGPUSwapChain
-scene_renderer_create_swapchain(const SceneRenderer *);
-
 void scene_renderer_init(SceneRenderer *renderer,
                          const SceneRendererCreateDescriptor *rd) {
 
-  renderer->context.name = rd->name;
   renderer->background = rd->background;
   renderer->context.dpi = scene_renderer_dpi(rd->dpi);
 
   // create clock
   clock_create(&renderer->clock);
 
-  // set wgpu data
-  renderer->wgpu.instance = wgpuCreateInstance(NULL);
-  renderer->wgpu.device = emscripten_webgpu_get_device();
-  renderer->wgpu.queue = wgpuDeviceGetQueue(renderer->wgpu.device);
-  renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
-
-  // define context size
-  scene_renderer_resize(renderer);
-
   TIMER("AO Bake", {
     ao_bake_init(&renderer->texture.ambient_occlusion,
                  &(AOBakeInitDescriptor){
                      .size = AO_TEXTURE_RESOLUTION,
                      .layer_count = AO_LAYER_COUNT,
-                     .device = scene_renderer_device(renderer),
                  });
   });
-
-  // init resize event
-  emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, renderer,
-                                 false, scene_renderer_resize_callback);
 
   {
     // init various buffers
     compute_pass_init(&renderer->draw.compute_pass,
                       &(ComputePassDescriptor){
-                          .device = renderer->wgpu.device,
-                          .queue = renderer->wgpu.queue,
-                          .max_height = renderer->context.height,
-                          .max_width = renderer->context.width,
+                          .max_height = context_height(),
+                          .max_width = context_width(),
                       });
 
-    ubo_init(&renderer->ubo, scene_renderer_queue(renderer),
-             scene_renderer_device(renderer));
+    ubo_init(&renderer->ubo);
 
-    ssbo_init(&renderer->ssbo, scene_renderer_device(renderer),
-              scene_renderer_queue(renderer));
+    ssbo_init(&renderer->ssbo);
   }
 
   scene_renderer_add_draw_callback(renderer, ssbo_draw_callback,
                                    (void *)&renderer->ssbo);
-
-  TIMER("Fallback Textures", {
-    scene_renderer_init_fallback_textures(scene_renderer_device(renderer),
-                                          scene_renderer_queue(renderer));
-  });
-
-  TIMER("Standard Shaders", {
-    standard_render_pipelines_init(scene_renderer_device(renderer),
-                                   rd->multisampling_count);
-    standard_compute_pipelines_init(scene_renderer_device(renderer));
-  });
-
-  /*
-
-   Global Input & Event polling
-
-   TODO: Since renderer isn't high level anymore, put the below calls in a
-   more global object ("Context" ?)
-
- */
-
-  // init global HTML event manager with context
-  //  name (implicit)
-  html_event_init(rd->name);
-
-  // poll global input
-  input_listen();
 }
 
 /**
@@ -120,35 +70,6 @@ void scene_renderer_draw_layout_callback(void *data) {
   render_pass_list_draw(&renderer->draw.render_pass[mode]);
 }
 
-bool scene_renderer_resize_callback(int event_type,
-                                    const EmscriptenUiEvent *ui_event,
-                                    void *user_data) {
-  SceneRenderer *renderer = (SceneRenderer *)user_data;
-  scene_renderer_resize(renderer);
-  return 1;
-}
-
-void scene_renderer_resize(SceneRenderer *renderer) {
-  double w, h;
-
-  // retrieve canvas dimension
-  emscripten_get_element_css_size(renderer->context.name, &w, &h);
-
-  // define render resolution
-  renderer->context.width = (int)w * renderer->context.dpi;
-  renderer->context.height = (int)h * renderer->context.dpi;
-
-  // set canvas size
-  emscripten_set_element_css_size(renderer->context.name, w, h);
-
-  if (renderer->wgpu.swapchain) {
-    // wgpuSwapChainRelease(renderer->wgpu.swapchain);
-    // renderer->wgpu.swapchain = NULL;
-  }
-
-  renderer->wgpu.swapchain = scene_renderer_create_swapchain(renderer);
-}
-
 double scene_renderer_dpi(double value) {
   // request dpi
   if (value == SCENE_RENDERER_DPI_AUTO)
@@ -159,10 +80,6 @@ double scene_renderer_dpi(double value) {
 
 void scene_renderer_close(const SceneRenderer *renderer) {
   wgpuRenderPipelineRelease(renderer->wgpu.pipeline);
-  wgpuSwapChainRelease(renderer->wgpu.swapchain);
-  wgpuQueueRelease(renderer->wgpu.queue);
-  wgpuDeviceRelease(renderer->wgpu.device);
-  wgpuInstanceRelease(renderer->wgpu.instance);
 }
 
 /**
@@ -223,20 +140,6 @@ void scene_renderer_draw(SceneRenderer *renderer) {
 }
 
 // getters
-WGPUDevice scene_renderer_device(SceneRenderer *rd) { return rd->wgpu.device; }
-WGPUQueue scene_renderer_queue(SceneRenderer *rd) { return rd->wgpu.queue; }
-WGPUSwapChain scene_renderer_swapchain(SceneRenderer *rd) {
-  return rd->wgpu.swapchain;
-}
-int scene_renderer_width(const SceneRenderer *rd) { return rd->context.width; }
-int scene_renderer_height(const SceneRenderer *rd) {
-  return rd->context.height;
-}
-
-const char *scene_renderer_target(SceneRenderer *rd) {
-  return rd->context.name;
-}
-
 void scene_renderer_set_draw_mode(SceneRenderer *renderer,
                                   const SceneRendererDrawMode mode) {
   renderer->draw.mode = mode;
@@ -248,28 +151,6 @@ const SceneRendererDrawMode scene_renderer_draw_mode(SceneRenderer *renderer) {
 
 cclock *scene_renderer_clock(SceneRenderer *renderer) {
   return &renderer->clock;
-}
-
-WGPUSwapChain scene_renderer_create_swapchain(const SceneRenderer *renderer) {
-  WGPUSurface surface = wgpuInstanceCreateSurface(
-      renderer->wgpu.instance,
-      &(WGPUSurfaceDescriptor){
-          .nextInChain = (WGPUChainedStruct *)(&(
-              WGPUSurfaceDescriptorFromCanvasHTMLSelector){
-              .chain.sType = WGPUSType_SurfaceDescriptorFromCanvasHTMLSelector,
-              .selector = renderer->context.name,
-          }),
-      });
-
-  return wgpuDeviceCreateSwapChain(
-      renderer->wgpu.device, surface,
-      &(WGPUSwapChainDescriptor){
-          .usage = WGPUTextureUsage_RenderAttachment,
-          .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT,
-          .width = scene_renderer_width(renderer),
-          .height = scene_renderer_height(renderer),
-          .presentMode = WGPUPresentMode_Fifo,
-      });
 }
 
 SSBOManager *scene_renderer_ssbo(SceneRenderer *renderer) {

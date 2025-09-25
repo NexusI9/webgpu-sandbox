@@ -42,8 +42,6 @@ void seo_light_spot_create_common(SceneEditorObject *seo, SpotLight *light,
   // create gizmo mesh
   seo_create_billboard(icon->mesh, &(SEOCreateBillboardDescriptor){
                                        .texture_path = texture_path,
-                                       .device = desc->device,
-                                       .queue = desc->queue,
                                        .position = &light->position,
                                        .scale = &SEO_BILLBOARD_SCALE,
                                    });
@@ -82,14 +80,10 @@ void seo_light_spot_set_scale(SEOTransformCallback *desc) {}
 
 /**
 
-
-
     ▗▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▖ ▗▖ ▗▖
    ▐▌   ▐▌ ▐▌▐▌ ▐▌▐▌  █▐▌ ▐▌▐▌ ▐▌
     ▝▀▚▖▐▛▀▜▌▐▛▀▜▌▐▌  █▐▌ ▐▌▐▌ ▐▌
    ▗▄▄▞▘▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀▝▚▄▞▘▐▙█▟▌
-
-
 
  */
 void seo_light_spot_shadow_create(SceneEditorObject *seo, SpotLight *light,
@@ -127,8 +121,6 @@ void seo_light_spot_shadow_set_position(SEOTransformCallback *desc) {
         &(ShadowMapDrawSpotLightDescriptor){
             .light = light,
             .pass = &desc->seo->scene->lights.spot.shadow.pass,
-            .device = scene_device(desc->seo->scene),
-            .queue = scene_queue(desc->seo->scene),
             .texture_layer = desc->mesh->target_list_index,
             .command_encoder = NULL,
         },

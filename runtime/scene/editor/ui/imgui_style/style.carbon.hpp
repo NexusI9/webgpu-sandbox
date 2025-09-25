@@ -8,7 +8,6 @@
 inline void scene_editor_ui_style_carbon() {
   ImGuiStyle &style = ImGui::GetStyle();
 
-  //style.ScaleAllSizes(2.0f);
   //style.FontScaleDpi = 2.0f;
   style.FontScaleMain = 1.0f;
   style.Alpha = 1.0;
@@ -23,6 +22,8 @@ inline void scene_editor_ui_style_carbon() {
   style.ChildBorderSize = 0.0f;
   style.FrameBorderSize = 0.0f;
   style.PopupBorderSize = 0.0f;
+
+  style.ScaleAllSizes(2.0f);
 
   style.Colors[ImGuiCol_Text] =
       (ImVec4 &)*theme_default_color[THEME_DEFAULT_COLOR_TEXT_ON_DARK];

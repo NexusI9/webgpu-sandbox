@@ -1,126 +1,135 @@
 #include "core.h"
 
+#include <cglm/util.h>
 #include <stdint.h>
 #include <string.h>
-#include <cglm/util.h>
 
-#include "draw.h"
-#include "texture.h"
-#include "webgpu/webgpu.h"
 #include "backend/logger.h"
-#include "runtime/mesh/ref_list.h"
-#include "utils/dyli.h"
+#include "backend/postfx/core.h"
+#include "draw.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/ref_list.h"
 #include "runtime/pipeline/render.h"
+#include "texture.h"
+#include "utils/dyli.h"
 #include "utils/stli.h"
+#include "webgpu/webgpu.h"
 
 static inline void render_pass_draw_pass(RenderPass *, WGPUCommandEncoder);
 
 void render_pass_create(RenderPass *render_pass,
                         const RenderPassCreateDescriptor *desc) {
 
-  /*
+  {
+    // === assign core attributes ===
 
-    === assign core attributes ===
-
-    */
-  render_pass->label = strdup(desc->label);
-  render_pass->device = desc->device;
-  render_pass->queue = desc->queue;
-  render_pass->swapchain = desc->swapchain;
-  render_pass->multisample = desc->multisample;
-
-  /*
-
-    === assign draw callbacks ===
-
-   */
-
-  // on screen drawing
-  if (render_pass->swapchain) {
-    // define callback based on multisample
-    switch (desc->multisample) {
-
-    case PipelineMultisampleCount_4x:
-      render_pass->draw_callback = render_pass_draw_onscreen_multisample;
-      break;
-
-    case PipelineMultisampleCount_1x:
-    default:
-      render_pass->draw_callback = render_pass_draw_onscreen_monosample;
-      break;
-    }
-
-  } else {
-    // off screen rendering (common drawing method no matter the msaa)
-    render_pass->draw_callback = render_pass_draw_offscreen;
+    render_pass->label = strdup(desc->label);
+    render_pass->swapchain = desc->swapchain;
+    render_pass->multisample = desc->multisample;
   }
 
-  /*
+  {
+    // === assign draw callbacks ===
 
-     === create render textures ===
+    // on screen drawing
+    if (render_pass->swapchain) {
+      // define callback based on multisample
+      switch (desc->multisample) {
 
-   */
+      case PipelineMultisampleCount_4x:
+        render_pass->draw_callback = render_pass_draw_onscreen_multisample;
+        break;
 
-  RenderPassTextureDescriptor texture_config = {
-      .device = render_pass->device,
-      .height = desc->height,
-      .width = desc->width,
-      .multisample = render_pass->multisample,
-  };
+      case PipelineMultisampleCount_1x:
+      default:
+        render_pass->draw_callback = render_pass_draw_onscreen_monosample;
+        break;
+      }
 
-  if (desc->color) {
-    // assign color attributes
-    render_pass->color.texture = desc->color->texture;
-
-    WGPUTextureView *main_color_view = &render_pass->color.views[0];
-    if (desc->color->view == NULL &&
-        desc->multisample > PipelineMultisampleCount_1x) {
-      render_pass_create_multisampling_view(&render_pass->color.texture,
-                                            main_color_view, &texture_config);
     } else {
-      *main_color_view = desc->color->view;
+      // off screen rendering (common drawing method no matter the msaa)
+      render_pass->draw_callback = render_pass_draw_offscreen;
     }
+  }
 
-    render_pass->color.attachment = (WGPURenderPassColorAttachment){
-        .view = *main_color_view,
-        .clearValue = desc->color->clear_value,
-        .depthSlice = desc->color->depth_slice,
-        .loadOp = desc->color->load_op,
-        .storeOp = desc->color->store_op,
+  {
+    // === create render textures ===
+
+    RenderPassTextureDescriptor texture_config = {
+        .height = desc->height,
+        .width = desc->width,
+        .multisample = render_pass->multisample,
     };
 
-    render_pass->color.views_length = 1;
-  }
+    if (desc->color) {
+      // assign color attributes
+      render_pass->color.texture = desc->color->texture;
 
-  if (desc->depth) {
-    render_pass->depth.texture = desc->depth->texture;
+      WGPUTextureView *main_color_view = &render_pass->color.views[0];
 
-    WGPUTextureView *main_depth_view = &render_pass->depth.views[0];
-    if (desc->depth->view == NULL) {
-      render_pass_create_depth_view(&render_pass->depth.texture,
-                                    main_depth_view, &texture_config);
-    } else {
-      *main_depth_view = desc->depth->view;
+      if (desc->color->view == NULL) {
+
+        render_pass_create_resolve_view(&render_pass->resolve_texture,
+                                        &render_pass->resolve_view,
+                                        &texture_config);
+
+        if (desc->multisample > PipelineMultisampleCount_1x) {
+
+          render_pass_create_multisampling_view(&render_pass->msaa_texture,
+                                                &render_pass->msaa_view,
+                                                &texture_config);
+
+          render_pass->color.texture = render_pass->msaa_texture;
+          *main_color_view = render_pass->msaa_view;
+        }
+      } else {
+        *main_color_view = desc->color->view;
+      }
+
+      render_pass->color.attachment = (WGPURenderPassColorAttachment){
+          .view = *main_color_view,
+          .clearValue = desc->color->clear_value,
+          .depthSlice = desc->color->depth_slice,
+          .loadOp = desc->color->load_op,
+          .storeOp = desc->color->store_op,
+      };
+
+      render_pass->color.views_length = 1;
+
+      post_fx_init(&render_pass->post_fx, &(PostFxDescriptor){
+                                          });
+
+      if (render_pass->swapchain) { // onscreen blit effect
+        post_fx_bind_texture_view(&render_pass->post_fx, PostFxType_Blit,
+                                  render_pass->resolve_view);
+	render_pass->color.attachment.resolveTarget = render_pass->resolve_view;
+      }
     }
 
-    // assign depth
-    render_pass->depth.attachment = (WGPURenderPassDepthStencilAttachment){
-        .view = *main_depth_view,
-        .depthClearValue = desc->depth->clear_value,
-        .depthReadOnly = desc->depth->read_only,
-        .depthLoadOp = desc->depth->load_op,
-        .depthStoreOp = desc->depth->store_op,
-    };
+    if (desc->depth) {
+      render_pass->depth.texture = desc->depth->texture;
 
-    render_pass->depth.views_length = 1;
+      WGPUTextureView *main_depth_view = &render_pass->depth.views[0];
+      if (desc->depth->view == NULL) {
+        render_pass_create_depth_view(&render_pass->depth.texture,
+                                      main_depth_view, &texture_config);
+      } else {
+        *main_depth_view = desc->depth->view;
+      }
+
+      // assign depth
+      render_pass->depth.attachment = (WGPURenderPassDepthStencilAttachment){
+          .view = *main_depth_view,
+          .depthClearValue = desc->depth->clear_value,
+          .depthReadOnly = desc->depth->read_only,
+          .depthLoadOp = desc->depth->load_op,
+          .depthStoreOp = desc->depth->store_op,
+      };
+
+      render_pass->depth.views_length = 1;
+    }
   }
 
-  /*
-
-    === copy draw list ===
-
-   */
   if (desc->draw_list)
     render_pass_draw_list_copy(desc->draw_list, &render_pass->draw_list);
 }
@@ -128,8 +137,6 @@ void render_pass_create(RenderPass *render_pass,
 void render_pass_list_create(RenderPassList *list,
                              const RenderPassListCreate *desc) {
   list->length = 0;
-  list->device = desc->device;
-  list->queue = desc->queue;
   list->swapchain = desc->swapchain;
 
   if (list->swapchain)
@@ -137,26 +144,17 @@ void render_pass_list_create(RenderPassList *list,
   else
     list->draw_callback = render_pass_list_draw_offscreen;
 
-  if (desc->multisample > PipelineMultisampleCount_1x) {
-    render_pass_create_multisampling_view(&list->resolve_texture,
-                                          &list->resolve_view,
-                                          &(RenderPassTextureDescriptor){
-                                              .device = list->device,
-                                              .height = desc->height,
-                                              .width = desc->width,
-                                              .multisample = desc->multisample,
-                                          });
-    if (list->swapchain)
-      list->draw_callback = render_pass_list_draw_onscreen_multisample;
-  }
+  if (desc->multisample > PipelineMultisampleCount_1x && list->swapchain)
+    list->draw_callback = render_pass_list_draw_onscreen_multisample;
 }
 
 void render_pass_list_insert_pass(RenderPassList *list,
                                   const RenderPassListInsert *desc) {
 
   if (list->length == RENDER_PASS_MAX_DRAW_LIST) {
-    logger_add(LoggerFlag_Warning, "Render pass list reached maxed capacity (%d)",
-                    RENDER_PASS_MAX_DRAW_LIST);
+    logger_add(LoggerFlag_Warning,
+               "Render pass list reached maxed capacity (%d)",
+               RENDER_PASS_MAX_DRAW_LIST);
     return;
   }
 
@@ -171,8 +169,6 @@ void render_pass_list_insert_pass(RenderPassList *list,
                          .multisample = desc->multisample,
 
                          // list inherited properties
-                         .device = list->device,
-                         .queue = list->queue,
                          .swapchain = list->swapchain,
                      });
 }
@@ -231,9 +227,10 @@ RenderPassStatus render_pass_update_preprocessor_data(RenderPass *pass,
                                                       uint8_t index,
                                                       void *data) {
   if (index > pass->draw_list.length) {
-    logger_add(LoggerFlag_Warning, "Trying to update an out of bound (%d) render pass "
-                    "preprocessor data. Target render pass has %lu draw lists.",
-                    index, pass->draw_list.length);
+    logger_add(LoggerFlag_Warning,
+               "Trying to update an out of bound (%d) render pass "
+               "preprocessor data. Target render pass has %lu draw lists.",
+               index, pass->draw_list.length);
     return RenderPassStatus_OutOfBoundDrawIndex;
   }
 

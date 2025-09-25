@@ -1,9 +1,10 @@
 #include "ao.h"
 
 #include "backend/ao_bake/core.h"
+#include "backend/context.h"
+#include "runtime/scene/core.h"
 #include "runtime/scene/renderer/core.h"
 #include "utils/color.h"
-#include "runtime/scene/core.h"
 
 void example_ao(Scene *scene, bool debug) {
 
@@ -20,8 +21,6 @@ void example_ao(Scene *scene, bool debug) {
   ao_bake_draw_list(
       &scene->renderer.texture.ambient_occlusion,
       &(AOBakeDrawDescriptor){
-          .queue = scene_renderer_queue(&scene->renderer),
-          .device = scene_renderer_device(&scene->renderer),
           .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
           .global =
               {

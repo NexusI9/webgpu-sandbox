@@ -1,12 +1,13 @@
 #ifndef _RENDER_PASS_CORE_H_
 #define _RENDER_PASS_CORE_H_
-#include <webgpu/webgpu.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <webgpu/webgpu.h>
 
-#include "runtime/mesh/mesh.h"
+#include "backend/postfx/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/mesh.h"
 #include "runtime/pipeline/render.h"
 #include "utils/stli.h"
 
@@ -84,8 +85,7 @@ typedef struct {
 */
 struct RenderPass {
   const char *label;
-  WGPUDevice device;
-  WGPUQueue queue;
+
   RenderPassColor color;
   RenderPassDepth depth;
   RenderPipelineMultisampleCount multisample;
@@ -93,14 +93,16 @@ struct RenderPass {
   RenderPassDrawList draw_list;
   render_pass_draw_callback draw_callback;
   WGPUCommandEncoder command_encoder;
+  PostFx post_fx;
+  WGPUTextureView resolve_view;
+  WGPUTexture resolve_texture;
+  WGPUTextureView msaa_view;
+  WGPUTexture msaa_texture;
 };
 
 struct RenderPassList {
-  WGPUDevice device;
-  WGPUQueue queue;
+
   WGPUSwapChain swapchain;
-  WGPUTextureView resolve_view;
-  WGPUTexture resolve_texture;
   RenderPass passes[RENDER_PASS_MAX_DRAW_LIST];
   size_t length;
   render_pass_list_draw_callback draw_callback;
@@ -110,7 +112,7 @@ typedef struct {
   const int width;
   const int height;
   const RenderPipelineMultisampleCount multisample;
-  const WGPUDevice device;
+  
 } RenderPassTextureDescriptor;
 
 typedef struct {
@@ -136,8 +138,7 @@ typedef struct {
   RenderPassColorAttachment *color;
   RenderPassDepthAttachment *depth;
   WGPUSwapChain swapchain;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   int width;
   int height;
   RenderPipelineMultisampleCount multisample;
@@ -156,8 +157,7 @@ typedef struct {
 
 typedef struct {
   const char *label;
-  WGPUDevice device;
-  WGPUQueue queue;
+
   WGPUSwapChain swapchain;
   int width;
   int height;
@@ -165,8 +165,7 @@ typedef struct {
 } RenderPassListCreate;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
 } RenderPassDrawDescriptor;
 
 struct RenderPassDrawOptions {

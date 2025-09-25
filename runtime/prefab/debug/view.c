@@ -26,8 +26,6 @@ void debug_view_create(DebugView *debug_view,
                        const DebugViewCreateDescriptor *desc) {
   debug_view->length = 0;
   debug_view->capacity = VIEW_MAX_CAPACITY;
-  debug_view->device = desc->device;
-  debug_view->queue = desc->queue;
 }
 
 void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
@@ -44,8 +42,6 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   mesh_create_primitive(new_view, &(MeshCreatePrimitiveDescriptor){
                                       .primitive = &plane,
-                                      .device = debug_view->device,
-                                      .queue = debug_view->queue,
                                       .name = "debug view",
                                   });
 
@@ -55,8 +51,6 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
                                .pipeline = std_render_pipeline(RenderPipelineType_Screen),
                                .name = "Debug view billboard shader",
                                .label = "Debug view billboard shader",
-                               .device = debug_view->device,
-                               .queue = debug_view->queue,
                            });
 
   mesh_set_scale(new_view, (vec3){view->size[0], 1.0f, view->size[1]});

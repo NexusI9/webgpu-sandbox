@@ -18,8 +18,6 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .name = "grid",
-                                  .queue = gd->queue,
-                                  .device = gd->device,
                                   .primitive = &plane,
                               });
 
@@ -28,8 +26,6 @@ void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                                .pipeline = std_render_pipeline(RenderPipelineType_Grid),
                                .label = "grid",
                                .name = "grid",
-                               .device = gd->device,
-                               .queue = gd->queue,
                            });
 
   mesh_set_scale(mesh, (vec3){

@@ -38,7 +38,7 @@ void mesh_update_model_matrix(Mesh *mesh) {
 
   // update topologies
   mesh_topology_boundbox_update(&mesh->topology.base, mesh->model,
-                                &mesh->topology.boundbox, mesh->queue);
+                                &mesh->topology.boundbox);
 
   // Automatically updated via trigger/callback model
   // See ./runtime/scene/event/event.h for more info

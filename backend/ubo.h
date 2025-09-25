@@ -32,7 +32,6 @@ typedef enum {
   UBOField_Fog
 } UBOField;
 
-
 typedef struct {
   LightCountUniform light_count;
   ProbeCountUniform probe_count;
@@ -42,10 +41,10 @@ typedef struct {
 typedef struct {
   UBOUniform data;
   WGPUBuffer handle;
-  WGPUQueue queue;
+  
 } UBOManager;
 
-void ubo_init(UBOManager *, WGPUQueue, const WGPUDevice);
+void ubo_init(UBOManager *);
 
 UBOStatus ubo_update_entry(UBOManager *, const UBOField, void *);
 

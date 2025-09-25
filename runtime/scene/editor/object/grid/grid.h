@@ -21,16 +21,12 @@ typedef struct {
 typedef struct {
 
   GizmoGridUniform uniform;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
 } GizmoGridCreateDescriptor;
 
 typedef struct {
 
   GizmoGridUniform uniform;
-
-  const WGPUDevice device;
-  const WGPUQueue queue;
 
   Camera *camera;
   Viewport *viewport;

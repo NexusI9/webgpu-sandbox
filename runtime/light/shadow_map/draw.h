@@ -18,15 +18,13 @@
 #include "runtime/scene/renderer/render_pass/core.h"
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   MeshRefList *mesh_list;
   LightList *lights;
 } ShadowMapDrawAllDescriptor;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const WGPUCommandEncoder command_encoder;
   PointLight *light;
   const size_t texture_layer;
@@ -39,8 +37,7 @@ typedef struct {
 } ShadowMapDebug;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const WGPUCommandEncoder command_encoder;
   SunLight *light;
   const size_t texture_layer;
@@ -48,8 +45,7 @@ typedef struct {
 } ShadowMapDrawSunLightDescriptor;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const WGPUCommandEncoder command_encoder;
   SpotLight *light;
   const size_t texture_layer;
@@ -57,8 +53,7 @@ typedef struct {
 } ShadowMapDrawSpotLightDescriptor;
 
 typedef struct {
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const WGPUCommandEncoder command_encoder;
   Projection *views;
   const size_t texture_layer;
@@ -71,8 +66,7 @@ typedef struct {
   RenderPass *pass;
   const uint32_t texture_layer;
   const ssbo_id_t ssbo_offset;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   WGPUCommandEncoder command_encoder;
   const RenderPipeline *pipeline;
 } ShadowMapDrawDescriptor;

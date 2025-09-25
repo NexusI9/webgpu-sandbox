@@ -14,8 +14,7 @@
 typedef struct {
   vec3 *position;
   vec3 *scale;
-  const WGPUDevice device;
-  const WGPUQueue queue;
+
   const char *label;
   const char *texture_path;
 } SEOCreateBillboardDescriptor;

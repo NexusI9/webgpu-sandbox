@@ -13,8 +13,6 @@
 void scene_debug_ray_create(SceneDebug *debug, Mesh **line) {
   *line = mesh_list_new_mesh(debug->pool);
   line_create(*line, &(LineCreateDescriptor){
-                         .device = debug->device,
-                         .queue = debug->queue,
                          .name = "Debug line mesh",
                      });
 

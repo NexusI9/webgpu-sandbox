@@ -16,8 +16,6 @@ typedef uint32_t mip_t;
 
 typedef struct {
   WGPUTexture texture;
-  const WGPUDevice device;
-  const WGPUQueue queue;
   const size_t layer_count;
 } MipmapDescriptor;
 
