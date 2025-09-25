@@ -6,6 +6,7 @@
 #include "backend/ssbo.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
 #include "runtime/scene/show.h"
@@ -32,8 +33,7 @@ void scene_gizmo_hide(Scene *scene) {
       scene_pipeline(scene, ScenePipeline_Fixed_Front));
 
   if (layout)
-    render_pass_layout_disable_mesh_ref_list(
-        layout, &gizmo->interactive_handles[gizmo->mode]);
+    render_pass_layout_disable_all_mesh(layout);
 }
 
 /**
@@ -41,6 +41,7 @@ void scene_gizmo_hide(Scene *scene) {
  */
 void scene_gizmo_pos_to_selection(Gizmo *gizmo, SceneSelection *selection,
                                   SSBOManager *ssbo) {
+
   // get average position
   vec3 position;
   scene_selection_average_position(selection, &position);
