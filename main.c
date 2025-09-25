@@ -59,8 +59,8 @@ int main(int argc, const char *argv[]) {
                            .dpi = 2.0,
                        },
                });
-  
-  scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Solid);
+
+  scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Texture);
 
   example_light(&main_scene);
   example_skybox(&main_scene);
@@ -69,7 +69,7 @@ int main(int argc, const char *argv[]) {
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);
   // example_glass_probe_grid(&main_scene, false);
-  // example_glass_probe_plane(&main_scene, false);
+  example_glass_probe_plane(&main_scene, false);
 
   // add gizmo camera
   /*GizmoCamera *new_cam =

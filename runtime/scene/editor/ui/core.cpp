@@ -165,9 +165,9 @@ void scene_editor_ui_draw_callback(void *data) {
     io.DisplaySize.x = (float)context_width() * ui->dpi;
     io.DisplaySize.y = (float)context_height() * ui->dpi;
     io.DeltaTime = ui->clock->delta;
-    io.FontGlobalScale = 2.0f;
+    io.FontGlobalScale = ui->dpi;
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-    io.MousePos = ImVec2(g_input.mouse.x, g_input.mouse.y);
+    io.MousePos = ImVec2(g_input.mouse.x * ui->dpi, g_input.mouse.y * ui->dpi);
     io.MouseDown[0] = g_input.mouse.state;
     io.MouseWheel = g_input.mouse.wheel.deltaX;
   }
