@@ -47,7 +47,7 @@ void example_light(Scene *scene) {
                           &(AmbientLightDescriptor){
                               .color = {1.0f, 1.0f, 1.0f},
                               .intensity = 0.2f,
-                              .position = {-2.0f, 1.0f, 0.3f},
+                              .position = {-2.0f, 3.0f, 3.3f},
                           },
                           NULL);
 }
