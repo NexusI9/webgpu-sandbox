@@ -1,30 +1,26 @@
 #ifndef _MESH_CORE_H_
 #define _MESH_CORE_H_
 
+#include <cglm/types.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <cglm/types.h>
 
 #include "backend/registry.h"
 #include "backend/ssbo.h"
+#include "runtime/geometry/vertex/attribute.h"
+#include "runtime/geometry/vertex/index.h"
 #include "runtime/geometry/vertex/vertex.h"
+#include "runtime/primitive/core.h"
 #include "runtime/primitive/primitive.h"
+#include "runtime/shader/core.h"
 #include "runtime/shader/shader.h"
+#include "topology/base.h"
 #include "topology/boundbox.h"
 #include "topology/core.h"
 #include "topology/topology.h"
-#include "webgpu/webgpu.h"
-#include "runtime/geometry/vertex/attribute.h"
-#include "runtime/geometry/vertex/index.h"
-#include "runtime/primitive/core.h"
-#include "runtime/shader/core.h"
-#include "utils/dyli.h"
-#include "topology/base.h"
 #include "topology/wireframe.h"
-#include "runtime/geometry/vertex/attribute.h"
-#include "runtime/geometry/vertex/index.h"
-#include "runtime/primitive/core.h"
-#include "runtime/shader/core.h"
+#include "utils/dyli.h"
+#include "webgpu/webgpu.h"
 
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
@@ -36,6 +32,7 @@ typedef struct Mesh Mesh;
 typedef enum {
   MeshStatus_Success,
   MeshStatus_AllocFail,
+  MeshStatus_InvalidShaderIndex,
   MeshStatus_AlreadyCreated,
   MeshStatus_UndefError,
 } MeshStatus;
@@ -48,12 +45,12 @@ typedef struct {
 
 typedef enum {
   MeshShader_Texture,
+  MeshShader_Fixed,
   MeshShader_Shadow,
   MeshShader_Reflection,
   MeshShader_Solid,
   MeshShader_Wireframe,
   MeshShader_Outline,
-  MeshShader_Fixed,
 } MeshShader;
 
 // Builder Pattern | Descriptor Pattern

@@ -17,6 +17,7 @@
 #include "runtime/mesh/topology/core.h"
 #include "runtime/mesh/topology/wireframe.h"
 #include "runtime/pipeline/render.h"
+#include "utils/math.h"
 
 typedef void (*scene_builder_callback)(Scene *, Mesh *, const RenderPipeline *);
 
@@ -159,7 +160,7 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
         scene->lights.spot.shadow.pass.depth.attachment.view);
 
     // create mesh shadow shader
-    mesh_shader_create_shadow(mesh);
+    mesh_shader_create_standard(mesh, MeshShader_Shadow);
     mesh_shader_build_mp(mesh, MeshShader_Shadow, ssbo,
                          SSBOType_ViewProjection);
   }
@@ -181,7 +182,7 @@ void scene_build_mesh_solid(Scene *scene, Mesh *mesh,
                                        &mesh->topology.boundbox);
 
   // create meshes' solid shader
-  mesh_shader_create_solid(mesh);
+  mesh_shader_create_standard(mesh, MeshShader_Solid);
 
   // bind views
   mesh_shader_build_mvp(mesh, MeshShader_Solid, &scene->renderer.ssbo);
@@ -215,7 +216,7 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
   // we need to add this extra precaution here.
   // Finally, when we switch from the current "boundbox" selection highlight to
   // the "outline" based one we should be able to remove this extra condition
-  if (mesh_shader_create_wireframe(mesh) == MeshStatus_Success)
+  if (mesh_shader_create_standard(mesh, MeshShader_Wireframe) == MeshStatus_Success)
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
 }
 
@@ -235,8 +236,14 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
   mesh_topology_boundbox_create(&mesh->topology.base, mesh->model, dest_topo);
 
   // create meshes' wireframe shader
-  if (mesh_shader_create_wireframe(mesh) == MeshStatus_Success)
+  if (mesh_shader_create_standard(mesh, MeshShader_Wireframe) == MeshStatus_Success) {
+    
+    // set wireframe random color
+    shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 0,
+                               &(color){randf(), randf(), randf(), 1.0f});
+    
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
+  }
 }
 
 /**

@@ -10,7 +10,6 @@
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "utils/color.h"
-#include "utils/math.h"
 
 /**
    ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
@@ -29,99 +28,67 @@ Shader *mesh_shader(Mesh *mesh, const MeshShader shader) {
   return &mesh->shader.standard[shader];
 }
 
+// Standard shaders automatically created on mesh creation and based on render
+// draw mode (solid/ wireframe...)
+static const struct {
+  const char *name;
+  const RenderPipelineType pipeline_type;
+} standard_shader_map[] = {
+    [MeshShader_Shadow] =
+        {
+            .name = "Mesh Std Shader - Shadow",
+            .pipeline_type = RenderPipelineType_Shadow,
+        },
+    [MeshShader_Solid] =
+        {
+            .name = "Mesh Std Shader - Solid",
+            .pipeline_type = RenderPipelineType_Solid,
+        },
+    [MeshShader_Wireframe] =
+        {
+            .name = "Mesh Std Shader - Wireframe",
+            .pipeline_type = RenderPipelineType_Line,
+        },
+    [MeshShader_Outline] =
+        {
+            .name = "Mesh Std Shader - Outline",
+            .pipeline_type = RenderPipelineType_Outline,
+        },
+};
+
 /**
-   Init mesh shadow shader.
-   By default all mesh have a shadow shader to generate shadow map
-   during the bind light process we will generate the depth map since that's
-   where we get out scene lights.
-
-   The init shadow shader doesn't belong to the material API as it is a
-   necessary component set by default on mesh creation.
+   Init mesh standard shader.
+   By default all dynamic meshes have a outline/shadow/solid shader to generate
+   shadow map during the bind light process we will generate the depth map since
+   that's where we get out scene lights.
  */
-MeshStatus mesh_shader_create_shadow(Mesh *mesh) {
+MeshStatus mesh_shader_create_standard(Mesh *mesh,
+                                       const MeshShader shader_type) {
 
-  // import shadow shader
-  Shader *shadow_shader = mesh_shader(mesh, MeshShader_Shadow);
+  if (shader_type < 2 || shader_type > MESH_STD_SHADER_COUNT) {
+    logger_add(
+        LoggerFlag_Warning,
+        "Attempting to create a standard mesh shader for '%s' with an invalid "
+        "index (%d)",
+        mesh->name, shader_type);
+    return MeshStatus_InvalidShaderIndex;
+  }
 
-  if (shadow_shader->name != NULL) {
+  Shader *shader = mesh_shader(mesh, shader_type);
+
+  if (shader->name != NULL) {
     logger_add(
         LoggerFlag_Info,
-        "Shadow shader for '%s' is already created, skip shader creation.",
-        mesh->name);
+        "Shader '%s' for mesh '%s' is already created, skip shader creation.",
+        standard_shader_map[shader_type].name, mesh->name);
     return MeshStatus_AlreadyCreated;
   }
 
-  shader_create(shadow_shader,
-                &(ShaderCreateDescriptor){
-                    .pipeline = std_render_pipeline(RenderPipelineType_Shadow),
-                    .name = "Mesh shadow shader",
-                });
-
-  return MeshStatus_Success;
-}
-
-/**
-   Initialize Wireframe shader.
-   Wireframe use a second vertex and index buffer (buffer.wireframe), since
-   wireframe require to draw lines for each edges, however lines are basically
-   rendered as very thin quads, which requires to duplicate each vertex once.
-
-   The init wireframe shader doesn't belong to the material API as it is a
-   necessary component set by default on mesh creation.
-
-   Overall process:
-     1. Isolate unique edges
-     2. Create lines for each pair
-     3. Upload data to GPU buffer
-     4. Create wireframe shader
- */
-MeshStatus mesh_shader_create_wireframe(Mesh *mesh) {
-
-  Shader *wireframe_shader = mesh_shader(mesh, MeshShader_Wireframe);
-
-  // skip if already created
-  if (wireframe_shader->name != NULL) {
-    logger_add(
-        LoggerFlag_Info,
-        "Wireframe shader for '%s' is already created, skip shader creation.",
-        mesh->name);
-    return MeshStatus_AlreadyCreated;
-  }
-
-  // create shader
-  shader_create(wireframe_shader,
-                &(ShaderCreateDescriptor){
-                    .pipeline = std_render_pipeline(RenderPipelineType_Line),
-                    .name = "Mesh wireframe shader",
-                });
-
-  shader_update_uniform_data(wireframe_shader, 1, 0,
-                             &(color){randf(), randf(), randf(), 1.0f});
-
-  return MeshStatus_Success;
-}
-
-/**
-   Initialize solid shader
- */
-MeshStatus mesh_shader_create_solid(Mesh *mesh) {
-
-  Shader *solid_shader = mesh_shader(mesh, MeshShader_Solid);
-
-  if (solid_shader->name != NULL) {
-    logger_add(
-        LoggerFlag_Info,
-        "Solid shader for '%s' is already created, skip shader creation.",
-        mesh->name);
-    return MeshStatus_AlreadyCreated;
-  }
-
-  // create shader
-  shader_create(solid_shader,
-                &(ShaderCreateDescriptor){
-                    .pipeline = std_render_pipeline(RenderPipelineType_Solid),
-                    .name = "Mesh solid shader",
-                });
+  shader_create(shader, &(ShaderCreateDescriptor){
+                            .pipeline = std_render_pipeline(
+                                standard_shader_map[shader_type].pipeline_type),
+                            .name = standard_shader_map[shader_type].name,
+                        });
 
   return MeshStatus_Success;
 }

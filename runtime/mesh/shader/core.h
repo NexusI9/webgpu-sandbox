@@ -14,10 +14,6 @@ MeshStatus mesh_shader_create_fixed(Mesh *, const ShaderCreateDescriptor *);
 
 /* builtins */
 MeshStatus mesh_shader_create_standard(Mesh *, const MeshShader);
-MeshStatus mesh_shader_create_shadow(Mesh *);
-MeshStatus mesh_shader_create_wireframe(Mesh *);
-MeshStatus mesh_shader_create_solid(Mesh *);
-MeshStatus mesh_shader_create_outline(Mesh *);
 
 Shader *mesh_shader(Mesh *, const MeshShader);
 
