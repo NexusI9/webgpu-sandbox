@@ -5,6 +5,7 @@
 #include <emscripten/html5.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "./callback/key.h"
 #include "./callback/mouse.h"
@@ -117,9 +118,6 @@ void scene_selection_init_filters(Scene *scene) {
                 &filter->selection.length, sizeof(SceneSelectionObject),
                 MESH_REF_LIST_CAPACITY, "Scene Selection Object List");
 
-    // DEBUG
-    printf("[%d] %p | %lu | %lu\n", i, filter->meshes.entries,
-           filter->meshes.capacity, filter->meshes.length);
   }
 }
 
@@ -264,7 +262,8 @@ void scene_selection_clear_initial_attributes(SceneSelection *selection) {
    - Scene Editor Objects (SEO)
  */
 void scene_selection_add_mesh(SceneSelection *selection, Mesh *mesh,
-                              void *extra, const SceneSelectionType type) {
+                              scene_selection_target_t extra,
+                              const SceneSelectionType type) {
 
   // insert mesh to selection meshes
   mesh_ref_list_insert(&selection->filters[type].meshes, mesh);
@@ -272,9 +271,12 @@ void scene_selection_add_mesh(SceneSelection *selection, Mesh *mesh,
   // push extra
   SceneSelectionTargetList *target_list = &selection->filters[type].targets;
 
-  dyli_insert((void *)&target_list->entries, &target_list->capacity,
-              &target_list->length, sizeof(scene_selection_target_t),
-              (void *)&extra, 1, "Scene Selection Target");
+  scene_selection_target_t target =
+      extra != NULL ? extra : &(scene_selection_target_t){0};
+
+
+  scene_selection_target_list_insert(target_list, target);
+
 }
 
 void scene_selection_add_mesh_ref_list(SceneSelection *selection,

@@ -42,7 +42,7 @@ void scene_selection_filter_set_all_active(SceneSelectionFilter *filter) {
   for (size_t i = 0; i < filter->meshes.length; i++) {
     Mesh *mesh = filter->meshes.entries[i];
     scene_selection_filter_selection_add_mesh(filter, mesh, &i);
-  }
+  } 
 
   if (filter->highlight_callback)
     filter->highlight_callback(&filter->meshes, &filter->selection,

@@ -85,10 +85,12 @@ typedef struct {
 } SceneEditorObjectMeshList;
 
 struct SceneEditorObject {
-  // parent scene pointer
+  // Parent scene pointer
   Scene *scene;
+  // SEO visual representation, basically a collection of meshes with their
+  // decdicated transform callback, a target.
   SceneEditorObjectMeshList meshes;
-  // origin mesh from which all sub meshes transformation will
+  // Origin mesh from which all sub meshes transformation will
   // depend
   Mesh *origin;
 };

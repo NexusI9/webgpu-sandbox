@@ -60,9 +60,6 @@ void render_pass_command_draw(RenderPass *pass,
       // draw mesh with layout callbacks
       for (size_t k = 0; k < meshes->length; k++) {
         Mesh *mesh = meshes->entries[k];
-        // DEBUG
-        // printf("drawing: %s | index buffer: %p\n", mesh->name,
-        //       mesh->topology.base.index.buffer);
 
         if (mesh_preprocessor)
           mesh_preprocessor(pass, mesh, list->mesh_preprocessor_data);

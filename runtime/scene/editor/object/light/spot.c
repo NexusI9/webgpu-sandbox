@@ -4,6 +4,8 @@
 #include <stddef.h>
 
 #include "backend/ssbo.h"
+#include "runtime/light/core.h"
+#include "runtime/light/list.h"
 #include "runtime/light/shadow_map/draw.h"
 #include "runtime/light/uniform.h"
 #include "runtime/mesh/transform.h"
@@ -14,8 +16,6 @@
 #include "runtime/scene/editor/object/list/list.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/renderer/core.h"
-#include "runtime/light/core.h"
-#include "runtime/light/list.h"
 
 static inline void seo_light_spot_create_common(SceneEditorObject *,
                                                 SpotLight *,

@@ -210,7 +210,7 @@ void scene_selection_raycast_mesh_callback(
         scene_selection_filter_find_mesh(selection, hit->mesh);
 
     if (filter != NULL) {
-
+   
       SceneSelectionObjectList *filter_selection = &filter->selection;
 
       // cap + right click : remove selection if exist, add if not

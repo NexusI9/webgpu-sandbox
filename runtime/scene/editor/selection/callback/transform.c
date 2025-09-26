@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "backend/logger.h"
 #include "backend/ssbo.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/light/shadow_map/draw.h"
@@ -172,7 +173,8 @@ void scene_selection_seo_transform(SceneSelectionTransform *desc) {
 
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
     Mesh *mesh = desc->selection->entries[i].mesh;
-    SceneEditorObject *seo = (SceneEditorObject *)desc->selection->entries[i].target;
+    SceneEditorObject *seo =
+        (SceneEditorObject *)desc->selection->entries[i].target;
 
     /* For now each SEO mesh has its own entry
      However the selection only works with a flat array of mesh, thus we need
@@ -182,9 +184,10 @@ void scene_selection_seo_transform(SceneSelectionTransform *desc) {
      provides for sure more flexbility for more complex SEO, so it's been
      decided to keep it for now. However if after implementing more complex SEO
      (like target spot lights, camera look at target) it proves to not really be
-     necessary then it's possible to implement back to a more simple/ "per seo"
+     necessary, then it's possible to implement back to a more simple/ "per seo"
      transform callback.
      */
+
     size_t local_index = i - offset;
     if (local_index >= seo->meshes.length) {
       offset += seo->meshes.length;

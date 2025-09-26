@@ -90,7 +90,7 @@ scene_selection_filter_selection_add_mesh(SceneSelectionFilter *filter,
   SceneSelectionObject object = {
       .initial_attribute = 0,
       .mesh = mesh,
-      .target = target,
+      .target = *target,
   };
 
   DynamicListStatus insert =

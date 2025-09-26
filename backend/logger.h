@@ -56,6 +56,13 @@ extern "C" {
 
 void logger_add(const LoggerFlag, const char *, ...);
 
+static inline void dbg(const char *fm, ...) {
+  va_list args;
+  va_start(args, fm);
+  logger_add(LoggerFlag_Debug, fm, args);
+  va_end(args);
+}
+
 #ifdef __cplusplus
 }
 #endif
