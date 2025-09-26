@@ -25,7 +25,6 @@ void example_primitive(Mesh *cube, vec3 position, Scene *scene,
 
   mesh_shader_create(cube, &(ShaderCreateDescriptor){
                                .pipeline = pipeline,
-                               .label = "cube",
                                .name = "cube",
                            });
 

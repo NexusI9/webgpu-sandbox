@@ -48,7 +48,7 @@ static const RenderPipelineStateObject layout_grid = {
                 },
             .stencil_state =
                 (WGPUDepthStencilState){
-                    .format = WGPUTextureFormat_Depth24Plus,
+                    .format = TEXTURE_FORMAT_DEPTH,
                     .depthWriteEnabled = false,
                     .depthCompare = WGPUCompareFunction_Less,
                 },

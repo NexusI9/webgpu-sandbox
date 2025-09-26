@@ -4,8 +4,8 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
-#include "core.h"
 #include "backend/std_pipeline/core.h"
+#include "core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/list.h"
 #include "runtime/mesh/ref_list.h"
@@ -36,12 +36,11 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
                               });
 
   // set view texture
-  mesh_shader_create_fixed(mesh,
-                           &(ShaderCreateDescriptor){
-                               .pipeline = std_render_pipeline(RenderPipelineType_Screen),
-                               .name = "Debug view billboard shader",
-                               .label = "Debug view billboard shader",
-                           });
+  mesh_shader_create_fixed(
+      mesh, &(ShaderCreateDescriptor){
+                .pipeline = std_render_pipeline(RenderPipelineType_Screen),
+                .name = "Debug view billboard shader",
+            });
 
   float ratio = debug->viewport->aspect * 9.0f / 16.0f;
   vec3 scale = {1.0f, 1.0f, ratio};
@@ -57,11 +56,11 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
 
   // bind model matrix
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 0, 0,
-                        mesh_uniform(mesh));
+                             mesh_uniform(mesh));
 
   // bind texture view
   shader_update_texture_view(mesh_shader(mesh, MeshShader_Fixed), 1, 0, view,
-                             TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+                             TEXTURE_FORMAT_OFFSCREEN);
 
   mesh_ref_list_insert(&debug->object_list[SceneDebugObject_View], mesh);
 }

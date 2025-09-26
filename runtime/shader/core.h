@@ -40,8 +40,6 @@
 // descriptors
 typedef struct {
   const char *path;
-  const char *label;
-
   const char *name;
   const RenderPipeline *pipeline;
 } ShaderCreateDescriptor;
@@ -297,9 +295,6 @@ typedef struct {
 // core
 typedef struct {
   char *name;
-
-  // wgpu
-
   // pipelines
   const RenderPipeline *pipeline;
 

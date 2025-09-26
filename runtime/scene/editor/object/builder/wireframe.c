@@ -39,7 +39,6 @@ void seo_create_wireframe(Mesh *mesh,
   // set wireframe shader
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
-                               .label = "SEO wireframe shader",
                                .name = "SEO wireframe shader",
                                .pipeline = std_render_pipeline(RenderPipelineType_Line),
                            });

@@ -49,7 +49,6 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   mesh_shader_create(mesh, &(ShaderCreateDescriptor){
                                .pipeline = std_render_pipeline(
                                    RenderPipelineType_GlassProbeGrid),
-                               .label = "Glass Probe Sphere",
                                .name = "Glass Probe Sphere",
                            });
 
@@ -85,12 +84,12 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture), 1, 3,
       scene->probes_reflection.pass.color.attachment.view,
-      TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+      TEXTURE_FORMAT_OFFSCREEN);
 
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture), 1, 5,
       scene_environment_skybox(&scene->environment)->view,
-      TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+      TEXTURE_FORMAT_OFFSCREEN);
 
   ProbeReflectionListDebug debug_options = {
       .scene_debug = &scene->debug,
@@ -126,12 +125,11 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                                   .name = "Glass Probe Plane",
                               });
 
-  mesh_shader_create(
-      mesh, &(ShaderCreateDescriptor){
-                .pipeline = std_render_pipeline(RenderPipelineType_GlassProbePlane),
-                .label = "Glass Probe Plane",
-                .name = "Glass Probe Plane",
-            });
+  mesh_shader_create(mesh, &(ShaderCreateDescriptor){
+                               .pipeline = std_render_pipeline(
+                                   RenderPipelineType_GlassProbePlane),
+                               .name = "Glass Probe Plane",
+                           });
 
   mesh_set_position(mesh, (vec3){0.0f, 0.2f, 0.0f});
   mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});

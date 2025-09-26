@@ -33,7 +33,7 @@ void probe_reflection_list_create_texture(
                   .height = desc->resolution,
                   .depthOrArrayLayers = desc->layer_count,
               },
-          .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+          .format = TEXTURE_FORMAT_OFFSCREEN,
           .usage = WGPUTextureUsage_TextureBinding   // read texture in shader
                    | WGPUTextureUsage_StorageBinding // write texture in shader
                    | WGPUTextureUsage_CopyDst        // upload the input data
@@ -69,7 +69,7 @@ void probe_reflection_list_create_texture(
                                     .height = desc->resolution,
                                     .depthOrArrayLayers = desc->layer_count,
                                 },
-                            .format = WGPUTextureFormat_Depth24Plus,
+                            .format = TEXTURE_FORMAT_DEPTH,
                             .usage = WGPUTextureUsage_CopyDst |
                                      WGPUTextureUsage_RenderAttachment |
                                      WGPUTextureUsage_TextureBinding,

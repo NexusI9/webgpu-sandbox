@@ -39,7 +39,7 @@ ComputePassStatus compute_pass_init(ComputePass *pass,
           .label = "Compute Pass Destination Texture",
           .dimension = WGPUTextureDimension_2D,
           .size = (WGPUExtent3D){max_dim, max_dim, 1},
-          .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+          .format = TEXTURE_FORMAT_OFFSCREEN,
           .mipLevelCount = 1,
           .sampleCount = 1,
           .usage = WGPUTextureUsage_TextureBinding |

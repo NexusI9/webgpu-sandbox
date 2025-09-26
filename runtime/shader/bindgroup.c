@@ -8,6 +8,7 @@
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/std_texture/core.h"
+#include "runtime/texture/core.h"
 #include "core.h"
 #include "runtime/pipeline/render.h"
 #include "utils/dyli.h"
@@ -496,7 +497,7 @@ void shader_bind_group_create_from_layout(
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
                                       .sample_type = entry->texture.sampleType,
-                                      .format = WGPUTextureFormat_Depth24Plus,
+                                      .format = TEXTURE_FORMAT_DEPTH,
                                       // use fallback texture as  placeholder
                                       .texture_view = std_texture_view(
                                           TextureViewType_Depth),
@@ -523,7 +524,7 @@ void shader_bind_group_create_from_layout(
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
                                       .sample_type = entry->texture.sampleType,
-                                      .format = WGPUTextureFormat_Depth24Plus,
+                                      .format = TEXTURE_FORMAT_DEPTH,
                                       // use fallback texture as  placeholder
                                       .texture_view = std_texture_view(
                                           TextureViewType_DepthCubeArray),
@@ -549,7 +550,7 @@ void shader_bind_group_create_from_layout(
                                       .binding = entry->binding,
                                       .dimension = entry->texture.viewDimension,
                                       .sample_type = entry->texture.sampleType,
-                                      .format = WGPUTextureFormat_Depth24Plus,
+                                      .format = TEXTURE_FORMAT_DEPTH,
                                       // use fallback texture as  placeholder
                                       .texture_view = std_texture_view(
                                           TextureViewType_Depth2DArray),

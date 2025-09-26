@@ -21,6 +21,7 @@
 #include "backend/std_pipeline/compute_shader/kawase/kawase.h"
 #include "backend/std_pipeline/compute_shader/mipmap/mipmap.h"
 #include "backend/std_pipeline/render_shader/blit/blit.h"
+#include "backend/std_pipeline/render_shader/outline/outline.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/pipeline/set.h"
 #include "webgpu/webgpu.h"
@@ -50,6 +51,7 @@ static const RenderPipelineStateObject
         [RenderPipelineType_GlassProbePlane] = &layout_glass_probe_plane,
         [RenderPipelineType_Reflection] = &layout_reflection,
         [RenderPipelineType_Blit] = &layout_blit,
+        [RenderPipelineType_Outline] = &layout_outline,
 };
 
 static const ComputePipelineStateObject

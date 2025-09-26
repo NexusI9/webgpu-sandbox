@@ -112,8 +112,8 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
     ImGui_ImplWGPU_InitInfo info;
 
     info.Device = context_device();
-    info.RenderTargetFormat = TEXTURE_FORMAT_ONSCREEN_DEFAULT;
-    info.DepthStencilFormat = TEXTURE_FORMAT_DEPTH_DEFAULT;
+    info.RenderTargetFormat = TEXTURE_FORMAT_ONSCREEN;
+    info.DepthStencilFormat = TEXTURE_FORMAT_DEPTH;
     info.NumFramesInFlight = 3;
 
     ImGui_ImplWGPU_Init(&info);
@@ -270,7 +270,7 @@ void scene_editor_ui_create_texture(SceneEditorUI *ui) {
             },
         .mipLevelCount = 1,
         .sampleCount = 1,
-        .format = TEXTURE_FORMAT_DEPTH_DEFAULT,
+        .format = TEXTURE_FORMAT_DEPTH,
         .usage = WGPUTextureUsage_RenderAttachment,
     };
 
@@ -278,7 +278,7 @@ void scene_editor_ui_create_texture(SceneEditorUI *ui) {
 
     WGPUTextureViewDescriptor view_desc = {
         .label = "Scene UI Depth View",
-        .format = TEXTURE_FORMAT_DEPTH_DEFAULT,
+        .format = TEXTURE_FORMAT_DEPTH,
         .dimension = WGPUTextureViewDimension_2D,
         .aspect = WGPUTextureAspect_DepthOnly,
         .baseMipLevel = 0,
@@ -295,7 +295,7 @@ void scene_editor_ui_create_texture(SceneEditorUI *ui) {
     TextureAtlasDescriptor atlas_desc = {
         .cell_count = {16, 16},
         .cell_size = {128, 128},
-        .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+        .format = TEXTURE_FORMAT_OFFSCREEN,
         .label = "Scene UI Icon Atlas",
         .path = "./resources/assets/texture/ui/icon_atlas.png",
     };

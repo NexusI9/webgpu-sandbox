@@ -10,9 +10,10 @@
 
 #define TEXTURE_HEIGHT_AUTO 0
 #define TEXTURE_WIDTH_AUTO 0
-#define TEXTURE_FORMAT_OFFSCREEN_DEFAULT WGPUTextureFormat_RGBA8Unorm
-#define TEXTURE_FORMAT_ONSCREEN_DEFAULT WGPUTextureFormat_BGRA8Unorm
-#define TEXTURE_FORMAT_DEPTH_DEFAULT WGPUTextureFormat_Depth24Plus
+#define TEXTURE_FORMAT_OFFSCREEN WGPUTextureFormat_RGBA8Unorm
+#define TEXTURE_FORMAT_ONSCREEN WGPUTextureFormat_BGRA8Unorm
+#define TEXTURE_FORMAT_DEPTH WGPUTextureFormat_Depth24Plus
+#define TEXTURE_FORMAT_DEPTH_STENCIL WGPUTextureFormat_Depth24PlusStencil8
 
 typedef enum {
   TextureChannel_Undefined = 0,

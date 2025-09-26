@@ -33,7 +33,6 @@ void seo_create_billboard(Mesh *mesh,
   // assign billboard shader
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
-                               .label = "SEO billboard shader",
                                .name = "SEO billboard shader",
                                .pipeline = std_render_pipeline(RenderPipelineType_Billboard),
                            });
@@ -64,7 +63,7 @@ void seo_create_billboard(Mesh *mesh,
                             .size = light_texture.size,
                             .channels = light_texture.channels,
                             .dimension = WGPUTextureViewDimension_2D,
-                            .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+                            .format = TEXTURE_FORMAT_OFFSCREEN,
                         });
 
   shader_update_sampler(mesh_shader(mesh, MeshShader_Fixed), 1, 1,

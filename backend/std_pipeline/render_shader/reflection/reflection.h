@@ -34,7 +34,7 @@ static const RenderPipelineStateObject layout_reflection = {
                 },
             .color_state =
                 (WGPUColorTargetState){
-                    .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+                    .format = TEXTURE_FORMAT_OFFSCREEN,
                     .writeMask = WGPUColorWriteMask_All,
                     .blend = NULL,
                 },

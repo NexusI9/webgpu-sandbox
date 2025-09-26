@@ -37,7 +37,6 @@ void gizmo_create_mesh(Mesh *mesh, Primitive *primitive,
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
                                .pipeline = std_render_pipeline(RenderPipelineType_Unlit),
-                               .label = "Gizmo shader",
                                .name = "Gizmo shader",
                            });
 

@@ -50,7 +50,6 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
                            &(ShaderCreateDescriptor){
                                .pipeline = std_render_pipeline(RenderPipelineType_Screen),
                                .name = "Debug view billboard shader",
-                               .label = "Debug view billboard shader",
                            });
 
   mesh_set_scale(new_view, (vec3){view->size[0], 1.0f, view->size[1]});
@@ -104,7 +103,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   // bind texture view
   shader_update_texture_view(mesh_shader(new_view, MeshShader_Fixed), 1, 0,
-                             view->texture_view, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+                             view->texture_view, TEXTURE_FORMAT_OFFSCREEN);
 
   // bind sampler
   /*shader_update_sampler(mesh_shader(new_view, MeshShader_Fixed), 1, 1,

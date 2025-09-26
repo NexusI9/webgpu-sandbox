@@ -45,7 +45,7 @@ static inline void prefab_skybox_upload_layer(const WGPUTexture texture,
           .size = layer_texture->size,
           .data = layer_texture->data,
           .channels = layer_texture->channels,
-          .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+          .format = TEXTURE_FORMAT_OFFSCREEN,
           .layer = layer_index,
       },
       free);
@@ -60,7 +60,7 @@ WGPUTexture prefab_skybox_texture(const size_t resolution) {
       context_device(),
       &(WGPUTextureDescriptor){
           .dimension = WGPUTextureDimension_2D,
-          .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+          .format = TEXTURE_FORMAT_OFFSCREEN,
           .usage = WGPUTextureUsage_TextureBinding   // read texturen in shader
                    | WGPUTextureUsage_StorageBinding // write texture in shader
                    | WGPUTextureUsage_CopyDst,       // upload the input data
@@ -113,7 +113,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
   *view = wgpuTextureCreateView(texture,
                                 &(WGPUTextureViewDescriptor){
                                     .dimension = WGPUTextureViewDimension_Cube,
-                                    .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+                                    .format = TEXTURE_FORMAT_OFFSCREEN,
                                     .arrayLayerCount = TEXTURE_CUBE_LAYER,
                                     .baseArrayLayer = 0,
                                     .mipLevelCount = 1,
@@ -134,7 +134,6 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
 
   // assign shader
   mesh_shader_create_fixed(skybox_mesh, &(ShaderCreateDescriptor){
-                                            .label = "skybox shader",
                                             .name = "skybox shader",
                                             .pipeline = std_render_pipeline(
                                                 RenderPipelineType_Skybox),
@@ -142,8 +141,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
 
   // update texture and sampler
   Shader *shader = mesh_shader(skybox_mesh, MeshShader_Fixed);
-  shader_update_texture_view(shader, 1, 0, *view,
-                             TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+  shader_update_texture_view(shader, 1, 0, *view, TEXTURE_FORMAT_OFFSCREEN);
 
   // add blur uniform
   shader_update_uniform_data(shader, 1, 2, (void *)&blur);
@@ -171,12 +169,12 @@ void prefab_skybox_create(Scene *scene,
   *skybox_texture = prefab_skybox_texture(desc->resolution);
 
   Texture skybox_sides[TEXTURE_CUBE_LAYER];
-  texture_create_cubemap_from_file(
-      skybox_sides, &(TextureCreateCubeMapDescriptor){
-                        .path = &desc->path,
-                        .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
-                        .resolution = desc->resolution,
-                    });
+  texture_create_cubemap_from_file(skybox_sides,
+                                   &(TextureCreateCubeMapDescriptor){
+                                       .path = &desc->path,
+                                       .format = TEXTURE_FORMAT_OFFSCREEN,
+                                       .resolution = desc->resolution,
+                                   });
 
   for (uint8_t i = 0; i < TEXTURE_CUBE_LAYER; i++)
     prefab_skybox_upload_layer(*skybox_texture, &skybox_sides[i], i,

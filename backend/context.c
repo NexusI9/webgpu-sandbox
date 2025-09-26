@@ -69,7 +69,7 @@ WGPUSwapChain context_create_swapchain() {
       g_context.device, surface,
       &(WGPUSwapChainDescriptor){
           .usage = WGPUTextureUsage_RenderAttachment,
-          .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT,
+          .format = TEXTURE_FORMAT_ONSCREEN,
           .width = g_context.width * g_context.dpi,
           .height = g_context.height * g_context.dpi,
           .presentMode = WGPUPresentMode_Fifo,

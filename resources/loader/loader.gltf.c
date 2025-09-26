@@ -53,8 +53,7 @@ static inline void loader_gltf_primitie_vertex_lists_init(VertexAttribute *,
                                                           VertexList *, size_t);
 
 // mesh utils
-static LoaderGLTFStatus loader_gltf_create_mesh(Scene *,
-                                                cgltf_data *,
+static LoaderGLTFStatus loader_gltf_create_mesh(Scene *, cgltf_data *,
                                                 const LoaderGLTFOptions *,
                                                 LoaderGLTFResult *);
 static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
@@ -99,8 +98,7 @@ LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
     break;
 
   case cgltf_result_success:
-    return loader_gltf_create_mesh(desc->scene, data,
-                                   desc->options, dest);
+    return loader_gltf_create_mesh(desc->scene, data, desc->options, dest);
     break;
 
   case cgltf_result_file_not_found:
@@ -263,8 +261,7 @@ void loader_gltf_primitive_vertex_index(VertexIndex *vert_index,
   };
 }
 
-LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene,
-                                         cgltf_data *data,
+LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_data *data,
                                          const LoaderGLTFOptions *options,
                                          LoaderGLTFResult *result) {
 
@@ -347,7 +344,6 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene,
         mesh_shader_create(target_mesh, &(ShaderCreateDescriptor){
                                             .pipeline = std_render_pipeline(
                                                 RenderPipelineType_PBR),
-                                            .label = material->name,
                                             .name = material->name,
                                         });
 
@@ -430,7 +426,7 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
                                     .width = width,
                                     .height = height,
                                     .dimension = WGPUTextureViewDimension_2D,
-                                    .format = TEXTURE_FORMAT_OFFSCREEN_DEFAULT,
+                                    .format = TEXTURE_FORMAT_OFFSCREEN,
                                     .channels = TextureChannel_RGBA,
                                 });
 
@@ -527,9 +523,9 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
       });
 
     } else {
-      //logger_add(LoggerFlag_Print, 
-      //    "Loader GLTF: Texture found but couldn't be loaded, loading "
-      //    "default texture");
+      // logger_add(LoggerFlag_Print,
+      //     "Loader GLTF: Texture found but couldn't be loaded, loading "
+      //     "default texture");
       return LoaderGLTFStatus_LoadError;
     }
 
@@ -578,8 +574,8 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
     }
 
   } else {
-    logger_add(LoggerFlag_Print, 
-        "Loader GLTF: Couldn't find texture, loading default texture");
+    logger_add(LoggerFlag_Print,
+               "Loader GLTF: Couldn't find texture, loading default texture");
     return LoaderGLTFStatus_TextureUnfound;
   }
 

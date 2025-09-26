@@ -42,7 +42,7 @@ void render_pass_create_multisampling_view(
                   .height = desc->height,
                   .depthOrArrayLayers = 1,
               },
-          .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT, // swapchain format
+          .format = TEXTURE_FORMAT_ONSCREEN, // swapchain format
           .sampleCount = desc->multisample,
           .mipLevelCount = 1,
       });
@@ -71,7 +71,7 @@ void render_pass_create_resolve_view(WGPUTexture *texture,
                   .height = desc->height,
                   .depthOrArrayLayers = 1,
               },
-          .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT, // swapchain format
+          .format = TEXTURE_FORMAT_ONSCREEN, // swapchain format
           .sampleCount = PipelineMultisampleCount_1x,
           .mipLevelCount = 1,
       });
@@ -97,8 +97,7 @@ void render_pass_create_depth_view(WGPUTexture *texture, WGPUTextureView *view,
                   .height = desc->height,
                   .depthOrArrayLayers = 1,
               },
-          .format =
-              WGPUTextureFormat_Depth24Plus, // texture with 24bit-depth format
+          .format = TEXTURE_FORMAT_DEPTH, // texture with 24bit-depth format
           .mipLevelCount = 1,
           .sampleCount = desc->multisample,
           .dimension = WGPUTextureDimension_2D,

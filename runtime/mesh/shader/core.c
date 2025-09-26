@@ -2,15 +2,15 @@
 
 #include <stddef.h>
 
-#include "utils/color.h"
-#include "utils/math.h"
+#include "backend/logger.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
-#include "runtime/shader/update.h"
-#include "backend/logger.h"
 #include "runtime/shader/core.h"
+#include "runtime/shader/update.h"
+#include "utils/color.h"
+#include "utils/math.h"
 
 /**
    ▗▖  ▗▖ ▗▄▖▗▄▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
@@ -44,7 +44,8 @@ MeshStatus mesh_shader_create_shadow(Mesh *mesh) {
   Shader *shadow_shader = mesh_shader(mesh, MeshShader_Shadow);
 
   if (shadow_shader->name != NULL) {
-    logger_add(LoggerFlag_Info, 
+    logger_add(
+        LoggerFlag_Info,
         "Shadow shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
@@ -53,7 +54,6 @@ MeshStatus mesh_shader_create_shadow(Mesh *mesh) {
   shader_create(shadow_shader,
                 &(ShaderCreateDescriptor){
                     .pipeline = std_render_pipeline(RenderPipelineType_Shadow),
-                    .label = "Mesh shadow shader",
                     .name = "Mesh shadow shader",
                 });
 
@@ -81,7 +81,8 @@ MeshStatus mesh_shader_create_wireframe(Mesh *mesh) {
 
   // skip if already created
   if (wireframe_shader->name != NULL) {
-    logger_add(LoggerFlag_Info, 
+    logger_add(
+        LoggerFlag_Info,
         "Wireframe shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
@@ -91,7 +92,6 @@ MeshStatus mesh_shader_create_wireframe(Mesh *mesh) {
   shader_create(wireframe_shader,
                 &(ShaderCreateDescriptor){
                     .pipeline = std_render_pipeline(RenderPipelineType_Line),
-                    .label = "Mesh wireframe shader",
                     .name = "Mesh wireframe shader",
                 });
 
@@ -109,18 +109,19 @@ MeshStatus mesh_shader_create_solid(Mesh *mesh) {
   Shader *solid_shader = mesh_shader(mesh, MeshShader_Solid);
 
   if (solid_shader->name != NULL) {
-    logger_add(LoggerFlag_Info, 
+    logger_add(
+        LoggerFlag_Info,
         "Solid shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
   }
 
   // create shader
-  shader_create(solid_shader, &(ShaderCreateDescriptor){
-                                  .pipeline = std_render_pipeline(RenderPipelineType_Solid),
-                                  .label = "Mesh solid shader",
-                                  .name = "Mesh solid shader",
-                              });
+  shader_create(solid_shader,
+                &(ShaderCreateDescriptor){
+                    .pipeline = std_render_pipeline(RenderPipelineType_Solid),
+                    .name = "Mesh solid shader",
+                });
 
   return MeshStatus_Success;
 }
@@ -133,7 +134,8 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   Shader *texture_shader = mesh_shader(mesh, MeshShader_Texture);
 
   if (texture_shader->name != NULL) {
-    logger_add(LoggerFlag_Info, 
+    logger_add(
+        LoggerFlag_Info,
         "Texture shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;
@@ -143,12 +145,12 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   shader_create(texture_shader, desc);
 
   // also initialise the reflection shader (basically a copy of the texture)
-  shader_create(mesh_shader(mesh, MeshShader_Reflection),
-                &(ShaderCreateDescriptor){
-                    .pipeline = std_render_pipeline(RenderPipelineType_Reflection),
-                    .label = "Mesh Reflection shader",
-                    .name = "Mesh Reflection shader",
-                });
+  shader_create(
+      mesh_shader(mesh, MeshShader_Reflection),
+      &(ShaderCreateDescriptor){
+          .pipeline = std_render_pipeline(RenderPipelineType_Reflection),
+          .name = "Mesh Reflection shader",
+      });
 
   return MeshStatus_Success;
 }
@@ -162,7 +164,8 @@ MeshStatus mesh_shader_create_fixed(Mesh *mesh,
   Shader *fixed_shader = mesh_shader(mesh, MeshShader_Texture);
 
   if (fixed_shader->name != NULL) {
-    logger_add(LoggerFlag_Info, 
+    logger_add(
+        LoggerFlag_Info,
         "Fixed shader for '%s' is already created, skip shader creation.",
         mesh->name);
     return MeshStatus_AlreadyCreated;

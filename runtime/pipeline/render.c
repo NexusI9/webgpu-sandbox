@@ -72,7 +72,7 @@ void render_pipeline_create(RenderPipeline *pipeline,
 
   // Color State
   pipeline->color_state = (WGPUColorTargetState){
-      .format = TEXTURE_FORMAT_ONSCREEN_DEFAULT,
+      .format = TEXTURE_FORMAT_ONSCREEN,
       .writeMask = WGPUColorWriteMask_All,
       .blend = &pipeline->blend_state,
   };
@@ -88,7 +88,7 @@ void render_pipeline_create(RenderPipeline *pipeline,
 
   // Stencil State
   pipeline->stencil_state = (WGPUDepthStencilState){
-      .format = WGPUTextureFormat_Depth24Plus,
+      .format = TEXTURE_FORMAT_DEPTH,
       .depthWriteEnabled = true,
       .depthCompare = WGPUCompareFunction_Less,
   };

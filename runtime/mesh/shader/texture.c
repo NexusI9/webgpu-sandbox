@@ -128,13 +128,13 @@ void mesh_shader_texture_update_probes(Mesh *mesh,
   if (bindings->probe->reflection_plane_texture != PIPELINE_BINDING_UNDEFINED)
     shader_update_texture_view(shader, bindings->probe->group,
                                bindings->probe->reflection_plane_texture,
-                               plane_texture, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+                               plane_texture, TEXTURE_FORMAT_OFFSCREEN);
 
   // update grid texture
   if (bindings->probe->reflection_grid_texture != PIPELINE_BINDING_UNDEFINED)
     shader_update_texture_view(shader, bindings->probe->group,
                                bindings->probe->reflection_grid_texture,
-                               grid_texture, TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+                               grid_texture, TEXTURE_FORMAT_OFFSCREEN);
 }
 
 void mesh_shader_texture_update_environment(Mesh *mesh,
@@ -148,7 +148,7 @@ void mesh_shader_texture_update_environment(Mesh *mesh,
   if (bindings->probe->skybox_texture != PIPELINE_BINDING_UNDEFINED)
     shader_update_texture_view(shader, bindings->probe->group,
                                bindings->probe->skybox_texture, skybox_texture,
-                               TEXTURE_FORMAT_OFFSCREEN_DEFAULT);
+                               TEXTURE_FORMAT_OFFSCREEN);
 }
 
 /**

@@ -70,7 +70,7 @@ static const RenderPipelineStateObject layout_skybox = {
                 (WGPUDepthStencilState){
                     .depthWriteEnabled = false,
                     .depthCompare = WGPUCompareFunction_LessEqual,
-                    .format = WGPUTextureFormat_Depth24Plus,
+                    .format = TEXTURE_FORMAT_DEPTH,
                 },
         },
     .bindings = {.mvp = &mvp_binding},
