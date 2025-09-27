@@ -1,7 +1,9 @@
 #include "texture.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
+#include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "runtime/pipeline/render.h"
@@ -18,7 +20,7 @@
    Create the texture and texture view for the multisampling rendering.
 
  */
-void render_pass_create_multisampling_view(
+void render_pass_texture_create_multisample(
     WGPUTexture *texture, WGPUTextureView *view,
     const RenderPassTextureDescriptor *desc) {
 
@@ -60,9 +62,9 @@ void render_pass_create_multisampling_view(
    Pass 2---+--=> MSAA (4x) => RESOLVE (1X) => BLIT => SWAPCHAIN
    Pass 3---'
  */
-void render_pass_create_resolve_view(WGPUTexture *texture,
-                                     WGPUTextureView *view,
-                                     const RenderPassTextureDescriptor *desc) {
+void render_pass_texture_create_monosample(
+    WGPUTexture *texture, WGPUTextureView *view,
+    const RenderPassTextureDescriptor *desc) {
 
   WGPUTextureFormat format = desc->format;
 
@@ -71,7 +73,7 @@ void render_pass_create_resolve_view(WGPUTexture *texture,
 
   *texture = wgpuDeviceCreateTexture(
       context_device(), &(WGPUTextureDescriptor){
-                            .label = "Resolve Texture",
+                            .label = "Monosample Texture",
                             .usage = WGPUTextureUsage_TextureBinding |
                                      WGPUTextureUsage_RenderAttachment,
                             .size =
@@ -88,8 +90,9 @@ void render_pass_create_resolve_view(WGPUTexture *texture,
   *view = wgpuTextureCreateView(*texture, NULL);
 }
 
-void render_pass_create_depth_view(WGPUTexture *texture, WGPUTextureView *view,
-                                   const RenderPassTextureDescriptor *desc) {
+void render_pass_texture_create_depth(WGPUTexture *texture,
+                                      WGPUTextureView *view,
+                                      const RenderPassTextureDescriptor *desc) {
 
   // Need to create a texture view for Z buffer stencil
   // by default set depth based on draw call order (first ones in
@@ -130,4 +133,77 @@ void render_pass_create_depth_view(WGPUTexture *texture, WGPUTextureView *view,
                                     .arrayLayerCount = 1,
                                     .aspect = aspect,
                                 });
+}
+
+void render_pass_list_create_shared_texture_color(
+    RenderPassList *list, const RenderPassTextureDescriptor *desc,
+    const RenderPassTextureStorage storage, WGPUTexture *dst_t,
+    WGPUTextureView *dst_v) {
+
+  if (desc->multisample == PipelineMultisampleCount_1x) {
+    render_pass_texture_create_monosample(&list->shared.color.texture,
+                                          &list->shared.color.view, desc);
+  } else if (desc->multisample == PipelineMultisampleCount_4x) {
+    render_pass_texture_create_multisample(&list->shared.color.texture,
+                                           &list->shared.color.view, desc);
+  }
+
+  {
+    if (dst_t)
+      *dst_t = list->shared.color.texture;
+
+    if (dst_v)
+      *dst_v = list->shared.color.view;
+  }
+
+  // DEBUG
+  printf("view: %p\n", list->shared.color.view);
+
+  // replace all passes views with the shared one
+  for (uint16_t i = 0; i < list->length; i++) {
+    RenderPass *pass = &list->passes[i];
+
+    // eventually release the old one
+    if (storage == RenderPassTextureStorage_Release) {
+      wgpuTextureViewRelease(pass->color.attachment.view);
+      wgpuTextureRelease(pass->color.texture);
+    }
+
+    pass->color.attachment.view = list->shared.color.view;
+    pass->color.texture = list->shared.color.texture;
+
+    // DEBUG
+    printf("[%d] pass: %p\n", i, pass->color.attachment.view);
+  }
+}
+
+void render_pass_list_create_shared_texture_depth(
+    RenderPassList *list, const RenderPassTextureDescriptor *desc,
+    const RenderPassTextureStorage storage, WGPUTexture *dst_t,
+    WGPUTextureView *dst_v) {
+
+  render_pass_texture_create_depth(&list->shared.depth.texture,
+                                   &list->shared.depth.view, desc);
+
+  {
+    if (dst_t)
+      *dst_t = list->shared.depth.texture;
+
+    if (dst_v)
+      *dst_v = list->shared.depth.view;
+  }
+
+  // replace all passes views with the shared one
+  for (uint16_t i = 0; i < list->length; i++) {
+    RenderPass *pass = &list->passes[i];
+
+    // eventually release the old one
+    if (storage == RenderPassTextureStorage_Release) {
+      wgpuTextureViewRelease(pass->depth.attachment.view);
+      wgpuTextureRelease(pass->depth.texture);
+    }
+
+    pass->depth.attachment.view = list->shared.depth.view;
+    pass->depth.texture = list->shared.depth.texture;
+  }
 }

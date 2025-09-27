@@ -1,15 +1,15 @@
 #include "draw.h"
 
-#include "webgpu/webgpu.h"
 #include "backend/std_pipeline/core.h"
-#include "runtime/scene/debug/view.h"
-#include "runtime/scene/renderer/render_pass/draw.h"
 #include "core.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
+#include "runtime/scene/debug/view.h"
 #include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/scene/renderer/render_pass/draw.h"
+#include "webgpu/webgpu.h"
 
 static inline void shadow_map_draw(const ShadowMapDrawDescriptor *,
                                    const ShadowMapDebug *);
@@ -109,7 +109,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
 
   // sometimes pass encoder may be set if we batch update all lights
   if (desc->command_encoder == NULL)
-    render_pass_command_begin(desc->pass);
+    render_pass_im_begin(desc->pass);
   {
 
     render_pass_update_preprocessor_data(desc->pass, 0,
@@ -118,14 +118,16 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
                                              .view_offset = desc->ssbo_offset,
                                          });
 
-    render_pass_command_draw(desc->pass,
-                             &(RenderPassDrawOptions){
-                                 .color = temp_layer_texture_view_color,
-                                 .depth = temp_layer_texture_view_depth,
-                             });
+    render_pass_im_set_overrides(desc->pass,
+                                 &(RenderPassDrawOptions){
+                                     .color = temp_layer_texture_view_color,
+                                     .depth = temp_layer_texture_view_depth,
+                                 });
+
+    render_pass_im_draw(desc->pass);
   }
   if (desc->command_encoder == NULL)
-    render_pass_command_end(desc->pass);
+    render_pass_im_end(desc->pass);
 
   wgpuTextureViewRelease(temp_layer_texture_view_depth);
 
@@ -200,7 +202,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
     ==== Point Lights ====
     */
   WGPUCommandEncoder point_encoder =
-      render_pass_command_begin(&desc->lights->point.shadow.pass);
+      render_pass_im_begin(&desc->lights->point.shadow.pass);
   {
     for (size_t p = 0; p < point_length; p++)
       shadow_map_draw_point_light(
@@ -212,10 +214,10 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
           },
           debug);
   }
-  render_pass_command_end(&desc->lights->point.shadow.pass);
+  render_pass_im_end(&desc->lights->point.shadow.pass);
 
   WGPUCommandEncoder dir_encoder =
-      render_pass_command_begin(&desc->lights->spot.shadow.pass);
+      render_pass_im_begin(&desc->lights->spot.shadow.pass);
   {
     /*
       ==== Spot Lights ====
@@ -247,7 +249,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
           },
           debug);
   }
-  render_pass_command_end(&desc->lights->spot.shadow.pass);
+  render_pass_im_end(&desc->lights->spot.shadow.pass);
 }
 
 /**
@@ -266,7 +268,7 @@ void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *desc,
 
     // Render scene (create shadow render pass to texture layer)
     size_t layer = desc->texture_layer * desc->light->views.length + v;
-    
+
     shadow_map_draw(
         &(ShadowMapDrawDescriptor){
             .pass = desc->pass,

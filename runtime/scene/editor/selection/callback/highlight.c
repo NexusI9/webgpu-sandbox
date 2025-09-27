@@ -21,7 +21,7 @@ void scene_selection_mesh_highlight(MeshRefList *meshes,
 
   RenderPass *pass =
       &scene->renderer.draw.render_pass[scene->renderer.draw.mode]
-           .passes[ScenePass_Default];
+           .passes[ScenePass_Selection];
 
   RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
       pass, scene_pipeline(scene, ScenePipeline_Fixed_Selection));

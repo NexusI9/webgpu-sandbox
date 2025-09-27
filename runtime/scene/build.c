@@ -204,10 +204,11 @@ void scene_build_mesh_outline(Scene *scene, Mesh *mesh,
 #endif
 
   // create meshes' solid shader
-  mesh_shader_create_standard(mesh, MeshShader_Outline);
-
-  // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Outline, &scene->renderer.ssbo);
+  if (mesh_shader_create_standard(mesh, MeshShader_Outline) ==
+      MeshStatus_Success) {
+    // bind views
+    mesh_shader_build_mvp(mesh, MeshShader_Outline, &scene->renderer.ssbo);
+  }
 }
 
 /**

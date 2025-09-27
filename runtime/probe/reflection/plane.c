@@ -17,8 +17,8 @@
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/debug/view.h"
-#include "runtime/scene/renderer/render_pass/visibility.h"
 #include "runtime/scene/renderer/render_pass/draw.h"
+#include "runtime/scene/renderer/render_pass/visibility.h"
 #include "runtime/texture/core.h"
 #include "utils/dyli.h"
 #include "utils/vector/core.h"
@@ -104,7 +104,7 @@ void probe_reflection_plane_list_draw_callback(void *data) {
 
   // then update probe list texture cube array based on each probes views
 
-  render_pass_command_begin(&list->pass);
+  render_pass_im_begin(&list->pass);
   {
     for (size_t i = 0; i < list->length; i++) {
 
@@ -145,10 +145,11 @@ void probe_reflection_plane_list_draw_callback(void *data) {
           });
 
       // draw pass
-      render_pass_command_draw(&list->pass, &(RenderPassDrawOptions){
-                                                .color = target_color,
-                                                .depth = target_depth,
-                                            });
+      render_pass_im_set_overrides(&list->pass, &(RenderPassDrawOptions){
+                                                    .color = target_color,
+                                                    .depth = target_depth,
+                                                });
+      render_pass_im_draw(&list->pass);
 
       if (debug && probe->texture_layer < debug->max_views)
         scene_debug_view_create(debug->scene_debug, target_color);
@@ -162,7 +163,7 @@ void probe_reflection_plane_list_draw_callback(void *data) {
     }
   }
 
-  render_pass_command_end(&list->pass);
+  render_pass_im_end(&list->pass);
 
   compute_pass_kawase(&scene->renderer.draw.compute_pass,
                       &(KawaseDescriptor){

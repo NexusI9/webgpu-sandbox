@@ -5,16 +5,26 @@
 
 #include "core.h"
 
-void render_pass_create_color_multisample(RenderPass *);
-void render_pass_create_color_monosample(RenderPass *);
+typedef enum {
+  RenderPassTextureStorage_Keep,
+  RenderPassTextureStorage_Release,
+} RenderPassTextureStorage;
 
-void render_pass_create_multisampling_view(WGPUTexture *, WGPUTextureView *,
+void render_pass_texture_create_multisample(
+    WGPUTexture *, WGPUTextureView *, const RenderPassTextureDescriptor *);
+
+void render_pass_texture_create_monosample(WGPUTexture *, WGPUTextureView *,
                                            const RenderPassTextureDescriptor *);
 
-void render_pass_create_resolve_view(WGPUTexture *, WGPUTextureView *,
-                                     const RenderPassTextureDescriptor *);
+void render_pass_texture_create_depth(WGPUTexture *, WGPUTextureView *,
+                                      const RenderPassTextureDescriptor *);
 
-void render_pass_create_depth_view(WGPUTexture *, WGPUTextureView *,
-                                   const RenderPassTextureDescriptor *);
+void render_pass_list_create_shared_texture_color(
+    RenderPassList *, const RenderPassTextureDescriptor *,
+    const RenderPassTextureStorage, WGPUTexture *, WGPUTextureView *);
+
+void render_pass_list_create_shared_texture_depth(
+    RenderPassList *, const RenderPassTextureDescriptor *,
+    const RenderPassTextureStorage, WGPUTexture *, WGPUTextureView *);
 
 #endif

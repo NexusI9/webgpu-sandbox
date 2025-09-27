@@ -4,6 +4,7 @@
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/pipeline/pipeline.h"
+#include "runtime/texture/core.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
@@ -59,7 +60,7 @@ static const WGPUPrimitiveState skybox_primitive = {
 static const WGPUDepthStencilState skybox_stencil = {
     .depthWriteEnabled = false,
     .depthCompare = WGPUCompareFunction_LessEqual,
-    .format = TEXTURE_FORMAT_DEPTH,
+    .format = TEXTURE_FORMAT_DEPTH_STENCIL,
 };
 
 static const RenderPipelineStateObject layout_skybox = {

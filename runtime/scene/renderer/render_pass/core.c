@@ -16,138 +16,145 @@
 #include "webgpu/webgpu.h"
 
 static inline void render_pass_draw_pass(RenderPass *, WGPUCommandEncoder);
+static inline void render_pass_assign_color(RenderPass *,
+                                            const RenderPassCreateDescriptor *);
+static inline void render_pass_assign_depth(RenderPass *,
+                                            const RenderPassCreateDescriptor *);
+static inline void render_pass_assign_draw_callback(RenderPass *);
 
-void render_pass_create(RenderPass *render_pass,
+void render_pass_create(RenderPass *pass,
                         const RenderPassCreateDescriptor *desc) {
 
-  {
-    // === assign core attributes ===
+  // === assign core attributes ===
+  pass->label = strdup(desc->label);
+  pass->multisample = desc->multisample;
+  pass->type = desc->type;
 
-    render_pass->label = strdup(desc->label);
-    render_pass->swapchain = desc->swapchain;
-    render_pass->multisample = desc->multisample;
-  }
+  // === assign draw callbacks ===
+  render_pass_assign_draw_callback(pass);
 
-  {
-    // === assign draw callbacks ===
+  // === create render textures ===
+  if (desc->color)
+    render_pass_assign_color(pass, desc);
 
-    // on screen drawing
-    if (render_pass->swapchain) {
-      // define callback based on multisample
-      switch (desc->multisample) {
-
-      case PipelineMultisampleCount_4x:
-        render_pass->draw_callback = render_pass_draw_onscreen_multisample;
-        break;
-
-      case PipelineMultisampleCount_1x:
-      default:
-        render_pass->draw_callback = render_pass_draw_onscreen_monosample;
-        break;
-      }
-
-    } else {
-      // off screen rendering (common drawing method no matter the msaa)
-      render_pass->draw_callback = render_pass_draw_offscreen;
-    }
-  }
-
-  {
-    // === create render textures ===
-    if (desc->color) {
-
-      RenderPassTextureDescriptor color_tex_config = {
-          .height = desc->height,
-          .width = desc->width,
-          .multisample = render_pass->multisample,
-          .format = desc->color->format,
-      };
-
-      // assign color attributes
-      render_pass->color.texture = desc->color->texture;
-
-      WGPUTextureView *main_color_view = &render_pass->color.views[0];
-
-      if (desc->color->attachment.view == NULL) {
-
-        render_pass_create_resolve_view(&render_pass->resolve_texture,
-                                        &render_pass->resolve_view,
-                                        &color_tex_config);
-
-        if (desc->multisample > PipelineMultisampleCount_1x) {
-
-          render_pass_create_multisampling_view(&render_pass->msaa_texture,
-                                                &render_pass->msaa_view,
-                                                &color_tex_config);
-
-          render_pass->color.texture = render_pass->msaa_texture;
-          *main_color_view = render_pass->msaa_view;
-        }
-      } else {
-        *main_color_view = desc->color->attachment.view;
-      }
-
-      render_pass->color.attachment = desc->color->attachment;
-      render_pass->color.attachment.view = *main_color_view;
-      render_pass->color.views_length = 1;
-
-      post_fx_init(&render_pass->post_fx, &(PostFxDescriptor){});
-
-      if (render_pass->swapchain) { // onscreen blit effect
-        post_fx_bind_texture_view(&render_pass->post_fx, PostFxType_Blit,
-                                  render_pass->resolve_view);
-        render_pass->color.attachment.resolveTarget = render_pass->resolve_view;
-      }
-    }
-
-    if (desc->depth) {
-
-      render_pass->depth.texture = desc->depth->texture;
-
-      WGPUTextureView *main_depth_view = &render_pass->depth.views[0];
-      if (desc->depth->attachment.view == NULL) {
-
-        RenderPassTextureDescriptor depth_tex_config = {
-            .height = desc->height,
-            .width = desc->width,
-            .multisample = render_pass->multisample,
-            .format = desc->depth->format,
-        };
-
-        render_pass_create_depth_view(&render_pass->depth.texture,
-                                      main_depth_view, &depth_tex_config);
-      } else {
-        *main_depth_view = desc->depth->attachment.view;
-      }
-
-      // assign depth
-      render_pass->depth.attachment = desc->depth->attachment;
-      render_pass->depth.attachment.view = *main_depth_view;
-      render_pass->depth.views_length = 1;
-
-    }
-  }
+  if (desc->depth)
+    render_pass_assign_depth(pass, desc);
 
   if (desc->draw_list)
-    render_pass_draw_list_copy(desc->draw_list, &render_pass->draw_list);
+    render_pass_draw_list_copy(desc->draw_list, &pass->draw_list);
+}
+
+void render_pass_assign_draw_callback(RenderPass *pass) {
+
+  // on screen drawing
+  if (pass->type == RenderPassType_OnScreen) {
+    // define callback based on multisample
+    switch (pass->multisample) {
+
+    case PipelineMultisampleCount_4x:
+      pass->draw_callback = render_pass_draw_callback_default;
+      break;
+
+    case PipelineMultisampleCount_1x:
+    default:
+      pass->draw_callback = render_pass_draw_callback_swapchain;
+      break;
+    }
+
+  } else {
+    // off screen rendering (common drawing method no matter the msaa)
+    pass->draw_callback = render_pass_draw_callback_default;
+  }
+}
+
+void render_pass_assign_color(RenderPass *pass,
+                              const RenderPassCreateDescriptor *desc) {
+
+  RenderPassTextureDescriptor color_tex_config = {
+      .height = desc->height,
+      .width = desc->width,
+      .multisample = pass->multisample,
+      .format = desc->color->format,
+  };
+
+  // assign color attributes
+  pass->color.texture = desc->color->texture;
+
+  WGPUTextureView *main_view = &pass->color.views[0];
+  *main_view = desc->color->attachment.view;
+
+  if (pass->type == RenderPassType_OnScreen &&
+      pass->multisample == PipelineMultisampleCount_4x) {
+
+    if (*main_view == NULL)
+      // create msaa texture as main color view
+      render_pass_texture_create_multisample(&pass->color.texture, main_view,
+                                             &color_tex_config);
+
+    if (pass->color.attachment.resolveTarget == NULL)
+      // create resolve texture (for blit/post-process passes)
+      render_pass_texture_create_monosample(&pass->color.resolve_texture,
+                                            &pass->color.resolve_view,
+                                            &color_tex_config);
+
+  } else if (pass->type == RenderPassType_OffScreen && *main_view == NULL) {
+
+    if (pass->multisample == PipelineMultisampleCount_1x)
+      render_pass_texture_create_monosample(&pass->color.texture, main_view,
+                                            &color_tex_config);
+
+    if (pass->multisample == PipelineMultisampleCount_4x)
+      render_pass_texture_create_multisample(&pass->color.texture, main_view,
+                                             &color_tex_config);
+  }
+
+  pass->color.attachment = desc->color->attachment;
+  pass->color.attachment.view = *main_view;
+  pass->color.views_length = 1;
+
+  post_fx_init(&pass->post_fx, &(PostFxDescriptor){});
+
+  // onscreen blit effect
+  if (desc->type == RenderPassType_OnScreen)
+    post_fx_bind_texture_view(&pass->post_fx, PostFxType_Blit,
+                              pass->color.resolve_view);
+}
+
+void render_pass_assign_depth(RenderPass *pass,
+                              const RenderPassCreateDescriptor *desc) {
+
+  pass->depth.texture = desc->depth->texture;
+
+  WGPUTextureView *main_depth_view = &pass->depth.views[0];
+  *main_depth_view = desc->depth->attachment.view;
+
+  if (desc->depth->attachment.view == NULL) {
+
+    RenderPassTextureDescriptor depth_tex_config = {
+        .height = desc->height,
+        .width = desc->width,
+        .multisample = pass->multisample,
+        .format = desc->depth->format,
+    };
+
+    render_pass_texture_create_depth(&pass->depth.texture, main_depth_view,
+                                     &depth_tex_config);
+  } else {
+    *main_depth_view = desc->depth->attachment.view;
+  }
+
+  pass->depth.attachment = desc->depth->attachment;
+  pass->depth.attachment.view = *main_depth_view;
+  pass->depth.views_length = 1;
 }
 
 void render_pass_list_create(RenderPassList *list,
                              const RenderPassListCreate *desc) {
   list->length = 0;
-  list->swapchain = desc->swapchain;
-
-  if (list->swapchain)
-    list->draw_callback = render_pass_list_draw_onscreen_monosample;
-  else
-    list->draw_callback = render_pass_list_draw_offscreen;
-
-  if (desc->multisample > PipelineMultisampleCount_1x && list->swapchain)
-    list->draw_callback = render_pass_list_draw_onscreen_multisample;
 }
 
 void render_pass_list_insert_pass(RenderPassList *list,
-                                  const RenderPassListInsert *desc) {
+                                  const RenderPassCreateDescriptor *desc) {
 
   if (list->length == RENDER_PASS_MAX_DRAW_LIST) {
     logger_add(LoggerFlag_Warning,
@@ -156,17 +163,15 @@ void render_pass_list_insert_pass(RenderPassList *list,
     return;
   }
 
-  render_pass_create(&list->passes[list->length++],
-                     &(RenderPassCreateDescriptor){
-                         .label = desc->label,
-                         .draw_list = desc->draw_list,
-                         .color = desc->color,
-                         .depth = desc->depth,
-                         .width = desc->width,
-                         .height = desc->height,
-                         .multisample = desc->multisample,
-                         .swapchain = list->swapchain,
-                     });
+  render_pass_create(&list->passes[list->length], desc);
+
+  for (size_t i = 0; i < list->length; i++)
+    render_pass_assign_draw_callback(&list->passes[i]);
+
+  // set last pass of the list as the resolve pass
+  list->passes[list->length].draw_callback = render_pass_draw_callback_resolve;
+
+  list->length++;
 }
 
 /**
@@ -197,6 +202,7 @@ void render_pass_list_insert_pass(RenderPassList *list,
    By following this order, we can simply map the right array entry depending on
    the scene render mode.
  */
+
 void render_pass_draw_list_copy(const RenderPassDrawListDescriptor *src,
                                 RenderPassDrawList *dest) {
 

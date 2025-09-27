@@ -27,7 +27,7 @@
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
 
-// initializers
+// initializers 
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
 static inline void scene_light_list_init(Scene *);
 static inline void scene_camera_init(Scene *);
@@ -40,8 +40,8 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   TIMER("Scene Load", {
     scene->id = reg_register((void *)scene, RegEntryType_Scene);
-
-    {
+ 
+    { 
       /*  ===== SCENE RENDER =====   */
       scene_renderer_init(&scene->renderer, desc->renderer);
       scene_environment_init(&scene->environment,
@@ -49,7 +49,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                                  .ssbo = &scene->renderer.ssbo,
                                  .ubo = &scene->renderer.ubo,
                              });
-    }
+    } 
 
     {
       /*  ===== LISTS ===== */
@@ -57,12 +57,12 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
       scene_layer_init(&scene->layers);
       scene_light_list_init(scene);
       scene_probe_reflection_init(scene, context_multisample());
-    }
+    } 
 
     {
       /*  ===== CAMERA & VIEWPORT =====  */
       scene_camera_init(scene);
-
+ 
       viewport_create(&scene->viewport,
                       &(ViewportCreateDescriptor){
                           .fov = desc->viewport->fov,
@@ -77,7 +77,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                       &scene->viewport.ssbo_slot);
     }
 
-    {
+    { 
       /*  ===== EDITOR =====  */
       scene_editor_init(scene); // EDITORONLY
       scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
@@ -140,7 +140,7 @@ void scene_camera_init(Scene *scene) {
 
   // set scene main camera as active
   scene->active_camera = scene->camera;
-}
+} 
 
 /**
    Define scene main edit camera
@@ -204,16 +204,16 @@ void scene_probe_reflection_init(
    Quick access to a scene layer mesh list.
  */
 MeshRefList *scene_layer_meshes(Scene *scene, const char *name) {
-
+  
   SceneLayer *layer = scene_layer_set_find(&scene->layers, name);
+     
+  if (layer == NULL) 
+    return NULL;  
 
-  if (layer == NULL)
-    return NULL;
+  return &layer->meshes;  
+}  
 
-  return &layer->meshes;
-}
-
-void scene_light_list_init(Scene *scene) {
+void scene_light_list_init(Scene *scene) { 
 
   light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
 

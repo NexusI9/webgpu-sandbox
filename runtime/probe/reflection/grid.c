@@ -1,19 +1,19 @@
 #include "grid.h"
 
-#include <stdint.h>
 #include <cglm/ivec3.h>
 #include <cglm/util.h>
 #include <cglm/vec3.h>
+#include <stdint.h>
 
+#include "backend/logger.h"
+#include "backend/std_texture/core.h"
 #include "core.h"
 #include "probe.h"
-#include "webgpu/webgpu.h"
-#include "backend/std_texture/core.h"
 #include "runtime/scene/debug/view.h"
-#include "runtime/scene/renderer/render_pass/draw.h"
-#include "backend/logger.h"
 #include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/scene/renderer/render_pass/draw.h"
 #include "utils/dyli.h"
+#include "webgpu/webgpu.h"
 
 static inline float probe_reflection_point(size_t x, uint16_t count,
                                            float size);
@@ -153,15 +153,16 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
   // then update probe list texture cube array based on each probes views
   size_t layer = 0;
 
-  render_pass_command_begin(&list->pass);
+  render_pass_im_begin(&list->pass);
   {
     for (size_t i = 0; i < list->length; i++) {
 
       ProbeReflectionGrid *grid = &list->entries[i];
 
       TIMER("", {
-        logger_add(LoggerFlag_Process, "Rendering Probe Reflection Grid %lu/%lu", i + 1,
-                        list->length);
+        logger_add(LoggerFlag_Process,
+                   "Rendering Probe Reflection Grid %lu/%lu", i + 1,
+                   list->length);
 
         for (size_t j = 0; j < grid->probes.length; j++) {
 
@@ -197,14 +198,16 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
                 &list->pass,
                 &(ProbeReflectionListPreprocessorData){
                     .camera_offset =
-                        probe->ssbo_slot[ProbeReflectionSSBOField_Camera + k].id,
+                        probe->ssbo_slot[ProbeReflectionSSBOField_Camera + k]
+                            .id,
                 });
 
             // draw pass
-            render_pass_command_draw(&list->pass, &(RenderPassDrawOptions){
-                                                      .color = target_color,
-                                                      .depth = target_depth,
-                                                  });
+            render_pass_im_set_overrides(&list->pass, &(RenderPassDrawOptions){
+                                                          .color = target_color,
+                                                          .depth = target_depth,
+                                                      });
+            render_pass_im_draw(&list->pass);
 
             if (debug && layer < debug->max_views)
               scene_debug_view_create(debug->scene_debug, target_color);
@@ -218,7 +221,7 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
       });
     }
   }
-  render_pass_command_end(&list->pass);
+  render_pass_im_end(&list->pass);
 }
 
 void probe_reflection_grid_list_uniform(ProbeReflectionListUniform *uniform,
@@ -248,12 +251,11 @@ probe_reflection_grid_list_probe_count(ProbeReflectionGridList *grid_list) {
   return count;
 }
 
-void probe_reflection_grid_update_boundbox(ProbeReflectionGrid * grid){
+void probe_reflection_grid_update_boundbox(ProbeReflectionGrid *grid) {
 
   vec3 half;
   glm_vec3_scale(grid->scale, 0.5f, half);
 
   glm_vec3_add(grid->position, half, grid->boundbox.max);
   glm_vec3_sub(grid->position, half, grid->boundbox.min);
-
 }

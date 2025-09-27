@@ -33,7 +33,6 @@
 #define SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT 128
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
-#define SCENE_PIPELINE_COUNT 8
 #define SCENE_PIPELINE_REFLECTION_COUNT 3
 
 typedef uint8_t shader_bind_t;
@@ -267,6 +266,8 @@ typedef enum {
   SceneStatuc_UndefError,
 } SceneStatus;
 
+#define SCENE_PIPELINE_COUNT 8
+
 typedef enum {
   // Dynamic
   ScenePipeline_Dynamic_Unlit = 1 << 0,
@@ -280,8 +281,11 @@ typedef enum {
   ScenePipeline_Fixed_UI = 1 << 7,
 } ScenePipeline;
 
+#define SCENE_RENDER_PASS_COUNT 3
+
 typedef enum {
   ScenePass_Default,
+  ScenePass_Selection,
   ScenePass_Gizmo,
 } ScenePass;
 

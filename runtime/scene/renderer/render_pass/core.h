@@ -14,16 +14,20 @@
 #define RENDER_PASS_DRAW_LAYOUT_MAX_MESH_LIST 6
 #define RENDER_PASS_MAX_DRAW_LIST 12
 #define RENDER_PASS_COUNT 2
-#define RENDER_PASS_VIEW_CREATE 0
+#define RENDER_PASS_VIEW_UNDEFINED 0
 #define RENDER_PASS_VIEW_OVERRIDE_NONE 0
 #define RENDER_PASS_VIEW_CAPACITY 256
+
+typedef enum {
+  RenderPassType_OnScreen,
+  RenderPassType_OffScreen,
+} RenderPassType;
 
 typedef struct RenderPass RenderPass;
 typedef struct RenderPassList RenderPassList;
 typedef struct RenderPassDrawOptions RenderPassDrawOptions;
 
-typedef void (*render_pass_draw_callback)(RenderPass *,
-                                          const RenderPassDrawOptions *);
+typedef void (*render_pass_draw_callback)(RenderPass *);
 typedef void (*render_pass_mesh_preprocessor_callback)(const RenderPass *,
                                                        Mesh *, void *);
 typedef void (*render_pass_list_draw_callback)(RenderPassList *);
@@ -67,6 +71,8 @@ typedef struct {
 
 typedef struct {
   WGPUTexture texture;
+  WGPUTexture resolve_texture;
+  WGPUTextureView resolve_view;
   WGPUTextureView views[RENDER_PASS_VIEW_CAPACITY];
   size_t views_length;
   WGPURenderPassColorAttachment attachment;
@@ -85,22 +91,31 @@ typedef struct {
 */
 struct RenderPass {
   const char *label;
+  RenderPassType type;
   RenderPassColor color;
   RenderPassDepth depth;
   RenderPipelineMultisampleCount multisample;
-  WGPUSwapChain swapchain;
   RenderPassDrawList draw_list;
   render_pass_draw_callback draw_callback;
   WGPUCommandEncoder command_encoder;
   PostFx post_fx;
-  WGPUTextureView resolve_view;
-  WGPUTexture resolve_texture;
-  WGPUTextureView msaa_view;
-  WGPUTexture msaa_texture;
 };
 
 struct RenderPassList {
-  WGPUSwapChain swapchain;
+  struct {
+
+    struct {
+      WGPUTexture texture;
+      WGPUTextureView view;
+    } color;
+
+    struct {
+      WGPUTexture texture;
+      WGPUTextureView view;
+    } depth;
+    
+  } shared;
+
   RenderPass passes[RENDER_PASS_MAX_DRAW_LIST];
   size_t length;
   render_pass_list_draw_callback draw_callback;
@@ -126,10 +141,10 @@ typedef struct {
 } RenderPassColorAttachment;
 
 typedef struct {
+  const RenderPassType type;
   const char *label;
   RenderPassColorAttachment *color;
   RenderPassDepthAttachment *depth;
-  WGPUSwapChain swapchain;
   int width;
   int height;
   RenderPipelineMultisampleCount multisample;
@@ -138,17 +153,6 @@ typedef struct {
 
 typedef struct {
   const char *label;
-  RenderPassColorAttachment *color;
-  RenderPassDepthAttachment *depth;
-  RenderPipelineMultisampleCount multisample;
-  int width;
-  int height;
-  const RenderPassDrawListDescriptor *draw_list;
-} RenderPassListInsert;
-
-typedef struct {
-  const char *label;
-  WGPUSwapChain swapchain;
   int width;
   int height;
   RenderPipelineMultisampleCount multisample;
@@ -162,7 +166,7 @@ struct RenderPassDrawOptions {
 void render_pass_list_create(RenderPassList *, const RenderPassListCreate *);
 
 void render_pass_list_insert_pass(RenderPassList *,
-                                  const RenderPassListInsert *);
+                                  const RenderPassCreateDescriptor *);
 
 /* === Pass === */
 

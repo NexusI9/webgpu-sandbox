@@ -166,6 +166,7 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
   // set render pass
   render_pass_create(
       desc->pass, &(RenderPassCreateDescriptor){
+                      .type = RenderPassType_OffScreen,
                       .label = "Shadow Map Pass",
                       .color =
                           &(RenderPassColorAttachment){
@@ -192,7 +193,6 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
                           },
                       .height = desc->height,
                       .width = desc->width,
-                      .swapchain = NULL,
                       .multisample = PipelineMultisampleCount_1x,
                       .draw_list = desc->draw_list,
                   });

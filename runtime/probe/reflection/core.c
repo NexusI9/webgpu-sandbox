@@ -119,12 +119,12 @@ probe_reflection_list_create_core(const ProbeReflectionCreateCore *desc) {
     render_pass_create(
         desc->render_pass->handle,
         &(RenderPassCreateDescriptor){
+            .type = RenderPassType_OffScreen,
             .label = "Probe Reflection List Render Pass",
             .height = desc->render_pass->resolution,
             .width = desc->render_pass->resolution,
             .draw_list = desc->render_pass->draw_list,
             .multisample = PipelineMultisampleCount_1x,
-            .swapchain = NULL,
             .color =
                 &(RenderPassColorAttachment){
                     .texture = color_texture,

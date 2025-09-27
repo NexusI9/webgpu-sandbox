@@ -21,7 +21,6 @@
 #include "webgpu/webgpu.h"
 
 static void scene_renderer_render(void *);
-
 static double scene_renderer_dpi(double);
 
 void scene_renderer_init(SceneRenderer *renderer,
@@ -34,7 +33,7 @@ void scene_renderer_init(SceneRenderer *renderer,
   clock_create(&renderer->clock);
 
   TIMER("AO Bake", {
-    ao_bake_init(&renderer->texture.ambient_occlusion,
+    ao_bake_init(&renderer->texture.ambient_occlusion, 
                  &(AOBakeInitDescriptor){
                      .size = AO_TEXTURE_RESOLUTION,
                      .layer_count = AO_LAYER_COUNT,
@@ -50,7 +49,7 @@ void scene_renderer_init(SceneRenderer *renderer,
                       });
 
     ubo_init(&renderer->ubo);
-
+ 
     ssbo_init(&renderer->ssbo);
   }
 
@@ -102,7 +101,7 @@ void scene_renderer_add_draw_callback(SceneRenderer *renderer,
   if (renderer->draw.callbacks.length == SCENE_RENDERER_MAX_HOOK) {
     logger_add(LoggerFlag_Warning, "Max draw hook reached.\n");
     return;
-  }
+  } 
 
   // add hook
   renderer->draw.callbacks.entries[renderer->draw.callbacks.length++] =
@@ -111,7 +110,7 @@ void scene_renderer_add_draw_callback(SceneRenderer *renderer,
           .data = data,
       };
 }
-
+ 
 void scene_renderer_render(void *desc) {
   SceneRendererRenderDescriptor *config = (SceneRendererRenderDescriptor *)desc;
  
