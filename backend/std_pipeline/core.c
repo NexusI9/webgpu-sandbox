@@ -26,7 +26,7 @@
 #include "runtime/pipeline/set.h"
 #include "webgpu/webgpu.h"
 
-// Global definitions
+// Global definitions 
 RenderPipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
 ComputePipeline g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT] = {0};
 
@@ -82,49 +82,43 @@ void standard_render_pipelines_init(
                                                 .path = layout->shader_path,
                                                 .pso = layout,
                                             });
-
+ 
     {
-      /* ===  CHECK CUSTOM ATTRIBUTES (weak check) === */
+      /* ===  CHECK CUSTOM ATTRIBUTES === */
       // vertex state
-      if (layout->pipeline_attributes.vertex_state.entryPoint != NULL)
+      if (layout->pipeline_attributes.vertex_state)
         render_pipeline_set_vertex(cached_pipeline,
                                    layout->pipeline_attributes.vertex_state);
-
+ 
       // fragment state
-      if (layout->pipeline_attributes.fragment_state.entryPoint != NULL)
+      if (layout->pipeline_attributes.fragment_state)
         render_pipeline_set_fragment(
-            cached_pipeline, &layout->pipeline_attributes.fragment_state);
+            cached_pipeline, layout->pipeline_attributes.fragment_state);
 
       // primitive state
-      if (layout->pipeline_attributes.primitive_state.cullMode !=
-          WGPUCullMode_Undefined)
+      if (layout->pipeline_attributes.primitive_state)
         render_pipeline_set_primitive(
             cached_pipeline, layout->pipeline_attributes.primitive_state);
 
       // stencil state
-      if (layout->pipeline_attributes.stencil_state.format !=
-              WGPUTextureFormat_Undefined ||
-          layout->pipeline_attributes.stencil_state.depthCompare !=
-              WGPUCompareFunction_Undefined)
+      if (layout->pipeline_attributes.stencil_state)
         render_pipeline_set_stencil(cached_pipeline,
                                     layout->pipeline_attributes.stencil_state);
 
       // color state
-      if (layout->pipeline_attributes.color_state.format !=
-          WGPUTextureFormat_Undefined)
+      if (layout->pipeline_attributes.color_state)
         render_pipeline_set_color(cached_pipeline,
-                                  &layout->pipeline_attributes.color_state);
+                                  layout->pipeline_attributes.color_state);
 
       // blend state
-      if (layout->pipeline_attributes.blend_state.alpha.dstFactor)
+      if (layout->pipeline_attributes.blend_state)
         render_pipeline_set_blend(cached_pipeline,
-                                  &layout->pipeline_attributes.blend_state);
+                                  layout->pipeline_attributes.blend_state);
 
       // if sampling set in custom attbutes, apply the config one
-      if (layout->pipeline_attributes.multisample_state.count !=
-          PipelineMultisampleCount_Undefined) {
+      if (layout->pipeline_attributes.multisample_state) {
         render_pipeline_set_multisample(
-            cached_pipeline, &layout->pipeline_attributes.multisample_state);
+            cached_pipeline, layout->pipeline_attributes.multisample_state);
       } else {
         // else use the renderer one
         render_pipeline_set_sampling(cached_pipeline, multisample);

@@ -1,9 +1,9 @@
 #ifndef _PIPELINE_LAYOUT_SOLID_H_
 #define _PIPELINE_LAYOUT_SOLID_H_
 
-#include "runtime/pipeline/pipeline.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/pipeline.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
@@ -11,11 +11,11 @@
 
 static const RenderPipelineStateObject layout_solid = {
     .label = "Pipeline Bind Groups - Solid",
-    .shader_path =
-        "./backend/std_pipeline/render_shader/solid/solid.wgsl",
+    .shader_path = "./backend/std_pipeline/render_shader/solid/solid.wgsl",
     .bind_groups_count = 1,
     .bind_groups = {&mvp_layout},
     .bindings = {.mvp = &mvp_binding},
+    .pipeline_attributes = {.stencil_state = &selectable_stencil},
 };
 
 #endif

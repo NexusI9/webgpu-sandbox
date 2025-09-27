@@ -105,6 +105,7 @@ void mesh_draw(MeshTopology topology, Shader *shader,
                                        WGPU_WHOLE_SIZE);
   wgpuRenderPassEncoderSetIndexBuffer(render_pass, index_buffer,
                                       MESH_INDEX_FORMAT, 0, WGPU_WHOLE_SIZE);
+  wgpuRenderPassEncoderSetStencilReference(render_pass, 1);
   wgpuRenderPassEncoderDrawIndexed(render_pass, index_length, 1, 0, 0, 0);
 }
 

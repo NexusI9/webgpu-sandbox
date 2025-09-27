@@ -125,7 +125,6 @@ void render_pass_list_draw_onscreen_multisample(RenderPassList *list) {
   WGPUTextureView swapchain_view =
       wgpuSwapChainGetCurrentTextureView(list->swapchain);
 
-  // WGPURenderPassEncoder msaa_pass[RENDER_PASS_MAX_DRAW_LIST],
   WGPURenderPassEncoder resolve_pass[RENDER_PASS_MAX_DRAW_LIST];
 
   // Go through and draw each mode render pass
@@ -163,10 +162,9 @@ void render_pass_list_draw_onscreen_multisample(RenderPassList *list) {
   // finally release swapchain texture
   wgpuTextureViewRelease(swapchain_view);
 
-  for (size_t i = 0; i < list->length; i++) {
+  for (size_t i = 0; i < list->length; i++) 
     wgpuRenderPassEncoderRelease(resolve_pass[i]);
-    // wgpuRenderPassEncoderRelease(msaa_pass[i]);
-  }
+  
 }
 
 void render_pass_list_draw_onscreen_monosample(RenderPassList *list) {

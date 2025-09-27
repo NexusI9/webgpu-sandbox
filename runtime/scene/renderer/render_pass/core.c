@@ -54,46 +54,41 @@ void render_pass_create(RenderPass *render_pass,
 
   {
     // === create render textures ===
-
-    RenderPassTextureDescriptor texture_config = {
-        .height = desc->height,
-        .width = desc->width,
-        .multisample = render_pass->multisample,
-    };
-
     if (desc->color) {
+
+      RenderPassTextureDescriptor color_tex_config = {
+          .height = desc->height,
+          .width = desc->width,
+          .multisample = render_pass->multisample,
+          .format = desc->color->format,
+      };
+
       // assign color attributes
       render_pass->color.texture = desc->color->texture;
 
       WGPUTextureView *main_color_view = &render_pass->color.views[0];
 
-      if (desc->color->view == NULL) {
+      if (desc->color->attachment.view == NULL) {
 
         render_pass_create_resolve_view(&render_pass->resolve_texture,
                                         &render_pass->resolve_view,
-                                        &texture_config);
+                                        &color_tex_config);
 
         if (desc->multisample > PipelineMultisampleCount_1x) {
 
           render_pass_create_multisampling_view(&render_pass->msaa_texture,
                                                 &render_pass->msaa_view,
-                                                &texture_config);
+                                                &color_tex_config);
 
           render_pass->color.texture = render_pass->msaa_texture;
           *main_color_view = render_pass->msaa_view;
         }
       } else {
-        *main_color_view = desc->color->view;
+        *main_color_view = desc->color->attachment.view;
       }
 
-      render_pass->color.attachment = (WGPURenderPassColorAttachment){
-          .view = *main_color_view,
-          .clearValue = desc->color->clear_value,
-          .depthSlice = desc->color->depth_slice,
-          .loadOp = desc->color->load_op,
-          .storeOp = desc->color->store_op,
-      };
-
+      render_pass->color.attachment = desc->color->attachment;
+      render_pass->color.attachment.view = *main_color_view;
       render_pass->color.views_length = 1;
 
       post_fx_init(&render_pass->post_fx, &(PostFxDescriptor){});
@@ -106,26 +101,30 @@ void render_pass_create(RenderPass *render_pass,
     }
 
     if (desc->depth) {
+
       render_pass->depth.texture = desc->depth->texture;
 
       WGPUTextureView *main_depth_view = &render_pass->depth.views[0];
-      if (desc->depth->view == NULL) {
+      if (desc->depth->attachment.view == NULL) {
+
+        RenderPassTextureDescriptor depth_tex_config = {
+            .height = desc->height,
+            .width = desc->width,
+            .multisample = render_pass->multisample,
+            .format = desc->depth->format,
+        };
+
         render_pass_create_depth_view(&render_pass->depth.texture,
-                                      main_depth_view, &texture_config);
+                                      main_depth_view, &depth_tex_config);
       } else {
-        *main_depth_view = desc->depth->view;
+        *main_depth_view = desc->depth->attachment.view;
       }
 
       // assign depth
-      render_pass->depth.attachment = (WGPURenderPassDepthStencilAttachment){
-          .view = *main_depth_view,
-          .depthClearValue = desc->depth->clear_value,
-          .depthReadOnly = desc->depth->read_only,
-          .depthLoadOp = desc->depth->load_op,
-          .depthStoreOp = desc->depth->store_op,
-      };
-
+      render_pass->depth.attachment = desc->depth->attachment;
+      render_pass->depth.attachment.view = *main_depth_view;
       render_pass->depth.views_length = 1;
+
     }
   }
 
@@ -166,8 +165,6 @@ void render_pass_list_insert_pass(RenderPassList *list,
                          .width = desc->width,
                          .height = desc->height,
                          .multisample = desc->multisample,
-
-                         // list inherited properties
                          .swapchain = list->swapchain,
                      });
 }
@@ -282,4 +279,3 @@ WGPUTextureView render_pass_view_color(RenderPass *pass, size_t index) {
 WGPUTextureView render_pass_view_depth(RenderPass *pass, size_t index) {
   return pass->depth.views[index];
 }
-

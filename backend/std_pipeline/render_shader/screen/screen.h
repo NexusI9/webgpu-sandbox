@@ -64,16 +64,6 @@ static const RenderPipelineStateObject layout_screen = {
                    "screen/screen.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&screen_layout_mesh, &screen_layout_texture},
-    /* .pipeline_attributes =
-         {
-             .primitive_state =
-                 (WGPUPrimitiveState){
-                     .frontFace = WGPUFrontFace_CCW,
-                     .cullMode = WGPUCullMode_None,
-                     .topology = WGPUPrimitiveTopology_TriangleList,
-                     .stripIndexFormat = WGPUIndexFormat_Undefined,
-                 },
-         },*/
     .bindings = {.mvp = &mvp_binding},
 };
 

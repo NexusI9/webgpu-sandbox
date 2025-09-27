@@ -1,9 +1,9 @@
 #ifndef _PIPELINE_LAYOUT_SKYBOX_H_
 #define _PIPELINE_LAYOUT_SKYBOX_H_
 
-#include "runtime/pipeline/pipeline.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/pipeline.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
@@ -49,29 +49,30 @@ static const WGPUBindGroupLayoutDescriptor skybox_layout_bind_group = {
         },
 };
 
+static const WGPUPrimitiveState skybox_primitive = {
+    .frontFace = WGPUFrontFace_CCW,
+    .cullMode = WGPUCullMode_Front,
+    .topology = WGPUPrimitiveTopology_TriangleList,
+    .stripIndexFormat = WGPUIndexFormat_Undefined,
+};
+
+static const WGPUDepthStencilState skybox_stencil = {
+    .depthWriteEnabled = false,
+    .depthCompare = WGPUCompareFunction_LessEqual,
+    .format = TEXTURE_FORMAT_DEPTH,
+};
+
 static const RenderPipelineStateObject layout_skybox = {
     .label = "Pipeline Bind Groups - Skybox",
-    .shader_path =
-        "./backend/std_pipeline/render_shader/skybox/skybox.wgsl",
+    .shader_path = "./backend/std_pipeline/render_shader/skybox/skybox.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &skybox_layout_bind_group},
     .pipeline_attributes =
         {
             // set cull to front face (inside cube)
-            .primitive_state =
-                (WGPUPrimitiveState){
-                    .frontFace = WGPUFrontFace_CCW,
-                    .cullMode = WGPUCullMode_Front,
-                    .topology = WGPUPrimitiveTopology_TriangleList,
-                    .stripIndexFormat = WGPUIndexFormat_Undefined,
-                },
+            .primitive_state = &skybox_primitive,
             // remove depth write, set depth comparison
-            .stencil_state =
-                (WGPUDepthStencilState){
-                    .depthWriteEnabled = false,
-                    .depthCompare = WGPUCompareFunction_LessEqual,
-                    .format = TEXTURE_FORMAT_DEPTH,
-                },
+            .stencil_state = &skybox_stencil,
         },
     .bindings = {.mvp = &mvp_binding},
 

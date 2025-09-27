@@ -88,7 +88,7 @@ void render_pipeline_create(RenderPipeline *pipeline,
 
   // Stencil State
   pipeline->stencil_state = (WGPUDepthStencilState){
-      .format = TEXTURE_FORMAT_DEPTH,
+      .format = TEXTURE_FORMAT_DEPTH_STENCIL,
       .depthWriteEnabled = true,
       .depthCompare = WGPUCompareFunction_Less,
   };

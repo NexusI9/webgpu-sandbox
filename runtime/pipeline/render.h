@@ -121,13 +121,13 @@ typedef struct {
   size_t bind_groups_count;
 
   struct {
-    WGPUVertexState vertex_state;
-    WGPUFragmentState fragment_state;
-    WGPUPrimitiveState primitive_state;
-    WGPUDepthStencilState stencil_state;
-    WGPUBlendState blend_state;
-    WGPUMultisampleState multisample_state;
-    WGPUColorTargetState color_state;
+    const WGPUVertexState *vertex_state;
+    const WGPUFragmentState *fragment_state;
+    const WGPUPrimitiveState *primitive_state;
+    const WGPUDepthStencilState *stencil_state;
+    const WGPUBlendState *blend_state;
+    const WGPUMultisampleState *multisample_state;
+    const WGPUColorTargetState *color_state;
   } pipeline_attributes;
 
   RenderPipelineBinding bindings;

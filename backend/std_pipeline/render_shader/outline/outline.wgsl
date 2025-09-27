@@ -42,17 +42,36 @@ struct Viewport {
   let camera = uCamera;
   let viewport = uViewport;
 
+  let thickness = 0.0015f;
+
+  // Transform to world space
+  let worldPos = uMesh.model * vec4<f32>(input.aPos, 1.0);
+  let worldNorm = normalize((uMesh.model * vec4<f32>(input.aNorm, 0.0)).xyz);
+  let worldTan = normalize((uMesh.model * vec4<f32>(input.aTan.xyz, 0.0)).xyz);
+
+  // Transform to view space
+  let viewPos = (uCamera.view * worldPos).xyz;
+  let viewNorm = normalize((uCamera.view * vec4<f32>(worldNorm, 0.0)).xyz);
+  let viewTan = normalize((uCamera.view * vec4<f32>(worldTan, 0.0)).xyz);
+
+  // Scale along view-space normal based on distance
+  let distance = length(viewPos);
+  let inflatedViewPos = viewPos + viewNorm * (thickness * distance);
+
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = viewport.projection * camera.view;
 
   var output : VertexOut;
-  output.Position = cam * mesh.model * vec4<f32>(input.aPos, 1.0);
+
+  output.Position = uViewport.projection * vec4<f32>(inflatedViewPos, 1.0);
   output.vCol = input.aCol;
+  
 
   return output;
 }
 
 // fragment shader
 @fragment fn fs_main(@location(0) vCol : vec3<f32>) -> @location(0) vec4<f32> {
-  return vec4<f32>(vCol, 1.0);
+  // return vec4<f32>(vCol, 1.0);
+  return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
 }

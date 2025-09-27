@@ -30,6 +30,9 @@ static inline void scene_build_mesh_solid(Scene *, Mesh *, const ScenePipeline);
 static inline void scene_build_mesh_wireframe(Scene *, Mesh *,
                                               const ScenePipeline);
 
+static inline void scene_build_mesh_outline(Scene *, Mesh *,
+                                            const ScenePipeline);
+
 static inline void scene_build_mesh_fixed(Scene *, Mesh *, const ScenePipeline);
 
 static inline void scene_build_mesh_boundbox(Scene *, Mesh *,
@@ -77,6 +80,7 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
       // Build Boundbox & Wireframe by default for selection (maybe temporary
       // cause we may switch to an outline based visual for the selection)
       scene_build_mesh_boundbox(scene, mesh, pipeline);
+      scene_build_mesh_outline(scene, mesh, pipeline);
     }
 
     // Dynamic rendering
@@ -189,6 +193,24 @@ void scene_build_mesh_solid(Scene *scene, Mesh *mesh,
 }
 
 /**
+   Build meshes Solid shader in each scene list
+   Establish pipeline from previously set bind groups
+ */
+void scene_build_mesh_outline(Scene *scene, Mesh *mesh,
+                              const ScenePipeline pipeline) {
+
+#ifdef VERBOSE_BUILDING_PHASE
+  logger_add(LoggerFlag_MeshBuild, "Outline %s", mesh->name);
+#endif
+
+  // create meshes' solid shader
+  mesh_shader_create_standard(mesh, MeshShader_Outline);
+
+  // bind views
+  mesh_shader_build_mvp(mesh, MeshShader_Outline, &scene->renderer.ssbo);
+}
+
+/**
    Build meshes Wireframe shader in each scene list
    Establish pipeline from previously set bind groups
  */
@@ -216,7 +238,8 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
   // we need to add this extra precaution here.
   // Finally, when we switch from the current "boundbox" selection highlight to
   // the "outline" based one we should be able to remove this extra condition
-  if (mesh_shader_create_standard(mesh, MeshShader_Wireframe) == MeshStatus_Success)
+  if (mesh_shader_create_standard(mesh, MeshShader_Wireframe) ==
+      MeshStatus_Success)
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
 }
 
@@ -236,12 +259,13 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
   mesh_topology_boundbox_create(&mesh->topology.base, mesh->model, dest_topo);
 
   // create meshes' wireframe shader
-  if (mesh_shader_create_standard(mesh, MeshShader_Wireframe) == MeshStatus_Success) {
-    
+  if (mesh_shader_create_standard(mesh, MeshShader_Wireframe) ==
+      MeshStatus_Success) {
+
     // set wireframe random color
     shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 0,
                                &(color){randf(), randf(), randf(), 1.0f});
-    
+
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
   }
 }

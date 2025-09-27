@@ -1,9 +1,9 @@
 #ifndef _PIPELINE_LAYOUT_UNLIT_H_
 #define _PIPELINE_LAYOUT_UNLIT_H_
 
-#include "runtime/pipeline/pipeline.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/pipeline.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
@@ -38,13 +38,21 @@ static const WGPUBindGroupLayoutDescriptor unlint_layout_bind_group = {
         },
 };
 
+static const WGPUDepthStencilState unlit_stencil = {
+    .format = TEXTURE_FORMAT_DEPTH, // USED BECAUSE OF GIZMO, BUT
+                                    // MAYBE NEED TO CREATE A NE
+                                    // DEDICATED PIPELINE FOR GIZMO
+    .depthWriteEnabled = true,
+    .depthCompare = WGPUCompareFunction_Less,
+};
+
 static const RenderPipelineStateObject layout_unlit = {
     .label = "Pipeline Bind Groups - Unlit",
-    .shader_path =
-        "./backend/std_pipeline/render_shader/unlit/unlit.wgsl",
+    .shader_path = "./backend/std_pipeline/render_shader/unlit/unlit.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &unlint_layout_bind_group},
     .bindings = {.mvp = &mvp_binding},
+    .pipeline_attributes = {.stencil_state = &unlit_stencil},
 };
 
 #endif

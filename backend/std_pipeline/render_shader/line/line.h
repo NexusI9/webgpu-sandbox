@@ -1,9 +1,9 @@
 #ifndef _PIPELINE_LAYOUT_LINE_H_
 #define _PIPELINE_LAYOUT_LINE_H_
 
-#include "runtime/pipeline/pipeline.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/pipeline.h"
 #include "runtime/viewport/viewport.h"
 #include "utils/color.h"
 
@@ -29,22 +29,19 @@ static const WGPUBindGroupLayoutDescriptor line_bind_group = {
         },
 };
 
+static const WGPUPrimitiveState line_primitive = {
+    .frontFace = WGPUFrontFace_CCW,
+    .cullMode = WGPUCullMode_None,
+    .topology = WGPUPrimitiveTopology_TriangleList,
+    .stripIndexFormat = WGPUIndexFormat_Undefined,
+};
+
 static const RenderPipelineStateObject layout_line = {
     .label = "Pipeline Bind Groups - Line",
-    .shader_path =
-        "./backend/std_pipeline/render_shader/line/line.wgsl",
+    .shader_path = "./backend/std_pipeline/render_shader/line/line.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &line_bind_group},
-    .pipeline_attributes =
-        {
-            .primitive_state =
-                (WGPUPrimitiveState){
-                    .frontFace = WGPUFrontFace_CCW,
-                    .cullMode = WGPUCullMode_None,
-                    .topology = WGPUPrimitiveTopology_TriangleList,
-                    .stripIndexFormat = WGPUIndexFormat_Undefined,
-                },
-        },
+    .pipeline_attributes = {.primitive_state = &line_primitive},
     .bindings = {.mvp = &mvp_binding},
 };
 

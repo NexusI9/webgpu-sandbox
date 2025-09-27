@@ -164,32 +164,38 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
                      });
 
   // set render pass
-  render_pass_create(desc->pass,
-                     &(RenderPassCreateDescriptor){
-                         .label = "Shadow Map Pass",
-                         .color =
-                             &(RenderPassColorAttachment){
-                                 .texture = color_texture,
-                                 .view = color_view,
-                                 .clear_value = {0.0f, 0.0f, 0.0f, 1.0f},
-                                 .load_op = WGPULoadOp_Clear,
-                                 .store_op = WGPUStoreOp_Store,
-                                 .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
-                             },
-                         .depth =
-                             &(RenderPassDepthAttachment){
-                                 .texture = depth_texture,
-                                 .view = depth_view,
-                                 .clear_value = 1.0f,
-                                 .load_op = WGPULoadOp_Clear,
-                                 .store_op = WGPUStoreOp_Store,
-                             },
-                         .height = desc->height,
-                         .width = desc->width,
-                         .swapchain = NULL,
-                         .multisample = PipelineMultisampleCount_1x,
-                         .draw_list = desc->draw_list,
-                     });
+  render_pass_create(
+      desc->pass, &(RenderPassCreateDescriptor){
+                      .label = "Shadow Map Pass",
+                      .color =
+                          &(RenderPassColorAttachment){
+                              .texture = color_texture,
+                              .attachment =
+                                  {
+                                      .view = color_view,
+                                      .clearValue = {0.0f, 0.0f, 0.0f, 1.0f},
+                                      .loadOp = WGPULoadOp_Clear,
+                                      .storeOp = WGPUStoreOp_Store,
+                                      .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+                                  },
+                          },
+                      .depth =
+                          &(RenderPassDepthAttachment){
+                              .texture = depth_texture,
+                              .attachment =
+                                  {
+                                      .view = depth_view,
+                                      .depthClearValue = 1.0f,
+                                      .depthLoadOp = WGPULoadOp_Clear,
+                                      .depthStoreOp = WGPUStoreOp_Store,
+                                  },
+                          },
+                      .height = desc->height,
+                      .width = desc->width,
+                      .swapchain = NULL,
+                      .multisample = PipelineMultisampleCount_1x,
+                      .draw_list = desc->draw_list,
+                  });
 }
 
 void shadow_map_pass_preprocessor_callback(const RenderPass *pass, Mesh *mesh,

@@ -1,9 +1,9 @@
 #ifndef _PIPELINE_LAYOUT_SHADOW_H_
 #define _PIPELINE_LAYOUT_SHADOW_H_
 
-#include "runtime/pipeline/render.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
@@ -18,6 +18,32 @@ static const PipelineBindingMVP shadow_mvp = {
     .model = 2,
 };
 
+static const WGPUMultisampleState shadow_multisample = {
+    .alphaToCoverageEnabled = false,
+    .mask = 0xFFFFFFFF,
+    .count = PipelineMultisampleCount_1x,
+};
+
+static const WGPUDepthStencilState shadow_stencil = {
+    .format = SHADOW_DEPTH_FORMAT,
+    .depthWriteEnabled = true,
+    .depthCompare = WGPUCompareFunction_Less,
+};
+
+static const WGPUPrimitiveState shadow_primitive_back = {
+    .frontFace = WGPUFrontFace_CCW,
+    .cullMode = WGPUCullMode_Back,
+    .topology = WGPUPrimitiveTopology_TriangleList,
+    .stripIndexFormat = WGPUIndexFormat_Undefined,
+};
+
+static const WGPUPrimitiveState shadow_primitive_front = {
+    .frontFace = WGPUFrontFace_CCW,
+    .cullMode = WGPUCullMode_Back,
+    .topology = WGPUPrimitiveTopology_TriangleList,
+    .stripIndexFormat = WGPUIndexFormat_Undefined,
+};
+
 static const RenderPipelineStateObject layout_shadow = {
     .label = "Pipeline Bind Groups - Shadow",
     .shader_path = "./backend/std_pipeline/render_shader/"
@@ -26,60 +52,27 @@ static const RenderPipelineStateObject layout_shadow = {
     .bind_groups = {&mp_layout},
     .pipeline_attributes =
         {
-            .multisample_state =
-                (WGPUMultisampleState){
-                    .alphaToCoverageEnabled = false,
-                    .mask = 0xFFFFFFFF,
-                    .count = PipelineMultisampleCount_1x,
-                },
-            .stencil_state =
-                (WGPUDepthStencilState){
-                    .format = SHADOW_DEPTH_FORMAT,
-                    .depthWriteEnabled = true,
-                    .depthCompare = WGPUCompareFunction_Less,
-                },
+            .multisample_state = &shadow_multisample,
+            .stencil_state = &shadow_stencil,
 
             /* need to set the cullback to FRONT for point light because
              * the light POV render is flipped on the X axis to match
              * the cubemap coordinates, such negative scaling lead to
              * set the cullback to front.*/
-            .primitive_state =
-                (WGPUPrimitiveState){
-                    .frontFace = WGPUFrontFace_CCW,
-                    .cullMode = WGPUCullMode_Front,
-                    .topology = WGPUPrimitiveTopology_TriangleList,
-                    .stripIndexFormat = WGPUIndexFormat_Undefined,
-                },
+            .primitive_state = &shadow_primitive_front,
         },
 };
 
 static const RenderPipelineStateObject layout_shadow_cullback = {
     .label = "Pipeline Bind Groups - Shadow Cullback",
-    .shader_path =
-        "./backend/std_pipeline/render_shader/shadow/shadow.wgsl",
+    .shader_path = "./backend/std_pipeline/render_shader/shadow/shadow.wgsl",
     .bind_groups_count = 1,
     .bind_groups = {&mp_layout},
     .pipeline_attributes =
         {
-            .multisample_state =
-                (WGPUMultisampleState){
-                    .alphaToCoverageEnabled = false,
-                    .mask = 0xFFFFFFFF,
-                    .count = PipelineMultisampleCount_1x,
-                },
-            .stencil_state =
-                (WGPUDepthStencilState){
-                    .format = SHADOW_DEPTH_FORMAT,
-                    .depthWriteEnabled = true,
-                    .depthCompare = WGPUCompareFunction_Less,
-                },
-            .primitive_state =
-                (WGPUPrimitiveState){
-                    .frontFace = WGPUFrontFace_CCW,
-                    .cullMode = WGPUCullMode_Back,
-                    .topology = WGPUPrimitiveTopology_TriangleList,
-                    .stripIndexFormat = WGPUIndexFormat_Undefined,
-                },
+            .multisample_state = &shadow_multisample,
+            .stencil_state = &shadow_stencil,
+            .primitive_state = &shadow_primitive_back,
         },
 };
 

@@ -116,33 +116,40 @@ probe_reflection_list_create_core(const ProbeReflectionCreateCore *desc) {
     });
 
     // create render pass preset
-    render_pass_create(desc->render_pass->handle,
-                       &(RenderPassCreateDescriptor){
-                           .label = "Probe Reflection List Render Pass",
-                           .height = desc->render_pass->resolution,
-                           .width = desc->render_pass->resolution,
-                           .draw_list = desc->render_pass->draw_list,
-                           .multisample = PipelineMultisampleCount_1x,
-                           .swapchain = NULL,
-                           .color =
-                               &(RenderPassColorAttachment){
-                                   .clear_value = {0},
-                                   .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
-                                   .load_op = WGPULoadOp_Clear,
-                                   .store_op = WGPUStoreOp_Store,
-                                   .texture = color_texture,
-                                   .view = color_view,
-                               },
-                           .depth =
-                               &(RenderPassDepthAttachment){
-                                   .clear_value = 1.0f,
-                                   .load_op = WGPULoadOp_Clear,
-                                   .store_op = WGPUStoreOp_Store,
-                                   .read_only = false,
-                                   .texture = depth_texture,
-                                   .view = depth_view,
-                               },
-                       });
+    render_pass_create(
+        desc->render_pass->handle,
+        &(RenderPassCreateDescriptor){
+            .label = "Probe Reflection List Render Pass",
+            .height = desc->render_pass->resolution,
+            .width = desc->render_pass->resolution,
+            .draw_list = desc->render_pass->draw_list,
+            .multisample = PipelineMultisampleCount_1x,
+            .swapchain = NULL,
+            .color =
+                &(RenderPassColorAttachment){
+                    .texture = color_texture,
+                    .attachment =
+                        {
+                            .clearValue = {0},
+                            .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+                            .loadOp = WGPULoadOp_Clear,
+                            .storeOp = WGPUStoreOp_Store,
+                            .view = color_view,
+                        },
+                },
+            .depth =
+                &(RenderPassDepthAttachment){
+                    .texture = depth_texture,
+                    .attachment =
+                        {
+                            .depthClearValue = 1.0f,
+                            .depthLoadOp = WGPULoadOp_Clear,
+                            .depthStoreOp = WGPUStoreOp_Store,
+                            .depthReadOnly = false,
+                            .view = depth_view,
+                        },
+                },
+        });
   }
 
   return create;

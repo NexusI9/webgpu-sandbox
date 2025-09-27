@@ -30,6 +30,32 @@ static const WGPUBindGroupLayoutDescriptor blit_bind_group_layout = {
         },
 };
 
+static const WGPUPrimitiveState blit_primitive = {
+    .topology = WGPUPrimitiveTopology_TriangleList,
+    .frontFace = WGPUFrontFace_CCW,
+    .cullMode = WGPUCullMode_None, // no cullmode
+    .stripIndexFormat = WGPUIndexFormat_Undefined,
+};
+
+static const WGPUDepthStencilState blit_depth_stencil = {
+    .format = WGPUTextureFormat_Undefined, // no stencil & depth
+    .depthWriteEnabled = false,
+    .depthCompare = WGPUCompareFunction_Always,
+};
+
+static const WGPUMultisampleState blit_multisample = {
+    .count = 1,
+    .mask = ~0u,
+    .alphaToCoverageEnabled = false,
+};
+
+static const WGPUVertexState blit_vertex = {
+    .bufferCount = 0,
+    .buffers = NULL,
+    .entryPoint = "vs_main",
+    .module = RENDER_PIPELINE_SET_KEEP_MODULE,
+};
+
 static const RenderPipelineStateObject layout_blit = {
     .label = "Pipeline Blit / Fullscreen Pass",
     .shader_path = "./backend/std_pipeline/render_shader/blit/blit.wgsl",
@@ -37,32 +63,11 @@ static const RenderPipelineStateObject layout_blit = {
     .bind_groups = {&blit_bind_group_layout},
     .pipeline_attributes =
         {
-            .primitive_state =
-                (WGPUPrimitiveState){
-                    .topology = WGPUPrimitiveTopology_TriangleList,
-                    .frontFace = WGPUFrontFace_CCW,
-                    .cullMode = WGPUCullMode_None, // no cullmode
-                    .stripIndexFormat = WGPUIndexFormat_Undefined,
-                },
-            .stencil_state =
-                (WGPUDepthStencilState){
-                    .format = WGPUTextureFormat_Undefined, // no stencil & depth
-                    .depthWriteEnabled = false,
-                    .depthCompare = WGPUCompareFunction_Always,
-                },
-            .multisample_state =
-                (WGPUMultisampleState){
-                    .count = 1,
-                    .mask = ~0u,
-                    .alphaToCoverageEnabled = false,
-                },
-            .vertex_state =
-                (WGPUVertexState){
-                    .bufferCount = 0,
-                    .buffers = NULL,
-                    .entryPoint = "vs_main",
-                    .module = RENDER_PIPELINE_SET_KEEP_MODULE,
-                },
+            .primitive_state = &blit_primitive,
+            .stencil_state = &blit_depth_stencil,
+            .multisample_state = &blit_multisample,
+            .vertex_state = &blit_vertex,
+
         },
     .bindings = {0},
 };

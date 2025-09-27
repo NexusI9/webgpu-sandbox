@@ -6,6 +6,7 @@
 #include "debug/core.h"
 #include "renderer/core.h"
 #include "renderer/render_pass/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/shader.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -38,6 +39,12 @@ scene_draw_layouts_init(Scene *scene,
           },
   };
 
+  const RenderPassDrawLayoutDescriptor layout_selection = {
+      .meshes = scene_pipeline(scene, ScenePipeline_Fixed_Selection),
+      .shader = MeshShader_Outline,
+      .topology_callback = mesh_topology_base,
+  };
+
   // Texture draw configuration
   const RenderPassDrawListDescriptor texture_draw_list = {
       .length = 8,
@@ -66,12 +73,7 @@ scene_draw_layouts_init(Scene *scene,
                   .topology_callback = mesh_topology_base,
               },
               // Fixed
-              {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Fixed_Selection),
-                  .shader = MeshShader_Wireframe,
-                  .topology_callback = mesh_topology_boundbox,
-              },
+              layout_selection,
               {
                   .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
                   .shader = MeshShader_Fixed,
@@ -113,12 +115,7 @@ scene_draw_layouts_init(Scene *scene,
                   .topology_callback = mesh_topology_base,
               },
               // Fixed
-              {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Fixed_Selection),
-                  .shader = MeshShader_Wireframe,
-                  .topology_callback = mesh_topology_boundbox,
-              },
+              layout_selection,
               {
                   .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
                   .shader = MeshShader_Fixed,
@@ -162,12 +159,7 @@ scene_draw_layouts_init(Scene *scene,
                   .topology_callback = mesh_topology_wireframe,
               },
               // Fixed
-              {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Fixed_Selection),
-                  .shader = MeshShader_Wireframe,
-                  .topology_callback = mesh_topology_boundbox,
-              },
+              layout_selection,
               {
                   .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
                   .shader = MeshShader_Fixed,
@@ -210,12 +202,7 @@ scene_draw_layouts_init(Scene *scene,
                   .topology_callback = mesh_topology_boundbox,
               },
               // Fixed
-              {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Fixed_Selection),
-                  .shader = MeshShader_Wireframe,
-                  .topology_callback = mesh_topology_boundbox,
-              },
+              layout_selection,
               {
                   .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
                   .shader = MeshShader_Fixed,
@@ -268,24 +255,27 @@ scene_draw_layouts_init(Scene *scene,
     render_pass_list_create(&pass_list[i], &list_config);
 
     RenderPassColorAttachment scene_color_attachment = {
-        .view = NULL,
-        .clear_value = scene->renderer.background,
-        .load_op = WGPULoadOp_Clear,
-        .store_op = WGPUStoreOp_Store,
-        .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
-    };
+        .attachment = {
+            .view = RENDER_PASS_VIEW_CREATE,
+            .clearValue = scene->renderer.background,
+            .loadOp = WGPULoadOp_Clear,
+            .storeOp = WGPUStoreOp_Store,
+            .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+        }};
 
     RenderPassDepthAttachment scene_depth_attachment = {
-        .view = NULL,
-        // Allow depth write
-        .read_only = false,
-        // Far plane
-        .clear_value = 1.0f,
-        // Keep depth for later use
-        .store_op = WGPUStoreOp_Store,
-        // Clear depth at start of render pass
-        .load_op = WGPULoadOp_Clear,
-    };
+        .format = TEXTURE_FORMAT_DEPTH_STENCIL,
+        .attachment = {
+            .view = RENDER_PASS_VIEW_CREATE,
+            .depthReadOnly = false,
+            .depthClearValue = 1.0f,
+            .depthStoreOp = WGPUStoreOp_Store,
+            .depthLoadOp = WGPULoadOp_Clear,
+            .stencilLoadOp = WGPULoadOp_Clear,
+            .stencilStoreOp = WGPUStoreOp_Store,
+            .stencilClearValue = 0,
+            .stencilReadOnly = false,
+        }};
 
     // add scene draw list
     const RenderPassListInsert scene_pass = {
@@ -303,22 +293,22 @@ scene_draw_layouts_init(Scene *scene,
     // add gizmo draw list
 
     RenderPassColorAttachment gizmo_color_attachment = {
-        .view = NULL,
-        .clear_value = 0,
-        .load_op = WGPULoadOp_Load,
-        .store_op = WGPUStoreOp_Discard,
-        .depth_slice = WGPU_DEPTH_SLICE_UNDEFINED,
-    };
+        .attachment = {
+            .view = RENDER_PASS_VIEW_CREATE,
+            .clearValue = 0,
+            .loadOp = WGPULoadOp_Load,
+            .storeOp = WGPUStoreOp_Discard,
+            .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
+        }};
 
     RenderPassDepthAttachment gizmo_depth_attachment = {
-        .view = NULL,
-        .read_only = false,
-        .clear_value = 1.0f,
-        // clear previously rendered depth
-        .load_op = WGPULoadOp_Clear,
-        // do not store it afterward
-        .store_op = WGPUStoreOp_Discard,
-    };
+        .attachment = {
+            .view = RENDER_PASS_VIEW_CREATE,
+            .depthReadOnly = false,
+            .depthClearValue = 1.0f,
+            .depthLoadOp = WGPULoadOp_Clear,
+            .depthStoreOp = WGPUStoreOp_Discard,
+        }};
 
     const RenderPassListInsert gizmo_pass = {
         .label = "Gizmo Render Pass",

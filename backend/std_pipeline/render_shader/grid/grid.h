@@ -1,9 +1,9 @@
 #ifndef _PIPELINE_LAYOUT_GRID_H_
 #define _PIPELINE_LAYOUT_GRID_H_
 
-#include "runtime/pipeline/pipeline.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/pipeline.h"
 #include "runtime/scene/editor/object/grid/grid.h"
 #include "runtime/viewport/viewport.h"
 
@@ -30,28 +30,29 @@ static const WGPUBindGroupLayoutDescriptor grid_bind_group = {
         },
 };
 
+static const WGPUPrimitiveState grid_primitive = {
+    .frontFace = WGPUFrontFace_CCW,
+    .cullMode = WGPUCullMode_None,
+    .topology = WGPUPrimitiveTopology_TriangleList,
+    .stripIndexFormat = WGPUIndexFormat_Undefined,
+};
+
+static const WGPUDepthStencilState grid_stencil = {
+    .format = TEXTURE_FORMAT_DEPTH_STENCIL,
+    .depthWriteEnabled = false,
+    .depthCompare = WGPUCompareFunction_Less,
+};
+
 static const RenderPipelineStateObject layout_grid = {
     .label = "Pipeline Bind Groups - Grid",
-    .shader_path =
-        "./backend/std_pipeline/render_shader/grid/grid.wgsl",
+    .shader_path = "./backend/std_pipeline/render_shader/grid/grid.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &grid_bind_group},
     .pipeline_attributes =
         {
             // double sided
-            .primitive_state =
-                (WGPUPrimitiveState){
-                    .frontFace = WGPUFrontFace_CCW,
-                    .cullMode = WGPUCullMode_None,
-                    .topology = WGPUPrimitiveTopology_TriangleList,
-                    .stripIndexFormat = WGPUIndexFormat_Undefined,
-                },
-            .stencil_state =
-                (WGPUDepthStencilState){
-                    .format = TEXTURE_FORMAT_DEPTH,
-                    .depthWriteEnabled = false,
-                    .depthCompare = WGPUCompareFunction_Less,
-                },
+            .primitive_state = &grid_primitive,
+            .stencil_state = &grid_stencil,
         },
     .bindings = {.mvp = &mvp_binding},
 };

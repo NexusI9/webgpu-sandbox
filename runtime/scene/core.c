@@ -121,7 +121,7 @@ void scene_mesh_list_init(Scene *scene) {
     mesh_ref_list_create(&scene->built_mesh[m],
                          SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
-  // init pool
+  // init pool 
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 }
 

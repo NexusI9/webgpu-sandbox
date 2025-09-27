@@ -6,12 +6,12 @@
    Define custom vertex state for pipeline prior building it
  */
 void render_pipeline_set_vertex(RenderPipeline *pipeline,
-                                const WGPUVertexState state) {
+                                const WGPUVertexState* state) {
 
   WGPUShaderModule tmp_module = pipeline->vertex_state.module;
-  pipeline->vertex_state = state;
+  pipeline->vertex_state = *state;
 
-  if (state.module == RENDER_PIPELINE_SET_KEEP_MODULE)
+  if (state->module == RENDER_PIPELINE_SET_KEEP_MODULE)
     pipeline->vertex_state.module = tmp_module;
 }
 
@@ -38,16 +38,16 @@ void render_pipeline_set_color(RenderPipeline *pipeline,
    Define custom primitive state for pipeline prior building it
  */
 void render_pipeline_set_primitive(RenderPipeline *pipeline,
-                                   const WGPUPrimitiveState state) {
-  pipeline->primitive_state = state;
+                                   const WGPUPrimitiveState *state) {
+  pipeline->primitive_state = *state;
 }
 
 /**
    Define custom stencil state for pipeline prior building it
  */
 void render_pipeline_set_stencil(RenderPipeline *pipeline,
-                                 const WGPUDepthStencilState state) {
-  pipeline->stencil_state = state;
+                                 const WGPUDepthStencilState* state) {
+  pipeline->stencil_state = *state;
 }
 
 void render_pipeline_set_blend(RenderPipeline *pipeline,

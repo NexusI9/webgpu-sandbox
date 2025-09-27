@@ -14,7 +14,7 @@
 #define RENDER_PASS_DRAW_LAYOUT_MAX_MESH_LIST 6
 #define RENDER_PASS_MAX_DRAW_LIST 12
 #define RENDER_PASS_COUNT 2
-#define RENDER_PASS_VIEW_CREATE -1
+#define RENDER_PASS_VIEW_CREATE 0
 #define RENDER_PASS_VIEW_OVERRIDE_NONE 0
 #define RENDER_PASS_VIEW_CAPACITY 256
 
@@ -110,24 +110,19 @@ typedef struct {
   const int width;
   const int height;
   const RenderPipelineMultisampleCount multisample;
+  const WGPUTextureFormat format;
 } RenderPassTextureDescriptor;
 
 typedef struct {
   WGPUTexture texture;
-  WGPUTextureView view;
-  WGPULoadOp load_op;
-  WGPUStoreOp store_op;
-  uint32_t clear_value;
-  bool read_only;
+  WGPUTextureFormat format;
+  WGPURenderPassDepthStencilAttachment attachment;
 } RenderPassDepthAttachment;
 
 typedef struct {
   WGPUTexture texture;
-  WGPUTextureView view;
-  WGPULoadOp load_op;
-  WGPUStoreOp store_op;
-  WGPUColor clear_value;
-  uint32_t depth_slice;
+  WGPUTextureFormat format;
+  WGPURenderPassColorAttachment attachment;
 } RenderPassColorAttachment;
 
 typedef struct {
@@ -158,10 +153,6 @@ typedef struct {
   int height;
   RenderPipelineMultisampleCount multisample;
 } RenderPassListCreate;
-
-typedef struct {
-
-} RenderPassDrawDescriptor;
 
 struct RenderPassDrawOptions {
   WGPUTextureView color, depth;

@@ -22,6 +22,11 @@ void render_pass_create_multisampling_view(
     WGPUTexture *texture, WGPUTextureView *view,
     const RenderPassTextureDescriptor *desc) {
 
+  WGPUTextureFormat format = desc->format;
+
+  if (format == WGPUTextureFormat_Undefined)
+    format = TEXTURE_FORMAT_ONSCREEN;
+
   if (desc->multisample == 0) {
     logger_add(LoggerFlag_Warning,
                "Multisample provided is not valid (%d), make sure the "
@@ -59,22 +64,26 @@ void render_pass_create_resolve_view(WGPUTexture *texture,
                                      WGPUTextureView *view,
                                      const RenderPassTextureDescriptor *desc) {
 
+  WGPUTextureFormat format = desc->format;
+
+  if (format == WGPUTextureFormat_Undefined)
+    format = TEXTURE_FORMAT_ONSCREEN;
+
   *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Resolve Texture",
-          .usage = WGPUTextureUsage_TextureBinding |
-                   WGPUTextureUsage_RenderAttachment,
-          .size =
-              (WGPUExtent3D){
-                  .width = desc->width,
-                  .height = desc->height,
-                  .depthOrArrayLayers = 1,
-              },
-          .format = TEXTURE_FORMAT_ONSCREEN, // swapchain format
-          .sampleCount = PipelineMultisampleCount_1x,
-          .mipLevelCount = 1,
-      });
+      context_device(), &(WGPUTextureDescriptor){
+                            .label = "Resolve Texture",
+                            .usage = WGPUTextureUsage_TextureBinding |
+                                     WGPUTextureUsage_RenderAttachment,
+                            .size =
+                                (WGPUExtent3D){
+                                    .width = desc->width,
+                                    .height = desc->height,
+                                    .depthOrArrayLayers = 1,
+                                },
+                            .format = format, // swapchain format
+                            .sampleCount = PipelineMultisampleCount_1x,
+                            .mipLevelCount = 1,
+                        });
 
   *view = wgpuTextureCreateView(*texture, NULL);
 }
@@ -87,30 +96,38 @@ void render_pass_create_depth_view(WGPUTexture *texture, WGPUTextureView *view,
   // backgrounds...)
   // => Need to create a depth texture: a hidden buffer storing depth values for
   // each pixel
-  *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .usage = WGPUTextureUsage_RenderAttachment, // used in rendering pass
-          .size =
-              (WGPUExtent3D){
-                  .width = desc->width,
-                  .height = desc->height,
-                  .depthOrArrayLayers = 1,
-              },
-          .format = TEXTURE_FORMAT_DEPTH, // texture with 24bit-depth format
-          .mipLevelCount = 1,
-          .sampleCount = desc->multisample,
-          .dimension = WGPUTextureDimension_2D,
-      });
 
-  *view = wgpuTextureCreateView(
-      *texture, &(WGPUTextureViewDescriptor){
-                    .format = WGPUTextureFormat_Depth24Plus,
-                    .dimension = WGPUTextureViewDimension_2D,
-                    .baseMipLevel = 0,
-                    .mipLevelCount = 1, // match above texture
-                    .baseArrayLayer = 0,
-                    .arrayLayerCount = 1, // not using array texture (only 1)
-                    .aspect = WGPUTextureAspect_DepthOnly,
-                });
+  WGPUTextureFormat format = desc->format;
+  WGPUTextureAspect aspect = WGPUTextureAspect_DepthOnly;
+
+  if (format == WGPUTextureFormat_Undefined)
+    format = TEXTURE_FORMAT_DEPTH;
+  else if (format == WGPUTextureFormat_Depth24PlusStencil8)
+    aspect = WGPUTextureAspect_All;
+
+  *texture = wgpuDeviceCreateTexture(
+      context_device(), &(WGPUTextureDescriptor){
+                            .usage = WGPUTextureUsage_RenderAttachment,
+                            .size =
+                                (WGPUExtent3D){
+                                    .width = desc->width,
+                                    .height = desc->height,
+                                    .depthOrArrayLayers = 1,
+                                },
+                            .format = format,
+                            .mipLevelCount = 1,
+                            .sampleCount = desc->multisample,
+                            .dimension = WGPUTextureDimension_2D,
+                        });
+
+  *view = wgpuTextureCreateView(*texture,
+                                &(WGPUTextureViewDescriptor){
+                                    .format = format,
+                                    .dimension = WGPUTextureViewDimension_2D,
+                                    .baseMipLevel = 0,
+                                    .mipLevelCount = 1,
+                                    .baseArrayLayer = 0,
+                                    .arrayLayerCount = 1,
+                                    .aspect = aspect,
+                                });
 }

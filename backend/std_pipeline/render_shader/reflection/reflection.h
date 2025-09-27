@@ -13,6 +13,24 @@
 #include "runtime/texture/texture.h"
 #include <webgpu/webgpu.h>
 
+static const WGPUMultisampleState reflection_multisample = {
+    .alphaToCoverageEnabled = false,
+    .mask = 0xFFFFFFFF,
+    .count = PipelineMultisampleCount_1x,
+};
+
+static const WGPUColorTargetState reflection_color = {
+    .format = TEXTURE_FORMAT_OFFSCREEN,
+    .writeMask = WGPUColorWriteMask_All,
+    .blend = NULL,
+};
+
+static const WGPUDepthStencilState reflection_stencil = {
+    .format = TEXTURE_FORMAT_DEPTH,
+    .depthWriteEnabled = true,
+    .depthCompare = WGPUCompareFunction_Less,
+};
+
 static const RenderPipelineStateObject layout_reflection = {
     .label = "Pipeline Bind Groups - Reflection",
     .shader_path = "../backend/std_pipeline/render_shader/reflection/"
@@ -26,18 +44,10 @@ static const RenderPipelineStateObject layout_reflection = {
         },
     .pipeline_attributes =
         {
-            .multisample_state =
-                (WGPUMultisampleState){
-                    .alphaToCoverageEnabled = false,
-                    .mask = 0xFFFFFFFF,
-                    .count = PipelineMultisampleCount_1x,
-                },
-            .color_state =
-                (WGPUColorTargetState){
-                    .format = TEXTURE_FORMAT_OFFSCREEN,
-                    .writeMask = WGPUColorWriteMask_All,
-                    .blend = NULL,
-                },
+            .multisample_state = &reflection_multisample,
+            .color_state = &reflection_color,
+            .stencil_state = &reflection_stencil,
+
         },
     .bindings =
         {
@@ -45,6 +55,7 @@ static const RenderPipelineStateObject layout_reflection = {
             .light_list = &pbr_light_list,
             .probe = NULL,
         },
+
 };
 
 #endif
