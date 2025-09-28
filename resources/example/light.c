@@ -21,6 +21,7 @@ void example_light(Scene *scene) {
                         },
                         LightShadow_None, NULL);
 
+
   scene_add_sun_light(scene,
                       &(SunLightDescriptor){
                           .position = {15.0f, 15.0f, 15.0f},
@@ -29,6 +30,7 @@ void example_light(Scene *scene) {
                           .size = 10.0f,
                       },
                       LightShadow_Enabled, NULL);
+
 
   /*
     scene_add_spot_light(scene,

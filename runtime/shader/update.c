@@ -29,8 +29,10 @@ shader_update_texture_view(Shader *shader, const bind_group_index group_index,
   if (bound_texture != NULL) {
 
     // clear the previous texture view if it is NOT a std texture
-    if (!is_std_texture_view(bound_texture->texture_view))
+    if (!is_std_texture_view(bound_texture->texture_view)) {
       wgpuTextureViewRelease(bound_texture->texture_view);
+      bound_texture->texture_view = NULL;
+    }
 
     // replace the value
     bound_texture->texture_view = view;

@@ -55,10 +55,13 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
   UBOManager *ubo = &scene->renderer.ubo;
 
   if (pipeline >= ScenePipeline_Fixed_Background) {
-    // === Fixed rendering ===
-    // (NOT part of shader/topology creation automation, meaning
-    // it's the developer responsibility to create the relative topology and
-    // shaders.)
+    /*
+      === Fixed rendering ===
+
+     (NOT part of shader/topology creation automation, meaning
+     it's the developer responsibility to create the relative topology and
+     shaders.)
+    */
 
     scene_build_mesh_fixed(scene, mesh, pipeline);
 
@@ -67,8 +70,8 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
     // === Dynamic rendering ===
 
     {
-      // flag mesh as built to make sure we don't build it twice (for dynamic
-      // rendering)
+      // flag mesh as built to make sure we don't build it twice
+      // (for dynamic rendering)
       MeshRefList *cache_built = &scene->built_mesh[draw_mode];
       if (mesh_ref_list_find(cache_built, mesh, NULL) != NULL)
         return SceneStatus_MeshAlreadyBuilt;
@@ -77,9 +80,6 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
 
     {
       // EDITORONLY
-      // Build Boundbox & Wireframe by default for selection (maybe temporary
-      // cause we may switch to an outline based visual for the selection)
-      scene_build_mesh_boundbox(scene, mesh, pipeline);
       scene_build_mesh_outline(scene, mesh, pipeline);
     }
 
@@ -87,7 +87,7 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
     switch (draw_mode) {
 
     case SceneRendererDrawMode_Boundbox:
-      // scene_build_mesh_boundbox(scene, mesh, pipeline);
+      scene_build_mesh_boundbox(scene, mesh, pipeline);
       break;
 
     case SceneRendererDrawMode_Solid:
@@ -152,21 +152,26 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
         mesh, scene->planes_reflection.pass.color.attachment.view,
         scene->probes_reflection.pass.color.attachment.view, ssbo);
   }
+
   if (pipeline &
       (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
 
     mesh_shader_texture_update_lights(mesh, MeshShader_Texture, ubo, ssbo);
     mesh_shader_texture_update_lights(mesh, MeshShader_Reflection, ubo, ssbo);
   }
+
   if (pipeline & ScenePipeline_Dynamic_LitShadow) {
+    
     mesh_shader_texture_bind_shadow_maps(
         mesh, scene->lights.point.shadow.pass.depth.attachment.view,
         scene->lights.spot.shadow.pass.depth.attachment.view);
 
     // create mesh shadow shader
     mesh_shader_create_standard(mesh, MeshShader_Shadow);
+
     mesh_shader_build_mp(mesh, MeshShader_Shadow, ssbo,
                          SSBOType_ViewProjection);
+
   }
 }
 
@@ -233,17 +238,15 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
   MeshTopologyWireframe *dest_topo = &mesh->topology.wireframe;
   mesh_topology_wireframe_create(&src_topo, dest_topo);
 
-  // create meshes' wireframe shader
-  // usually we don't need to check if the shader is already created cause we
-  // cache each mesh ptr in the mesh_built list to check if it's already been
-  // built based on the render mode or not.
-  // However the wireframe shader is used for the boundbox and the wireframe, so
-  // we need to add this extra precaution here.
-  // Finally, when we switch from the current "boundbox" selection highlight to
-  // the "outline" based one we should be able to remove this extra condition
   if (mesh_shader_create_standard(mesh, MeshShader_Wireframe) ==
-      MeshStatus_Success)
+      MeshStatus_Success) {
+
+    // set wireframe random color
+    shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 0,
+                               &(color){randf(), randf(), randf(), 1.0f});
+
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
+  }
 }
 
 /**
@@ -287,7 +290,5 @@ void scene_build_mesh_fixed(Scene *scene, Mesh *mesh,
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
                                        &mesh->topology.boundbox);
-
-  // bind views
   mesh_shader_build_mvp(mesh, MeshShader_Fixed, &scene->renderer.ssbo);
 }

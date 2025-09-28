@@ -292,6 +292,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
     // recompute shadow map if render mode
     if (scene_renderer_draw_mode(&scene->renderer) ==
         SceneRendererDrawMode_Texture)
+
       shadow_map_draw_sun_light(
           &(ShadowMapDrawSunLightDescriptor){
               .light = new_light,
@@ -384,7 +385,7 @@ SceneEditorObject *scene_add_camera(Scene *scene,
 void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
 
   MeshRefList *pipeline_mesh_list = scene_pipeline(scene, ScenePipeline_Fixed);
-  
+
   for (size_t i = 0; i < seo->meshes.length; i++) {
     SceneEditorObjectMesh *seom = &seo->meshes.entries[i];
     Mesh *mesh = seom->mesh;
@@ -404,8 +405,8 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
 
     {
       // add to scene selection (SEO pipeline) with target
-      scene_selection_add_mesh(&scene->editor.selection, mesh,
-                               (void *)seo, SceneSelectionType_SEO);
+      scene_selection_add_mesh(&scene->editor.selection, mesh, (void *)seo,
+                               SceneSelectionType_SEO);
     }
   }
 }

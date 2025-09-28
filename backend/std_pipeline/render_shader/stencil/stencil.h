@@ -4,6 +4,29 @@
 #include "../commons.h"
 #include <webgpu/webgpu.h>
 
+static const WGPUDepthStencilState selectable_stencil = {
+    .format = TEXTURE_FORMAT_DEPTH_STENCIL,
+    .depthWriteEnabled = false,
+    .depthCompare = WGPUCompareFunction_Less,
+    .stencilFront =
+        (WGPUStencilFaceState){
+            .compare = WGPUCompareFunction_Always,
+            .failOp = WGPUStencilOperation_Keep,
+            .depthFailOp = WGPUStencilOperation_Keep,
+            .passOp = WGPUStencilOperation_Replace,
+        },
+    .stencilBack =
+        (WGPUStencilFaceState){
+            .compare = WGPUCompareFunction_Always,
+            .failOp = WGPUStencilOperation_Keep,
+            .depthFailOp = WGPUStencilOperation_Keep,
+            .passOp = WGPUStencilOperation_Replace,
+        },
+    .stencilReadMask = 0xFF,
+    .stencilWriteMask = 0xFF,
+};
+
+
 static const RenderPipelineStateObject layout_stencil = {
     .label = "Pipeline Bind Groups - Stencil",
     .shader_path = "./backend/std_pipeline/render_shader/stencil/stencil.wgsl",

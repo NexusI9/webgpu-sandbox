@@ -237,6 +237,7 @@ void scene_light_list_init(Scene *scene) {
                   },
           },
   });
+
 }
 
 /**

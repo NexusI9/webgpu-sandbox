@@ -86,26 +86,4 @@ static const WGPUBindGroupLayoutDescriptor mp_layout = {
         },
 };
 
-static const WGPUDepthStencilState selectable_stencil = {
-    .format = TEXTURE_FORMAT_DEPTH_STENCIL,
-    .depthWriteEnabled = false,
-    .depthCompare = WGPUCompareFunction_Less,
-    .stencilFront =
-        (WGPUStencilFaceState){
-            .compare = WGPUCompareFunction_Always,
-            .failOp = WGPUStencilOperation_Keep,
-            .depthFailOp = WGPUStencilOperation_Keep,
-            .passOp = WGPUStencilOperation_Replace,
-        },
-    .stencilBack =
-        (WGPUStencilFaceState){
-            .compare = WGPUCompareFunction_Always,
-            .failOp = WGPUStencilOperation_Keep,
-            .depthFailOp = WGPUStencilOperation_Keep,
-            .passOp = WGPUStencilOperation_Replace,
-        },
-    .stencilReadMask = 0xFF,
-    .stencilWriteMask = 0xFF,
-};
-
 #endif

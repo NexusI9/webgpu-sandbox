@@ -8,9 +8,9 @@
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/std_texture/core.h"
-#include "runtime/texture/core.h"
 #include "core.h"
 #include "runtime/pipeline/render.h"
+#include "runtime/texture/core.h"
 #include "utils/dyli.h"
 #include "webgpu/webgpu.h"
 
@@ -173,12 +173,14 @@ void shader_convert_textures(ShaderBindGroup *bindgroup,
   // (basically the same just without data and callback attributes)
 
   for (int j = 0; j < bindgroup->textures.length; j++) {
+    
     ShaderBindGroupTextureEntry *current_entry =
         &bindgroup->textures.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .textureView = current_entry->texture_view,
     };
+
   }
 }
 
@@ -243,8 +245,10 @@ WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *group) {
 }
 
 void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
-  if (shader_bind_group->bind_group != NULL)
+  if (shader_bind_group->bind_group != NULL) {
     wgpuBindGroupRelease(shader_bind_group->bind_group);
+    shader_bind_group->bind_group = NULL;
+  }
 }
 
 /**

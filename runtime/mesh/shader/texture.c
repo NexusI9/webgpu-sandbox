@@ -1,11 +1,14 @@
 #include "texture.h"
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
-#include "runtime/light/shadow_map/core.h"
-#include "webgpu/webgpu.h"
+#include "backend/logger.h"
+#include "backend/ssbo.h"
 #include "backend/ubo.h"
+#include "core.h"
+#include "runtime/light/shadow_map/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/uniform.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/core.h"
@@ -14,10 +17,7 @@
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
-#include "backend/logger.h"
-#include "core.h"
-#include "backend/ssbo.h"
-#include "runtime/mesh/core.h"
+#include "webgpu/webgpu.h"
 
 /**
    Clear the texture shader bind groups of mesh
@@ -80,6 +80,7 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
   shader_update_texture_view(shader, bindings->light_list->group,
                              bindings->light_list->point_texture,
                              point_texture_view, texture_format);
+
 
   shader_update_texture_view(shader, bindings->light_list->group,
                              bindings->light_list->directional_texture,

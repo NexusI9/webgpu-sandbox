@@ -39,7 +39,7 @@ static inline void render_pass_draw_callback_swapchain(RenderPass *);
 static inline WGPUCommandEncoder render_pass_im_begin(RenderPass *);
 static inline void render_pass_im_draw(RenderPass *);
 static inline void render_pass_im_end(RenderPass *);
-static inline void render_pass_im_set_overrides(RenderPass *,
+static inline void render_pass_im_set_views(RenderPass *,
                                                 const RenderPassDrawOptions *);
 
 // Pass List
@@ -82,8 +82,6 @@ static inline void list_tmp(RenderPassList *);
 
  */
 
-// DEBUG
-static int t = 0;
 void render_pass_list_draw(RenderPassList *list) {
 
   /*
@@ -107,14 +105,6 @@ void render_pass_list_draw(RenderPassList *list) {
     RenderPass *pass = &list->passes[i];
     pass->command_encoder = command_encoder;
     render_pass_draw(pass);
-
-    {
-      // DEBUG
-      if (t++ < 20) {
-        printf("<%p> '%s' pass color view: %p\n", list->shared.color.view,
-               pass->label, pass->color.attachment.view);
-      }
-    }
   }
 
   {
@@ -216,7 +206,7 @@ WGPUCommandEncoder render_pass_im_begin(RenderPass *pass) {
   return pass->command_encoder;
 }
 
-void render_pass_im_set_overrides(RenderPass *pass,
+void render_pass_im_set_views(RenderPass *pass,
                                   const RenderPassDrawOptions *overrides) {
   if (overrides && overrides->color)
     pass->color.attachment.view = overrides->color;

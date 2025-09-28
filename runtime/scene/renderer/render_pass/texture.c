@@ -156,9 +156,6 @@ void render_pass_list_create_shared_texture_color(
       *dst_v = list->shared.color.view;
   }
 
-  // DEBUG
-  printf("view: %p\n", list->shared.color.view);
-
   // replace all passes views with the shared one
   for (uint16_t i = 0; i < list->length; i++) {
     RenderPass *pass = &list->passes[i];
@@ -166,14 +163,14 @@ void render_pass_list_create_shared_texture_color(
     // eventually release the old one
     if (storage == RenderPassTextureStorage_Release) {
       wgpuTextureViewRelease(pass->color.attachment.view);
+      pass->color.attachment.view = NULL;
+
       wgpuTextureRelease(pass->color.texture);
+      pass->color.texture = NULL;
     }
 
     pass->color.attachment.view = list->shared.color.view;
     pass->color.texture = list->shared.color.texture;
-
-    // DEBUG
-    printf("[%d] pass: %p\n", i, pass->color.attachment.view);
   }
 }
 
