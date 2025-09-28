@@ -54,6 +54,11 @@ static const struct {
             .name = "Mesh Std Shader - Outline",
             .pipeline_type = RenderPipelineType_Outline,
         },
+    [MeshShader_Stencil] =
+        {
+            .name = "Mesh Std Shader - Stencil",
+            .pipeline_type = RenderPipelineType_Stencil,
+        },
 };
 
 /**

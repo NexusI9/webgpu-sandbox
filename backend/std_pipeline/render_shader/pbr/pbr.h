@@ -386,7 +386,6 @@ static const RenderPipelineStateObject layout_pbr = {
             .light_list = &pbr_light_list,
             .probe = &pbr_probe,
         },
-    .pipeline_attributes = {.stencil_state = &selectable_stencil},
 };
 
 #endif

@@ -285,7 +285,7 @@ typedef enum {
 
 typedef enum {
   ScenePass_Default,
-  ScenePass_Selection,
+  ScenePass_Outline,
   ScenePass_Gizmo,
 } ScenePass;
 

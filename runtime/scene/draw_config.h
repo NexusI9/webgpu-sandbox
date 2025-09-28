@@ -41,7 +41,7 @@ scene_draw_layouts_init(Scene *scene,
           },
   };
 
-  const RenderPassDrawListDescriptor selection_draw_list = {
+  const RenderPassDrawListDescriptor outline_draw_list = {
       .length = 1,
       .entries =
           {
@@ -55,9 +55,15 @@ scene_draw_layouts_init(Scene *scene,
           },
   };
 
+  const RenderPassDrawLayoutDescriptor stencil_layout = {
+      .meshes = scene_pipeline(scene, ScenePipeline_Fixed_Selection),
+      .shader = MeshShader_Stencil,
+      .topology_callback = mesh_topology_base,
+  };
+
   // Texture draw configuration
   const RenderPassDrawListDescriptor texture_draw_list = {
-      .length = 7,
+      .length = 8,
       .entries =
           {
               {
@@ -66,6 +72,7 @@ scene_draw_layouts_init(Scene *scene,
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_base,
               },
+              stencil_layout,
               {
                   .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Lit),
                   .shader = MeshShader_Texture,
@@ -104,9 +111,10 @@ scene_draw_layouts_init(Scene *scene,
 
   // Solid draw configuration
   const RenderPassDrawListDescriptor solid_draw_list = {
-      .length = 6,
+      .length = 7,
       .entries =
           {
+              stencil_layout,
               {
                   .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Lit),
                   .shader = MeshShader_Solid,
@@ -349,7 +357,7 @@ scene_draw_layouts_init(Scene *scene,
 
      */
 
-    RenderPassColorAttachment selection_color_attachment = {
+    RenderPassColorAttachment outline_color_attachment = {
         .attachment = {
             .view = shared_color_view,
             .clearValue = 0,
@@ -358,7 +366,7 @@ scene_draw_layouts_init(Scene *scene,
             .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
         }};
 
-    RenderPassDepthAttachment selection_depth_attachment = {
+    RenderPassDepthAttachment outline_depth_attachment = {
         .attachment = {
             .view = shared_depth_view,
             .depthReadOnly = false,
@@ -371,18 +379,18 @@ scene_draw_layouts_init(Scene *scene,
             .stencilReadOnly = false,
         }};
 
-    const RenderPassCreateDescriptor selection_pass = {
+    const RenderPassCreateDescriptor outline_pass = {
         .type = RenderPassType_OnScreen,
-        .label = "Selection Render Pass",
+        .label = "Outline Render Pass",
         .multisample = multisample,
         .width = render_width,
         .height = render_height,
-        .color = &selection_color_attachment,
-        .depth = &selection_depth_attachment,
-        .draw_list = &selection_draw_list,
+        .color = &outline_color_attachment,
+        .depth = &outline_depth_attachment,
+        .draw_list = &outline_draw_list,
     };
 
-    render_pass_list_insert_pass(&pass_list[i], &selection_pass);
+    render_pass_list_insert_pass(&pass_list[i], &outline_pass);
 
     /*
                 ▗▄▄▖▗▄▄▄▖▗▄▄▄▄▖▗▖  ▗▖ ▗▄▖

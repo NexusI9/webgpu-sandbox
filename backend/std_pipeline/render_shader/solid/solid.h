@@ -15,7 +15,6 @@ static const RenderPipelineStateObject layout_solid = {
     .bind_groups_count = 1,
     .bind_groups = {&mvp_layout},
     .bindings = {.mvp = &mvp_binding},
-    .pipeline_attributes = {.stencil_state = &selectable_stencil},
 };
 
 #endif

@@ -1,5 +1,5 @@
 #include "core.h"
- 
+
 #include <stddef.h>
 
 #include "./render_shader/billboard/billboard.h"
@@ -22,11 +22,12 @@
 #include "backend/std_pipeline/compute_shader/mipmap/mipmap.h"
 #include "backend/std_pipeline/render_shader/blit/blit.h"
 #include "backend/std_pipeline/render_shader/outline/outline.h"
+#include "backend/std_pipeline/render_shader/stencil/stencil.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/pipeline/set.h"
 #include "webgpu/webgpu.h"
- 
-// Global definitions 
+
+// Global definitions
 RenderPipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
 ComputePipeline g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT] = {0};
 
@@ -52,14 +53,15 @@ static const RenderPipelineStateObject
         [RenderPipelineType_Reflection] = &layout_reflection,
         [RenderPipelineType_Blit] = &layout_blit,
         [RenderPipelineType_Outline] = &layout_outline,
-};  
+        [RenderPipelineType_Stencil] = &layout_stencil,
+};
 
 static const ComputePipelineStateObject
     *standard_compute_layouts[COMPUTE_PIPELINE_TYPE_COUNT] = {
         [ComputePipelineType_Mipmap] = &layout_mipmap,
         [ComputePipelineType_Kawase] = &layout_kawase,
 };
-    
+ 
 /**
    Initialize standards shaders and build pipelines layout for each of them.
 
@@ -82,14 +84,14 @@ void standard_render_pipelines_init(
                                                 .path = layout->shader_path,
                                                 .pso = layout,
                                             });
- 
+
     {
       /* ===  CHECK CUSTOM ATTRIBUTES === */
       // vertex state
       if (layout->pipeline_attributes.vertex_state)
         render_pipeline_set_vertex(cached_pipeline,
                                    layout->pipeline_attributes.vertex_state);
- 
+
       // fragment state
       if (layout->pipeline_attributes.fragment_state)
         render_pipeline_set_fragment(

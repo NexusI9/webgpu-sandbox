@@ -17,20 +17,29 @@ void scene_selection_mesh_highlight(MeshRefList *meshes,
 
   Scene *scene = (Scene *)data;
 
-  MeshRefList *ref_list = scene_pipeline(scene, ScenePipeline_Fixed_Selection);
+  MeshRefList *selection_list =
+      scene_pipeline(scene, ScenePipeline_Fixed_Selection);
 
-  RenderPass *pass =
-      &scene->renderer.draw.render_pass[scene->renderer.draw.mode]
-           .passes[ScenePass_Selection];
+  ScenePass target_pass[2] = {
+      ScenePass_Default,
+      ScenePass_Outline,
+  };
 
-  RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
-      pass, scene_pipeline(scene, ScenePipeline_Fixed_Selection));
+  // enable mesh in each fixed selection of each pass (outline + stencil)
+  for (uint8_t i = 0; i < 2; i++) {
+    RenderPass *pass =
+        &scene->renderer.draw.render_pass[scene->renderer.draw.mode]
+             .passes[target_pass[i]];
 
-  if (layout) {
-    render_pass_layout_disable_all_mesh(layout);
-    for (size_t i = 0; i < selection->length; i++) {
-      Mesh *mesh = selection->entries[i].mesh;
-      render_pass_layout_enable_mesh(layout, mesh);
+    RenderPassDrawLayout *layout =
+        render_pass_find_layout_from_source_list(pass, selection_list);
+
+    if (layout) {
+      render_pass_layout_disable_all_mesh(layout);
+      for (size_t i = 0; i < selection->length; i++) {
+        Mesh *mesh = selection->entries[i].mesh;
+        render_pass_layout_enable_mesh(layout, mesh);
+      }
     }
   }
 };

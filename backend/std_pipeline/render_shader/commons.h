@@ -88,7 +88,7 @@ static const WGPUBindGroupLayoutDescriptor mp_layout = {
 
 static const WGPUDepthStencilState selectable_stencil = {
     .format = TEXTURE_FORMAT_DEPTH_STENCIL,
-    .depthWriteEnabled = true,
+    .depthWriteEnabled = false,
     .depthCompare = WGPUCompareFunction_Less,
     .stencilFront =
         (WGPUStencilFaceState){

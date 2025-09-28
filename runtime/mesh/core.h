@@ -25,7 +25,6 @@
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
 #define MESH_INDEX_FORMAT WGPUIndexFormat_Uint32
-#define MESH_STD_SHADER_COUNT 7
 
 typedef struct Mesh Mesh;
 
@@ -43,6 +42,8 @@ typedef struct {
   size_t length;
 } MeshRefList;
 
+#define MESH_STD_SHADER_COUNT 8
+
 typedef enum {
   MeshShader_Texture,
   MeshShader_Fixed,
@@ -51,6 +52,7 @@ typedef enum {
   MeshShader_Solid,
   MeshShader_Wireframe,
   MeshShader_Outline,
+  MeshShader_Stencil,
 } MeshShader;
 
 // Builder Pattern | Descriptor Pattern

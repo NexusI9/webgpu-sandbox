@@ -27,7 +27,7 @@
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
 
-// initializers 
+// initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
 static inline void scene_light_list_init(Scene *);
 static inline void scene_camera_init(Scene *);
