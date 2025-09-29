@@ -405,7 +405,7 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
 
     {
       // add to scene selection (SEO pipeline) with target
-      scene_selection_add_mesh(&scene->editor.selection, mesh, (void *)seo,
+      scene_selection_subscribe_mesh(&scene->editor.selection, mesh, (void *)seo,
                                SceneSelectionType_SEO);
     }
   }
@@ -577,7 +577,7 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
 
   // EDITORONLY (add mesh to selection)
   if ((flag & SceneAddFlag_Unselectable) == 0)
-    scene_selection_add_mesh(&scene->editor.selection, mesh, NULL,
+    scene_selection_subscribe_mesh(&scene->editor.selection, mesh, NULL,
                              selection_pipeline);
 }
 

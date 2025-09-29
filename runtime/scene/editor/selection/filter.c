@@ -42,7 +42,7 @@ void scene_selection_filter_set_all_active(SceneSelectionFilter *filter) {
   for (size_t i = 0; i < filter->meshes.length; i++) {
     Mesh *mesh = filter->meshes.entries[i];
     scene_selection_filter_selection_add_mesh(filter, mesh, &i);
-  } 
+  }
 
   if (filter->highlight_callback)
     filter->highlight_callback(&filter->meshes, &filter->selection,
@@ -58,7 +58,7 @@ void scene_selection_filter_set_all_inactive(SceneSelectionFilter *filter) {
 
   if (filter->highlight_callback)
     filter->highlight_callback(&filter->meshes, &filter->selection,
-                               filter->highlight_data);
+                                filter->highlight_data);
 }
 
 /**
@@ -66,11 +66,25 @@ void scene_selection_filter_set_all_inactive(SceneSelectionFilter *filter) {
    Returns the target filter or NULL if not found.
  */
 SceneSelectionFilter *
-scene_selection_filter_find_mesh(SceneSelection *selection, Mesh *mesh) {
+scene_selection_filter_find_mesh(SceneSelection *selection, Mesh *mesh,
+                                 bool *selected) {
 
   for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
     SceneSelectionFilter *filter = &selection->filters[i];
+
+    // first search in selected meshes (usually shorter)
+    for (size_t j = 0; j < filter->selection.length; j++) {
+      if (filter->selection.entries[j].mesh == mesh) {
+        if (selected)
+          *selected = true;
+	return filter;
+      }
+    }
+
+    // then seach in wider mesh list if not found in selection
     if (mesh_ref_list_find(&filter->meshes, mesh, NULL)) {
+      if (selected)
+        *selected = false;
       return filter;
     }
   }

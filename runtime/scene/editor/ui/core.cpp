@@ -9,12 +9,15 @@
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
+#include "runtime/scene/editor/selection/core.h"
+#include "runtime/scene/editor/selection/filter.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/editor/selection/utils.h"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
 #include "stdio.h"
+#include <stdint.h>
 
 /* TODO: make context available in the scene editor ui, but may interfere witht
  * the "pure C" approach since SceneEditorUI is included in Scene.
@@ -567,6 +570,18 @@ void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
         ImGui::PushID(mesh->id);
         if (ImGui::TreeNodeEx(mesh->name, flags)) {
 
+          if (ImGui::IsItemClicked()) {
+
+            SceneSelectionFilter *filter = scene_selection_filter(
+                &scene->editor.selection, SceneSelectionType_Mesh);
+
+            scene_selection_filter_selection_add_mesh(filter, mesh, NULL);
+
+            if (filter->highlight_callback)
+              filter->highlight_callback(&filter->meshes, &filter->selection,
+                                         scene);
+          }
+
           if (mesh->children.length == 0)
             ImGui::TreePop();
         }
@@ -611,6 +626,16 @@ void scene_editor_ui_create_monitor(SceneEditorUI *ui, Scene *scene) {
   ImGui::End();
 }
 
+static const struct {
+  const GizmoMode mode;
+  const char *label;
+  const SceneEditorUIIcon icon;
+} gizmo_button[] = {
+    {GizmoMode_Position, "Position", SceneEditorUIIcon_Gizmo_Position},
+    {GizmoMode_Rotation, "Rotate", SceneEditorUIIcon_Gizmo_Rotate},
+    {GizmoMode_Scale, "Scale", SceneEditorUIIcon_Gizmo_Scale},
+};
+
 void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
 
   ImGui::SetNextWindowPos(
@@ -625,40 +650,54 @@ void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
                    ImGuiWindowFlags_NoScrollbar |
                    ImGuiWindowFlags_NoBackground);
-  {
+
+  for (uint8_t i = 0; i < 3; i++) {
     if (scene_editor_ui_create_button_icon(
-            ui, SceneEditorUIIcon_Gizmo_Position, "Position",
+            ui, gizmo_button[i].icon, gizmo_button[i].label,
             ImVec2(ui_size[SceneEditorUISize_Button_GizmoSize],
                    ui_size[SceneEditorUISize_Button_GizmoSize]))) {
       scene_gizmo_hide(scene);
-      scene->editor.gizmo.transform.mode = GizmoMode_Position;
-      scene_gizmo_show(scene);
+      scene->editor.gizmo.transform.mode = gizmo_button[i].mode;
+      if (scene_selection_length(&scene->editor.selection)) {
+        scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
+                                     &scene->editor.selection,
+                                     &scene->renderer.ssbo);
+        scene_gizmo_show(scene);
+      }
     }
 
     ImGui::Spacing();
-
-    if (scene_editor_ui_create_button_icon(
-            ui, SceneEditorUIIcon_Gizmo_Rotate, "Rotate",
-            ImVec2(ui_size[SceneEditorUISize_Button_GizmoSize],
-                   ui_size[SceneEditorUISize_Button_GizmoSize]))) {
-      scene_gizmo_hide(scene);
-      scene->editor.gizmo.transform.mode = GizmoMode_Rotation;
-      scene_gizmo_show(scene);
-    }
-
-    ImGui::Spacing();
-
-    if (scene_editor_ui_create_button_icon(
-            ui, SceneEditorUIIcon_Gizmo_Scale, "Scale",
-            ImVec2(ui_size[SceneEditorUISize_Button_GizmoSize],
-                   ui_size[SceneEditorUISize_Button_GizmoSize]))) {
-      scene_gizmo_hide(scene);
-      scene->editor.gizmo.transform.mode = GizmoMode_Scale;
-      scene_gizmo_show(scene);
-    }
   }
+
   ImGui::End();
 }
+
+static const struct {
+  const SceneRendererDrawMode mode;
+  const char *label;
+  const SceneEditorUIIcon icon;
+} render_button[] = {
+    {
+        SceneRendererDrawMode_Boundbox,
+        "Boundbox",
+        SceneEditorUIIcon_RenderMode_Boundbox,
+    },
+    {
+        SceneRendererDrawMode_Wireframe,
+        "Wireframe",
+        SceneEditorUIIcon_RenderMode_Wireframe,
+    },
+    {
+        SceneRendererDrawMode_Solid,
+        "Solid",
+        SceneEditorUIIcon_RenderMode_Solid,
+    },
+    {
+        SceneRendererDrawMode_Texture,
+        "Texture",
+        SceneEditorUIIcon_RenderMode_Texture,
+    },
+};
 
 void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
 
@@ -684,36 +723,15 @@ void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
       top_bar_width -
       button_count *
           (ui_size[SceneEditorUISize_Button_RenderModeSize] + padding));
-  {
+
+  for (uint8_t i = 0; i < 4; i++) {
     if (scene_editor_ui_create_button_icon(
-            ui, SceneEditorUIIcon_RenderMode_Boundbox, "Boundbox",
+            ui, render_button[i].icon, render_button[i].label,
             ImVec2(ui_size[SceneEditorUISize_Button_RenderModeSize],
                    ui_size[SceneEditorUISize_Button_RenderModeSize])))
-      scene_set_draw_mode(scene, SceneRendererDrawMode_Boundbox);
+      scene_set_draw_mode(scene, render_button[i].mode);
 
     ImGui::SameLine();
-
-    if (scene_editor_ui_create_button_icon(
-            ui, SceneEditorUIIcon_RenderMode_Wireframe, "Wireframe",
-            ImVec2(ui_size[SceneEditorUISize_Button_RenderModeSize],
-                   ui_size[SceneEditorUISize_Button_RenderModeSize])))
-      scene_set_draw_mode(scene, SceneRendererDrawMode_Wireframe);
-
-    ImGui::SameLine();
-
-    if (scene_editor_ui_create_button_icon(
-            ui, SceneEditorUIIcon_RenderMode_Solid, "Solid",
-            ImVec2(ui_size[SceneEditorUISize_Button_RenderModeSize],
-                   ui_size[SceneEditorUISize_Button_RenderModeSize])))
-      scene_set_draw_mode(scene, SceneRendererDrawMode_Solid);
-
-    ImGui::SameLine();
-
-    if (scene_editor_ui_create_button_icon(
-            ui, SceneEditorUIIcon_RenderMode_Texture, "Texture",
-            ImVec2(ui_size[SceneEditorUISize_Button_RenderModeSize],
-                   ui_size[SceneEditorUISize_Button_RenderModeSize])))
-      scene_set_draw_mode(scene, SceneRendererDrawMode_Texture);
   }
   ImGui::End();
 

@@ -200,49 +200,12 @@ void scene_selection_raycast_mesh_callback(
 
   if (mouseEvent->button != 2)
     return;
-
-  // add hit to selection pipeline
-  if (cast_data->hits->length > 0 && hit) {
-
-    // get the tarfet selectionfilter to dispatch the hit mesh in the right
-    // "corridor" (mesh or shader)
-    SceneSelectionFilter *filter =
-        scene_selection_filter_find_mesh(selection, hit->mesh);
-
-    if (filter != NULL) {
-   
-      SceneSelectionObjectList *filter_selection = &filter->selection;
-
-      // cap + right click : remove selection if exist, add if not
-      if (mouseEvent->shiftKey && mouseEvent->button == 2) {
-        scene_selection_filter_selection_add_mesh(filter, hit->mesh, NULL);
-        // right click : add to selection
-      } else if (mouseEvent->button == 2) {
-        // clear selection and add new one
-        scene_selection_empty(selection);
-        scene_selection_filter_selection_add_mesh(filter, hit->mesh, NULL);
-      }
-
-      // transfert source to destination
-      if (filter->highlight_callback)
-        filter->highlight_callback(&filter->meshes, filter_selection, scene);
-    }
-  } else {
-    // empty selection
+  
+  if (cast_data->hits->length > 0 && hit)
+    scene_selection_update_mesh(scene, hit->mesh);
+  else
     scene_selection_empty(selection);
-  }
-
-  // handle gizmo
-  if (scene_selection_length(&scene->editor.selection) > 0) {
-    // get average position
-    scene_gizmo_pos_to_selection(gizmo, &scene->editor.selection,
-                                 &scene->renderer.ssbo);
-    scene_gizmo_show(scene);
-  } else {
-    // hide from the scene
-    scene_gizmo_hide(scene);
-  }
-}
+} 
 
 /**
    Left click raycast callback.

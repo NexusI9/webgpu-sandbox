@@ -3,8 +3,8 @@
 #include <cglm/types.h>
 #include <stddef.h>
 
-#include "utils/dyli.h"
 #include "core.h"
+#include "utils/dyli.h"
 
 #define MESH_REF_LIST_CAPACITY 24
 #define MESH_REF_LIST_ARRAY_CAPACITY 6
@@ -15,6 +15,10 @@ typedef struct {
   size_t capacity;
   size_t length;
 } MeshRefListArray;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // creators
 DynamicListStatus mesh_ref_list_create(MeshRefList *, const size_t);
@@ -31,7 +35,7 @@ Mesh *mesh_ref_list_find_by_name(const MeshRefList *, const char *);
 
 // transferts
 MeshStatus mesh_ref_list_append(const MeshRefList *, MeshRefList *,
-                                   MeshRefList *);
+                                MeshRefList *);
 MeshStatus mesh_ref_list_replace(const MeshRefList *, MeshRefList *);
 MeshStatus mesh_ref_list_create_and_copy(const MeshRefList *, MeshRefList *);
 
@@ -42,4 +46,8 @@ Mesh *mesh_ref_list_find(const MeshRefList *, const Mesh *, size_t *);
 void mesh_ref_list_print(MeshRefList *);
 
 void mesh_ref_list_average_position(MeshRefList *, vec3 *);
+
+#ifdef __cplusplus
+}
+#endif
 #endif

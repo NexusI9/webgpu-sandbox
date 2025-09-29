@@ -38,6 +38,7 @@ void scene_selection_mesh_highlight(MeshRefList *meshes,
       render_pass_layout_disable_all_mesh(layout);
       for (size_t i = 0; i < selection->length; i++) {
         Mesh *mesh = selection->entries[i].mesh;
+
         render_pass_layout_enable_mesh(layout, mesh);
       }
     }

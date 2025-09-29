@@ -22,6 +22,10 @@ typedef struct {
   size_t type_size;
 } DynamicList;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 DynamicListStatus dyli_create(void **, size_t *, size_t *, size_t, size_t,
                               const char *);
 DynamicListStatus dyli_expand(void **, size_t *, size_t *, size_t, size_t,
@@ -30,10 +34,10 @@ DynamicListStatus dyli_insert(void **, size_t *, size_t *, size_t, void *,
                               size_t, const char *);
 
 DynamicListStatus dyli_append(const void *, const size_t, void **, size_t *,
-                                 size_t *, size_t, const char *);
+                              size_t *, size_t, const char *);
 
 DynamicListStatus dyli_replace(const void *, const size_t, void **, size_t *,
-                                 size_t *, size_t, const char *);
+                               size_t *, size_t, const char *);
 
 DynamicListStatus dyli_remove(void *, size_t *, size_t, void *, const char *);
 
@@ -45,5 +49,9 @@ DynamicListStatus dyli_empty(void *, size_t *, size_t);
 DynamicListStatus dyli_free(void **, size_t *, size_t *);
 
 void *dyli_new_entry(void **, size_t *, size_t *, size_t, const char *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

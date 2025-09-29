@@ -16,22 +16,41 @@ typedef enum {
   SceneSelectionFilterStatus_UndefError,
 } SceneSelectionFilterStatus;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Filters */
-SceneSelectionFilter *scene_selection_filter_find_mesh(SceneSelection *,
-                                                       Mesh *);
+SceneSelectionFilter *scene_selection_filter_find_mesh(SceneSelection *, Mesh *,
+                                                       bool *);
 
 void scene_selection_filter_set_all_active(SceneSelectionFilter *);
 void scene_selection_filter_set_all_inactive(SceneSelectionFilter *);
 
-void scene_selection_filter_transfert_active_targets(SceneSelectionFilter *);
+static inline SceneSelectionFilter *
+scene_selection_filter(SceneSelection *, const SceneSelectionType);
+
+static inline SceneSelectionFilterStatus
+scene_selection_filter_selection_remove_mesh(SceneSelectionFilter *, Mesh *);
+
+static inline SceneSelectionFilterStatus
+scene_selection_filter_selection_add_mesh(SceneSelectionFilter *, Mesh *,
+                                          const size_t *);
+
+static inline SceneSelectionObject *
+scene_selection_filter_selection_find_mesh(SceneSelectionFilter *, Mesh *,
+                                           size_t *);
 
 static inline DynamicListStatus
+scene_selection_filter_selection_empty(SceneSelectionFilter *);
+
+DynamicListStatus
 scene_selection_filter_selection_empty(SceneSelectionFilter *filter) {
   return dyli_empty((void *)filter->selection.entries,
                     &filter->selection.length, sizeof(SceneSelectionObject));
 }
 
-static inline SceneSelectionObject *
+SceneSelectionObject *
 scene_selection_filter_selection_find_mesh(SceneSelectionFilter *filter,
                                            Mesh *mesh, size_t *index) {
 
@@ -51,20 +70,17 @@ scene_selection_filter_selection_find_mesh(SceneSelectionFilter *filter,
 /**
    Create a SceneSelectionObject from the mesh and linked target and insert it
    to the filter selection list.
+
+    .----------.                .---------------.
+    |   Mesh   |------.         | Selection Obj |
+    '----------'      |________ | + Mesh        |
+    .----------.      |         | + Target      |
+    |  Target  |------'         | + Init Attr   |
+    '----------'                '---------------'
+
  */
-static inline SceneSelectionFilterStatus
-scene_selection_filter_selection_add_mesh(SceneSelectionFilter *filter,
-                                          Mesh *mesh,
-                                          const size_t *attr_index) {
-
-  {
-    // check if already selected
-    SceneSelectionObject *selected_object =
-        scene_selection_filter_selection_find_mesh(filter, mesh, NULL);
-
-    if (selected_object != NULL)
-      return SceneSelectionFilterStatus_MeshAlreadySelected;
-  }
+SceneSelectionFilterStatus scene_selection_filter_selection_add_mesh(
+    SceneSelectionFilter *filter, Mesh *mesh, const size_t *attr_index) {
 
   size_t index = MESH_REF_LIST_UNFOUND_ENTRY;
 
@@ -107,12 +123,12 @@ scene_selection_filter_selection_add_mesh(SceneSelectionFilter *filter,
              : SceneSelectionFilterStatus_UndefError;
 }
 
-static inline SceneSelectionFilterStatus
+SceneSelectionFilterStatus
 scene_selection_filter_selection_remove_mesh(SceneSelectionFilter *filter,
                                              Mesh *mesh) {
 
   // find mesh index
-  size_t index;
+  size_t index = MESH_REF_LIST_UNFOUND_ENTRY;
   SceneSelectionObject *selected_object =
       scene_selection_filter_selection_find_mesh(filter, mesh, &index);
 
@@ -122,12 +138,25 @@ scene_selection_filter_selection_remove_mesh(SceneSelectionFilter *filter,
   SceneSelectionObjectList *selection_list = &filter->selection;
 
   DynamicListStatus remove = dyli_remove_at_index(
-      (void **)&selection_list->entries, &selection_list->length,
+      (void *)selection_list->entries, &selection_list->length,
       sizeof(SceneSelectionObject), index, "Scene Selection Object List");
+
+  for (size_t i = 0; i < mesh->children.length; i++)
+    scene_selection_filter_selection_remove_mesh(filter,
+                                                 mesh->children.entries[i]);
 
   return remove == DynamicListStatus_Success
              ? SceneSelectionFilterStatus_Success
              : SceneSelectionFilterStatus_UndefError;
 }
+
+SceneSelectionFilter *scene_selection_filter(SceneSelection *selection,
+                                             const SceneSelectionType type) {
+  return &selection->filters[type];
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

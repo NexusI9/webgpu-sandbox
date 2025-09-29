@@ -193,7 +193,6 @@ static inline RenderPassStatus
 render_pass_layout_disable_all_mesh(RenderPassDrawLayout *layout) {
   MeshRefList *dest = &layout->drawn_meshes;
   dyli_empty((void *)dest->entries, &dest->length, sizeof(Mesh *));
-
   return RenderPassStatus_Success;
 }
 

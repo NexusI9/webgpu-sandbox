@@ -91,7 +91,7 @@ DynamicListStatus dyli_free(void **entries, size_t *capacity, size_t *length) {
 
   return DynamicListStatus_Success;
 }
- 
+
 DynamicListStatus dyli_remove(void *entries, size_t *length, size_t type_size,
                               void *entry, const char *label) {
 
@@ -119,11 +119,18 @@ DynamicListStatus dyli_remove_at_index(void *entries, size_t *length,
   if (index >= *length)
     return DynamicListStatus_UnfoundEntry;
 
-  void **list = (void **)entries;
+  // void **list = (void **)entries;
+  // if (index < *length - 1)
+  //  memmove(&list[index], &list[index + 1], (*length - index - 1) *
+  //  type_size);
 
-  if (index < *length - 1)
-    memmove(&list[index], &list[index + 1], (*length - index - 1) * type_size);
+  char *list = (char *)entries;
 
+  if (index < *length - 1) {
+    memmove(list + index * type_size, list + (index + 1) * type_size,
+            (*length - index - 1) * type_size);
+  }
+  
   (*length)--;
   return DynamicListStatus_Success;
 }

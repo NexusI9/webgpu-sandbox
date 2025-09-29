@@ -59,7 +59,11 @@ void logger_add(const LoggerFlag, const char *, ...);
 static inline void dbg(const char *fm, ...) {
   va_list args;
   va_start(args, fm);
-  logger_add(LoggerFlag_Debug, fm, args);
+
+  char buffer[1024];
+  vsnprintf(buffer, sizeof(buffer), fm, args);
+  logger_add(LoggerFlag_Debug, "%s", buffer);
+
   va_end(args);
 }
 

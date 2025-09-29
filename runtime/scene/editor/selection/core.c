@@ -12,9 +12,11 @@
 #include "./config.h"
 #include "./filter.h"
 #include "emscripten/em_types.h"
+#include "runtime/input/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/editor/selection/utils.h"
 #include "target_list.h"
 #include "utils/dyli.h"
 #include "utils/vector/vec3_list.h"
@@ -78,7 +80,7 @@ void scene_selection_draw_callback(void *data) {
       // (loc/rot/scale)
       scene_selection_transform_callback mesh_transform_callback =
           filter->transform_callback;
-
+ 
       mesh_transform_callback(
           &(SceneSelectionTransform){.selection = &filter->selection,
                                      .delta = &delta,
@@ -117,18 +119,7 @@ void scene_selection_init_filters(Scene *scene) {
     dyli_create((void *)&filter->selection.entries, &filter->selection.capacity,
                 &filter->selection.length, sizeof(SceneSelectionObject),
                 MESH_REF_LIST_CAPACITY, "Scene Selection Object List");
-
   }
-}
-
-/**
-   Add mesh to the selection list
- */
-void scene_selection_add(MeshRefList *list, Mesh *mesh) {
-
-  // only add if mesh not already exists
-  if (mesh_ref_list_find(list, mesh, NULL) == NULL)
-    mesh_ref_list_insert(list, mesh);
 }
 
 /**
@@ -261,9 +252,9 @@ void scene_selection_clear_initial_attributes(SceneSelection *selection) {
    - Mesh
    - Scene Editor Objects (SEO)
  */
-void scene_selection_add_mesh(SceneSelection *selection, Mesh *mesh,
-                              scene_selection_target_t extra,
-                              const SceneSelectionType type) {
+void scene_selection_subscribe_mesh(SceneSelection *selection, Mesh *mesh,
+                                    scene_selection_target_t extra,
+                                    const SceneSelectionType type) {
 
   // insert mesh to selection meshes
   mesh_ref_list_insert(&selection->filters[type].meshes, mesh);
@@ -274,14 +265,56 @@ void scene_selection_add_mesh(SceneSelection *selection, Mesh *mesh,
   scene_selection_target_t target =
       extra != NULL ? extra : &(scene_selection_target_t){0};
 
-
   scene_selection_target_list_insert(target_list, target);
-
 }
 
-void scene_selection_add_mesh_ref_list(SceneSelection *selection,
-                                       MeshRefList *list, void *extra,
-                                       const SceneSelectionType type) {
+void scene_selection_subscribe_mesh_ref_list(SceneSelection *selection,
+                                             MeshRefList *list, void *extra,
+                                             const SceneSelectionType type) {
   for (size_t i = 0; i < list->length; i++)
-    scene_selection_add_mesh(selection, list->entries[i], extra, type);
+    scene_selection_subscribe_mesh(selection, list->entries[i], extra, type);
+}
+
+/**
+   Handle the overall flow of selection state, including:
+   - Add mesh to filter selection list
+   - Trigger highlight callback
+   - Handle the gizmo visibility
+
+   This function is used as the main function to add/remove mesh from the
+   selection depending on the trigger method (click, shortcut, UI)
+ */
+void scene_selection_update_mesh(Scene *scene, Mesh *mesh) {
+
+  bool selected;
+  SceneSelectionFilter *filter = scene_selection_filter_find_mesh(
+      &scene->editor.selection, mesh, &selected);
+
+  if (filter == NULL)
+    return;
+
+  if (!selected) {
+
+    if (input_key(INPUT_KEY_CAP) == false)
+      scene_selection_empty(&scene->editor.selection);
+
+    scene_selection_filter_selection_add_mesh(filter, mesh, NULL);
+  } else {
+    scene_selection_filter_selection_remove_mesh(filter, mesh);
+  }
+
+  // update highlight
+  if (filter->highlight_callback)
+    filter->highlight_callback(&filter->meshes, &filter->selection, scene);
+
+  // handle gizmo
+  if (scene_selection_length(&scene->editor.selection) > 0) {
+    scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
+                                 &scene->editor.selection,
+                                 &scene->renderer.ssbo);
+    scene_gizmo_show(scene);
+
+  } else {
+    scene_gizmo_hide(scene);
+  }
 }
