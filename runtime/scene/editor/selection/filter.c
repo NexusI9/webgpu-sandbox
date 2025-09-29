@@ -34,8 +34,6 @@
    */
 void scene_selection_filter_set_all_active(SceneSelectionFilter *filter) {
 
-  scene_selection_filter_selection_empty(filter);
-
   SceneSelectionObjectList *selection = &filter->selection;
 
   // map targets to mesh
@@ -58,7 +56,7 @@ void scene_selection_filter_set_all_inactive(SceneSelectionFilter *filter) {
 
   if (filter->highlight_callback)
     filter->highlight_callback(&filter->meshes, &filter->selection,
-                                filter->highlight_data);
+                               filter->highlight_data);
 }
 
 /**
@@ -77,7 +75,7 @@ scene_selection_filter_find_mesh(SceneSelection *selection, Mesh *mesh,
       if (filter->selection.entries[j].mesh == mesh) {
         if (selected)
           *selected = true;
-	return filter;
+        return filter;
       }
     }
 

@@ -570,17 +570,8 @@ void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
         ImGui::PushID(mesh->id);
         if (ImGui::TreeNodeEx(mesh->name, flags)) {
 
-          if (ImGui::IsItemClicked()) {
-
-            SceneSelectionFilter *filter = scene_selection_filter(
-                &scene->editor.selection, SceneSelectionType_Mesh);
-
-            scene_selection_filter_selection_add_mesh(filter, mesh, NULL);
-
-            if (filter->highlight_callback)
-              filter->highlight_callback(&filter->meshes, &filter->selection,
-                                         scene);
-          }
+          if (ImGui::IsItemClicked())
+            scene_selection_update_mesh(scene, mesh);
 
           if (mesh->children.length == 0)
             ImGui::TreePop();

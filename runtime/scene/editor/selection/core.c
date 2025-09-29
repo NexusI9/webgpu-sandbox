@@ -190,6 +190,7 @@ void scene_selection_empty(SceneSelection *selection) {
     SceneSelectionFilter *filter = &selection->filters[i];
     scene_selection_filter_set_all_inactive(filter);
   }
+
 }
 
 /**

@@ -157,18 +157,12 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
   SceneSelection *selection = &scene->editor.selection;
   Gizmo *gizmo = &scene->editor.gizmo.transform;
 
-  /* ==== DESELECT ALL ====   */
   // if already selection => unselect everything
   if (scene_selection_length(selection)) {
-    // empty selection
     scene_selection_empty(selection);
-    // hide gizmo
     scene_gizmo_hide(scene);
   } else {
-    /*  ==== SELECT ALL ==== */
     scene_selection_all(selection);
-
-    // show gizmo
     scene_gizmo_pos_to_selection(gizmo, &scene->editor.selection,
                                  &scene->renderer.ssbo);
     scene_gizmo_show(scene);
