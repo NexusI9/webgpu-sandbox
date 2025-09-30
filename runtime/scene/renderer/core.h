@@ -25,10 +25,10 @@
 #define SCENE_RENDERER_DRAW_MODE_COUNT 4
 
 typedef enum {
-  SceneRendererDrawMode_Texture,
-  SceneRendererDrawMode_Solid,
-  SceneRendererDrawMode_Wireframe,
-  SceneRendererDrawMode_Boundbox,
+  SceneRendererDrawMode_Texture = 1 << 0,
+  SceneRendererDrawMode_Solid = 1 << 1,
+  SceneRendererDrawMode_Wireframe = 1 << 2,
+  SceneRendererDrawMode_Boundbox = 1 << 3,
 } SceneRendererDrawMode;
 
 typedef struct {
@@ -72,7 +72,7 @@ typedef struct SceneRenderer {
 
   struct {
     SceneRendererDrawMode mode;
-    SceneRendererDrawCallbackList callbacks;
+    SceneRendererDrawCallbackList callbacks[SCENE_RENDERER_DRAW_MODE_COUNT];
     RenderPassList render_pass[SCENE_RENDERER_DRAW_MODE_COUNT];
     ComputePass compute_pass;
   } draw;
@@ -91,7 +91,13 @@ void scene_renderer_set_draw_mode(SceneRenderer *, const SceneRendererDrawMode);
 void scene_renderer_draw_layout_callback(void *);
 
 void scene_renderer_add_draw_callback(SceneRenderer *,
-                                      scene_renderer_draw_callback, void *);
+                                      scene_renderer_draw_callback, void *,
+                                      const SceneRendererDrawMode);
+
+scene_renderer_draw_callback
+scene_renderer_find_draw_callback(SceneRenderer *,
+                                  scene_renderer_draw_callback);
+
 void scene_renderer_draw(SceneRenderer *);
 void scene_renderer_close(const SceneRenderer *);
 
@@ -116,5 +122,6 @@ static inline RenderPassList *
 scene_renderer_active_pass_list(SceneRenderer *renderer) {
   return &renderer->draw.render_pass[renderer->draw.mode];
 }
+
 
 #endif

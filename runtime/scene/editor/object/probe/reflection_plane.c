@@ -50,7 +50,7 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
   });
 
   SEOCreateWireframeDescriptor wireframe_cube_desc = {
-      .color = &(color){1.0f, 0.0f, 0.0f, 1.0f},
+      .color = &(color){0.0f, 0.0f, 0.0f, 1.0f},
       .index = &primitive_cube.index,
       .vertex = &primitive_cube.vertex,
       .name = "seo probe reflection plane",
@@ -93,7 +93,7 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
   });
 
   SEOCreateWireframeDescriptor wireframe_desc = {
-      .color = &(color){1.0f, 0.0f, 0.0f, 1.0f},
+      .color = &(color){0.0f, 0.0f, 0.0f, 1.0f},
       .index = &primitive.index,
       .vertex = &primitive.vertex,
       .name = "seo probe reflection plane",
@@ -132,7 +132,7 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
   });
 
   SEOCreateWireframeDescriptor wireframe_arrow_desc = {
-      .color = &(color){1.0f, 0.0f, 0.0f, 1.0f},
+      .color = &(color){0.0f, 0.0f, 0.0f, 1.0f},
       .index = &primitive_arrow.index,
       .vertex = &primitive_arrow.vertex,
       .name = "seo probe reflection plane",

@@ -33,6 +33,7 @@
 #include "runtime/mesh/shader/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/core.h"
+#include "runtime/probe/reflection/draw.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
@@ -405,8 +406,8 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
 
     {
       // add to scene selection (SEO pipeline) with target
-      scene_selection_subscribe_mesh(&scene->editor.selection, mesh, (void *)seo,
-                               SceneSelectionType_SEO);
+      scene_selection_subscribe_mesh(&scene->editor.selection, mesh,
+                                     (void *)seo, SceneSelectionType_SEO);
     }
   }
 }
@@ -471,12 +472,12 @@ scene_add_probe_reflection_plane(Scene *scene,
                                  ProbeReflectionPlaneDescriptor *desc,
                                  ProbeReflectionPlane **dest) {
 
+  // && scene->renderer.draw.mode == SceneRendererDrawMode_Texture
   // add draw callback if first probe
-  if (scene->planes_reflection.length == 0 &&
-      scene->renderer.draw.mode == SceneRendererDrawMode_Texture)
-    scene_renderer_add_draw_callback(&scene->renderer,
-                                     probe_reflection_plane_list_draw_callback,
-                                     (void *)scene);
+  if (scene->planes_reflection.length == 0)
+    scene_renderer_add_draw_callback(
+        &scene->renderer, probe_reflection_plane_list_draw_callback,
+        (void *)scene, SceneRendererDrawMode_Texture);
 
   ProbeReflectionPlane *probe =
       probe_reflection_plane_list_new_entry(&scene->planes_reflection);
@@ -578,7 +579,7 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   // EDITORONLY (add mesh to selection)
   if ((flag & SceneAddFlag_Unselectable) == 0)
     scene_selection_subscribe_mesh(&scene->editor.selection, mesh, NULL,
-                             selection_pipeline);
+                                   selection_pipeline);
 }
 
 /**

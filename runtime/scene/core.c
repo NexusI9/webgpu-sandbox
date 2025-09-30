@@ -40,8 +40,8 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   TIMER("Scene Load", {
     scene->id = reg_register((void *)scene, RegEntryType_Scene);
- 
-    { 
+
+    {
       /*  ===== SCENE RENDER =====   */
       scene_renderer_init(&scene->renderer, desc->renderer);
       scene_environment_init(&scene->environment,
@@ -49,7 +49,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                                  .ssbo = &scene->renderer.ssbo,
                                  .ubo = &scene->renderer.ubo,
                              });
-    } 
+    }
 
     {
       /*  ===== LISTS ===== */
@@ -57,12 +57,12 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
       scene_layer_init(&scene->layers);
       scene_light_list_init(scene);
       scene_probe_reflection_init(scene, context_multisample());
-    } 
+    }
 
     {
       /*  ===== CAMERA & VIEWPORT =====  */
       scene_camera_init(scene);
- 
+
       viewport_create(&scene->viewport,
                       &(ViewportCreateDescriptor){
                           .fov = desc->viewport->fov,
@@ -77,7 +77,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                       &scene->viewport.ssbo_slot);
     }
 
-    { 
+    {
       /*  ===== EDITOR =====  */
       scene_editor_init(scene); // EDITORONLY
       scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
@@ -96,14 +96,18 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
     {
       /* === DRAW CALLBACKS === */
-      scene_renderer_add_draw_callback(&scene->renderer,
-                                       scene_renderer_draw_layout_callback,
-                                       (void *)&scene->renderer);
+      scene_renderer_add_draw_callback(
+          &scene->renderer, scene_renderer_draw_layout_callback,
+          (void *)&scene->renderer,
+          SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
+              SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
 
       scene_renderer_add_draw_callback(
-          &scene->renderer, scene_editor_ui_draw_callback, (void *)scene);
+          &scene->renderer, scene_editor_ui_draw_callback, (void *)scene,
+          SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
+              SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
     }
-  });
+  }); 
 }
 
 /**
@@ -121,7 +125,7 @@ void scene_mesh_list_init(Scene *scene) {
     mesh_ref_list_create(&scene->built_mesh[m],
                          SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
-  // init pool 
+  // init pool
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 }
 
@@ -140,7 +144,7 @@ void scene_camera_init(Scene *scene) {
 
   // set scene main camera as active
   scene->active_camera = scene->camera;
-} 
+}
 
 /**
    Define scene main edit camera
@@ -204,16 +208,16 @@ void scene_probe_reflection_init(
    Quick access to a scene layer mesh list.
  */
 MeshRefList *scene_layer_meshes(Scene *scene, const char *name) {
-  
+
   SceneLayer *layer = scene_layer_set_find(&scene->layers, name);
-     
-  if (layer == NULL) 
-    return NULL;  
 
-  return &layer->meshes;  
-}  
+  if (layer == NULL)
+    return NULL;
 
-void scene_light_list_init(Scene *scene) { 
+  return &layer->meshes;
+}
+
+void scene_light_list_init(Scene *scene) {
 
   light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
 
@@ -237,7 +241,6 @@ void scene_light_list_init(Scene *scene) {
                   },
           },
   });
-
 }
 
 /**

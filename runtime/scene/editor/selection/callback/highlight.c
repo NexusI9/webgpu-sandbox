@@ -39,13 +39,27 @@ void scene_selection_mesh_highlight(MeshRefList *meshes,
       render_pass_layout_disable_all_mesh(layout);
       for (size_t i = 0; i < selection->length; i++) {
         Mesh *mesh = selection->entries[i].mesh;
-
         render_pass_layout_enable_mesh(layout, mesh);
       }
     }
   }
 };
 
+/**
+   For SEO Object we use a OOP approach (similar to the transform callback)
+   where each SEO Mesh has its own transform and highlight callback.
+
+   Since SEO are such polymorphic objects, it just easier and less messy to hook
+   each mesh a transform and highlight callback.
+ */
 void scene_selection_seo_highlight(MeshRefList *meshes,
                                    SceneSelectionObjectList *list, void *data) {
+
+  // disable all SEOs
+  for(size_t i = 0; i < list->length; i++){
+    
+  }
+
+  // enable selected ones
+  
 }

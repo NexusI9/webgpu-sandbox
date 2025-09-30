@@ -72,10 +72,10 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
     {
       // flag mesh as built to make sure we don't build it twice
       // (for dynamic rendering)
-      MeshRefList *cache_built = &scene->built_mesh[draw_mode];
+      MeshRefList *cache_built = &scene->built_mesh[__builtin_ctz(draw_mode)];
       if (mesh_ref_list_find(cache_built, mesh, NULL) != NULL)
         return SceneStatus_MeshAlreadyBuilt;
-      mesh_ref_list_insert(&scene->built_mesh[draw_mode], mesh);
+      mesh_ref_list_insert(&scene->built_mesh[__builtin_ctz(draw_mode)], mesh);
     }
 
     {
@@ -99,6 +99,7 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
       break;
 
     case SceneRendererDrawMode_Texture:
+    default:
       scene_build_mesh_texture(scene, mesh, pipeline);
       break;
     }
@@ -161,7 +162,7 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
   }
 
   if (pipeline & ScenePipeline_Dynamic_LitShadow) {
-    
+
     mesh_shader_texture_bind_shadow_maps(
         mesh, scene->lights.point.shadow.pass.depth.attachment.view,
         scene->lights.spot.shadow.pass.depth.attachment.view);
@@ -171,7 +172,6 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
 
     mesh_shader_build_mp(mesh, MeshShader_Shadow, ssbo,
                          SSBOType_ViewProjection);
-
   }
 }
 

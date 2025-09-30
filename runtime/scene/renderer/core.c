@@ -1,6 +1,7 @@
 #include "core.h"
 
 #include <emscripten/emscripten.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "backend/ao_bake/core.h"
@@ -33,7 +34,7 @@ void scene_renderer_init(SceneRenderer *renderer,
   clock_create(&renderer->clock);
 
   TIMER("AO Bake", {
-    ao_bake_init(&renderer->texture.ambient_occlusion, 
+    ao_bake_init(&renderer->texture.ambient_occlusion,
                  &(AOBakeInitDescriptor){
                      .size = AO_TEXTURE_RESOLUTION,
                      .layer_count = AO_LAYER_COUNT,
@@ -49,12 +50,14 @@ void scene_renderer_init(SceneRenderer *renderer,
                       });
 
     ubo_init(&renderer->ubo);
- 
+
     ssbo_init(&renderer->ssbo);
   }
 
-  scene_renderer_add_draw_callback(renderer, ssbo_draw_callback,
-                                   (void *)&renderer->ssbo);
+  scene_renderer_add_draw_callback(
+      renderer, ssbo_draw_callback, (void *)&renderer->ssbo,
+      SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
+          SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
 }
 
 /**
@@ -66,7 +69,7 @@ void scene_renderer_draw_layout_callback(void *data) {
 
   // retrieve render mode
   const SceneRendererDrawMode mode = renderer->draw.mode;
-  render_pass_list_draw(&renderer->draw.render_pass[mode]);
+  render_pass_list_draw(&renderer->draw.render_pass[__builtin_ctz(mode)]);
 }
 
 double scene_renderer_dpi(double value) {
@@ -96,30 +99,37 @@ void scene_renderer_close(const SceneRenderer *renderer) {
  */
 void scene_renderer_add_draw_callback(SceneRenderer *renderer,
                                       scene_renderer_draw_callback callback,
-                                      void *data) {
-  // do not add if max hook reached
-  if (renderer->draw.callbacks.length == SCENE_RENDERER_MAX_HOOK) {
-    logger_add(LoggerFlag_Warning, "Max draw hook reached.\n");
-    return;
-  } 
+                                      void *data,
+                                      const SceneRendererDrawMode modes) {
 
-  // add hook
-  renderer->draw.callbacks.entries[renderer->draw.callbacks.length++] =
-      (SceneRendererDrawCallback){
-          .callback = callback,
-          .data = data,
-      };
+  // add hook to corressponding mode
+  for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
+    if (modes & (1 << i)) {
+
+      // do not add if max hook reached
+      if (renderer->draw.callbacks[i].length == SCENE_RENDERER_MAX_HOOK) {
+        logger_add(LoggerFlag_Warning, "Max draw hook reached.\n");
+        return;
+      }
+
+      renderer->draw.callbacks[i]
+          .entries[renderer->draw.callbacks[i].length++] =
+          (SceneRendererDrawCallback){callback, data};
+    }
+  }
 }
- 
+
 void scene_renderer_render(void *desc) {
   SceneRendererRenderDescriptor *config = (SceneRendererRenderDescriptor *)desc;
- 
-  // Call draw callbacks
-  for (size_t i = 0; i < config->renderer->draw.callbacks.length; i++) {
-    SceneRendererDrawCallback *cb =
-        &config->renderer->draw.callbacks.entries[i];
 
-    // call callback, pass renderer and data
+  // Call draw callbacks of active renderere draw mode
+  SceneRendererDrawCallbackList *callback_list =
+      &config->renderer->draw
+           .callbacks[__builtin_ctz(config->renderer->draw.mode)];
+
+  // call callbacks, pass renderer and data
+  for (size_t i = 0; i < callback_list->length; i++) {
+    SceneRendererDrawCallback *cb = &callback_list->entries[i];
     cb->callback(cb->data);
   }
 
@@ -142,6 +152,5 @@ void scene_renderer_draw(SceneRenderer *renderer) {
 void scene_renderer_set_draw_mode(SceneRenderer *renderer,
                                   const SceneRendererDrawMode mode) {
   renderer->draw.mode = mode;
+
 }
-
-

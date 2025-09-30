@@ -64,7 +64,14 @@ typedef struct {
   float *offset;
 } SEOTransformCallback;
 
+typedef struct {
+  SceneEditorObjectMesh *mesh;
+  SceneEditorObject *seo;
+  float *offset;
+} SEOHighlightCallback;
+
 typedef void (*seo_transform_axis_callback)(SEOTransformCallback *);
+typedef void (*seo_transform_highlight_callback)(SEOTransformCallback *);
 
 // Link each SEO Mesh a dedicated callback
 struct SceneEditorObjectMesh {
@@ -75,6 +82,7 @@ struct SceneEditorObjectMesh {
   // flow...
   size_t target_list_index;
   seo_transform_axis_callback transform_callback[GIZMO_MODE_COUNT];
+  seo_transform_highlight_callback highlight_callback;
 };
 
 typedef struct {
@@ -97,7 +105,6 @@ struct SceneEditorObject {
 typedef struct {
   Scene *scene;
   size_t target_list_index;
-
   Camera *camera;
   Viewport *viewport;
 } SEOCreateDescriptor;

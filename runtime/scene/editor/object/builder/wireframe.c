@@ -1,13 +1,13 @@
 #include "wireframe.h"
 
 #include "backend/std_pipeline/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/topology/core.h"
 #include "runtime/mesh/topology/wireframe.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
-#include "runtime/mesh/core.h"
 
 /**
    Setup a wireframe mesh with the given vertex/index attributes and color.
@@ -37,15 +37,23 @@ void seo_create_wireframe(Mesh *mesh,
   mesh_topology_wireframe_create(&base_topo, wireframe_topo);
 
   // set wireframe shader
-  mesh_shader_create_fixed(mesh,
-                           &(ShaderCreateDescriptor){
-                               .name = "SEO wireframe shader",
-                               .pipeline = std_render_pipeline(RenderPipelineType_Line),
-                           });
+  mesh_shader_create_fixed(
+      mesh, &(ShaderCreateDescriptor){
+                .name = "SEO wireframe shader",
+                .pipeline = std_render_pipeline(RenderPipelineType_Line),
+            });
 
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
                              desc->color);
 
   // set override topology and shader as wireframe
   mesh_topology_set_override(mesh, mesh_topology_wireframe(mesh));
+}
+
+/*
+  Generic highligh function for all SEO Wireframes objects
+ */
+void seo_wireframe_highlight_callback(const SEOHighlightCallback *desc) {
+  shader_update_uniform_data(mesh_shader(desc->mesh->mesh, MeshShader_Fixed), 1,
+                             0, &(color){1.0f, 0.0f, 0.0f, 1.0f});
 }

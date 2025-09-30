@@ -117,8 +117,10 @@ void scene_selection_init_mouse_events(Scene *scene) {
         });
 
   // add draw callback
-  scene_renderer_add_draw_callback(&scene->renderer,
-                                   scene_selection_draw_callback, scene);
+  scene_renderer_add_draw_callback(
+      &scene->renderer, scene_selection_draw_callback, scene,
+      SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
+          SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
 
   // add mouse up / reset callback
   html_event_add_mouse_up(&(HTMLEventMouse){

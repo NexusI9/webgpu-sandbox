@@ -243,13 +243,12 @@ scene_draw_layouts_init(Scene *scene,
 
    */
 
-  const RenderPassDrawListDescriptor
-      *scene_draw_list[SCENE_RENDERER_DRAW_MODE_COUNT] = {
-          [SceneRendererDrawMode_Texture] = &texture_draw_list,
-          [SceneRendererDrawMode_Solid] = &solid_draw_list,
-          [SceneRendererDrawMode_Wireframe] = &wireframe_draw_list,
-          [SceneRendererDrawMode_Boundbox] = &boundbox_draw_list,
-      };
+  const RenderPassDrawListDescriptor *scene_draw_list[] = {
+      [SceneRendererDrawMode_Texture] = &texture_draw_list,
+      [SceneRendererDrawMode_Solid] = &solid_draw_list,
+      [SceneRendererDrawMode_Wireframe] = &wireframe_draw_list,
+      [SceneRendererDrawMode_Boundbox] = &boundbox_draw_list,
+  };
 
   RenderPassList *pass_list = scene->renderer.draw.render_pass;
 
@@ -258,7 +257,7 @@ scene_draw_layouts_init(Scene *scene,
   const int render_height = context_height() * ratio;
 
   for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
-
+    
     RenderPassListCreate list_config = {
         .multisample = multisample,
         .width = render_width,
@@ -339,7 +338,7 @@ scene_draw_layouts_init(Scene *scene,
         .height = render_height,
         .color = &scene_color_attachment,
         .depth = &scene_depth_attachment,
-        .draw_list = scene_draw_list[i],
+        .draw_list = scene_draw_list[1 << i],
     };
 
     render_pass_list_insert_pass(&pass_list[i], &scene_pass);

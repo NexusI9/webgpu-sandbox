@@ -84,8 +84,6 @@ DynamicListStatus probe_reflection_plane_list_remove(ProbeReflectionPlaneList *,
 DynamicListStatus
 probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *);
 
-void probe_reflection_plane_list_draw_callback(void *);
-
 /* === Plane === */
 void probe_reflection_plane_create(ProbeReflectionPlane *,
                                    ProbeReflectionPlaneDescriptor *);
@@ -98,5 +96,6 @@ void probe_reflection_plane_enable_mesh(ProbeReflectionPlane *,
 void probe_reflection_plane_update_uniform(ProbeReflectionPlane *);
 void probe_reflection_plane_update_camera(ProbeReflectionPlane *);
 void probe_reflection_plane_update_boundbox(ProbeReflectionPlane *);
+
 
 #endif
