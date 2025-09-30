@@ -284,7 +284,7 @@ void scene_selection_subscribe_mesh_ref_list(SceneSelection *selection,
    This function is used as the main function to add/remove mesh from the
    selection depending on the trigger method (click, shortcut, UI)
  */
-void scene_selection_update_mesh(Scene *scene, Mesh *mesh) {
+void scene_selection_toggle_mesh(Scene *scene, Mesh *mesh) {
 
   bool selected;
   SceneSelectionFilter *filter = scene_selection_filter_find_mesh(

@@ -10,7 +10,7 @@ typedef enum {
   SceneEditorUIStatus_UndefError,
 } SceneEditorUIStatus;
 
-#define SCENE_EDITOR_UI_ICON_COUNT 16
+#define SCENE_EDITOR_UI_ICON_COUNT 18
 
 typedef enum {
   SceneEditorUIIcon_Null,
@@ -29,6 +29,8 @@ typedef enum {
   SceneEditorUIIcon_Log_Process,
   SceneEditorUIIcon_Layout,
   SceneEditorUIIcon_Activity,
+  SceneEditorUIIcon_Eye,
+  SceneEditorUIIcon_EyeOff,
 } SceneEditorUIIcon;
 
 typedef struct {

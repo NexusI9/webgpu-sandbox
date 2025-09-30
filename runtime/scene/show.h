@@ -2,7 +2,11 @@
 #define _SCENE_SHOW_H_
 
 #include "./core.h"
+#include "backend/logger.h"
+#include "renderer/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/ref_list.h"
+#include "runtime/scene/renderer/render_pass/visibility.h"
 
 /**
 
@@ -30,9 +34,77 @@
 
  */
 
-SceneStatus scene_show_mesh(Scene *, Mesh *);
-SceneStatus scene_hide_mesh(Scene *, Mesh *);
-SceneStatus scene_show_mesh_ref_list(Scene *, MeshRefList *);
-SceneStatus scene_hide_mesh_ref_list(Scene *, MeshRefList *);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+   Show the mesh by pushing it to the pipeline ref list
+ */
+SceneStatus scene_show_mesh(Scene *scene, Mesh *mesh) {
+
+  for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
+    render_pass_list_enable_mesh(
+        scene_renderer_pass_list(&scene->renderer,
+                                 (SceneRendererDrawMode)(1 << i)),
+        mesh);
+
+  mesh_ref_list_remove(scene_mesh_state(scene, SceneMeshStates_Hidden), mesh);
+
+  return SceneStatus_Success;
+}
+
+/**
+   Hide the mesh by removing it from the pipelines ref list.
+ */
+SceneStatus scene_hide_mesh(Scene *scene, Mesh *mesh) {
+
+  for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
+    render_pass_list_disable_mesh(
+        scene_renderer_pass_list(&scene->renderer,
+                                 (SceneRendererDrawMode)(1 << i)),
+        mesh);
+
+  mesh_ref_list_insert(scene_mesh_state(scene, SceneMeshStates_Hidden), mesh);
+
+  return SceneStatus_Success;
+}
+
+SceneStatus scene_show_mesh_ref_list(Scene *scene, MeshRefList *list) {
+
+  for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
+    render_pass_list_enable_mesh_ref_list(
+        scene_renderer_pass_list(&scene->renderer,
+                                 (SceneRendererDrawMode)(1 << i)),
+        list);
+
+  return SceneStatus_Success;
+}
+
+SceneStatus scene_hide_mesh_ref_list(Scene *scene, MeshRefList *list) {
+
+  for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
+    render_pass_list_disable_mesh_ref_list(
+        scene_renderer_pass_list(&scene->renderer,
+                                 (SceneRendererDrawMode)(1 << i)),
+        list);
+
+  return SceneStatus_Success;
+}
+
+SceneStatus scene_visibility_toggle_mesh(Scene *scene, Mesh *mesh) {
+
+  if (mesh_ref_list_find(scene_mesh_state(scene, SceneMeshStates_Hidden), mesh,
+                         NULL))
+    scene_show_mesh(scene, mesh);
+  else
+    scene_hide_mesh(scene, mesh);
+
+  return SceneStatus_Success;
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

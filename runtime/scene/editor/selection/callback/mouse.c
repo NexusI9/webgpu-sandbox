@@ -204,7 +204,7 @@ void scene_selection_raycast_mesh_callback(
     return;
 
   if (cast_data->hits->length > 0 && hit)
-    scene_selection_update_mesh(scene, hit->mesh);
+    scene_selection_toggle_mesh(scene, hit->mesh);
   else {
     scene_selection_empty(selection);
     scene_gizmo_hide(scene);

@@ -288,6 +288,17 @@ typedef enum {
   ScenePipeline_Fixed_UI = 1 << 7,
 } ScenePipeline;
 
+#define SCENE_MESH_STATE_COUNT 5
+
+typedef enum {
+  SceneMeshStates_BuiltTexture = __builtin_ctz(SceneRendererDrawMode_Texture),
+  SceneMeshStates_BuiltSolid = __builtin_ctz(SceneRendererDrawMode_Solid),
+  SceneMeshStates_BuiltWireframe =
+      __builtin_ctz(SceneRendererDrawMode_Wireframe),
+  SceneMeshStates_BuiltBoundbox = __builtin_ctz(SceneRendererDrawMode_Boundbox),
+  SceneMeshStates_Hidden,
+} SceneMeshStates;
+
 #define SCENE_RENDER_PASS_COUNT 3
 
 typedef enum {
@@ -316,7 +327,16 @@ struct Scene {
 
   // References List (ptr)
   MeshRefList pipelines[SCENE_PIPELINE_COUNT];
-  MeshRefList built_mesh[SCENE_RENDERER_DRAW_MODE_COUNT];
+
+  /*
+    Versatile list used to store mesh pointers depending on numerous states
+    (such as built, hidden...). Having such array allows to:
+      - Prevent having booleans polluting the Mesh struct
+      - Data-Oriented friendly approach so each Meshes with the same states can
+        be easily access and given instruction.
+      - Faster access to meshes sharing the same states.
+   */
+  MeshRefList mesh_state[SCENE_MESH_STATE_COUNT];
 
   SceneLayerSet layers; // meshes layer (for interaction logic)
 
@@ -347,7 +367,6 @@ MeshRefList *scene_layer_meshes(Scene *, const char *);
 
 static inline MeshRefList *scene_pipeline(Scene *scene,
                                           const ScenePipeline pipeline) {
-  // take lower bit
   return &scene->pipelines[__builtin_ctz(pipeline)];
 }
 
@@ -362,6 +381,11 @@ static inline void scene_reflection_pipeline_meshes(
 
   for (uint8_t i = 0; i < SCENE_PIPELINE_REFLECTION_COUNT; i++)
     pipelines[i] = scene_pipeline(scene, target_pipelines[i]);
+}
+
+static inline MeshRefList *scene_mesh_state(Scene *scene,
+                                            const SceneMeshStates state) {
+  return &scene->mesh_state[state];
 }
 
 #endif

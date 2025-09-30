@@ -72,10 +72,10 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
     {
       // flag mesh as built to make sure we don't build it twice
       // (for dynamic rendering)
-      MeshRefList *cache_built = &scene->built_mesh[__builtin_ctz(draw_mode)];
+      MeshRefList *cache_built = scene_mesh_state(scene, __builtin_ctz(draw_mode));
       if (mesh_ref_list_find(cache_built, mesh, NULL) != NULL)
         return SceneStatus_MeshAlreadyBuilt;
-      mesh_ref_list_insert(&scene->built_mesh[__builtin_ctz(draw_mode)], mesh);
+      mesh_ref_list_insert(cache_built, mesh);
     }
 
     {

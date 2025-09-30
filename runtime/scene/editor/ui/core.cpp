@@ -14,11 +14,13 @@
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/editor/selection/utils.h"
 #include "runtime/scene/renderer/core.h"
+#include "runtime/scene/show.h"
 #include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
 #include "stdio.h"
+#include "utils.hpp"
 #include <stdint.h>
- 
+
 /* TODO: make context available in the scene editor ui, but may interfere witht
  * the "pure C" approach since SceneEditorUI is included in Scene.
  */
@@ -250,6 +252,8 @@ void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
     // bool
     ui->icon_uv[SceneEditorUIIcon_Layout] = {.cell = {2, 1}};
     ui->icon_uv[SceneEditorUIIcon_Activity] = {.cell = {3, 1}};
+    ui->icon_uv[SceneEditorUIIcon_Eye] = {.cell = {4, 1}};
+    ui->icon_uv[SceneEditorUIIcon_EyeOff] = {.cell = {5, 1}};
   }
 
   // generate uvs
@@ -555,28 +559,51 @@ void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
   ImGui::BeginChild("Tree", ImVec2(0, ImGui::GetContentRegionAvail().y * 0.3f),
                     true);
   ImGui::Text("Scene Inspector");
+
   {
     // === Meshes ===
     for (int i = 0; i < 3; i++) {
       MeshRefList *meshes = scene_pipeline(scene, tree_meshes[i]);
       for (int j = 0; j < meshes->length; j++) {
         Mesh *mesh = meshes->entries[j];
-        ImGuiTreeNodeFlags flags =
-            ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+        // ImGuiTreeNodeFlags_SpanAvailWidth
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow |
+                                   ImGuiTreeNodeFlags_AllowItemOverlap;
 
         if (mesh->children.length == 0)
           flags |= ImGuiTreeNodeFlags_Leaf;
 
-        ImGui::PushID(mesh->id);
+        // Tree item
         if (ImGui::TreeNodeEx(mesh->name, flags)) {
 
           if (ImGui::IsItemClicked())
-            scene_selection_update_mesh(scene, mesh);
+            scene_selection_toggle_mesh(scene, mesh);
 
           if (mesh->children.length == 0)
             ImGui::TreePop();
         }
-        ImGui::PopID();
+
+        // Visibility icon
+        {
+          const float line_height = ImGui::GetTextLineHeightWithSpacing();
+          const float icon_size =
+              ui_size[SceneEditorUISize_Button_RenderModeSize];
+
+          ImGui::SameLine(ImGui::GetWindowContentRegionMax().x -
+                          ui->dpi * icon_size);
+
+          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+   
+          char button_id[256];
+          snprintf(button_id, 256, "mesh_visibility_%u", mesh->id);
+          if (scene_editor_ui_create_button_icon(ui, SceneEditorUIIcon_Eye,
+                                                 button_id,
+                                                 ImVec2(icon_size, icon_size)))
+            scene_visibility_toggle_mesh(scene, mesh);
+
+          ImGui::PopStyleColor(1);
+        }
       }
     }
 

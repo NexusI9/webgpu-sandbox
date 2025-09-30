@@ -32,8 +32,7 @@ void scene_selection_subscribe_mesh_ref_list(SceneSelection *, MeshRefList *,
 void scene_selection_subscribe_mesh(SceneSelection *, Mesh *, void *,
                                     const SceneSelectionType);
 
-void scene_selection_update_mesh(Scene *, Mesh *);
-void scene_selection_disable_mesh(Scene *, Mesh *);
+void scene_selection_toggle_mesh(Scene *, Mesh *);
 
 void scene_selection_empty(SceneSelection *);
 void scene_selection_all(SceneSelection *);
