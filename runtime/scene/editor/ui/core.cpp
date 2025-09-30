@@ -18,7 +18,7 @@
 #include "runtime/texture/core.h"
 #include "stdio.h"
 #include <stdint.h>
-
+ 
 /* TODO: make context available in the scene editor ui, but may interfere witht
  * the "pure C" approach since SceneEditorUI is included in Scene.
  */

@@ -80,7 +80,7 @@ void scene_selection_draw_callback(void *data) {
       // (loc/rot/scale)
       scene_selection_transform_callback mesh_transform_callback =
           filter->transform_callback;
- 
+
       mesh_transform_callback(
           &(SceneSelectionTransform){.selection = &filter->selection,
                                      .delta = &delta,
@@ -190,7 +190,6 @@ void scene_selection_empty(SceneSelection *selection) {
     SceneSelectionFilter *filter = &selection->filters[i];
     scene_selection_filter_set_all_inactive(filter);
   }
-
 }
 
 /**
@@ -290,6 +289,7 @@ void scene_selection_update_mesh(Scene *scene, Mesh *mesh) {
   bool selected;
   SceneSelectionFilter *filter = scene_selection_filter_find_mesh(
       &scene->editor.selection, mesh, &selected);
+
 
   if (filter == NULL)
     return;

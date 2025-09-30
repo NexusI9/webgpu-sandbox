@@ -120,8 +120,13 @@ static inline cclock *scene_renderer_clock(SceneRenderer *renderer) {
 
 static inline RenderPassList *
 scene_renderer_active_pass_list(SceneRenderer *renderer) {
-  return &renderer->draw.render_pass[renderer->draw.mode];
+  return &renderer->draw.render_pass[__builtin_ctz(renderer->draw.mode)];
 }
 
+static inline RenderPassList *
+scene_renderer_pass_list(SceneRenderer *renderer,
+                         const SceneRendererDrawMode mode) {
+  return &renderer->draw.render_pass[__builtin_ctz(mode)];
+}
 
 #endif

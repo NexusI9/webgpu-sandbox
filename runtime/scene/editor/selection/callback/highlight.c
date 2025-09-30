@@ -28,9 +28,8 @@ void scene_selection_mesh_highlight(MeshRefList *meshes,
 
   // enable mesh in each fixed selection of each pass (outline + stencil)
   for (uint8_t i = 0; i < 2; i++) {
-    RenderPass *pass =
-        &scene->renderer.draw.render_pass[scene->renderer.draw.mode]
-             .passes[target_pass[i]];
+    RenderPass *pass = &scene_renderer_active_pass_list(&scene->renderer)
+                            ->passes[target_pass[i]];
 
     RenderPassDrawLayout *layout =
         render_pass_find_layout_from_source_list(pass, selection_list);
@@ -56,10 +55,8 @@ void scene_selection_seo_highlight(MeshRefList *meshes,
                                    SceneSelectionObjectList *list, void *data) {
 
   // disable all SEOs
-  for(size_t i = 0; i < list->length; i++){
-    
+  for (size_t i = 0; i < list->length; i++) {
   }
 
   // enable selected ones
-  
 }
