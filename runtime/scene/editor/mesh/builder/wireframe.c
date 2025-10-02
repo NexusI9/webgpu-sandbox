@@ -1,6 +1,7 @@
 #include "wireframe.h"
 
 #include "backend/std_pipeline/core.h"
+#include "runtime/geometry/line/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/topology/core.h"
@@ -43,6 +44,10 @@ void sem_create_wireframe(Mesh *mesh,
                 .pipeline = std_render_pipeline(RenderPipelineType_Line),
             });
 
+  const float line_thickness = LINE_THICKNESS_BASE;
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 1,
+                             (void *)&line_thickness);
+
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
                              desc->color);
 
@@ -54,11 +59,19 @@ void sem_create_wireframe(Mesh *mesh,
   Generic highligh function for all SEM Wireframes objects
  */
 void sem_wireframe_select_callback(SEMHighlightCallback *desc) {
-  shader_update_uniform_data(mesh_shader(desc->sem->mesh, MeshShader_Fixed), 1,
-                             0, &(color){1.0f, 0.0f, 0.0f, 1.0f});
+
+  Shader *shader = mesh_shader(desc->sem->mesh, MeshShader_Fixed);
+
+  const float line_thickness = LINE_THICKNESS_STRONG;
+  shader_update_uniform_data(shader, 1, 1, (void *)&line_thickness);
+  shader_update_uniform_data(shader, 1, 0, &(color){1.0f, 0.0f, 0.0f, 1.0f});
 }
 
 void sem_wireframe_deselect_callback(SEMHighlightCallback *desc) {
-  shader_update_uniform_data(mesh_shader(desc->sem->mesh, MeshShader_Fixed), 1,
-                             0, &(color){0.0f, 0.0f, 0.0f, 1.0f});
+
+  Shader *shader = mesh_shader(desc->sem->mesh, MeshShader_Fixed);
+
+  const float line_thickness = LINE_THICKNESS_BASE;
+  shader_update_uniform_data(shader, 1, 1, (void *)&line_thickness);
+  shader_update_uniform_data(shader, 1, 0, &(color){0.0f, 0.0f, 0.0f, 1.0f});
 }

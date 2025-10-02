@@ -30,14 +30,13 @@ struct Viewport {
   projection : mat4x4<f32>, width : u32, height : u32,
 };
 
-const thickness : f32 = 0.0015f;
-
 // camera viewport
 const SSBO_CAPACITY : u32 = 32u;
 @group(0) @binding(0) var<uniform> uViewport : Viewport;
 @group(0) @binding(1) var<uniform> uCamera : Camera;
 @group(0) @binding(2) var<uniform> uMesh : Mesh;
 @group(1) @binding(0) var<uniform> uColor : vec4<f32>;
+@group(1) @binding(1) var<uniform> uThickness : f32;
 
 // vertex shader
 @vertex fn vs_main(input : VertexIn) -> VertexOut {
@@ -85,9 +84,9 @@ const SSBO_CAPACITY : u32 = 32u;
   let abs_view_z = abs(view_pos.z);
 
   let view_space_offset_x =
-      thickness * 0.5f * abs_view_z / viewport.projection[0][0];
+      uThickness * 0.5f * abs_view_z / viewport.projection[0][0];
   let view_space_offset_y =
-      thickness * 0.5f * abs_view_z / viewport.projection[1][1];
+      uThickness * 0.5f * abs_view_z / viewport.projection[1][1];
 
   let offset_view_space = vec3<f32>(perp_view_2D.x * view_space_offset_x,
                                     perp_view_2D.y * view_space_offset_y, 0.0f);

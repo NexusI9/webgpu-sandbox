@@ -2,24 +2,26 @@
 #define _LINE_CORE_H_
 
 #include <cglm/cglm.h>
-#include <webgpu/webgpu.h>
 #include <cglm/types.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <webgpu/webgpu.h>
 
-#include "runtime/mesh/mesh.h"
-#include "runtime/geometry/vertex/vertex.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/index.h"
+#include "runtime/geometry/vertex/vertex.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/mesh.h"
 
-#define LINE_MAX_POINTS 1024
-#define LINE_THICKNESS 0.005
+static const float LINE_MAX_POINTS = 1024;
+static const float LINE_THICKNESS_BASE = 0.0015f;
+static const float LINE_THICKNESS_STRONG = 0.0030f;
 
 // generate 8 (2*4) vertex per line
-#define LINE_VERTEX_COUNT 4
+static const uint8_t LINE_VERTEX_COUNT = 4;
 
 // generate 12 (2*6) index per line
-#define LINE_INDEX_COUNT 6
+static const uint8_t LINE_INDEX_COUNT = 6;
 
 typedef struct {
 

@@ -13,7 +13,7 @@
 static const WGPUBindGroupLayoutDescriptor line_bind_group = {
     // Group 1
     .label = "Group 1 - Color",
-    .entryCount = 1,
+    .entryCount = 2,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -24,6 +24,16 @@ static const WGPUBindGroupLayoutDescriptor line_bind_group = {
                         .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
                         .minBindingSize = sizeof(color),
+                    },
+            },
+            {
+                .binding = 1, // Thickness
+                .visibility = WGPUShaderStage_Vertex,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .hasDynamicOffset = false,
+                        .minBindingSize = sizeof(float),
                     },
             },
         },

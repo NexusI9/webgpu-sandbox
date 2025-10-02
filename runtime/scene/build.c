@@ -8,6 +8,7 @@
 #include "core.h"
 #include "renderer/core.h"
 #include "renderer/render_pass/core.h"
+#include "runtime/geometry/line/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/shader/core.h"
@@ -72,7 +73,8 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
     {
       // flag mesh as built to make sure we don't build it twice
       // (for dynamic rendering)
-      MeshRefList *cache_built = scene_mesh_state(scene, __builtin_ctz(draw_mode));
+      MeshRefList *cache_built =
+          scene_mesh_state(scene, __builtin_ctz(draw_mode));
       if (mesh_ref_list_find(cache_built, mesh, NULL) != NULL)
         return SceneStatus_MeshAlreadyBuilt;
       mesh_ref_list_insert(cache_built, mesh);
@@ -241,7 +243,10 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
   if (mesh_shader_create_standard(mesh, MeshShader_Wireframe) ==
       MeshStatus_Success) {
 
-    // set wireframe random color
+    float line_thickness = LINE_THICKNESS_BASE;
+    shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 1,
+                               (void *)&line_thickness);
+
     shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 0,
                                &(color){randf(), randf(), randf(), 1.0f});
 
@@ -267,6 +272,10 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
   // create meshes' wireframe shader
   if (mesh_shader_create_standard(mesh, MeshShader_Wireframe) ==
       MeshStatus_Success) {
+
+    float line_thickness = LINE_THICKNESS_BASE;
+    shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 1,
+                               (void *)&line_thickness);
 
     // set wireframe random color
     shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 0,
