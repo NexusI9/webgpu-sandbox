@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../core.h"
 #include "../filter.h"
@@ -258,32 +259,35 @@ void scene_selection_raycast_gizmo_hover_callback(
 
   SceneSelectionCallbackData *cast_user_data =
       (SceneSelectionCallbackData *)user_data;
+
   Gizmo *gizmo = &cast_user_data->scene->editor.gizmo.transform;
+  CameraRaycastHit *hit = NULL;
 
-  // DEBUG
-  // for (size_t i = 0; i < cast_data->hits->length; i++)
-  // dbg("[%d] hit mesh: %s", i, cast_data->hits->entries[i].mesh->name);
+  // Since we recieve multiple hits (gizmo-mode agnostic) we need to filter down
+  // and select the hit from the right gizmo_mode, else we may hover the rotate
+  // gizmo being in the position mode.
+  for (size_t i = 0; i < cast_data->hits->length; i++)
+    if (mesh_ref_list_find(&gizmo->interactive_handles[gizmo->mode],
+                           cast_data->hits->entries[i].mesh, NULL)) {
+      hit = &cast_data->hits->entries[i];
+      break;
+    }
 
-  CameraRaycastHit *hit = &cast_data->hits->entries[0];
+  if (hit == NULL) {
+    if (cast_data->last_hit->mesh != NULL)
+      gizmo_reset_color_uniform(gizmo);
+    return;
+  }
 
   // update only once
   if (cast_data->last_hit->mesh != hit->mesh &&
       // if mouse is down >> lock
       g_input.mouse.state == InputMouseState_Up) {
 
-    if (hit->mesh) {
-
-      dbg("<%p> hit mesh: %s", hit->mesh, hit->mesh->name);
-
-      // reset colors
-      gizmo_reset_color_uniform(gizmo);
-
-      // update hovered gizmo color
-      shader_update_uniform_data(mesh_shader(hit->mesh, MeshShader_Fixed), 1, 0,
-                                 COLOR_GIZMO_HOVER);
-
-    } else {
-      //gizmo_reset_color_uniform(gizmo);
-    }
+    gizmo_reset_color_uniform(gizmo);
+    // update hovered gizmo color
+    shader_update_uniform_data(mesh_shader(hit->mesh, MeshShader_Fixed), 1, 0,
+                               COLOR_GIZMO_HOVER);
+  } else {
   }
 }

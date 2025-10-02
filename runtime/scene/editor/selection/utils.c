@@ -25,6 +25,7 @@ void scene_gizmo_show(Scene *scene) {
 }
 
 void scene_gizmo_hide(Scene *scene) {
+  
   Gizmo *gizmo = &scene->editor.gizmo.transform;
 
   RenderPassList *pass_list = scene_renderer_active_pass_list(&scene->renderer);
