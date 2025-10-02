@@ -12,8 +12,8 @@
 // mesh transform
 void scene_selection_mesh_transform(SceneSelectionTransform *);
 
-// seo transform
-void scene_selection_seo_transform(SceneSelectionTransform *);
+// sem transform
+void scene_selection_sem_transform(SceneSelectionTransform *);
 
 // mesh shadow transform
 void scene_selection_mesh_shadow_transform(SceneSelectionTransform *);

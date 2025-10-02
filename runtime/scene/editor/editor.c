@@ -3,8 +3,8 @@
 #include <stddef.h>
 
 #include "backend/context.h"
-#include "object/grid/grid.h"
-#include "object/list/list.h"
+#include "mesh/grid/grid.h"
+#include "mesh/list/list.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/build.h"
@@ -39,8 +39,8 @@ void scene_editor_init(Scene *scene) {
   scene_editor_gizmo_create_transform(scene);
 
   //  init gizmo list
-  seo_list_create(scene_editor_object_list(scene),
-                  SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT);
+  sem_list_array_create(scene_editor_mesh_list(&scene->editor),
+                        SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT);
 }
 
 /**
@@ -50,7 +50,7 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
 
   scene->editor.gizmo.grid = scene_new_mesh(scene);
 
-  seo_grid_create(scene->editor.gizmo.grid,
+  sem_grid_create(scene->editor.gizmo.grid,
                   &(GizmoGridCreateDescriptor){
                       .uniform =
                           (GizmoGridUniform){
@@ -85,12 +85,4 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
                            SceneAddFlag_Hide | SceneAddFlag_Unselectable);
     }
   }
-}
-
-/**
-   Return the scene editor gizmo list.
-   Used when adding lights or camera into the scene.
- */
-SceneEditorObjectList *scene_editor_object_list(Scene *scene) {
-  return &scene->editor.seo_list;
 }

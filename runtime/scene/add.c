@@ -11,14 +11,14 @@
 #include "build.h"
 #include "core.h"
 #include "debug/core.h"
-#include "editor/object/camera/camera.h"
-#include "editor/object/light/ambient.h"
-#include "editor/object/light/point.h"
-#include "editor/object/light/spot.h"
-#include "editor/object/light/sun.h"
-#include "editor/object/list/list.h"
-#include "editor/object/probe/reflection_grid.h"
-#include "editor/object/probe/reflection_plane.h"
+#include "editor/mesh/camera/camera.h"
+#include "editor/mesh/light/ambient.h"
+#include "editor/mesh/light/point.h"
+#include "editor/mesh/light/spot.h"
+#include "editor/mesh/light/sun.h"
+#include "editor/mesh/list/list.h"
+#include "editor/mesh/probe/reflection_grid.h"
+#include "editor/mesh/probe/reflection_plane.h"
 #include "editor/selection/core.h"
 #include "layer.h"
 #include "renderer/core.h"
@@ -40,7 +40,7 @@
 #include "runtime/scene/renderer/render_pass/visibility.h"
 #include "utils/projection.h"
 
-static inline void scene_add_seo(Scene *, SceneEditorObject *);
+static inline void scene_add_sem(Scene *, SceneEditorMeshList *);
 static inline void
 scene_render_pass_draw_list_enable_mesh(Scene *, const MeshRefList *, Mesh *);
 
@@ -56,10 +56,10 @@ scene_render_pass_draw_list_enable_mesh(Scene *, const MeshRefList *, Mesh *);
              ▝▚▄▞▘▐▙▄▞▘▗▄▄▞▘▐▙▄▄▖▝▚▄▄▖  █ ▗▄▄▞▘
 
  */
-SceneEditorObject *scene_add_point_light(Scene *scene,
-                                         PointLightDescriptor *desc,
-                                         const LightShadow shadow,
-                                         PointLight **dest) {
+SceneEditorMeshList *scene_add_point_light(Scene *scene,
+                                           PointLightDescriptor *desc,
+                                           const LightShadow shadow,
+                                           PointLight **dest) {
 
   PointLightListBase *base_list = &scene->lights.point.base;
   if (base_list->length == base_list->capacity) {
@@ -79,9 +79,10 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
                   &new_light->ssbo_slot[LightSSBOSlot_List]);
 
   // create mesh/gizmo
-  SceneEditorObject *seo = seo_list_new_entry(scene_editor_object_list(scene));
+  SceneEditorMeshList *sem_list =
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
 
-  SEOCreateDescriptor seo_desc = {
+  SEMCreateDescriptor sem_desc = {
       .camera = scene->active_camera,
       .viewport = &scene->viewport,
       .scene = scene,
@@ -96,8 +97,8 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
 
     PointLightListShadow *shadow_list = &scene->lights.point.shadow;
 
-    seo_desc.target_list_index = shadow_list->length;
-    seo_light_point_shadow_create(seo, new_light, &seo_desc);
+    sem_desc.target_list_index = shadow_list->length;
+    sem_light_point_shadow_create(sem_list, new_light, &sem_desc);
 
     light_list_point_shadow_insert(shadow_list, new_light);
 
@@ -114,11 +115,11 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-    seo_light_point_create(seo, new_light, &seo_desc);
+    sem_light_point_create(sem_list, new_light, &sem_desc);
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_seo(scene, seo);
+  scene_add_sem(scene, sem_list);
 
   base_list->length++;
 
@@ -126,12 +127,13 @@ SceneEditorObject *scene_add_point_light(Scene *scene,
                    (void *)&base_list->length);
   ubo_upload(&scene->renderer.ubo);
 
-  return seo;
+  return sem_list;
 }
 
-SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
-                                        const LightShadow shadow,
-                                        SpotLight **dest) {
+SceneEditorMeshList *scene_add_spot_light(Scene *scene,
+                                          SpotLightDescriptor *desc,
+                                          const LightShadow shadow,
+                                          SpotLight **dest) {
 
   SpotLightListBase *base_list = &scene->lights.spot.base;
   if (base_list->length == base_list->capacity) {
@@ -151,9 +153,10 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
                   &new_light->ssbo_slot[LightSSBOSlot_List]);
 
   // create mesh/gizmo
-  SceneEditorObject *seo = seo_list_new_entry(scene_editor_object_list(scene));
+  SceneEditorMeshList *sem =
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
 
-  SEOCreateDescriptor seo_desc = {
+  SEMCreateDescriptor sem_desc = {
       .camera = scene->active_camera,
       .viewport = &scene->viewport,
       .scene = scene,
@@ -167,8 +170,8 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
 
     SpotLightListShadow *shadow_list = &scene->lights.spot.shadow;
 
-    seo_desc.target_list_index = shadow_list->length;
-    seo_light_spot_shadow_create(seo, new_light, &seo_desc);
+    sem_desc.target_list_index = shadow_list->length;
+    sem_light_spot_shadow_create(sem, new_light, &sem_desc);
 
     light_list_spot_shadow_insert(shadow_list, new_light);
 
@@ -185,11 +188,11 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-    seo_light_spot_create(seo, new_light, &seo_desc);
+    sem_light_spot_create(sem, new_light, &sem_desc);
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_seo(scene, seo);
+  scene_add_sem(scene, sem);
 
   base_list->length++;
 
@@ -200,12 +203,12 @@ SceneEditorObject *scene_add_spot_light(Scene *scene, SpotLightDescriptor *desc,
     ubo_upload(&scene->renderer.ubo);
   }
 
-  return seo;
+  return sem;
 }
 
-SceneEditorObject *scene_add_ambient_light(Scene *scene,
-                                           AmbientLightDescriptor *desc,
-                                           AmbientLight **dest) {
+SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
+                                             AmbientLightDescriptor *desc,
+                                             AmbientLight **dest) {
 
   AmbientLightList *list = &scene->lights.ambient;
   if (list->length == list->capacity) {
@@ -226,10 +229,11 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
                   &new_light->ssbo_slot);
 
   // create mesh/gizmo
-  SceneEditorObject *seo = seo_list_new_entry(scene_editor_object_list(scene));
+  SceneEditorMeshList *sem =
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
 
-  seo_light_ambient_create(seo, new_light,
-                           &(SEOCreateDescriptor){
+  sem_light_ambient_create(sem, new_light,
+                           &(SEMCreateDescriptor){
                                .camera = scene->active_camera,
                                .viewport = &scene->viewport,
                                .scene = scene,
@@ -237,18 +241,18 @@ SceneEditorObject *scene_add_ambient_light(Scene *scene,
                            });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_seo(scene, seo);
+  scene_add_sem(scene, sem);
 
   ubo_update_entry(&scene->renderer.ubo, UBOField_AmbientLightCount,
                    (void *)&list->length);
   ubo_upload(&scene->renderer.ubo);
 
-  return seo;
+  return sem;
 }
 
-SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
-                                       const LightShadow shadow,
-                                       SunLight **dest) {
+SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
+                                         const LightShadow shadow,
+                                         SunLight **dest) {
 
   SunLightListBase *base_list = &scene->lights.sun.base;
   if (base_list->length == base_list->capacity) {
@@ -268,9 +272,10 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
                   &new_light->ssbo_slot[LightSSBOSlot_List]);
 
   // create mesh/gizmo
-  SceneEditorObject *seo = seo_list_new_entry(scene_editor_object_list(scene));
+  SceneEditorMeshList *sem =
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
 
-  SEOCreateDescriptor seo_desc = {
+  SEMCreateDescriptor sem_desc = {
       .camera = scene->active_camera,
       .viewport = &scene->viewport,
       .scene = scene,
@@ -284,9 +289,9 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
     SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
 
-    seo_desc.target_list_index = shadow_list->length;
+    sem_desc.target_list_index = shadow_list->length;
 
-    seo_light_sun_shadow_create(seo, new_light, &seo_desc);
+    sem_light_sun_shadow_create(sem, new_light, &sem_desc);
 
     light_list_sun_shadow_insert(shadow_list, new_light);
 
@@ -299,17 +304,17 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
               .light = new_light,
               .pass = &scene->lights.spot.shadow.pass,
               .texture_layer =
-                  scene->lights.spot.shadow.length + seo_desc.target_list_index,
+                  scene->lights.spot.shadow.length + sem_desc.target_list_index,
               .command_encoder = NULL,
           },
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-    seo_light_sun_create(seo, new_light, &seo_desc);
+    sem_light_sun_create(sem, new_light, &sem_desc);
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_seo(scene, seo);
+  scene_add_sem(scene, sem);
 
   base_list->length++;
 
@@ -317,7 +322,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
                    (void *)&base_list->length);
   ubo_upload(&scene->renderer.ubo);
 
-  return seo;
+  return sem;
 }
 
 /**
@@ -327,7 +332,7 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
         ScenePool
        .---------.
        |   ...   |
-       |---------|              SEO<T>
+       |---------|              SEM<T>
        |  cam N  | ---.      .-----------.       Scene Render Layer
        '---------'    '--->  |   target  |           .-----------.
                       .--->  |  meshes*  | --------> |  mesh 1*  |
@@ -340,9 +345,9 @@ SceneEditorObject *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
        '----------'
 
  */
-SceneEditorObject *scene_add_camera(Scene *scene,
-                                    const CameraCreateDescriptor *desc,
-                                    Camera **dest) {
+SceneEditorMeshList *scene_add_camera(Scene *scene,
+                                      const CameraCreateDescriptor *desc,
+                                      Camera **dest) {
 
   // init scene camera
   Camera *new_cam = camera_list_new_camera(&scene->cameras);
@@ -352,10 +357,11 @@ SceneEditorObject *scene_add_camera(Scene *scene,
     *dest = new_cam;
 
   // create gizmo
-  SceneEditorObject *seo = seo_list_new_entry(scene_editor_object_list(scene));
+  SceneEditorMeshList *sem =
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
 
-  seo_camera_create(seo, new_cam,
-                    &(SEOCreateDescriptor){
+  sem_camera_create(sem, new_cam,
+                    &(SEMCreateDescriptor){
                         .camera = scene->active_camera,
                         .viewport = &scene->viewport,
                         .scene = scene,
@@ -363,9 +369,9 @@ SceneEditorObject *scene_add_camera(Scene *scene,
                     });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_seo(scene, seo);
+  scene_add_sem(scene, sem);
 
-  return seo;
+  return sem;
 }
 
 /**
@@ -373,23 +379,23 @@ SceneEditorObject *scene_add_camera(Scene *scene,
    follow a more specific path when it comes to be added to the scene and
    especially how they are handled for selection.
 
-   SEO are segmented into:
+   SEM are segmented into:
    1. Meshes list: a visual helper/ representaiton of the entity
    2. Target: the actual data
 
    As a result in order to add them to the scene we need to add their meshes
    list in the scene pool, but need to add them in a different "branch" of the
-   selection system (SceneSelectionType_SEO).
+   selection system (SceneSelectionType_SEM).
 
    We use the below function to do such operation.
  */
-void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
+void scene_add_sem(Scene *scene, SceneEditorMeshList *list) {
 
   MeshRefList *pipeline_mesh_list = scene_pipeline(scene, ScenePipeline_Fixed);
 
-  for (size_t i = 0; i < seo->meshes.length; i++) {
-    SceneEditorObjectMesh *seom = &seo->meshes.entries[i];
-    Mesh *mesh = seom->mesh;
+  for (size_t i = 0; i < list->length; i++) {
+    SceneEditorMesh *sem = &list->entries[i];
+    Mesh *mesh = sem->mesh;
 
     {
       // build mesh depending on pipeline and scene render mode
@@ -405,14 +411,14 @@ void scene_add_seo(Scene *scene, SceneEditorObject *seo) {
     }
 
     {
-      // add to scene selection (SEO pipeline) with target
+      // add to scene selection (SEM pipeline) with target
       scene_selection_subscribe_mesh(&scene->editor.selection, mesh,
-                                     (void *)seo, SceneSelectionType_SEO);
+                                     (void *)sem, SceneSelectionType_SEM);
     }
   }
 }
 
-SceneEditorObject *
+SceneEditorMeshList *
 scene_add_probe_reflection_grid(Scene *scene,
                                 ProbeReflectionGridDescriptor *desc,
                                 ProbeReflectionGrid **dest) {
@@ -426,11 +432,11 @@ scene_add_probe_reflection_grid(Scene *scene,
     *dest = new_grid;
 
   // create scene object
-  SceneEditorObject *seo_grid =
-      seo_list_new_entry(scene_editor_object_list(scene));
+  SceneEditorMeshList *sem_grid =
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
 
-  seo_probe_reflection_grid_create(seo_grid, new_grid,
-                                   &(SEOCreateDescriptor){
+  sem_probe_reflection_grid_create(sem_grid, new_grid,
+                                   &(SEMCreateDescriptor){
                                        .camera = scene->active_camera,
                                        .viewport = &scene->viewport,
                                        .scene = scene,
@@ -462,12 +468,12 @@ scene_add_probe_reflection_grid(Scene *scene,
   ubo_upload(&scene->renderer.ubo);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_seo(scene, seo_grid);
+  scene_add_sem(scene, sem_grid);
 
-  return seo_grid;
+  return sem_grid;
 }
 
-SceneEditorObject *
+SceneEditorMeshList *
 scene_add_probe_reflection_plane(Scene *scene,
                                  ProbeReflectionPlaneDescriptor *desc,
                                  ProbeReflectionPlane **dest) {
@@ -488,17 +494,18 @@ scene_add_probe_reflection_plane(Scene *scene,
   probe_reflection_plane_create(probe, desc);
 
   // create scene object
-  SceneEditorObject *seo = seo_list_new_entry(scene_editor_object_list(scene));
+  SceneEditorMeshList *sem =
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
 
   probe_reflection_plane_create(probe, desc);
 
-  seo_probe_reflection_plane_create(
-      seo, probe,
-      &(SEOCreateDescriptor){
+  sem_probe_reflection_plane_create(
+      sem, probe,
+      &(SEMCreateDescriptor){
           .camera = scene->active_camera,
           .viewport = &scene->viewport,
           .scene = scene,
-          .target_list_index = SCENE_EDITOR_OBJECT_TARGET_UNDEFINED,
+          .target_list_index = SCENE_EDITOR_MESH_TARGET_UNDEFINED,
       });
 
   // add probes to ssbo list
@@ -523,9 +530,9 @@ scene_add_probe_reflection_plane(Scene *scene,
   ubo_upload(&scene->renderer.ubo);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_seo(scene, seo);
+  scene_add_sem(scene, sem);
 
-  return seo;
+  return sem;
 }
 
 /**

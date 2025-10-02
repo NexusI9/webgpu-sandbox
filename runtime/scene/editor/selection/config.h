@@ -33,10 +33,10 @@ static inline void scene_selection_config(Scene *scene) {
                       .highlight_data = (void *)scene,
                   },
               // shader based rule
-              [SceneSelectionType_SEO] =
+              [SceneSelectionType_SEM] =
                   {
-                      .transform_callback = scene_selection_seo_transform,
-                      .highlight_callback = scene_selection_seo_highlight,
+                      .transform_callback = scene_selection_sem_transform,
+                      .highlight_callback = scene_selection_sem_highlight,
                       .highlight_data = (void *)scene,
                   },
 

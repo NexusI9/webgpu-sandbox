@@ -4,7 +4,7 @@
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/pipeline/pipeline.h"
-#include "runtime/scene/editor/object/grid/grid.h"
+#include "runtime/scene/editor/mesh/grid/grid.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"

@@ -29,7 +29,7 @@
 
 void example_glass_probe_grid(Scene *scene, bool debug) {
 
-  SceneEditorObject *grid_probe =
+  SceneEditorMeshList *grid_probe =
       scene_add_probe_reflection_grid(scene,
                                       &(ProbeReflectionGridDescriptor){
                                           .count = {3, 3, 3},
@@ -105,7 +105,7 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
   const float scale = 20.0f;
 
   ProbeReflectionPlane *plane;
-  SceneEditorObject *plane_probe = scene_add_probe_reflection_plane(
+  SceneEditorMeshList *plane_probe = scene_add_probe_reflection_plane(
       scene,
       &(ProbeReflectionPlaneDescriptor){
           .far = 100.0f,

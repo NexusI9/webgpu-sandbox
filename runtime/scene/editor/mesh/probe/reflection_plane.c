@@ -17,30 +17,26 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/editor/object/builder/wireframe.h"
-#include "runtime/scene/editor/object/list/list.h"
+#include "runtime/scene/editor/mesh/builder/wireframe.h"
+#include "runtime/scene/editor/mesh/list/list.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
 #include "utils/color.h"
 
-void seo_probe_reflection_plane_create(SceneEditorObject *seo,
+void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
                                        ProbeReflectionPlane *probe,
-                                       const SEOCreateDescriptor *desc) {
+                                       const SEMCreateDescriptor *desc) {
 
-  seo->scene = desc->scene;
-
-  const uint16_t seo_mesh_count = 4;
-  seo_mesh_list_create(&seo->meshes, seo_mesh_count);
+  const uint16_t sem_mesh_count = 4;
+  sem_list_create(list, sem_mesh_count);
 
   /*
 
      === Distance Cube ===
 
    */
-  SceneEditorObjectMesh *probe_cube = seo_mesh_list_new_entry(&seo->meshes);
+  SceneEditorMesh *probe_cube = sem_list_new_entry(list);
   probe_cube->mesh = scene_new_mesh(desc->scene);
-  probe_cube->target = probe;
-  probe_cube->target_list_index = SCENE_EDITOR_OBJECT_TARGET_UNDEFINED;
 
   Primitive primitive_cube;
   // TODO: cache MBIN
@@ -49,15 +45,15 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
       .primitive = &primitive_cube,
   });
 
-  SEOCreateWireframeDescriptor wireframe_cube_desc = {
+  SEMCreateWireframeDescriptor wireframe_cube_desc = {
       .color = &(color){0.0f, 0.0f, 0.0f, 1.0f},
       .index = &primitive_cube.index,
       .vertex = &primitive_cube.vertex,
-      .name = "seo probe reflection plane",
-      .thickness = SEO_WIREFRAME_LINE_THICKNESS,
+      .name = "sem probe reflection plane",
+      .thickness = SEM_WIREFRAME_LINE_THICKNESS,
   };
 
-  seo_create_wireframe(probe_cube->mesh, &wireframe_cube_desc);
+  sem_create_wireframe(probe_cube->mesh, &wireframe_cube_desc);
 
   mesh_set_scale(probe_cube->mesh, (vec3){
                                        probe->scale[0],
@@ -65,25 +61,13 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
                                        probe->scale[2],
                                    });
   mesh_set_position(probe_cube->mesh, probe->position);
-
-  probe_cube->transform_callback[GizmoMode_Position] =
-      seo_probe_reflection_plane_set_position;
-  probe_cube->transform_callback[GizmoMode_Rotation] =
-      seo_probe_reflection_plane_set_rotation;
-  probe_cube->transform_callback[GizmoMode_Scale] =
-      seo_probe_reflection_plane_set_scale;
-
   /*
 
     === Main refletion plane ===
 
    */
-  SceneEditorObjectMesh *probe_plane = seo_mesh_list_new_entry(&seo->meshes);
-
+  SceneEditorMesh *probe_plane = sem_list_new_entry(list);
   probe_plane->mesh = scene_new_mesh(desc->scene);
-  probe_plane->target = probe;
-  probe_plane->target_list_index =
-      SCENE_EDITOR_OBJECT_TARGET_UNDEFINED; // necessary ?
 
   Primitive primitive;
   // TODO: cache MBIN
@@ -92,37 +76,28 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
       .primitive = &primitive,
   });
 
-  SEOCreateWireframeDescriptor wireframe_desc = {
+  SEMCreateWireframeDescriptor wireframe_desc = {
       .color = &(color){0.0f, 0.0f, 0.0f, 1.0f},
       .index = &primitive.index,
       .vertex = &primitive.vertex,
-      .name = "seo probe reflection plane",
-      .thickness = SEO_WIREFRAME_LINE_THICKNESS,
+      .name = "sem probe reflection plane",
+      .thickness = SEM_WIREFRAME_LINE_THICKNESS,
   };
 
-  seo_create_wireframe(probe_plane->mesh, &wireframe_desc);
+  sem_create_wireframe(probe_plane->mesh, &wireframe_desc);
 
   mesh_set_scale(probe_plane->mesh, probe->scale);
   mesh_set_position(probe_plane->mesh, probe->position);
 
   mesh_child_add(probe_cube->mesh, probe_plane->mesh);
 
-  probe_plane->transform_callback[GizmoMode_Position] =
-      seo_probe_reflection_plane_set_position;
-  probe_plane->transform_callback[GizmoMode_Rotation] =
-      seo_probe_reflection_plane_set_rotation;
-  probe_plane->transform_callback[GizmoMode_Scale] =
-      seo_probe_reflection_plane_set_scale;
-
   /*
 
    === Normal Arrow ===
 
  */
-  SceneEditorObjectMesh *probe_arrow = seo_mesh_list_new_entry(&seo->meshes);
+  SceneEditorMesh *probe_arrow = sem_list_new_entry(list);
   probe_arrow->mesh = scene_new_mesh(desc->scene);
-  probe_arrow->target = probe;
-  probe_arrow->target_list_index = SCENE_EDITOR_OBJECT_TARGET_UNDEFINED;
 
   Primitive primitive_arrow;
   // TODO: cache MBIN
@@ -131,27 +106,36 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
       .primitive = &primitive_arrow,
   });
 
-  SEOCreateWireframeDescriptor wireframe_arrow_desc = {
+  SEMCreateWireframeDescriptor wireframe_arrow_desc = {
       .color = &(color){0.0f, 0.0f, 0.0f, 1.0f},
       .index = &primitive_arrow.index,
       .vertex = &primitive_arrow.vertex,
-      .name = "seo probe reflection plane",
-      .thickness = SEO_WIREFRAME_LINE_THICKNESS,
+      .name = "sem probe reflection plane",
+      .thickness = SEM_WIREFRAME_LINE_THICKNESS,
   };
 
-  seo_create_wireframe(probe_arrow->mesh, &wireframe_arrow_desc);
+  sem_create_wireframe(probe_arrow->mesh, &wireframe_arrow_desc);
   mesh_set_position(probe_arrow->mesh, probe->position);
 
   mesh_child_add(probe_cube->mesh, probe_arrow->mesh);
 
-  probe_arrow->transform_callback[GizmoMode_Position] =
-      seo_probe_reflection_plane_set_position;
-  probe_arrow->transform_callback[GizmoMode_Rotation] =
-      seo_probe_reflection_plane_set_rotation;
-  probe_arrow->transform_callback[GizmoMode_Scale] =
-      seo_probe_reflection_plane_set_scale;
+  // apply sem commons attributes
+  for (uint8_t i = 0; i < list->length; i++) {
 
-  seo->origin = probe_plane->mesh;
+    list->entries[i].scene = desc->scene;
+    list->entries[i].target = probe;
+    list->entries[i].target_list_index = SCENE_EDITOR_MESH_TARGET_UNDEFINED;
+
+    list->entries[i].transform_callback[GizmoMode_Position] =
+        sem_probe_reflection_plane_set_position;
+    list->entries[i].transform_callback[GizmoMode_Rotation] =
+        sem_probe_reflection_plane_set_rotation;
+    list->entries[i].transform_callback[GizmoMode_Scale] =
+        sem_probe_reflection_plane_set_scale;
+    
+    list->entries[i].select_callback = sem_wireframe_select_callback;
+    list->entries[i].deselect_callback = sem_wireframe_deselect_callback;
+  }
 }
 
 /**
@@ -174,14 +158,13 @@ void seo_probe_reflection_plane_create(SceneEditorObject *seo,
    have more efficient and optimized control on the probe reflection handle and
    self reflection.
  */
-void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *seo) {
+void sem_probe_reflection_plane_update_mesh_uniform(SceneEditorMesh *sem) {
 
   MeshRefList *pipeline_mesh_list[SCENE_PIPELINE_REFLECTION_COUNT];
-  scene_reflection_pipeline_meshes(seo->scene, pipeline_mesh_list);
+  scene_reflection_pipeline_meshes(sem->scene, pipeline_mesh_list);
 
-  SceneEditorObjectMesh *probe_bound_box = &seo->meshes.entries[0];
-  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)probe_bound_box->target;
-  SSBOManager *ssbo = &seo->scene->renderer.ssbo;
+  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)sem->target;
+  SSBOManager *ssbo = &sem->scene->renderer.ssbo;
 
   probe_reflection_plane_update_boundbox(probe);
 
@@ -198,30 +181,30 @@ void seo_probe_reflection_plane_update_mesh_uniform(SceneEditorObject *seo) {
 
       if (intersect) {
         mesh_uniform_set_probe_reflection_plane(pipeline_mesh, ssbo);
-        render_pass_disable_mesh(&seo->scene->planes_reflection.pass,
+        render_pass_disable_mesh(&sem->scene->planes_reflection.pass,
                                  pipeline_mesh);
       } else {
         mesh_uniform_clear_probe_reflection_plane(pipeline_mesh, ssbo);
-        render_pass_enable_mesh(&seo->scene->planes_reflection.pass,
+        render_pass_enable_mesh(&sem->scene->planes_reflection.pass,
                                 pipeline_mesh);
       }
     }
   }
 }
 
-void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
+void sem_probe_reflection_plane_set_position(SEMTransformCallback *desc) {
 
-  mesh_set_position(desc->mesh->mesh, desc->offset);
+  mesh_set_position(desc->sem->mesh, desc->offset);
 
-  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)desc->mesh->target;
-  glm_vec3_copy(desc->mesh->mesh->position, probe->position);
+  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)desc->sem->target;
+  glm_vec3_copy(desc->sem->mesh->position, probe->position);
   probe->signed_distance = glm_dot(probe->normal, probe->position);
 
   // update uniform cpu side
   probe_reflection_plane_update_uniform(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
+  ssbo_update_queue_insert(&desc->sem->scene->renderer.ssbo,
                            SSBOType_ProbePlaneReflection,
                            probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
 
@@ -230,13 +213,13 @@ void seo_probe_reflection_plane_set_position(SEOTransformCallback *desc) {
 
   // add to upload queue
   ssbo_update_queue_insert(
-      &desc->seo->scene->renderer.ssbo, SSBOType_Camera,
+      &desc->sem->scene->renderer.ssbo, SSBOType_Camera,
       probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
 }
 
-void seo_probe_reflection_plane_set_rotation(SEOTransformCallback *desc) {}
+void sem_probe_reflection_plane_set_rotation(SEMTransformCallback *desc) {}
 
-void seo_probe_reflection_plane_set_scale(SEOTransformCallback *desc) {
+void sem_probe_reflection_plane_set_scale(SEMTransformCallback *desc) {
 
   // print_vec3(desc->offset);
 }

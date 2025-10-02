@@ -9,7 +9,7 @@
 void scene_selection_mesh_highlight(MeshRefList *, SceneSelectionObjectList *,
                                      void *);
 
-void scene_selection_seo_highlight(MeshRefList *, SceneSelectionObjectList *,
+void scene_selection_sem_highlight(MeshRefList *, SceneSelectionObjectList *,
                                     void *);
 
 #endif

@@ -128,44 +128,42 @@ void scene_selection_mesh_shadow_transform(SceneSelectionTransform *desc) {
  */
 
 static inline void
-scene_selection_seo_transform_core(SceneEditorObjectMesh *, SceneEditorObject *,
-                                   vec3 *, seo_transform_axis_callback,
+scene_selection_sem_transform_core(SceneEditorMesh *, vec3 *,
+                                   sem_transform_axis_callback,
                                    SceneSelectionTransform *);
 
-void scene_selection_seo_transform_core(
-    SceneEditorObjectMesh *mesh, SceneEditorObject *seo, vec3 *init_attribute,
-    seo_transform_axis_callback transform_callback,
+void scene_selection_sem_transform_core(
+    SceneEditorMesh *sem, vec3 *init_attribute,
+    sem_transform_axis_callback transform_callback,
     SceneSelectionTransform *desc) {
 
-  // printf("%s\n", seo->meshes.entries[i].mesh->name);
   //  calculate offset from delta
   vec3 offset_attribute;
   glm_vec3_add(*init_attribute, *desc->delta, offset_attribute);
 
-  // transform seo via their own callback
-  transform_callback(&(SEOTransformCallback){
-      .mesh = mesh,
-      .seo = seo,
+  // transform sem via their own callback
+  transform_callback(&(SEMTransformCallback){
+      .sem = sem,
       .offset = offset_attribute,
   });
 
   ssbo_update_queue_insert(&desc->scene->renderer.ssbo, SSBOType_Mesh,
-                           mesh->mesh->ssbo_slot.id);
+                           sem->mesh->ssbo_slot.id);
 }
 
 /*
-  SEO based transform
+  SEM based transform
 
    .--------------------------------------------------------------.
    |                       Actives Meshes                         |
    |------------------------------.-------------------------------|
    | Mesh 1 |  Mesh 2  |  Mesh 3  |  Mesh 1  |  Mesh 2  | Mesh 3  |
    |------------------------------+-------------------------------|
-   |           SEO 1              |            SEO 2              |
+   |           SEM 1              |            SEM 2              |
    '------------------------------'-------------------------------'
 
  */
-void scene_selection_seo_transform(SceneSelectionTransform *desc) {
+void scene_selection_sem_transform(SceneSelectionTransform *desc) {
 
   size_t offset = 0;
 
@@ -173,33 +171,11 @@ void scene_selection_seo_transform(SceneSelectionTransform *desc) {
 
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
     Mesh *mesh = desc->selection->entries[i].mesh;
-    SceneEditorObject *seo =
-        (SceneEditorObject *)desc->selection->entries[i].target;
+    SceneEditorMesh *sem_mesh =
+        (SceneEditorMesh *)desc->selection->entries[i].target;
 
-    /* For now each SEO mesh has its own entry
-     However the selection only works with a flat array of mesh, thus we need
-     to map back the seo meshes using an offset.
-
-     It is still unsure if the "per mesh callback" is necessary, however it
-     provides for sure more flexbility for more complex SEO, so it's been
-     decided to keep it for now. However if after implementing more complex SEO
-     (like target spot lights, camera look at target) it proves to not really be
-     necessary, then it's possible to implement back to a more simple/ "per seo"
-     transform callback.
-     */
-
-    size_t local_index = i - offset;
-    if (local_index >= seo->meshes.length) {
-      offset += seo->meshes.length;
-      local_index = 0;
-    }
-
-    seo_transform_axis_callback transform_callback =
-        seo->meshes.entries[local_index]
-            .transform_callback[desc->transform_mode];
-
-    scene_selection_seo_transform_core(&seo->meshes.entries[local_index], seo,
-                                       init_attribute, transform_callback,
-                                       desc);
+    scene_selection_sem_transform_core(
+        sem_mesh, init_attribute,
+        sem_mesh->transform_callback[desc->transform_mode], desc);
   }
 }

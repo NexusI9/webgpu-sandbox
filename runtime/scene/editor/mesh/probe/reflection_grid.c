@@ -1,36 +1,34 @@
 #include "reflection_grid.h"
 
-#include <stdint.h>
 #include <cglm/types.h>
 #include <cglm/vec3.h>
 #include <stddef.h>
+#include <stdint.h>
 
-#include "resources/loader/loader.mbin.h"
+#include "backend/logger.h"
 #include "backend/ssbo.h"
+#include "resources/loader/loader.mbin.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/primitive/core.h"
 #include "runtime/probe/reflection/core.h"
+#include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/probe.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/editor/object/builder/wireframe.h"
-#include "runtime/scene/editor/object/list/list.h"
+#include "runtime/scene/editor/mesh/builder/wireframe.h"
+#include "runtime/scene/editor/mesh/list/list.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "utils/color.h"
-#include "backend/logger.h"
-#include "runtime/probe/reflection/grid.h"
 
-void seo_probe_reflection_grid_create(SceneEditorObject *seo,
+void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
                                       ProbeReflectionGrid *grid,
-                                      const SEOCreateDescriptor *desc) {
-
-  seo->scene = desc->scene;
+                                      const SEMCreateDescriptor *desc) {
 
   // 1 bound cube + (x * y * z probes)
-  const uint16_t seo_mesh_count =
+  const uint16_t sem_mesh_count =
       1 + grid->count[0] * grid->count[1] * grid->count[2];
-  seo_mesh_list_create(&seo->meshes, seo_mesh_count);
+  sem_list_create(list, sem_mesh_count);
 
   /*
 
@@ -38,10 +36,12 @@ void seo_probe_reflection_grid_create(SceneEditorObject *seo,
 
    */
 
-  SceneEditorObjectMesh *bound_cube = seo_mesh_list_new_entry(&seo->meshes);
+  SceneEditorMesh *bound_cube = sem_list_new_entry(list);
   bound_cube->mesh = scene_new_mesh(desc->scene);
   bound_cube->target = grid;
   bound_cube->target_list_index = desc->target_list_index; // necessary ?
+  bound_cube->scene = desc->scene;
+
   Primitive cube_primitive;
   // TODO: cache MBIN
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
@@ -49,26 +49,26 @@ void seo_probe_reflection_grid_create(SceneEditorObject *seo,
       .primitive = &cube_primitive,
   });
 
-  SEOCreateWireframeDescriptor wireframe_desc = {
+  SEMCreateWireframeDescriptor wireframe_desc = {
       .color = &(color){1.0f, 0.0f, 0.0f, 1.0f},
       .index = &cube_primitive.index,
       .vertex = &cube_primitive.vertex,
-      .name = "seo probe reflection bound",
-      .thickness = SEO_WIREFRAME_LINE_THICKNESS,
+      .name = "sem probe reflection bound",
+      .thickness = SEM_WIREFRAME_LINE_THICKNESS,
   };
 
   vec3 padded_size;
   glm_vec3_scale(grid->scale, 2.2f, padded_size);
-  seo_create_wireframe(bound_cube->mesh, &wireframe_desc);
+  sem_create_wireframe(bound_cube->mesh, &wireframe_desc);
 
   mesh_set_scale(bound_cube->mesh, padded_size);
 
   bound_cube->transform_callback[GizmoMode_Position] =
-      seo_probe_reflection_grid_bound_set_position;
+      sem_probe_reflection_grid_bound_set_position;
   bound_cube->transform_callback[GizmoMode_Rotation] =
-      seo_probe_reflection_grid_set_rotation;
+      sem_probe_reflection_grid_set_rotation;
   bound_cube->transform_callback[GizmoMode_Scale] =
-      seo_probe_reflection_grid_bound_set_scale;
+      sem_probe_reflection_grid_bound_set_scale;
 
   /*
 
@@ -77,60 +77,59 @@ void seo_probe_reflection_grid_create(SceneEditorObject *seo,
    */
   for (size_t i = 0; i < grid->probes.length; i++) {
 
-    SceneEditorObjectMesh *probe = seo_mesh_list_new_entry(&seo->meshes);
+    SceneEditorMesh *probe = sem_list_new_entry(list);
     probe->mesh = scene_new_mesh(desc->scene);
     probe->target = &grid->probes.entries[i];
     probe->target_list_index = i;
+    probe->scene = desc->scene;
 
     if (probe == NULL) {
-      logger_add(LoggerFlag_Warning, "Couldn't create new mesh for probe SEO.");
+      logger_add(LoggerFlag_Warning, "Couldn't create new mesh for probe SEM.");
       break;
     }
 
-    seo_create_wireframe(probe->mesh, &wireframe_desc);
+    sem_create_wireframe(probe->mesh, &wireframe_desc);
 
     mesh_set_scale(probe->mesh, (vec3){0.6f, 0.6f, 0.6f});
     mesh_set_position(probe->mesh, grid->probes.entries[i].position);
 
     probe->transform_callback[GizmoMode_Position] =
-        seo_probe_reflection_grid_set_position;
+        sem_probe_reflection_grid_set_position;
     probe->transform_callback[GizmoMode_Rotation] =
-        seo_probe_reflection_grid_set_rotation;
+        sem_probe_reflection_grid_set_rotation;
     probe->transform_callback[GizmoMode_Scale] =
-        seo_probe_reflection_grid_set_scale;
+        sem_probe_reflection_grid_set_scale;
 
     mesh_child_add(bound_cube->mesh, probe->mesh);
   }
-
-  seo->origin = bound_cube->mesh;
 }
 
 /**
    Update the position list according to the origin on top the casual mesh
    translation.
  */
-void seo_probe_reflection_grid_bound_set_position(SEOTransformCallback *desc) {
+void sem_probe_reflection_grid_bound_set_position(SEMTransformCallback *desc) {
 
-  ProbeReflectionGrid *grid = (ProbeReflectionGrid *)desc->mesh->target;
-  mesh_set_position(desc->mesh->mesh, desc->offset);
+  ProbeReflectionGrid *grid = (ProbeReflectionGrid *)desc->sem->target;
+  mesh_set_position(desc->sem->mesh, desc->offset);
 }
 
-void seo_probe_reflection_grid_bound_set_scale(SEOTransformCallback *desc) {
+void sem_probe_reflection_grid_bound_set_scale(SEMTransformCallback *desc) {
   // mesh_set_scale(desc->mesh->mesh, desc->offset);
 }
 
-void seo_probe_reflection_grid_set_position(SEOTransformCallback *desc) {
+void sem_probe_reflection_grid_set_position(SEMTransformCallback *desc) {
 
-  mesh_set_position(desc->mesh->mesh, desc->offset);
+  mesh_set_position(desc->sem->mesh, desc->offset);
 
-  ProbeReflection *probe = (ProbeReflection *)desc->mesh->target;
-  glm_vec3_copy(desc->mesh->mesh->position, probe->position);
+  ProbeReflection *probe = (ProbeReflection *)desc->sem->target;
+  glm_vec3_copy(desc->sem->mesh->position, probe->position);
 
   // update uniform cpu side
   probe_reflection_update_uniform(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
+  ssbo_update_queue_insert(&desc->sem->scene->renderer.ssbo,
                            SSBOType_ProbeGridReflection,
                            probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
 
@@ -138,14 +137,14 @@ void seo_probe_reflection_grid_set_position(SEOTransformCallback *desc) {
   probe_reflection_update_camera(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(&desc->seo->scene->renderer.ssbo,
-                           SSBOType_Camera,
-                           probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
+  ssbo_update_queue_insert(
+      &desc->sem->scene->renderer.ssbo, SSBOType_Camera,
+      probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
 }
 
-void seo_probe_reflection_grid_set_rotation(SEOTransformCallback *desc) {}
+void sem_probe_reflection_grid_set_rotation(SEMTransformCallback *desc) {}
 
-void seo_probe_reflection_grid_set_scale(SEOTransformCallback *desc) {
+void sem_probe_reflection_grid_set_scale(SEMTransformCallback *desc) {
 
   // print_vec3(desc->offset);
 }

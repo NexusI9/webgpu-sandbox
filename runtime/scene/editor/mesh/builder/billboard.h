@@ -2,7 +2,7 @@
 #define _SCENE_EDITOR_OBJECT_BUILDER_BILLBOARD_H_
 
 #include "runtime/scene/core.h"
-#define SEO_BILLBOARD_SCALE ((vec3){0.85f, 0.85f, 0.85f})
+#define SEM_BILLBOARD_SCALE ((vec3){0.85f, 0.85f, 0.85f})
 
 #include <cglm/cglm.h>
 #include <cglm/types.h>
@@ -18,9 +18,10 @@ typedef struct {
 
   const char *label;
   const char *texture_path;
-} SEOCreateBillboardDescriptor;
+} SEMCreateBillboardDescriptor;
 
-void seo_create_billboard(Mesh *, const SEOCreateBillboardDescriptor *);
+void sem_create_billboard(Mesh *, const SEMCreateBillboardDescriptor *);
 
-void seo_billboard_highlight_callback(const SEOHighlightCallback *);
+void sem_billboard_select_callback(const SEMHighlightCallback *);
+void sem_billboard_deselect_callback(const SEMHighlightCallback *);
 #endif

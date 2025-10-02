@@ -21,8 +21,8 @@
    responsibility to handle the wireframe generation as well as the overriden
    topology/shader to be rendered all the time.
  */
-void seo_create_wireframe(Mesh *mesh,
-                          const SEOCreateWireframeDescriptor *desc) {
+void sem_create_wireframe(Mesh *mesh,
+                          const SEMCreateWireframeDescriptor *desc) {
 
   // create mesh from vertex/index attributes
   mesh_create(mesh, &(MeshCreateDescriptor){
@@ -39,7 +39,7 @@ void seo_create_wireframe(Mesh *mesh,
   // set wireframe shader
   mesh_shader_create_fixed(
       mesh, &(ShaderCreateDescriptor){
-                .name = "SEO wireframe shader",
+                .name = "SEM wireframe shader",
                 .pipeline = std_render_pipeline(RenderPipelineType_Line),
             });
 
@@ -51,9 +51,14 @@ void seo_create_wireframe(Mesh *mesh,
 }
 
 /*
-  Generic highligh function for all SEO Wireframes objects
+  Generic highligh function for all SEM Wireframes objects
  */
-void seo_wireframe_highlight_callback(const SEOHighlightCallback *desc) {
-  shader_update_uniform_data(mesh_shader(desc->mesh->mesh, MeshShader_Fixed), 1,
+void sem_wireframe_select_callback(SEMHighlightCallback *desc) {
+  shader_update_uniform_data(mesh_shader(desc->sem->mesh, MeshShader_Fixed), 1,
                              0, &(color){1.0f, 0.0f, 0.0f, 1.0f});
+}
+
+void sem_wireframe_deselect_callback(SEMHighlightCallback *desc) {
+  shader_update_uniform_data(mesh_shader(desc->sem->mesh, MeshShader_Fixed), 1,
+                             0, &(color){0.0f, 0.0f, 0.0f, 1.0f});
 }

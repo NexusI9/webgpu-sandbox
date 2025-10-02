@@ -52,68 +52,56 @@ typedef struct Scene Scene;
 
  */
 
-#define SCENE_EDITOR_OBJECT_TARGET_UNDEFINED UINT32_MAX
+#define SCENE_EDITOR_MESH_TARGET_UNDEFINED UINT32_MAX
 
-typedef struct SceneEditorObject SceneEditorObject;
-
-typedef struct SceneEditorObjectMesh SceneEditorObjectMesh;
-
-typedef struct {
-  SceneEditorObjectMesh *mesh;
-  SceneEditorObject *seo;
-  float *offset;
-} SEOTransformCallback;
+typedef struct SceneEditorMesh SceneEditorMesh;
+typedef struct SceneEditorMeshList SceneEditorMeshList;
 
 typedef struct {
-  SceneEditorObjectMesh *mesh;
-  SceneEditorObject *seo;
+  SceneEditorMesh *sem;
   float *offset;
-} SEOHighlightCallback;
+} SEMTransformCallback;
 
-typedef void (*seo_transform_axis_callback)(SEOTransformCallback *);
-typedef void (*seo_transform_highlight_callback)(SEOTransformCallback *);
+typedef struct {
+  SceneEditorMesh *sem;
+} SEMHighlightCallback;
 
-// Link each SEO Mesh a dedicated callback
-struct SceneEditorObjectMesh {
+typedef void (*sem_transform_axis_callback)(SEMTransformCallback *);
+typedef void (*sem_transform_highlight_callback)(SEMHighlightCallback *);
+
+// Link each SEM a dedicated callback
+struct SceneEditorMesh {
   Mesh *mesh;
   // camera, light 'abstract' objects the meshes drives through transformation
   void *target;
+  // Parent scene pointer
+  Scene *scene;
   // index of object (ex in LightList or CameraList), not sure about this
   // flow...
   size_t target_list_index;
-  seo_transform_axis_callback transform_callback[GIZMO_MODE_COUNT];
-  seo_transform_highlight_callback highlight_callback;
+  sem_transform_axis_callback transform_callback[GIZMO_MODE_COUNT];
+  sem_transform_highlight_callback select_callback;
+  sem_transform_highlight_callback deselect_callback;
+};
+
+struct SceneEditorMeshList {
+  SceneEditorMesh *entries;
+  size_t capacity;
+  size_t length;
 };
 
 typedef struct {
-  SceneEditorObjectMesh *entries;
+  SceneEditorMeshList *entries;
   size_t capacity;
   size_t length;
-} SceneEditorObjectMeshList;
-
-struct SceneEditorObject {
-  // Parent scene pointer
-  Scene *scene;
-  // SEO visual representation, basically a collection of meshes with their
-  // decdicated transform callback, a target.
-  SceneEditorObjectMeshList meshes;
-  // Origin mesh from which all sub meshes transformation will
-  // depend
-  Mesh *origin;
-};
+} SceneEditorMeshListArray;
 
 typedef struct {
   Scene *scene;
   size_t target_list_index;
   Camera *camera;
   Viewport *viewport;
-} SEOCreateDescriptor;
-
-typedef struct {
-  size_t length;
-  size_t capacity;
-  SceneEditorObject *entries;
-} SceneEditorObjectList;
+} SEMCreateDescriptor;
 
 /**
     ▗▄▄▖▗▄▄▄▖▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖▗▄▄▄▖ ▗▄▖ ▗▖  ▗▖
@@ -166,7 +154,7 @@ typedef void (*scene_selection_highlight_callback)(MeshRefList *,
 typedef enum {
   SceneSelectionType_Mesh,
   SceneSelectionType_MeshShadow, // update shadow map on move
-  SceneSelectionType_SEO,
+  SceneSelectionType_SEM,
 } SceneSelectionType;
 
 typedef struct {
@@ -201,7 +189,7 @@ typedef struct {
   // selection sets
   SceneSelection selection;
   SceneEditorUI ui;
-  SceneEditorObjectList seo_list; // cam/ lights  lists
+  SceneEditorMeshListArray sem_list; // cam/ lights  lists
 
   struct {
     Gizmo transform; // transform gizmo (unique)

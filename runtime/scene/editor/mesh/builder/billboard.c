@@ -19,21 +19,21 @@
 /**
    Create a plane mesh with a billboard shader
  */
-void seo_create_billboard(Mesh *mesh,
-                          const SEOCreateBillboardDescriptor *desc) {
+void sem_create_billboard(Mesh *mesh,
+                          const SEMCreateBillboardDescriptor *desc) {
 
   // create plane
   Primitive plane = primitive_plane();
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){
                                   .primitive = &plane,
-                                  .name = "SEO Billboard",
+                                  .name = "SEM Billboard",
                               });
 
   // assign billboard shader
   mesh_shader_create_fixed(mesh,
                            &(ShaderCreateDescriptor){
-                               .name = "SEO billboard shader",
+                               .name = "SEM billboard shader",
                                .pipeline = std_render_pipeline(RenderPipelineType_Billboard),
                            });
 

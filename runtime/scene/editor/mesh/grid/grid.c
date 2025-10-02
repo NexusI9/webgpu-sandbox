@@ -12,7 +12,7 @@
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 
-void seo_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
+void sem_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
 
   Primitive plane = primitive_plane();
 

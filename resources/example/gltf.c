@@ -10,6 +10,7 @@
 #include "runtime/mesh/shader/texture.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/add.h"
+#include "runtime/scene/core.h"
 #include "runtime/texture/core.h"
 
 void example_gltf(Scene *scene) {
@@ -43,7 +44,7 @@ void example_gltf_podium(Scene *scene) {
 
   // create a new planar reflection for the podium
   ProbeReflectionPlane *plane;
-  SceneEditorObject *plane_probe =
+  SceneEditorMeshList *plane_probe =
       scene_add_probe_reflection_plane(scene,
                                        &(ProbeReflectionPlaneDescriptor){
                                            .far = 100.0f,

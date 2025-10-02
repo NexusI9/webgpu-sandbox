@@ -2,10 +2,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "../core.h"
 #include "../filter.h"
 #include "../utils.h"
+#include "backend/logger.h"
 #include "runtime/camera/raycast/core.h"
 #include "runtime/camera/raycast/hit_list.h"
 #include "runtime/html_event/add.h"
@@ -116,13 +118,12 @@ void scene_selection_init_mouse_events(Scene *scene) {
             .size = sizeof(SceneSelectionCallbackData),
         });
 
-  // add draw callback
   scene_renderer_add_draw_callback(
       &scene->renderer, scene_selection_draw_callback, scene,
       SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
           SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
 
-  // add mouse up / reset callback
+  // reset on mouse up
   html_event_add_mouse_up(&(HTMLEventMouse){
       .data = (void *)scene,
       .size = 0, // set to 0 so no heap allocation (and use same data pointer)
@@ -259,7 +260,10 @@ void scene_selection_raycast_gizmo_hover_callback(
       (SceneSelectionCallbackData *)user_data;
   Gizmo *gizmo = &cast_user_data->scene->editor.gizmo.transform;
 
+  // DEBUG
   // for (size_t i = 0; i < cast_data->hits->length; i++)
+  // dbg("[%d] hit mesh: %s", i, cast_data->hits->entries[i].mesh->name);
+
   CameraRaycastHit *hit = &cast_data->hits->entries[0];
 
   // update only once
@@ -269,6 +273,8 @@ void scene_selection_raycast_gizmo_hover_callback(
 
     if (hit->mesh) {
 
+      dbg("<%p> hit mesh: %s", hit->mesh, hit->mesh->name);
+
       // reset colors
       gizmo_reset_color_uniform(gizmo);
 
@@ -277,7 +283,7 @@ void scene_selection_raycast_gizmo_hover_callback(
                                  COLOR_GIZMO_HOVER);
 
     } else {
-      gizmo_reset_color_uniform(gizmo);
+      //gizmo_reset_color_uniform(gizmo);
     }
   }
 }

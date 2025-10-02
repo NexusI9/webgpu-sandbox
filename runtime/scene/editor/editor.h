@@ -3,7 +3,7 @@
 
 #include "backend/ssbo.h"
 #include "backend/ubo.h"
-#include "object/list/list.h"
+#include "mesh/list/list.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/list.h"
 #include "runtime/scene/core.h"
@@ -12,7 +12,7 @@
 typedef struct {
 
   MeshList *mesh_list;
-  SceneEditorObjectList *seo_list; // cam/ lights  lists
+  SceneEditorMeshList *sem_list; // cam/ lights  lists
 
   MeshRefList *fixed_pipeline;
   MeshRefList *selection_pipeline;
@@ -36,6 +36,13 @@ typedef struct {
 
 void scene_editor_init(Scene *);
 
-SceneEditorObjectList *scene_editor_object_list(Scene *);
+/**
+   Return the scene editor gizmo list.
+   Used when adding lights or camera into the scene.
+ */
+static inline SceneEditorMeshListArray *
+scene_editor_mesh_list(SceneEditor *editor) {
+  return &editor->sem_list;
+}
 
 #endif

@@ -569,12 +569,14 @@ void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
 
         // ImGuiTreeNodeFlags_SpanAvailWidth
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow |
-                                   ImGuiTreeNodeFlags_AllowItemOverlap;
+                                   ImGuiTreeNodeFlags_AllowItemOverlap |
+                                   ImGuiTreeNodeFlags_FramePadding;
 
         if (mesh->children.length == 0)
           flags |= ImGuiTreeNodeFlags_Leaf;
 
         // Tree item
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(2.f, 8.f));
         if (ImGui::TreeNodeEx(mesh->name, flags)) {
 
           if (ImGui::IsItemClicked())
@@ -583,6 +585,7 @@ void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
           if (mesh->children.length == 0)
             ImGui::TreePop();
         }
+        ImGui::PopStyleVar();
 
         // Visibility icon
         {
@@ -594,7 +597,7 @@ void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
                           ui->dpi * icon_size);
 
           ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-   
+
           char button_id[256];
           snprintf(button_id, 256, "mesh_visibility_%u", mesh->id);
           if (scene_editor_ui_create_button_icon(ui, SceneEditorUIIcon_Eye,
@@ -614,8 +617,14 @@ void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
   ImGui::EndChild();
 }
 
-static float values[90] = {};
-static int values_offset = 0;
+typedef enum {
+  SceneEditorUIMonitorType_FPS,
+  SceneEditorUIMonitorType_CPU,
+  SceneEditorUIMonitorType_GPU,
+} SceneEditorUIMonitorType;
+
+static float values[3][90] = {};
+static int values_offset[3] = {0};
 void scene_editor_ui_create_monitor(SceneEditorUI *ui, Scene *scene) {
 
   ImGui::SetNextWindowPos(
@@ -631,15 +640,21 @@ void scene_editor_ui_create_monitor(SceneEditorUI *ui, Scene *scene) {
   // === FPS ===
   {
     float fps = ImGui::GetIO().Framerate;
-    values[values_offset] = fps;
-    values_offset = (values_offset + 1) % IM_ARRAYSIZE(values);
+    float *value = values[SceneEditorUIMonitorType_FPS];
+    int *offset = &values_offset[SceneEditorUIMonitorType_FPS];
+
+    value[*offset] = fps;
+    *offset =
+        (*offset + 1) % IM_ARRAYSIZE(values[SceneEditorUIMonitorType_FPS]);
 
     char buf[64];
     snprintf(buf, sizeof(buf), "FPS: %.0f", fps);
 
-    ImGui::PlotLines(buf, values, IM_ARRAYSIZE(values), values_offset, nullptr,
-                     0.0f, 120.0f, ImVec2(0, 80));
+    ImGui::PlotLines(buf, value,
+                     IM_ARRAYSIZE(values[SceneEditorUIMonitorType_FPS]),
+                     *offset, nullptr, 0.0f, 120.0f, ImVec2(0, 80));
   }
+
 
   ImGui::End();
 }

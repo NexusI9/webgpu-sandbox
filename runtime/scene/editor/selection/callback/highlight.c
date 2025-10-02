@@ -7,6 +7,7 @@
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/editor/editor.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
 
 /**
@@ -45,18 +46,33 @@ void scene_selection_mesh_highlight(MeshRefList *meshes,
 };
 
 /**
-   For SEO Object we use a OOP approach (similar to the transform callback)
-   where each SEO Mesh has its own transform and highlight callback.
+   For SEM Object we use a OOP approach (similar to the transform callback)
+   where each SEM Mesh has its own transform and highlight callback.
 
-   Since SEO are such polymorphic objects, it just easier and less messy to hook
+   Since SEM are such polymorphic objects, it just easier and less messy to hook
    each mesh a transform and highlight callback.
  */
-void scene_selection_seo_highlight(MeshRefList *meshes,
+void scene_selection_sem_highlight(MeshRefList *meshes,
                                    SceneSelectionObjectList *list, void *data) {
 
-  // disable all SEOs
-  for (size_t i = 0; i < list->length; i++) {
-  }
+  Scene *scene = (Scene *)data;
+
+  // disable selected ones
+  SceneEditorMeshListArray *sem_array = scene_editor_mesh_list(&scene->editor);
+  for (size_t i = 0; i < sem_array->length; i++)
+    for (size_t j = 0; j < sem_array->entries[i].length; j++) {
+      SceneEditorMesh *sem = &sem_array->entries[i].entries[j];
+      if (sem->deselect_callback)
+        sem->deselect_callback(&(SEMHighlightCallback){sem});
+    }
 
   // enable selected ones
+  for (size_t i = 0; i < list->length; i++) {
+
+    SceneEditorMesh *sem = (SceneEditorMesh *)list->entries[i].target;
+    Mesh *mesh = list->entries[i].mesh;
+
+    if (sem->select_callback)
+      sem->select_callback(&(SEMHighlightCallback){sem});
+  }
 }

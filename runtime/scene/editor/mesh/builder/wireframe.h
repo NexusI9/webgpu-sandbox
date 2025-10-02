@@ -8,7 +8,7 @@
 #include "runtime/scene/core.h"
 #include "utils/color.h"
 
-#define SEO_WIREFRAME_LINE_THICKNESS 0.001f
+#define SEM_WIREFRAME_LINE_THICKNESS 0.001f
 
 typedef struct {
   VertexAttribute *vertex;
@@ -16,9 +16,10 @@ typedef struct {
   color *color;
   float thickness;
   const char *name;
-} SEOCreateWireframeDescriptor;
+} SEMCreateWireframeDescriptor;
 
-void seo_create_wireframe(Mesh *, const SEOCreateWireframeDescriptor *);
-void seo_wireframe_highlight_callback(const SEOHighlightCallback *);
+void sem_create_wireframe(Mesh *, const SEMCreateWireframeDescriptor *);
+void sem_wireframe_select_callback(SEMHighlightCallback *);
+void sem_wireframe_deselect_callback(SEMHighlightCallback *);
 
 #endif
