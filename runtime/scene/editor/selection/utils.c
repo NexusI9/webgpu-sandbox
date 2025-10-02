@@ -21,7 +21,7 @@ void scene_gizmo_show(Scene *scene) {
 
   if (layout)
     render_pass_layout_enable_mesh_ref_list(
-        layout, &gizmo->interactive_handles[gizmo->mode]);
+        layout, &gizmo->handles[gizmo->mode]);
 }
 
 void scene_gizmo_hide(Scene *scene) {
