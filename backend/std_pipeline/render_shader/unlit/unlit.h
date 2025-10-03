@@ -38,6 +38,13 @@ static const WGPUBindGroupLayoutDescriptor unlint_layout_bind_group = {
         },
 };
 
+static const WGPUPrimitiveState unlit_prim = {
+    .cullMode = WGPUCullMode_None,
+    .frontFace = WGPUFrontFace_CCW,
+    .stripIndexFormat = WGPUIndexFormat_Undefined,
+    .topology = WGPUPrimitiveTopology_TriangleList,
+};
+
 static const WGPUDepthStencilState unlit_stencil = {
     .format = TEXTURE_FORMAT_DEPTH, // USED BECAUSE OF GIZMO, BUT
                                     // MAYBE NEED TO CREATE A NE
@@ -52,7 +59,11 @@ static const RenderPipelineStateObject layout_unlit = {
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &unlint_layout_bind_group},
     .bindings = {.mvp = &mvp_binding},
-    .pipeline_attributes = {.stencil_state = &unlit_stencil},
+    .pipeline_attributes =
+        {
+            .stencil_state = &unlit_stencil,
+            .primitive_state = &unlit_prim,
+        },
 };
 
 #endif

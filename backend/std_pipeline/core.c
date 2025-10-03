@@ -1,5 +1,5 @@
 #include "core.h"
-
+ 
 #include <stddef.h>
 
 #include "./render_shader/billboard/billboard.h"
@@ -30,11 +30,11 @@
 // Global definitions
 RenderPipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
 ComputePipeline g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT] = {0};
-
+ 
 static inline WGPUPipelineLayout shader_pipeline_state_object_create(
     const WGPUBindGroupLayoutDescriptor *const *, const size_t,
     WGPUBindGroupLayout *);
-
+ 
 static const RenderPipelineStateObject
     *standard_render_layouts[RENDER_PIPELINE_TYPE_COUNT] = {
         [RenderPipelineType_Billboard] = &layout_billboard,

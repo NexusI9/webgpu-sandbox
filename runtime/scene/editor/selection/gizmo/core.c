@@ -107,7 +107,7 @@ void gizmo_set_rotation_add(Gizmo *gizmo, vec3 value, const Axis axis) {
  */
 void gizmo_set_axis_from_mesh(Gizmo *gizmo, const Mesh *mesh) {
 
-  for (size_t j = 0; j < 3; j++) // axis
+  for (size_t j = 0; j < gizmo->interactive_handles[gizmo->mode].length; j++)
     if (gizmo->interactive_handles[gizmo->mode].entries[j] == mesh)
       gizmo->axis = j;
 }
@@ -135,14 +135,13 @@ void gizmo_set_active(Gizmo *gizmo, Camera *camera, Viewport *viewport) {
   // cache gizmo init position
   gizmo_origin(gizmo, &gizmo->cache.gizmo_init_position);
 
-  // cache axis
   // get direction from camera
   if (gizmo->axis == Axis_View) {
     glm_vec3_copy(camera->forward, gizmo->cache.axis_direction);
-  } else {
+  } else { 
     // get world direction from axis
     vec_world_axis(gizmo->axis, &gizmo->cache.axis_direction);
-  }
+  } 
 
   // init delta
   Raycast raycast;
@@ -178,32 +177,5 @@ void gizmo_set_active(Gizmo *gizmo, Camera *camera, Viewport *viewport) {
     // update init delta
     raycast_hit_inf_plane(&raycast, &gizmo->cache.plane,
                           &gizmo->cache.init_delta);
-  }
-}
-
-/**
-   Clear gizmo cached data. Used on HTML events mouse up so
-   during the next mouse down we can repopulate the new data.
- */
-void gizmo_clear_active(Gizmo *gizmo) {
-  // reset gizmo initial position and delta
-  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.gizmo_init_position);
-  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.init_delta);
-  gizmo->cache.init_distance = 0.0f;
-}
-
-/**
-   Got through the active meshes and update their uniform back to their default
-   one. Function primarily used in the selection callback to set back the handle
-   color on mouse leave.
-
-   Use a lookup table coupled with a linear search to pick the right pointer.
- */
-void gizmo_reset_color_uniform(Gizmo *gizmo) {
-
-  for (uint8_t i = 0; i < GIZMO_AXIS_COUNT; i++) {
-    Mesh *handle = gizmo->interactive_handles[gizmo->mode].entries[i];
-    shader_update_uniform_data(mesh_shader(handle, MeshShader_Fixed), 1, 0,
-                               gizmo_handle_color[i]);
   }
 }

@@ -3,13 +3,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "backend/logger.h"
 #include "core.h"
 #include "string.h"
-#include "backend/logger.h"
 #include "utils/vector/core.h"
 
-static void vertex_attribute_replace(VertexAttribute *, float *, VertexAttributeOffset,
-                                     size_t);
+static inline void vertex_attribute_replace(VertexAttribute *, const float *,
+                                            const VertexAttributeOffset,
+                                            const size_t);
+static inline void vertex_attribute_add(VertexAttribute *, const float *,
+                                        const VertexAttributeOffset,
+                                        const size_t);
 
 void vertex_attribute_print(VertexAttribute *va) {
   for (size_t i = 0; i < va->length; i++) {
@@ -19,10 +23,18 @@ void vertex_attribute_print(VertexAttribute *va) {
   }
 }
 
+/*
+   ▗▄▄▖ ▗▄▄▄▖▗▄▄▖ ▗▖    ▗▄▖  ▗▄▄▖▗▄▄▄▖
+   ▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌   ▐▌ ▐▌▐▌   ▐▌
+   ▐▛▀▚▖▐▛▀▀▘▐▛▀▘ ▐▌   ▐▛▀▜▌▐▌   ▐▛▀▀▘
+   ▐▌ ▐▌▐▙▄▄▖▐▌   ▐▙▄▄▖▐▌ ▐▌▝▚▄▄▖▐▙▄▄▖
+
+ */
+
 /**
    Replace the attributes of a vertex attribute list starting at a certain index
  */
-void vertex_attribute_replace(VertexAttribute *va, float *val,
+void vertex_attribute_replace(VertexAttribute *va, const float *val,
                               VertexAttributeOffset offset, size_t type_size) {
   for (size_t i = offset; i < va->length; i += VertexAttributeOffset_End)
     memcpy(&va->entries[i], val, type_size);
@@ -31,8 +43,8 @@ void vertex_attribute_replace(VertexAttribute *va, float *val,
 /**
    Replace the color attributes of a vertex attribute list
  */
-void vertex_attribute_set_color(VertexAttribute *va, vertex_color *color) {
-  vertex_attribute_replace(va, *color, VertexAttributeOffset_Color,
+void vertex_attribute_set_color(VertexAttribute *va, const vertex_color color) {
+  vertex_attribute_replace(va, color, VertexAttributeOffset_Color,
                            sizeof(vertex_color));
 }
 
@@ -40,25 +52,91 @@ void vertex_attribute_set_color(VertexAttribute *va, vertex_color *color) {
    Replace the color attributes of a vertex attribute list
  */
 void vertex_attribute_set_position(VertexAttribute *va,
-                                   vertex_position *position) {
-  vertex_attribute_replace(va, *position, VertexAttributeOffset_Position,
+                                   const vertex_position position) {
+  vertex_attribute_replace(va, position, VertexAttributeOffset_Position,
                            sizeof(vertex_position));
 }
 
 /**
    Replace the color attributes of a vertex attribute list
  */
-void vertex_attribute_set_normal(VertexAttribute *va, vertex_normal *normal) {
-  vertex_attribute_replace(va, *normal, VertexAttributeOffset_Normal,
+void vertex_attribute_set_normal(VertexAttribute *va,
+                                 const vertex_normal normal) {
+  vertex_attribute_replace(va, normal, VertexAttributeOffset_Normal,
                            sizeof(vertex_normal));
 }
 
 /**
    Replace the uv attributes of a vertex attribute list
  */
-void vertex_attribute_set_uv(VertexAttribute *va, vertex_uv *uv) {
-  vertex_attribute_replace(va, *uv, VertexAttributeOffset_Uv, sizeof(vertex_uv));
+void vertex_attribute_set_uv(VertexAttribute *va, const vertex_uv uv) {
+  vertex_attribute_replace(va, uv, VertexAttributeOffset_Uv, sizeof(vertex_uv));
 }
+
+/*
+   ▗▄▖ ▗▄▄▄ ▗▄▄▄
+  ▐▌ ▐▌▐▌  █▐▌  █
+  ▐▛▀▜▌▐▌  █▐▌  █
+  ▐▌ ▐▌▐▙▄▄▀▐▙▄▄▀
+
+ */
+
+/**
+   Add up the attributes of a vertex attribute list starting at a certain index
+ */
+void vertex_attribute_add(VertexAttribute *va, const float *val,
+                          VertexAttributeOffset offset, size_t type_size) {
+
+  size_t count = type_size / sizeof(vattr_t);
+  for (size_t i = offset; i < va->length; i += VertexAttributeOffset_End) {
+    vattr_t *dst = (vattr_t *)&va->entries[i];
+    for (size_t j = 0; j < count; j++)
+      dst[j] += val[j];
+  }
+}
+
+/**
+   Add up the color attributes of a vertex attribute list
+ */
+void vertex_attribute_set_color_add(VertexAttribute *va,
+                                    const vertex_color color) {
+  vertex_attribute_add(va, color, VertexAttributeOffset_Color,
+                       sizeof(vertex_color));
+}
+
+/**
+   Add up the color attributes of a vertex attribute list
+ */
+void vertex_attribute_set_position_add(VertexAttribute *va,
+                                       const vertex_position position) {
+  vertex_attribute_add(va, position, VertexAttributeOffset_Position,
+                       sizeof(vertex_position));
+}
+
+/**
+   Add up the color attributes of a vertex attribute list
+ */
+void vertex_attribute_set_normal_add(VertexAttribute *va,
+                                     const vertex_normal normal) {
+  vertex_attribute_add(va, normal, VertexAttributeOffset_Normal,
+                       sizeof(vertex_normal));
+}
+
+/**
+   Add up the uv attributes of a vertex attribute list
+ */
+void vertex_attribute_set_uv_add(VertexAttribute *va, const vertex_uv uv) {
+  vertex_attribute_add(va, uv, VertexAttributeOffset_Uv, sizeof(vertex_uv));
+}
+
+/**
+
+   ▗▖ ▗▖▗▄▄▄▖▗▄▄▄▖▗▖    ▗▄▄▖
+   ▐▌ ▐▌  █    █  ▐▌   ▐▌
+   ▐▌ ▐▌  █    █  ▐▌    ▝▀▚▖
+   ▝▚▄▞▘  █  ▗▄█▄▖▐▙▄▄▖▗▄▄▞▘
+
+ */
 
 VertexStatus vertex_attribute_copy(VertexAttribute *src,
                                    VertexAttribute *dest) {
@@ -73,7 +151,8 @@ VertexStatus vertex_attribute_copy(VertexAttribute *src,
   size_t length = dest->length * sizeof(vattr_t);
   dest->entries = malloc(length);
   if (dest->entries == NULL) {
-    logger_add(LoggerFlag_Error, "Couldn't allocate memory for vertex attribute.");
+    logger_add(LoggerFlag_Error,
+               "Couldn't allocate memory for vertex attribute.");
     dest->buffer = NULL;
     dest->capacity = 0;
     dest->length = 0;

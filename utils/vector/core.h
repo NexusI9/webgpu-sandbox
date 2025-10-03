@@ -119,9 +119,9 @@ static inline void vec_world_axis(const Axis axis, vec3 *dest) {
       [Axis_X] = {1.0f, 0.0f, 0.0f},   // X axis
       [Axis_Y] = {0.0f, 1.0f, 0.0f},   // Y axis
       [Axis_Z] = {0.0f, 0.0f, 1.0f},   // Z axis
-      [Axis_XY] = {0.0f, 0.0f, 1.0f},  // Z normal
-      [Axis_YZ] = {1.0f, 0.0f, 0.0f},  // X normal
-      [Axis_XZ] = {0.0f, 1.0f, 0.0f},  // Y normal
+      [Axis_XY] = {1.0f, 0.0f, 0.0f},  // Z normal
+      [Axis_YZ] = {0.0f, 1.0f, 0.0f},  // X normal
+      [Axis_XZ] = {0.0f, 0.0f, 1.0f},  // Y normal
       [Axis_XYZ] = {1.0f, 1.0f, 1.0f}, // XYZ combined
       [Axis_View] = {0}                // Unvalid
   };

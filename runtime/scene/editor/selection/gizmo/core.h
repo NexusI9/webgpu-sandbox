@@ -14,10 +14,12 @@
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/list.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/mesh/shader/core.h"
 #include "runtime/viewport/core.h"
 #include "runtime/viewport/viewport.h"
 #include "utils/color.h"
 #include "utils/vector/core.h"
+#include "utils/vector/vec3_list.h"
 #include "utils/vector/vector.h"
 
 #define GIZMO_SIZE 15.0f
@@ -211,10 +213,15 @@ typedef struct {
   MeshList *list; // mesh pool from which gizmo mesh will be created
 } GizmoCreateDescriptor;
 
-static color *gizmo_handle_color[GIZMO_AXIS_COUNT] = {
+static const color *gizmo_handle_color[6] = {
+    // 1D
     &COLOR_GIZMO_X,
     &COLOR_GIZMO_Y,
     &COLOR_GIZMO_Z,
+    // 2D
+    &COLOR_GIZMO_XY,
+    &COLOR_GIZMO_YZ,
+    &COLOR_GIZMO_XZ,
 };
 
 typedef void (*gizmo_create_handles_callback)(MeshRefList *, MeshRefList *,
@@ -239,11 +246,33 @@ void gizmo_set_rotation(Gizmo *, vec3);
 
 void gizmo_set_active(Gizmo *, Camera *, Viewport *);
 
-void gizmo_clear_active(Gizmo *);
-
 void gizmo_set_axis_from_mesh(Gizmo *, const Mesh *);
 
-void gizmo_reset_color_uniform(Gizmo *);
+/**
+   Clear gizmo cached data. Used on HTML events mouse up so
+   during the next mouse down we can repopulate the new data.
+ */
+static inline void gizmo_clear_active(Gizmo *gizmo) {
+  // reset gizmo initial position and delta
+  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.gizmo_init_position);
+  glm_vec3_copy(GLM_VEC3_ZERO, gizmo->cache.init_delta);
+  gizmo->cache.init_distance = 0.0f;
+}
+
+/**
+   Got through the active meshes and update their uniform back to their default
+   one. Function primarily used in the selection callback to set back the handle
+   color on mouse leave.
+
+   Use a lookup table coupled with a linear search to pick the right pointer.
+ */
+static inline void gizmo_reset_color_uniform(Gizmo *gizmo) {
+  for (uint8_t i = 0; i < gizmo->interactive_handles[gizmo->mode].length; i++) {
+    Mesh *handle = gizmo->interactive_handles[gizmo->mode].entries[i];
+    shader_update_uniform_data(mesh_shader(handle, MeshShader_Fixed), 1, 0,
+                               (void *)gizmo_handle_color[i % 6]);
+  }
+}
 
 static inline void gizmo_update_ssbo(Gizmo *gizmo, SSBOManager *ssbo) {
   for (uint8_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)

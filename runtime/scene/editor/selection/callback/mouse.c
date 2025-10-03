@@ -274,7 +274,8 @@ void scene_selection_raycast_gizmo_hover_callback(
     }
 
   if (hit == NULL) {
-    if (cast_data->last_hit->mesh != NULL && g_input.mouse.state == InputMouseState_Up)
+    if (cast_data->last_hit->mesh != NULL &&
+        g_input.mouse.state == InputMouseState_Up)
       gizmo_reset_color_uniform(gizmo);
     return;
   }
@@ -287,7 +288,7 @@ void scene_selection_raycast_gizmo_hover_callback(
     gizmo_reset_color_uniform(gizmo);
     // update hovered gizmo color
     shader_update_uniform_data(mesh_shader(hit->mesh, MeshShader_Fixed), 1, 0,
-                               COLOR_GIZMO_HOVER);
+                               (void *)COLOR_GIZMO_HOVER);
   } else {
   }
 }
