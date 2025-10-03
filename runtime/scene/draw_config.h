@@ -310,7 +310,7 @@ scene_draw_layouts_init(Scene *scene,
     RenderPassColorAttachment scene_color_attachment = {
         .attachment = {
             .view = shared_color_view,
-            .clearValue = scene->renderer.background,
+            .clearValue = scene->renderer.context.background,
             .loadOp = WGPULoadOp_Clear,
             .storeOp = WGPUStoreOp_Store,
             .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,

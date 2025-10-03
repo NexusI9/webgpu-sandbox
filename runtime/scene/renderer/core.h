@@ -51,19 +51,14 @@ typedef struct {
 
 typedef struct SceneRenderer {
 
-  cclock clock;         // update clock delta on draw
-  WGPUColor background; // TODO: put this under context
+  cclock clock; // update clock delta on draw
   SSBOManager ssbo;
   UBOManager ubo;
 
   struct {
     double dpi;
+    WGPUColor background;
   } context;
-
-  struct {
-    WGPURenderPipeline pipeline;       // ??
-    WGPURenderPassEncoder render_pass; // TODO: Move to draw
-  } wgpu;
 
   // cached texture shared throughout parent scene objects
   struct {
@@ -99,7 +94,6 @@ scene_renderer_find_draw_callback(SceneRenderer *,
                                   scene_renderer_draw_callback);
 
 void scene_renderer_draw(SceneRenderer *);
-void scene_renderer_close(const SceneRenderer *);
 
 // getters
 static inline SSBOManager *scene_renderer_ssbo(SceneRenderer *renderer) {

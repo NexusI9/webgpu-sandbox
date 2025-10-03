@@ -27,7 +27,7 @@ static double scene_renderer_dpi(double);
 void scene_renderer_init(SceneRenderer *renderer,
                          const SceneRendererCreateDescriptor *rd) {
 
-  renderer->background = rd->background;
+  renderer->context.background = rd->background;
   renderer->context.dpi = scene_renderer_dpi(rd->dpi);
 
   // create clock
@@ -80,9 +80,6 @@ double scene_renderer_dpi(double value) {
   return value;
 }
 
-void scene_renderer_close(const SceneRenderer *renderer) {
-  wgpuRenderPipelineRelease(renderer->wgpu.pipeline);
-}
 
 /**
    Draw callbackas are basically list of functions that will be called during
