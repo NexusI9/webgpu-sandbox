@@ -40,7 +40,7 @@ static inline WGPUCommandEncoder render_pass_im_begin(RenderPass *);
 static inline void render_pass_im_draw(RenderPass *);
 static inline void render_pass_im_end(RenderPass *);
 static inline void render_pass_im_set_views(RenderPass *,
-                                                const RenderPassDrawOptions *);
+                                            const RenderPassDrawOptions *);
 
 // Pass List
 static inline void render_pass_list_draw(RenderPassList *);
@@ -207,7 +207,7 @@ WGPUCommandEncoder render_pass_im_begin(RenderPass *pass) {
 }
 
 void render_pass_im_set_views(RenderPass *pass,
-                                  const RenderPassDrawOptions *overrides) {
+                              const RenderPassDrawOptions *overrides) {
   if (overrides && overrides->color)
     pass->color.attachment.view = overrides->color;
 

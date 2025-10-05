@@ -1,6 +1,7 @@
 #include "compute.h"
 #include "backend/buffer.h"
 #include "backend/context.h"
+#include "backend/resource_manager/core.h"
 #include "utils/file.h"
 #include "webgpu/webgpu.h"
 

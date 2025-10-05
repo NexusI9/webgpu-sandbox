@@ -83,7 +83,7 @@ inline void scene_editor_ui_style_carbon() {
   style.Colors[ImGuiCol_PlotHistogramHovered] =
       ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
   style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(1.00f, 1.00f, 1.00f, 0.22f);
-  style.Colors[ImGuiCol_PopupBg] = ImVec4(0.04f, 0.04f, 0.04f, 0.50f);
+  style.Colors[ImGuiCol_PopupBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.0f);
 
   // style.Colors[ImGuiCol_ModalWindowDarkening] =
   //    ImVec4(0.10f, 0.10f, 0.09f, 0.51f);

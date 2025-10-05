@@ -6,25 +6,39 @@
 #include "core.h"
 
 typedef enum {
-  RenderPassTextureStorage_Keep,
-  RenderPassTextureStorage_Release,
-} RenderPassTextureStorage;
+  RenderPassTextureFlag_None = 1 << 0,
+  RenderPassTextureFlag_ReleasePrevious = 1 << 1,
+  RenderPassTextureFlag_AssignChildPasses = 1 << 2,
+} RenderPassTextureFlag;
 
-void render_pass_texture_create_multisample(
-    WGPUTexture *, WGPUTextureView *, const RenderPassTextureDescriptor *);
+void render_pass_texture_create_multisample(WGPUTexture *, WGPUTextureView *,
+                                            const RenderPassTextureDescriptor *,
+                                            const RenderPassTextureFlag);
 
 void render_pass_texture_create_monosample(WGPUTexture *, WGPUTextureView *,
-                                           const RenderPassTextureDescriptor *);
+                                           const RenderPassTextureDescriptor *,
+                                           const RenderPassTextureFlag);
 
-void render_pass_texture_create_depth(WGPUTexture *, WGPUTextureView *,
-                                      const RenderPassTextureDescriptor *);
+void render_pass_texture_create_color(RenderPass *,
+                                      const RenderPassTextureDescriptor *,
+                                      const RenderPassTextureFlag);
 
-void render_pass_list_create_shared_texture_color(
-    RenderPassList *, const RenderPassTextureDescriptor *,
-    const RenderPassTextureStorage, WGPUTexture *, WGPUTextureView *);
+void render_pass_texture_create_depth(RenderPass *,
+                                      const RenderPassTextureDescriptor *,
+                                      const RenderPassTextureFlag);
 
-void render_pass_list_create_shared_texture_depth(
-    RenderPassList *, const RenderPassTextureDescriptor *,
-    const RenderPassTextureStorage, WGPUTexture *, WGPUTextureView *);
+void render_pass_texture_destroy_color(RenderPass *);
+void render_pass_texture_destroy_depth(RenderPass *);
+
+void render_pass_list_texture_create_shared_color(
+    RenderPassList *, const RenderPassTextureDescriptor *, WGPUTexture *,
+    WGPUTextureView *, const RenderPassTextureFlag);
+
+void render_pass_list_texture_create_shared_depth(
+    RenderPassList *, const RenderPassTextureDescriptor *, WGPUTexture *,
+    WGPUTextureView *, const RenderPassTextureFlag);
+
+void render_pass_list_destroy_shared_texture_color(RenderPassList *);
+void render_pass_list_destroy_shared_texture_depth(RenderPassList *);
 
 #endif

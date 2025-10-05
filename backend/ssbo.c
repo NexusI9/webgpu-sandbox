@@ -212,6 +212,7 @@ StaticListStatus ssbo_update_queue_insert(SSBOManager *manager,
                                           const ssbo_id_t id) {
 
   SSBOBufferUpdateQueue *queue = &manager->buffers[type].update_queue;
+
   return stli_insert((void *)queue->entries, queue->capacity, &queue->length,
                      sizeof(ssbo_id_t), (void *)&id, "SSBO Update Queue");
 }
@@ -223,6 +224,7 @@ StaticListStatus ssbo_update_queue_shift(SSBOManager *manager,
                     "SSBO Update Queue");
 }
 
+
 void ssbo_draw_callback(void *data) {
 
   SSBOManager *manager = (SSBOManager *)data;
@@ -232,6 +234,7 @@ void ssbo_draw_callback(void *data) {
 
     while (queue->length > 0) {
       ssbo_id_t id = queue->entries[0];
+
       ssbo_upload_entry(manager, type,
                         &(SSBOSlot){
                             .id = id,

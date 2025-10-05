@@ -22,13 +22,16 @@
 #include "webgpu/webgpu.h"
 
 static void scene_renderer_render(void *);
-static double scene_renderer_dpi(double);
 
 void scene_renderer_init(SceneRenderer *renderer,
                          const SceneRendererCreateDescriptor *rd) {
 
   renderer->context.background = rd->background;
-  renderer->context.dpi = scene_renderer_dpi(rd->dpi);
+  renderer->context.width = rd->width ? rd->width : context_width();
+  renderer->context.height = rd->height ? rd->height : context_height();
+  renderer->context.dpi = rd->dpi == SCENE_RENDERER_DPI_AUTO
+                              ? emscripten_get_device_pixel_ratio()
+                              : rd->dpi;
 
   // create clock
   clock_create(&renderer->clock);
@@ -71,15 +74,6 @@ void scene_renderer_draw_layout_callback(void *data) {
   const SceneRendererDrawMode mode = renderer->draw.mode;
   render_pass_list_draw(&renderer->draw.render_pass[__builtin_ctz(mode)]);
 }
-
-double scene_renderer_dpi(double value) {
-  // request dpi
-  if (value == SCENE_RENDERER_DPI_AUTO)
-    return emscripten_get_device_pixel_ratio();
-
-  return value;
-}
-
 
 /**
    Draw callbackas are basically list of functions that will be called during
@@ -149,5 +143,4 @@ void scene_renderer_draw(SceneRenderer *renderer) {
 void scene_renderer_set_draw_mode(SceneRenderer *renderer,
                                   const SceneRendererDrawMode mode) {
   renderer->draw.mode = mode;
-
 }

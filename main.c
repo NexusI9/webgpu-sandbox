@@ -52,7 +52,6 @@ int main(int argc, const char *argv[]) {
                            .fov = 32.0f,
                            .near_clip = 0.1f,
                            .far_clip = 100.0f,
-                           .aspect = 16.0f / 9.0f,
                        },
                    .ui =
                        &(SceneEditorUIConfig){
@@ -88,8 +87,6 @@ int main(int argc, const char *argv[]) {
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);
 
-  // Quit
-  scene_renderer_close(&main_scene.renderer);
 
   return 0;
 }

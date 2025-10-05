@@ -16,11 +16,12 @@
 #include "webgpu/webgpu.h"
 
 static inline void render_pass_draw_pass(RenderPass *, WGPUCommandEncoder);
-static inline void render_pass_assign_color(RenderPass *,
-                                            const RenderPassCreateDescriptor *);
-static inline void render_pass_assign_depth(RenderPass *,
-                                            const RenderPassCreateDescriptor *);
-static inline void render_pass_assign_draw_callback(RenderPass *);
+
+static inline void render_pass_init_color(RenderPass *,
+                                          const RenderPassCreateDescriptor *);
+
+static inline void render_pass_init_depth(RenderPass *,
+                                          const RenderPassCreateDescriptor *);
 
 void render_pass_create(RenderPass *pass,
                         const RenderPassCreateDescriptor *desc) {
@@ -31,20 +32,20 @@ void render_pass_create(RenderPass *pass,
   pass->type = desc->type;
 
   // === assign draw callbacks ===
-  render_pass_assign_draw_callback(pass);
+  render_pass_init_draw_callback(pass);
 
   // === create render textures ===
   if (desc->color)
-    render_pass_assign_color(pass, desc);
+    render_pass_init_color(pass, desc);
 
   if (desc->depth)
-    render_pass_assign_depth(pass, desc);
+    render_pass_init_depth(pass, desc);
 
   if (desc->draw_list)
     render_pass_draw_list_copy(desc->draw_list, &pass->draw_list);
 }
 
-void render_pass_assign_draw_callback(RenderPass *pass) {
+void render_pass_init_draw_callback(RenderPass *pass) {
 
   // on screen drawing
   if (pass->type == RenderPassType_OnScreen) {
@@ -67,50 +68,22 @@ void render_pass_assign_draw_callback(RenderPass *pass) {
   }
 }
 
-void render_pass_assign_color(RenderPass *pass,
-                              const RenderPassCreateDescriptor *desc) {
-
-  RenderPassTextureDescriptor color_tex_config = {
-      .height = desc->height,
-      .width = desc->width,
-      .multisample = pass->multisample,
-      .format = desc->color->format,
-  };
+void render_pass_init_color(RenderPass *pass,
+                            const RenderPassCreateDescriptor *desc) {
 
   // assign color attributes
   pass->color.texture = desc->color->texture;
-
-  WGPUTextureView *main_view = &pass->color.views[0];
-  *main_view = desc->color->attachment.view;
-
-  if (pass->type == RenderPassType_OnScreen &&
-      pass->multisample == PipelineMultisampleCount_4x) {
-
-    if (*main_view == NULL)
-      // create msaa texture as main color view
-      render_pass_texture_create_multisample(&pass->color.texture, main_view,
-                                             &color_tex_config);
-
-    if (pass->color.attachment.resolveTarget == NULL)
-      // create resolve texture (for blit/post-process passes)
-      render_pass_texture_create_monosample(&pass->color.resolve_texture,
-                                            &pass->color.resolve_view,
-                                            &color_tex_config);
-
-  } else if (pass->type == RenderPassType_OffScreen && *main_view == NULL) {
-
-    if (pass->multisample == PipelineMultisampleCount_1x)
-      render_pass_texture_create_monosample(&pass->color.texture, main_view,
-                                            &color_tex_config);
-
-    if (pass->multisample == PipelineMultisampleCount_4x)
-      render_pass_texture_create_multisample(&pass->color.texture, main_view,
-                                             &color_tex_config);
-  }
-
   pass->color.attachment = desc->color->attachment;
-  pass->color.attachment.view = *main_view;
   pass->color.views_length = 1;
+
+  render_pass_texture_create_color(pass,
+                                   &(RenderPassTextureDescriptor){
+                                       .height = desc->height,
+                                       .width = desc->width,
+                                       .multisample = pass->multisample,
+                                       .format = desc->color->format,
+                                   },
+                                   RenderPassTextureFlag_None);
 
   post_fx_init(&pass->post_fx, &(PostFxDescriptor){});
 
@@ -120,38 +93,25 @@ void render_pass_assign_color(RenderPass *pass,
                               pass->color.resolve_view);
 }
 
-void render_pass_assign_depth(RenderPass *pass,
-                              const RenderPassCreateDescriptor *desc) {
+void render_pass_init_depth(RenderPass *pass,
+                            const RenderPassCreateDescriptor *desc) {
 
   pass->depth.texture = desc->depth->texture;
-
-  WGPUTextureView *main_depth_view = &pass->depth.views[0];
-  *main_depth_view = desc->depth->attachment.view;
-
-  if (desc->depth->attachment.view == NULL) {
-
-    RenderPassTextureDescriptor depth_tex_config = {
-        .height = desc->height,
-        .width = desc->width,
-        .multisample = pass->multisample,
-        .format = desc->depth->format,
-    };
-
-    render_pass_texture_create_depth(&pass->depth.texture, main_depth_view,
-                                     &depth_tex_config);
-  } else {
-    *main_depth_view = desc->depth->attachment.view;
-  }
-
   pass->depth.attachment = desc->depth->attachment;
-  pass->depth.attachment.view = *main_depth_view;
   pass->depth.views_length = 1;
+
+  if (pass->depth.attachment.view == NULL)
+    render_pass_texture_create_depth(pass,
+                                     &(RenderPassTextureDescriptor){
+                                         .height = desc->height,
+                                         .width = desc->width,
+                                         .multisample = desc->multisample,
+                                         .format = desc->depth->format,
+                                     },
+                                     RenderPassTextureFlag_None);
 }
 
-void render_pass_list_create(RenderPassList *list,
-                             const RenderPassListCreate *desc) {
-  list->length = 0;
-}
+void render_pass_list_create(RenderPassList *list) { list->length = 0; }
 
 void render_pass_list_insert_pass(RenderPassList *list,
                                   const RenderPassCreateDescriptor *desc) {
@@ -166,7 +126,7 @@ void render_pass_list_insert_pass(RenderPassList *list,
   render_pass_create(&list->passes[list->length], desc);
 
   for (size_t i = 0; i < list->length; i++)
-    render_pass_assign_draw_callback(&list->passes[i]);
+    render_pass_init_draw_callback(&list->passes[i]);
 
   // set last pass of the list as the resolve pass
   list->passes[list->length].draw_callback = render_pass_draw_callback_resolve;

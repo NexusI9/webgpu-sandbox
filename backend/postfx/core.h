@@ -10,7 +10,9 @@
 typedef enum {
   PostFxStatus_Success,
   PostFxStatus_MaxCapacity,
+  PostFxStatus_ViewUnfound,
   PostFxStatus_UndefError,
+
 } PostFxStatus;
 
 typedef enum {
@@ -29,18 +31,21 @@ typedef struct {
 
 typedef struct {
   WGPUSampler sampler;
-  
   PostFxBindgroupList bingroup_list[POST_FX_TYPE_COUNT];
 } PostFx;
 
 typedef struct {
-  
+
 } PostFxDescriptor;
 
 PostFxStatus post_fx_init(PostFx *, const PostFxDescriptor *);
 PostFxStatus post_fx_destroy(PostFx *);
 PostFxStatus post_fx_bind_texture_view(PostFx *, const PostFxType,
-                               const WGPUTextureView);
+                                       const WGPUTextureView);
+
+PostFxStatus post_fx_update_bindgroup_view(PostFx *, const PostFxType,
+                                           const WGPUTextureView,
+                                           const WGPUTextureView);
 
 void post_fx_blit(PostFx *, WGPUTextureView, WGPURenderPassEncoder);
 

@@ -53,6 +53,9 @@ static inline RenderPipelineMultisampleCount context_multisample() {
   return g_context.multisample;
 }
 
+static inline void context_set_width(int value){ g_context.width = value; }
+static inline void context_set_height(int value){ g_context.height = value; }
+
 #ifdef __cplusplus
 }
 #endif

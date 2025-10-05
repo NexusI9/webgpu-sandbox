@@ -113,7 +113,7 @@ struct RenderPassList {
       WGPUTexture texture;
       WGPUTextureView view;
     } depth;
-    
+
   } shared;
 
   RenderPass passes[RENDER_PASS_MAX_DRAW_LIST];
@@ -151,19 +151,12 @@ typedef struct {
   const RenderPassDrawListDescriptor *draw_list;
 } RenderPassCreateDescriptor;
 
-typedef struct {
-  const char *label;
-  int width;
-  int height;
-  RenderPipelineMultisampleCount multisample;
-} RenderPassListCreate;
-
 struct RenderPassDrawOptions {
   WGPUTextureView color, depth;
 };
 
 /* === Pass List === */
-void render_pass_list_create(RenderPassList *, const RenderPassListCreate *);
+void render_pass_list_create(RenderPassList *);
 
 void render_pass_list_insert_pass(RenderPassList *,
                                   const RenderPassCreateDescriptor *);
@@ -187,5 +180,7 @@ StaticListStatus render_pass_view_depth_remove(RenderPass *, WGPUTextureView);
 
 WGPUTextureView render_pass_view_color(RenderPass *, size_t);
 WGPUTextureView render_pass_view_depth(RenderPass *, size_t);
+
+void render_pass_init_draw_callback(RenderPass *);
 
 #endif

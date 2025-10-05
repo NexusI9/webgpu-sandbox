@@ -5,12 +5,12 @@
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
-#include "runtime/scene/environment/fog.h"
 #include "runtime/light/list.h"
 #include "runtime/probe/core.h"
+#include "runtime/scene/environment/fog.h"
 
 typedef enum {
-  UBOStatus_Success, 
+  UBOStatus_Success,
   UBOStatus_OutOfBound,
   UBOStatus_FieldValueUnfound,
   UBOStatus_UndefError,
@@ -41,8 +41,12 @@ typedef struct {
 typedef struct {
   UBOUniform data;
   WGPUBuffer handle;
-  
+
 } UBOManager;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void ubo_init(UBOManager *);
 
@@ -50,5 +54,9 @@ UBOStatus ubo_update_entry(UBOManager *, const UBOField, void *);
 
 UBOStatus ubo_upload(UBOManager *);
 WGPUBuffer ubo_buffer_handle(UBOManager *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

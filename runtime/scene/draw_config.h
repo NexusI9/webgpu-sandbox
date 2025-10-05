@@ -252,19 +252,13 @@ scene_draw_layouts_init(Scene *scene,
 
   RenderPassList *pass_list = scene->renderer.draw.render_pass;
 
-  const double ratio = scene->renderer.context.dpi;
-  const int render_width = context_width() * ratio;
-  const int render_height = context_height() * ratio;
+  const double ratio = scene_renderer_dpi(&scene->renderer);
+  const int render_width = scene_renderer_width(&scene->renderer) * ratio;
+  const int render_height = scene_renderer_height(&scene->renderer) * ratio;
 
   for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
-    
-    RenderPassListCreate list_config = {
-        .multisample = multisample,
-        .width = render_width,
-        .height = render_height,
-    };
 
-    render_pass_list_create(&pass_list[i], &list_config);
+    render_pass_list_create(&pass_list[i]);
     WGPUTextureView shared_color_view;
     WGPUTextureView shared_depth_view;
 
@@ -278,9 +272,9 @@ scene_draw_layouts_init(Scene *scene,
           .multisample = multisample,
       };
 
-      render_pass_list_create_shared_texture_color(
-          &pass_list[i], &shared_texture_color_config,
-          RenderPassTextureStorage_Keep, NULL, &shared_color_view);
+      render_pass_list_texture_create_shared_color(
+          &pass_list[i], &shared_texture_color_config, NULL, &shared_color_view,
+          RenderPassTextureFlag_None);
 
       RenderPassTextureDescriptor shared_texture_depth_config = {
           .format = TEXTURE_FORMAT_DEPTH_STENCIL,
@@ -289,9 +283,9 @@ scene_draw_layouts_init(Scene *scene,
           .multisample = multisample,
       };
 
-      render_pass_list_create_shared_texture_depth(
-          &pass_list[i], &shared_texture_depth_config,
-          RenderPassTextureStorage_Keep, NULL, &shared_depth_view);
+      render_pass_list_texture_create_shared_depth(
+          &pass_list[i], &shared_texture_depth_config, NULL, &shared_depth_view,
+          RenderPassTextureFlag_None);
     }
 
     /*
@@ -403,13 +397,13 @@ scene_draw_layouts_init(Scene *scene,
                   ▐▌   ▐▌ ▐▌▗▄▄▞▘▗▄▄▞▘
 
      */
-
+    
     RenderPassColorAttachment gizmo_color_attachment = {
         .attachment = {
             .view = shared_color_view,
             .clearValue = 0,
             .loadOp = WGPULoadOp_Load,
-            .storeOp = WGPUStoreOp_Store,
+            .storeOp = WGPUStoreOp_Discard,
             .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
         }};
 

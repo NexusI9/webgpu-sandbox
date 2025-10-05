@@ -6,8 +6,8 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "string.h"
 #include "backend/ssbo.h"
+#include "string.h"
 
 void viewport_create(Viewport *viewport,
                      const ViewportCreateDescriptor *view_desc) {
@@ -15,7 +15,6 @@ void viewport_create(Viewport *viewport,
   viewport->fov = view_desc->fov;
   viewport->near_clip = view_desc->near_clip;
   viewport->far_clip = view_desc->far_clip;
-  viewport->aspect = view_desc->aspect;
   viewport->width = view_desc->width;
   viewport->height = view_desc->height;
 
@@ -33,7 +32,8 @@ void viewport_update_projection(Viewport *viewport) {
   float fov = glm_rad(viewport->fov);
   float far = viewport->far_clip;
   float near = viewport->near_clip;
-  float aspect = viewport->aspect;
+  float aspect = (float)viewport->width / (float)viewport->height;
+
   float f = 1.0 / tan(fov * 0.5f);
 
   glm_perspective(fov, aspect, near, far, viewport->projection);
@@ -47,7 +47,9 @@ void viewport_uniform_update(Viewport *viewport) {
 
   ViewportUniform *uniform = (ViewportUniform *)viewport->ssbo_slot.uniform;
 
-  uniform->width = viewport->width, uniform->height = viewport->height,
+  uniform->width = viewport->width;
+  uniform->height = viewport->height;
+  viewport_update_projection(viewport);
 
   glm_mat4_copy(viewport->projection, uniform->projection);
 }

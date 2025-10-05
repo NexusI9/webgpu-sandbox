@@ -26,10 +26,12 @@ reg_id_t reg_register(void *ptr, RegEntryType type) {
   return id;
 }
 
-void *reg_lookup(reg_id_t id) {
+void reg_lookup(reg_id_t id, RegEntry *entry) {
   if (id >= REG_MAX_OBJECTS) {
     logger_add(LoggerFlag_Error, "id out of registry bounds.");
-    return NULL;
+    entry = NULL;
+    return;
   }
-  return g_reg[id].ptr;
+
+  memcpy(entry, &g_reg[id], sizeof(RegEntry));
 }

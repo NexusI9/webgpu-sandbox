@@ -35,6 +35,8 @@ typedef struct {
   cclock *clock;
   WGPUColor background;
   const double dpi;
+  const int width;
+  const int height;
 } SceneRendererCreateDescriptor;
 
 typedef void (*scene_renderer_draw_callback)(void *);
@@ -58,6 +60,7 @@ typedef struct SceneRenderer {
   struct {
     double dpi;
     WGPUColor background;
+    int width, height;
   } context;
 
   // cached texture shared throughout parent scene objects
@@ -77,6 +80,10 @@ typedef struct SceneRenderer {
 typedef struct {
   SceneRenderer *renderer;
 } SceneRendererRenderDescriptor;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void scene_renderer_init(SceneRenderer *,
                          const SceneRendererCreateDescriptor *);
@@ -117,10 +124,34 @@ scene_renderer_active_pass_list(SceneRenderer *renderer) {
   return &renderer->draw.render_pass[__builtin_ctz(renderer->draw.mode)];
 }
 
+static inline int scene_renderer_width(SceneRenderer *rd) {
+  return rd->context.width;
+}
+
+static inline int scene_renderer_height(SceneRenderer *rd) {
+  return rd->context.height;
+}
+
+static inline double scene_renderer_dpi(SceneRenderer *rd) {
+  return rd->context.dpi;
+}
+
+static inline void scene_renderer_set_width(SceneRenderer *rd, int value) {
+  rd->context.width = value;
+}
+
+static inline void scene_renderer_set_height(SceneRenderer *rd, int value) {
+  rd->context.height = value;
+}
+
 static inline RenderPassList *
 scene_renderer_pass_list(SceneRenderer *renderer,
                          const SceneRendererDrawMode mode) {
   return &renderer->draw.render_pass[__builtin_ctz(mode)];
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

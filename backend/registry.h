@@ -14,6 +14,8 @@ typedef enum {
   RegEntryType_SunLight,
   RegEntryType_Scene,
   RegEntryType_SceneLayer,
+  RegEntryType_ProbeReflectionPlane,
+  RegEntryType_ProbeReflectionGrid,
 } RegEntryType;
 
 typedef struct {
@@ -26,6 +28,6 @@ static RegEntry g_reg[REG_MAX_OBJECTS] = {0};
 
 reg_id_t reg_register(void *, RegEntryType);
 
-void *reg_lookup(reg_id_t);
+void reg_lookup(reg_id_t, RegEntry *);
 
 #endif

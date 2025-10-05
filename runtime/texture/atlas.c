@@ -2,8 +2,8 @@
 #include "runtime/texture/core.h"
 
 #include "backend/buffer.h"
-#include "runtime/texture/create.h"
 #include "backend/logger.h"
+#include "runtime/texture/create.h"
 #include "webgpu/webgpu.h"
 
 TextureStatus texture_atlas_create(TextureAtlas *atlas,
@@ -11,10 +11,11 @@ TextureStatus texture_atlas_create(TextureAtlas *atlas,
 
   if (desc->cell_count[0] > TEXTURE_ATLAS_MAX_ROW ||
       desc->cell_count[1] > TEXTURE_ATLAS_MAX_COL) {
-    logger_add(LoggerFlag_Error, "Attempting to set a cell count out of maximum allowed cell "
-           "count: [%d,%d], trying to set [%d, %d].",
-           TEXTURE_ATLAS_MAX_ROW, TEXTURE_ATLAS_MAX_COL, desc->cell_count[0],
-           desc->cell_count[1]);
+    logger_add(LoggerFlag_Error,
+               "Attempting to set a cell count out of maximum allowed cell "
+               "count: [%d,%d], trying to set [%d, %d].",
+               TEXTURE_ATLAS_MAX_ROW, TEXTURE_ATLAS_MAX_COL,
+               desc->cell_count[0], desc->cell_count[1]);
     return TextureStatus_CellOutOfBound;
   }
 
@@ -29,7 +30,8 @@ TextureStatus texture_atlas_create(TextureAtlas *atlas,
                                          });
 
   if (create != TextureStatus_Success) {
-    logger_add(LoggerFlag_Error, "Couldn't create texture atlas %s.", desc->label);
+    logger_add(LoggerFlag_Error, "Couldn't create texture atlas %s.",
+               desc->label);
     return create;
   }
 
@@ -47,17 +49,6 @@ TextureStatus texture_atlas_create(TextureAtlas *atlas,
                         },
                         BufferTextureMemory_Free);
 
-  // atlas->sampler = wgpuDeviceCreateSampler(
-  //     desc->device, &(WGPUSamplerDescriptor){
-  //                       .label = "Atlas Sampler",
-  //                       .addressModeU = WGPUAddressMode_ClampToEdge,
-  //                       .addressModeV = WGPUAddressMode_ClampToEdge,
-  //                       .addressModeW = WGPUAddressMode_ClampToEdge,
-  //                       .compare = WGPUCompareFunction_Undefined,
-  //                       .magFilter = WGPUFilterMode_Linear,
-  //                       .minFilter = WGPUFilterMode_Linear,
-  //                   });
-
   atlas->width = texture.width;
   atlas->height = texture.height;
   glm_ivec2_copy((int *)desc->cell_count, atlas->cell_count);
@@ -70,10 +61,12 @@ TextureStatus texture_atlas_cell_uv(TextureAtlas *atlas, ivec2 cell, vec2 uv0,
                                     vec2 uv1) {
 
   if (cell[0] > atlas->cell_count[0] || cell[1] > atlas->cell_count[1]) {
-    printf("Attempting to reach a cell out of texture atlas %s. Maximum cell "
-           "count: [%d,%d], trying to reach [%d, %d].",
-           atlas->label, atlas->cell_count[0], atlas->cell_count[1], cell[0],
-           cell[1]);
+    logger_add(
+        LoggerFlag_Warning,
+        "Attempting to reach a cell out of texture atlas %s. Maximum cell "
+        "count: [%d,%d], trying to reach [%d, %d].",
+        atlas->label, atlas->cell_count[0], atlas->cell_count[1], cell[0],
+        cell[1]);
     return TextureStatus_CellOutOfBound;
   }
 

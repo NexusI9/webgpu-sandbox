@@ -42,7 +42,9 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
                 .name = "Debug view billboard shader",
             });
 
-  float ratio = debug->viewport->aspect * 9.0f / 16.0f;
+  float ratio =
+      ((float)debug->viewport->width / (float)debug->viewport->height) * 9.0f /
+      16.0f;
   vec3 scale = {1.0f, 1.0f, ratio};
   glm_vec3_scale(scale, 0.3f, scale);
   mesh_set_scale(mesh, scale);

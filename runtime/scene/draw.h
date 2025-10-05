@@ -3,12 +3,16 @@
 
 #include "./core.h"
 #include "renderer/core.h"
+#include "runtime/pipeline/render.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void scene_set_draw_mode(Scene *, const SceneRendererDrawMode);
+
+void scene_update_render_pass_texture_size(
+    Scene *, const int, const int, const RenderPipelineMultisampleCount);
 
 #ifdef __cplusplus
 }

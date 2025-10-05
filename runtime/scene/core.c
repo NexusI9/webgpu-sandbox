@@ -27,7 +27,7 @@
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
 
-// initializers
+// initializers 
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
 static inline void scene_light_list_init(Scene *);
 static inline void scene_camera_init(Scene *);
@@ -52,6 +52,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     }
 
     {
+      
       /*  ===== LISTS ===== */
       scene_mesh_list_init(scene);
       scene_layer_init(&scene->layers);
@@ -62,15 +63,14 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     {
       /*  ===== CAMERA & VIEWPORT =====  */
       scene_camera_init(scene);
-
+      
       viewport_create(&scene->viewport,
                       &(ViewportCreateDescriptor){
                           .fov = desc->viewport->fov,
                           .near_clip = desc->viewport->near_clip,
                           .far_clip = desc->viewport->far_clip,
-                          .aspect = desc->viewport->aspect,
-                          .width = context_width(),
-                          .height = context_height(),
+                          .width = scene_renderer_width(&scene->renderer),
+                          .height = scene_renderer_height(&scene->renderer),
                       });
 
       ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Viewport,

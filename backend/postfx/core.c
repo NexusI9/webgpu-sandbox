@@ -75,6 +75,33 @@ PostFxStatus post_fx_bind_texture_view(PostFx *fx, const PostFxType type,
   return PostFxStatus_Success;
 }
 
+/**
+   Update the view of the cached bind group, meaning we also need to rebuild the
+   bindgroup.
+ */
+
+PostFxStatus post_fx_update_bindgroup_view(PostFx *fx, const PostFxType type,
+                                           const WGPUTextureView old,
+                                           const WGPUTextureView new) {
+
+  int found = 0;
+  for (size_t i = 0; i < fx->bingroup_list[type].length; i++) {
+
+    PostFxBindgroup *bg = &fx->bingroup_list[type].entries[i];
+
+    if (bg->view == old) {
+      bg->view = new;
+
+      wgpuBindGroupRelease(bg->bindgroup);
+      bg->bindgroup = bind_creator[type](fx, new);
+
+      found++;
+    }
+  }
+
+  return found ? PostFxStatus_Success : PostFxStatus_ViewUnfound;
+}
+
 void post_fx_blit(PostFx *fx, WGPUTextureView view,
                   WGPURenderPassEncoder pass) {
 

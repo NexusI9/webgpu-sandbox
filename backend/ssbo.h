@@ -2,11 +2,11 @@
 #define _SHADER_STORAGE_BUFFER_OBJECT_H_
 
 #include <stdalign.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <webgpu/webgpu.h>
-#include <stdint.h>
 
 #include "utils/stli.h"
 
@@ -115,6 +115,10 @@ typedef struct {
 
 } SSBOManager;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void ssbo_draw_callback(void *);
 
 void ssbo_init(SSBOManager *);
@@ -170,8 +174,15 @@ static inline SSBOStatus ssbo_copy_entry(SSBOManager *manager,
   return SSBOStatus_Success;
 }
 
+static inline ssbo_id_t ssbo_slot_id(const SSBOSlot *slot) { return slot->id; }
+
 /* ==== UPDATE QUEUE ==== */
 StaticListStatus ssbo_update_queue_insert(SSBOManager *, const SSBOType,
                                           const ssbo_id_t);
 StaticListStatus ssbo_update_queue_shift(SSBOManager *, const SSBOType);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif
