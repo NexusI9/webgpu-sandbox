@@ -26,6 +26,7 @@ void render_pass_texture_view_destroy(WGPUTexture *texture,
     wgpuTextureViewRelease(*view);
     *view = NULL;
   }
+
 }
 
 /**
@@ -118,29 +119,29 @@ void render_pass_texture_create_color(RenderPass *pass,
                                       const RenderPassTextureDescriptor *desc,
                                       const RenderPassTextureFlag flag) {
 
-  if (pass->type == RenderPassType_OnScreen &&
-      pass->multisample == PipelineMultisampleCount_4x) {
-
-    if (pass->color.attachment.view == NULL)
-      // create msaa texture as main color view
-      render_pass_texture_create_multisample(
-          &pass->color.texture, &pass->color.attachment.view, desc, flag);
-
-    if (pass->color.attachment.resolveTarget == NULL)
-      // create resolve texture (for blit/post-process passes)
-      render_pass_texture_create_monosample(
-          &pass->color.resolve_texture, &pass->color.resolve_view, desc, flag);
-
-  } else if (pass->type == RenderPassType_OffScreen &&
-             pass->color.attachment.view == NULL) {
-
-    if (desc->multisample == PipelineMultisampleCount_1x)
-      render_pass_texture_create_monosample(
-          &pass->color.texture, &pass->color.attachment.view, desc, flag);
+  // create msaa texture as main color view
+  if (pass->color.attachment.view == NULL) {
 
     if (desc->multisample == PipelineMultisampleCount_4x)
       render_pass_texture_create_multisample(
           &pass->color.texture, &pass->color.attachment.view, desc, flag);
+
+    if (desc->multisample == PipelineMultisampleCount_1x)
+      render_pass_texture_create_monosample(
+          &pass->color.texture, &pass->color.attachment.view, desc, flag);
+  }
+
+  // create resolve texture (for blit/post-process passes)
+  if (RenderPassType_OnScreen == pass->type) {
+
+    if (PipelineMultisampleCount_1x == desc->multisample) {
+      pass->color.resolve_view = pass->color.attachment.view;
+      pass->color.attachment.resolveTarget = NULL;
+    }
+
+    if (PipelineMultisampleCount_4x == desc->multisample)
+      render_pass_texture_create_monosample(
+          &pass->color.resolve_texture, &pass->color.resolve_view, desc, flag);
   }
 }
 

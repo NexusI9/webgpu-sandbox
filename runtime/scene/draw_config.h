@@ -403,7 +403,7 @@ scene_draw_layouts_init(Scene *scene,
             .view = shared_color_view,
             .clearValue = 0,
             .loadOp = WGPULoadOp_Load,
-            .storeOp = WGPUStoreOp_Discard,
+            .storeOp = WGPUStoreOp_Store,
             .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
         }};
 

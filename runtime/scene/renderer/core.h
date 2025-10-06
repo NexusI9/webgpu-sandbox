@@ -136,12 +136,19 @@ static inline double scene_renderer_dpi(SceneRenderer *rd) {
   return rd->context.dpi;
 }
 
-static inline void scene_renderer_set_width(SceneRenderer *rd, int value) {
+static inline void scene_renderer_set_width(SceneRenderer *rd,
+                                            const int value) {
   rd->context.width = value;
 }
 
-static inline void scene_renderer_set_height(SceneRenderer *rd, int value) {
+static inline void scene_renderer_set_height(SceneRenderer *rd,
+                                             const int value) {
   rd->context.height = value;
+}
+
+static inline void scene_renderer_set_dpi(SceneRenderer *rd,
+                                          const double value) {
+  rd->context.dpi = glm_max(1, value);
 }
 
 static inline RenderPassList *

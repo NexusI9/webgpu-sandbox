@@ -35,12 +35,12 @@ typedef struct {
 
 extern Context g_context;
 
-ContextStatus context_init(const ContextDescriptor *);
-ContextStatus context_close();
-
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+ContextStatus context_init(const ContextDescriptor *);
+ContextStatus context_close();
 
 static inline WGPUDevice context_device() { return g_context.device; }
 static inline WGPUQueue context_queue() { return g_context.queue; }
@@ -53,8 +53,12 @@ static inline RenderPipelineMultisampleCount context_multisample() {
   return g_context.multisample;
 }
 
-static inline void context_set_width(int value){ g_context.width = value; }
-static inline void context_set_height(int value){ g_context.height = value; }
+static inline void context_set_width(int value) { g_context.width = value; }
+static inline void context_set_height(int value) { g_context.height = value; }
+static inline void
+context_set_multisample(RenderPipelineMultisampleCount value) {
+  g_context.multisample = value;
+}
 
 #ifdef __cplusplus
 }

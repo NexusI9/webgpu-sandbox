@@ -4,6 +4,7 @@
 #include "core.h"
 #include "runtime/light/shadow_map/draw.h"
 #include "runtime/mesh/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/scene/build.h"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
@@ -53,13 +54,13 @@ void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
 
    Function primarily used in the UI when we adjust the scene width and height.
  */
-void scene_update_render_pass_texture_size(
+void scene_update_render_pass_texture(
     Scene *scene, int width, int height,
-    const RenderPipelineMultisampleCount multisample) {
+    const RenderPipelineMultisampleCount multisample, const double dpi) {
 
-  // If multisample change, we need to update the pass list passes callbacks
+  int real_width = (int)(width * dpi);
+  int real_height = (int)(height * dpi);
 
-  
   // Update textures
   for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
 
@@ -72,8 +73,8 @@ void scene_update_render_pass_texture_size(
 
       RenderPassTextureDescriptor color_config = {
           .format = TEXTURE_FORMAT_ONSCREEN,
-          .height = height,
-          .width = width,
+          .height = real_height,
+          .width = real_width,
           .multisample = multisample,
       };
 
@@ -81,16 +82,57 @@ void scene_update_render_pass_texture_size(
           pass_list, &color_config, NULL, &shared_color_view,
           RenderPassTextureFlag_ReleasePrevious);
 
+
       // replace each passes color views with resized one
       for (ScenePass j = 0; j < SCENE_RENDER_PASS_COUNT; j++) {
         RenderPass *pass = &pass_list->passes[j];
+        WGPUTextureView previous_resolve = pass->color.resolve_view;
+        RenderPipelineMultisampleCount previous_multisample = pass->multisample;
+
+        /*
+          If previously monosample it means the resolve texture/view corresponds
+          to the list shared view/ texture.
+
+          However we already release the shared view/texutre in the
+          create_shared_color function, so we set the child pass resolve
+          texture/view to NULL manually.
+
+          Monosample:
+
+                List                      Child Passes
+
+           .-----------.               .-- pass 1 -------.
+           |   Share   |        .----> | Resolve Texture |
+           |-----------|       |       |-----------------|     .-------------.
+           |  Texture  |------+    .-> | Resolve View    | --> | Attachment  |
+           |-----------|      |   |    '-----------------'     '-------------'
+           |  View     |------|---+
+           '-----------'      |   |    .---pass 2--------.
+                              '------> | Resolve Texture |
+                                  |    |-----------------|     .-------------.
+                                  '--> | Resolve View    | --> | Attachment  |
+                                       '-----------------'     '-------------'
+
+         */
+        if (previous_multisample == PipelineMultisampleCount_1x) {
+          pass->color.resolve_texture = NULL;
+          pass->color.resolve_view = NULL;
+        }
+
+        pass->multisample = multisample;
         pass->color.attachment.view = shared_color_view;
 
-        WGPUTextureView previous_resolve = pass->color.resolve_view;
-        // update resolve pass texture (monosampled)
-        render_pass_texture_create_monosample(
-            &pass->color.resolve_texture, &pass->color.resolve_view,
-            &color_config, RenderPassTextureFlag_ReleasePrevious);
+        // Update resolve view for multisample passes
+        if (PipelineMultisampleCount_4x == pass->multisample)
+          render_pass_texture_create_monosample(
+              &pass->color.resolve_texture, &pass->color.resolve_view,
+              &color_config, RenderPassTextureFlag_ReleasePrevious);
+
+        if (PipelineMultisampleCount_1x == pass->multisample) {
+          pass->color.resolve_view = shared_color_view;
+          pass->color.resolve_texture = NULL;
+          pass->color.attachment.resolveTarget = NULL;
+        }
 
         // update post fx bingroup with the newest view
         post_fx_update_bindgroup_view(&pass->post_fx, PostFxType_Blit,
@@ -108,8 +150,8 @@ void scene_update_render_pass_texture_size(
           pass_list,
           &(RenderPassTextureDescriptor){
               .format = TEXTURE_FORMAT_DEPTH_STENCIL,
-              .height = height,
-              .width = width,
+              .height = real_height,
+              .width = real_width,
               .multisample = multisample,
 
           },
@@ -123,8 +165,8 @@ void scene_update_render_pass_texture_size(
       render_pass_texture_create_depth(&pass_list->passes[ScenePass_Gizmo],
                                        &(RenderPassTextureDescriptor){
                                            .format = TEXTURE_FORMAT_DEPTH,
-                                           .height = height,
-                                           .width = width,
+                                           .height = real_height,
+                                           .width = real_width,
                                            .multisample = multisample,
                                        },
                                        RenderPassTextureFlag_ReleasePrevious);

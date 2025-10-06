@@ -11,8 +11,9 @@ extern "C" {
 
 void scene_set_draw_mode(Scene *, const SceneRendererDrawMode);
 
-void scene_update_render_pass_texture_size(
-    Scene *, const int, const int, const RenderPipelineMultisampleCount);
+void scene_update_render_pass_texture(Scene *, const int, const int,
+                                           const RenderPipelineMultisampleCount,
+                                           const double);
 
 #ifdef __cplusplus
 }

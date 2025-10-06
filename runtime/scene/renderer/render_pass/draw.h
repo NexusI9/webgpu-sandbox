@@ -31,9 +31,9 @@
 
 // Pass
 static inline void render_pass_draw(RenderPass *);
-static inline void render_pass_draw_callback_default(RenderPass *);
-static inline void render_pass_draw_callback_resolve(RenderPass *);
-static inline void render_pass_draw_callback_swapchain(RenderPass *);
+static inline void render_pass_draw_callback_resolve_multisample(RenderPass *);
+static inline void render_pass_draw_callback_resolve_monosample(RenderPass *);
+static inline void render_pass_draw_post_fx(RenderPass *);
 
 // Pass Immediate mode functions
 static inline WGPUCommandEncoder render_pass_im_begin(RenderPass *);
@@ -136,19 +136,27 @@ void render_pass_list_draw(RenderPassList *list) {
    MSAA Texture (Nx) ===> resolved ===> Swapchain texture (1x)
  */
 
-void render_pass_draw_callback_default(RenderPass *pass) {
-  render_pass_im_draw(pass);
-}
-
 /*
   Only for On Screen last render pass in a pass list
   Resolve msaa => revolve view => blit => swapchain
  */
-void render_pass_draw_callback_resolve(RenderPass *pass) {
-
+void render_pass_draw_callback_resolve_multisample(RenderPass *pass) {
   // Transfert cached resolve view (sampled 1x) to pass resolve
   pass->color.attachment.resolveTarget = pass->color.resolve_view;
   render_pass_im_draw(pass);
+  render_pass_draw_post_fx(pass);
+}
+
+/*
+  Basically the same as the resolve_multisample, except we don't need to assign
+  a resolve target since the view is already monosampled.
+ */
+void render_pass_draw_callback_resolve_monosample(RenderPass *pass) {
+  render_pass_im_draw(pass);
+  render_pass_draw_post_fx(pass);
+}
+
+void render_pass_draw_post_fx(RenderPass *pass) {
 
   // Blit pass
   {
@@ -170,18 +178,11 @@ void render_pass_draw_callback_resolve(RenderPass *pass) {
         wgpuCommandEncoderBeginRenderPass(pass->command_encoder, &pass_desc);
     {
       // POST FX
-      post_fx_blit(&pass->post_fx, pass->color.attachment.resolveTarget,
+      post_fx_blit(&pass->post_fx, pass->color.resolve_view,
                    resolve_pass);
     }
     wgpuRenderPassEncoderEnd(resolve_pass);
   }
-}
-
-// resolve to swapchain
-void render_pass_draw_callback_swapchain(RenderPass *pass) {
-  pass->color.attachment.view =
-      wgpuSwapChainGetCurrentTextureView(context_swapchain());
-  render_pass_im_draw(pass);
 }
 
 void render_pass_draw(RenderPass *pass) { pass->draw_callback(pass); }

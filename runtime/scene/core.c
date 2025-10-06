@@ -141,7 +141,7 @@ void scene_camera_init(Scene *scene) {
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Camera,
                   &scene->camera->ssbo_slot);
 
-  // set scene main camera as active
+  // set scene main camera as active 
   scene->active_camera = scene->camera;
 }
 

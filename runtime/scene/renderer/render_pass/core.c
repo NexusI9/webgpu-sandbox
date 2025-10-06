@@ -32,7 +32,7 @@ void render_pass_create(RenderPass *pass,
   pass->type = desc->type;
 
   // === assign draw callbacks ===
-  render_pass_init_draw_callback(pass);
+  pass->draw_callback = render_pass_im_draw;
 
   // === create render textures ===
   if (desc->color)
@@ -43,29 +43,6 @@ void render_pass_create(RenderPass *pass,
 
   if (desc->draw_list)
     render_pass_draw_list_copy(desc->draw_list, &pass->draw_list);
-}
-
-void render_pass_init_draw_callback(RenderPass *pass) {
-
-  // on screen drawing
-  if (pass->type == RenderPassType_OnScreen) {
-    // define callback based on multisample
-    switch (pass->multisample) {
-
-    case PipelineMultisampleCount_4x:
-      pass->draw_callback = render_pass_draw_callback_default;
-      break;
-
-    case PipelineMultisampleCount_1x:
-    default:
-      pass->draw_callback = render_pass_draw_callback_swapchain;
-      break;
-    }
-
-  } else {
-    // off screen rendering (common drawing method no matter the msaa)
-    pass->draw_callback = render_pass_draw_callback_default;
-  }
 }
 
 void render_pass_init_color(RenderPass *pass,
@@ -123,15 +100,37 @@ void render_pass_list_insert_pass(RenderPassList *list,
     return;
   }
 
-  render_pass_create(&list->passes[list->length], desc);
+  render_pass_create(&list->passes[list->length++], desc);
+  render_pass_list_update_child_passes_callback(list);
+}
 
+/**
+   Define automatically each last pass draw callback depending on the pass
+   multisample.
+ */
+void render_pass_list_update_child_passes_callback(RenderPassList *list) {
+
+  // reset previous pass callback to default
   for (size_t i = 0; i < list->length; i++)
-    render_pass_init_draw_callback(&list->passes[i]);
+    list->passes[i].draw_callback = render_pass_im_draw;
 
-  // set last pass of the list as the resolve pass
-  list->passes[list->length].draw_callback = render_pass_draw_callback_resolve;
+  // set last pass resolve
+  {
+    RenderPass *last_pass = &list->passes[list->length - 1];
 
-  list->length++;
+    if (PipelineMultisampleCount_1x == last_pass->multisample)
+      last_pass->draw_callback = render_pass_draw_callback_resolve_monosample;
+    else if (PipelineMultisampleCount_4x == last_pass->multisample)
+      last_pass->draw_callback = render_pass_draw_callback_resolve_multisample;
+    else
+      logger_add(
+          LoggerFlag_Error,
+          "Error while assigning render pass draw callback (pass: %s <%p>). No "
+          "callback found "
+          "for the Multisample %d, make sure the child render-pass has a valid "
+          "multisample value.",
+          last_pass->label, last_pass, last_pass->multisample);
+  }
 }
 
 /**

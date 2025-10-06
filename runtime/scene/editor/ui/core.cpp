@@ -4,6 +4,7 @@
 #include "backend/logger.h"
 #include "backend/registry.h"
 #include "backend/ssbo.h"
+#include "backend/std_pipeline/core.h"
 #include "include/imgui/imgui.h"
 #include "include/imgui/imgui_impl_wgpu.h"
 #include "resources/tool/css2h/output/theme.default.h"
@@ -17,6 +18,7 @@
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/editor/selection/utils.h"
 #include "runtime/scene/renderer/core.h"
+#include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/scene/show.h"
 #include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
@@ -380,19 +382,34 @@ void scene_editor_ui_create_display(SceneEditorUI *ui, Scene *scene) {
   ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
   {
-    if (scene_editor_ui_create_button_icon(
-            ui, SceneEditorUIIcon_Layout, "Layout",
-            ImVec2(ui_size[SceneEditorUISize_Button_DisplaySize],
-                   ui_size[SceneEditorUISize_Button_DisplaySize])))
-      display ^= SceneEditorUIDisplay_Layout;
+
+    {
+      bool layout_button = scene_editor_ui_create_button_icon(
+          ui, SceneEditorUIIcon_Layout, "Layout",
+          ImVec2(ui_size[SceneEditorUISize_Button_DisplaySize],
+                 ui_size[SceneEditorUISize_Button_DisplaySize]));
+
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Toggle interface");
+
+      if (layout_button)
+        display ^= SceneEditorUIDisplay_Layout;
+    }
 
     ImGui::SameLine();
 
-    if (scene_editor_ui_create_button_icon(
-            ui, SceneEditorUIIcon_Activity, "Activity",
-            ImVec2(ui_size[SceneEditorUISize_Button_DisplaySize],
-                   ui_size[SceneEditorUISize_Button_DisplaySize])))
-      display ^= SceneEditorUIDisplay_Activity;
+    {
+      bool activity_button = scene_editor_ui_create_button_icon(
+          ui, SceneEditorUIIcon_Activity, "Activity",
+          ImVec2(ui_size[SceneEditorUISize_Button_DisplaySize],
+                 ui_size[SceneEditorUISize_Button_DisplaySize]));
+
+      if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Toggle monitor");
+
+      if (activity_button)
+        display ^= SceneEditorUIDisplay_Activity;
+    }
   }
   ImGui::PopStyleColor(3);
   ImGui::PopStyleVar();
@@ -602,6 +619,7 @@ RenderPipelineMultisampleCount multisample = PipelineMultisampleCount_1x;
 int width = context_width();
 int height = context_height();
 float fov, near_clip, far_clip = 0.0f;
+double dpi = 0.0;
 void scene_editor_ui_tab_scene(struct PropsTabs *tab, SceneEditorUI *ui,
                                Scene *scene) {
 
@@ -631,11 +649,13 @@ void scene_editor_ui_tab_scene(struct PropsTabs *tab, SceneEditorUI *ui,
                                    ssbo_slot_id(&scene->viewport.ssbo_slot));
         }
         // update scene render texture
-        scene_update_render_pass_texture_size(scene, width, height, multisample);
+        scene_update_render_pass_texture(scene, width, height, multisample,
+                                         dpi);
       }
     }
-    ImGui::Spacing();
+
     {
+      ImGui::Spacing();
       ImGui::Text("Height");
       height = scene_renderer_height(&scene->renderer);
       if (ImGui::InputInt("##height", &height, 1, 10)) {
@@ -648,14 +668,15 @@ void scene_editor_ui_tab_scene(struct PropsTabs *tab, SceneEditorUI *ui,
           ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
                                    SSBOType_Viewport,
                                    ssbo_slot_id(&scene->viewport.ssbo_slot));
-        } 
+        }
         // update scene render texture
-        scene_update_render_pass_texture_size(scene, width, height,
-                                              multisample);
+        scene_update_render_pass_texture(scene, width, height, multisample,
+                                         dpi);
       }
     }
-    ImGui::Spacing();
+
     {
+      ImGui::Spacing();
       ImGui::Text("Multisample");
 
       char default_value[12];
@@ -664,13 +685,25 @@ void scene_editor_ui_tab_scene(struct PropsTabs *tab, SceneEditorUI *ui,
       if (ImGui::BeginCombo("##Multisample", default_value)) {
         for (int i = 0; i < IM_ARRAYSIZE(multisample_count); ++i) {
 
-          const bool is_selected =
-              (multisample_count[i] == context_multisample());
+          const bool is_selected = (multisample_count[i] == multisample);
 
           char value[12];
           snprintf(value, 12, "x%d", multisample_count[i]);
           if (ImGui::Selectable(value, is_selected)) {
-            // selectedItemIndex = i; // Update the selected item
+            RenderPipelineMultisampleCount count = multisample_count[i];
+            context_set_multisample(count);
+
+            // rebuild pipelines
+            standard_render_pipelines_destroy();
+            standard_render_pipelines_init(count);
+
+            // update scene render texture
+            scene_update_render_pass_texture(scene, width, height, count, dpi);
+
+            // update passes relative draw callbacks for each modes
+            for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
+              render_pass_list_update_child_passes_callback(
+                  &scene->renderer.draw.render_pass[i]);
           }
 
           // Set the initial focus when opening the combo (for keyboard
@@ -679,6 +712,19 @@ void scene_editor_ui_tab_scene(struct PropsTabs *tab, SceneEditorUI *ui,
             ImGui::SetItemDefaultFocus();
         }
         ImGui::EndCombo();
+      }
+    }
+
+    {
+      ImGui::Spacing();
+      ImGui::Text("Device Pixel Ratio (DPI)");
+      dpi = scene_renderer_dpi(&scene->renderer);
+      if (ImGui::InputDouble("##dpi", &dpi, 0.1, 1)) {
+        // update renderer
+        scene_renderer_set_dpi(&scene->renderer, dpi);
+        // update scene render texture
+        scene_update_render_pass_texture(scene, width, height, multisample,
+                                         dpi);
       }
     }
     ImGui::TreePop();

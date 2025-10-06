@@ -35,6 +35,10 @@ PostFxStatus post_fx_destroy(PostFx *fx) {
 
 WGPUBindGroup post_fx_blit_bind_group_create(PostFx *fx, WGPUTextureView view) {
 
+  if (view == NULL)
+    logger_add(LoggerFlag_Warning,
+               "Attempting to bind a NULL view for PostFX.");
+
   const WGPURenderPipeline blit_pipeline =
       std_render_pipeline(RenderPipelineType_Blit)->handle;
 
@@ -101,6 +105,7 @@ PostFxStatus post_fx_update_bindgroup_view(PostFx *fx, const PostFxType type,
 
   return found ? PostFxStatus_Success : PostFxStatus_ViewUnfound;
 }
+
 
 void post_fx_blit(PostFx *fx, WGPUTextureView view,
                   WGPURenderPassEncoder pass) {
