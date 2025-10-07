@@ -88,7 +88,7 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   return SceneEditorUIStatus_Success;
 }
 
-int display = UI::UIDisplay_Activity | UI::UIDisplay_Layout;
+int g_display = UI::UIDisplay_Activity | UI::UIDisplay_Layout;
 void scene_editor_ui_draw_callback(void *data) {
   Scene *scene = (Scene *)data;
   SceneEditorUI *ui = &scene->editor.ui;
@@ -143,18 +143,18 @@ void scene_editor_ui_draw_callback(void *data) {
     ImGui::NewFrame();
     {
 
-      if (display & UI::UIDisplay_Layout) {
+      if (g_display & UI::UIDisplay_Layout) {
         scene_editor_ui_create_top_bar(ui, scene);
         scene_editor_ui_create_right_panel(ui, scene);
         scene_editor_ui_create_bottom_panel(ui, scene);
         UI::Gizmo(scene, "Gizmo").draw();
       }
 
-      if (display & UI::UIDisplay_Activity) {
+      if (g_display & UI::UIDisplay_Activity) {
         UI::Monitor(scene, "Monitor").draw();
       }
 
-      UI::Display(scene, "Display").draw();
+      UI::Display(scene, "Display", &g_display).draw();
     }
     ImGui::Render();
     ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), ui->pass_encoder);
@@ -310,7 +310,7 @@ void scene_editor_ui_create_right_panel(SceneEditorUI *ui, Scene *scene) {
   ImGui::Begin("Left Panel", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
-  { 
+  {
     UI::Hierarchy(scene, "Hierarchy").draw();
     UI::Inspector(scene, "Inspector").draw();
   }

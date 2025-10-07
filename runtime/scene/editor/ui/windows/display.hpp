@@ -13,8 +13,9 @@ typedef enum {
 class Display : public Window {
 
 public:
-  Display(Scene *scene, const char *label) : Window(scene, label) {}
-  int state;
+  Display(Scene *scene, const char *label, int *state)
+      : Window(scene, label), state(state) {}
+  int *state;
   void draw() override;
 };
 

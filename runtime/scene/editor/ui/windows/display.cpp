@@ -31,7 +31,7 @@ void UI::Display::draw() {
         ImGui::SetTooltip("Toggle interface");
 
       if (layout_button)
-        state ^= UIDisplay_Layout;
+        *state ^= UIDisplay_Layout;
     }
 
     ImGui::SameLine();
@@ -47,7 +47,7 @@ void UI::Display::draw() {
         ImGui::SetTooltip("Toggle monitor");
 
       if (activity_button)
-        state ^= UIDisplay_Activity;
+        *state ^= UIDisplay_Activity;
     }
   }
   ImGui::PopStyleColor(3);
