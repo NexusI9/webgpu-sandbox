@@ -11,6 +11,7 @@ typedef enum {
 } SceneEditorUIStatus;
 
 #define SCENE_EDITOR_UI_ICON_COUNT 21
+#define SCENE_EDITOR_UI_SIZE_COUNT 19
 
 typedef enum {
   SceneEditorUIIcon_Null,
@@ -36,6 +37,28 @@ typedef enum {
   SceneEditorUIIcon_Properties_Object,
 } SceneEditorUIIcon;
 
+typedef enum {
+  SceneEditorUISize_Screen_Width,
+  SceneEditorUISize_Screen_Height,
+  SceneEditorUISize_RightPanel_Width,
+  SceneEditorUISize_RightPanelTab_Width,
+  SceneEditorUISize_Tree_Height,
+  SceneEditorUISize_Tree_PaddingV,
+  SceneEditorUISize_Tree_PaddingH,
+  SceneEditorUISize_TopBar_Height,
+  SceneEditorUISize_TopBar_Margin,
+  SceneEditorUISize_Gizmo_Width,
+  SceneEditorUISize_Gizmo_Height,
+  SceneEditorUISize_Gizmo_Margin,
+  SceneEditorUISize_Button_RenderModeSize,
+  SceneEditorUISize_Button_GizmoSize,
+  SceneEditorUISize_Button_DisplaySize,
+  SceneEditorUISize_BottomPanel_Height,
+  SceneEditorUISize_Log_IconScale,
+  SceneEditorUISize_Monitor_Width,
+  SceneEditorUISize_Monitor_Height,
+} SceneEditorUISize;
+
 typedef struct {
   ivec2 cell;
   vec2 uv0;
@@ -56,6 +79,8 @@ typedef struct {
   WGPUTextureView depth_view;
   TextureAtlas atlas_texture;
   SceneEditorUIIconUV icon_uv[SCENE_EDITOR_UI_ICON_COUNT];
+  int size[SCENE_EDITOR_UI_SIZE_COUNT];
+  
 } SceneEditorUI;
 
 typedef struct {

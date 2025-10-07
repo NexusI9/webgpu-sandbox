@@ -82,7 +82,6 @@ void scene_update_render_pass_texture(
           pass_list, &color_config, NULL, &shared_color_view,
           RenderPassTextureFlag_ReleasePrevious);
 
-
       // replace each passes color views with resized one
       for (ScenePass j = 0; j < SCENE_RENDER_PASS_COUNT; j++) {
         RenderPass *pass = &pass_list->passes[j];

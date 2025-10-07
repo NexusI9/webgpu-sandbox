@@ -17,6 +17,14 @@
 #include "runtime/scene/editor/selection/filter.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/editor/selection/utils.h"
+#include "runtime/scene/editor/ui/windows/browser.hpp"
+#include "runtime/scene/editor/ui/windows/display.hpp"
+#include "runtime/scene/editor/ui/windows/gizmo.hpp"
+#include "runtime/scene/editor/ui/windows/hierarchy.hpp"
+#include "runtime/scene/editor/ui/windows/inspector.hpp"
+#include "runtime/scene/editor/ui/windows/log.hpp"
+#include "runtime/scene/editor/ui/windows/monitor.hpp"
+#include "runtime/scene/editor/ui/windows/render_mode.hpp"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/scene/show.h"
@@ -33,77 +41,17 @@
  */
 static ImGuiContext *imgui_context;
 
-typedef enum {
-  SceneEditorUIDisplay_Layout = 1 << 0,
-  SceneEditorUIDisplay_Activity = 1 << 1,
-} SceneEditorUIDisplay;
-
-/* ===  SIZES === */
-#define SCENE_EDITOR_UI_SIZE_COUNT 19
-typedef enum {
-  SceneEditorUISize_Screen_Width,
-  SceneEditorUISize_Screen_Height,
-  SceneEditorUISize_RightPanel_Width,
-  SceneEditorUISize_RightPanelTab_Width,
-  SceneEditorUISize_Tree_Height,
-  SceneEditorUISize_Tree_PaddingV,
-  SceneEditorUISize_Tree_PaddingH,
-  SceneEditorUISize_TopBar_Height,
-  SceneEditorUISize_TopBar_Margin,
-  SceneEditorUISize_Gizmo_Width,
-  SceneEditorUISize_Gizmo_Height,
-  SceneEditorUISize_Gizmo_Margin,
-  SceneEditorUISize_Button_RenderModeSize,
-  SceneEditorUISize_Button_GizmoSize,
-  SceneEditorUISize_Button_DisplaySize,
-  SceneEditorUISize_BottomPanel_Height,
-  SceneEditorUISize_Log_IconScale,
-  SceneEditorUISize_Monitor_Width,
-  SceneEditorUISize_Monitor_Height,
-} SceneEditorUISize;
-
-static int ui_size[SCENE_EDITOR_UI_SIZE_COUNT] = {
-    [SceneEditorUISize_Screen_Width] = 0,
-    [SceneEditorUISize_Screen_Height] = 0,
-    [SceneEditorUISize_RightPanel_Width] = 250,
-    [SceneEditorUISize_RightPanelTab_Width] = 30,
-    [SceneEditorUISize_Tree_Height] = 400,
-    [SceneEditorUISize_Tree_PaddingV] = 4,
-    [SceneEditorUISize_Tree_PaddingH] = 1,
-    [SceneEditorUISize_TopBar_Height] = 40,
-    [SceneEditorUISize_TopBar_Margin] = 0,
-    [SceneEditorUISize_Gizmo_Width] = 100,
-    [SceneEditorUISize_Gizmo_Height] = 400,
-    [SceneEditorUISize_Gizmo_Margin] = 10,
-    [SceneEditorUISize_Button_RenderModeSize] = 15,
-    [SceneEditorUISize_Button_GizmoSize] = 30,
-    [SceneEditorUISize_Button_DisplaySize] = 24,
-    [SceneEditorUISize_BottomPanel_Height] = 200,
-    [SceneEditorUISize_Log_IconScale] = 16,
-    [SceneEditorUISize_Monitor_Width] = 300,
-    [SceneEditorUISize_Monitor_Height] = 100,
-};
-
+// ui init
 static inline void scene_editor_ui_set_icon_cell(SceneEditorUI *);
-static inline void scene_editor_ui_scale_size(SceneEditorUI *);
+static inline void scene_editor_ui_set_size(SceneEditorUI *);
 static inline void scene_editor_ui_create_texture(SceneEditorUI *);
 
-static inline bool scene_editor_ui_create_button_icon(SceneEditorUI *,
-                                                      const SceneEditorUIIcon,
-                                                      const char *, ImVec2);
-
-static inline void scene_editor_ui_create_display(SceneEditorUI *, Scene *);
-static inline void scene_editor_ui_create_scene_tree(SceneEditorUI *, Scene *);
-static inline void scene_editor_ui_create_properties(SceneEditorUI *, Scene *);
-static inline void scene_editor_ui_create_gizmo(SceneEditorUI *, Scene *);
+// layouts
 static inline void scene_editor_ui_create_top_bar(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_left_panel(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_right_panel(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_bottom_panel(SceneEditorUI *,
                                                        Scene *);
-static inline void scene_editor_ui_create_log(SceneEditorUI *, Scene *);
-static inline void scene_editor_ui_create_inspector(SceneEditorUI *, Scene *);
-static inline void scene_editor_ui_create_monitor(SceneEditorUI *, Scene *);
 
 SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
                                          const SceneEditorUIDescriptor *desc) {
@@ -114,7 +62,7 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
     ui->clock = desc->clock;
     ui->dpi = desc->dpi;
     scene_editor_ui_create_texture(ui);
-    scene_editor_ui_scale_size(ui);
+    scene_editor_ui_set_size(ui);
     scene_editor_ui_set_icon_cell(ui);
   }
 
@@ -140,7 +88,7 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   return SceneEditorUIStatus_Success;
 }
 
-int display = SceneEditorUIDisplay_Activity | SceneEditorUIDisplay_Layout;
+int display = UI::UIDisplay_Activity | UI::UIDisplay_Layout;
 void scene_editor_ui_draw_callback(void *data) {
   Scene *scene = (Scene *)data;
   SceneEditorUI *ui = &scene->editor.ui;
@@ -195,18 +143,18 @@ void scene_editor_ui_draw_callback(void *data) {
     ImGui::NewFrame();
     {
 
-      if (display & SceneEditorUIDisplay_Layout) {
+      if (display & UI::UIDisplay_Layout) {
         scene_editor_ui_create_top_bar(ui, scene);
         scene_editor_ui_create_right_panel(ui, scene);
         scene_editor_ui_create_bottom_panel(ui, scene);
-        scene_editor_ui_create_gizmo(ui, scene);
+        UI::Gizmo(scene, "Gizmo").draw();
       }
 
-      if (display & SceneEditorUIDisplay_Activity) {
-        scene_editor_ui_create_monitor(ui, scene);
+      if (display & UI::UIDisplay_Activity) {
+        UI::Monitor(scene, "Monitor").draw();
       }
 
-      scene_editor_ui_create_display(ui, scene);
+      UI::Display(scene, "Display").draw();
     }
     ImGui::Render();
     ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), ui->pass_encoder);
@@ -221,13 +169,32 @@ void scene_editor_ui_draw_callback(void *data) {
   }
 }
 
-void scene_editor_ui_scale_size(SceneEditorUI *ui) {
+void scene_editor_ui_set_size(SceneEditorUI *ui) {
 
-  ui_size[SceneEditorUISize_Screen_Width] = context_width();
-  ui_size[SceneEditorUISize_Screen_Height] = context_height();
+  static int base_size[SCENE_EDITOR_UI_SIZE_COUNT] = {
+      [SceneEditorUISize_Screen_Width] = context_width(),
+      [SceneEditorUISize_Screen_Height] = context_height(),
+      [SceneEditorUISize_RightPanel_Width] = 250,
+      [SceneEditorUISize_RightPanelTab_Width] = 30,
+      [SceneEditorUISize_Tree_Height] = 400,
+      [SceneEditorUISize_Tree_PaddingV] = 4,
+      [SceneEditorUISize_Tree_PaddingH] = 1,
+      [SceneEditorUISize_TopBar_Height] = 40,
+      [SceneEditorUISize_TopBar_Margin] = 0,
+      [SceneEditorUISize_Gizmo_Width] = 100,
+      [SceneEditorUISize_Gizmo_Height] = 400,
+      [SceneEditorUISize_Gizmo_Margin] = 10,
+      [SceneEditorUISize_Button_RenderModeSize] = 15,
+      [SceneEditorUISize_Button_GizmoSize] = 30,
+      [SceneEditorUISize_Button_DisplaySize] = 24,
+      [SceneEditorUISize_BottomPanel_Height] = 200,
+      [SceneEditorUISize_Log_IconScale] = 16,
+      [SceneEditorUISize_Monitor_Width] = 300,
+      [SceneEditorUISize_Monitor_Height] = 100,
+  };
 
   for (uint16_t i = 0; i < SCENE_EDITOR_UI_SIZE_COUNT; i++)
-    ui_size[i] *= ui->dpi;
+    ui->size[i] = base_size[i] * (int)ui->dpi;
 }
 
 void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
@@ -330,755 +297,66 @@ void scene_editor_ui_create_texture(SceneEditorUI *ui) {
   }
 }
 
-bool scene_editor_ui_create_button_icon(SceneEditorUI *ui,
-                                        const SceneEditorUIIcon icon,
-                                        const char *id, ImVec2 scale) {
-
-  SceneEditorUIIconUV *uv = &ui->icon_uv[icon];
-  return ImGui::ImageButton(id, (ImTextureRef)ui->atlas_texture.view, scale,
-                            ImVec2(uv->uv0[0], uv->uv0[1]),
-                            ImVec2(uv->uv1[0], uv->uv1[1]));
-}
-
-static const ScenePipeline tree_meshes[3] = {
-    ScenePipeline_Dynamic_Lit,
-    ScenePipeline_Dynamic_LitShadow,
-    ScenePipeline_Dynamic_Unlit,
-};
-
 void scene_editor_ui_create_right_panel(SceneEditorUI *ui, Scene *scene) {
 
   ImGui::SetNextWindowPos(
-      ImVec2(ui_size[SceneEditorUISize_Screen_Width] -
-                 ui_size[SceneEditorUISize_RightPanel_Width],
+      ImVec2(ui->size[SceneEditorUISize_Screen_Width] -
+                 ui->size[SceneEditorUISize_RightPanel_Width],
              0));
 
-  ImGui::SetNextWindowSize(ImVec2(ui_size[SceneEditorUISize_RightPanel_Width],
-                                  ui_size[SceneEditorUISize_Screen_Height]));
+  ImGui::SetNextWindowSize(ImVec2(ui->size[SceneEditorUISize_RightPanel_Width],
+                                  ui->size[SceneEditorUISize_Screen_Height]));
 
   ImGui::Begin("Left Panel", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
-  {
-    scene_editor_ui_create_scene_tree(ui, scene);
-    scene_editor_ui_create_properties(ui, scene);
+  { 
+    UI::Hierarchy(scene, "Hierarchy").draw();
+    UI::Inspector(scene, "Inspector").draw();
   }
 
-  ImGui::End();
-}
-
-void scene_editor_ui_create_display(SceneEditorUI *ui, Scene *scene) {
-
-  ImGui::SetNextWindowPos(ImVec2(ui_size[SceneEditorUISize_Gizmo_Margin], 0),
-                          ImGuiCond_Always);
-  ImGui::Begin("Display Frame", nullptr,
-               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
-                   ImGuiWindowFlags_NoBackground);
-
-  // remove backgrounds & padding
-  ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-  ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));
-  ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0, 0, 0, 0));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-  {
-
-    {
-      bool layout_button = scene_editor_ui_create_button_icon(
-          ui, SceneEditorUIIcon_Layout, "Layout",
-          ImVec2(ui_size[SceneEditorUISize_Button_DisplaySize],
-                 ui_size[SceneEditorUISize_Button_DisplaySize]));
-
-      if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Toggle interface");
-
-      if (layout_button)
-        display ^= SceneEditorUIDisplay_Layout;
-    }
-
-    ImGui::SameLine();
-
-    {
-      bool activity_button = scene_editor_ui_create_button_icon(
-          ui, SceneEditorUIIcon_Activity, "Activity",
-          ImVec2(ui_size[SceneEditorUISize_Button_DisplaySize],
-                 ui_size[SceneEditorUISize_Button_DisplaySize]));
-
-      if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Toggle monitor");
-
-      if (activity_button)
-        display ^= SceneEditorUIDisplay_Activity;
-    }
-  }
-  ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar();
   ImGui::End();
 }
 
 void scene_editor_ui_create_bottom_panel(SceneEditorUI *ui, Scene *scene) {
 
   ImGui::SetNextWindowPos(
-      ImVec2(0, ui_size[SceneEditorUISize_Screen_Height] -
-                    ui_size[SceneEditorUISize_BottomPanel_Height]));
+      ImVec2(0, ui->size[SceneEditorUISize_Screen_Height] -
+                    ui->size[SceneEditorUISize_BottomPanel_Height]));
 
   ImGui::SetNextWindowSize(
-      ImVec2(ui_size[SceneEditorUISize_Screen_Width] -
-                 ui_size[SceneEditorUISize_RightPanel_Width],
-             ui_size[SceneEditorUISize_BottomPanel_Height]));
+      ImVec2(ui->size[SceneEditorUISize_Screen_Width] -
+                 ui->size[SceneEditorUISize_RightPanel_Width],
+             ui->size[SceneEditorUISize_BottomPanel_Height]));
 
   ImGui::Begin("Bottom Panel", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
   {
-    scene_editor_ui_create_log(ui, scene);
+
+    UI::Log(scene, "Log").draw();
     ImGui::SameLine();
-    scene_editor_ui_create_inspector(ui, scene);
+    UI::Browser(scene, "Browser").draw();
   }
 
   ImGui::End();
 }
-
-typedef struct {
-  const ThemeDefaultColor text;
-  const ThemeDefaultColor timestamp;
-  const ThemeDefaultColor background;
-  SceneEditorUIIcon icon;
-} LoggerLook;
-
-static const LoggerLook logger_looks[LOGGER_FLAG_COUNT] = {
-    [LoggerFlag_Print] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
-            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
-            .icon = SceneEditorUIIcon_Null,
-        },
-    [LoggerFlag_Info] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
-            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
-            .icon = SceneEditorUIIcon_Log_Info,
-        },
-    [LoggerFlag_Error] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_DANGER_ON_DANGER,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_DANGER_SUBTLE,
-            .background = THEME_DEFAULT_COLOR_BACKGROUND_DANGER_STRONG_DARK,
-            .icon = SceneEditorUIIcon_Log_Error,
-        },
-    [LoggerFlag_Warning] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_WARNING_ON_WARNING,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_WARNING_SUBTLE,
-            .background = THEME_DEFAULT_COLOR_BACKGROUND_WARNING_STRONG_DARK,
-            .icon = SceneEditorUIIcon_Log_Warning,
-        },
-    [LoggerFlag_Debug] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
-            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
-            .icon = SceneEditorUIIcon_Null,
-        },
-    [LoggerFlag_ShaderCreate] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
-            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
-            .icon = SceneEditorUIIcon_Null,
-        },
-    [LoggerFlag_MeshBuild] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
-            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
-            .icon = SceneEditorUIIcon_Null,
-        },
-    [LoggerFlag_MeshCreate] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
-            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
-            .icon = SceneEditorUIIcon_Null,
-        },
-    [LoggerFlag_Import] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_INFORMATION_ON_INFORMATION,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_INFORMATION_SUBTLE,
-            .background =
-                THEME_DEFAULT_COLOR_BACKGROUND_INFORMATION_STRONG_DARK,
-            .icon = SceneEditorUIIcon_Log_Import,
-        },
-    [LoggerFlag_Success] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_SUCCESS_ON_SUCCESS,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUCCESS_SUBTLE,
-            .background = THEME_DEFAULT_COLOR_BACKGROUND_SUCCESS_STRONG_DARK,
-            .icon = SceneEditorUIIcon_Log_Success,
-        },
-    [LoggerFlag_Process] =
-        {
-            .text = THEME_DEFAULT_COLOR_TEXT_ON_DARK,
-            .timestamp = THEME_DEFAULT_COLOR_TEXT_SUBTLE_ON_DARK,
-            .background = THEME_DEFAULT_COLOR_SURFACE_LOWER,
-            .icon = SceneEditorUIIcon_Log_Process,
-        },
-};
-
-void scene_editor_ui_create_log(SceneEditorUI *ui, Scene *scene) {
-
-  static ImVec2 log_icon_scale =
-      ImVec2(ui_size[SceneEditorUISize_Log_IconScale],
-             ui_size[SceneEditorUISize_Log_IconScale]);
-
-  ImGui::BeginChild("Logs", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0),
-                    true);
-  {
-    ImGui::Text("Logs");
-    ImGui::BeginChild("Logs entries", ImVec2(0, 0), true);
-    {
-      for (size_t i = 0; i < g_logger.length; i++) {
-
-        const LoggerLook *look = &logger_looks[g_logger.flags[i]];
-        const SceneEditorUIIconUV *uv = &ui->icon_uv[look->icon];
-        const color *background_color = &theme_default_color[look->background];
-        const color *timestamp_color = &theme_default_color[look->timestamp];
-        const color *text_color = &theme_default_color[look->text];
-        const char *message = g_logger.messages[i];
-
-        ImVec2 pos = ImGui::GetCursorScreenPos();
-
-        float row_height = ImGui::GetTextLineHeightWithSpacing();
-        float row_width = ImGui::GetContentRegionAvail().x;
-
-        ImGui::GetWindowDrawList()->AddRectFilled(
-            pos, ImVec2(pos.x + row_width, pos.y + row_height),
-            ImGui::ColorConvertFloat4ToU32((ImVec4 &)*background_color));
-
-        ImGui::Image((ImTextureRef)ui->atlas_texture.view, log_icon_scale,
-                     ImVec2(uv->uv0[0], uv->uv0[1]),
-                     ImVec2(uv->uv1[0], uv->uv1[1]));
-        ImGui::SameLine();
-        ImGui::TextColored((ImVec4 &)*text_color, "%s", g_logger.messages[i]);
-      }
-
-      if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
-        ImGui::SetScrollHereY(1.0f);
-    }
-    ImGui::EndChild();
-  }
-  ImGui::EndChild();
-}
-
-void scene_editor_ui_create_inspector(SceneEditorUI *ui, Scene *scene) {
-  ImGui::BeginChild("Inspector", ImVec2(0, 0), true);
-  {
-    ImGui::Text("Inspector");
-  }
-  ImGui::EndChild();
-}
-
-static void scene_editor_ui_tab_scene(struct PropsTabs *, SceneEditorUI *,
-                                      Scene *);
-static void scene_editor_ui_tab_setting(struct PropsTabs *, SceneEditorUI *,
-                                        Scene *);
-static void scene_editor_ui_tab_properties(struct PropsTabs *, SceneEditorUI *,
-                                           Scene *);
-
-static const int tab_count = 3;
-static struct PropsTabs {
-  const SceneEditorUIIcon icon;
-  char tooltip[256];
-  void (*content)(struct PropsTabs *, SceneEditorUI *, Scene *);
-} prop_tabs[] = {
-    {
-        SceneEditorUIIcon_Properties_Scene,
-        "Scene",
-        scene_editor_ui_tab_scene,
-    },
-    {
-        SceneEditorUIIcon_Properties_Setting,
-        "Settings",
-        scene_editor_ui_tab_setting,
-    },
-    {
-        SceneEditorUIIcon_Properties_Object,
-        "Object",
-        scene_editor_ui_tab_properties,
-    },
-};
-
-static RenderPipelineMultisampleCount multisample_count[2] = {
-    PipelineMultisampleCount_1x,
-    PipelineMultisampleCount_4x,
-};
-
-RenderPipelineMultisampleCount multisample = PipelineMultisampleCount_1x;
-int width = context_width();
-int height = context_height();
-float fov, near_clip, far_clip = 0.0f;
-double dpi = 0.0;
-void scene_editor_ui_tab_scene(struct PropsTabs *tab, SceneEditorUI *ui,
-                               Scene *scene) {
-
-  ImGui::BeginChild("##scene_properties", ImVec2(0, 0), true,
-                    ImGuiWindowFlags_NoScrollWithMouse);
-
-  ImGuiTreeNodeFlags flags =
-      ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen;
-
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                      ImVec2(ui_size[SceneEditorUISize_Tree_PaddingH],
-                             ui_size[SceneEditorUISize_Tree_PaddingV]));
-  // resolution / multisample
-  if (ImGui::TreeNodeEx("Resolution", flags)) {
-    {
-      ImGui::Text("Width");
-      width = scene_renderer_width(&scene->renderer);
-      if (ImGui::InputInt("##width", &width, 1, 10)) {
-        // update renderer
-        scene_renderer_set_width(&scene->renderer, width);
-        // update viewport + uniform
-        {
-          viewport_set_width(&scene->viewport, width);
-          viewport_uniform_update(&scene->viewport);
-          ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                   SSBOType_Viewport,
-                                   ssbo_slot_id(&scene->viewport.ssbo_slot));
-        }
-        // update scene render texture
-        scene_update_render_pass_texture(scene, width, height, multisample,
-                                         dpi);
-      }
-    }
-
-    {
-      ImGui::Spacing();
-      ImGui::Text("Height");
-      height = scene_renderer_height(&scene->renderer);
-      if (ImGui::InputInt("##height", &height, 1, 10)) {
-        // update renderer
-        scene_renderer_set_height(&scene->renderer, height);
-        // update viewport + uniform
-        {
-          viewport_set_height(&scene->viewport, height);
-          viewport_uniform_update(&scene->viewport);
-          ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                   SSBOType_Viewport,
-                                   ssbo_slot_id(&scene->viewport.ssbo_slot));
-        }
-        // update scene render texture
-        scene_update_render_pass_texture(scene, width, height, multisample,
-                                         dpi);
-      }
-    }
-
-    {
-      ImGui::Spacing();
-      ImGui::Text("Multisample");
-
-      char default_value[12];
-      snprintf(default_value, 12, "x%d", context_multisample());
-      multisample = context_multisample();
-      if (ImGui::BeginCombo("##Multisample", default_value)) {
-        for (int i = 0; i < IM_ARRAYSIZE(multisample_count); ++i) {
-
-          const bool is_selected = (multisample_count[i] == multisample);
-
-          char value[12];
-          snprintf(value, 12, "x%d", multisample_count[i]);
-          if (ImGui::Selectable(value, is_selected)) {
-            RenderPipelineMultisampleCount count = multisample_count[i];
-            context_set_multisample(count);
-
-            // rebuild pipelines
-            standard_render_pipelines_destroy();
-            standard_render_pipelines_init(count);
-
-            // update scene render texture
-            scene_update_render_pass_texture(scene, width, height, count, dpi);
-
-            // update passes relative draw callbacks for each modes
-            for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
-              render_pass_list_update_child_passes_callback(
-                  &scene->renderer.draw.render_pass[i]);
-          }
-
-          // Set the initial focus when opening the combo (for keyboard
-          // navigation)
-          if (is_selected)
-            ImGui::SetItemDefaultFocus();
-        }
-        ImGui::EndCombo();
-      }
-    }
-
-    {
-      ImGui::Spacing();
-      ImGui::Text("Device Pixel Ratio (DPI)");
-      dpi = scene_renderer_dpi(&scene->renderer);
-      if (ImGui::InputDouble("##dpi", &dpi, 0.1, 1)) {
-        // update renderer
-        scene_renderer_set_dpi(&scene->renderer, dpi);
-        // update scene render texture
-        scene_update_render_pass_texture(scene, width, height, multisample,
-                                         dpi);
-      }
-    }
-    ImGui::TreePop();
-  }
-
-  if (ImGui::TreeNodeEx("View", flags)) {
-
-    {
-      ImGui::Text("FOV");
-      fov = viewport_fov(&scene->viewport);
-      if (ImGui::SliderFloat("##FOV", &fov, 10, 179.9)) {
-        viewport_set_fov(&scene->viewport, fov);
-        viewport_uniform_update(&scene->viewport);
-        ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                 SSBOType_Viewport,
-                                 ssbo_slot_id(&scene->viewport.ssbo_slot));
-      }
-    }
-
-    {
-      ImGui::Text("Near clip");
-      near_clip = viewport_near_clip(&scene->viewport);
-      if (ImGui::SliderFloat("##Near Clip", &near_clip, 0.01, 1000)) {
-        viewport_set_near_clip(&scene->viewport, near_clip);
-        viewport_uniform_update(&scene->viewport);
-        ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                 SSBOType_Viewport,
-                                 ssbo_slot_id(&scene->viewport.ssbo_slot));
-      }
-    }
-
-    {
-      ImGui::Text("Far clip");
-      far_clip = viewport_far_clip(&scene->viewport);
-      if (ImGui::SliderFloat("##Far Clip", &far_clip, 0.01, 1000)) {
-        viewport_set_far_clip(&scene->viewport, far_clip);
-        viewport_uniform_update(&scene->viewport);
-        ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                 SSBOType_Viewport,
-                                 ssbo_slot_id(&scene->viewport.ssbo_slot));
-      }
-    }
-    ImGui::TreePop();
-  }
-
-  if (ImGui::TreeNodeEx("Bloom", flags)) {
-    ImGui::TreePop();
-  }
-
-  if (ImGui::TreeNodeEx("Vignette", flags)) {
-    ImGui::TreePop();
-  }
-
-  ImGui::PopStyleVar(1);
-
-  ImGui::EndChild();
-}
-void scene_editor_ui_tab_setting(struct PropsTabs *tab, SceneEditorUI *ui,
-                                 Scene *scene) {
-
-  // Shadow map resolution
-  {
-  }
-
-  // Reflection resolution
-  {
-  }
-}
-void scene_editor_ui_tab_properties(struct PropsTabs *tab, SceneEditorUI *ui,
-                                    Scene *scene) {}
-
-static int prop_current_tab = 0;
-void scene_editor_ui_create_properties(SceneEditorUI *ui, Scene *scene) {
-
-  const float page_width = ui_size[SceneEditorUISize_RightPanel_Width];
-  const float bar_width = ui_size[SceneEditorUISize_RightPanelTab_Width];
-  const float gap = 4.f * ui->dpi;
-  const float btn_size = ui_size[SceneEditorUISize_Button_RenderModeSize];
-  const ImVec2 icon_size{btn_size, btn_size};
-
-  ImGui::BeginChild("Properties", ImVec2(0, 0), true);
-  {
-    ImGui::Separator();
-    ImGui::Text("Properties");
-    ImGui::Spacing();
-    {
-      ImGui::BeginChild("Properties Content", ImVec2(0, 0), true);
-      {
-        // tighten horizontal spacing
-        ImGuiStyle &style = ImGui::GetStyle();
-        float savedSpacingX = style.ItemSpacing.x;
-        style.ItemSpacing.x = gap;
-
-        // always-visible icon strip
-        ImGui::BeginChild("##icon_bar", ImVec2(bar_width, 0), false,
-                          ImGuiWindowFlags_NoScrollbar |
-                              ImGuiWindowFlags_NoScrollWithMouse);
-        {
-          for (int i = 0; i < tab_count; ++i) {
-
-            ImGui::PushID(i);
-            bool sel = (prop_current_tab == i);
-
-            // highlight selected tab
-            if (sel) {
-              ImGui::PushStyleColor(ImGuiCol_Button,
-                                    ImVec4(0.30f, 0.44f, 0.60f, 1.f));
-              ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                    ImVec4(0.32f, 0.49f, 0.68f, 1.f));
-              ImGui::PushStyleColor(ImGuiCol_Border,
-                                    ImVec4(0.80f, 0.80f, 0.90f, 1.f));
-            }
-
-            bool pressed = scene_editor_ui_create_button_icon(
-                ui, prop_tabs[i].icon, prop_tabs[i].tooltip, icon_size);
-
-            if (pressed)
-              prop_current_tab = sel ? -1 : i; // toggle off on re-click
-
-            if (ImGui::IsItemHovered() && strlen(prop_tabs[i].tooltip))
-              ImGui::SetTooltip("%s", prop_tabs[i].tooltip);
-
-            if (sel)
-              ImGui::PopStyleColor(3);
-
-            ImGui::PopID();
-          }
-        }
-        ImGui::EndChild();
-
-        ImGui::SameLine();
-
-        // draw content
-        if (prop_current_tab >= 0) {
-          ImGui::BeginChild("##page", ImVec2(page_width, 0), true,
-                            ImGuiWindowFlags_NoScrollWithMouse);
-
-          // header
-          {
-            ImGui::Text("%s", prop_tabs[prop_current_tab].tooltip);
-          }
-
-          prop_tabs[prop_current_tab].content(&prop_tabs[prop_current_tab], ui,
-                                              scene);
-          ImGui::EndChild();
-        }
-
-        style.ItemSpacing.x = savedSpacingX;
-      }
-      ImGui::EndChild();
-    }
-    ImGui::EndChild();
-  }
-}
-
-void scene_editor_ui_create_scene_tree(SceneEditorUI *ui, Scene *scene) {
-
-  ImGui::BeginChild("Tree", ImVec2(0, ImGui::GetContentRegionAvail().y * 0.3f),
-                    true);
-  ImGui::Text("Scene Inspector");
-
-  {
-    // === Meshes ===
-    for (int i = 0; i < 3; i++) {
-      MeshRefList *meshes = scene_pipeline(scene, tree_meshes[i]);
-      for (int j = 0; j < meshes->length; j++) {
-        Mesh *mesh = meshes->entries[j];
-
-        // ImGuiTreeNodeFlags_SpanAvailWidth
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow |
-                                   ImGuiTreeNodeFlags_AllowItemOverlap |
-                                   ImGuiTreeNodeFlags_FramePadding;
-
-        if (mesh->children.length == 0)
-          flags |= ImGuiTreeNodeFlags_Leaf;
-
-        // Tree item
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                            ImVec2(ui_size[SceneEditorUISize_Tree_PaddingH],
-                                   ui_size[SceneEditorUISize_Tree_PaddingV]));
-        if (ImGui::TreeNodeEx(mesh->name, flags)) {
-
-          if (ImGui::IsItemClicked())
-            scene_selection_toggle_mesh(scene, mesh);
-
-          if (mesh->children.length == 0)
-            ImGui::TreePop();
-        }
-        ImGui::PopStyleVar();
-
-        // Visibility icon
-        {
-          const float line_height = ImGui::GetTextLineHeightWithSpacing();
-          const float icon_size =
-              ui_size[SceneEditorUISize_Button_RenderModeSize];
-
-          ImGui::SameLine(ImGui::GetWindowContentRegionMax().x -
-                          ui->dpi * icon_size);
-
-          ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-
-          char button_id[256];
-          snprintf(button_id, 256, "mesh_visibility_%u", mesh->id);
-          if (scene_editor_ui_create_button_icon(ui, SceneEditorUIIcon_Eye,
-                                                 button_id,
-                                                 ImVec2(icon_size, icon_size)))
-            scene_visibility_toggle_mesh(scene, mesh);
-
-          ImGui::PopStyleColor(1);
-        }
-      }
-    }
-
-    // === Lights ===
-
-    // === Probes ===
-  }
-  ImGui::EndChild();
-}
-
-typedef enum {
-  SceneEditorUIMonitorType_FPS,
-  SceneEditorUIMonitorType_CPU,
-  SceneEditorUIMonitorType_GPU,
-} SceneEditorUIMonitorType;
-
-static float values[3][90] = {};
-static int values_offset[3] = {0};
-void scene_editor_ui_create_monitor(SceneEditorUI *ui, Scene *scene) {
-
-  ImGui::SetNextWindowPos(
-      ImVec2(ui_size[SceneEditorUISize_Gizmo_Margin],
-             ui_size[SceneEditorUISize_TopBar_Height] + 10));
-  ImGui::SetNextWindowSize(ImVec2(ui_size[SceneEditorUISize_Monitor_Width],
-                                  ui_size[SceneEditorUISize_Monitor_Height]));
-
-  ImGui::Begin("Monitor", nullptr,
-               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
-                   ImGuiWindowFlags_NoBackground);
-  // === FPS ===
-  {
-    float fps = ImGui::GetIO().Framerate;
-    float *value = values[SceneEditorUIMonitorType_FPS];
-    int *offset = &values_offset[SceneEditorUIMonitorType_FPS];
-
-    value[*offset] = fps;
-    *offset =
-        (*offset + 1) % IM_ARRAYSIZE(values[SceneEditorUIMonitorType_FPS]);
-
-    char buf[64];
-    snprintf(buf, sizeof(buf), "FPS: %.0f", fps);
-
-    ImGui::PlotLines(buf, value,
-                     IM_ARRAYSIZE(values[SceneEditorUIMonitorType_FPS]),
-                     *offset, nullptr, 0.0f, 120.0f, ImVec2(0, 80));
-  }
-
-  ImGui::End();
-}
-
-static const struct {
-  const GizmoMode mode;
-  const char *label;
-  const SceneEditorUIIcon icon;
-} gizmo_button[] = {
-    {GizmoMode_Position, "Position", SceneEditorUIIcon_Gizmo_Position},
-    {GizmoMode_Rotation, "Rotate", SceneEditorUIIcon_Gizmo_Rotate},
-    {GizmoMode_Scale, "Scale", SceneEditorUIIcon_Gizmo_Scale},
-};
-
-void scene_editor_ui_create_gizmo(SceneEditorUI *ui, Scene *scene) {
-
-  ImGui::SetNextWindowPos(
-      ImVec2(ui_size[SceneEditorUISize_Gizmo_Margin],
-             (int)(ui_size[SceneEditorUISize_Screen_Height] / 2) -
-                 (int)(ui_size[SceneEditorUISize_Gizmo_Height] / 2)));
-
-  ImGui::SetNextWindowSize(ImVec2(ui_size[SceneEditorUISize_Gizmo_Width],
-                                  ui_size[SceneEditorUISize_Gizmo_Height]));
-  ImGui::Begin("Gizmo", nullptr,
-               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
-                   ImGuiWindowFlags_NoScrollbar |
-                   ImGuiWindowFlags_NoBackground);
-
-  for (uint8_t i = 0; i < 3; i++) {
-    if (scene_editor_ui_create_button_icon(
-            ui, gizmo_button[i].icon, gizmo_button[i].label,
-            ImVec2(ui_size[SceneEditorUISize_Button_GizmoSize],
-                   ui_size[SceneEditorUISize_Button_GizmoSize]))) {
-      scene_gizmo_hide(scene);
-      scene->editor.gizmo.transform.mode = gizmo_button[i].mode;
-      if (scene_selection_length(&scene->editor.selection)) {
-        scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
-                                     &scene->editor.selection,
-                                     &scene->renderer.ssbo);
-        scene_gizmo_show(scene);
-      }
-    }
-
-    ImGui::Spacing();
-  }
-
-  ImGui::End();
-}
-
-static const struct {
-  const SceneRendererDrawMode mode;
-  const char *label;
-  const SceneEditorUIIcon icon;
-  const char *tooltip;
-} render_button[] = {
-    {
-        SceneRendererDrawMode_Boundbox,
-        "Boundbox",
-        SceneEditorUIIcon_RenderMode_Boundbox,
-        "Boundbox rendering",
-    },
-    {
-        SceneRendererDrawMode_Wireframe,
-        "Wireframe",
-        SceneEditorUIIcon_RenderMode_Wireframe,
-        "Wireframe rendering",
-    },
-    {
-        SceneRendererDrawMode_Solid,
-        "Solid",
-        SceneEditorUIIcon_RenderMode_Solid,
-        "Solid rendering",
-    },
-    {
-        SceneRendererDrawMode_Texture,
-        "Texture",
-        SceneEditorUIIcon_RenderMode_Texture,
-        "Texture rendering",
-    },
-};
 
 void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
 
-  const int top_bar_width = ui_size[SceneEditorUISize_Screen_Width] -
-                            ui_size[SceneEditorUISize_RightPanel_Width];
+  const int top_bar_width = ui->size[SceneEditorUISize_Screen_Width] -
+                            ui->size[SceneEditorUISize_RightPanel_Width];
   const int button_count = 8;
   const int padding = 1 * ui->dpi;
 
-  ImGui::SetNextWindowPos(ImVec2(ui_size[SceneEditorUISize_TopBar_Margin],
-                                 ui_size[SceneEditorUISize_TopBar_Margin]));
+  ImGui::SetNextWindowPos(ImVec2(ui->size[SceneEditorUISize_TopBar_Margin],
+                                 ui->size[SceneEditorUISize_TopBar_Margin]));
 
   ImGui::PushStyleColor(ImGuiCol_WindowBg,
                         (ImVec4 &)*theme_default_color
                             [THEME_DEFAULT_COLOR_BACKGROUND_BLANKET_MEDIUM]);
   ImGui::SetNextWindowSize(
-      ImVec2(top_bar_width, ui_size[SceneEditorUISize_TopBar_Height]));
+      ImVec2(top_bar_width, ui->size[SceneEditorUISize_TopBar_Height]));
   ImGui::Begin("Top bar", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
@@ -1087,23 +365,9 @@ void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
   ImGui::SetCursorPosX(
       top_bar_width -
       button_count *
-          (ui_size[SceneEditorUISize_Button_RenderModeSize] + padding));
+          (ui->size[SceneEditorUISize_Button_RenderModeSize] + padding));
 
-  for (uint8_t i = 0; i < 4; i++) {
-
-    bool render_mode_button = scene_editor_ui_create_button_icon(
-        ui, render_button[i].icon, render_button[i].label,
-        ImVec2(ui_size[SceneEditorUISize_Button_RenderModeSize],
-               ui_size[SceneEditorUISize_Button_RenderModeSize]));
-
-    if (ImGui::IsItemHovered())
-      ImGui::SetTooltip("%s", render_button[i].tooltip);
-
-    if (render_mode_button)
-      scene_set_draw_mode(scene, render_button[i].mode);
-
-    ImGui::SameLine();
-  }
+  UI::RenderMode(scene, "Render mode").draw();
   ImGui::End();
 
   ImGui::PopStyleColor();
