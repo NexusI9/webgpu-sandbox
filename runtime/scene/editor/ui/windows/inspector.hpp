@@ -81,7 +81,6 @@ public:
   void draw();
 
 private:
-  int active_tab = 0;
   UI::InspectorTab *tabs[INSPECTOR_TYPE_COUNT];
   UI::SceneTab scene_tab;
   UI::SettingTab setting_tab;

@@ -5,6 +5,7 @@
 #include "runtime/scene/editor/ui/components/ButtonIcon.hpp"
 #include <cstdio>
 
+static int g_active_tab = 0;
 static RenderPipelineMultisampleCount multisample_count[2] = {
     PipelineMultisampleCount_1x,
     PipelineMultisampleCount_4x,
@@ -204,7 +205,7 @@ void UI::Inspector::draw() {
           for (int i = 0; i < INSPECTOR_TYPE_COUNT; ++i) {
 
             ImGui::PushID(i);
-            bool sel = (active_tab == i);
+            bool sel = (g_active_tab == i);
 
             // highlight selected tab
             if (sel) {
@@ -221,7 +222,7 @@ void UI::Inspector::draw() {
                     .draw();
 
             if (pressed)
-              active_tab = sel ? -1 : i; // toggle off on re-click
+              g_active_tab = sel ? -1 : i; // toggle off on re-click
 
             if (ImGui::IsItemHovered() && strlen(tabs[i]->tooltip))
               ImGui::SetTooltip("%s", tabs[i]->tooltip);
@@ -237,16 +238,16 @@ void UI::Inspector::draw() {
         ImGui::SameLine();
 
         // draw content
-        if (active_tab >= 0) {
+        if (g_active_tab >= 0) {
           ImGui::BeginChild("##page", ImVec2(page_width, 0), true,
                             ImGuiWindowFlags_NoScrollWithMouse);
 
           // header
           {
-            ImGui::Text("%s", tabs[active_tab]->tooltip);
+            ImGui::Text("%s", tabs[g_active_tab]->tooltip);
           }
 
-          tabs[active_tab]->draw();
+          tabs[g_active_tab]->draw();
 
           ImGui::EndChild();
         }
