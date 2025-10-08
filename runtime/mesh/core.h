@@ -25,6 +25,7 @@
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
 #define MESH_INDEX_FORMAT WGPUIndexFormat_Uint32
+#define MESH_NAME_LEN 1024
 
 typedef struct Mesh Mesh;
 
@@ -75,13 +76,13 @@ typedef struct {
   uint32_t _pad[42];
 } __attribute__((aligned(16))) MeshUniform;
 
-typedef void (*mesh_get_transform_attribute)(Mesh *, vec3 *);
+typedef void (*mesh_get_transform_attribute)(Mesh *, vec3);
 
 // Core
 struct Mesh {
 
   reg_id_t id;
-  char *name;
+  char name[MESH_NAME_LEN];
 
   // transforms
   mat4 model;
@@ -111,6 +112,10 @@ struct Mesh {
   MeshRefList children;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // constructor
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
@@ -124,21 +129,73 @@ void mesh_set_parent(Mesh *, Mesh *);
 DynamicListStatus mesh_child_add(Mesh *, Mesh *);
 DynamicListStatus mesh_child_remove(Mesh *, Mesh *);
 Mesh *mesh_child_new(Mesh *);
-Mesh *mesh_child_get_by_id(Mesh *, size_t);
 
 // topology
 typedef MeshTopology (*mesh_get_topology_callback)(Mesh *);
 typedef int (*mesh_topology_create_callback)(MeshTopology *, MeshTopology *);
 
-MeshTopology mesh_topology_base(Mesh *);
-MeshTopology mesh_topology_wireframe(Mesh *);
-MeshTopology mesh_topology_boundbox(Mesh *);
-MeshTopology mesh_topology_override(Mesh *); // for fixed mesh only
-void mesh_topology_set_override(Mesh *, const MeshTopology topology);
+// accessor
 
-// getter
-void mesh_get_position(Mesh *, vec3 *);
-void mesh_get_scale(Mesh *, vec3 *);
-void mesh_get_rotation_euler(Mesh *, vec3 *);
+/**
+   Retireve the mesh children address at the given index from the mesh children
+   list
+ */
+static inline Mesh *mesh_child_get_by_id(Mesh *mesh, size_t index) {
+  return mesh->children.entries[index];
+}
+
+/**
+   Return Mesh Base Vertex
+ */
+static inline MeshTopology mesh_topology_base(Mesh *mesh) {
+  return mesh_topology_base_vertex(&mesh->topology.base);
+}
+
+/**
+   Return Mesh Wireframe Vertex
+ */
+static inline MeshTopology mesh_topology_wireframe(Mesh *mesh) {
+  return mesh_topology_wireframe_vertex(&mesh->topology.wireframe);
+}
+
+/**
+   Return Mesh Boundbox Vertex
+ */
+static inline MeshTopology mesh_topology_boundbox(Mesh *mesh) {
+  return mesh_topology_boundbox_vertex(&mesh->topology.boundbox);
+}
+
+/**
+   Override topology is primarily used for fixed mesh during the scene build and
+   draw phase and will be the targeted topology for whatever render mode
+   (solid/wireframe/texture)
+ */
+static inline MeshTopology mesh_topology_override(Mesh *mesh) {
+  return mesh->topology.override;
+}
+
+/**
+   Define the override topology.
+ */
+static inline void mesh_topology_set_override(Mesh *mesh,
+                                              const MeshTopology topology) {
+  mesh->topology.override = topology;
+}
+
+static inline void mesh_get_position(Mesh *mesh, vec3 dest) {
+  glm_vec3_copy(mesh->position, dest);
+}
+
+static inline void mesh_get_scale(Mesh *mesh, vec3 dest) {
+  glm_vec3_copy(mesh->scale, dest);
+}
+
+static inline void mesh_get_rotation_euler(Mesh *mesh, vec3 dest) {
+  glm_vec3_copy(mesh->rotation_euler, dest);
+}
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

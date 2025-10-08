@@ -33,7 +33,6 @@
 #define SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT 128
 #define SCENE_MESH_MAX_MESH_CAPACITY 64
 #define SCENE_CAMERA_LIST_CAPACITY 16
-#define SCENE_PIPELINE_REFLECTION_COUNT 3
 
 typedef uint8_t shader_bind_t;
 
@@ -71,6 +70,7 @@ typedef void (*sem_transform_highlight_callback)(SEMHighlightCallback *);
 
 // Link each SEM a dedicated callback
 struct SceneEditorMesh {
+  reg_id_t id;
   Mesh *mesh;
   // camera, light 'abstract' objects the meshes drives through transformation
   void *target;
@@ -85,6 +85,7 @@ struct SceneEditorMesh {
 };
 
 struct SceneEditorMeshList {
+  reg_id_t id;
   SceneEditorMesh *entries;
   size_t capacity;
   size_t length;
@@ -115,12 +116,36 @@ typedef struct {
 
 #define SCENE_SELECTION_LIST_CAPACITY 6
 #define SCENE_SELECTION_TYPE_COUNT 3
+#define SCENE_SELECTION_OBJECT_MAX_TARGET 6
 
-typedef void *scene_selection_target_t;
+typedef reg_id_t selection_targets[SCENE_SELECTION_OBJECT_MAX_TARGET];
+
+/**
+   ==== SSOTargetID ====
+   Some standards Index used in the Scene Selection Object (SSO) targets lists
+   for the SEM Filters.
+    - The index 0 (Default) is the id of the light/ camera/ probe the sem is
+   related to
+    - The index 1 (SEM) is the actual SEM id of the the Selected mesh
+
+   Initially we only had 1 id per SSO, however we required a more clear,
+   uniformized and direct way to access the targeted selection id (whether it's
+   a mesh, a light, probe or camera)
+
+   As a result we can add a bunch of ids to a selected object so when we access
+   this SSO we can freely select its related ids.
+   Also since we use registry IDs targets (prev void*), we also have the
+   benefit to fetch the entity 'type' based on its id from the registry.
+   
+ */
+typedef enum {
+  SSOTargetID_Default,
+  SSOTargetID_SEM,
+} SSOTargetID;
 
 typedef struct {
   Mesh *mesh;
-  scene_selection_target_t target;
+  reg_id_t *targets;
   vec3 initial_attribute;
 } SceneSelectionObject;
 
@@ -131,7 +156,7 @@ typedef struct {
 } SceneSelectionObjectList;
 
 typedef struct {
-  scene_selection_target_t *entries;
+  selection_targets *entries;
   size_t length;
   size_t capacity;
 } SceneSelectionTargetList;
@@ -321,7 +346,7 @@ struct Scene {
     (such as built, hidden...). Having such array allows to:
       - Prevent having booleans polluting the Mesh struct
       - Data-Oriented friendly approach so each Meshes with the same states can
-        be easily access and given instruction.
+        be easily access and given per array instructions.
       - Faster access to meshes sharing the same states.
    */
   MeshRefList mesh_state[SCENE_MESH_STATE_COUNT];
@@ -358,6 +383,7 @@ static inline MeshRefList *scene_pipeline(Scene *scene,
   return &scene->pipelines[__builtin_ctz(pipeline)];
 }
 
+#define SCENE_PIPELINE_REFLECTION_COUNT 3
 static inline void scene_reflection_pipeline_meshes(
     Scene *scene, MeshRefList *pipelines[SCENE_PIPELINE_REFLECTION_COUNT]) {
 
@@ -369,6 +395,19 @@ static inline void scene_reflection_pipeline_meshes(
 
   for (uint8_t i = 0; i < SCENE_PIPELINE_REFLECTION_COUNT; i++)
     pipelines[i] = scene_pipeline(scene, target_pipelines[i]);
+}
+
+#define SCENE_DYNAMIC_PIPELINE_COUNT 3
+static inline void
+scene_dynamic_pipelines(Scene *scene,
+                        MeshRefList *list[SCENE_DYNAMIC_PIPELINE_COUNT],
+                        size_t *count) {
+
+  if (count)
+    *count = SCENE_DYNAMIC_PIPELINE_COUNT;
+
+  for (size_t i = 0; i < SCENE_DYNAMIC_PIPELINE_COUNT; i++)
+    list[i] = scene_pipeline(scene, (ScenePipeline)(1 << i));
 }
 
 static inline MeshRefList *scene_mesh_state(Scene *scene,

@@ -326,8 +326,8 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_data *data,
            (same issue with shader)
         */
 
-        char *mesh_name;
-        asprintf(&mesh_name, "%s %lu", gl_mesh.name, p);
+        char mesh_name[MESH_NAME_LEN];
+        snprintf(mesh_name, MESH_NAME_LEN, "%s %lu", gl_mesh.name, p);
         mesh_create(target_mesh, &(MeshCreateDescriptor){
                                      .name = mesh_name,
                                      .vertex = (VertexAttribute){0},

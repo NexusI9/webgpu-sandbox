@@ -6,6 +6,7 @@
 #include <stddef.h>
 
 #include "backend/logger.h"
+#include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/light/shadow_map/draw.h"
@@ -171,8 +172,10 @@ void scene_selection_sem_transform(SceneSelectionTransform *desc) {
 
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
     Mesh *mesh = desc->selection->entries[i].mesh;
-    SceneEditorMesh *sem_mesh =
-        (SceneEditorMesh *)desc->selection->entries[i].target;
+    
+    const RegEntry *reg_entry =
+        reg_lookup(desc->selection->entries[i].targets[SSOTargetID_SEM]);
+    SceneEditorMesh *sem_mesh = (SceneEditorMesh *)reg_entry->ptr;
 
     scene_selection_sem_transform_core(
         sem_mesh, init_attribute,

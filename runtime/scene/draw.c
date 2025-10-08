@@ -14,23 +14,15 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-static const ScenePipeline scene_dynamic_pipelines[4] = {
-    ScenePipeline_Dynamic_Lit,
-    ScenePipeline_Dynamic_LitShadow,
-    ScenePipeline_Dynamic_Lit,
-    ScenePipeline_Dynamic_Unlit,
-};
-
 void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
 
   if (mode == scene->renderer.draw.mode)
     return;
 
   // build dynamic meshes
-  for (uint8_t i = 0; i < 4; i++)
-    scene_build_mesh_ref_list(scene,
-                              scene_pipeline(scene, scene_dynamic_pipelines[i]),
-                              scene_dynamic_pipelines[i], mode);
+  for (uint8_t i = 0; i < 3; i++)
+    scene_build_mesh_ref_list(scene, scene_pipeline(scene, 1 << i), 1 << i,
+                              mode);
 
   // update light / reflections
   if (mode == SceneRendererDrawMode_Texture) {

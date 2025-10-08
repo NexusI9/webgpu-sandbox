@@ -10,6 +10,7 @@
 
 #include "backend/compute/kawase.h"
 #include "backend/compute/mipmap.h"
+#include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "core.h"
 #include "runtime/camera/core.h"
@@ -98,6 +99,8 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *list) {
 void probe_reflection_plane_create(ProbeReflectionPlane *probe,
                                    ProbeReflectionPlaneDescriptor *desc) {
 
+  probe->id = reg_register(probe, RegEntryType_ProbeReflectionPlane);
+  
   // Define init attribute
   glm_vec3_copy(desc->position, probe->position);
   glm_vec3_copy(desc->scale, probe->scale);

@@ -2,6 +2,8 @@
 #include "backend/logger.h"
 #include <stdio.h>
 
+RegEntry g_reg[REG_MAX_OBJECTS] = {0};
+
 static reg_id_t g_reg_id = 1;
 
 static inline reg_id_t gen_id();
@@ -24,14 +26,4 @@ reg_id_t reg_register(void *ptr, RegEntryType type) {
   g_reg[id].id = id;
 
   return id;
-}
-
-void reg_lookup(reg_id_t id, RegEntry *entry) {
-  if (id >= REG_MAX_OBJECTS) {
-    logger_add(LoggerFlag_Error, "id out of registry bounds.");
-    entry = NULL;
-    return;
-  }
-
-  memcpy(entry, &g_reg[id], sizeof(RegEntry));
 }

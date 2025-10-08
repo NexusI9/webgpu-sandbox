@@ -81,9 +81,7 @@ void mesh_create_primitive(Mesh *mesh,
 void mesh_set_parent(Mesh *child, Mesh *parent) { child->parent = parent; }
 
 void mesh_set_name(Mesh *mesh, const char *name) {
-  if (mesh->name)
-    free(mesh->name);
-  mesh->name = strdup(name);
+  snprintf(mesh->name, MESH_NAME_LEN, "%s", name);
 }
 
 /**
@@ -161,61 +159,4 @@ DynamicListStatus mesh_child_add(Mesh *parent, Mesh *child) {
   }
 
   return insert;
-}
-
-/**
-   Retireve the mesh children address at the given index from the mesh children
-   list
- */
-Mesh *mesh_child_get(Mesh *mesh, size_t index) {
-  return mesh->children.entries[index];
-}
-
-/**
-   Return Mesh Base Vertex
- */
-MeshTopology mesh_topology_base(Mesh *mesh) {
-  return mesh_topology_base_vertex(&mesh->topology.base);
-}
-
-/**
-   Return Mesh Wireframe Vertex
- */
-MeshTopology mesh_topology_wireframe(Mesh *mesh) {
-  return mesh_topology_wireframe_vertex(&mesh->topology.wireframe);
-}
-
-/**
-   Return Mesh Boundbox Vertex
- */
-MeshTopology mesh_topology_boundbox(Mesh *mesh) {
-  return mesh_topology_boundbox_vertex(&mesh->topology.boundbox);
-}
-
-/**
-   Override topology is primarily used for fixed mesh during the scene build and
-   draw phase and will be the targeted topology for whatever render mode
-   (solid/wireframe/texture)
- */
-MeshTopology mesh_topology_override(Mesh *mesh) {
-  return mesh->topology.override;
-}
-
-/**
-   Define the override topology.
- */
-void mesh_topology_set_override(Mesh *mesh, const MeshTopology topology) {
-  mesh->topology.override = topology;
-}
-
-void mesh_get_position(Mesh *mesh, vec3 *dest) {
-  glm_vec3_copy(mesh->position, *dest);
-}
-
-void mesh_get_scale(Mesh *mesh, vec3 *dest) {
-  glm_vec3_copy(mesh->scale, *dest);
-}
-
-void mesh_get_rotation_euler(Mesh *mesh, vec3 *dest) {
-  glm_vec3_copy(mesh->rotation_euler, *dest);
 }

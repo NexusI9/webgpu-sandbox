@@ -7,6 +7,7 @@
 #include <webgpu/webgpu.h>
 
 #include "./core.h"
+#include "backend/registry.h"
 #include "probe.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/scene/renderer/render_pass/core.h"
@@ -25,6 +26,7 @@
 #define PROBE_REFLECTION_GRID_LIST_CAPACITY 8
 
 typedef struct {
+  reg_id_t id;
   ProbeReflectionList probes;
   WGPUTexture texture;
   WGPUTextureView view;

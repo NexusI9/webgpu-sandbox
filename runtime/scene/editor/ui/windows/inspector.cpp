@@ -1,11 +1,17 @@
 #include "inspector.hpp"
+#include "backend/registry.h"
 #include "backend/std_pipeline/core.h"
 #include "imgui/imgui.h"
+#include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
+#include "runtime/scene/editor/selection/core.h"
 #include "runtime/scene/editor/ui/components/ButtonIcon.hpp"
+#include "runtime/scene/editor/ui/windows/inspector.mesh.hpp"
 #include <cstdio>
 
 static int g_active_tab = 0;
+static RegEntry const *g_active_object = NULL;
+
 static RenderPipelineMultisampleCount multisample_count[2] = {
     PipelineMultisampleCount_1x,
     PipelineMultisampleCount_4x,
@@ -27,7 +33,7 @@ void UI::SceneTab::draw() {
     {
       ImGui::Text("Width");
       width = scene_renderer_width(&scene->renderer);
-      if (ImGui::InputInt("##width", &width, 1, 10)) {
+      if (ImGui::InputInt("##width", &width, 0, 0)) {
         // update renderer
         scene_renderer_set_width(&scene->renderer, width);
         // update viewport + uniform
@@ -48,7 +54,7 @@ void UI::SceneTab::draw() {
       ImGui::Spacing();
       ImGui::Text("Height");
       height = scene_renderer_height(&scene->renderer);
-      if (ImGui::InputInt("##height", &height, 1, 10)) {
+      if (ImGui::InputInt("##height", &height, 0, 0)) {
         // update renderer
         scene_renderer_set_height(&scene->renderer, height);
         // update viewport + uniform
@@ -109,7 +115,7 @@ void UI::SceneTab::draw() {
       ImGui::Spacing();
       ImGui::Text("Device Pixel Ratio (DPI)");
       dpi = scene_renderer_dpi(&scene->renderer);
-      if (ImGui::InputDouble("##dpi", &dpi, 0.1, 1)) {
+      if (ImGui::InputDouble("##dpi", &dpi)) {
         // update renderer
         scene_renderer_set_dpi(&scene->renderer, dpi);
         // update scene render texture
@@ -174,7 +180,54 @@ void UI::SceneTab::draw() {
 }
 
 void UI::SettingTab::draw() {}
-void UI::ObjectTab::draw() {}
+
+void UI::ObjectTab::draw() {
+
+  ImGui::BeginChild("##ObjectTab", ImVec2(0, 0), true);
+  {
+
+    reg_id_t target_id = set_active_target();
+    g_active_object = reg_lookup(target_id); // O(1) so cheap in hot loop
+
+    switch (g_active_object->type) {
+
+    case RegEntryType_Mesh:
+      InspectorMesh(scene, "Mesh properties", (Mesh *)g_active_object->ptr)
+          .draw();
+      break;
+
+    default:
+      break;
+    }
+  }
+  ImGui::EndChild();
+}
+
+bool UI::ObjectTab::is_valid_type(const RegEntryType type) {
+
+  for (uint8_t i = 0; i < valid_type_len; i++)
+    if (valid_type[i] == type)
+      return true;
+
+  return false;
+}
+
+reg_id_t UI::ObjectTab::set_active_target() {
+
+  if (scene_selection_length(&scene->editor.selection)) {
+    // get selection 1st entry
+    for (int i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
+      SceneSelectionObjectList *selection_list =
+          &scene->editor.selection.filters[i].selection;
+      if (selection_list->length) {
+        return selection_list->entries[0].targets[SSOTargetID_Default];
+      }
+    }
+  }
+
+  // else use 1st Object in tree
+  return scene->meshes.entries[0].id;
+}
 
 void UI::Inspector::draw() {
 
@@ -202,7 +255,7 @@ void UI::Inspector::draw() {
                           ImGuiWindowFlags_NoScrollbar |
                               ImGuiWindowFlags_NoScrollWithMouse);
         {
-          for (int i = 0; i < INSPECTOR_TYPE_COUNT; ++i) {
+          for (int i = 0; i < tab_count; ++i) {
 
             ImGui::PushID(i);
             bool sel = (g_active_tab == i);

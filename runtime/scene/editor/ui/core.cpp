@@ -32,7 +32,6 @@
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
 #include "stdio.h"
-#include "utils.hpp"
 #include <cstring>
 #include <stdint.h>
 

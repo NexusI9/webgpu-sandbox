@@ -1,6 +1,7 @@
 #ifndef _SCENE_EDITOR_SELECTION_CORE_H_
 #define _SCENE_EDITOR_SELECTION_CORE_H_
 
+#include "backend/registry.h"
 #include "runtime/scene/core.h"
 
 #include <cglm/types.h>
@@ -25,9 +26,10 @@ void scene_selection_average_position(SceneSelection *, vec3 *);
 size_t scene_selection_length(SceneSelection *);
 
 void scene_selection_subscribe_mesh_ref_list(SceneSelection *, MeshRefList *,
-                                             void *, const SceneSelectionType);
+                                             selection_targets,
+                                             const SceneSelectionType);
 
-void scene_selection_subscribe_mesh(SceneSelection *, Mesh *, void *,
+void scene_selection_subscribe_mesh(SceneSelection *, Mesh *, selection_targets,
                                     const SceneSelectionType);
 
 void scene_selection_toggle_mesh(Scene *, Mesh *);

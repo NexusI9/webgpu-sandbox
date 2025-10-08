@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "backend/logger.h"
+#include "backend/registry.h"
 #include "backend/std_texture/core.h"
 #include "core.h"
 #include "probe.h"
@@ -25,6 +26,8 @@ float probe_reflection_point(size_t x, uint16_t count, float size) {
 void probe_reflection_grid_create(ProbeReflectionGrid *grid,
                                   ProbeReflectionGridDescriptor *desc) {
 
+  grid->id = reg_register(grid, RegEntryType_ProbeReflectionGrid);
+  
   glm_vec3_copy(desc->scale, grid->scale);
   glm_vec3_copy(desc->position, grid->position);
 

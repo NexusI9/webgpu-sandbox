@@ -5,6 +5,7 @@
 
 #include "./editor/editor.h"
 #include "backend/logger.h"
+#include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/ubo.h"
@@ -40,7 +41,8 @@
 #include "runtime/scene/renderer/render_pass/visibility.h"
 #include "utils/projection.h"
 
-static inline void scene_add_sem(Scene *, SceneEditorMeshList *);
+static inline void scene_add_sem(Scene *, SceneEditorMeshList *,
+                                 const reg_id_t);
 static inline void
 scene_render_pass_draw_list_enable_mesh(Scene *, const MeshRefList *, Mesh *);
 
@@ -119,7 +121,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem_list);
+  scene_add_sem(scene, sem_list, new_light->id);
 
   base_list->length++;
 
@@ -192,7 +194,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem);
+  scene_add_sem(scene, sem, new_light->id);
 
   base_list->length++;
 
@@ -241,7 +243,7 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
                            });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem);
+  scene_add_sem(scene, sem, new_light->id);
 
   ubo_update_entry(&scene->renderer.ubo, UBOField_AmbientLightCount,
                    (void *)&list->length);
@@ -314,7 +316,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem);
+  scene_add_sem(scene, sem, new_light->id);
 
   base_list->length++;
 
@@ -369,7 +371,7 @@ SceneEditorMeshList *scene_add_camera(Scene *scene,
                     });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem);
+  scene_add_sem(scene, sem, new_cam->id);
 
   return sem;
 }
@@ -389,7 +391,8 @@ SceneEditorMeshList *scene_add_camera(Scene *scene,
 
    We use the below function to do such operation.
  */
-void scene_add_sem(Scene *scene, SceneEditorMeshList *list) {
+void scene_add_sem(Scene *scene, SceneEditorMeshList *list,
+                   const reg_id_t target) {
 
   MeshRefList *pipeline_mesh_list = scene_pipeline(scene, ScenePipeline_Fixed);
 
@@ -413,7 +416,11 @@ void scene_add_sem(Scene *scene, SceneEditorMeshList *list) {
     {
       // add to scene selection (SEM pipeline) with target
       scene_selection_subscribe_mesh(&scene->editor.selection, mesh,
-                                     (void *)sem, SceneSelectionType_SEM);
+                                     (selection_targets){
+                                         [SSOTargetID_Default] = target,
+                                         [SSOTargetID_SEM] = sem->id,
+                                     },
+                                     SceneSelectionType_SEM);
     }
   }
 }
@@ -468,7 +475,7 @@ scene_add_probe_reflection_grid(Scene *scene,
   ubo_upload(&scene->renderer.ubo);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem_grid);
+  scene_add_sem(scene, sem_grid, new_grid->id);
 
   return sem_grid;
 }
@@ -530,7 +537,7 @@ scene_add_probe_reflection_plane(Scene *scene,
   ubo_upload(&scene->renderer.ubo);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem);
+  scene_add_sem(scene, sem, probe->id);
 
   return sem;
 }
@@ -585,7 +592,8 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
 
   // EDITORONLY (add mesh to selection)
   if ((flag & SceneAddFlag_Unselectable) == 0)
-    scene_selection_subscribe_mesh(&scene->editor.selection, mesh, NULL,
+    scene_selection_subscribe_mesh(&scene->editor.selection, mesh,
+                                   (selection_targets){mesh->id},
                                    selection_pipeline);
 }
 

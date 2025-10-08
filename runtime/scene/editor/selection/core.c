@@ -11,6 +11,7 @@
 #include "./callback/mouse.h"
 #include "./config.h"
 #include "./filter.h"
+#include "backend/registry.h"
 #include "emscripten/em_types.h"
 #include "runtime/input/core.h"
 #include "runtime/mesh/core.h"
@@ -38,7 +39,6 @@ void scene_selection_init(Scene *scene) {
   // init selection keyboard events
   scene_selection_init_key_events(scene);
 }
-
 
 /**
    Define selection rules for each selection lists (mesh or shader-based
@@ -175,7 +175,7 @@ void scene_selection_cache_initial_attributes(SceneSelection *selection,
     for (size_t j = 0; j < filter->selection.length; j++) {
       SceneSelectionObject *object = &filter->selection.entries[j];
       vec3 attribute;
-      mesh_transform_attribute[mode](object->mesh, &attribute);
+      mesh_transform_attribute[mode](object->mesh, attribute);
       glm_vec3_copy(attribute, object->initial_attribute);
     }
   }
@@ -200,26 +200,24 @@ void scene_selection_clear_initial_attributes(SceneSelection *selection) {
    - Scene Editor Objects (SEM)
  */
 void scene_selection_subscribe_mesh(SceneSelection *selection, Mesh *mesh,
-                                    scene_selection_target_t extra,
+                                    selection_targets targets,
                                     const SceneSelectionType type) {
 
   // insert mesh to selection meshes
   mesh_ref_list_insert(&selection->filters[type].meshes, mesh);
 
-  // push extra
+  // push target id
   SceneSelectionTargetList *target_list = &selection->filters[type].targets;
-
-  scene_selection_target_t target =
-      extra != NULL ? extra : &(scene_selection_target_t){0};
-
-  scene_selection_target_list_insert(target_list, target);
+  scene_selection_target_list_insert(target_list, targets);
 }
 
 void scene_selection_subscribe_mesh_ref_list(SceneSelection *selection,
-                                             MeshRefList *list, void *extra,
+                                             MeshRefList *list,
+                                             selection_targets targets,
                                              const SceneSelectionType type) {
   for (size_t i = 0; i < list->length; i++)
-    scene_selection_subscribe_mesh(selection, list->entries[i], extra, type);
+    scene_selection_subscribe_mesh(selection, list->entries[i], targets,
+                                   type);
 }
 
 /**
@@ -237,7 +235,6 @@ void scene_selection_toggle_mesh(Scene *scene, Mesh *mesh) {
   SceneSelectionFilter *filter = scene_selection_filter_find_mesh(
       &scene->editor.selection, mesh, &selected);
 
-
   if (filter == NULL)
     return;
 
@@ -247,10 +244,10 @@ void scene_selection_toggle_mesh(Scene *scene, Mesh *mesh) {
       scene_selection_empty(&scene->editor.selection);
 
     scene_selection_filter_selection_add_mesh(filter, mesh, NULL);
-  } else {
+  } else { 
     scene_selection_filter_selection_remove_mesh(filter, mesh);
   }
-
+ 
   // update highlight
   if (filter->highlight_callback)
     filter->highlight_callback(&filter->meshes, &filter->selection, scene);

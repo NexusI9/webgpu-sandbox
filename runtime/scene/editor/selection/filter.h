@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "backend/logger.h"
+#include "backend/registry.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "utils/dyli.h"
@@ -101,12 +102,11 @@ SceneSelectionFilterStatus scene_selection_filter_selection_add_mesh(
   }
 
   SceneSelectionObjectList *selection = &filter->selection;
-  scene_selection_target_t *target = &filter->targets.entries[index];
 
   SceneSelectionObject object = {
       .initial_attribute = 0,
       .mesh = mesh,
-      .target = *target,
+      .targets = filter->targets.entries[index],
   };
 
   DynamicListStatus insert =

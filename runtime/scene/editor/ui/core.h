@@ -88,6 +88,7 @@ typedef struct {
   double dpi;
 } SceneEditorUIDescriptor;
 
+
 // prevent c++ mangling
 #ifdef __cplusplus
 extern "C" {

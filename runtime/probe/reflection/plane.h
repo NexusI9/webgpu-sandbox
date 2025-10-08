@@ -5,19 +5,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "runtime/scene/renderer/render_pass/render_pass.h"
 #include "./core.h"
-#include "cglm/cglm.h"
+#include "backend/registry.h"
 #include "backend/ssbo.h"
+#include "cglm/cglm.h"
 #include "runtime/camera/core.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/scene/renderer/render_pass/render_pass.h"
 #include "utils/dyli.h"
 
 #define PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT 32
 
 typedef struct {
+  reg_id_t id;
   vec3 position;
   vec3 normal;
   float signed_distance;
@@ -88,14 +90,11 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *);
 void probe_reflection_plane_create(ProbeReflectionPlane *,
                                    ProbeReflectionPlaneDescriptor *);
 
-void probe_reflection_plane_disable_mesh(ProbeReflectionPlane *,
-                                              Mesh *);
-void probe_reflection_plane_enable_mesh(ProbeReflectionPlane *,
-                                             Mesh *);
+void probe_reflection_plane_disable_mesh(ProbeReflectionPlane *, Mesh *);
+void probe_reflection_plane_enable_mesh(ProbeReflectionPlane *, Mesh *);
 
 void probe_reflection_plane_update_uniform(ProbeReflectionPlane *);
 void probe_reflection_plane_update_camera(ProbeReflectionPlane *);
 void probe_reflection_plane_update_boundbox(ProbeReflectionPlane *);
-
 
 #endif

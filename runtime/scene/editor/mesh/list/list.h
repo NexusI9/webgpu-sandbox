@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "backend/registry.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/scene.h"
 #include "utils/dyli.h"
@@ -60,9 +61,14 @@ SceneEditorMesh *sem_list_insert(SceneEditorMeshList *list,
 
 SceneEditorMesh *sem_list_new_entry(SceneEditorMeshList *list) {
 
-  return (SceneEditorMesh *)dyli_new_entry(
+  SceneEditorMesh *entry = (SceneEditorMesh *)dyli_new_entry(
       (void **)&list->entries, &list->capacity, &list->length,
       sizeof(SceneEditorMesh), "Scene Editor Mesh list");
+
+  if (entry)
+    entry->id = reg_register(entry, RegEntryType_SceneEditorMesh);
+
+  return entry;
 }
 
 DynamicListStatus sem_list_remove(SceneEditorMeshList *list,
@@ -99,9 +105,13 @@ DynamicListStatus sem_list_array_create(SceneEditorMeshListArray *array,
 
 SceneEditorMeshList *sem_list_array_new_entry(SceneEditorMeshListArray *array) {
 
-  return (SceneEditorMeshList *)dyli_new_entry(
+  SceneEditorMeshList *list = (SceneEditorMeshList *)dyli_new_entry(
       (void **)&array->entries, &array->capacity, &array->length,
       sizeof(SceneEditorMeshList), "Scene Editor Mesh List Array");
+
+  list->id = reg_register(list, RegEntryType_SceneEditorMeshList);
+
+  return list;
 }
 
 DynamicListStatus sem_list_array_remove(SceneEditorMeshListArray *array,

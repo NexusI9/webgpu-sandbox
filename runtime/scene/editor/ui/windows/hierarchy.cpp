@@ -1,15 +1,10 @@
 #include "hierarchy.hpp"
 #include "imgui/imgui.h"
+#include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor/selection/core.h"
 #include "runtime/scene/editor/ui/components/ButtonIcon.hpp"
 #include "runtime/scene/show.h"
-
-static const ScenePipeline tree_meshes[3] = {
-    ScenePipeline_Dynamic_Lit,
-    ScenePipeline_Dynamic_LitShadow,
-    ScenePipeline_Dynamic_Unlit,
-};
 
 void UI::Hierarchy::draw() {
 
@@ -19,8 +14,12 @@ void UI::Hierarchy::draw() {
 
   {
     // === Meshes ===
-    for (int i = 0; i < 3; i++) {
-      MeshRefList *meshes = scene_pipeline(scene, tree_meshes[i]);
+    MeshRefList *dynamic_meshes[SCENE_DYNAMIC_PIPELINE_COUNT];
+    size_t count;
+    scene_dynamic_pipelines(scene, dynamic_meshes, &count);
+
+    for (int i = 0; i < count; i++) {
+      MeshRefList *meshes = dynamic_meshes[i];
       for (int j = 0; j < meshes->length; j++) {
         Mesh *mesh = meshes->entries[j];
 

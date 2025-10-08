@@ -2,20 +2,13 @@
 #define _SCENE_EDTIOR_UI_WINDOW_INSPECTOR_H_
 
 #include "backend/context.h"
+#include "backend/registry.h"
 #include "core.hpp"
 #include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/viewport/core.h"
 
 namespace UI {
-
-constexpr uint8_t INSPECTOR_TYPE_COUNT = 3;
-
-typedef enum {
-  InspectorType_Scene,
-  InspectorType_Setting,
-  InspectorType_Object,
-} InspectorType;
 
 class InspectorTab : public Window {
 
@@ -62,6 +55,22 @@ public:
   void draw() override;
 
 private:
+  static constexpr uint8_t valid_type_len = 8;
+  static constexpr RegEntryType valid_type[valid_type_len] = {
+      RegEntryType_Mesh,
+      RegEntryType_PointLight,
+      RegEntryType_AmbientLight,
+      RegEntryType_SunLight,
+      RegEntryType_SpotLight,
+      RegEntryType_Camera,
+      RegEntryType_ProbeReflectionPlane,
+      RegEntryType_ProbeReflectionGrid,
+  };
+
+  inline bool is_valid_type(const RegEntryType);
+  inline reg_id_t set_active_target();
+
+private:
 };
 
 class Inspector : public Window {
@@ -81,7 +90,8 @@ public:
   void draw();
 
 private:
-  UI::InspectorTab *tabs[INSPECTOR_TYPE_COUNT];
+  static constexpr uint8_t tab_count = 3;
+  UI::InspectorTab *tabs[tab_count];
   UI::SceneTab scene_tab;
   UI::SettingTab setting_tab;
   UI::ObjectTab object_tab;
