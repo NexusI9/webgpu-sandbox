@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 #include "runtime/scene/editor/selection/core.h"
 #include "runtime/scene/editor/selection/utils.h"
-#include "runtime/scene/editor/ui/components/ButtonIcon.hpp"
+#include "runtime/scene/editor/ui/components/button_icon.hpp"
 
 static const struct {
   const GizmoMode mode;

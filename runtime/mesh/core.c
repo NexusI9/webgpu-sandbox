@@ -16,6 +16,7 @@
 #include "topology/boundbox.h"
 #include "uniform.h"
 #include "utils/dyli.h"
+#include "utils/name.h"
 
 // Shadow map is implicitely handled withing mesh
 static inline Mesh *mesh_children_list_check_init(Mesh *);
@@ -80,8 +81,8 @@ void mesh_create_primitive(Mesh *mesh,
 
 void mesh_set_parent(Mesh *child, Mesh *parent) { child->parent = parent; }
 
-void mesh_set_name(Mesh *mesh, const char *name) {
-  snprintf(mesh->name, MESH_NAME_LEN, "%s", name);
+void mesh_set_name(Mesh *mesh, const name_t name) {
+  name_copy(name, mesh->name);
 }
 
 /**

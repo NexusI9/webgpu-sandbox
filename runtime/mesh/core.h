@@ -19,13 +19,13 @@
 #include "topology/core.h"
 #include "topology/topology.h"
 #include "topology/wireframe.h"
+#include "utils/name.h"
 #include "utils/dyli.h"
 #include "webgpu/webgpu.h"
 
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
 #define MESH_INDEX_FORMAT WGPUIndexFormat_Uint32
-#define MESH_NAME_LEN 1024
 
 typedef struct Mesh Mesh;
 
@@ -82,7 +82,7 @@ typedef void (*mesh_get_transform_attribute)(Mesh *, vec3);
 struct Mesh {
 
   reg_id_t id;
-  char name[MESH_NAME_LEN];
+  name_t name;
 
   // transforms
   mat4 model;
@@ -119,7 +119,7 @@ extern "C" {
 // constructor
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
-void mesh_set_name(Mesh *, const char *);
+void mesh_set_name(Mesh *, const name_t);
 
 // shader
 void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder);

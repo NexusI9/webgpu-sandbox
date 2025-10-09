@@ -21,7 +21,7 @@
 #include "runtime/scene/editor/ui/windows/display.hpp"
 #include "runtime/scene/editor/ui/windows/gizmo.hpp"
 #include "runtime/scene/editor/ui/windows/hierarchy.hpp"
-#include "runtime/scene/editor/ui/windows/inspector.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.hpp"
 #include "runtime/scene/editor/ui/windows/log.hpp"
 #include "runtime/scene/editor/ui/windows/monitor.hpp"
 #include "runtime/scene/editor/ui/windows/render_mode.hpp"

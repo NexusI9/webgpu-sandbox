@@ -2,11 +2,12 @@
 #define _LIGHT_CORE_H_
 
 #include <cglm/cglm.h>
-#include <stdint.h>
 #include <cglm/types.h>
+#include <stdint.h>
 
 #include "backend/registry.h"
 #include "backend/ssbo.h"
+#include "utils/name.h"
 #include "utils/projection.h"
 #include "webgpu/webgpu.h"
 
@@ -30,6 +31,7 @@ typedef enum {
 
 // core type
 typedef struct {
+  name_t name;
   reg_id_t id;
   vec3 position;
   vec3 color;
@@ -43,6 +45,7 @@ typedef struct {
 } PointLight;
 
 typedef struct {
+  name_t name;
   reg_id_t id;
   vec3 position; // abstract, for UI purpose only
   vec3 color;
@@ -52,6 +55,7 @@ typedef struct {
 } AmbientLight;
 
 typedef struct {
+  name_t name;
   reg_id_t id;
   vec3 position;
   vec3 target;
@@ -65,6 +69,7 @@ typedef struct {
 } SpotLight;
 
 typedef struct {
+  name_t name;
   reg_id_t id;
   vec3 position;
   vec3 color;
@@ -76,6 +81,7 @@ typedef struct {
 
 // descriptor type
 typedef struct {
+  const char *name;
   vec3 position;
   vec3 color;
   float intensity;
@@ -86,12 +92,14 @@ typedef struct {
 } PointLightDescriptor;
 
 typedef struct {
+  const char *name;
   vec3 position;
   vec3 color;
   float intensity;
 } AmbientLightDescriptor;
 
 typedef struct {
+  const char *name;
   vec3 position;
   vec3 target;
   vec3 color;
@@ -102,6 +110,7 @@ typedef struct {
 } SpotLightDescriptor;
 
 typedef struct {
+  const char *name;
   vec3 position;
   vec3 color;
   float size;
@@ -169,13 +178,14 @@ void light_spot_create(SpotLight *, SpotLightDescriptor *);
 void light_ambient_create(AmbientLight *, AmbientLightDescriptor *);
 void light_sun_create(SunLight *, SunLightDescriptor *);
 
+// === Matrix Updates ===
 static inline void light_point_projection_update(PointLight *light) {
   // update light projection attribute
   projection_point(&light->views, light->position, light->near, light->far);
 
   // transfert attribute to SSBO slot
   projection_update_ssbo_slot(light->ssbo_slot, &light->views,
-                                LightSSBOSlot_View);
+                              LightSSBOSlot_View);
 }
 
 static inline void light_spot_projection_update(SpotLight *light) {
@@ -184,7 +194,7 @@ static inline void light_spot_projection_update(SpotLight *light) {
 
   // transfert attribute to SSBO slot
   projection_update_ssbo_slot(light->ssbo_slot, &light->views,
-                                LightSSBOSlot_View);
+                              LightSSBOSlot_View);
 }
 
 static inline void light_sun_projection_update(SunLight *light) {
@@ -193,7 +203,7 @@ static inline void light_sun_projection_update(SunLight *light) {
 
   // transfert attribute to SSBO slot
   projection_update_ssbo_slot(light->ssbo_slot, &light->views,
-                                LightSSBOSlot_View);
+                              LightSSBOSlot_View);
 }
 
 #endif

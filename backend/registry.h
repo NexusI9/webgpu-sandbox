@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 extern RegEntry g_reg[REG_MAX_OBJECTS];
+extern reg_id_t g_reg_id;
 
 reg_id_t reg_register(void *, RegEntryType);
 
@@ -42,6 +43,15 @@ static inline const RegEntry *reg_lookup(reg_id_t id) {
   }
 
   return &g_reg[id];
+}
+
+static inline size_t reg_type_count(const RegEntryType type) {
+  size_t count = 0;
+  for (size_t i = 0; i < g_reg_id; i++)
+    if (g_reg[i].type == type)
+      count++;
+
+  return count;
 }
 
 #ifdef __cplusplus

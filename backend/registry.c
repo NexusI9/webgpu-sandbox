@@ -3,8 +3,7 @@
 #include <stdio.h>
 
 RegEntry g_reg[REG_MAX_OBJECTS] = {0};
-
-static reg_id_t g_reg_id = 1;
+reg_id_t g_reg_id = 1;
 
 static inline reg_id_t gen_id();
 

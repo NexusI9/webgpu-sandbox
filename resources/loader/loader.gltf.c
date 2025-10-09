@@ -25,6 +25,7 @@
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
+#include "utils/name.h"
 #include "webgpu/webgpu.h"
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -326,8 +327,9 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_data *data,
            (same issue with shader)
         */
 
-        char mesh_name[MESH_NAME_LEN];
-        snprintf(mesh_name, MESH_NAME_LEN, "%s %lu", gl_mesh.name, p);
+        char mesh_name[NAME_LEN];
+        name_compose(mesh_name, "%s.%lu", gl_mesh.name, p);
+	
         mesh_create(target_mesh, &(MeshCreateDescriptor){
                                      .name = mesh_name,
                                      .vertex = (VertexAttribute){0},

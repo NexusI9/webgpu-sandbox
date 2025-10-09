@@ -1,4 +1,4 @@
-#include "ButtonIcon.hpp"
+#include "button_icon.hpp"
 
 bool UI::ButtonIcon::draw() {
 

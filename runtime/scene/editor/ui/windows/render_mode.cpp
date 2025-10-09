@@ -1,7 +1,7 @@
 #include "render_mode.hpp"
 #include "imgui/imgui.h"
 #include "runtime/scene/draw.h"
-#include "runtime/scene/editor/ui/components/ButtonIcon.hpp"
+#include "runtime/scene/editor/ui/components/button_icon.hpp"
 
 static const struct {
   const SceneRendererDrawMode mode;

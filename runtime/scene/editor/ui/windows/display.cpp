@@ -1,7 +1,7 @@
 #include "display.hpp"
 
 #include "../imgui_style/style.carbon.hpp"
-#include "runtime/scene/editor/ui/components/ButtonIcon.hpp"
+#include "runtime/scene/editor/ui/components/button_icon.hpp"
 #include "runtime/scene/show.h"
 
 void UI::Display::draw() {

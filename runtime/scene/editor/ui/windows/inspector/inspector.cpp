@@ -2,11 +2,17 @@
 #include "backend/registry.h"
 #include "backend/std_pipeline/core.h"
 #include "imgui/imgui.h"
+#include "runtime/light/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/scene/editor/selection/core.h"
-#include "runtime/scene/editor/ui/components/ButtonIcon.hpp"
-#include "runtime/scene/editor/ui/windows/inspector.mesh.hpp"
+#include "runtime/scene/editor/ui/components/button_icon.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.ambient_light.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.mesh.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.point_light.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.spot_light.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.sun_light.hpp"
 #include <cstdio>
 
 static int g_active_tab = 0;
@@ -196,6 +202,30 @@ void UI::ObjectTab::draw() {
           .draw();
       break;
 
+    case RegEntryType_PointLight:
+      InspectorPointLight(scene, "Light properties",
+                          (PointLight *)g_active_object->ptr)
+          .draw();
+      break;
+
+    case RegEntryType_AmbientLight:
+      InspectorAmbientLight(scene, "Light properties",
+                            (AmbientLight *)g_active_object->ptr)
+          .draw();
+      break;
+
+    case RegEntryType_SpotLight:
+      InspectorSpotLight(scene, "Light properties",
+                         (SpotLight *)g_active_object->ptr)
+          .draw();
+      break;
+
+    case RegEntryType_SunLight:
+      InspectorSunLight(scene, "Light properties",
+                        (SunLight *)g_active_object->ptr)
+          .draw();
+      break;
+
     default:
       break;
     }
@@ -225,8 +255,15 @@ reg_id_t UI::ObjectTab::set_active_target() {
     }
   }
 
-  // else use 1st Object in tree
-  return scene->meshes.entries[0].id;
+  MeshRefList *meshes[SCENE_DYNAMIC_PIPELINE_COUNT];
+  size_t count;
+  scene_dynamic_pipelines(scene, meshes, &count);
+  for (uint8_t i = 0; i < count; i++)
+    for (size_t j = 0; j < meshes[i]->length; j++)
+      return meshes[i]->entries[j]->id;
+
+  // TODO Make fallback id more robust
+  return REG_OWNER_UNDEFINED;
 }
 
 void UI::Inspector::draw() {
@@ -275,7 +312,7 @@ void UI::Inspector::draw() {
                     .draw();
 
             if (pressed)
-              g_active_tab = sel ? -1 : i; // toggle off on re-click
+              g_active_tab = i;
 
             if (ImGui::IsItemHovered() && strlen(tabs[i]->tooltip))
               ImGui::SetTooltip("%s", tabs[i]->tooltip);
