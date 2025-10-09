@@ -68,6 +68,9 @@ typedef struct {
   SunLightUniform entries[LIGHT_MAX_CAPACITY];
 } __attribute__((aligned(16))) SunLightListUniform;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 /*
   DEPRECATED
   Light comparator is use to map each point light entry and each uniform to
@@ -318,5 +321,9 @@ static inline void sun_light_set_near(SunLight *light, float value) {
   light->size = value;
   light_sun_uniform_update(light);
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -17,21 +17,7 @@ void UI::InspectorAmbientLight::draw() {
     }
 
     ImGui::Spacing();
-
-    ImGuiTreeNodeFlags flags =
-        ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen;
-
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                        ImVec2(ui->size[SceneEditorUISize_Tree_PaddingH],
-                               ui->size[SceneEditorUISize_Tree_PaddingV]));
-    // resolution / multisample
-    if (ImGui::TreeNodeEx("Properties", flags)) {
-      for(int i = 0; i < attr_float_count; i++){
-	
-      }
-      ImGui::TreePop();
-    }
-    ImGui::PopStyleVar();
+    inspector_tree_list_draw(light, &attributes, scene); 
   }
   ImGui::EndChild();
 }
