@@ -39,7 +39,7 @@ void UI::SceneTab::draw() {
     {
       ImGui::Text("Width");
       width = scene_renderer_width(&scene->renderer);
-      if (ImGui::InputInt("##width", &width, 0, 0)) {
+      if (ImGui::DragInt("##width", &width)) {
         // update renderer
         scene_renderer_set_width(&scene->renderer, width);
         // update viewport + uniform
@@ -60,7 +60,7 @@ void UI::SceneTab::draw() {
       ImGui::Spacing();
       ImGui::Text("Height");
       height = scene_renderer_height(&scene->renderer);
-      if (ImGui::InputInt("##height", &height, 0, 0)) {
+      if (ImGui::DragInt("##height", &height)) {
         // update renderer
         scene_renderer_set_height(&scene->renderer, height);
         // update viewport + uniform
@@ -137,7 +137,7 @@ void UI::SceneTab::draw() {
     {
       ImGui::Text("FOV");
       fov = viewport_fov(&scene->viewport);
-      if (ImGui::SliderFloat("##FOV", &fov, 10, 179.9)) {
+      if (ImGui::DragFloat("##FOV", &fov, 1, 10, 179.9)) {
         viewport_set_fov(&scene->viewport, fov);
         viewport_uniform_update(&scene->viewport);
         ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
@@ -149,7 +149,7 @@ void UI::SceneTab::draw() {
     {
       ImGui::Text("Near clip");
       near_clip = viewport_near_clip(&scene->viewport);
-      if (ImGui::SliderFloat("##Near Clip", &near_clip, 0.01, 1000)) {
+      if (ImGui::DragFloat("##Near Clip", &near_clip, 0.01, 0.01, 1000)) {
         viewport_set_near_clip(&scene->viewport, near_clip);
         viewport_uniform_update(&scene->viewport);
         ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
@@ -161,7 +161,7 @@ void UI::SceneTab::draw() {
     {
       ImGui::Text("Far clip");
       far_clip = viewport_far_clip(&scene->viewport);
-      if (ImGui::SliderFloat("##Far Clip", &far_clip, 0.01, 1000)) {
+      if (ImGui::DragFloat("##Far Clip", &far_clip, 0.01, 0.01, 1000)) {
         viewport_set_far_clip(&scene->viewport, far_clip);
         viewport_uniform_update(&scene->viewport);
         ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),

@@ -34,7 +34,7 @@ typedef struct {
   name_t name;
   reg_id_t id;
   vec3 position;
-  vec3 color;
+  color color;
   float intensity;
   float cutoff;
   float inner_cutoff;
@@ -48,7 +48,7 @@ typedef struct {
   name_t name;
   reg_id_t id;
   vec3 position; // abstract, for UI purpose only
-  vec3 color;
+  color color;
   float intensity;
   SSBOSlot ssbo_slot;
   Projection views;
@@ -59,7 +59,7 @@ typedef struct {
   reg_id_t id;
   vec3 position;
   vec3 target;
-  vec3 color;
+  color color;
   float cutoff;
   float angle;
   float inner_cutoff;
@@ -72,7 +72,7 @@ typedef struct {
   name_t name;
   reg_id_t id;
   vec3 position;
-  vec3 color;
+  color color;
   float size;
   float intensity;
   SSBOSlot ssbo_slot[LIGHT_SSBO_SLOT_COUNT];
@@ -83,7 +83,7 @@ typedef struct {
 typedef struct {
   const char *name;
   vec3 position;
-  vec3 color;
+  color color;
   float intensity;
   float cutoff;
   float inner_cutoff;
@@ -94,7 +94,7 @@ typedef struct {
 typedef struct {
   const char *name;
   vec3 position;
-  vec3 color;
+  color color;
   float intensity;
 } AmbientLightDescriptor;
 
@@ -102,7 +102,7 @@ typedef struct {
   const char *name;
   vec3 position;
   vec3 target;
-  vec3 color;
+  color color;
   float cutoff;
   float angle;
   float inner_cutoff;
@@ -112,7 +112,7 @@ typedef struct {
 typedef struct {
   const char *name;
   vec3 position;
-  vec3 color;
+  color color;
   float size;
   float intensity;
 } SunLightDescriptor;

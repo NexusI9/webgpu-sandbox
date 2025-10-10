@@ -106,8 +106,10 @@ template <typename T> void InputInt<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
-  if (ImGui::InputInt(input_id, &value))
+  if (ImGui::DragInt(input_id, &value))
     set(target, value);
+
+  ImGui::Spacing();
 }
 
 template <typename T> void InputFloat<T>::draw() {
@@ -118,8 +120,10 @@ template <typename T> void InputFloat<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
-  if (ImGui::InputFloat(input_id, &value))
+  if (ImGui::DragFloat(input_id, &value))
     set(target, value);
+
+  ImGui::Spacing();
 }
 
 template <typename T> void InputVec3<T>::draw() {
@@ -131,9 +135,11 @@ template <typename T> void InputVec3<T>::draw() {
     name_t input_id;
     name_compose(input_id, "##%s%d", label, i);
 
-    if (ImGui::InputFloat(input_id, &value[i]))
+    if (ImGui::DragFloat(input_id, &value[i]))
       set(target, value);
   }
+
+  ImGui::Spacing();
 }
 
 template <typename T> void InputVec4<T>::draw() {
@@ -145,9 +151,11 @@ template <typename T> void InputVec4<T>::draw() {
     name_t input_id;
     name_compose(input_id, "##%s%d", label, i);
 
-    if (ImGui::InputFloat(input_id, &value[i]))
+    if (ImGui::DragFloat(input_id, &value[i]))
       set(target, value);
   }
+
+  ImGui::Spacing();
 }
 
 template <typename T> void InputColor<T>::draw() {
@@ -155,13 +163,13 @@ template <typename T> void InputColor<T>::draw() {
   ImGui::Text("%s", label);
   get(target, value);
 
-  for (uint8_t i = 0; i < 4; i++) {
-    name_t input_id;
-    name_compose(input_id, "##%s%d", label, i);
+  name_t input_id;
+  name_compose(input_id, "##%s_input", label);
 
-    if (ImGui::InputFloat(input_id, &value[i]))
-      set(target, value);
-  }
+  if (ImGui::ColorPicker4(input_id, value))
+    set(target, value);
+
+  ImGui::Spacing();
 }
 
 } // namespace UI

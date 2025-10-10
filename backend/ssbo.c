@@ -92,7 +92,7 @@ void ssbo_init(SSBOManager *manager) {
           "Attempting to set a buffer (%d) not with a type size inferior to %hu"
           "bytes (%lu).",
           i, min_size, ssbo_type[i].size);
-
+    
     SSBOBuffer *ssbo = &manager->buffers[i];
     ssbo->type_size = ssbo_type[i].size;
     ssbo->length = 0;

@@ -16,7 +16,7 @@ void light_point_uniform_update(PointLight *light) {
   uniform->near = light->near;
   uniform->far = light->far;
 
-  glm_vec3_copy(light->color, uniform->color);
+  glm_vec4_copy(light->color, uniform->color);
   glm_vec3_copy(light->position, uniform->position);
 
   // copy 6 points views for shader depth comparison
@@ -32,7 +32,7 @@ void light_ambient_uniform_update(AmbientLight *light) {
   // map light to light uniform (including paddings...)
   AmbientLightUniform *uniform = light->ssbo_slot.uniform;
   uniform->intensity = light->intensity;
-  glm_vec3_copy(light->color, uniform->color);
+  glm_vec4_copy(light->color, uniform->color);
 }
 
 void light_spot_uniform_update(SpotLight *light) {
@@ -42,7 +42,7 @@ void light_spot_uniform_update(SpotLight *light) {
   uniform->intensity = light->intensity;
   uniform->cutoff = light->cutoff;
   uniform->inner_cutoff = light->inner_cutoff;
-  glm_vec3_copy(light->color, uniform->color);
+  glm_vec4_copy(light->color, uniform->color);
   glm_vec3_copy(light->target, uniform->target);
   glm_vec3_copy(light->position, uniform->position);
 
@@ -60,7 +60,7 @@ void light_sun_uniform_update(SunLight *light) {
 
   uniform->intensity = light->intensity;
   glm_vec3_copy(light->position, uniform->position);
-  glm_vec3_copy(light->color, uniform->color);
+  glm_vec4_copy(light->color, uniform->color);
 
   // get light view matrix
   Projection sun_view;

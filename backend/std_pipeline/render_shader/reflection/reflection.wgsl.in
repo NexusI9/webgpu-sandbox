@@ -53,13 +53,14 @@ struct Material {
                                                        emissive : vec3<f32>,
 };
 
+
 // Lights
 struct PointLight {
   position : vec3<f32>,
              cutoff : f32,
-                      color : vec3<f32>,
-                              intensity : f32,
-                                          views : array<mat4x4<f32>, 6>,
+                      color : vec4<f32>,
+                              views : array<mat4x4<f32>, 6>,
+                                      intensity : f32,
                                                   inner_cutoff : f32,
                                                                  near : f32,
                                                                         far
@@ -67,7 +68,7 @@ struct PointLight {
 };
 
 struct AmbientLight {
-  color : vec3<f32>, intensity : f32,
+  color : vec4<f32>, intensity : f32,
 };
 
 struct SpotLight {
@@ -75,19 +76,15 @@ struct SpotLight {
              cutoff : f32,
                       lookat : vec3<f32>,
                                inner_cutoff : f32,
-                                              color : vec3<f32>,
-                                                      intensity : f32,
-                                                                  view
-      : mat4x4<f32>,
+                                              color : vec4<f32>,
+                                                      view : mat4x4<f32>,
+                                                             intensity : f32,
 };
 
 struct SunLight {
-  position : vec3<f32>,
-             intensity : f32,
-                         color : vec3<f32>,
-                                 _padding : f32,
-                                            view : mat4x4<f32>,
+  position : vec3<f32>, intensity : f32, color : vec4<f32>, view : mat4x4<f32>,
 };
+
 
 // === UBO ===
 struct LightCount {
@@ -130,8 +127,6 @@ struct PlaneReflection {
 struct ProbeReflection {
   position : vec3<f32>, radius : f32,
 }
-
-
 
 struct PBRMaterial {
   base_color_factor : vec4<f32>,
@@ -321,10 +316,9 @@ fn create_material(diffuse : vec4<f32>, metallic : vec4<f32>,
   return material;
 }
 
-
 fn compute_point_light(material : Material, fragment_position : vec3<f32>,
                        world_normal : vec3<f32>, camera_position : vec3<f32>,
-                       light_position : vec3<f32>, light_color : vec3<f32>,
+                       light_position : vec3<f32>, light_color : vec4<f32>,
                        light_intensity : f32) -> vec3<f32> {
   let mesh = uMesh;
 
@@ -363,7 +357,7 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   var kD = (vec3(1.0f) - F) * (1.0f - material.metallic);
 
   var diffuse : vec3<f32> = (material.albedo / PI);
-  var Lo : vec3<f32> = (kD * diffuse + specular) * light_color *
+  var Lo : vec3<f32> = (kD * diffuse + specular) * light_color.rgb *
                        light_intensity * NdotL;
 
   // 8. Apply AO //0.03f
@@ -372,9 +366,9 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   return Lo;
 }
 
-fn compute_ambient_light(material : Material, light_color : vec3<f32>,
-                         light_intensity : f32) -> vec3<f32> {
-  return vec3(light_intensity) * material.albedo * material.occlusion;
+fn compute_ambient_light(material : Material, light_intensity : f32)
+    -> vec3<f32> {
+  return light_intensity * material.albedo * material.occlusion;
 }
 
 fn compute_point_depth(position : f32, near : f32, far : f32) -> f32 {
@@ -443,7 +437,7 @@ fn point_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
 
   var factor : f32 = 1.0f; // show by default
   var bias : f32 = 0.002f;
-  
+
   for (var l : u32 = 0u; l < ubo.light_count.point; l++) {
 
     let light = point_light_list[l];
@@ -700,7 +694,8 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   var occlusion = textureSample(occlusion_texture, occlusion_sampler, vUv);
   var emissive = textureSample(emissive_texture, emissive_sampler, vUv);
 
-  let material = create_material(albedo, metallic, normal, occlusion, emissive, uPBR);
+  let material =
+      create_material(albedo, metallic, normal, occlusion, emissive, uPBR);
 
   let world_normal = normalize(TBN * material.normal);
 
@@ -742,7 +737,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   var ambient_intensity = 0.0f;
   for (var i = 0u; i < ubo.light_count.ambient; i = i + 1u) {
     let light = ambient_light_list[i];
-    ambient += compute_ambient_light(material, light.color, light.intensity);
+    ambient += compute_ambient_light(material, light.intensity);
     ambient_intensity += light.intensity;
   }
 

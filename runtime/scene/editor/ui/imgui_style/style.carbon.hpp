@@ -41,7 +41,7 @@ inline void scene_editor_ui_style_carbon() {
   style.Colors[ImGuiCol_FrameBg] =
       (ImVec4 &)*theme_default_color[THEME_DEFAULT_COLOR_SURFACE_LOWEST];
 
-  style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
+  style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.30f, 0.30f, 0.30f, 1.0f);
   style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.80f, 0.80f, 0.80f, 1.0f);
   style.Colors[ImGuiCol_TitleBg] = ImVec4(0.03f, 0.03f, 0.03f, 1.0f);
   style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.54f);

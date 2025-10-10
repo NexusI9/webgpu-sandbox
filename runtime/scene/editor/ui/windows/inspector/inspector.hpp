@@ -89,7 +89,7 @@ static inline void inspector_tree_list_draw(T *target,
                       list->int_list.entries[i].accessor_callback,
                       list->int_list.entries[i].mutator_callback)
           .draw();
-
+    
     for (i = 0; i < list->float_list.length; i++)
       UI::InputFloat<T>(target, scene, list->float_list.entries[i].label,
                         list->float_list.entries[i].accessor_callback,

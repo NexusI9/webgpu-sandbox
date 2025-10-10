@@ -55,8 +55,7 @@ struct Material {
 struct SunLight {
   position : vec3<f32>,
              intensity : f32,
-                         color : vec3<f32>,
-                                 _padding : f32,
+                         color : vec4<f32>,
                                             view : mat4x4<f32>,
 };
 
@@ -91,7 +90,7 @@ struct SunLight {
 
 fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
                        camera_position : vec3<f32>, light_position : vec3<f32>,
-                       light_color : vec3<f32>, light_intensity : f32)
+                       light_color : vec4<f32>, light_intensity : f32)
     -> vec3<f32> {
 
   let mesh = uMesh;
@@ -125,7 +124,7 @@ fn compute_point_light(fragment_position : vec3<f32>, vertex_normal : vec3<f32>,
   var sun_light : SunLight;
   sun_light.position = vec3<f32>(20.0f, 20.0f, 10.0f);
   sun_light.intensity = 0.2f;
-  sun_light.color = vec3<f32>(1.0f, 1.0f, 1.0f);
+  sun_light.color = vec4<f32>(1.0f, 1.0f, 1.0f, 1.0f);
 
   // calculate sun lights
   Lo += compute_point_light(vFrag, vNormal, camera.position.xyz,

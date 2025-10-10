@@ -12,19 +12,19 @@
 typedef struct {
   vec3 position;
   float cutoff;
-  vec3 color;
-  float intensity;
+  color color;
   mat4 views[LIGHT_POINT_VIEWS];
+  float intensity;
   float inner_cutoff;
   float near;
   float far;
-  float _padding[21];
+  float _padding[20];
 } __attribute__((aligned(16))) PointLightUniform;
 
 typedef struct {
-  vec3 color;
+  color color;
   float intensity;
-  float _pad[60];
+  float _pad[59];
 } __attribute__((aligned(16))) AmbientLightUniform;
 
 typedef struct {
@@ -32,17 +32,16 @@ typedef struct {
   float cutoff;
   vec3 target;
   float inner_cutoff;
-  vec3 color;
-  float intensity;
+  color color;
   mat4 view;
-  float _pad[36];
+  float intensity;
+  float _pad[35];
 } __attribute__((aligned(16))) SpotLightUniform;
 
 typedef struct {
   vec3 position;
   float intensity;
-  vec3 color;
-  float _padding;
+  color color;
   mat4 view;
   float _pad[40];
 } __attribute__((aligned(16))) SunLightUniform;

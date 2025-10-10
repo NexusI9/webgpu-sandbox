@@ -11,7 +11,7 @@ void example_light(Scene *scene) {
 
   scene_add_point_light(scene,
                         &(PointLightDescriptor){
-                            .color = {0.4f, 0.0f, 1.0f},
+                            .color = {0.4f, 0.0f, 1.0f, 1.0f},
                             .intensity = 7.0f,
                             .cutoff = 20.0f,
                             .inner_cutoff = 50.0f,
@@ -21,21 +21,19 @@ void example_light(Scene *scene) {
                         },
                         LightShadow_None, NULL);
 
-
   scene_add_sun_light(scene,
                       &(SunLightDescriptor){
                           .position = {15.0f, 15.0f, 15.0f},
-                          .color = {0.0f, 0.4f, 1.0f},
+                          .color = {0.0f, 0.4f, 1.0f, 1.0f},
                           .intensity = 2.0f,
                           .size = 10.0f,
                       },
                       LightShadow_Enabled, NULL);
 
-
   /*
     scene_add_spot_light(scene,
                          &(SpotLightDescriptor){
-                             .color = {1.0f, 1.0f, 1.0f},
+                             .color = {1.0f, 1.0f, 1.0f, 1.0f},
                              .intensity = 2.0f,
                              .cutoff = 45.0f,
                              .angle = 90.0f,
@@ -47,7 +45,7 @@ void example_light(Scene *scene) {
   */
   scene_add_ambient_light(scene,
                           &(AmbientLightDescriptor){
-                              .color = {1.0f, 1.0f, 1.0f},
+                              .color = {1.0f, 1.0f, 1.0f, 1.0f},
                               .intensity = 0.2f,
                               .position = {-2.0f, 3.0f, 3.3f},
                           },
