@@ -4,6 +4,7 @@
 #include "../core.hpp"
 #include "backend/context.h"
 #include "backend/registry.h"
+#include "backend/ssbo.h"
 #include "imgui/imgui_impl_wgpu.h"
 #include "runtime/scene/editor/ui/components/input.hpp"
 #include "runtime/scene/editor/ui/core.h"
@@ -69,9 +70,9 @@ template <typename T> struct InspectorTreeList {
 };
 
 template <typename T>
-static inline void inspector_tree_list_draw(T *target,
-                                            const InspectorTreeList<T> *list,
-                                            Scene *scene) {
+static inline void
+inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
+                         Scene *scene, SSBOType ssbo_type, ssbo_id_t ssbo_id) {
 
   ImGuiTreeNodeFlags flags =
       ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen;
@@ -87,31 +88,36 @@ static inline void inspector_tree_list_draw(T *target,
     for (i = 0; i < list->int_list.length; i++)
       UI::InputInt<T>(target, scene, list->int_list.entries[i].label,
                       list->int_list.entries[i].accessor_callback,
-                      list->int_list.entries[i].mutator_callback)
+                      list->int_list.entries[i].mutator_callback, ssbo_type,
+                      ssbo_id)
           .draw();
-    
+
     for (i = 0; i < list->float_list.length; i++)
       UI::InputFloat<T>(target, scene, list->float_list.entries[i].label,
                         list->float_list.entries[i].accessor_callback,
-                        list->float_list.entries[i].mutator_callback)
+                        list->float_list.entries[i].mutator_callback, ssbo_type,
+                        ssbo_id)
           .draw();
 
     for (i = 0; i < list->vec3_list.length; i++)
       UI::InputVec3<T>(target, scene, list->vec3_list.entries[i].label,
                        list->vec3_list.entries[i].accessor_callback,
-                       list->vec3_list.entries[i].mutator_callback)
+                       list->vec3_list.entries[i].mutator_callback, ssbo_type,
+                       ssbo_id)
           .draw();
 
     for (i = 0; i < list->vec4_list.length; i++)
       UI::InputVec4<T>(target, scene, list->vec4_list.entries[i].label,
                        list->vec4_list.entries[i].accessor_callback,
-                       list->vec4_list.entries[i].mutator_callback)
+                       list->vec4_list.entries[i].mutator_callback, ssbo_type,
+                       ssbo_id)
           .draw();
 
     for (i = 0; i < list->color_list.length; i++)
       UI::InputColor<T>(target, scene, list->color_list.entries[i].label,
                         list->color_list.entries[i].accessor_callback,
-                        list->color_list.entries[i].mutator_callback)
+                        list->color_list.entries[i].mutator_callback, ssbo_type,
+                        ssbo_id)
           .draw();
 
     ImGui::TreePop();

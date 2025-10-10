@@ -1,4 +1,5 @@
 #include "inspector.point_light.hpp"
+#include "backend/ssbo.h"
 #include "imgui/imgui.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/mesh/transform.h"
@@ -17,7 +18,8 @@ void UI::InspectorPointLight::draw() {
     }
 
     ImGui::Spacing();
-    inspector_tree_list_draw(light, &attributes, scene);
+    inspector_tree_list_draw(light, &attributes, scene, SSBOType_PointLight,
+                             light->ssbo_slot[LightSSBOSlot_List].id);
   }
   ImGui::EndChild();
 }

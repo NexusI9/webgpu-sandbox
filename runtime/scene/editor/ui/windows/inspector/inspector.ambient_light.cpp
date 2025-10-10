@@ -1,4 +1,5 @@
 #include "inspector.ambient_light.hpp"
+#include "backend/ssbo.h"
 #include "imgui/imgui.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/mesh/transform.h"
@@ -17,7 +18,8 @@ void UI::InspectorAmbientLight::draw() {
     }
 
     ImGui::Spacing();
-    inspector_tree_list_draw(light, &attributes, scene); 
+    inspector_tree_list_draw(light, &attributes, scene, SSBOType_AmbientLight,
+                             light->ssbo_slot.id);
   }
   ImGui::EndChild();
 }

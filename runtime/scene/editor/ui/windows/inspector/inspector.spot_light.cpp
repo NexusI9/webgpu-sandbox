@@ -1,6 +1,8 @@
 #include "inspector.spot_light.hpp"
+#include "backend/ssbo.h"
 #include "imgui/imgui.h"
 #include "runtime/geometry/vertex/attribute.h"
+#include "runtime/light/core.h"
 #include "runtime/mesh/transform.h"
 #include <cstdio>
 
@@ -17,7 +19,8 @@ void UI::InspectorSpotLight::draw() {
     }
 
     ImGui::Spacing();
-    inspector_tree_list_draw(light, &attributes, scene);
+    inspector_tree_list_draw(light, &attributes, scene, SSBOType_SpotLight,
+                             light->ssbo_slot[LightSSBOSlot_List].id);
   }
   ImGui::EndChild();
 }
