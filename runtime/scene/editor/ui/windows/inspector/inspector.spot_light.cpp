@@ -19,7 +19,7 @@ void UI::InspectorSpotLight::draw() {
     }
 
     ImGui::Spacing();
-    inspector_tree_list_draw(light, &attributes, scene, SSBOType_SpotLight,
+    inspector_tree_list_draw(light, &properties_attributes, scene, SSBOType_SpotLight,
                              light->ssbo_slot[LightSSBOSlot_List].id);
   }
   ImGui::EndChild();

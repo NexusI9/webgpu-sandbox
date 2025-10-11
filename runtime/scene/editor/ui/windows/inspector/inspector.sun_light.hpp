@@ -20,9 +20,7 @@ public:
 
 private:
   SunLight *light;
-
-  static constexpr int attr_float_count = 1;
-  static constexpr InspectorTreeList<SunLight> attributes = {
+  static constexpr InspectorTreeList<SunLight> properties_attributes = {
       .label = "Properties",
       .float_list =
           {

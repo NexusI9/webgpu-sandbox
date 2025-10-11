@@ -18,7 +18,7 @@ void UI::InspectorSunLight::draw() {
     }
 
     ImGui::Spacing();
-    inspector_tree_list_draw(light, &attributes, scene, SSBOType_SunLight,
+    inspector_tree_list_draw(light, &properties_attributes, scene, SSBOType_SunLight,
                              light->ssbo_slot[LightSSBOSlot_List].id);
   }
   ImGui::EndChild();

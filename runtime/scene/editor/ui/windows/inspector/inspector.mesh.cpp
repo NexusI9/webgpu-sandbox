@@ -16,10 +16,10 @@ void UI::InspectorMesh::draw() {
 
     if (ImGui::InputText(name_id, mesh->name, sizeof(mesh->name))) {
       // mesh_set_name(mesh, mesh->name);
-    }
+    } 
 
     ImGui::Spacing();
-    inspector_tree_list_draw(mesh, &attributes, scene, SSBOType_Mesh,
+    inspector_tree_list_draw(mesh, &transform_attributes, scene, SSBOType_Mesh,
                              mesh->ssbo_slot.id);
   }
   ImGui::EndChild();

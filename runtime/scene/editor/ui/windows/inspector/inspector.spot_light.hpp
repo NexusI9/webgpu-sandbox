@@ -21,7 +21,7 @@ public:
 private:
   SpotLight *light;
 
-  static constexpr InspectorTreeList<SpotLight> attributes = {
+  static constexpr InspectorTreeList<SpotLight> properties_attributes = {
       .label = "Properties",
       .float_list =
           {

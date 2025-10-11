@@ -371,9 +371,10 @@ fn compute_point_light(material : Material, fragment_position : vec3<f32>,
   return Lo;
 }
 
-fn compute_ambient_light(material : Material, light_intensity : f32)
-    -> vec3<f32> {
-  return light_intensity * material.albedo.rgb * material.occlusion;
+fn compute_ambient_light(material : Material, light_intensity : f32,
+                         light_color : vec4<f32>) -> vec3<f32> {
+  return (light_color * light_intensity * material.albedo).rgb;
+  // *  material.occlusion;
 }
 
 fn compute_point_depth(position : f32, near : f32, far : f32) -> f32 {
@@ -756,7 +757,7 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   var ambient_intensity = 0.0f;
   for (var i = 0u; i < ubo.light_count.ambient; i = i + 1u) {
     let light = ambient_light_list[i];
-    ambient += compute_ambient_light(material, light.intensity);
+    ambient += compute_ambient_light(material, light.intensity, light.color);
     ambient_intensity += light.intensity;
   }
 
@@ -811,8 +812,9 @@ fn sun_shadow_factor(frag_position : vec3<f32>, cam_pos : vec3<f32>) -> f32 {
   let spot_shadow = spot_shadow_factor(vFrag, camera.position.xyz);
   let sun_shadow = sun_shadow_factor(vFrag, camera.position.xyz);
 
-  let combined_shadow = mix(vec3<f32>(ambient_intensity), vec3<f32>(1.0),
-                            point_shadow + spot_shadow + sun_shadow);
+  let combined_shadow =
+      mix(vec3<f32>(min(ambient_intensity, 1.0f)), vec3<f32>(1.0),
+          point_shadow + spot_shadow + sun_shadow);
 
   let combined =
       vec4<f32>((ambient + Lo + IBL * combined_shadow) + material.emissive,

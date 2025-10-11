@@ -129,7 +129,7 @@ template <typename T> void InputFloat<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
-  if (ImGui::DragFloat(input_id, &value)) {
+  if (ImGui::DragFloat(input_id, &value, 0.1f)) {
     set(target, value);
     ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
   }
@@ -146,7 +146,7 @@ template <typename T> void InputVec3<T>::draw() {
     name_t input_id;
     name_compose(input_id, "##%s%d", label, i);
 
-    if (ImGui::DragFloat(input_id, &value[i])) {
+    if (ImGui::DragFloat(input_id, &value[i], 0.1f)) {
       set(target, value);
       ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
     }
@@ -164,7 +164,7 @@ template <typename T> void InputVec4<T>::draw() {
     name_t input_id;
     name_compose(input_id, "##%s%d", label, i);
 
-    if (ImGui::DragFloat(input_id, &value[i])) {
+    if (ImGui::DragFloat(input_id, &value[i], 0.1f)) {
       set(target, value);
       ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
     }
@@ -181,7 +181,11 @@ template <typename T> void InputColor<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
-  if (ImGui::ColorPicker4(input_id, value, ImGuiColorEditFlags_NoSidePreview)) {
+  if (ImGui::ColorPicker4(input_id, value,
+                          ImGuiColorEditFlags_NoSidePreview |
+                              ImGuiColorEditFlags_NoSmallPreview |
+                              ImGuiColorEditFlags_DisplayRGB |
+                              ImGuiColorEditFlags_DisplayHex)) {
     set(target, value);
     ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
   }

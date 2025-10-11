@@ -18,8 +18,8 @@ public:
 
 private:
   Mesh *mesh;
-  static constexpr InspectorTreeList<Mesh> attributes = {
-      .label = "Properties",
+  static constexpr InspectorTreeList<Mesh> transform_attributes = {
+      .label = "Transform",
       .vec3_list =
           {
               .length = 3,

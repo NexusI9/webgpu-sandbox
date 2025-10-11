@@ -184,7 +184,7 @@ void scene_editor_ui_set_size(SceneEditorUI *ui) {
       [SceneEditorUISize_Gizmo_Height] = 400,
       [SceneEditorUISize_Gizmo_Margin] = 10,
       [SceneEditorUISize_Button_RenderModeSize] = 15,
-      [SceneEditorUISize_Button_GizmoSize] = 30,
+      [SceneEditorUISize_Button_GizmoSize] = 35,
       [SceneEditorUISize_Button_DisplaySize] = 24,
       [SceneEditorUISize_BottomPanel_Height] = 200,
       [SceneEditorUISize_Log_IconScale] = 16,

@@ -10,6 +10,7 @@
 #include "uniform.h"
 #include "utils/name.h"
 #include "utils/projection.h"
+#include "utils/system.h"
 
 void light_point_create(PointLight *light, PointLightDescriptor *desc) {
 
@@ -100,9 +101,9 @@ void light_ambient_create(AmbientLight *light, AmbientLightDescriptor *desc) {
   light->id = reg_register((void *)light, RegEntryType_AmbientLight);
   light->intensity = desc->intensity;
 
-  glm_vec3_copy(desc->color, light->color);
+  glm_vec4_copy(desc->color, light->color);
   glm_vec3_copy(desc->position, light->position);
-
+  
   /* === Init SSBO ===*/
 
   ssbo_slot_init_alloc(&light->ssbo_slot, sizeof(AmbientLightUniform));

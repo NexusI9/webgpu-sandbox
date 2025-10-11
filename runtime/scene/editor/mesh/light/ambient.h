@@ -13,4 +13,6 @@ void sem_light_ambient_set_position(SEMTransformCallback *);
 void sem_light_ambient_set_rotation(SEMTransformCallback *);
 void sem_light_ambient_set_scale(SEMTransformCallback *);
 
+
+
 #endif

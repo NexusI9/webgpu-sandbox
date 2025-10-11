@@ -45,7 +45,7 @@ void example_light(Scene *scene) {
   */
   scene_add_ambient_light(scene,
                           &(AmbientLightDescriptor){
-                              .color = {1.0f, 1.0f, 1.0f, 1.0f},
+                              .color = {0.0f, 0.4f, 1.0f, 1.0f},
                               .intensity = 0.2f,
                               .position = {-2.0f, 3.0f, 3.3f},
                           },

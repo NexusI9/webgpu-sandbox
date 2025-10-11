@@ -19,7 +19,7 @@ public:
 
 private:
   PointLight *light;
-  static constexpr InspectorTreeList<PointLight> attributes = {
+  static constexpr InspectorTreeList<PointLight> properties_attributes = {
       .label = "Properties",
       .float_list =
           {

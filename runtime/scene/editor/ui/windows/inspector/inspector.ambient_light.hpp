@@ -5,6 +5,7 @@
 #include "runtime/light/uniform.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/transform.h"
+#include "runtime/scene/core.h"
 #include "runtime/scene/editor/ui/windows/core.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.hpp"
 
@@ -21,7 +22,7 @@ public:
 private:
   AmbientLight *light;
 
-  static constexpr InspectorTreeList<AmbientLight> attributes = {
+  static constexpr InspectorTreeList<AmbientLight> properties_attributes = {
       .label = "Properties",
       .float_list =
           {

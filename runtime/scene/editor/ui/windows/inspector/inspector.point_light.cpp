@@ -17,8 +17,8 @@ void UI::InspectorPointLight::draw() {
       // mesh_set_name(mesh, mesh->name);
     }
 
-    ImGui::Spacing();
-    inspector_tree_list_draw(light, &attributes, scene, SSBOType_PointLight,
+    ImGui::Spacing(); 
+    inspector_tree_list_draw(light, &properties_attributes, scene, SSBOType_PointLight,
                              light->ssbo_slot[LightSSBOSlot_List].id);
   }
   ImGui::EndChild();
