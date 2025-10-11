@@ -18,26 +18,16 @@ static const struct {
     {GizmoMode_Scale, "Scale", SceneEditorUIIcon_Gizmo_Scale},
 };
 
-static void scene_editor_ui_update_gizmo_mode(Scene *scene,
-                                              const GizmoMode mode) {
+static void scene_editor_ui_update_gizmo_mode(Scene *scene, void *mode) {
+
   scene_gizmo_hide(scene);
-  scene->editor.gizmo.transform.mode = mode;
+  scene->editor.gizmo.transform.mode = *(GizmoMode *)mode;
   if (scene_selection_length(&scene->editor.selection)) {
     scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
                                  &scene->editor.selection,
                                  &scene->renderer.ssbo);
     scene_gizmo_show(scene);
   }
-}
-
-static void scene_editor_ui_update_gizmo_mode_position(Scene *scene) {
-  scene_editor_ui_update_gizmo_mode(scene, GizmoMode_Position);
-}
-static void scene_editor_ui_update_gizmo_mode_rotation(Scene *scene) {
-  scene_editor_ui_update_gizmo_mode(scene, GizmoMode_Rotation);
-}
-static void scene_editor_ui_update_gizmo_mode_scale(Scene *scene) {
-  scene_editor_ui_update_gizmo_mode(scene, GizmoMode_Scale);
 }
 
 void UI::Gizmo::draw() {
@@ -55,45 +45,33 @@ void UI::Gizmo::draw() {
           (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_BASE],
       .background_hover =
           (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_HIGH],
-
   };
+
+  GizmoMode mode_position = GizmoMode_Position;
+  GizmoMode mode_rotation = GizmoMode_Rotation;
+  GizmoMode mode_scale = GizmoMode_Scale;
 
   UI::ButtonGroup(scene, label,
                   (ButtonGroupItem[]){
                       {
                           "gizmo_button_position",
                           SceneEditorUIIcon_Gizmo_Position,
-                          scene_editor_ui_update_gizmo_mode_position,
+                          scene_editor_ui_update_gizmo_mode,
+                          (void *)&mode_position,
                       },
                       {
                           "gizmo_button_rotate",
                           SceneEditorUIIcon_Gizmo_Rotate,
-                          scene_editor_ui_update_gizmo_mode_rotation,
+                          scene_editor_ui_update_gizmo_mode,
+                          (void *)&mode_rotation,
                       },
                       {
                           "gizmo_button_scale",
                           SceneEditorUIIcon_Gizmo_Scale,
-                          scene_editor_ui_update_gizmo_mode_scale,
+                          scene_editor_ui_update_gizmo_mode,
+                          (void *)&mode_scale,
                       },
                   },
                   3, &style)
       .draw();
-
-  // for (uint8_t i = 0; i < 3; i++) {
-  //   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-  //   if (ButtonIcon(ui, gizmo_button[i].icon, gizmo_button[i].label,
-  //                  ImVec2(ui->size[SceneEditorUISize_Button_GizmoSize],
-  //                         ui->size[SceneEditorUISize_Button_GizmoSize]))
-  //           .draw()) {
-  //     scene_gizmo_hide(scene);
-  //     scene->editor.gizmo.transform.mode = gizmo_button[i].mode;
-  //     if (scene_selection_length(&scene->editor.selection)) {
-  //       scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
-  //                                    &scene->editor.selection,
-  //                                    &scene->renderer.ssbo);
-  //       scene_gizmo_show(scene);
-  //     }
-  //   }
-  //   ImGui::PopStyleVar(1);
-  // }
 }

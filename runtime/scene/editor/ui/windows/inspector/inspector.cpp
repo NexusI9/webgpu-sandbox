@@ -8,6 +8,7 @@
 #include "runtime/scene/draw.h"
 #include "runtime/scene/editor/selection/core.h"
 #include "runtime/scene/editor/ui/components/button_icon.hpp"
+#include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.ambient_light.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.mesh.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.point_light.hpp"
@@ -271,7 +272,7 @@ void UI::Inspector::draw() {
   const float page_width = ui->size[SceneEditorUISize_RightPanel_Width];
   const float bar_width = ui->size[SceneEditorUISize_RightPanelTab_Width];
   const float gap = 4.f * ui->dpi;
-  const float btn_size = ui->size[SceneEditorUISize_Button_RenderModeSize];
+  const float btn_size = ui->size[SceneEditorUISize_Button_InspectorTab];
   const ImVec2 icon_size{btn_size, btn_size};
 
   ImGui::BeginChild("##Properties", ImVec2(0, 0), true);

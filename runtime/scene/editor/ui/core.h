@@ -11,8 +11,6 @@ typedef enum {
 } SceneEditorUIStatus;
 
 #define SCENE_EDITOR_UI_ICON_COUNT 21
-#define SCENE_EDITOR_UI_SIZE_COUNT 19
-
 typedef enum {
   SceneEditorUIIcon_Null,
   SceneEditorUIIcon_RenderMode_Boundbox,
@@ -37,6 +35,7 @@ typedef enum {
   SceneEditorUIIcon_Properties_Object,
 } SceneEditorUIIcon;
 
+#define SCENE_EDITOR_UI_SIZE_COUNT 20
 typedef enum {
   SceneEditorUISize_Screen_Width,
   SceneEditorUISize_Screen_Height,
@@ -52,6 +51,7 @@ typedef enum {
   SceneEditorUISize_Gizmo_Margin,
   SceneEditorUISize_Button_RenderModeSize,
   SceneEditorUISize_Button_GizmoSize,
+  SceneEditorUISize_Button_InspectorTab,
   SceneEditorUISize_Button_DisplaySize,
   SceneEditorUISize_BottomPanel_Height,
   SceneEditorUISize_Log_IconScale,

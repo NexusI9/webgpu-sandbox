@@ -183,7 +183,8 @@ void scene_editor_ui_set_size(SceneEditorUI *ui) {
       [SceneEditorUISize_Gizmo_Width] = 100,
       [SceneEditorUISize_Gizmo_Height] = 400,
       [SceneEditorUISize_Gizmo_Margin] = 10,
-      [SceneEditorUISize_Button_RenderModeSize] = 15,
+      [SceneEditorUISize_Button_RenderModeSize] = 22,
+      [SceneEditorUISize_Button_InspectorTab] = 15,
       [SceneEditorUISize_Button_GizmoSize] = 35,
       [SceneEditorUISize_Button_DisplaySize] = 24,
       [SceneEditorUISize_BottomPanel_Height] = 200,
@@ -345,29 +346,13 @@ void scene_editor_ui_create_top_bar(SceneEditorUI *ui, Scene *scene) {
 
   const int top_bar_width = ui->size[SceneEditorUISize_Screen_Width] -
                             ui->size[SceneEditorUISize_RightPanel_Width];
-  const int button_count = 8;
-  const int padding = 1 * ui->dpi;
 
-  ImGui::SetNextWindowPos(ImVec2(ui->size[SceneEditorUISize_TopBar_Margin],
-                                 ui->size[SceneEditorUISize_TopBar_Margin]));
+  UI::RenderMode render_mode_buttons = UI::RenderMode(scene, "Render mode");
 
-  ImGui::PushStyleColor(ImGuiCol_WindowBg,
-                        (ImVec4 &)*theme_default_color
-                            [THEME_DEFAULT_COLOR_BACKGROUND_BLANKET_MEDIUM]);
-  ImGui::SetNextWindowSize(
-      ImVec2(top_bar_width, ui->size[SceneEditorUISize_TopBar_Height]));
-  ImGui::Begin("Top bar", nullptr,
-               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
-                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
-                   ImGuiWindowFlags_NoBringToFrontOnFocus);
+  ImGui::SetNextWindowPos(ImVec2(
+      top_bar_width - (render_mode_buttons.count + 0.8) *
+                          ui->size[SceneEditorUISize_Button_RenderModeSize],
+      0));
 
-  ImGui::SetCursorPosX(
-      top_bar_width -
-      button_count *
-          (ui->size[SceneEditorUISize_Button_RenderModeSize] + padding));
-
-  UI::RenderMode(scene, "Render mode").draw();
-  ImGui::End();
-
-  ImGui::PopStyleColor();
+  render_mode_buttons.draw();
 }

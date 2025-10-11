@@ -8,10 +8,17 @@
 
 namespace UI {
 
+typedef enum {
+  ButtonGroupDirection_Vertical,
+  ButtonGroupDirection_Horizontal,
+} ButtonGroupDirection;
+
 typedef struct {
   const char *label;
   SceneEditorUIIcon icon;
-  void (*on_click_callback)(Scene *);
+  void (*on_click_callback)(Scene *, void *);
+  void *user_data;
+  const char *tooltip;
 } ButtonGroupItem;
 
 typedef struct {
@@ -25,16 +32,19 @@ typedef struct {
 class ButtonGroup : public Window {
 
 public:
-  ButtonGroup(Scene *scene, const char *label, const ButtonGroupItem *items,
-              const uint8_t items_length, const ButtonStyle *style)
+  ButtonGroup(
+      Scene *scene, const char *label, const ButtonGroupItem *items,
+      const uint8_t items_length, const ButtonStyle *style,
+      const ButtonGroupDirection direction = ButtonGroupDirection_Vertical)
       : Window(scene, label), items(items), items_length(items_length),
-        style(style) {}
+        style(style), direction(direction) {}
   void draw() override;
 
 private:
   const ButtonGroupItem *items;
   const uint8_t items_length;
   const ButtonStyle *style;
+  const ButtonGroupDirection direction;
 };
 
 } // namespace UI

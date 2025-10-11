@@ -4,6 +4,7 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor/selection/core.h"
 #include "runtime/scene/editor/ui/components/button_icon.hpp"
+#include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/show.h"
 
 void UI::Hierarchy::draw() {
@@ -49,7 +50,7 @@ void UI::Hierarchy::draw() {
         {
           const float line_height = ImGui::GetTextLineHeightWithSpacing();
           const float icon_size =
-              ui->size[SceneEditorUISize_Button_RenderModeSize];
+              ui->size[SceneEditorUISize_Button_InspectorTab];
 
           ImGui::SameLine(ImGui::GetWindowContentRegionMax().x -
                           ui->dpi * icon_size);
