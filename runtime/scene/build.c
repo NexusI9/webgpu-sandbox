@@ -251,7 +251,7 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
 
     // set wireframe random color
     shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 0,
-                               &(color){randf(), randf(), randf(), 1.0f});
+                               &(color){0.0f, 0.0f, 0.0f, 1.0f});
 
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
   }

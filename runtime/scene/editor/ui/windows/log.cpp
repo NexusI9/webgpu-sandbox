@@ -1,6 +1,7 @@
 #include "log.hpp"
 
 #include "../imgui_style/style.carbon.hpp"
+#include "imgui/imgui.h"
 #include "runtime/scene/show.h"
 
 typedef struct {
@@ -125,7 +126,10 @@ void UI::Log::draw() {
                      ImVec2(uv->uv0[0], uv->uv0[1]),
                      ImVec2(uv->uv1[0], uv->uv1[1]));
         ImGui::SameLine();
+        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() +
+                               ImGui::GetContentRegionAvail().x);
         ImGui::TextColored((ImVec4 &)*text_color, "%s", g_logger.messages[i]);
+        ImGui::PopTextWrapPos();
       }
 
       if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY())

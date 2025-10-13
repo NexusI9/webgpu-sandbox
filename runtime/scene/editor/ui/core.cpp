@@ -109,7 +109,7 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   return SceneEditorUIStatus_Success;
 }
 
-int g_display = UI::UIDisplay_Activity | UI::UIDisplay_Layout;
+
 void scene_editor_ui_draw_callback(void *data) {
   Scene *scene = (Scene *)data;
   SceneEditorUI *ui = &scene->editor.ui;
@@ -170,18 +170,18 @@ void scene_editor_ui_draw_callback(void *data) {
     ImGui::NewFrame();
     {
 
-      if (g_display & UI::UIDisplay_Layout) {
+      if (UI::Display::state & UI::DisplayState_Layout) {
         scene_editor_ui_create_top_bar(ui, scene);
         scene_editor_ui_create_right_panel(ui, scene);
         scene_editor_ui_create_bottom_panel(ui, scene);
         UI::Gizmo(scene, "Gizmo").draw();
       }
 
-      if (g_display & UI::UIDisplay_Activity) {
+      if (UI::Display::state & UI::DisplayState_Activity) {
         UI::Monitor(scene, "Monitor").draw();
       }
 
-      UI::Display(scene, "Display", &g_display).draw();
+      UI::Display(scene, "Display").draw();
     }
     ImGui::Render();
     ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), ui->pass_encoder);
@@ -280,7 +280,8 @@ void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
     ui->icon_uv[SceneEditorUIIcon_Mesh] = {.cell = {9, 1}};
     ui->icon_uv[SceneEditorUIIcon_ProbeReflectionPlane] = {.cell = {10, 1}};
     ui->icon_uv[SceneEditorUIIcon_ProbeReflectionGrid] = {.cell = {11, 1}};
-    ui->icon_uv[SceneEditorUIIcon_Camera] = {.cell = {0, 4}};
+    ui->icon_uv[SceneEditorUIIcon_Camera] = {.cell = {4, 0}};
+    ui->icon_uv[SceneEditorUIIcon_Grid] = {.cell = {12, 1}};
   }
 
   // generate uvs

@@ -133,4 +133,31 @@ sem_list_array_destroy(SceneEditorMeshListArray *array) {
                    &array->capacity);
 }
 
+static inline void sem_list_toggle_visibility(SceneEditorMeshListArray *array,
+                                              Scene *scene,
+                                              const RegEntryType *types,
+                                              size_t count, bool active) {
+
+  for (size_t i = 0; i < array->length; i++) {
+
+    SceneEditorMeshList *sem_list = &array->entries[i];
+    const RegEntry *entry = reg_lookup(sem_list->id);
+
+    for (size_t j = 0; j < count; j++) {
+      if (entry->type == types[j]) {
+
+        for (size_t k = 0; k < sem_list->length; k++) {
+
+          if (active)
+            scene_show_mesh(scene, sem_list->entries[k].mesh);
+          else
+            scene_hide_mesh(scene, sem_list->entries[k].mesh);
+        }
+
+        break;
+      }
+    }
+  }
+}
+
 #endif

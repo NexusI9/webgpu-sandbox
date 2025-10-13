@@ -10,6 +10,7 @@
 #include "emscripten/html5.h"
 #include "gizmo/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/scene/editor/selection/filter.h"
 
 typedef struct {
   Scene *scene;
@@ -32,7 +33,7 @@ void scene_selection_subscribe_mesh_ref_list(SceneSelection *, MeshRefList *,
 void scene_selection_subscribe_mesh(SceneSelection *, Mesh *, selection_targets,
                                     const SceneSelectionType);
 
-void scene_selection_toggle_mesh(Scene *, Mesh *);
+SceneSelectionFilterStatus scene_selection_toggle_mesh(Scene *, Mesh *);
 
 void scene_selection_empty(SceneSelection *);
 void scene_selection_all(SceneSelection *);

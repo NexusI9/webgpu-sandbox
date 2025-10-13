@@ -216,12 +216,12 @@ void scene_selection_subscribe_mesh_ref_list(SceneSelection *selection,
                                              selection_targets targets,
                                              const SceneSelectionType type) {
   for (size_t i = 0; i < list->length; i++)
-    scene_selection_subscribe_mesh(selection, list->entries[i], targets,
-                                   type);
+    scene_selection_subscribe_mesh(selection, list->entries[i], targets, type);
 }
 
 /**
    Handle the overall flow of selection state, including:
+   - Find the mesh relative filter
    - Add mesh to filter selection list
    - Trigger highlight callback
    - Handle the gizmo visibility
@@ -229,14 +229,15 @@ void scene_selection_subscribe_mesh_ref_list(SceneSelection *selection,
    This function is used as the main function to add/remove mesh from the
    selection depending on the trigger method (click, shortcut, UI)
  */
-void scene_selection_toggle_mesh(Scene *scene, Mesh *mesh) {
+SceneSelectionFilterStatus scene_selection_toggle_mesh(Scene *scene,
+                                                       Mesh *mesh) {
 
   bool selected;
   SceneSelectionFilter *filter = scene_selection_filter_find_mesh(
       &scene->editor.selection, mesh, &selected);
 
   if (filter == NULL)
-    return;
+    return SceneSelectionFilterStatus_MeshUnfound;
 
   if (!selected) {
 
@@ -244,10 +245,10 @@ void scene_selection_toggle_mesh(Scene *scene, Mesh *mesh) {
       scene_selection_empty(&scene->editor.selection);
 
     scene_selection_filter_selection_add_mesh(filter, mesh, NULL);
-  } else { 
+  } else {
     scene_selection_filter_selection_remove_mesh(filter, mesh);
   }
- 
+
   // update highlight
   if (filter->highlight_callback)
     filter->highlight_callback(&filter->meshes, &filter->selection, scene);
@@ -262,4 +263,6 @@ void scene_selection_toggle_mesh(Scene *scene, Mesh *mesh) {
   } else {
     scene_gizmo_hide(scene);
   }
+
+  return SceneSelectionFilterStatus_Success;
 }

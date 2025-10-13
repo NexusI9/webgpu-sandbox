@@ -131,13 +131,12 @@ void scene_selection_sem_highlight(MeshRefList *meshes,
 
   // enable selected ones
   for (size_t i = 0; i < list->length; i++) {
-
+    
     const RegEntry *reg_obj =
         reg_lookup(list->entries[i].targets[SSOTargetID_SEM]);
 
     SceneEditorMesh *sem = (SceneEditorMesh *)reg_obj->ptr;
-    Mesh *mesh = list->entries[i].mesh;
-
+    
     if (sem->select_callback)
       sem->select_callback(&(SEMHighlightCallback){sem});
   }

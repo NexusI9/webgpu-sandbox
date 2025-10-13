@@ -70,7 +70,8 @@ static inline SceneStatus scene_hide_mesh(Scene *scene, Mesh *mesh) {
   return SceneStatus_Success;
 }
 
-static inline SceneStatus scene_show_mesh_ref_list(Scene *scene, MeshRefList *list) {
+static inline SceneStatus scene_show_mesh_ref_list(Scene *scene,
+                                                   MeshRefList *list) {
 
   for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
     render_pass_list_enable_mesh_ref_list(
@@ -81,7 +82,8 @@ static inline SceneStatus scene_show_mesh_ref_list(Scene *scene, MeshRefList *li
   return SceneStatus_Success;
 }
 
-static inline SceneStatus scene_hide_mesh_ref_list(Scene *scene, MeshRefList *list) {
+static inline SceneStatus scene_hide_mesh_ref_list(Scene *scene,
+                                                   MeshRefList *list) {
 
   for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
     render_pass_list_disable_mesh_ref_list(
@@ -92,16 +94,19 @@ static inline SceneStatus scene_hide_mesh_ref_list(Scene *scene, MeshRefList *li
   return SceneStatus_Success;
 }
 
-static inline SceneStatus scene_visibility_toggle_mesh(Scene *scene, Mesh *mesh) {
+static inline SceneStatus scene_visibility_toggle_mesh(Scene *scene,
+                                                       Mesh *mesh) {
 
   if (mesh_ref_list_find(scene_mesh_state(scene, SceneMeshStates_Hidden), mesh,
-                         NULL))
+                         NULL)) {
     scene_show_mesh(scene, mesh);
-  else
+    return SceneStatus_MeshVisible;
+  } else {
     scene_hide_mesh(scene, mesh);
-
-  return SceneStatus_Success;
+    return SceneStatus_MeshHidden;
+  }
 }
+
 
 #ifdef __cplusplus
 }

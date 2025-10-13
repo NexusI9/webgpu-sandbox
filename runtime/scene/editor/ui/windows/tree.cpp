@@ -1,4 +1,5 @@
 #include "tree.hpp"
+#include "backend/logger.h"
 #include "backend/registry.h"
 #include "imgui/imgui.h"
 #include "runtime/light/core.h"
@@ -28,6 +29,9 @@ void UI::Tree::draw_mesh(Mesh *mesh) {
       draw_mesh(mesh->children.entries[i]);
 
   item.draw_visibility();
+
+  if (ImGui::IsItemClicked())
+    scene_visibility_toggle_mesh(scene, mesh);
 }
 
 static const SceneEditorUIIcon sem_icon_map[SCENE_EDITOR_UI_ICON_COUNT] = {
@@ -56,44 +60,50 @@ void UI::Tree::draw_scene_editor_mesh_list(SceneEditorMeshList *list,
   item.draw_label();
 
   if (ImGui::IsItemClicked())
-    for (size_t i = 0; i < list->length; i++)
-      scene_selection_toggle_mesh(scene, list->entries[i].mesh);
+    scene_selection_toggle_mesh(scene, list->entries->mesh);
 
   item.draw_visibility();
+
+  if (ImGui::IsItemClicked())
+    for (size_t i = 0; i < list->length; i++)
+      scene_visibility_toggle_mesh(scene, list->entries[i].mesh);
 }
 
 void UI::Tree::draw() {
 
   ImGui::BeginChild("Tree", ImVec2(0, ImGui::GetContentRegionAvail().y * 0.3f),
                     true);
-  ImGui::Text("Scene Inspector");
+  ImGui::Text("Scene Tree");
 
-  for (size_t i = 0; i < scene->editor.ui.tree.length; i++) {
+  ImGui::BeginChild("Tree items", ImVec2(0, 0), true);
+  {
+    for (size_t i = 0; i < scene->editor.ui.tree.length; i++) {
 
-    const RegEntry *entry = reg_lookup(scene->editor.ui.tree.entries[i]);
+      const RegEntry *entry = reg_lookup(scene->editor.ui.tree.entries[i]);
 
-    switch (entry->type) {
+      switch (entry->type) {
 
-    case RegEntryType_Mesh:
-      draw_mesh((Mesh *)entry->ptr);
-      break;
+      case RegEntryType_Mesh:
+        draw_mesh((Mesh *)entry->ptr);
+        break;
 
-    case RegEntryType_SceneEditorMeshList_AmbientLight:
-    case RegEntryType_SceneEditorMeshList_PointLight:
-    case RegEntryType_SceneEditorMeshList_SunLight:
-    case RegEntryType_SceneEditorMeshList_SpotLight:
-    case RegEntryType_SceneEditorMeshList_ProbeReflectionGrid:
-    case RegEntryType_SceneEditorMeshList_ProbeReflectionPlane:
-      draw_scene_editor_mesh_list((SceneEditorMeshList *)entry->ptr,
-                                  entry->type);
-      break;
+      case RegEntryType_SceneEditorMeshList_AmbientLight:
+      case RegEntryType_SceneEditorMeshList_PointLight:
+      case RegEntryType_SceneEditorMeshList_SunLight:
+      case RegEntryType_SceneEditorMeshList_SpotLight:
+      case RegEntryType_SceneEditorMeshList_ProbeReflectionGrid:
+      case RegEntryType_SceneEditorMeshList_ProbeReflectionPlane:
+        draw_scene_editor_mesh_list((SceneEditorMeshList *)entry->ptr,
+                                    entry->type);
+        break;
 
-    default:
-      // unhandeld type
-      break;
+      default:
+        // unhandeld type
+        break;
+      }
     }
   }
-
+  ImGui::EndChild();
   ImGui::EndChild();
 }
 

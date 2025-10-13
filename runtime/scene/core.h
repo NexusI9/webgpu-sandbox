@@ -284,6 +284,8 @@ typedef enum {
   SceneStatus_MeshAlreadyExists,
   SceneStatus_MeshInsertFail,
   SceneStatus_MeshAlreadyBuilt,
+  SceneStatus_MeshHidden,
+  SceneStatus_MeshVisible,
   SceneStatuc_UndefError,
 } SceneStatus;
 
