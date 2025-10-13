@@ -3,6 +3,7 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
+#include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
@@ -17,16 +18,17 @@
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/renderer/core.h"
 
-static inline void sem_light_spot_create_common(SceneEditorMeshList *,
+static inline void sem_spot_light_create_common(SceneEditorMeshList *,
                                                 SpotLight *,
                                                 const SEMCreateDescriptor *);
 
-void sem_light_spot_create_common(SceneEditorMeshList *list, SpotLight *light,
+void sem_spot_light_create_common(SceneEditorMeshList *list, SpotLight *light,
                                   const SEMCreateDescriptor *desc) {
 
   // define mesh
   const size_t gizmo_mesh_count = 1;
-  sem_list_create(list, gizmo_mesh_count);
+  sem_list_create(list, gizmo_mesh_count, "Spot Light",
+                  RegEntryType_SceneEditorMeshList_SpotLight);
 
   // get new mesh pointer from main mesh list
   SceneEditorMesh *icon = sem_list_new_entry(list);
@@ -48,29 +50,29 @@ void sem_light_spot_create_common(SceneEditorMeshList *list, SpotLight *light,
 /**
    Insert Spot light gizmo mesh to the list
  */
-void sem_light_spot_create(SceneEditorMeshList *list, SpotLight *light,
+void sem_spot_light_create(SceneEditorMeshList *list, SpotLight *light,
                            const SEMCreateDescriptor *desc) {
 
-  sem_light_spot_create_common(list, light, desc);
-  sem_light_spot_update_transform_callback(list, LightShadow_None);
+  sem_spot_light_create_common(list, light, desc);
+  sem_spot_light_update_transform_callback(list, LightShadow_None);
 }
 
-void sem_light_spot_set_position(SEMTransformCallback *desc) {
+void sem_spot_light_set_position(SEMTransformCallback *desc) {
 
   SpotLight *light = (SpotLight *)desc->sem->target;
 
   glm_vec3_copy(desc->offset, light->position);
 
-  light_spot_uniform_update(light);
+  spot_light_uniform_update(light);
   ssbo_update_queue_insert(&desc->sem->scene->renderer.ssbo, SSBOType_SpotLight,
                            light->ssbo_slot[LightSSBOSlot_List].id);
 
   mesh_set_position(desc->sem->mesh, desc->offset);
 }
 
-void sem_light_spot_set_rotation(SEMTransformCallback *desc) {}
+void sem_spot_light_set_rotation(SEMTransformCallback *desc) {}
 
-void sem_light_spot_set_scale(SEMTransformCallback *desc) {}
+void sem_spot_light_set_scale(SEMTransformCallback *desc) {}
 
 /**
 
@@ -80,21 +82,21 @@ void sem_light_spot_set_scale(SEMTransformCallback *desc) {}
    ▗▄▄▞▘▐▌ ▐▌▐▌ ▐▌▐▙▄▄▀▝▚▄▞▘▐▙█▟▌
 
  */
-void sem_light_spot_shadow_create(SceneEditorMeshList *list, SpotLight *light,
+void sem_spot_light_shadow_create(SceneEditorMeshList *list, SpotLight *light,
                                   const SEMCreateDescriptor *desc) {
 
-  sem_light_spot_create_common(list, light, desc);
-  sem_light_spot_update_transform_callback(list, LightShadow_Enabled);
+  sem_spot_light_create_common(list, light, desc);
+  sem_spot_light_update_transform_callback(list, LightShadow_Enabled);
 }
 
-void sem_light_spot_shadow_set_position(SEMTransformCallback *desc) {
+void sem_spot_light_shadow_set_position(SEMTransformCallback *desc) {
 
   SpotLight *light = (SpotLight *)desc->sem->target;
   SSBOManager *ssbo = &desc->sem->scene->renderer.ssbo;
 
   glm_vec3_copy(desc->offset, light->position);
 
-  light_spot_uniform_update(light);
+  spot_light_uniform_update(light);
   ssbo_update_queue_insert(ssbo, SSBOType_SpotLight,
                            light->ssbo_slot[LightSSBOSlot_List].id);
 
@@ -104,7 +106,7 @@ void sem_light_spot_shadow_set_position(SEMTransformCallback *desc) {
   if (scene_renderer_draw_mode(&desc->sem->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
 
-    light_spot_projection_update(light);
+    spot_light_projection_update(light);
 
     ssbo_update_queue_insert(ssbo, SSBOType_ViewProjection,
                              light->ssbo_slot[LightSSBOSlot_View].id);
@@ -120,25 +122,25 @@ void sem_light_spot_shadow_set_position(SEMTransformCallback *desc) {
   }
 }
 
-void sem_light_spot_shadow_set_rotation(SEMTransformCallback *desc) {}
+void sem_spot_light_shadow_set_rotation(SEMTransformCallback *desc) {}
 
 static const sem_transform_axis_callback
     light_transform_callback[2][GIZMO_MODE_COUNT] = {
         [LightShadow_None] =
             {
-                [GizmoMode_Position] = sem_light_spot_set_position,
-                [GizmoMode_Rotation] = sem_light_spot_set_rotation,
-                [GizmoMode_Scale] = sem_light_spot_set_scale,
+                [GizmoMode_Position] = sem_spot_light_set_position,
+                [GizmoMode_Rotation] = sem_spot_light_set_rotation,
+                [GizmoMode_Scale] = sem_spot_light_set_scale,
             },
         [LightShadow_Enabled] =
             {
-                [GizmoMode_Position] = sem_light_spot_shadow_set_position,
-                [GizmoMode_Rotation] = sem_light_spot_shadow_set_rotation,
-                [GizmoMode_Scale] = sem_light_spot_set_scale,
+                [GizmoMode_Position] = sem_spot_light_shadow_set_position,
+                [GizmoMode_Rotation] = sem_spot_light_shadow_set_rotation,
+                [GizmoMode_Scale] = sem_spot_light_set_scale,
             },
 };
 
-void sem_light_spot_update_transform_callback(SceneEditorMeshList *list,
+void sem_spot_light_update_transform_callback(SceneEditorMeshList *list,
                                               const LightShadow shadow) {
 
   for (size_t i = 0; i < list->length; i++)

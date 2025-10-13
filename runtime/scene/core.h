@@ -86,6 +86,7 @@ struct SceneEditorMesh {
 
 struct SceneEditorMeshList {
   reg_id_t id;
+  name_t name;
   SceneEditorMesh *entries;
   size_t capacity;
   size_t length;
@@ -115,7 +116,6 @@ typedef struct {
  */
 
 #define SCENE_SELECTION_LIST_CAPACITY 6
-#define SCENE_SELECTION_TYPE_COUNT 3
 #define SCENE_SELECTION_OBJECT_MAX_TARGET 6
 
 typedef reg_id_t selection_targets[SCENE_SELECTION_OBJECT_MAX_TARGET];
@@ -136,7 +136,7 @@ typedef reg_id_t selection_targets[SCENE_SELECTION_OBJECT_MAX_TARGET];
    this SSO we can freely select its related ids.
    Also since we use registry IDs targets (prev void*), we also have the
    benefit to fetch the entity 'type' based on its id from the registry.
-   
+
  */
 typedef enum {
   SSOTargetID_Default,
@@ -176,6 +176,7 @@ typedef void (*scene_selection_highlight_callback)(MeshRefList *,
                                                    SceneSelectionObjectList *,
                                                    void *);
 
+#define SCENE_SELECTION_TYPE_COUNT 3
 typedef enum {
   SceneSelectionType_Mesh,
   SceneSelectionType_MeshShadow, // update shadow map on move
@@ -301,14 +302,9 @@ typedef enum {
   ScenePipeline_Fixed_UI = 1 << 7,
 } ScenePipeline;
 
-#define SCENE_MESH_STATE_COUNT 5
+#define SCENE_MESH_STATE_COUNT 1
 
 typedef enum {
-  SceneMeshStates_BuiltTexture = __builtin_ctz(SceneRendererDrawMode_Texture),
-  SceneMeshStates_BuiltSolid = __builtin_ctz(SceneRendererDrawMode_Solid),
-  SceneMeshStates_BuiltWireframe =
-      __builtin_ctz(SceneRendererDrawMode_Wireframe),
-  SceneMeshStates_BuiltBoundbox = __builtin_ctz(SceneRendererDrawMode_Boundbox),
   SceneMeshStates_Hidden,
 } SceneMeshStates;
 

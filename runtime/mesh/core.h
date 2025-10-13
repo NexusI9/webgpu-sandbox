@@ -19,8 +19,8 @@
 #include "topology/core.h"
 #include "topology/topology.h"
 #include "topology/wireframe.h"
-#include "utils/name.h"
 #include "utils/dyli.h"
+#include "utils/name.h"
 #include "webgpu/webgpu.h"
 
 #define MESH_CHILD_LENGTH 6
@@ -119,7 +119,6 @@ extern "C" {
 // constructor
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
-void mesh_set_name(Mesh *, const name_t);
 
 // shader
 void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder);
@@ -192,6 +191,13 @@ static inline void mesh_get_scale(Mesh *mesh, vec3 dest) {
 
 static inline void mesh_get_rotation_euler(Mesh *mesh, vec3 dest) {
   glm_vec3_copy(mesh->rotation_euler, dest);
+}
+
+static inline void mesh_get_name(Mesh *mesh, char *dest) {
+  snprintf(dest, sizeof(mesh->name), "%s", mesh->name);
+}
+static inline void mesh_set_name(Mesh *mesh, const char *src) {
+  name_copy(src, mesh->name);
 }
 
 #ifdef __cplusplus

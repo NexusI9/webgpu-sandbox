@@ -92,10 +92,10 @@ extern "C" {
 
 /* Creator */
 
-void light_point_uniform_update(PointLight *);
-void light_ambient_uniform_update(AmbientLight *);
-void light_spot_uniform_update(SpotLight *);
-void light_sun_uniform_update(SunLight *);
+void point_light_uniform_update(PointLight *);
+void ambient_light_uniform_update(AmbientLight *);
+void spot_light_uniform_update(SpotLight *);
+void sun_light_uniform_update(SunLight *);
 
 // === Attributes Accessor & Mutator ===
 
@@ -112,7 +112,7 @@ static inline void sun_light_get_position(SunLight *light, vec3 dest) {
 
 static inline void sun_light_set_position(SunLight *light, vec3 value) {
   glm_vec3_copy(value, light->position);
-  light_sun_uniform_update(light);
+  sun_light_uniform_update(light);
 }
 
 static inline void spot_light_get_position(SpotLight *light, vec3 dest) {
@@ -121,7 +121,7 @@ static inline void spot_light_get_position(SpotLight *light, vec3 dest) {
 
 static inline void spot_light_set_position(SpotLight *light, vec3 value) {
   glm_vec3_copy(value, light->position);
-  light_spot_uniform_update(light);
+  spot_light_uniform_update(light);
 }
 
 static inline void point_light_get_position(PointLight *light, vec3 dest) {
@@ -130,7 +130,7 @@ static inline void point_light_get_position(PointLight *light, vec3 dest) {
 
 static inline void point_light_set_position(PointLight *light, vec3 value) {
   glm_vec3_copy(value, light->position);
-  light_point_uniform_update(light);
+  point_light_uniform_update(light);
 }
 
 /*
@@ -146,7 +146,7 @@ static inline void sun_light_get_color(SunLight *light, color dest) {
 
 static inline void sun_light_set_color(SunLight *light, color value) {
   glm_vec4_copy(value, light->color);
-  light_sun_uniform_update(light);
+  sun_light_uniform_update(light);
 }
 
 static inline void spot_light_get_color(SpotLight *light, color dest) {
@@ -155,7 +155,7 @@ static inline void spot_light_get_color(SpotLight *light, color dest) {
 
 static inline void spot_light_set_color(SpotLight *light, color value) {
   glm_vec4_copy(value, light->color);
-  light_spot_uniform_update(light);
+  spot_light_uniform_update(light);
 }
 
 static inline void ambient_light_get_color(AmbientLight *light, color dest) {
@@ -164,7 +164,7 @@ static inline void ambient_light_get_color(AmbientLight *light, color dest) {
 
 static inline void ambient_light_set_color(AmbientLight *light, color value) {
   glm_vec4_copy(value, light->color);
-  light_ambient_uniform_update(light);
+  ambient_light_uniform_update(light);
 }
 
 static inline void point_light_get_color(PointLight *light, color dest) {
@@ -173,7 +173,7 @@ static inline void point_light_get_color(PointLight *light, color dest) {
 
 static inline void point_light_set_color(PointLight *light, color value) {
   glm_vec4_copy(value, light->color);
-  light_point_uniform_update(light);
+  point_light_uniform_update(light);
 }
 
 /*
@@ -189,7 +189,7 @@ static inline float sun_light_get_intensity(SunLight *light) {
 
 static inline void sun_light_set_intensity(SunLight *light, float value) {
   light->intensity = value;
-  light_sun_uniform_update(light);
+  sun_light_uniform_update(light);
 }
 
 static inline float spot_light_get_intensity(SpotLight *light) {
@@ -198,7 +198,7 @@ static inline float spot_light_get_intensity(SpotLight *light) {
 
 static inline void spot_light_set_intensity(SpotLight *light, float value) {
   light->intensity = value;
-  light_spot_uniform_update(light);
+  spot_light_uniform_update(light);
 }
 
 static inline float ambient_light_get_intensity(AmbientLight *light) {
@@ -208,7 +208,7 @@ static inline float ambient_light_get_intensity(AmbientLight *light) {
 static inline void ambient_light_set_intensity(AmbientLight *light,
                                                float value) {
   light->intensity = value;
-  light_ambient_uniform_update(light);
+  ambient_light_uniform_update(light);
 }
 
 static inline float point_light_get_intensity(PointLight *light) {
@@ -217,7 +217,7 @@ static inline float point_light_get_intensity(PointLight *light) {
 
 static inline void point_light_set_intensity(PointLight *light, float value) {
   light->intensity = value;
-  light_point_uniform_update(light);
+  point_light_uniform_update(light);
 }
 
 /*
@@ -233,7 +233,7 @@ static inline float point_light_get_cutoff(PointLight *light) {
 
 static inline void point_light_set_cutoff(PointLight *light, float value) {
   light->cutoff = value;
-  light_point_uniform_update(light);
+  point_light_uniform_update(light);
 }
 
 static inline float point_light_get_inner_cutoff(PointLight *light) {
@@ -243,7 +243,7 @@ static inline float point_light_get_inner_cutoff(PointLight *light) {
 static inline void point_light_set_inner_cutoff(PointLight *light,
                                                 float value) {
   light->inner_cutoff = value;
-  light_point_uniform_update(light);
+  point_light_uniform_update(light);
 }
 
 static inline float spot_light_get_cutoff(SpotLight *light) {
@@ -252,7 +252,7 @@ static inline float spot_light_get_cutoff(SpotLight *light) {
 
 static inline void spot_light_set_cutoff(SpotLight *light, float value) {
   light->cutoff = value;
-  light_spot_uniform_update(light);
+  spot_light_uniform_update(light);
 }
 
 static inline float spot_light_get_inner_cutoff(SpotLight *light) {
@@ -261,7 +261,7 @@ static inline float spot_light_get_inner_cutoff(SpotLight *light) {
 
 static inline void spot_light_set_inner_cutoff(SpotLight *light, float value) {
   light->inner_cutoff = value;
-  light_spot_uniform_update(light);
+  spot_light_uniform_update(light);
 }
 
 /*
@@ -277,7 +277,7 @@ static inline float point_light_get_near(PointLight *light) {
 
 static inline void point_light_set_near(PointLight *light, float value) {
   light->near = value;
-  light_point_uniform_update(light);
+  point_light_uniform_update(light);
 }
 
 static inline float point_light_get_far(PointLight *light) {
@@ -286,7 +286,7 @@ static inline float point_light_get_far(PointLight *light) {
 
 static inline void point_light_set_far(PointLight *light, float value) {
   light->far = value;
-  light_point_uniform_update(light);
+  point_light_uniform_update(light);
 }
 
 /*
@@ -303,7 +303,7 @@ static inline float spot_light_get_angle(SpotLight *light) {
 
 static inline void spot_light_set_angle(SpotLight *light, float value) {
   light->angle = value;
-  light_spot_uniform_update(light);
+  spot_light_uniform_update(light);
 }
 
 /*
@@ -318,7 +318,7 @@ static inline float sun_light_get_angle(SunLight *light) { return light->size; }
 
 static inline void sun_light_set_near(SunLight *light, float value) {
   light->size = value;
-  light_sun_uniform_update(light);
+  sun_light_uniform_update(light);
 }
 
 #ifdef __cplusplus

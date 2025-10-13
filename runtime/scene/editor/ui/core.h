@@ -2,6 +2,9 @@
 #define _SCENE_EDITOR_UI_CORE_H_
 
 #include "backend/clock.h"
+#include "backend/registry.h"
+#include "emscripten/html5.h"
+#include "runtime/scene/editor/ui/tree.h"
 #include "runtime/texture/atlas.h"
 #include <webgpu/webgpu.h>
 
@@ -10,7 +13,7 @@ typedef enum {
   SceneEditorUIStatus_UndefError,
 } SceneEditorUIStatus;
 
-#define SCENE_EDITOR_UI_ICON_COUNT 21
+#define SCENE_EDITOR_UI_ICON_COUNT 28
 typedef enum {
   SceneEditorUIIcon_Null,
   SceneEditorUIIcon_RenderMode_Boundbox,
@@ -33,6 +36,13 @@ typedef enum {
   SceneEditorUIIcon_Properties_Scene,
   SceneEditorUIIcon_Properties_Setting,
   SceneEditorUIIcon_Properties_Object,
+  SceneEditorUIIcon_PointLight,
+  SceneEditorUIIcon_AmbientLight,
+  SceneEditorUIIcon_SunLight,
+  SceneEditorUIIcon_SpotLight,
+  SceneEditorUIIcon_Mesh,
+  SceneEditorUIIcon_ProbeReflectionPlane,
+  SceneEditorUIIcon_ProbeReflectionGrid,
 } SceneEditorUIIcon;
 
 #define SCENE_EDITOR_UI_SIZE_COUNT 20
@@ -70,6 +80,8 @@ typedef struct {
 } SceneEditorUIConfig;
 
 typedef struct {
+
+  reg_id_t id;
   cclock *clock;
   double dpi;
   WGPURenderPassEncoder pass_encoder;
@@ -78,16 +90,17 @@ typedef struct {
   WGPUTexture depth_texture;
   WGPUTextureView depth_view;
   TextureAtlas atlas_texture;
+
+  SceneEditorUITree tree;
   SceneEditorUIIconUV icon_uv[SCENE_EDITOR_UI_ICON_COUNT];
   int size[SCENE_EDITOR_UI_SIZE_COUNT];
-  
+
 } SceneEditorUI;
 
 typedef struct {
   cclock *clock;
   double dpi;
 } SceneEditorUIDescriptor;
-
 
 // prevent c++ mangling
 #ifdef __cplusplus
@@ -98,6 +111,10 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *,
                                          const SceneEditorUIDescriptor *);
 
 void scene_editor_ui_draw_callback(void *);
+
+bool scene_editor_keydown_callback(int eventType,
+                                   const EmscriptenKeyboardEvent *keyEvent,
+                                   void *userData);
 
 #ifdef __cplusplus
 }

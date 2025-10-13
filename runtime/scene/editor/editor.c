@@ -56,13 +56,13 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
                           (GizmoGridUniform){
                               .size = 100.0f,
                               .cell_size = 100.0f,
-                              .thickness = 44.0f,
-                              .color = {0.5f, 0.5f, 0.5f, 1.0f},
+                              .thickness = 20.0f,
+                              .color = {0.25f, 0.25f, 0.25f, 1.0f},
                           },
                   });
 
   scene_add_mesh_fixed(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
-                       NULL, SceneAddFlag_Unselectable);
+                       NULL, SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
 }
 
 /**
@@ -82,7 +82,8 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
       Mesh *mesh = gizmo->handles[i].entries[j];
       scene_add_mesh_fixed(scene, mesh, ScenePipeline_Fixed_Front,
                            SCENE_LAYER_GIZMO,
-                           SceneAddFlag_Hide | SceneAddFlag_Unselectable);
+                           SceneAddFlag_Hide | SceneAddFlag_Unselectable |
+                               SceneAddFlag_TreeHide);
     }
   }
 }

@@ -14,11 +14,19 @@ typedef enum {
   RegEntryType_SpotLight,
   RegEntryType_SunLight,
   RegEntryType_Scene,
+  RegEntryType_SceneUI,
   RegEntryType_SceneLayer,
   RegEntryType_ProbeReflectionPlane,
   RegEntryType_ProbeReflectionGrid,
   RegEntryType_SceneEditorMesh,
   RegEntryType_SceneEditorMeshList,
+  RegEntryType_SceneEditorMeshList_PointLight,
+  RegEntryType_SceneEditorMeshList_AmbientLight,
+  RegEntryType_SceneEditorMeshList_SunLight,
+  RegEntryType_SceneEditorMeshList_SpotLight,
+  RegEntryType_SceneEditorMeshList_Camera,
+  RegEntryType_SceneEditorMeshList_ProbeReflectionPlane,
+  RegEntryType_SceneEditorMeshList_ProbeReflectionGrid,
 } RegEntryType;
 
 typedef struct {

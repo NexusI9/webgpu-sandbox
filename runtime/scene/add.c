@@ -38,6 +38,7 @@
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
+#include "runtime/scene/editor/ui/tree.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
 #include "utils/projection.h"
 
@@ -71,7 +72,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
 
   // create sun light
   PointLight *new_light = &base_list->entries[base_list->length];
-  light_point_create(new_light, desc);
+  point_light_create(new_light, desc);
 
   if (dest)
     *dest = new_light;
@@ -81,8 +82,9 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
                   &new_light->ssbo_slot[LightSSBOSlot_List]);
 
   // create mesh/gizmo
-  SceneEditorMeshList *sem_list =
-      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
+  SceneEditorMeshList *sem =
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor),
+                               RegEntryType_SceneEditorMeshList_PointLight);
 
   SEMCreateDescriptor sem_desc = {
       .camera = scene->active_camera,
@@ -100,7 +102,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
     PointLightListShadow *shadow_list = &scene->lights.point.shadow;
 
     sem_desc.target_list_index = shadow_list->length;
-    sem_light_point_shadow_create(sem_list, new_light, &sem_desc);
+    sem_point_light_shadow_create(sem, new_light, &sem_desc);
 
     light_list_point_shadow_insert(shadow_list, new_light);
 
@@ -117,11 +119,11 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-    sem_light_point_create(sem_list, new_light, &sem_desc);
+    sem_point_light_create(sem, new_light, &sem_desc);
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem_list, new_light->id);
+  scene_add_sem(scene, sem, new_light->id);
 
   base_list->length++;
 
@@ -129,7 +131,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
                    (void *)&base_list->length);
   ubo_upload(&scene->renderer.ubo);
 
-  return sem_list;
+  return sem;
 }
 
 SceneEditorMeshList *scene_add_spot_light(Scene *scene,
@@ -145,7 +147,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
 
   // create sun light
   SpotLight *new_light = &base_list->entries[base_list->length];
-  light_spot_create(new_light, desc);
+  spot_light_create(new_light, desc);
 
   if (dest)
     *dest = new_light;
@@ -156,7 +158,8 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
 
   // create mesh/gizmo
   SceneEditorMeshList *sem =
-      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor),
+                               RegEntryType_SceneEditorMeshList_SpotLight);
 
   SEMCreateDescriptor sem_desc = {
       .camera = scene->active_camera,
@@ -173,7 +176,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
     SpotLightListShadow *shadow_list = &scene->lights.spot.shadow;
 
     sem_desc.target_list_index = shadow_list->length;
-    sem_light_spot_shadow_create(sem, new_light, &sem_desc);
+    sem_spot_light_shadow_create(sem, new_light, &sem_desc);
 
     light_list_spot_shadow_insert(shadow_list, new_light);
 
@@ -190,7 +193,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-    sem_light_spot_create(sem, new_light, &sem_desc);
+    sem_spot_light_create(sem, new_light, &sem_desc);
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -221,7 +224,7 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
 
   // create sun light
   AmbientLight *new_light = &list->entries[list->length++];
-  light_ambient_create(new_light, desc);
+  ambient_light_create(new_light, desc);
 
   if (dest)
     *dest = new_light;
@@ -232,9 +235,10 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
 
   // create mesh/gizmo
   SceneEditorMeshList *sem =
-      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor),
+                               RegEntryType_SceneEditorMeshList_AmbientLight);
 
-  sem_light_ambient_create(sem, new_light,
+  sem_ambient_light_create(sem, new_light,
                            &(SEMCreateDescriptor){
                                .camera = scene->active_camera,
                                .viewport = &scene->viewport,
@@ -264,7 +268,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
   // create sun light
   SunLight *new_light = &base_list->entries[base_list->length];
-  light_sun_create(new_light, desc);
+  sun_light_create(new_light, desc);
 
   if (dest)
     *dest = new_light;
@@ -275,7 +279,8 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
   // create mesh/gizmo
   SceneEditorMeshList *sem =
-      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor),
+                               RegEntryType_SceneEditorMeshList_SunLight);
 
   SEMCreateDescriptor sem_desc = {
       .camera = scene->active_camera,
@@ -293,7 +298,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
     sem_desc.target_list_index = shadow_list->length;
 
-    sem_light_sun_shadow_create(sem, new_light, &sem_desc);
+    sem_sun_light_shadow_create(sem, new_light, &sem_desc);
 
     light_list_sun_shadow_insert(shadow_list, new_light);
 
@@ -312,7 +317,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-    sem_light_sun_create(sem, new_light, &sem_desc);
+    sem_sun_light_create(sem, new_light, &sem_desc);
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -360,7 +365,8 @@ SceneEditorMeshList *scene_add_camera(Scene *scene,
 
   // create gizmo
   SceneEditorMeshList *sem =
-      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
+      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor),
+                               RegEntryType_SceneEditorMeshList_Camera);
 
   sem_camera_create(sem, new_cam,
                     &(SEMCreateDescriptor){
@@ -403,8 +409,7 @@ void scene_add_sem(Scene *scene, SceneEditorMeshList *list,
     {
       // build mesh depending on pipeline and scene render mode
       ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
-      scene_build_mesh(scene, mesh, ScenePipeline_Fixed,
-                       scene->renderer.draw.mode);
+      scene_build_mesh(scene, mesh, ScenePipeline_Fixed);
     }
 
     {
@@ -423,6 +428,9 @@ void scene_add_sem(Scene *scene, SceneEditorMeshList *list,
                                      SceneSelectionType_SEM);
     }
   }
+
+  // EDITORONLY
+  scene_editor_ui_tree_insert(&scene->editor.ui.tree, list->id);
 }
 
 SceneEditorMeshList *
@@ -439,8 +447,9 @@ scene_add_probe_reflection_grid(Scene *scene,
     *dest = new_grid;
 
   // create scene object
-  SceneEditorMeshList *sem_grid =
-      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
+  SceneEditorMeshList *sem_grid = sem_list_array_new_entry(
+      scene_editor_mesh_list(&scene->editor),
+      RegEntryType_SceneEditorMeshList_ProbeReflectionGrid);
 
   sem_probe_reflection_grid_create(sem_grid, new_grid,
                                    &(SEMCreateDescriptor){
@@ -501,8 +510,9 @@ scene_add_probe_reflection_plane(Scene *scene,
   probe_reflection_plane_create(probe, desc);
 
   // create scene object
-  SceneEditorMeshList *sem =
-      sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor));
+  SceneEditorMeshList *sem = sem_list_array_new_entry(
+      scene_editor_mesh_list(&scene->editor),
+      RegEntryType_SceneEditorMeshList_ProbeReflectionPlane);
 
   probe_reflection_plane_create(probe, desc);
 
@@ -595,6 +605,10 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
     scene_selection_subscribe_mesh(&scene->editor.selection, mesh,
                                    (selection_targets){mesh->id},
                                    selection_pipeline);
+
+  // EDITORONLY
+  if ((flag & SceneAddFlag_TreeHide) == 0 && mesh->parent == NULL)
+    scene_editor_ui_tree_insert(&scene->editor.ui.tree, mesh->id);
 }
 
 /**
@@ -666,7 +680,7 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
 
   // build mesh depending on pipeline and scene render mode
-  scene_build_mesh(scene, mesh, pipeline, scene->renderer.draw.mode);
+  scene_build_mesh(scene, mesh, pipeline);
 
   scene_add_mesh_any(scene, mesh, pipeline, layer, flag);
 }
@@ -696,7 +710,7 @@ void scene_add_mesh_fixed(Scene *scene, Mesh *mesh,
                           const ScenePipeline pipeline, const char *layer,
                           const SceneAddFlag flag) {
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
-  scene_build_mesh(scene, mesh, pipeline, scene->renderer.draw.mode);
+  scene_build_mesh(scene, mesh, pipeline);
   scene_add_mesh_any(scene, mesh, pipeline, layer, flag);
 }
 

@@ -49,8 +49,7 @@ static inline void scene_build_mesh_boundbox(Scene *, Mesh *,
    which the mesh will be added to.
  */
 SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
-                             const ScenePipeline pipeline,
-                             const SceneRendererDrawMode draw_mode) {
+                             const ScenePipeline pipeline) {
 
   SSBOManager *ssbo = &scene->renderer.ssbo;
   UBOManager *ubo = &scene->renderer.ubo;
@@ -68,42 +67,16 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
 
   } else {
 
-    // === Dynamic rendering ===
-
-    {
-      // flag mesh as built to make sure we don't build it twice
-      // (for dynamic rendering)
-      MeshRefList *cache_built =
-          scene_mesh_state(scene, __builtin_ctz(draw_mode));
-      if (mesh_ref_list_find(cache_built, mesh, NULL) != NULL)
-        return SceneStatus_MeshAlreadyBuilt;
-      mesh_ref_list_insert(cache_built, mesh);
-    }
-
     {
       // EDITORONLY
       scene_build_mesh_outline(scene, mesh, pipeline);
     }
 
-    // Dynamic rendering
-    switch (draw_mode) {
-
-    case SceneRendererDrawMode_Boundbox:
+    {
       scene_build_mesh_boundbox(scene, mesh, pipeline);
-      break;
-
-    case SceneRendererDrawMode_Solid:
       scene_build_mesh_solid(scene, mesh, pipeline);
-      break;
-
-    case SceneRendererDrawMode_Wireframe:
       scene_build_mesh_wireframe(scene, mesh, pipeline);
-      break;
-
-    case SceneRendererDrawMode_Texture:
-    default:
       scene_build_mesh_texture(scene, mesh, pipeline);
-      break;
     }
   }
 
@@ -111,10 +84,9 @@ SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
 }
 
 void scene_build_mesh_ref_list(Scene *scene, MeshRefList *list,
-                               const ScenePipeline pipeline,
-                               const SceneRendererDrawMode draw_mode) {
+                               const ScenePipeline pipeline) {
   for (size_t i = 0; i < list->length; i++)
-    scene_build_mesh(scene, list->entries[i], pipeline, draw_mode);
+    scene_build_mesh(scene, list->entries[i], pipeline);
 }
 
 /**
@@ -248,7 +220,7 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
                                (void *)&line_thickness);
 
     shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 0,
-                               &(color){randf(), randf(), randf(), 1.0f});
+                               &(color){0.0f, 0.0f, 0.0f, 1.0f});
 
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
   }

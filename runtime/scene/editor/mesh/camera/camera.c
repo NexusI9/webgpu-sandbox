@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "backend/registry.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/camera/core.h"
 #include "runtime/geometry/vertex/attribute.h"
@@ -25,7 +26,8 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
                        const SEMCreateDescriptor *desc) {
 
   const uint8_t sem_mesh_count = 2;
-  sem_list_create(list, sem_mesh_count);
+  sem_list_create(list, sem_mesh_count, "Camera",
+                  RegEntryType_SceneEditorMeshList_Camera);
 
   // create new mesh in the mesh list
   SceneEditorMesh *icon = sem_list_new_entry(list);

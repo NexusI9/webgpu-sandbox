@@ -14,27 +14,33 @@
 void scene_gizmo_show(Scene *scene) {
   Gizmo *gizmo = &scene->editor.gizmo.transform;
 
-  RenderPassList *pass_list = scene_renderer_active_pass_list(&scene->renderer);
-  RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
-      &pass_list->passes[ScenePass_Gizmo],
-      scene_pipeline(scene, ScenePipeline_Fixed_Front));
+  for (SceneRendererDrawMode i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
+    RenderPassList *pass_list = &scene->renderer.draw.render_pass[i];
 
-  if (layout)
-    render_pass_layout_enable_mesh_ref_list(
-        layout, &gizmo->handles[gizmo->mode]);
+    RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
+        &pass_list->passes[ScenePass_Gizmo],
+        scene_pipeline(scene, ScenePipeline_Fixed_Front));
+
+    if (layout)
+      render_pass_layout_enable_mesh_ref_list(layout,
+                                              &gizmo->handles[gizmo->mode]);
+  }
 }
 
 void scene_gizmo_hide(Scene *scene) {
-  
+
   Gizmo *gizmo = &scene->editor.gizmo.transform;
 
-  RenderPassList *pass_list = scene_renderer_active_pass_list(&scene->renderer);
-  RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
-      &pass_list->passes[ScenePass_Gizmo],
-      scene_pipeline(scene, ScenePipeline_Fixed_Front));
+  for (SceneRendererDrawMode i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
+    RenderPassList *pass_list = &scene->renderer.draw.render_pass[i];
+    
+    RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
+        &pass_list->passes[ScenePass_Gizmo],
+        scene_pipeline(scene, ScenePipeline_Fixed_Front));
 
-  if (layout)
-    render_pass_layout_disable_all_mesh(layout);
+    if (layout)
+      render_pass_layout_disable_all_mesh(layout);
+  }
 }
 
 /**

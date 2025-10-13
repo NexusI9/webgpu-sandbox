@@ -26,6 +26,7 @@
 #define PROBE_REFLECTION_GRID_LIST_CAPACITY 8
 
 typedef struct {
+  name_t name;
   reg_id_t id;
   ProbeReflectionList probes;
   WGPUTexture texture;
@@ -47,7 +48,7 @@ typedef struct {
   ivec3 count;
   vec3 scale;
   vec3 position;
-
+  const char *name;
 } ProbeReflectionGridDescriptor;
 
 typedef struct {
@@ -62,6 +63,16 @@ void probe_reflection_grid_create(ProbeReflectionGrid *,
 void probe_reflection_grid_destroy(ProbeReflectionGrid *);
 
 void probe_reflection_grid_update_boundbox(ProbeReflectionGrid *);
+
+static inline const char *
+probe_reflection_grid_get_name(ProbeReflectionGrid *grid) {
+  return grid->name;
+}
+
+static inline void probe_reflection_grid_set_name(ProbeReflectionGrid *grid,
+                                                  const char *name) {
+  name_copy(name, grid->name);
+}
 
 /* === Probe Grid List  === */
 

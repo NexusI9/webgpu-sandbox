@@ -17,24 +17,32 @@ template <typename T> struct InspectorTreeIntAttribute {
   const char *label;
   void (*mutator_callback)(T *, int);
   int (*accessor_callback)(T *);
+  void (*extra_callback)(Scene *, void *);
+  void *user_data;
 };
 
 template <typename T> struct InspectorTreeFloatAttribute {
   const char *label;
   void (*mutator_callback)(T *, float);
   float (*accessor_callback)(T *);
+  void (*extra_callback)(Scene *, void *);
+  void *user_data;
 };
 
 template <typename T> struct InspectorTreeVec3Attribute {
   const char *label;
   void (*mutator_callback)(T *, vec3);
   void (*accessor_callback)(T *, vec3);
+  void (*extra_callback)(Scene *, void *);
+  void *user_data;
 };
 
 template <typename T> struct InspectorTreeVec4Attribute {
   const char *label;
   void (*mutator_callback)(T *, vec4);
   void (*accessor_callback)(T *, vec4);
+  void (*extra_callback)(Scene *, void *);
+  void *user_data;
 };
 
 #define INSPECTOR_TREE_CAPACITY 12
@@ -88,35 +96,42 @@ inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
     for (i = 0; i < list->int_list.length; i++)
       UI::InputInt<T>(target, scene, list->int_list.entries[i].label,
                       list->int_list.entries[i].accessor_callback,
-                      list->int_list.entries[i].mutator_callback, ssbo_type,
-                      ssbo_id)
+                      list->int_list.entries[i].mutator_callback,
+                      list->int_list.entries[i].extra_callback,
+                      list->int_list.entries[i].user_data, ssbo_type, ssbo_id)
           .draw();
 
     for (i = 0; i < list->float_list.length; i++)
       UI::InputFloat<T>(target, scene, list->float_list.entries[i].label,
                         list->float_list.entries[i].accessor_callback,
-                        list->float_list.entries[i].mutator_callback, ssbo_type,
+                        list->float_list.entries[i].mutator_callback,
+                        list->float_list.entries[i].extra_callback,
+                        list->float_list.entries[i].user_data, ssbo_type,
                         ssbo_id)
           .draw();
 
     for (i = 0; i < list->vec3_list.length; i++)
       UI::InputVec3<T>(target, scene, list->vec3_list.entries[i].label,
                        list->vec3_list.entries[i].accessor_callback,
-                       list->vec3_list.entries[i].mutator_callback, ssbo_type,
-                       ssbo_id)
+                       list->vec3_list.entries[i].mutator_callback,
+                       list->vec3_list.entries[i].extra_callback,
+                       list->vec3_list.entries[i].user_data, ssbo_type, ssbo_id)
           .draw();
 
     for (i = 0; i < list->vec4_list.length; i++)
       UI::InputVec4<T>(target, scene, list->vec4_list.entries[i].label,
                        list->vec4_list.entries[i].accessor_callback,
-                       list->vec4_list.entries[i].mutator_callback, ssbo_type,
-                       ssbo_id)
+                       list->vec4_list.entries[i].mutator_callback,
+                       list->vec4_list.entries[i].extra_callback,
+                       list->vec4_list.entries[i].user_data, ssbo_type, ssbo_id)
           .draw();
 
     for (i = 0; i < list->color_list.length; i++)
       UI::InputColor<T>(target, scene, list->color_list.entries[i].label,
                         list->color_list.entries[i].accessor_callback,
-                        list->color_list.entries[i].mutator_callback, ssbo_type,
+                        list->color_list.entries[i].mutator_callback,
+                        list->color_list.entries[i].extra_callback,
+                        list->color_list.entries[i].user_data, ssbo_type,
                         ssbo_id)
           .draw();
 

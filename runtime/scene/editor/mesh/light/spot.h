@@ -8,22 +8,22 @@
 #include "runtime/light/list.h"
 
 /* Base */
-void sem_light_spot_create(SceneEditorMeshList *, SpotLight *,
+void sem_spot_light_create(SceneEditorMeshList *, SpotLight *,
                            const SEMCreateDescriptor *);
 
-void sem_light_spot_set_position(SEMTransformCallback *);
-void sem_light_spot_set_rotation(SEMTransformCallback *);
-void sem_light_spot_set_scale(SEMTransformCallback *);
+void sem_spot_light_set_position(SEMTransformCallback *);
+void sem_spot_light_set_rotation(SEMTransformCallback *);
+void sem_spot_light_set_scale(SEMTransformCallback *);
 
-void sem_light_spot_update_transform_callback(SceneEditorMeshList *,
+void sem_spot_light_update_transform_callback(SceneEditorMeshList *,
                                               const LightShadow);
 
 /* Shadow */
 
-void sem_light_spot_shadow_create(SceneEditorMeshList *, SpotLight *,
+void sem_spot_light_shadow_create(SceneEditorMeshList *, SpotLight *,
                                   const SEMCreateDescriptor *);
 
-void sem_light_spot_shadow_set_position(SEMTransformCallback *);
-void sem_light_spot_shadow_set_rotation(SEMTransformCallback *);
+void sem_spot_light_shadow_set_position(SEMTransformCallback *);
+void sem_spot_light_shadow_set_rotation(SEMTransformCallback *);
 
 #endif

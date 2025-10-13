@@ -8,6 +8,8 @@
 #include "include/imgui/imgui.h"
 #include "include/imgui/imgui_impl_wgpu.h"
 #include "resources/tool/css2h/output/theme.default.h"
+#include "runtime/html_event/add.h"
+#include "runtime/html_event/core.h"
 #include "runtime/input/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
@@ -20,11 +22,11 @@
 #include "runtime/scene/editor/ui/windows/browser.hpp"
 #include "runtime/scene/editor/ui/windows/display.hpp"
 #include "runtime/scene/editor/ui/windows/gizmo.hpp"
-#include "runtime/scene/editor/ui/windows/hierarchy.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.hpp"
 #include "runtime/scene/editor/ui/windows/log.hpp"
 #include "runtime/scene/editor/ui/windows/monitor.hpp"
 #include "runtime/scene/editor/ui/windows/render_mode.hpp"
+#include "runtime/scene/editor/ui/windows/tree.hpp"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/scene/show.h"
@@ -52,17 +54,37 @@ static inline void scene_editor_ui_create_right_panel(SceneEditorUI *, Scene *);
 static inline void scene_editor_ui_create_bottom_panel(SceneEditorUI *,
                                                        Scene *);
 
+bool scene_editor_keydown_callback(int eventType,
+                                   const EmscriptenKeyboardEvent *e,
+                                   void *userData) {
+  ImGuiIO &io = ImGui::GetIO();
+  ImGuiKey key = (ImGuiKey)(ImGuiKey_NamedKey_BEGIN + e->keyCode);
+
+  if (e->which > 0 && e->which < 0x10000)
+    io.AddInputCharacter((unsigned int)e->which);
+
+  return EM_TRUE;
+}
+
 SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
                                          const SceneEditorUIDescriptor *desc) {
 
   logger_add(LoggerFlag_Process, "Intitializing Editor UI");
 
   {
+    ui->id = reg_register(ui, RegEntryType_SceneUI);
     ui->clock = desc->clock;
     ui->dpi = desc->dpi;
     scene_editor_ui_create_texture(ui);
     scene_editor_ui_set_size(ui);
     scene_editor_ui_set_icon_cell(ui);
+    scene_editor_ui_tree_create(&ui->tree, SCENE_EDITOR_UI_TREE_CAPACITY);
+
+    HTMLEventKey keydown_desc = {
+        .callback = scene_editor_keydown_callback,
+        .owner = ui->id,
+    };
+    html_event_add_key_down(&keydown_desc);
   }
 
   {
@@ -134,7 +156,8 @@ void scene_editor_ui_draw_callback(void *data) {
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
     io.MousePos = ImVec2(g_input.mouse.x * ui->dpi, g_input.mouse.y * ui->dpi);
     io.MouseDown[0] = g_input.mouse.state;
-    io.MouseWheel = g_input.mouse.wheel.deltaX;
+    io.MouseWheel += g_input.mouse.wheel.deltaY;
+    io.MouseWheelH += g_input.mouse.wheel.deltaX;
   }
 
   {
@@ -243,6 +266,17 @@ void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
     ui->icon_uv[SceneEditorUIIcon_Properties_Object] = {.cell = {8, 1}};
   }
 
+  // solid
+  {
+    ui->icon_uv[SceneEditorUIIcon_PointLight] = {.cell = {0, 0}};
+    ui->icon_uv[SceneEditorUIIcon_SunLight] = {.cell = {1, 0}};
+    ui->icon_uv[SceneEditorUIIcon_SpotLight] = {.cell = {2, 0}};
+    ui->icon_uv[SceneEditorUIIcon_AmbientLight] = {.cell = {3, 0}};
+    ui->icon_uv[SceneEditorUIIcon_Mesh] = {.cell = {9, 1}};
+    ui->icon_uv[SceneEditorUIIcon_ProbeReflectionPlane] = {.cell = {10, 1}};
+    ui->icon_uv[SceneEditorUIIcon_ProbeReflectionGrid] = {.cell = {11, 1}};
+  }
+
   // generate uvs
   for (uint8_t i = 0; i < SCENE_EDITOR_UI_ICON_COUNT; i++)
     texture_atlas_cell_uv(&ui->atlas_texture, ui->icon_uv[i].cell,
@@ -311,7 +345,7 @@ void scene_editor_ui_create_right_panel(SceneEditorUI *ui, Scene *scene) {
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
   {
-    UI::Hierarchy(scene, "Hierarchy").draw();
+    UI::Tree(scene, "Hierarchy").draw();
     UI::Inspector(scene, "Inspector").draw();
   }
 

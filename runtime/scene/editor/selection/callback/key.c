@@ -153,6 +153,9 @@ void scene_selection_init_key_events(Scene *scene) {
 void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
                                                       void *data) {
 
+  if (g_input.locked & InputLockState_Keyboard)
+    return;
+
   Scene *scene = (Scene *)data;
   SceneSelection *selection = &scene->editor.selection;
   Gizmo *gizmo = &scene->editor.gizmo.transform;
@@ -171,6 +174,9 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
 
 void scene_selection_key_sequence_callback_set_gizmo_mode(
     KeyRecordSequence *seq, void *data) {
+
+  if (g_input.locked & InputLockState_Keyboard)
+    return;
 
   Scene *scene = (Scene *)data;
   Gizmo *gizmo = &scene->editor.gizmo.transform;
@@ -198,6 +204,9 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
 
 void scene_selection_key_sequence_callback_transform(
     KeyRecordSequence *current_seq, void *data) {
+
+  if (g_input.locked & InputLockState_Keyboard)
+    return;
 
   Scene *scene = (Scene *)data;
   Gizmo *gizmo = &scene->editor.gizmo.transform;

@@ -100,6 +100,8 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
                                    ProbeReflectionPlaneDescriptor *desc) {
 
   probe->id = reg_register(probe, RegEntryType_ProbeReflectionPlane);
+
+  probe_reflection_plane_set_name(probe, desc->name == 0 ? "Probe Reflection Plane" : desc->name);
   
   // Define init attribute
   glm_vec3_copy(desc->position, probe->position);

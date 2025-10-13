@@ -42,6 +42,7 @@ typedef enum {
   SceneAddFlag_None = 1 << 0,
   SceneAddFlag_Hide = 1 << 1,
   SceneAddFlag_Unselectable = 1 << 2,
+  SceneAddFlag_TreeHide = 1 << 3,
 } SceneAddFlag;
 
 /* === Scene Editor Objects === */

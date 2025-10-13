@@ -27,13 +27,19 @@ typedef enum {
   InputMouseState_Down,
 } InputMouseState;
 
+typedef enum {
+  InputLockState_Unlocked = 0,
+  InputLockState_Keyboard = 1 << 0,
+  InputLockState_Mouse = 1 << 1,
+} InputLockState;
+
 typedef struct {
 
+  int locked; // need to look when focused on ui
   bool keys[INPUT_KEY_LENGTH];
   KeyRecordSequenceList sequence_listener;
 
   struct {
-
     int x, y;
     InputMouseState state;
     float sensitivity;
@@ -65,7 +71,7 @@ typedef struct {
 void input_set_key(unsigned int, bool);
 void input_disable_all_keys();
 
-void input_init(const InputDescriptor*);
+void input_init(const InputDescriptor *);
 
 bool input_key(unsigned int);
 

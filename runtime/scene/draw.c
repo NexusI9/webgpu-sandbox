@@ -19,11 +19,6 @@ void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
   if (mode == scene->renderer.draw.mode)
     return;
 
-  // build dynamic meshes
-  for (uint8_t i = 0; i < 3; i++)
-    scene_build_mesh_ref_list(scene, scene_pipeline(scene, 1 << i), 1 << i,
-                              mode);
-
   // update light / reflections
   if (mode == SceneRendererDrawMode_Texture) {
 

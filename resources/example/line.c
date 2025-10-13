@@ -24,5 +24,5 @@ void example_line(Scene *scene) {
                  &line->topology.base.index);
 
   scene_add_mesh_fixed(scene, line, ScenePipeline_Fixed, NULL,
-                       SceneAddFlag_Unselectable);
+                       SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
 }

@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "backend/logger.h"
+#include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/mesh/core.h"
@@ -28,7 +29,8 @@ void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
   // 1 bound cube + (x * y * z probes)
   const uint16_t sem_mesh_count =
       1 + grid->count[0] * grid->count[1] * grid->count[2];
-  sem_list_create(list, sem_mesh_count);
+  sem_list_create(list, sem_mesh_count, "Probe Reflection Grid",
+                  RegEntryType_SceneEditorMeshList_ProbeReflectionGrid);
 
   /*
 

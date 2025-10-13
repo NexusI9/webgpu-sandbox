@@ -15,10 +15,12 @@
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/scene/renderer/render_pass/render_pass.h"
 #include "utils/dyli.h"
+#include "utils/name.h"
 
 #define PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT 32
 
 typedef struct {
+  name_t name;
   reg_id_t id;
   vec3 position;
   vec3 normal;
@@ -60,6 +62,7 @@ typedef struct {
 } ProbeReflectionPlaneList;
 
 typedef struct {
+  const char *name;
   float near;
   float far;
   vec3 scale;
@@ -96,5 +99,14 @@ void probe_reflection_plane_enable_mesh(ProbeReflectionPlane *, Mesh *);
 void probe_reflection_plane_update_uniform(ProbeReflectionPlane *);
 void probe_reflection_plane_update_camera(ProbeReflectionPlane *);
 void probe_reflection_plane_update_boundbox(ProbeReflectionPlane *);
+
+static inline const char *
+probe_reflection_plane_get_name(ProbeReflectionPlane *plane) {
+  return plane->name;
+}
+
+static inline void probe_reflection_plane_set_name(ProbeReflectionPlane* plane, const char* name){
+  name_copy(name, plane->name);
+}
 
 #endif

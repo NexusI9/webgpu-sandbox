@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/geometry/aabb/aabb.h"
@@ -28,7 +29,8 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
                                        const SEMCreateDescriptor *desc) {
 
   const uint16_t sem_mesh_count = 4;
-  sem_list_create(list, sem_mesh_count);
+  sem_list_create(list, sem_mesh_count, "Probe Reflection Plane",
+                  RegEntryType_SceneEditorMeshList_ProbeReflectionPlane);
 
   /*
 
@@ -132,7 +134,7 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
         sem_probe_reflection_plane_set_rotation;
     list->entries[i].transform_callback[GizmoMode_Scale] =
         sem_probe_reflection_plane_set_scale;
-    
+
     list->entries[i].select_callback = sem_wireframe_select_callback;
     list->entries[i].deselect_callback = sem_wireframe_deselect_callback;
   }

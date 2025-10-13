@@ -3,20 +3,24 @@
 #include "imgui/imgui.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/mesh/transform.h"
+#include "runtime/scene/editor/selection/utils.h"
+#include "runtime/scene/editor/ui/components/input.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.hpp"
 #include <cstdio>
+
+void UI::InspectorMesh::update_extra_callback(Scene *scene, void *user_data) {
+  scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
+                               &scene->editor.selection, &scene->renderer.ssbo);
+}
 
 void UI::InspectorMesh::draw() {
 
   ImGui::BeginChild("##MeshProp", ImVec2(0, 0), true);
   {
-
-    char name_id[128];
-    snprintf(name_id, 12, "##%s", mesh->name);
-
-    if (ImGui::InputText(name_id, mesh->name, sizeof(mesh->name))) {
-      // mesh_set_name(mesh, mesh->name);
-    } 
+ 
+    UI::InputText<Mesh>(mesh, scene, "mesh name", sizeof(name_t), mesh_get_name,
+                        mesh_set_name, NULL, NULL)
+        .draw();
 
     ImGui::Spacing();
     inspector_tree_list_draw(mesh, &transform_attributes, scene, SSBOType_Mesh,

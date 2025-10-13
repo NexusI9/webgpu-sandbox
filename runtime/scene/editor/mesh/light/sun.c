@@ -3,6 +3,7 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
+#include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
@@ -17,16 +18,17 @@
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/renderer/core.h"
 
-static inline void sem_light_sun_create_common(SceneEditorMeshList *,
+static inline void sem_sun_light_create_common(SceneEditorMeshList *,
                                                SunLight *,
                                                const SEMCreateDescriptor *);
 
-void sem_light_sun_create_common(SceneEditorMeshList *list, SunLight *light,
+void sem_sun_light_create_common(SceneEditorMeshList *list, SunLight *light,
                                  const SEMCreateDescriptor *desc) {
 
   // define mesh
   const size_t gizmo_mesh_count = 1;
-  sem_list_create(list, gizmo_mesh_count);
+  sem_list_create(list, gizmo_mesh_count, "Sun Light",
+                  RegEntryType_SceneEditorMeshList_SunLight);
 
   // get new mesh pointer from main mesh list
   SceneEditorMesh *icon = sem_list_new_entry(list);
@@ -48,28 +50,28 @@ void sem_light_sun_create_common(SceneEditorMeshList *list, SunLight *light,
 /**
    Insert Sun light gizmo mesh to the list
  */
-void sem_light_sun_create(SceneEditorMeshList *list, SunLight *light,
+void sem_sun_light_create(SceneEditorMeshList *list, SunLight *light,
                           const SEMCreateDescriptor *desc) {
-  sem_light_sun_create_common(list, light, desc);
-  sem_light_sun_update_transform_callback(list, LightShadow_None);
+  sem_sun_light_create_common(list, light, desc);
+  sem_sun_light_update_transform_callback(list, LightShadow_None);
 }
 
-void sem_light_sun_set_position(SEMTransformCallback *desc) {
+void sem_sun_light_set_position(SEMTransformCallback *desc) {
 
   SunLight *light = (SunLight *)desc->sem->target;
 
   glm_vec3_copy(desc->offset, light->position);
 
-  light_sun_uniform_update(light);
+  sun_light_uniform_update(light);
   ssbo_update_queue_insert(&desc->sem->scene->renderer.ssbo, SSBOType_SunLight,
                            light->ssbo_slot[LightSSBOSlot_List].id);
 
   mesh_set_position(desc->sem->mesh, desc->offset);
 }
 
-void sem_light_sun_set_rotation(SEMTransformCallback *desc) {}
+void sem_sun_light_set_rotation(SEMTransformCallback *desc) {}
 
-void sem_light_sun_set_scale(SEMTransformCallback *desc) {}
+void sem_sun_light_set_scale(SEMTransformCallback *desc) {}
 
 /**
 
@@ -83,22 +85,22 @@ void sem_light_sun_set_scale(SEMTransformCallback *desc) {}
 /**
    Insert Shadowed Sun light gizmo mesh to the list
  */
-void sem_light_sun_shadow_create(SceneEditorMeshList *list, SunLight *light,
+void sem_sun_light_shadow_create(SceneEditorMeshList *list, SunLight *light,
                                  const SEMCreateDescriptor *desc) {
 
-  sem_light_sun_create_common(list, light, desc);
+  sem_sun_light_create_common(list, light, desc);
 
-  sem_light_sun_update_transform_callback(list, LightShadow_Enabled);
+  sem_sun_light_update_transform_callback(list, LightShadow_Enabled);
 }
 
-void sem_light_sun_shadow_set_position(SEMTransformCallback *desc) {
+void sem_sun_light_shadow_set_position(SEMTransformCallback *desc) {
 
   SunLight *light = (SunLight *)desc->sem->target;
   SSBOManager *ssbo = &desc->sem->scene->renderer.ssbo;
 
   glm_vec3_copy(desc->offset, light->position);
 
-  light_sun_uniform_update(light);
+  sun_light_uniform_update(light);
   ssbo_update_queue_insert(&desc->sem->scene->renderer.ssbo, SSBOType_SunLight,
                            light->ssbo_slot[LightSSBOSlot_List].id);
 
@@ -108,7 +110,7 @@ void sem_light_sun_shadow_set_position(SEMTransformCallback *desc) {
   if (scene_renderer_draw_mode(&desc->sem->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
 
-    light_sun_projection_update(light);
+    sun_light_projection_update(light);
 
     ssbo_update_queue_insert(ssbo, SSBOType_ViewProjection,
                              light->ssbo_slot[LightSSBOSlot_View].id);
@@ -129,19 +131,19 @@ static const sem_transform_axis_callback
     light_transform_callback[2][GIZMO_MODE_COUNT] = {
         [LightShadow_None] =
             {
-                [GizmoMode_Position] = sem_light_sun_set_position,
-                [GizmoMode_Rotation] = sem_light_sun_set_rotation,
-                [GizmoMode_Scale] = sem_light_sun_set_scale,
+                [GizmoMode_Position] = sem_sun_light_set_position,
+                [GizmoMode_Rotation] = sem_sun_light_set_rotation,
+                [GizmoMode_Scale] = sem_sun_light_set_scale,
             },
         [LightShadow_Enabled] =
             {
-                [GizmoMode_Position] = sem_light_sun_shadow_set_position,
-                [GizmoMode_Rotation] = sem_light_sun_set_rotation,
-                [GizmoMode_Scale] = sem_light_sun_set_scale,
+                [GizmoMode_Position] = sem_sun_light_shadow_set_position,
+                [GizmoMode_Rotation] = sem_sun_light_set_rotation,
+                [GizmoMode_Scale] = sem_sun_light_set_scale,
             },
 };
 
-void sem_light_sun_update_transform_callback(SceneEditorMeshList *list,
+void sem_sun_light_update_transform_callback(SceneEditorMeshList *list,
                                              const LightShadow shadow) {
 
   for (size_t i = 0; i < list->length; i++)

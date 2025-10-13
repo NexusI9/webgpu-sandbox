@@ -7,24 +7,64 @@
 #include "runtime/scene/core.h"
 #include "utils/dyli.h"
 
-/* Object List */
-DynamicListStatus scene_selection_target_list_create(SceneSelectionTargetList *,
-                                                     size_t);
+#include "backend/registry.h"
+#include "runtime/scene/core.h"
+#include "utils/dyli.h"
 
-reg_id_t* scene_selection_target_list_insert(SceneSelectionTargetList *,
-                                            selection_targets);
+static inline DynamicListStatus
+scene_selection_target_list_create(SceneSelectionTargetList *list,
+                                   size_t capacity) {
 
-DynamicListStatus
-scene_selection_target_remove_at_index(SceneSelectionTargetList *, size_t);
+  return dyli_create((void **)&list->entries, &list->capacity, &list->length,
+                     sizeof(selection_targets), capacity,
+                     "Scene selection target list");
+}
 
-DynamicListStatus
-scene_selection_target_list_append(const SceneSelectionTargetList *,
-                                   SceneSelectionTargetList *);
+static inline reg_id_t *
+scene_selection_target_list_insert(SceneSelectionTargetList *list,
+                                   selection_targets entry) {
 
-reg_id_t* scene_selection_target_list_new_entry(SceneSelectionTargetList *);
+  if (dyli_insert((void **)&list->entries, &list->capacity, &list->length,
+                  sizeof(selection_targets), (void *)entry, 1,
+                  "Scene selection target list") != DynamicListStatus_Success)
+    return NULL;
 
-DynamicListStatus scene_selection_target_list_empty(SceneSelectionTargetList *);
+  return entry;
+}
 
-DynamicListStatus scene_selection_target_list_free(SceneSelectionTargetList *);
+static inline reg_id_t *
+scene_selection_target_list_new_entry(SceneSelectionTargetList *list) {
+  return (reg_id_t *)dyli_new_entry((void **)&list->entries, &list->capacity,
+                                    &list->length, sizeof(selection_targets),
+                                    "Scene selection target list");
+}
+
+static inline DynamicListStatus
+scene_selection_target_list_empty(SceneSelectionTargetList *list) {
+  return dyli_empty((void *)list->entries, &list->length,
+                    sizeof(selection_targets));
+}
+
+static inline DynamicListStatus
+scene_selection_target_list_free(SceneSelectionTargetList *list) {
+  return dyli_free((void **)&list->entries, &list->capacity, &list->length);
+}
+
+static inline DynamicListStatus
+scene_selection_target_list_append(const SceneSelectionTargetList *src,
+                                   SceneSelectionTargetList *dest) {
+
+  return dyli_append((void *)src->entries, src->length, (void **)dest->entries,
+                     &dest->capacity, &dest->length, sizeof(selection_targets),
+                     "Scene selection target list");
+}
+
+static inline DynamicListStatus
+scene_selection_target_remove_at_index(SceneSelectionTargetList *list,
+                                       size_t index) {
+  return dyli_remove_at_index((void *)list->entries, &list->length,
+                              sizeof(selection_targets), index,
+                              "Scene selection target list");
+}
 
 #endif

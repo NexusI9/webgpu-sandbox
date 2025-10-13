@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "backend/registry.h"
 #include "runtime/light/core.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/scene/add.h"
@@ -13,12 +14,13 @@
 /**
    Insert Ambient light gizmo mesh to the list
  */
-void sem_light_ambient_create(SceneEditorMeshList *list, AmbientLight *light,
+void sem_ambient_light_create(SceneEditorMeshList *list, AmbientLight *light,
                               const SEMCreateDescriptor *desc) {
 
   // define mesh
   const size_t gizmo_mesh_count = 1;
-  sem_list_create(list, gizmo_mesh_count);
+  sem_list_create(list, gizmo_mesh_count, "Ambient Light",
+                  RegEntryType_SceneEditorMeshList_AmbientLight);
 
   // get new mesh pointer from main mesh list
   SceneEditorMesh *icon = sem_list_new_entry(list);
@@ -37,15 +39,15 @@ void sem_light_ambient_create(SceneEditorMeshList *list, AmbientLight *light,
                                    });
 
   // set callback
-  icon->transform_callback[GizmoMode_Position] = sem_light_ambient_set_position;
-  icon->transform_callback[GizmoMode_Rotation] = sem_light_ambient_set_rotation;
-  icon->transform_callback[GizmoMode_Scale] = sem_light_ambient_set_scale;
+  icon->transform_callback[GizmoMode_Position] = sem_ambient_light_set_position;
+  icon->transform_callback[GizmoMode_Rotation] = sem_ambient_light_set_rotation;
+  icon->transform_callback[GizmoMode_Scale] = sem_ambient_light_set_scale;
 }
 
-void sem_light_ambient_set_position(SEMTransformCallback *desc) {
+void sem_ambient_light_set_position(SEMTransformCallback *desc) {
   mesh_set_position(desc->sem->mesh, desc->offset);
 }
 
-void sem_light_ambient_set_rotation(SEMTransformCallback *desc) {}
+void sem_ambient_light_set_rotation(SEMTransformCallback *desc) {}
 
-void sem_light_ambient_set_scale(SEMTransformCallback *desc) {}
+void sem_ambient_light_set_scale(SEMTransformCallback *desc) {}

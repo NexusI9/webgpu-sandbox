@@ -7,7 +7,7 @@
 #include "core.h"
 
 /* Uniforms */
-void light_point_uniform_update(PointLight *light) {
+void point_light_uniform_update(PointLight *light) {
 
   PointLightUniform *uniform = light->ssbo_slot[LightSSBOSlot_List].uniform;
   uniform->intensity = light->intensity;
@@ -27,7 +27,7 @@ void light_point_uniform_update(PointLight *light) {
     glm_mat4_copy(points_views.combined[v], uniform->views[v]);
 }
 
-void light_ambient_uniform_update(AmbientLight *light) {
+void ambient_light_uniform_update(AmbientLight *light) {
 
   // map light to light uniform (including paddings...)
   AmbientLightUniform *uniform = light->ssbo_slot.uniform;
@@ -35,7 +35,7 @@ void light_ambient_uniform_update(AmbientLight *light) {
   glm_vec4_copy(light->color, uniform->color);
 }
 
-void light_spot_uniform_update(SpotLight *light) {
+void spot_light_uniform_update(SpotLight *light) {
 
   SpotLightUniform *uniform = light->ssbo_slot[LightSSBOSlot_List].uniform;
 
@@ -54,7 +54,7 @@ void light_spot_uniform_update(SpotLight *light) {
     glm_mat4_copy(spot_view.combined[v], uniform->view);
 }
 
-void light_sun_uniform_update(SunLight *light) {
+void sun_light_uniform_update(SunLight *light) {
 
   SunLightUniform *uniform = light->ssbo_slot[LightSSBOSlot_List].uniform;
 

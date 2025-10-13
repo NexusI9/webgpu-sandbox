@@ -173,13 +173,13 @@ typedef struct {
  */
 
 // constructors
-void light_point_create(PointLight *, PointLightDescriptor *);
-void light_spot_create(SpotLight *, SpotLightDescriptor *);
-void light_ambient_create(AmbientLight *, AmbientLightDescriptor *);
-void light_sun_create(SunLight *, SunLightDescriptor *);
+void point_light_create(PointLight *, PointLightDescriptor *);
+void spot_light_create(SpotLight *, SpotLightDescriptor *);
+void ambient_light_create(AmbientLight *, AmbientLightDescriptor *);
+void sun_light_create(SunLight *, SunLightDescriptor *);
 
 // === Matrix Updates ===
-static inline void light_point_projection_update(PointLight *light) {
+static inline void point_light_projection_update(PointLight *light) {
   // update light projection attribute
   projection_point(&light->views, light->position, light->near, light->far);
 
@@ -188,7 +188,7 @@ static inline void light_point_projection_update(PointLight *light) {
                               LightSSBOSlot_View);
 }
 
-static inline void light_spot_projection_update(SpotLight *light) {
+static inline void spot_light_projection_update(SpotLight *light) {
   // update light projection attribute
   projection_spot(&light->views, light->position, light->target, light->angle);
 
@@ -197,13 +197,46 @@ static inline void light_spot_projection_update(SpotLight *light) {
                               LightSSBOSlot_View);
 }
 
-static inline void light_sun_projection_update(SunLight *light) {
+static inline void sun_light_projection_update(SunLight *light) {
   // update light projection attribute
   projection_sun(&light->views, light->position, light->size);
 
   // transfert attribute to SSBO slot
   projection_update_ssbo_slot(light->ssbo_slot, &light->views,
                               LightSSBOSlot_View);
+}
+
+static inline const char *point_light_get_name(PointLight *light) {
+  return light->name;
+}
+
+static inline void point_light_set_name(PointLight *light, const char *src) {
+  name_copy(src, light->name);
+}
+
+static inline const char *spot_light_get_name(SpotLight *light) {
+  return light->name;
+}
+
+static inline void spot_light_set_name(SpotLight *light, const char *src) {
+  name_copy(src, light->name);
+}
+
+static inline const char *sun_light_get_name(SunLight *light) {
+  return light->name;
+}
+
+static inline void sun_light_set_name(SunLight *light, const char *src) {
+  name_copy(src, light->name);
+}
+
+static inline const char *ambient_light_get_name(AmbientLight *light) {
+  return light->name;
+}
+
+static inline void ambient_light_set_name(AmbientLight *light,
+                                          const char *src) {
+  name_copy(src, light->name);
 }
 
 #endif

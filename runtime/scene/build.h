@@ -41,8 +41,6 @@
 
  */
 
-SceneStatus scene_build_mesh(Scene *, Mesh *, const ScenePipeline,
-                             const SceneRendererDrawMode);
-void scene_build_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline,
-                               const SceneRendererDrawMode);
+SceneStatus scene_build_mesh(Scene *, Mesh *, const ScenePipeline);
+void scene_build_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);
 #endif

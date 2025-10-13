@@ -81,10 +81,6 @@ void mesh_create_primitive(Mesh *mesh,
 
 void mesh_set_parent(Mesh *child, Mesh *parent) { child->parent = parent; }
 
-void mesh_set_name(Mesh *mesh, const name_t name) {
-  name_copy(name, mesh->name);
-}
-
 /**
    Mesh main draw from default vertex and index buffer
  */

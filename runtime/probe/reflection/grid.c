@@ -27,7 +27,10 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
                                   ProbeReflectionGridDescriptor *desc) {
 
   grid->id = reg_register(grid, RegEntryType_ProbeReflectionGrid);
-  
+
+  probe_reflection_grid_set_name(grid, desc->name == 0 ? "Probe Reflection Grid"
+                                                       : desc->name);
+
   glm_vec3_copy(desc->scale, grid->scale);
   glm_vec3_copy(desc->position, grid->position);
 
@@ -207,9 +210,9 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
 
             // draw pass
             render_pass_im_set_views(&list->pass, &(RenderPassDrawOptions){
-                                                          .color = target_color,
-                                                          .depth = target_depth,
-                                                      });
+                                                      .color = target_color,
+                                                      .depth = target_depth,
+                                                  });
             render_pass_im_draw(&list->pass);
 
             if (debug && layer < debug->max_views)

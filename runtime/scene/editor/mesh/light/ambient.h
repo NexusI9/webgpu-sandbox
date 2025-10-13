@@ -6,12 +6,12 @@
 #include "runtime/scene/core.h"
 #include "runtime/light/core.h"
 
-void sem_light_ambient_create(SceneEditorMeshList *, AmbientLight *,
+void sem_ambient_light_create(SceneEditorMeshList *, AmbientLight *,
                               const SEMCreateDescriptor *);
 
-void sem_light_ambient_set_position(SEMTransformCallback *);
-void sem_light_ambient_set_rotation(SEMTransformCallback *);
-void sem_light_ambient_set_scale(SEMTransformCallback *);
+void sem_ambient_light_set_position(SEMTransformCallback *);
+void sem_ambient_light_set_rotation(SEMTransformCallback *);
+void sem_ambient_light_set_scale(SEMTransformCallback *);
 
 
 
