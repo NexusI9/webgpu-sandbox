@@ -16,6 +16,7 @@
 #include "runtime/scene/editor/mesh/builder/billboard.h"
 #include "runtime/scene/editor/mesh/list/list.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
+#include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/renderer/core.h"
 
 static inline void sem_spot_light_create_common(SceneEditorMeshList *,
@@ -37,14 +38,18 @@ void sem_spot_light_create_common(SceneEditorMeshList *list, SpotLight *light,
   icon->target_list_index = desc->target_list_index;
   icon->scene = desc->scene;
 
-  const char *texture_path = "./resources/assets/texture/ui/light-spot.png";
+  SceneEditorUIIconUV icon_uv =
+      desc->scene->editor.ui.icon_uv[SceneEditorUIIcon_SpotLight];
 
-  // create gizmo mesh
-  sem_create_billboard(icon->mesh, &(SEMCreateBillboardDescriptor){
-                                       .texture_path = texture_path,
-                                       .position = &light->position,
-                                       .scale = &SEM_BILLBOARD_SCALE,
-                                   });
+  // create icon mesh
+  sem_create_billboard(icon->mesh,
+                       &(SEMCreateBillboardDescriptor){
+                           .view = desc->scene->editor.ui.atlas_texture.view,
+                           .position = &light->position,
+                           .scale = &SEM_BILLBOARD_SCALE,
+                           .uv0 = {icon_uv.uv0[0], icon_uv.uv0[1]},
+                           .uv1 = {icon_uv.uv1[0], icon_uv.uv1[1]},
+                       });
 }
 
 /**

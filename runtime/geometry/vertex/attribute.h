@@ -23,6 +23,18 @@ void vertex_attribute_set_normal(VertexAttribute *, const vertex_normal);
 void vertex_attribute_set_color(VertexAttribute *, const vertex_color);
 void vertex_attribute_set_uv(VertexAttribute *, const vertex_uv);
 
+void vertex_attribute_set_position_at_index(VertexAttribute *,
+                                            const vertex_position, const int);
+
+void vertex_attribute_set_normal_at_index(VertexAttribute *,
+                                          const vertex_normal, const int);
+
+void vertex_attribute_set_color_at_index(VertexAttribute *, const vertex_color,
+                                         const int);
+
+void vertex_attribute_set_uv_at_index(VertexAttribute *, const vertex_uv,
+                                      const int);
+
 void vertex_attribute_set_position_add(VertexAttribute *,
                                        const vertex_position);
 void vertex_attribute_set_normal_add(VertexAttribute *, const vertex_normal);

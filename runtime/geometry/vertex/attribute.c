@@ -73,6 +73,45 @@ void vertex_attribute_set_uv(VertexAttribute *va, const vertex_uv uv) {
   vertex_attribute_replace(va, uv, VertexAttributeOffset_Uv, sizeof(vertex_uv));
 }
 
+/**
+   Replace the color attributes of a vertex attribute list
+ */
+void vertex_attribute_set_color_at_index(VertexAttribute *va,
+                                         const vertex_color color,
+                                         const int index) {
+  memcpy(&va->entries[index * VERTEX_STRIDE + VertexAttributeOffset_Color],
+         color, sizeof(vertex_color));
+}
+
+/**
+   Replace the color attributes of a vertex attribute list
+ */
+void vertex_attribute_set_position_at_index(VertexAttribute *va,
+                                            const vertex_position position,
+                                            const int index) {
+  memcpy(&va->entries[index * VERTEX_STRIDE + VertexAttributeOffset_Position],
+         position, sizeof(vertex_position));
+}
+
+/**
+   Replace the color attributes of a vertex attribute list
+ */
+void vertex_attribute_set_normal_at_index(VertexAttribute *va,
+                                          const vertex_normal normal,
+                                          const int index) {
+  memcpy(&va->entries[index * VERTEX_STRIDE + VertexAttributeOffset_Normal],
+         normal, sizeof(vertex_normal));
+}
+
+/**
+   Replace the uv attributes of a vertex attribute list
+ */
+void vertex_attribute_set_uv_at_index(VertexAttribute *va, const vertex_uv uv,
+                                      const int index) {
+  memcpy(&va->entries[index * VERTEX_STRIDE + VertexAttributeOffset_Uv], uv,
+         sizeof(vertex_uv));
+}
+
 /*
    ▗▄▖ ▗▄▄▄ ▗▄▄▄
   ▐▌ ▐▌▐▌  █▐▌  █

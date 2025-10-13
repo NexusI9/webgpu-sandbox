@@ -13,7 +13,7 @@ typedef enum {
   SceneEditorUIStatus_UndefError,
 } SceneEditorUIStatus;
 
-#define SCENE_EDITOR_UI_ICON_COUNT 28
+#define SCENE_EDITOR_UI_ICON_COUNT 29
 typedef enum {
   SceneEditorUIIcon_Null,
   SceneEditorUIIcon_RenderMode_Boundbox,
@@ -43,6 +43,7 @@ typedef enum {
   SceneEditorUIIcon_Mesh,
   SceneEditorUIIcon_ProbeReflectionPlane,
   SceneEditorUIIcon_ProbeReflectionGrid,
+  SceneEditorUIIcon_Camera,
 } SceneEditorUIIcon;
 
 #define SCENE_EDITOR_UI_SIZE_COUNT 20

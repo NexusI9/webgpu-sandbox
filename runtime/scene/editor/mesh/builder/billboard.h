@@ -17,7 +17,8 @@ typedef struct {
   vec3 *scale;
 
   const char *label;
-  const char *texture_path;
+  const WGPUTextureView view;
+  const vec2 uv0, uv1;
 } SEMCreateBillboardDescriptor;
 
 void sem_create_billboard(Mesh *, const SEMCreateBillboardDescriptor *);

@@ -70,7 +70,7 @@ bool html_event_listener_mouse_up(int eventType,
 bool html_event_listener_wheel(int eventType,
                                const EmscriptenWheelEvent *wheelEvent,
                                void *userData) {
-
+  
   for (size_t i = 0; i < g_html_event.wheel.length; i++) {
 
     HTMLEventWheel *event = &g_html_event.wheel.entries[i];

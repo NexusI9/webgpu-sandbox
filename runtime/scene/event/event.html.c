@@ -9,6 +9,7 @@
 #include "runtime/camera/mode.h"
 #include "runtime/html_event/add.h"
 #include "runtime/html_event/core.h"
+#include "runtime/input/core.h"
 #include "runtime/probe/reflection/core.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/core.h"
@@ -19,18 +20,30 @@ static inline void scene_event_html_commons(Scene *);
 
 bool scene_event_html_mouse(int eventType, const EmscriptenMouseEvent *event,
                             void *data) {
+
+  if (g_input.locked & InputLockState_Mouse)
+    return EM_FALSE;
+
   scene_event_html_commons((Scene *)data);
   return EM_FALSE;
 }
 
 bool scene_event_html_wheel(int eventType, const EmscriptenWheelEvent *event,
                             void *data) {
+
+  if (g_input.locked & InputLockState_Mouse)
+    return EM_FALSE;
+
   scene_event_html_commons((Scene *)data);
   return EM_FALSE;
 }
 
 bool scene_event_html_key(int eventType, const EmscriptenKeyboardEvent *event,
                           void *data) {
+
+  if (g_input.locked & InputLockState_Mouse)
+    return EM_FALSE;
+
   scene_event_html_commons((Scene *)data);
   return EM_FALSE;
 }

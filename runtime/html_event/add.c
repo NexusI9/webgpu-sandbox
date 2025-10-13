@@ -1,14 +1,14 @@
 #include "add.h"
 
-#include <stdio.h>
-#include <string.h>
-#include <emscripten/html5.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include "backend/logger.h"
 #include "core.h"
 #include "listener.h"
+#include <emscripten/html5.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // Listener Flags
 static inline uint8_t html_event_listener_flag(HTMLEventType);
@@ -149,7 +149,8 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
       cast_entry->data = stored_data;
       memcpy(cast_entry->data, event->data, event->size);
     } else {
-      logger_add(LoggerFlag_Error, "Coudln't allocate memory for html event data.");
+      logger_add(LoggerFlag_Error,
+                 "Coudln't allocate memory for html event data.");
       return HTMLEventStatus_AllocFail;
     }
   }

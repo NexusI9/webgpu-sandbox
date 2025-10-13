@@ -156,8 +156,13 @@ void scene_editor_ui_draw_callback(void *data) {
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
     io.MousePos = ImVec2(g_input.mouse.x * ui->dpi, g_input.mouse.y * ui->dpi);
     io.MouseDown[0] = g_input.mouse.state;
-    io.MouseWheel += g_input.mouse.wheel.deltaY;
-    io.MouseWheelH += g_input.mouse.wheel.deltaX;
+    io.MouseWheel = g_input.mouse.wheel.deltaY;
+    io.MouseWheelH = g_input.mouse.wheel.deltaX;
+
+    if (io.WantCaptureMouse)
+      g_input.locked |= InputLockState_Mouse;
+    else if (g_input.locked & InputLockState_Mouse)
+      g_input.locked ^= InputLockState_Mouse;
   }
 
   {
@@ -275,6 +280,7 @@ void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
     ui->icon_uv[SceneEditorUIIcon_Mesh] = {.cell = {9, 1}};
     ui->icon_uv[SceneEditorUIIcon_ProbeReflectionPlane] = {.cell = {10, 1}};
     ui->icon_uv[SceneEditorUIIcon_ProbeReflectionGrid] = {.cell = {11, 1}};
+    ui->icon_uv[SceneEditorUIIcon_Camera] = {.cell = {0, 4}};
   }
 
   // generate uvs
