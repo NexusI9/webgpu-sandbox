@@ -14,34 +14,21 @@ struct VertexOut {
                                                     @location(1) vUv : vec2<f32>
 };
 
-
-
 struct Mesh {
   model : mat4x4<f32>,
           position : vec4<f32>,
-                                                 probe_reflection_plane_count
+                     probe_reflection_plane_count : u32,
+                                                    probe_reflection_grid_count
       : u32,
-                                   probe_reflection_grid_count : u32,
 }
 
 struct Camera {
-  view : mat4x4<f32>,
-         position : vec4<f32>,
-                    lookat : vec4<f32>,
-                             mode : u32,
+  view : mat4x4<f32>, position : vec4<f32>, lookat : vec4<f32>, mode : u32,
 };
 
 struct Viewport {
   projection : mat4x4<f32>, width : u32, height : u32
 };
-
-// mode flags
-// use bitwise operators to match with C enum
-const CAMERA_MODE_FIXED : u32 = 0u;
-const CAMERA_MODE_FLYING : u32 = 1u;
-const CAMERA_MODE_ORBIT : u32 = 2u;
-const CAMERA_MODE_EDIT : u32 = 3u;
-
 
 // NOTE:
 // Need to add padding cause WebGPU align to memory based on 16-bytes
@@ -53,6 +40,10 @@ const CAMERA_MODE_EDIT : u32 = 3u;
 // Maybe a trick to have better control on that is to use struct
 // Important to align both C and WGPU struct, especially if the struct isn't the
 // last of the bind group
+
+// Can check:
+// https://asliceofrendering.com/scene%20helper/2020/01/05/InfiniteGrid/
+// However requires inverted matrix/vertex which is expensive...
 
 struct GridData {
   color : vec4<f32>,
@@ -80,11 +71,8 @@ struct GridData {
   var output : VertexOut;
   var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
 
-  if ((camera.mode & CAMERA_MODE_ORBIT) != 0u) {
-    // fix position to target (lookat) if camera is Orbit mode
-    offset.x = camera.lookat.x;
-    offset.y = camera.lookat.z;
-  }
+  offset.x = camera.position.x;
+  offset.y = camera.position.z;
 
   // Put the grid below the camera
   var translate_matrix
@@ -102,19 +90,15 @@ struct GridData {
 }
 
 // fragment shader
-fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
+
+@fragment fn fs_main(@location(0) vCol : vec3<f32>,
+                     @location(1) vUv : vec2<f32>) -> @location(0) vec4<f32> {
 
   let mesh = uMesh;
   let camera = uCamera;
   let viewport = uViewport;
 
   var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
-
-  if (camera.mode == CAMERA_MODE_ORBIT || camera.mode == CAMERA_MODE_EDIT) {
-    // switch offset to target (lookat) if camera is Orbit mode
-    offset.x = camera.lookat.x;
-    offset.y = camera.lookat.z;
-  }
 
   // Setup grid
   var patternSize : f32 = 1.0 / uGrid.division;   // size of the tile
@@ -123,12 +107,12 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var edge_tone : f32 = 1.0; // 0.5 for the edge
 
   // Move Uv to the opposite camera direction to compensate the grid translation
-  var compensUv : vec2<f32> = vec2(uv.x + offset.x * patternSize,
-                                   uv.y + offset.y * patternSize);
-
+  var compensUv : vec2<f32> = vec2(vUv.x + offset.x * patternSize,
+                                   vUv.y + offset.y * patternSize);
   var gridUv
       : vec2<f32> =
             sign(vec2(edge) - fract(compensUv / patternSize) * patternSize);
+
   var pattern : vec4<f32> = vec4(face_tone - sign(gridUv.x + gridUv.y + 1.0) *
                                                  (face_tone - edge_tone));
 
@@ -139,9 +123,11 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var z_color : vec3<f32> = vec3(0.23f, 0.40f, 0.91f);
 
   // Add X & Y Axis
-  var axisThickness : f32 = 0.04f / uGrid.scale;
-  var yAxis : f32 = step(abs(compensUv.x - center.x), axisThickness);
-  var xAxis : f32 = step(abs(compensUv.y - center.y), axisThickness);
+  var axisThickness : f32 = 0.0005f;
+  var yAxis
+      : f32 = step(abs(vUv.x - 0.5f + offset.x / uGrid.scale), axisThickness);
+  var xAxis
+      : f32 = step(abs(vUv.y - 0.5f + offset.y / uGrid.scale), axisThickness);
   var yAxisColor : vec3<f32> = mix(black, z_color, vec3(yAxis));
   var xAxisColor : vec3<f32> = mix(black, x_color, vec3(xAxis));
   var axis : vec3<f32> = max(xAxisColor, yAxisColor); // combine axis
@@ -149,16 +135,11 @@ fn draw_grid(uv : vec2<f32>) -> vec4<f32> {
   var axisMask : vec4<f32> = vec4(min(1.0f - xAxis, 1.0f - yAxis));
 
   // Setup gradient
-  var fadeFactor : f32 = max(100.0f / abs(camera.position.y), 50.0f);
-  var ray : f32 = min(distance(uv, center) * uGrid.scale / fadeFactor, 1.0f);
+  var fade_factor : f32 = max(abs(camera.position.y), 50.0f);
+  var ray : f32 = min(pow(distance(vUv, center), 4.0f) * 11.0f, 1.0f);
   var grad : vec3<f32> = mix(white, black, ray);
   var avg : f32 = (grad.r + grad.g + grad.b) / 3.0f;
+
   return (uGrid.color * pattern * axisMask + vec4(axis, 1.0f)) *
          vec4(grad, avg);
-}
-
-@fragment fn fs_main(@location(0) vCol : vec3<f32>,
-                     @location(1) vUv : vec2<f32>) -> @location(0) vec4<f32> {
-
-  return draw_grid(vUv);
 }
