@@ -69,11 +69,7 @@ struct GridData {
   // Final Matrix (Projection * View)
   var cam : mat4x4<f32> = viewport.projection * camera.view;
   var output : VertexOut;
-  var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
-
-  offset.x = camera.position.x;
-  offset.y = camera.position.z;
-
+  var offset : vec2<f32> = vec2<f32>(camera.lookat.x, camera.lookat.z);
   // Put the grid below the camera
   var translate_matrix
       : mat4x4<f32> = mat4x4<f32>(vec4<f32>(1.0, 0.0, 0.0, 0.0),
@@ -98,7 +94,7 @@ struct GridData {
   let camera = uCamera;
   let viewport = uViewport;
 
-  var offset : vec2<f32> = vec2<f32>(camera.position.x, camera.position.z);
+  var offset : vec2<f32> = vec2<f32>(camera.lookat.x, camera.lookat.z);
 
   // Setup grid
   var patternSize : f32 = 1.0 / uGrid.division;   // size of the tile
@@ -136,10 +132,14 @@ struct GridData {
 
   // Setup gradient
   var fade_factor : f32 = max(abs(camera.position.y), 50.0f);
-  var ray : f32 = min(pow(distance(vUv, center), 4.0f) * 11.0f, 1.0f);
+  var fade : f32 = pow(distance(vUv, center), 4.0f) * 11.0f;
+  var ray : f32 = max(min(fade, 1.0f), 0.0f);
   var grad : vec3<f32> = mix(white, black, ray);
   var avg : f32 = (grad.r + grad.g + grad.b) / 3.0f;
 
-  return (uGrid.color * pattern * axisMask + vec4(axis, 1.0f)) *
-         vec4(grad, avg);
+   return (uGrid.color * pattern * axisMask + vec4(axis, 1.0f)) *
+          vec4(grad, avg);
+
+  // return vec4(grad, avg);
+  //return vec4<f32>(0.4f, 0.4f, 0.4f, 1.0f);
 }
