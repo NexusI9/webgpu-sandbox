@@ -150,6 +150,14 @@ public:
   const char *tooltip;
 };
 
+class ClockTab : public InspectorTab {
+
+public:
+  ClockTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
+      : InspectorTab(scene, icon, label) {}
+  void draw() override;
+};
+
 class SceneTab : public InspectorTab {
 
 public:
@@ -167,14 +175,22 @@ private:
   RenderPipelineMultisampleCount multisample = context_multisample();
 };
 
-class SettingTab : public InspectorTab {
+class InfoTab : public InspectorTab {
 
 public:
-  SettingTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
+  InfoTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
       : InspectorTab(scene, icon, label) {}
   void draw() override;
 
 private:
+  static constexpr const char *backend_label[] = {
+      "Undefined", "Null",   "WebGPU", "D3D11",    "D3D12",
+      "Metal",     "Vulkan", "OpenGL", "OpenGLES", "Force32",
+  };
+
+  static constexpr const char *adapter_type_label[] = {
+      "Discrete GPU", "Integrated GPU", "CPU", "Unknown", "Force32",
+  };
 };
 
 class ObjectTab : public InspectorTab {
@@ -209,22 +225,25 @@ public:
   Inspector(Scene *scene, const char *label)
       : Window(scene, label),
         object_tab(scene, SceneEditorUIIcon_Properties_Object, "Object"),
-        setting_tab(scene, SceneEditorUIIcon_Properties_Setting, "Setting"),
-        scene_tab(scene, SceneEditorUIIcon_Properties_Scene, "Scene") {
+        info_tab(scene, SceneEditorUIIcon_Properties_Chip, "Information"),
+        scene_tab(scene, SceneEditorUIIcon_Properties_Scene, "Scene"),
+        clock_tab(scene, SceneEditorUIIcon_Properties_Clock, "Performance") {
 
     tabs[0] = &scene_tab;
-    tabs[1] = &setting_tab;
+    tabs[1] = &info_tab;
     tabs[2] = &object_tab;
+    tabs[3] = &clock_tab;
   }
 
   void draw();
 
 private:
-  static constexpr uint8_t tab_count = 3;
+  static constexpr uint8_t tab_count = 4;
   UI::InspectorTab *tabs[tab_count];
   UI::SceneTab scene_tab;
-  UI::SettingTab setting_tab;
+  UI::InfoTab info_tab;
   UI::ObjectTab object_tab;
+  UI::ClockTab clock_tab;
 };
 
 } // namespace UI

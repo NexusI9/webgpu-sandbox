@@ -269,6 +269,8 @@ void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
     ui->icon_uv[SceneEditorUIIcon_Properties_Scene] = {.cell = {6, 1}};
     ui->icon_uv[SceneEditorUIIcon_Properties_Setting] = {.cell = {7, 1}};
     ui->icon_uv[SceneEditorUIIcon_Properties_Object] = {.cell = {8, 1}};
+    ui->icon_uv[SceneEditorUIIcon_Properties_Chip] = {.cell = {13, 1}};
+    ui->icon_uv[SceneEditorUIIcon_Properties_Clock] = {.cell = {14, 1}};
   }
 
   // solid

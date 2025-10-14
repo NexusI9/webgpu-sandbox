@@ -8,10 +8,18 @@
 #include "runtime/html_event/core.h"
 #include "runtime/texture/core.h"
 #include "string.h"
+#include "webgpu/webgpu.h"
 
 Context g_context = {0};
 
 static inline WGPUSwapChain context_create_swapchain();
+static void context_req_adapter_callback(WGPURequestAdapterStatus status,
+                                         WGPUAdapter adapter,
+                                         char const *message, void *userdata) {
+  Context *ctxt = (Context *)userdata;
+  ctxt->adapter = adapter;
+  wgpuAdapterGetInfo(ctxt->adapter, &ctxt->adapter_info);
+}
 
 static bool context_update_size(int event_type,
                                 const EmscriptenUiEvent *ui_event,
@@ -25,6 +33,9 @@ ContextStatus context_init(const ContextDescriptor *desc) {
   g_context.queue = wgpuDeviceGetQueue(g_context.device);
   g_context.dpi = emscripten_get_device_pixel_ratio();
   g_context.multisample = desc->render.multisample_count;
+
+  wgpuInstanceRequestAdapter(g_context.instance, NULL,
+                             context_req_adapter_callback, (void *)&g_context);
 
   context_update_size(0, NULL, (void *)&g_context);
 

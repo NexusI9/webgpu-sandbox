@@ -15,6 +15,8 @@ typedef struct {
   WGPUInstance instance;
   WGPUDevice device;
   WGPUQueue queue;
+  WGPUAdapter adapter;
+  WGPUAdapterInfo adapter_info;
   WGPUSwapChain swapchain;
   RenderPipelineMultisampleCount multisample;
   const char *html_target;

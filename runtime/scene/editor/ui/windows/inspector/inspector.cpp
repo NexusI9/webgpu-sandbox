@@ -1,4 +1,5 @@
 #include "inspector.hpp"
+#include "backend/context.h"
 #include "backend/registry.h"
 #include "backend/std_pipeline/core.h"
 #include "imgui/imgui.h"
@@ -14,6 +15,7 @@
 #include "runtime/scene/editor/ui/windows/inspector/inspector.point_light.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.spot_light.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.sun_light.hpp"
+#include "webgpu/webgpu.h"
 #include <cstdio>
 
 static int g_active_tab = 0;
@@ -186,7 +188,28 @@ void UI::SceneTab::draw() {
   ImGui::EndChild();
 }
 
-void UI::SettingTab::draw() {}
+void UI::InfoTab::draw() {
+
+  const struct {
+    const char *label;
+    const char *value;
+  } items[] = {
+      {"Vendor", g_context.adapter_info.vendor},
+      {"Architecture", g_context.adapter_info.architecture},
+      {"Device", g_context.adapter_info.device},
+      {"Description", g_context.adapter_info.description},
+      {"Backend", backend_label[g_context.adapter_info.backendType]},
+      {"Adapter Type", adapter_type_label[g_context.adapter_info.adapterType]},
+  };
+
+  for (uint8_t i = 0; i < 6; i++) {
+    ImGui::Spacing();
+    ImGui::Text("%s: %s", items[i].label, items[i].value);
+    ImGui::Separator();
+  }
+}
+
+void UI::ClockTab::draw() { ImGui::Text("Performance"); }
 
 void UI::ObjectTab::draw() {
 
