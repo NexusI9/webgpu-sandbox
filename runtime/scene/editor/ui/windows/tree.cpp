@@ -19,19 +19,22 @@ void UI::Tree::draw_mesh(Mesh *mesh) {
       scene, mesh->name, mesh->id, SceneEditorUIIcon_Mesh,
       ui->size[SceneEditorUISize_Button_InspectorTab], mesh->children.length);
 
-  item.draw_label();
+  bool draw_label = item.draw_label();
 
   if (ImGui::IsItemClicked())
     scene_selection_toggle_mesh(scene, mesh);
+  
+  {
+    item.draw_visibility();
+    if (ImGui::IsItemClicked())
+      scene_visibility_toggle_mesh(scene, mesh);
+  }
 
-  if (ImGui::IsItemToggledOpen())
+  if (draw_label) {
     for (size_t i = 0; i < mesh->children.length; i++)
       draw_mesh(mesh->children.entries[i]);
-
-  item.draw_visibility();
-
-  if (ImGui::IsItemClicked())
-    scene_visibility_toggle_mesh(scene, mesh);
+    ImGui::TreePop();
+  }
 }
 
 static const SceneEditorUIIcon sem_icon_map[SCENE_EDITOR_UI_ICON_COUNT] = {
@@ -57,7 +60,9 @@ void UI::Tree::draw_scene_editor_mesh_list(SceneEditorMeshList *list,
       UI::TreeItem(scene, list->name, list->id, icon,
                    ui->size[SceneEditorUISize_Button_InspectorTab], false);
 
-  item.draw_label();
+  if (item.draw_label()) {
+    ImGui::TreePop();
+  }
 
   if (ImGui::IsItemClicked())
     scene_selection_toggle_mesh(scene, list->entries->mesh);
@@ -137,10 +142,6 @@ bool UI::TreeItem::draw_label() {
 
   ImGui::SameLine();
   ImGui::Text("%s", label);
-
-  if (tree_item) {
-    ImGui::TreePop();
-  }
   ImGui::PopStyleVar();
 
   return tree_item;
