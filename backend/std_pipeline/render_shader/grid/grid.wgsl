@@ -132,14 +132,12 @@ struct GridData {
 
   // Setup gradient
   var fade_factor : f32 = max(abs(camera.position.y), 50.0f);
-  var fade : f32 = pow(distance(vUv, center), 4.0f) * 11.0f;
+  var fade : f32 = pow(distance(vUv, center), 3.0f) * 20.0f;
   var ray : f32 = max(min(fade, 1.0f), 0.0f);
   var grad : vec3<f32> = mix(white, black, ray);
   var avg : f32 = (grad.r + grad.g + grad.b) / 3.0f;
 
-   return (uGrid.color * pattern * axisMask + vec4(axis, 1.0f)) *
-          vec4(grad, avg);
+  return (uGrid.color * pattern * axisMask + vec4(axis, 1.0f)) *
+         vec4(grad, avg);
 
-  // return vec4(grad, avg);
-  //return vec4<f32>(0.4f, 0.4f, 0.4f, 1.0f);
 }
