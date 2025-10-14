@@ -23,7 +23,7 @@ void UI::Tree::draw_mesh(Mesh *mesh) {
 
   if (ImGui::IsItemClicked())
     scene_selection_toggle_mesh(scene, mesh);
-  
+
   {
     item.draw_visibility();
     if (ImGui::IsItemClicked())
@@ -130,6 +130,10 @@ bool UI::TreeItem::draw_label() {
   name_t inv_name;
   name_compose(inv_name, "##%s", label);
 
+  name_t id_name;
+  name_compose(inv_name, "##tree_item_%d", id);
+
+  ImGui::PushID(id_name);
   bool tree_item = ImGui::TreeNodeEx(inv_name, flags);
 
   ImGui::SameLine();
@@ -143,6 +147,7 @@ bool UI::TreeItem::draw_label() {
   ImGui::SameLine();
   ImGui::Text("%s", label);
   ImGui::PopStyleVar();
+  ImGui::PopID();
 
   return tree_item;
 }
