@@ -1,0 +1,63 @@
+#ifndef _PROFILER_H_
+#define _PROFILER_H_
+
+#include <stdint.h>
+#include <time.h>
+
+#define PROFILER_LATENCY_TYPE_COUNT 7
+typedef enum {
+  ProfilerLatencyType_ShadowPass,
+  ProfilerLatencyType_ReflectionPass,
+  ProfilerLatencyType_UIPass,
+  ProfilerLatencyType_MainLoop,
+  ProfilerLatencyType_BlitPass,
+  ProfilerLatencyType_KawasePass,
+  ProfilerLatencyType_BloomPass,
+} ProfilerLatencyType;
+
+typedef struct {
+  struct timespec start;
+  struct timespec end;
+} ProfilerLatency;
+
+typedef struct {
+  ProfilerLatency latencies[PROFILER_LATENCY_TYPE_COUNT];
+} Profiler;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void profiler_init(Profiler *);
+
+static inline void profiler_latency_start(Profiler *profiler,
+                                          const ProfilerLatencyType type) {
+  clock_gettime(CLOCK_MONOTONIC, &profiler->latencies[type].start);
+}
+
+static inline void profiler_latency_end(Profiler *profiler,
+                                        const ProfilerLatencyType type) {
+  clock_gettime(CLOCK_MONOTONIC, &profiler->latencies[type].end);
+}
+
+static inline void profiler_latency_flush(Profiler *profiler) {
+  for (uint8_t i = 0; i < PROFILER_LATENCY_TYPE_COUNT; i++)
+    profiler->latencies[i] = (ProfilerLatency){0};
+}
+
+static inline double
+profiler_latency_get_elapsed(Profiler *profiler,
+                             const ProfilerLatencyType type) {
+
+  struct timespec *start = &profiler->latencies[type].start;
+  struct timespec *end = &profiler->latencies[type].end;
+
+  return (end->tv_sec - start->tv_sec) * 1000.0 +
+         (end->tv_nsec - start->tv_nsec) / 1000000.0;
+}
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

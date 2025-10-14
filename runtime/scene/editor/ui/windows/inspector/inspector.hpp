@@ -150,12 +150,23 @@ public:
   const char *tooltip;
 };
 
+typedef struct {
+  const ProfilerLatencyType type;
+  const char *label;
+  const float *color;
+  double value;
+} ClockTabBar;
+
 class ClockTab : public InspectorTab {
 
 public:
   ClockTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
       : InspectorTab(scene, icon, label) {}
   void draw() override;
+
+private:
+  static constexpr double max_value = 10.0f;
+  static constexpr color color = {0.3f, 0.3f, 0.5f, 1.0f};
 };
 
 class SceneTab : public InspectorTab {
@@ -225,9 +236,10 @@ public:
   Inspector(Scene *scene, const char *label)
       : Window(scene, label),
         object_tab(scene, SceneEditorUIIcon_Properties_Object, "Object"),
-        info_tab(scene, SceneEditorUIIcon_Properties_Chip, "Information"),
+        info_tab(scene, SceneEditorUIIcon_Properties_Chip,
+                 "Device Information"),
         scene_tab(scene, SceneEditorUIIcon_Properties_Scene, "Scene"),
-        clock_tab(scene, SceneEditorUIIcon_Properties_Clock, "Performance") {
+        clock_tab(scene, SceneEditorUIIcon_Properties_Clock, "Latencies") {
 
     tabs[0] = &scene_tab;
     tabs[1] = &info_tab;

@@ -1,7 +1,7 @@
 #include "clock.h"
 #include <time.h>
 
-void clock_create(cclock * c){
+void clock_init(cclock * c){
     c->last_time = clock();
     c->delta = 0.0;
 }

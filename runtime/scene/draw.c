@@ -19,6 +19,8 @@ void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
   if (mode == scene->renderer.draw.mode)
     return;
 
+  profiler_latency_flush(&scene->renderer.profiler);
+
   // update light / reflections
   if (mode == SceneRendererDrawMode_Texture) {
 
@@ -26,7 +28,7 @@ void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
         &(ShadowMapDrawAllDescriptor){
             .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
             .lights = &scene->lights,
-        },
+            .profiler = &scene->renderer.profiler},
         SCENE_DEBUG_UNDEFINED);
   }
 

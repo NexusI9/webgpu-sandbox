@@ -12,7 +12,7 @@ typedef struct {
 
 } cclock;
 
-void clock_create(cclock*);
+void clock_init(cclock*);
 void clock_update_delta(cclock *);
 
 #endif

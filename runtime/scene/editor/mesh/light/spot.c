@@ -122,6 +122,7 @@ void sem_spot_light_shadow_set_position(SEMTransformCallback *desc) {
             .pass = &desc->sem->scene->lights.spot.shadow.pass,
             .texture_layer = desc->sem->target_list_index,
             .command_encoder = NULL,
+            .profiler = &desc->sem->scene->renderer.profiler,
         },
         SCENE_DEBUG_UNDEFINED);
   }

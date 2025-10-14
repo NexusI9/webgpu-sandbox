@@ -1,14 +1,17 @@
 #include "inspector.hpp"
 #include "backend/context.h"
+#include "backend/profiler.h"
 #include "backend/registry.h"
 #include "backend/std_pipeline/core.h"
 #include "imgui/imgui.h"
+#include "resources/tool/css2h/output/theme.default.h"
 #include "runtime/light/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/scene/editor/selection/core.h"
 #include "runtime/scene/editor/ui/components/button_icon.hpp"
+#include "runtime/scene/editor/ui/components/time_bar.hpp"
 #include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.ambient_light.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.mesh.hpp"
@@ -17,6 +20,7 @@
 #include "runtime/scene/editor/ui/windows/inspector/inspector.sun_light.hpp"
 #include "webgpu/webgpu.h"
 #include <cstdio>
+#include <cstdlib>
 
 static int g_active_tab = 0;
 static RegEntry const *g_active_object = NULL;
@@ -209,7 +213,70 @@ void UI::InfoTab::draw() {
   }
 }
 
-void UI::ClockTab::draw() { ImGui::Text("Performance"); }
+int qsort_callback(const void *a, const void *b) {
+  return ((UI::ClockTabBar *)b)->value - ((UI::ClockTabBar *)a)->value;
+}
+
+void UI::ClockTab::draw() {
+
+  ClockTabBar bars[PROFILER_LATENCY_TYPE_COUNT] = {
+      {
+          ProfilerLatencyType_ShadowPass,
+          "Shadow Pass",
+          color,
+      },
+      {
+          ProfilerLatencyType_ReflectionPass,
+          "Reflection Pass",
+          color,
+      },
+      {
+          ProfilerLatencyType_UIPass,
+          "UI",
+          color,
+      },
+      {
+          ProfilerLatencyType_MainLoop,
+          "Main Loop",
+          color,
+      },
+      {
+          ProfilerLatencyType_BlitPass,
+          "Blit Pass",
+          color,
+      },
+      {
+          ProfilerLatencyType_KawasePass,
+          "Kawase Pass",
+          color,
+      },
+      {
+          ProfilerLatencyType_BloomPass,
+          "Bloom Pass",
+          color,
+      },
+  };
+
+  // fetch all value
+  for (int i = 0; i < PROFILER_LATENCY_TYPE_COUNT; i++)
+    bars[i].value =
+        profiler_latency_get_elapsed(&scene->renderer.profiler, bars[i].type);
+
+  // sort
+  qsort(bars, PROFILER_LATENCY_TYPE_COUNT, sizeof(bars[0]), qsort_callback);
+
+  TimeBarStyle style = {
+      .background =
+          (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_LOW],
+      .bar = (ImVec4 &)color,
+      .border_radius = 10.0f,
+      .height = 20.0f,
+  };
+
+  // display time bar
+  for (int i = 0; i < PROFILER_LATENCY_TYPE_COUNT; i++)
+    UI::TimeBar(scene, bars[i].label, bars[i].value, max_value, &style).draw();
+}
 
 void UI::ObjectTab::draw() {
 

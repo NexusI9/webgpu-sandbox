@@ -2,6 +2,7 @@
 #include "./imgui_style/style.carbon.hpp"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/profiler.h"
 #include "backend/registry.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
@@ -109,10 +110,12 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   return SceneEditorUIStatus_Success;
 }
 
-
 void scene_editor_ui_draw_callback(void *data) {
   Scene *scene = (Scene *)data;
   SceneEditorUI *ui = &scene->editor.ui;
+
+  profiler_latency_end(&scene->renderer.profiler, ProfilerLatencyType_UIPass);
+  profiler_latency_start(&scene->renderer.profiler, ProfilerLatencyType_UIPass);
 
   WGPUCommandEncoderDescriptor com_enc_desc = {.label = "Scene UI Command"};
   WGPUCommandEncoder command_encoder =

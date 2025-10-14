@@ -3,6 +3,7 @@
 
 #include "backend/compute/kawase.h"
 #include "backend/logger.h"
+#include "backend/profiler.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
@@ -20,7 +21,8 @@ static inline void probe_reflection_plane_list_draw_callback(void *data) {
   WGPUTextureView cached_view_depth = list->pass.depth.attachment.view;
 
   // then update probe list texture cube array based on each probes views
-
+  profiler_latency_start(&scene->renderer.profiler,
+                         ProfilerLatencyType_ReflectionPass);
   render_pass_im_begin(&list->pass);
   {
     for (size_t i = 0; i < list->length; i++) {
@@ -52,7 +54,7 @@ static inline void probe_reflection_plane_list_draw_callback(void *data) {
       };
       WGPUTextureView target_depth =
           wgpuTextureCreateView(list->pass.depth.texture, &target_depth_desc);
-      
+
       // update each mesh views/projections matrix
       ProbeReflectionListPreprocessorData preprocessor_data = {
           .camera_offset = probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id,
@@ -78,21 +80,29 @@ static inline void probe_reflection_plane_list_draw_callback(void *data) {
       render_pass_enable_all_mesh(&list->pass);
     }
   }
-
   render_pass_im_end(&list->pass);
+  profiler_latency_end(&scene->renderer.profiler,
+                       ProfilerLatencyType_ReflectionPass);
 
-  RenderPassDrawOptions src_views = {
-      .color = cached_view_color,
-      .depth = cached_view_depth,
-  };
-  render_pass_im_set_views(&list->pass, &src_views);
+  // Kawase pass
+  profiler_latency_start(&scene->renderer.profiler,
+                         ProfilerLatencyType_KawasePass);
+  {
+    RenderPassDrawOptions src_views = {
+        .color = cached_view_color,
+        .depth = cached_view_depth,
+    };
+    render_pass_im_set_views(&list->pass, &src_views);
 
-  KawaseDescriptor blur_desc = {
-      .texture = list->pass.color.texture,
-      .layer_count = list->length,
-      .pass_count = 1,
-  };
-  compute_pass_kawase(&scene->renderer.draw.compute_pass, &blur_desc);
+    KawaseDescriptor blur_desc = {
+        .texture = list->pass.color.texture,
+        .layer_count = list->length,
+        .pass_count = 1,
+    };
+    compute_pass_kawase(&scene->renderer.draw.compute_pass, &blur_desc);
+  }
+  profiler_latency_end(&scene->renderer.profiler,
+                       ProfilerLatencyType_KawasePass);
 }
 
 #endif

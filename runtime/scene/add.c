@@ -115,6 +115,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
               .pass = &scene->lights.point.shadow.pass,
               .texture_layer = shadow_list->length,
               .command_encoder = NULL,
+              .profiler = &scene->renderer.profiler,
           },
           SCENE_DEBUG_UNDEFINED);
 
@@ -189,6 +190,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
               .pass = &shadow_list->pass,
               .texture_layer = shadow_list->length,
               .command_encoder = NULL,
+              .profiler = &scene->renderer.profiler,
           },
           SCENE_DEBUG_UNDEFINED);
 
@@ -313,6 +315,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
               .texture_layer =
                   scene->lights.spot.shadow.length + sem_desc.target_list_index,
               .command_encoder = NULL,
+              .profiler = &scene->renderer.profiler,
           },
           SCENE_DEBUG_UNDEFINED);
 
@@ -594,6 +597,7 @@ void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
         &(ShadowMapDrawAllDescriptor){
             .mesh_list = pipeline_mesh_list,
             .lights = &scene->lights,
+            .profiler = &scene->renderer.profiler,
         },
         SCENE_DEBUG_UNDEFINED);
 

@@ -115,6 +115,7 @@ void scene_selection_mesh_shadow_transform(SceneSelectionTransform *desc) {
             .mesh_list =
                 scene_pipeline(desc->scene, ScenePipeline_Dynamic_LitShadow),
             .lights = &desc->scene->lights,
+            .profiler = &desc->scene->renderer.profiler,
         },
         SCENE_DEBUG_UNDEFINED);
 }
@@ -172,7 +173,7 @@ void scene_selection_sem_transform(SceneSelectionTransform *desc) {
 
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
     Mesh *mesh = desc->selection->entries[i].mesh;
-    
+
     const RegEntry *reg_entry =
         reg_lookup(desc->selection->entries[i].targets[SSOTargetID_SEM]);
     SceneEditorMesh *sem_mesh = (SceneEditorMesh *)reg_entry->ptr;

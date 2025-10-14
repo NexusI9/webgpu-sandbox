@@ -6,6 +6,7 @@
 #include <webgpu/webgpu.h>
 
 // #include "runtime/light/light.h"
+#include "backend/profiler.h"
 #include "backend/ssbo.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
@@ -31,6 +32,7 @@
 typedef struct {
   MeshRefList *mesh_list;
   LightList *lights;
+  Profiler *profiler;
 } ShadowMapDrawAllDescriptor;
 
 typedef struct {
@@ -38,6 +40,7 @@ typedef struct {
   PointLight *light;
   const size_t texture_layer;
   RenderPass *pass;
+  Profiler *profiler;
 } ShadowMapDrawPointLightDescriptor;
 
 typedef struct {
@@ -50,6 +53,7 @@ typedef struct {
   SunLight *light;
   const size_t texture_layer;
   RenderPass *pass;
+  Profiler *profiler;
 } ShadowMapDrawSunLightDescriptor;
 
 typedef struct {
@@ -57,6 +61,7 @@ typedef struct {
   SpotLight *light;
   const size_t texture_layer;
   RenderPass *pass;
+  Profiler *profiler;
 } ShadowMapDrawSpotLightDescriptor;
 
 typedef struct {
@@ -66,6 +71,7 @@ typedef struct {
   const ssbo_id_t ssbo_offset;
   const RenderPipeline *pipeline;
   RenderPass *pass;
+  Profiler *profiler;
 } ShadowMapDrawDirLightDescriptor;
 
 typedef struct {
@@ -74,6 +80,7 @@ typedef struct {
   const ssbo_id_t ssbo_offset;
   WGPUCommandEncoder command_encoder;
   const RenderPipeline *pipeline;
+  Profiler *profiler;
 } ShadowMapDrawDescriptor;
 
 static inline void
@@ -156,74 +163,79 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
 
    */
 
-  // TODO: cache those views in the renderpass views
-  // create per layer texture views (depth + color)
-  WGPUTextureViewDescriptor temp_layer_texture_descriptor_depth = {
-      .label = "Shadow per layer texture view - Depth",
-      .format = SHADOW_DEPTH_FORMAT,
-      .dimension = WGPUTextureViewDimension_2D,
-      .baseArrayLayer = desc->texture_layer,
-      .arrayLayerCount = 1,
-      .mipLevelCount = 1,
-      .baseMipLevel = 0,
-  };
-
-  WGPUTextureViewDescriptor temp_layer_texture_descriptor_color = {
-      .label = "Shadow per layer texture view - Color",
-      .format = SHADOW_COLOR_FORMAT,
-      .dimension = WGPUTextureViewDimension_2D,
-      .baseArrayLayer = desc->texture_layer,
-      .arrayLayerCount = 1,
-      .mipLevelCount = 1,
-      .baseMipLevel = 0,
-  };
-
-  WGPUTextureView temp_layer_texture_view_depth = wgpuTextureCreateView(
-      desc->pass->depth.texture, &temp_layer_texture_descriptor_depth);
-
-  WGPUTextureView temp_layer_texture_view_color = wgpuTextureCreateView(
-      desc->pass->color.texture, &temp_layer_texture_descriptor_color);
-
-  WGPUTextureView cached_view_color = desc->pass->color.attachment.view;
-  WGPUTextureView cached_view_depth = desc->pass->depth.attachment.view;
-
-  // sometimes pass encoder may be set if we batch update all lights
-  if (desc->command_encoder == NULL)
-    render_pass_im_begin(desc->pass);
+  profiler_latency_start(desc->profiler, ProfilerLatencyType_ShadowPass);
   {
-
-    LightShadowData light_data = {
-        .pipeline = desc->pipeline,
-        .view_offset = desc->ssbo_offset,
+    // TODO: cache those views in the renderpass views
+    // create per layer texture views (depth + color)
+    WGPUTextureViewDescriptor temp_layer_texture_descriptor_depth = {
+        .label = "Shadow per layer texture view - Depth",
+        .format = SHADOW_DEPTH_FORMAT,
+        .dimension = WGPUTextureViewDimension_2D,
+        .baseArrayLayer = desc->texture_layer,
+        .arrayLayerCount = 1,
+        .mipLevelCount = 1,
+        .baseMipLevel = 0,
     };
 
-    render_pass_update_preprocessor_data(desc->pass, 0, &light_data);
-
-    RenderPassDrawOptions layer_views = {
-        .color = temp_layer_texture_view_color,
-        .depth = temp_layer_texture_view_depth,
+    WGPUTextureViewDescriptor temp_layer_texture_descriptor_color = {
+        .label = "Shadow per layer texture view - Color",
+        .format = SHADOW_COLOR_FORMAT,
+        .dimension = WGPUTextureViewDimension_2D,
+        .baseArrayLayer = desc->texture_layer,
+        .arrayLayerCount = 1,
+        .mipLevelCount = 1,
+        .baseMipLevel = 0,
     };
 
-    render_pass_im_set_views(desc->pass, &layer_views);
+    WGPUTextureView temp_layer_texture_view_depth = wgpuTextureCreateView(
+        desc->pass->depth.texture, &temp_layer_texture_descriptor_depth);
 
-    render_pass_im_draw(desc->pass);
+    WGPUTextureView temp_layer_texture_view_color = wgpuTextureCreateView(
+        desc->pass->color.texture, &temp_layer_texture_descriptor_color);
 
-    // set back original view
-    RenderPassDrawOptions source_views = {
-        .color = cached_view_color,
-        .depth = cached_view_depth,
-    };
-    render_pass_im_set_views(desc->pass, &source_views);
+    WGPUTextureView cached_view_color = desc->pass->color.attachment.view;
+    WGPUTextureView cached_view_depth = desc->pass->depth.attachment.view;
+
+    // sometimes pass encoder may be set if we batch update all lights
+    if (desc->command_encoder == NULL)
+      render_pass_im_begin(desc->pass);
+    {
+
+      LightShadowData light_data = {
+          .pipeline = desc->pipeline,
+          .view_offset = desc->ssbo_offset,
+      };
+
+      render_pass_update_preprocessor_data(desc->pass, 0, &light_data);
+
+      RenderPassDrawOptions layer_views = {
+          .color = temp_layer_texture_view_color,
+          .depth = temp_layer_texture_view_depth,
+      };
+
+      render_pass_im_set_views(desc->pass, &layer_views);
+
+      render_pass_im_draw(desc->pass);
+
+      // set back original view
+      RenderPassDrawOptions source_views = {
+          .color = cached_view_color,
+          .depth = cached_view_depth,
+      };
+      render_pass_im_set_views(desc->pass, &source_views);
+    }
+    if (desc->command_encoder == NULL)
+      render_pass_im_end(desc->pass);
+
+    wgpuTextureViewRelease(temp_layer_texture_view_depth);
+
+    if (debug && debug->scene_debug && debug_view_count++ < debug->max_views)
+      scene_debug_view_create(debug->scene_debug,
+                              temp_layer_texture_view_color);
+    else
+      wgpuTextureViewRelease(temp_layer_texture_view_color);
   }
-  if (desc->command_encoder == NULL)
-    render_pass_im_end(desc->pass);
-
-  wgpuTextureViewRelease(temp_layer_texture_view_depth);
-
-  if (debug && debug->scene_debug && debug_view_count++ < debug->max_views)
-    scene_debug_view_create(debug->scene_debug, temp_layer_texture_view_color);
-  else
-    wgpuTextureViewRelease(temp_layer_texture_view_color);
+  profiler_latency_end(desc->profiler, ProfilerLatencyType_ShadowPass);
 }
 
 /**
@@ -300,6 +312,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
           .light = desc->lights->point.shadow.entries[p],
           .pass = &desc->lights->point.shadow.pass,
           .command_encoder = point_encoder,
+          .profiler = desc->profiler,
       };
       shadow_map_draw_point_light(&point_draw_desc, debug);
     }
@@ -318,6 +331,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
           .light = desc->lights->spot.shadow.entries[p],
           .command_encoder = dir_encoder,
           .pass = &desc->lights->spot.shadow.pass,
+          .profiler = desc->profiler,
       };
       shadow_map_draw_spot_light(&spot_draw_desc, debug);
     }
@@ -335,6 +349,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
           .command_encoder = dir_encoder,
           .pass = &desc->lights->spot.shadow.pass,
           .light = desc->lights->sun.shadow.entries[p],
+          .profiler = desc->profiler,
       };
       shadow_map_draw_sun_light(&sun_draw_desc, debug);
     }
@@ -365,6 +380,7 @@ void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *desc,
         .command_encoder = desc->command_encoder,
         .pipeline = std_render_pipeline(RenderPipelineType_Shadow),
         .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View + v].id,
+        .profiler = desc->profiler,
     };
     shadow_map_draw(&draw_desc, debug);
   }
@@ -384,6 +400,7 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc,
         .ssbo_offset = desc->ssbo_offset,
         .command_encoder = desc->command_encoder,
         .pipeline = desc->pipeline,
+        .profiler = desc->profiler,
     };
     shadow_map_draw(&draw_desc, debug);
   }
@@ -399,6 +416,7 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc,
       .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
       .views = &desc->light->views,
       .pipeline = std_render_pipeline(RenderPipelineType_ShadowCullBack),
+      .profiler = desc->profiler,
   };
   shadow_map_draw_dir_light(&draw_desc, debug);
 }
@@ -413,6 +431,7 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc,
       .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
       .views = &desc->light->views,
       .pipeline = std_render_pipeline(RenderPipelineType_ShadowCullBack),
+      .profiler = desc->profiler,
   };
   shadow_map_draw_dir_light(&draw_desc, debug);
 }

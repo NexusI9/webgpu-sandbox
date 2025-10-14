@@ -10,6 +10,7 @@
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/postfx/core.h"
+#include "backend/profiler.h"
 #include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
@@ -33,8 +34,8 @@ void scene_renderer_init(SceneRenderer *renderer,
                               ? emscripten_get_device_pixel_ratio()
                               : rd->dpi;
 
-  // create clock
-  clock_create(&renderer->clock);
+  clock_init(&renderer->clock);
+  profiler_init(&renderer->profiler);
 
   TIMER("AO Bake", {
     ao_bake_init(&renderer->texture.ambient_occlusion,
@@ -110,8 +111,16 @@ void scene_renderer_add_draw_callback(SceneRenderer *renderer,
   }
 }
 
+/**
+   Renderer Main Loop, basically just loop through the registered callbacks.
+ */
 void scene_renderer_render(void *desc) {
   SceneRendererRenderDescriptor *config = (SceneRendererRenderDescriptor *)desc;
+
+  profiler_latency_end(&config->renderer->profiler,
+                       ProfilerLatencyType_MainLoop);
+  profiler_latency_start(&config->renderer->profiler,
+                         ProfilerLatencyType_MainLoop);
 
   // Call draw callbacks of active renderere draw mode
   SceneRendererDrawCallbackList *callback_list =

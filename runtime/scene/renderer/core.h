@@ -11,6 +11,7 @@
 #include "backend/ao_bake/core.h"
 #include "backend/clock.h"
 #include "backend/compute/core.h"
+#include "backend/profiler.h"
 #include "backend/ssbo.h"
 #include "backend/ubo.h"
 #include "render_pass/core.h"
@@ -56,6 +57,7 @@ typedef struct SceneRenderer {
   cclock clock; // update clock delta on draw
   SSBOManager ssbo;
   UBOManager ubo;
+  Profiler profiler;
 
   struct {
     double dpi;

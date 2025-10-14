@@ -127,6 +127,7 @@ void sem_sun_light_shadow_set_position(SEMTransformCallback *desc) {
             .texture_layer = desc->sem->scene->lights.spot.shadow.length +
                              desc->sem->target_list_index,
             .command_encoder = NULL,
+	    .profiler = &desc->sem->scene->renderer.profiler,
         },
         SCENE_DEBUG_UNDEFINED);
   }
