@@ -1,6 +1,7 @@
 #include "compute.h"
 #include "backend/buffer.h"
 #include "backend/context.h"
+#include "backend/registry.h"
 #include "backend/resource_manager/core.h"
 #include "utils/file.h"
 #include "webgpu/webgpu.h"
@@ -12,6 +13,7 @@ void compute_pipeline_create(ComputePipeline *pipeline,
                              const ComputePipelineCreateDescriptor *desc) {
 
   // Define core data
+  pipeline->id = reg_register(pipeline, RegEntryType_ComputePipeline);
   pipeline->handle = NULL;
   pipeline->label = desc->label;
   pipeline->shader_pso = desc->pso;

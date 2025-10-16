@@ -255,7 +255,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
 
   // logger_add(LoggerFlag_Process, "Computing all shadow maps...");
 
-  /* TODO :
+  /*
      When using "global" shadow encoder and passing it through all the passes
      create an async conflict issue: the point light view probably takes longer
      to be calculated and gets overriden by the the sun point of view.

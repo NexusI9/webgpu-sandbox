@@ -7,6 +7,7 @@
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
+#include "runtime/scene/stat.h"
 
 /**
 
@@ -51,6 +52,11 @@ static inline SceneStatus scene_show_mesh(Scene *scene, Mesh *mesh) {
 
   mesh_ref_list_remove(scene_mesh_state(scene, SceneMeshStates_Hidden), mesh);
 
+  {
+    scene_stat_update_draw_call_count(scene);
+    scene_stat_update_vertex_count(scene);
+  }
+
   return SceneStatus_Success;
 }
 
@@ -67,6 +73,11 @@ static inline SceneStatus scene_hide_mesh(Scene *scene, Mesh *mesh) {
 
   mesh_ref_list_insert(scene_mesh_state(scene, SceneMeshStates_Hidden), mesh);
 
+  {
+    scene_stat_update_draw_call_count(scene);
+    scene_stat_update_vertex_count(scene);
+  }
+
   return SceneStatus_Success;
 }
 
@@ -79,6 +90,11 @@ static inline SceneStatus scene_show_mesh_ref_list(Scene *scene,
                                  (SceneRendererDrawMode)(1 << i)),
         list);
 
+  {
+    scene_stat_update_draw_call_count(scene);
+    scene_stat_update_vertex_count(scene);
+  }
+
   return SceneStatus_Success;
 }
 
@@ -90,6 +106,11 @@ static inline SceneStatus scene_hide_mesh_ref_list(Scene *scene,
         scene_renderer_pass_list(&scene->renderer,
                                  (SceneRendererDrawMode)(1 << i)),
         list);
+
+  {
+    scene_stat_update_draw_call_count(scene);
+    scene_stat_update_vertex_count(scene);
+  }
 
   return SceneStatus_Success;
 }
@@ -106,7 +127,6 @@ static inline SceneStatus scene_visibility_toggle_mesh(Scene *scene,
     return SceneStatus_MeshHidden;
   }
 }
-
 
 #ifdef __cplusplus
 }

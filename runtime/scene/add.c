@@ -40,6 +40,7 @@
 #include "runtime/probe/reflection/probe.h"
 #include "runtime/scene/editor/ui/tree.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
+#include "runtime/scene/stat.h"
 #include "utils/projection.h"
 
 static inline void scene_add_sem(Scene *, SceneEditorMeshList *,
@@ -567,11 +568,11 @@ Mesh *scene_new_mesh(Scene *scene) {
   return mesh_list_new_mesh(&scene->meshes);
 }
 
-static inline void scene_add_mesh_any(Scene *, Mesh *, const ScenePipeline,
-                                      const char *, const SceneAddFlag);
+static inline void scene_add_mesh_core(Scene *, Mesh *, const ScenePipeline,
+                                       const char *, const SceneAddFlag);
 
-void scene_add_mesh_any(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
-                        const char *layer, const SceneAddFlag flag) {
+void scene_add_mesh_core(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
+                         const char *layer, const SceneAddFlag flag) {
 
   {
     // add to scene layers ('Default' layer if NULL)
@@ -628,6 +629,9 @@ void scene_render_pass_draw_list_enable_mesh(
   render_pass_enable_mesh(&scene->planes_reflection.pass, mesh);
   render_pass_enable_mesh(&scene->lights.point.shadow.pass, mesh);
   render_pass_enable_mesh(&scene->lights.spot.shadow.pass, mesh);
+
+  scene_stat_update_draw_call_count(scene);
+  scene_stat_update_vertex_count(scene);
 }
 
 /**
@@ -686,7 +690,7 @@ void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
   // build mesh depending on pipeline and scene render mode
   scene_build_mesh(scene, mesh, pipeline);
 
-  scene_add_mesh_any(scene, mesh, pipeline, layer, flag);
+  scene_add_mesh_core(scene, mesh, pipeline, layer, flag);
 }
 
 /**
@@ -715,7 +719,7 @@ void scene_add_mesh_fixed(Scene *scene, Mesh *mesh,
                           const SceneAddFlag flag) {
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
   scene_build_mesh(scene, mesh, pipeline);
-  scene_add_mesh_any(scene, mesh, pipeline, layer, flag);
+  scene_add_mesh_core(scene, mesh, pipeline, layer, flag);
 }
 
 /**
@@ -727,5 +731,5 @@ void scene_add_mesh_fixed_ref_list(Scene *scene, MeshRefList *list,
                                    const ScenePipeline pipeline,
                                    const char *layer, const SceneAddFlag flag) {
   for (size_t i = 0; i < list->length; i++)
-    scene_add_mesh_any(scene, list->entries[i], pipeline, layer, flag);
+    scene_add_mesh_core(scene, list->entries[i], pipeline, layer, flag);
 }

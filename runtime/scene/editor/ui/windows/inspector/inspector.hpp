@@ -237,7 +237,7 @@ public:
       : Window(scene, label),
         object_tab(scene, SceneEditorUIIcon_Properties_Object, "Object"),
         info_tab(scene, SceneEditorUIIcon_Properties_Chip,
-                 "Device Information"),
+                 "Information"),
         scene_tab(scene, SceneEditorUIIcon_Properties_Scene, "Scene"),
         clock_tab(scene, SceneEditorUIIcon_Properties_Clock, "Latencies") {
 

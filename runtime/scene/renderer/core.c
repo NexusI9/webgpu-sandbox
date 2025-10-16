@@ -12,6 +12,7 @@
 #include "backend/postfx/core.h"
 #include "backend/profiler.h"
 #include "backend/ssbo.h"
+#include "backend/stat.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
 #include "backend/ubo.h"
@@ -36,6 +37,7 @@ void scene_renderer_init(SceneRenderer *renderer,
 
   clock_init(&renderer->clock);
   profiler_init(&renderer->profiler);
+  stat_init(&renderer->stats);
 
   TIMER("AO Bake", {
     ao_bake_init(&renderer->texture.ambient_occlusion,

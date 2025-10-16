@@ -19,7 +19,7 @@ void scene_set_draw_mode(Scene *scene, const SceneRendererDrawMode mode) {
   if (mode == scene->renderer.draw.mode)
     return;
 
-  profiler_latency_flush(&scene->renderer.profiler);
+  profiler_latency_clear_all(&scene->renderer.profiler);
 
   // update light / reflections
   if (mode == SceneRendererDrawMode_Texture) {
@@ -87,11 +87,11 @@ void scene_update_render_pass_texture(
 
           Monosample:
 
-                List                      Child Passes
+               List                       Child Passes
 
            .-----------.               .-- pass 1 -------.
-           |   Share   |        .----> | Resolve Texture |
-           |-----------|       |       |-----------------|     .-------------.
+           |   Share   |       .-----> | Resolve Texture |
+           |-----------|      |        |-----------------|     .-------------.
            |  Texture  |------+    .-> | Resolve View    | --> | Attachment  |
            |-----------|      |   |    '-----------------'     '-------------'
            |  View     |------|---+

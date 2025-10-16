@@ -13,6 +13,7 @@
 #include "backend/compute/core.h"
 #include "backend/profiler.h"
 #include "backend/ssbo.h"
+#include "backend/stat.h"
 #include "backend/ubo.h"
 #include "render_pass/core.h"
 #include "runtime/pipeline/pipeline.h"
@@ -55,9 +56,12 @@ typedef struct {
 typedef struct SceneRenderer {
 
   cclock clock; // update clock delta on draw
+
   SSBOManager ssbo;
   UBOManager ubo;
+
   Profiler profiler;
+  Statistics stats;
 
   struct {
     double dpi;

@@ -28,7 +28,9 @@ typedef struct {
 extern "C" {
 #endif
 
-void profiler_init(Profiler *);
+static inline void profiler_init(Profiler *profiler) {
+  *profiler = (Profiler){0};
+}
 
 static inline void profiler_latency_start(Profiler *profiler,
                                           const ProfilerLatencyType type) {
@@ -40,7 +42,12 @@ static inline void profiler_latency_end(Profiler *profiler,
   clock_gettime(CLOCK_MONOTONIC, &profiler->latencies[type].end);
 }
 
-static inline void profiler_latency_flush(Profiler *profiler) {
+static inline void profiler_latency_clear(Profiler *profiler,
+                                          const ProfilerLatencyType type) {
+  profiler->latencies[type] = (ProfilerLatency){0};
+}
+
+static inline void profiler_latency_clear_all(Profiler *profiler) {
   for (uint8_t i = 0; i < PROFILER_LATENCY_TYPE_COUNT; i++)
     profiler->latencies[i] = (ProfilerLatency){0};
 }

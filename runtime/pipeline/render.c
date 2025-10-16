@@ -4,6 +4,7 @@
 
 #include "backend/buffer.h"
 #include "backend/context.h"
+#include "backend/registry.h"
 #include "runtime/geometry/vertex/core.h"
 #include "runtime/texture/core.h"
 #include "utils/file.h"
@@ -18,6 +19,7 @@ void render_pipeline_create(RenderPipeline *pipeline,
                             const RenderPipelineCreateDescriptor *desc) {
 
   // Define core data
+  pipeline->id = reg_register(pipeline, RegEntryType_RenderPipeline);
   pipeline->handle = NULL;
   pipeline->label = desc->label;
   pipeline->shader_pso = desc->pso;

@@ -2,6 +2,7 @@
 #include "backend/context.h"
 #include "backend/profiler.h"
 #include "backend/registry.h"
+#include "backend/stat.h"
 #include "backend/std_pipeline/core.h"
 #include "imgui/imgui.h"
 #include "resources/tool/css2h/output/theme.default.h"
@@ -194,10 +195,11 @@ void UI::SceneTab::draw() {
 
 void UI::InfoTab::draw() {
 
+  // === Device Info ===
   const struct {
     const char *label;
     const char *value;
-  } items[] = {
+  } device_items[] = {
       {"Vendor", g_context.adapter_info.vendor},
       {"Architecture", g_context.adapter_info.architecture},
       {"Device", g_context.adapter_info.device},
@@ -206,20 +208,49 @@ void UI::InfoTab::draw() {
       {"Adapter Type", adapter_type_label[g_context.adapter_info.adapterType]},
   };
 
-  for (uint8_t i = 0; i < 6; i++) {
+  uint8_t i;
+  for (i = 0; i < sizeof(device_items) / sizeof(device_items[0]); i++) {
     ImGui::Spacing();
-    ImGui::Text("%s: %s", items[i].label, items[i].value);
+    ImGui::Text("%s: %s", device_items[i].label, device_items[i].value);
+    ImGui::Separator();
+  }
+
+  // === Scene Stats Info ===
+  const struct {
+    const char *label;
+    const StatCount value;
+  } stats_items[] = {
+      {"Vertex Count", StatCount_Vertex},
+      {"Texture Count", StatCount_Texture},
+      {"Shader Count", StatCount_Shader},
+      {"Draw Call Count", StatCount_DrawCall},
+  };
+
+  ImGui::Spacing();
+  ImGui::Text("Scene stats");
+
+  for (i = 0; i < sizeof(stats_items) / sizeof(stats_items[0]); i++) {
+    ImGui::Spacing();
+    ImGui::Text("%s: %d", stats_items[i].label,
+                stat_get_count(&scene->renderer.stats, stats_items[i].value));
     ImGui::Separator();
   }
 }
 
 int qsort_callback(const void *a, const void *b) {
-  return ((UI::ClockTabBar *)b)->value - ((UI::ClockTabBar *)a)->value;
+  const UI::ClockTabBar *A = (const UI::ClockTabBar *)a;
+  const UI::ClockTabBar *B = (const UI::ClockTabBar *)b;
+
+  if (B->value > A->value)
+    return 1;
+  if (B->value < A->value)
+    return -1;
+  return 0;
 }
 
 void UI::ClockTab::draw() {
 
-  ClockTabBar bars[PROFILER_LATENCY_TYPE_COUNT] = {
+  ClockTabBar bars[] = {
       {
           ProfilerLatencyType_ShadowPass,
           "Shadow Pass",
@@ -228,16 +259,6 @@ void UI::ClockTab::draw() {
       {
           ProfilerLatencyType_ReflectionPass,
           "Reflection Pass",
-          color,
-      },
-      {
-          ProfilerLatencyType_UIPass,
-          "UI",
-          color,
-      },
-      {
-          ProfilerLatencyType_MainLoop,
-          "Main Loop",
           color,
       },
       {
@@ -258,24 +279,27 @@ void UI::ClockTab::draw() {
   };
 
   // fetch all value
-  for (int i = 0; i < PROFILER_LATENCY_TYPE_COUNT; i++)
+  const size_t length = sizeof(bars) / sizeof(ClockTabBar);
+  for (int i = 0; i < length; i++)
     bars[i].value =
         profiler_latency_get_elapsed(&scene->renderer.profiler, bars[i].type);
 
   // sort
-  qsort(bars, PROFILER_LATENCY_TYPE_COUNT, sizeof(bars[0]), qsort_callback);
+  qsort(bars, length, sizeof(ClockTabBar), qsort_callback);
 
   TimeBarStyle style = {
       .background =
           (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_LOW],
       .bar = (ImVec4 &)color,
       .border_radius = 10.0f,
-      .height = 20.0f,
+      .height = 40.0f,
   };
 
   // display time bar
-  for (int i = 0; i < PROFILER_LATENCY_TYPE_COUNT; i++)
+  for (int i = 0; i < length; i++) {
     UI::TimeBar(scene, bars[i].label, bars[i].value, max_value, &style).draw();
+    ImGui::Spacing();
+  }
 }
 
 void UI::ObjectTab::draw() {
@@ -420,8 +444,8 @@ void UI::Inspector::draw() {
 
         // draw content
         if (g_active_tab >= 0) {
-          ImGui::BeginChild("##page", ImVec2(page_width, 0), true,
-                            ImGuiWindowFlags_NoScrollWithMouse);
+          ImGui::BeginChild("##page", ImVec2(page_width - bar_width - gap, 0),
+                            true, ImGuiWindowFlags_NoScrollWithMouse);
 
           // header
           {

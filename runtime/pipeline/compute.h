@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "backend/registry.h"
 #include "runtime/geometry/vertex/core.h"
 #include "runtime/geometry/vertex/vertex.h"
 #include "webgpu/webgpu.h"
@@ -28,6 +29,7 @@ typedef struct {
 
 typedef struct {
 
+  reg_id_t id;
   const char *label;
   const char *path;
 
@@ -49,7 +51,7 @@ typedef struct {
   const char *label;
   const char *path;
   const ComputePipelineStateObject *pso;
-  
+
 } ComputePipelineCreateDescriptor;
 
 void compute_pipeline_create(ComputePipeline *,

@@ -9,15 +9,16 @@ void UI::TimeBar::draw() {
   ImVec2 surface = ImGui::GetContentRegionAvail();
 
   // background
-  draw_list->AddRectFilled(pos, ImVec2(surface.x, style->height),
-                           ImGui::ColorConvertFloat4ToU32(style->background),
-                           style->border_radius);
+  draw_list->AddRectFilled(
+      pos, ImVec2(pos.x + surface.x, pos.y + style->height),
+      ImGui::ColorConvertFloat4ToU32(style->background), style->border_radius);
 
   // bar
+
   double x = value * surface.x / max_value;
-  draw_list->AddRectFilled(pos, ImVec2(x, style->height),
-                           ImGui::ColorConvertFloat4ToU32(style->bar),
-                           style->border_radius);
+  draw_list->AddRectFilled(
+      pos, ImVec2(pos.x + x, pos.y + style->height),
+      ImGui::ColorConvertFloat4ToU32(style->bar), style->border_radius);
 
   ImGui::Text("%s", label);
   ImGui::SameLine();

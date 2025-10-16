@@ -27,6 +27,9 @@ typedef enum {
   RegEntryType_SceneEditorMeshList_Camera,
   RegEntryType_SceneEditorMeshList_ProbeReflectionPlane,
   RegEntryType_SceneEditorMeshList_ProbeReflectionGrid,
+  RegEntryType_RenderPipeline,
+  RegEntryType_ComputePipeline,
+  RegEntryType_Texture,
 } RegEntryType;
 
 typedef struct {
@@ -39,10 +42,14 @@ typedef struct {
 extern "C" {
 #endif
 
+// TODO: maybe segment reg into per-type, so it's faster to access the elements
+// of a certain type RegEntry g_reg[TYPE_COUNT][REG_MAX_OBJECTS]
 extern RegEntry g_reg[REG_MAX_OBJECTS];
 extern reg_id_t g_reg_id;
 
 reg_id_t reg_register(void *, RegEntryType);
+
+static inline const int reg_length() { return g_reg_id; }
 
 static inline const RegEntry *reg_lookup(reg_id_t id) {
   if (id >= REG_MAX_OBJECTS) {

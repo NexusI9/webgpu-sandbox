@@ -8,6 +8,7 @@
 #include "backend/logger.h"
 #include "backend/registry.h"
 #include "backend/ssbo.h"
+#include "backend/stat.h"
 #include "debug/core.h"
 #include "event/event.html.h"
 #include "renderer/render_pass/core.h"
@@ -24,10 +25,11 @@
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/renderer/core.h"
+#include "runtime/scene/stat.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
 
-// initializers 
+// initializers
 static inline Camera *scene_init_main_camera(Scene *, cclock *);
 static inline void scene_light_list_init(Scene *);
 static inline void scene_camera_init(Scene *);
@@ -52,7 +54,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     }
 
     {
-      
+
       /*  ===== LISTS ===== */
       scene_mesh_list_init(scene);
       scene_layer_init(&scene->layers);
@@ -63,7 +65,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     {
       /*  ===== CAMERA & VIEWPORT =====  */
       scene_camera_init(scene);
-      
+
       viewport_create(&scene->viewport,
                       &(ViewportCreateDescriptor){
                           .fov = desc->viewport->fov,
@@ -79,6 +81,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
     {
       /*  ===== EDITOR =====  */
+      scene_stat_update_shader_count(scene);
       scene_editor_init(scene); // EDITORONLY
       scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
                                           .camera = scene->active_camera,
@@ -141,7 +144,7 @@ void scene_camera_init(Scene *scene) {
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Camera,
                   &scene->camera->ssbo_slot);
 
-  // set scene main camera as active 
+  // set scene main camera as active
   scene->active_camera = scene->camera;
 }
 
