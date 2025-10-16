@@ -12,7 +12,9 @@
 #include "runtime/scene/draw.h"
 #include "runtime/scene/editor/selection/core.h"
 #include "runtime/scene/editor/ui/components/button_icon.hpp"
+#include "runtime/scene/editor/ui/components/spacing.hpp"
 #include "runtime/scene/editor/ui/components/time_bar.hpp"
+#include "runtime/scene/editor/ui/components/tree_item.hpp"
 #include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.ambient_light.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.mesh.hpp"
@@ -36,14 +38,8 @@ void UI::SceneTab::draw() {
   ImGui::BeginChild("##scene_properties", ImVec2(0, 0), true,
                     ImGuiWindowFlags_NoScrollWithMouse);
 
-  ImGuiTreeNodeFlags flags =
-      ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen;
-
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                      ImVec2(ui->size[SceneEditorUISize_Tree_PaddingH],
-                             ui->size[SceneEditorUISize_Tree_PaddingV]));
   // resolution / multisample
-  if (ImGui::TreeNodeEx("Resolution", flags)) {
+  if (UI::TreeItem(scene, "Resolution").draw()) {
     {
       ImGui::Text("Width");
       width = scene_renderer_width(&scene->renderer);
@@ -140,7 +136,7 @@ void UI::SceneTab::draw() {
     ImGui::TreePop();
   }
 
-  if (ImGui::TreeNodeEx("View", flags)) {
+  if (UI::TreeItem(scene, "View").draw()) {
 
     {
       ImGui::Text("FOV");
@@ -180,20 +176,21 @@ void UI::SceneTab::draw() {
     ImGui::TreePop();
   }
 
-  if (ImGui::TreeNodeEx("Bloom", flags)) {
+  if (UI::TreeItem(scene, "Bloom").draw()) {
     ImGui::TreePop();
   }
 
-  if (ImGui::TreeNodeEx("Vignette", flags)) {
+  if (UI::TreeItem(scene, "Vignette").draw()) {
     ImGui::TreePop();
   }
 
-  ImGui::PopStyleVar(1);
 
   ImGui::EndChild();
 }
 
 void UI::InfoTab::draw() {
+
+  uint8_t i;
 
   // === Device Info ===
   const struct {
@@ -208,12 +205,18 @@ void UI::InfoTab::draw() {
       {"Adapter Type", adapter_type_label[g_context.adapter_info.adapterType]},
   };
 
-  ImGui::Text("Device");
-  uint8_t i;
-  for (i = 0; i < sizeof(device_items) / sizeof(device_items[0]); i++) {
-    ImGui::Spacing();
-    ImGui::Text("%s: %s", device_items[i].label, device_items[i].value);
-    ImGui::Separator();
+
+  UI::Spacing(ui, SceneEditorUISize_Space_Small).draw_y();
+  if (UI::TreeItem(scene, "Device").draw()) {
+    for (i = 0; i < sizeof(device_items) / sizeof(device_items[0]); i++) {
+      ImGui::Spacing();
+      ImGui::PushTextWrapPos(ImGui::GetCursorPosX() +
+                             ImGui::GetContentRegionAvail().x);
+      ImGui::Text("%s: %s", device_items[i].label, device_items[i].value);
+      ImGui::PopTextWrapPos();
+      ImGui::Separator();
+    }
+    ImGui::TreePop();
   }
 
   // === Scene Stats Info ===
@@ -227,15 +230,18 @@ void UI::InfoTab::draw() {
       {"Draw Call Count", StatCount_DrawCall},
   };
 
-  ImGui::SetCursorPosY(ImGui::GetCursorPosY() +
-                       ui->size[SceneEditorUISize_Space_Small]);
-  ImGui::Text("Scene");
-
-  for (i = 0; i < sizeof(stats_items) / sizeof(stats_items[0]); i++) {
-    ImGui::Spacing();
-    ImGui::Text("%s: %d", stats_items[i].label,
-                stat_get_count(&scene->renderer.stats, stats_items[i].value));
-    ImGui::Separator();
+  UI::Spacing(ui, SceneEditorUISize_Space_Medium).draw_y();
+  if (UI::TreeItem(scene, "Scene").draw()) {
+    for (i = 0; i < sizeof(stats_items) / sizeof(stats_items[0]); i++) {
+      ImGui::Spacing();
+      ImGui::PushTextWrapPos(ImGui::GetCursorPosX() +
+                             ImGui::GetContentRegionAvail().x);
+      ImGui::Text("%s: %d", stats_items[i].label,
+                  stat_get_count(&scene->renderer.stats, stats_items[i].value));
+      ImGui::PopTextWrapPos();
+      ImGui::Separator();
+    }
+    ImGui::TreePop();
   }
 }
 
@@ -446,7 +452,8 @@ void UI::Inspector::draw() {
 
         // draw content
         if (g_active_tab >= 0) {
-          ImGui::BeginChild("##page", ImVec2(page_width - bar_width - gap, 0),
+          ImGui::BeginChild("##page",
+                            ImVec2(page_width - 2.0f * bar_width - gap, 0),
                             true, ImGuiWindowFlags_NoScrollWithMouse);
 
           // header

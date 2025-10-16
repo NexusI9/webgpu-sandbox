@@ -123,7 +123,7 @@ bool scene_editor_keydown_callback(int eventType,
                                    const EmscriptenKeyboardEvent *keyEvent,
                                    void *userData);
 
-static inline int scene_editor_ui_size(SceneEditorUI *ui, const int size) {
+static inline int scene_editor_ui_size(const SceneEditorUI *ui, const int size) {
   return size * ui->dpi;
 }
 

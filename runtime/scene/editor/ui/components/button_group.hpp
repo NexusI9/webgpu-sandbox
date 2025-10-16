@@ -3,8 +3,8 @@
 
 #include "imgui/imgui.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/editor/ui/components/core.hpp"
 #include "runtime/scene/editor/ui/core.h"
-#include "runtime/scene/editor/ui/windows/core.hpp"
 
 namespace UI {
 
@@ -29,16 +29,16 @@ typedef struct {
   const int x, y;
 } ButtonStyle;
 
-class ButtonGroup : public Window {
+class ButtonGroup : public Component {
 
 public:
   ButtonGroup(
       Scene *scene, const char *label, const ButtonGroupItem *items,
       const uint8_t items_length, const ButtonStyle *style,
       const ButtonGroupDirection direction = ButtonGroupDirection_Vertical)
-      : Window(scene, label), items(items), items_length(items_length),
+      : Component(scene, label), items(items), items_length(items_length),
         style(style), direction(direction) {}
-  void draw() override;
+  bool draw() override;
 
 private:
   const ButtonGroupItem *items;

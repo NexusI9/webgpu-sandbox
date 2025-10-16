@@ -4,22 +4,23 @@
 #include "backend/ssbo.h"
 #include "imgui/imgui.h"
 #include "runtime/input/core.h"
-#include "runtime/scene/editor/ui/windows/core.hpp"
+#include "runtime/scene/editor/ui/components/core.hpp"
 #include "utils/color.h"
 #include "utils/name.h"
 
 namespace UI {
 
 // INT
-template <typename T> class InputInt : public Window {
+template <typename T> class InputInt : public Component {
 
 public:
   InputInt(T *target, Scene *scene, const char *label, int (*get)(T *),
            void (*set)(T *, int), void (*extra)(Scene *, void *),
            void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
-      : Window(scene, label), target(target), get(get), set(set), extra(extra),
-        user_data(user_data), ssbo_type(ssbo_type), ssbo_id(ssbo_id) {}
-  void draw() override;
+      : Component(scene, label), target(target), get(get), set(set),
+        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
+        ssbo_id(ssbo_id) {}
+  bool draw() override;
 
 private:
   T *target;
@@ -33,15 +34,16 @@ private:
 };
 
 // FLOAT
-template <typename T> class InputFloat : public Window {
+template <typename T> class InputFloat : public Component {
 
 public:
   InputFloat(T *target, Scene *scene, const char *label, float (*get)(T *),
              void (*set)(T *, float), void (*extra)(Scene *, void *),
              void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
-      : Window(scene, label), target(target), get(get), set(set), extra(extra),
-        user_data(user_data), ssbo_type(ssbo_type), ssbo_id(ssbo_id) {}
-  void draw() override;
+      : Component(scene, label), target(target), get(get), set(set),
+        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
+        ssbo_id(ssbo_id) {}
+  bool draw() override;
 
 private:
   T *target;
@@ -55,15 +57,16 @@ private:
 };
 
 // VEC3
-template <typename T> class InputVec3 : public Window {
+template <typename T> class InputVec3 : public Component {
 
 public:
   InputVec3(T *target, Scene *scene, const char *label, void (*get)(T *, vec3),
             void (*set)(T *, vec3), void (*extra)(Scene *, void *),
             void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
-      : Window(scene, label), target(target), get(get), set(set), extra(extra),
-        user_data(user_data), ssbo_type(ssbo_type), ssbo_id(ssbo_id) {}
-  void draw() override;
+      : Component(scene, label), target(target), get(get), set(set),
+        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
+        ssbo_id(ssbo_id) {}
+  bool draw() override;
 
 private:
   T *target;
@@ -77,15 +80,16 @@ private:
 };
 
 // VEC4
-template <typename T> class InputVec4 : public Window {
+template <typename T> class InputVec4 : public Component {
 
 public:
   InputVec4(T *target, Scene *scene, const char *label, void (*get)(T *, vec4),
             void (*set)(T *, vec4), void (*extra)(Scene *, void *),
             void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
-      : Window(scene, label), target(target), get(get), set(set), extra(extra),
-        user_data(user_data), ssbo_type(ssbo_type), ssbo_id(ssbo_id) {}
-  void draw() override;
+      : Component(scene, label), target(target), get(get), set(set),
+        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
+        ssbo_id(ssbo_id) {}
+  bool draw() override;
 
 private:
   T *target;
@@ -99,16 +103,17 @@ private:
 };
 
 // COLOR
-template <typename T> class InputColor : public Window {
+template <typename T> class InputColor : public Component {
 
 public:
   InputColor(T *target, Scene *scene, const char *label,
              void (*get)(T *, color), void (*set)(T *, color),
              void (*extra)(Scene *, void *), void *user_data,
              SSBOType ssbo_type, ssbo_id_t ssbo_id)
-      : Window(scene, label), target(target), get(get), set(set), extra(extra),
-        user_data(user_data), ssbo_type(ssbo_type), ssbo_id(ssbo_id) {}
-  void draw() override;
+      : Component(scene, label), target(target), get(get), set(set),
+        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
+        ssbo_id(ssbo_id) {}
+  bool draw() override;
 
 private:
   T *target;
@@ -121,15 +126,15 @@ private:
   ssbo_id_t ssbo_id;
 };
 
-template <typename T> class InputText : public Window {
+template <typename T> class InputText : public Component {
 
 public:
   InputText(T *target, Scene *scene, const char *label, const int buffer_size,
             void (*get)(T *, char *), void (*set)(T *, const char *),
             void (*extra)(Scene *, void *), void *user_data)
-      : Window(scene, label), target(target), buffer_size(buffer_size),
+      : Component(scene, label), target(target), buffer_size(buffer_size),
         get(get), set(set), extra(extra), user_data(user_data) {}
-  void draw() override;
+  bool draw() override;
 
 private:
   T *target;
@@ -145,7 +150,7 @@ private:
   char value[max_buffer_size];
 };
 
-template <typename T> void InputInt<T>::draw() {
+template <typename T> bool InputInt<T>::draw() {
 
   ImGui::Text("%s", label);
   value = get(target);
@@ -153,7 +158,9 @@ template <typename T> void InputInt<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
-  if (ImGui::DragInt(input_id, &value)) {
+  bool input = ImGui::DragInt(input_id, &value);
+
+  if (input) {
     set(target, value);
     ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
 
@@ -162,9 +169,10 @@ template <typename T> void InputInt<T>::draw() {
   }
 
   ImGui::Spacing();
+  return input;
 }
 
-template <typename T> void InputFloat<T>::draw() {
+template <typename T> bool InputFloat<T>::draw() {
 
   ImGui::Text("%s", label);
   value = get(target);
@@ -172,7 +180,9 @@ template <typename T> void InputFloat<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
-  if (ImGui::DragFloat(input_id, &value, 0.1f)) {
+  bool input = ImGui::DragFloat(input_id, &value, 0.1f);
+  
+  if (input) {
     set(target, value);
     ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
 
@@ -181,9 +191,11 @@ template <typename T> void InputFloat<T>::draw() {
   }
 
   ImGui::Spacing();
+
+  return input;
 }
 
-template <typename T> void InputVec3<T>::draw() {
+template <typename T> bool InputVec3<T>::draw() {
 
   ImGui::Text("%s", label);
   get(target, value);
@@ -202,9 +214,11 @@ template <typename T> void InputVec3<T>::draw() {
   }
 
   ImGui::Spacing();
+
+  return false;
 }
 
-template <typename T> void InputVec4<T>::draw() {
+template <typename T> bool InputVec4<T>::draw() {
 
   ImGui::Text("%s", label);
   get(target, value);
@@ -223,9 +237,11 @@ template <typename T> void InputVec4<T>::draw() {
   }
 
   ImGui::Spacing();
+
+  return false;
 }
 
-template <typename T> void InputColor<T>::draw() {
+template <typename T> bool InputColor<T>::draw() {
 
   ImGui::Text("%s", label);
   get(target, value);
@@ -233,11 +249,12 @@ template <typename T> void InputColor<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
-  if (ImGui::ColorPicker4(input_id, value,
-                          ImGuiColorEditFlags_NoSidePreview |
-                              ImGuiColorEditFlags_NoSmallPreview |
-                              ImGuiColorEditFlags_DisplayRGB |
-                              ImGuiColorEditFlags_DisplayHex)) {
+  bool input = ImGui::ColorPicker4(
+      input_id, value,
+      ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview |
+          ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_DisplayHex);
+
+  if (input) {
     set(target, value);
     ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
 
@@ -246,10 +263,11 @@ template <typename T> void InputColor<T>::draw() {
   }
 
   ImGui::Spacing();
+
+  return input;
 }
 
-
-template <typename T> void InputText<T>::draw() {
+template <typename T> bool InputText<T>::draw() {
 
   ImGui::Text("%s", label);
   get(target, value);
@@ -257,8 +275,10 @@ template <typename T> void InputText<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
-  if (ImGui::InputText(input_id, value,
-                       glm_imin(buffer_size, max_buffer_size))) {
+  bool input =
+      ImGui::InputText(input_id, value, glm_imin(buffer_size, max_buffer_size));
+
+  if (input) {
     set(target, value);
 
     if (extra)
@@ -267,12 +287,13 @@ template <typename T> void InputText<T>::draw() {
 
   if (ImGui::IsItemActivated())
     g_input.locked = InputLockState_Keyboard;
-  
 
   if (ImGui::IsItemDeactivated())
     g_input.locked = InputLockState_Unlocked;
 
   ImGui::Spacing();
+
+  return input;
 }
 
 } // namespace UI

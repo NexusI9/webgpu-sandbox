@@ -223,9 +223,10 @@ void scene_editor_ui_set_size(SceneEditorUI *ui) {
       [SceneEditorUISize_Log_IconScale] = 16,
       [SceneEditorUISize_Monitor_Width] = 300,
       [SceneEditorUISize_Monitor_Height] = 100,
-      [SceneEditorUISize_Space_Small] = 12,
-      [SceneEditorUISize_Space_Medium] = 32,
-      [SceneEditorUISize_Space_Large] = 46};
+      [SceneEditorUISize_Space_Small] = 6,
+      [SceneEditorUISize_Space_Medium] = 12,
+      [SceneEditorUISize_Space_Large] = 32,
+  };
 
   for (uint16_t i = 0; i < SCENE_EDITOR_UI_SIZE_COUNT; i++)
     ui->size[i] = scene_editor_ui_size(ui, base_size[i]);
@@ -356,7 +357,7 @@ void scene_editor_ui_create_right_panel(SceneEditorUI *ui, Scene *scene) {
   ImGui::SetNextWindowSize(ImVec2(ui->size[SceneEditorUISize_RightPanel_Width],
                                   ui->size[SceneEditorUISize_Screen_Height]));
 
-  ImGui::Begin("Left Panel", nullptr,
+  ImGui::Begin("Right Panel", nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
   {

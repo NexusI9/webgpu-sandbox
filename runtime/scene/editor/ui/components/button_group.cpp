@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 #include "utils/name.h"
 
-void UI::ButtonGroup::draw() {
+bool UI::ButtonGroup::draw() {
 
   ImGui::Begin(label, nullptr,
                ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse |
@@ -94,4 +94,6 @@ void UI::ButtonGroup::draw() {
   }
 
   ImGui::End();
+
+  return false;
 }

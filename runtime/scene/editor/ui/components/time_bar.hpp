@@ -2,7 +2,8 @@
 #define _SCENE_EDITOR_UI_COMPONENT_TIME_BAR_H_
 
 #include "imgui/imgui.h"
-#include "runtime/scene/editor/ui/windows/core.hpp"
+#include "runtime/scene/editor/ui/components/core.hpp"
+
 namespace UI {
 
 typedef struct {
@@ -11,15 +12,15 @@ typedef struct {
   const float height;
 } TimeBarStyle;
 
-class TimeBar : public Window {
+class TimeBar : public Component {
 
 public:
   TimeBar(Scene *scene, const char *label, const double value,
           const double max_value, const TimeBarStyle *style)
-      : Window(scene, label), value(value), max_value(max_value), style(style) {
+      : Component(scene, label), value(value), max_value(max_value), style(style) {
   }
 
-  void draw() override;
+  bool draw() override;
 
 private:
   const double value;

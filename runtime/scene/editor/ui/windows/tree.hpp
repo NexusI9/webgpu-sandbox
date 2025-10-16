@@ -7,25 +7,6 @@
 
 namespace UI {
 
-class TreeItem : public Window {
-
-public:
-  TreeItem(Scene *scene, const char *label, const reg_id_t id,
-           const SceneEditorUIIcon icon, const int icon_size,
-           const bool has_child)
-      : Window(scene, label), icon(icon), icon_size(icon_size),
-        has_child(has_child), id(id) {}
-  void draw() override {};
-  bool draw_label();
-  bool draw_visibility();
-
-private:
-  const SceneEditorUIIcon icon;
-  const int icon_size;
-  const bool has_child;
-  const reg_id_t id;
-};
-
 class Tree : public Window {
 
 public:
@@ -33,8 +14,9 @@ public:
   void draw() override;
 
 private:
-  void draw_mesh(Mesh *);
-  void draw_scene_editor_mesh_list(SceneEditorMeshList *, const RegEntryType);
+  void draw_mesh(Mesh *, const size_t);
+  void draw_scene_editor_mesh_list(SceneEditorMeshList *, const RegEntryType,
+                                   const size_t);
 };
 
 } // namespace UI

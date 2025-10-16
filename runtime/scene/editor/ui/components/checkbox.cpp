@@ -2,10 +2,13 @@
 #include "imgui/imgui.h"
 #include "runtime/scene/editor/ui/core.h"
 
-void UI::Checkbox::draw() {
+bool UI::Checkbox::draw() {
 
   ImGui::PushID(label);
-  if (ImGui::Checkbox("##checkbox", &active)) {
+
+  bool checkbox = ImGui::Checkbox("##checkbox", &active);
+  
+  if (checkbox) {
     
     if (on_change)
       on_change(scene, active, user_data);
@@ -25,4 +28,6 @@ void UI::Checkbox::draw() {
 
   ImGui::Text("%s", label);
   ImGui::PopID();
+
+  return checkbox;
 }
