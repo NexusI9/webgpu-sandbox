@@ -13,7 +13,6 @@ typedef enum {
   SceneEditorUIStatus_UndefError,
 } SceneEditorUIStatus;
 
-
 #define SCENE_EDITOR_UI_ICON_COUNT 32
 typedef enum {
   SceneEditorUIIcon_Null,
@@ -50,7 +49,7 @@ typedef enum {
   SceneEditorUIIcon_Grid,
 } SceneEditorUIIcon;
 
-#define SCENE_EDITOR_UI_SIZE_COUNT 20
+#define SCENE_EDITOR_UI_SIZE_COUNT 23
 typedef enum {
   SceneEditorUISize_Screen_Width,
   SceneEditorUISize_Screen_Height,
@@ -72,6 +71,9 @@ typedef enum {
   SceneEditorUISize_Log_IconScale,
   SceneEditorUISize_Monitor_Width,
   SceneEditorUISize_Monitor_Height,
+  SceneEditorUISize_Space_Small,
+  SceneEditorUISize_Space_Medium,
+  SceneEditorUISize_Space_Large,
 } SceneEditorUISize;
 
 typedef struct {
@@ -120,6 +122,10 @@ void scene_editor_ui_draw_callback(void *);
 bool scene_editor_keydown_callback(int eventType,
                                    const EmscriptenKeyboardEvent *keyEvent,
                                    void *userData);
+
+static inline int scene_editor_ui_size(SceneEditorUI *ui, const int size) {
+  return size * ui->dpi;
+}
 
 #ifdef __cplusplus
 }

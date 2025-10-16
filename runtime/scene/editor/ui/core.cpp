@@ -152,12 +152,13 @@ void scene_editor_ui_draw_callback(void *data) {
 
   {
     ImGuiIO &io = ImGui::GetIO();
-    io.DisplaySize.x = (float)context_width() * ui->dpi;
-    io.DisplaySize.y = (float)context_height() * ui->dpi;
+    io.DisplaySize.x = scene_editor_ui_size(ui, context_width());
+    io.DisplaySize.y = scene_editor_ui_size(ui, context_height());
     io.DeltaTime = ui->clock->delta;
     io.FontGlobalScale = ui->dpi;
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-    io.MousePos = ImVec2(g_input.mouse.x * ui->dpi, g_input.mouse.y * ui->dpi);
+    io.MousePos = ImVec2(scene_editor_ui_size(ui, g_input.mouse.x),
+                         scene_editor_ui_size(ui, g_input.mouse.y));
     io.MouseDown[0] = g_input.mouse.state;
     io.MouseWheel = g_input.mouse.wheel.deltaY;
     io.MouseWheelH = g_input.mouse.wheel.deltaX;
@@ -222,10 +223,12 @@ void scene_editor_ui_set_size(SceneEditorUI *ui) {
       [SceneEditorUISize_Log_IconScale] = 16,
       [SceneEditorUISize_Monitor_Width] = 300,
       [SceneEditorUISize_Monitor_Height] = 100,
-  };
+      [SceneEditorUISize_Space_Small] = 12,
+      [SceneEditorUISize_Space_Medium] = 32,
+      [SceneEditorUISize_Space_Large] = 46};
 
   for (uint16_t i = 0; i < SCENE_EDITOR_UI_SIZE_COUNT; i++)
-    ui->size[i] = base_size[i] * (int)ui->dpi;
+    ui->size[i] = scene_editor_ui_size(ui, base_size[i]);
 }
 
 void scene_editor_ui_set_icon_cell(SceneEditorUI *ui) {
@@ -304,8 +307,8 @@ void scene_editor_ui_create_texture(SceneEditorUI *ui) {
         .dimension = WGPUTextureDimension_2D,
         .size =
             {
-                .width = (uint32_t)(context_width() * ui->dpi),
-                .height = (uint32_t)(context_height() * ui->dpi),
+                .width = (uint32_t)scene_editor_ui_size(ui, context_width()),
+                .height = (uint32_t)scene_editor_ui_size(ui, context_height()),
                 .depthOrArrayLayers = 1,
             },
         .mipLevelCount = 1,

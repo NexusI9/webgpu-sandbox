@@ -34,6 +34,7 @@ void scene_renderer_init(SceneRenderer *renderer,
   renderer->context.dpi = rd->dpi == SCENE_RENDERER_DPI_AUTO
                               ? emscripten_get_device_pixel_ratio()
                               : rd->dpi;
+  renderer->draw.mode = SceneRendererDrawMode_Solid;
 
   clock_init(&renderer->clock);
   profiler_init(&renderer->profiler);

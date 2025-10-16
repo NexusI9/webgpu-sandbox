@@ -154,7 +154,8 @@ bool UI::TreeItem::draw_label() {
 
 bool UI::TreeItem::draw_visibility() {
 
-  ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - ui->dpi * icon_size);
+  ImGui::SameLine(ImGui::GetWindowContentRegionMax().x -
+                  scene_editor_ui_size(ui, icon_size));
 
   ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 

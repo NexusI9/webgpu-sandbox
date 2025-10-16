@@ -208,6 +208,7 @@ void UI::InfoTab::draw() {
       {"Adapter Type", adapter_type_label[g_context.adapter_info.adapterType]},
   };
 
+  ImGui::Text("Device");
   uint8_t i;
   for (i = 0; i < sizeof(device_items) / sizeof(device_items[0]); i++) {
     ImGui::Spacing();
@@ -226,8 +227,9 @@ void UI::InfoTab::draw() {
       {"Draw Call Count", StatCount_DrawCall},
   };
 
-  ImGui::Spacing();
-  ImGui::Text("Scene stats");
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() +
+                       ui->size[SceneEditorUISize_Space_Small]);
+  ImGui::Text("Scene");
 
   for (i = 0; i < sizeof(stats_items) / sizeof(stats_items[0]); i++) {
     ImGui::Spacing();
@@ -385,7 +387,7 @@ void UI::Inspector::draw() {
 
   const float page_width = ui->size[SceneEditorUISize_RightPanel_Width];
   const float bar_width = ui->size[SceneEditorUISize_RightPanelTab_Width];
-  const float gap = 4.f * ui->dpi;
+  const float gap = scene_editor_ui_size(ui, 4.f);
   const float btn_size = ui->size[SceneEditorUISize_Button_InspectorTab];
   const ImVec2 icon_size{btn_size, btn_size};
 
