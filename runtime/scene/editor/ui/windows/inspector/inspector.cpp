@@ -12,6 +12,7 @@
 #include "runtime/scene/draw.h"
 #include "runtime/scene/editor/selection/core.h"
 #include "runtime/scene/editor/ui/components/button_icon.hpp"
+#include "runtime/scene/editor/ui/components/input.hpp"
 #include "runtime/scene/editor/ui/components/spacing.hpp"
 #include "runtime/scene/editor/ui/components/time_bar.hpp"
 #include "runtime/scene/editor/ui/components/tree_item.hpp"
@@ -35,15 +36,21 @@ static RenderPipelineMultisampleCount multisample_count[2] = {
 
 void UI::SceneTab::draw() {
 
+  const InputStyle style = {
+      .direction = InputDirection_Horizontal,
+      .label_width = scene_editor_ui_size(ui, 80),
+  };
+
   ImGui::BeginChild("##scene_properties", ImVec2(0, 0), true,
                     ImGuiWindowFlags_NoScrollWithMouse);
 
+  ImGui::PushItemWidth(-1);
   // resolution / multisample
   if (UI::TreeItem(scene, "Resolution").draw()) {
+
     {
-      ImGui::Text("Width");
       width = scene_renderer_width(&scene->renderer);
-      if (ImGui::DragInt("##width", &width)) {
+      if (UI::DragInt(scene, "Width", &style, &width, 1.0f, 1, 10000).draw()) {
         // update renderer
         scene_renderer_set_width(&scene->renderer, width);
         // update viewport + uniform
@@ -61,10 +68,9 @@ void UI::SceneTab::draw() {
     }
 
     {
-      ImGui::Spacing();
-      ImGui::Text("Height");
       height = scene_renderer_height(&scene->renderer);
-      if (ImGui::DragInt("##height", &height)) {
+      if (UI::DragInt(scene, "Height", &style, &height, 1.0f, 1, 10000)
+              .draw()) {
         // update renderer
         scene_renderer_set_height(&scene->renderer, height);
         // update viewport + uniform
@@ -82,13 +88,14 @@ void UI::SceneTab::draw() {
     }
 
     {
-      ImGui::Spacing();
-      ImGui::Text("Multisample");
 
       char default_value[12];
       snprintf(default_value, 12, "x%d", context_multisample());
+
+      UI::Combobox combobox = UI::Combobox(scene, "MSAA", &style, default_value);
+  
       multisample = context_multisample();
-      if (ImGui::BeginCombo("##Multisample", default_value)) {
+      if (combobox.draw()) {
         for (int i = 0; i < IM_ARRAYSIZE(multisample_count); ++i) {
 
           const bool is_selected = (multisample_count[i] == multisample);
@@ -117,15 +124,14 @@ void UI::SceneTab::draw() {
           if (is_selected)
             ImGui::SetItemDefaultFocus();
         }
-        ImGui::EndCombo();
+        combobox.end();
       }
     }
 
-    {
-      ImGui::Spacing();
-      ImGui::Text("Device Pixel Ratio (DPI)");
-      dpi = scene_renderer_dpi(&scene->renderer);
-      if (ImGui::InputDouble("##dpi", &dpi)) {
+    { 
+      dpi = (float)scene_renderer_dpi(&scene->renderer);
+      if (UI::DragFloat(scene, "DPI", &style, &dpi, 0.01f, 1, 4)
+              .draw()) {
         // update renderer
         scene_renderer_set_dpi(&scene->renderer, dpi);
         // update scene render texture
@@ -139,9 +145,9 @@ void UI::SceneTab::draw() {
   if (UI::TreeItem(scene, "View").draw()) {
 
     {
-      ImGui::Text("FOV");
       fov = viewport_fov(&scene->viewport);
-      if (ImGui::DragFloat("##FOV", &fov, 1, 10, 179.9)) {
+      if (UI::DragFloat(scene, "FOV", &style, &fov, 1.0f, 10.0f, 179.9f)
+              .draw()) {
         viewport_set_fov(&scene->viewport, fov);
         viewport_uniform_update(&scene->viewport);
         ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
@@ -151,9 +157,10 @@ void UI::SceneTab::draw() {
     }
 
     {
-      ImGui::Text("Near clip");
       near_clip = viewport_near_clip(&scene->viewport);
-      if (ImGui::DragFloat("##Near Clip", &near_clip, 0.01, 0.01, 1000)) {
+      if (UI::DragFloat(scene, "Near Clip", &style, &near_clip, 0.01f, 0.01f,
+                        1000.0f)
+              .draw()) {
         viewport_set_near_clip(&scene->viewport, near_clip);
         viewport_uniform_update(&scene->viewport);
         ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
@@ -163,9 +170,11 @@ void UI::SceneTab::draw() {
     }
 
     {
-      ImGui::Text("Far clip");
       far_clip = viewport_far_clip(&scene->viewport);
-      if (ImGui::DragFloat("##Far Clip", &far_clip, 0.01, 0.01, 1000)) {
+      if (UI::DragFloat(scene, "Far Clip", &style, &far_clip, 0.01f, 0.01f,
+                        1000.0f)
+              .draw()) {
+
         viewport_set_far_clip(&scene->viewport, far_clip);
         viewport_uniform_update(&scene->viewport);
         ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
@@ -184,7 +193,7 @@ void UI::SceneTab::draw() {
     ImGui::TreePop();
   }
 
-
+  ImGui::PopItemWidth();
   ImGui::EndChild();
 }
 
@@ -204,7 +213,6 @@ void UI::InfoTab::draw() {
       {"Backend", backend_label[g_context.adapter_info.backendType]},
       {"Adapter Type", adapter_type_label[g_context.adapter_info.adapterType]},
   };
-
 
   UI::Spacing(ui, SceneEditorUISize_Space_Small).draw_y();
   if (UI::TreeItem(scene, "Device").draw()) {

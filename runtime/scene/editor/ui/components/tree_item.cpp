@@ -10,12 +10,12 @@ bool UI::TreeItemMesh::draw() {
   // init attributes
   bool active = false;
 
-  const ImVec2 pos = ImGui::GetCursorPos();
-  const ImVec2 screen_pos = ImGui::GetCursorScreenPos();
+  pos = ImGui::GetCursorPos();
+  screen_pos = ImGui::GetCursorScreenPos();
   const float height = scene_editor_ui_size(ui, this->height);
   const float border_radius = scene_editor_ui_size(ui, this->border_radius);
-  const float top_padding = scene_editor_ui_size(ui, 4.f);
-  const float left_padding = scene_editor_ui_size(ui, 20.f);
+  const float top_padding = scene_editor_ui_size(ui, this->top_padding);
+  const float left_padding = scene_editor_ui_size(ui, this->left_padding);
   const ImVec2 dim = ImVec2(ImGui::GetContentRegionAvail().x, height);
 
   name_t inv_name;
@@ -44,7 +44,10 @@ bool UI::TreeItemMesh::draw() {
 
     // Need to create an invisible button that cover the background cause
     // DrawList Rect filled are not interactive elements
-    ImGui::InvisibleButton(id_bg, dim);
+    ImGui::InvisibleButton(id_bg,
+                           ImVec2(ImGui::GetContentRegionAvail().x -
+                                      scene_editor_ui_size(ui, icon_size),
+                                  dim.y));
 
     // set it back for the actual background color...
     ImGui::SetCursorPosX(pos.x);
@@ -108,8 +111,10 @@ bool UI::TreeItemMesh::draw() {
 
 bool UI::TreeItemMesh::draw_visibility() {
 
-  ImGui::SameLine(ImGui::GetWindowContentRegionMax().x -
-                  scene_editor_ui_size(ui, icon_size));
+  ImGui::SetCursorPos(
+      ImVec2(ImGui::GetWindowContentRegionMax().x -
+                 scene_editor_ui_size(ui, icon_size),
+             pos.y + scene_editor_ui_size(ui, this->top_padding)));
 
   ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));

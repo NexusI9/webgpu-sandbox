@@ -5,18 +5,259 @@
 #include "imgui/imgui.h"
 #include "runtime/input/core.h"
 #include "runtime/scene/editor/ui/components/core.hpp"
+#include "runtime/scene/editor/ui/theme/theme.default.h"
 #include "utils/color.h"
 #include "utils/name.h"
 
 namespace UI {
 
+typedef enum {
+  InputFlag_None = 0,
+  InputFlag_SpanFullWidth = 1 << 0,
+} InputFlag;
+
+static inline void input_style_begin() {
+  ImGui::PushStyleColor(
+      ImGuiCol_FrameBg,
+      (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_LOW]);
+
+  ImGui::PushStyleColor(
+      ImGuiCol_FrameBgHovered,
+      (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_BASE]);
+
+  ImGui::PushStyleColor(
+      ImGuiCol_FrameBgActive,
+      (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_BASE]);
+}
+
+static inline void input_style_end() { ImGui::PopStyleColor(3); }
+/**
+                        ▗▄▄▄ ▗▄▄▄▖▗▄▄▖ ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖
+                        ▐▌  █  █  ▐▌ ▐▌▐▌   ▐▌     █
+                        ▐▌  █  █  ▐▛▀▚▖▐▛▀▀▘▐▌     █
+                        ▐▙▄▄▀▗▄█▄▖▐▌ ▐▌▐▙▄▄▖▝▚▄▄▖  █
+
+                        ▗▄▄▄▖▗▖  ▗▖▗▄▄▖ ▗▖ ▗▖▗▄▄▄▖▗▄▄▖
+                          █  ▐▛▚▖▐▌▐▌ ▐▌▐▌ ▐▌  █ ▐▌
+                          █  ▐▌ ▝▜▌▐▛▀▘ ▐▌ ▐▌  █  ▝▀▚▖
+                        ▗▄█▄▖▐▌  ▐▌▐▌   ▝▚▄▞▘  █ ▗▄▄▞▘
+
+   Basic inputs with few style and layout options (direction/ spacing).
+   Ideal for general use case.
+
+ */
+
+typedef enum {
+  InputDirection_Vertical,
+  InputDirection_Horizontal,
+} InputDirection;
+
+typedef struct {
+  const InputDirection direction;
+  const int label_width;
+} InputStyle;
+
+// ===== Base =====
+class InputBase : public Component {
+public:
+  InputBase(Scene *scene, const char *label, const InputStyle *style)
+      : Component(scene, label), style(style) {}
+
+protected:
+  const InputStyle *style;
+};
+
+class DragInt : public InputBase {
+public:
+  DragInt(Scene *scene, const char *label, const InputStyle *style, int *value,
+          float speed = 1.0f, int min = 0, int max = 0,
+          const char *format = "%d", ImGuiSliderFlags flags = 0)
+      : InputBase(scene, label, style), value(value), speed(speed), min(min),
+        max(max), format(format), flags(flags) {}
+
+  bool draw() override {
+    ImGui::Text("%s", label);
+    if (style->direction == InputDirection_Horizontal)
+      ImGui::SameLine(style->label_width);
+
+    name_t input_label;
+    name_compose(input_label, "##%s", label);
+
+    input_style_begin();
+    bool changed =
+        ImGui::DragInt(input_label, value, speed, min, max, format, flags);
+    input_style_end();
+    return changed;
+  }
+
+private:
+  int *value;
+  float speed;
+  int min;
+  int max;
+  const char *format;
+  ImGuiSliderFlags flags;
+};
+
+// ===== Float =====
+class DragFloat : public InputBase {
+public:
+  DragFloat(Scene *scene, const char *label, const InputStyle *style,
+            float *value, float speed = 0.1f, float min = 0.0f,
+            float max = 0.0f, const char *format = "%.3f",
+            ImGuiSliderFlags flags = 0)
+      : InputBase(scene, label, style), value(value), speed(speed), min(min),
+        max(max), format(format), flags(flags) {}
+
+  bool draw() override {
+
+    ImGui::Text("%s", label);
+    if (style->direction == InputDirection_Horizontal)
+      ImGui::SameLine(style->label_width);
+
+    name_t input_label;
+    name_compose(input_label, "##%s", label);
+
+    input_style_begin();
+    bool changed =
+        ImGui::DragFloat(input_label, value, speed, min, max, format, flags);
+    input_style_end();
+    return changed;
+  }
+
+private:
+  float *value;
+  float speed;
+  float min;
+  float max;
+  const char *format;
+  ImGuiSliderFlags flags;
+};
+
+// ===== Float3 =====
+class DragFloat3 : public InputBase {
+public:
+  DragFloat3(Scene *scene, const char *label, const InputStyle *style,
+             float *values, float speed = 0.1f, float min = 0.0f,
+             float max = 0.0f, const char *format = "%.3f",
+             ImGuiSliderFlags flags = 0)
+      : InputBase(scene, label, style), values(values), speed(speed), min(min),
+        max(max), format(format), flags(flags) {}
+
+  bool draw() override {
+
+    ImGui::Text("%s", label);
+    if (style->direction == InputDirection_Horizontal)
+      ImGui::SameLine(style->label_width);
+
+    name_t input_label;
+    name_compose(input_label, "##%s", label);
+
+    input_style_begin();
+    bool changed =
+        ImGui::DragFloat3(input_label, values, speed, min, max, format, flags);
+    input_style_end();
+    return changed;
+  }
+
+private:
+  float *values;
+  float speed;
+  float min;
+  float max;
+  const char *format;
+  ImGuiSliderFlags flags;
+};
+
+// ===== Float4 =====
+class DragFloat4 : public InputBase {
+public:
+  DragFloat4(Scene *scene, const char *label, const InputStyle *style,
+             float *values, float speed = 0.1f, float min = 0.0f,
+             float max = 0.0f, const char *format = "%.3f",
+             ImGuiSliderFlags flags = 0)
+      : InputBase(scene, label, style), values(values), speed(speed), min(min),
+        max(max), format(format), flags(flags) {}
+
+  bool draw() override {
+
+    ImGui::Text("%s", label);
+    if (style->direction == InputDirection_Horizontal)
+      ImGui::SameLine(style->label_width);
+
+    name_t input_label;
+    name_compose(input_label, "##%s", label);
+
+    input_style_begin();
+    bool changed =
+        ImGui::DragFloat4(input_label, values, speed, min, max, format, flags);
+    input_style_end();
+    return changed;
+  }
+
+private:
+  float *values;
+  float speed;
+  float min;
+  float max;
+  const char *format;
+  ImGuiSliderFlags flags;
+};
+
+// ===== Combobox =====
+class Combobox : public InputBase {
+public:
+  Combobox(Scene *scene, const char *label, const InputStyle *style,
+           const char *value, ImGuiComboFlags flags = 0)
+      : InputBase(scene, label, style), value(value), flags(flags) {}
+
+  bool draw() override {
+
+    ImGui::Text("%s", label);
+    if (style->direction == InputDirection_Horizontal)
+      ImGui::SameLine(style->label_width);
+
+    name_t input_label;
+    name_compose(input_label, "##%s", label);
+
+    input_style_begin();
+    bool changed = ImGui::BeginCombo("##Multisample", value, flags);
+    input_style_end();
+    return changed;
+  }
+
+  void end() { ImGui::EndCombo(); }
+
+private:
+  const char *value;
+  ImGuiComboFlags flags;
+};
+
+/**
+     ▗▄▖  ▗▄▄▖ ▗▄▄▖▗▄▄▄▖ ▗▄▄▖ ▗▄▄▖     ▄  ▗▖  ▗▖▗▖ ▗▖▗▄▄▄▖▗▄▖▗▄▄▄▖▗▄▄▄▖
+    ▐▌ ▐▌▐▌   ▐▌   ▐▌   ▐▌   ▐▌       █   ▐▛▚▞▜▌▐▌ ▐▌  █ ▐▌ ▐▌ █  ▐▌
+    ▐▛▀▜▌▐▌   ▐▌   ▐▛▀▀▘ ▝▀▚▖ ▝▀▚▖   █    ▐▌  ▐▌▐▌ ▐▌  █ ▐▛▀▜▌ █  ▐▛▀▀▘
+    ▐▌ ▐▌▝▚▄▄▖▝▚▄▄▖▐▙▄▄▖▗▄▄▞▘▗▄▄▞▘  █     ▐▌  ▐▌▝▚▄▞▘  █ ▐▌ ▐▌ █  ▐▙▄▄▖
+
+                     ▗▄▄▄▖▗▖  ▗▖▗▄▄▖ ▗▖ ▗▖▗▄▄▄▖▗▄▄▖
+                       █  ▐▛▚▖▐▌▐▌ ▐▌▐▌ ▐▌  █ ▐▌
+                       █  ▐▌ ▝▜▌▐▛▀▘ ▐▌ ▐▌  █  ▝▀▚▖
+                     ▗▄█▄▖▐▌  ▐▌▐▌   ▝▚▄▞▘  █ ▗▄▄▞▘
+
+   Advanced inputs with builtin accessor/mutator callback system. Useful for
+   systematizing the meshes/ objects attributes editions (transform/ light
+   intensity) However more overkill and less suitable for more general usecase
+   (hence the default classes above).
+
+ */
+
 // INT
-template <typename T> class InputInt : public Component {
+template <typename T> class InputIntCallback : public Component {
 
 public:
-  InputInt(T *target, Scene *scene, const char *label, int (*get)(T *),
-           void (*set)(T *, int), void (*extra)(Scene *, void *),
-           void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
+  InputIntCallback(T *target, Scene *scene, const char *label, int (*get)(T *),
+                   void (*set)(T *, int), void (*extra)(Scene *, void *),
+                   void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
       : Component(scene, label), target(target), get(get), set(set),
         extra(extra), user_data(user_data), ssbo_type(ssbo_type),
         ssbo_id(ssbo_id) {}
@@ -34,12 +275,13 @@ private:
 };
 
 // FLOAT
-template <typename T> class InputFloat : public Component {
+template <typename T> class InputFloatCallback : public Component {
 
 public:
-  InputFloat(T *target, Scene *scene, const char *label, float (*get)(T *),
-             void (*set)(T *, float), void (*extra)(Scene *, void *),
-             void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
+  InputFloatCallback(T *target, Scene *scene, const char *label,
+                     float (*get)(T *), void (*set)(T *, float),
+                     void (*extra)(Scene *, void *), void *user_data,
+                     SSBOType ssbo_type, ssbo_id_t ssbo_id)
       : Component(scene, label), target(target), get(get), set(set),
         extra(extra), user_data(user_data), ssbo_type(ssbo_type),
         ssbo_id(ssbo_id) {}
@@ -57,12 +299,13 @@ private:
 };
 
 // VEC3
-template <typename T> class InputVec3 : public Component {
+template <typename T> class InputVec3Callback : public Component {
 
 public:
-  InputVec3(T *target, Scene *scene, const char *label, void (*get)(T *, vec3),
-            void (*set)(T *, vec3), void (*extra)(Scene *, void *),
-            void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
+  InputVec3Callback(T *target, Scene *scene, const char *label,
+                    void (*get)(T *, vec3), void (*set)(T *, vec3),
+                    void (*extra)(Scene *, void *), void *user_data,
+                    SSBOType ssbo_type, ssbo_id_t ssbo_id)
       : Component(scene, label), target(target), get(get), set(set),
         extra(extra), user_data(user_data), ssbo_type(ssbo_type),
         ssbo_id(ssbo_id) {}
@@ -80,12 +323,13 @@ private:
 };
 
 // VEC4
-template <typename T> class InputVec4 : public Component {
+template <typename T> class InputVec4Callback : public Component {
 
 public:
-  InputVec4(T *target, Scene *scene, const char *label, void (*get)(T *, vec4),
-            void (*set)(T *, vec4), void (*extra)(Scene *, void *),
-            void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
+  InputVec4Callback(T *target, Scene *scene, const char *label,
+                    void (*get)(T *, vec4), void (*set)(T *, vec4),
+                    void (*extra)(Scene *, void *), void *user_data,
+                    SSBOType ssbo_type, ssbo_id_t ssbo_id)
       : Component(scene, label), target(target), get(get), set(set),
         extra(extra), user_data(user_data), ssbo_type(ssbo_type),
         ssbo_id(ssbo_id) {}
@@ -103,13 +347,13 @@ private:
 };
 
 // COLOR
-template <typename T> class InputColor : public Component {
+template <typename T> class InputColorCallback : public Component {
 
 public:
-  InputColor(T *target, Scene *scene, const char *label,
-             void (*get)(T *, color), void (*set)(T *, color),
-             void (*extra)(Scene *, void *), void *user_data,
-             SSBOType ssbo_type, ssbo_id_t ssbo_id)
+  InputColorCallback(T *target, Scene *scene, const char *label,
+                     void (*get)(T *, color), void (*set)(T *, color),
+                     void (*extra)(Scene *, void *), void *user_data,
+                     SSBOType ssbo_type, ssbo_id_t ssbo_id)
       : Component(scene, label), target(target), get(get), set(set),
         extra(extra), user_data(user_data), ssbo_type(ssbo_type),
         ssbo_id(ssbo_id) {}
@@ -126,14 +370,15 @@ private:
   ssbo_id_t ssbo_id;
 };
 
-template <typename T> class InputText : public Component {
+template <typename T> class InputTextCallback : public Component {
 
 public:
-  InputText(T *target, Scene *scene, const char *label, const int buffer_size,
-            void (*get)(T *, char *), void (*set)(T *, const char *),
-            void (*extra)(Scene *, void *), void *user_data)
+  InputTextCallback(T *target, Scene *scene, const char *label,
+                    const int buffer_size, const InputFlag flag,
+                    void (*get)(T *, char *), void (*set)(T *, const char *),
+                    void (*extra)(Scene *, void *), void *user_data)
       : Component(scene, label), target(target), buffer_size(buffer_size),
-        get(get), set(set), extra(extra), user_data(user_data) {}
+        flag(flag), get(get), set(set), extra(extra), user_data(user_data) {}
   bool draw() override;
 
 private:
@@ -146,11 +391,12 @@ private:
   void *user_data;
 
   const int buffer_size;
+  const InputFlag flag;
   static constexpr int max_buffer_size = 2048;
   char value[max_buffer_size];
 };
 
-template <typename T> bool InputInt<T>::draw() {
+template <typename T> bool InputIntCallback<T>::draw() {
 
   ImGui::Text("%s", label);
   value = get(target);
@@ -158,7 +404,9 @@ template <typename T> bool InputInt<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
+  input_style_begin();
   bool input = ImGui::DragInt(input_id, &value);
+  input_style_end();
 
   if (input) {
     set(target, value);
@@ -172,7 +420,7 @@ template <typename T> bool InputInt<T>::draw() {
   return input;
 }
 
-template <typename T> bool InputFloat<T>::draw() {
+template <typename T> bool InputFloatCallback<T>::draw() {
 
   ImGui::Text("%s", label);
   value = get(target);
@@ -180,8 +428,10 @@ template <typename T> bool InputFloat<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
+  input_style_begin();
   bool input = ImGui::DragFloat(input_id, &value, 0.1f);
-  
+  input_style_end();
+
   if (input) {
     set(target, value);
     ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
@@ -195,11 +445,12 @@ template <typename T> bool InputFloat<T>::draw() {
   return input;
 }
 
-template <typename T> bool InputVec3<T>::draw() {
+template <typename T> bool InputVec3Callback<T>::draw() {
 
   ImGui::Text("%s", label);
   get(target, value);
 
+  input_style_begin();
   for (uint8_t i = 0; i < 3; i++) {
     name_t input_id;
     name_compose(input_id, "##%s%d", label, i);
@@ -212,17 +463,19 @@ template <typename T> bool InputVec3<T>::draw() {
         extra(scene, user_data);
     }
   }
+  input_style_end();
 
   ImGui::Spacing();
 
   return false;
 }
 
-template <typename T> bool InputVec4<T>::draw() {
+template <typename T> bool InputVec4Callback<T>::draw() {
 
   ImGui::Text("%s", label);
   get(target, value);
 
+  input_style_begin();
   for (uint8_t i = 0; i < 4; i++) {
     name_t input_id;
     name_compose(input_id, "##%s%d", label, i);
@@ -235,13 +488,14 @@ template <typename T> bool InputVec4<T>::draw() {
         extra(scene, user_data);
     }
   }
+  input_style_end();
 
   ImGui::Spacing();
 
   return false;
 }
 
-template <typename T> bool InputColor<T>::draw() {
+template <typename T> bool InputColorCallback<T>::draw() {
 
   ImGui::Text("%s", label);
   get(target, value);
@@ -249,10 +503,12 @@ template <typename T> bool InputColor<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
+  input_style_begin();
   bool input = ImGui::ColorPicker4(
       input_id, value,
       ImGuiColorEditFlags_NoSidePreview | ImGuiColorEditFlags_NoSmallPreview |
           ImGuiColorEditFlags_DisplayRGB | ImGuiColorEditFlags_DisplayHex);
+  input_style_end();
 
   if (input) {
     set(target, value);
@@ -267,7 +523,7 @@ template <typename T> bool InputColor<T>::draw() {
   return input;
 }
 
-template <typename T> bool InputText<T>::draw() {
+template <typename T> bool InputTextCallback<T>::draw() {
 
   ImGui::Text("%s", label);
   get(target, value);
@@ -275,8 +531,13 @@ template <typename T> bool InputText<T>::draw() {
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
 
+  if (flag & InputFlag_SpanFullWidth)
+    ImGui::SetNextItemWidth(-FLT_MIN);
+
+  input_style_begin();
   bool input =
       ImGui::InputText(input_id, value, glm_imin(buffer_size, max_buffer_size));
+  input_style_end();
 
   if (input) {
     set(target, value);

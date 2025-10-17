@@ -1,6 +1,7 @@
 #ifndef _SCENE_EDITOR_UI_COMPONENT_TREE_ITEM_H_
 #define _SCENE_EDITOR_UI_COMPONENT_TREE_ITEM_H_
 
+#include "imgui/imgui.h"
 #include "runtime/scene/editor/ui/components/core.hpp"
 
 namespace UI {
@@ -33,16 +34,20 @@ public:
        ....
        tree_item.close_click();
     }
-    
+
   */
 
 private:
+  static constexpr int height = 25;
+  static constexpr int border_radius = 2;
+  static constexpr int top_padding = 3;
+  static constexpr int left_padding = 20;
   const SceneEditorUIIcon icon;
   const int icon_size;
   const TreeItemFlag flag;
   const reg_id_t id;
-  static constexpr float height = 30.0f;
-  static constexpr float border_radius = 2.0f;
+  ImVec2 pos;
+  ImVec2 screen_pos;
 };
 
 class TreeItem : public Component {

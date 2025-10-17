@@ -93,8 +93,9 @@ inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
   if (ImGui::TreeNodeEx(list->label, flags)) {
     size_t i;
 
+    ImGui::PushItemWidth(-1);
     for (i = 0; i < list->int_list.length; i++)
-      UI::InputInt<T>(target, scene, list->int_list.entries[i].label,
+      UI::InputIntCallback<T>(target, scene, list->int_list.entries[i].label,
                       list->int_list.entries[i].accessor_callback,
                       list->int_list.entries[i].mutator_callback,
                       list->int_list.entries[i].extra_callback,
@@ -102,7 +103,7 @@ inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
           .draw();
 
     for (i = 0; i < list->float_list.length; i++)
-      UI::InputFloat<T>(target, scene, list->float_list.entries[i].label,
+      UI::InputFloatCallback<T>(target, scene, list->float_list.entries[i].label,
                         list->float_list.entries[i].accessor_callback,
                         list->float_list.entries[i].mutator_callback,
                         list->float_list.entries[i].extra_callback,
@@ -111,7 +112,7 @@ inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
           .draw();
 
     for (i = 0; i < list->vec3_list.length; i++)
-      UI::InputVec3<T>(target, scene, list->vec3_list.entries[i].label,
+      UI::InputVec3Callback<T>(target, scene, list->vec3_list.entries[i].label,
                        list->vec3_list.entries[i].accessor_callback,
                        list->vec3_list.entries[i].mutator_callback,
                        list->vec3_list.entries[i].extra_callback,
@@ -119,7 +120,7 @@ inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
           .draw();
 
     for (i = 0; i < list->vec4_list.length; i++)
-      UI::InputVec4<T>(target, scene, list->vec4_list.entries[i].label,
+      UI::InputVec4Callback<T>(target, scene, list->vec4_list.entries[i].label,
                        list->vec4_list.entries[i].accessor_callback,
                        list->vec4_list.entries[i].mutator_callback,
                        list->vec4_list.entries[i].extra_callback,
@@ -127,7 +128,7 @@ inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
           .draw();
 
     for (i = 0; i < list->color_list.length; i++)
-      UI::InputColor<T>(target, scene, list->color_list.entries[i].label,
+      UI::InputColorCallback<T>(target, scene, list->color_list.entries[i].label,
                         list->color_list.entries[i].accessor_callback,
                         list->color_list.entries[i].mutator_callback,
                         list->color_list.entries[i].extra_callback,
@@ -135,6 +136,7 @@ inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
                         ssbo_id)
           .draw();
 
+    ImGui::PopItemWidth();
     ImGui::TreePop();
   }
   ImGui::PopStyleVar();
@@ -182,7 +184,7 @@ private:
   float fov = viewport_fov(&scene->viewport);
   float near_clip = viewport_near_clip(&scene->viewport);
   float far_clip = viewport_far_clip(&scene->viewport);
-  double dpi = scene_renderer_dpi(&scene->renderer);
+  float dpi = (float)scene_renderer_dpi(&scene->renderer);
   RenderPipelineMultisampleCount multisample = context_multisample();
 };
 
@@ -236,8 +238,7 @@ public:
   Inspector(Scene *scene, const char *label)
       : Window(scene, label),
         object_tab(scene, SceneEditorUIIcon_Properties_Object, "Object"),
-        info_tab(scene, SceneEditorUIIcon_Properties_Chip,
-                 "Information"),
+        info_tab(scene, SceneEditorUIIcon_Properties_Chip, "Information"),
         scene_tab(scene, SceneEditorUIIcon_Properties_Scene, "Scene"),
         clock_tab(scene, SceneEditorUIIcon_Properties_Clock, "Latencies") {
 

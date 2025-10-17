@@ -17,9 +17,10 @@ void UI::InspectorMesh::draw() {
 
   ImGui::BeginChild("##MeshProp", ImVec2(0, 0), true);
   {
- 
-    UI::InputText<Mesh>(mesh, scene, "mesh name", sizeof(name_t), mesh_get_name,
-                        mesh_set_name, NULL, NULL)
+
+    UI::InputTextCallback<Mesh>(mesh, scene, "Mesh name", sizeof(name_t),
+                        InputFlag_SpanFullWidth, mesh_get_name, mesh_set_name,
+                        NULL, NULL)
         .draw();
 
     ImGui::Spacing();
