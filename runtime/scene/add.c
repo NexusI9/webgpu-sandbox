@@ -43,8 +43,7 @@
 #include "runtime/scene/stat.h"
 #include "utils/projection.h"
 
-static inline void scene_add_sem(Scene *, SceneEditorMeshList *,
-                                 const reg_id_t);
+static inline void scene_add_sem(Scene *, SceneEditorMeshList *);
 static inline void
 scene_render_pass_draw_list_enable_mesh(Scene *, const MeshRefList *, Mesh *);
 
@@ -62,7 +61,7 @@ scene_render_pass_draw_list_enable_mesh(Scene *, const MeshRefList *, Mesh *);
  */
 SceneEditorMeshList *scene_add_point_light(Scene *scene,
                                            PointLightDescriptor *desc,
-                                           const LightShadow shadow,
+                                           const LightCreateFlag flag,
                                            PointLight **dest) {
 
   PointLightListBase *base_list = &scene->lights.point.base;
@@ -94,7 +93,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
       .target_list_index = 0,
   };
 
-  if (shadow) {
+  if (flag & LightCreateFlag_Shadow) {
 
     for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
       ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewProjection,
@@ -125,7 +124,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem, new_light->id);
+  scene_add_sem(scene, sem);
 
   base_list->length++;
 
@@ -138,7 +137,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
 
 SceneEditorMeshList *scene_add_spot_light(Scene *scene,
                                           SpotLightDescriptor *desc,
-                                          const LightShadow shadow,
+                                          const LightCreateFlag flag,
                                           SpotLight **dest) {
 
   SpotLightListBase *base_list = &scene->lights.spot.base;
@@ -170,7 +169,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
       .target_list_index = 0,
   };
 
-  if (shadow) {
+  if (flag & LightCreateFlag_Shadow) {
 
     ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewProjection,
                     &new_light->ssbo_slot[LightSSBOSlot_View]);
@@ -200,7 +199,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem, new_light->id);
+  scene_add_sem(scene, sem);
 
   base_list->length++;
 
@@ -250,7 +249,7 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
                            });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem, new_light->id);
+  scene_add_sem(scene, sem);
 
   ubo_update_entry(&scene->renderer.ubo, UBOField_AmbientLightCount,
                    (void *)&list->length);
@@ -260,7 +259,7 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
 }
 
 SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
-                                         const LightShadow shadow,
+                                         const LightCreateFlag flag,
                                          SunLight **dest) {
 
   SunLightListBase *base_list = &scene->lights.sun.base;
@@ -292,7 +291,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
       .target_list_index = 0,
   };
 
-  if (shadow) {
+  if (flag & LightCreateFlag_Shadow) {
 
     ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewProjection,
                     &new_light->ssbo_slot[LightSSBOSlot_View]);
@@ -325,7 +324,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem, new_light->id);
+  scene_add_sem(scene, sem);
 
   base_list->length++;
 
@@ -381,7 +380,7 @@ SceneEditorMeshList *scene_add_camera(Scene *scene,
                     });
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem, new_cam->id);
+  scene_add_sem(scene, sem);
 
   return sem;
 }
@@ -401,8 +400,7 @@ SceneEditorMeshList *scene_add_camera(Scene *scene,
 
    We use the below function to do such operation.
  */
-void scene_add_sem(Scene *scene, SceneEditorMeshList *list,
-                   const reg_id_t target) {
+void scene_add_sem(Scene *scene, SceneEditorMeshList *list) {
 
   MeshRefList *pipeline_mesh_list = scene_pipeline(scene, ScenePipeline_Fixed);
 
@@ -424,11 +422,7 @@ void scene_add_sem(Scene *scene, SceneEditorMeshList *list,
 
     {
       // add to scene selection (SEM pipeline) with target
-      scene_selection_subscribe_mesh(&scene->editor.selection, mesh,
-                                     (selection_targets){
-                                         [SSOTargetID_Default] = target,
-                                         [SSOTargetID_SEM] = sem->id,
-                                     },
+      scene_selection_subscribe_mesh(&scene->editor.selection, mesh, list->id,
                                      SceneSelectionType_SEM);
     }
   }
@@ -488,7 +482,7 @@ scene_add_probe_reflection_grid(Scene *scene,
   ubo_upload(&scene->renderer.ubo);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem_grid, new_grid->id);
+  scene_add_sem(scene, sem_grid);
 
   return sem_grid;
 }
@@ -551,7 +545,7 @@ scene_add_probe_reflection_plane(Scene *scene,
   ubo_upload(&scene->renderer.ubo);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
-  scene_add_sem(scene, sem, probe->id);
+  scene_add_sem(scene, sem);
 
   return sem;
 }
@@ -607,8 +601,7 @@ void scene_add_mesh_core(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
 
   // EDITORONLY (add mesh to selection)
   if ((flag & SceneAddFlag_Unselectable) == 0)
-    scene_selection_subscribe_mesh(&scene->editor.selection, mesh,
-                                   (selection_targets){mesh->id},
+    scene_selection_subscribe_mesh(&scene->editor.selection, mesh, mesh->id,
                                    selection_pipeline);
 
   // EDITORONLY

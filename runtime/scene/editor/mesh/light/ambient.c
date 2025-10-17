@@ -23,6 +23,8 @@ void sem_ambient_light_create(SceneEditorMeshList *list, AmbientLight *light,
   sem_list_create(list, gizmo_mesh_count, "Ambient Light",
                   RegEntryType_SceneEditorMeshList_AmbientLight);
 
+  list->origin = &list->entries[SEM_LIST_ORIGIN_INDEX];
+
   // get new mesh pointer from main mesh list
   SceneEditorMesh *icon = sem_list_new_entry(list);
   icon->mesh = scene_new_mesh(desc->scene);
@@ -49,10 +51,36 @@ void sem_ambient_light_create(SceneEditorMeshList *list, AmbientLight *light,
   icon->transform_callback[GizmoMode_Scale] = sem_ambient_light_set_scale;
 }
 
-void sem_ambient_light_set_position(SEMTransformCallback *desc) {
-  mesh_set_position(desc->sem->mesh, desc->offset);
+// accessor
+void sem_list_ambient_light_get_position(SceneEditorMeshList *list,
+                                         vec3 value) {
+  glm_vec3_copy(((AmbientLight *)list->origin->target)->position, value);
+}
+void sem_list_ambient_light_get_rotation(SceneEditorMeshList *list,
+                                         vec3 value) {
+  glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, value);
+}
+void sem_list_ambient_light_get_scale(SceneEditorMeshList *list, vec3 value) {
+  glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, value);
 }
 
-void sem_ambient_light_set_rotation(SEMTransformCallback *desc) {}
+void sem_list_ambient_light_set_position(SceneEditorMeshList *list,
+                                         vec3 value) {
+  for (size_t i = 0; i < list->length; i++) {
+    SceneEditorMesh *sem = &list->entries[i];
+    sem->transform_callback[GizmoMode_Position](sem, value);
+  }
+}
 
-void sem_ambient_light_set_scale(SEMTransformCallback *desc) {}
+void sem_list_ambient_light_set_rotation(SceneEditorMeshList *sem, vec3 value) {
+
+}
+
+void sem_list_ambient_light_set_scale(SceneEditorMeshList *sem, vec3 value) {}
+
+// mutator
+void sem_ambient_light_set_position(SceneEditorMesh *sem, vec3 value) {
+  mesh_set_position(sem->mesh, value);
+}
+void sem_ambient_light_set_rotation(SceneEditorMesh *sem, vec3 value) {}
+void sem_ambient_light_set_scale(SceneEditorMesh *sem, vec3 value) {}

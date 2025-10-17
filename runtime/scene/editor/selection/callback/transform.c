@@ -144,10 +144,7 @@ void scene_selection_sem_transform_core(
   glm_vec3_add(*init_attribute, *desc->delta, offset_attribute);
 
   // transform sem via their own callback
-  transform_callback(&(SEMTransformCallback){
-      .sem = sem,
-      .offset = offset_attribute,
-  });
+  transform_callback(sem, offset_attribute);
 
   ssbo_update_queue_insert(&desc->scene->renderer.ssbo, SSBOType_Mesh,
                            sem->mesh->ssbo_slot.id);
@@ -174,12 +171,14 @@ void scene_selection_sem_transform(SceneSelectionTransform *desc) {
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
     Mesh *mesh = desc->selection->entries[i].mesh;
 
-    const RegEntry *reg_entry =
-        reg_lookup(desc->selection->entries[i].targets[SSOTargetID_SEM]);
-    SceneEditorMesh *sem_mesh = (SceneEditorMesh *)reg_entry->ptr;
+    const RegEntry *reg_entry = reg_lookup(desc->selection->entries[i].target);
+    SceneEditorMeshList *sem_list = (SceneEditorMeshList *)reg_entry->ptr;
 
-    scene_selection_sem_transform_core(
-        sem_mesh, init_attribute,
-        sem_mesh->transform_callback[desc->transform_mode], desc);
+    for (size_t i = 0; i < sem_list->length; i++) {
+      SceneEditorMesh *sem = &sem_list->entries[i];
+      scene_selection_sem_transform_core(
+          sem, init_attribute, sem->transform_callback[desc->transform_mode],
+          desc);
+    }
   }
 }

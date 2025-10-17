@@ -27,10 +27,10 @@ void scene_selection_average_position(SceneSelection *, vec3 *);
 size_t scene_selection_length(SceneSelection *);
 
 void scene_selection_subscribe_mesh_ref_list(SceneSelection *, MeshRefList *,
-                                             selection_targets,
+                                             reg_id_t,
                                              const SceneSelectionType);
 
-void scene_selection_subscribe_mesh(SceneSelection *, Mesh *, selection_targets,
+void scene_selection_subscribe_mesh(SceneSelection *, Mesh *, reg_id_t,
                                     const SceneSelectionType);
 
 SceneSelectionFilterStatus scene_selection_toggle_mesh(Scene *, Mesh *);

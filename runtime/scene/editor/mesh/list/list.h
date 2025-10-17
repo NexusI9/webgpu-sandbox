@@ -99,6 +99,11 @@ DynamicListStatus sem_list_destroy(SceneEditorMeshList *list) {
   return dyli_free((void **)list->entries, &list->capacity, &list->capacity);
 }
 
+
+static inline SceneEditorMesh *sem_list_get_origin(SceneEditorMeshList *list) {
+  return &list->entries[SEM_LIST_ORIGIN_INDEX];
+}
+
 /* === SEM LIST ARRAY === */
 
 static inline DynamicListStatus

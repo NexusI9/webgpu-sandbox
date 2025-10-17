@@ -32,6 +32,8 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
   sem_list_create(list, sem_mesh_count, "Probe Reflection Plane",
                   RegEntryType_SceneEditorMeshList_ProbeReflectionPlane);
 
+  list->origin = &list->entries[SEM_LIST_ORIGIN_INDEX];
+
   /*
 
      === Distance Cube ===
@@ -194,19 +196,19 @@ void sem_probe_reflection_plane_update_mesh_uniform(SceneEditorMesh *sem) {
   }
 }
 
-void sem_probe_reflection_plane_set_position(SEMTransformCallback *desc) {
+void sem_probe_reflection_plane_set_position(SceneEditorMesh *sem, vec3 value) {
 
-  mesh_set_position(desc->sem->mesh, desc->offset);
+  mesh_set_position(sem->mesh, value);
 
-  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)desc->sem->target;
-  glm_vec3_copy(desc->sem->mesh->position, probe->position);
+  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)sem->target;
+  glm_vec3_copy(sem->mesh->position, probe->position);
   probe->signed_distance = glm_dot(probe->normal, probe->position);
 
   // update uniform cpu side
   probe_reflection_plane_update_uniform(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(&desc->sem->scene->renderer.ssbo,
+  ssbo_update_queue_insert(&sem->scene->renderer.ssbo,
                            SSBOType_ProbePlaneReflection,
                            probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
 
@@ -215,13 +217,13 @@ void sem_probe_reflection_plane_set_position(SEMTransformCallback *desc) {
 
   // add to upload queue
   ssbo_update_queue_insert(
-      &desc->sem->scene->renderer.ssbo, SSBOType_Camera,
+      &sem->scene->renderer.ssbo, SSBOType_Camera,
       probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
 }
 
-void sem_probe_reflection_plane_set_rotation(SEMTransformCallback *desc) {}
+void sem_probe_reflection_plane_set_rotation(SceneEditorMesh *sem, vec3 value) {
+}
 
-void sem_probe_reflection_plane_set_scale(SEMTransformCallback *desc) {
-
+void sem_probe_reflection_plane_set_scale(SceneEditorMesh *sem, vec3 value) {
   // print_vec3(desc->offset);
 }

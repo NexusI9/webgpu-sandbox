@@ -19,9 +19,9 @@ public:
 private:
   Mesh *mesh;
 
-  static void update_extra_callback(Scene *, void *);
+  static void transform_update_callback(Scene *, void *);
 
-  static constexpr InspectorTreeList<Mesh> transform_attributes = {
+  InspectorTreeList<Mesh> transform_attributes = {
       .label = "Transform",
       .vec3_list =
           {
@@ -32,7 +32,8 @@ private:
                           .label = "Position",
                           .accessor_callback = mesh_get_position,
                           .mutator_callback = mesh_set_position,
-                          .extra_callback = update_extra_callback,
+                          .extra_callback = transform_update_callback,
+                          .user_data = (void *)mesh,
                       },
                       {
                           .label = "Scale",

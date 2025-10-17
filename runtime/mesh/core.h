@@ -193,9 +193,8 @@ static inline void mesh_get_rotation_euler(Mesh *mesh, vec3 dest) {
   glm_vec3_copy(mesh->rotation_euler, dest);
 }
 
-static inline void mesh_get_name(Mesh *mesh, char *dest) {
-  snprintf(dest, sizeof(mesh->name), "%s", mesh->name);
-}
+static const char *mesh_get_name(Mesh *mesh) { return mesh->name; }
+
 static inline void mesh_set_name(Mesh *mesh, const char *src) {
   name_copy(src, mesh->name);
 }

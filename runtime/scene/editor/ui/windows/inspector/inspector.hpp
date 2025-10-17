@@ -78,9 +78,9 @@ template <typename T> struct InspectorTreeList {
 };
 
 template <typename T>
-static inline void
-inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
-                         Scene *scene, SSBOType ssbo_type, ssbo_id_t ssbo_id) {
+static inline void inspector_tree_list_draw(T *target,
+                                            const InspectorTreeList<T> *list,
+                                            Scene *scene) {
 
   ImGuiTreeNodeFlags flags =
       ImGuiTreeNodeFlags_FramePadding | ImGuiTreeNodeFlags_DefaultOpen;
@@ -96,44 +96,44 @@ inspector_tree_list_draw(T *target, const InspectorTreeList<T> *list,
     ImGui::PushItemWidth(-1);
     for (i = 0; i < list->int_list.length; i++)
       UI::InputIntCallback<T>(target, scene, list->int_list.entries[i].label,
-                      list->int_list.entries[i].accessor_callback,
-                      list->int_list.entries[i].mutator_callback,
-                      list->int_list.entries[i].extra_callback,
-                      list->int_list.entries[i].user_data, ssbo_type, ssbo_id)
+                              list->int_list.entries[i].accessor_callback,
+                              list->int_list.entries[i].mutator_callback,
+                              list->int_list.entries[i].extra_callback,
+                              list->int_list.entries[i].user_data)
           .draw();
 
     for (i = 0; i < list->float_list.length; i++)
-      UI::InputFloatCallback<T>(target, scene, list->float_list.entries[i].label,
-                        list->float_list.entries[i].accessor_callback,
-                        list->float_list.entries[i].mutator_callback,
-                        list->float_list.entries[i].extra_callback,
-                        list->float_list.entries[i].user_data, ssbo_type,
-                        ssbo_id)
+      UI::InputFloatCallback<T>(target, scene,
+                                list->float_list.entries[i].label,
+                                list->float_list.entries[i].accessor_callback,
+                                list->float_list.entries[i].mutator_callback,
+                                list->float_list.entries[i].extra_callback,
+                                list->float_list.entries[i].user_data)
           .draw();
 
     for (i = 0; i < list->vec3_list.length; i++)
       UI::InputVec3Callback<T>(target, scene, list->vec3_list.entries[i].label,
-                       list->vec3_list.entries[i].accessor_callback,
-                       list->vec3_list.entries[i].mutator_callback,
-                       list->vec3_list.entries[i].extra_callback,
-                       list->vec3_list.entries[i].user_data, ssbo_type, ssbo_id)
+                               list->vec3_list.entries[i].accessor_callback,
+                               list->vec3_list.entries[i].mutator_callback,
+                               list->vec3_list.entries[i].extra_callback,
+                               list->vec3_list.entries[i].user_data)
           .draw();
 
     for (i = 0; i < list->vec4_list.length; i++)
       UI::InputVec4Callback<T>(target, scene, list->vec4_list.entries[i].label,
-                       list->vec4_list.entries[i].accessor_callback,
-                       list->vec4_list.entries[i].mutator_callback,
-                       list->vec4_list.entries[i].extra_callback,
-                       list->vec4_list.entries[i].user_data, ssbo_type, ssbo_id)
+                               list->vec4_list.entries[i].accessor_callback,
+                               list->vec4_list.entries[i].mutator_callback,
+                               list->vec4_list.entries[i].extra_callback,
+                               list->vec4_list.entries[i].user_data)
           .draw();
 
     for (i = 0; i < list->color_list.length; i++)
-      UI::InputColorCallback<T>(target, scene, list->color_list.entries[i].label,
-                        list->color_list.entries[i].accessor_callback,
-                        list->color_list.entries[i].mutator_callback,
-                        list->color_list.entries[i].extra_callback,
-                        list->color_list.entries[i].user_data, ssbo_type,
-                        ssbo_id)
+      UI::InputColorCallback<T>(target, scene,
+                                list->color_list.entries[i].label,
+                                list->color_list.entries[i].accessor_callback,
+                                list->color_list.entries[i].mutator_callback,
+                                list->color_list.entries[i].extra_callback,
+                                list->color_list.entries[i].user_data)
           .draw();
 
     ImGui::PopItemWidth();

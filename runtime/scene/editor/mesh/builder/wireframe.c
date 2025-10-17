@@ -59,7 +59,7 @@ void sem_create_wireframe(Mesh *mesh,
   Generic highligh function for all SEM Wireframes objects
  */
 void sem_wireframe_select_callback(SEMHighlightCallback *desc) {
-
+  
   Shader *shader = mesh_shader(desc->sem->mesh, MeshShader_Fixed);
 
   const float line_thickness = LINE_THICKNESS_STRONG;

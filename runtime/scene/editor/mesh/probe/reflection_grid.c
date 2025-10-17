@@ -32,6 +32,8 @@ void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
   sem_list_create(list, sem_mesh_count, "Probe Reflection Grid",
                   RegEntryType_SceneEditorMeshList_ProbeReflectionGrid);
 
+  list->origin = &list->entries[SEM_LIST_ORIGIN_INDEX];
+
   /*
 
     ===== Create Bound Cubes =====
@@ -110,28 +112,30 @@ void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
    Update the position list according to the origin on top the casual mesh
    translation.
  */
-void sem_probe_reflection_grid_bound_set_position(SEMTransformCallback *desc) {
+void sem_probe_reflection_grid_bound_set_position(SceneEditorMesh *sem,
+                                                  vec3 value) {
 
-  ProbeReflectionGrid *grid = (ProbeReflectionGrid *)desc->sem->target;
-  mesh_set_position(desc->sem->mesh, desc->offset);
+  ProbeReflectionGrid *grid = (ProbeReflectionGrid *)sem->target;
+  mesh_set_position(sem->mesh, value);
 }
 
-void sem_probe_reflection_grid_bound_set_scale(SEMTransformCallback *desc) {
+void sem_probe_reflection_grid_bound_set_scale(SceneEditorMesh *sem,
+                                               vec3 value) {
   // mesh_set_scale(desc->mesh->mesh, desc->offset);
 }
 
-void sem_probe_reflection_grid_set_position(SEMTransformCallback *desc) {
+void sem_probe_reflection_grid_set_position(SceneEditorMesh *sem, vec3 value) {
 
-  mesh_set_position(desc->sem->mesh, desc->offset);
+  mesh_set_position(sem->mesh, value);
 
-  ProbeReflection *probe = (ProbeReflection *)desc->sem->target;
-  glm_vec3_copy(desc->sem->mesh->position, probe->position);
+  ProbeReflection *probe = (ProbeReflection *)sem->target;
+  glm_vec3_copy(sem->mesh->position, probe->position);
 
   // update uniform cpu side
   probe_reflection_update_uniform(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(&desc->sem->scene->renderer.ssbo,
+  ssbo_update_queue_insert(&sem->scene->renderer.ssbo,
                            SSBOType_ProbeGridReflection,
                            probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
 
@@ -140,13 +144,12 @@ void sem_probe_reflection_grid_set_position(SEMTransformCallback *desc) {
 
   // add to upload queue
   ssbo_update_queue_insert(
-      &desc->sem->scene->renderer.ssbo, SSBOType_Camera,
+      &sem->scene->renderer.ssbo, SSBOType_Camera,
       probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
 }
 
-void sem_probe_reflection_grid_set_rotation(SEMTransformCallback *desc) {}
+void sem_probe_reflection_grid_set_rotation(SceneEditorMesh *sem, vec3 value) {}
 
-void sem_probe_reflection_grid_set_scale(SEMTransformCallback *desc) {
-
+void sem_probe_reflection_grid_set_scale_(SceneEditorMesh *sem, vec3 value) {
   // print_vec3(desc->offset);
 }

@@ -30,6 +30,8 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
   sem_list_create(list, sem_mesh_count, "Camera",
                   RegEntryType_SceneEditorMeshList_Camera);
 
+  list->origin = &list->entries[SEM_LIST_ORIGIN_INDEX];
+
   // create new mesh in the mesh list
   SceneEditorMesh *icon = sem_list_new_entry(list);
   icon->mesh = scene_new_mesh(desc->scene);
@@ -109,18 +111,25 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
   sem_camera_fov(list, 90.0f);
 }
 
-void sem_camera_set_position(SEMTransformCallback *desc) {
+void sem_camera_set_position(SceneEditorMesh *sem, vec3 value) {
 
   // transform target
-  camera_set_position(desc->sem->target, desc->offset);
+  camera_set_position(sem->target, value);
 
   // transform mesh
-  mesh_set_position(desc->sem->mesh, desc->offset);
+  mesh_set_position(sem->mesh, value);
 }
 
-void sem_camera_set_rotation(SEMTransformCallback *desc) {}
+void sem_camera_set_rotation(SceneEditorMesh *sem, vec3 value) {}
+void sem_camera_set_scale(SceneEditorMesh *sem, vec3 value) {}
 
-void sem_camera_set_scale(SEMTransformCallback *desc) {}
+void sem_list_camera_get_position(SceneEditorMeshList *list, vec3 value) {}
+void sem_list_camera_get_rotation(SceneEditorMeshList *list, vec3 value) {}
+void sem_list_camera_get_scale(SceneEditorMeshList *list, vec3 value) {}
+
+void sem_list_camera_set_position(SceneEditorMeshList *list, vec3 value) {}
+void sem_list_camera_set_rotation(SceneEditorMeshList *list, vec3 value) {}
+void sem_list_camera_set_scale(SceneEditorMeshList *list, vec3 value) {}
 
 void sem_camera_lookat(SceneEditorMeshList *list, vec3 position, vec3 target) {
 

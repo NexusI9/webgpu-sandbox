@@ -92,8 +92,9 @@ void UI::SceneTab::draw() {
       char default_value[12];
       snprintf(default_value, 12, "x%d", context_multisample());
 
-      UI::Combobox combobox = UI::Combobox(scene, "MSAA", &style, default_value);
-  
+      UI::Combobox combobox =
+          UI::Combobox(scene, "MSAA", &style, default_value);
+
       multisample = context_multisample();
       if (combobox.draw()) {
         for (int i = 0; i < IM_ARRAYSIZE(multisample_count); ++i) {
@@ -128,10 +129,9 @@ void UI::SceneTab::draw() {
       }
     }
 
-    { 
+    {
       dpi = (float)scene_renderer_dpi(&scene->renderer);
-      if (UI::DragFloat(scene, "DPI", &style, &dpi, 0.01f, 1, 4)
-              .draw()) {
+      if (UI::DragFloat(scene, "DPI", &style, &dpi, 0.01f, 1, 4).draw()) {
         // update renderer
         scene_renderer_set_dpi(&scene->renderer, dpi);
         // update scene render texture
@@ -333,27 +333,33 @@ void UI::ObjectTab::draw() {
           .draw();
       break;
 
-    case RegEntryType_PointLight:
-      InspectorPointLight(scene, "Light properties",
-                          (PointLight *)g_active_object->ptr)
-          .draw();
-      break;
-
-    case RegEntryType_AmbientLight:
+    case RegEntryType_SceneEditorMeshList_AmbientLight:
       InspectorAmbientLight(scene, "Light properties",
-                            (AmbientLight *)g_active_object->ptr)
+                            (SceneEditorMeshList *)g_active_object->ptr)
           .draw();
       break;
 
-    case RegEntryType_SpotLight:
+    case RegEntryType_SceneEditorMeshList_PointLight:
+    case RegEntryType_SceneEditorMeshList_PointLightShadow:
+      InspectorPointLight(scene, "Light properties",
+                          (SceneEditorMeshList *)g_active_object->ptr,
+                          g_active_object->type)
+          .draw();
+      break;
+
+    case RegEntryType_SceneEditorMeshList_SpotLight:
+    case RegEntryType_SceneEditorMeshList_SpotLightShadow:
       InspectorSpotLight(scene, "Light properties",
-                         (SpotLight *)g_active_object->ptr)
+                         (SceneEditorMeshList *)g_active_object->ptr,
+                         g_active_object->type)
           .draw();
       break;
 
-    case RegEntryType_SunLight:
+    case RegEntryType_SceneEditorMeshList_SunLight:
+    case RegEntryType_SceneEditorMeshList_SunLightShadow:
       InspectorSunLight(scene, "Light properties",
-                        (SunLight *)g_active_object->ptr)
+                        (SceneEditorMeshList *)g_active_object->ptr,
+                        g_active_object->type)
           .draw();
       break;
 
@@ -373,6 +379,11 @@ bool UI::ObjectTab::is_valid_type(const RegEntryType type) {
   return false;
 }
 
+/**
+   Return the registry ID of the selected mesh.
+   If no meshes are selected, it returns the first mesh id of the dynamic
+   pipelines.
+ */
 reg_id_t UI::ObjectTab::set_active_target() {
 
   if (scene_selection_length(&scene->editor.selection)) {
@@ -380,9 +391,8 @@ reg_id_t UI::ObjectTab::set_active_target() {
     for (int i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
       SceneSelectionObjectList *selection_list =
           &scene->editor.selection.filters[i].selection;
-      if (selection_list->length) {
-        return selection_list->entries[0].targets[SSOTargetID_Default];
-      }
+      if (selection_list->length)
+        return selection_list->entries[0].target;
     }
   }
 

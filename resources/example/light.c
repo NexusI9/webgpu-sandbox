@@ -19,7 +19,7 @@ void example_light(Scene *scene) {
                             .far = 20.0f,
                             .position = {0.0f, 3.5f, 0.0f},
                         },
-                        LightShadow_None, NULL);
+                        LightCreateFlag_None, NULL);
 
   scene_add_sun_light(scene,
                       &(SunLightDescriptor){
@@ -28,7 +28,7 @@ void example_light(Scene *scene) {
                           .intensity = 2.0f,
                           .size = 10.0f,
                       },
-                      LightShadow_Enabled, NULL);
+                      LightCreateFlag_Shadow, NULL);
 
   /*
     scene_add_spot_light(scene,

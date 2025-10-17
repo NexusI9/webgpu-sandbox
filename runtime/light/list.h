@@ -3,12 +3,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "runtime/scene/renderer/render_pass/render_pass.h"
-#include "utils/stli.h"
 #include "core.h"
-#include "webgpu/webgpu.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/scene/renderer/render_pass/render_pass.h"
+#include "utils/stli.h"
+#include "webgpu/webgpu.h"
 
 typedef enum {
   LightListStatus_Success,
@@ -17,9 +17,9 @@ typedef enum {
 } LightListStatus;
 
 typedef enum {
-  LightShadow_None = 0,
-  LightShadow_Enabled = 1,
-} LightShadow;
+  LightCreateFlag_None = 0,
+  LightCreateFlag_Shadow = 1 << 0,
+} LightCreateFlag;
 
 typedef struct {
   const RenderPipeline *pipeline;

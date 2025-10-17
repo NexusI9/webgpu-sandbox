@@ -8,6 +8,7 @@
 #include "runtime/scene/editor/ui/theme/theme.default.h"
 #include "utils/color.h"
 #include "utils/name.h"
+#include <cstdio>
 
 namespace UI {
 
@@ -257,10 +258,9 @@ template <typename T> class InputIntCallback : public Component {
 public:
   InputIntCallback(T *target, Scene *scene, const char *label, int (*get)(T *),
                    void (*set)(T *, int), void (*extra)(Scene *, void *),
-                   void *user_data, SSBOType ssbo_type, ssbo_id_t ssbo_id)
+                   void *user_data)
       : Component(scene, label), target(target), get(get), set(set),
-        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
-        ssbo_id(ssbo_id) {}
+        extra(extra), user_data(user_data) {}
   bool draw() override;
 
 private:
@@ -270,8 +270,6 @@ private:
   void (*extra)(Scene *, void *);
   void *user_data;
   int value;
-  SSBOType ssbo_type;
-  ssbo_id_t ssbo_id;
 };
 
 // FLOAT
@@ -280,11 +278,9 @@ template <typename T> class InputFloatCallback : public Component {
 public:
   InputFloatCallback(T *target, Scene *scene, const char *label,
                      float (*get)(T *), void (*set)(T *, float),
-                     void (*extra)(Scene *, void *), void *user_data,
-                     SSBOType ssbo_type, ssbo_id_t ssbo_id)
+                     void (*extra)(Scene *, void *), void *user_data)
       : Component(scene, label), target(target), get(get), set(set),
-        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
-        ssbo_id(ssbo_id) {}
+        extra(extra), user_data(user_data) {}
   bool draw() override;
 
 private:
@@ -294,8 +290,6 @@ private:
   void (*extra)(Scene *, void *);
   void *user_data;
   float value;
-  SSBOType ssbo_type;
-  ssbo_id_t ssbo_id;
 };
 
 // VEC3
@@ -304,11 +298,9 @@ template <typename T> class InputVec3Callback : public Component {
 public:
   InputVec3Callback(T *target, Scene *scene, const char *label,
                     void (*get)(T *, vec3), void (*set)(T *, vec3),
-                    void (*extra)(Scene *, void *), void *user_data,
-                    SSBOType ssbo_type, ssbo_id_t ssbo_id)
+                    void (*extra)(Scene *, void *), void *user_data)
       : Component(scene, label), target(target), get(get), set(set),
-        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
-        ssbo_id(ssbo_id) {}
+        extra(extra), user_data(user_data) {}
   bool draw() override;
 
 private:
@@ -318,8 +310,6 @@ private:
   void (*extra)(Scene *, void *);
   void *user_data;
   vec3 value;
-  SSBOType ssbo_type;
-  ssbo_id_t ssbo_id;
 };
 
 // VEC4
@@ -328,11 +318,9 @@ template <typename T> class InputVec4Callback : public Component {
 public:
   InputVec4Callback(T *target, Scene *scene, const char *label,
                     void (*get)(T *, vec4), void (*set)(T *, vec4),
-                    void (*extra)(Scene *, void *), void *user_data,
-                    SSBOType ssbo_type, ssbo_id_t ssbo_id)
+                    void (*extra)(Scene *, void *), void *user_data)
       : Component(scene, label), target(target), get(get), set(set),
-        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
-        ssbo_id(ssbo_id) {}
+        extra(extra), user_data(user_data) {}
   bool draw() override;
 
 private:
@@ -342,8 +330,6 @@ private:
   void (*extra)(Scene *, void *);
   void *user_data;
   vec4 value;
-  SSBOType ssbo_type;
-  ssbo_id_t ssbo_id;
 };
 
 // COLOR
@@ -352,11 +338,9 @@ template <typename T> class InputColorCallback : public Component {
 public:
   InputColorCallback(T *target, Scene *scene, const char *label,
                      void (*get)(T *, color), void (*set)(T *, color),
-                     void (*extra)(Scene *, void *), void *user_data,
-                     SSBOType ssbo_type, ssbo_id_t ssbo_id)
+                     void (*extra)(Scene *, void *), void *user_data)
       : Component(scene, label), target(target), get(get), set(set),
-        extra(extra), user_data(user_data), ssbo_type(ssbo_type),
-        ssbo_id(ssbo_id) {}
+        extra(extra), user_data(user_data) {}
   bool draw() override;
 
 private:
@@ -366,8 +350,6 @@ private:
   void (*extra)(Scene *, void *);
   void *user_data;
   color value;
-  SSBOType ssbo_type;
-  ssbo_id_t ssbo_id;
 };
 
 template <typename T> class InputTextCallback : public Component {
@@ -375,7 +357,7 @@ template <typename T> class InputTextCallback : public Component {
 public:
   InputTextCallback(T *target, Scene *scene, const char *label,
                     const int buffer_size, const InputFlag flag,
-                    void (*get)(T *, char *), void (*set)(T *, const char *),
+                    const char *(*get)(T *), void (*set)(T *, const char *),
                     void (*extra)(Scene *, void *), void *user_data)
       : Component(scene, label), target(target), buffer_size(buffer_size),
         flag(flag), get(get), set(set), extra(extra), user_data(user_data) {}
@@ -384,7 +366,7 @@ public:
 private:
   T *target;
 
-  void (*get)(T *, char *);
+  const char *(*get)(T *);
   void (*set)(T *, const char *);
 
   void (*extra)(Scene *, void *);
@@ -410,7 +392,6 @@ template <typename T> bool InputIntCallback<T>::draw() {
 
   if (input) {
     set(target, value);
-    ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
 
     if (extra)
       extra(scene, user_data);
@@ -434,7 +415,6 @@ template <typename T> bool InputFloatCallback<T>::draw() {
 
   if (input) {
     set(target, value);
-    ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
 
     if (extra)
       extra(scene, user_data);
@@ -457,7 +437,6 @@ template <typename T> bool InputVec3Callback<T>::draw() {
 
     if (ImGui::DragFloat(input_id, &value[i], 0.1f)) {
       set(target, value);
-      ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
 
       if (extra)
         extra(scene, user_data);
@@ -482,7 +461,6 @@ template <typename T> bool InputVec4Callback<T>::draw() {
 
     if (ImGui::DragFloat(input_id, &value[i], 0.1f)) {
       set(target, value);
-      ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
 
       if (extra)
         extra(scene, user_data);
@@ -512,7 +490,6 @@ template <typename T> bool InputColorCallback<T>::draw() {
 
   if (input) {
     set(target, value);
-    ssbo_update_queue_insert(&scene->renderer.ssbo, ssbo_type, ssbo_id);
 
     if (extra)
       extra(scene, user_data);
@@ -526,7 +503,8 @@ template <typename T> bool InputColorCallback<T>::draw() {
 template <typename T> bool InputTextCallback<T>::draw() {
 
   ImGui::Text("%s", label);
-  get(target, value);
+  const char *val = get(target);
+  snprintf(value, max_buffer_size, "%s", val);
 
   name_t input_id;
   name_compose(input_id, "##%s_input", label);

@@ -33,6 +33,7 @@ typedef struct {
 
 } GizmoGrid;
 
+
 void sem_grid_create(Mesh *, GizmoGridCreateDescriptor *);
 
 #endif

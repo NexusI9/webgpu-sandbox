@@ -49,11 +49,11 @@ typedef enum {
 
 // light
 SceneEditorMeshList *scene_add_point_light(Scene *, PointLightDescriptor *,
-                                           const LightShadow, PointLight **);
+                                           const LightCreateFlag, PointLight **);
 SceneEditorMeshList *scene_add_spot_light(Scene *, SpotLightDescriptor *,
-                                          const LightShadow, SpotLight **);
+                                          const LightCreateFlag, SpotLight **);
 SceneEditorMeshList *scene_add_sun_light(Scene *, SunLightDescriptor *,
-                                         const LightShadow, SunLight **);
+                                         const LightCreateFlag, SunLight **);
 SceneEditorMeshList *scene_add_ambient_light(Scene *, AmbientLightDescriptor *,
                                              AmbientLight **);
 

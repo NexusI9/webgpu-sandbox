@@ -200,7 +200,7 @@ void scene_selection_clear_initial_attributes(SceneSelection *selection) {
    - Scene Editor Objects (SEM)
  */
 void scene_selection_subscribe_mesh(SceneSelection *selection, Mesh *mesh,
-                                    selection_targets targets,
+                                    reg_id_t target,
                                     const SceneSelectionType type) {
 
   // insert mesh to selection meshes
@@ -208,15 +208,15 @@ void scene_selection_subscribe_mesh(SceneSelection *selection, Mesh *mesh,
 
   // push target id
   SceneSelectionTargetList *target_list = &selection->filters[type].targets;
-  scene_selection_target_list_insert(target_list, targets);
+
+  scene_selection_target_list_insert(target_list, target);
 }
 
 void scene_selection_subscribe_mesh_ref_list(SceneSelection *selection,
-                                             MeshRefList *list,
-                                             selection_targets targets,
+                                             MeshRefList *list, reg_id_t target,
                                              const SceneSelectionType type) {
   for (size_t i = 0; i < list->length; i++)
-    scene_selection_subscribe_mesh(selection, list->entries[i], targets, type);
+    scene_selection_subscribe_mesh(selection, list->entries[i], target, type);
 }
 
 /**

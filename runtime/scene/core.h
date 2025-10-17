@@ -65,7 +65,7 @@ typedef struct {
   SceneEditorMesh *sem;
 } SEMHighlightCallback;
 
-typedef void (*sem_transform_axis_callback)(SEMTransformCallback *);
+typedef void (*sem_transform_axis_callback)(SceneEditorMesh *, vec3);
 typedef void (*sem_transform_highlight_callback)(SEMHighlightCallback *);
 
 // Link each SEM a dedicated callback
@@ -84,12 +84,25 @@ struct SceneEditorMesh {
   sem_transform_highlight_callback deselect_callback;
 };
 
+static const int SEM_LIST_ORIGIN_INDEX = 0;
+
+/*
+
+ */
 struct SceneEditorMeshList {
   reg_id_t id;
   name_t name;
+
+  // Mesh list composing the SEM (light handle, spot target...)
   SceneEditorMesh *entries;
   size_t capacity;
   size_t length;
+
+  // Since Editor Mesh List may have multiple targets and meshes, we still need
+  // to define a refernce/ main mesh, i.e. the origin.
+  // The origin mesh help to define the SEM list main position and target.
+  // Usually the origin will be the first mesh of the list.
+  SceneEditorMesh *origin;
 };
 
 typedef struct {
@@ -116,36 +129,10 @@ typedef struct {
  */
 
 #define SCENE_SELECTION_LIST_CAPACITY 6
-#define SCENE_SELECTION_OBJECT_MAX_TARGET 6
-
-typedef reg_id_t selection_targets[SCENE_SELECTION_OBJECT_MAX_TARGET];
-
-/**
-   ==== SSOTargetID ====
-   Some standards Index used in the Scene Selection Object (SSO) targets lists
-   for the SEM Filters.
-    - The index 0 (Default) is the id of the light/ camera/ probe the sem is
-   related to
-    - The index 1 (SEM) is the actual SEM id of the the Selected mesh
-
-   Initially we only had 1 id per SSO, however we required a more clear,
-   uniformized and direct way to access the targeted selection id (whether it's
-   a mesh, a light, probe or camera)
-
-   As a result we can add a bunch of ids to a selected object so when we access
-   this SSO we can freely select its related ids.
-   Also since we use registry IDs targets (prev void*), we also have the
-   benefit to fetch the entity 'type' based on its id from the registry.
-
- */
-typedef enum {
-  SSOTargetID_Default,
-  SSOTargetID_SEM,
-} SSOTargetID;
 
 typedef struct {
   Mesh *mesh;
-  reg_id_t *targets;
+  reg_id_t target;
   vec3 initial_attribute;
 } SceneSelectionObject;
 
@@ -156,7 +143,7 @@ typedef struct {
 } SceneSelectionObjectList;
 
 typedef struct {
-  selection_targets *entries;
+  reg_id_t *entries;
   size_t length;
   size_t capacity;
 } SceneSelectionTargetList;

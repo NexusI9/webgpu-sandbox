@@ -106,7 +106,7 @@ SceneSelectionFilterStatus scene_selection_filter_selection_add_mesh(
   SceneSelectionObject object = {
       .initial_attribute = 0,
       .mesh = mesh,
-      .targets = filter->targets.entries[index],
+      .target = filter->targets.entries[index],
   };
 
   DynamicListStatus insert =

@@ -30,7 +30,7 @@ void UI::Tree::draw_mesh(Mesh *mesh, const size_t index) {
 
   bool draw_label = item.draw();
 
-  if (item.clicked){
+  if (item.clicked) {
     scene_selection_toggle_mesh(scene, mesh);
     item.close_click();
   }
@@ -53,8 +53,14 @@ static const SceneEditorUIIcon sem_icon_map[SCENE_EDITOR_UI_ICON_COUNT] = {
         SceneEditorUIIcon_AmbientLight,
     [RegEntryType_SceneEditorMeshList_PointLight] =
         SceneEditorUIIcon_PointLight,
+    [RegEntryType_SceneEditorMeshList_PointLightShadow] =
+        SceneEditorUIIcon_PointLight,
     [RegEntryType_SceneEditorMeshList_SunLight] = SceneEditorUIIcon_SunLight,
+    [RegEntryType_SceneEditorMeshList_SunLightShadow] =
+        SceneEditorUIIcon_SunLight,
     [RegEntryType_SceneEditorMeshList_SpotLight] = SceneEditorUIIcon_SpotLight,
+    [RegEntryType_SceneEditorMeshList_SpotLightShadow] =
+        SceneEditorUIIcon_SpotLight,
     [RegEntryType_SceneEditorMeshList_ProbeReflectionGrid] =
         SceneEditorUIIcon_ProbeReflectionGrid,
     [RegEntryType_SceneEditorMeshList_ProbeReflectionPlane] =
@@ -77,7 +83,7 @@ void UI::Tree::draw_scene_editor_mesh_list(SceneEditorMeshList *list,
     ImGui::TreePop();
   }
 
-  if (item.clicked){
+  if (item.clicked) {
     scene_selection_toggle_mesh(scene, list->entries->mesh);
     item.close_click();
   }
@@ -112,6 +118,9 @@ void UI::Tree::draw() {
       case RegEntryType_SceneEditorMeshList_PointLight:
       case RegEntryType_SceneEditorMeshList_SunLight:
       case RegEntryType_SceneEditorMeshList_SpotLight:
+      case RegEntryType_SceneEditorMeshList_PointLightShadow:
+      case RegEntryType_SceneEditorMeshList_SunLightShadow:
+      case RegEntryType_SceneEditorMeshList_SpotLightShadow:
       case RegEntryType_SceneEditorMeshList_ProbeReflectionGrid:
       case RegEntryType_SceneEditorMeshList_ProbeReflectionPlane:
         draw_scene_editor_mesh_list((SceneEditorMeshList *)entry->ptr,
