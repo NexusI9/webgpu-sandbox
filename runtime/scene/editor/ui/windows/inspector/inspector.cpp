@@ -20,6 +20,7 @@
 #include "runtime/scene/editor/ui/windows/inspector/inspector.ambient_light.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.mesh.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.point_light.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.probe_reflection_plane.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.spot_light.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.sun_light.hpp"
 #include "webgpu/webgpu.h"
@@ -330,6 +331,12 @@ void UI::ObjectTab::draw() {
 
     case RegEntryType_Mesh:
       InspectorMesh(scene, "Mesh properties", (Mesh *)g_active_object->ptr)
+          .draw();
+      break;
+
+    case RegEntryType_SceneEditorMeshList_ProbeReflectionPlane:
+      InspectorProbeReflectionPlane(scene, "Probe reflection plane properties",
+                                    (SceneEditorMeshList *)g_active_object->ptr)
           .draw();
       break;
 

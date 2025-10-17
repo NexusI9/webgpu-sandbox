@@ -8,9 +8,8 @@
 #include "runtime/scene/editor/selection/utils.h"
 #include <cstdio>
 
-
 void UI::InspectorSpotLight::transform_update_callback(Scene *scene,
-                                                        void *user_data) {
+                                                       void *user_data) {
 
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
 
@@ -23,7 +22,7 @@ void UI::InspectorSpotLight::transform_update_callback(Scene *scene,
 }
 
 void UI::InspectorSpotLight::properties_update_callback(Scene *scene,
-                                                         void *user_data) {
+                                                        void *user_data) {
 
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
   SpotLight *light = (SpotLight *)list->origin->target;
@@ -37,6 +36,11 @@ void UI::InspectorSpotLight::draw() {
   ImGui::BeginChild("##Prop", ImVec2(0, 0), true);
   {
 
+    UI::InputTextCallback<SceneEditorMeshList>(
+        sem, scene, "Light name", sizeof(name_t), InputFlag_SpanFullWidth,
+        sem_list_get_name, sem_list_set_name, NULL, NULL)
+        .draw();
+
     light = (SpotLight *)sem->origin->target;
 
     {
@@ -48,11 +52,6 @@ void UI::InspectorSpotLight::draw() {
       else if (RegEntryType_SceneEditorMeshList_SpotLightShadow == type)
         inspector_tree_list_draw(sem, &transform_shadow_attributes, scene);
     }
-
-    UI::InputTextCallback<SceneEditorMeshList>(
-        sem, scene, "Light name", sizeof(name_t), InputFlag_SpanFullWidth,
-        sem_list_get_name, sem_list_set_name, NULL, NULL)
-        .draw();
 
     ImGui::Spacing();
     inspector_tree_list_draw(light, &properties_attributes, scene);

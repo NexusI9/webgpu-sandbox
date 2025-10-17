@@ -37,6 +37,11 @@ void UI::InspectorPointLight::draw() {
   ImGui::BeginChild("##Prop", ImVec2(0, 0), true);
   {
 
+    UI::InputTextCallback<SceneEditorMeshList>(
+        sem, scene, "Light name", sizeof(name_t), InputFlag_SpanFullWidth,
+        sem_list_get_name, sem_list_set_name, NULL, NULL)
+        .draw();
+
     light = (PointLight *)sem->origin->target;
 
     {
@@ -48,11 +53,6 @@ void UI::InspectorPointLight::draw() {
       else if (RegEntryType_SceneEditorMeshList_PointLightShadow == type)
         inspector_tree_list_draw(sem, &transform_shadow_attributes, scene);
     }
-
-    UI::InputTextCallback<SceneEditorMeshList>(
-        sem, scene, "Light name", sizeof(name_t), InputFlag_SpanFullWidth,
-        sem_list_get_name, sem_list_set_name, NULL, NULL)
-        .draw();
 
     ImGui::Spacing();
     inspector_tree_list_draw(light, &properties_attributes, scene);
