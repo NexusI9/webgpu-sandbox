@@ -10,7 +10,9 @@ void UI::InfoTab::draw() {
   uint8_t i;
 
   UI::Spacing(ui, SceneEditorUISize_Space_Medium).draw_y();
-  if (ImGui::Button("Registry data"))
+  ImGui::Text("Registry:");
+  ImGui::SameLine();
+  if (ImGui::Button("Open table"))
     UI::Registry::open = true;
 
   // === Scene Stats Info ===
