@@ -7,7 +7,9 @@ namespace UI {
 class Registry : public Window {
 
 public:
-  
+  Registry(Scene *scene, const char *label) : Window(scene, label) {}
+  void draw() override;
+  static bool open;
 };
 
 } // namespace UI

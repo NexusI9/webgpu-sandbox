@@ -27,6 +27,8 @@
 #include <cstdio>
 #include <cstdlib>
 
+int UI::Inspector::active_tab = 0;
+
 void UI::Inspector::draw() {
 
   const float page_width = ui->size[SceneEditorUISize_RightPanel_Width];

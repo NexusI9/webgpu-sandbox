@@ -35,6 +35,41 @@ typedef enum {
   RegEntryType_Texture,
 } RegEntryType;
 
+static const char *reg_label[] = {
+    [RegEntryType_Mesh] = "Mesh",
+    [RegEntryType_Camera] = "Camera",
+    [RegEntryType_AmbientLight] = "Ambient Light",
+    [RegEntryType_PointLight] = "Point Light",
+    [RegEntryType_SpotLight] = "Spot Light",
+    [RegEntryType_SunLight] = "Sun light",
+    [RegEntryType_Scene] = "Scene",
+    [RegEntryType_SceneUI] = "Scene UI",
+    [RegEntryType_SceneLayer] = "Scene Layer",
+    [RegEntryType_ProbeReflectionPlane] = "Probe Reflection Plane",
+    [RegEntryType_ProbeReflectionGrid] = "Probe Reflection Grid",
+    [RegEntryType_SceneEditorMesh] = "Scene Editor Mesh",
+    [RegEntryType_SceneEditorMeshList] = "Scene Editor Mesh List",
+    [RegEntryType_SceneEditorMeshList_PointLight] = "SEM List <Point Light>",
+    [RegEntryType_SceneEditorMeshList_AmbientLight] =
+        "SEM List <Ambient Light>",
+    [RegEntryType_SceneEditorMeshList_SunLight] = "SEM List <Sun Light>",
+    [RegEntryType_SceneEditorMeshList_SpotLight] = "SEM List <Spot Light>",
+    [RegEntryType_SceneEditorMeshList_PointLightShadow] =
+        "SEM List <Point Light Shadow>",
+    [RegEntryType_SceneEditorMeshList_SunLightShadow] =
+        "SEM List <Sun Light Shadow>",
+    [RegEntryType_SceneEditorMeshList_SpotLightShadow] =
+        "SEM List <Spot Light Shadow>",
+    [RegEntryType_SceneEditorMeshList_Camera] = "SEM List <Camera>",
+    [RegEntryType_SceneEditorMeshList_ProbeReflectionPlane] =
+        "SEM List <Probe Reflection Plane>",
+    [RegEntryType_SceneEditorMeshList_ProbeReflectionGrid] =
+        "SEM List <Probe Reflection Grid>",
+    [RegEntryType_RenderPipeline] = "Render Pipeline",
+    [RegEntryType_ComputePipeline] = "Compute Pipeline",
+    [RegEntryType_Texture] = "Texture",
+};
+
 typedef struct {
   reg_id_t id;
   RegEntryType type;

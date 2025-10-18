@@ -8,6 +8,7 @@
 
 namespace UI {
 
+  
 class InspectorMesh : public Window {
 
 public:

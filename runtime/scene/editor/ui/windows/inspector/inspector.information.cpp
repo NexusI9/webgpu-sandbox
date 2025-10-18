@@ -2,10 +2,16 @@
 #include "imgui/imgui.h"
 #include "runtime/scene/editor/ui/components/spacing.hpp"
 #include "runtime/scene/editor/ui/components/tree_item.hpp"
+#include "runtime/scene/editor/ui/windows/display.hpp"
+#include "runtime/scene/editor/ui/windows/registry.hpp"
 
 void UI::InfoTab::draw() {
 
   uint8_t i;
+
+  UI::Spacing(ui, SceneEditorUISize_Space_Medium).draw_y();
+  if (ImGui::Button("Registry data"))
+    UI::Registry::open = true;
 
   // === Scene Stats Info ===
   const struct {
@@ -57,6 +63,4 @@ void UI::InfoTab::draw() {
     }
     ImGui::TreePop();
   }
-
-  // === Registry Portal ===
 }

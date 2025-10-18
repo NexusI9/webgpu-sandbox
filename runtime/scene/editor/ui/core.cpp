@@ -24,8 +24,10 @@
 #include "runtime/scene/editor/ui/windows/display.hpp"
 #include "runtime/scene/editor/ui/windows/gizmo.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.information.hpp"
 #include "runtime/scene/editor/ui/windows/log.hpp"
 #include "runtime/scene/editor/ui/windows/monitor.hpp"
+#include "runtime/scene/editor/ui/windows/registry.hpp"
 #include "runtime/scene/editor/ui/windows/render_mode.hpp"
 #include "runtime/scene/editor/ui/windows/tree.hpp"
 #include "runtime/scene/renderer/core.h"
@@ -181,10 +183,12 @@ void scene_editor_ui_draw_callback(void *data) {
         UI::Gizmo(scene, "Gizmo").draw();
       }
 
-      if (UI::Display::state & UI::DisplayState_Activity) {
+      if (UI::Display::state & UI::DisplayState_Activity)
         UI::Monitor(scene, "Monitor").draw();
-      }
 
+      if (UI::Registry::open)
+        UI::Registry(scene, "Registry").draw();
+      
       UI::Display(scene, "Display").draw();
     }
     ImGui::Render();

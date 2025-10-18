@@ -9,12 +9,11 @@ class ObjectTab : public InspectorTab {
 
 public:
   ObjectTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
-  : InspectorTab(scene, icon, label) {
-  }
+      : InspectorTab(scene, icon, label) {}
   void draw() override;
+  static RegEntry const *active_object;
 
 private:
-  static RegEntry const *active_object;
   static constexpr uint8_t valid_type_len = 8;
   static constexpr RegEntryType valid_type[valid_type_len] = {
       RegEntryType_Mesh,

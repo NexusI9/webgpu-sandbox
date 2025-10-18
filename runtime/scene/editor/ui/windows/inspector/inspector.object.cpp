@@ -8,7 +8,7 @@
 #include "runtime/scene/editor/ui/windows/inspector/inspector.spot_light.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.sun_light.hpp"
 
-
+RegEntry const *UI::ObjectTab::active_object = nullptr;
 
 bool UI::ObjectTab::is_valid_type(const RegEntryType type) {
 
@@ -46,8 +46,6 @@ reg_id_t UI::ObjectTab::set_active_target() {
   // TODO Make fallback id more robust
   return REG_OWNER_UNDEFINED;
 }
-
-
 
 void UI::ObjectTab::draw() {
 
@@ -106,4 +104,3 @@ void UI::ObjectTab::draw() {
   }
   ImGui::EndChild();
 }
-

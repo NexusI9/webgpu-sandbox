@@ -23,7 +23,7 @@ public:
 
 private:
   static constexpr int filter_length = 5;
-  
+
   static void checkbox_on_change_base(Scene *, bool, void *);
   static void checkbox_on_change_grid(Scene *, bool, void *);
   static void checkbox_on_change_probe(Scene *, bool, void *);
