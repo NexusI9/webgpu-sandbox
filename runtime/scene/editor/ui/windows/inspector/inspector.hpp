@@ -8,6 +8,12 @@
 #include "imgui/imgui_impl_wgpu.h"
 #include "runtime/scene/editor/ui/components/input.hpp"
 #include "runtime/scene/editor/ui/core.h"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.clock.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.information.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.object.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.scene.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.world.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/tab.hpp"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/viewport/core.h"
 
@@ -142,96 +148,6 @@ static inline void inspector_tree_list_draw(T *target,
   ImGui::PopStyleVar();
 }
 
-class InspectorTab : public Window {
-
-public:
-  InspectorTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
-      : Window(scene, label), icon(icon), tooltip(label) {}
-  virtual void draw() = 0;
-  const SceneEditorUIIcon icon;
-  const char *tooltip;
-};
-
-typedef struct {
-  const ProfilerLatencyType type;
-  const char *label;
-  const float *color;
-  double value;
-} ClockTabBar;
-
-class ClockTab : public InspectorTab {
-
-public:
-  ClockTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
-      : InspectorTab(scene, icon, label) {}
-  void draw() override;
-
-private:
-  static constexpr double max_value = 10.0f;
-  static constexpr color color = {0.3f, 0.3f, 0.5f, 1.0f};
-};
-
-class SceneTab : public InspectorTab {
-
-public:
-  SceneTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
-      : InspectorTab(scene, icon, label) {}
-  void draw() override;
-
-private:
-  int width = context_width();
-  int height = context_height();
-  float fov = viewport_fov(&scene->viewport);
-  float near_clip = viewport_near_clip(&scene->viewport);
-  float far_clip = viewport_far_clip(&scene->viewport);
-  float dpi = (float)scene_renderer_dpi(&scene->renderer);
-  RenderPipelineMultisampleCount multisample = context_multisample();
-};
-
-class InfoTab : public InspectorTab {
-
-public:
-  InfoTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
-      : InspectorTab(scene, icon, label) {}
-  void draw() override;
-
-private:
-  static constexpr const char *backend_label[] = {
-      "Undefined", "Null",   "WebGPU", "D3D11",    "D3D12",
-      "Metal",     "Vulkan", "OpenGL", "OpenGLES", "Force32",
-  };
-
-  static constexpr const char *adapter_type_label[] = {
-      "Discrete GPU", "Integrated GPU", "CPU", "Unknown", "Force32",
-  };
-};
-
-class ObjectTab : public InspectorTab {
-
-public:
-  ObjectTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
-      : InspectorTab(scene, icon, label) {}
-  void draw() override;
-
-private:
-  static constexpr uint8_t valid_type_len = 8;
-  static constexpr RegEntryType valid_type[valid_type_len] = {
-      RegEntryType_Mesh,
-      RegEntryType_PointLight,
-      RegEntryType_AmbientLight,
-      RegEntryType_SunLight,
-      RegEntryType_SpotLight,
-      RegEntryType_Camera,
-      RegEntryType_ProbeReflectionPlane,
-      RegEntryType_ProbeReflectionGrid,
-  };
-
-  inline bool is_valid_type(const RegEntryType);
-  inline reg_id_t set_active_target();
-
-private:
-};
-
 class Inspector : public Window {
 
 public:
@@ -240,23 +156,28 @@ public:
         object_tab(scene, SceneEditorUIIcon_Properties_Object, "Object"),
         info_tab(scene, SceneEditorUIIcon_Properties_Chip, "Information"),
         scene_tab(scene, SceneEditorUIIcon_Properties_Scene, "Scene"),
-        clock_tab(scene, SceneEditorUIIcon_Properties_Clock, "Latencies") {
+        clock_tab(scene, SceneEditorUIIcon_Properties_Clock, "Latencies"),
+        world_tab(scene, SceneEditorUIIcon_Properties_Earth, "World") {
 
     tabs[0] = &scene_tab;
-    tabs[1] = &info_tab;
+    tabs[1] = &world_tab;
     tabs[2] = &object_tab;
     tabs[3] = &clock_tab;
+    tabs[4] = &info_tab;
+
   }
 
   void draw();
 
 private:
-  static constexpr uint8_t tab_count = 4;
+  static int active_tab;
+  static constexpr uint8_t tab_count = 5;
   UI::InspectorTab *tabs[tab_count];
   UI::SceneTab scene_tab;
   UI::InfoTab info_tab;
   UI::ObjectTab object_tab;
   UI::ClockTab clock_tab;
+  UI::WorldTab world_tab;
 };
 
 } // namespace UI

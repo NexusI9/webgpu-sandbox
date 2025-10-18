@@ -13,7 +13,7 @@ typedef enum {
   SceneEditorUIStatus_UndefError,
 } SceneEditorUIStatus;
 
-#define SCENE_EDITOR_UI_ICON_COUNT 32
+#define SCENE_EDITOR_UI_ICON_COUNT 33
 typedef enum {
   SceneEditorUIIcon_Null,
   SceneEditorUIIcon_RenderMode_Boundbox,
@@ -38,6 +38,7 @@ typedef enum {
   SceneEditorUIIcon_Properties_Object,
   SceneEditorUIIcon_Properties_Chip,
   SceneEditorUIIcon_Properties_Clock,
+  SceneEditorUIIcon_Properties_Earth,
   SceneEditorUIIcon_PointLight,
   SceneEditorUIIcon_AmbientLight,
   SceneEditorUIIcon_SunLight,
@@ -123,7 +124,8 @@ bool scene_editor_keydown_callback(int eventType,
                                    const EmscriptenKeyboardEvent *keyEvent,
                                    void *userData);
 
-static inline int scene_editor_ui_size(const SceneEditorUI *ui, const int size) {
+static inline int scene_editor_ui_size(const SceneEditorUI *ui,
+                                       const int size) {
   return size * ui->dpi;
 }
 
