@@ -122,10 +122,11 @@ void scene_update_render_pass_texture(
           pass->color.attachment.resolveTarget = NULL;
         }
 
-        // update post fx bingroup with the newest view
-        post_fx_update_bindgroup_view(&pass->post_fx, PostFxType_Blit,
-                                      previous_resolve,
-                                      pass->color.resolve_view);
+        // update last pass post fx bingroup with the newest view
+        if (j == SCENE_RENDER_PASS_COUNT - 1)
+          post_fx_update_effect_view(&pass->post_fx, PostFxType_Blit,
+                                     POST_FX_VIEW_INDEX_SCENE,
+                                     pass->color.resolve_view);
       }
     }
 

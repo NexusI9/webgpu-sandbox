@@ -63,11 +63,6 @@ void render_pass_init_color(RenderPass *pass,
                                    RenderPassTextureFlag_None);
 
   post_fx_init(&pass->post_fx, &(PostFxDescriptor){});
-
-  // onscreen blit effect
-  if (desc->type == RenderPassType_OnScreen)
-    post_fx_bind_texture_view(&pass->post_fx, PostFxType_Blit,
-                              pass->color.resolve_view);
 }
 
 void render_pass_init_depth(RenderPass *pass,
@@ -90,18 +85,21 @@ void render_pass_init_depth(RenderPass *pass,
 
 void render_pass_list_create(RenderPassList *list) { list->length = 0; }
 
-void render_pass_list_insert_pass(RenderPassList *list,
-                                  const RenderPassCreateDescriptor *desc) {
+RenderPass *
+render_pass_list_insert_pass(RenderPassList *list,
+                             const RenderPassCreateDescriptor *desc) {
 
   if (list->length == RENDER_PASS_MAX_DRAW_LIST) {
     logger_add(LoggerFlag_Warning,
                "Render pass list reached maxed capacity (%d)",
                RENDER_PASS_MAX_DRAW_LIST);
-    return;
+    return NULL;
   }
 
-  render_pass_create(&list->passes[list->length++], desc);
+  RenderPass *new_pass = &list->passes[list->length++];
+  render_pass_create(new_pass, desc);
   render_pass_list_update_child_passes_callback(list);
+  return new_pass;
 }
 
 /**

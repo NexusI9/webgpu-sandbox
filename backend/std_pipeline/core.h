@@ -6,7 +6,7 @@
 #include "runtime/pipeline/pipeline.h"
 
 // Standards pipelines
-#define RENDER_PIPELINE_TYPE_COUNT 17
+#define RENDER_PIPELINE_TYPE_COUNT 19
 typedef enum {
   RenderPipelineType_Billboard,
   RenderPipelineType_Default,
@@ -25,6 +25,8 @@ typedef enum {
   RenderPipelineType_Blit,
   RenderPipelineType_Outline,
   RenderPipelineType_Stencil,
+  RenderPipelineType_Bloom,
+  RenderPipelineType_Composite,
 } RenderPipelineType;
 
 #define COMPUTE_PIPELINE_TYPE_COUNT 2

@@ -21,6 +21,8 @@
 #include "backend/std_pipeline/compute_shader/kawase/kawase.h"
 #include "backend/std_pipeline/compute_shader/mipmap/mipmap.h"
 #include "backend/std_pipeline/render_shader/blit/blit.h"
+#include "backend/std_pipeline/render_shader/bloom/bloom.h"
+#include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "backend/std_pipeline/render_shader/outline/outline.h"
 #include "backend/std_pipeline/render_shader/stencil/stencil.h"
 #include "runtime/pipeline/render.h"
@@ -54,6 +56,8 @@ static const RenderPipelineStateObject
         [RenderPipelineType_Blit] = &layout_blit,
         [RenderPipelineType_Outline] = &layout_outline,
         [RenderPipelineType_Stencil] = &layout_stencil,
+        [RenderPipelineType_Bloom] = &layout_bloom,
+        [RenderPipelineType_Composite] = &layout_composite,
 };
 
 static const ComputePipelineStateObject
@@ -74,6 +78,15 @@ void standard_render_pipelines_init(
   logger_add(LoggerFlag_Process, "Initializing Standard Render Pipelines...");
 
   for (RenderPipelineType i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++) {
+
+    if (standard_render_layouts[i] == NULL) {
+      logger_add(LoggerFlag_Error,
+                 "Attempting to initialized an undefined pipeline (%d), make sure "
+                 "the PSO list is rightly configured and match the actual "
+                 "amount of Standard Render Pipelines",
+                 i);
+      continue;
+    }
 
     const RenderPipelineStateObject *layout = standard_render_layouts[i];
     RenderPipeline *cached_pipeline = &g_std_render_pipelines[i];

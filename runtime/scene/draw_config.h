@@ -3,6 +3,7 @@
 
 #include "./core.h"
 #include "backend/context.h"
+#include "backend/postfx/core.h"
 #include "debug/core.h"
 #include "renderer/core.h"
 #include "renderer/render_pass/core.h"
@@ -397,7 +398,7 @@ scene_draw_layouts_init(Scene *scene,
                   ▐▌   ▐▌ ▐▌▗▄▄▞▘▗▄▄▞▘
 
      */
-    
+
     RenderPassColorAttachment gizmo_color_attachment = {
         .attachment = {
             .view = shared_color_view,
@@ -427,7 +428,10 @@ scene_draw_layouts_init(Scene *scene,
         .draw_list = &gizmo_draw_list,
     };
 
-    render_pass_list_insert_pass(&pass_list[i], &gizmo_pass);
+    RenderPass *last_pass =
+        render_pass_list_insert_pass(&pass_list[i], &gizmo_pass);
+
+    post_fx_blit_create(&last_pass->post_fx, last_pass->color.resolve_view);
   }
 }
 

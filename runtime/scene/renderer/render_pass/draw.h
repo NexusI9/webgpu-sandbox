@@ -33,7 +33,6 @@
 static inline void render_pass_draw(RenderPass *);
 static inline void render_pass_draw_callback_resolve_multisample(RenderPass *);
 static inline void render_pass_draw_callback_resolve_monosample(RenderPass *);
-static inline void render_pass_draw_post_fx(RenderPass *);
 
 // Pass Immediate mode functions
 static inline WGPUCommandEncoder render_pass_im_begin(RenderPass *);
@@ -144,7 +143,8 @@ void render_pass_draw_callback_resolve_multisample(RenderPass *pass) {
   // Transfert cached resolve view (sampled 1x) to pass resolve
   pass->color.attachment.resolveTarget = pass->color.resolve_view;
   render_pass_im_draw(pass);
-  render_pass_draw_post_fx(pass);
+  post_fx_draw(&pass->post_fx, pass->command_encoder);
+
 }
 
 /*
@@ -153,37 +153,9 @@ void render_pass_draw_callback_resolve_multisample(RenderPass *pass) {
  */
 void render_pass_draw_callback_resolve_monosample(RenderPass *pass) {
   render_pass_im_draw(pass);
-  render_pass_draw_post_fx(pass);
+  post_fx_draw(&pass->post_fx, pass->command_encoder);
 }
 
-void render_pass_draw_post_fx(RenderPass *pass) {
-
-  // Blit pass
-  {
-    WGPURenderPassColorAttachment color_attachment = {
-        .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-        .view = wgpuSwapChainGetCurrentTextureView(context_swapchain()),
-        .loadOp = WGPULoadOp_Load,
-        .storeOp = WGPUStoreOp_Store,
-    };
-
-    WGPURenderPassDescriptor pass_desc = {
-        .label = "Resolve Pass",
-        .colorAttachmentCount = 1,
-        .colorAttachments = &color_attachment,
-    };
-
-    // RESOLVE (1x) ==> POSTFX ==> SWAPCHAIN
-    WGPURenderPassEncoder resolve_pass =
-        wgpuCommandEncoderBeginRenderPass(pass->command_encoder, &pass_desc);
-    {
-      // POST FX
-      post_fx_blit(&pass->post_fx, pass->color.resolve_view,
-                   resolve_pass);
-    }
-    wgpuRenderPassEncoderEnd(resolve_pass);
-  }
-}
 
 void render_pass_draw(RenderPass *pass) { pass->draw_callback(pass); }
 
