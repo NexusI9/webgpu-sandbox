@@ -13,6 +13,7 @@ static inline PostFxStatus post_fx_validate_create(PostFx *, const PostFxType);
 static inline PostFxStatus post_fx_bloom_destroy(PostFx *);
 static inline PostFxStatus post_fx_add_callback(PostFx *,
                                                 post_fx_draw_callback);
+static inline WGPUTexture post_fx_bloom_create_texture(const int, const int);
 
 PostFxStatus post_fx_init(PostFx *fx, const PostFxDescriptor *desc) {
 
@@ -64,7 +65,7 @@ PostFxStatus post_fx_validate_create(PostFx *fx, const PostFxType type) {
 }
 
 PostFxStatus post_fx_update_effect_view(PostFx *fx, const PostFxType type,
-                                        const uint8_t index,
+                                        const PostFxViewIndex index,
                                         const WGPUTextureView view) {
 
   if (__builtin_ctz(type) > POST_FX_TYPE_COUNT) {
@@ -113,7 +114,7 @@ PostFxStatus post_fx_blit_create(PostFx *fx, const WGPUTextureView view) {
   // === Define core attributes ===
   {
     effect->pipeline = std_render_pipeline(pipeline_type);
-    effect->view[POST_FX_VIEW_INDEX_SCENE] = view;
+    effect->view[PostFxViewIndex_Scene] = view;
     effect->texture = NULL;
     effect->bindgroup_creator = post_fx_blit_create_bindgroup;
   }
@@ -143,28 +144,11 @@ PostFxStatus post_fx_bloom_create(PostFx *fx, const WGPUTextureView view,
   // === Define core attributes ===
   {
     effect->pipeline = std_render_pipeline(pipeline_type);
-    effect->view[POST_FX_VIEW_INDEX_SCENE] = view;
+    effect->view[PostFxViewIndex_Scene] = view;
     effect->bindgroup_creator = post_fx_bloom_create_bindgroup;
+    effect->texture = post_fx_bloom_create_texture(width, height);
 
-    effect->texture = wgpuDeviceCreateTexture(
-        context_device(),
-        &(WGPUTextureDescriptor){
-            .label = "Bloom texture",
-            .dimension = WGPUTextureDimension_2D,
-            .format = TEXTURE_FORMAT_OFFSCREEN,
-            .usage = WGPUTextureUsage_TextureBinding |
-                     WGPUTextureUsage_RenderAttachment |
-                     WGPUTextureUsage_StorageBinding | WGPUTextureUsage_CopyDst,
-            .sampleCount = 1,
-            .mipLevelCount = 1,
-            .size =
-                (WGPUExtent3D){
-                    .height = height,
-                    .width = width,
-                    .depthOrArrayLayers = 1,
-                },
-        });
-    effect->view[POST_FX_VIEW_INDEX_BLOOM] =
+    effect->view[PostFxViewIndex_Bloom] =
         wgpuTextureCreateView(effect->texture, NULL);
 
     effect->uniform.bloom = uniform;
@@ -190,7 +174,7 @@ PostFxStatus post_fx_composite_create(PostFx *fx, const WGPUTextureView view,
 
     // requires Post Fx Bloom to be setup (TODO: will be replace by fallback
     // texture in future)
-    if (post_fx_effect(fx, PostFxType_Bloom)->view[POST_FX_VIEW_INDEX_BLOOM] ==
+    if (post_fx_effect(fx, PostFxType_Bloom)->view[PostFxViewIndex_Bloom] ==
         NULL) {
       logger_add(LoggerFlag_Error,
                  "Composite effect require bloom post fx to be created");
@@ -203,9 +187,9 @@ PostFxStatus post_fx_composite_create(PostFx *fx, const WGPUTextureView view,
   // === Define core attributes ===
   {
     effect->pipeline = std_render_pipeline(pipeline_type);
-    effect->view[POST_FX_VIEW_INDEX_SCENE] = view;
-    effect->view[POST_FX_VIEW_INDEX_BLOOM] =
-        post_fx_effect(fx, PostFxType_Bloom)->view[POST_FX_VIEW_INDEX_BLOOM];
+    effect->view[PostFxViewIndex_Scene] = view;
+    effect->view[PostFxViewIndex_Bloom] =
+        post_fx_effect(fx, PostFxType_Bloom)->view[PostFxViewIndex_Bloom];
     effect->bindgroup_creator = post_fx_composite_create_bindgroup;
     effect->uniform.composite = uniform;
   }
@@ -241,7 +225,7 @@ PostFxStatus post_fx_blit_create_bindgroup(PostFx *fx) {
       wgpuRenderPipelineGetBindGroupLayout(pipeline, 0);
 
   WGPUBindGroupEntry entries[2] = {
-      {.binding = 0, .textureView = effect->view[POST_FX_VIEW_INDEX_SCENE]},
+      {.binding = 0, .textureView = effect->view[PostFxViewIndex_Scene]},
       {.binding = 1, .sampler = fx->sampler},
   };
   WGPUBindGroupDescriptor bg_desc = {
@@ -278,7 +262,7 @@ PostFxStatus post_fx_bloom_create_bindgroup(PostFx *fx) {
                        &effect->uniform.bloom, sizeof(BloomUniform));
 
   WGPUBindGroupEntry entries[3] = {
-      {.binding = 0, .textureView = effect->view[POST_FX_VIEW_INDEX_SCENE]},
+      {.binding = 0, .textureView = effect->view[PostFxViewIndex_Scene]},
       {.binding = 1, .sampler = fx->sampler},
       {
           .binding = 2,
@@ -321,8 +305,8 @@ PostFxStatus post_fx_composite_create_bindgroup(PostFx *fx) {
                        &effect->uniform.composite, sizeof(CompositeUniform));
 
   WGPUBindGroupEntry entries[4] = {
-      {.binding = 0, .textureView = effect->view[POST_FX_VIEW_INDEX_SCENE]},
-      {.binding = 1, .textureView = effect->view[POST_FX_VIEW_INDEX_BLOOM]},
+      {.binding = 0, .textureView = effect->view[PostFxViewIndex_Scene]},
+      {.binding = 1, .textureView = effect->view[PostFxViewIndex_Bloom]},
       {.binding = 2, .sampler = fx->sampler},
       {
           .binding = 3,
@@ -350,6 +334,61 @@ PostFxStatus post_fx_add_callback(PostFx *fx, post_fx_draw_callback callback) {
   }
 
   fx->callbacks.entries[fx->callbacks.length++] = callback;
+
+  return PostFxStatus_Success;
+}
+
+WGPUTexture post_fx_bloom_create_texture(const int width, const int height) {
+
+  return wgpuDeviceCreateTexture(
+      context_device(),
+      &(WGPUTextureDescriptor){
+          .label = "Bloom texture",
+          .dimension = WGPUTextureDimension_2D,
+          .format = TEXTURE_FORMAT_OFFSCREEN,
+          .usage = WGPUTextureUsage_TextureBinding |
+                   WGPUTextureUsage_RenderAttachment |
+                   WGPUTextureUsage_StorageBinding | WGPUTextureUsage_CopyDst,
+          .sampleCount = 1,
+          .mipLevelCount = 1,
+          .size =
+              (WGPUExtent3D){
+                  .height = height,
+                  .width = width,
+                  .depthOrArrayLayers = 1,
+              },
+      });
+}
+
+/**
+   Update the bloom texture resolution and update the view from the composite
+   pass (if existing)
+ */
+PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *fx,
+                                                     const int width,
+                                                     const int height) {
+
+  PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
+
+  if (effect->texture) {
+    if (width == wgpuTextureGetWidth(effect->texture) &&
+        height == wgpuTextureGetHeight(effect->texture))
+      return PostFxStatus_SameAttribute;
+    else
+      wgpuTextureRelease(effect->texture);
+  }
+
+  effect->texture = post_fx_bloom_create_texture(width, height);
+  effect->view[PostFxViewIndex_Bloom] =
+      wgpuTextureCreateView(effect->texture, NULL);
+  post_fx_bloom_create_bindgroup(fx);
+
+  // update composite view as well
+  if (fx->state & PostFxType_Composite) {
+    post_fx_effect(fx, PostFxType_Composite)->view[PostFxViewIndex_Bloom] =
+        effect->view[PostFxViewIndex_Bloom];
+    post_fx_composite_create_bindgroup(fx);
+  }
 
   return PostFxStatus_Success;
 }

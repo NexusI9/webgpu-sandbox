@@ -51,9 +51,9 @@ void scene_update_render_pass_texture(
   int real_height = (int)(height * dpi);
 
   // Update textures
-  for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
+  for (uint8_t mode = 0; mode < SCENE_RENDERER_DRAW_MODE_COUNT; mode++) {
 
-    RenderPassList *pass_list = &scene->renderer.draw.render_pass[i];
+    RenderPassList *pass_list = &scene->renderer.draw.render_pass[mode];
 
     // === Color ===
     {
@@ -122,15 +122,32 @@ void scene_update_render_pass_texture(
           pass->color.attachment.resolveTarget = NULL;
         }
 
-        // TODO: for texture mode, update composite
-        if (i == 0) {
-        }
-
         if (j == SCENE_RENDER_PASS_COUNT - 1) {
-          // update last pass post fx bingroup with the newest view
-          post_fx_update_effect_view(&pass->post_fx, PostFxType_Blit,
-                                     POST_FX_VIEW_INDEX_SCENE,
-                                     pass->color.resolve_view);
+
+          if (SceneRendererDrawMode_Texture & (1 << mode)) {
+
+            // first update the scene view of Bloom & Composite
+            post_fx_update_effect_view(&pass->post_fx, PostFxType_Bloom,
+                                       PostFxViewIndex_Scene,
+                                       pass->color.resolve_view);
+
+            post_fx_update_effect_view(&pass->post_fx, PostFxType_Composite,
+                                       PostFxViewIndex_Scene,
+                                       pass->color.resolve_view);
+
+            // then recreate the bloom independent texture with the new
+            // resolution
+            post_fx_bloom_update_texture_resolution(&pass->post_fx,
+                                                    (int)(real_width / 2.0f),
+                                                    (int)(real_height / 2.0f));
+
+          } else {
+
+            // update last pass post fx bingroup with the newest view
+            post_fx_update_effect_view(&pass->post_fx, PostFxType_Blit,
+                                       PostFxViewIndex_Scene,
+                                       pass->color.resolve_view);
+          }
         }
       }
     }

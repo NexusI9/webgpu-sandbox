@@ -18,6 +18,7 @@ typedef enum {
   PostFxStatus_AlreadyCreated,
   PostFxStatus_MissingNecessaryResource,
   PostFxStatus_UnknownType,
+  PostFxStatus_SameAttribute,
   PostFxStatus_UndefError,
 } PostFxStatus;
 
@@ -28,8 +29,10 @@ typedef enum {
   PostFxType_Composite = 1 << 2,
 } PostFxType;
 
-static const int POST_FX_VIEW_INDEX_SCENE = 0;
-static const int POST_FX_VIEW_INDEX_BLOOM = 1;
+typedef enum {
+  PostFxViewIndex_Scene,
+  PostFxViewIndex_Bloom,
+} PostFxViewIndex;
 
 /**
    Overall flow:
@@ -117,7 +120,11 @@ PostFxStatus post_fx_composite_create(PostFx *, const WGPUTextureView,
                                       const CompositeUniform);
 
 PostFxStatus post_fx_update_effect_view(PostFx *, const PostFxType,
-                                        const uint8_t, const WGPUTextureView);
+                                        const PostFxViewIndex,
+                                        const WGPUTextureView);
+
+PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *, const int,
+                                                     const int);
 
 static inline PostFxEffect *post_fx_effect(PostFx *fx, const PostFxType type) {
   return &fx->effects[__builtin_ctz(type)];
@@ -160,7 +167,7 @@ static inline void post_fx_bloom_draw(PostFx *fx,
   const PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
   WGPURenderPassColorAttachment color_attachment = {
       .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-      .view = effect->view[POST_FX_VIEW_INDEX_BLOOM],
+      .view = effect->view[PostFxViewIndex_Bloom],
       .loadOp = WGPULoadOp_Load,
       .storeOp = WGPUStoreOp_Store,
   };
