@@ -58,11 +58,12 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
 
   // bind model matrix
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 0, 0,
-                             mesh_uniform(mesh));
+                             mesh_uniform(mesh), ShaderUpdateFlag_None);
 
   // bind texture view
   shader_update_texture_view(mesh_shader(mesh, MeshShader_Fixed), 1, 0, view,
-                             TEXTURE_FORMAT_OFFSCREEN);
+                             TEXTURE_FORMAT_OFFSCREEN,
+                             ShaderUpdateFlag_ReleasePrevious);
 
   mesh_ref_list_insert(&debug->object_list[SceneDebugObject_View], mesh);
 }

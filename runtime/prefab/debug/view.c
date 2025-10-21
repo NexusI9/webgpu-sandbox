@@ -1,24 +1,24 @@
 #include "view.h"
 
-#include <stddef.h>
 #include <cglm/cam.h>
 #include <cglm/vec3.h>
+#include <stddef.h>
 
-#include "runtime/primitive/plane.h"
 #include "backend/logger.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/camera/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/mesh/uniform.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/primitive/core.h"
+#include "runtime/primitive/plane.h"
 #include "runtime/scene/debug/view.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
-#include "runtime/mesh/core.h"
 
 static void debug_view_compute_position(DebugView *, vec3);
 
@@ -31,8 +31,9 @@ void debug_view_create(DebugView *debug_view,
 void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   if (debug_view->length == debug_view->capacity) {
-    logger_add(LoggerFlag_Print, "Debug view Currently holding max capacity, no more views "
-                  "can be added\n");
+    logger_add(LoggerFlag_Print,
+               "Debug view Currently holding max capacity, no more views "
+               "can be added\n");
     return;
   }
 
@@ -46,11 +47,11 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
                                   });
 
   // set view texture
-  mesh_shader_create_fixed(new_view,
-                           &(ShaderCreateDescriptor){
-                               .pipeline = std_render_pipeline(RenderPipelineType_Screen),
-                               .name = "Debug view billboard shader",
-                           });
+  mesh_shader_create_fixed(
+      new_view, &(ShaderCreateDescriptor){
+                    .pipeline = std_render_pipeline(RenderPipelineType_Screen),
+                    .name = "Debug view billboard shader",
+                });
 
   mesh_set_scale(new_view, (vec3){view->size[0], 1.0f, view->size[1]});
 
@@ -98,12 +99,14 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
   for (size_t i = 0; i < 3; i++) {
     ShaderBindGroupUniformEntry *entry = &entries[i];
     shader_update_uniform_data(mesh_shader(new_view, MeshShader_Fixed), 0,
-                          entry->binding, entry->data);
+                               entry->binding, entry->data,
+                               ShaderUpdateFlag_None);
   }
 
   // bind texture view
   shader_update_texture_view(mesh_shader(new_view, MeshShader_Fixed), 1, 0,
-                             view->texture_view, TEXTURE_FORMAT_OFFSCREEN);
+                             view->texture_view, TEXTURE_FORMAT_OFFSCREEN,
+                             ShaderUpdateFlag_ReleasePrevious);
 
   // bind sampler
   /*shader_update_sampler(mesh_shader(new_view, MeshShader_Fixed), 1, 1,

@@ -217,10 +217,11 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
 
     float line_thickness = LINE_THICKNESS_BASE;
     shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 1,
-                               (void *)&line_thickness);
+                               (void *)&line_thickness, ShaderUpdateFlag_None);
 
     shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 0,
-                               &(color){0.0f, 0.0f, 0.0f, 1.0f});
+                               &(color){0.0f, 0.0f, 0.0f, 1.0f},
+                               ShaderUpdateFlag_None);
 
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
   }
@@ -247,11 +248,12 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
 
     float line_thickness = LINE_THICKNESS_BASE;
     shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 1,
-                               (void *)&line_thickness);
+                               (void *)&line_thickness, ShaderUpdateFlag_None);
 
     // set wireframe random color
     shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1, 0,
-                               &(color){0.0f, 0.0f, 0.0f, 1.0f});
+                               &(color){0.0f, 0.0f, 0.0f, 1.0f},
+                               ShaderUpdateFlag_None);
 
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
   }

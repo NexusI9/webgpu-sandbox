@@ -4,16 +4,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "runtime/scene/renderer/renderer.h"
-#include "utils/vector/vector.h"
-#include "webgpu/webgpu.h"
 #include "backend/ssbo.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/debug/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
+#include "runtime/scene/renderer/renderer.h"
 #include "runtime/texture/core.h"
 #include "utils/dyli.h"
+#include "utils/vector/vector.h"
+#include "webgpu/webgpu.h"
 
 #define PROBE_REFLECTION_SSBO_SLOT_COUNT 2
 #define PROBE_REFLECTION_MIPMAP_COUNT 1
@@ -48,7 +48,7 @@ typedef struct {
   WGPUTextureView *color_view;
   WGPUTextureView *depth_view;
   const TextureResolution resolution;
-  
+
   const size_t layer_count;
   const WGPUTextureViewDimension view_dimension;
 } ProbeReflectionTextureDescriptor;
@@ -79,10 +79,22 @@ typedef struct {
 
 } ProbeReflectionCreateCore;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 DynamicListStatus
 probe_reflection_list_create_core(const ProbeReflectionCreateCore *);
 
 void probe_reflection_list_draw_preprocessor(const RenderPass *, Mesh *,
                                              void *);
+
+void probe_reflection_list_update_resolution(RenderPass *,
+                                             const TextureResolution,
+                                             const WGPUTextureViewDimension);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

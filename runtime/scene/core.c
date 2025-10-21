@@ -118,15 +118,13 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
  */
 void scene_mesh_list_init(Scene *scene) {
 
-  {
-    for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
-      mesh_ref_list_create(scene_pipeline(scene, flag),
-                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
+    mesh_ref_list_create(scene_pipeline(scene, flag),
+                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
-    for (SceneMeshStates m = 0; m < SCENE_MESH_STATE_COUNT; m++)
-      mesh_ref_list_create(scene_mesh_state(scene, m),
-                           SCENE_MESH_LIST_DEFAULT_CAPACITY);
-  }
+  for (SceneMeshStates m = 0; m < SCENE_MESH_STATE_COUNT; m++)
+    mesh_ref_list_create(scene_mesh_state(scene, m),
+                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
   mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 }

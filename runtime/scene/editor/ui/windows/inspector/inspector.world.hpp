@@ -13,11 +13,11 @@ public:
   void draw() override;
 
 private:
+  static constexpr uint8_t fixed_resolution_count = 8;
   static constexpr struct {
     TextureResolution resolution;
     const char *label;
-  } fixed_resolutions[] = {
-      {TextureResolution_Undefined, "Dynamic"},
+  } fixed_resolutions[fixed_resolution_count] = {
       {TextureResolution_16, "16 x 16"},
       {TextureResolution_32, "32 x 32 "},
       {TextureResolution_64, "64 x 64"},
@@ -27,7 +27,6 @@ private:
       {TextureResolution_1024, "1024 x 1024"},
       {TextureResolution_2048, "2048 x 2048"},
   };
-
 };
 
 } // namespace UI

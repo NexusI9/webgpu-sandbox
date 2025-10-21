@@ -70,7 +70,8 @@ void scene_selection_mesh_highlight(MeshRefList *meshes,
              j++) {
           Mesh *mesh = scene->editor.selection.filters[i].meshes.entries[j];
           shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1,
-                                     0, (void *)&default_color);
+                                     0, (void *)&default_color,
+                                     ShaderUpdateFlag_None);
         }
       }
 
@@ -78,7 +79,8 @@ void scene_selection_mesh_highlight(MeshRefList *meshes,
       for (size_t k = 0; k < selection->length; k++) {
         Mesh *mesh = selection->entries[k].mesh;
         shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1,
-                                   0, (void *)&highlight_color);
+                                   0, (void *)&highlight_color,
+                                   ShaderUpdateFlag_None);
       }
 
       break;

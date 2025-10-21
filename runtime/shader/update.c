@@ -15,12 +15,15 @@
 #include "utils/dyli.h"
 #include "webgpu/webgpu.h"
 
+// ShaderBufferLifetime
+
 /*TODO: BATCH UPDATE : like add, take a bunch of entry and ONLY REBUILD at the
  * end of update*/
 ShaderBindGroupTextureEntry *
 shader_update_texture_view(Shader *shader, const bind_group_index group_index,
                            const bind_index index, WGPUTextureView view,
-                           WGPUTextureFormat format) {
+                           WGPUTextureFormat format,
+                           const ShaderUpdateFlag flag) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupTextureEntry *bound_texture =
@@ -29,7 +32,8 @@ shader_update_texture_view(Shader *shader, const bind_group_index group_index,
   if (bound_texture != NULL) {
 
     // clear the previous texture view if it is NOT a std texture
-    if (!is_std_texture_view(bound_texture->texture_view)) {
+    if (!is_std_texture_view(bound_texture->texture_view) &&
+        (flag & ShaderUpdateFlag_ReleasePrevious)) {
       wgpuTextureViewRelease(bound_texture->texture_view);
       bound_texture->texture_view = NULL;
     }
@@ -56,7 +60,8 @@ shader_update_texture_view(Shader *shader, const bind_group_index group_index,
 
 ShaderBindGroupUniformEntry *
 shader_update_uniform_data(Shader *shader, const bind_group_index group_index,
-                           const bind_index index, void *data) {
+                           const bind_index index, void *data,
+                           const ShaderUpdateFlag flag) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
@@ -95,8 +100,7 @@ shader_update_uniform_data(Shader *shader, const bind_group_index group_index,
 ShaderBindGroupUniformEntry *
 shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
                              const bind_index index, WGPUBuffer buffer,
-                             const size_t offset,
-                             const ShaderBufferLifetime lifetime) {
+                             const size_t offset, const ShaderUpdateFlag flag) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
@@ -106,7 +110,7 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
 
   if (bound_uniform != NULL) {
 
-    if (lifetime == ShaderBufferLifetime_Release)
+    if (flag & ShaderUpdateFlag_ReleasePrevious)
       wgpuBufferRelease(bound_uniform->buffer);
 
     size_t alignment = shader_device_uniform_alignment();
@@ -144,7 +148,7 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
  */
 ShaderBindGroupUniformEntry *shader_update_uniform_callback(
     Shader *shader, const bind_group_index group_index, const bind_index index,
-    const ShaderUniformUpdate *update) {
+    const ShaderUniformUpdate *update, const ShaderUpdateFlag flag) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
@@ -212,10 +216,9 @@ ShaderBindGroupUniformEntry *shader_update_uniform_callback(
   return bound_uniform;
 }
 
-ShaderBindGroupSamplerEntry *
-shader_update_sampler(Shader *shader, const bind_group_index group_index,
-                      const bind_index index,
-                      const WGPUSamplerDescriptor *sampler) {
+ShaderBindGroupSamplerEntry *shader_update_sampler(
+    Shader *shader, const bind_group_index group_index, const bind_index index,
+    const WGPUSamplerDescriptor *sampler, const ShaderUpdateFlag flag) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupSamplerEntry *bound_sampler =
@@ -251,10 +254,9 @@ shader_update_sampler(Shader *shader, const bind_group_index group_index,
   return bound_sampler;
 }
 
-ShaderBindGroupTextureEntry *
-shader_update_texture(Shader *shader, const bind_group_index group_index,
-                      const bind_index index,
-                      const ShaderUpdateTexture *texture) {
+ShaderBindGroupTextureEntry *shader_update_texture(
+    Shader *shader, const bind_group_index group_index, const bind_index index,
+    const ShaderUpdateTexture *texture, const ShaderUpdateFlag flag) {
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupTextureEntry *bound_texture =
@@ -277,7 +279,7 @@ shader_update_texture(Shader *shader, const bind_group_index group_index,
                           BufferTextureMemory_Free);
 
     shader_update_texture_view(shader, group_index, index, new_view,
-                               bound_texture->format);
+                               bound_texture->format, flag);
 
   } else {
     logger_add(
@@ -290,10 +292,9 @@ shader_update_texture(Shader *shader, const bind_group_index group_index,
   return bound_texture;
 }
 
-ShaderBindGroup *
-shader_update_bind_group_offset(Shader *shader,
-                                const bind_group_index group_index,
-                                const uint8_t index, const size_t offset) {
+ShaderBindGroup *shader_update_bind_group_offset(
+    Shader *shader, const bind_group_index group_index, const uint8_t index,
+    const size_t offset, const ShaderUpdateFlag flag) {
 
   ShaderBindGroup *bind_group = &shader->bind_groups.entries[group_index];
 

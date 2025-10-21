@@ -4,16 +4,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "runtime/texture/texture.h"
 #include "bindgroup.h"
 #include "core.h"
-#include "webgpu/webgpu.h"
 #include "runtime/texture/core.h"
+#include "runtime/texture/texture.h"
+#include "webgpu/webgpu.h"
 
 typedef enum {
-  ShaderBufferLifetime_Keep,
-  ShaderBufferLifetime_Release,
-} ShaderBufferLifetime;
+  ShaderUpdateFlag_None = 0,
+  ShaderUpdateFlag_KeepPrevious = 1 << 0,
+  ShaderUpdateFlag_ReleasePrevious = 1 << 1,
+} ShaderUpdateFlag;
 
 typedef struct {
   TextureResolution width;
@@ -25,34 +26,43 @@ typedef struct {
   WGPUTextureFormat format;
 } ShaderUpdateTexture;
 
-ShaderBindGroupTextureEntry *shader_update_texture(Shader *,
-                                                   const bind_group_index,
-                                                   const bind_index,
-                                                   const ShaderUpdateTexture *);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+ShaderBindGroupTextureEntry *
+shader_update_texture(Shader *, const bind_group_index, const bind_index,
+                      const ShaderUpdateTexture *, const ShaderUpdateFlag);
 
 ShaderBindGroupTextureEntry *
 shader_update_texture_view(Shader *, const bind_group_index, const bind_index,
-                           WGPUTextureView, WGPUTextureFormat);
+                           WGPUTextureView, WGPUTextureFormat,
+                           const ShaderUpdateFlag);
 
-ShaderBindGroupUniformEntry *shader_update_uniform_data(Shader *,
-                                                        const bind_group_index,
-                                                        const bind_index,
-                                                        void *);
+ShaderBindGroupUniformEntry *
+shader_update_uniform_data(Shader *, const bind_group_index, const bind_index,
+                           void *, const ShaderUpdateFlag);
 
 ShaderBindGroupUniformEntry *
 shader_update_uniform_buffer(Shader *, const bind_group_index, const bind_index,
-                             WGPUBuffer, const size_t,
-                             const ShaderBufferLifetime);
+                             WGPUBuffer, const size_t, const ShaderUpdateFlag);
 
 ShaderBindGroupUniformEntry *
 shader_update_uniform_callback(Shader *, const bind_group_index,
-                               const bind_index, const ShaderUniformUpdate *);
+                               const bind_index, const ShaderUniformUpdate *,
+                               const ShaderUpdateFlag);
 
 ShaderBindGroupSamplerEntry *
 shader_update_sampler(Shader *, const bind_group_index, const bind_index,
-                      const WGPUSamplerDescriptor *);
+                      const WGPUSamplerDescriptor *, const ShaderUpdateFlag);
 
 ShaderBindGroup *shader_update_bind_group_offset(Shader *,
                                                  const bind_group_index,
-                                                 const uint8_t, const size_t);
+                                                 const uint8_t, const size_t,
+                                                 const ShaderUpdateFlag);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

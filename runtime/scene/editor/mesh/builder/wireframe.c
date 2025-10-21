@@ -46,10 +46,10 @@ void sem_create_wireframe(Mesh *mesh,
 
   const float line_thickness = LINE_THICKNESS_BASE;
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 1,
-                             (void *)&line_thickness);
+                             (void *)&line_thickness, ShaderUpdateFlag_None);
 
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
-                             desc->color);
+                             desc->color, ShaderUpdateFlag_None);
 
   // set override topology and shader as wireframe
   mesh_topology_set_override(mesh, mesh_topology_wireframe(mesh));
@@ -59,12 +59,14 @@ void sem_create_wireframe(Mesh *mesh,
   Generic highligh function for all SEM Wireframes objects
  */
 void sem_wireframe_select_callback(SEMHighlightCallback *desc) {
-  
+
   Shader *shader = mesh_shader(desc->sem->mesh, MeshShader_Fixed);
 
   const float line_thickness = LINE_THICKNESS_STRONG;
-  shader_update_uniform_data(shader, 1, 1, (void *)&line_thickness);
-  shader_update_uniform_data(shader, 1, 0, &(color){1.0f, 0.0f, 0.0f, 1.0f});
+  shader_update_uniform_data(shader, 1, 1, (void *)&line_thickness,
+                             ShaderUpdateFlag_None);
+  shader_update_uniform_data(shader, 1, 0, &(color){1.0f, 0.0f, 0.0f, 1.0f},
+                             ShaderUpdateFlag_None);
 }
 
 void sem_wireframe_deselect_callback(SEMHighlightCallback *desc) {
@@ -72,6 +74,8 @@ void sem_wireframe_deselect_callback(SEMHighlightCallback *desc) {
   Shader *shader = mesh_shader(desc->sem->mesh, MeshShader_Fixed);
 
   const float line_thickness = LINE_THICKNESS_BASE;
-  shader_update_uniform_data(shader, 1, 1, (void *)&line_thickness);
-  shader_update_uniform_data(shader, 1, 0, &(color){0.0f, 0.0f, 0.0f, 1.0f});
+  shader_update_uniform_data(shader, 1, 1, (void *)&line_thickness,
+                             ShaderUpdateFlag_None);
+  shader_update_uniform_data(shader, 1, 0, &(color){0.0f, 0.0f, 0.0f, 1.0f},
+                             ShaderUpdateFlag_None);
 }

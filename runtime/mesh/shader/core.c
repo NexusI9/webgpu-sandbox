@@ -200,7 +200,7 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
     ShaderBindGroupUniformEntry *entry = &entries[i];
     shader_update_uniform_buffer(shader, mvp->group, entry->binding,
                                  entry->buffer, entry->offset,
-                                 ShaderBufferLifetime_Release);
+                                 ShaderUpdateFlag_ReleasePrevious);
   }
 }
 
@@ -240,6 +240,7 @@ void mesh_shader_build_mp(Mesh *mesh, const MeshShader shader_type,
   for (size_t i = 0; i < 2; i++) {
     ShaderBindGroupUniformEntry *entry = &entries[i];
     shader_update_uniform_buffer(shader, 0, entry->binding, entry->buffer,
-                                 entry->offset, ShaderBufferLifetime_Release);
+                                 entry->offset,
+                                 ShaderUpdateFlag_ReleasePrevious);
   }
 }

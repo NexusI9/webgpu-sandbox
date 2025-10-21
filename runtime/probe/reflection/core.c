@@ -155,6 +155,45 @@ probe_reflection_list_create_core(const ProbeReflectionCreateCore *desc) {
   return create;
 }
 
+void probe_reflection_list_update_resolution(
+    RenderPass *pass, const TextureResolution resolution,
+    const WGPUTextureViewDimension view_dimension) {
+
+  if (resolution == wgpuTextureGetWidth(pass->color.texture) ||
+      resolution == wgpuTextureGetHeight(pass->color.texture))
+    return;
+
+  uint32_t layer_count = wgpuTextureGetDepthOrArrayLayers(pass->color.texture);
+
+  // === clean up ===
+  {
+    if (pass->color.texture)
+      wgpuTextureRelease(pass->color.texture);
+
+    if (pass->depth.texture)
+      wgpuTextureRelease(pass->depth.texture);
+
+    if (pass->color.views[0])
+      wgpuTextureViewRelease(pass->color.views[0]);
+
+    if (pass->depth.views[0])
+      wgpuTextureViewRelease(pass->depth.views[0]);
+  }
+
+  probe_reflection_list_create_texture(&(ProbeReflectionTextureDescriptor){
+      .color = &pass->color.texture,
+      .color_view = &pass->color.views[0],
+      .depth = &pass->depth.texture,
+      .depth_view = &pass->depth.views[0],
+      .view_dimension = view_dimension,
+      .layer_count = layer_count,
+      .resolution = resolution,
+  });
+
+  pass->color.attachment.view = pass->color.views[0];
+  pass->depth.attachment.view = pass->depth.views[0];
+}
+
 void probe_reflection_list_draw_preprocessor(const RenderPass *pass, Mesh *mesh,
                                              void *data) {
 
@@ -162,5 +201,6 @@ void probe_reflection_list_draw_preprocessor(const RenderPass *pass, Mesh *mesh,
       (ProbeReflectionListPreprocessorData *)data;
 
   Shader *shader = mesh_shader(mesh, MeshShader_Reflection);
-  shader_update_bind_group_offset(shader, 0, 1, cast_data->camera_offset);
+  shader_update_bind_group_offset(shader, 0, 1, cast_data->camera_offset,
+                                  ShaderUpdateFlag_None);
 }

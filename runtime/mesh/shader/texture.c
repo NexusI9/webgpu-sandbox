@@ -47,7 +47,7 @@ void mesh_shader_texture_update_lights(Mesh *mesh, const MeshShader shader_type,
   for (size_t i = 0; i < 5; i++)
     shader_update_uniform_buffer(mesh_shader(mesh, shader_type),
                                  SHADER_TEXTURE_BINDGROUP_LIGHTS, i, entries[i],
-                                 0, ShaderBufferLifetime_Release);
+                                 0, ShaderUpdateFlag_ReleasePrevious);
 }
 
 /**
@@ -77,14 +77,14 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
 #endif
 
   // add multi-layered texture to default shader
-  shader_update_texture_view(shader, bindings->light_list->group,
-                             bindings->light_list->point_texture,
-                             point_texture_view, texture_format);
-
+  shader_update_texture_view(
+      shader, bindings->light_list->group, bindings->light_list->point_texture,
+      point_texture_view, texture_format, ShaderUpdateFlag_ReleasePrevious);
 
   shader_update_texture_view(shader, bindings->light_list->group,
                              bindings->light_list->directional_texture,
-                             spot_texture_view, texture_format);
+                             spot_texture_view, texture_format,
+                             ShaderUpdateFlag_ReleasePrevious);
 }
 
 void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
@@ -107,13 +107,15 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
     if (bindings->light_list->point_texture != PIPELINE_BINDING_UNDEFINED)
       shader_update_texture_view(shader, bindings->light_list->group,
                                  bindings->light_list->point_texture, point_map,
-                                 SHADOW_DEPTH_FORMAT);
+                                 SHADOW_DEPTH_FORMAT,
+                                 ShaderUpdateFlag_ReleasePrevious);
 
     // update dir texture
     if (bindings->light_list->directional_texture != PIPELINE_BINDING_UNDEFINED)
       shader_update_texture_view(shader, bindings->light_list->group,
                                  bindings->light_list->directional_texture,
-                                 spot_map, SHADOW_DEPTH_FORMAT);
+                                 spot_map, SHADOW_DEPTH_FORMAT,
+                                 ShaderUpdateFlag_ReleasePrevious);
   }
 }
 
@@ -129,13 +131,15 @@ void mesh_shader_texture_update_probes(Mesh *mesh,
   if (bindings->probe->reflection_plane_texture != PIPELINE_BINDING_UNDEFINED)
     shader_update_texture_view(shader, bindings->probe->group,
                                bindings->probe->reflection_plane_texture,
-                               plane_texture, TEXTURE_FORMAT_OFFSCREEN);
+                               plane_texture, TEXTURE_FORMAT_OFFSCREEN,
+                               ShaderUpdateFlag_ReleasePrevious);
 
   // update grid texture
   if (bindings->probe->reflection_grid_texture != PIPELINE_BINDING_UNDEFINED)
     shader_update_texture_view(shader, bindings->probe->group,
                                bindings->probe->reflection_grid_texture,
-                               grid_texture, TEXTURE_FORMAT_OFFSCREEN);
+                               grid_texture, TEXTURE_FORMAT_OFFSCREEN,
+                               ShaderUpdateFlag_ReleasePrevious);
 }
 
 void mesh_shader_texture_update_environment(Mesh *mesh,
@@ -149,7 +153,8 @@ void mesh_shader_texture_update_environment(Mesh *mesh,
   if (bindings->probe->skybox_texture != PIPELINE_BINDING_UNDEFINED)
     shader_update_texture_view(shader, bindings->probe->group,
                                bindings->probe->skybox_texture, skybox_texture,
-                               TEXTURE_FORMAT_OFFSCREEN);
+                               TEXTURE_FORMAT_OFFSCREEN,
+                               ShaderUpdateFlag_ReleasePrevious);
 }
 
 /**
@@ -166,7 +171,7 @@ void mesh_shader_texture_bind_probe(Mesh *mesh, ProbeReflectionPlane *plane,
       pipeline->bindings.probe->reflection_plane,
       ssbo_buffer_handle(ssbo, SSBOType_ProbePlaneReflection),
       plane->ssbo_slot[ProbeReflectionSSBOField_List].id,
-      ShaderBufferLifetime_Release);
+      ShaderUpdateFlag_ReleasePrevious);
 
   {
     MeshUniform *uniform = mesh_uniform(mesh);

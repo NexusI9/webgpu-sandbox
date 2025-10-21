@@ -67,29 +67,30 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
                                  .frost_scale = 80.0f,
                                  .frost_strength = 10.0f,
                                  .roughness = 0.145f,
-                             });
+                             },
+                             ShaderUpdateFlag_None);
 
   // link probe lists (position, radius)
   shader_update_uniform_buffer(
       mesh_shader(mesh, MeshShader_Texture), 1, 1,
       ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbeGridReflection),
-      0, ShaderBufferLifetime_Release);
+      0, ShaderUpdateFlag_ReleasePrevious);
 
   // link UBO
   shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 2,
                                ubo_buffer_handle(&scene->renderer.ubo), 0,
-                               ShaderBufferLifetime_Release);
+                               ShaderUpdateFlag_ReleasePrevious);
 
   // link probe color texture
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture), 1, 3,
       scene->probes_reflection.pass.color.attachment.view,
-      TEXTURE_FORMAT_OFFSCREEN);
+      TEXTURE_FORMAT_OFFSCREEN, ShaderUpdateFlag_ReleasePrevious);
 
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture), 1, 5,
       scene_environment_skybox(&scene->environment)->view,
-      TEXTURE_FORMAT_OFFSCREEN);
+      TEXTURE_FORMAT_OFFSCREEN, ShaderUpdateFlag_ReleasePrevious);
 
   ProbeReflectionListDebug debug_options = {
       .scene_debug = &scene->debug,
@@ -144,11 +145,12 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                                  .frost_scale = 20.0f,
                                  .frost_strength = 2.0f,
                                  .roughness = 0.145f,
-                             });
+                             },
+                             ShaderUpdateFlag_None);
   // link UBO
   shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 2,
                                ubo_buffer_handle(&scene->renderer.ubo), 0,
-                               ShaderBufferLifetime_Release);
+                               ShaderUpdateFlag_ReleasePrevious);
 
   mesh_shader_texture_bind_probe(mesh, plane, &scene->renderer.ssbo);
 }

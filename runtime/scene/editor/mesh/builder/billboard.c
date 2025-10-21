@@ -28,10 +28,10 @@ void sem_create_billboard(Mesh *mesh,
 
   {
     const vertex_uv new_uv[4] = {
-        {desc->uv0[0], desc->uv1[1]}, 
-        {desc->uv1[0], desc->uv1[1]}, 
-        {desc->uv1[0], desc->uv0[1]}, 
-        {desc->uv0[0], desc->uv0[1]}, 
+        {desc->uv0[0], desc->uv1[1]},
+        {desc->uv1[0], desc->uv1[1]},
+        {desc->uv1[0], desc->uv0[1]},
+        {desc->uv0[0], desc->uv0[1]},
     };
 
     for (uint8_t i = 0; i < 4; i++)
@@ -58,7 +58,8 @@ void sem_create_billboard(Mesh *mesh,
 
   // bind texture + sampler
   shader_update_texture_view(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
-                             desc->view, TEXTURE_FORMAT_OFFSCREEN);
+                             desc->view, TEXTURE_FORMAT_OFFSCREEN,
+                             ShaderUpdateFlag_ReleasePrevious);
 
   shader_update_sampler(mesh_shader(mesh, MeshShader_Fixed), 1, 1,
                         &(WGPUSamplerDescriptor){
@@ -68,9 +69,10 @@ void sem_create_billboard(Mesh *mesh,
                             .minFilter = WGPUFilterMode_Linear,
                             .magFilter = WGPUFilterMode_Linear,
                             .compare = WGPUCompareFunction_Undefined,
-                        });
+                        },
+                        ShaderUpdateFlag_None);
 
   const uint32_t size = 0;
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 2,
-                             (void *)&size);
+                             (void *)&size, ShaderUpdateFlag_None);
 }

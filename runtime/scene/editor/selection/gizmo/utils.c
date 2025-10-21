@@ -42,9 +42,10 @@ void gizmo_create_mesh(Mesh *mesh, Primitive *primitive, const color *rgba) {
   // add color uniform
   const float fixed_size = GIZMO_SIZE;
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
-                             (void *)rgba);
+                             (void *)rgba, ShaderUpdateFlag_None);
+  
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 1,
-                             (void *)&fixed_size);
+                             (void *)&fixed_size, ShaderUpdateFlag_None);
 
   // scale gizmo (cpu side as well, so the hitbox are correct dimension)
   // mesh_set_scale(mesh, (vec3){gizmo_size, gizmo_size, gizmo_size});

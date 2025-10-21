@@ -141,10 +141,12 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
 
   // update texture and sampler
   Shader *shader = mesh_shader(skybox_mesh, MeshShader_Fixed);
-  shader_update_texture_view(shader, 1, 0, *view, TEXTURE_FORMAT_OFFSCREEN);
+  shader_update_texture_view(shader, 1, 0, *view, TEXTURE_FORMAT_OFFSCREEN,
+                             ShaderUpdateFlag_ReleasePrevious);
 
   // add blur uniform
-  shader_update_uniform_data(shader, 1, 2, (void *)&blur);
+  shader_update_uniform_data(shader, 1, 2, (void *)&blur,
+                             ShaderUpdateFlag_None);
 
   // alter pipeline (no depth test)
   const RenderPipeline *pipeline = shader_pipeline(shader);

@@ -75,7 +75,8 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
 
       const bind_group_index AO_group = 1;
       shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture),
-                                 AO_group, 8, layer_view, AO_TEXTURE_FORMAT);
+                                 AO_group, 8, layer_view, AO_TEXTURE_FORMAT,
+                                 ShaderUpdateFlag_ReleasePrevious);
 
       Shader *shader = mesh_shader(mesh, MeshShader_Texture);
       ShaderBindGroup *bind_group = shader_get_bind_group(shader, AO_group);

@@ -329,7 +329,7 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_data *data,
 
         char mesh_name[NAME_LEN];
         name_compose(mesh_name, "%s.%lu", gl_mesh.name, p);
-	
+
         mesh_create(target_mesh, &(MeshCreateDescriptor){
                                      .name = mesh_name,
                                      .vertex = (VertexAttribute){0},
@@ -430,7 +430,8 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
                                     .dimension = WGPUTextureViewDimension_2D,
                                     .format = TEXTURE_FORMAT_OFFSCREEN,
                                     .channels = TextureChannel_RGBA,
-                                });
+                                },
+                                ShaderUpdateFlag_None);
 
       // transfert texture view to reflection shader (reuse resource), however
       // need to be careful with shared ownership. Here it shouldn't be to
@@ -439,7 +440,8 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
       shader_update_texture_view(mesh_shader(mesh, MeshShader_Reflection),
                                  SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
                                  shader_texture->texture_view,
-                                 shader_texture->format);
+                                 shader_texture->format,
+                                 ShaderUpdateFlag_ReleasePrevious);
     }
 
     binding += 2;
@@ -466,8 +468,10 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
   glm_vec4_copy(material->pbr_metallic_roughness.base_color_factor,
                 pbr.base_color_factor);
 
-  shader_update_uniform_data(texture_shader, 1, 10, &pbr);
-  shader_update_uniform_data(reflection_shader, 1, 10, &pbr);
+  shader_update_uniform_data(texture_shader, 1, 10, &pbr,
+                             ShaderUpdateFlag_None);
+  shader_update_uniform_data(reflection_shader, 1, 10, &pbr,
+                             ShaderUpdateFlag_None);
 
   {
     // DELETE ME DEBUG

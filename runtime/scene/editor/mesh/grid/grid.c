@@ -34,5 +34,5 @@ void sem_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
                        });
 
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
-                             &gd->uniform);
+                             &gd->uniform, ShaderUpdateFlag_None);
 }

@@ -201,10 +201,10 @@ static inline void post_fx_bloom_draw(PostFx *fx,
 /**
 
                                        .- attachment view -----.
-   .---------.                        |           _____        |
-   |  view   | ----.   .----------.   |        __|____|__      |
-   '---------'     |__| bindgroup |-> |       |  .---.   |     |
-   .---------.     |  '-----------'   |       --;____;---'     |
+   .---------.                        |          _____         |
+   |  view   | ----.   .----------.   |       __|____|__       |
+   '---------'     |__| bindgroup |-> |      |  .---.   |      |
+   .---------.     |  '-----------'   |      --;____;---'      |
    | uniform | ----'                  |                        |
    '---------'                        '-----------------------'
 
@@ -230,7 +230,6 @@ static inline void post_fx_composite_draw(PostFx *fx,
       .colorAttachments = &color_attachment,
   };
 
-  // RESOLVE (1x) ==> POSTFX ==> SWAPCHAIN
   WGPURenderPassEncoder pass =
       wgpuCommandEncoderBeginRenderPass(command_encoder, &pass_desc);
   {

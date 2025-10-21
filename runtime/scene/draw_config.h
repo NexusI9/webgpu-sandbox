@@ -484,7 +484,7 @@ scene_draw_layouts_init(Scene *scene,
                            bloom, render_width, render_height);
 
       const CompositeUniform composite = {
-          .bloom_intensity = 1.0f,
+          .bloom_intensity = 0.860f,
           .exposure = 1.0f,
           .vignette_feather = 0.420f,
           .vignette_strength = 0.720f,
