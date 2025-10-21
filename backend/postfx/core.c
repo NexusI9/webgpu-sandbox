@@ -146,7 +146,8 @@ PostFxStatus post_fx_bloom_create(PostFx *fx, const WGPUTextureView view,
     effect->pipeline = std_render_pipeline(pipeline_type);
     effect->view[PostFxViewIndex_Scene] = view;
     effect->bindgroup_creator = post_fx_bloom_create_bindgroup;
-    effect->texture = post_fx_bloom_create_texture(width, height);
+    effect->texture = post_fx_bloom_create_texture(
+        (int)(width / uniform.downscale), (int)(width / uniform.downscale));
 
     effect->view[PostFxViewIndex_Bloom] =
         wgpuTextureCreateView(effect->texture, NULL);
@@ -371,14 +372,19 @@ PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *fx,
   PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
 
   if (effect->texture) {
-    if (width == wgpuTextureGetWidth(effect->texture) &&
-        height == wgpuTextureGetHeight(effect->texture))
+    if (width == wgpuTextureGetWidth(effect->texture) *
+                     effect->uniform.bloom.downscale &&
+        height == wgpuTextureGetHeight(effect->texture) *
+                      effect->uniform.bloom.downscale)
       return PostFxStatus_SameAttribute;
     else
       wgpuTextureRelease(effect->texture);
   }
 
-  effect->texture = post_fx_bloom_create_texture(width, height);
+  effect->texture = post_fx_bloom_create_texture(
+      (int)(width / effect->uniform.bloom.downscale),
+      (int)(height / effect->uniform.bloom.downscale));
+
   effect->view[PostFxViewIndex_Bloom] =
       wgpuTextureCreateView(effect->texture, NULL);
   post_fx_bloom_create_bindgroup(fx);

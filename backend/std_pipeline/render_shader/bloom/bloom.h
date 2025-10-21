@@ -10,7 +10,7 @@ typedef struct {
   float threshold;
   float knee;
   uint32_t blur;
-  float _pad;
+  uint32_t downscale;
 } BloomUniform;
 
 static const WGPUBindGroupLayoutDescriptor bloom_bind_group_layout = {

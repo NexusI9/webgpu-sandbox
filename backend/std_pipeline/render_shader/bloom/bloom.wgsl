@@ -3,7 +3,7 @@ struct VertexOut {
 };
 
 struct BloomUniform {
-  threshold : f32, knee : f32, blur : u32, _pad : f32,
+  threshold : f32, knee : f32, blur : u32, downscale : u32,
 };
 
 // bright.wgsl (fragment)

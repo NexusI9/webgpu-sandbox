@@ -137,9 +137,8 @@ void scene_update_render_pass_texture(
 
             // then recreate the bloom independent texture with the new
             // resolution
-            post_fx_bloom_update_texture_resolution(
-                &pass->post_fx, (int)(real_width / POST_FX_BLOOM_DENOM),
-                (int)(real_height / POST_FX_BLOOM_DENOM));
+            post_fx_bloom_update_texture_resolution(&pass->post_fx, real_width,
+                                                    real_height);
 
           } else {
 

@@ -192,6 +192,11 @@ void UI::RenderTab::draw() {
       post_fx_composite_update_uniform(texture_pass_fx,
                                        composite->uniform.composite);
 
+    if (UI::DragInt(scene, "Downscale", &style,
+                    (int *)&bloom->uniform.bloom.downscale, 1, 1, 6)
+            .draw())
+      post_fx_bloom_update_texture_resolution(texture_pass_fx, width, height);
+
     ImGui::TreePop();
   }
 
@@ -212,7 +217,8 @@ void UI::RenderTab::draw() {
                                        composite->uniform.composite);
 
     if (UI::DragFloat(scene, "Exposure", &style,
-                      &composite->uniform.composite.exposure, 0.01f, 0.0f, 10.0f)
+                      &composite->uniform.composite.exposure, 0.01f, 0.0f,
+                      10.0f)
             .draw())
       post_fx_composite_update_uniform(texture_pass_fx,
                                        composite->uniform.composite);

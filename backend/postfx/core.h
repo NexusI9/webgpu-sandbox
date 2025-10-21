@@ -12,8 +12,6 @@
 
 typedef struct PostFx PostFx;
 
-static const float POST_FX_BLOOM_DENOM = 3.0f;
-
 typedef enum {
   PostFxStatus_Success,
   PostFxStatus_MaxCapacity,
@@ -107,6 +105,10 @@ struct PostFx {
 typedef struct {
   ComputePass *compute;
 } PostFxDescriptor;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 PostFxStatus post_fx_init(PostFx *, const PostFxDescriptor *);
 PostFxStatus post_fx_destroy(PostFx *);
@@ -276,5 +278,9 @@ post_fx_composite_update_uniform(PostFx *fx, const CompositeUniform uniform) {
                        &effect->uniform.composite, sizeof(CompositeUniform));
   return PostFxStatus_Success;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

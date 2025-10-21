@@ -32,7 +32,6 @@ KawaseStatus compute_pass_kawase(ComputePass *pass,
   return KawaseStatus_Success;
 }
 
-
 KawaseStatus
 compute_pass_kawase_inline(ComputePass *pass, const KawaseDescriptor *desc,
                            const WGPUCommandEncoder command_encoder) {
@@ -47,13 +46,18 @@ compute_pass_kawase_inline(ComputePass *pass, const KawaseDescriptor *desc,
   const TextureResolution width = wgpuTextureGetWidth(desc->texture);
   const TextureResolution height = wgpuTextureGetHeight(desc->texture);
 
+  // Using a predefined set of offset seems to give smoother result than
+  // increment offset by K (1.0f) each pass count.
+  static const int offset_count = 5;
+  static const float offset[] = {0.5f, 1.5f, 2.5f, 2.5f, 3.0f};
+
   KawaseUniform uniform = {
       .texel_size =
           {
               texture_size_texel(width),
               texture_size_texel(height),
           },
-      .offset = 1,
+      .offset = 0.5f,
   };
 
   WGPUTexture a_tex = desc->texture;
@@ -124,7 +128,8 @@ compute_pass_kawase_inline(ComputePass *pass, const KawaseDescriptor *desc,
       wgpuComputePassEncoderEnd(compute_pass);
       wgpuComputePassEncoderRelease(compute_pass);
 
-      uniform.offset++;
+      if (j < offset_count)
+        uniform.offset = offset[j];
     }
 
     // copy dest to src if count pass is odd (since result end up in dest)

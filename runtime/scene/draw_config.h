@@ -474,16 +474,14 @@ scene_draw_layouts_init(Scene *scene,
     } else {
 
       const BloomUniform bloom = {
-          .blur = 4,
+          .blur = 2,
           .knee = 0.3f,
           .threshold = 0.3f,
+          .downscale = 3,
       };
 
-      const int bloom_width = (int)(render_width / POST_FX_BLOOM_DENOM);
-      const int bloom_height = (int)(render_height / POST_FX_BLOOM_DENOM);
-
       post_fx_bloom_create(&last_pass->post_fx, last_pass->color.resolve_view,
-                           bloom, bloom_width, bloom_height);
+                           bloom, render_width, render_height);
 
       const CompositeUniform composite = {
           .bloom_intensity = 1.0f,
