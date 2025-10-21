@@ -62,7 +62,6 @@ void render_pass_init_color(RenderPass *pass,
                                    },
                                    RenderPassTextureFlag_None);
 
-  post_fx_init(&pass->post_fx, &(PostFxDescriptor){});
 }
 
 void render_pass_init_depth(RenderPass *pass,

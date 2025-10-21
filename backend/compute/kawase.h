@@ -22,11 +22,15 @@ typedef struct {
 
 typedef struct {
   WGPUTexture texture;
-
   const size_t layer_count;
   const uint32_t pass_count;
 } KawaseDescriptor;
 
-KawaseStatus compute_pass_kawase(ComputePass *, const KawaseDescriptor *);
+KawaseStatus
+compute_pass_kawase(ComputePass *,
+                    const KawaseDescriptor *); // builtin command encoder
+
+KawaseStatus compute_pass_kawase_inline(ComputePass *, const KawaseDescriptor *,
+                                        const WGPUCommandEncoder);
 
 #endif

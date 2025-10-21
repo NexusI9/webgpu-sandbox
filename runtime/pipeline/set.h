@@ -5,6 +5,7 @@
 #include "webgpu/webgpu.h"
 
 #define RENDER_PIPELINE_SET_KEEP_MODULE 0
+#define RENDER_PIPELINE_SET_KEEP_BLEND 0
 
 void render_pipeline_set_vertex(RenderPipeline *, const WGPUVertexState *);
 void render_pipeline_set_fragment(RenderPipeline *, const WGPUFragmentState *);

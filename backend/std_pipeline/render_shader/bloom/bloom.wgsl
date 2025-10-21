@@ -3,7 +3,7 @@ struct VertexOut {
 };
 
 struct BloomUniform {
-  threshold : f32, knee : f32,
+  threshold : f32, knee : f32, blur : u32, _pad : f32,
 };
 
 // bright.wgsl (fragment)
@@ -24,13 +24,12 @@ struct BloomUniform {
 @fragment fn fs_main(@location(0) fragUV : vec2<f32>) ->
     @location(0) vec4<f32> {
 
-  let scaled_uv = fragUV / vec2<f32>(textureDimensions(bloom_texture));
-  let texture = textureSample(bloom_texture, bloom_sampler, scaled_uv).rgb;
+  let texture = textureSample(bloom_texture, bloom_sampler, fragUV).rgb;
 
   let lum = dot(texture, vec3(0.2126, 0.7152, 0.0722));
 
-  let threshold = uBloom.threshold;
-  let knee = uBloom.knee;
+  let threshold = 0.3f;
+  let knee = 1.0f;  
 
   let soft = clamp((lum - threshold + knee) / (2.0 * knee), 0.0, 1.0);
   let bright = max(lum - threshold, 0.0) * soft;

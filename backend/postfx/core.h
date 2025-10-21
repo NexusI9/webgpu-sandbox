@@ -1,6 +1,8 @@
 #ifndef _POST_FX_CORE_H_
 #define _POST_FX_CORE_H_
 
+#include "backend/compute/core.h"
+#include "backend/compute/kawase.h"
 #include "backend/context.h"
 #include "backend/std_pipeline/render_shader/bloom/bloom.h"
 #include "backend/std_pipeline/render_shader/composite/composite.h"
@@ -76,7 +78,7 @@ typedef struct {
   // optional texture if we want the post fx to use a independent texture
   WGPUTexture texture;
   post_fx_bindgroup_creator bindgroup_creator;
-  
+
   union {
     CompositeUniform composite;
     BloomUniform bloom;
@@ -89,6 +91,7 @@ struct PostFx {
   PostFxType state;
   WGPUSampler sampler; // common sampler used in each effect
   PostFxEffect effects[POST_FX_TYPE_COUNT];
+  ComputePass *compute; // scene renderer compute pass (used to blur the bloom)
 
   struct {
     post_fx_draw_callback entries[POST_FX_TYPE_COUNT];
@@ -97,7 +100,7 @@ struct PostFx {
 };
 
 typedef struct {
-
+  ComputePass *compute;
 } PostFxDescriptor;
 
 PostFxStatus post_fx_init(PostFx *, const PostFxDescriptor *);
@@ -110,7 +113,7 @@ PostFxStatus post_fx_bloom_create(PostFx *, const WGPUTextureView,
                                   const BloomUniform, const int width,
                                   const int height);
 
-PostFxStatus post_fx_create_composite(PostFx *, const WGPUTextureView,
+PostFxStatus post_fx_composite_create(PostFx *, const WGPUTextureView,
                                       const CompositeUniform);
 
 PostFxStatus post_fx_update_effect_view(PostFx *, const PostFxType,
@@ -137,7 +140,6 @@ static inline void post_fx_blit_draw(PostFx *fx,
       .colorAttachments = &color_attachment,
   };
 
-  // RESOLVE (1x) ==> POSTFX ==> SWAPCHAIN
   WGPURenderPassEncoder pass =
       wgpuCommandEncoderBeginRenderPass(command_encoder, &pass_desc);
   {
@@ -155,34 +157,54 @@ static inline void post_fx_blit_draw(PostFx *fx,
 static inline void post_fx_bloom_draw(PostFx *fx,
                                       WGPUCommandEncoder command_encoder) {
 
+  const PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
   WGPURenderPassColorAttachment color_attachment = {
       .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-      .view =
-          post_fx_effect(fx, PostFxType_Bloom)->view[POST_FX_VIEW_INDEX_BLOOM],
+      .view = effect->view[POST_FX_VIEW_INDEX_BLOOM],
       .loadOp = WGPULoadOp_Load,
-      .storeOp = WGPUStoreOp_Discard,
+      .storeOp = WGPUStoreOp_Store,
   };
 
   WGPURenderPassDescriptor pass_desc = {
-      .label = "Blit Resolve Pass",
+      .label = "Bloom Resolve Pass",
       .colorAttachmentCount = 1,
       .colorAttachments = &color_attachment,
   };
 
-  // RESOLVE (1x) ==> POSTFX ==> SWAPCHAIN
   WGPURenderPassEncoder pass =
       wgpuCommandEncoderBeginRenderPass(command_encoder, &pass_desc);
   {
     // POST FX
-    wgpuRenderPassEncoderSetPipeline(
-        pass, post_fx_effect(fx, PostFxType_Blit)->pipeline->handle);
-    wgpuRenderPassEncoderSetBindGroup(
-        pass, 0, post_fx_effect(fx, PostFxType_Blit)->bindgroup, 0, NULL);
+    wgpuRenderPassEncoderSetPipeline(pass, effect->pipeline->handle);
+    wgpuRenderPassEncoderSetBindGroup(pass, 0, effect->bindgroup, 0, NULL);
     wgpuRenderPassEncoderDraw(pass, 3, 1, 0, 0);
   }
 
   wgpuRenderPassEncoderEnd(pass);
+
+  KawaseDescriptor blur_desc = {
+      .texture = effect->texture,
+      .layer_count = 1,
+      .pass_count = effect->uniform.bloom.blur,
+  };
+  compute_pass_kawase_inline(fx->compute, &blur_desc, command_encoder);
 }
+
+/**
+
+                                       .- attachment view -----.
+   .---------.                        |           _____        |
+   |  view   | ----.   .----------.   |        __|____|__      |
+   '---------'     |__| bindgroup |-> |       |  .---.   |     |
+   .---------.     |  '-----------'   |       --;____;---'     |
+   | uniform | ----'                  |                        |
+   '---------'                        '-----------------------'
+
+
+   We load resources bound to bindgroup (view, uniform)
+   Read and compute them through shader
+   Print the output to the attachment view
+ */
 
 static inline void post_fx_composite_draw(PostFx *fx,
                                           WGPUCommandEncoder command_encoder) {
@@ -195,7 +217,7 @@ static inline void post_fx_composite_draw(PostFx *fx,
   };
 
   WGPURenderPassDescriptor pass_desc = {
-      .label = "Blit Resolve Pass",
+      .label = "Composite Resolve Pass",
       .colorAttachmentCount = 1,
       .colorAttachments = &color_attachment,
   };

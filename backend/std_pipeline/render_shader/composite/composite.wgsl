@@ -27,13 +27,12 @@ struct CompositeUniform {
 @fragment fn fs_main(@location(0) fragUV : vec2<f32>) ->
     @location(0) vec4<f32> {
 
-  let uv = fragUV / vec2<f32>(textureDimensions(scene_texture));
-  let scene = textureSample(scene_texture, linear_sampler, uv).rgb;
-  let bloom = textureSample(bloom_texture, linear_sampler, uv).rgb;
+  let scene = textureSample(scene_texture, linear_sampler, fragUV).rgb;
+  let bloom = textureSample(bloom_texture, linear_sampler, fragUV).rgb;
   var color = scene + bloom * uComposite.bloom_intensity; // additive bloom
 
   // vignette
-  let pos = uv * 2.0 - vec2(1.0);
+  let pos = fragUV * 2.0 - vec2(1.0);
   let dist = length(pos);
   let vig =
       smoothstep(uComposite.vignette_radius, 1.0, dist); // radius -> falloff
@@ -46,5 +45,6 @@ struct CompositeUniform {
   color = vec3(1.0) - exp(-color * uComposite.exposure);
   // gamma
   color = pow(color, vec3(1.0 / 2.2));
+  
   return vec4(color, 1.0);
 }

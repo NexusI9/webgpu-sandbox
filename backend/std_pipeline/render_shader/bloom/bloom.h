@@ -3,6 +3,7 @@
 
 #include "../blit/blit.h"
 #include "../commons.h"
+#include "runtime/texture/core.h"
 #include <webgpu/webgpu.h>
 
 typedef struct {
@@ -48,6 +49,12 @@ static const WGPUBindGroupLayoutDescriptor bloom_bind_group_layout = {
         },
 };
 
+static const WGPUColorTargetState bloom_color_target = {
+    .blend = RENDER_PIPELINE_SET_KEEP_BLEND,
+    .writeMask = WGPUColorWriteMask_All,
+    .format = TEXTURE_FORMAT_OFFSCREEN,
+};
+
 static const RenderPipelineStateObject layout_bloom = {
     .label = "Pipeline Bloom Pass",
     .shader_path = "./backend/std_pipeline/render_shader/bloom/bloom.wgsl",
@@ -59,7 +66,7 @@ static const RenderPipelineStateObject layout_bloom = {
             .stencil_state = &blit_depth_stencil,
             .multisample_state = &blit_multisample,
             .vertex_state = &blit_vertex,
-
+            .color_state = &bloom_color_target,
         },
     .bindings = {0},
 };

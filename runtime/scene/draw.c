@@ -122,11 +122,16 @@ void scene_update_render_pass_texture(
           pass->color.attachment.resolveTarget = NULL;
         }
 
-        // update last pass post fx bingroup with the newest view
-        if (j == SCENE_RENDER_PASS_COUNT - 1)
+        // TODO: for texture mode, update composite
+        if (i == 0) {
+        }
+
+        if (j == SCENE_RENDER_PASS_COUNT - 1) {
+          // update last pass post fx bingroup with the newest view
           post_fx_update_effect_view(&pass->post_fx, PostFxType_Blit,
                                      POST_FX_VIEW_INDEX_SCENE,
                                      pass->color.resolve_view);
+        }
       }
     }
 

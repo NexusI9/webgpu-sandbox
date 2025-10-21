@@ -4,6 +4,8 @@
 #include "./core.h"
 #include "backend/context.h"
 #include "backend/postfx/core.h"
+#include "backend/std_pipeline/render_shader/bloom/bloom.h"
+#include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "debug/core.h"
 #include "renderer/core.h"
 #include "renderer/render_pass/core.h"
@@ -257,9 +259,9 @@ scene_draw_layouts_init(Scene *scene,
   const int render_width = scene_renderer_width(&scene->renderer) * ratio;
   const int render_height = scene_renderer_height(&scene->renderer) * ratio;
 
-  for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
+  for (uint8_t mode = 0; mode < SCENE_RENDERER_DRAW_MODE_COUNT; mode++) {
 
-    render_pass_list_create(&pass_list[i]);
+    render_pass_list_create(&pass_list[mode]);
     WGPUTextureView shared_color_view;
     WGPUTextureView shared_depth_view;
 
@@ -274,8 +276,8 @@ scene_draw_layouts_init(Scene *scene,
       };
 
       render_pass_list_texture_create_shared_color(
-          &pass_list[i], &shared_texture_color_config, NULL, &shared_color_view,
-          RenderPassTextureFlag_None);
+          &pass_list[mode], &shared_texture_color_config, NULL,
+          &shared_color_view, RenderPassTextureFlag_None);
 
       RenderPassTextureDescriptor shared_texture_depth_config = {
           .format = TEXTURE_FORMAT_DEPTH_STENCIL,
@@ -285,8 +287,8 @@ scene_draw_layouts_init(Scene *scene,
       };
 
       render_pass_list_texture_create_shared_depth(
-          &pass_list[i], &shared_texture_depth_config, NULL, &shared_depth_view,
-          RenderPassTextureFlag_None);
+          &pass_list[mode], &shared_texture_depth_config, NULL,
+          &shared_depth_view, RenderPassTextureFlag_None);
     }
 
     /*
@@ -333,10 +335,10 @@ scene_draw_layouts_init(Scene *scene,
         .height = render_height,
         .color = &scene_color_attachment,
         .depth = &scene_depth_attachment,
-        .draw_list = scene_draw_list[1 << i],
+        .draw_list = scene_draw_list[1 << mode],
     };
 
-    render_pass_list_insert_pass(&pass_list[i], &scene_pass);
+    render_pass_list_insert_pass(&pass_list[mode], &scene_pass);
 
     /*
          ▗▄▄▖▗▄▄▄▖▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖▗▄▄▄▖ ▗▄▖ ▗▖  ▗▖
@@ -384,7 +386,7 @@ scene_draw_layouts_init(Scene *scene,
         .draw_list = &outline_draw_list,
     };
 
-    render_pass_list_insert_pass(&pass_list[i], &outline_pass);
+    render_pass_list_insert_pass(&pass_list[mode], &outline_pass);
 
     /*
                 ▗▄▄▖▗▄▄▄▖▗▄▄▄▄▖▗▖  ▗▖ ▗▄▖
@@ -429,9 +431,70 @@ scene_draw_layouts_init(Scene *scene,
     };
 
     RenderPass *last_pass =
-        render_pass_list_insert_pass(&pass_list[i], &gizmo_pass);
+        render_pass_list_insert_pass(&pass_list[mode], &gizmo_pass);
 
-    post_fx_blit_create(&last_pass->post_fx, last_pass->color.resolve_view);
+    /**
+
+       ▗▄▄▖  ▗▄▖  ▗▄▄▖▗▄▄▄▖    ▗▄▄▄▖▗▖  ▗▖
+       ▐▌ ▐▌▐▌ ▐▌▐▌     █      ▐▌    ▝▚▞▘
+       ▐▛▀▘ ▐▌ ▐▌ ▝▀▚▖  █      ▐▛▀▀▘  ▐▌
+       ▐▌   ▝▚▄▞▘▗▄▄▞▘  █      ▐▌   ▗▞▘▝▚▖
+
+
+       We use two kinds of Post Effect pipeline depending on draw mode:
+
+       .-------------.
+       |  Boundbox   | --------.
+       '-------------'         |
+       .-------------.         |        .- fx ------.
+       |  Wireframe  | --------+------> |    Blit   |
+       '-------------'         |        '-----------'
+       .-------------.         |
+       |    Solid    | --------'
+       '-------------'
+       .-------------.                   .- fx ----.     .- fx ------.
+       |   Texture   | ----------------> |  Bloom  | --> | Composite |
+       '-------------'                   '---------'     '-----------'
+
+       The composite acts as an "advanced blit" with more functionalities (tone
+       mapping, exposure, vignette, bloom...)
+
+     */
+
+    PostFxDescriptor post_fx_desc = {&scene->renderer.draw.compute_pass};
+    
+    post_fx_init(&last_pass->post_fx, &post_fx_desc);
+
+    if (SceneRendererDrawMode_Solid & (1 << mode) ||
+        SceneRendererDrawMode_Wireframe & (1 << mode) ||
+        SceneRendererDrawMode_Boundbox & (1 << mode)) {
+
+      post_fx_blit_create(&last_pass->post_fx, last_pass->color.resolve_view);
+
+    } else {
+
+      const BloomUniform bloom = {
+          .blur = 2,
+          .knee = 1.0f,
+          .threshold = 0.3f,
+      };
+
+      const int bloom_width = (int)(render_width / 2.0f);
+      const int bloom_height = (int)(render_height / 2.0f);
+
+      post_fx_bloom_create(&last_pass->post_fx, last_pass->color.resolve_view,
+                           bloom, bloom_width, bloom_height);
+
+      const CompositeUniform composite = {
+          .bloom_intensity = 1.0f,
+          .exposure = 1.0f,
+          .vignette_radius = 0.01f,
+          .vignette_strength = 0.3f,
+      };
+
+      post_fx_composite_create(&last_pass->post_fx,
+                               last_pass->color.resolve_view, composite);
+    }
   }
 }
 

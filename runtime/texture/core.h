@@ -55,9 +55,19 @@ typedef struct {
   uint8_t value;
 } Texture;
 
-extern const float g_texture_resolution_texel_size[TextureResolution_2048 + 1];
+// cached textel sizes since they use expensive divide operation
+extern float g_texture_resolution_texel_size[TextureResolution_2048 + 1];
 
 void texture_save(Texture *, const char *);
 void texture_free(Texture *);
+
+static inline float texture_size_texel(const TextureResolution size) {
+
+  if (g_texture_resolution_texel_size[size] == 0 &&
+      size <= TextureResolution_2048)
+    g_texture_resolution_texel_size[size] = 1.0f / size;
+
+  return g_texture_resolution_texel_size[size];
+}
 
 #endif

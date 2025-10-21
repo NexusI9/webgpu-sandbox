@@ -28,7 +28,7 @@ void render_pipeline_set_color(RenderPipeline *pipeline,
 
   pipeline->color_state = *state;
 
-  if (pipeline->color_state.blend == NULL)
+  if (pipeline->color_state.blend == RENDER_PIPELINE_SET_KEEP_BLEND)
     pipeline->color_state.blend = &pipeline->blend_state;
 
   pipeline->fragment_state.targets = &pipeline->color_state;

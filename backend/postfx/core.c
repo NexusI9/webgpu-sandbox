@@ -27,6 +27,8 @@ PostFxStatus post_fx_init(PostFx *fx, const PostFxDescriptor *desc) {
                             .mipmapFilter = WGPUMipmapFilterMode_Linear,
                         });
 
+  fx->compute = desc->compute;
+
   fx->callbacks.length = 0;
 
   return PostFxStatus_Success;
@@ -145,21 +147,23 @@ PostFxStatus post_fx_bloom_create(PostFx *fx, const WGPUTextureView view,
     effect->bindgroup_creator = post_fx_bloom_create_bindgroup;
 
     effect->texture = wgpuDeviceCreateTexture(
-        context_device(), &(WGPUTextureDescriptor){
-                              .label = "Bloom texture",
-                              .dimension = WGPUTextureDimension_2D,
-                              .format = TEXTURE_FORMAT_OFFSCREEN,
-                              .usage = WGPUTextureUsage_TextureBinding |
-                                       WGPUTextureUsage_RenderAttachment,
-                              .sampleCount = 1,
-                              .mipLevelCount = 1,
-                              .size =
-                                  (WGPUExtent3D){
-                                      .height = height,
-                                      .width = width,
-                                      .depthOrArrayLayers = 1,
-                                  },
-                          });
+        context_device(),
+        &(WGPUTextureDescriptor){
+            .label = "Bloom texture",
+            .dimension = WGPUTextureDimension_2D,
+            .format = TEXTURE_FORMAT_OFFSCREEN,
+            .usage = WGPUTextureUsage_TextureBinding |
+                     WGPUTextureUsage_RenderAttachment |
+                     WGPUTextureUsage_StorageBinding | WGPUTextureUsage_CopyDst,
+            .sampleCount = 1,
+            .mipLevelCount = 1,
+            .size =
+                (WGPUExtent3D){
+                    .height = height,
+                    .width = width,
+                    .depthOrArrayLayers = 1,
+                },
+        });
     effect->view[POST_FX_VIEW_INDEX_BLOOM] =
         wgpuTextureCreateView(effect->texture, NULL);
 
@@ -172,7 +176,7 @@ PostFxStatus post_fx_bloom_create(PostFx *fx, const WGPUTextureView view,
   return PostFxStatus_Success;
 }
 
-PostFxStatus post_fx_create_composite(PostFx *fx, const WGPUTextureView view,
+PostFxStatus post_fx_composite_create(PostFx *fx, const WGPUTextureView view,
                                       const CompositeUniform uniform) {
 
   const PostFxType fx_type = PostFxType_Composite;
@@ -263,11 +267,12 @@ PostFxStatus post_fx_bloom_create_bindgroup(PostFx *fx) {
 
   if (effect->buffer[0] == NULL)
     effect->buffer[0] = wgpuDeviceCreateBuffer(
-        context_device(), &(WGPUBufferDescriptor){
-                              .label = "Bloom buffer",
-                              .size = sizeof(BloomUniform),
-                              .usage = WGPUBufferUsage_Uniform,
-                          });
+        context_device(),
+        &(WGPUBufferDescriptor){
+            .label = "Bloom buffer",
+            .size = sizeof(BloomUniform),
+            .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
+        });
 
   wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
                        &effect->uniform.bloom, sizeof(BloomUniform));
@@ -305,11 +310,12 @@ PostFxStatus post_fx_composite_create_bindgroup(PostFx *fx) {
 
   if (effect->buffer[0] == NULL)
     effect->buffer[0] = wgpuDeviceCreateBuffer(
-        context_device(), &(WGPUBufferDescriptor){
-                              .label = "Composite Buffer",
-                              .size = sizeof(CompositeUniform),
-                              .usage = WGPUTextureUsage_TextureBinding,
-                          });
+        context_device(),
+        &(WGPUBufferDescriptor){
+            .label = "Composite Buffer",
+            .size = sizeof(CompositeUniform),
+            .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
+        });
 
   wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
                        &effect->uniform.composite, sizeof(CompositeUniform));

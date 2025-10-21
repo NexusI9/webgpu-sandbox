@@ -9,9 +9,6 @@
 #include <math.h>
 #include <stdint.h>
 
-static inline void compute_pass_kawase_draw(ComputePass *,
-                                            const KawaseDescriptor *);
-
 static inline void compute_pass_kawase_dispatch(WGPUComputePassEncoder,
                                                 const TextureResolution,
                                                 const TextureResolution);
@@ -19,14 +16,26 @@ static inline void compute_pass_kawase_dispatch(WGPUComputePassEncoder,
 KawaseStatus compute_pass_kawase(ComputePass *pass,
                                  const KawaseDescriptor *desc) {
 
-  compute_pass_kawase_draw(pass, desc);
+  WGPUCommandEncoder command_encoder =
+      wgpuDeviceCreateCommandEncoder(context_device(), NULL);
+
+  compute_pass_kawase_inline(pass, desc, command_encoder);
+
+  WGPUCommandBuffer compute_buffer =
+      wgpuCommandEncoderFinish(command_encoder, NULL);
+
+  wgpuQueueSubmit(context_queue(), 1, &compute_buffer);
+
+  wgpuCommandEncoderRelease(command_encoder);
+  wgpuCommandBufferRelease(compute_buffer);
+
   return KawaseStatus_Success;
 }
 
-void compute_pass_kawase_draw(ComputePass *pass, const KawaseDescriptor *desc) {
 
-  WGPUCommandEncoder command_encoder =
-      wgpuDeviceCreateCommandEncoder(context_device(), NULL);
+KawaseStatus
+compute_pass_kawase_inline(ComputePass *pass, const KawaseDescriptor *desc,
+                           const WGPUCommandEncoder command_encoder) {
 
   const ComputePipeline *compute_pipeline =
       std_compute_pipeline(ComputePipelineType_Kawase);
@@ -41,8 +50,8 @@ void compute_pass_kawase_draw(ComputePass *pass, const KawaseDescriptor *desc) {
   KawaseUniform uniform = {
       .texel_size =
           {
-              g_texture_resolution_texel_size[width],
-              g_texture_resolution_texel_size[height],
+              texture_size_texel(width),
+              texture_size_texel(height),
           },
       .offset = 1,
   };
@@ -141,13 +150,7 @@ void compute_pass_kawase_draw(ComputePass *pass, const KawaseDescriptor *desc) {
     wgpuTextureViewRelease(b_view);
   }
 
-  WGPUCommandBuffer compute_buffer =
-      wgpuCommandEncoderFinish(command_encoder, NULL);
-
-  wgpuQueueSubmit(context_queue(), 1, &compute_buffer);
-
-  wgpuCommandEncoderRelease(command_encoder);
-  wgpuCommandBufferRelease(compute_buffer);
+  return KawaseStatus_Success;
 }
 
 void compute_pass_kawase_dispatch(WGPUComputePassEncoder pass,

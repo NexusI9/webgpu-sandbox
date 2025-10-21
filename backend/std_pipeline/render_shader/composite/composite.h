@@ -9,7 +9,7 @@ typedef struct {
   float bloom_intensity;
   float vignette_strength;
   float vignette_radius;
-  float expoure;
+  float exposure;
 } CompositeUniform;
 
 static const WGPUBindGroupLayoutDescriptor composite_bind_group_layout = {
