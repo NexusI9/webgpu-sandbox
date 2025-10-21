@@ -462,7 +462,7 @@ scene_draw_layouts_init(Scene *scene,
      */
 
     PostFxDescriptor post_fx_desc = {&scene->renderer.draw.compute_pass};
-    
+
     post_fx_init(&last_pass->post_fx, &post_fx_desc);
 
     if (SceneRendererDrawMode_Solid & (1 << mode) ||
@@ -474,13 +474,13 @@ scene_draw_layouts_init(Scene *scene,
     } else {
 
       const BloomUniform bloom = {
-          .blur = 2,
-          .knee = 1.0f,
+          .blur = 4,
+          .knee = 0.3f,
           .threshold = 0.3f,
       };
 
-      const int bloom_width = (int)(render_width / 2.0f);
-      const int bloom_height = (int)(render_height / 2.0f);
+      const int bloom_width = (int)(render_width / POST_FX_BLOOM_DENOM);
+      const int bloom_height = (int)(render_height / POST_FX_BLOOM_DENOM);
 
       post_fx_bloom_create(&last_pass->post_fx, last_pass->color.resolve_view,
                            bloom, bloom_width, bloom_height);
@@ -488,8 +488,8 @@ scene_draw_layouts_init(Scene *scene,
       const CompositeUniform composite = {
           .bloom_intensity = 1.0f,
           .exposure = 1.0f,
-          .vignette_radius = 0.01f,
-          .vignette_strength = 0.3f,
+          .vignette_feather = 0.420f,
+          .vignette_strength = 0.720f,
       };
 
       post_fx_composite_create(&last_pass->post_fx,

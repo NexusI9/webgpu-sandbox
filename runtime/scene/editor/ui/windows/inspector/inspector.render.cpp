@@ -11,7 +11,7 @@ void UI::RenderTab::draw() {
 
   const InputStyle style = {
       .direction = InputDirection_Horizontal,
-      .label_width = scene_editor_ui_size(ui, 80),
+      .label_width = scene_editor_ui_size(ui, 85),
   };
 
   ImGui::BeginChild("##render_properties", ImVec2(0, 0), true,
@@ -181,13 +181,13 @@ void UI::RenderTab::draw() {
       post_fx_bloom_update_uniform(texture_pass_fx, bloom->uniform.bloom);
 
     if (UI::DragInt(scene, "Blur", &style, (int *)&bloom->uniform.bloom.blur,
-                    1.0f, 0, 4)
+                    1.0f, 0, 10)
             .draw())
       post_fx_bloom_update_uniform(texture_pass_fx, bloom->uniform.bloom);
 
-    if (UI::DragFloat(scene, "Intenity", &style,
+    if (UI::DragFloat(scene, "Intensity", &style,
                       &composite->uniform.composite.bloom_intensity, 0.01f,
-                      0.0f, 1.0f)
+                      0.0f, 10.0f)
             .draw())
       post_fx_composite_update_uniform(texture_pass_fx,
                                        composite->uniform.composite);
@@ -204,15 +204,15 @@ void UI::RenderTab::draw() {
       post_fx_composite_update_uniform(texture_pass_fx,
                                        composite->uniform.composite);
 
-    if (UI::DragFloat(scene, "Radius", &style,
-                      &composite->uniform.composite.vignette_radius, 0.01f,
+    if (UI::DragFloat(scene, "Feather", &style,
+                      &composite->uniform.composite.vignette_feather, 0.01f,
                       0.0f, 1.0f)
             .draw())
       post_fx_composite_update_uniform(texture_pass_fx,
                                        composite->uniform.composite);
 
     if (UI::DragFloat(scene, "Exposure", &style,
-                      &composite->uniform.composite.exposure, 0.01f, 0.0f, 3.0f)
+                      &composite->uniform.composite.exposure, 0.01f, 0.0f, 10.0f)
             .draw())
       post_fx_composite_update_uniform(texture_pass_fx,
                                        composite->uniform.composite);

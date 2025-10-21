@@ -97,7 +97,7 @@ static inline void probe_reflection_plane_list_draw_callback(void *data) {
     KawaseDescriptor blur_desc = {
         .texture = list->pass.color.texture,
         .layer_count = list->length,
-        .pass_count = 1,
+        .pass_count = 3,
     };
     compute_pass_kawase(&scene->renderer.draw.compute_pass, &blur_desc);
   }

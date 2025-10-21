@@ -8,7 +8,7 @@
 typedef struct {
   float bloom_intensity;
   float vignette_strength;
-  float vignette_radius;
+  float vignette_feather;
   float exposure;
 } CompositeUniform;
 

@@ -12,6 +12,8 @@
 
 typedef struct PostFx PostFx;
 
+static const float POST_FX_BLOOM_DENOM = 3.0f;
+
 typedef enum {
   PostFxStatus_Success,
   PostFxStatus_MaxCapacity,
