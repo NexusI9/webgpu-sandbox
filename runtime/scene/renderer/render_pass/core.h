@@ -162,11 +162,14 @@ extern "C" {
 /* === Pass List === */
 void render_pass_list_create(RenderPassList *);
 
-RenderPass * render_pass_list_insert_pass(RenderPassList *,
-                                  const RenderPassCreateDescriptor *);
+RenderPass *render_pass_list_insert_pass(RenderPassList *,
+                                         const RenderPassCreateDescriptor *);
 
 void render_pass_list_update_child_passes_callback(RenderPassList *);
 
+static inline RenderPass *render_pass_list_last_pass(RenderPassList *list) {
+  return &list->passes[list->length - 1];
+}
 
 /* === Pass === */
 

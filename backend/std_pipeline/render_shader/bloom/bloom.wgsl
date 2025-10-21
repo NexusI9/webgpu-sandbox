@@ -28,8 +28,8 @@ struct BloomUniform {
 
   let lum = dot(texture, vec3(0.2126, 0.7152, 0.0722));
 
-  let threshold = 0.3f;
-  let knee = 1.0f;  
+  let threshold = uBloom.threshold;
+  let knee = uBloom.knee;  
 
   let soft = clamp((lum - threshold + knee) / (2.0 * knee), 0.0, 1.0);
   let bright = max(lum - threshold, 0.0) * soft;

@@ -11,7 +11,7 @@
 #include "runtime/scene/editor/ui/windows/inspector/inspector.clock.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.information.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.object.hpp"
-#include "runtime/scene/editor/ui/windows/inspector/inspector.scene.hpp"
+#include "runtime/scene/editor/ui/windows/inspector/inspector.render.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.world.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/tab.hpp"
 #include "runtime/scene/renderer/core.h"
@@ -155,11 +155,11 @@ public:
       : Window(scene, label),
         object_tab(scene, SceneEditorUIIcon_Properties_Object, "Object"),
         info_tab(scene, SceneEditorUIIcon_Properties_Chip, "Information"),
-        scene_tab(scene, SceneEditorUIIcon_Properties_Scene, "Scene"),
+        render_tab(scene, SceneEditorUIIcon_Properties_Scene, "Render"),
         clock_tab(scene, SceneEditorUIIcon_Properties_Clock, "Latencies"),
         world_tab(scene, SceneEditorUIIcon_Properties_Earth, "World") {
 
-    tabs[0] = &scene_tab;
+    tabs[0] = &render_tab;
     tabs[1] = &world_tab;
     tabs[2] = &object_tab;
     tabs[3] = &clock_tab;
@@ -173,7 +173,7 @@ private:
   static int active_tab;
   static constexpr uint8_t tab_count = 5;
   UI::InspectorTab *tabs[tab_count];
-  UI::SceneTab scene_tab;
+  UI::RenderTab render_tab;
   UI::InfoTab info_tab;
   UI::ObjectTab object_tab;
   UI::ClockTab clock_tab;

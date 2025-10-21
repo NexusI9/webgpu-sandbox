@@ -130,6 +130,12 @@ scene_renderer_active_pass_list(SceneRenderer *renderer) {
   return &renderer->draw.render_pass[__builtin_ctz(renderer->draw.mode)];
 }
 
+static inline RenderPassList *
+scene_renderer_mode_pass_list(SceneRenderer *rd,
+                              const SceneRendererDrawMode mode) {
+  return &rd->draw.render_pass[__builtin_ctz(mode)];
+}
+
 static inline int scene_renderer_width(SceneRenderer *rd) {
   return rd->context.width;
 }

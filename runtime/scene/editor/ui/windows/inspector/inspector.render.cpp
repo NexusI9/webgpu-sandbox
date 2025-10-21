@@ -1,18 +1,20 @@
-#include "inspector.scene.hpp"
+#include "inspector.render.hpp"
+#include "backend/postfx/core.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/scene/editor/ui/components/input.hpp"
 #include "runtime/scene/editor/ui/components/tree_item.hpp"
+#include "runtime/scene/renderer/core.h"
+#include "runtime/scene/renderer/render_pass/core.h"
 
-
-void UI::SceneTab::draw() {
+void UI::RenderTab::draw() {
 
   const InputStyle style = {
       .direction = InputDirection_Horizontal,
       .label_width = scene_editor_ui_size(ui, 80),
   };
 
-  ImGui::BeginChild("##scene_properties", ImVec2(0, 0), true,
+  ImGui::BeginChild("##render_properties", ImVec2(0, 0), true,
                     ImGuiWindowFlags_NoScrollWithMouse);
 
   ImGui::PushItemWidth(-1);
@@ -156,11 +158,65 @@ void UI::SceneTab::draw() {
     ImGui::TreePop();
   }
 
+  PostFx *texture_pass_fx =
+      &render_pass_list_last_pass(
+           scene_renderer_mode_pass_list(&scene->renderer,
+                                         SceneRendererDrawMode_Texture))
+           ->post_fx;
+
+  PostFxEffect *bloom = post_fx_effect(texture_pass_fx, PostFxType_Bloom);
+  PostFxEffect *composite =
+      post_fx_effect(texture_pass_fx, PostFxType_Composite);
+
   if (UI::TreeItem(scene, "Bloom").draw()) {
+
+    if (UI::DragFloat(scene, "Threshold", &style,
+                      &bloom->uniform.bloom.threshold, 0.01f, 0.0f, 1.0f)
+            .draw())
+      post_fx_bloom_update_uniform(texture_pass_fx, bloom->uniform.bloom);
+
+    if (UI::DragFloat(scene, "Knee", &style, &bloom->uniform.bloom.knee, 0.01f,
+                      0.0f, 1.0f)
+            .draw())
+      post_fx_bloom_update_uniform(texture_pass_fx, bloom->uniform.bloom);
+
+    if (UI::DragInt(scene, "Blur", &style, (int *)&bloom->uniform.bloom.blur,
+                    1.0f, 0, 4)
+            .draw())
+      post_fx_bloom_update_uniform(texture_pass_fx, bloom->uniform.bloom);
+
+    if (UI::DragFloat(scene, "Intenity", &style,
+                      &composite->uniform.composite.bloom_intensity, 0.01f,
+                      0.0f, 1.0f)
+            .draw())
+      post_fx_composite_update_uniform(texture_pass_fx,
+                                       composite->uniform.composite);
+
     ImGui::TreePop();
   }
 
   if (UI::TreeItem(scene, "Vignette").draw()) {
+
+    if (UI::DragFloat(scene, "Strength", &style,
+                      &composite->uniform.composite.vignette_strength, 0.01f,
+                      0.0f, 1.0f)
+            .draw())
+      post_fx_composite_update_uniform(texture_pass_fx,
+                                       composite->uniform.composite);
+
+    if (UI::DragFloat(scene, "Radius", &style,
+                      &composite->uniform.composite.vignette_radius, 0.01f,
+                      0.0f, 1.0f)
+            .draw())
+      post_fx_composite_update_uniform(texture_pass_fx,
+                                       composite->uniform.composite);
+
+    if (UI::DragFloat(scene, "Exposure", &style,
+                      &composite->uniform.composite.exposure, 0.01f, 0.0f, 3.0f)
+            .draw())
+      post_fx_composite_update_uniform(texture_pass_fx,
+                                       composite->uniform.composite);
+
     ImGui::TreePop();
   }
 

@@ -1,14 +1,14 @@
-#ifndef _SCENE_EDTIOR_UI_WINDOW_INSPECTOR_SCENE_H_
-#define _SCENE_EDTIOR_UI_WINDOW_INSPECTOR_SCENE_H_
+#ifndef _SCENE_EDTIOR_UI_WINDOW_INSPECTOR_RENDER_H_
+#define _SCENE_EDTIOR_UI_WINDOW_INSPECTOR_RENDER_H_
 
 #include "runtime/scene/editor/ui/windows/inspector/tab.hpp"
 
 namespace UI {
 
-class SceneTab : public InspectorTab {
+class RenderTab : public InspectorTab {
 
 public:
-  SceneTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
+  RenderTab(Scene *scene, const SceneEditorUIIcon icon, const char *label)
       : InspectorTab(scene, icon, label) {}
   void draw() override;
 

@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 // cache texel size for division are expensive during hot path
-const float g_texture_resolution_texel_size[TextureResolution_2048+1] = {
+float g_texture_resolution_texel_size[TextureResolution_2048 + 1] = {
     [TextureResolution_16] = 1.0f / TextureResolution_16,
     [TextureResolution_32] = 1.0f / TextureResolution_32,
     [TextureResolution_64] = 1.0f / TextureResolution_64,

@@ -123,9 +123,6 @@ PostFxStatus post_fx_update_effect_view(PostFx *, const PostFxType,
                                         const PostFxViewIndex,
                                         const WGPUTextureView);
 
-PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *, const int,
-                                                     const int);
-
 static inline PostFxEffect *post_fx_effect(PostFx *fx, const PostFxType type) {
   return &fx->effects[__builtin_ctz(type)];
 }
@@ -254,5 +251,28 @@ static inline void post_fx_draw(PostFx *fx,
 PostFxStatus post_fx_blit_create_bindgroup(PostFx *);
 PostFxStatus post_fx_bloom_create_bindgroup(PostFx *);
 PostFxStatus post_fx_composite_create_bindgroup(PostFx *);
+
+// Update
+
+PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *, const int,
+                                                     const int);
+
+static inline PostFxStatus
+post_fx_bloom_update_uniform(PostFx *fx, const BloomUniform uniform) {
+  PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
+  effect->uniform.bloom = uniform;
+  wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
+                       &effect->uniform.bloom, sizeof(BloomUniform));
+  return PostFxStatus_Success;
+}
+
+static inline PostFxStatus
+post_fx_composite_update_uniform(PostFx *fx, const CompositeUniform uniform) {
+  PostFxEffect *effect = post_fx_effect(fx, PostFxType_Composite);
+  effect->uniform.composite = uniform;
+  wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
+                       &effect->uniform.composite, sizeof(CompositeUniform));
+  return PostFxStatus_Success;
+}
 
 #endif
