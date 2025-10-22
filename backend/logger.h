@@ -2,6 +2,7 @@
 #define _LOGGER_H_
 
 #include "utils/color.h"
+#include "utils/defines.h"
 #include <stdarg.h>
 #include <stdint.h>
 #include <string.h>
@@ -50,9 +51,7 @@ typedef struct {
 
 extern Logger g_logger;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void logger_add(const LoggerFlag, const char *, ...);
 
@@ -67,9 +66,7 @@ static inline void dbg(const char *fm, ...) {
   va_end(args);
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 /*
 

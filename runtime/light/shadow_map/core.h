@@ -36,9 +36,7 @@ typedef struct {
   WGPUTextureView *color_view, *depth_view;
 } ShadowPassTextureDescriptor;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void shadow_map_init(const ShadowMapInitDescriptor *);
 
@@ -49,8 +47,6 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *);
 void shadow_pass_update_resolution(RenderPass *, const TextureResolution,
                                    const WGPUTextureViewDimension);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

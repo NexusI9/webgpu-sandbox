@@ -111,9 +111,7 @@ typedef struct {
 } SceneEditorUIDescriptor;
 
 // prevent c++ mangling
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *,
                                          const SceneEditorUIDescriptor *);
@@ -129,8 +127,6 @@ static inline int scene_editor_ui_size(const SceneEditorUI *ui,
   return size * ui->dpi;
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

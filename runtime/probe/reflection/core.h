@@ -79,9 +79,7 @@ typedef struct {
 
 } ProbeReflectionCreateCore;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 DynamicListStatus
 probe_reflection_list_create_core(const ProbeReflectionCreateCore *);
@@ -93,8 +91,6 @@ void probe_reflection_list_update_resolution(RenderPass *,
                                              const TextureResolution,
                                              const WGPUTextureViewDimension);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

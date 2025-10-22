@@ -22,6 +22,7 @@
 #include "utils/dyli.h"
 #include "utils/name.h"
 #include "webgpu/webgpu.h"
+#include "utils/defines.h"
 
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
@@ -112,9 +113,7 @@ struct Mesh {
   MeshRefList children;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 // constructor
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
@@ -199,8 +198,6 @@ static inline void mesh_set_name(Mesh *mesh, const char *src) {
   name_copy(src, mesh->name);
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

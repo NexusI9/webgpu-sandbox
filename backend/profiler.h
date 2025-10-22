@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <time.h>
+#include "utils/defines.h"
 
 #define PROFILER_LATENCY_TYPE_COUNT 7
 typedef enum {
@@ -24,9 +25,7 @@ typedef struct {
   ProfilerLatency latencies[PROFILER_LATENCY_TYPE_COUNT];
 } Profiler;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 static inline void profiler_init(Profiler *profiler) {
   *profiler = (Profiler){0};
@@ -63,8 +62,6 @@ profiler_latency_get_elapsed(Profiler *profiler,
          (end->tv_nsec - start->tv_nsec) / 1000000.0;
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

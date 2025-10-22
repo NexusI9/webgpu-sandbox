@@ -87,9 +87,7 @@ typedef struct {
   SceneRenderer *renderer;
 } SceneRendererRenderDescriptor;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void scene_renderer_init(SceneRenderer *,
                          const SceneRendererCreateDescriptor *);
@@ -169,8 +167,6 @@ scene_renderer_pass_list(SceneRenderer *renderer,
   return &renderer->draw.render_pass[__builtin_ctz(mode)];
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

@@ -5,18 +5,14 @@
 #include "renderer/core.h"
 #include "runtime/pipeline/render.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void scene_set_draw_mode(Scene *, const SceneRendererDrawMode);
 
 void scene_update_render_pass_texture(Scene *, const int, const int,
-                                           const RenderPipelineMultisampleCount,
-                                           const double);
+                                      const RenderPipelineMultisampleCount,
+                                      const double);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

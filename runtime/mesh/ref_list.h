@@ -16,9 +16,7 @@ typedef struct {
   size_t length;
 } MeshRefListArray;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 // creators
 DynamicListStatus mesh_ref_list_create(MeshRefList *, const size_t);
@@ -47,7 +45,5 @@ void mesh_ref_list_print(MeshRefList *);
 
 void mesh_ref_list_average_position(MeshRefList *, vec3 *);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 #endif

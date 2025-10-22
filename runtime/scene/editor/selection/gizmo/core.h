@@ -227,17 +227,11 @@ static const color *gizmo_handle_color[6] = {
 typedef void (*gizmo_create_handles_callback)(MeshRefList *, MeshRefList *,
                                               const GizmoCreateDescriptor *);
 
+EXTERN_C_BEGIN
 void gizmo_create(Gizmo *, const GizmoCreateDescriptor *desc);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 void gizmo_update_mode(Gizmo *, MeshRefList *, GizmoMode);
-
-#ifdef __cplusplus
-}
-#endif
 
 void gizmo_remove(Gizmo *, MeshRefList *);
 
@@ -281,5 +275,7 @@ static inline void gizmo_update_ssbo(Gizmo *gizmo, SSBOManager *ssbo) {
         ssbo, SSBOType_Mesh,
         gizmo->handles[gizmo->mode].entries[i]->ssbo_slot.id);
 }
+
+EXTERN_C_END
 
 #endif

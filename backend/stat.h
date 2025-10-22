@@ -2,6 +2,7 @@
 #define _STAT_H_
 
 #include <webgpu/webgpu.h>
+#include "utils/defines.h"
 
 #define STAT_COUNT_COUNT 4
 typedef enum {
@@ -15,9 +16,7 @@ typedef struct {
   int count[STAT_COUNT_COUNT];
 } Statistics;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 static inline void stat_init(Statistics *stat) { *stat = (Statistics){0}; }
 
@@ -30,8 +29,6 @@ static inline int stat_get_count(Statistics *stat, const StatCount type) {
   return stat->count[type];
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

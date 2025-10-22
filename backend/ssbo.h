@@ -9,6 +9,7 @@
 #include <webgpu/webgpu.h>
 
 #include "utils/stli.h"
+#include "utils/defines.h"
 
 #define SSBO_TYPE_COUNT 10
 #define SSBO_CAPACITY 128
@@ -115,9 +116,7 @@ typedef struct {
 
 } SSBOManager;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void ssbo_draw_callback(void *);
 
@@ -181,8 +180,6 @@ StaticListStatus ssbo_update_queue_insert(SSBOManager *, const SSBOType,
                                           const ssbo_id_t);
 StaticListStatus ssbo_update_queue_shift(SSBOManager *, const SSBOType);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

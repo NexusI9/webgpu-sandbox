@@ -155,9 +155,7 @@ struct RenderPassDrawOptions {
   WGPUTextureView color, depth;
 };
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /* === Pass List === */
 void render_pass_list_create(RenderPassList *);
@@ -191,8 +189,6 @@ StaticListStatus render_pass_view_depth_remove(RenderPass *, WGPUTextureView);
 WGPUTextureView render_pass_view_color(RenderPass *, size_t);
 WGPUTextureView render_pass_view_depth(RenderPass *, size_t);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

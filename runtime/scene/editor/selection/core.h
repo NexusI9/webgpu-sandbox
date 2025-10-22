@@ -16,9 +16,7 @@ typedef struct {
   Scene *scene;
 } SceneSelectionCallbackData;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void scene_selection_init(Scene *);
 
@@ -97,8 +95,6 @@ static inline void scene_selection_draw_callback(void *data) {
   }
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

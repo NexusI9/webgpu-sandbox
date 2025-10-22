@@ -9,9 +9,7 @@
 #include "runtime/mesh/mesh.h"
 #include "runtime/scene/core.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void sem_camera_create(SceneEditorMeshList *, Camera *,
                        const SEMCreateDescriptor *);
@@ -34,8 +32,6 @@ void sem_camera_set_scale(SceneEditorMesh *, vec3);
 void sem_camera_lookat(SceneEditorMeshList *, vec3, vec3);
 void sem_camera_fov(SceneEditorMeshList *, float);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

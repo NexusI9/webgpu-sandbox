@@ -35,9 +35,7 @@
 
  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /**
    Show the mesh by pushing it to the pipeline ref list
@@ -128,8 +126,6 @@ static inline SceneStatus scene_visibility_toggle_mesh(Scene *scene,
   }
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

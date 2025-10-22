@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+#include "defines.h"
 
 #define DYLI_INVALID_INDEX ((size_t)-1)
 
@@ -22,9 +23,7 @@ typedef struct {
   size_t type_size;
 } DynamicList;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 DynamicListStatus dyli_create(void **, size_t *, size_t *, size_t, size_t,
                               const char *);
@@ -50,8 +49,7 @@ DynamicListStatus dyli_free(void **, size_t *, size_t *);
 
 void *dyli_new_entry(void **, size_t *, size_t *, size_t, const char *);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
+
 
 #endif

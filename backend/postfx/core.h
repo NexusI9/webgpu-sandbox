@@ -106,9 +106,7 @@ typedef struct {
   ComputePass *compute;
 } PostFxDescriptor;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 PostFxStatus post_fx_init(PostFx *, const PostFxDescriptor *);
 PostFxStatus post_fx_destroy(PostFx *);
@@ -278,8 +276,6 @@ post_fx_composite_update_uniform(PostFx *fx, const CompositeUniform uniform) {
   return PostFxStatus_Success;
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

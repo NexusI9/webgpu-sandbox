@@ -44,9 +44,7 @@ typedef struct {
 
 } UBOManager;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void ubo_init(UBOManager *);
 
@@ -55,8 +53,6 @@ UBOStatus ubo_update_entry(UBOManager *, const UBOField, void *);
 UBOStatus ubo_upload(UBOManager *);
 WGPUBuffer ubo_buffer_handle(UBOManager *);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

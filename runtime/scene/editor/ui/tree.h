@@ -12,9 +12,7 @@ typedef struct {
   size_t capacity;
 } SceneEditorUITree;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 static inline DynamicListStatus
 scene_editor_ui_tree_create(SceneEditorUITree *tree, size_t capacity) {
@@ -63,8 +61,6 @@ scene_editor_ui_tree_remove_at_index(SceneEditorUITree *tree, size_t index) {
                               sizeof(reg_id_t), index, "Scene editor UI tree");
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

@@ -7,6 +7,7 @@
 
 #include "backend/clock.h"
 #include "backend/ssbo.h"
+#include "utils/defines.h"
 
 typedef struct {
   mat4 projection;
@@ -37,9 +38,7 @@ typedef struct {
 
 } Viewport;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void viewport_create(Viewport *, const ViewportCreateDescriptor *);
 void viewport_update_projection(Viewport *);
@@ -88,8 +87,6 @@ static inline void viewport_set_height(Viewport *viewport, const float value) {
   viewport->height = value;
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

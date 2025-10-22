@@ -76,9 +76,7 @@ typedef struct {
   void *ptr;
 } RegEntry;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 // TODO: maybe segment reg into per-type, so it's faster to access the elements
 // of a certain type RegEntry g_reg[TYPE_COUNT][REG_MAX_OBJECTS]
@@ -107,8 +105,6 @@ static inline size_t reg_type_count(const RegEntryType type) {
   return count;
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

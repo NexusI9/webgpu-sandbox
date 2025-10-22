@@ -6,9 +6,7 @@
 #include "runtime/mesh/mesh.h"
 #include "runtime/scene/core.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 void sem_ambient_light_create(SceneEditorMeshList *, AmbientLight *,
                               const SEMCreateDescriptor *);
@@ -28,8 +26,6 @@ void sem_ambient_light_set_position(SceneEditorMesh *, vec3);
 void sem_ambient_light_set_rotation(SceneEditorMesh *, vec3);
 void sem_ambient_light_set_scale(SceneEditorMesh *, vec3);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

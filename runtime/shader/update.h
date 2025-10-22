@@ -26,9 +26,7 @@ typedef struct {
   WGPUTextureFormat format;
 } ShaderUpdateTexture;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 ShaderBindGroupTextureEntry *
 shader_update_texture(Shader *, const bind_group_index, const bind_index,
@@ -61,8 +59,6 @@ ShaderBindGroup *shader_update_bind_group_offset(Shader *,
                                                  const uint8_t, const size_t,
                                                  const ShaderUpdateFlag);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

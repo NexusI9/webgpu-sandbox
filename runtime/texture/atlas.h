@@ -28,9 +28,7 @@ typedef struct {
   WGPUTextureFormat format;
 } TextureAtlasDescriptor;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 TextureStatus texture_atlas_create(TextureAtlas *,
                                    const TextureAtlasDescriptor *);
@@ -43,8 +41,6 @@ static inline TextureStatus texture_atlas_cell_size(TextureAtlas *atlas,
   return TextureStatus_Success;
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

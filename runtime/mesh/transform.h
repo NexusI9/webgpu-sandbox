@@ -11,10 +11,7 @@ typedef void (*mesh_transform_axis_callback)(Mesh *, vec3, const Axis);
 typedef void (*mesh_transform_uni_axis_callback)(Mesh *, vec3);
 typedef void (*mesh_transform_callback)(Mesh *, vec3);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+EXTERN_C_BEGIN
 // scale
 void mesh_set_scale(Mesh *, vec3);
 void mesh_set_scale_axis(Mesh *, vec3, const Axis);
@@ -34,8 +31,6 @@ void mesh_set_rotation_quat(Mesh *, versor);
 
 void mesh_lookat(Mesh *, vec3, vec3);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

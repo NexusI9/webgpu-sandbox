@@ -37,9 +37,7 @@ typedef struct {
 
 extern Context g_context;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 ContextStatus context_init(const ContextDescriptor *);
 ContextStatus context_close();
@@ -62,8 +60,6 @@ context_set_multisample(RenderPipelineMultisampleCount value) {
   g_context.multisample = value;
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

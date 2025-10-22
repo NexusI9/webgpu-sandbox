@@ -8,9 +8,7 @@
 #include "runtime/shader/shader.h"
 #include "runtime/viewport/viewport.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /* custom */
 MeshStatus mesh_shader_create(Mesh *, const ShaderCreateDescriptor *);
@@ -25,8 +23,6 @@ void mesh_shader_build_mvp(Mesh *, const MeshShader, SSBOManager *);
 void mesh_shader_build_mp(Mesh *, const MeshShader, SSBOManager *,
                           const SSBOType);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

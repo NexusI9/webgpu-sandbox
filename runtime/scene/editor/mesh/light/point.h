@@ -7,9 +7,7 @@
 #include "runtime/mesh/mesh.h"
 #include "runtime/scene/core.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /* base */
 void sem_point_light_create(SceneEditorMeshList *, PointLight *,
@@ -48,8 +46,6 @@ void sem_point_light_shadow_set_position(SceneEditorMesh *, vec3);
 void sem_point_light_shadow_set_rotation(SceneEditorMesh *, vec3);
 void sem_point_light_shadow_set_scale(SceneEditorMesh *, vec3);
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif

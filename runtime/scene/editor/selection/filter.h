@@ -17,9 +17,7 @@ typedef enum {
   SceneSelectionFilterStatus_UndefError,
 } SceneSelectionFilterStatus;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_BEGIN
 
 /* Filters */
 SceneSelectionFilter *scene_selection_filter_find_mesh(SceneSelection *, Mesh *,
@@ -155,8 +153,6 @@ SceneSelectionFilter *scene_selection_filter(SceneSelection *selection,
   return &selection->filters[type];
 }
 
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 
 #endif
