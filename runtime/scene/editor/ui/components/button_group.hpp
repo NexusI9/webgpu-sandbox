@@ -8,6 +8,8 @@
 
 namespace UI {
 
+static const int BUTTON_GROUP_DEFAULT_SELECTED_NONE = -1;
+
 typedef enum {
   ButtonGroupDirection_Vertical,
   ButtonGroupDirection_Horizontal,
@@ -35,12 +37,14 @@ public:
   ButtonGroup(
       Scene *scene, const char *label, const ButtonGroupItem *items,
       const uint8_t items_length, const ButtonStyle *style,
+      const uint8_t default_selected = BUTTON_GROUP_DEFAULT_SELECTED_NONE,
       const ButtonGroupDirection direction = ButtonGroupDirection_Vertical)
       : Component(scene, label), items(items), items_length(items_length),
-        style(style), direction(direction) {}
+        style(style), direction(direction), selected(default_selected) {}
   bool draw() override;
 
 private:
+  uint8_t selected;
   const ButtonGroupItem *items;
   const uint8_t items_length;
   const ButtonStyle *style;

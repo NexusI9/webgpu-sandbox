@@ -9,4 +9,6 @@ void example_gltf(Scene *);
 
 void example_gltf_podium(Scene *);
 
+void example_gltf_spa(Scene *);
+
 #endif

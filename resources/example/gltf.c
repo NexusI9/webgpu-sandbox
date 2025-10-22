@@ -27,6 +27,21 @@ void example_gltf(Scene *scene) {
       NULL);
 }
 
+void example_gltf_spa(Scene *scene) {
+  loader_gltf_load(
+      &(GLTFLoadDescriptor){
+          .scene = scene,
+          .path = "./resources/assets/gltf/spa.gltf",
+          .cgltf_options = &(cgltf_options){0},
+          .options =
+              &(LoaderGLTFOptions){
+                  .max_texture_size = TextureResolution_512,
+              },
+      },
+      NULL);
+}
+
+
 void example_gltf_podium(Scene *scene) {
 
   LoaderGLTFResult gltf_result;

@@ -7,6 +7,7 @@
 #include "runtime/scene/editor/ui/components/button_group.hpp"
 #include "runtime/scene/editor/ui/components/button_icon.hpp"
 #include "runtime/scene/editor/ui/core.h"
+#include "runtime/scene/editor/ui/theme/theme.default.h"
 
 static const struct {
   const GizmoMode mode;
@@ -45,6 +46,8 @@ void UI::Gizmo::draw() {
           (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_BASE],
       .background_hover =
           (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_HIGH],
+      .background_active = (ImVec4 &)
+          theme_default_color[THEME_DEFAULT_COLOR_BACKGROUND_BRAND_BASE],
   };
 
   GizmoMode mode_position = GizmoMode_Position;
@@ -72,6 +75,6 @@ void UI::Gizmo::draw() {
                           (void *)&mode_scale,
                       },
                   },
-                  3, &style)
+                  3, &style, scene->editor.gizmo.transform.mode)
       .draw();
 }

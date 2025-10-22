@@ -58,10 +58,17 @@ bool UI::ButtonGroup::draw() {
                          ImDrawFlags_RoundCornersBottomRight;
     }
 
-    draw_list->AddRectFilled(
-        btn_pos, btn_end,
-        ImGui::ColorConvertFloat4ToU32(style->background_default), radius,
-        flags);
+    if (selected == i)
+      draw_list->AddRectFilled(
+          btn_pos, btn_end,
+          ImGui::ColorConvertFloat4ToU32(style->background_active), radius,
+          flags);
+    else {
+      draw_list->AddRectFilled(
+          btn_pos, btn_end,
+          ImGui::ColorConvertFloat4ToU32(style->background_default), radius,
+          flags);
+    }
 
     bool hovered = ImGui::IsItemHovered();
     bool clicked = ImGui::IsItemClicked();
@@ -87,8 +94,11 @@ bool UI::ButtonGroup::draw() {
                         ImVec2(uv->uv0[0], uv->uv0[1]),
                         ImVec2(uv->uv1[0], uv->uv1[1]));
 
-    if (clicked && items[i].on_click_callback)
-      items[i].on_click_callback(scene, items[i].user_data);
+    if (clicked) {
+      selected = i;
+      if (items[i].on_click_callback)
+        items[i].on_click_callback(scene, items[i].user_data);
+    }
 
     ImGui::PopID();
   }

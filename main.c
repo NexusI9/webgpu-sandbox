@@ -44,7 +44,7 @@ int main(int argc, const char *argv[]) {
                &(SceneCreateDescriptor){
                    .renderer =
                        &(SceneRendererCreateDescriptor){
-                           .background = (WGPUColor){0.1f, 0.1f, 0.1f, 1.0f},
+                           .background = (WGPUColor){0.14f, 0.14f, 0.14f, 1.0f},
                            .dpi = 1.0,
                        },
                    .viewport =

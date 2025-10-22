@@ -16,8 +16,10 @@ typedef enum {
   PostFxStatus_Success,
   PostFxStatus_MaxCapacity,
   PostFxStatus_AlreadyCreated,
+  PostFxStatus_Uncreated,
   PostFxStatus_MissingNecessaryResource,
   PostFxStatus_UnknownType,
+  PostFxStatus_UnvalidType,
   PostFxStatus_SameAttribute,
   PostFxStatus_UndefError,
 } PostFxStatus;
@@ -64,6 +66,8 @@ typedef enum {
 
  */
 
+typedef PostFxStatus (*post_fx_destructor)(PostFx *);
+typedef PostFxStatus (*post_fx_constructor)(PostFx *);
 typedef PostFxStatus (*post_fx_bindgroup_creator)(PostFx *);
 typedef void (*post_fx_draw_callback)(PostFx *, WGPUCommandEncoder);
 
@@ -81,6 +85,9 @@ typedef struct {
   // optional texture if we want the post fx to use a independent texture
   WGPUTexture texture;
   post_fx_bindgroup_creator bindgroup_creator;
+  // Create the effect with unset values (0).
+  post_fx_constructor constructor;
+  post_fx_destructor destructor;
 
   union {
     CompositeUniform composite;
@@ -275,6 +282,12 @@ post_fx_composite_update_uniform(PostFx *fx, const CompositeUniform uniform) {
                        &effect->uniform.composite, sizeof(CompositeUniform));
   return PostFxStatus_Success;
 }
+
+static inline bool post_fx_effect_enabled(PostFx *fx, const PostFxType type) {
+  return (fx->state & type);
+}
+
+PostFxStatus post_fx_toggle_effect(PostFx *, const PostFxType);
 
 EXTERN_C_END
 

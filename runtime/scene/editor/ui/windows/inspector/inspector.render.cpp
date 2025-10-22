@@ -1,9 +1,11 @@
 #include "inspector.render.hpp"
 #include "backend/postfx/core.h"
 #include "backend/std_pipeline/core.h"
+#include "imgui/imgui.h"
 #include "runtime/scene/draw.h"
 #include "runtime/scene/editor/ui/components/input.hpp"
 #include "runtime/scene/editor/ui/components/tree_item.hpp"
+#include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 
@@ -169,6 +171,12 @@ void UI::RenderTab::draw() {
       post_fx_effect(texture_pass_fx, PostFxType_Composite);
 
   if (UI::TreeItem(scene, "Bloom").draw()) {
+
+    ImGui::Text("Enable");
+    ImGui::SameLine(ImGui::GetContentRegionAvail().x);
+    if(ImGui::Checkbox("##enablebloom", NULL)){
+      
+    }
 
     if (UI::DragFloat(scene, "Threshold", &style,
                       &bloom->uniform.bloom.threshold, 0.01f, 0.0f, 1.0f)

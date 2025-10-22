@@ -5,6 +5,7 @@
 #include "runtime/scene/editor/ui/components/button_group.hpp"
 #include "runtime/scene/editor/ui/components/button_icon.hpp"
 #include "runtime/scene/editor/ui/core.h"
+#include "runtime/scene/editor/ui/theme/theme.default.h"
 #include "runtime/scene/renderer/core.h"
 
 void UI::RenderMode::draw() {
@@ -17,9 +18,12 @@ void UI::RenderMode::draw() {
           (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_BASE],
       .background_hover =
           (ImVec4 &)theme_default_color[THEME_DEFAULT_COLOR_SURFACE_HIGH],
+      .background_active = (ImVec4 &)
+          theme_default_color[THEME_DEFAULT_COLOR_BACKGROUND_BRAND_BASE],
   };
 
   UI::ButtonGroup(scene, label, buttons, count, &style,
+                  __builtin_ctz(scene_renderer_draw_mode(&scene->renderer)),
                   ButtonGroupDirection_Horizontal)
       .draw();
 }

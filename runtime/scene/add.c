@@ -312,8 +312,8 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
           &(ShadowMapDrawSunLightDescriptor){
               .light = new_light,
               .pass = &scene->lights.spot.shadow.pass,
-              .texture_layer =
-                  scene->lights.spot.shadow.length + sem_desc.target_list_index,
+              .texture_layer = light_list_sun_layer_index(
+                  &scene->lights, sem_desc.target_list_index),
               .command_encoder = NULL,
               .profiler = &scene->renderer.profiler,
           },

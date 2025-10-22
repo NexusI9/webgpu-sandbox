@@ -27,10 +27,10 @@
 #define SCENE_RENDERER_DRAW_MODE_COUNT 4
 
 typedef enum {
-  SceneRendererDrawMode_Texture = 1 << 0,
-  SceneRendererDrawMode_Solid = 1 << 1,
-  SceneRendererDrawMode_Wireframe = 1 << 2,
-  SceneRendererDrawMode_Boundbox = 1 << 3,
+  SceneRendererDrawMode_Boundbox = 1 << 0,
+  SceneRendererDrawMode_Wireframe = 1 << 1,
+  SceneRendererDrawMode_Solid = 1 << 2,
+  SceneRendererDrawMode_Texture = 1 << 3,
 } SceneRendererDrawMode;
 
 typedef struct {

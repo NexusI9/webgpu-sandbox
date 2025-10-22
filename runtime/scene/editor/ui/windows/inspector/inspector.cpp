@@ -17,6 +17,7 @@
 #include "runtime/scene/editor/ui/components/time_bar.hpp"
 #include "runtime/scene/editor/ui/components/tree_item.hpp"
 #include "runtime/scene/editor/ui/core.h"
+#include "runtime/scene/editor/ui/theme/theme.default.h"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.ambient_light.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.mesh.hpp"
 #include "runtime/scene/editor/ui/windows/inspector/inspector.point_light.hpp"
@@ -62,12 +63,15 @@ void UI::Inspector::draw() {
 
             // highlight selected tab
             if (sel) {
-              ImGui::PushStyleColor(ImGuiCol_Button,
-                                    ImVec4(0.30f, 0.44f, 0.60f, 1.f));
-              ImGui::PushStyleColor(ImGuiCol_ButtonHovered,
-                                    ImVec4(0.32f, 0.49f, 0.68f, 1.f));
-              ImGui::PushStyleColor(ImGuiCol_Border,
-                                    ImVec4(0.80f, 0.80f, 0.90f, 1.f));
+              ImGui::PushStyleColor(
+                  ImGuiCol_Button,
+                  (ImVec4 &)
+                      theme_default_color[THEME_DEFAULT_COLOR_BACKGROUND_BRAND_BASE]);
+	      
+              ImGui::PushStyleColor(
+                  ImGuiCol_ButtonHovered,
+                  (ImVec4 &)
+                      theme_default_color[THEME_DEFAULT_COLOR_BACKGROUND_BRAND_BASE]);
             }
 
             bool pressed =
@@ -81,7 +85,7 @@ void UI::Inspector::draw() {
               ImGui::SetTooltip("%s", tabs[i]->tooltip);
 
             if (sel)
-              ImGui::PopStyleColor(3);
+              ImGui::PopStyleColor(2);
 
             ImGui::PopID();
           }

@@ -35,15 +35,18 @@ void UI::Display::checkbox_on_change_light(Scene *scene, bool active,
   UI::DisplayState target = *(UI::DisplayState *)user_data;
   checkbox_update_state(active, target);
 
-  static const RegEntryType light_type[4] = {
+  static const RegEntryType light_type[7] = {
       RegEntryType_SceneEditorMeshList_AmbientLight,
       RegEntryType_SceneEditorMeshList_PointLight,
       RegEntryType_SceneEditorMeshList_SunLight,
       RegEntryType_SceneEditorMeshList_SpotLight,
+      RegEntryType_SceneEditorMeshList_PointLightShadow,
+      RegEntryType_SceneEditorMeshList_SunLightShadow,
+      RegEntryType_SceneEditorMeshList_SpotLightShadow,
   };
 
-  sem_list_toggle_visibility(&scene->editor.sem_list, scene, light_type, 4,
-                             active);
+  sem_list_toggle_visibility(&scene->editor.sem_list, scene, light_type,
+                             sizeof(light_type) / sizeof(RegEntryType), active);
 }
 
 void UI::Display::checkbox_on_change_probe(Scene *scene, bool active,

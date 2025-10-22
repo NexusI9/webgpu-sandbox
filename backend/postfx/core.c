@@ -10,7 +10,11 @@
 #include <stdint.h>
 
 static inline PostFxStatus post_fx_validate_create(PostFx *, const PostFxType);
+
 static inline PostFxStatus post_fx_bloom_destroy(PostFx *);
+static inline PostFxStatus post_fx_composite_destroy(PostFx *);
+static inline PostFxStatus post_fx_blit_destroy(PostFx *);
+
 static inline PostFxStatus post_fx_add_callback(PostFx *,
                                                 post_fx_draw_callback);
 static inline WGPUTexture post_fx_bloom_create_texture(const int, const int);
@@ -210,6 +214,8 @@ PostFxStatus post_fx_bloom_destroy(PostFx *fx) {
   wgpuTextureRelease(post_fx_effect(fx, PostFxType_Bloom)->texture);
   wgpuTextureViewRelease(post_fx_effect(fx, PostFxType_Bloom)->view[0]);
 
+  // TODO: update composite view bindgroup if existing
+
   return PostFxStatus_Success;
 }
 
@@ -394,6 +400,39 @@ PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *fx,
     post_fx_effect(fx, PostFxType_Composite)->view[PostFxViewIndex_Bloom] =
         effect->view[PostFxViewIndex_Bloom];
     post_fx_composite_create_bindgroup(fx);
+  }
+
+  return PostFxStatus_Success;
+}
+
+/**
+
+ */
+PostFxStatus post_fx_toggle_effect(PostFx *fx, const PostFxType type) {
+
+  if ((type & PostFxType_Blit)) {
+    logger_add(LoggerFlag_Warning, "Cannot toggle 'Blit' post effect pass.");
+    return PostFxStatus_UnvalidType;
+  }
+
+  PostFxEffect *effect = post_fx_effect(fx, type);
+
+  if ((fx->state & type)) {
+    // disable effect
+
+  } else {
+    // enable effect
+
+    if (effect->pipeline) {
+      // Effect already created
+
+    } else {
+      logger_add(LoggerFlag_Warning,
+                 "Effect %d not initialized yet, make sure you've created the "
+                 "effect with initial values before using toggle method.",
+                 __builtin_ctz(type));
+      return PostFxStatus_Uncreated;
+    }
   }
 
   return PostFxStatus_Success;
