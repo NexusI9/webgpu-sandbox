@@ -7,6 +7,14 @@
 
 #define VIEW_MARGIN 10
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void scene_debug_view_create(SceneDebug *, const WGPUTextureView);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -116,4 +116,8 @@ StaticListStatus light_list_spot_shadow_insert(SpotLightListShadow *,
 StaticListStatus light_list_spot_shadow_remove(SpotLightListShadow *,
                                                SpotLight *);
 
+static inline size_t light_list_sun_layer_index(LightList *list, size_t index) {
+  return list->spot.shadow.length + index;
+}
+
 #endif

@@ -63,13 +63,13 @@ int main(int argc, const char *argv[]) {
 
   example_light(&main_scene);
   example_skybox(&main_scene);
-  example_gltf_podium(&main_scene);
+  example_gltf(&main_scene);
 
 
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);
   // example_glass_probe_grid(&main_scene, false);
-  example_glass_probe_plane(&main_scene, false);
+  //example_glass_probe_plane(&main_scene, false);
 
   // add gizmo camera
   /*GizmoCamera *new_cam =

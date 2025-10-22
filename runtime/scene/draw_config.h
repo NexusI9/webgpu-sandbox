@@ -477,14 +477,14 @@ scene_draw_layouts_init(Scene *scene,
           .blur = 2,
           .knee = 0.3f,
           .threshold = 0.3f,
-          .downscale = 3,
+          .downscale = 2,
       };
 
       post_fx_bloom_create(&last_pass->post_fx, last_pass->color.resolve_view,
                            bloom, render_width, render_height);
 
       const CompositeUniform composite = {
-          .bloom_intensity = 0.860f,
+          .bloom_intensity = 1.280f,
           .exposure = 1.0f,
           .vignette_feather = 0.420f,
           .vignette_strength = 0.720f,
