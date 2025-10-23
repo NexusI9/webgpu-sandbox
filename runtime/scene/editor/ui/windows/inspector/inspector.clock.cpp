@@ -1,4 +1,5 @@
 #include "inspector.clock.hpp"
+#include "backend/profiler.h"
 #include "runtime/scene/editor/ui/components/time_bar.hpp"
 #include "runtime/scene/editor/ui/theme/theme.default.h"
 
@@ -41,10 +42,15 @@ void UI::ClockTab::draw() {
           "Bloom Pass",
           color,
       },
+      {
+          ProfilerLatencyType_CompositePass,
+          "Composite Pass",
+          color,
+      },
   };
 
   // fetch all value
-  const size_t length = sizeof(bars) / sizeof(ClockTabBar);
+  const size_t length = 6;
   for (int i = 0; i < length; i++)
     bars[i].value =
         profiler_latency_get_elapsed(&scene->renderer.profiler, bars[i].type);

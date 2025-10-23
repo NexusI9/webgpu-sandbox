@@ -4,6 +4,7 @@
 #include "backend/compute/core.h"
 #include "backend/compute/kawase.h"
 #include "backend/context.h"
+#include "backend/profiler.h"
 #include "backend/std_pipeline/render_shader/bloom/bloom.h"
 #include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "runtime/pipeline/render.h"
@@ -114,6 +115,7 @@ struct PostFx {
   WGPUTextureView scene_view; // view from which the effect will be applied on
   ComputePass *compute; // scene renderer compute pass (used to blur the bloom)
   TextureResolution width, height;
+  Profiler *profiler;
 
   struct {
     post_fx_draw_callback entries[POST_FX_TYPE_COUNT];
@@ -123,6 +125,7 @@ struct PostFx {
 
 typedef struct {
   ComputePass *compute;
+  Profiler *profiler;
   WGPUTextureView scene_view;
   const TextureResolution width, height;
 } PostFxDescriptor;
@@ -223,23 +226,27 @@ static inline void post_fx_bloom_draw(PostFx *fx,
       .colorAttachments = &color_attachment,
   };
 
-  WGPURenderPassEncoder pass =
-      wgpuCommandEncoderBeginRenderPass(command_encoder, &pass_desc);
+  profiler_latency_start(fx->profiler, ProfilerLatencyType_BloomPass);
   {
-    // POST FX
-    wgpuRenderPassEncoderSetPipeline(pass, effect->pipeline->handle);
-    wgpuRenderPassEncoderSetBindGroup(pass, 0, effect->bindgroup, 0, NULL);
-    wgpuRenderPassEncoderDraw(pass, 3, 1, 0, 0);
+    WGPURenderPassEncoder pass =
+        wgpuCommandEncoderBeginRenderPass(command_encoder, &pass_desc);
+    {
+      // POST FX
+      wgpuRenderPassEncoderSetPipeline(pass, effect->pipeline->handle);
+      wgpuRenderPassEncoderSetBindGroup(pass, 0, effect->bindgroup, 0, NULL);
+      wgpuRenderPassEncoderDraw(pass, 3, 1, 0, 0);
+    }
+
+    wgpuRenderPassEncoderEnd(pass);
+
+    KawaseDescriptor blur_desc = {
+        .texture = effect->texture,
+        .layer_count = 1,
+        .pass_count = effect->uniform.bloom.blur,
+    };
+    compute_pass_kawase_inline(fx->compute, &blur_desc, command_encoder);
   }
-
-  wgpuRenderPassEncoderEnd(pass);
-
-  KawaseDescriptor blur_desc = {
-      .texture = effect->texture,
-      .layer_count = 1,
-      .pass_count = effect->uniform.bloom.blur,
-  };
-  compute_pass_kawase_inline(fx->compute, &blur_desc, command_encoder);
+  profiler_latency_end(fx->profiler, ProfilerLatencyType_BloomPass);
 }
 
 /**
@@ -274,18 +281,23 @@ static inline void post_fx_composite_draw(PostFx *fx,
       .colorAttachments = &color_attachment,
   };
 
-  WGPURenderPassEncoder pass =
-      wgpuCommandEncoderBeginRenderPass(command_encoder, &pass_desc);
+  profiler_latency_start(fx->profiler, ProfilerLatencyType_CompositePass);
   {
-    // POST FX
-    wgpuRenderPassEncoderSetPipeline(
-        pass, post_fx_effect(fx, PostFxType_Composite)->pipeline->handle);
-    wgpuRenderPassEncoderSetBindGroup(
-        pass, 0, post_fx_effect(fx, PostFxType_Composite)->bindgroup, 0, NULL);
-    wgpuRenderPassEncoderDraw(pass, 3, 1, 0, 0);
-  }
+    WGPURenderPassEncoder pass =
+        wgpuCommandEncoderBeginRenderPass(command_encoder, &pass_desc);
+    {
+      // POST FX
+      wgpuRenderPassEncoderSetPipeline(
+          pass, post_fx_effect(fx, PostFxType_Composite)->pipeline->handle);
+      wgpuRenderPassEncoderSetBindGroup(
+          pass, 0, post_fx_effect(fx, PostFxType_Composite)->bindgroup, 0,
+          NULL);
+      wgpuRenderPassEncoderDraw(pass, 3, 1, 0, 0);
+    }
 
-  wgpuRenderPassEncoderEnd(pass);
+    wgpuRenderPassEncoderEnd(pass);
+  }
+  profiler_latency_end(fx->profiler, ProfilerLatencyType_CompositePass);
 }
 
 static inline void post_fx_draw(PostFx *fx,

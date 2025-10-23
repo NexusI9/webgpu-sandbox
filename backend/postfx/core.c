@@ -67,6 +67,7 @@ PostFxStatus post_fx_init(PostFx *fx, const PostFxDescriptor *desc) {
   fx->width = desc->width;
   fx->height = desc->height;
   fx->scene_view = desc->scene_view;
+  fx->profiler = desc->profiler;
   fx->callbacks.length = 0;
 
   // define effect callbacks

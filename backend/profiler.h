@@ -1,11 +1,11 @@
 #ifndef _PROFILER_H_
 #define _PROFILER_H_
 
+#include "utils/defines.h"
 #include <stdint.h>
 #include <time.h>
-#include "utils/defines.h"
 
-#define PROFILER_LATENCY_TYPE_COUNT 7
+#define PROFILER_LATENCY_TYPE_COUNT 8
 typedef enum {
   ProfilerLatencyType_ShadowPass,
   ProfilerLatencyType_ReflectionPass,
@@ -14,6 +14,7 @@ typedef enum {
   ProfilerLatencyType_BlitPass,
   ProfilerLatencyType_KawasePass,
   ProfilerLatencyType_BloomPass,
+  ProfilerLatencyType_CompositePass,
 } ProfilerLatencyType;
 
 typedef struct {

@@ -467,6 +467,7 @@ scene_draw_layouts_init(Scene *scene,
         .width = (const TextureResolution)render_width,
         .height = (const TextureResolution)render_height,
         .compute = &scene->renderer.draw.compute_pass,
+        .profiler = &scene->renderer.profiler,
     };
 
     post_fx_init(&last_pass->post_fx, &post_fx_desc);
