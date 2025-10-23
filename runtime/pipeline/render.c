@@ -57,20 +57,22 @@ void render_pipeline_create(RenderPipeline *pipeline,
   };
 
   // Blend State
-  pipeline->blend_state = (WGPUBlendState){
-      .color =
-          {
-              .operation = WGPUBlendOperation_Add,
-              .srcFactor = WGPUBlendFactor_SrcAlpha,
-              .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha,
-          },
-      .alpha =
-          {
-              .operation = WGPUBlendOperation_Add,
-              .srcFactor = WGPUBlendFactor_One,
-              .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha,
-          },
-  };
+  // pipeline->blend_state = (WGPUBlendState){
+  //     .color =
+  //         {
+  //             .operation = WGPUBlendOperation_Add,
+  //             .srcFactor = WGPUBlendFactor_SrcAlpha,
+  //             .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha,
+  //         },
+  //     .alpha =
+  //         {
+  //             .operation = WGPUBlendOperation_Add,
+  //             .srcFactor = WGPUBlendFactor_One,
+  //             .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha,
+  //         },
+  // };
+
+  pipeline->blend_state = (WGPUBlendState){0};
 
   // Color State
   pipeline->color_state = (WGPUColorTargetState){

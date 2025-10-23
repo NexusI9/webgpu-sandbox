@@ -53,6 +53,7 @@ static const RenderPipelineStateObject layout_grid = {
             // double sided
             .primitive_state = &grid_primitive,
             .stencil_state = &grid_stencil,
+            .blend_state = &blend_alpha,
         },
     .bindings = {.mvp = &mvp_binding},
 };

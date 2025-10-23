@@ -273,22 +273,26 @@ typedef enum {
   SceneStatus_MeshAlreadyBuilt,
   SceneStatus_MeshHidden,
   SceneStatus_MeshVisible,
+  SceneStatus_UnvalidPipeline,
+  SceneStatus_UnsubscribedPipeline,
   SceneStatuc_UndefError,
 } SceneStatus;
 
-#define SCENE_PIPELINE_COUNT 8
+#define SCENE_PIPELINE_COUNT 9
 
 typedef enum {
+  ScenePipeline_Undefined = 0,
   // Dynamic
   ScenePipeline_Dynamic_Unlit = 1 << 0,
   ScenePipeline_Dynamic_Lit = 1 << 1,
   ScenePipeline_Dynamic_LitShadow = 1 << 2,
+  ScenePipeline_Dynamic_LitAlpha = 1 << 3,
   // Fixed
-  ScenePipeline_Fixed_Background = 1 << 3,
-  ScenePipeline_Fixed = 1 << 4,
-  ScenePipeline_Fixed_Selection = 1 << 5,
-  ScenePipeline_Fixed_Front = 1 << 6,
-  ScenePipeline_Fixed_UI = 1 << 7,
+  ScenePipeline_Fixed_Background = 1 << 4,
+  ScenePipeline_Fixed = 1 << 5,
+  ScenePipeline_Fixed_Selection = 1 << 6,
+  ScenePipeline_Fixed_Front = 1 << 7,
+  ScenePipeline_Fixed_UI = 1 << 8,
 } ScenePipeline;
 
 #define SCENE_MESH_STATE_COUNT 1

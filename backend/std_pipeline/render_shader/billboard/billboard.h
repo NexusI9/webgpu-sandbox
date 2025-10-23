@@ -1,9 +1,9 @@
 #ifndef _PIPELINE_LAYOUT_BILLBOARD_H_
 #define _PIPELINE_LAYOUT_BILLBOARD_H_
 
-#include "runtime/pipeline/pipeline.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/pipeline.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
@@ -54,6 +54,8 @@ static const RenderPipelineStateObject layout_billboard = {
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &billboard_material_bind_group},
     .bindings = {.mvp = &mvp_binding},
-};
+    .pipeline_attributes = {
+        .blend_state = &blend_alpha,
+    }};
 
 #endif

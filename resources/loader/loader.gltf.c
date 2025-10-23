@@ -343,11 +343,19 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_data *data,
         // TODO: Add a custom path for different shader in loader configuration
         cgltf_material *material = current_primitive.material;
 
-        mesh_shader_create(target_mesh, &(ShaderCreateDescriptor){
-                                            .pipeline = std_render_pipeline(
-                                                RenderPipelineType_PBR),
-                                            .name = material->name,
-                                        });
+        RenderPipelineType pipeline_type = RenderPipelineType_PBR;
+
+        if (material->double_sided)
+          pipeline_type = RenderPipelineType_PBR_DoubleSided;
+
+        if (material->alpha_mode)
+          pipeline_type = RenderPipelineType_PBR_Alpha;
+
+        mesh_shader_create(target_mesh,
+                           &(ShaderCreateDescriptor){
+                               .pipeline = std_render_pipeline(pipeline_type),
+                               .name = material->name,
+                           });
 
         // load and bind gltf textures
         loader_gltf_bind_textures(target_mesh, material, options);
@@ -392,12 +400,30 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
   // TODO: check how to handle if object already has a AO Texture imported ?
   // overwrite ?
   //&material->occlusion_texture : baked separately in the AO pass,
-  cgltf_texture_view *texture_view_list[] = {
-      &material->pbr_metallic_roughness.base_color_texture,
-      &material->pbr_metallic_roughness.metallic_roughness_texture,
-      &material->normal_texture,
-      &material->emissive_texture,
-      &material->occlusion_texture,
+  const struct {
+    cgltf_texture_view *gltf_texture;
+    const WGPUTextureView fallback_texture;
+  } texture_view_list[] = {
+      {
+          &material->pbr_metallic_roughness.base_color_texture,
+          std_texture_view(TextureViewType_FloatBlack),
+      },
+      {
+          &material->pbr_metallic_roughness.metallic_roughness_texture,
+          std_texture_view(TextureViewType_FloatBlack),
+      },
+      {
+          &material->normal_texture,
+          std_texture_view(TextureViewType_FloatBlack),
+      },
+      {
+          &material->emissive_texture,
+          std_texture_view(TextureViewType_FloatBlack),
+      },
+      {
+          &material->occlusion_texture,
+          std_texture_view(TextureViewType_Float),
+      },
   };
 
   uint8_t binding = 0;
@@ -414,12 +440,14 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
 
     // If find texture, upload new texture to GPU and bind to shader
     //(before freeing it)
-    if (loader_gltf_extract_texture(
-            texture_view_list[t], &data, &size, &width, &height, &channels,
-            options->max_texture_size) == LoaderGLTFStatus_TextureFound) {
+    ShaderBindGroupTextureEntry *reflection_texture;
+    if (loader_gltf_extract_texture(texture_view_list[t].gltf_texture, &data,
+                                    &size, &width, &height, &channels,
+                                    options->max_texture_size) ==
+        LoaderGLTFStatus_TextureFound) {
 
       // send texture + sampler to shader
-      ShaderBindGroupTextureEntry *shader_texture =
+      reflection_texture =
           shader_update_texture(mesh_shader(mesh, MeshShader_Texture),
                                 SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
                                 &(ShaderUpdateTexture){
@@ -432,17 +460,24 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
                                     .channels = TextureChannel_RGBA,
                                 },
                                 ShaderUpdateFlag_None);
+    } else {
 
-      // transfert texture view to reflection shader (reuse resource), however
-      // need to be careful with shared ownership. Here it shouldn't be to
-      // much trouble since reflection and texture shader lifetime are mostly
-      // linked.
-      shader_update_texture_view(mesh_shader(mesh, MeshShader_Reflection),
-                                 SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
-                                 shader_texture->texture_view,
-                                 shader_texture->format,
-                                 ShaderUpdateFlag_ReleasePrevious);
+      reflection_texture = shader_update_texture_view(
+          mesh_shader(mesh, MeshShader_Texture),
+          SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
+          texture_view_list[t].fallback_texture, TEXTURE_FORMAT_OFFSCREEN,
+          ShaderUpdateFlag_None);
     }
+
+    // transfert texture view to reflection shader (reuse resource), however
+    // need to be careful with shared ownership. Here it shouldn't be to
+    // much trouble since reflection and texture shader lifetime are mostly
+    // linked.
+    shader_update_texture_view(mesh_shader(mesh, MeshShader_Reflection),
+                               SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
+                               reflection_texture->texture_view,
+                               reflection_texture->format,
+                               ShaderUpdateFlag_ReleasePrevious);
 
     binding += 2;
   }

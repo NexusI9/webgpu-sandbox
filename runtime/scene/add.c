@@ -46,6 +46,7 @@
 static inline void scene_add_sem(Scene *, SceneEditorMeshList *);
 static inline void
 scene_render_pass_draw_list_enable_mesh(Scene *, const MeshRefList *, Mesh *);
+static inline ScenePipeline scene_map_pipeline(const RenderPipeline *);
 
 /**
     ▗▄▄▖ ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖    ▗▄▄▄▖▗▄▄▄ ▗▄▄▄▖▗▄▄▄▖▗▄▖ ▗▄▄▖
@@ -283,7 +284,6 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   SceneEditorMeshList *sem =
       sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor),
                                RegEntryType_SceneEditorMeshList_SunLight);
-
 
   SEMCreateDescriptor sem_desc = {
       .camera = scene->active_camera,
@@ -642,49 +642,81 @@ void scene_render_pass_draw_list_enable_mesh(
    one will add dynamic assets to the scene, compared to the fixed elements
    which are only used by the editor itself.
  */
+ScenePipeline scene_map_pipeline(const RenderPipeline *render_pipeline) {
 
-const static ScenePipeline scene_pipeline_dispatch[RENDER_PIPELINE_TYPE_COUNT] =
-    {
-        [RenderPipelineType_Billboard] = ScenePipeline_Dynamic_Unlit,
-        [RenderPipelineType_Default] = ScenePipeline_Dynamic_LitShadow,
-        [RenderPipelineType_Grid] = ScenePipeline_Fixed,
-        [RenderPipelineType_Line] = ScenePipeline_Fixed,
-        [RenderPipelineType_PBR] = ScenePipeline_Dynamic_LitShadow,
-        [RenderPipelineType_Screen] = ScenePipeline_Fixed,
-        [RenderPipelineType_Shadow] = ScenePipeline_Fixed,
-        [RenderPipelineType_ShadowCullBack] = ScenePipeline_Fixed,
-        [RenderPipelineType_Skybox] = ScenePipeline_Fixed_Background,
-        [RenderPipelineType_Solid] = ScenePipeline_Fixed,
-        [RenderPipelineType_Unlit] = ScenePipeline_Dynamic_Unlit,
-        [RenderPipelineType_GlassProbeGrid] = ScenePipeline_Dynamic_Unlit,
-        [RenderPipelineType_GlassProbePlane] = ScenePipeline_Dynamic_Unlit,
-        [RenderPipelineType_Reflection] = ScenePipeline_Dynamic_Lit,
-        [RenderPipelineType_Blit] = ScenePipeline_Fixed,
-};
+  static const ScenePipeline
+      scene_pipeline_dispatch[RENDER_PIPELINE_TYPE_COUNT] = {
+          // Unlit
+          [RenderPipelineType_Billboard] = ScenePipeline_Dynamic_Unlit,
+          [RenderPipelineType_Unlit] = ScenePipeline_Dynamic_Unlit,
+          [RenderPipelineType_GlassProbeGrid] = ScenePipeline_Dynamic_Unlit,
+          [RenderPipelineType_GlassProbePlane] = ScenePipeline_Dynamic_Unlit,
 
-void scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
-                    const SceneAddFlag flag) {
+          // Lit
+          [RenderPipelineType_Reflection] = ScenePipeline_Dynamic_Lit,
 
-  // TODO: find a cleaner way to define if mesh is Shadowed or not.. the
-  // overallx dispatch is unclear.
-  const RenderPipeline *mesh_pipeline =
-      mesh_shader(mesh, MeshShader_Texture)->pipeline;
+          // Shadow
+          [RenderPipelineType_Default] = ScenePipeline_Dynamic_LitShadow,
+          [RenderPipelineType_PBR] = ScenePipeline_Dynamic_LitShadow,
+          [RenderPipelineType_PBR_DoubleSided] =
+              ScenePipeline_Dynamic_LitShadow,
+
+          // Alpha
+          [RenderPipelineType_PBR_Alpha] = ScenePipeline_Dynamic_LitAlpha,
+
+          // Fixed
+          [RenderPipelineType_Grid] = ScenePipeline_Fixed,
+          [RenderPipelineType_Line] = ScenePipeline_Fixed,
+          [RenderPipelineType_Screen] = ScenePipeline_Fixed,
+          [RenderPipelineType_Shadow] = ScenePipeline_Fixed,
+          [RenderPipelineType_ShadowCullBack] = ScenePipeline_Fixed,
+          [RenderPipelineType_Solid] = ScenePipeline_Fixed,
+          [RenderPipelineType_Blit] = ScenePipeline_Fixed,
+
+          // Background
+          [RenderPipelineType_Skybox] = ScenePipeline_Fixed_Background,
+
+      };
+
+  RenderPipelineType pipeline_type = std_render_pipeline_type(render_pipeline);
+
+  if (pipeline_type == RENDER_PIPELINE_UNDEFINED) {
+    logger_add(LoggerFlag_Error,
+               "Couldn't find any valid type for mesh pipeline.");
+    return ScenePipeline_Undefined;
+  }
 
   // dispatch mesh based on their global pipeline address (lit by default)
-  ScenePipeline pipeline = ScenePipeline_Dynamic_LitShadow;
+  ScenePipeline pipeline = scene_pipeline_dispatch[pipeline_type];
 
-  if (mesh_pipeline == std_render_pipeline(RenderPipelineType_Unlit) ||
-      mesh_pipeline == std_render_pipeline(RenderPipelineType_GlassProbeGrid) ||
-      mesh_pipeline == std_render_pipeline(RenderPipelineType_GlassProbePlane))
-    pipeline = ScenePipeline_Dynamic_Unlit;
+  if (pipeline == ScenePipeline_Undefined)
+    logger_add(LoggerFlag_Error,
+               "Couldn't find any scene pipeline for render pipeline: %d.");
+
+  return pipeline;
+}
+
+SceneStatus scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
+                           const SceneAddFlag flag) {
+
+  const RenderPipeline *mesh_pipeline =
+      mesh_shader(mesh, MeshShader_Texture)->pipeline;
 
   // bind new mesh uniform to SSBO and copy previous mesh uniform data
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
 
-  // build mesh depending on pipeline and scene render mode
-  scene_build_mesh(scene, mesh, pipeline);
+  ScenePipeline pipeline = scene_map_pipeline(mesh_pipeline);
 
-  scene_add_mesh_core(scene, mesh, pipeline, layer, flag);
+  if (pipeline != ScenePipeline_Undefined) {
+
+    // build mesh depending on pipeline and scene render mode
+    scene_build_mesh(scene, mesh, pipeline);
+    scene_add_mesh_core(scene, mesh, pipeline, layer, flag);
+
+    return SceneStatus_Success;
+  }
+
+  return SceneStatus_UnvalidPipeline;
 }
 
 /**

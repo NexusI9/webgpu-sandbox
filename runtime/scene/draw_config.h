@@ -67,7 +67,7 @@ scene_draw_layouts_init(Scene *scene,
 
   // Texture draw configuration
   const RenderPassDrawListDescriptor texture_draw_list = {
-      .length = 8,
+      .length = 9,
       .entries =
           {
               {
@@ -93,6 +93,12 @@ scene_draw_layouts_init(Scene *scene,
                   .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_base,
               },
+              {
+                  .meshes =
+                      scene_pipeline(scene, ScenePipeline_Dynamic_LitAlpha),
+                  .shader = MeshShader_Texture,
+                  .topology_callback = mesh_topology_base,
+              },
               // Fixed
               {
                   .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
@@ -115,7 +121,7 @@ scene_draw_layouts_init(Scene *scene,
 
   // Solid draw configuration
   const RenderPassDrawListDescriptor solid_draw_list = {
-      .length = 7,
+      .length = 8,
       .entries =
           {
               stencil_layout,
@@ -132,6 +138,12 @@ scene_draw_layouts_init(Scene *scene,
               {
                   .meshes =
                       scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+                  .shader = MeshShader_Solid,
+                  .topology_callback = mesh_topology_base,
+              },
+              {
+                  .meshes =
+                      scene_pipeline(scene, ScenePipeline_Dynamic_LitAlpha),
                   .shader = MeshShader_Solid,
                   .topology_callback = mesh_topology_base,
               },
@@ -159,7 +171,7 @@ scene_draw_layouts_init(Scene *scene,
 
   // Wireframe draw configuration
   const RenderPassDrawListDescriptor wireframe_draw_list = {
-      .length = 6,
+      .length = 7,
       .entries =
           {
               {
@@ -175,6 +187,12 @@ scene_draw_layouts_init(Scene *scene,
               },
               {
                   .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Unlit),
+                  .shader = MeshShader_Wireframe,
+                  .topology_callback = mesh_topology_wireframe,
+              },
+              {
+                  .meshes =
+                      scene_pipeline(scene, ScenePipeline_Dynamic_LitAlpha),
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_wireframe,
               },
@@ -201,7 +219,7 @@ scene_draw_layouts_init(Scene *scene,
 
   // Boundbox draw configuration
   const RenderPassDrawListDescriptor boundbox_draw_list = {
-      .length = 6,
+      .length = 7,
       .entries =
           {
               {
@@ -217,6 +235,11 @@ scene_draw_layouts_init(Scene *scene,
               },
               {
                   .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Unlit),
+                  .shader = MeshShader_Wireframe,
+                  .topology_callback = mesh_topology_boundbox,
+              },
+              {
+                  .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_LitAlpha),
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_boundbox,
               },

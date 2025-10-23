@@ -45,6 +45,8 @@ static const RenderPipelineStateObject
         [RenderPipelineType_Unlit] = &layout_unlit,
         [RenderPipelineType_Grid] = &layout_grid,
         [RenderPipelineType_PBR] = &layout_pbr,
+        [RenderPipelineType_PBR_DoubleSided] = &layout_pbr_double_sided,
+        [RenderPipelineType_PBR_Alpha] = &layout_pbr_alpha,
         [RenderPipelineType_Screen] = &layout_screen,
         [RenderPipelineType_Shadow] = &layout_shadow,
         [RenderPipelineType_ShadowCullBack] = &layout_shadow_cullback,
@@ -80,11 +82,12 @@ void standard_render_pipelines_init(
   for (RenderPipelineType i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++) {
 
     if (standard_render_layouts[i] == NULL) {
-      logger_add(LoggerFlag_Error,
-                 "Attempting to initialized an undefined pipeline (%d), make sure "
-                 "the PSO list is rightly configured and match the actual "
-                 "amount of Standard Render Pipelines",
-                 i);
+      logger_add(
+          LoggerFlag_Error,
+          "Attempting to initialized an undefined pipeline (%d), make sure "
+          "the PSO list is rightly configured and match the actual "
+          "amount of Standard Render Pipelines",
+          i);
       continue;
     }
 

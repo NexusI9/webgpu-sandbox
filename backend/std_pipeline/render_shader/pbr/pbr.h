@@ -370,6 +370,20 @@ static const WGPUBindGroupLayoutDescriptor layout_pbr_lights_bind_group = {
         },
 };
 
+static const WGPUPrimitiveState pbr_double_sided_primitive = {
+    .frontFace = WGPUFrontFace_CCW,
+    .cullMode = WGPUCullMode_None,
+    .topology = WGPUPrimitiveTopology_TriangleList,
+    .stripIndexFormat = WGPUIndexFormat_Undefined,
+};
+
+
+static const WGPUDepthStencilState pbr_alpha_stencil = {
+    .format = TEXTURE_FORMAT_DEPTH_STENCIL,
+    .depthWriteEnabled = false,
+    .depthCompare = WGPUCompareFunction_LessEqual,
+};
+
 static const RenderPipelineStateObject layout_pbr = {
     .label = "Pipeline Bind Groups - PBR",
     .shader_path = "../backend/std_pipeline/render_shader/pbr/pbr.wgsl",
@@ -385,6 +399,52 @@ static const RenderPipelineStateObject layout_pbr = {
             .mvp = &mvp_binding,
             .light_list = &pbr_light_list,
             .probe = &pbr_probe,
+        },
+};
+
+static const RenderPipelineStateObject layout_pbr_double_sided = {
+    .label = "Pipeline Bind Groups - PBR Double Sided",
+    .shader_path = "../backend/std_pipeline/render_shader/pbr/pbr.wgsl",
+    .bind_groups_count = 3,
+    .bind_groups =
+        {
+            &mvp_layout,
+            &layout_pbr_textures_bind_group,
+            &layout_pbr_lights_bind_group,
+        },
+    .bindings =
+        {
+            .mvp = &mvp_binding,
+            .light_list = &pbr_light_list,
+            .probe = &pbr_probe,
+        },
+    .pipeline_attributes =
+        {
+            .primitive_state = &pbr_double_sided_primitive,
+        },
+};
+
+static const RenderPipelineStateObject layout_pbr_alpha = {
+    .label = "Pipeline Bind Groups - PBR Alpha",
+    .shader_path = "../backend/std_pipeline/render_shader/pbr/pbr.wgsl",
+    .bind_groups_count = 3,
+    .bind_groups =
+        {
+            &mvp_layout,
+            &layout_pbr_textures_bind_group,
+            &layout_pbr_lights_bind_group,
+        },
+    .bindings =
+        {
+            .mvp = &mvp_binding,
+            .light_list = &pbr_light_list,
+            .probe = &pbr_probe,
+        },
+    .pipeline_attributes =
+        {
+            .primitive_state = &pbr_double_sided_primitive,
+            .blend_state = &blend_alpha,
+            .stencil_state = &pbr_alpha_stencil,
         },
 };
 

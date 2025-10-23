@@ -1,18 +1,23 @@
 #ifndef _SCENE_RENDERER_STD_PIPELINE_CORE_H_
 #define _SCENE_RENDERER_STD_PIPELINE_CORE_H_
 
+#include <stdint.h>
 #include <webgpu/webgpu.h>
 
 #include "runtime/pipeline/pipeline.h"
 
 // Standards pipelines
-#define RENDER_PIPELINE_TYPE_COUNT 19
+#define RENDER_PIPELINE_TYPE_COUNT 21
+#define RENDER_PIPELINE_UNDEFINED FLT_MAX
+
 typedef enum {
   RenderPipelineType_Billboard,
   RenderPipelineType_Default,
   RenderPipelineType_Grid,
   RenderPipelineType_Line,
   RenderPipelineType_PBR,
+  RenderPipelineType_PBR_DoubleSided,
+  RenderPipelineType_PBR_Alpha,
   RenderPipelineType_Screen,
   RenderPipelineType_Shadow,
   RenderPipelineType_ShadowCullBack,
@@ -53,6 +58,18 @@ static inline const ComputePipeline *
 std_compute_pipeline(const ComputePipelineType type) {
   return &g_std_compute_pipelines[type];
 }
+
+static inline RenderPipelineType
+std_render_pipeline_type(const RenderPipeline *pipeline) {
+
+  for (uint8_t i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++) {
+    if (std_render_pipeline((RenderPipelineType)i) == pipeline)
+      return (RenderPipelineType)i;
+  }
+
+  return (RenderPipelineType)RENDER_PIPELINE_UNDEFINED;
+}
+
 
 EXTERN_C_END
 

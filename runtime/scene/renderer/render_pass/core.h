@@ -11,7 +11,6 @@
 #include "runtime/pipeline/render.h"
 #include "utils/stli.h"
 
-#define RENDER_PASS_DRAW_LAYOUT_MAX_MESH_LIST 6
 #define RENDER_PASS_MAX_DRAW_LIST 12
 #define RENDER_PASS_COUNT 2
 #define RENDER_PASS_VIEW_UNDEFINED 0

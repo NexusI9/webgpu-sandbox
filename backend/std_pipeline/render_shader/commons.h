@@ -86,4 +86,19 @@ static const WGPUBindGroupLayoutDescriptor mp_layout = {
         },
 };
 
+static const WGPUBlendState blend_alpha = {
+    .color =
+        {
+            .srcFactor = WGPUBlendFactor_SrcAlpha,
+            .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha,
+            .operation = WGPUBlendOperation_Add,
+        },
+    .alpha =
+        {
+            .srcFactor = WGPUBlendFactor_One,
+            .dstFactor = WGPUBlendFactor_OneMinusSrcAlpha,
+            .operation = WGPUBlendOperation_Add,
+        },
+};
+
 #endif

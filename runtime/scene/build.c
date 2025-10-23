@@ -117,8 +117,8 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
   mesh_shader_build_mvp(mesh, MeshShader_Reflection, ssbo);
 
   if (pipeline &
-      (ScenePipeline_Dynamic_Unlit | ScenePipeline_Dynamic_LitShadow |
-       ScenePipeline_Dynamic_Lit)) {
+      (ScenePipeline_Dynamic_Unlit | ScenePipeline_Dynamic_LitAlpha |
+       ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
 
     mesh_shader_texture_update_environment(mesh, scene->environment.skybox.view,
                                            ssbo);
@@ -128,14 +128,15 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
         scene->probes_reflection.pass.color.attachment.view, ssbo);
   }
 
-  if (pipeline &
-      (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
+  if (pipeline & (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit |
+                  ScenePipeline_Dynamic_LitAlpha)) {
 
     mesh_shader_texture_update_lights(mesh, MeshShader_Texture, ubo, ssbo);
     mesh_shader_texture_update_lights(mesh, MeshShader_Reflection, ubo, ssbo);
   }
 
-  if (pipeline & ScenePipeline_Dynamic_LitShadow) {
+  if (pipeline &
+      (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_LitAlpha)) {
 
     mesh_shader_texture_bind_shadow_maps(
         mesh, scene->lights.point.shadow.pass.depth.attachment.view,
