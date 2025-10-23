@@ -61,9 +61,9 @@ int main(int argc, const char *argv[]) {
 
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Solid);
 
-  example_light(&main_scene);
+  //example_light(&main_scene);
   example_skybox(&main_scene);
-  example_gltf(&main_scene);
+  example_gltf_spa(&main_scene);
 
 
   // example_ao(&main_scene, true);

@@ -26,7 +26,7 @@ void UI::InspectorSunLight::properties_update_callback(Scene *scene,
                                                        void *user_data) {
 
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
-  PointLight *light = (PointLight *)list->origin->target;
+  SunLight *light = (SunLight *)list->origin->target;
 
   ssbo_update_queue_insert(&scene->renderer.ssbo, SSBOType_SunLight,
                            light->ssbo_slot[LightSSBOSlot_List].id);

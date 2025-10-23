@@ -28,6 +28,36 @@ void example_gltf(Scene *scene) {
 }
 
 void example_gltf_spa(Scene *scene) {
+
+//  scene_add_point_light(scene,
+//                        &(PointLightDescriptor){
+//                            .color = {0.4f, 0.0f, 1.0f, 1.0f},
+//                            .intensity = 7.0f,
+//                            .cutoff = 20.0f,
+//                            .inner_cutoff = 50.0f,
+//                            .near = 0.1,
+//                            .far = 20.0f,
+//                            .position = {0.0f, 3.5f, 0.0f},
+//                        },
+//                        LightCreateFlag_None, NULL);
+
+  scene_add_sun_light(scene,
+                      &(SunLightDescriptor){
+                          .position = {10.8f, 12.0f, -15.0f},
+                          .color = {1.0f, 1.4f, 1.0f, 1.0f},
+                          .intensity = 1.0f,
+                          .size = 10.0f,
+                      },
+                      LightCreateFlag_Shadow, NULL);
+
+  scene_add_ambient_light(scene,
+                          &(AmbientLightDescriptor){
+                              .color = {0.0f, 0.4f, 1.0f, 1.0f},
+                              .intensity = 0.2f,
+                              .position = {-2.0f, 3.0f, 3.3f},
+                          },
+                          NULL);
+
   loader_gltf_load(
       &(GLTFLoadDescriptor){
           .scene = scene,
@@ -40,7 +70,6 @@ void example_gltf_spa(Scene *scene) {
       },
       NULL);
 }
-
 
 void example_gltf_podium(Scene *scene) {
 

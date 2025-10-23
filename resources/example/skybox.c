@@ -33,7 +33,7 @@ void example_skybox(Scene *scene) {
       &(PrefabSkyboxCreateDescriptor){
           .blur = 4,
           .resolution = TextureResolution_512,
-          .path = netherworld_cubemap,
+          .path = lake_cubemap,
       });
 }
 

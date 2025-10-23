@@ -284,6 +284,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
       sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor),
                                RegEntryType_SceneEditorMeshList_SunLight);
 
+
   SEMCreateDescriptor sem_desc = {
       .camera = scene->active_camera,
       .viewport = &scene->viewport,
