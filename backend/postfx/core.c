@@ -301,8 +301,8 @@ PostFxStatus post_fx_composite_create(PostFx *fx) {
   const RenderPipelineType pipeline_type = RenderPipelineType_Composite;
   const CompositeUniform uniform = {
       .bloom_intensity = 1.0f,
-      .exposure = 1.0f,
-      .gamma = 1.0f,
+      .exposure = 1.140f,
+      .gamma = 1.460f,
       .vignette_feather = 1.0f,
       .vignette_strength = 0.0f,
   };

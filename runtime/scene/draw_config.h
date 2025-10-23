@@ -481,39 +481,8 @@ scene_draw_layouts_init(Scene *scene,
                                  last_pass->color.resolve_view);
 
     } else {
-
-      {
-        const PostFxEffectUniform bloom = {
-            .bloom =
-                {
-                    .blur = 2,
-                    .knee = 0.3f,
-                    .threshold = 0.3f,
-                    .downscale = 2,
-                },
-        };
-
-        post_fx_toggle_effect(&last_pass->post_fx, PostFxType_Bloom);
-        post_fx_update_effect_uniform(&last_pass->post_fx, PostFxType_Bloom,
-                                      bloom);
-      }
-
-      {
-        const PostFxEffectUniform composite = {
-            .composite =
-                {
-                    .bloom_intensity = 1.280f,
-                    .exposure = 1.0f,
-                    .gamma = 1.0f,
-                    .vignette_feather = 0.420f,
-                    .vignette_strength = 0.720f,
-                },
-        };
-
-        post_fx_toggle_effect(&last_pass->post_fx, PostFxType_Composite);
-        post_fx_update_effect_uniform(&last_pass->post_fx, PostFxType_Composite,
-                                      composite);
-      }
+      post_fx_toggle_effect(&last_pass->post_fx, PostFxType_Bloom);
+      post_fx_toggle_effect(&last_pass->post_fx, PostFxType_Composite);
     }
   }
 }
