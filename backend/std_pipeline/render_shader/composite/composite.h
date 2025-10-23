@@ -10,6 +10,8 @@ typedef struct {
   float vignette_strength;
   float vignette_feather;
   float exposure;
+  float gamma;
+  vec3 _pad;
 } CompositeUniform;
 
 static const WGPUBindGroupLayoutDescriptor composite_bind_group_layout = {
@@ -60,7 +62,8 @@ static const WGPUBindGroupLayoutDescriptor composite_bind_group_layout = {
 
 static const RenderPipelineStateObject layout_composite = {
     .label = "Composite pass",
-    .shader_path = "./backend/std_pipeline/render_shader/composite/composite.wgsl",
+    .shader_path =
+        "./backend/std_pipeline/render_shader/composite/composite.wgsl",
     .bind_groups_count = 1,
     .bind_groups = {&composite_bind_group_layout},
     .pipeline_attributes =

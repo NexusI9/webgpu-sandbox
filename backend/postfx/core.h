@@ -146,7 +146,7 @@ PostFxStatus post_fx_effect_destroy(PostFxEffect *);
 PostFxStatus post_fx_add_callback(PostFx *, post_fx_draw_callback);
 PostFxStatus post_fx_remove_callback(PostFx *, post_fx_draw_callback);
 
-// Updaters
+// Mutators
 PostFxStatus post_fx_blit_update_bindgroup(PostFx *);
 PostFxStatus post_fx_bloom_update_bindgroup(PostFx *);
 PostFxStatus post_fx_composite_update_bindgroup(PostFx *);
@@ -155,6 +155,7 @@ PostFxStatus post_fx_bloom_update_uniform(PostFx *, const PostFxEffectUniform);
 PostFxStatus post_fx_composite_update_uniform(PostFx *,
                                               const PostFxEffectUniform);
 
+PostFxStatus post_fx_update_scene_view(PostFx *, const WGPUTextureView);
 PostFxStatus post_fx_update_effect_view(PostFx *, const PostFxType,
                                         const PostFxViewIndex,
                                         const WGPUTextureView);

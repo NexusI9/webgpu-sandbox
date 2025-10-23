@@ -121,6 +121,25 @@ PostFxStatus post_fx_validate_create(PostFx *fx, const PostFxType type) {
 }
 
 /**
+   Update the global post fx view and rebuild all active effect with the new
+   scene view
+ */
+PostFxStatus post_fx_update_scene_view(PostFx *fx, const WGPUTextureView view) {
+  fx->scene_view = view;
+
+  for (uint8_t i = 0; i < POST_FX_TYPE_COUNT; i++) {
+    PostFxEffect *effect = post_fx_effect(fx, 1 << i);
+
+    effect->view[PostFxViewIndex_Scene] = fx->scene_view;
+
+    if (post_fx_effect_enabled(fx, 1 << i) && effect->bindgroup_update_callback)
+      effect->bindgroup_update_callback(fx);
+  }
+
+  return PostFxStatus_Success;
+}
+
+/**
    Generic function to replace the view of an effect at a certain index and
    automatically rebuild the effect after ward.
  */
@@ -283,6 +302,7 @@ PostFxStatus post_fx_composite_create(PostFx *fx) {
   const CompositeUniform uniform = {
       .bloom_intensity = 1.0f,
       .exposure = 1.0f,
+      .gamma = 1.0f,
       .vignette_feather = 1.0f,
       .vignette_strength = 0.0f,
   };
@@ -394,8 +414,10 @@ PostFxStatus post_fx_blit_update_bindgroup(PostFx *fx) {
   PostFxEffect *effect = post_fx_effect(fx, PostFxType_Blit);
 
   // clean up
-  if (effect->bindgroup)
+  if (effect->bindgroup) {
     wgpuBindGroupRelease(effect->bindgroup);
+    effect->bindgroup = NULL;
+  }
 
   const WGPURenderPipeline pipeline = effect->pipeline->handle;
   const WGPUBindGroupLayout bind_group_layout =

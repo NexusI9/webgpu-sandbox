@@ -7,6 +7,8 @@ struct CompositeUniform {
                     vignette_strength : f32,
                                         vignette_radius : f32,
                                                           exposure : f32,
+                                                                     gamma
+      : f32,
 };
 
 @group(0) @binding(0) var scene_texture : texture_2d<f32>;
@@ -44,7 +46,7 @@ struct CompositeUniform {
   // simple tone mapping + exposure
   color = vec3(1.0) - exp(-color * uComposite.exposure);
   // gamma
-  color = pow(color, vec3(1.0 / 2.2));
-  
+  color = pow(color, vec3(1.0 / uComposite.gamma));
+
   return vec4(color, 1.0);
 }

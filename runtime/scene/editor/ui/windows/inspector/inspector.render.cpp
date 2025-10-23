@@ -170,6 +170,24 @@ void UI::RenderTab::draw() {
   PostFxEffect *composite =
       post_fx_effect(texture_pass_fx, PostFxType_Composite);
 
+  if (UI::TreeItem(scene, "Tone Mapping").draw()) {
+
+    if (UI::DragFloat(scene, "Exposure", &style,
+                      &composite->uniform.composite.exposure, 0.01f, 0.0f,
+                      10.0f)
+            .draw())
+      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Composite,
+                                    composite->uniform);
+
+    if (UI::DragFloat(scene, "Gamma", &style,
+                      &composite->uniform.composite.gamma, 0.01f, 0.0f, 10.0f)
+            .draw())
+      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Composite,
+                                    composite->uniform);
+
+    ImGui::TreePop();
+  }
+
   if (UI::TreeItem(scene, "Bloom").draw()) {
 
     ImGui::Text("Enable");
@@ -222,13 +240,6 @@ void UI::RenderTab::draw() {
     if (UI::DragFloat(scene, "Feather", &style,
                       &composite->uniform.composite.vignette_feather, 0.01f,
                       0.0f, 1.0f)
-            .draw())
-      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Composite,
-                                    composite->uniform);
-
-    if (UI::DragFloat(scene, "Exposure", &style,
-                      &composite->uniform.composite.exposure, 0.01f, 0.0f,
-                      10.0f)
             .draw())
       post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Composite,
                                     composite->uniform);

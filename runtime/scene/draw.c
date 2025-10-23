@@ -123,30 +123,12 @@ void scene_update_render_pass_texture(
         }
 
         if (j == SCENE_RENDER_PASS_COUNT - 1) {
-
-          if (SceneRendererDrawMode_Texture & (1 << mode)) {
-
-            // first update the scene view of Bloom & Composite
-            post_fx_update_effect_view(&pass->post_fx, PostFxType_Bloom,
-                                       PostFxViewIndex_Scene,
-                                       pass->color.resolve_view);
-
-            post_fx_update_effect_view(&pass->post_fx, PostFxType_Composite,
-                                       PostFxViewIndex_Scene,
-                                       pass->color.resolve_view);
-
-            // then recreate the bloom independent texture with the new
-            // resolution
+	  
+          post_fx_update_scene_view(&pass->post_fx, pass->color.resolve_view);
+          if (SceneRendererDrawMode_Texture & (1 << mode))
+            // recreate the bloom independent texture with the new resolution
             post_fx_bloom_update_texture_resolution(&pass->post_fx, real_width,
                                                     real_height);
-
-          } else {
-
-            // update last pass post fx bingroup with the newest view
-            post_fx_update_effect_view(&pass->post_fx, PostFxType_Blit,
-                                       PostFxViewIndex_Scene,
-                                       pass->color.resolve_view);
-          }
         }
       }
     }
