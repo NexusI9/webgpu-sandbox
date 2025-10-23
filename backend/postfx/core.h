@@ -7,10 +7,13 @@
 #include "backend/std_pipeline/render_shader/bloom/bloom.h"
 #include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "runtime/pipeline/render.h"
+#include "runtime/texture/core.h"
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
 typedef struct PostFx PostFx;
+typedef struct PostFxEffect PostFxEffect;
+typedef union PostFxEffectUniform PostFxEffectUniform;
 
 typedef enum {
   PostFxStatus_Success,
@@ -66,13 +69,21 @@ typedef enum {
 
  */
 
-typedef PostFxStatus (*post_fx_destructor)(PostFx *);
 typedef PostFxStatus (*post_fx_constructor)(PostFx *);
-typedef PostFxStatus (*post_fx_bindgroup_creator)(PostFx *);
+typedef PostFxStatus (*post_fx_destructor)(PostFx *);
+typedef PostFxStatus (*post_fx_bindgroup_update)(PostFx *);
+typedef PostFxStatus (*post_fx_uniform_update)(PostFx *,
+                                               const PostFxEffectUniform);
 typedef void (*post_fx_draw_callback)(PostFx *, WGPUCommandEncoder);
 
 #define POST_FX_MAX_BUFFER 6
-typedef struct {
+
+union PostFxEffectUniform {
+  CompositeUniform composite;
+  BloomUniform bloom;
+};
+
+struct PostFxEffect {
 
   // cached bindgroup created with the effect parameter (view, unfiroms...)
   WGPUBindGroup bindgroup;
@@ -84,24 +95,25 @@ typedef struct {
   WGPUBuffer buffer[POST_FX_MAX_BUFFER];
   // optional texture if we want the post fx to use a independent texture
   WGPUTexture texture;
-  post_fx_bindgroup_creator bindgroup_creator;
-  // Create the effect with unset values (0).
+
+  // Mutators:
   post_fx_constructor constructor;
   post_fx_destructor destructor;
+  post_fx_draw_callback draw_callback;
+  post_fx_uniform_update uniform_update_callback;
+  post_fx_bindgroup_update bindgroup_update_callback;
 
-  union {
-    CompositeUniform composite;
-    BloomUniform bloom;
-  } uniform;
-
-} PostFxEffect;
+  PostFxEffectUniform uniform;
+};
 
 struct PostFx {
 
   PostFxType state;
   WGPUSampler sampler; // common sampler used in each effect
   PostFxEffect effects[POST_FX_TYPE_COUNT];
+  WGPUTextureView scene_view; // view from which the effect will be applied on
   ComputePass *compute; // scene renderer compute pass (used to blur the bloom)
+  TextureResolution width, height;
 
   struct {
     post_fx_draw_callback entries[POST_FX_TYPE_COUNT];
@@ -111,6 +123,8 @@ struct PostFx {
 
 typedef struct {
   ComputePass *compute;
+  WGPUTextureView scene_view;
+  const TextureResolution width, height;
 } PostFxDescriptor;
 
 EXTERN_C_BEGIN
@@ -119,21 +133,45 @@ PostFxStatus post_fx_init(PostFx *, const PostFxDescriptor *);
 PostFxStatus post_fx_destroy(PostFx *);
 
 // Creators
-PostFxStatus post_fx_blit_create(PostFx *, const WGPUTextureView);
+PostFxStatus post_fx_blit_create(PostFx *);
+PostFxStatus post_fx_bloom_create(PostFx *);
+PostFxStatus post_fx_composite_create(PostFx *);
 
-PostFxStatus post_fx_bloom_create(PostFx *, const WGPUTextureView,
-                                  const BloomUniform, const int width,
-                                  const int height);
+// Destructors
+PostFxStatus post_fx_blit_destroy(PostFx *);
+PostFxStatus post_fx_bloom_destroy(PostFx *);
+PostFxStatus post_fx_composite_destroy(PostFx *);
+PostFxStatus post_fx_effect_destroy(PostFxEffect *);
 
-PostFxStatus post_fx_composite_create(PostFx *, const WGPUTextureView,
-                                      const CompositeUniform);
+PostFxStatus post_fx_add_callback(PostFx *, post_fx_draw_callback);
+PostFxStatus post_fx_remove_callback(PostFx *, post_fx_draw_callback);
+
+// Updaters
+PostFxStatus post_fx_blit_update_bindgroup(PostFx *);
+PostFxStatus post_fx_bloom_update_bindgroup(PostFx *);
+PostFxStatus post_fx_composite_update_bindgroup(PostFx *);
+
+PostFxStatus post_fx_bloom_update_uniform(PostFx *, const PostFxEffectUniform);
+PostFxStatus post_fx_composite_update_uniform(PostFx *,
+                                              const PostFxEffectUniform);
 
 PostFxStatus post_fx_update_effect_view(PostFx *, const PostFxType,
                                         const PostFxViewIndex,
                                         const WGPUTextureView);
 
+PostFxStatus post_fx_update_effect_uniform(PostFx *, const PostFxType,
+                                           const PostFxEffectUniform);
+
+PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *, const int,
+                                                     const int);
+
+// Accessor
 static inline PostFxEffect *post_fx_effect(PostFx *fx, const PostFxType type) {
   return &fx->effects[__builtin_ctz(type)];
+}
+
+static inline bool post_fx_effect_enabled(PostFx *fx, const PostFxType type) {
+  return (fx->state & type);
 }
 
 // Draw
@@ -254,37 +292,6 @@ static inline void post_fx_draw(PostFx *fx,
   // loop through subscribed effects
   for (uint8_t i = 0; i < fx->callbacks.length; i++)
     fx->callbacks.entries[i](fx, command_encoder);
-}
-
-PostFxStatus post_fx_blit_create_bindgroup(PostFx *);
-PostFxStatus post_fx_bloom_create_bindgroup(PostFx *);
-PostFxStatus post_fx_composite_create_bindgroup(PostFx *);
-
-// Update
-
-PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *, const int,
-                                                     const int);
-
-static inline PostFxStatus
-post_fx_bloom_update_uniform(PostFx *fx, const BloomUniform uniform) {
-  PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
-  effect->uniform.bloom = uniform;
-  wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
-                       &effect->uniform.bloom, sizeof(BloomUniform));
-  return PostFxStatus_Success;
-}
-
-static inline PostFxStatus
-post_fx_composite_update_uniform(PostFx *fx, const CompositeUniform uniform) {
-  PostFxEffect *effect = post_fx_effect(fx, PostFxType_Composite);
-  effect->uniform.composite = uniform;
-  wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
-                       &effect->uniform.composite, sizeof(CompositeUniform));
-  return PostFxStatus_Success;
-}
-
-static inline bool post_fx_effect_enabled(PostFx *fx, const PostFxType type) {
-  return (fx->state & type);
 }
 
 PostFxStatus post_fx_toggle_effect(PostFx *, const PostFxType);

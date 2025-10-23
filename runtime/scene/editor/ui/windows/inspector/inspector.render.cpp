@@ -174,31 +174,33 @@ void UI::RenderTab::draw() {
 
     ImGui::Text("Enable");
     ImGui::SameLine(ImGui::GetContentRegionAvail().x);
-    if(ImGui::Checkbox("##enablebloom", NULL)){
-      
-    }
+    if (ImGui::Checkbox("##enablebloom", NULL))
+      post_fx_toggle_effect(texture_pass_fx, PostFxType_Bloom);
 
     if (UI::DragFloat(scene, "Threshold", &style,
                       &bloom->uniform.bloom.threshold, 0.01f, 0.0f, 1.0f)
             .draw())
-      post_fx_bloom_update_uniform(texture_pass_fx, bloom->uniform.bloom);
+      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Bloom,
+                                    bloom->uniform);
 
     if (UI::DragFloat(scene, "Knee", &style, &bloom->uniform.bloom.knee, 0.01f,
                       0.0f, 1.0f)
             .draw())
-      post_fx_bloom_update_uniform(texture_pass_fx, bloom->uniform.bloom);
+      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Bloom,
+                                    bloom->uniform);
 
     if (UI::DragInt(scene, "Blur", &style, (int *)&bloom->uniform.bloom.blur,
                     1.0f, 0, 10)
             .draw())
-      post_fx_bloom_update_uniform(texture_pass_fx, bloom->uniform.bloom);
+      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Bloom,
+                                    bloom->uniform);
 
     if (UI::DragFloat(scene, "Intensity", &style,
                       &composite->uniform.composite.bloom_intensity, 0.01f,
                       0.0f, 10.0f)
             .draw())
-      post_fx_composite_update_uniform(texture_pass_fx,
-                                       composite->uniform.composite);
+      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Composite,
+                                    composite->uniform);
 
     if (UI::DragInt(scene, "Downscale", &style,
                     (int *)&bloom->uniform.bloom.downscale, 1, 1, 6)
@@ -214,22 +216,22 @@ void UI::RenderTab::draw() {
                       &composite->uniform.composite.vignette_strength, 0.01f,
                       0.0f, 1.0f)
             .draw())
-      post_fx_composite_update_uniform(texture_pass_fx,
-                                       composite->uniform.composite);
+      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Composite,
+                                    composite->uniform);
 
     if (UI::DragFloat(scene, "Feather", &style,
                       &composite->uniform.composite.vignette_feather, 0.01f,
                       0.0f, 1.0f)
             .draw())
-      post_fx_composite_update_uniform(texture_pass_fx,
-                                       composite->uniform.composite);
+      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Composite,
+                                    composite->uniform);
 
     if (UI::DragFloat(scene, "Exposure", &style,
                       &composite->uniform.composite.exposure, 0.01f, 0.0f,
                       10.0f)
             .draw())
-      post_fx_composite_update_uniform(texture_pass_fx,
-                                       composite->uniform.composite);
+      post_fx_update_effect_uniform(texture_pass_fx, PostFxType_Composite,
+                                    composite->uniform);
 
     ImGui::TreePop();
   }

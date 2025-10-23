@@ -19,6 +19,9 @@ static inline WGPUTextureView
 scene_renderer_create_fallback_float(WGPUTexture *);
 
 static inline WGPUTextureView
+scene_renderer_create_fallback_float_black(WGPUTexture *);
+
+static inline WGPUTextureView
 scene_renderer_create_fallback_float_2d_array(WGPUTexture *);
 
 static inline WGPUTextureView
@@ -50,6 +53,7 @@ scene_renderer_create_fallback_depth_2d_array(WGPUTexture *);
 static const std_texture_view_create texture_creator[STD_TEXTURE_VIEW_COUNT] = {
     // float
     [TextureViewType_Float] = scene_renderer_create_fallback_float,
+    [TextureViewType_FloatBlack] = scene_renderer_create_fallback_float_black,
     [TextureViewType_Float2DArray] =
         scene_renderer_create_fallback_float_2d_array,
     [TextureViewType_FloatCube] = scene_renderer_create_fallback_float_cube,
@@ -104,6 +108,29 @@ WGPUTextureView scene_renderer_create_fallback_float(WGPUTexture *texture) {
                             .rowsPerImage = 1,
                         },
                         &(WGPUExtent3D){1, 1, 1});
+
+  return wgpuTextureCreateView(*texture, NULL);
+}
+
+WGPUTextureView scene_renderer_create_fallback_float_black(WGPUTexture *texture) {
+
+  *texture = wgpuDeviceCreateTexture(
+      context_device(),
+      &(WGPUTextureDescriptor){
+          .label = "Standard Texture Float Black",
+          .size =
+              {
+                  .width = 1,
+                  .height = 1,
+                  .depthOrArrayLayers = 1,
+              },
+          .format = TEXTURE_FORMAT_OFFSCREEN,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+          .dimension = WGPUTextureDimension_2D,
+          .usage = WGPUTextureUsage_RenderAttachment |
+                   WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+      });
 
   return wgpuTextureCreateView(*texture, NULL);
 }

@@ -15,6 +15,7 @@
 #include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
+#include <stdio.h>
 
 /**
    Define the scene renderer draw configurations by providing each draw mode
@@ -461,7 +462,12 @@ scene_draw_layouts_init(Scene *scene,
 
      */
 
-    PostFxDescriptor post_fx_desc = {&scene->renderer.draw.compute_pass};
+    PostFxDescriptor post_fx_desc = {
+        .scene_view = last_pass->color.resolve_view,
+        .width = (const TextureResolution)render_width,
+        .height = (const TextureResolution)render_height,
+        .compute = &scene->renderer.draw.compute_pass,
+    };
 
     post_fx_init(&last_pass->post_fx, &post_fx_desc);
 
@@ -469,29 +475,44 @@ scene_draw_layouts_init(Scene *scene,
         SceneRendererDrawMode_Wireframe & (1 << mode) ||
         SceneRendererDrawMode_Boundbox & (1 << mode)) {
 
-      post_fx_blit_create(&last_pass->post_fx, last_pass->color.resolve_view);
+      post_fx_toggle_effect(&last_pass->post_fx, PostFxType_Blit);
+      post_fx_update_effect_view(&last_pass->post_fx, PostFxType_Blit,
+                                 PostFxViewIndex_Scene,
+                                 last_pass->color.resolve_view);
 
     } else {
 
-      const BloomUniform bloom = {
-          .blur = 2,
-          .knee = 0.3f,
-          .threshold = 0.3f,
-          .downscale = 2,
-      };
+      {
+        const PostFxEffectUniform bloom = {
+            .bloom =
+                {
+                    .blur = 2,
+                    .knee = 0.3f,
+                    .threshold = 0.3f,
+                    .downscale = 2,
+                },
+        };
 
-      post_fx_bloom_create(&last_pass->post_fx, last_pass->color.resolve_view,
-                           bloom, render_width, render_height);
+        post_fx_toggle_effect(&last_pass->post_fx, PostFxType_Bloom);
+        post_fx_update_effect_uniform(&last_pass->post_fx, PostFxType_Bloom,
+                                      bloom);
+      }
 
-      const CompositeUniform composite = {
-          .bloom_intensity = 1.280f,
-          .exposure = 1.0f,
-          .vignette_feather = 0.420f,
-          .vignette_strength = 0.720f,
-      };
+      {
+        const PostFxEffectUniform composite = {
+            .composite =
+                {
+                    .bloom_intensity = 1.280f,
+                    .exposure = 1.0f,
+                    .vignette_feather = 0.420f,
+                    .vignette_strength = 0.720f,
+                },
+        };
 
-      post_fx_composite_create(&last_pass->post_fx,
-                               last_pass->color.resolve_view, composite);
+        post_fx_toggle_effect(&last_pass->post_fx, PostFxType_Composite);
+        post_fx_update_effect_uniform(&last_pass->post_fx, PostFxType_Composite,
+                                      composite);
+      }
     }
   }
 }
