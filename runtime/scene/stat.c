@@ -14,7 +14,7 @@ void scene_stat_update_vertex_count(Scene *scene) {
   RenderPassList *active_list =
       scene_renderer_pass_list(&scene->renderer, scene->renderer.draw.mode);
 
-  float denom = 1.0f / VERTEX_STRIDE;
+  float denom = 1.0f / 3;
 
   for (size_t i = 0; i < active_list->length; i++)
     for (size_t j = 0; j < active_list->passes[i].draw_list.length; j++)
@@ -24,7 +24,7 @@ void scene_stat_update_vertex_count(Scene *scene) {
         count += active_list->passes[i]
                      .draw_list.entries[j]
                      .drawn_meshes.entries[k]
-                     ->topology.base.attribute.length *
+                     .length *
                  denom;
 
   stat_update_count(&scene->renderer.stats, StatCount_Vertex, count);

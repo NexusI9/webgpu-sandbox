@@ -19,10 +19,10 @@
 #include "topology/core.h"
 #include "topology/topology.h"
 #include "topology/wireframe.h"
+#include "utils/defines.h"
 #include "utils/dyli.h"
 #include "utils/name.h"
 #include "webgpu/webgpu.h"
-#include "utils/defines.h"
 
 #define MESH_CHILD_LENGTH 6
 #define MESH_NAME_MAX_LENGTH 64
@@ -119,9 +119,6 @@ EXTERN_C_BEGIN
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
 
-// shader
-void mesh_draw(MeshTopology, Shader *, WGPURenderPassEncoder);
-
 // hierarchy
 void mesh_set_parent(Mesh *, Mesh *);
 DynamicListStatus mesh_child_add(Mesh *, Mesh *);
@@ -197,6 +194,7 @@ static const char *mesh_get_name(Mesh *mesh) { return mesh->name; }
 static inline void mesh_set_name(Mesh *mesh, const char *src) {
   name_copy(src, mesh->name);
 }
+
 
 EXTERN_C_END
 

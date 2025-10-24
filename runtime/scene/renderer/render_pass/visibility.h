@@ -2,6 +2,9 @@
 #define _RENDER_PASS_VISBILITY_H_
 
 #include "core.h"
+#include "runtime/mesh/draw.h"
+#include "runtime/mesh/shader/core.h"
+#include "utils/dyli.h"
 
 /* ===  Visbility manager ===
 
@@ -62,7 +65,7 @@
                       '-----.----'----------'----.----'-----.----'----------'
                             |          .---------'.---------'
                       .-----'----.-----'----.----'-----.
-   Draw list:         |  Mesh 1  |  Mesh 3  |  Mesh 4  |
+   Draw list:         | Packet 1 | Packet 3 | Packet 4 |
                       '----------'----------'----------'
 
    The caveats to this double layer list is that we need to make sure to sync
@@ -140,8 +143,13 @@ render_pass_find_layout_from_source_list(RenderPass *pass,
 static inline RenderPassStatus
 render_pass_layout_enable_mesh(RenderPassDrawLayout *layout, Mesh *mesh) {
 
-  if (mesh_ref_list_insert(&layout->drawn_meshes, mesh) != NULL)
+  MeshDrawPacket *pack = mesh_draw_packet_list_new_entry(&layout->drawn_meshes);
+  if (pack) {
+    mesh_create_draw_packet(layout->topology_callback(mesh),
+                            mesh_shader(mesh, layout->shader), mesh, pack);
+  } else {
     return RenderPassStatus_DrawListUpdateError;
+  }
 
   return RenderPassStatus_Success;
 }
@@ -149,11 +157,16 @@ render_pass_layout_enable_mesh(RenderPassDrawLayout *layout, Mesh *mesh) {
 static inline RenderPassStatus
 render_pass_layout_disable_mesh(RenderPassDrawLayout *layout, Mesh *mesh) {
 
-  if (mesh_ref_list_remove(&layout->drawn_meshes, mesh) !=
-      DynamicListStatus_Success)
-    return RenderPassStatus_DrawListUpdateError;
+  size_t index;
+  MeshDrawPacket *pack =
+      mesh_draw_packet_list_find_by_mesh(&layout->drawn_meshes, mesh, &index);
 
-  return RenderPassStatus_Success;
+  if (pack && mesh_draw_packet_list_remove_at_index(
+                  &layout->drawn_meshes, index) == DynamicListStatus_Success) {
+    return RenderPassStatus_Success;
+  }
+
+  return RenderPassStatus_DrawListUpdateError;
 }
 
 static inline RenderPassStatus
@@ -179,33 +192,25 @@ render_pass_layout_disable_mesh_ref_list(RenderPassDrawLayout *layout,
 static inline RenderPassStatus
 render_pass_layout_enable_all_mesh(RenderPassDrawLayout *layout) {
 
-  const MeshRefList *src = layout->src_meshes;
-  MeshRefList *dest = &layout->drawn_meshes;
+  const MeshRefList *src_list = layout->src_meshes;
+  MeshDrawPacketList *pack_list = &layout->drawn_meshes;
 
-  dyli_replace((void *)src->entries, src->length, (void **)&dest->entries,
-               &dest->capacity, &dest->length, sizeof(Mesh *),
-               "Render pass draw layout");
+  mesh_draw_packet_list_empty(pack_list);
+
+  for (size_t i = 0; i < src_list->length; i++) {
+    Mesh *mesh = src_list->entries[i];
+    MeshDrawPacket *pack = mesh_draw_packet_list_new_entry(pack_list);
+    if (pack)
+      mesh_create_draw_packet(layout->topology_callback(mesh),
+                              mesh_shader(mesh, layout->shader), mesh, pack);
+  }
 
   return RenderPassStatus_Success;
 }
 
 static inline RenderPassStatus
 render_pass_layout_disable_all_mesh(RenderPassDrawLayout *layout) {
-  MeshRefList *dest = &layout->drawn_meshes;
-  dyli_empty((void *)dest->entries, &dest->length, sizeof(Mesh *));
-  return RenderPassStatus_Success;
-}
-
-
-// TODO: find a way to make the ownership sharing safer.
-static inline RenderPassStatus
-render_pass_layout_swap_draw_list(RenderPassDrawLayout *layout,
-                                  MeshRefList *list) {
-
-  layout->drawn_meshes.entries = list->entries;
-  layout->drawn_meshes.length = list->length;
-  layout->drawn_meshes.capacity = list->capacity;
-
+  mesh_draw_packet_list_empty(&layout->drawn_meshes);
   return RenderPassStatus_Success;
 }
 

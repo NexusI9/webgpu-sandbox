@@ -587,7 +587,7 @@ void scene_add_mesh_core(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   // Update Shadow maps if added to Dynamic_Lit pipeline
   SceneSelectionType selection_pipeline = SceneSelectionType_Mesh;
 
-  if (pipeline == ScenePipeline_Dynamic_LitShadow &&
+  if ((pipeline & ScenePipeline_Dynamic_LitShadow) &&
       scene->renderer.draw.mode == SceneRendererDrawMode_Texture) {
     shadow_map_draw_all(
         &(ShadowMapDrawAllDescriptor){
@@ -615,7 +615,7 @@ void scene_add_mesh_core(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
  */
 void scene_render_pass_draw_list_enable_mesh(
     Scene *scene, const MeshRefList *pipeline_mesh_list, Mesh *mesh) {
-
+  
   for (SceneRendererDrawMode i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
     render_pass_list_enable_mesh(&scene->renderer.draw.render_pass[i], mesh);
 
@@ -636,7 +636,7 @@ void scene_render_pass_draw_list_enable_mesh(
    has Unlit pieline it goes to the unlit.
 
    To add a mesh to the fixed pipelines (ex: Gizmo, Scene Editor Objects), the
-   scene_add_mesh_fixed dedicated function shall be used.
+   scene_add_mesh_pipeline dedicated function shall be used.
 
    The below function is designed for "common usage", meaning on a daily basis,
    one will add dynamic assets to the scene, compared to the fixed elements
@@ -740,9 +740,9 @@ void scene_add_mesh_ref_list(Scene *scene, MeshRefList *list, const char *layer,
    method, we provide the scene pipeline so it will stay the same no matter the
    render draw mode.
  */
-void scene_add_mesh_fixed(Scene *scene, Mesh *mesh,
-                          const ScenePipeline pipeline, const char *layer,
-                          const SceneAddFlag flag) {
+void scene_add_mesh_pipeline(Scene *scene, Mesh *mesh,
+                             const ScenePipeline pipeline, const char *layer,
+                             const SceneAddFlag flag) {
   ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
   scene_build_mesh(scene, mesh, pipeline);
   scene_add_mesh_core(scene, mesh, pipeline, layer, flag);
@@ -753,9 +753,10 @@ void scene_add_mesh_fixed(Scene *scene, Mesh *mesh,
    pipeline. Meaning each meshes are going to be build depending on the pipeline
    and the current render mode.
  */
-void scene_add_mesh_fixed_ref_list(Scene *scene, MeshRefList *list,
-                                   const ScenePipeline pipeline,
-                                   const char *layer, const SceneAddFlag flag) {
+void scene_add_mesh_pipeline_ref_list(Scene *scene, MeshRefList *list,
+                                      const ScenePipeline pipeline,
+                                      const char *layer,
+                                      const SceneAddFlag flag) {
   for (size_t i = 0; i < list->length; i++)
     scene_add_mesh_core(scene, list->entries[i], pipeline, layer, flag);
 }

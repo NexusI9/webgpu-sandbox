@@ -8,6 +8,7 @@
 #include "backend/postfx/core.h"
 #include "draw.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/draw.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/pipeline/render.h"
 #include "texture.h"
@@ -61,7 +62,6 @@ void render_pass_init_color(RenderPass *pass,
                                        .format = desc->color->format,
                                    },
                                    RenderPassTextureFlag_None);
-
 }
 
 void render_pass_init_depth(RenderPass *pass,
@@ -176,8 +176,7 @@ void render_pass_draw_list_copy(const RenderPassDrawListDescriptor *src,
     d->mesh_preprocessor_data = s->mesh_preprocessor_data;
     d->src_meshes = s->meshes;
 
-    // initialize the drawn_meshes for each passes
-    mesh_ref_list_create_and_copy(s->meshes, &d->drawn_meshes);
+    mesh_draw_packet_list_create(&d->drawn_meshes, MESH_REF_LIST_CAPACITY);
   }
 }
 

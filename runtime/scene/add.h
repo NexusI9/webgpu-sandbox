@@ -49,7 +49,8 @@ typedef enum {
 
 // light
 SceneEditorMeshList *scene_add_point_light(Scene *, PointLightDescriptor *,
-                                           const LightCreateFlag, PointLight **);
+                                           const LightCreateFlag,
+                                           PointLight **);
 SceneEditorMeshList *scene_add_spot_light(Scene *, SpotLightDescriptor *,
                                           const LightCreateFlag, SpotLight **);
 SceneEditorMeshList *scene_add_sun_light(Scene *, SunLightDescriptor *,
@@ -76,10 +77,12 @@ SceneStatus scene_add_mesh(Scene *, Mesh *, const char *, const SceneAddFlag);
 void scene_add_mesh_ref_list(Scene *, MeshRefList *, const char *,
                              const SceneAddFlag);
 
-void scene_add_mesh_fixed(Scene *, Mesh *, const ScenePipeline, const char *,
-                          const SceneAddFlag);
-void scene_add_mesh_fixed_ref_list(Scene *, MeshRefList *, const ScenePipeline,
-                                   const char *, const SceneAddFlag);
+void scene_add_mesh_pipeline(Scene *, Mesh *, const ScenePipeline, const char *,
+                             const SceneAddFlag);
+
+void scene_add_mesh_pipeline_ref_list(Scene *, MeshRefList *,
+                                      const ScenePipeline, const char *,
+                                      const SceneAddFlag);
 
 void scene_remove_mesh(Scene *, Mesh *, const ScenePipeline);
 void scene_remove_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);

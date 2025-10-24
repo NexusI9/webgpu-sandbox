@@ -12,6 +12,7 @@
 #include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/layer.h"
 #include "runtime/scene/renderer/core.h"
+#include "runtime/scene/show.h"
 #include "selection/core.h"
 #include "selection/gizmo/core.h"
 
@@ -61,8 +62,9 @@ void scene_editor_gizmo_create_grid(Scene *scene) {
                           },
                   });
 
-  scene_add_mesh_fixed(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
-                       NULL, SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
+  scene_add_mesh_pipeline(scene, scene->editor.gizmo.grid, ScenePipeline_Fixed,
+                          NULL,
+                          SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
 }
 
 /**
@@ -80,10 +82,10 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
   for (size_t i = 0; i < GIZMO_MODE_COUNT; i++) {
     for (size_t j = 0; j < gizmo->handles[i].length; j++) {
       Mesh *mesh = gizmo->handles[i].entries[j];
-      scene_add_mesh_fixed(scene, mesh, ScenePipeline_Fixed_Front,
-                           SCENE_LAYER_GIZMO,
-                           SceneAddFlag_Hide | SceneAddFlag_Unselectable |
-                               SceneAddFlag_TreeHide);
+      scene_add_mesh_pipeline(scene, mesh, ScenePipeline_Fixed_Front,
+                              SCENE_LAYER_GIZMO,
+                              SceneAddFlag_Hide | SceneAddFlag_Unselectable |
+                                  SceneAddFlag_TreeHide);
     }
   }
 }

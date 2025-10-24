@@ -80,6 +80,12 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     }
 
     {
+      /*  ===== EVENT =====  */
+      scene_event_html(scene);
+      scene_draw_layouts_init(scene, context_multisample());
+    }
+
+    {
       /*  ===== EDITOR =====  */
       scene_stat_update_shader_count(scene);
       scene_editor_init(scene); // EDITORONLY
@@ -89,12 +95,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                                           .pool = &scene->meshes,
                                           .ssbo = &scene->renderer.ssbo,
                                       });
-    }
-
-    {
-      /*  ===== EVENT =====  */
-      scene_event_html(scene);
-      scene_draw_layouts_init(scene, context_multisample());
     }
 
     {

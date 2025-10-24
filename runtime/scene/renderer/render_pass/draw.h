@@ -9,6 +9,7 @@
 #include "backend/context.h"
 #include "backend/postfx/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/draw.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "webgpu/webgpu.h"
@@ -144,7 +145,6 @@ void render_pass_draw_callback_resolve_multisample(RenderPass *pass) {
   pass->color.attachment.resolveTarget = pass->color.resolve_view;
   render_pass_im_draw(pass);
   post_fx_draw(&pass->post_fx, pass->command_encoder);
-
 }
 
 /*
@@ -155,7 +155,6 @@ void render_pass_draw_callback_resolve_monosample(RenderPass *pass) {
   render_pass_im_draw(pass);
   post_fx_draw(&pass->post_fx, pass->command_encoder);
 }
-
 
 void render_pass_draw(RenderPass *pass) { pass->draw_callback(pass); }
 
@@ -223,21 +222,18 @@ void render_pass_im_draw(RenderPass *pass) {
 
     // retrieve layout
     RenderPassDrawLayout *list = &pass->draw_list.entries[j];
-    mesh_get_topology_callback target_topology = list->topology_callback;
-    MeshShader target_shader = list->shader;
+    MeshDrawPacketList *packets = &list->drawn_meshes;
     render_pass_mesh_preprocessor_callback mesh_preprocessor =
         list->mesh_preprocessor_callback;
-    MeshRefList *meshes = &list->drawn_meshes;
 
     // draw mesh with layout callbacks
-    for (size_t k = 0; k < meshes->length; k++) {
-      Mesh *mesh = meshes->entries[k];
+    for (size_t k = 0; k < packets->length; k++) {
+      MeshDrawPacket *pack = &packets->entries[k];
 
       if (mesh_preprocessor)
-        mesh_preprocessor(pass, mesh, list->mesh_preprocessor_data);
+        mesh_preprocessor(pass, pack->mesh, list->mesh_preprocessor_data);
 
-      mesh_draw(target_topology(mesh), mesh_shader(mesh, target_shader),
-                pass_encoder);
+      mesh_draw(pack, pass_encoder);
     }
   }
   wgpuRenderPassEncoderEnd(pass_encoder);

@@ -7,6 +7,7 @@
 
 #include "backend/postfx/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/draw.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/pipeline/render.h"
 #include "utils/stli.h"
@@ -39,13 +40,44 @@ typedef enum {
   RenderPassStatus_UndefError,
 } RenderPassStatus;
 
+/**
+   Since the priority for hot path (draw loop) is cache hit, we reorganise the
+   data read the draw loop in a compact way (reducing spatial proximity).
+   We will define "Packet" as a keyword for every struct that serve this
+   purpose.
+
+        COLD PATH                                         HOT PATH
+            |------------------------------------------------|
+       Base Struct                                        Packet
+   .--------------------.                          .-------------------.
+   | Mesh               |                          | Mesh Draw Packet  |
+   |  + …               |                          |  + v attr         |
+   |  + …               |                          |  + i attr         |
+   |  + v attr          |   ====[ FILTER ]====>    |  + bindgroup      |
+   |  + i attr          |                          |  + pipeline       |
+   |  + …               |                          |  --- extras ---   |
+   |  + Shader          |                          |  + shader name    |
+   |     + …            |                          |  + mesh id        |
+   |     + bindgroup    |                          '-------------------'
+   |     + pipeline     |
+   |     + …            |
+   |  +…                |
+   |                    |
+   '--------------------'
+
+   Structured for human                            Structured for cache
+   readibility.                                    efficiency.
+
+ */
 typedef struct {
   MeshShader shader;
   mesh_get_topology_callback topology_callback;
   render_pass_mesh_preprocessor_callback mesh_preprocessor_callback;
   void *mesh_preprocessor_data;
-  const MeshRefList *src_meshes;
-  MeshRefList drawn_meshes;
+  const MeshRefList *src_meshes; // SOT constant list used as a reference to
+                                 // enable/disable mesh to the draw meshes.
+  MeshDrawPacketList
+      drawn_meshes; // Compact and cache friendly data from mesh and shader
 } RenderPassDrawLayout;
 
 typedef struct {
@@ -67,7 +99,6 @@ typedef struct {
 } RenderPassDrawListDescriptor;
 
 // Descriptor
-
 typedef struct {
   WGPUTexture texture;
   WGPUTexture resolve_texture;

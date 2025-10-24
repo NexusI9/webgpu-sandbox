@@ -9,6 +9,7 @@
 #include "runtime/pipeline/compute.h"
 #include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/render.h"
+#include "utils/defines.h"
 #include "webgpu/webgpu.h"
 
 // commons
@@ -302,17 +303,20 @@ typedef struct {
 
 } Shader;
 
+EXTERN_C_BEGIN
+
 // methods
 void shader_create(Shader *, const ShaderCreateDescriptor *);
 void shader_destroy(Shader *);
 void shader_build(Shader *);
 
 // on update
-void shader_draw(Shader *, WGPURenderPassEncoder);
 void shader_uniform_update(ShaderBindGroup *);
 
 void shader_module_release(Shader *);
 const RenderPipeline *shader_pipeline(Shader *);
 void shader_pipeline_release_layout(Shader *);
+
+EXTERN_C_END
 
 #endif

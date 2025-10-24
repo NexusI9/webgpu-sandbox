@@ -82,29 +82,6 @@ void mesh_create_primitive(Mesh *mesh,
 void mesh_set_parent(Mesh *child, Mesh *parent) { child->parent = parent; }
 
 /**
-   Mesh main draw from default vertex and index buffer
- */
-void mesh_draw(MeshTopology topology, Shader *shader,
-               WGPURenderPassEncoder render_pass) {
-
-  // draw shader
-  // if shader is null, use default shader
-  shader_draw(shader, render_pass);
-
-  WGPUBuffer attribute_buffer = topology.attribute->buffer;
-  WGPUBuffer index_buffer = topology.index->buffer;
-  size_t index_length = topology.index->length;
-
-  // draw indexes from buffer
-  wgpuRenderPassEncoderSetVertexBuffer(render_pass, 0, attribute_buffer, 0,
-                                       WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderSetIndexBuffer(render_pass, index_buffer,
-                                      MESH_INDEX_FORMAT, 0, WGPU_WHOLE_SIZE);
-  wgpuRenderPassEncoderSetStencilReference(render_pass, 1);
-  wgpuRenderPassEncoderDrawIndexed(render_pass, index_length, 1, 0, 0, 0);
-}
-
-/**
    Check if children list is already created.
    If not init a new list
  */
