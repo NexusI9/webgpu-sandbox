@@ -7,7 +7,7 @@
 #include "runtime/pipeline/pipeline.h"
 
 // Standards pipelines
-#define RENDER_PIPELINE_TYPE_COUNT 21
+#define RENDER_PIPELINE_TYPE_COUNT 20
 #define RENDER_PIPELINE_UNDEFINED FLT_MAX
 
 typedef enum {
@@ -20,7 +20,6 @@ typedef enum {
   RenderPipelineType_PBR_Alpha,
   RenderPipelineType_Screen,
   RenderPipelineType_Shadow,
-  RenderPipelineType_ShadowCullBack,
   RenderPipelineType_Skybox,
   RenderPipelineType_Solid,
   RenderPipelineType_Unlit,

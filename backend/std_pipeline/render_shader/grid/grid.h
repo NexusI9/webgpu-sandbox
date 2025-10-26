@@ -30,12 +30,6 @@ static const WGPUBindGroupLayoutDescriptor grid_bind_group = {
         },
 };
 
-static const WGPUPrimitiveState grid_primitive = {
-    .frontFace = WGPUFrontFace_CCW,
-    .cullMode = WGPUCullMode_None,
-    .topology = WGPUPrimitiveTopology_TriangleList,
-    .stripIndexFormat = WGPUIndexFormat_Undefined,
-};
 
 static const WGPUDepthStencilState grid_stencil = {
     .format = TEXTURE_FORMAT_DEPTH_STENCIL,
@@ -51,7 +45,7 @@ static const RenderPipelineStateObject layout_grid = {
     .pipeline_attributes =
         {
             // double sided
-            .primitive_state = &grid_primitive,
+            .primitive_state = &primitive_double_sided,
             .stencil_state = &grid_stencil,
             .blend_state = &blend_alpha,
         },

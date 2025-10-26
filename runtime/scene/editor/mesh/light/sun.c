@@ -129,7 +129,7 @@ void sem_spot_light_update_shadow(SceneEditorMesh *sem) {
 
     ubo_update_queue_insert(ubo, UBOType_ViewProjection,
                             light->ubo_projection.id);
-
+    
     shadow_map_draw_sun_light(
         &(ShadowMapDrawSunLightDescriptor){
             .light = light,

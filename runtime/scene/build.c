@@ -136,7 +136,7 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
   if (pipeline &
       (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_LitAlpha)) {
 
-    mesh_shader_texture_bind_shadow_maps(
+    mesh_shader_texture_update_shadow_maps(
         mesh, scene->lights.point.shadow.pass.depth.attachment.view,
         scene->lights.spot.shadow.pass.depth.attachment.view);
 

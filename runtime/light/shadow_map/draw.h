@@ -69,7 +69,6 @@ typedef struct {
   Projection *views;
   const size_t texture_layer;
   const ubo_id_t ubo_offset;
-  const RenderPipeline *pipeline;
   RenderPass *pass;
   Profiler *profiler;
 } ShadowMapDrawDirLightDescriptor;
@@ -79,7 +78,6 @@ typedef struct {
   const uint32_t texture_layer;
   const ubo_id_t ubo_offset;
   WGPUCommandEncoder command_encoder;
-  const RenderPipeline *pipeline;
   Profiler *profiler;
 } ShadowMapDrawDescriptor;
 
@@ -201,11 +199,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
       render_pass_im_begin(desc->pass);
     {
 
-      LightShadowData light_data = {
-          .pipeline = desc->pipeline,
-          .view_offset = desc->ubo_offset,
-      };
-
+      LightShadowData light_data = {desc->ubo_offset};
       render_pass_update_preprocessor_data(desc->pass, 0, &light_data);
 
       RenderPassDrawOptions layer_views = {
@@ -340,6 +334,7 @@ void shadow_map_draw_all(const ShadowMapDrawAllDescriptor *desc,
       ==== Sun Lights ====
     */
     for (size_t p = 0; p < sun_length; p++) {
+
       ShadowMapDrawSunLightDescriptor sun_draw_desc = {
           // TODO: currently use spot light color_map, maybe make a linked
           // pointer
@@ -378,7 +373,6 @@ void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *desc,
         .pass = desc->pass,
         .texture_layer = layer,
         .command_encoder = desc->command_encoder,
-        .pipeline = std_render_pipeline(RenderPipelineType_Shadow),
         .ubo_offset = desc->light->ubo_projection[v].id,
         .profiler = desc->profiler,
     };
@@ -399,7 +393,6 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc,
         .texture_layer = desc->texture_layer,
         .ubo_offset = desc->ubo_offset,
         .command_encoder = desc->command_encoder,
-        .pipeline = desc->pipeline,
         .profiler = desc->profiler,
     };
     shadow_map_draw(&draw_desc, debug);
@@ -415,7 +408,6 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc,
       .texture_layer = desc->texture_layer,
       .ubo_offset = desc->light->ubo_projection.id,
       .views = &desc->light->views,
-      .pipeline = std_render_pipeline(RenderPipelineType_ShadowCullBack),
       .profiler = desc->profiler,
   };
   shadow_map_draw_dir_light(&draw_desc, debug);
@@ -430,7 +422,6 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc,
       .texture_layer = desc->texture_layer,
       .ubo_offset = desc->light->ubo_projection.id,
       .views = &desc->light->views,
-      .pipeline = std_render_pipeline(RenderPipelineType_ShadowCullBack),
       .profiler = desc->profiler,
   };
   shadow_map_draw_dir_light(&draw_desc, debug);

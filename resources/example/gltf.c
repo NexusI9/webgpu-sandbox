@@ -5,6 +5,7 @@
 
 #include "backend/context.h"
 #include "resources/loader/loader.gltf.h"
+#include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/shader/texture.h"
@@ -49,7 +50,7 @@ void example_gltf_spa(Scene *scene) {
           .intensity = 3.2f,
           .size = 10.0f,
       },
-      LightCreateFlag_None, NULL);
+      LightCreateFlag_Shadow, NULL);
 
   scene_add_ambient_light(scene,
                           &(AmbientLightDescriptor){

@@ -105,6 +105,10 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
 
     point_light_projection_update(light);
 
+    for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
+      ubo_upload_entry(&scene->renderer.ubo, UBOType_ViewProjection,
+                       &light->ubo_projection[i]);
+
     PointLightListShadow *shadow_list = &scene->lights.point.shadow;
 
     sem_desc.target_list_index = shadow_list->length;
@@ -179,7 +183,10 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
 
     light->ubo_projection =
         ubo_new_entry(&scene->renderer.ubo, UBOType_ViewProjection);
+
     spot_light_projection_update(light);
+    ubo_upload_entry(&scene->renderer.ubo, UBOType_ViewProjection,
+                     &light->ubo_projection);
 
     SpotLightListShadow *shadow_list = &scene->lights.spot.shadow;
 
@@ -302,7 +309,10 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
     light->ubo_projection =
         ubo_new_entry(&scene->renderer.ubo, UBOType_ViewProjection);
+
     sun_light_projection_update(light);
+    ubo_upload_entry(&scene->renderer.ubo, UBOType_ViewProjection,
+                     &light->ubo_projection);
 
     SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
 
@@ -676,7 +686,6 @@ ScenePipeline scene_map_pipeline(const RenderPipeline *render_pipeline) {
           [RenderPipelineType_Line] = ScenePipeline_Fixed,
           [RenderPipelineType_Screen] = ScenePipeline_Fixed,
           [RenderPipelineType_Shadow] = ScenePipeline_Fixed,
-          [RenderPipelineType_ShadowCullBack] = ScenePipeline_Fixed,
           [RenderPipelineType_Solid] = ScenePipeline_Fixed,
           [RenderPipelineType_Blit] = ScenePipeline_Fixed,
 

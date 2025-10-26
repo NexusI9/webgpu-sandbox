@@ -11,15 +11,11 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/environment/core.h"
 
-// first bind
-void mesh_shader_texture_bind_shadow_maps(Mesh *, WGPUTextureView,
-                                          WGPUTextureView);
-
-// update
-void mesh_shader_texture_update_lights(Mesh *, const MeshShader, UBOManager *);
 
 void mesh_shader_texture_update_shadow_maps(Mesh *, WGPUTextureView,
-                                            WGPUTextureView);
+                                          WGPUTextureView);
+
+void mesh_shader_texture_update_lights(Mesh *, const MeshShader, UBOManager *);
 
 void mesh_shader_texture_update_probes(Mesh *, WGPUTextureView, WGPUTextureView,
                                        UBOManager *);

@@ -30,41 +30,9 @@ static const WGPUDepthStencilState shadow_stencil = {
     .depthCompare = WGPUCompareFunction_Less,
 };
 
-static const WGPUPrimitiveState shadow_primitive_back = {
-    .frontFace = WGPUFrontFace_CCW,
-    .cullMode = WGPUCullMode_Back,
-    .topology = WGPUPrimitiveTopology_TriangleList,
-    .stripIndexFormat = WGPUIndexFormat_Undefined,
-};
-
-static const WGPUPrimitiveState shadow_primitive_front = {
-    .frontFace = WGPUFrontFace_CCW,
-    .cullMode = WGPUCullMode_Back,
-    .topology = WGPUPrimitiveTopology_TriangleList,
-    .stripIndexFormat = WGPUIndexFormat_Undefined,
-};
 
 static const RenderPipelineStateObject layout_shadow = {
     .label = "Pipeline Bind Groups - Shadow",
-    .shader_path = "./backend/std_pipeline/render_shader/"
-                   "shadow/shadow.wgsl",
-    .bind_groups_count = 1,
-    .bind_groups = {&mp_layout},
-    .pipeline_attributes =
-        {
-            .multisample_state = &shadow_multisample,
-            .stencil_state = &shadow_stencil,
-
-            /* need to set the cullback to FRONT for point light because
-             * the light POV render is flipped on the X axis to match
-             * the cubemap coordinates, such negative scaling lead to
-             * set the cullback to front.*/
-            .primitive_state = &shadow_primitive_front,
-        },
-};
-
-static const RenderPipelineStateObject layout_shadow_cullback = {
-    .label = "Pipeline Bind Groups - Shadow Cullback",
     .shader_path = "./backend/std_pipeline/render_shader/shadow/shadow.wgsl",
     .bind_groups_count = 1,
     .bind_groups = {&mp_layout},
@@ -72,7 +40,7 @@ static const RenderPipelineStateObject layout_shadow_cullback = {
         {
             .multisample_state = &shadow_multisample,
             .stencil_state = &shadow_stencil,
-            .primitive_state = &shadow_primitive_back,
+            .primitive_state = &primitive_double_sided,
         },
 };
 

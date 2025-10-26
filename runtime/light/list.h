@@ -24,7 +24,6 @@ typedef enum {
 } LightCreateFlag;
 
 typedef struct {
-  const RenderPipeline *pipeline;
   const size_t view_offset;
 } LightShadowData;
 

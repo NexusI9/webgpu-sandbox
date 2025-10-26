@@ -15,6 +15,10 @@ static const RenderPipelineStateObject layout_solid = {
     .bind_groups_count = 1,
     .bind_groups = {&mvp_layout},
     .bindings = {.mvp = &mvp_binding},
+    .pipeline_attributes =
+        {
+            .primitive_state = &primitive_double_sided,
+        },
 };
 
 #endif

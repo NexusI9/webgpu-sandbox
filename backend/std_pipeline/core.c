@@ -49,7 +49,6 @@ static const RenderPipelineStateObject
         [RenderPipelineType_PBR_Alpha] = &layout_pbr_alpha,
         [RenderPipelineType_Screen] = &layout_screen,
         [RenderPipelineType_Shadow] = &layout_shadow,
-        [RenderPipelineType_ShadowCullBack] = &layout_shadow_cullback,
         [RenderPipelineType_Skybox] = &layout_skybox,
         [RenderPipelineType_Solid] = &layout_solid,
         [RenderPipelineType_GlassProbeGrid] = &layout_glass_probe_grid,

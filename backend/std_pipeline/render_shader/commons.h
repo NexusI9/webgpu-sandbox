@@ -101,4 +101,13 @@ static const WGPUBlendState blend_alpha = {
         },
 };
 
+
+static const WGPUPrimitiveState primitive_double_sided = {
+    .frontFace = WGPUFrontFace_CCW,
+    .cullMode = WGPUCullMode_None,
+    .topology = WGPUPrimitiveTopology_TriangleList,
+    .stripIndexFormat = WGPUIndexFormat_Undefined,
+};
+
+
 #endif

@@ -47,11 +47,9 @@ void mesh_shader_texture_update_lights(Mesh *mesh, const MeshShader shader_type,
    Bind the shadow maps and sampler to the default shader (called during shader
    creation)
  */
-void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
-                                          WGPUTextureView point_texture_view,
-                                          WGPUTextureView spot_texture_view) {
-
-  const uint8_t sampler_binding = 6;
+void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
+                                            WGPUTextureView point_texture_view,
+                                            WGPUTextureView spot_texture_view) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
   const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
@@ -78,38 +76,6 @@ void mesh_shader_texture_bind_shadow_maps(Mesh *mesh,
                              bindings->light_list->directional_texture,
                              spot_texture_view, texture_format,
                              ShaderUpdateFlag_ReleasePrevious);
-}
-
-void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
-                                            WGPUTextureView point_map,
-                                            WGPUTextureView spot_map) {
-
-  logger_add(LoggerFlag_Process, "Update shadow map: %s", mesh->name);
-
-  const MeshShader shader_types[2] = {
-      MeshShader_Texture,
-      MeshShader_Reflection,
-  };
-
-  for (uint8_t i = 0; i < 2; i++) {
-
-    Shader *shader = mesh_shader(mesh, shader_types[i]);
-    const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
-
-    // update point texture
-    if (bindings->light_list->point_texture != PIPELINE_BINDING_UNDEFINED)
-      shader_update_texture_view(shader, bindings->light_list->group,
-                                 bindings->light_list->point_texture, point_map,
-                                 SHADOW_DEPTH_FORMAT,
-                                 ShaderUpdateFlag_ReleasePrevious);
-
-    // update dir texture
-    if (bindings->light_list->directional_texture != PIPELINE_BINDING_UNDEFINED)
-      shader_update_texture_view(shader, bindings->light_list->group,
-                                 bindings->light_list->directional_texture,
-                                 spot_map, SHADOW_DEPTH_FORMAT,
-                                 ShaderUpdateFlag_ReleasePrevious);
-  }
 }
 
 void mesh_shader_texture_update_probes(Mesh *mesh,
