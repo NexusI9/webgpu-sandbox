@@ -4,13 +4,13 @@
 #include <cglm/vec3.h>
 #include <stdint.h>
 
+#include "backend/ubo.h"
 #include "core.h"
 #include "grid.h"
-#include "backend/ssbo.h"
+#include "runtime/camera/core.h"
 #include "runtime/camera/uniform.h"
 #include "utils/dyli.h"
 #include "utils/projection.h"
-#include "runtime/camera/core.h"
 
 /*
 
@@ -25,13 +25,7 @@ void probe_reflection_create(ProbeReflection *probe, vec3 position) {
 
   glm_vec3_copy(position, probe->position);
 
-  ssbo_slot_init_alloc(&probe->ssbo_slot[ProbeReflectionSSBOField_List],
-                       sizeof(ProbeReflectionUniform));
-
   for (uint8_t i = 0; i < PROBE_REFLECTION_VIEW_COUNT; i++) {
-    ssbo_slot_init_alloc(
-        &probe->ssbo_slot[ProbeReflectionSSBOField_Camera + i],
-        sizeof(CameraUniform));
 
     // shallow camera
     Camera *cam = &probe->camera[i];
@@ -41,23 +35,19 @@ void probe_reflection_create(ProbeReflection *probe, vec3 position) {
     glm_vec3_copy((float *)projection_cubemaps_directions[i], cam->forward);
     glm_vec3_copy((float *)projection_cubemaps_ups[i], cam->up);
   }
-
-  probe_reflection_update_uniform(probe);
-  probe_reflection_update_camera(probe);
 }
 
 void probe_reflection_update_uniform(ProbeReflection *probe) {
 
   ProbeReflectionUniform *uniform =
-      (ProbeReflectionUniform *)probe->ssbo_slot[ProbeReflectionSSBOField_List]
-          .uniform;
+      (ProbeReflectionUniform *)probe->ubo_uniform.uniform.reflection_probe;
 
   glm_vec3_copy(probe->position, uniform->position);
   uniform->radius = probe->radius;
 }
 
 void probe_reflection_update_camera(ProbeReflection *probe) {
-  // transfert attribute to SSBO slot
+  // transfert attribute to UBO slot
   for (uint8_t i = 0; i < PROBE_REFLECTION_VIEW_COUNT; i++) {
     Camera *cam = &probe->camera[i];
 
@@ -69,8 +59,8 @@ void probe_reflection_update_camera(ProbeReflection *probe) {
     camera_uniform_update(cam);
 
     CameraUniform *uniform = camera_uniform(cam);
-    ssbo_slot_set_uniform(&probe->ssbo_slot[ProbeReflectionSSBOField_Camera + i],
-                          (void *)uniform, sizeof(CameraUniform));
+    ubo_slot_set_uniform(&probe->ubo_camera[i], (void *)uniform,
+                         sizeof(CameraUniform));
   }
 }
 

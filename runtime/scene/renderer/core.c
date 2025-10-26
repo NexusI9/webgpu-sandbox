@@ -11,11 +11,10 @@
 #include "backend/logger.h"
 #include "backend/postfx/core.h"
 #include "backend/profiler.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "backend/stat.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
-#include "backend/ubo.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "render_pass/draw.h"
@@ -57,12 +56,10 @@ void scene_renderer_init(SceneRenderer *renderer,
                       });
 
     ubo_init(&renderer->ubo);
-
-    ssbo_init(&renderer->ssbo);
   }
 
   scene_renderer_add_draw_callback(
-      renderer, ssbo_draw_callback, (void *)&renderer->ssbo,
+      renderer, ubo_draw_callback, (void *)&renderer->ubo,
       SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
           SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
 }

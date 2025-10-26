@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "backend/clock.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "utils/defines.h"
 
 typedef struct {
@@ -34,7 +34,7 @@ typedef struct {
   int height;
   mat4 projection;
 
-  SSBOSlot ssbo_slot;
+  UBOSlot ubo_slot;
 
 } Viewport;
 

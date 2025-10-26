@@ -6,7 +6,6 @@
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
-#include "runtime/probe/probe.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 
@@ -39,10 +38,10 @@
  */
 
 typedef enum {
-  SceneAddFlag_None = 1 << 0,
-  SceneAddFlag_Hide = 1 << 1,
-  SceneAddFlag_Unselectable = 1 << 2,
-  SceneAddFlag_TreeHide = 1 << 3,
+  SceneAddFlag_None = 0,
+  SceneAddFlag_Hide = 1 << 0,
+  SceneAddFlag_Unselectable = 1 << 1,
+  SceneAddFlag_TreeHide = 1 << 2,
 } SceneAddFlag;
 
 /* === Scene Editor Objects === */

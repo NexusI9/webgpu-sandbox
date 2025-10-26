@@ -4,31 +4,31 @@
 #include <webgpu/webgpu.h>
 
 #include "backend/ubo.h"
+#include "core.h"
 #include "runtime/camera/camera.h"
 #include "runtime/light/light.h"
-#include "runtime/probe/reflection/plane.h"
-#include "core.h"
-#include "backend/ssbo.h"
 #include "runtime/mesh/core.h"
+#include "runtime/probe/reflection/plane.h"
+#include "runtime/scene/environment/core.h"
 
 // first bind
 void mesh_shader_texture_bind_shadow_maps(Mesh *, WGPUTextureView,
                                           WGPUTextureView);
 
 // update
-void mesh_shader_texture_update_lights(Mesh *, const MeshShader, UBOManager *,
-                                       SSBOManager *);
+void mesh_shader_texture_update_lights(Mesh *, const MeshShader, UBOManager *);
 
 void mesh_shader_texture_update_shadow_maps(Mesh *, WGPUTextureView,
                                             WGPUTextureView);
 
 void mesh_shader_texture_update_probes(Mesh *, WGPUTextureView, WGPUTextureView,
-                                       SSBOManager *);
+                                       UBOManager *);
 
 void mesh_shader_texture_update_environment(Mesh *, WGPUTextureView,
-                                            SSBOManager *);
+                                            SceneEnvironmentUniform *,
+                                            UBOManager *);
 
 void mesh_shader_texture_bind_probe(Mesh *, ProbeReflectionPlane *,
-                                    SSBOManager *);
+                                    UBOManager *);
 
 #endif

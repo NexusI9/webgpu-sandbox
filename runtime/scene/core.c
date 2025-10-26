@@ -7,8 +7,8 @@
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
 #include "backend/stat.h"
+#include "backend/ubo.h"
 #include "debug/core.h"
 #include "event/event.html.h"
 #include "renderer/render_pass/core.h"
@@ -21,9 +21,11 @@
 #include "runtime/mesh/list.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/pipeline/render.h"
+#include "runtime/probe/core.h"
 #include "runtime/probe/reflection/core.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
+#include "runtime/scene/environment/core.h"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/scene/stat.h"
 #include "runtime/texture/core.h"
@@ -46,11 +48,16 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
     {
       /*  ===== SCENE RENDER =====   */
       scene_renderer_init(&scene->renderer, desc->renderer);
-      scene_environment_init(&scene->environment,
-                             &(SceneEnvironmentDescriptor){
-                                 .ssbo = &scene->renderer.ssbo,
-                                 .ubo = &scene->renderer.ubo,
-                             });
+      scene_environment_init(&scene->environment);
+      {
+        scene->environment.ubo_slot =
+            ubo_new_entry(&scene->renderer.ubo, UBOType_Environment);
+
+        scene_environment_update_uniform(&scene->environment);
+	
+        ubo_upload_entry(&scene->renderer.ubo, UBOType_Environment,
+                         &scene->environment.ubo_slot);
+      }
     }
 
     {
@@ -61,6 +68,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
       scene_light_list_init(scene);
       scene_probe_reflection_init(scene, context_multisample());
     }
+
 
     {
       /*  ===== CAMERA & VIEWPORT =====  */
@@ -75,8 +83,15 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                           .height = scene_renderer_height(&scene->renderer),
                       });
 
-      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Viewport,
-                      &scene->viewport.ssbo_slot);
+      {
+        scene->viewport.ubo_slot =
+            ubo_new_entry(&scene->renderer.ubo, UBOType_Viewport);
+
+        viewport_uniform_update(&scene->viewport);
+
+        ubo_upload_entry(&scene->renderer.ubo, UBOType_Viewport,
+                         &scene->viewport.ubo_slot);
+      }
     }
 
     {
@@ -93,7 +108,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                                           .camera = scene->active_camera,
                                           .viewport = &scene->viewport,
                                           .pool = &scene->meshes,
-                                          .ssbo = &scene->renderer.ssbo,
+                                          .ubo = &scene->renderer.ubo,
                                       });
     }
 
@@ -139,9 +154,6 @@ void scene_camera_init(Scene *scene) {
   scene->camera =
       scene_init_main_camera(scene, scene_renderer_clock(&scene->renderer));
 
-  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Camera,
-                  &scene->camera->ssbo_slot);
-
   // set scene main camera as active
   scene->active_camera = scene->camera;
 }
@@ -167,8 +179,12 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 
                         });
 
+  camera->ubo_slot = ubo_new_entry(&scene->renderer.ubo, UBOType_Camera);
+
   // init main camera position
   camera_lookat(camera, (vec3){20.0f, 20.0f, 20.0f}, (vec3){0.0f, 0.0f, 0.0f});
+  
+  ubo_upload_entry(&scene->renderer.ubo, UBOType_Camera, &camera->ubo_slot);
 
   return camera;
 }
@@ -197,10 +213,13 @@ void scene_probe_reflection_init(
       .draw_list = &reflection_draw_list,
   };
 
-  probe_reflection_grid_list_create(&scene->probes_reflection,
+  scene->probes.ubo_slot =
+      ubo_new_entry(&scene->renderer.ubo, UBOType_ProbeList);
+
+  probe_reflection_grid_list_create(&scene->probes.reflection_probe,
                                     &reflection_config);
 
-  probe_reflection_plane_list_create(&scene->planes_reflection,
+  probe_reflection_plane_list_create(&scene->probes.reflection_plane,
                                      &reflection_config);
 }
 
@@ -220,6 +239,9 @@ MeshRefList *scene_layer_meshes(Scene *scene, const char *name) {
 void scene_light_list_init(Scene *scene) {
 
   light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
+
+  scene->lights.ubo_slot =
+    ubo_new_entry(&scene->renderer.ubo, UBOType_LightList);
 
   // init shadow textures
   shadow_map_init(&(ShadowMapInitDescriptor){

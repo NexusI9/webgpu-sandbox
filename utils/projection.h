@@ -7,11 +7,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "backend/ubo.h"
 #include "runtime/camera/camera.h"
-#include "backend/ssbo.h"
 #include "runtime/camera/core.h"
 #include "runtime/viewport/core.h"
-#include "backend/ssbo.h"
 
 #define PROJECTION_VIEW_COUNT 6
 #define PROJECTION_SUN_DISTANCE 10
@@ -50,13 +49,12 @@ void projection_sun(Projection *, const vec3, const float);
    Function primarily used for lights and probes since they heavily rely on
    projections.
  */
-static inline void projection_update_ssbo_slot(SSBOSlot *slot,
-                                               Projection *views,
-                                               size_t field_id) {
+static inline void projection_update_ubo_slot(UBOSlot *slot,
+                                               Projection *views) {
   for (uint8_t i = 0; i < views->length; i++) {
     ProjectionUniform uniform;
     glm_mat4_copy(views->combined[i], uniform.view);
-    ssbo_slot_set_uniform(&slot[field_id + i], (void *)&uniform,
+    ubo_slot_set_uniform(&slot[i], (void *)&uniform,
                           sizeof(ProjectionUniform));
   }
 }

@@ -1,57 +1,178 @@
 #ifndef _SHADER_UNIFORM_BUFFER_OBJECT_H_
 #define _SHADER_UNIFORM_BUFFER_OBJECT_H_
 
-#include <cglm/cglm.h>
+#include <stdalign.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <webgpu/webgpu.h>
 
-#include "runtime/light/list.h"
-#include "runtime/probe/core.h"
-#include "runtime/scene/environment/fog.h"
+#include "utils/defines.h"
+#include "utils/stli.h"
+
+#define UBO_CAPACITY 128
+#define UBO_MAX_TYPE_SIZE 65536
+#define UBO_UPDATE_QUEUE_CAPACITY 128
+#define UBO_INDEX_UNFOUND UINT32_MAX
+
+/**
+
+   SSBO and UBO managers both offer centralized interfaces for memory
+   management. Those entities have fields from which their respective buffers
+   are shared amongst many meshes (ex: Camera/ Viewport matrix).
+
+   Such approach allow to only update 1 shared buffer rather that N independant
+   buffer (hosted by N meshes) which drastically improved performances.
+
+   SSBO offer either the possibility to directly write in GPU or to Queue a
+   specific index (from a given field).
+
+   Note regarding the Shader PSO:
+   While UBO relies on Uniform, SSBO relies on Storage coupled with a dynamic
+   offset. Storage are specific buffer type defined in the PSO:
+
+    .--- Shader PSO --------------------------------------------------------.
+    |       ...                                                             |
+    |           (WGPUBufferBindingLayout){                                  |
+    |               .type = WGPUBufferBindingType_ReadOnlyStorage,          |
+    |               .hasDynamicOffset = false,                              |
+    |               .minBindingSize = sizeof(SpotLightUniform),             |
+    |            }                                                          |
+    |       ...                                                             |
+    '-----------------------------------------------------------------------'
+
+    For storage the 'minBindSize' is important as it acts as an range of data
+    available in the shader.
+
+    Meaning in the case above, only 1 SpotLightUniform entry will be available
+   (i.e. 1 x sizeof(SpotLightUniform))
+
+    If we use an offset and only plan to read from 1 item (at index 0) this is
+    fine. However if we plan to read multiple entry from the storage, we need to
+    define the amplitude of available elements, which would give:
+
+    .--- Shader PSO --------------------------------------------------------.
+    |      ...                                                              |
+    |           (WGPUBufferBindingLayout){                                  |
+    |               .type = WGPUBufferBindingType_ReadOnlyStorage,          |
+    |               .hasDynamicOffset = false,                              |
+    |               .minBindingSize = sizeof(SpotLightUniform) * amplitude, |
+    |            }                                                          |
+    |       ...                                                             |
+    '-----------------------------------------------------------------------'
+
+    It's also worth noting that WebGPU seems to clamp the storage indexing,
+   meaning that in case we try to reach an index out of bound, WebGPU will clamp
+   the index to the latest index accesible.
+
+ */
+
+typedef size_t ubo_id_t;
 
 typedef enum {
   UBOStatus_Success,
   UBOStatus_OutOfBound,
-  UBOStatus_FieldValueUnfound,
   UBOStatus_UndefError,
 } UBOStatus;
 
-#define UBO_FIELD_COUNT 7
-
+#define UBO_TYPE_COUNT 7
 typedef enum {
-  // u32 fields
-  UBOField_PointLightCount,
-  UBOField_SunLightCount,
-  UBOField_SpotLightCount,
-  UBOField_AmbientLightCount,
-  UBOField_ProbeReflectionGridCount,
-  UBOField_ProbeReflectionPlaneCount,
-  // f32 fields
-
-  // struct fields
-  UBOField_Fog
-} UBOField;
+  UBOType_Camera,
+  UBOType_Viewport,
+  UBOType_Mesh,
+  UBOType_ViewProjection,
+  UBOType_LightList,
+  UBOType_ProbeList,
+  UBOType_Environment,
+} UBOType;
 
 typedef struct {
-  LightCountUniform light_count;
-  ProbeCountUniform probe_count;
-  SceneEnvironmentFogUniform fog;
-} UBOUniform;
+  ubo_id_t id;
+  void *uniform;
+} UBOSlot;
 
 typedef struct {
-  UBOUniform data;
+  ubo_id_t entries[UBO_UPDATE_QUEUE_CAPACITY];
+  size_t length;
+  size_t capacity;
+} UBOBufferUpdateQueue;
+
+typedef struct {
+  uint8_t entries[UBO_CAPACITY * UBO_MAX_TYPE_SIZE];
+  UBOBufferUpdateQueue update_queue;
+  size_t capacity;
+  size_t length;
   WGPUBuffer handle;
+  size_t type_size;
+} __attribute__((aligned(16))) UBOBuffer;
+
+typedef struct {
+  UBOBuffer buffers[UBO_TYPE_COUNT];
 
 } UBOManager;
 
 EXTERN_C_BEGIN
 
+void ubo_draw_callback(void *);
+
 void ubo_init(UBOManager *);
+void ubo_upload(UBOManager *, const UBOType);
 
-UBOStatus ubo_update_entry(UBOManager *, const UBOField, void *);
+/* ==== GETTERS ==== */
+WGPUBuffer ubo_buffer_handle(UBOManager *, const UBOType);
+size_t ubo_length(UBOManager *, const UBOType);
+size_t ubo_find_index(UBOManager *, const UBOType, void *);
+void *ubo_entry(UBOManager *, const UBOType, ubo_id_t);
 
-UBOStatus ubo_upload(UBOManager *);
-WGPUBuffer ubo_buffer_handle(UBOManager *);
+/* ==== SLOT MANAGEMENT ==== */
+UBOStatus ubo_insert_entry(UBOManager *, const UBOType, UBOSlot *);
+UBOStatus ubo_update_entry(UBOManager *, const UBOType, const UBOSlot *);
+UBOStatus ubo_upload_entry(UBOManager *, const UBOType, const UBOSlot *);
+StaticListStatus ubo_remove_entry(UBOManager *, const UBOType, ubo_id_t);
+UBOSlot ubo_new_entry(UBOManager *, const UBOType);
+
+/* ==== SLOT ====*/
+
+static inline void ubo_slot_init_alloc(UBOSlot *slot, size_t type_size) {
+  slot->uniform = malloc(type_size);
+  memset(slot->uniform, 0, type_size);
+  slot->id = UBO_INDEX_UNFOUND;
+}
+
+static inline void ubo_slot_set_uniform(UBOSlot *slot, const void *data,
+                                         const size_t type_size) {
+  memcpy(slot->uniform, data, type_size);
+}
+
+/**
+   DELETEME ??
+   Transfers the given UBOSlot to the manager
+ */
+static inline UBOStatus ubo_copy_entry(UBOManager *manager,
+                                         const UBOType type, UBOSlot *slot) {
+
+  UBOSlot new_slot = ubo_new_entry(manager, type);
+
+  // update CPU Side with existing slot data
+  ubo_update_entry(manager, type, slot);
+  // write GPU Side
+  ubo_upload_entry(manager, type, slot);
+
+  // free old mesh uniform data
+  free(slot->uniform);
+
+  *slot = new_slot;
+
+  return UBOStatus_Success;
+}
+
+static inline ubo_id_t ubo_slot_id(const UBOSlot *slot) { return slot->id; }
+
+/* ==== UPDATE QUEUE ==== */
+StaticListStatus ubo_update_queue_insert(UBOManager *, const UBOType,
+                                          const ubo_id_t);
+StaticListStatus ubo_update_queue_shift(UBOManager *, const UBOType);
 
 EXTERN_C_END
 

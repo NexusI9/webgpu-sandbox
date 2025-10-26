@@ -3,13 +3,16 @@
 #include <cglm/mat4.h>
 #include <cglm/vec3.h>
 
-#include "utils/projection.h"
 #include "core.h"
+#include "runtime/light/list.h"
+#include "utils/projection.h"
 
 /* Uniforms */
 void point_light_uniform_update(PointLight *light) {
 
-  PointLightUniform *uniform = light->ssbo_slot[LightSSBOSlot_List].uniform;
+  PointLightUniform *uniform =
+      (PointLightUniform *)light->ubo_uniform.uniform.point;
+
   uniform->intensity = light->intensity;
   uniform->cutoff = light->cutoff;
   uniform->inner_cutoff = light->inner_cutoff;
@@ -30,14 +33,17 @@ void point_light_uniform_update(PointLight *light) {
 void ambient_light_uniform_update(AmbientLight *light) {
 
   // map light to light uniform (including paddings...)
-  AmbientLightUniform *uniform = light->ssbo_slot.uniform;
+  AmbientLightUniform *uniform =
+      (AmbientLightUniform *)light->ubo_uniform.uniform.ambient;
+
   uniform->intensity = light->intensity;
   glm_vec4_copy(light->color, uniform->color);
 }
 
 void spot_light_uniform_update(SpotLight *light) {
 
-  SpotLightUniform *uniform = light->ssbo_slot[LightSSBOSlot_List].uniform;
+  SpotLightUniform *uniform =
+      (SpotLightUniform *)light->ubo_uniform.uniform.spot;
 
   uniform->intensity = light->intensity;
   uniform->cutoff = light->cutoff;
@@ -56,7 +62,7 @@ void spot_light_uniform_update(SpotLight *light) {
 
 void sun_light_uniform_update(SunLight *light) {
 
-  SunLightUniform *uniform = light->ssbo_slot[LightSSBOSlot_List].uniform;
+  SunLightUniform *uniform = (SunLightUniform *)light->ubo_uniform.uniform.sun;
 
   uniform->intensity = light->intensity;
   glm_vec3_copy(light->position, uniform->position);
@@ -68,4 +74,23 @@ void sun_light_uniform_update(SunLight *light) {
 
   for (uint8_t v = 0; v < sun_view.length; v++)
     glm_mat4_copy(sun_view.combined[v], uniform->view);
+}
+
+/**
+   Only recalulcate the length of each light list, doesn't handle the per light
+   uniform update. Since each lights have they uniform pointing to the UBO list,
+   we can directly use the dedicated methods 'light_T_uniform_update()' to
+   update the light uniform.
+
+  This function may be called when a light is added or removed from the scene.
+ */
+void light_list_uniform_update(LightList *list) {
+
+  LightListUniform *uniform = (LightListUniform *)list->ubo_slot.uniform;
+
+  uniform->ambient_count = list->ambient.length;
+  uniform->point_count = list->point.base.length;
+  uniform->spot_count = list->spot.base.length;
+  uniform->sun_count = list->sun.base.length;
+
 }

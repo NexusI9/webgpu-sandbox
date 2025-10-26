@@ -1,71 +1,10 @@
 #ifndef _LIGHT_LIST_UNIFORM_H_
 #define _LIGHT_LIST_UNIFORM_H_
 
+#include "core.h"
+#include "runtime/light/list.h"
 #include <cglm/types.h>
 #include <stdint.h>
-
-#include "core.h"
-
-// light type
-// NOTE: use __attribute__ on list AS WELL AS entries (pointlights...) else
-// wrong alignment in list entries (i.e. _padding takes color.r value)
-typedef struct {
-  vec3 position;
-  float cutoff;
-  color color;
-  mat4 views[LIGHT_POINT_VIEWS];
-  float intensity;
-  float inner_cutoff;
-  float near;
-  float far;
-  float _padding[20];
-} __attribute__((aligned(16))) PointLightUniform;
-
-typedef struct {
-  color color;
-  float intensity;
-  float _pad[59];
-} __attribute__((aligned(16))) AmbientLightUniform;
-
-typedef struct {
-  vec3 position;
-  float cutoff;
-  vec3 target;
-  float inner_cutoff;
-  color color;
-  mat4 view;
-  float intensity;
-  float _pad[35];
-} __attribute__((aligned(16))) SpotLightUniform;
-
-typedef struct {
-  vec3 position;
-  float intensity;
-  color color;
-  mat4 view;
-  float _pad[40];
-} __attribute__((aligned(16))) SunLightUniform;
-
-// light uniforms
-typedef struct {
-  uint32_t length;
-  PointLightUniform entries[LIGHT_MAX_CAPACITY];
-} __attribute__((aligned(16))) PointLightListUniform;
-
-typedef struct {
-  uint32_t length;
-  AmbientLightUniform entries[LIGHT_MAX_CAPACITY];
-} __attribute__((aligned(16))) AmbientLightListUniform;
-
-typedef struct {
-  uint32_t length;
-  SpotLightUniform entries[LIGHT_MAX_CAPACITY];
-} __attribute__((aligned(16))) SpotLightListUniform;
-
-typedef struct {
-  uint32_t length;
-  SunLightUniform entries[LIGHT_MAX_CAPACITY];
-} __attribute__((aligned(16))) SunLightListUniform;
 
 EXTERN_C_BEGIN
 
@@ -95,6 +34,7 @@ void point_light_uniform_update(PointLight *);
 void ambient_light_uniform_update(AmbientLight *);
 void spot_light_uniform_update(SpotLight *);
 void sun_light_uniform_update(SunLight *);
+void light_list_uniform_update(LightList *);
 
 // === Attributes Accessor & Mutator ===
 

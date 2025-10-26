@@ -4,7 +4,6 @@
 #include <stddef.h>
 
 #include "backend/context.h"
-#include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_pipeline/render_shader/glass_probe_grid/glass_probe_grid.h"
 #include "backend/ubo.h"
@@ -71,24 +70,26 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
                              ShaderUpdateFlag_None);
 
   // link probe lists (position, radius)
+  Shader *shader = mesh_shader(mesh, MeshShader_Texture);
   shader_update_uniform_buffer(
-      mesh_shader(mesh, MeshShader_Texture), 1, 1,
-      ssbo_buffer_handle(&scene->renderer.ssbo, SSBOType_ProbeGridReflection),
-      0, ShaderUpdateFlag_ReleasePrevious);
-
-  // link UBO
-  shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 2,
-                               ubo_buffer_handle(&scene->renderer.ubo), 0,
-                               ShaderUpdateFlag_ReleasePrevious);
+      shader, shader->pipeline->bindings.probe->group,
+      shader->pipeline->bindings.probe->list,
+      ubo_buffer_handle(&scene->renderer.ubo, UBOType_ProbeList), 0,
+      ShaderUpdateFlag_ReleasePrevious);
 
   // link probe color texture
   shader_update_texture_view(
-      mesh_shader(mesh, MeshShader_Texture), 1, 3,
-      scene->probes_reflection.pass.color.attachment.view,
+      mesh_shader(mesh, MeshShader_Texture),
+      shader->pipeline->bindings.probe->group,
+      shader->pipeline->bindings.probe->reflection_grid_texture,
+      scene->probes.reflection_probe.pass.color.attachment.view,
       TEXTURE_FORMAT_OFFSCREEN, ShaderUpdateFlag_ReleasePrevious);
 
+  // DELETEME (linked in scene add directly ??)
   shader_update_texture_view(
-      mesh_shader(mesh, MeshShader_Texture), 1, 5,
+      mesh_shader(mesh, MeshShader_Texture),
+      shader->pipeline->bindings.probe->group,
+      shader->pipeline->bindings.probe->skybox_texture,
       scene_environment_skybox(&scene->environment)->view,
       TEXTURE_FORMAT_OFFSCREEN, ShaderUpdateFlag_ReleasePrevious);
 
@@ -97,7 +98,7 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
       .max_views = 16,
   };
 
-  probe_reflection_grid_list_draw(&scene->probes_reflection,
+  probe_reflection_grid_list_draw(&scene->probes.reflection_probe,
                                   debug ? &debug_options : NULL);
 }
 
@@ -148,9 +149,12 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                              },
                              ShaderUpdateFlag_None);
   // link UBO
-  shader_update_uniform_buffer(mesh_shader(mesh, MeshShader_Texture), 1, 2,
-                               ubo_buffer_handle(&scene->renderer.ubo), 0,
-                               ShaderUpdateFlag_ReleasePrevious);
+  Shader *shader = mesh_shader(mesh, MeshShader_Texture);
+  shader_update_uniform_buffer(
+      shader, shader->pipeline->bindings.probe->group,
+      shader->pipeline->bindings.probe->list,
+      ubo_buffer_handle(&scene->renderer.ubo, UBOType_ProbeList), 0,
+      ShaderUpdateFlag_ReleasePrevious);
 
-  mesh_shader_texture_bind_probe(mesh, plane, &scene->renderer.ssbo);
+  mesh_shader_texture_bind_probe(mesh, plane, &scene->renderer.ubo);
 }

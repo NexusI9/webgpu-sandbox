@@ -1,7 +1,7 @@
 #ifndef _UI_INPUT_H_
 #define _UI_INPUT_H_
 
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "imgui/imgui.h"
 #include "runtime/input/core.h"
 #include "runtime/scene/editor/ui/components/core.hpp"

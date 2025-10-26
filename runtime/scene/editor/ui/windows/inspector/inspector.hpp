@@ -4,7 +4,7 @@
 #include "../core.hpp"
 #include "backend/context.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "imgui/imgui_impl_wgpu.h"
 #include "runtime/scene/editor/ui/components/input.hpp"
 #include "runtime/scene/editor/ui/core.h"

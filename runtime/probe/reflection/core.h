@@ -4,26 +4,20 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "backend/ssbo.h"
-#include "runtime/mesh/core.h"
-#include "runtime/pipeline/render.h"
 #include "runtime/scene/debug/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
-#include "runtime/scene/renderer/renderer.h"
-#include "runtime/texture/core.h"
 #include "utils/dyli.h"
-#include "utils/vector/vector.h"
 #include "webgpu/webgpu.h"
 
-#define PROBE_REFLECTION_SSBO_SLOT_COUNT 2
+#define PROBE_REFLECTION_UBO_SLOT_COUNT 2
 #define PROBE_REFLECTION_MIPMAP_COUNT 1
 #define PROBE_REFLECTION_NEAR 0.1f
 #define PROBE_REFLECTION_FAR 100.0f
 
 typedef enum {
-  ProbeReflectionSSBOField_List,
-  ProbeReflectionSSBOField_Camera,
-} ProbeReflectionSSBOField;
+  ProbeReflectionUBOField_List,
+  ProbeReflectionUBOField_Camera,
+} ProbeReflectionUBOField;
 
 typedef struct {
 
@@ -39,7 +33,7 @@ typedef struct {
 } ProbeReflectionListDebug;
 
 typedef struct {
-  ssbo_id_t camera_offset;
+  ubo_id_t camera_offset;
 } ProbeReflectionListPreprocessorData;
 
 typedef struct {
@@ -73,10 +67,8 @@ typedef struct {
 } ProbeReflectionCreateCorePass;
 
 typedef struct {
-
   ProbeReflectionCreateCoreList *probe_list;
   ProbeReflectionCreateCorePass *render_pass;
-
 } ProbeReflectionCreateCore;
 
 EXTERN_C_BEGIN

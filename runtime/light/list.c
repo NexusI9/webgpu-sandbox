@@ -1,5 +1,7 @@
 #include "list.h"
 
+#include "backend/logger.h"
+#include "backend/ubo.h"
 #include "core.h"
 #include "utils/stli.h"
 
@@ -90,4 +92,55 @@ StaticListStatus light_list_spot_shadow_remove(SpotLightListShadow *list,
                                                SpotLight *light) {
   return stli_remove((void *)list->entries, &list->length, sizeof(SpotLight *),
                      (void *)light, "Spot Light List Shadow");
+}
+
+LightListSlot light_list_uniform_new_entry(LightListUniform *list,
+                                           const LightType type) {
+
+  switch (type) {
+
+  case LightType_Ambient:
+
+    if (list->ambient_count < LIGHT_LIST_ENTRIES_CAPACITY)
+      return (LightListSlot){
+          .uniform = {.ambient = &list->ambient_light[list->ambient_count]},
+          .offset =
+              light_list_uniform_offset(list->ambient_count, LightType_Ambient),
+          .id = list->ambient_count++,
+      };
+    break;
+
+  case LightType_Point:
+    if (list->point_count < LIGHT_LIST_ENTRIES_CAPACITY)
+      return (LightListSlot){
+          .uniform = {.point = &list->point_light[list->point_count]},
+          .offset =
+              light_list_uniform_offset(list->point_count, LightType_Point),
+          .id = list->point_count++,
+      };
+    break;
+
+  case LightType_Spot:
+    if (list->spot_count < LIGHT_LIST_ENTRIES_CAPACITY)
+      return (LightListSlot){
+          .uniform = {.spot = &list->spot_light[list->spot_count]},
+          .offset = light_list_uniform_offset(list->spot_count, LightType_Spot),
+          .id = list->spot_count++,
+      };
+    break;
+
+  case LightType_Sun:
+    if (list->sun_count < LIGHT_LIST_ENTRIES_CAPACITY)
+      return (LightListSlot){
+          .uniform = {.sun = &list->sun_light[list->sun_count]},
+          .offset = light_list_uniform_offset(list->sun_count, LightType_Sun),
+          .id = list->sun_count++,
+      };
+    break;
+  }
+
+  logger_add(LoggerFlag_Error, "Couldn't create new light uniform slot. Light "
+                               "list reached max capacity.");
+
+  return (LightListSlot){.uniform = 0, .id = UBO_INDEX_UNFOUND, .offset = 0};
 }

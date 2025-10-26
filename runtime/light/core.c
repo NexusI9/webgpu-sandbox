@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "uniform.h"
 #include "utils/name.h"
 #include "utils/projection.h"
@@ -27,18 +27,6 @@ void point_light_create(PointLight *light, PointLightDescriptor *desc) {
   glm_vec3_copy(desc->position, light->position);
   glm_vec3_copy(desc->color, light->color);
 
-  /* === Init SSBO ===*/
-
-  ssbo_slot_init_alloc(&light->ssbo_slot[LightSSBOSlot_List],
-                       sizeof(PointLightUniform));
-
-  point_light_uniform_update(light);
-
-  for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
-    ssbo_slot_init_alloc(&light->ssbo_slot[LightSSBOSlot_View + i],
-                         sizeof(ProjectionUniform));
-
-  point_light_projection_update(light);
 }
 
 void spot_light_create(SpotLight *light, SpotLightDescriptor *desc) {
@@ -56,16 +44,6 @@ void spot_light_create(SpotLight *light, SpotLightDescriptor *desc) {
   glm_vec3_copy(desc->target, light->target);
   glm_vec3_copy(desc->color, light->color);
 
-  /* === Init SSBO ===*/
-
-  ssbo_slot_init_alloc(&light->ssbo_slot[LightSSBOSlot_List],
-                       sizeof(SpotLightUniform));
-  spot_light_uniform_update(light);
-
-  ssbo_slot_init_alloc(&light->ssbo_slot[LightSSBOSlot_View],
-                       sizeof(ProjectionUniform));
-
-  spot_light_projection_update(light);
 }
 
 void sun_light_create(SunLight *light, SunLightDescriptor *desc) {
@@ -80,17 +58,6 @@ void sun_light_create(SunLight *light, SunLightDescriptor *desc) {
   glm_vec3_copy(desc->position, light->position);
   glm_vec3_copy(desc->color, light->color);
 
-  /* === Init SSBO ===*/
-
-  ssbo_slot_init_alloc(&light->ssbo_slot[LightSSBOSlot_List],
-                       sizeof(SunLightUniform));
-
-  sun_light_uniform_update(light);
-
-  ssbo_slot_init_alloc(&light->ssbo_slot[LightSSBOSlot_View],
-                       sizeof(ProjectionUniform));
-
-  sun_light_projection_update(light);
 }
 
 void ambient_light_create(AmbientLight *light, AmbientLightDescriptor *desc) {
@@ -104,9 +71,4 @@ void ambient_light_create(AmbientLight *light, AmbientLightDescriptor *desc) {
   glm_vec4_copy(desc->color, light->color);
   glm_vec3_copy(desc->position, light->position);
 
-  /* === Init SSBO ===*/
-
-  ssbo_slot_init_alloc(&light->ssbo_slot, sizeof(AmbientLightUniform));
-
-  ambient_light_uniform_update(light);
 }

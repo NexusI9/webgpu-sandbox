@@ -90,7 +90,7 @@ static inline void scene_selection_draw_callback(void *data) {
       };
       mesh_transform_callback(&transform);
 
-      gizmo_update_ssbo(gizmo, &scene->renderer.ssbo);
+      gizmo_update_ubo(gizmo, &scene->renderer.ubo);
     }
   }
 }

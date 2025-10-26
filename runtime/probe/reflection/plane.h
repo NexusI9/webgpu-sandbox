@@ -7,11 +7,12 @@
 
 #include "./core.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "cglm/cglm.h"
 #include "runtime/camera/core.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/mesh/core.h"
+#include "runtime/probe/uniform.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/scene/renderer/render_pass/render_pass.h"
 #include "utils/dyli.h"
@@ -31,28 +32,14 @@ typedef struct {
   float near;
   float far;
   float distance;
-  SSBOSlot ssbo_slot[PROBE_REFLECTION_SSBO_SLOT_COUNT];
   Camera camera;
   Camera const *ref_camera;
   AABB boundbox;
   uint32_t texture_layer;
   MeshRefList excluded_meshes;
+  ProbeListSlot ubo_uniform;
+  UBOSlot ubo_camera;
 } ProbeReflectionPlane;
-
-typedef struct {
-  vec3 position;
-  float near;
-  vec3 normal;
-  float far;
-  vec3 scale;
-  float distance;
-  vec3 tangent;
-  float signed_distance;
-  vec3 bitangent;
-  uint32_t texture_layer;
-  mat4 view;
-  float _pad1[28];
-} __attribute__((aligned(16))) ProbeReflectionPlaneUniform;
 
 typedef struct {
   ProbeReflectionPlane *entries;
@@ -105,7 +92,8 @@ probe_reflection_plane_get_name(ProbeReflectionPlane *plane) {
   return plane->name;
 }
 
-static inline void probe_reflection_plane_set_name(ProbeReflectionPlane* plane, const char* name){
+static inline void probe_reflection_plane_set_name(ProbeReflectionPlane *plane,
+                                                   const char *name) {
   name_copy(name, plane->name);
 }
 

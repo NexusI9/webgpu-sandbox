@@ -7,7 +7,7 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/transform.h"
@@ -135,17 +135,16 @@ void sem_probe_reflection_grid_set_position(SceneEditorMesh *sem, vec3 value) {
   probe_reflection_update_uniform(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(&sem->scene->renderer.ssbo,
-                           SSBOType_ProbeGridReflection,
-                           probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
+  ubo_update_queue_insert(&sem->scene->renderer.ubo, UBOType_ProbeList,
+                          sem->scene->probes.ubo_slot.id);
 
   // update view cpu side
   probe_reflection_update_camera(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(
-      &sem->scene->renderer.ssbo, SSBOType_Camera,
-      probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
+  for (uint8_t i = 0; i < PROBE_REFLECTION_VIEW_COUNT; i++)
+    ubo_update_queue_insert(&sem->scene->renderer.ubo, UBOType_Camera,
+                            probe->ubo_camera[i].id);
 }
 
 void sem_probe_reflection_grid_set_rotation(SceneEditorMesh *sem, vec3 value) {}

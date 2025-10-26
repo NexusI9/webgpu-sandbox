@@ -8,8 +8,8 @@
 
 #include "./core.h"
 #include "backend/registry.h"
-#include "probe.h"
 #include "runtime/geometry/aabb/aabb.h"
+#include "runtime/probe/reflection/probe.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "utils/dyli.h"
 
@@ -51,11 +51,6 @@ typedef struct {
   const char *name;
 } ProbeReflectionGridDescriptor;
 
-typedef struct {
-  uint32_t length;
-  ProbeReflectionUniform entries[PROBE_REFLECTION_GRID_LIST_CAPACITY *
-                                 PROBE_REFLECTION_LIST_MAX_COUNT];
-} __attribute__((aligned(16))) ProbeReflectionListUniform;
 
 void probe_reflection_grid_create(ProbeReflectionGrid *,
                                   ProbeReflectionGridDescriptor *);
@@ -93,9 +88,6 @@ DynamicListStatus probe_reflection_grid_list_destroy(ProbeReflectionGridList *);
 
 void probe_reflection_grid_list_draw(ProbeReflectionGridList *,
                                      ProbeReflectionListDebug *);
-
-void probe_reflection_grid_list_uniform(ProbeReflectionListUniform *,
-                                        ProbeReflectionGridList *);
 
 size_t probe_reflection_grid_list_probe_count(ProbeReflectionGridList *);
 #endif

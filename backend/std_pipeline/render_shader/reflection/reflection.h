@@ -39,8 +39,8 @@ static const RenderPipelineStateObject layout_reflection = {
     .bind_groups =
         {
             &mvp_layout,
-            &layout_pbr_textures_bind_group,
-            &layout_pbr_lights_bind_group,
+            &pbr_material_bind_group,
+            &pbr_lighting_bind_group,
         },
     .pipeline_attributes =
         {

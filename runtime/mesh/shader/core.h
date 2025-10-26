@@ -1,7 +1,7 @@
 #ifndef _MESH_SHADER_C_
 #define _MESH_SHADER_C_
 
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/core.h"
 #include "runtime/shader/core.h"
@@ -19,9 +19,9 @@ MeshStatus mesh_shader_create_standard(Mesh *, const MeshShader);
 
 Shader *mesh_shader(Mesh *, const MeshShader);
 
-void mesh_shader_build_mvp(Mesh *, const MeshShader, SSBOManager *);
-void mesh_shader_build_mp(Mesh *, const MeshShader, SSBOManager *,
-                          const SSBOType);
+void mesh_shader_build_mvp(Mesh *, const MeshShader, UBOManager *);
+void mesh_shader_build_mp(Mesh *, const MeshShader, UBOManager *,
+                          const UBOType);
 
 EXTERN_C_END
 

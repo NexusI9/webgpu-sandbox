@@ -8,7 +8,7 @@
 #include "./uniform.h"
 #include "math.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 
 void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
@@ -23,8 +23,6 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->mode = cd->mode;
   cam->sensitivity = cd->sensitivity;
 
-  // may be overriden/free by SSBO later when added to scene
-  ssbo_slot_init_alloc(&cam->ssbo_slot, sizeof(CameraUniform));
 }
 
 void camera_reset(Camera *c) {
@@ -45,7 +43,7 @@ void camera_reset(Camera *c) {
     vec3 right = {0.0f, 0.0f, 0.0f};
     glm_vec3_copy(right, c->right);
 
-    c->ssbo_slot.uniform = NULL;
+    c->ubo_slot.uniform = NULL;
   }
 }
 

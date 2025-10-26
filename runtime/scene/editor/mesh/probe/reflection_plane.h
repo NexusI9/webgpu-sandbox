@@ -1,7 +1,6 @@
 #ifndef _SCENE_EDITOR_OBJECT_PROBE_REFLECTION_PLANE_H_
 #define _SCENE_EDITOR_OBJECT_PROBE_REFLECTION_PLANE_H_
 
-#include "runtime/probe/probe.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/core.h"
 

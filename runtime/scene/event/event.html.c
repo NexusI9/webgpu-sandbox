@@ -3,7 +3,7 @@
 #include <emscripten/html5.h>
 #include <stddef.h>
 
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "emscripten/em_types.h"
 #include "runtime/camera/core.h"
 #include "runtime/camera/mode.h"
@@ -89,27 +89,25 @@ void scene_event_html_commons(Scene *scene) {
   // update camera controls
   Camera *camera = scene->active_camera;
   camera_mode_controller[camera->mode](camera);
-  ssbo_update_queue_insert(&scene->renderer.ssbo, SSBOType_Camera,
-                           camera->ssbo_slot.id);
+  ubo_update_queue_insert(&scene->renderer.ubo, UBOType_Camera,
+                          camera->ubo_slot.id);
 
   // update planar reflections probes views
-  for (size_t i = 0; i < scene->planes_reflection.length; i++) {
-    ProbeReflectionPlane *probe = &scene->planes_reflection.entries[i];
+  for (size_t i = 0; i < scene->probes.reflection_plane.length; i++) {
+    ProbeReflectionPlane *probe = &scene->probes.reflection_plane.entries[i];
 
     // update CPU side
     probe_reflection_plane_update_camera(probe);
     probe_reflection_plane_update_uniform(probe);
 
     // add to GPU update Queue
-    ssbo_update_queue_insert(
-        &scene->renderer.ssbo, SSBOType_Camera,
-        probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
-
-    // add to GPU update Queue
-    ssbo_update_queue_insert(
-        &scene->renderer.ssbo, SSBOType_ProbePlaneReflection,
-        probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
+    ubo_update_queue_insert(&scene->renderer.ubo, UBOType_Camera,
+                            probe->ubo_camera.id);
   }
+
+  // add to GPU update Queue
+  ubo_update_queue_insert(&scene->renderer.ubo, UBOType_ProbeList,
+                          scene->probes.ubo_slot.id);
 }
 
 void scene_event_html_update_meshes(Scene *data) {

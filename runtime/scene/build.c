@@ -3,7 +3,6 @@
 #include <stddef.h>
 
 #include "backend/logger.h"
-#include "backend/ssbo.h"
 #include "backend/ubo.h"
 #include "core.h"
 #include "renderer/core.h"
@@ -51,7 +50,6 @@ static inline void scene_build_mesh_boundbox(Scene *, Mesh *,
 SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
                              const ScenePipeline pipeline) {
 
-  SSBOManager *ssbo = &scene->renderer.ssbo;
   UBOManager *ubo = &scene->renderer.ubo;
 
   if (pipeline >= ScenePipeline_Fixed_Background) {
@@ -105,7 +103,6 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
   logger_add(LoggerFlag_MeshBuild, "Texture %s", mesh->name);
 #endif
 
-  SSBOManager *ssbo = &scene->renderer.ssbo;
   UBOManager *ubo = &scene->renderer.ubo;
 
   // compute boundbox bounds for collisions (lightweight)
@@ -113,26 +110,27 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
                                        &mesh->topology.boundbox);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Texture, ssbo);
-  mesh_shader_build_mvp(mesh, MeshShader_Reflection, ssbo);
+  mesh_shader_build_mvp(mesh, MeshShader_Texture, ubo);
+  mesh_shader_build_mvp(mesh, MeshShader_Reflection, ubo);
 
   if (pipeline &
       (ScenePipeline_Dynamic_Unlit | ScenePipeline_Dynamic_LitAlpha |
        ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit)) {
 
-    mesh_shader_texture_update_environment(mesh, scene->environment.skybox.view,
-                                           ssbo);
+    mesh_shader_texture_update_environment(
+        mesh, scene->environment.skybox.view,
+        (SceneEnvironmentUniform *)scene->environment.ubo_slot.uniform, ubo);
 
     mesh_shader_texture_update_probes(
-        mesh, scene->planes_reflection.pass.color.attachment.view,
-        scene->probes_reflection.pass.color.attachment.view, ssbo);
+        mesh, scene->probes.reflection_plane.pass.color.attachment.view,
+        scene->probes.reflection_probe.pass.color.attachment.view, ubo);
   }
 
   if (pipeline & (ScenePipeline_Dynamic_LitShadow | ScenePipeline_Dynamic_Lit |
                   ScenePipeline_Dynamic_LitAlpha)) {
 
-    mesh_shader_texture_update_lights(mesh, MeshShader_Texture, ubo, ssbo);
-    mesh_shader_texture_update_lights(mesh, MeshShader_Reflection, ubo, ssbo);
+    mesh_shader_texture_update_lights(mesh, MeshShader_Texture, ubo);
+    mesh_shader_texture_update_lights(mesh, MeshShader_Reflection, ubo);
   }
 
   if (pipeline &
@@ -145,8 +143,7 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
     // create mesh shadow shader
     mesh_shader_create_standard(mesh, MeshShader_Shadow);
 
-    mesh_shader_build_mp(mesh, MeshShader_Shadow, ssbo,
-                         SSBOType_ViewProjection);
+    mesh_shader_build_mp(mesh, MeshShader_Shadow, ubo, UBOType_ViewProjection);
   }
 }
 
@@ -169,7 +166,7 @@ void scene_build_mesh_solid(Scene *scene, Mesh *mesh,
   mesh_shader_create_standard(mesh, MeshShader_Solid);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Solid, &scene->renderer.ssbo);
+  mesh_shader_build_mvp(mesh, MeshShader_Solid, &scene->renderer.ubo);
 }
 
 /**
@@ -186,11 +183,11 @@ void scene_build_mesh_outline(Scene *scene, Mesh *mesh,
   // create meshes' solid shader
   if (mesh_shader_create_standard(mesh, MeshShader_Outline) ==
       MeshStatus_Success)
-    mesh_shader_build_mvp(mesh, MeshShader_Outline, &scene->renderer.ssbo);
+    mesh_shader_build_mvp(mesh, MeshShader_Outline, &scene->renderer.ubo);
 
   if (mesh_shader_create_standard(mesh, MeshShader_Stencil) ==
       MeshStatus_Success)
-    mesh_shader_build_mvp(mesh, MeshShader_Stencil, &scene->renderer.ssbo);
+    mesh_shader_build_mvp(mesh, MeshShader_Stencil, &scene->renderer.ubo);
 }
 
 /**
@@ -224,7 +221,7 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
                                &(color){0.0f, 0.0f, 0.0f, 1.0f},
                                ShaderUpdateFlag_None);
 
-    mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
+    mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ubo);
   }
 }
 
@@ -256,7 +253,7 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
                                &(color){0.0f, 0.0f, 0.0f, 1.0f},
                                ShaderUpdateFlag_None);
 
-    mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ssbo);
+    mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ubo);
   }
 }
 
@@ -274,5 +271,5 @@ void scene_build_mesh_fixed(Scene *scene, Mesh *mesh,
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
                                        &mesh->topology.boundbox);
-  mesh_shader_build_mvp(mesh, MeshShader_Fixed, &scene->renderer.ssbo);
+  mesh_shader_build_mvp(mesh, MeshShader_Fixed, &scene->renderer.ubo);
 }

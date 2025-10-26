@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/index.h"
 #include "runtime/geometry/vertex/vertex.h"
@@ -73,7 +73,7 @@ typedef struct {
   mat4 model;
   vec4 position;
   uint32_t probe_reflection_plane_count;
-  uint32_t probe_reflection_grid_count;
+  uint32_t probe_reflection_probe_count;
   uint32_t _pad[42];
 } __attribute__((aligned(16))) MeshUniform;
 
@@ -92,7 +92,7 @@ struct Mesh {
   vec3 rotation_euler;
   versor rotation_quat;
 
-  SSBOSlot ssbo_slot;
+  UBOSlot ubo_slot;
 
   // vertex data & buffer topology
   struct mesh_topology {

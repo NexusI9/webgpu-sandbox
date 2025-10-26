@@ -4,7 +4,6 @@
 #include <stdint.h>
 
 #include "backend/logger.h"
-#include "backend/ssbo.h"
 #include "backend/ubo.h"
 #include "core.h"
 #include "runtime/light/shadow_map/core.h"
@@ -34,20 +33,14 @@ void mesh_shader_texture_clear_bindings(Mesh *mesh) {
    within a defined group
   */
 void mesh_shader_texture_update_lights(Mesh *mesh, const MeshShader shader_type,
-                                       UBOManager *ubo, SSBOManager *ssbo) {
+                                       UBOManager *ubo) {
 
-  WGPUBuffer entries[5] = {
-      ssbo_buffer_handle(ssbo, SSBOType_AmbientLight),
-      ssbo_buffer_handle(ssbo, SSBOType_SpotLight),
-      ssbo_buffer_handle(ssbo, SSBOType_PointLight),
-      ssbo_buffer_handle(ssbo, SSBOType_SunLight),
-      ubo_buffer_handle(ubo),
-  };
-
-  for (size_t i = 0; i < 5; i++)
-    shader_update_uniform_buffer(mesh_shader(mesh, shader_type),
-                                 SHADER_TEXTURE_BINDGROUP_LIGHTS, i, entries[i],
-                                 0, ShaderUpdateFlag_ReleasePrevious);
+  Shader *shader = mesh_shader(mesh, shader_type);
+  shader_update_uniform_buffer(shader,
+                               shader->pipeline->bindings.light_list->group,
+                               shader->pipeline->bindings.light_list->list,
+                               ubo_buffer_handle(ubo, UBOType_LightList), 0,
+                               ShaderUpdateFlag_ReleasePrevious);
 }
 
 /**
@@ -122,7 +115,7 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
 void mesh_shader_texture_update_probes(Mesh *mesh,
                                        WGPUTextureView plane_texture,
                                        WGPUTextureView grid_texture,
-                                       SSBOManager *ssbo) {
+                                       UBOManager *ubo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
   const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
@@ -144,7 +137,8 @@ void mesh_shader_texture_update_probes(Mesh *mesh,
 
 void mesh_shader_texture_update_environment(Mesh *mesh,
                                             WGPUTextureView skybox_texture,
-                                            SSBOManager *ssbo) {
+                                            SceneEnvironmentUniform *scene_env,
+                                            UBOManager *ubo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
   const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
@@ -155,28 +149,32 @@ void mesh_shader_texture_update_environment(Mesh *mesh,
                                bindings->probe->skybox_texture, skybox_texture,
                                TEXTURE_FORMAT_OFFSCREEN,
                                ShaderUpdateFlag_ReleasePrevious);
+
+  // udpate scene environment (fog...)
+  if (bindings->environment->environment != PIPELINE_BINDING_UNDEFINED)
+    shader_update_uniform_data(shader, bindings->environment->group,
+                               bindings->environment->environment,
+                               (void *)scene_env, ShaderUpdateFlag_None);
 }
 
 /**
    Link one mesh texture to a reflection probe.
  */
 void mesh_shader_texture_bind_probe(Mesh *mesh, ProbeReflectionPlane *plane,
-                                    SSBOManager *ssbo) {
+                                    UBOManager *ubo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
   const RenderPipeline *pipeline = shader_pipeline(shader);
 
-  shader_update_uniform_buffer(
-      shader, pipeline->bindings.probe->group,
-      pipeline->bindings.probe->reflection_plane,
-      ssbo_buffer_handle(ssbo, SSBOType_ProbePlaneReflection),
-      plane->ssbo_slot[ProbeReflectionSSBOField_List].id,
-      ShaderUpdateFlag_ReleasePrevious);
+  shader_update_uniform_buffer(shader, pipeline->bindings.probe->group,
+                               pipeline->bindings.probe->list,
+                               ubo_buffer_handle(ubo, UBOType_ProbeList), 0,
+                               ShaderUpdateFlag_ReleasePrevious);
 
   {
     MeshUniform *uniform = mesh_uniform(mesh);
-    uniform->probe_reflection_plane_count = 1;
-    ssbo_update_queue_insert(ssbo, SSBOType_Mesh, mesh->ssbo_slot.id);
+    uniform->probe_reflection_plane_count = plane->ubo_uniform.id;
+    ubo_update_queue_insert(ubo, UBOType_Mesh, mesh->ubo_slot.id);
   }
 
   // prevent self reflection by removing the mesh from the plane draw list

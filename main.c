@@ -61,15 +61,14 @@ int main(int argc, const char *argv[]) {
 
   scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Solid);
 
-  //example_light(&main_scene);
+  // example_light(&main_scene);
   example_skybox(&main_scene);
   example_gltf_spa(&main_scene);
-
 
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);
   // example_glass_probe_grid(&main_scene, false);
-  //example_glass_probe_plane(&main_scene, false);
+  // example_glass_probe_plane(&main_scene, false);
 
   // add gizmo camera
   /*GizmoCamera *new_cam =
@@ -86,7 +85,6 @@ int main(int argc, const char *argv[]) {
 
   // Update Loop
   scene_renderer_draw(&main_scene.renderer);
-
 
   return 0;
 }

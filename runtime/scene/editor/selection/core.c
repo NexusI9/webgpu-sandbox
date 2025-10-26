@@ -257,7 +257,7 @@ SceneSelectionFilterStatus scene_selection_toggle_mesh(Scene *scene,
   if (scene_selection_length(&scene->editor.selection) > 0) {
     scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
                                  &scene->editor.selection,
-                                 &scene->renderer.ssbo);
+                                 &scene->renderer.ubo);
     scene_gizmo_show(scene);
 
   } else {

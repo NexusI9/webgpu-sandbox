@@ -6,7 +6,7 @@
 #include <stdint.h>
 
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "utils/name.h"
 #include "utils/projection.h"
 #include "webgpu/webgpu.h"
@@ -15,19 +15,63 @@
 #define LIGHT_SPOT_VIEW 1
 #define LIGHT_MAX_CAPACITY 16
 
+// explicitely define them cause order is important
+#define LIGHT_TYPE_COUNT 4
 typedef enum {
-  LightType_Ambient = 1 << 0,
-  LightType_Spot = 1 << 1,
-  LightType_Sun = 1 << 2,
-  LightType_Point = 1 << 3,
+  LightType_Ambient = 0,
+  LightType_Point = 1,
+  LightType_Spot = 2,
+  LightType_Sun = 3,
 } LightType;
 
-#define LIGHT_SSBO_SLOT_COUNT 2
+// light type
+// NOTE: use __attribute__ on list AS WELL AS entries (pointlights...) else
+// wrong alignment in list entries (i.e. _padding takes color.r value)
+typedef struct {
+  vec3 position;
+  float cutoff;
+  color color;
+  mat4 views[LIGHT_POINT_VIEWS];
+  float intensity;
+  float inner_cutoff;
+  float near;
+  float far;
+} __attribute__((aligned(16))) PointLightUniform;
 
-typedef enum {
-  LightSSBOSlot_List,
-  LightSSBOSlot_View,
-} LightSSBOSlot;
+typedef struct {
+  color color;
+  float intensity;
+  float _pad[3];
+} __attribute__((aligned(16))) AmbientLightUniform;
+
+typedef struct {
+  vec3 position;
+  float cutoff;
+  vec3 target;
+  float inner_cutoff;
+  color color;
+  mat4 view;
+  float intensity;
+  float _pad[3];
+} __attribute__((aligned(16))) SpotLightUniform;
+
+typedef struct {
+  vec3 position;
+  float intensity;
+  color color;
+  mat4 view;
+} __attribute__((aligned(16))) SunLightUniform;
+
+typedef struct {
+  union { // points to the LightListUniform entry
+    AmbientLightUniform *ambient;
+    PointLightUniform *point;
+    SpotLightUniform *spot;
+    SunLightUniform *sun;
+  } uniform;
+  size_t id;
+  size_t offset;
+} LightListSlot;
 
 // core type
 typedef struct {
@@ -40,8 +84,9 @@ typedef struct {
   float inner_cutoff;
   float near;
   float far;
-  SSBOSlot ssbo_slot[LIGHT_SSBO_SLOT_COUNT + 5]; // 1 list + (1 + 5 views)
   Projection views;
+  UBOSlot ubo_projection[LIGHT_POINT_VIEWS];
+  LightListSlot ubo_uniform;
 } PointLight;
 
 typedef struct {
@@ -50,8 +95,7 @@ typedef struct {
   vec3 position; // abstract, for UI purpose only
   color color;
   float intensity;
-  SSBOSlot ssbo_slot;
-  Projection views;
+  LightListSlot ubo_uniform;
 } AmbientLight;
 
 typedef struct {
@@ -64,8 +108,9 @@ typedef struct {
   float angle;
   float inner_cutoff;
   float intensity;
-  SSBOSlot ssbo_slot[LIGHT_SSBO_SLOT_COUNT];
   Projection views;
+  UBOSlot ubo_projection;
+  LightListSlot ubo_uniform;
 } SpotLight;
 
 typedef struct {
@@ -75,8 +120,9 @@ typedef struct {
   color color;
   float size;
   float intensity;
-  SSBOSlot ssbo_slot[LIGHT_SSBO_SLOT_COUNT];
   Projection views;
+  UBOSlot ubo_projection;
+  LightListSlot ubo_uniform;
 } SunLight;
 
 // descriptor type
@@ -183,27 +229,24 @@ static inline void point_light_projection_update(PointLight *light) {
   // update light projection attribute
   projection_point(&light->views, light->position, light->near, light->far);
 
-  // transfert attribute to SSBO slot
-  projection_update_ssbo_slot(light->ssbo_slot, &light->views,
-                              LightSSBOSlot_View);
+  // transfert attribute to UBO slot
+  projection_update_ubo_slot(light->ubo_projection, &light->views);
 }
 
 static inline void spot_light_projection_update(SpotLight *light) {
   // update light projection attribute
   projection_spot(&light->views, light->position, light->target, light->angle);
 
-  // transfert attribute to SSBO slot
-  projection_update_ssbo_slot(light->ssbo_slot, &light->views,
-                              LightSSBOSlot_View);
+  // transfert attribute to UBO slot
+  projection_update_ubo_slot(&light->ubo_projection, &light->views);
 }
 
 static inline void sun_light_projection_update(SunLight *light) {
   // update light projection attribute
   projection_sun(&light->views, light->position, light->size);
 
-  // transfert attribute to SSBO slot
-  projection_update_ssbo_slot(light->ssbo_slot, &light->views,
-                              LightSSBOSlot_View);
+  // transfert attribute to UBO slot
+  projection_update_ubo_slot(&light->ubo_projection, &light->views);
 }
 
 static inline const char *point_light_get_name(PointLight *light) {

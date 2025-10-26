@@ -4,7 +4,7 @@
 #include <stddef.h>
 
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/light/shadow_map/draw.h"
@@ -99,8 +99,8 @@ void sem_spot_light_set_position(SceneEditorMesh *sem, vec3 value) {
   glm_vec3_copy(value, light->position);
 
   spot_light_uniform_update(light);
-  ssbo_update_queue_insert(&sem->scene->renderer.ssbo, SSBOType_SpotLight,
-                           light->ssbo_slot[LightSSBOSlot_List].id);
+  ubo_update_queue_insert(&sem->scene->renderer.ubo, UBOType_LightList,
+                          sem->scene->lights.ubo_slot.id);
 
   mesh_set_position(sem->mesh, value);
 }
@@ -122,15 +122,15 @@ static inline void sem_spot_light_update_shadow(SceneEditorMesh *);
 void sem_spot_light_update_shadow(SceneEditorMesh *sem) {
 
   SpotLight *light = (SpotLight *)sem->target;
-  SSBOManager *ssbo = &sem->scene->renderer.ssbo;
+  UBOManager *ubo = &sem->scene->renderer.ubo;
 
   if (scene_renderer_draw_mode(&sem->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
 
     spot_light_projection_update(light);
 
-    ssbo_update_queue_insert(ssbo, SSBOType_ViewProjection,
-                             light->ssbo_slot[LightSSBOSlot_View].id);
+    ubo_update_queue_insert(ubo, UBOType_ViewProjection,
+                            light->ubo_projection.id);
 
     shadow_map_draw_spot_light(
         &(ShadowMapDrawSpotLightDescriptor){
@@ -153,13 +153,13 @@ void sem_spot_light_shadow_create(SceneEditorMeshList *list, SpotLight *light,
 void sem_spot_light_shadow_set_position(SceneEditorMesh *sem, vec3 value) {
 
   SpotLight *light = (SpotLight *)sem->target;
-  SSBOManager *ssbo = &sem->scene->renderer.ssbo;
+  UBOManager *ubo = &sem->scene->renderer.ubo;
 
   glm_vec3_copy(value, light->position);
 
   spot_light_uniform_update(light);
-  ssbo_update_queue_insert(ssbo, SSBOType_SpotLight,
-                           light->ssbo_slot[LightSSBOSlot_List].id);
+  ubo_update_queue_insert(&sem->scene->renderer.ubo, UBOType_LightList,
+                          sem->scene->lights.ubo_slot.id);
 
   mesh_set_position(sem->mesh, value);
 

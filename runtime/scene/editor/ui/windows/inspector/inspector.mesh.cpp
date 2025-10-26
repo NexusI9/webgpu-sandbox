@@ -1,5 +1,5 @@
 #include "inspector.mesh.hpp"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "imgui/imgui.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/mesh/transform.h"
@@ -11,11 +11,11 @@
 void UI::InspectorMesh::transform_update_callback(Scene *scene,
                                                   void *user_data) {
 
-  ssbo_update_queue_insert(&scene->renderer.ssbo, SSBOType_Mesh,
-                           ((Mesh *)user_data)->ssbo_slot.id);
+  ubo_update_queue_insert(&scene->renderer.ubo, UBOType_Mesh,
+                           ((Mesh *)user_data)->ubo_slot.id);
 
   scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
-                               &scene->editor.selection, &scene->renderer.ssbo);
+                               &scene->editor.selection, &scene->renderer.ubo);
 }
 
 void UI::InspectorMesh::draw() {

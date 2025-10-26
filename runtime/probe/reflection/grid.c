@@ -201,12 +201,9 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
 
             // update each mesh views/projections matrix
             render_pass_update_all_preprocessor_data(
-                &list->pass,
-                &(ProbeReflectionListPreprocessorData){
-                    .camera_offset =
-                        probe->ssbo_slot[ProbeReflectionSSBOField_Camera + k]
-                            .id,
-                });
+                &list->pass, &(ProbeReflectionListPreprocessorData){
+                                 .camera_offset = probe->ubo_camera[k].id,
+                             });
 
             // draw pass
             render_pass_im_set_views(&list->pass, &(RenderPassDrawOptions){
@@ -228,23 +225,6 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
     }
   }
   render_pass_im_end(&list->pass);
-}
-
-void probe_reflection_grid_list_uniform(ProbeReflectionListUniform *uniform,
-                                        ProbeReflectionGridList *grid) {
-
-  uint16_t probe_count = 0;
-  uint16_t index = 0;
-  for (uint8_t i = 0; i < grid->length; i++) {
-    probe_count += grid->entries[i].probes.length;
-    for (uint8_t j = 0; j < grid->entries[i].probes.length; j++) {
-      glm_vec3_copy(grid->entries[i].probes.entries[j].position,
-                    uniform->entries[index].position);
-      index++;
-    }
-  }
-
-  uniform->length = probe_count;
 }
 
 size_t

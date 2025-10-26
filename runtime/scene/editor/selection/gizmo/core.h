@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <webgpu/webgpu.h>
 
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/camera/camera.h"
 #include "runtime/camera/core.h"
 #include "runtime/geometry/plane/core.h"
@@ -269,11 +269,11 @@ static inline void gizmo_reset_color_uniform(Gizmo *gizmo) {
   }
 }
 
-static inline void gizmo_update_ssbo(Gizmo *gizmo, SSBOManager *ssbo) {
+static inline void gizmo_update_ubo(Gizmo *gizmo, UBOManager *ubo) {
   for (uint8_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
-    ssbo_update_queue_insert(
-        ssbo, SSBOType_Mesh,
-        gizmo->handles[gizmo->mode].entries[i]->ssbo_slot.id);
+    ubo_update_queue_insert(
+        ubo, UBOType_Mesh,
+        gizmo->handles[gizmo->mode].entries[i]->ubo_slot.id);
 }
 
 EXTERN_C_END

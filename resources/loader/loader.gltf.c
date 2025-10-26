@@ -22,6 +22,7 @@
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
+#include "runtime/shader/bindgroup.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
@@ -473,13 +474,13 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
     // need to be careful with shared ownership. Here it shouldn't be to
     // much trouble since reflection and texture shader lifetime are mostly
     // linked.
-    shader_update_texture_view(mesh_shader(mesh, MeshShader_Reflection),
-                               SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
-                               reflection_texture->texture_view,
-                               reflection_texture->format,
-                               ShaderUpdateFlag_ReleasePrevious);
+    Shader *reflection_shader = mesh_shader(mesh, MeshShader_Reflection);
+    shader_update_texture_view(
+        reflection_shader, SHADER_TEXTURE_BINDGROUP_TEXTURES, binding,
+        reflection_texture->texture_view, reflection_texture->format,
+        ShaderUpdateFlag_ReleasePrevious);
 
-    binding += 2;
+    binding++;
   }
 }
 
@@ -503,9 +504,10 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
   glm_vec4_copy(material->pbr_metallic_roughness.base_color_factor,
                 pbr.base_color_factor);
 
-  shader_update_uniform_data(texture_shader, 1, 10, &pbr,
+  static const bind_index pbr_uniform_binding = 6;
+  shader_update_uniform_data(texture_shader, 1, pbr_uniform_binding, &pbr,
                              ShaderUpdateFlag_None);
-  shader_update_uniform_data(reflection_shader, 1, 10, &pbr,
+  shader_update_uniform_data(reflection_shader, 1, pbr_uniform_binding, &pbr,
                              ShaderUpdateFlag_None);
 
   {

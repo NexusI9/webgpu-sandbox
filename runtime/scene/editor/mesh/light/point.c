@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/light/shadow_map/draw.h"
@@ -100,8 +100,8 @@ void sem_point_light_set_position(SceneEditorMesh *sem, vec3 value) {
   glm_vec3_copy(value, light->position);
 
   point_light_uniform_update(light);
-  ssbo_update_queue_insert(&sem->scene->renderer.ssbo, SSBOType_PointLight,
-                           light->ssbo_slot[LightSSBOSlot_List].id);
+  ubo_update_queue_insert(&sem->scene->renderer.ubo, UBOType_LightList,
+                          sem->scene->lights.ubo_slot.id);
 
   mesh_set_position(sem->mesh, value);
 }
@@ -122,18 +122,18 @@ static inline void sem_point_light_update_shadow(SceneEditorMesh *);
 void sem_point_light_update_shadow(SceneEditorMesh *sem) {
 
   PointLight *light = (PointLight *)sem->target;
-  SSBOManager *ssbo = &sem->scene->renderer.ssbo;
+  UBOManager *ubo = &sem->scene->renderer.ubo;
 
   if (scene_renderer_draw_mode(&sem->scene->renderer) ==
       SceneRendererDrawMode_Texture) {
 
-    // update light views properties (CPU) + update SSBO entries
+    // update light views properties (CPU) + update UBO entries
     point_light_projection_update(light);
 
     // add to write queue (CPU > GPU)
     for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
-      ssbo_update_queue_insert(ssbo, SSBOType_ViewProjection,
-                               light->ssbo_slot[LightSSBOSlot_View + i].id);
+      ubo_update_queue_insert(ubo, UBOType_ViewProjection,
+                              light->ubo_projection[i].id);
 
     shadow_map_draw_point_light(
         &(ShadowMapDrawPointLightDescriptor){
@@ -157,13 +157,13 @@ void sem_point_light_shadow_create(SceneEditorMeshList *list, PointLight *light,
 void sem_point_light_shadow_set_position(SceneEditorMesh *sem, vec3 value) {
 
   PointLight *light = (PointLight *)sem->target;
-  SSBOManager *ssbo = &sem->scene->renderer.ssbo;
+  UBOManager *ubo = &sem->scene->renderer.ubo;
 
   glm_vec3_copy(value, light->position);
 
   point_light_uniform_update(light);
-  ssbo_update_queue_insert(ssbo, SSBOType_PointLight,
-                           light->ssbo_slot[LightSSBOSlot_List].id);
+  ubo_update_queue_insert(&sem->scene->renderer.ubo, UBOType_LightList,
+                          sem->scene->lights.ubo_slot.id);
 
   mesh_set_position(sem->mesh, value);
   sem_point_light_update_shadow(sem);

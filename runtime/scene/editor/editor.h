@@ -1,7 +1,6 @@
 #ifndef _SCENE_EDITOR_H_
 #define _SCENE_EDITOR_H_
 
-#include "backend/ssbo.h"
 #include "backend/ubo.h"
 #include "mesh/list/list.h"
 #include "runtime/mesh/core.h"
@@ -20,7 +19,6 @@ typedef struct {
   Camera *active_camera;
   Viewport *viewport;
 
-  SSBOManager *ssbo;
   UBOManager *ubo;
 
   // selection sets

@@ -3,7 +3,7 @@
 #include <stddef.h>
 
 #include "backend/logger.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
@@ -153,7 +153,7 @@ MeshStatus mesh_shader_create_fixed(Mesh *mesh,
    Build Mesh, Camera and Projection matrix to a given mesh shader.
    It replaces the initial bound values by the ones provided by the scene
    (active camera matrix, viewport data).
-   For Views uniform we actually link to the scene SSBO to allow
+   For Views uniform we actually link to the scene UBO to allow
    queue and batch update.
 
    Additionally it also add the relative callbacks and trigger ensuring the mesh
@@ -169,7 +169,7 @@ MeshStatus mesh_shader_create_fixed(Mesh *mesh,
    This function is primarily used when a mesh is firstly added to the scene.
  */
 void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
-                           SSBOManager *ssbo_manager) {
+                           UBOManager *ubo_manager) {
 
   // retrieve the model-view-projection binding index from the pipeline
   Shader *shader = mesh_shader(mesh, shader_type);
@@ -179,20 +179,20 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
       // viewport
       {
           .binding = mvp->projection,
-          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Viewport),
+          .buffer = ubo_buffer_handle(ubo_manager, UBOType_Viewport),
           .offset = 0, // active vewport index
       },
       // camera
       {
           .binding = mvp->view,
-          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Camera),
+          .buffer = ubo_buffer_handle(ubo_manager, UBOType_Camera),
           .offset = 0, // active camera index
       },
       // model
       {
           .binding = mvp->model,
-          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Mesh),
-          .offset = mesh->ssbo_slot.id,
+          .buffer = ubo_buffer_handle(ubo_manager, UBOType_Mesh),
+          .offset = mesh->ubo_slot.id,
       },
   };
 
@@ -216,8 +216,8 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
    Build settings mostly used for shadow and reflection shader.
  */
 void mesh_shader_build_mp(Mesh *mesh, const MeshShader shader_type,
-                          SSBOManager *ssbo_manager,
-                          const SSBOType ssbo_view_type) {
+                          UBOManager *ubo_manager,
+                          const UBOType ubo_view_type) {
 
   // retrieve the model-view-projection binding index from the pipeline
   Shader *shader = mesh_shader(mesh, shader_type);
@@ -226,14 +226,14 @@ void mesh_shader_build_mp(Mesh *mesh, const MeshShader shader_type,
       // viewport x cam
       {
           .binding = 0,
-          .buffer = ssbo_buffer_handle(ssbo_manager, ssbo_view_type),
+          .buffer = ubo_buffer_handle(ubo_manager, ubo_view_type),
           .offset = 0,
       },
       // model
       {
           .binding = 1,
-          .buffer = ssbo_buffer_handle(ssbo_manager, SSBOType_Mesh),
-          .offset = mesh->ssbo_slot.id,
+          .buffer = ubo_buffer_handle(ubo_manager, UBOType_Mesh),
+          .offset = mesh->ubo_slot.id,
       },
   };
 

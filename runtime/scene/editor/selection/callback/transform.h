@@ -4,7 +4,7 @@
 #include <cglm/cglm.h>
 
 #include "runtime/scene/core.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/mesh/core.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
@@ -23,5 +23,5 @@ void scene_selection_mesh_shadow_transform(SceneSelectionTransform *);
 void scene_selection_mesh_update_probe_uniform(Mesh *,
                                                ProbeReflectionGridList *,
                                                ProbeReflectionPlaneList *,
-                                               SSBOManager *);
+                                               UBOManager *);
 #endif

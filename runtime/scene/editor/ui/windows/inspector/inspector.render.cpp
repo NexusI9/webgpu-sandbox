@@ -32,9 +32,9 @@ void UI::RenderTab::draw() {
         {
           viewport_set_width(&scene->viewport, width);
           viewport_uniform_update(&scene->viewport);
-          ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                   SSBOType_Viewport,
-                                   ssbo_slot_id(&scene->viewport.ssbo_slot));
+          ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+                                   UBOType_Viewport,
+                                   ubo_slot_id(&scene->viewport.ubo_slot));
         }
         // update scene render texture
         scene_update_render_pass_texture(scene, width, height, multisample,
@@ -52,9 +52,9 @@ void UI::RenderTab::draw() {
         {
           viewport_set_height(&scene->viewport, height);
           viewport_uniform_update(&scene->viewport);
-          ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                   SSBOType_Viewport,
-                                   ssbo_slot_id(&scene->viewport.ssbo_slot));
+          ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+                                   UBOType_Viewport,
+                                   ubo_slot_id(&scene->viewport.ubo_slot));
         }
         // update scene render texture
         scene_update_render_pass_texture(scene, width, height, multisample,
@@ -125,9 +125,9 @@ void UI::RenderTab::draw() {
               .draw()) {
         viewport_set_fov(&scene->viewport, fov);
         viewport_uniform_update(&scene->viewport);
-        ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                 SSBOType_Viewport,
-                                 ssbo_slot_id(&scene->viewport.ssbo_slot));
+        ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+                                 UBOType_Viewport,
+                                 ubo_slot_id(&scene->viewport.ubo_slot));
       }
     }
 
@@ -138,9 +138,9 @@ void UI::RenderTab::draw() {
               .draw()) {
         viewport_set_near_clip(&scene->viewport, near_clip);
         viewport_uniform_update(&scene->viewport);
-        ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                 SSBOType_Viewport,
-                                 ssbo_slot_id(&scene->viewport.ssbo_slot));
+        ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+                                 UBOType_Viewport,
+                                 ubo_slot_id(&scene->viewport.ubo_slot));
       }
     }
 
@@ -152,9 +152,9 @@ void UI::RenderTab::draw() {
 
         viewport_set_far_clip(&scene->viewport, far_clip);
         viewport_uniform_update(&scene->viewport);
-        ssbo_update_queue_insert(scene_renderer_ssbo(&scene->renderer),
-                                 SSBOType_Viewport,
-                                 ssbo_slot_id(&scene->viewport.ssbo_slot));
+        ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+                                 UBOType_Viewport,
+                                 ubo_slot_id(&scene->viewport.ubo_slot));
       }
     }
     ImGui::TreePop();

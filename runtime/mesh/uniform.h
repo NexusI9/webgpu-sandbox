@@ -4,7 +4,7 @@
 #include <stdbool.h>
 
 #include "core.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 
 MeshUniform *mesh_uniform(Mesh *);
 
@@ -14,7 +14,7 @@ void mesh_uniform_model_update_callback(void *, void *);
 bool mesh_uniform_model_compare_callback(void *, const void *);
 
 static inline void mesh_uniform_set_probe_reflection_plane(Mesh *mesh,
-                                                           SSBOManager *ssbo) {
+                                                           UBOManager *ubo) {
   MeshUniform *uniform = mesh_uniform(mesh);
 
   if (uniform->probe_reflection_plane_count == 1)
@@ -22,11 +22,11 @@ static inline void mesh_uniform_set_probe_reflection_plane(Mesh *mesh,
 
   uniform->probe_reflection_plane_count = 1;
 
-  ssbo_update_queue_insert(ssbo, SSBOType_Mesh, mesh->ssbo_slot.id);
+  ubo_update_queue_insert(ubo, UBOType_Mesh, mesh->ubo_slot.id);
 }
 
 static inline void
-mesh_uniform_clear_probe_reflection_plane(Mesh *mesh, SSBOManager *ssbo) {
+mesh_uniform_clear_probe_reflection_plane(Mesh *mesh, UBOManager *ubo) {
 
   MeshUniform *uniform = mesh_uniform(mesh);
 
@@ -35,7 +35,7 @@ mesh_uniform_clear_probe_reflection_plane(Mesh *mesh, SSBOManager *ssbo) {
 
   uniform->probe_reflection_plane_count = 0;
 
-  ssbo_update_queue_insert(ssbo, SSBOType_Mesh, mesh->ssbo_slot.id);
+  ubo_update_queue_insert(ubo, UBOType_Mesh, mesh->ubo_slot.id);
 }
 
 #endif

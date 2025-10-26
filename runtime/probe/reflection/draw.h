@@ -15,7 +15,7 @@ static inline void probe_reflection_plane_list_draw_callback(void *data) {
   ProbeReflectionListDebug *debug = NULL;
 
   Scene *scene = (Scene *)data;
-  ProbeReflectionPlaneList *list = &scene->planes_reflection;
+  ProbeReflectionPlaneList *list = &scene->probes.reflection_plane;
 
   WGPUTextureView cached_view_color = list->pass.color.attachment.view;
   WGPUTextureView cached_view_depth = list->pass.depth.attachment.view;
@@ -57,7 +57,7 @@ static inline void probe_reflection_plane_list_draw_callback(void *data) {
 
       // update each mesh views/projections matrix
       ProbeReflectionListPreprocessorData preprocessor_data = {
-          .camera_offset = probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id,
+          .camera_offset = probe->ubo_camera.id,
       };
       render_pass_update_all_preprocessor_data(&list->pass, &preprocessor_data);
 

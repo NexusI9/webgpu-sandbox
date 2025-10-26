@@ -3,7 +3,7 @@
 #include <cglm/types.h>
 
 #include "./core.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
@@ -47,13 +47,13 @@ void scene_gizmo_hide(Scene *scene) {
    Get the selection average position (used to translate the gizmo).
  */
 void scene_gizmo_pos_to_selection(Gizmo *gizmo, SceneSelection *selection,
-                                  SSBOManager *ssbo) {
+                                  UBOManager *ubo) {
 
   // get average position
   vec3 position;
   scene_selection_average_position(selection, &position);
   gizmo_set_position(gizmo, position);
 
-  // update ssbo matrix buffer
-  gizmo_update_ssbo(gizmo, ssbo);
+  // update ubo matrix buffer
+  gizmo_update_ubo(gizmo, ubo);
 }

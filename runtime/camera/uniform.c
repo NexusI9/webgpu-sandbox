@@ -8,14 +8,14 @@
 #include "core.h"
 
 CameraUniform *camera_uniform(Camera *camera) {
-  return (CameraUniform *)camera->ssbo_slot.uniform;
+  return (CameraUniform *)camera->ubo_slot.uniform;
 }
 
 void camera_uniform_update(Camera *camera) {
   // Combine directly view matrix and camera position so faster to upload into
   // buffer
 
-  CameraUniform *uniform = (CameraUniform *)camera->ssbo_slot.uniform;
+  CameraUniform *uniform = (CameraUniform *)camera->ubo_slot.uniform;
 
   // transform vec3 to vec4 for alignment sake
   vec4 pos_uniform = {
@@ -42,7 +42,7 @@ void camera_uniform_update_matrix_callback(void *callback_camera, void *data) {
 
   Camera *cast_cam = (Camera *)callback_camera;
 
-  CameraUniform *updated_data = (CameraUniform *)cast_cam->ssbo_slot.uniform;
+  CameraUniform *updated_data = (CameraUniform *)cast_cam->ubo_slot.uniform;
   CameraUniform *new_data = (CameraUniform *)data;
 
   //  transfer updated camera values (position and view) to new data

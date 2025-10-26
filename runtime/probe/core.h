@@ -1,13 +1,16 @@
 #ifndef _PROBE_CORE_H_
 #define _PROBE_CORE_H_
 
-#include <stdint.h>
+#include "runtime/probe/reflection/grid.h"
+#include "runtime/probe/reflection/plane.h"
+
 
 typedef struct {
-  uint32_t reflection_grid;
-  uint32_t reflection_plane;
-  uint32_t irradiance;
-  uint32_t _pad;
-} ProbeCountUniform;
+  ProbeReflectionGridList reflection_probe;
+  ProbeReflectionPlaneList reflection_plane;
+  UBOSlot ubo_slot; // ubo slot of the ProbeListUniform
+} ProbeList;
+
+void probe_list_update_uniform(ProbeList *);
 
 #endif

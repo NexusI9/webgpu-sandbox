@@ -1,20 +1,28 @@
 #ifndef _PIPELINE_LAYOUT_GLASS_PROBE_PLANE_H_
 #define _PIPELINE_LAYOUT_GLASS_PROBE_PLANE_H_
 
-#include "runtime/pipeline/pipeline.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/pipeline.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/plane.h"
+#include "runtime/scene/environment/core.h"
 #include "runtime/viewport/viewport.h"
-
-#include "../glass_probe_grid/glass_probe_grid.h"
 
 #include <webgpu/webgpu.h>
 
+typedef struct {
+  float roughness;
+  float frost_scale;
+  float frost_strength;
+  float _pad;
+  color color;
+  vec4 _pad1;
+} __attribute__((aligned(16))) GlassUniform;
+
 static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
-    // Group 1 (Reflection probes array + sampler)
-    .label = "Group 1 (Reflection Probes)",
-    .entryCount = 7,
+    .label = "Group 1 (Glass + Environment + Probes)",
+    .entryCount = 6,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -28,23 +36,23 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 1, // uProbeReflectionList
-                .visibility = WGPUShaderStage_Fragment,
-                .buffer =
-                    (WGPUBufferBindingLayout){
-                        .type = WGPUBufferBindingType_Uniform,
-                        .hasDynamicOffset = true,
-                        .minBindingSize = sizeof(ProbeReflectionPlaneUniform),
-                    },
-            },
-            {
-                .binding = 2, // UBO
+                .binding = 1, // uEnvironment
                 .visibility = WGPUShaderStage_Fragment,
                 .buffer =
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(UBOUniform),
+                        .minBindingSize = sizeof(SceneEnvironmentUniform),
+                    },
+            },
+            {
+                .binding = 2, // uProbes
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .hasDynamicOffset = false,
+                        .minBindingSize = sizeof(ProbeListUniform),
                     },
             },
             {
@@ -58,15 +66,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 4, // probe_reflection_sampler
-                .visibility = WGPUShaderStage_Fragment,
-                .sampler =
-                    (WGPUSamplerBindingLayout){
-                        .type = WGPUSamplerBindingType_Filtering,
-                    },
-            },
-            {
-                .binding = 5, // env_map
+                .binding = 4, // skybox_map
                 .visibility = WGPUShaderStage_Fragment,
                 .texture =
                     (WGPUTextureBindingLayout){
@@ -76,7 +76,7 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
                     },
             },
             {
-                .binding = 6, // env_sampler
+                .binding = 5, // linear_sampler
                 .visibility = WGPUShaderStage_Fragment,
                 .sampler =
                     (WGPUSamplerBindingLayout){
@@ -88,22 +88,17 @@ static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
 
 static const PipelineBindingProbe glass_probe_plane = {
     .group = 1,
-
-    .reflection_plane = 1,
+    .list = 2,
     .reflection_plane_texture = 3,
-    .reflection_plane_sampler = 4,
-
-    .reflection_grid = PIPELINE_BINDING_UNDEFINED,
     .reflection_grid_texture = PIPELINE_BINDING_UNDEFINED,
-    .reflection_grid_sampler = PIPELINE_BINDING_UNDEFINED,
-
-    .irradiance = PIPELINE_BINDING_UNDEFINED,
-    .irradiance_sampler = PIPELINE_BINDING_UNDEFINED,
     .irradiance_texture = PIPELINE_BINDING_UNDEFINED,
+    .skybox_texture = 4,
+    .sampler = 5,
+};
 
-    .skybox_texture = 5,
-    .skybox_sampler = 6,
-
+static const PipelineBindingEnvironment glass_env_plane = {
+    .group = 1,
+    .environment = 1,
 };
 
 static const RenderPipelineStateObject layout_glass_probe_plane = {
@@ -112,7 +107,12 @@ static const RenderPipelineStateObject layout_glass_probe_plane = {
                    "glass_probe_plane.wgsl",
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &glass_probe_plane_bind_group},
-    .bindings = {.mvp = &mvp_binding, .probe = &glass_probe_plane},
+    .bindings =
+        {
+            .mvp = &mvp_binding,
+            .probe = &glass_probe_plane,
+            .environment = &glass_env_plane,
+        },
 };
 
 #endif

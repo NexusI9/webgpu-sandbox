@@ -9,7 +9,7 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/pipeline/render.h"
 #include "shader/core.h"
@@ -50,8 +50,8 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation_euler);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
-  // alloc uniform (may be replaced by SSBO later when added to the scene)
-  ssbo_slot_init_alloc(&mesh->ssbo_slot, sizeof(MeshUniform));
+  // alloc uniform (may be replaced by UBO later when added to the scene)
+  ubo_slot_init_alloc(&mesh->ubo_slot, sizeof(MeshUniform));
   mesh_uniform_update(mesh);
 
   // set default pipeline shader

@@ -11,7 +11,7 @@
 #include "backend/compute/kawase.h"
 #include "backend/compute/mipmap.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "core.h"
 #include "runtime/camera/core.h"
 #include "runtime/camera/uniform.h"
@@ -95,14 +95,14 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *list) {
   return dyli_free((void *)list->entries, &list->capacity, &list->length);
 }
 
-
 void probe_reflection_plane_create(ProbeReflectionPlane *probe,
                                    ProbeReflectionPlaneDescriptor *desc) {
 
   probe->id = reg_register(probe, RegEntryType_ProbeReflectionPlane);
 
-  probe_reflection_plane_set_name(probe, desc->name == 0 ? "Probe Reflection Plane" : desc->name);
-  
+  probe_reflection_plane_set_name(
+      probe, desc->name == 0 ? "Probe Reflection Plane" : desc->name);
+
   // Define init attribute
   glm_vec3_copy(desc->position, probe->position);
   glm_vec3_copy(desc->scale, probe->scale);
@@ -124,26 +124,14 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
   // attributes
   camera_create(&probe->camera, &(CameraCreateDescriptor){0});
 
-  static const size_t probe_ssbo_slot_size[PROBE_REFLECTION_SSBO_SLOT_COUNT] = {
-      [ProbeReflectionSSBOField_List] = sizeof(ProbeReflectionPlaneUniform),
-      [ProbeReflectionSSBOField_Camera] = sizeof(CameraUniform),
-  };
-
-  for (ProbeReflectionSSBOField i = 0; i < PROBE_REFLECTION_SSBO_SLOT_COUNT;
-       i++)
-    ssbo_slot_init_alloc(&probe->ssbo_slot[i], probe_ssbo_slot_size[i]);
-
-  probe_reflection_plane_update_camera(probe);
-  probe_reflection_plane_update_uniform(probe);
   probe_reflection_plane_update_boundbox(probe);
 }
 
 void probe_reflection_plane_update_uniform(ProbeReflectionPlane *probe) {
 
   ProbeReflectionPlaneUniform *uniform =
-      (ProbeReflectionPlaneUniform *)probe
-          ->ssbo_slot[ProbeReflectionSSBOField_List]
-          .uniform;
+      (ProbeReflectionPlaneUniform *)
+          probe->ubo_uniform.uniform.reflection_plane;
 
   glm_vec3_copy(probe->position, uniform->position);
   glm_vec3_copy(probe->scale, uniform->scale);
@@ -182,10 +170,10 @@ void probe_reflection_plane_update_camera(ProbeReflectionPlane *probe) {
 
   camera_uniform_update(&probe->camera);
 
-  // transfert attribute to SSBO slot
+  // transfert attribute to UBO slot
   CameraUniform *uniform = camera_uniform(&probe->camera);
-  ssbo_slot_set_uniform(&probe->ssbo_slot[ProbeReflectionSSBOField_Camera],
-                        (void *)uniform, sizeof(CameraUniform));
+  ubo_slot_set_uniform(&probe->ubo_camera, (void *)uniform,
+                       sizeof(CameraUniform));
 }
 
 void probe_reflection_plane_update_boundbox(ProbeReflectionPlane *probe) {

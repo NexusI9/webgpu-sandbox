@@ -74,9 +74,9 @@ void UI::WorldTab::draw() {
   if (UI::TreeItem(scene, "Reflection").draw()) {
 
     const int width =
-        wgpuTextureGetWidth(scene->planes_reflection.pass.color.texture);
+        wgpuTextureGetWidth(scene->probes.reflection_plane.pass.color.texture);
     const int height =
-        wgpuTextureGetHeight(scene->planes_reflection.pass.color.texture);
+        wgpuTextureGetHeight(scene->probes.reflection_plane.pass.color.texture);
 
     name_t default_value;
     name_compose(default_value, "%d x %d", width, height);
@@ -181,7 +181,7 @@ void UI::WorldTab::on_resolution_change_dir_light(
 void UI::WorldTab::on_resolution_change_plane_reflection(
     Scene *scene, const TextureResolution resolution) {
 
-  probe_reflection_list_update_resolution(&scene->planes_reflection.pass,
+  probe_reflection_list_update_resolution(&scene->probes.reflection_plane.pass,
                                           resolution,
                                           WGPUTextureViewDimension_2DArray);
 
@@ -197,7 +197,7 @@ void UI::WorldTab::on_resolution_change_plane_reflection(
 
       shader_update_texture_view(
           shader, binding->group, binding->reflection_plane_texture,
-          scene->planes_reflection.pass.color.attachment.view,
+          scene->probes.reflection_plane.pass.color.attachment.view,
           TEXTURE_FORMAT_OFFSCREEN, ShaderUpdateFlag_None);
     }
   }

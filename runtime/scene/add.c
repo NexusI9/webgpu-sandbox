@@ -6,7 +6,6 @@
 #include "./editor/editor.h"
 #include "backend/logger.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/ubo.h"
 #include "build.h"
@@ -28,16 +27,19 @@
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/light/shadow_map/draw.h"
+#include "runtime/light/uniform.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/list.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/shader/core.h"
+#include "runtime/mesh/uniform.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/core.h"
 #include "runtime/probe/reflection/draw.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
+#include "runtime/probe/uniform.h"
 #include "runtime/scene/editor/ui/tree.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
 #include "runtime/scene/stat.h"
@@ -72,15 +74,16 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
   }
 
   // create sun light
-  PointLight *new_light = &base_list->entries[base_list->length];
-  point_light_create(new_light, desc);
+  PointLight *light = &base_list->entries[base_list->length];
+  point_light_create(light, desc);
 
   if (dest)
-    *dest = new_light;
+    *dest = light;
 
-  // transfert Light Uniform to SSBO
-  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_PointLight,
-                  &new_light->ssbo_slot[LightSSBOSlot_List]);
+  light->ubo_uniform = light_list_uniform_new_entry(
+      scene->lights.ubo_slot.uniform, LightType_Point);
+
+  point_light_uniform_update(light);
 
   // create mesh/gizmo
   SceneEditorMeshList *sem =
@@ -97,22 +100,24 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
   if (flag & LightCreateFlag_Shadow) {
 
     for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
-      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewProjection,
-                      &new_light->ssbo_slot[LightSSBOSlot_View + i]);
+      light->ubo_projection[i] =
+          ubo_new_entry(&scene->renderer.ubo, UBOType_ViewProjection);
+
+    point_light_projection_update(light);
 
     PointLightListShadow *shadow_list = &scene->lights.point.shadow;
 
     sem_desc.target_list_index = shadow_list->length;
-    sem_point_light_shadow_create(sem, new_light, &sem_desc);
+    sem_point_light_shadow_create(sem, light, &sem_desc);
 
-    light_list_point_shadow_insert(shadow_list, new_light);
+    light_list_point_shadow_insert(shadow_list, light);
 
     // recompute shadow map if render mode
     if (scene_renderer_draw_mode(&scene->renderer) ==
         SceneRendererDrawMode_Texture)
       shadow_map_draw_point_light(
           &(ShadowMapDrawPointLightDescriptor){
-              .light = new_light,
+              .light = light,
               .pass = &scene->lights.point.shadow.pass,
               .texture_layer = shadow_list->length,
               .command_encoder = NULL,
@@ -121,7 +126,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-    sem_point_light_create(sem, new_light, &sem_desc);
+    sem_point_light_create(sem, light, &sem_desc);
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -129,9 +134,9 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
 
   base_list->length++;
 
-  ubo_update_entry(&scene->renderer.ubo, UBOField_PointLightCount,
-                   (void *)&base_list->length);
-  ubo_upload(&scene->renderer.ubo);
+  light_list_uniform_update(&scene->lights);
+  ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
+                   &scene->lights.ubo_slot);
 
   return sem;
 }
@@ -148,15 +153,15 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
   }
 
   // create sun light
-  SpotLight *new_light = &base_list->entries[base_list->length];
-  spot_light_create(new_light, desc);
+  SpotLight *light = &base_list->entries[base_list->length];
+  spot_light_create(light, desc);
 
   if (dest)
-    *dest = new_light;
+    *dest = light;
 
-  // transfert Light Uniform to SSBO
-  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_SpotLight,
-                  &new_light->ssbo_slot[LightSSBOSlot_List]);
+  light->ubo_uniform = light_list_uniform_new_entry(
+      scene->lights.ubo_slot.uniform, LightType_Spot);
+  spot_light_uniform_update(light);
 
   // create mesh/gizmo
   SceneEditorMeshList *sem =
@@ -172,22 +177,23 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
 
   if (flag & LightCreateFlag_Shadow) {
 
-    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewProjection,
-                    &new_light->ssbo_slot[LightSSBOSlot_View]);
+    light->ubo_projection =
+        ubo_new_entry(&scene->renderer.ubo, UBOType_ViewProjection);
+    spot_light_projection_update(light);
 
     SpotLightListShadow *shadow_list = &scene->lights.spot.shadow;
 
     sem_desc.target_list_index = shadow_list->length;
-    sem_spot_light_shadow_create(sem, new_light, &sem_desc);
+    sem_spot_light_shadow_create(sem, light, &sem_desc);
 
-    light_list_spot_shadow_insert(shadow_list, new_light);
+    light_list_spot_shadow_insert(shadow_list, light);
 
     // recompute shadow map if render mode
     if (scene_renderer_draw_mode(&scene->renderer) ==
         SceneRendererDrawMode_Texture)
       shadow_map_draw_spot_light(
           &(ShadowMapDrawSpotLightDescriptor){
-              .light = new_light,
+              .light = light,
               .pass = &shadow_list->pass,
               .texture_layer = shadow_list->length,
               .command_encoder = NULL,
@@ -196,7 +202,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-    sem_spot_light_create(sem, new_light, &sem_desc);
+    sem_spot_light_create(sem, light, &sem_desc);
   }
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -204,12 +210,10 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
 
   base_list->length++;
 
-  {
-    // update UBO
-    ubo_update_entry(&scene->renderer.ubo, UBOField_SpotLightCount,
-                     (void *)&base_list->length);
-    ubo_upload(&scene->renderer.ubo);
-  }
+  // update UBO
+  light_list_uniform_update(&scene->lights);
+  ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
+                   &scene->lights.ubo_slot);
 
   return sem;
 }
@@ -226,22 +230,23 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
   }
 
   // create sun light
-  AmbientLight *new_light = &list->entries[list->length++];
-  ambient_light_create(new_light, desc);
+  AmbientLight *light = &list->entries[list->length++];
+  ambient_light_create(light, desc);
 
   if (dest)
-    *dest = new_light;
+    *dest = light;
 
-  // transfert Light Uniform to SSBO
-  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_AmbientLight,
-                  &new_light->ssbo_slot);
+  light->ubo_uniform = light_list_uniform_new_entry(
+      scene->lights.ubo_slot.uniform, LightType_Ambient);
+
+  ambient_light_uniform_update(light);
 
   // create mesh/gizmo
   SceneEditorMeshList *sem =
       sem_list_array_new_entry(scene_editor_mesh_list(&scene->editor),
                                RegEntryType_SceneEditorMeshList_AmbientLight);
 
-  sem_ambient_light_create(sem, new_light,
+  sem_ambient_light_create(sem, light,
                            &(SEMCreateDescriptor){
                                .camera = scene->active_camera,
                                .viewport = &scene->viewport,
@@ -252,9 +257,9 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_sem(scene, sem);
 
-  ubo_update_entry(&scene->renderer.ubo, UBOField_AmbientLightCount,
-                   (void *)&list->length);
-  ubo_upload(&scene->renderer.ubo);
+  light_list_uniform_update(&scene->lights);
+  ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
+                   &scene->lights.ubo_slot);
 
   return sem;
 }
@@ -270,15 +275,16 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   }
 
   // create sun light
-  SunLight *new_light = &base_list->entries[base_list->length];
-  sun_light_create(new_light, desc);
+  SunLight *light = &base_list->entries[base_list->length];
+  sun_light_create(light, desc);
 
   if (dest)
-    *dest = new_light;
+    *dest = light;
 
-  // transfert Light Uniform to SSBO
-  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_SunLight,
-                  &new_light->ssbo_slot[LightSSBOSlot_List]);
+  light->ubo_uniform = light_list_uniform_new_entry(
+      scene->lights.ubo_slot.uniform, LightType_Sun);
+
+  sun_light_uniform_update(light);
 
   // create mesh/gizmo
   SceneEditorMeshList *sem =
@@ -294,16 +300,17 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
   if (flag & LightCreateFlag_Shadow) {
 
-    ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_ViewProjection,
-                    &new_light->ssbo_slot[LightSSBOSlot_View]);
+    light->ubo_projection =
+        ubo_new_entry(&scene->renderer.ubo, UBOType_ViewProjection);
+    sun_light_projection_update(light);
 
     SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
 
     sem_desc.target_list_index = shadow_list->length;
 
-    sem_sun_light_shadow_create(sem, new_light, &sem_desc);
+    sem_sun_light_shadow_create(sem, light, &sem_desc);
 
-    light_list_sun_shadow_insert(shadow_list, new_light);
+    light_list_sun_shadow_insert(shadow_list, light);
 
     // recompute shadow map if render mode
     if (scene_renderer_draw_mode(&scene->renderer) ==
@@ -311,7 +318,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
 
       shadow_map_draw_sun_light(
           &(ShadowMapDrawSunLightDescriptor){
-              .light = new_light,
+              .light = light,
               .pass = &scene->lights.spot.shadow.pass,
               .texture_layer = light_list_sun_layer_index(
                   &scene->lights, sem_desc.target_list_index),
@@ -321,17 +328,16 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
           SCENE_DEBUG_UNDEFINED);
 
   } else {
-    sem_sun_light_create(sem, new_light, &sem_desc);
+    sem_sun_light_create(sem, light, &sem_desc);
   }
 
-  // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_sem(scene, sem);
 
   base_list->length++;
 
-  ubo_update_entry(&scene->renderer.ubo, UBOField_SunLightCount,
-                   (void *)&base_list->length);
-  ubo_upload(&scene->renderer.ubo);
+  light_list_uniform_update(&scene->lights);
+  ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
+                   &scene->lights.ubo_slot);
 
   return sem;
 }
@@ -411,7 +417,9 @@ void scene_add_sem(Scene *scene, SceneEditorMeshList *list) {
 
     {
       // build mesh depending on pipeline and scene render mode
-      ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
+      mesh->ubo_slot = ubo_new_entry(&scene->renderer.ubo, UBOType_Mesh);
+      mesh_uniform_update(mesh);
+      ubo_upload_entry(&scene->renderer.ubo, UBOType_Mesh, &mesh->ubo_slot);
       scene_build_mesh(scene, mesh, ScenePipeline_Fixed);
     }
 
@@ -438,7 +446,7 @@ scene_add_probe_reflection_grid(Scene *scene,
                                 ProbeReflectionGrid **dest) {
 
   ProbeReflectionGrid *new_grid =
-      probe_reflection_grid_list_new_entry(&scene->probes_reflection);
+      probe_reflection_grid_list_new_entry(&scene->probes.reflection_probe);
 
   probe_reflection_grid_create(new_grid, desc);
 
@@ -458,29 +466,30 @@ scene_add_probe_reflection_grid(Scene *scene,
                                        .target_list_index = 0,
                                    });
 
-  // add probes to ssbo list
+  // add probes to ubo list
   for (uint16_t i = 0; i < new_grid->probes.length; i++) {
     ProbeReflection *probe = &new_grid->probes.entries[i];
-    SSBOManager *ssbo = &scene->renderer.ssbo;
+    UBOManager *ubo = &scene->renderer.ubo;
 
-    // add to pos/radius list
-    ssbo_copy_entry(ssbo, SSBOType_ProbeGridReflection,
-                    &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
+    {
+      probe->ubo_uniform = probe_list_uniform_new_entry(
+          scene->probes.ubo_slot.uniform, ProbeType_ReflectionProbe);
+      probe_reflection_update_uniform(probe);
+    }
 
-    // add each views
-    for (uint8_t v = 0; v < PROBE_REFLECTION_VIEW_COUNT; v++) {
-      ssbo_copy_entry(ssbo, SSBOType_Camera,
-                      &probe->ssbo_slot[ProbeReflectionSSBOField_Camera + v]);
+    {
+      // add each views
+      for (uint8_t v = 0; v < PROBE_REFLECTION_VIEW_COUNT; v++)
+        probe->ubo_camera[v] =
+            ubo_new_entry(&scene->renderer.ubo, UBOType_Camera);
+      probe_reflection_update_camera(probe);
     }
   }
 
   // update UBO for probe count
-  size_t probe_count =
-      probe_reflection_grid_list_probe_count(&scene->probes_reflection);
-  ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionGridCount,
-                   (void *)&probe_count);
-
-  ubo_upload(&scene->renderer.ubo);
+  probe_list_update_uniform(&scene->probes);
+  ubo_upload_entry(&scene->renderer.ubo, UBOType_ProbeList,
+                   &scene->probes.ubo_slot);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_sem(scene, sem_grid);
@@ -495,13 +504,13 @@ scene_add_probe_reflection_plane(Scene *scene,
 
   // && scene->renderer.draw.mode == SceneRendererDrawMode_Texture
   // add draw callback if first probe
-  if (scene->planes_reflection.length == 0)
+  if (scene->probes.reflection_plane.length == 0)
     scene_renderer_add_draw_callback(
         &scene->renderer, probe_reflection_plane_list_draw_callback,
         (void *)scene, SceneRendererDrawMode_Texture);
 
   ProbeReflectionPlane *probe =
-      probe_reflection_plane_list_new_entry(&scene->planes_reflection);
+      probe_reflection_plane_list_new_entry(&scene->probes.reflection_plane);
 
   if (dest)
     *dest = probe;
@@ -524,26 +533,24 @@ scene_add_probe_reflection_plane(Scene *scene,
           .target_list_index = SCENE_EDITOR_MESH_TARGET_UNDEFINED,
       });
 
-  // add probes to ssbo list
-  SSBOManager *ssbo = &scene->renderer.ssbo;
-
-  ssbo_copy_entry(ssbo, SSBOType_Camera,
-                  &probe->ssbo_slot[ProbeReflectionSSBOField_Camera]);
+  // add probes to ubo list
+  UBOManager *ubo = &scene->renderer.ubo;
 
   {
-    // update uniform to update camera/view ssbo id
+    probe->ubo_uniform = probe_list_uniform_new_entry(
+        scene->probes.ubo_slot.uniform, ProbeType_ReflectionPlane);
     probe_reflection_plane_update_uniform(probe);
-
-    // add to pos/radius list
-    ssbo_copy_entry(ssbo, SSBOType_ProbePlaneReflection,
-                    &probe->ssbo_slot[ProbeReflectionSSBOField_List]);
   }
 
-  // update UBO for probe count
-  ubo_update_entry(&scene->renderer.ubo, UBOField_ProbeReflectionPlaneCount,
-                   (void *)&scene->planes_reflection.length);
+  {
+    probe->ubo_camera = ubo_new_entry(&scene->renderer.ubo, UBOType_Camera);
+    probe_reflection_plane_update_camera(probe);
+  }
 
-  ubo_upload(&scene->renderer.ubo);
+  // update Probe List UBO for probe count
+  probe_list_update_uniform(&scene->probes);
+  ubo_upload_entry(&scene->renderer.ubo, UBOType_ProbeList,
+                   &scene->probes.ubo_slot);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_sem(scene, sem);
@@ -615,12 +622,12 @@ void scene_add_mesh_core(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
  */
 void scene_render_pass_draw_list_enable_mesh(
     Scene *scene, const MeshRefList *pipeline_mesh_list, Mesh *mesh) {
-  
+
   for (SceneRendererDrawMode i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
     render_pass_list_enable_mesh(&scene->renderer.draw.render_pass[i], mesh);
 
-  render_pass_enable_mesh(&scene->probes_reflection.pass, mesh);
-  render_pass_enable_mesh(&scene->planes_reflection.pass, mesh);
+  render_pass_enable_mesh(&scene->probes.reflection_probe.pass, mesh);
+  render_pass_enable_mesh(&scene->probes.reflection_plane.pass, mesh);
   render_pass_enable_mesh(&scene->lights.point.shadow.pass, mesh);
   render_pass_enable_mesh(&scene->lights.spot.shadow.pass, mesh);
 
@@ -702,8 +709,10 @@ SceneStatus scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
   const RenderPipeline *mesh_pipeline =
       mesh_shader(mesh, MeshShader_Texture)->pipeline;
 
-  // bind new mesh uniform to SSBO and copy previous mesh uniform data
-  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
+  // bind new mesh uniform to UBO and copy previous mesh uniform data
+  mesh->ubo_slot = ubo_new_entry(&scene->renderer.ubo, UBOType_Mesh);
+  mesh_uniform_update(mesh);
+  ubo_upload_entry(&scene->renderer.ubo, UBOType_Mesh, &mesh->ubo_slot);
 
   ScenePipeline pipeline = scene_map_pipeline(mesh_pipeline);
 
@@ -743,7 +752,11 @@ void scene_add_mesh_ref_list(Scene *scene, MeshRefList *list, const char *layer,
 void scene_add_mesh_pipeline(Scene *scene, Mesh *mesh,
                              const ScenePipeline pipeline, const char *layer,
                              const SceneAddFlag flag) {
-  ssbo_copy_entry(&scene->renderer.ssbo, SSBOType_Mesh, &mesh->ssbo_slot);
+
+  mesh->ubo_slot = ubo_new_entry(&scene->renderer.ubo, UBOType_Mesh);
+  mesh_uniform_update(mesh);
+  ubo_upload_entry(&scene->renderer.ubo, UBOType_Mesh, &mesh->ubo_slot);
+
   scene_build_mesh(scene, mesh, pipeline);
   scene_add_mesh_core(scene, mesh, pipeline, layer, flag);
 }

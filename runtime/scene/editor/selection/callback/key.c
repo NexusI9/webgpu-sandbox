@@ -167,7 +167,7 @@ void scene_selection_key_sequence_callback_select_all(KeyRecordSequence *seq,
   } else {
     scene_selection_all(selection);
     scene_gizmo_pos_to_selection(gizmo, &scene->editor.selection,
-                                 &scene->renderer.ssbo);
+                                 &scene->renderer.ubo);
     scene_gizmo_show(scene);
   }
 }
@@ -197,7 +197,7 @@ void scene_selection_key_sequence_callback_set_gizmo_mode(
   if (scene_selection_length(&scene->editor.selection)) {
     // update location to selection average
     scene_gizmo_pos_to_selection(gizmo, &scene->editor.selection,
-                                 &scene->renderer.ssbo);
+                                 &scene->renderer.ubo);
     scene_gizmo_show(scene);
   }
 }

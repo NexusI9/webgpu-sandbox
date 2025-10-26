@@ -28,4 +28,10 @@ static inline size_t shader_device_uniform_alignment() {
   return limits.limits.minUniformBufferOffsetAlignment;
 }
 
+static inline size_t shader_device_max_uniform_size() {
+  WGPUSupportedLimits limits;
+  wgpuDeviceGetLimits(context_device(), &limits);
+  return limits.limits.maxUniformBufferBindingSize;
+}
+
 #endif

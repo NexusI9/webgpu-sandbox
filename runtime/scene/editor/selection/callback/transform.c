@@ -7,7 +7,7 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/light/shadow_map/draw.h"
 #include "runtime/mesh/core.h"
@@ -43,7 +43,7 @@ scene_selection_mesh_transform_core(Mesh *, vec3 *, SceneSelectionTransform *);
  */
 void scene_selection_mesh_update_probe_uniform(
     Mesh *mesh, ProbeReflectionGridList *grid_list,
-    ProbeReflectionPlaneList *plane_list, SSBOManager *ssbo) {
+    ProbeReflectionPlaneList *plane_list, UBOManager *ubo) {
   size_t i = 0;
 
   MeshUniform *uniform = mesh_uniform(mesh);
@@ -55,9 +55,9 @@ void scene_selection_mesh_update_probe_uniform(
         aabb_intersect(&mesh->topology.boundbox.world, &probe->boundbox);
 
     if (intersect)
-      mesh_uniform_set_probe_reflection_plane(mesh, ssbo);
+      mesh_uniform_set_probe_reflection_plane(mesh, ubo);
     else
-      mesh_uniform_clear_probe_reflection_plane(mesh, ssbo);
+      mesh_uniform_clear_probe_reflection_plane(mesh, ubo);
   }
 
   for (i = 0; i < grid_list->length; i++) {
@@ -80,8 +80,8 @@ void scene_selection_mesh_transform_core(Mesh *mesh, vec3 *init_attribute,
   // transform mesh
   transform_callback_mesh[desc->transform_mode](mesh, offset_attribute);
 
-  ssbo_update_queue_insert(&desc->scene->renderer.ssbo, SSBOType_Mesh,
-                           mesh->ssbo_slot.id);
+  ubo_update_queue_insert(&desc->scene->renderer.ubo, UBOType_Mesh,
+                           mesh->ubo_slot.id);
 }
 
 /* Mesh based transform */
@@ -146,8 +146,8 @@ void scene_selection_sem_transform_core(
   // transform sem via their own callback
   transform_callback(sem, offset_attribute);
 
-  ssbo_update_queue_insert(&desc->scene->renderer.ssbo, SSBOType_Mesh,
-                           sem->mesh->ssbo_slot.id);
+  ubo_update_queue_insert(&desc->scene->renderer.ubo, UBOType_Mesh,
+                           sem->mesh->ubo_slot.id);
 }
 
 /*

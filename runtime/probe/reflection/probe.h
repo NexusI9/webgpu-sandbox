@@ -2,14 +2,15 @@
 #define _PROBE_REFLECTION_PROBE_H_
 
 #include <cglm/cglm.h>
-#include <stddef.h>
 #include <cglm/types.h>
+#include <stddef.h>
 
-#include "backend/ssbo.h"
-#include "utils/dyli.h"
-#include "utils/projection.h"
+#include "backend/ubo.h"
 #include "core.h"
 #include "runtime/camera/core.h"
+#include "runtime/probe/uniform.h"
+#include "utils/dyli.h"
+#include "utils/projection.h"
 
 // See probe reflection limitations:
 // https://discussions.unity.com/t/reflection-probe-inaccuracy/675384/3
@@ -21,16 +22,10 @@
 typedef struct {
   vec3 position;
   float radius;
-  // 1 list + (1 + 5 view) like point lights
-  SSBOSlot ssbo_slot[PROBE_REFLECTION_SSBO_SLOT_COUNT + 5];
   Camera camera[PROBE_REFLECTION_VIEW_COUNT];
+  ProbeListSlot ubo_uniform;
+  UBOSlot ubo_camera[PROBE_REFLECTION_VIEW_COUNT];
 } ProbeReflection;
-
-typedef struct {
-  vec3 position;
-  float radius;
-  float _pad[60];
-} __attribute__((aligned(16))) ProbeReflectionUniform;
 
 typedef struct {
   ProbeReflection *entries;

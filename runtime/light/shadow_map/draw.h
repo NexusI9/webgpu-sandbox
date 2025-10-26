@@ -7,7 +7,7 @@
 
 // #include "runtime/light/light.h"
 #include "backend/profiler.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
@@ -68,7 +68,7 @@ typedef struct {
   const WGPUCommandEncoder command_encoder;
   Projection *views;
   const size_t texture_layer;
-  const ssbo_id_t ssbo_offset;
+  const ubo_id_t ubo_offset;
   const RenderPipeline *pipeline;
   RenderPass *pass;
   Profiler *profiler;
@@ -77,7 +77,7 @@ typedef struct {
 typedef struct {
   RenderPass *pass;
   const uint32_t texture_layer;
-  const ssbo_id_t ssbo_offset;
+  const ubo_id_t ubo_offset;
   WGPUCommandEncoder command_encoder;
   const RenderPipeline *pipeline;
   Profiler *profiler;
@@ -203,7 +203,7 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
 
       LightShadowData light_data = {
           .pipeline = desc->pipeline,
-          .view_offset = desc->ssbo_offset,
+          .view_offset = desc->ubo_offset,
       };
 
       render_pass_update_preprocessor_data(desc->pass, 0, &light_data);
@@ -379,7 +379,7 @@ void shadow_map_draw_point_light(const ShadowMapDrawPointLightDescriptor *desc,
         .texture_layer = layer,
         .command_encoder = desc->command_encoder,
         .pipeline = std_render_pipeline(RenderPipelineType_Shadow),
-        .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View + v].id,
+        .ubo_offset = desc->light->ubo_projection[v].id,
         .profiler = desc->profiler,
     };
     shadow_map_draw(&draw_desc, debug);
@@ -397,7 +397,7 @@ void shadow_map_draw_dir_light(const ShadowMapDrawDirLightDescriptor *desc,
     ShadowMapDrawDescriptor draw_desc = {
         .pass = desc->pass,
         .texture_layer = desc->texture_layer,
-        .ssbo_offset = desc->ssbo_offset,
+        .ubo_offset = desc->ubo_offset,
         .command_encoder = desc->command_encoder,
         .pipeline = desc->pipeline,
         .profiler = desc->profiler,
@@ -413,7 +413,7 @@ void shadow_map_draw_sun_light(const ShadowMapDrawSunLightDescriptor *desc,
       .pass = desc->pass,
       .command_encoder = desc->command_encoder,
       .texture_layer = desc->texture_layer,
-      .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
+      .ubo_offset = desc->light->ubo_projection.id,
       .views = &desc->light->views,
       .pipeline = std_render_pipeline(RenderPipelineType_ShadowCullBack),
       .profiler = desc->profiler,
@@ -428,7 +428,7 @@ void shadow_map_draw_spot_light(const ShadowMapDrawSpotLightDescriptor *desc,
       .pass = desc->pass,
       .command_encoder = desc->command_encoder,
       .texture_layer = desc->texture_layer,
-      .ssbo_offset = desc->light->ssbo_slot[LightSSBOSlot_View].id,
+      .ubo_offset = desc->light->ubo_projection.id,
       .views = &desc->light->views,
       .pipeline = std_render_pipeline(RenderPipelineType_ShadowCullBack),
       .profiler = desc->profiler,

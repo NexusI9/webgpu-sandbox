@@ -77,38 +77,31 @@ typedef struct {
 
 typedef struct {
   uint8_t group;
-  uint16_t ambient;
-  uint16_t spot;
-  uint16_t point;
-  uint16_t sun;
+  uint16_t list;
   uint16_t point_texture;
   uint16_t directional_texture;
 } PipelineBindingLightList;
 
 typedef struct {
   uint8_t group;
-
-  uint16_t reflection_plane;
+  uint16_t list;
   uint16_t reflection_plane_texture;
-  uint16_t reflection_plane_sampler;
-
-  uint16_t reflection_grid;
   uint16_t reflection_grid_texture;
-  uint16_t reflection_grid_sampler;
-
-  uint16_t irradiance;
   uint16_t irradiance_texture;
-  uint16_t irradiance_sampler;
-
   uint16_t skybox_texture;
-  uint16_t skybox_sampler;
-
+  uint16_t sampler;
 } PipelineBindingProbe;
+
+typedef struct {
+  uint8_t group;
+  uint16_t environment;
+} PipelineBindingEnvironment;
 
 typedef struct {
   const PipelineBindingMVP *mvp;
   const PipelineBindingLightList *light_list;
   const PipelineBindingProbe *probe;
+  const PipelineBindingEnvironment *environment;
 } RenderPipelineBinding;
 
 typedef struct {

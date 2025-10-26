@@ -8,7 +8,7 @@
 #include "core.h"
 
 MeshUniform *mesh_uniform(Mesh *mesh) {
-  return (MeshUniform *)mesh->ssbo_slot.uniform;
+  return (MeshUniform *)mesh->ubo_slot.uniform;
 }
 
 void mesh_uniform_update(Mesh *mesh) {
@@ -20,8 +20,7 @@ void mesh_uniform_update(Mesh *mesh) {
       1.0f,
   };
 
-  MeshUniform *uniform = (MeshUniform *)mesh->ssbo_slot.uniform;
-
+  MeshUniform *uniform = (MeshUniform *)mesh->ubo_slot.uniform;
   glm_mat4_copy(mesh->model, uniform->model);
   glm_vec4_copy(position, uniform->position);
 }
@@ -30,7 +29,7 @@ void mesh_uniform_model_update_callback(void *callback_mesh, void *entry_data) {
 
   Mesh *cast_mesh = (Mesh *)callback_mesh;
 
-  MeshUniform *updated_data = (MeshUniform *)cast_mesh->ssbo_slot.uniform;
+  MeshUniform *updated_data = (MeshUniform *)cast_mesh->ubo_slot.uniform;
   MeshUniform *new_data = (MeshUniform *)entry_data;
 
   //  transfer updated camera values (position and view) to new data

@@ -4,7 +4,7 @@
 #include "backend/logger.h"
 #include "backend/profiler.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "backend/std_pipeline/core.h"
 #include "include/imgui/imgui.h"
 #include "include/imgui/imgui_impl_wgpu.h"

@@ -1,32 +1,36 @@
 struct VertexIn {
-  @location(0) aPos : vec3<f32>,
-                      @location(1) aNorm : vec3<f32>,
-                                           @location(2) aTan : vec4<f32>,
-                                                               @location(3) aCol
-      : vec3<f32>,
-        @location(4) aUv : vec2<f32>,
+  @location(0) aPos: vec3<f32>,
+  @location(1) aNorm: vec3<f32>,
+  @location(2) aTan: vec4<f32>,
+  @location(3) aCol: vec3<f32>,
+  @location(4) aUv: vec2<f32>,
 };
 
 struct VertexOut {
-  @builtin(position) Position : vec4<f32>,
-                                @location(0) vCol : vec3<f32>,
-                                                    @location(1) vUv : vec2<f32>
+  @builtin(position) Position: vec4<f32>,
+  @location(0) vCol: vec3<f32>,
+  @location(1) vUv: vec2<f32>
 };
 
 struct Mesh {
-  model : mat4x4<f32>,
-          position : vec4<f32>,
-                     probe_reflection_plane_count : u32,
-                                                    probe_reflection_grid_count
-      : u32,
+  model: mat4x4<f32>,
+  position: vec4<f32>,
+  probe_reflection_plane_count: u32,
+  probe_reflection_grid_count: u32,
 }
 
 struct Camera {
-  view : mat4x4<f32>, position : vec4<f32>, lookat : vec4<f32>, mode : u32,
+  view: mat4x4<f32>,
+  position: vec4<f32>,
+  lookat: vec4<f32>,
+  mode: u32,
 };
 
 struct Viewport {
-  projection : mat4x4<f32>, width : u32, height : u32, _pad : vec2<u32>
+  projection: mat4x4<f32>,
+  width: u32,
+  height: u32,
+  _pad: vec2<u32>
 };
 
 @group(0) @binding(0) var<uniform> uViewport : Viewport;
@@ -38,58 +42,57 @@ struct Viewport {
 @group(1) @binding(2) var<uniform> uScale : u32;
 
 // vertex shader
-@vertex fn vs_main(input : VertexIn) -> VertexOut {
+  @vertex
+fn vs_main(input: VertexIn) -> VertexOut {
 
   // Final Matrix (Projection * View)
-  var output : VertexOut;
+    var output: VertexOut;
 
-  let mesh = uMesh;
-  let camera = uCamera;
-  let viewport = uViewport;
+    let mesh = uMesh;
+    let camera = uCamera;
+    let viewport = uViewport;
 
-  let look = normalize(camera.position.xyz - mesh.position.xyz);
-  let worldUp = vec3<f32>(0.0f, 1.0f, 0.0f);
+    let look = normalize(camera.position.xyz - mesh.position.xyz);
+    let worldUp = vec3<f32>(0.0f, 1.0f, 0.0f);
 
-  let scale_x = length(vec3<f32>(mesh.model[0].xyz));
-  let scale_y = length(vec3<f32>(mesh.model[1].xyz));
-  let scale_z = length(vec3<f32>(mesh.model[2].xyz));
-  var scale_factor = 1.0f;
+    let scale_x = length(vec3<f32>(mesh.model[0].xyz));
+    let scale_y = length(vec3<f32>(mesh.model[1].xyz));
+    let scale_z = length(vec3<f32>(mesh.model[2].xyz));
+    var scale_factor = 1.0f;
 
-  if (uScale == 0u) {
+    if uScale == 0u {
 
-    let target_pixel = 10.0f;
-    let view_pos = camera.view * vec4<f32>(mesh.position.xyz, 1.0f);
-    let proj_pos = viewport.projection * view_pos;
+        let target_pixel = 10.0f;
+        let view_pos = camera.view * vec4<f32>(mesh.position.xyz, 1.0f);
+        let proj_pos = viewport.projection * view_pos;
 
-    let ndc_position = proj_pos.xyz / proj_pos.w;
+        let ndc_position = proj_pos.xyz / proj_pos.w;
 
-    let pixel_size_ndc =
-        2.0f / vec2<f32>(f32(viewport.width), f32(viewport.height));
+        let pixel_size_ndc = 2.0f / vec2<f32>(f32(viewport.width), f32(viewport.height));
 
-    let ndc_size = pixel_size_ndc * target_pixel;
+        let ndc_size = pixel_size_ndc * target_pixel;
 
     // convert ndc -> world space scale
-    scale_factor = view_pos.z * -ndc_size.y;
-  }
+        scale_factor = view_pos.z * -ndc_size.y;
+    }
 
-  let flatToCamera = normalize(vec3<f32>(look.x, 0.0f, look.z));
-  let right = normalize(cross(worldUp, flatToCamera));
-  let up = cross(look, right);
+    let flatToCamera = normalize(vec3<f32>(look.x, 0.0f, look.z));
+    let right = normalize(cross(worldUp, flatToCamera));
+    let up = cross(look, right);
 
-  let local_position = input.aPos.x * right * scale_x * scale_factor +
-                       input.aPos.z * up * scale_z * scale_factor;
+    let local_position = input.aPos.x * right * scale_x * scale_factor + input.aPos.z * up * scale_z * scale_factor;
 
-  let world_position = mesh.position.xyz + local_position;
+    let world_position = mesh.position.xyz + local_position;
 
-  output.Position =
-      viewport.projection * camera.view * vec4<f32>(world_position, 1.0f);
-  output.vCol = input.aCol;
-  output.vUv = input.aUv;
-  return output;
+    output.Position = viewport.projection * camera.view * vec4<f32>(world_position, 1.0f);
+    output.vCol = input.aCol;
+    output.vUv = input.aUv;
+    return output;
 }
 
 // fragment shader
-@fragment fn fs_main(@location(1) vUv : vec2<f32>) -> @location(0) vec4<f32> {
+      @fragment
+fn fs_main(@location(1) vUv: vec2<f32>) -> @location(0) vec4<f32> {
 
-  return textureSample(texture, texture_sampler, vUv);
+    return textureSample(texture, texture_sampler, vUv);
 }

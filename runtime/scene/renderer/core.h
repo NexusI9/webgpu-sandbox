@@ -12,9 +12,8 @@
 #include "backend/clock.h"
 #include "backend/compute/core.h"
 #include "backend/profiler.h"
-#include "backend/ssbo.h"
-#include "backend/stat.h"
 #include "backend/ubo.h"
+#include "backend/stat.h"
 #include "render_pass/core.h"
 #include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/render.h"
@@ -56,8 +55,6 @@ typedef struct {
 typedef struct SceneRenderer {
 
   cclock clock; // update clock delta on draw
-
-  SSBOManager ssbo;
   UBOManager ubo;
 
   Profiler profiler;
@@ -107,12 +104,10 @@ scene_renderer_find_draw_callback(SceneRenderer *,
 void scene_renderer_draw(SceneRenderer *);
 
 // getters
-static inline SSBOManager *scene_renderer_ssbo(SceneRenderer *renderer) {
-  return &renderer->ssbo;
-}
 static inline UBOManager *scene_renderer_ubo(SceneRenderer *renderer) {
   return &renderer->ubo;
 }
+
 
 static inline const SceneRendererDrawMode
 scene_renderer_draw_mode(SceneRenderer *renderer) {

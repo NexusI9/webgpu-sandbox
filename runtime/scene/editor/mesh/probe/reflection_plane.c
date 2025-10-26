@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/mesh/core.h"
@@ -168,7 +168,7 @@ void sem_probe_reflection_plane_update_mesh_uniform(SceneEditorMesh *sem) {
   scene_reflection_pipeline_meshes(sem->scene, pipeline_mesh_list);
 
   ProbeReflectionPlane *probe = (ProbeReflectionPlane *)sem->target;
-  SSBOManager *ssbo = &sem->scene->renderer.ssbo;
+  UBOManager *ubo = &sem->scene->renderer.ubo;
 
   probe_reflection_plane_update_boundbox(probe);
 
@@ -184,12 +184,12 @@ void sem_probe_reflection_plane_update_mesh_uniform(SceneEditorMesh *sem) {
                                       &pipeline_mesh->topology.boundbox.world);
 
       if (intersect) {
-        mesh_uniform_set_probe_reflection_plane(pipeline_mesh, ssbo);
-        render_pass_disable_mesh(&sem->scene->planes_reflection.pass,
+        mesh_uniform_set_probe_reflection_plane(pipeline_mesh, ubo);
+        render_pass_disable_mesh(&sem->scene->probes.reflection_plane.pass,
                                  pipeline_mesh);
       } else {
-        mesh_uniform_clear_probe_reflection_plane(pipeline_mesh, ssbo);
-        render_pass_enable_mesh(&sem->scene->planes_reflection.pass,
+        mesh_uniform_clear_probe_reflection_plane(pipeline_mesh, ubo);
+        render_pass_enable_mesh(&sem->scene->probes.reflection_plane.pass,
                                 pipeline_mesh);
       }
     }
@@ -208,17 +208,15 @@ void sem_probe_reflection_plane_set_position(SceneEditorMesh *sem, vec3 value) {
   probe_reflection_plane_update_uniform(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(&sem->scene->renderer.ssbo,
-                           SSBOType_ProbePlaneReflection,
-                           probe->ssbo_slot[ProbeReflectionSSBOField_List].id);
+  ubo_update_queue_insert(&sem->scene->renderer.ubo, UBOType_ProbeList,
+                          sem->scene->probes.ubo_slot.id);
 
   // update view cpu side
   probe_reflection_plane_update_camera(probe);
 
   // add to upload queue
-  ssbo_update_queue_insert(
-      &sem->scene->renderer.ssbo, SSBOType_Camera,
-      probe->ssbo_slot[ProbeReflectionSSBOField_Camera].id);
+  ubo_update_queue_insert(&sem->scene->renderer.ubo, UBOType_Camera,
+                          probe->ubo_camera.id);
 }
 
 void sem_probe_reflection_plane_set_rotation(SceneEditorMesh *sem, vec3 value) {

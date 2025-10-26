@@ -92,7 +92,7 @@ void shader_add_uniform(Shader *shader,
       /*
         === Define dynamic offset ===
 
-        Some shader may use SSBO or UBO global buffer, such approach involve the
+        Some shader may use UBO or UBO global buffer, such approach involve the
         use of dynamic offsets.
 
         Basically on draw, when the setBindGroup function is called, we provied

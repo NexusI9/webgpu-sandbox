@@ -3,7 +3,7 @@
 
 #include <webgpu/webgpu.h>
 
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/viewport/viewport.h"
@@ -22,7 +22,7 @@ typedef enum {
 
 typedef struct {
   MeshList *pool;
-  SSBOManager *ssbo;
+  UBOManager *ubo;
   MeshRefList object_list[SCENE_DEBUG_MESH_LIST_COUNT];
   Camera *camera;
   Viewport *viewport;
@@ -31,7 +31,7 @@ typedef struct {
 
 typedef struct {
   MeshList *pool;
-  SSBOManager *ssbo;
+  UBOManager *ubo;
   Camera *camera;
   Viewport *viewport;
 

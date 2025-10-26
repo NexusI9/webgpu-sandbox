@@ -1,5 +1,5 @@
 #include "inspector.spot_light.hpp"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "imgui/imgui.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/light/core.h"
@@ -14,11 +14,11 @@ void UI::InspectorSpotLight::transform_update_callback(Scene *scene,
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
 
   for (size_t i = 0; i < list->length; i++)
-    ssbo_update_queue_insert(&scene->renderer.ssbo, SSBOType_Mesh,
-                             list->entries[i].mesh->ssbo_slot.id);
+    ubo_update_queue_insert(&scene->renderer.ubo, UBOType_Mesh,
+                            list->entries[i].mesh->ubo_slot.id);
 
   scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
-                               &scene->editor.selection, &scene->renderer.ssbo);
+                               &scene->editor.selection, &scene->renderer.ubo);
 }
 
 void UI::InspectorSpotLight::properties_update_callback(Scene *scene,
@@ -27,8 +27,8 @@ void UI::InspectorSpotLight::properties_update_callback(Scene *scene,
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
   SpotLight *light = (SpotLight *)list->origin->target;
 
-  ssbo_update_queue_insert(&scene->renderer.ssbo, SSBOType_SpotLight,
-                           light->ssbo_slot[LightSSBOSlot_List].id);
+  ubo_update_queue_insert(&scene->renderer.ubo, UBOType_LightList,
+                          scene->lights.ubo_slot.id);
 }
 
 void UI::InspectorSpotLight::draw() {

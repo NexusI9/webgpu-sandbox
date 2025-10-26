@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 #include "string.h"
 
 void viewport_create(Viewport *viewport,
@@ -18,12 +18,8 @@ void viewport_create(Viewport *viewport,
   viewport->width = view_desc->width;
   viewport->height = view_desc->height;
 
-  // may be overriden/free by SSBO later when added to scene
-  ssbo_slot_init_alloc(&viewport->ssbo_slot, sizeof(ViewportUniform));
-
   // init projection matrix
   viewport_update_projection(viewport);
-  viewport_uniform_update(viewport);
 }
 
 void viewport_update_projection(Viewport *viewport) {
@@ -40,12 +36,12 @@ void viewport_update_projection(Viewport *viewport) {
 }
 
 ViewportUniform *viewport_uniform(Viewport *viewport) {
-  return viewport->ssbo_slot.uniform;
+  return viewport->ubo_slot.uniform;
 }
 
 void viewport_uniform_update(Viewport *viewport) {
 
-  ViewportUniform *uniform = (ViewportUniform *)viewport->ssbo_slot.uniform;
+  ViewportUniform *uniform = (ViewportUniform *)viewport->ubo_slot.uniform;
 
   uniform->width = viewport->width;
   uniform->height = viewport->height;
@@ -58,9 +54,9 @@ mat4 *viewport_projection(Viewport *vp) { return &vp->projection; }
 
 void viewport_destroy(Viewport *vp) {
 
-  // means hasn't been assigned in the ssbo
-  if (vp->ssbo_slot.id == SSBO_INDEX_UNFOUND)
-    free(vp->ssbo_slot.uniform);
+  // means hasn't been assigned in the ubo
+  if (vp->ubo_slot.id == UBO_INDEX_UNFOUND)
+    free(vp->ubo_slot.uniform);
 
   memset(vp, 0, sizeof(Viewport));
 }

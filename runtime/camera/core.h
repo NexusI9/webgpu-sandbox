@@ -11,7 +11,7 @@
 
 #include "backend/clock.h"
 #include "backend/registry.h"
-#include "backend/ssbo.h"
+#include "backend/ubo.h"
 
 typedef enum {
   CameraStatus_Success,
@@ -65,7 +65,7 @@ typedef struct Camera {
   vec3 up;
   vec3 right;
 
-  SSBOSlot ssbo_slot;
+  UBOSlot ubo_slot;
 
   mat4 view;
 

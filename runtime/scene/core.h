@@ -22,7 +22,7 @@
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/list.h"
-#include "runtime/probe/probe.h"
+#include "runtime/probe/core.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/viewport/core.h"
@@ -324,8 +324,7 @@ struct Scene {
   MeshList meshes;
   LightList lights;
   CameraList cameras;
-  ProbeReflectionGridList probes_reflection;
-  ProbeReflectionPlaneList planes_reflection;
+  ProbeList probes;
 
   // References List (ptr)
   MeshRefList pipelines[SCENE_PIPELINE_COUNT];
