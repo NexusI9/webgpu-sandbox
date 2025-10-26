@@ -303,10 +303,12 @@ fn create_material(diffuse: vec4<f32>, metallic: vec4<f32>,
     return material;
 }
 
+      
 fn compute_point_light(material: Material, fragment_position: vec3<f32>,
     world_normal: vec3<f32>, camera_position: vec3<f32>,
     light_position: vec3<f32>, light_color: vec4<f32>,
     light_intensity: f32) -> vec3<f32> {
+
     let mesh = uMesh;
 
   // compute light base on Cook-Torrance BRDF Model
@@ -353,7 +355,8 @@ fn compute_point_light(material: Material, fragment_position: vec3<f32>,
 
 fn compute_ambient_light(material: Material, light_intensity: f32,
     light_color: vec4<f32>) -> vec3<f32> {
-    return (light_color * light_intensity * material.albedo).rgb * material.occlusion;
+    return (light_color * light_intensity * material.albedo).rgb;
+  // *  material.occlusion;
 }
 
 fn compute_point_depth(position: f32, near: f32, far: f32) -> f32 {
@@ -367,6 +370,13 @@ fn compute_point_depth(position: f32, near: f32, far: f32) -> f32 {
     let depth = (far + near) / (far - near) - 2.0f * far * near / (norm_z_comp * (far - near));
 
     return (depth + 1.0f) * 0.5f;
+}
+
+fn compute_reflection_uv(frag_pos: vec3<f32>, r_view: mat4x4<f32>) -> vec2<f32> {
+    let clip = uViewport.projection * r_view * vec4<f32>(frag_pos, 1.0);
+    let ndc = clip.xyz / clip.w;                                // [-1, 1] space
+    let uv = ndc.xy * vec2<f32>(0.5f, -0.5f) + vec2<f32>(0.5f); // [0, 1] space
+    return uv;
 }
 
 // https://x.com/JKoukourakis/status/1958800134914949268/photo/1
@@ -400,11 +410,8 @@ const PCF_MAX_DISTANCE : f32 = 5.0f;
 fn kernel_from_distance(frag_pos: vec3<f32>, cam_pos: vec3<f32>) -> u32 {
 
     let d = distance(frag_pos, cam_pos);
-    if d > 2.0f {
-        return 0u;
-    } else {
-        return 3u;
-    }
+    return select(3u, 0u, d > 2.0f);
+
   // let distance : f32 = distance(frag_pos, cam_pos);
   // let t : f32 = clamp(distance / PCF_MAX_DISTANCE, 0.0f, 1.0f);
   // return u32(mix(f32(PCF_KERNEL_MAX), 0.0f, t));
@@ -413,11 +420,7 @@ fn kernel_from_distance(frag_pos: vec3<f32>, cam_pos: vec3<f32>) -> u32 {
 // Combine and compute Point light shadow
 fn point_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
-    if uLights.point_count == 0u {
-        return 0.0f;
-    }
-
-    var factor: f32 = 1.0f; // show by default
+    var factor: f32 = max(f32(uLights.point_count), 1.0f) * 1.0f; // show by default
     var bias: f32 = 0.002f;
 
     for (var l: u32 = 0u; l < uLights.point_count; l++) {
@@ -440,12 +443,7 @@ fn point_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
         closest_depth = closest_depth * far;
 
-        if current_depth - bias > closest_depth {
-            factor = 0.0f;
-      continue;
-        } else {
-            factor = 1.0f;
-        }
+        factor = select(1.0f, 0.0f, current_depth - bias > closest_depth);
 
 #else
 
@@ -457,12 +455,9 @@ fn point_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
         let dist = length(frag_to_light) / light.far;
 
-        if dist > light.cutoff {
-            factor = 0.0f;
-        } else {
-            factor = smoothstep(light.cutoff, light.inner_cutoff, dist);
-            factor = pow(factor, light.intensity);
-        }
+        factor = smoothstep(light.cutoff, light.inner_cutoff, dist);
+        factor = pow(factor, light.intensity);
+        factor = select(factor, 0.0f, dist > light.cutoff);
 
     // PCF
         var pcf_shadow_factor = 0.0f;
@@ -514,11 +509,7 @@ fn directional_shadow_position(world_position: vec3<f32>,
 
 fn spot_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
-    if uLights.spot_count == 0u {
-        return 0.0f;
-    }
-
-    var factor: f32 = 1.0f; // show by default
+    var factor: f32 = max(f32(uLights.spot_count), 1.0f) * 1.0f; // show by default
     var bias: f32 = 0.0005f;
 
     for (var l: u32 = 0u; l < uLights.spot_count; l++) {
@@ -539,12 +530,9 @@ fn spot_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
         let shadow_depth = shadow_position.z - bias;
 
-        if spot_dot < light.cutoff {
-            factor = 0.0f;
-        } else {
-            factor = smoothstep(light.cutoff, light.inner_cutoff, spot_dot);
-            factor = pow(factor, light.intensity);
-        }
+        factor = smoothstep(light.cutoff, light.inner_cutoff, spot_dot);
+        factor = pow(factor, light.intensity);
+        factor = select(factor, 0.0f, spot_dot < light.cutoff);
 
     // PCF
         var pcf_shadow_factor = 0.0f;
@@ -577,11 +565,7 @@ fn spot_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
 fn sun_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
-    if uLights.sun_count == 0u {
-        return 0.0f;
-    }
-
-    var factor: f32 = 1.0f; // show by default
+    var factor: f32 = max(f32(uLights.sun_count), 1.0f) * 1.0f; // show by default
     var bias: f32 = 0.005f;
 
     for (var l: u32 = 0u; l < uLights.sun_count; l++) {
@@ -631,6 +615,7 @@ fn sun_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
     return factor;
 }
 
+      
 //
 //
 //
