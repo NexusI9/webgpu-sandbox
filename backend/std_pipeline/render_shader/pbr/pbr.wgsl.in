@@ -53,6 +53,7 @@ struct Material {
   normal: vec3<f32>,
   occlusion: f32,
   emissive: vec3<f32>,
+  alpha: f32,
 };
 
 
@@ -64,7 +65,6 @@ struct PBRMaterial {
   specular_factor: f32,
   normal_scale: f32,
   occlusion_strength: f32,
-
 }
 
 // === Environment ===
@@ -312,7 +312,7 @@ fn create_material(diffuse: vec4<f32>, metallic: vec4<f32>,
     material.normal = normalize(normal.rgb * 2.0 - 1.0) * factors.normal_scale; // convert to [-1,+1]
     material.occlusion = occlusion.r * factors.occlusion_strength;
     material.emissive = emissive.rgb * factors.emissive_factor;
-
+    material.alpha = factors.base_color_factor.a * diffuse.a;
     return material;
 }
 
@@ -797,13 +797,13 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
         point_shadow + spot_shadow + sun_shadow);
 
     let combined = vec4<f32>((ambient + Lo + IBL * combined_shadow) + material.emissive,
-        uPBR.base_color_factor.a * albedo.a);
+        material.alpha);
 
     let fog_k = fog_factor(length(vFrag - camera.position.xyz),
         uEnvironment.fog.start_distance, uEnvironment.fog.density);
 
     let out_color = mix(combined, uEnvironment.fog.color, fog_k);
-      
 
-   return out_color;
+    return out_color;
+    //return vec4<f32>(out_color, 1.0f);
 }

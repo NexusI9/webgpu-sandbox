@@ -419,7 +419,7 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
       },
       {
           &material->emissive_texture,
-          std_texture_view(TextureViewType_FloatBlack),
+          std_texture_view(TextureViewType_Float),
       },
       {
           &material->occlusion_texture,
