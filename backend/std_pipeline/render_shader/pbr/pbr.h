@@ -25,6 +25,8 @@ typedef struct {
   float specular_factor;
   float normal_scale;
   float occlusion_strength;
+  float alpha_threshold;
+  float _pad[3];
 } PBRMaterialUniform;
 
 static const WGPUBindGroupLayoutDescriptor pbr_material_bind_group = {
@@ -234,17 +236,10 @@ static const PipelineBindingEnvironment pbr_env = {
     .environment = 0,
 };
 
-static const WGPUPrimitiveState pbr_double_sided_primitive = {
-    .frontFace = WGPUFrontFace_CCW,
-    .cullMode = WGPUCullMode_None,
-    .topology = WGPUPrimitiveTopology_TriangleList,
-    .stripIndexFormat = WGPUIndexFormat_Undefined,
-};
-
 static const WGPUDepthStencilState pbr_alpha_stencil = {
     .format = TEXTURE_FORMAT_DEPTH_STENCIL,
     .depthWriteEnabled = false,
-    .depthCompare = WGPUCompareFunction_LessEqual,
+    .depthCompare = WGPUCompareFunction_GreaterEqual,
 };
 
 static const RenderPipelineStateObject layout_pbr = {
@@ -285,7 +280,7 @@ static const RenderPipelineStateObject layout_pbr_double_sided = {
         },
     .pipeline_attributes =
         {
-            .primitive_state = &pbr_double_sided_primitive,
+            .primitive_state = &primitive_double_sided,
         },
 };
 
@@ -308,7 +303,7 @@ static const RenderPipelineStateObject layout_pbr_alpha = {
         },
     .pipeline_attributes =
         {
-            .primitive_state = &pbr_double_sided_primitive,
+            .primitive_state = &primitive_double_sided,
             .blend_state = &blend_alpha,
             .stencil_state = &pbr_alpha_stencil,
         },

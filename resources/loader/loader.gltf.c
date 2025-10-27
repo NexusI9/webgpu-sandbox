@@ -67,10 +67,9 @@ static inline void loader_gltf_bind_textures(Mesh *, cgltf_material *,
 static inline void loader_gltf_bind_uniforms(Mesh *, cgltf_material *,
                                              const LoaderGLTFOptions *);
 
-static LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *,
-                                                    void **, size_t *, int *,
-                                                    int *, int *,
-                                                    TextureResolution);
+static LoaderGLTFStatus
+loader_gltf_extract_texture(cgltf_texture_view *, void **, size_t *, int *,
+                            int *, int *, TextureResolution, const char *);
 
 LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
                                   LoaderGLTFResult *dest) {
@@ -349,7 +348,7 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_data *data,
         if (material->double_sided)
           pipeline_type = RenderPipelineType_PBR_DoubleSided;
 
-        if (material->alpha_mode)
+        if (material->alpha_mode == cgltf_alpha_mode_blend)
           pipeline_type = RenderPipelineType_PBR_Alpha;
 
         mesh_shader_create(target_mesh,
@@ -402,26 +401,32 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
   // overwrite ?
   //&material->occlusion_texture : baked separately in the AO pass,
   const struct {
+    const char *label;
     cgltf_texture_view *gltf_texture;
     const WGPUTextureView fallback_texture;
   } texture_view_list[] = {
       {
+          "Base",
           &material->pbr_metallic_roughness.base_color_texture,
           std_texture_view(TextureViewType_FloatBlack),
       },
       {
+          "Metallic Roughness",
           &material->pbr_metallic_roughness.metallic_roughness_texture,
-          std_texture_view(TextureViewType_FloatBlack),
+          std_texture_view(TextureViewType_Float),
       },
       {
+          "Normal",
           &material->normal_texture,
-          std_texture_view(TextureViewType_FloatBlack),
+          std_texture_view(TextureViewType_FloatNormal),
       },
       {
+          "Emissive",
           &material->emissive_texture,
           std_texture_view(TextureViewType_Float),
       },
       {
+          "Occlusion",
           &material->occlusion_texture,
           std_texture_view(TextureViewType_Float),
       },
@@ -442,10 +447,10 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
     // If find texture, upload new texture to GPU and bind to shader
     //(before freeing it)
     ShaderBindGroupTextureEntry *reflection_texture;
-    if (loader_gltf_extract_texture(texture_view_list[t].gltf_texture, &data,
-                                    &size, &width, &height, &channels,
-                                    options->max_texture_size) ==
-        LoaderGLTFStatus_TextureFound) {
+    if (loader_gltf_extract_texture(
+            texture_view_list[t].gltf_texture, &data, &size, &width, &height,
+            &channels, options->max_texture_size,
+            texture_view_list[t].label) == LoaderGLTFStatus_TextureFound) {
 
       // send texture + sampler to shader
       reflection_texture =
@@ -498,8 +503,9 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
   pbr.metallic_factor = material->pbr_metallic_roughness.metallic_factor;
   pbr.roughness_factor = material->pbr_metallic_roughness.roughness_factor;
   pbr.specular_factor = material->specular.specular_factor;
-  pbr.normal_scale = material->normal_texture.scale;
+  pbr.normal_scale = material->normal_texture.scale || 1.0f;
   pbr.occlusion_strength = material->occlusion_texture.scale;
+  pbr.alpha_threshold = 0.9f;
   glm_vec3_copy(material->emissive_factor, pbr.emissive_factor);
   glm_vec4_copy(material->pbr_metallic_roughness.base_color_factor,
                 pbr.base_color_factor);
@@ -530,11 +536,9 @@ void loader_gltf_bind_uniforms(Mesh *mesh, cgltf_material *material,
     1. if uri => load image
     2. if buffer_view => store buffer & size
  */
-LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
-                                             void **data, size_t *size,
-                                             int *width, int *height,
-                                             int *channels,
-                                             TextureResolution max_size) {
+LoaderGLTFStatus loader_gltf_extract_texture(
+    cgltf_texture_view *texture_view, void **data, size_t *size, int *width,
+    int *height, int *channels, TextureResolution max_size, const char *label) {
 
   const TextureChannel forced_channel = TextureChannel_RGBA;
 
@@ -617,8 +621,10 @@ LoaderGLTFStatus loader_gltf_extract_texture(cgltf_texture_view *texture_view,
     }
 
   } else {
-    logger_add(LoggerFlag_Print,
-               "Loader GLTF: Couldn't find texture, loading default texture");
+    logger_add(
+        LoggerFlag_Print,
+        "Loader GLTF: Couldn't find texture '%s', loading default texture",
+        label);
     return LoaderGLTFStatus_TextureUnfound;
   }
 

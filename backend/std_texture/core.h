@@ -3,11 +3,12 @@
 #include <stdbool.h>
 #include <webgpu/webgpu.h>
 
-#define STD_TEXTURE_VIEW_COUNT 8
+#define STD_TEXTURE_VIEW_COUNT 9
 
 typedef enum {
   TextureViewType_Float,
   TextureViewType_FloatBlack,
+  TextureViewType_FloatNormal,
   TextureViewType_Float2DArray,
   TextureViewType_FloatCube,
   TextureViewType_FloatCubeArray,

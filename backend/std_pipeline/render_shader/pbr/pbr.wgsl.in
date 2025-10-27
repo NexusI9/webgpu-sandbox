@@ -65,6 +65,7 @@ struct PBRMaterial {
   specular_factor: f32,
   normal_scale: f32,
   occlusion_strength: f32,
+  alpha_threshold: f32,
 }
 
 // === Environment ===
@@ -578,7 +579,7 @@ fn spot_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 fn sun_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
     var factor: f32 = max(f32(uLights.sun_count), 1.0f) * 1.0f; // show by default
-    var bias: f32 = 0.005f;
+    var bias: f32 = 0.0005f;
 
     for (var l: u32 = 0u; l < uLights.sun_count; l++) {
 
@@ -672,6 +673,10 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
     var emissive = textureSample(emissive_texture, linear_sampler, vUv);
 
     let material = create_material(albedo, metallic, normal, occlusion, emissive, uPBR);
+
+    if material.alpha < uPBR.alpha_threshold {
+      discard;
+    }
 
     let world_normal = normalize(TBN * material.normal);
 
@@ -771,13 +776,13 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
         point_shadow + spot_shadow + sun_shadow);
 
     let combined = vec4<f32>((ambient + Lo + IBL * combined_shadow) + material.emissive,
-        material.alpha);
-
+        1.0f);
+//material.alpha
     let fog_k = fog_factor(length(vFrag - camera.position.xyz),
         uEnvironment.fog.start_distance, uEnvironment.fog.density);
 
     let out_color = mix(combined, uEnvironment.fog.color, fog_k);
 
     return out_color;
-    //return vec4<f32>(out_color, 1.0f);
+    //return vec4<f32>(material.normal, 1.0f);
 }

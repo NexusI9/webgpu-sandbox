@@ -73,7 +73,7 @@ private:
                           .label = "Color",
                           .accessor_callback = ambient_light_get_color,
                           .mutator_callback = ambient_light_set_color,
-                          .extra_callback = transform_update_callback,
+                          .extra_callback = properties_update_callback,
                           .user_data = (void *)sem,
                       },
                   },
