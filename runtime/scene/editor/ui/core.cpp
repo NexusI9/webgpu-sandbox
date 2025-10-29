@@ -4,8 +4,8 @@
 #include "backend/logger.h"
 #include "backend/profiler.h"
 #include "backend/registry.h"
-#include "backend/ubo.h"
 #include "backend/std_pipeline/core.h"
+#include "backend/ubo.h"
 #include "include/imgui/imgui.h"
 #include "include/imgui/imgui_impl_wgpu.h"
 #include "resources/tool/css2h/output/theme.default.h"
@@ -30,6 +30,7 @@
 #include "runtime/scene/editor/ui/windows/registry.hpp"
 #include "runtime/scene/editor/ui/windows/render_mode.hpp"
 #include "runtime/scene/editor/ui/windows/tree.hpp"
+#include "runtime/scene/editor/ui/windows/vertex_viewer.hpp"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/scene/show.h"
@@ -186,9 +187,10 @@ void scene_editor_ui_draw_callback(void *data) {
       if (UI::Display::state & UI::DisplayState_Activity)
         UI::Monitor(scene, "Monitor").draw();
 
-      if (UI::Registry::open)
-        UI::Registry(scene, "Registry").draw();
+      UI::Registry(scene, "Registry").draw();
       
+      UI::VertexViewer(scene, "Vertex Viewer").draw();
+
       UI::Display(scene, "Display").draw();
     }
     ImGui::Render();

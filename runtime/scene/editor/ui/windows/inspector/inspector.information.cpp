@@ -26,9 +26,12 @@ void UI::InfoTab::draw() {
       {"Draw Call Count", StatCount_DrawCall},
   };
 
+  static const int scene_item_count =
+      sizeof(stats_items) / sizeof(stats_items[0]);
+
   UI::Spacing(ui, SceneEditorUISize_Space_Medium).draw_y();
   if (UI::TreeItem(scene, "Scene").draw()) {
-    for (i = 0; i < sizeof(stats_items) / sizeof(stats_items[0]); i++) {
+    for (i = 0; i < scene_item_count; i++) {
       ImGui::Spacing();
       ImGui::PushTextWrapPos(ImGui::GetCursorPosX() +
                              ImGui::GetContentRegionAvail().x);
@@ -53,9 +56,12 @@ void UI::InfoTab::draw() {
       {"Adapter Type", adapter_type_label[g_context.adapter_info.adapterType]},
   };
 
+  static const int device_item_count =
+      sizeof(device_items) / sizeof(device_items[0]);
+
   UI::Spacing(ui, SceneEditorUISize_Space_Small).draw_y();
   if (UI::TreeItem(scene, "Device").draw()) {
-    for (i = 0; i < sizeof(device_items) / sizeof(device_items[0]); i++) {
+    for (i = 0; i < device_item_count; i++) {
       ImGui::Spacing();
       ImGui::PushTextWrapPos(ImGui::GetCursorPosX() +
                              ImGui::GetContentRegionAvail().x);

@@ -173,14 +173,13 @@ void shader_convert_textures(ShaderBindGroup *bindgroup,
   // (basically the same just without data and callback attributes)
 
   for (int j = 0; j < bindgroup->textures.length; j++) {
-    
+
     ShaderBindGroupTextureEntry *current_entry =
         &bindgroup->textures.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
         .binding = current_entry->binding,
         .textureView = current_entry->texture_view,
     };
-
   }
 }
 
@@ -583,6 +582,9 @@ void shader_bind_group_create_from_layout(
                                     .minFilter = WGPUFilterMode_Linear,
                                     .magFilter = WGPUFilterMode_Linear,
                                     .mipMapFilter = WGPUMipmapFilterMode_Linear,
+                                    .addressModeU = WGPUAddressMode_Repeat,
+                                    .addressModeV = WGPUAddressMode_Repeat,
+                                    .addressModeW = WGPUAddressMode_Repeat,
                                 },
                             },
                     });

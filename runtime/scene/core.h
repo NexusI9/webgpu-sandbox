@@ -11,7 +11,10 @@
 #include "./environment/environment.h"
 #include "./layer.h"
 #include "backend/clock.h"
+#include "backend/postfx/core.h"
 #include "backend/registry.h"
+#include "backend/std_pipeline/render_shader/bloom/bloom.h"
+#include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "debug/core.h"
 #include "editor/selection/gizmo/core.h"
 #include "editor/ui/core.h"
@@ -401,6 +404,34 @@ scene_dynamic_pipelines(Scene *scene,
 static inline MeshRefList *scene_mesh_state(Scene *scene,
                                             const SceneMeshStates state) {
   return &scene->mesh_state[state];
+}
+
+static inline void scene_post_fx_set_bloom(Scene *scene,
+                                           const BloomUniform bloom) {
+
+  // retrieve the pass fx of the last texture pass
+  // TODO: make the access more easy; rn not intuitive
+  PostFx *texture_pass_fx =
+      &render_pass_list_last_pass(
+           scene_renderer_mode_pass_list(&scene->renderer,
+                                         SceneRendererDrawMode_Texture))
+           ->post_fx;
+
+  PostFxEffectUniform fx_uniform = {.bloom = bloom};
+  post_fx_bloom_update_uniform(texture_pass_fx, fx_uniform);
+}
+
+static inline void
+scene_post_fx_set_composite(Scene *scene, const CompositeUniform composite) {
+  // retrieve the pass fx of the last texture pass
+  PostFx *texture_pass_fx =
+      &render_pass_list_last_pass(
+           scene_renderer_mode_pass_list(&scene->renderer,
+                                         SceneRendererDrawMode_Texture))
+           ->post_fx;
+
+  PostFxEffectUniform fx_uniform = {.composite = composite};
+  post_fx_composite_update_uniform(texture_pass_fx, fx_uniform);
 }
 
 #endif
