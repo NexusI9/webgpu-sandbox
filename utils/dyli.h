@@ -1,9 +1,9 @@
 #ifndef _DYNAMIC_LIST_H_
 #define _DYNAMIC_LIST_H_
 
+#include "defines.h"
 #include <stddef.h>
 #include <stdio.h>
-#include "defines.h"
 
 #define DYLI_INVALID_INDEX ((size_t)-1)
 
@@ -49,7 +49,9 @@ DynamicListStatus dyli_free(void **, size_t *, size_t *);
 
 void *dyli_new_entry(void **, size_t *, size_t *, size_t, const char *);
 
-EXTERN_C_END
+DynamicListStatus dyli_clone(const void *, const size_t, void **, size_t *,
+                             size_t *, size_t, const char *);
 
+EXTERN_C_END
 
 #endif

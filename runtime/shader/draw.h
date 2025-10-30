@@ -18,7 +18,7 @@ static const int bg_print_count = 800;
 static inline void shader_draw(ShaderBindGroupList *bindgroup_list,
                                WGPURenderPipeline pipeline, const char *name,
                                WGPURenderPassEncoder render_pass) {
-
+  
   // bind pipeline to render
   wgpuRenderPassEncoderSetPipeline(render_pass, pipeline);
 

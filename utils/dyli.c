@@ -223,3 +223,26 @@ DynamicListStatus dyli_replace(const void *src_entries, const size_t src_length,
 
   return DynamicListStatus_Success;
 }
+
+DynamicListStatus dyli_clone(const void *src_entries, const size_t src_length,
+                             void **dest_entries, size_t *dest_capacity,
+                             size_t *dest_length, size_t type_size,
+                             const char *label) {
+
+  size_t new_capacity = src_length;
+  void *temp_entries = malloc(new_capacity * type_size);
+
+  if (!temp_entries) {
+    logger_add(LoggerFlag_Error, "Couldn't clone to %s.", label);
+    return DynamicListStatus_AllocFail;
+  }
+
+  memcpy(temp_entries, src_entries, src_length * type_size);
+
+  free(*dest_entries);
+  *dest_entries = temp_entries;
+  *dest_capacity = new_capacity;
+  *dest_length = src_length;
+
+  return DynamicListStatus_Success;
+}

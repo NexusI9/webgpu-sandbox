@@ -314,7 +314,7 @@ fn create_material(diffuse: vec4<f32>, metallic: vec4<f32>,
     material.normal = normalize(normal.rgb * 2.0 - 1.0) * factors.normal_scale; // convert to [-1,+1]
     material.occlusion = occlusion.r * factors.occlusion_strength;
     material.emissive = emissive.rgb * factors.emissive_factor;
-    material.alpha = factors.base_color_factor.a * diffuse.a;
+    material.alpha = diffuse.a; //factors.base_color_factor.a
     return material;
 }
 
@@ -730,13 +730,15 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
     var R: vec3<f32> = normalize(reflect(-V, world_normal));
 
   // Fresnel
+    let NdotV: f32 = dot_max(world_normal, V);
+    let f0: vec3<f32> = mix(vec3<f32>(0.04f), material.albedo.rgb, material.metallic);
+    let F: vec3<f32> = f0 + (1.0f - f0) * pow(1.0 - NdotV, 5.0f);
+    let kD = (1.0f - F) * (1.0f - material.metallic);
+    let diffuseIBL = textureSample(skybox_texture, linear_sampler, world_normal) * material.albedo;
+
     let mipCount = f32(textureNumLevels(skybox_texture));
     let lod = material.roughness * (mipCount - 1.0);
-    let NdotV: f32 = dot_max(world_normal, V);
-    let f0: vec3<f32> = vec3(0.04); // dielectric default reflectance
-    let F: vec3<f32> = f0 + (1.0f - f0) * pow(1.0 - NdotV, 5.0f);
-    let kD = (vec3(1.0f) - F) * (1.0f - material.metallic);
-    let diffuseIBL = textureSample(skybox_texture, linear_sampler, world_normal) * material.albedo;
+    let specularIBL = textureSampleLevel(skybox_texture, linear_sampler, R, lod).rgb;
 
   // plane reflection
     var plane_reflection: vec4<f32> = vec4<f32>(0.0f);
@@ -761,13 +763,13 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
 
 
 
-
-    let specularIBL = textureSampleLevel(skybox_texture, linear_sampler, R, lod).rgb * F;
-
+ 
+      // fusion of skybox + reflection as overlay
     let specular_composite = mix(specularIBL, plane_reflection.rgb, plane_reflection.a);
 
-    let IBL = kD * diffuseIBL.rgb + specular_composite;
-
+    let IBL = kD * diffuseIBL.rgb + F * specular_composite;
+    ambient += IBL;
+      
   // shadow map computation
     let point_shadow = point_shadow_factor(vFrag, camera.position.xyz);
     let spot_shadow = spot_shadow_factor(vFrag, camera.position.xyz);
@@ -776,14 +778,15 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
     let combined_shadow = mix(vec3<f32>(min(ambient_intensity, 1.0f)), vec3<f32>(1.0),
         point_shadow + spot_shadow + sun_shadow);
 
-    let combined = vec4<f32>((ambient + Lo + IBL * combined_shadow) + material.emissive,
+    let combined = vec4<f32>((ambient + Lo * combined_shadow) + material.emissive,
         1.0f);
-//material.alpha
+
     let fog_k = fog_factor(length(vFrag - camera.position.xyz),
         uEnvironment.fog.start_distance, uEnvironment.fog.density);
 
     let out_color = mix(combined, uEnvironment.fog.color, fog_k);
 
+    //return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
     return out_color;
     //return vec4<f32>(abs(vTangent), 1.0f);
 }

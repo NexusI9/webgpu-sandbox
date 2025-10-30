@@ -101,6 +101,7 @@ static inline void mesh_create_draw_packet(MeshTopology topo, Shader *shader,
   pack->mesh = mesh;
 }
 
+
 /**
    Mesh main draw from default vertex and index buffer
  */
@@ -124,7 +125,6 @@ static inline void mesh_draw(MeshDrawPacket *pack,
   wgpuRenderPassEncoderSetStencilReference(render_pass, 1);
   wgpuRenderPassEncoderDrawIndexed(render_pass, index_length, 1, 0, 0, 0);
 }
-
 
 EXTERN_C_END
 

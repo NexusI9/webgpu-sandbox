@@ -240,3 +240,8 @@ WGPUTextureView render_pass_view_color(RenderPass *pass, size_t index) {
 WGPUTextureView render_pass_view_depth(RenderPass *pass, size_t index) {
   return pass->depth.views[index];
 }
+
+
+void render_pass_draw_list_refresh_packets(RenderPassDrawList *){
+  
+}

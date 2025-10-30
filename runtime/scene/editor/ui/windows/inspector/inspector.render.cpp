@@ -2,6 +2,8 @@
 #include "backend/postfx/core.h"
 #include "backend/std_pipeline/core.h"
 #include "imgui/imgui.h"
+#include "runtime/mesh/draw.h"
+#include "runtime/mesh/shader/core.h"
 #include "runtime/scene/draw.h"
 #include "runtime/scene/editor/ui/components/input.hpp"
 #include "runtime/scene/editor/ui/components/tree_item.hpp"
@@ -33,8 +35,8 @@ void UI::RenderTab::draw() {
           viewport_set_width(&scene->viewport, width);
           viewport_uniform_update(&scene->viewport);
           ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
-                                   UBOType_Viewport,
-                                   ubo_slot_id(&scene->viewport.ubo_slot));
+                                  UBOType_Viewport,
+                                  ubo_slot_id(&scene->viewport.ubo_slot));
         }
         // update scene render texture
         scene_update_render_pass_texture(scene, width, height, multisample,
@@ -53,8 +55,8 @@ void UI::RenderTab::draw() {
           viewport_set_height(&scene->viewport, height);
           viewport_uniform_update(&scene->viewport);
           ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
-                                   UBOType_Viewport,
-                                   ubo_slot_id(&scene->viewport.ubo_slot));
+                                  UBOType_Viewport,
+                                  ubo_slot_id(&scene->viewport.ubo_slot));
         }
         // update scene render texture
         scene_update_render_pass_texture(scene, width, height, multisample,
@@ -93,6 +95,31 @@ void UI::RenderTab::draw() {
             for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
               render_pass_list_update_child_passes_callback(
                   &scene->renderer.draw.render_pass[i]);
+
+            // since mesh packets are "shallow copy" of the source mesh list, we
+            // need to make sure to sync and update all mesh packets
+            // WGPURenderPipeline since it still refers to the previous one (now
+            // released).
+            // We specifically added the "mesh" property at the end of the
+            // Packet struct since we new we may access it not very frequently.
+            for (int i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
+              RenderPassList *pass_list = scene_renderer_pass_list(
+                  &scene->renderer, (const SceneRendererDrawMode)(1 << i));
+
+              for (size_t j = 0; j < pass_list->length; j++) {
+                RenderPass *pass = &pass_list->passes[j];
+                for (size_t k = 0; k < pass->draw_list.length; k++) {
+                  RenderPassDrawLayout *layout = &pass->draw_list.entries[k];
+
+                  for (size_t l = 0; l < layout->drawn_meshes.length; l++) {
+                    MeshDrawPacket *pack = &layout->drawn_meshes.entries[l];
+                    Shader *layout_shader =
+                        mesh_shader(pack->mesh, layout->shader);
+                    pack->pipeline = layout_shader->pipeline->handle;
+                  }
+                }
+              }
+            }
           }
 
           // Set the initial focus when opening the combo (for keyboard
@@ -100,6 +127,7 @@ void UI::RenderTab::draw() {
           if (is_selected)
             ImGui::SetItemDefaultFocus();
         }
+
         combobox.end();
       }
     }
@@ -126,8 +154,8 @@ void UI::RenderTab::draw() {
         viewport_set_fov(&scene->viewport, fov);
         viewport_uniform_update(&scene->viewport);
         ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
-                                 UBOType_Viewport,
-                                 ubo_slot_id(&scene->viewport.ubo_slot));
+                                UBOType_Viewport,
+                                ubo_slot_id(&scene->viewport.ubo_slot));
       }
     }
 
@@ -139,8 +167,8 @@ void UI::RenderTab::draw() {
         viewport_set_near_clip(&scene->viewport, near_clip);
         viewport_uniform_update(&scene->viewport);
         ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
-                                 UBOType_Viewport,
-                                 ubo_slot_id(&scene->viewport.ubo_slot));
+                                UBOType_Viewport,
+                                ubo_slot_id(&scene->viewport.ubo_slot));
       }
     }
 
@@ -153,8 +181,8 @@ void UI::RenderTab::draw() {
         viewport_set_far_clip(&scene->viewport, far_clip);
         viewport_uniform_update(&scene->viewport);
         ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
-                                 UBOType_Viewport,
-                                 ubo_slot_id(&scene->viewport.ubo_slot));
+                                UBOType_Viewport,
+                                ubo_slot_id(&scene->viewport.ubo_slot));
       }
     }
     ImGui::TreePop();
