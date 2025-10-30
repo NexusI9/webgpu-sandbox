@@ -59,10 +59,13 @@ static inline void loader_gltf_primitie_vertex_lists_init(VertexAttribute *,
                                                           size_t);
 
 // mesh utils
-static LoaderGLTFStatus loader_gltf_create_mesh(Scene *, cgltf_data *,
-                                                const LoaderGLTFOptions *,
-                                                LoaderGLTFResult *);
-static void loader_gltf_mesh_position(Mesh *, const char *, cgltf_data *);
+static inline LoaderGLTFStatus
+loader_gltf_traverse_nodes(cgltf_data *, Scene *, const LoaderGLTFOptions *,
+                           LoaderGLTFResult *);
+static inline LoaderGLTFStatus
+loader_gltf_create_mesh(Scene *, cgltf_node *, Mesh *,
+                        const LoaderGLTFOptions *, LoaderGLTFResult *);
+static inline void loader_gltf_mesh_position(cgltf_node *, Mesh *);
 
 // shader utils
 static inline void loader_gltf_bind_textures(Mesh *, cgltf_material *,
@@ -103,7 +106,7 @@ LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
     break;
 
   case cgltf_result_success:
-    return loader_gltf_create_mesh(desc->scene, data, desc->options, dest);
+    return loader_gltf_traverse_nodes(data, desc->scene, desc->options, dest);
     break;
 
   case cgltf_result_file_not_found:
@@ -138,6 +141,20 @@ bool loader_gltf_attribute_is_empty(const float *attr,
       return false;
 
   return true;
+}
+
+LoaderGLTFStatus loader_gltf_traverse_nodes(cgltf_data *data, Scene *scene,
+                                            const LoaderGLTFOptions *options,
+                                            LoaderGLTFResult *result) {
+
+  for (size_t i = 0; i < data->nodes_count; i++) {
+    cgltf_node *node = &data->nodes[i];
+    if (node->mesh)
+      loader_gltf_create_mesh(scene, node, NULL, options, result);
+  }
+
+
+  return LoaderGLTFStatus_Success;
 }
 
 float *loader_gltf_attributes(const cgltf_accessor *accessor) {
@@ -275,128 +292,131 @@ void loader_gltf_primitive_vertex_index(VertexIndex *vert_index,
   };
 }
 
-LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_data *data,
+LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_node *gl_node,
+                                         Mesh *parent,
                                          const LoaderGLTFOptions *options,
                                          LoaderGLTFResult *result) {
 
-  // data->meshes
-  for (size_t m = 0; m < data->meshes_count; m++) {
+  cgltf_mesh *gl_mesh = gl_node->mesh;
+  struct Mesh *scene_mesh = scene_new_mesh(scene);
+  mesh_create(scene_mesh, &(MeshCreateDescriptor){
+                              .name = gl_mesh->name,
+                              .vertex = (VertexAttribute){0},
+                              .index = (VertexIndex){0},
+                          });
 
-    cgltf_mesh gl_mesh = data->meshes[m];
+  /*
+    GLTF PRIMITIVES
+    primitives are vertices that belong to a same mesh but have different
+    material/shader.
+    In the current case we separate the primitives into mesh
+    children maybe in the future we will need to create a dedicated array.
+    primitive 0 = parent, primitive n = child
 
-    struct Mesh *scene_mesh = scene_new_mesh(scene);
-    mesh_create(scene_mesh, &(MeshCreateDescriptor){
-                                .name = gl_mesh.name,
-                                .vertex = (VertexAttribute){0},
-                                .index = (VertexIndex){0},
-                            });
+    TODO :
+    For now we include primitives as child along with the other child meshes.
+    But maybe in the future it could be useful to put them under a primitive
+    array.
+  */
+  for (size_t p = 0; p < gl_mesh->primitives_count; p++) {
+    // get accessors to decode buffers into typed data (vertex, indices...)
+    // load vertex attributes
 
-    /*
-      GLTF PRIMITIVES
-      primitives are vertices that belong to a same mesh but have different
-      material/shader.
-      In the current case we separate the primitives into mesh
-      children maybe in the future we will need to create a dedicated array.
-      primitive 0 = parent, primitive n = child
-    */
-    for (size_t p = 0; p < gl_mesh.primitives_count; p++) {
-      // get accessors to decode buffers into typed data (vertex, indices...)
-      // load vertex attributes
+    VertexAttribute vert_attr = {0};
+    VertexIndex vert_index = {0};
 
-      VertexAttribute vert_attr = {0};
-      VertexIndex vert_index = {0};
+    cgltf_primitive current_primitive = gl_mesh->primitives[p];
 
-      cgltf_primitive current_primitive = gl_mesh.primitives[p];
+    // Initialize vertex lists with 0.0:
+    // need fallback values in case no color or uv coordinates
+    // ensure to maintain correct standaridzed structure for shaders
+    {
 
-      // Initialize vertex lists with 0.0:
-      // need fallback values in case no color or uv coordinates
-      // ensure to maintain correct standaridzed structure for shaders
-      {
+      const size_t vertex_count =
+          current_primitive.attributes[0].data->count * VERTEX_STRIDE;
 
-        const size_t vertex_count =
-            current_primitive.attributes[0].data->count * VERTEX_STRIDE;
+      loader_gltf_primitive_vertex_lists_init(&vert_attr, vertex_count);
 
-        loader_gltf_primitive_vertex_lists_init(&vert_attr, vertex_count);
+      loader_gltf_primitive_vertex_attribute_create(&vert_attr,
+                                                    &current_primitive);
+      loader_gltf_primitive_vertex_index(&vert_index, &current_primitive);
+    }
 
-        loader_gltf_primitive_vertex_attribute_create(&vert_attr,
-                                                      &current_primitive);
-        loader_gltf_primitive_vertex_index(&vert_index, &current_primitive);
-      }
+    // target current mesh itself if primitive == 0
+    Mesh *target_mesh = scene_mesh;
 
-      // target current mesh itself if primitive == 0
-      Mesh *target_mesh = scene_mesh;
+    // add child to parent mesh if current primitive > 0
+    // and set it as target mesh
+    if (p > 0) {
+      target_mesh = scene_new_mesh(scene);
+      mesh_child_add(scene_mesh, target_mesh);
 
-      // add child to parent mesh if current primitive > 0
-      // and set it as target mesh
-      if (p > 0) {
-        target_mesh = scene_new_mesh(scene);
-        mesh_child_add(scene_mesh, target_mesh);
+      /*
+        need to dynamically allocate name
+         iteration use same frame stack
+         meaning addresses will be reused throughout the loop
+         this leads the latest mesh name (pointer) -
+         to be shared accross all children mesh
+         (same issue with shader)
+      */
 
-        /*
-          need to dynamically allocate name
-           iteration use same frame stack
-           meaning addresses will be reused throughout the loop
-           this leads the latest mesh name (pointer) -
-           to be shared accross all children mesh
-           (same issue with shader)
-        */
+      char mesh_name[NAME_LEN];
+      name_compose(mesh_name, "%s.%lu", gl_mesh->name, p);
 
-        char mesh_name[NAME_LEN];
-        name_compose(mesh_name, "%s.%lu", gl_mesh.name, p);
+      mesh_create(target_mesh, &(MeshCreateDescriptor){
+                                   .name = mesh_name,
+                                   .vertex = (VertexAttribute){0},
+                                   .index = (VertexIndex){0},
+                               });
+    }
 
-        mesh_create(target_mesh, &(MeshCreateDescriptor){
-                                     .name = mesh_name,
-                                     .vertex = (VertexAttribute){0},
-                                     .index = (VertexIndex){0},
-                                 });
-      }
+    // === CREATE SHADER AND BIND TEXTURE/UNIFORMS
+    {
+      // Use default pbr shader as default
+      // TODO: Add a custom path for different shader in loader configuration
+      cgltf_material *material = current_primitive.material;
 
-      // === CREATE SHADER AND BIND TEXTURE/UNIFORMS
-      {
-        // Use default pbr shader as default
-        // TODO: Add a custom path for different shader in loader configuration
-        cgltf_material *material = current_primitive.material;
+      RenderPipelineType pipeline_type = RenderPipelineType_PBR;
 
-        RenderPipelineType pipeline_type = RenderPipelineType_PBR;
+      if (material->double_sided)
+        pipeline_type = RenderPipelineType_PBR_DoubleSided;
 
-        if (material->double_sided)
-          pipeline_type = RenderPipelineType_PBR_DoubleSided;
+      if (material->alpha_mode == cgltf_alpha_mode_blend)
+        pipeline_type = RenderPipelineType_PBR_Alpha;
 
-        if (material->alpha_mode == cgltf_alpha_mode_blend)
-          pipeline_type = RenderPipelineType_PBR_Alpha;
+      mesh_shader_create(target_mesh,
+                         &(ShaderCreateDescriptor){
+                             .pipeline = std_render_pipeline(pipeline_type),
+                             .name = material->name,
+                         });
 
-        mesh_shader_create(target_mesh,
-                           &(ShaderCreateDescriptor){
-                               .pipeline = std_render_pipeline(pipeline_type),
-                               .name = material->name,
-                           });
+      // load and bind gltf textures
+      loader_gltf_bind_textures(target_mesh, material, options);
+      loader_gltf_bind_uniforms(target_mesh, material, options);
+    }
 
-        // load and bind gltf textures
-        loader_gltf_bind_textures(target_mesh, material, options);
-        loader_gltf_bind_uniforms(target_mesh, material, options);
-      }
+    loader_gltf_mesh_position(gl_node, target_mesh);
+    // define mesh vertex attribute
+    mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
+                              &vert_index);
 
-      // define mesh vertex attribute
-      mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
-                                &vert_index);
+    scene_add_mesh(scene, target_mesh, NULL, SceneAddFlag_None);
 
-      // set mesh position
-      loader_gltf_mesh_position(scene_mesh, gl_mesh.name, data);
+    // ==== UPDATE STATS ===
+    {
+      if (result) {
+        result->stats.mesh_count++;
+        result->stats.vertex_count +=
+            target_mesh->topology.base.attribute.length / VERTEX_STRIDE;
 
-      scene_add_mesh(scene, target_mesh, NULL, SceneAddFlag_None);
-
-      // ==== UPDATE STATS ===
-      {
-        if (result) {
-          result->stats.mesh_count++;
-          result->stats.vertex_count +=
-              target_mesh->topology.base.attribute.length / VERTEX_STRIDE;
-
-          if (result->meshes.length < LOADER_GLTF_RESULT_MESH_COUNT)
-            result->meshes.entries[result->meshes.length++] = target_mesh;
-        }
+        if (result->meshes.length < LOADER_GLTF_RESULT_MESH_COUNT)
+          result->meshes.entries[result->meshes.length++] = target_mesh;
       }
     }
+
+    for (size_t i = 0; i < gl_node->children_count; i++)
+      loader_gltf_create_mesh(scene, gl_node->children[i], target_mesh, options,
+                              result);
   }
 
   return LoaderGLTFStatus_Success;
@@ -648,37 +668,24 @@ LoaderGLTFStatus loader_gltf_extract_texture(
   return LoaderGLTFStatus_UndefError;
 }
 
-void loader_gltf_mesh_position(Mesh *mesh, const char *name, cgltf_data *data) {
+void loader_gltf_mesh_position(cgltf_node *node, Mesh *mesh) {
 
-  // Apply transformation to mesh
-  // Transformation attributes are stored in the nodes
-  // whereas mesh only contain vertices/index related data
-  // need to go through the nodes and compare with the given gltf_mesh to see
-  // if it matches name
+  // set translation
+  if (node->has_translation)
+    mesh_set_position(mesh, (vec3){
+                                node->translation[0],
+                                node->translation[1],
+                                node->translation[2],
+                            });
 
-  for (size_t n = 0; n < data->nodes_count; n++) {
-
-    cgltf_node *node = &data->nodes[n];
-    if (strcmp(node->mesh->name, name) == 0) {
-
-      // set translation
-      if (node->has_translation)
-        mesh_set_position(mesh, (vec3){
-                                    node->translation[0],
-                                    node->translation[1],
-                                    node->translation[2],
-                                });
-
-      // set scale
-      if (node->has_scale)
-        mesh_set_scale(mesh, (vec3){
-                                 node->scale[0],
-                                 node->scale[1],
-                                 node->scale[2],
-                             });
-      // set rotation
-      if (node->has_rotation)
-        mesh_set_rotation_quat(mesh, node->rotation);
-    }
-  }
+  // set scale
+  if (node->has_scale)
+    mesh_set_scale(mesh, (vec3){
+                             node->scale[0],
+                             node->scale[1],
+                             node->scale[2],
+                         });
+  // set rotation
+  if (node->has_rotation)
+    mesh_set_rotation_quat(mesh, node->rotation);
 }
