@@ -219,7 +219,8 @@ StaticListStatus render_pass_view_depth_remove(RenderPass *, WGPUTextureView);
 WGPUTextureView render_pass_view_color(RenderPass *, size_t);
 WGPUTextureView render_pass_view_depth(RenderPass *, size_t);
 
-void render_pass_refresh_packets(RenderPass *);
+
+void render_pass_refresh_mesh_drawn_list_pipeline(RenderPass *);
 
 EXTERN_C_END
 

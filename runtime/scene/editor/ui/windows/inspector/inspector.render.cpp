@@ -10,6 +10,7 @@
 #include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
+#include <stdint.h>
 
 void UI::RenderTab::draw() {
 
@@ -96,29 +97,42 @@ void UI::RenderTab::draw() {
               render_pass_list_update_child_passes_callback(
                   &scene->renderer.draw.render_pass[i]);
 
-            // since mesh packets are "shallow copy" of the source mesh list, we
-            // need to make sure to sync and update all mesh packets
-            // WGPURenderPipeline since it still refers to the previous one (now
-            // released).
-            // We specifically added the "mesh" property at the end of the
-            // Packet struct since we new we may access it not very frequently.
-            for (int i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
-              RenderPassList *pass_list = scene_renderer_pass_list(
-                  &scene->renderer, (const SceneRendererDrawMode)(1 << i));
+            {
+              //
+              // since mesh packets are "shallow copy" of the source mesh list,
+              // we need to make sure to sync and update all mesh packets
+              // WGPURenderPipeline since it still refers to the previous one
+              // (now released).
+              //
+              // Note: We specifically added the "mesh" property at the end of
+              // the Packet struct since we new we may access it not very
+              // frequently.
+              //
+              // We need to update all the entities that use pass
+              // which means:
+              // - Scene renderer
+              // - Lights
+              // - Probe reflections
+              //
 
-              for (size_t j = 0; j < pass_list->length; j++) {
-                RenderPass *pass = &pass_list->passes[j];
-                for (size_t k = 0; k < pass->draw_list.length; k++) {
-                  RenderPassDrawLayout *layout = &pass->draw_list.entries[k];
-
-                  for (size_t l = 0; l < layout->drawn_meshes.length; l++) {
-                    MeshDrawPacket *pack = &layout->drawn_meshes.entries[l];
-                    Shader *layout_shader =
-                        mesh_shader(pack->mesh, layout->shader);
-                    pack->pipeline = layout_shader->pipeline->handle;
-                  }
-                }
+              for (int i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
+                RenderPassList *pass_list = scene_renderer_pass_list(
+                    &scene->renderer, (const SceneRendererDrawMode)(1 << i));
+                for (size_t j = 0; j < pass_list->length; j++)
+                  render_pass_refresh_mesh_drawn_list_pipeline(
+                      &pass_list->passes[j]);
               }
+
+              RenderPass *pass_to_refresh[] = {
+                  &scene->lights.point.shadow.pass,
+                  &scene->lights.spot.shadow.pass,
+                  &scene->probes.reflection_plane.pass,
+                  &scene->probes.reflection_plane.pass,
+              };
+
+              for (uint8_t i = 0; i < 4; i++)
+                render_pass_refresh_mesh_drawn_list_pipeline(
+                    pass_to_refresh[i]);
             }
           }
 

@@ -241,7 +241,14 @@ WGPUTextureView render_pass_view_depth(RenderPass *pass, size_t index) {
   return pass->depth.views[index];
 }
 
+void render_pass_refresh_mesh_drawn_list_pipeline(RenderPass *pass) {
+  for (size_t k = 0; k < pass->draw_list.length; k++) {
+    RenderPassDrawLayout *layout = &pass->draw_list.entries[k];
 
-void render_pass_draw_list_refresh_packets(RenderPassDrawList *){
-  
+    for (size_t l = 0; l < layout->drawn_meshes.length; l++) {
+      MeshDrawPacket *pack = &layout->drawn_meshes.entries[l];
+      Shader *layout_shader = mesh_shader(pack->mesh, layout->shader);
+      pack->pipeline = layout_shader->pipeline->handle;
+    }
+  }
 }
