@@ -153,7 +153,6 @@ LoaderGLTFStatus loader_gltf_traverse_nodes(cgltf_data *data, Scene *scene,
       loader_gltf_create_mesh(scene, node, NULL, options, result);
   }
 
-
   return LoaderGLTFStatus_Success;
 }
 
@@ -298,12 +297,16 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_node *gl_node,
                                          LoaderGLTFResult *result) {
 
   cgltf_mesh *gl_mesh = gl_node->mesh;
-  struct Mesh *scene_mesh = scene_new_mesh(scene);
-  mesh_create(scene_mesh, &(MeshCreateDescriptor){
-                              .name = gl_mesh->name,
-                              .vertex = (VertexAttribute){0},
-                              .index = (VertexIndex){0},
-                          });
+  Mesh *root_mesh = scene_new_mesh(scene);
+
+  if (parent)
+    mesh_child_add(parent, root_mesh);
+
+  mesh_create(root_mesh, &(MeshCreateDescriptor){
+                             .name = gl_mesh->name,
+                             .vertex = (VertexAttribute){0},
+                             .index = (VertexIndex){0},
+                         });
 
   /*
     GLTF PRIMITIVES
@@ -343,13 +346,13 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_node *gl_node,
     }
 
     // target current mesh itself if primitive == 0
-    Mesh *target_mesh = scene_mesh;
+    Mesh *target_mesh = root_mesh;
 
     // add child to parent mesh if current primitive > 0
     // and set it as target mesh
     if (p > 0) {
       target_mesh = scene_new_mesh(scene);
-      mesh_child_add(scene_mesh, target_mesh);
+      mesh_child_add(root_mesh, target_mesh);
 
       /*
         need to dynamically allocate name
