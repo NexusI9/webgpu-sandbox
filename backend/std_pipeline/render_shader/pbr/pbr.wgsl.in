@@ -314,7 +314,7 @@ fn create_material(diffuse: vec4<f32>, metallic: vec4<f32>,
     material.normal = normalize(normal.rgb * 2.0 - 1.0) * factors.normal_scale; // convert to [-1,+1]
     material.occlusion = occlusion.r * factors.occlusion_strength;
     material.emissive = emissive.rgb * factors.emissive_factor;
-    material.alpha = diffuse.a; //factors.base_color_factor.a
+    material.alpha = factors.base_color_factor.a * diffuse.a;
     return material;
 }
 
@@ -786,7 +786,7 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
 
     let out_color = mix(combined, uEnvironment.fog.color, fog_k);
 
-    //return vec4<f32>(1.0f, 0.0f, 0.0f, 1.0f);
+    //return vec4<f32>(albedo.a, 0.0f, 0.0f, 1.0f);
     return out_color;
     //return vec4<f32>(abs(vTangent), 1.0f);
 }

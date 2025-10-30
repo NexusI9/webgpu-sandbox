@@ -1,5 +1,6 @@
 #include "loader.gltf.h"
 
+#include "utils/system.h"
 #include <cglm/types.h>
 #include <cglm/util.h>
 #include <stdint.h>
@@ -432,7 +433,7 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
       {
           "Base",
           &material->pbr_metallic_roughness.base_color_texture,
-          std_texture_view(TextureViewType_FloatBlack),
+          std_texture_view(TextureViewType_Float),
       },
       {
           "Metallic Roughness",
