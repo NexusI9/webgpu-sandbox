@@ -233,17 +233,6 @@ loader_gltf_primitive_vertex_attribute_create(VertexAttribute *vert_attr,
 
           index += VERTEX_STRIDE;
         }
-
-      } else if (type_vertex_map[i].fallback) {
-
-        // for (size_t k = 0; k < accessor->count * dimension; k += dimension) {
-        //
-        //          memcpy(&vert_attr->entries[index + offset],
-        //                 *(type_vertex_map[i].fallback), sizeof(vattr_t) *
-        //                 dimension);
-        //
-        //          index += VERTEX_STRIDE;
-        //  }
       }
     }
   }

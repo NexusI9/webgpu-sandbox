@@ -760,9 +760,6 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
 //        plane_reflection.a /= 1.3f;
 //    }
       //
-
-
-
  
       // fusion of skybox + reflection as overlay
     let specular_composite = mix(specularIBL, plane_reflection.rgb, plane_reflection.a);
