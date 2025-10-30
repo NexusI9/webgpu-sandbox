@@ -239,7 +239,8 @@ fn vs_main(input: VertexIn) -> VertexOut {
     var cam: mat4x4<f32> = viewport.projection * camera.view;
 
     let normal = normalize((mesh.model * vec4<f32>(input.aNorm.xyz, 0.0f)).xyz);
-    let tangent = normalize((mesh.model * vec4<f32>(input.aTan.xyz, 0.0f)).xyz);
+  //let tangent = normalize((mesh.model * vec4<f32>(input.aTan.xyz, 0.0f)).xyz);
+    let tangent = input.aTan.xyz;
     let bitangent = cross(normal, tangent) * input.aTan.w;
 
     var output: VertexOut;
@@ -523,7 +524,7 @@ fn directional_shadow_position(world_position: vec3<f32>,
 fn spot_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
     var factor: f32 = max(f32(uLights.spot_count), 1.0f) * 1.0f; // show by default
-    var bias: f32 = 0.0005f;
+    var bias: f32 = 0.001f;
 
     for (var l: u32 = 0u; l < uLights.spot_count; l++) {
 
@@ -579,7 +580,7 @@ fn spot_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 fn sun_shadow_factor(frag_position: vec3<f32>, cam_pos: vec3<f32>) -> f32 {
 
     var factor: f32 = max(f32(uLights.sun_count), 1.0f) * 1.0f; // show by default
-    var bias: f32 = 0.0005f;
+    var bias: f32 = 0.001f;
 
     for (var l: u32 = 0u; l < uLights.sun_count; l++) {
 
@@ -784,5 +785,5 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
     let out_color = mix(combined, uEnvironment.fog.color, fog_k);
 
     return out_color;
-    //return vec4<f32>(material.normal, 1.0f);
+    //return vec4<f32>(abs(vTangent), 1.0f);
 }

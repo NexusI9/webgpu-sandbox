@@ -4,6 +4,8 @@
 #include <stddef.h>
 
 #include "backend/context.h"
+#include "backend/std_pipeline/render_shader/bloom/bloom.h"
+#include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "resources/loader/loader.gltf.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
@@ -71,6 +73,22 @@ void example_gltf_spa(Scene *scene) {
               },
       },
       NULL);
+
+  // adjust Post FX
+  scene_post_fx_set_bloom(scene, (BloomUniform){
+                                     .blur = 2,
+                                     .downscale = 3,
+                                     .knee = 0.450,
+                                     .threshold = 0.300,
+                                 });
+
+  scene_post_fx_set_composite(scene, (CompositeUniform){
+                                         .exposure = 1.020,
+                                         .bloom_intensity = 0.320f,
+                                         .gamma = 0.920,
+                                         .vignette_feather = 1.0f,
+                                         .vignette_strength = 0.0f,
+                                     });
 }
 
 void example_gltf_podium(Scene *scene) {

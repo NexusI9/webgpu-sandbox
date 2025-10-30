@@ -39,20 +39,23 @@
 #include "cgltf/cgltf.h"
 
 // gltf utils
-static float *loader_gltf_attributes(cgltf_accessor *);
-static void loader_gltf_accessor_to_array(cgltf_accessor *, float *, uint8_t);
+static float *loader_gltf_attributes(const cgltf_accessor *);
+
+static inline void
+loader_gltf_set_attribute_fallback(float *, const float *,
+                                   const VertexAttributeDimension);
+static inline bool
+loader_gltf_attribute_is_empty(const float *, const VertexAttributeDimension);
 
 // vertex buffer utils
 static void loader_gltf_primitive_vertex_index(VertexIndex *,
                                                cgltf_primitive *);
-static inline void loader_gltf_primitive_vertex_attribute_add(VertexAttribute *,
-                                                              float *, size_t,
-                                                              size_t, uint8_t);
+
 static inline void
-loader_gltf_primitive_vertex_attribute_create(VertexList *, VertexAttribute *,
+loader_gltf_primitive_vertex_attribute_create(VertexAttribute *,
                                               cgltf_primitive *);
 static inline void loader_gltf_primitie_vertex_lists_init(VertexAttribute *,
-                                                          VertexList *, size_t);
+                                                          size_t);
 
 // mesh utils
 static LoaderGLTFStatus loader_gltf_create_mesh(Scene *, cgltf_data *,
@@ -120,24 +123,23 @@ LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
   return LoaderGLTFStatus_Success;
 }
 
-void loader_gltf_primitive_vertex_attribute_add(VertexAttribute *vert_attribute,
-                                                float *data, size_t offset,
-                                                size_t count,
-                                                uint8_t dimension) {
-  size_t row = 0;
-  for (size_t i = 0; i < count * dimension; i += dimension) {
-    size_t row_offset = row * VERTEX_STRIDE + offset;
-    for (uint8_t x = 0; x < dimension; x++) {
-      size_t index = x + i;
-      // prevent overflow
-      if (row_offset + x < vert_attribute->length)
-        vert_attribute->entries[row_offset + x] = data[index];
-    }
-    row++;
-  }
+void loader_gltf_set_attribute_fallback(float *attr, const float *fallback,
+                                        const VertexAttributeDimension count) {
+  for (VertexAttributeDimension i = 0; i < count; i++)
+    attr[i] = fallback[i];
 }
 
-float *loader_gltf_attributes(cgltf_accessor *accessor) {
+bool loader_gltf_attribute_is_empty(const float *attr,
+                                    const VertexAttributeDimension count) {
+
+  for (VertexAttributeDimension i = 0; i < count; i++)
+    if (attr[i])
+      return false;
+
+  return true;
+}
+
+float *loader_gltf_attributes(const cgltf_accessor *accessor) {
 
   cgltf_buffer_view *buffer_view = accessor->buffer_view;
 
@@ -147,88 +149,108 @@ float *loader_gltf_attributes(cgltf_accessor *accessor) {
 }
 
 void loader_gltf_primitive_vertex_lists_init(VertexAttribute *attributes,
-                                             VertexList *list, size_t count) {
-
-  // init vertex list
-  vertex_list_create(list, count);
-
-  // init vertex data (interleaved attributes)
-  // list->count is the number of vertex used by index array
-  // need to multiply by stride
-  attributes->length = list->count * VERTEX_STRIDE;
+                                             size_t count) {
+  attributes->length = count;
   attributes->capacity = attributes->length;
   attributes->entries =
       (vattr_t *)calloc(attributes->capacity, sizeof(vattr_t));
 }
 
+/**
+   Access vertex data from the file and interleave them within the referenced
+   vertex attribute. Note that initially in GLTF format, all the vertex
+   attributes are packed by attributes, meaning we have: [p1, p2, p3, p4, p5]
+   [n1, n1, n3, n4, n5]
+   etc.
+ */
 static inline void
-loader_gltf_primitive_vertex_attribute_create(VertexList *vert_list,
-                                              VertexAttribute *vert_attr,
+loader_gltf_primitive_vertex_attribute_create(VertexAttribute *vert_attr,
                                               cgltf_primitive *primitive) {
 
-  static const struct {
-    VertexAttributeType type;
-    VertexAttributeDimension dimension;
-    VertexAttributeOffset offset;
-  } type_vertex_map[cgltf_attribute_type_max_enum] = {
-      [cgltf_attribute_type_position] =
-          {
-              .type = VertexAttributeType_Position,
-              .dimension = VertexAttributeDimension_Position,
-              .offset = VertexAttributeOffset_Position,
-          },
-      [cgltf_attribute_type_normal] =
-          {
-              .type = VertexAttributeType_Normal,
-              .dimension = VertexAttributeDimension_Normal,
-              .offset = VertexAttributeOffset_Normal,
-          },
-      [cgltf_attribute_type_tangent] =
-          {
-              .type = VertexAttributeType_Tangent,
-              .dimension = VertexAttributeDimension_Tangent,
-              .offset = VertexAttributeOffset_Tangent,
-          },
-      [cgltf_attribute_type_color] =
-          {
-              .type = VertexAttributeType_Color,
-              .dimension = VertexAttributeDimension_Color,
-              .offset = VertexAttributeOffset_Color,
-          },
-      [cgltf_attribute_type_texcoord] =
-          {
-              .type = VertexAttributeType_Uv,
-              .dimension = VertexAttributeDimension_Uv,
-              .offset = VertexAttributeOffset_Uv,
-          },
+  const struct {
+    const cgltf_attribute_type gltf_attribute;
+    const VertexAttributeType type;
+    const VertexAttributeDimension dimension;
+    const VertexAttributeOffset offset;
+    const vattr_t (*fallback)[4];
+  } type_vertex_map[VERTEX_ATTRIBUTE_COUNT] = {
+      {
+          .gltf_attribute = cgltf_attribute_type_position,
+          .type = VertexAttributeType_Position,
+          .dimension = VertexAttributeDimension_Position,
+          .offset = VertexAttributeOffset_Position,
+      },
+      {
+          .gltf_attribute = cgltf_attribute_type_normal,
+          .type = VertexAttributeType_Normal,
+          .dimension = VertexAttributeDimension_Normal,
+          .offset = VertexAttributeOffset_Normal,
+          .fallback = &(vattr_t[4]){0.0f, 1.0f, 0.0f},
+      },
+      {
+          .gltf_attribute = cgltf_attribute_type_tangent,
+          .type = VertexAttributeType_Tangent,
+          .dimension = VertexAttributeDimension_Tangent,
+          .offset = VertexAttributeOffset_Tangent,
+          .fallback = &(vattr_t[4]){-1.0f, 0.0f, 0.0f, -1.0f},
+      },
+      {
+          .gltf_attribute = cgltf_attribute_type_color,
+          .type = VertexAttributeType_Color,
+          .dimension = VertexAttributeDimension_Color,
+          .offset = VertexAttributeOffset_Color,
+      },
+      {
+          .gltf_attribute = cgltf_attribute_type_texcoord,
+          .type = VertexAttributeType_Uv,
+          .dimension = VertexAttributeDimension_Uv,
+          .offset = VertexAttributeOffset_Uv,
+      },
   };
 
-  for (size_t a = 0; a < primitive->attributes_count; a++) {
+  // traverse and check if gltf attribute match
+  for (size_t j = 0; j < primitive->attributes_count; j++) {
 
-    cgltf_attribute *attribute = &primitive->attributes[a];
-    cgltf_accessor *accessor = attribute->data;
-    cgltf_attribute_type type = attribute->type;
+    const cgltf_attribute *attribute = &primitive->attributes[j];
+    const cgltf_accessor *accessor = attribute->data;
+    const cgltf_attribute_type gltf_type = attribute->type;
 
-    if (type_vertex_map[type].dimension == 0)
-      continue;
+    float *data = loader_gltf_attributes(accessor);
 
-    // first concat each attribute in their respective list (all pos
-    // together etc.)
-    loader_gltf_accessor_to_array(
-        accessor, vert_list->attributes[type_vertex_map[type].type],
-        type_vertex_map[type].dimension);
+    for (size_t i = 0; i < VERTEX_ATTRIBUTE_COUNT; i++) {
 
-    // interleave vertex data ( create pattern pos / norm / tan / uv...)
-    loader_gltf_primitive_vertex_attribute_add(
-        vert_attr, vert_list->attributes[type_vertex_map[type].type],
-        type_vertex_map[type].offset, vert_list->count,
-        type_vertex_map[type].dimension);
+      size_t index = 0;
+      const VertexAttributeDimension dimension = type_vertex_map[i].dimension;
+      const VertexAttributeOffset offset = type_vertex_map[i].offset;
+      const cgltf_attribute_type gltf_attr = type_vertex_map[i].gltf_attribute;
+
+      if (primitive->attributes[j].type == gltf_attr) {
+
+        for (size_t k = 0; k < accessor->count * dimension; k += dimension) {
+          memcpy(&vert_attr->entries[index + offset], &data[k],
+                 sizeof(vattr_t) * dimension);
+
+          index += VERTEX_STRIDE;
+        }
+
+      } else if (type_vertex_map[i].fallback) {
+
+        for (size_t k = 0; k < accessor->count * dimension; k += dimension) {
+
+          memcpy(&vert_attr->entries[index + offset],
+                 *(type_vertex_map[i].fallback), sizeof(vattr_t) * dimension);
+
+          index += VERTEX_STRIDE;
+        }
+      }
+    }
   }
 }
 
-static void loader_gltf_accessor_to_array(cgltf_accessor *accessor,
-                                          float *destination,
-                                          uint8_t dimension) {
+static void
+loader_gltf_accessor_to_array(const cgltf_accessor *accessor,
+                              float *destination,
+                              const VertexAttributeDimension dimension) {
 
   float *attributes = loader_gltf_attributes(accessor);
   size_t index = 0;
@@ -290,7 +312,6 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_data *data,
       // get accessors to decode buffers into typed data (vertex, indices...)
       // load vertex attributes
 
-      VertexList vert_list; // raw vertex list (non-interleaved)
       VertexAttribute vert_attr = {0};
       VertexIndex vert_index = {0};
 
@@ -300,11 +321,13 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_data *data,
       // need fallback values in case no color or uv coordinates
       // ensure to maintain correct standaridzed structure for shaders
       {
-        loader_gltf_primitive_vertex_lists_init(
-            &vert_attr, &vert_list,
-            current_primitive.attributes[0].data->count);
 
-        loader_gltf_primitive_vertex_attribute_create(&vert_list, &vert_attr,
+        const size_t vertex_count =
+            current_primitive.attributes[0].data->count * VERTEX_STRIDE;
+
+        loader_gltf_primitive_vertex_lists_init(&vert_attr, vertex_count);
+
+        loader_gltf_primitive_vertex_attribute_create(&vert_attr,
                                                       &current_primitive);
         loader_gltf_primitive_vertex_index(&vert_index, &current_primitive);
       }
@@ -549,7 +572,9 @@ LoaderGLTFStatus loader_gltf_extract_texture(
     cgltf_image *image = texture_view->texture->image;
     if (image->uri) {
       cgltf_decode_uri(image->uri);
-      TIMER("GLTF Load Texture", {
+
+      logger_add(LoggerFlag_Import, "GLTF Texture '%s'", image->name);
+      TIMER("", {
         *data = stbi_load(image->uri, width, height, channels, forced_channel);
       });
 
@@ -563,7 +588,8 @@ LoaderGLTFStatus loader_gltf_extract_texture(
       // channels
       // TODO: more flexible texture upload (RGB/RGBA, large texture
       // handling...)
-      TIMER("GLTF Load Texture", {
+      logger_add(LoggerFlag_Import, "GLTF Texture '%s'", image->name);
+      TIMER("", {
         *data =
             stbi_load_from_memory(gltf_data, image->buffer_view->buffer->size,
                                   width, height, channels, forced_channel);

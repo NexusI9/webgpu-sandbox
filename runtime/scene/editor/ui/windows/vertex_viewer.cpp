@@ -93,7 +93,7 @@ void UI::VertexViewer::draw() {
               for (int k = 0; k < v_data[i].count; k++) {
                 ImGui::TableSetColumnIndex(k);
                 ImGui::Text("%f", mesh->topology.base.attribute
-                                      .entries[v_data[i].offset + k]);
+                                      .entries[j + v_data[i].offset + k]);
               }
             }
             ImGui::EndTable();
