@@ -80,6 +80,8 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *);
 void probe_reflection_plane_create(ProbeReflectionPlane *,
                                    ProbeReflectionPlaneDescriptor *);
 
+void probe_reflection_plane_destroy(ProbeReflectionPlane *);
+
 void probe_reflection_plane_disable_mesh(ProbeReflectionPlane *, Mesh *);
 void probe_reflection_plane_enable_mesh(ProbeReflectionPlane *, Mesh *);
 

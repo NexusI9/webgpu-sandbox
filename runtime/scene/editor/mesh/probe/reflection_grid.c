@@ -7,6 +7,7 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/mesh/core.h"
@@ -41,7 +42,7 @@ void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
    */
 
   SceneEditorMesh *bound_cube = sem_list_new_entry(list);
-  bound_cube->mesh = scene_new_mesh(desc->scene);
+  bound_cube->mesh = rem_new_mesh();
   bound_cube->target = grid;
   bound_cube->target_list_index = desc->target_list_index; // necessary ?
   bound_cube->scene = desc->scene;
@@ -82,7 +83,7 @@ void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
   for (size_t i = 0; i < grid->probes.length; i++) {
 
     SceneEditorMesh *probe = sem_list_new_entry(list);
-    probe->mesh = scene_new_mesh(desc->scene);
+    probe->mesh = rem_new_mesh();
     probe->target = &grid->probes.entries[i];
     probe->target_list_index = i;
     probe->scene = desc->scene;

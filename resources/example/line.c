@@ -4,13 +4,14 @@
 #include <stddef.h>
 
 #include "backend/context.h"
+#include "backend/resource_manager.h"
 #include "runtime/geometry/line/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
 
 void example_line(Scene *scene) {
-  Mesh *line = scene_new_mesh(scene);
+  Mesh *line = rem_new_mesh();
   line_create(line, &(LineCreateDescriptor){
                         .name = "line mesh",
                     });

@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
@@ -43,7 +44,7 @@ void sem_point_light_create_common(SceneEditorMeshList *list, PointLight *light,
 
   // get new mesh pointer from main mesh list
   SceneEditorMesh *icon = sem_list_new_entry(list);
-  icon->mesh = scene_new_mesh(desc->scene);
+  icon->mesh = rem_new_mesh();
   icon->target = light;
   icon->target_list_index = desc->target_list_index;
   icon->scene = desc->scene;

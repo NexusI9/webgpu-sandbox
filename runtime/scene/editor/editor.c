@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "backend/context.h"
+#include "backend/resource_manager.h"
 #include "mesh/grid/grid.h"
 #include "mesh/list/list.h"
 #include "runtime/mesh/ref_list.h"
@@ -49,7 +50,7 @@ void scene_editor_init(Scene *scene) {
  */
 void scene_editor_gizmo_create_grid(Scene *scene) {
 
-  scene->editor.gizmo.grid = scene_new_mesh(scene);
+  scene->editor.gizmo.grid = rem_new_mesh();
 
   sem_grid_create(scene->editor.gizmo.grid,
                   &(GizmoGridCreateDescriptor){
@@ -76,7 +77,6 @@ void scene_editor_gizmo_create_transform(Scene *scene) {
   gizmo_create(gizmo, &(GizmoCreateDescriptor){
                           .camera = scene->active_camera,
                           .viewport = &scene->viewport,
-                          .list = &scene->meshes,
                       });
 
   for (size_t i = 0; i < GIZMO_MODE_COUNT; i++) {

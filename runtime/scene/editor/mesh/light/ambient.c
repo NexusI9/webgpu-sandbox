@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "runtime/light/core.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/scene/add.h"
@@ -27,7 +28,7 @@ void sem_ambient_light_create(SceneEditorMeshList *list, AmbientLight *light,
 
   // get new mesh pointer from main mesh list
   SceneEditorMesh *icon = sem_list_new_entry(list);
-  icon->mesh = scene_new_mesh(desc->scene);
+  icon->mesh = rem_new_mesh();
   icon->target_list_index = desc->target_list_index;
   icon->target = light;
   icon->scene = desc->scene;

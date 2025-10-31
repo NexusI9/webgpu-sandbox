@@ -68,13 +68,15 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
                                            PointLight **dest) {
 
   PointLightListBase *base_list = &scene->lights.point.base;
-  if (base_list->length == base_list->capacity) {
-    logger_add(LoggerFlag_Error, "Scene point light capacity reached maximum.");
-    return 0;
-  }
 
   // create sun light
-  PointLight *light = &base_list->entries[base_list->length];
+  PointLight *light = light_list_new_point_light(base_list);
+
+  if (light == NULL) {
+    logger_add(LoggerFlag_Error, "Scene spot light capacity reached maximum.");
+    return NULL;
+  }
+
   point_light_create(light, desc);
 
   if (dest)
@@ -136,8 +138,6 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_sem(scene, sem);
 
-  base_list->length++;
-
   light_list_uniform_update(&scene->lights);
   ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
                    &scene->lights.ubo_slot);
@@ -151,13 +151,15 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
                                           SpotLight **dest) {
 
   SpotLightListBase *base_list = &scene->lights.spot.base;
-  if (base_list->length == base_list->capacity) {
-    logger_add(LoggerFlag_Error, "Scene spot light capacity reached maximum.");
-    return 0;
-  }
 
   // create sun light
-  SpotLight *light = &base_list->entries[base_list->length];
+  SpotLight *light = light_list_new_spot_light(base_list);
+
+  if (light == NULL) {
+    logger_add(LoggerFlag_Error, "Scene spot light capacity reached maximum.");
+    return NULL;
+  }
+
   spot_light_create(light, desc);
 
   if (dest)
@@ -215,8 +217,6 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
   scene_add_sem(scene, sem);
 
-  base_list->length++;
-
   // update UBO
   light_list_uniform_update(&scene->lights);
   ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
@@ -230,14 +230,15 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
                                              AmbientLight **dest) {
 
   AmbientLightList *list = &scene->lights.ambient;
-  if (list->length == list->capacity) {
-    logger_add(LoggerFlag_Error,
-               "Scene ambient light capacity reached maximum.");
-    return 0;
-  }
 
   // create sun light
-  AmbientLight *light = &list->entries[list->length++];
+  AmbientLight *light = light_list_new_ambient_light(list);
+
+  if (light == NULL) {
+    logger_add(LoggerFlag_Error, "Scene sun light capacity reached maximum.");
+    return NULL;
+  }
+
   ambient_light_create(light, desc);
 
   if (dest)
@@ -276,13 +277,15 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
                                          SunLight **dest) {
 
   SunLightListBase *base_list = &scene->lights.sun.base;
-  if (base_list->length == base_list->capacity) {
+
+  // create sun light
+  SunLight *light = light_list_new_sun_light(base_list);
+
+  if (light == NULL) {
     logger_add(LoggerFlag_Error, "Scene sun light capacity reached maximum.");
     return NULL;
   }
 
-  // create sun light
-  SunLight *light = &base_list->entries[base_list->length];
   sun_light_create(light, desc);
 
   if (dest)
@@ -342,8 +345,6 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   }
 
   scene_add_sem(scene, sem);
-
-  base_list->length++;
 
   light_list_uniform_update(&scene->lights);
   ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
@@ -575,10 +576,6 @@ scene_add_probe_reflection_plane(Scene *scene,
   ▐▌  ▐▌▐▙▄▄▖▗▄▄▞▘▐▌ ▐▌
 
  */
-
-Mesh *scene_new_mesh(Scene *scene) {
-  return mesh_list_new_mesh(&scene->meshes);
-}
 
 static inline void scene_add_mesh_core(Scene *, Mesh *, const ScenePipeline,
                                        const char *, const SceneAddFlag);

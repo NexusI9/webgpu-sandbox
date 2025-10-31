@@ -207,10 +207,8 @@ struct Gizmo {
 };
 
 typedef struct {
-
   Camera *camera;
   Viewport *viewport;
-  MeshList *list; // mesh pool from which gizmo mesh will be created
 } GizmoCreateDescriptor;
 
 static const color *gizmo_handle_color[6] = {

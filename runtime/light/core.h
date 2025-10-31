@@ -224,6 +224,13 @@ void spot_light_create(SpotLight *, SpotLightDescriptor *);
 void ambient_light_create(AmbientLight *, AmbientLightDescriptor *);
 void sun_light_create(SunLight *, SunLightDescriptor *);
 
+void point_light_destroy(PointLight *);
+void spot_light_destroy(SpotLight *);
+void ambient_light_destroy(AmbientLight *);
+void sun_light_destroy(SunLight *);
+
+
+
 // === Matrix Updates ===
 static inline void point_light_projection_update(PointLight *light) {
   // update light projection attribute

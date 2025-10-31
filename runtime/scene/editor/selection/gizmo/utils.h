@@ -13,7 +13,6 @@
 
 typedef struct {
   const char *mbin_path;
-  MeshList *list;
   vec3 offset;
 } GizmoCreateMeshDescriptor;
 

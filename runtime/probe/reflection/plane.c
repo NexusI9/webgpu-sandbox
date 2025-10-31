@@ -262,3 +262,7 @@ void probe_reflection_plane_enable_mesh(ProbeReflectionPlane *plane,
                                         Mesh *mesh) {
   mesh_ref_list_remove(&plane->excluded_meshes, mesh);
 }
+
+void probe_reflection_plane_destroy(ProbeReflectionPlane *plane) {
+  // TODO
+}

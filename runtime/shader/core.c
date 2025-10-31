@@ -6,6 +6,7 @@
 
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/registry.h"
 #include "bindgroup.h"
 #include "runtime/pipeline/render.h"
 #include "string.h"
@@ -52,6 +53,7 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 
   // set name
   shader->name = strdup(sd->name);
+  shader->id = reg_register(shader, RegEntryType_Shader);
 
 #ifdef VERBOSE_CREATING_PHASE
   logger_add(LoggerFlag_ShaderCreate, "%s", shader->name);
@@ -77,7 +79,6 @@ void shader_destroy(Shader *shader) {
   // clearing bind groups
   shader_bind_group_clear(shader);
 }
-
 
 void shader_module_release(Shader *shader) {
   // releasing shader module before drawing

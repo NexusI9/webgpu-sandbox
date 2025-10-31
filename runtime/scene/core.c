@@ -54,7 +54,7 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
             ubo_new_entry(&scene->renderer.ubo, UBOType_Environment);
 
         scene_environment_update_uniform(&scene->environment);
-	
+
         ubo_upload_entry(&scene->renderer.ubo, UBOType_Environment,
                          &scene->environment.ubo_slot);
       }
@@ -68,7 +68,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
       scene_light_list_init(scene);
       scene_probe_reflection_init(scene, context_multisample());
     }
-
 
     {
       /*  ===== CAMERA & VIEWPORT =====  */
@@ -107,7 +106,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
       scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
                                           .camera = scene->active_camera,
                                           .viewport = &scene->viewport,
-                                          .pool = &scene->meshes,
                                           .ubo = &scene->renderer.ubo,
                                       });
     }
@@ -141,7 +139,6 @@ void scene_mesh_list_init(Scene *scene) {
     mesh_ref_list_create(scene_mesh_state(scene, m),
                          SCENE_MESH_LIST_DEFAULT_CAPACITY);
 
-  mesh_list_create(&scene->meshes, SCENE_MESH_MAX_MESH_CAPACITY);
 }
 
 /**
@@ -183,7 +180,7 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 
   // init main camera position
   camera_lookat(camera, (vec3){20.0f, 20.0f, 20.0f}, (vec3){0.0f, 0.0f, 0.0f});
-  
+
   ubo_upload_entry(&scene->renderer.ubo, UBOType_Camera, &camera->ubo_slot);
 
   return camera;
@@ -241,7 +238,7 @@ void scene_light_list_init(Scene *scene) {
   light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
 
   scene->lights.ubo_slot =
-    ubo_new_entry(&scene->renderer.ubo, UBOType_LightList);
+      ubo_new_entry(&scene->renderer.ubo, UBOType_LightList);
 
   // init shadow textures
   shadow_map_init(&(ShadowMapInitDescriptor){
@@ -265,7 +262,6 @@ void scene_light_list_init(Scene *scene) {
   });
 }
 
-/**
-   Return pointer to scene mesh pool
- */
-MeshList *scene_mesh_list(Scene *scene) { return &scene->meshes; }
+void scene_destroy(Scene *scene) {
+  // TODO
+}

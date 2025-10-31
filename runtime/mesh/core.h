@@ -118,6 +118,7 @@ EXTERN_C_BEGIN
 // constructor
 void mesh_create(Mesh *, const MeshCreateDescriptor *);
 void mesh_create_primitive(Mesh *, const MeshCreatePrimitiveDescriptor *);
+void mesh_destroy(Mesh *);
 
 // hierarchy
 void mesh_set_parent(Mesh *, Mesh *);
@@ -194,7 +195,6 @@ static const char *mesh_get_name(Mesh *mesh) { return mesh->name; }
 static inline void mesh_set_name(Mesh *mesh, const char *src) {
   name_copy(src, mesh->name);
 }
-
 
 EXTERN_C_END
 

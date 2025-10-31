@@ -1,6 +1,7 @@
 #include "translate.h"
 
 #include "./utils.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "core.h"
 #include "runtime/geometry/vertex/attribute.h"
@@ -20,10 +21,10 @@ void gizmo_position_create(MeshRefList *visual_list,
 
   gizmo_create_handles(
       visual_list, interactive_list,
-      &(GizmoCreateMeshDescriptor){.list = desc->list,
-                                   .mbin_path =
-                                       "./resources/assets/mbin/translate.mbin",
-                                   .offset = {0.0f, 0.1f, 0.0f}});
+      &(GizmoCreateMeshDescriptor){
+          .mbin_path = "./resources/assets/mbin/translate.mbin",
+          .offset = {0.0f, 0.1f, 0.0f},
+      });
 
   {
     Primitive prim_plane = primitive_plane();
@@ -32,7 +33,7 @@ void gizmo_position_create(MeshRefList *visual_list,
     float distance = 1.3f;
 
     for (uint8_t i = 0; i < GIZMO_AXIS_COUNT; i++) {
-      plane[i] = mesh_list_new_mesh(desc->list);
+      plane[i] = rem_new_mesh();
 
       color plane_color;
       glm_vec4_copy((float *)gizmo_handle_color[3 + i], plane_color);

@@ -1,5 +1,6 @@
 #include "rotate.h"
 
+#include "backend/resource_manager.h"
 #include "resources/loader/loader.mbin.h"
 #include "utils/color.h"
 #include "./utils.h"
@@ -16,7 +17,7 @@ void gizmo_rotation_create(MeshRefList *visual_list,
   mesh_ref_list_create(visual_list, 4);
 
   // sphere mask first
-  Mesh *sphere = mesh_list_new_mesh(desc->list);
+  Mesh *sphere = rem_new_mesh();
   Primitive sphere_primitive;
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
       .path = "./resources/assets/mbin/rotate_mask.mbin",
@@ -35,7 +36,6 @@ void gizmo_rotation_create(MeshRefList *visual_list,
   gizmo_create_handles(
       visual_list, interactive_list,
       &(GizmoCreateMeshDescriptor){
-          .list = desc->list,
           .mbin_path = "./resources/assets/mbin/rotate.mbin",
       });
 

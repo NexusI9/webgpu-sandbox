@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "backend/context.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_pipeline/render_shader/glass_probe_grid/glass_probe_grid.h"
 #include "backend/ubo.h"
@@ -36,7 +37,7 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
                                       },
                                       NULL);
 
-  Mesh *mesh = scene_new_mesh(scene);
+  Mesh *mesh = rem_new_mesh();
 
   Primitive prim = primitive_icosphere();
 
@@ -119,7 +120,7 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
       },
       &plane);
 
-  Mesh *mesh = scene_new_mesh(scene);
+  Mesh *mesh = rem_new_mesh();
   Primitive prim = primitive_plane();
 
   mesh_create_primitive(mesh, &(MeshCreatePrimitiveDescriptor){

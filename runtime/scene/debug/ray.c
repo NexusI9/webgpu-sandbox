@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 
+#include "backend/resource_manager.h"
 #include "runtime/geometry/line/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/list.h"
@@ -11,7 +12,7 @@
 #include "utils/color.h"
 
 void scene_debug_ray_create(SceneDebug *debug, Mesh **line) {
-  *line = mesh_list_new_mesh(debug->pool);
+  *line = rem_new_mesh();
   line_create(*line, &(LineCreateDescriptor){
                          .name = "Debug line mesh",
                      });

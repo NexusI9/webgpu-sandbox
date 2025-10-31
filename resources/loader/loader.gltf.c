@@ -1,5 +1,6 @@
 #include "loader.gltf.h"
 
+#include "backend/resource_manager.h"
 #include "utils/system.h"
 #include <cglm/types.h>
 #include <cglm/util.h>
@@ -297,7 +298,7 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_node *gl_node,
                                          LoaderGLTFResult *result) {
 
   cgltf_mesh *gl_mesh = gl_node->mesh;
-  Mesh *root_mesh = scene_new_mesh(scene);
+  Mesh *root_mesh = rem_new_mesh();
 
   if (parent)
     mesh_child_add(parent, root_mesh);
@@ -351,7 +352,7 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_node *gl_node,
     // add child to parent mesh if current primitive > 0
     // and set it as target mesh
     if (p > 0) {
-      target_mesh = scene_new_mesh(scene);
+      target_mesh = rem_new_mesh();
       mesh_child_add(root_mesh, target_mesh);
 
       /*

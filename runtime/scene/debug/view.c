@@ -4,6 +4,7 @@
 #include <cglm/vec3.h>
 #include <stddef.h>
 
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "core.h"
 #include "runtime/mesh/core.h"
@@ -26,7 +27,7 @@ const float height_ratio = 9.0f / 16.0f;
 void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
 
   // create view mesh
-  Mesh *mesh = mesh_list_new_mesh(debug->pool);
+  Mesh *mesh = rem_new_mesh();
 
   Primitive plane = primitive_plane();
 

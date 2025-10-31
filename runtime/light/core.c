@@ -26,7 +26,6 @@ void point_light_create(PointLight *light, PointLightDescriptor *desc) {
 
   glm_vec3_copy(desc->position, light->position);
   glm_vec3_copy(desc->color, light->color);
-
 }
 
 void spot_light_create(SpotLight *light, SpotLightDescriptor *desc) {
@@ -43,7 +42,6 @@ void spot_light_create(SpotLight *light, SpotLightDescriptor *desc) {
   glm_vec3_copy(desc->position, light->position);
   glm_vec3_copy(desc->target, light->target);
   glm_vec3_copy(desc->color, light->color);
-
 }
 
 void sun_light_create(SunLight *light, SunLightDescriptor *desc) {
@@ -57,7 +55,6 @@ void sun_light_create(SunLight *light, SunLightDescriptor *desc) {
 
   glm_vec3_copy(desc->position, light->position);
   glm_vec3_copy(desc->color, light->color);
-
 }
 
 void ambient_light_create(AmbientLight *light, AmbientLightDescriptor *desc) {
@@ -70,5 +67,10 @@ void ambient_light_create(AmbientLight *light, AmbientLightDescriptor *desc) {
 
   glm_vec4_copy(desc->color, light->color);
   glm_vec3_copy(desc->position, light->position);
-
 }
+
+// TODO
+void point_light_destroy(PointLight *light) {}
+void spot_light_destroy(SpotLight *light) {}
+void ambient_light_destroy(AmbientLight *light) {}
+void sun_light_destroy(SunLight *light) {}

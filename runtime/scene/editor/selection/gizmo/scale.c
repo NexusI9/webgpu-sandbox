@@ -9,7 +9,6 @@ void gizmo_scale_create(MeshRefList *visual_list, MeshRefList *interactive_list,
 
   gizmo_create_handles(visual_list, interactive_list,
                        &(GizmoCreateMeshDescriptor){
-                           .list = desc->list,
                            .mbin_path = "./resources/assets/mbin/scale.mbin",
                            .offset = {0.0f, 0.1f, 0.0f},
                        });

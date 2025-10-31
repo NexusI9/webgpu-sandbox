@@ -31,7 +31,7 @@ typedef struct {
 typedef struct {
   size_t length;
   size_t capacity;
-  PointLight entries[LIGHT_MAX_CAPACITY];
+  PointLight *entries[LIGHT_MAX_CAPACITY];
 } PointLightListBase;
 
 typedef struct {
@@ -44,7 +44,7 @@ typedef struct {
 typedef struct {
   size_t length;
   size_t capacity;
-  SpotLight entries[LIGHT_MAX_CAPACITY];
+  SpotLight *entries[LIGHT_MAX_CAPACITY];
 } SpotLightListBase;
 
 typedef struct {
@@ -57,13 +57,13 @@ typedef struct {
 typedef struct {
   size_t length;
   size_t capacity;
-  AmbientLight entries[LIGHT_MAX_CAPACITY];
+  AmbientLight *entries[LIGHT_MAX_CAPACITY];
 } AmbientLightList;
 
 typedef struct {
   size_t length;
   size_t capacity;
-  SunLight entries[LIGHT_MAX_CAPACITY];
+  SunLight *entries[LIGHT_MAX_CAPACITY];
 } SunLightListBase;
 
 typedef struct {
@@ -111,13 +111,18 @@ typedef struct {
 
   float _pad[STRUCT_PAD(
       16, sizeof(AmbientLightUniform) * LIGHT_LIST_ENTRIES_CAPACITY +
-               sizeof(PointLightUniform) * LIGHT_LIST_ENTRIES_CAPACITY +
-               sizeof(SpotLightUniform) * LIGHT_LIST_ENTRIES_CAPACITY +
-               sizeof(SunLightUniform) * LIGHT_LIST_ENTRIES_CAPACITY +
-               sizeof(uint32_t) * 4)];
+              sizeof(PointLightUniform) * LIGHT_LIST_ENTRIES_CAPACITY +
+              sizeof(SpotLightUniform) * LIGHT_LIST_ENTRIES_CAPACITY +
+              sizeof(SunLightUniform) * LIGHT_LIST_ENTRIES_CAPACITY +
+              sizeof(uint32_t) * 4)];
 } __attribute__((aligned(16))) LightListUniform;
 
 StaticListStatus light_list_create(LightList *, size_t);
+
+PointLight *light_list_new_point_light(PointLightListBase *);
+AmbientLight *light_list_new_ambient_light(AmbientLightList *);
+SpotLight *light_list_new_spot_light(SpotLightListBase *);
+SunLight *light_list_new_sun_light(SunLightListBase *);
 
 StaticListStatus light_list_point_shadow_insert(PointLightListShadow *,
                                                 PointLight *);

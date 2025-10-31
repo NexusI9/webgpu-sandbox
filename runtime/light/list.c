@@ -1,6 +1,7 @@
 #include "list.h"
 
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "core.h"
 #include "utils/stli.h"
@@ -56,43 +57,56 @@ StaticListStatus light_list_create(LightList *list, size_t capacity) {
   return StaticListStatus_Success;
 }
 
-StaticListStatus light_list_point_shadow_insert(PointLightListShadow *list,
-                                                PointLight *light) {
-  return stli_insert((void *)list->entries, list->capacity, &list->length,
-                     sizeof(PointLight *), (void *)&light,
-                     "Point Light List Shadow");
-}
-StaticListStatus light_list_point_shadow_remove(PointLightListShadow *list,
-                                                PointLight *light) {
-  return stli_remove((void *)list->entries, &list->length, sizeof(PointLight *),
-                     (void *)light, "Point Light List Shadow");
-}
+#define LIGHT_LIST_NEW(Type, FuncName, List, Label)                            \
+  Type *light_list_new_##FuncName(List *list) {                                \
+                                                                               \
+    Type *light = rem_new_##FuncName();                                        \
+                                                                               \
+    if (light == NULL)                                                         \
+      return NULL;                                                             \
+                                                                               \
+    if (stli_insert((void *)list->entries, list->capacity, &list->length,      \
+                    sizeof(Type *), (void *)&light,                            \
+                    Label) != StaticListStatus_Success)                        \
+      return NULL;                                                             \
+                                                                               \
+    return light;                                                              \
+  }
 
-StaticListStatus light_list_sun_shadow_insert(SunLightListShadow *list,
-                                              SunLight *light) {
-  return stli_insert((void *)list->entries, list->capacity, &list->length,
-                     sizeof(SunLight *), (void *)&light,
-                     "Sun Light List Shadow");
-}
+LIGHT_LIST_NEW(PointLight, point_light, PointLightListBase, "Point Light");
+LIGHT_LIST_NEW(AmbientLight, ambient_light, AmbientLightList, "Ambient Light");
+LIGHT_LIST_NEW(SpotLight, spot_light, SpotLightListBase, "Spot Light");
+LIGHT_LIST_NEW(SunLight, sun_light, SunLightListBase, "Sun Light");
 
-StaticListStatus light_list_sun_shadow_remove(SunLightListShadow *list,
-                                              SunLight *light) {
-  return stli_remove((void *)list->entries, &list->length, sizeof(SunLight *),
-                     (void *)light, "Sun Light List Shadow");
-}
+#define LIGHT_LIST_SHADOW_INSERT(List, FuncName, Type, Label)                  \
+  StaticListStatus light_list_##FuncName##_shadow_insert(List *list,           \
+                                                         Type *light) {        \
+                                                                               \
+    return stli_insert((void *)list->entries, list->capacity, &list->length,   \
+                       sizeof(Type *), (void *)&light, Label);                 \
+  }
 
-StaticListStatus light_list_spot_shadow_insert(SpotLightListShadow *list,
-                                               SpotLight *light) {
-  return stli_insert((void *)list->entries, list->capacity, &list->length,
-                     sizeof(SpotLight *), (void *)&light,
-                     "Spot Light List Shadow");
-}
+#define LIGHT_LIST_SHADOW_REMOVE(List, FuncName, Type, Label)                  \
+  StaticListStatus light_list_##FuncName##_shadow_remove(List *list,           \
+                                                         Type *light) {        \
+    return stli_remove((void *)list->entries, &list->length, sizeof(Type *),   \
+                       (void *)light, Label);                                  \
+  }
 
-StaticListStatus light_list_spot_shadow_remove(SpotLightListShadow *list,
-                                               SpotLight *light) {
-  return stli_remove((void *)list->entries, &list->length, sizeof(SpotLight *),
-                     (void *)light, "Spot Light List Shadow");
-}
+LIGHT_LIST_SHADOW_INSERT(PointLightListShadow, point, PointLight,
+                         "Point Light Shadow List");
+LIGHT_LIST_SHADOW_REMOVE(PointLightListShadow, point, PointLight,
+                         "Point Light Shadow List");
+
+LIGHT_LIST_SHADOW_INSERT(SpotLightListShadow, spot, SpotLight,
+                         "Spot Light Shadow List");
+LIGHT_LIST_SHADOW_REMOVE(SpotLightListShadow, spot, SpotLight,
+                         "Spot Light Shadow List");
+
+LIGHT_LIST_SHADOW_INSERT(SunLightListShadow, sun, SunLight,
+                         "Sun Light Shadow List");
+LIGHT_LIST_SHADOW_REMOVE(SunLightListShadow, sun, SunLight,
+                         "Sun Light Shadow List");
 
 LightListSlot light_list_uniform_new_entry(LightListUniform *list,
                                            const LightType type) {
@@ -139,8 +153,11 @@ LightListSlot light_list_uniform_new_entry(LightListUniform *list,
     break;
   }
 
-  logger_add(LoggerFlag_Error, "Couldn't create new light uniform slot. Light "
-                               "list reached max capacity.");
+  logger_add(LoggerFlag_Error, "Couldn't create new "
+                               "light uniform slot. "
+                               "Light "
+                               "list reached max "
+                               "capacity.");
 
   return (LightListSlot){.uniform = 0, .id = UBO_INDEX_UNFOUND, .offset = 0};
 }

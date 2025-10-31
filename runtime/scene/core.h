@@ -324,7 +324,6 @@ struct Scene {
   Viewport viewport;
 
   // Values lists
-  MeshList meshes;
   LightList lights;
   CameraList cameras;
   ProbeList probes;
@@ -362,9 +361,7 @@ typedef void (*scene_draw_callback)(Scene *, WGPURenderPassEncoder *);
 typedef void (*scene_build_callback)(Scene *);
 
 void scene_create(Scene *, const SceneCreateDescriptor *);
-
-// mesh pool
-MeshList *scene_mesh_list(Scene *);
+void scene_destroy(Scene *);
 
 // scene layer quick access
 MeshRefList *scene_layer_meshes(Scene *, const char *);

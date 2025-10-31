@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/geometry/aabb/aabb.h"
@@ -40,7 +41,7 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
 
    */
   SceneEditorMesh *probe_cube = sem_list_new_entry(list);
-  probe_cube->mesh = scene_new_mesh(desc->scene);
+  probe_cube->mesh = rem_new_mesh();
 
   Primitive primitive_cube;
   // TODO: cache MBIN
@@ -71,7 +72,7 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
 
    */
   SceneEditorMesh *probe_plane = sem_list_new_entry(list);
-  probe_plane->mesh = scene_new_mesh(desc->scene);
+  probe_plane->mesh = rem_new_mesh();
 
   Primitive primitive;
   // TODO: cache MBIN
@@ -101,7 +102,7 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
 
  */
   SceneEditorMesh *probe_arrow = sem_list_new_entry(list);
-  probe_arrow->mesh = scene_new_mesh(desc->scene);
+  probe_arrow->mesh = rem_new_mesh();
 
   Primitive primitive_arrow;
   // TODO: cache MBIN

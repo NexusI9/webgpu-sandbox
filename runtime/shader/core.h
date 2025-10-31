@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "backend/registry.h"
 #include "runtime/pipeline/compute.h"
 #include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/render.h"
@@ -296,6 +297,7 @@ typedef struct {
 // core
 typedef struct {
   char *name;
+  reg_id_t id;
   // pipelines
   const RenderPipeline *pipeline;
 

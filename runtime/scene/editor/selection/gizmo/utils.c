@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "./core.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/mesh/core.h"
@@ -77,7 +78,7 @@ void gizmo_create_handles(MeshRefList *visual_list,
 
   // create new mesh in mesh ref list in order: x, y ,z
   for (size_t i = 0; i < gizmo_mesh_count; i++) {
-    Mesh *mesh = mesh_list_new_mesh(desc->list);
+    Mesh *mesh = rem_new_mesh();
 
     gizmo_create_mesh(mesh, &mesh_primitive, gizmo_handle_color[i]);
 

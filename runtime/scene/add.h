@@ -71,7 +71,6 @@ SceneEditorMeshList *scene_add_camera(Scene *, const CameraCreateDescriptor *,
                                       Camera **);
 
 /* ===  Scene Meshes === */
-Mesh *scene_new_mesh(Scene *);
 SceneStatus scene_add_mesh(Scene *, Mesh *, const char *, const SceneAddFlag);
 void scene_add_mesh_ref_list(Scene *, MeshRefList *, const char *,
                              const SceneAddFlag);

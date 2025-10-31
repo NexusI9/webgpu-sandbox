@@ -5,6 +5,7 @@
 #include <cglm/types.h>
 #include <stddef.h>
 
+#include "backend/registry.h"
 #include "backend/ubo.h"
 #include "core.h"
 #include "runtime/camera/core.h"
@@ -20,6 +21,7 @@
 #define PROBE_REFLECTION_VIEW_COUNT 6
 
 typedef struct {
+  reg_id_t id;
   vec3 position;
   float radius;
   Camera camera[PROBE_REFLECTION_VIEW_COUNT];
@@ -36,6 +38,7 @@ typedef struct {
 /* === Probe Reflection === */
 
 void probe_reflection_create(ProbeReflection *, vec3);
+void probe_reflection_destroy(ProbeReflection *);
 
 void probe_reflection_update_uniform(ProbeReflection *);
 void probe_reflection_update_camera(ProbeReflection *);

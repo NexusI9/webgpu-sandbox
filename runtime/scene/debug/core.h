@@ -21,7 +21,6 @@ typedef enum {
 } SceneDebugObject;
 
 typedef struct {
-  MeshList *pool;
   UBOManager *ubo;
   MeshRefList object_list[SCENE_DEBUG_MESH_LIST_COUNT];
   Camera *camera;
@@ -30,11 +29,9 @@ typedef struct {
 } SceneDebug;
 
 typedef struct {
-  MeshList *pool;
   UBOManager *ubo;
   Camera *camera;
   Viewport *viewport;
-
 } SceneDebugDescriptor;
 
 void scene_debug_init(SceneDebug *, const SceneDebugDescriptor *);

@@ -4,6 +4,7 @@
 #include "backend/compute/mipmap.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "include/stb/stb_image.h"
 #include "runtime/mesh/core.h"
@@ -126,7 +127,7 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
      maybe can use a "position-only" version to save a bit of memory
    */
   Primitive box_primitive = primitive_cube();
-  Mesh *skybox_mesh = scene_new_mesh(scene);
+  Mesh *skybox_mesh = rem_new_mesh();
   mesh_create_primitive(skybox_mesh, &(MeshCreatePrimitiveDescriptor){
                                          .name = "skybox mesh",
                                          .primitive = &box_primitive,

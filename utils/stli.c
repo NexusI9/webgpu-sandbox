@@ -87,3 +87,22 @@ void *stli_find(void *entries, size_t length, size_t type_size, void *entry,
 
   return NULL;
 }
+
+StaticListStatus stli_remove_at_index(void *entries, size_t *length,
+                                      size_t type_size, size_t index) {
+  if (*length == 0) {
+    return StaticListStatus_EmptyList;
+  }
+  if (index >= *length) {
+    return StaticListStatus_OutOfRange;
+  }
+
+  if (index < *length - 1) {
+    memmove((char *)entries + index * type_size,
+            (char *)entries + (index + 1) * type_size,
+            (*length - 1 - index) * type_size);
+  }
+
+  (*length)--;
+  return StaticListStatus_Success;
+}

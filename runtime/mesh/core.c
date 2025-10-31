@@ -9,8 +9,8 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
-#include "backend/ubo.h"
 #include "backend/std_pipeline/core.h"
+#include "backend/ubo.h"
 #include "runtime/pipeline/render.h"
 #include "shader/core.h"
 #include "topology/boundbox.h"
@@ -133,4 +133,8 @@ DynamicListStatus mesh_child_add(Mesh *parent, Mesh *child) {
   }
 
   return insert;
+}
+
+void mesh_destroy(Mesh *mesh) {
+  //TODO
 }

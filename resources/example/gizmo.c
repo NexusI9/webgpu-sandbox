@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "backend/context.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/mesh/core.h"
@@ -16,7 +17,7 @@
 
 void example_gizmo(Scene *scene) {
 
-  Mesh *gizmo = scene_new_mesh(scene);
+  Mesh *gizmo = rem_new_mesh();
   Primitive mbin_primitive;
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
       .path = "./resources/assets/mbin/sphere.mbin",
@@ -37,5 +38,5 @@ void example_gizmo(Scene *scene) {
   mesh_set_position(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 
   scene_add_mesh_pipeline(scene, gizmo, ScenePipeline_Fixed_Front, NULL,
-                       SceneAddFlag_None);
+                          SceneAddFlag_None);
 }

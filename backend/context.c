@@ -1,4 +1,5 @@
 #include "context.h"
+#include "./resource_manager.h"
 #include "backend/logger.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
@@ -40,6 +41,8 @@ ContextStatus context_init(const ContextDescriptor *desc) {
   context_update_size(0, NULL, (void *)&g_context);
 
   // === Global Input & Event polling ===
+  
+  TIMER("Resource Manager", { resource_manager_init(); });
 
   TIMER("Fallback Textures", { standard_textures_init(); });
 

@@ -4,6 +4,7 @@
 #include <cglm/vec3.h>
 #include <stdint.h>
 
+#include "backend/registry.h"
 #include "backend/ubo.h"
 #include "core.h"
 #include "grid.h"
@@ -23,6 +24,7 @@
 
 void probe_reflection_create(ProbeReflection *probe, vec3 position) {
 
+  probe->id = reg_register(probe, RegEntryType_ProbeReflection);
   glm_vec3_copy(position, probe->position);
 
   for (uint8_t i = 0; i < PROBE_REFLECTION_VIEW_COUNT; i++) {
@@ -112,4 +114,8 @@ DynamicListStatus probe_reflection_list_remove(ProbeReflectionList *list,
 
 DynamicListStatus probe_reflection_list_destroy(ProbeReflectionList *list) {
   return dyli_free((void *)list->entries, &list->capacity, &list->length);
+}
+
+void probe_reflection_destroy(ProbeReflection *probe) {
+  // TODO
 }

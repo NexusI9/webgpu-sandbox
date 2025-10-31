@@ -17,6 +17,7 @@ typedef enum {
   RegEntryType_SceneUI,
   RegEntryType_SceneLayer,
   RegEntryType_ProbeReflectionPlane,
+  RegEntryType_ProbeReflection,
   RegEntryType_ProbeReflectionGrid,
   RegEntryType_SceneEditorMesh,
   RegEntryType_SceneEditorMeshList,
@@ -33,6 +34,7 @@ typedef enum {
   RegEntryType_RenderPipeline,
   RegEntryType_ComputePipeline,
   RegEntryType_Texture,
+  RegEntryType_Shader,
 } RegEntryType;
 
 static const char *reg_label[] = {
@@ -46,6 +48,7 @@ static const char *reg_label[] = {
     [RegEntryType_SceneUI] = "Scene UI",
     [RegEntryType_SceneLayer] = "Scene Layer",
     [RegEntryType_ProbeReflectionPlane] = "Probe Reflection Plane",
+    [RegEntryType_ProbeReflection] = "Probe Reflection",
     [RegEntryType_ProbeReflectionGrid] = "Probe Reflection Grid",
     [RegEntryType_SceneEditorMesh] = "Scene Editor Mesh",
     [RegEntryType_SceneEditorMeshList] = "Scene Editor Mesh List",
@@ -68,6 +71,7 @@ static const char *reg_label[] = {
     [RegEntryType_RenderPipeline] = "Render Pipeline",
     [RegEntryType_ComputePipeline] = "Compute Pipeline",
     [RegEntryType_Texture] = "Texture",
+    [RegEntryType_Shader] = "Shader",
 };
 
 typedef struct {

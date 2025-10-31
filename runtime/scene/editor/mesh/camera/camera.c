@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "resources/loader/loader.mbin.h"
 #include "runtime/camera/core.h"
 #include "runtime/geometry/vertex/attribute.h"
@@ -34,7 +35,7 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
 
   // create new mesh in the mesh list
   SceneEditorMesh *icon = sem_list_new_entry(list);
-  icon->mesh = scene_new_mesh(desc->scene);
+  icon->mesh = rem_new_mesh();
   icon->target = camera;
   icon->target_list_index = desc->target_list_index;
 
@@ -65,7 +66,7 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
   icon->transform_callback[GizmoMode_Scale] = sem_camera_set_scale;
 
   SceneEditorMesh *cube = sem_list_new_entry(list);
-  cube->mesh = scene_new_mesh(desc->scene);
+  cube->mesh = rem_new_mesh();
   cube->scene = desc->scene;
   // create manually wirerfame since sem is part of fixed rendering, so the
   // mesh topology generation isn't automatically handled.
