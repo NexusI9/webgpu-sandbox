@@ -103,10 +103,7 @@ struct Mesh {
   } topology;
 
   // shader
-  struct mesh_shader {
-    Shader standard[MESH_STD_SHADER_COUNT];
-    Shader *active;
-  } shader;
+  Shader *shader[MESH_STD_SHADER_COUNT];
 
   // hierarchy
   Mesh *parent;

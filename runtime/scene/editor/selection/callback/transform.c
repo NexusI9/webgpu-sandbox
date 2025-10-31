@@ -80,8 +80,9 @@ void scene_selection_mesh_transform_core(Mesh *mesh, vec3 *init_attribute,
   // transform mesh
   transform_callback_mesh[desc->transform_mode](mesh, offset_attribute);
 
+  mesh_uniform_update(mesh);
   ubo_update_queue_insert(&desc->scene->renderer.ubo, UBOType_Mesh,
-                           mesh->ubo_slot.id);
+                          mesh->ubo_slot.id);
 }
 
 /* Mesh based transform */
@@ -145,9 +146,9 @@ void scene_selection_sem_transform_core(
 
   // transform sem via their own callback
   transform_callback(sem, offset_attribute);
-
+  mesh_uniform_update(sem->mesh);
   ubo_update_queue_insert(&desc->scene->renderer.ubo, UBOType_Mesh,
-                           sem->mesh->ubo_slot.id);
+                          sem->mesh->ubo_slot.id);
 }
 
 /*

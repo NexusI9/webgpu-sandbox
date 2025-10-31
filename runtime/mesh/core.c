@@ -50,14 +50,6 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   glm_vec3_copy(GLM_VEC3_ZERO, mesh->rotation_euler);
   glm_vec3_copy(GLM_VEC3_ONE, mesh->scale);
 
-  // alloc uniform (may be replaced by UBO later when added to the scene)
-  ubo_slot_init_alloc(&mesh->ubo_slot, sizeof(MeshUniform));
-  mesh_uniform_update(mesh);
-
-  // set default pipeline shader
-  mesh_shader(mesh, MeshShader_Texture)->pipeline =
-      std_render_pipeline(RenderPipelineType_Default);
-
   // defines default topology override
   mesh_topology_set_override(mesh,
                              (MeshTopology){

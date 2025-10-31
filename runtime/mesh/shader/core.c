@@ -3,8 +3,9 @@
 #include <stddef.h>
 
 #include "backend/logger.h"
-#include "backend/ubo.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
+#include "backend/ubo.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/shader/core.h"
@@ -25,7 +26,11 @@
  */
 
 Shader *mesh_shader(Mesh *mesh, const MeshShader shader) {
-  return &mesh->shader.standard[shader];
+  return mesh->shader[shader];
+}
+
+void mesh_set_shader(Mesh *mesh, const MeshShader type, Shader *src) {
+  mesh->shader[type] = src;
 }
 
 // Standard shaders automatically created on mesh creation and based on render
@@ -79,15 +84,25 @@ MeshStatus mesh_shader_create_standard(Mesh *mesh,
     return MeshStatus_InvalidShaderIndex;
   }
 
-  Shader *shader = mesh_shader(mesh, shader_type);
-
-  if (shader->name != NULL) {
+  if (mesh_shader(mesh, shader_type) != NULL) {
     logger_add(
         LoggerFlag_Info,
         "Shader '%s' for mesh '%s' is already created, skip shader creation.",
         standard_shader_map[shader_type].name, mesh->name);
     return MeshStatus_AlreadyCreated;
   }
+
+  Shader *shader = rem_new_shader();
+
+  if (shader == NULL) {
+    logger_add(
+        LoggerFlag_Error,
+        "Unable to create texture shader for mesh '%s'. Max capacity reached.",
+        mesh->name);
+    return MeshStatus_AllocFail;
+  }
+
+  mesh_set_shader(mesh, shader_type, shader);
 
   shader_create(shader, &(ShaderCreateDescriptor){
                             .pipeline = std_render_pipeline(
@@ -103,9 +118,7 @@ MeshStatus mesh_shader_create_standard(Mesh *mesh,
  */
 MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
 
-  Shader *texture_shader = mesh_shader(mesh, MeshShader_Texture);
-
-  if (texture_shader->name != NULL) {
+  if (mesh_shader(mesh, MeshShader_Texture) != NULL) {
     logger_add(
         LoggerFlag_Info,
         "Texture shader for '%s' is already created, skip shader creation.",
@@ -114,15 +127,37 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
   }
 
   // create texture shader as default
-  shader_create(texture_shader, desc);
+
+  Shader *shader = rem_new_shader();
+
+  if (shader == NULL) {
+    logger_add(
+        LoggerFlag_Error,
+        "Unable to create texture shader for mesh '%s'. Max capacity reached.",
+        mesh->name);
+    return MeshStatus_AllocFail;
+  }
+
+  mesh_set_shader(mesh, MeshShader_Texture, shader);
+  shader_create(shader, desc);
 
   // also initialise the reflection shader (basically a copy of the texture)
-  shader_create(
-      mesh_shader(mesh, MeshShader_Reflection),
-      &(ShaderCreateDescriptor){
-          .pipeline = std_render_pipeline(RenderPipelineType_Reflection),
-          .name = "Mesh Reflection shader",
-      });
+  Shader *reflection_shader = rem_new_shader();
+
+  if (shader == NULL) {
+    logger_add(LoggerFlag_Error,
+               "Unable to create reflection shader for mesh '%s'. Max capacity "
+               "reached.",
+               mesh->name);
+    return MeshStatus_AllocFail;
+  }
+
+  mesh_set_shader(mesh, MeshShader_Reflection, reflection_shader);
+  shader_create(reflection_shader, &(ShaderCreateDescriptor){
+                                       .pipeline = std_render_pipeline(
+                                           RenderPipelineType_Reflection),
+                                       .name = "Mesh Reflection shader",
+                                   });
 
   return MeshStatus_Success;
 }
@@ -133,9 +168,7 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
 MeshStatus mesh_shader_create_fixed(Mesh *mesh,
                                     const ShaderCreateDescriptor *desc) {
 
-  Shader *fixed_shader = mesh_shader(mesh, MeshShader_Texture);
-
-  if (fixed_shader->name != NULL) {
+  if (mesh_shader(mesh, MeshShader_Fixed) != NULL) {
     logger_add(
         LoggerFlag_Info,
         "Fixed shader for '%s' is already created, skip shader creation.",
@@ -143,8 +176,20 @@ MeshStatus mesh_shader_create_fixed(Mesh *mesh,
     return MeshStatus_AlreadyCreated;
   }
 
+  Shader *fixed_shader = rem_new_shader();
+
+  if (fixed_shader == NULL) {
+    logger_add(LoggerFlag_Error,
+               "Unable to create fixed shader for mesh '%s'. Max capacity "
+               "reached.",
+               mesh->name);
+    return MeshStatus_AllocFail;
+  }
+
+  mesh_set_shader(mesh, MeshShader_Fixed, fixed_shader);
+
   // alias to shader_create
-  shader_create(mesh_shader(mesh, MeshShader_Fixed), desc);
+  shader_create(fixed_shader, desc);
 
   return MeshStatus_Success;
 }

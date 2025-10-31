@@ -5,12 +5,12 @@
 #include <math.h>
 
 #include "core.h"
+#include "runtime/camera/core.h"
 #include "runtime/input/core.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/raycast/core.h"
-#include "utils/vector/core.h"
-#include "runtime/camera/core.h"
 #include "runtime/viewport/core.h"
+#include "utils/vector/core.h"
 
 /**
    ▗▖  ▗▖▗▄▄▄▖▗▄▄▄▖▗▖ ▗▖ ▗▄▖ ▗▄▄▄  ▗▄▄▖
@@ -30,8 +30,7 @@ static inline void gizmo_transform_angle(Gizmo *, Camera *, Viewport *,
    Generic function to transform gizmo based on axis and provided callback
    (trans/rot/scale)
  */
-void gizmo_transform_axis(Gizmo *gizmo, Camera *camera,
-                          Viewport *viewport,
+void gizmo_transform_axis(Gizmo *gizmo, Camera *camera, Viewport *viewport,
                           mesh_transform_axis_callback transform_callback,
                           vec3 *delta) {
 
@@ -76,14 +75,12 @@ void gizmo_transform_axis(Gizmo *gizmo, Camera *camera,
   // out
   if (delta)
     glm_vec3_copy(gizmo_delta, *delta);
-
 }
 
 /**
    Project a plane orthogonal to the active axis and calculate
  */
-void gizmo_transform_angle(Gizmo *gizmo, Camera *camera,
-                           Viewport *viewport,
+void gizmo_transform_angle(Gizmo *gizmo, Camera *camera, Viewport *viewport,
                            mesh_transform_axis_callback transform_callback,
                            vec3 *dest) {
 
@@ -142,8 +139,8 @@ void gizmo_transform_angle(Gizmo *gizmo, Camera *camera,
    handled in the scene selection draw callback.
 
  */
-void gizmo_callback_position(Gizmo *gizmo, Camera *camera,
-                                        Viewport *viewport, vec3 *delta) {
+void gizmo_callback_position(Gizmo *gizmo, Camera *camera, Viewport *viewport,
+                             vec3 *delta) {
 
   // transform selection
   gizmo_transform_axis(gizmo, camera, viewport, mesh_set_position_axis, delta);
@@ -154,14 +151,14 @@ void gizmo_callback_position(Gizmo *gizmo, Camera *camera,
   gizmo_set_position(gizmo, gizmo_offset);
 }
 
-void gizmo_callback_rotation(Gizmo *gizmo, Camera *camera,
-                                     Viewport *viewport, vec3 *delta) {
+void gizmo_callback_rotation(Gizmo *gizmo, Camera *camera, Viewport *viewport,
+                             vec3 *delta) {
 
   gizmo_transform_angle(gizmo, camera, viewport, mesh_set_rotation_axis, delta);
 }
 
-void gizmo_callback_scale(Gizmo *gizmo, Camera *camera,
-                                    Viewport *viewport, vec3 *delta) {
+void gizmo_callback_scale(Gizmo *gizmo, Camera *camera, Viewport *viewport,
+                          vec3 *delta) {
 
   gizmo_transform_axis(gizmo, camera, viewport, mesh_set_scale_axis, delta);
 }

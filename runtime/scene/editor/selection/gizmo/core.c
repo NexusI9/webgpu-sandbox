@@ -15,6 +15,7 @@
 #include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/ref_list_transform.h"
 #include "runtime/mesh/shader/core.h"
+#include "runtime/mesh/transform.h"
 #include "runtime/raycast/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/viewport/core.h"
@@ -91,19 +92,29 @@ void gizmo_remove(Gizmo *gizmo, MeshRefList *dest_list) {
  */
 
 void gizmo_set_position(Gizmo *gizmo, vec3 position) {
-  mesh_ref_list_set_position(&gizmo->handles[gizmo->mode], position);
+
+  for (size_t i = 0; i < gizmo->handles[gizmo->mode].length; i++) {
+    Mesh *mesh = gizmo->handles[gizmo->mode].entries[i];
+    mesh_set_position(mesh, position);
+    mesh_uniform_update(mesh);
+  }
 }
 
 void gizmo_set_rotation_add(Gizmo *gizmo, vec3 value, const Axis axis) {
-  mesh_ref_list_set_rotation_axis(&gizmo->handles[gizmo->mode], value, axis);
+
+  for (size_t i = 0; i < gizmo->handles[gizmo->mode].length; i++) {
+    Mesh *mesh = gizmo->handles[gizmo->mode].entries[i];
+    mesh_set_rotation_axis_add(mesh, value, axis);
+    mesh_uniform_update(mesh);
+  }
 }
 
 /**
-   Search the mesh in the gizmo active handles, depending on the mesh index the
-   axis is defined (0 = X, 1 = Y, 2 = Z).
+   Search the mesh in the gizmo active handles, depending on the mesh index
+   the axis is defined (0 = X, 1 = Y, 2 = Z).
 
-   Function prmarily used in raycast selection to retrieve the axis depending on
-   the clicked gizmo arrow/ scale or rotation handle.
+   Function prmarily used in raycast selection to retrieve the axis depending
+   on the clicked gizmo arrow/ scale or rotation handle.
  */
 void gizmo_set_axis_from_mesh(Gizmo *gizmo, const Mesh *mesh) {
 
@@ -119,15 +130,15 @@ void gizmo_set_axis_from_mesh(Gizmo *gizmo, const Mesh *mesh) {
    Key operations:
    1. Define gizmo active axis based on the handle clicked on (X/Y/Z)
 
-   2. Define gizmo active handles (trans/rot/scale) based on current gizmo mode.
-   Gizmo active handles kinda acts as a trigger to tell the loop check that the
-   gizmo is ready to move object during polling.
+   2. Define gizmo active handles (trans/rot/scale) based on current gizmo
+   mode. Gizmo active handles kinda acts as a trigger to tell the loop check
+   that the gizmo is ready to move object during polling.
 
    3. Finally cache gizmo initial offset position projected on the right axis.
 
-   Since the transformation is based on a Delta factor, we need to store initial
-   values on click such as "angle" or "initial delta" to calculate the correct
-   offset.
+   Since the transformation is based on a Delta factor, we need to store
+   initial values on click such as "angle" or "initial delta" to calculate the
+   correct offset.
 
  */
 void gizmo_set_active(Gizmo *gizmo, Camera *camera, Viewport *viewport) {
@@ -138,10 +149,10 @@ void gizmo_set_active(Gizmo *gizmo, Camera *camera, Viewport *viewport) {
   // get direction from camera
   if (gizmo->axis == Axis_View) {
     glm_vec3_copy(camera->forward, gizmo->cache.axis_direction);
-  } else { 
+  } else {
     // get world direction from axis
     vec_world_axis(gizmo->axis, &gizmo->cache.axis_direction);
-  } 
+  }
 
   // init delta
   Raycast raycast;
