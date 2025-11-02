@@ -33,6 +33,14 @@ DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
                               size_t type_size, size_t scale,
                               const char *label) {
 
+  if (*capacity == 0) {
+    logger_add(LoggerFlag_Error,
+               "Dynamic list '%s' has a capaicty of 0. Make sure it's been "
+               "initialized corectly.\n",
+               label);
+    return DynamicListStatus_NotInit;
+  }
+
   size_t new_capacity = scale * (*capacity);
 
   void *temp = (void *)realloc(*entries, new_capacity * type_size);
@@ -70,6 +78,45 @@ DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
   char *target = (char *)(*entries) + (*length * type_size);
   memcpy(target, entry, type_size * count);
   *length += count;
+
+  return DynamicListStatus_Success;
+}
+
+DynamicListStatus dyli_insert_at(void **entries, size_t *capacity,
+                                 size_t *length, size_t type_size,
+                                 const void *entry, size_t index,
+                                 float expand_threshold, const char *label) {
+  if (!entries || !*entries || !capacity || !length) {
+    logger_add(LoggerFlag_Error,
+               "Dynamic list '%s' invalid or uninitialized (entries: %p).",
+               label, *entries);
+    return DynamicListStatus_NotInit;
+  }
+
+  if (index > *length) {
+    logger_add(LoggerFlag_Error,
+               "Dynamic list '%s' insert index %zu out of range (length=%zu).",
+               label, index, *length);
+    return DynamicListStatus_OutOfBound;
+  }
+
+  float usage =
+      (*capacity > 0) ? ((float)(*length) / (float)(*capacity)) : 1.0f;
+  if (usage >= expand_threshold) {
+    if (dyli_expand(entries, capacity, length, type_size, 2, label) !=
+        DynamicListStatus_Success) {
+      return DynamicListStatus_UndefError;
+    }
+  }
+
+  if (index < *length) {
+    char *base = (char *)(*entries);
+    memmove(base + (index + 1) * type_size, base + index * type_size,
+            (*length - index) * type_size);
+  }
+
+  memcpy((char *)(*entries) + index * type_size, entry, type_size);
+  (*length)++;
 
   return DynamicListStatus_Success;
 }
@@ -119,18 +166,13 @@ DynamicListStatus dyli_remove_at_index(void *entries, size_t *length,
   if (index >= *length)
     return DynamicListStatus_UnfoundEntry;
 
-  // void **list = (void **)entries;
-  // if (index < *length - 1)
-  //  memmove(&list[index], &list[index + 1], (*length - index - 1) *
-  //  type_size);
-
   char *list = (char *)entries;
 
   if (index < *length - 1) {
     memmove(list + index * type_size, list + (index + 1) * type_size,
             (*length - index - 1) * type_size);
   }
-  
+
   (*length)--;
   return DynamicListStatus_Success;
 }

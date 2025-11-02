@@ -1,6 +1,7 @@
 #include "mipmap.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
@@ -60,10 +61,8 @@ void compute_pass_mipmap_draw(ComputePass *pass, const MipmapDescriptor *desc) {
       WGPUTextureViewDescriptor dst_view_desc = src_view_desc;
       dst_view_desc.baseMipLevel = j;
 
-      WGPUTextureView src_view =
-          wgpuTextureCreateView(desc->texture, &src_view_desc);
-      WGPUTextureView dst_view =
-          wgpuTextureCreateView(desc->texture, &dst_view_desc);
+      WGPUTextureView src_view = rem_new_view(desc->texture, &src_view_desc);
+      WGPUTextureView dst_view = rem_new_view(desc->texture, &dst_view_desc);
 
       WGPUBindGroupEntry entries[3] = {
           {.binding = 0, .textureView = src_view},
@@ -91,8 +90,8 @@ void compute_pass_mipmap_draw(ComputePass *pass, const MipmapDescriptor *desc) {
 
       wgpuBindGroupRelease(bind_group);
 
-      wgpuTextureViewRelease(src_view);
-      wgpuTextureViewRelease(dst_view);
+      rem_destroy_view(&src_view);
+      rem_destroy_view(&dst_view);
     }
   }
   WGPUCommandBuffer compute_buffer =

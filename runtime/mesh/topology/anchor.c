@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "string.h"
 #include "backend/logger.h"
+#include "string.h"
 #include "utils/dyli.h"
 
 /**
@@ -37,7 +37,8 @@ int mesh_topology_anchor_insert(MeshTopologyAnchor *anchor, vindex_t *index,
   // check anchor entries capacity
   if (anchor->capacity <= anchor->length + length &&
       mesh_topology_anchor_expand(anchor) != MeshTopologyAnchorStatus_Success) {
-    logger_add(LoggerFlag_Error, "Couldn't allocate memory for wireframe anchor.");
+    logger_add(LoggerFlag_Error,
+               "Couldn't allocate memory for wireframe anchor.");
     return MeshTopologyAnchorStatus_AllocFail;
   }
 
@@ -267,7 +268,8 @@ int mesh_topology_anchor_list_insert(MeshTopologyAnchorList *list,
       mesh_topology_anchor_insert(new_anchor, index, length);
 
     } else {
-      logger_add(LoggerFlag_Error, "Couldn't add new anchor in wireframe anchor list.");
+      logger_add(LoggerFlag_Error,
+                 "Couldn't add new anchor in wireframe anchor list.");
       return MeshTopologyAnchorStatus_UndefError;
     }
   }

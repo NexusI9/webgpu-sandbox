@@ -4,6 +4,7 @@
 #include "backend/compute/kawase.h"
 #include "backend/logger.h"
 #include "backend/profiler.h"
+#include "backend/resource_manager.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
@@ -42,7 +43,7 @@ static inline void probe_reflection_plane_list_draw_callback(void *data) {
           .mipLevelCount = 1,
       };
       WGPUTextureView target_color =
-          wgpuTextureCreateView(list->pass.color.texture, &target_color_desc);
+          rem_new_view(list->pass.color.texture, &target_color_desc);
 
       WGPUTextureViewDescriptor target_depth_desc = {
           .label = "Probe Reflection Plane Target Depth View",
@@ -53,7 +54,7 @@ static inline void probe_reflection_plane_list_draw_callback(void *data) {
           .mipLevelCount = 1,
       };
       WGPUTextureView target_depth =
-          wgpuTextureCreateView(list->pass.depth.texture, &target_depth_desc);
+          rem_new_view(list->pass.depth.texture, &target_depth_desc);
 
       // update each mesh views/projections matrix
       ProbeReflectionListPreprocessorData preprocessor_data = {
@@ -72,9 +73,9 @@ static inline void probe_reflection_plane_list_draw_callback(void *data) {
       if (debug && probe->texture_layer < debug->max_views)
         scene_debug_view_create(debug->scene_debug, target_color);
       else
-        wgpuTextureViewRelease(target_color);
+        rem_destroy_view(&target_color);
 
-      wgpuTextureViewRelease(target_depth);
+      rem_destroy_view(&target_depth);
 
       // re-enable all meshes for next draw (dirty......)
       render_pass_enable_all_mesh(&list->pass);

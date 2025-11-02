@@ -4,14 +4,16 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include "anchor.h"
 #include "backend/buffer.h"
 #include "backend/context.h"
-#include "utils/math.h"
-#include "anchor.h"
-#include "string.h"
+#include "backend/resource_manager.h"
 #include "runtime/geometry/edge/core.h"
 #include "runtime/geometry/line/core.h"
 #include "runtime/geometry/vertex/core.h"
+#include "string.h"
+#include "utils/math.h"
+#include "webgpu/webgpu.h"
 
 static bool mesh_topology_wireframe_is_face(VertexIndex *);
 
@@ -155,23 +157,37 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
   // map wireframe index cluster based on base topology index
   mesh_topology_anchor_list_map(&hashed_anchors, src_topo, &dest_topo->anchors);
 
-  // upload vertex attributes
-  buffer_create(&dest_topo->attribute.buffer,
-                &(CreateBufferDescriptor){
-                    .data = (void *)dest_topo->attribute.entries,
-                    .size = dest_topo->attribute.length * sizeof(vattr_t),
-                    .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
-                    .mappedAtCreation = false,
-                });
+  {
+    // upload vertex attributes
+    const size_t va_size = dest_topo->attribute.length * sizeof(vattr_t);
 
-  // upload vertex index
-  buffer_create(&dest_topo->index.buffer,
-                &(CreateBufferDescriptor){
-                    .data = (void *)dest_topo->index.entries,
-                    .size = dest_topo->index.length * sizeof(vindex_t),
-                    .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
-                    .mappedAtCreation = false,
-                });
+    dest_topo->attribute.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
+        .label = "Wireframe Topology Vertex Attributes",
+        .mappedAtCreation = false,
+        .size = va_size,
+        .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
+    });
+
+    rem_write_buffer(dest_topo->attribute.buffer, 0,
+                     (void *)dest_topo->attribute.entries, va_size,
+                     REMWriteFlag_None);
+  }
+
+  {
+    // upload vertex index
+    const size_t vi_size = dest_topo->index.length * sizeof(vindex_t);
+
+    dest_topo->index.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
+        .label = "Wireframe Topology Vertex Indexes",
+        .mappedAtCreation = false,
+        .size = vi_size,
+        .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
+    });
+
+    rem_write_buffer(dest_topo->index.buffer, 0,
+                     (void *)dest_topo->index.entries, vi_size,
+                     REMWriteFlag_None);
+  }
 
   return MeshTopologyWireframeStatus_Success;
 }
@@ -219,9 +235,9 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
   }
 
   // update buffer or use map_write for direct link with CPU
-  wgpuQueueWriteBuffer(context_queue(), dest_topo->attribute.buffer, 0,
-                       dest_topo->attribute.entries,
-                       dest_topo->attribute.length * sizeof(vattr_t));
+  rem_write_buffer(dest_topo->attribute.buffer, 0, dest_topo->attribute.entries,
+                   dest_topo->attribute.length * sizeof(vattr_t),
+                   REMWriteFlag_None);
 
   return MeshTopologyWireframeStatus_Success;
 }

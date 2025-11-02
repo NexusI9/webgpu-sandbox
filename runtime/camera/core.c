@@ -1,18 +1,18 @@
 #include "core.h"
 
-#include <stddef.h>
 #include <cglm/mat4.h>
 #include <cglm/vec3.h>
+#include <stddef.h>
 
-#include "utils/matrix.h"
 #include "./uniform.h"
-#include "math.h"
 #include "backend/registry.h"
 #include "backend/ubo.h"
+#include "math.h"
+#include "utils/matrix.h"
 
 void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
-  cam->id = reg_register((void *)cam, RegEntryType_Camera);
+  cam->id = reg_register(reg_new_id(), (void *)cam, RegEntryType_Camera);
 
   // set matrix and position to 0
   camera_reset(cam);
@@ -22,7 +22,6 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
   cam->clock = cd->clock;
   cam->mode = cd->mode;
   cam->sensitivity = cd->sensitivity;
-
 }
 
 void camera_reset(Camera *c) {

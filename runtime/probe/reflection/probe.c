@@ -4,7 +4,9 @@
 #include <cglm/vec3.h>
 #include <stdint.h>
 
+#include "backend/logger.h"
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "core.h"
 #include "grid.h"
@@ -24,7 +26,6 @@
 
 void probe_reflection_create(ProbeReflection *probe, vec3 position) {
 
-  probe->id = reg_register(probe, RegEntryType_ProbeReflection);
   glm_vec3_copy(position, probe->position);
 
   for (uint8_t i = 0; i < PROBE_REFLECTION_VIEW_COUNT; i++) {
@@ -78,7 +79,7 @@ void probe_reflection_update_camera(ProbeReflection *probe) {
 DynamicListStatus probe_reflection_list_create(ProbeReflectionList *list,
                                                const size_t capacity) {
   return dyli_create((void *)&list->entries, &list->capacity, &list->length,
-                     sizeof(ProbeReflection), capacity,
+                     sizeof(ProbeReflection *), capacity,
                      "Probe Reflection list");
 }
 
@@ -90,7 +91,7 @@ DynamicListStatus probe_reflection_list_insert(ProbeReflectionList *list,
     return DynamicListStatus_UndefError;
 
   return dyli_insert((void *)&list->entries, &list->capacity, &list->length,
-                     sizeof(ProbeReflection), (void *)entry, 1,
+                     sizeof(ProbeReflection *), (void *)&entry, 1,
                      "Probe Reflection list");
 }
 
@@ -100,15 +101,29 @@ ProbeReflection *probe_reflection_list_new_entry(ProbeReflectionList *list) {
   if (list->length == PROBE_REFLECTION_LIST_MAX_COUNT)
     return NULL;
 
-  return (ProbeReflection *)dyli_new_entry(
-      (void *)&list->entries, &list->capacity, &list->length,
-      sizeof(ProbeReflection), "Probe Reflection list");
+  ProbeReflection *probe = rem_new_probe_reflection();
+
+  if (probe == NULL) {
+    logger_add(LoggerFlag_Error,
+               "Couldn't create new probe reflection. Max capacity reached.");
+    return NULL;
+  }
+
+  DynamicListStatus insert = probe_reflection_list_insert(list, probe);
+
+  if (insert != DynamicListStatus_Success) {
+    logger_add(LoggerFlag_Error,
+               "Couldn't insert new probe reflection. Error code: %d.", insert);
+    return NULL;
+  }
+
+  return probe;
 }
 
 DynamicListStatus probe_reflection_list_remove(ProbeReflectionList *list,
                                                ProbeReflection *entry) {
   return dyli_remove((void *)list->entries, &list->length,
-                     sizeof(ProbeReflection), (void *)entry,
+                     sizeof(ProbeReflection *), (void *)entry,
                      "Probe Reflection list");
 }
 

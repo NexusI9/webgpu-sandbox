@@ -9,6 +9,7 @@
 
 // runtime
 #include "backend/context.h"
+#include "backend/resource_manager.h"
 #include "resources/example/glass.h"
 #include "resources/example/gltf.h"
 #include "resources/example/light.h"
@@ -21,8 +22,6 @@
 #include "runtime/scene/renderer/core.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
-
-static Scene main_scene;
 
 int main(int argc, const char *argv[]) {
   (void)argc, (void)argv; // unused
@@ -40,7 +39,9 @@ int main(int argc, const char *argv[]) {
           },
   });
 
-  scene_create(&main_scene,
+  Scene *main_scene = rem_new_scene();
+
+  scene_create(main_scene,
                &(SceneCreateDescriptor){
                    .renderer =
                        &(SceneRendererCreateDescriptor){
@@ -59,11 +60,11 @@ int main(int argc, const char *argv[]) {
                        },
                });
 
-  scene_set_draw_mode(&main_scene, SceneRendererDrawMode_Solid);
+  scene_set_draw_mode(main_scene, SceneRendererDrawMode_Solid);
 
   // example_light(&main_scene);
-  example_skybox(&main_scene);
-  example_gltf_spa(&main_scene);
+  example_skybox(main_scene);
+  example_gltf_spa(main_scene);
 
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);
@@ -84,7 +85,7 @@ int main(int argc, const char *argv[]) {
    */
 
   // Update Loop
-  scene_renderer_draw(&main_scene.renderer);
+  scene_renderer_draw(&main_scene->renderer);
 
   return 0;
 }

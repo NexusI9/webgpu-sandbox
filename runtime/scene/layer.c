@@ -4,10 +4,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "utils/hash.h"
 #include "backend/logger.h"
 #include "runtime/mesh/ref_list.h"
 #include "utils/dyli.h"
+#include "utils/hsht.h"
 
 static const char *standard_layers[SCENE_STD_LAYER_COUNT] = {
     SCENE_LAYER_DEFAULT,
@@ -137,13 +137,13 @@ SceneLayer *scene_layer_set_create_layer(SceneLayerSet *set, const char *name) {
     return NULL;
   }
 
-  hash_djb2_t hash = hash_djb2(name) % set->capacity;
+  hash_t hash = hash_djb2(name) % set->capacity;
 
   // init new layer
   SceneLayer *layer = &set->entries[hash];
 
   // linear prob
-  hash_djb2_t init_hash = hash;
+  hash_t init_hash = hash;
   while (true) {
     // if not occupied or names don't match(collision)
     if (layer->meshes.entries == NULL || strcmp(layer->name, name) == 0)
@@ -168,9 +168,9 @@ SceneLayer *scene_layer_set_create_layer(SceneLayerSet *set, const char *name) {
  */
 SceneLayer *scene_layer_set_find(SceneLayerSet *set, const char *name) {
 
-  hash_djb2_t hash = hash_djb2(name) % set->capacity;
+  hash_t hash = hash_djb2(name) % set->capacity;
 
-  hash_djb2_t init_hash = hash;
+  hash_t init_hash = hash;
 
   while (true) {
 
@@ -198,7 +198,7 @@ SceneLayer *scene_layer_set_find(SceneLayerSet *set, const char *name) {
  */
 int scene_layer_set_delete(SceneLayerSet *set, const char *name) {
 
-  hash_djb2_t hash = hash_djb2(name) % set->capacity;
+  hash_t hash = hash_djb2(name) % set->capacity;
 
   SceneLayer *layer = scene_layer_set_find(set, name);
 

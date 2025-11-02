@@ -1,6 +1,7 @@
 #include "kawase.h"
 #include "backend/buffer.h"
 #include "backend/context.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
@@ -77,8 +78,8 @@ compute_pass_kawase_inline(ComputePass *pass, const KawaseDescriptor *desc,
     WGPUTextureViewDescriptor b_desc = a_desc;
     b_desc.baseArrayLayer = 0; // reset array
 
-    WGPUTextureView a_view = wgpuTextureCreateView(a_tex, &a_desc);
-    WGPUTextureView b_view = wgpuTextureCreateView(b_tex, &b_desc);
+    WGPUTextureView a_view = rem_new_view(a_tex, &a_desc);
+    WGPUTextureView b_view = rem_new_view(b_tex, &b_desc);
 
     WGPUBindGroupEntry entries[4] = {
         {.binding = 0, .textureView = a_view},
@@ -114,8 +115,8 @@ compute_pass_kawase_inline(ComputePass *pass, const KawaseDescriptor *desc,
       wgpuComputePassEncoderSetPipeline(compute_pass, pipeline);
 
       // update offset uniform
-      wgpuQueueWriteBuffer(context_queue(), pass->buffer, 0, &uniform,
-                           sizeof(KawaseUniform));
+      rem_write_buffer(pass->buffer, 0, &uniform, sizeof(KawaseUniform),
+                       REMWriteFlag_None);
 
       wgpuComputePassEncoderSetBindGroup(
           compute_pass, 0, (j % 2 == 0) ? bind_group_a : bind_group_b, 0, NULL);
@@ -151,8 +152,8 @@ compute_pass_kawase_inline(ComputePass *pass, const KawaseDescriptor *desc,
     wgpuBindGroupRelease(bind_group_a);
     wgpuBindGroupRelease(bind_group_b);
 
-    wgpuTextureViewRelease(a_view);
-    wgpuTextureViewRelease(b_view);
+    rem_destroy_view(&a_view);
+    rem_destroy_view(&b_view);
   }
 
   return KawaseStatus_Success;

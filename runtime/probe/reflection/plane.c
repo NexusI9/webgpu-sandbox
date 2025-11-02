@@ -11,6 +11,7 @@
 #include "backend/compute/kawase.h"
 #include "backend/compute/mipmap.h"
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "core.h"
 #include "runtime/camera/core.h"
@@ -73,13 +74,26 @@ probe_reflection_plane_list_new_entry(ProbeReflectionPlaneList *list) {
   if (list->length == PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT)
     return NULL;
 
-  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)dyli_new_entry(
-      (void *)&list->entries, &list->capacity, &list->length,
-      sizeof(ProbeReflectionPlane), "Probe Reflection Grid list");
+  ProbeReflectionPlane *plane = rem_new_plane_reflection();
 
-  probe->texture_layer = list->length - 1;
+  if (plane == NULL) {
+    logger_add(LoggerFlag_Error,
+               "Couldn't create new plane reflection. Max capacity reached.");
+    return NULL;
+  }
 
-  return probe;
+  DynamicListStatus insert = probe_reflection_plane_list_insert(list, plane);
+
+  if (insert != DynamicListStatus_Success) {
+    logger_add(LoggerFlag_Error,
+               "Couldn't insert new probe reflection plane. Error code: %d.",
+               insert);
+    return NULL;
+  }
+
+  plane->texture_layer = list->length - 1;
+
+  return plane;
 }
 
 DynamicListStatus
@@ -97,8 +111,6 @@ probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *list) {
 
 void probe_reflection_plane_create(ProbeReflectionPlane *probe,
                                    ProbeReflectionPlaneDescriptor *desc) {
-
-  probe->id = reg_register(probe, RegEntryType_ProbeReflectionPlane);
 
   probe_reflection_plane_set_name(
       probe, desc->name == 0 ? "Probe Reflection Plane" : desc->name);

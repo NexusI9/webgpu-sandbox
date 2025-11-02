@@ -43,8 +43,7 @@ static inline void scene_mesh_list_init(Scene *);
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   TIMER("Scene Load", {
-    scene->id = reg_register((void *)scene, RegEntryType_Scene);
-
+   
     {
       /*  ===== SCENE RENDER =====   */
       scene_renderer_init(&scene->renderer, desc->renderer);

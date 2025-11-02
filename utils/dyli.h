@@ -6,6 +6,7 @@
 #include <stdio.h>
 
 #define DYLI_INVALID_INDEX ((size_t)-1)
+#define DYLI_DEFAULT_EXPAND_THRESHOLD 1
 
 typedef enum {
   DynamicListStatus_Success,

@@ -5,6 +5,7 @@
 
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "runtime/light/shadow_map/core.h"
 #include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
@@ -81,328 +82,250 @@ void standard_textures_init() {
 
 WGPUTextureView scene_renderer_create_fallback_float(WGPUTexture *texture) {
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Standard Texture Float 2D",
-          .size =
-              {
-                  .width = 1,
-                  .height = 1,
-                  .depthOrArrayLayers = 1,
-              },
-          .format = TEXTURE_FORMAT_OFFSCREEN,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-          .dimension = WGPUTextureDimension_2D,
-          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-      });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Standard Texture Float 2D",
+      .size =
+          {
+              .width = 1,
+              .height = 1,
+              .depthOrArrayLayers = 1,
+          },
+      .format = TEXTURE_FORMAT_OFFSCREEN,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .dimension = WGPUTextureDimension_2D,
+      .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+  });
 
-  wgpuQueueWriteTexture(context_queue(),
-                        &(WGPUImageCopyTexture){
-                            .texture = *texture,
-                            .mipLevel = 0,
-                            .origin = {0, 0, 0},
-                            .aspect = WGPUTextureAspect_All,
-                        },
-                        pixel, 4 * sizeof(uint32_t),
-                        &(WGPUTextureDataLayout){
-                            .offset = 0,
-                            .bytesPerRow = 4,
-                            .rowsPerImage = 1,
-                        },
-                        &(WGPUExtent3D){1, 1, 1});
+  rem_write_texture(*texture, (void *)pixel, 4 * sizeof(uint32_t),
+                    TextureChannel_RGBA, 0, REMWriteFlag_None);
 
-  return wgpuTextureCreateView(*texture, NULL);
+  return rem_new_view(*texture, NULL);
 }
 
 WGPUTextureView
 scene_renderer_create_fallback_float_normal(WGPUTexture *texture) {
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Standard Texture Float 2D Normal",
-          .size =
-              {
-                  .width = 1,
-                  .height = 1,
-                  .depthOrArrayLayers = 1,
-              },
-          .format = TEXTURE_FORMAT_OFFSCREEN,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-          .dimension = WGPUTextureDimension_2D,
-          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-      });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Standard Texture Float 2D Normal",
+      .size =
+          {
+              .width = 1,
+              .height = 1,
+              .depthOrArrayLayers = 1,
+          },
+      .format = TEXTURE_FORMAT_OFFSCREEN,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .dimension = WGPUTextureDimension_2D,
+      .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+  });
 
-  wgpuQueueWriteTexture(context_queue(),
-                        &(WGPUImageCopyTexture){
-                            .texture = *texture,
-                            .mipLevel = 0,
-                            .origin = {0, 0, 0},
-                            .aspect = WGPUTextureAspect_All,
-                        },
-                        (uint8_t[4]){127, 127, 255, 255}, 4 * sizeof(uint8_t),
-                        &(WGPUTextureDataLayout){
-                            .offset = 0,
-                            .bytesPerRow = 4,
-                            .rowsPerImage = 1,
-                        },
-                        &(WGPUExtent3D){1, 1, 1});
+  rem_write_texture(*texture, (uint8_t[4]){127, 127, 255, 255},
+                    4 * sizeof(uint32_t), TextureChannel_RGBA, 0,
+                    REMWriteFlag_None);
 
-  return wgpuTextureCreateView(*texture, NULL);
+  return rem_new_view(*texture, NULL);
 }
 
 WGPUTextureView
 scene_renderer_create_fallback_float_black(WGPUTexture *texture) {
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Standard Texture Float Black",
-          .size =
-              {
-                  .width = 1,
-                  .height = 1,
-                  .depthOrArrayLayers = 1,
-              },
-          .format = TEXTURE_FORMAT_OFFSCREEN,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-          .dimension = WGPUTextureDimension_2D,
-          .usage = WGPUTextureUsage_RenderAttachment |
-                   WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-      });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Standard Texture Float Black",
+      .size =
+          {
+              .width = 1,
+              .height = 1,
+              .depthOrArrayLayers = 1,
+          },
+      .format = TEXTURE_FORMAT_OFFSCREEN,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .dimension = WGPUTextureDimension_2D,
+      .usage = WGPUTextureUsage_RenderAttachment |
+               WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+  });
 
-  return wgpuTextureCreateView(*texture, NULL);
+  return rem_new_view(*texture, NULL);
 }
 
 WGPUTextureView
 scene_renderer_create_fallback_float_2d_array(WGPUTexture *texture) {
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Standard Texture Float Array",
-          .size =
-              {
-                  .width = 1,
-                  .height = 1,
-                  .depthOrArrayLayers = 1,
-              },
-          .format = WGPUTextureFormat_R8Unorm,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-          .dimension = WGPUTextureDimension_2D,
-          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-      });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Standard Texture Float Array",
+      .size =
+          {
+              .width = 1,
+              .height = 1,
+              .depthOrArrayLayers = 1,
+          },
+      .format = WGPUTextureFormat_R8Unorm,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .dimension = WGPUTextureDimension_2D,
+      .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+  });
 
-  // DELETEME?
-  wgpuQueueWriteTexture(context_queue(),
-                        &(WGPUImageCopyTexture){
-                            .texture = *texture,
-                            .mipLevel = 0,
-                            .origin = {0, 0, 0},
-                            .aspect = WGPUTextureAspect_All,
-                        },
-                        (uint8_t[]){255}, sizeof(uint32_t),
-                        &(WGPUTextureDataLayout){
-                            .offset = 0,
-                            .bytesPerRow = 1,
-                            .rowsPerImage = 1,
-                        },
-                        &(WGPUExtent3D){1, 1, 1});
+  rem_write_texture(*texture, (uint8_t[]){255}, sizeof(uint32_t),
+                    TextureChannel_R, 0, REMWriteFlag_None);
 
-  return wgpuTextureCreateView(
-      *texture, &(WGPUTextureViewDescriptor){
-                    .label = "Standard View Float Array",
-                    .dimension = WGPUTextureViewDimension_2DArray,
-                    .format = WGPUTextureFormat_R8Unorm,
-                    .mipLevelCount = 1,
-                    .arrayLayerCount = 1,
-                });
+  return rem_new_view(*texture,
+                      &(WGPUTextureViewDescriptor){
+                          .label = "Standard View Float Array",
+                          .dimension = WGPUTextureViewDimension_2DArray,
+                          .format = WGPUTextureFormat_R8Unorm,
+                          .mipLevelCount = 1,
+                          .arrayLayerCount = 1,
+                      });
 }
 
 WGPUTextureView
 scene_renderer_create_fallback_float_cube(WGPUTexture *texture) {
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Standard Texture Float Cube",
-          .size =
-              {
-                  .width = 1,
-                  .height = 1,
-                  .depthOrArrayLayers = 6,
-              },
-          .format = WGPUTextureFormat_R8Unorm,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-          .dimension = WGPUTextureDimension_2D,
-          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-      });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Standard Texture Float Cube",
+      .size =
+          {
+              .width = 1,
+              .height = 1,
+              .depthOrArrayLayers = 6,
+          },
+      .format = WGPUTextureFormat_R8Unorm,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .dimension = WGPUTextureDimension_2D,
+      .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+  });
 
-  // DELETEME?
-  wgpuQueueWriteTexture(context_queue(),
-                        &(WGPUImageCopyTexture){
-                            .texture = *texture,
-                            .mipLevel = 0,
-                            .origin = {0, 0, 0},
-                            .aspect = WGPUTextureAspect_All,
-                        },
-                        (uint8_t[]){255}, sizeof(uint32_t),
-                        &(WGPUTextureDataLayout){
-                            .offset = 0,
-                            .bytesPerRow = 1,
-                            .rowsPerImage = 1,
-                        },
-                        &(WGPUExtent3D){1, 1, 1});
+  rem_write_texture(*texture, (uint8_t[]){255}, sizeof(uint32_t),
+                    TextureChannel_R, 0, REMWriteFlag_None);
 
-  return wgpuTextureCreateView(*texture,
-                               &(WGPUTextureViewDescriptor){
-                                   .label = "Standard View Float Cube",
-                                   .dimension = WGPUTextureViewDimension_Cube,
-                                   .format = WGPUTextureFormat_R8Unorm,
-                                   .mipLevelCount = 1,
-                                   .arrayLayerCount = 6,
-                               });
+  return rem_new_view(*texture, &(WGPUTextureViewDescriptor){
+                                    .label = "Standard View Float Cube",
+                                    .dimension = WGPUTextureViewDimension_Cube,
+                                    .format = WGPUTextureFormat_R8Unorm,
+                                    .mipLevelCount = 1,
+                                    .arrayLayerCount = 6,
+                                });
 }
 
 WGPUTextureView
 scene_renderer_create_fallback_float_cube_array(WGPUTexture *texture) {
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Standard Texture Float Cube Array",
-          .size =
-              {
-                  .width = 1,
-                  .height = 1,
-                  .depthOrArrayLayers = 6,
-              },
-          .format = WGPUTextureFormat_R8Unorm,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-          .dimension = WGPUTextureDimension_2D,
-          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-      });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Standard Texture Float Cube Array",
+      .size =
+          {
+              .width = 1,
+              .height = 1,
+              .depthOrArrayLayers = 6,
+          },
+      .format = WGPUTextureFormat_R8Unorm,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .dimension = WGPUTextureDimension_2D,
+      .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+  });
 
-  wgpuQueueWriteTexture(context_queue(),
-                        &(WGPUImageCopyTexture){
-                            .texture = *texture,
-                            .mipLevel = 0,
-                            .origin = {0, 0, 0},
-                            .aspect = WGPUTextureAspect_All,
-                        },
-                        (uint8_t[]){255}, sizeof(uint32_t),
-                        &(WGPUTextureDataLayout){
-                            .offset = 0,
-                            .bytesPerRow = 1,
-                            .rowsPerImage = 1,
-                        },
-                        &(WGPUExtent3D){1, 1, 1});
+  rem_write_texture(*texture, (uint8_t[]){255}, sizeof(uint32_t),
+                    TextureChannel_R, 0, REMWriteFlag_None);
 
-  return wgpuTextureCreateView(
-      *texture, &(WGPUTextureViewDescriptor){
-                    .label = "Standard View Float Cube Array",
-                    .dimension = WGPUTextureViewDimension_CubeArray,
-                    .format = WGPUTextureFormat_R8Unorm,
-                    .mipLevelCount = 1,
-                    .arrayLayerCount = 6,
-                });
+  return rem_new_view(*texture,
+                      &(WGPUTextureViewDescriptor){
+                          .label = "Standard View Float Cube Array",
+                          .dimension = WGPUTextureViewDimension_CubeArray,
+                          .format = WGPUTextureFormat_R8Unorm,
+                          .mipLevelCount = 1,
+                          .arrayLayerCount = 6,
+                      });
 }
 
 WGPUTextureView scene_renderer_create_fallback_depth(WGPUTexture *texture) {
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(), &(WGPUTextureDescriptor){
-                            .label = "Standard Texture Depth 2D",
-                            .size =
-                                {
-                                    .width = 1,
-                                    .height = 1,
-                                    .depthOrArrayLayers = 1,
-                                },
-                            .format = TEXTURE_FORMAT_DEPTH,
-                            .mipLevelCount = 1,
-                            .sampleCount = 1,
-                            .dimension = WGPUTextureDimension_2D,
-                            .usage = WGPUTextureUsage_TextureBinding |
-                                     WGPUTextureUsage_RenderAttachment,
-                        });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Standard Texture Depth 2D",
+      .size =
+          {
+              .width = 1,
+              .height = 1,
+              .depthOrArrayLayers = 1,
+          },
+      .format = TEXTURE_FORMAT_DEPTH,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .dimension = WGPUTextureDimension_2D,
+      .usage =
+          WGPUTextureUsage_TextureBinding | WGPUTextureUsage_RenderAttachment,
+  });
 
-  return wgpuTextureCreateView(*texture, NULL);
+  return rem_new_view(*texture, NULL);
 }
 
 WGPUTextureView
 scene_renderer_create_fallback_depth_cube_array(WGPUTexture *texture) {
 
   // create texture
-  *texture = wgpuDeviceCreateTexture(
-      context_device(), &(WGPUTextureDescriptor){
-                            .label = "Standard Texture Depth Cube Array",
-                            .size =
-                                (WGPUExtent3D){
-                                    .width = 1,
-                                    .height = 1,
-                                    .depthOrArrayLayers = 6,
-                                },
-                            .format = SHADOW_DEPTH_FORMAT,
-                            .usage = WGPUTextureUsage_RenderAttachment |
-                                     WGPUTextureUsage_TextureBinding,
-                            .dimension = WGPUTextureDimension_2D,
-                            .mipLevelCount = 1,
-                            .sampleCount = 1,
-                        });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Standard Texture Depth Cube Array",
+      .size =
+          (WGPUExtent3D){
+              .width = 1,
+              .height = 1,
+              .depthOrArrayLayers = 6,
+          },
+      .format = SHADOW_DEPTH_FORMAT,
+      .usage =
+          WGPUTextureUsage_RenderAttachment | WGPUTextureUsage_TextureBinding,
+      .dimension = WGPUTextureDimension_2D,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+  });
 
-  return wgpuTextureCreateView(
-      *texture, &(WGPUTextureViewDescriptor){
-                    .label = "Standard View Depth Cube Array",
-                    .dimension = WGPUTextureViewDimension_CubeArray,
-                    .format = SHADOW_DEPTH_FORMAT,
-                    .baseMipLevel = 0,
-                    .mipLevelCount = 1,
-                    .baseArrayLayer = 0,
-                    .arrayLayerCount = 6,
-                    .aspect = WGPUTextureAspect_DepthOnly,
-                });
+  return rem_new_view(*texture,
+                      &(WGPUTextureViewDescriptor){
+                          .label = "Standard View Depth Cube Array",
+                          .dimension = WGPUTextureViewDimension_CubeArray,
+                          .format = SHADOW_DEPTH_FORMAT,
+                          .baseMipLevel = 0,
+                          .mipLevelCount = 1,
+                          .baseArrayLayer = 0,
+                          .arrayLayerCount = 6,
+                          .aspect = WGPUTextureAspect_DepthOnly,
+                      });
 }
 
 WGPUTextureView
 scene_renderer_create_fallback_depth_2d_array(WGPUTexture *texture) {
 
   // create texture
-  *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Standard Texture Cube Depth 2D Array",
-          .size =
-              (WGPUExtent3D){
-                  .width = 1,
-                  .height = 1,
-                  .depthOrArrayLayers = 1, // may need to update
-              },
-          .format = SHADOW_DEPTH_FORMAT,
-          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-          .dimension = WGPUTextureDimension_2D,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-      });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Standard Texture Cube Depth 2D Array",
+      .size =
+          (WGPUExtent3D){
+              .width = 1,
+              .height = 1,
+              .depthOrArrayLayers = 1, // may need to update
+          },
+      .format = SHADOW_DEPTH_FORMAT,
+      .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+      .dimension = WGPUTextureDimension_2D,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+  });
 
-  return wgpuTextureCreateView(
-      *texture, &(WGPUTextureViewDescriptor){
-                    .label = "Standard View Cube Depth 2D Array",
-                    .dimension = WGPUTextureViewDimension_2DArray,
-                    .format = SHADOW_DEPTH_FORMAT,
-                    .baseMipLevel = 0,
-                    .mipLevelCount = 1,
-                    .baseArrayLayer = 0,
-                    .arrayLayerCount = 1, // or however many layers
-                    .aspect = WGPUTextureAspect_DepthOnly,
-                });
+  return rem_new_view(*texture,
+                      &(WGPUTextureViewDescriptor){
+                          .label = "Standard View Cube Depth 2D Array",
+                          .dimension = WGPUTextureViewDimension_2DArray,
+                          .format = SHADOW_DEPTH_FORMAT,
+                          .baseMipLevel = 0,
+                          .mipLevelCount = 1,
+                          .baseArrayLayer = 0,
+                          .arrayLayerCount = 1, // or however many layers
+                          .aspect = WGPUTextureAspect_DepthOnly,
+                      });
 }
 
 const WGPUTextureView std_texture_view(const TextureViewType type) {

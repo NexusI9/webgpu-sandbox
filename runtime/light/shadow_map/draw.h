@@ -7,6 +7,7 @@
 
 // #include "runtime/light/light.h"
 #include "backend/profiler.h"
+#include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
@@ -185,10 +186,10 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
         .baseMipLevel = 0,
     };
 
-    WGPUTextureView temp_layer_texture_view_depth = wgpuTextureCreateView(
+    WGPUTextureView temp_layer_texture_view_depth = rem_new_view(
         desc->pass->depth.texture, &temp_layer_texture_descriptor_depth);
 
-    WGPUTextureView temp_layer_texture_view_color = wgpuTextureCreateView(
+    WGPUTextureView temp_layer_texture_view_color = rem_new_view(
         desc->pass->color.texture, &temp_layer_texture_descriptor_color);
 
     WGPUTextureView cached_view_color = desc->pass->color.attachment.view;
@@ -221,13 +222,13 @@ void shadow_map_draw(const ShadowMapDrawDescriptor *desc,
     if (desc->command_encoder == NULL)
       render_pass_im_end(desc->pass);
 
-    wgpuTextureViewRelease(temp_layer_texture_view_depth);
+    rem_destroy_view(&temp_layer_texture_view_depth);
 
     if (debug && debug->scene_debug && debug_view_count++ < debug->max_views)
       scene_debug_view_create(debug->scene_debug,
                               temp_layer_texture_view_color);
     else
-      wgpuTextureViewRelease(temp_layer_texture_view_color);
+      rem_destroy_view(&temp_layer_texture_view_color);
   }
   profiler_latency_end(desc->profiler, ProfilerLatencyType_ShadowPass);
 }

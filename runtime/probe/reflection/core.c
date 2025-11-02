@@ -4,6 +4,7 @@
 #include <webgpu/webgpu.h>
 
 #include "backend/context.h"
+#include "backend/resource_manager.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/pipeline/render.h"
@@ -23,27 +24,25 @@ void probe_reflection_list_create_texture(
     === COLOR ===
    */
 
-  *desc->color = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Probe Reflection List Texture Color",
-          .size =
-              (WGPUExtent3D){
-                  .width = desc->resolution,
-                  .height = desc->resolution,
-                  .depthOrArrayLayers = desc->layer_count,
-              },
-          .format = TEXTURE_FORMAT_OFFSCREEN,
-          .usage = WGPUTextureUsage_TextureBinding   // read texture in shader
-                   | WGPUTextureUsage_StorageBinding // write texture in shader
-                   | WGPUTextureUsage_CopyDst        // upload the input data
-                   | WGPUTextureUsage_RenderAttachment,
-          .dimension = WGPUTextureDimension_2D,
-          .mipLevelCount = PROBE_REFLECTION_MIPMAP_COUNT,
-          .sampleCount = 1,
-      });
+  *desc->color = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Probe Reflection List Texture Color",
+      .size =
+          (WGPUExtent3D){
+              .width = desc->resolution,
+              .height = desc->resolution,
+              .depthOrArrayLayers = desc->layer_count,
+          },
+      .format = TEXTURE_FORMAT_OFFSCREEN,
+      .usage = WGPUTextureUsage_TextureBinding   // read texture in shader
+               | WGPUTextureUsage_StorageBinding // write texture in shader
+               | WGPUTextureUsage_CopyDst        // upload the input data
+               | WGPUTextureUsage_RenderAttachment,
+      .dimension = WGPUTextureDimension_2D,
+      .mipLevelCount = PROBE_REFLECTION_MIPMAP_COUNT,
+      .sampleCount = 1,
+  });
 
-  *desc->color_view = wgpuTextureCreateView(
+  *desc->color_view = rem_new_view(
       *desc->color, &(WGPUTextureViewDescriptor){
                         .label = "Probe Reflection List View Color",
                         .format = wgpuTextureGetFormat(*desc->color),
@@ -60,25 +59,23 @@ void probe_reflection_list_create_texture(
     === DEPTH ===
    */
 
-  *desc->depth = wgpuDeviceCreateTexture(
-      context_device(), &(WGPUTextureDescriptor){
-                            .label = "Probe Reflection List Texture Depth",
-                            .size =
-                                (WGPUExtent3D){
-                                    .width = desc->resolution,
-                                    .height = desc->resolution,
-                                    .depthOrArrayLayers = desc->layer_count,
-                                },
-                            .format = TEXTURE_FORMAT_DEPTH,
-                            .usage = WGPUTextureUsage_CopyDst |
-                                     WGPUTextureUsage_RenderAttachment |
-                                     WGPUTextureUsage_TextureBinding,
-                            .dimension = WGPUTextureDimension_2D,
-                            .mipLevelCount = 1,
-                            .sampleCount = 1,
-                        });
+  *desc->depth = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Probe Reflection List Texture Depth",
+      .size =
+          (WGPUExtent3D){
+              .width = desc->resolution,
+              .height = desc->resolution,
+              .depthOrArrayLayers = desc->layer_count,
+          },
+      .format = TEXTURE_FORMAT_DEPTH,
+      .usage = WGPUTextureUsage_CopyDst | WGPUTextureUsage_RenderAttachment |
+               WGPUTextureUsage_TextureBinding,
+      .dimension = WGPUTextureDimension_2D,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+  });
 
-  *desc->depth_view = wgpuTextureCreateView(
+  *desc->depth_view = rem_new_view(
       *desc->depth, &(WGPUTextureViewDescriptor){
                         .label = "Probe Reflection List View Depth",
                         .dimension = desc->view_dimension,
@@ -167,17 +164,11 @@ void probe_reflection_list_update_resolution(
 
   // === clean up ===
   {
-    if (pass->color.texture)
-      wgpuTextureRelease(pass->color.texture);
+    rem_destroy_view(&pass->color.views[0]);
+    rem_destroy_texture(&pass->color.texture);
 
-    if (pass->depth.texture)
-      wgpuTextureRelease(pass->depth.texture);
-
-    if (pass->color.views[0])
-      wgpuTextureViewRelease(pass->color.views[0]);
-
-    if (pass->depth.views[0])
-      wgpuTextureViewRelease(pass->depth.views[0]);
+    rem_destroy_view(&pass->depth.views[0]);
+    rem_destroy_texture(&pass->depth.texture);
   }
 
   probe_reflection_list_create_texture(&(ProbeReflectionTextureDescriptor){

@@ -4,11 +4,12 @@
 #include <stdlib.h>
 
 #include "backend/buffer.h"
+#include "backend/resource_manager.h"
 #include "core.h"
-#include "webgpu/webgpu.h"
-#include "runtime/geometry/line/core.h"
 #include "runtime/geometry/aabb/aabb.h"
+#include "runtime/geometry/line/core.h"
 #include "runtime/geometry/vertex/core.h"
+#include "webgpu/webgpu.h"
 
 static void mesh_topology_boundbox_cube(MeshTopologyBoundbox *);
 
@@ -103,21 +104,33 @@ mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
   mesh_topology_boundbox_cube(bound);
 
   // upload to gpu
-  buffer_create(&bound->index.buffer,
-                &(CreateBufferDescriptor){
-                    .data = (void *)bound->index.entries,
-                    .size = bound->index.length * sizeof(vindex_t),
-                    .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
-                    .mappedAtCreation = false,
-                });
+  {
+    const size_t va_size = bound->attribute.length * sizeof(vattr_t);
 
-  buffer_create(&bound->attribute.buffer,
-                &(CreateBufferDescriptor){
-                    .data = (void *)bound->attribute.entries,
-                    .size = bound->attribute.length * sizeof(vattr_t),
-                    .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
-                    .mappedAtCreation = false,
-                });
+    bound->attribute.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
+        .label = "BoundBox Topology Vertex Attributes",
+        .mappedAtCreation = false,
+        .size = va_size,
+        .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
+    });
+
+    rem_write_buffer(bound->attribute.buffer, 0,
+                     (void *)bound->attribute.entries, va_size,
+                     REMWriteFlag_None);
+  }
+
+  {
+    const size_t vi_size = bound->index.length * sizeof(vindex_t);
+    bound->index.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
+        .label = "BoundBox Topology Vertex Indexes",
+        .mappedAtCreation = false,
+        .size = vi_size,
+        .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
+    });
+
+    rem_write_buffer(bound->index.buffer, 0, (void *)bound->index.entries,
+                     vi_size, REMWriteFlag_None);
+  }
 
   return MeshTopologyBoundboxStatus_Success;
 }

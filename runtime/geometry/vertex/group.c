@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "utils/hash.h"
+#include "utils/hsht.h"
 #include "index.h"
 #include "backend/logger.h"
 
@@ -132,12 +132,12 @@ VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
     return NULL;
   }
 
-  hash_djb2_t hash = hash_djb2(new_group->name) % set->capacity;
+  hash_t hash = hash_djb2(new_group->name) % set->capacity;
 
   // init new vertex group
   VertexGroup *vgroup = &set->entries[hash];
 
-  hash_djb2_t init_hash = hash;
+  hash_t init_hash = hash;
 
   while (true) {
     // if not occupied or names don't match(collision)

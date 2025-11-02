@@ -87,7 +87,17 @@ EXTERN_C_BEGIN
 extern RegEntry g_reg[REG_MAX_OBJECTS];
 extern reg_id_t g_reg_id;
 
-reg_id_t reg_register(void *, RegEntryType);
+static inline reg_id_t reg_new_id() {
+
+  if (g_reg_id == REG_MAX_OBJECTS) {
+    logger_add(LoggerFlag_Error, "Cannot add more objects to registry.");
+    return REG_MAX_OBJECTS;
+  }
+  
+  return g_reg_id++;
+}
+
+reg_id_t reg_register(const reg_id_t, void *, RegEntryType);
 
 static inline const int reg_length() { return g_reg_id; }
 

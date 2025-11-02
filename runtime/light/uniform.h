@@ -102,9 +102,6 @@ static inline void ambient_light_get_color(AmbientLight *light, color dest) {
 }
 
 static inline void ambient_light_set_color(AmbientLight *light, color value) {
-
-  // DEBUG
-  printf("COLOR\n");
   
   glm_vec4_copy(value, light->color);
   ambient_light_uniform_update(light);

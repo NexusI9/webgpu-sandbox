@@ -1,4 +1,5 @@
 #include "atlas.h"
+#include "backend/resource_manager.h"
 #include "runtime/texture/core.h"
 
 #include "backend/buffer.h"
@@ -38,16 +39,20 @@ TextureStatus texture_atlas_create(TextureAtlas *atlas,
   if (desc->label)
     atlas->label = strdup(desc->label);
 
-  buffer_create_texture(&atlas->texture, &atlas->view,
-                        &(CreateTextureDescriptor){
-                            .channels = texture.channels,
-                            .data = texture.data,
-                            .format = desc->format,
-                            .height = texture.height,
-                            .width = texture.width,
-                            .size = texture.size,
-                        },
-                        BufferTextureMemory_Free);
+  atlas->texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Atlas Texture",
+      .dimension = WGPUTextureDimension_2D,
+      .format = TEXTURE_FORMAT_OFFSCREEN,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+      .size = {texture.width, texture.height, 1},
+  });
+
+  rem_write_texture(atlas->texture, texture.data, texture.size,
+                    texture.channels, 0, REMWriteFlag_STBIFreeData);
+
+  atlas->view = rem_new_view(atlas->texture, NULL);
 
   atlas->width = texture.width;
   atlas->height = texture.height;
@@ -88,13 +93,13 @@ TextureStatus texture_atlas_destroy(TextureAtlas *atlas) {
   }
 
   if (atlas->sampler)
-    wgpuSamplerRelease(atlas->sampler);
+    rem_destroy_sampler(&atlas->sampler);
 
   if (atlas->texture)
-    wgpuTextureRelease(atlas->texture);
+    rem_destroy_texture(&atlas->texture);
 
   if (atlas->view)
-    wgpuTextureViewRelease(atlas->view);
+    rem_destroy_view(&atlas->view);
 
   return TextureStatus_Success;
 }

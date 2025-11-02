@@ -7,6 +7,7 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "backend/std_texture/core.h"
 #include "core.h"
 #include "probe.h"
@@ -25,8 +26,6 @@ float probe_reflection_point(size_t x, uint16_t count, float size) {
 
 void probe_reflection_grid_create(ProbeReflectionGrid *grid,
                                   ProbeReflectionGridDescriptor *desc) {
-
-  grid->id = reg_register(grid, RegEntryType_ProbeReflectionGrid);
 
   probe_reflection_grid_set_name(grid, desc->name == 0 ? "Probe Reflection Grid"
                                                        : desc->name);
@@ -67,11 +66,8 @@ void probe_reflection_grid_create(ProbeReflectionGrid *grid,
 
 void probe_reflection_grid_destroy(ProbeReflectionGrid *grid) {
 
-  wgpuTextureViewRelease(grid->view);
-  grid->view = NULL;
-
-  wgpuTextureRelease(grid->texture);
-  grid->texture = NULL;
+  rem_destroy_view(&grid->view);
+  rem_destroy_texture(&grid->texture);
 
   glm_ivec3_zero(grid->count);
   glm_vec3_zero(grid->scale);
@@ -124,7 +120,7 @@ probe_reflection_grid_list_insert(ProbeReflectionGridList *list,
     return DynamicListStatus_UndefError;
 
   return dyli_insert((void *)&list->entries, &list->capacity, &list->length,
-                     sizeof(ProbeReflectionGrid), (void *)entry, 1,
+                     sizeof(ProbeReflectionGrid *), (void *)&entry, 1,
                      "Probe Reflection Grid list");
 }
 
@@ -135,16 +131,32 @@ probe_reflection_grid_list_new_entry(ProbeReflectionGridList *list) {
   if (list->length == PROBE_REFLECTION_GRID_LIST_CAPACITY)
     return NULL;
 
-  return (ProbeReflectionGrid *)dyli_new_entry(
-      (void *)&list->entries, &list->capacity, &list->length,
-      sizeof(ProbeReflectionGrid), "Probe Reflection Grid list");
+  ProbeReflectionGrid *grid = rem_new_probe_reflection_grid();
+
+  if (grid == NULL) {
+    logger_add(
+        LoggerFlag_Error,
+        "Couldn't create new probe reflection grid. Max capacity reached.");
+    return NULL;
+  }
+
+  DynamicListStatus insert = probe_reflection_grid_list_insert(list, grid);
+
+  if (insert != DynamicListStatus_Success) {
+    logger_add(LoggerFlag_Error,
+               "Couldn't insert new probe reflection grid. Error code: %d.",
+               insert);
+    return NULL;
+  }
+
+  return grid;
 }
 
 DynamicListStatus
 probe_reflection_grid_list_remove(ProbeReflectionGridList *list,
                                   ProbeReflectionGrid *entry) {
   return dyli_remove((void *)list->entries, &list->length,
-                     sizeof(ProbeReflectionGrid), (void *)entry,
+                     sizeof(ProbeReflectionGrid *), (void *)entry,
                      "Probe Reflection Grid list");
 }
 
@@ -163,7 +175,7 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
   {
     for (size_t i = 0; i < list->length; i++) {
 
-      ProbeReflectionGrid *grid = &list->entries[i];
+      ProbeReflectionGrid *grid = list->entries[i];
 
       TIMER("", {
         logger_add(LoggerFlag_Process,
@@ -172,32 +184,32 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
 
         for (size_t j = 0; j < grid->probes.length; j++) {
 
-          ProbeReflection *probe = &grid->probes.entries[j];
+          ProbeReflection *probe = grid->probes.entries[j];
 
           for (uint8_t k = 0; k < PROBE_REFLECTION_VIEW_COUNT; k++) {
 
             // define target layer
-            WGPUTextureView target_color = wgpuTextureCreateView(
-                list->pass.color.texture,
-                &(WGPUTextureViewDescriptor){
-                    .label = "Probe Reflection Target Color View",
-                    .arrayLayerCount = 1,
-                    .baseArrayLayer = layer,
-                    .dimension = WGPUTextureViewDimension_2D,
-                    .baseMipLevel = 0,
-                    .mipLevelCount = 1,
-                });
+            WGPUTextureView target_color =
+                rem_new_view(list->pass.color.texture,
+                             &(WGPUTextureViewDescriptor){
+                                 .label = "Probe Reflection Target Color View",
+                                 .arrayLayerCount = 1,
+                                 .baseArrayLayer = layer,
+                                 .dimension = WGPUTextureViewDimension_2D,
+                                 .baseMipLevel = 0,
+                                 .mipLevelCount = 1,
+                             });
 
-            WGPUTextureView target_depth = wgpuTextureCreateView(
-                list->pass.depth.texture,
-                &(WGPUTextureViewDescriptor){
-                    .label = "Probe Reflection Target Depth View",
-                    .arrayLayerCount = 1,
-                    .baseArrayLayer = layer,
-                    .dimension = WGPUTextureViewDimension_2D,
-                    .baseMipLevel = 0,
-                    .mipLevelCount = 1,
-                });
+            WGPUTextureView target_depth =
+                rem_new_view(list->pass.depth.texture,
+                             &(WGPUTextureViewDescriptor){
+                                 .label = "Probe Reflection Target Depth View",
+                                 .arrayLayerCount = 1,
+                                 .baseArrayLayer = layer,
+                                 .dimension = WGPUTextureViewDimension_2D,
+                                 .baseMipLevel = 0,
+                                 .mipLevelCount = 1,
+                             });
 
             // update each mesh views/projections matrix
             render_pass_update_all_preprocessor_data(
@@ -215,9 +227,9 @@ void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
             if (debug && layer < debug->max_views)
               scene_debug_view_create(debug->scene_debug, target_color);
             else
-              wgpuTextureViewRelease(target_color);
+              rem_destroy_view(&target_color);
 
-            wgpuTextureViewRelease(target_depth);
+            rem_destroy_view(&target_depth);
             layer++;
           }
         }
@@ -232,7 +244,7 @@ probe_reflection_grid_list_probe_count(ProbeReflectionGridList *grid_list) {
 
   size_t count = 0;
   for (size_t i = 0; i < grid_list->length; i++)
-    count += grid_list->entries[i].probes.length;
+    count += grid_list->entries[i]->probes.length;
 
   return count;
 }

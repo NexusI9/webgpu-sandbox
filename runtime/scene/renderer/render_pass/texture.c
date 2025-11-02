@@ -6,6 +6,7 @@
 #include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/renderer/render_pass/core.h"
 #include "runtime/texture/core.h"
@@ -17,16 +18,8 @@ static inline void render_pass_texture_view_destroy(WGPUTexture *,
 void render_pass_texture_view_destroy(WGPUTexture *texture,
                                       WGPUTextureView *view) {
 
-  if (*texture) {
-    wgpuTextureRelease(*texture);
-    *texture = NULL;
-  }
-
-  if (*view) {
-    wgpuTextureViewRelease(*view);
-    *view = NULL;
-  }
-
+  rem_destroy_texture(texture);
+  rem_destroy_view(view);
 }
 
 /**
@@ -59,24 +52,22 @@ void render_pass_texture_create_multisample(
     return;
   }
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "MSAA Texture",
-          .usage = WGPUTextureUsage_TextureBinding |
-                   WGPUTextureUsage_RenderAttachment,
-          .size =
-              (WGPUExtent3D){
-                  .width = desc->width,
-                  .height = desc->height,
-                  .depthOrArrayLayers = 1,
-              },
-          .format = TEXTURE_FORMAT_ONSCREEN, // swapchain format
-          .sampleCount = desc->multisample,
-          .mipLevelCount = 1,
-      });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "MSAA Texture",
+      .usage =
+          WGPUTextureUsage_TextureBinding | WGPUTextureUsage_RenderAttachment,
+      .size =
+          (WGPUExtent3D){
+              .width = desc->width,
+              .height = desc->height,
+              .depthOrArrayLayers = 1,
+          },
+      .format = TEXTURE_FORMAT_ONSCREEN, // swapchain format
+      .sampleCount = desc->multisample,
+      .mipLevelCount = 1,
+  });
 
-  *view = wgpuTextureCreateView(*texture, NULL);
+  *view = rem_new_view(*texture, NULL);
 }
 
 /*
@@ -96,23 +87,22 @@ void render_pass_texture_create_monosample(
   if (format == WGPUTextureFormat_Undefined)
     format = TEXTURE_FORMAT_ONSCREEN;
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(), &(WGPUTextureDescriptor){
-                            .label = "Monosample Texture",
-                            .usage = WGPUTextureUsage_TextureBinding |
-                                     WGPUTextureUsage_RenderAttachment,
-                            .size =
-                                (WGPUExtent3D){
-                                    .width = desc->width,
-                                    .height = desc->height,
-                                    .depthOrArrayLayers = 1,
-                                },
-                            .format = format, // swapchain format
-                            .sampleCount = PipelineMultisampleCount_1x,
-                            .mipLevelCount = 1,
-                        });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Monosample Texture",
+      .usage =
+          WGPUTextureUsage_TextureBinding | WGPUTextureUsage_RenderAttachment,
+      .size =
+          (WGPUExtent3D){
+              .width = desc->width,
+              .height = desc->height,
+              .depthOrArrayLayers = 1,
+          },
+      .format = format, // swapchain format
+      .sampleCount = PipelineMultisampleCount_1x,
+      .mipLevelCount = 1,
+  });
 
-  *view = wgpuTextureCreateView(*texture, NULL);
+  *view = rem_new_view(*texture, NULL);
 }
 
 void render_pass_texture_create_color(RenderPass *pass,
@@ -165,21 +155,20 @@ void render_pass_texture_depth(WGPUTexture *texture, WGPUTextureView *view,
   else if (format == WGPUTextureFormat_Depth24PlusStencil8)
     aspect = WGPUTextureAspect_All;
 
-  *texture = wgpuDeviceCreateTexture(
-      context_device(), &(WGPUTextureDescriptor){
-                            .label = "Render Pass Depth Texture",
-                            .usage = WGPUTextureUsage_RenderAttachment,
-                            .size =
-                                (WGPUExtent3D){
-                                    .width = desc->width,
-                                    .height = desc->height,
-                                    .depthOrArrayLayers = 1,
-                                },
-                            .format = format,
-                            .mipLevelCount = 1,
-                            .sampleCount = desc->multisample,
-                            .dimension = WGPUTextureDimension_2D,
-                        });
+  *texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Render Pass Depth Texture",
+      .usage = WGPUTextureUsage_RenderAttachment,
+      .size =
+          (WGPUExtent3D){
+              .width = desc->width,
+              .height = desc->height,
+              .depthOrArrayLayers = 1,
+          },
+      .format = format,
+      .mipLevelCount = 1,
+      .sampleCount = desc->multisample,
+      .dimension = WGPUTextureDimension_2D,
+  });
 
   *view = wgpuTextureCreateView(*texture,
                                 &(WGPUTextureViewDescriptor){
@@ -276,52 +265,20 @@ void render_pass_list_texture_create_shared_depth(
 }
 
 void render_pass_texture_destroy_color(RenderPass *pass) {
-
-  if (pass->color.attachment.view) {
-    wgpuTextureViewRelease(pass->color.attachment.view);
-    pass->color.attachment.view = NULL;
-  }
-
-  if (pass->color.texture) {
-    wgpuTextureRelease(pass->color.texture);
-    pass->color.texture = NULL;
-  }
+  rem_destroy_view(&pass->color.attachment.view);
+  rem_destroy_texture(&pass->color.texture);
 }
 void render_pass_texture_destroy_depth(RenderPass *pass) {
-
-  if (pass->depth.attachment.view) {
-    wgpuTextureViewRelease(pass->depth.attachment.view);
-    pass->depth.attachment.view = NULL;
-  }
-
-  if (pass->depth.texture) {
-    wgpuTextureRelease(pass->depth.texture);
-    pass->depth.texture = NULL;
-  }
+  rem_destroy_view(&pass->depth.attachment.view);
+  rem_destroy_texture(&pass->depth.texture);
 }
 
 void render_pass_list_destroy_shared_texture_color(RenderPassList *list) {
-
-  if (list->shared.color.view) {
-    wgpuTextureViewRelease(list->shared.color.view);
-    list->shared.color.view = NULL;
-  }
-
-  if (list->shared.color.texture) {
-    wgpuTextureRelease(list->shared.color.texture);
-    list->shared.color.texture = NULL;
-  }
+  rem_destroy_view(&list->shared.color.view);
+  rem_destroy_texture(&list->shared.color.texture);
 }
 
 void render_pass_list_destroy_shared_texture_depth(RenderPassList *list) {
-
-  if (list->shared.depth.view) {
-    wgpuTextureViewRelease(list->shared.depth.view);
-    list->shared.depth.view = NULL;
-  }
-
-  if (list->shared.depth.texture) {
-    wgpuTextureRelease(list->shared.depth.texture);
-    list->shared.depth.texture = NULL;
-  }
+  rem_destroy_view(&list->shared.depth.view);
+  rem_destroy_texture(&list->shared.depth.texture);
 }

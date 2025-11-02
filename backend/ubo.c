@@ -5,6 +5,7 @@
 
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "runtime/camera/core.h"
 #include "runtime/light/list.h"
 #include "runtime/light/uniform.h"
@@ -94,14 +95,12 @@ void ubo_init(UBOManager *manager) {
     ubo->length = 0;
     ubo->capacity = UBO_CAPACITY * UBO_MAX_TYPE_SIZE;
     ubo->update_queue.capacity = UBO_UPDATE_QUEUE_CAPACITY;
-    ubo->handle = wgpuDeviceCreateBuffer(
-        context_device(),
-        &(WGPUBufferDescriptor){
-            .size = ubo->capacity,
-            .mappedAtCreation = false,
-            .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Uniform,
-            .label = ubo_type[i].label,
-        });
+    ubo->handle = rem_new_buffer(&(WGPUBufferDescriptor){
+        .size = ubo->capacity,
+        .mappedAtCreation = false,
+        .usage = WGPUBufferUsage_CopyDst | WGPUBufferUsage_Uniform,
+        .label = ubo_type[i].label,
+    });
   }
 }
 
@@ -133,8 +132,8 @@ UBOStatus ubo_upload_entry(UBOManager *manager, const UBOType type,
   UBOBuffer *ubo = &manager->buffers[type];
   size_t offset = slot->id * ubo->type_size;
 
-  wgpuQueueWriteBuffer(context_queue(), ubo->handle, offset,
-                       (uint8_t *)ubo->entries + offset, ubo->type_size);
+  rem_write_buffer(ubo->handle, offset, (uint8_t *)ubo->entries + offset,
+                   ubo->type_size, REMWriteFlag_None);
 
   return UBOStatus_Success;
 }
@@ -142,8 +141,8 @@ UBOStatus ubo_upload_entry(UBOManager *manager, const UBOType type,
 void ubo_upload(UBOManager *manager, const UBOType type) {
 
   UBOBuffer *ubo = &manager->buffers[type];
-  wgpuQueueWriteBuffer(context_queue(), ubo->handle, 0, ubo->entries,
-                       ubo->type_size * UBO_CAPACITY);
+  rem_write_buffer(ubo->handle, 0, ubo->entries, ubo->type_size * UBO_CAPACITY,
+                   REMWriteFlag_None);
 }
 
 WGPUBuffer ubo_buffer_handle(UBOManager *manager, const UBOType type) {

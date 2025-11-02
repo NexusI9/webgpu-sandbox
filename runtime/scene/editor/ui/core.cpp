@@ -76,7 +76,7 @@ SceneEditorUIStatus scene_editor_ui_init(SceneEditorUI *ui,
   logger_add(LoggerFlag_Process, "Intitializing Editor UI");
 
   {
-    ui->id = reg_register(ui, RegEntryType_SceneUI);
+    ui->id = reg_register(reg_new_id(), ui, RegEntryType_SceneUI);
     ui->clock = desc->clock;
     ui->dpi = desc->dpi;
     scene_editor_ui_create_texture(ui);

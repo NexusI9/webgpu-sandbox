@@ -5,6 +5,7 @@
 #include "./texture_list.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/shader/bindgroup.h"
@@ -26,16 +27,14 @@ void ao_bake_init(SceneRendererTextureAO *ao,
 
   ao->layer_count = desc->layer_count;
   ao->size = desc->size;
-  ao->texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .size = {ao->size, ao->size, desc->layer_count},
-          .format = AO_TEXTURE_FORMAT,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-          .dimension = WGPUTextureDimension_2D,
-          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-      });
+  ao->texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .size = {ao->size, ao->size, desc->layer_count},
+      .format = AO_TEXTURE_FORMAT,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .dimension = WGPUTextureDimension_2D,
+      .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+  });
 
   ao_bake_texture_list_create(&ao->texture_list, ao->layer_count);
 }
@@ -63,7 +62,7 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
       texture = &new_entry->texture;
       layer = ao->texture_list.length - 1;
 
-      WGPUTextureView layer_view = wgpuTextureCreateView(
+      WGPUTextureView layer_view = rem_new_view(
           ao->texture, &(WGPUTextureViewDescriptor){
                            .arrayLayerCount = 1,
                            .baseArrayLayer = layer,
@@ -120,23 +119,9 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
     });
 
   if (update_bind_view) {
-
     ao_bake_process_texture(texture);
-
-    wgpuQueueWriteTexture(context_queue(),
-                          &(WGPUImageCopyTexture){
-                              .texture = ao->texture,
-                              .mipLevel = 0,
-                              .origin = {0, 0, layer},
-                              .aspect = WGPUTextureAspect_All,
-                          },
-                          texture->data, texture->size,
-                          &(WGPUTextureDataLayout){
-                              .offset = 0,
-                              .bytesPerRow = texture->width * texture->channels,
-                              .rowsPerImage = texture->height,
-                          },
-                          &(WGPUExtent3D){texture->width, texture->height, 1});
+    rem_write_texture(ao->texture, texture->data, texture->size,
+                      texture->channels, layer, REMWriteFlag_None);
   }
 }
 
@@ -155,20 +140,7 @@ void ao_bake_draw_list(SceneRendererTextureAO *ao,
     // post process texture (blur, add contrast since sometimes with few
     // sampling factor the dots a too clearly visible)
     ao_bake_process_texture(texture);
-
-    wgpuQueueWriteTexture(context_queue(),
-                          &(WGPUImageCopyTexture){
-                              .texture = ao->texture,
-                              .mipLevel = 0,
-                              .origin = {0, 0, i},
-                              .aspect = WGPUTextureAspect_All,
-                          },
-                          texture->data, texture->size,
-                          &(WGPUTextureDataLayout){
-                              .offset = 0,
-                              .bytesPerRow = texture->width * texture->channels,
-                              .rowsPerImage = texture->height,
-                          },
-                          &(WGPUExtent3D){texture->width, texture->height, 1});
+    rem_write_texture(ao->texture, texture->data, texture->size,
+                      texture->channels, i, REMWriteFlag_None);
   }
 }

@@ -7,6 +7,7 @@
 #include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "bindgroup.h"
 #include "core.h"
 #include "string.h"
@@ -55,14 +56,14 @@ void shader_add_uniform(Shader *shader,
       dest->usage = src->usage;
       dest->update = src->update;
 
-      // assign buffer to entry
-      buffer_create(&dest->buffer, &(CreateBufferDescriptor){
-                                       .label = "Initial Shader Buffer",
-                                       .data = (void *)dest->data,
-                                       .size = dest->size,
-                                       .usage = dest->usage,
-                                       .mappedAtCreation = false,
-                                   });
+      dest->buffer = rem_new_buffer(
+          &(WGPUBufferDescriptor){.label = "Initial Shader Buffer",
+                                  .usage = dest->usage,
+                                  .mappedAtCreation = false,
+                                  .size = dest->size});
+
+      rem_write_buffer(dest->buffer, 0, (void *)dest->data, dest->size,
+                       REMWriteFlag_None);
 
       /*
 
@@ -179,16 +180,19 @@ void shader_add_texture(Shader *shader,
 
       // generate texture + texture view from data & size
       WGPUTexture tmp_texture;
-      buffer_create_texture(&tmp_texture, &dest->texture_view,
-                            &(CreateTextureDescriptor){
-                                .width = dest->width,
-                                .height = dest->height,
-                                .data = dest->data,
-                                .size = dest->size,
-                                .format = dest->format,
-                                .channels = dest->channels,
-                            },
-                            BufferTextureMemory_Free);
+
+      tmp_texture = rem_new_texture(&(WGPUTextureDescriptor){
+          .label = "Anonymous shader bindgroup new texture",
+          .size = {dest->width, dest->height, 1},
+          .dimension = WGPUTextureDimension_2D,
+          .format = TEXTURE_FORMAT_OFFSCREEN,
+          .mipLevelCount = 1,
+          .sampleCount = 1,
+          .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+      });
+
+      rem_write_texture(tmp_texture, dest->data, dest->size, dest->channels, 0,
+                        REMWriteFlag_STBIFreeData);
     }
   }
 }
@@ -277,16 +281,15 @@ void shader_add_sampler(Shader *shader,
       dest->compare = src->compare;
 
       // creating sampler by mapping desc configuration
-      dest->sampler = wgpuDeviceCreateSampler(
-          context_device(), &(WGPUSamplerDescriptor){
-                                .compare = dest->compare,
-                                .addressModeU = dest->addressModeU,
-                                .addressModeV = dest->addressModeV,
-                                .addressModeW = dest->addressModeW,
-                                .minFilter = dest->minFilter,
-                                .magFilter = dest->magFilter,
-                                .mipmapFilter = dest->mipmapFilter,
-                            });
+      dest->sampler = rem_new_sampler(&(WGPUSamplerDescriptor){
+          .compare = dest->compare,
+          .addressModeU = dest->addressModeU,
+          .addressModeV = dest->addressModeV,
+          .addressModeW = dest->addressModeW,
+          .minFilter = dest->minFilter,
+          .magFilter = dest->magFilter,
+          .mipmapFilter = dest->mipmapFilter,
+      });
     }
   }
 }

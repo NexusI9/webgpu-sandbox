@@ -7,6 +7,7 @@
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "bindgroup.h"
 #include "runtime/pipeline/render.h"
 #include "string.h"
@@ -53,7 +54,6 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 
   // set name
   shader->name = strdup(sd->name);
-  shader->id = reg_register(shader, RegEntryType_Shader);
 
 #ifdef VERBOSE_CREATING_PHASE
   logger_add(LoggerFlag_ShaderCreate, "%s", shader->name);
@@ -78,12 +78,6 @@ void shader_destroy(Shader *shader) {
 
   // clearing bind groups
   shader_bind_group_clear(shader);
-}
-
-void shader_module_release(Shader *shader) {
-  // releasing shader module before drawing
-  // invoked when adding the shader to the mesh (mesh_create)
-  wgpuShaderModuleRelease(shader->pipeline->module);
 }
 
 const RenderPipeline *shader_pipeline(Shader *shader) {
@@ -117,9 +111,9 @@ void shader_uniform_update(ShaderBindGroup *group) {
       uniform_update->callback(uniform_update->data, current_entry->data);
 
       // rewrite uniform to GPU
-      wgpuQueueWriteBuffer(context_queue(), current_entry->buffer,
-                           current_entry->offset, current_entry->data,
-                           current_entry->size);
+      rem_write_buffer(current_entry->buffer, current_entry->offset,
+                       current_entry->data, current_entry->size,
+                       REMWriteFlag_None);
     }
   }
 }

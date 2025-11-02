@@ -96,7 +96,7 @@ void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
     sem_create_wireframe(probe->mesh, &wireframe_desc);
 
     mesh_set_scale(probe->mesh, (vec3){0.6f, 0.6f, 0.6f});
-    mesh_set_position(probe->mesh, grid->probes.entries[i].position);
+    mesh_set_position(probe->mesh, grid->probes.entries[i]->position);
 
     probe->transform_callback[GizmoMode_Position] =
         sem_probe_reflection_grid_set_position;

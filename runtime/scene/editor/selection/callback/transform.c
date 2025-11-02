@@ -62,7 +62,7 @@ void scene_selection_mesh_update_probe_uniform(
 
   for (i = 0; i < grid_list->length; i++) {
 
-    ProbeReflectionGrid *grid = &grid_list->entries[i];
+    ProbeReflectionGrid *grid = grid_list->entries[i];
     bool intersect =
         aabb_intersect(&mesh->topology.boundbox.world, &grid->boundbox);
 

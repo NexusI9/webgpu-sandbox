@@ -479,7 +479,7 @@ scene_add_probe_reflection_grid(Scene *scene,
 
   // add probes to ubo list
   for (uint16_t i = 0; i < new_grid->probes.length; i++) {
-    ProbeReflection *probe = &new_grid->probes.entries[i];
+    ProbeReflection *probe = new_grid->probes.entries[i];
     UBOManager *ubo = &scene->renderer.ubo;
 
     {

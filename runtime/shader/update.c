@@ -7,6 +7,7 @@
 #include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "backend/std_texture/core.h"
 #include "bindgroup.h"
 #include "core.h"
@@ -34,7 +35,7 @@ shader_update_texture_view(Shader *shader, const bind_group_index group_index,
     // clear the previous texture view if it is NOT a std texture
     if (!is_std_texture_view(bound_texture->texture_view) &&
         (flag & ShaderUpdateFlag_ReleasePrevious)) {
-      wgpuTextureViewRelease(bound_texture->texture_view);
+      rem_destroy_view(&bound_texture->texture_view);
       bound_texture->texture_view = NULL;
     }
 
@@ -77,9 +78,9 @@ shader_update_uniform_data(Shader *shader, const bind_group_index group_index,
     else
       bound_uniform->data = data;
 
-    wgpuQueueWriteBuffer(context_queue(), bound_uniform->buffer,
-                         bound_uniform->offset, bound_uniform->data,
-                         bound_uniform->size);
+    rem_write_buffer(bound_uniform->buffer, bound_uniform->offset,
+                     bound_uniform->data, bound_uniform->size,
+                     REMWriteFlag_None);
 
     // DELETME
     //   rebuild group (no need for uniforms)
@@ -111,7 +112,7 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
   if (bound_uniform != NULL) {
 
     if (flag & ShaderUpdateFlag_ReleasePrevious)
-      wgpuBufferRelease(bound_uniform->buffer);
+      rem_destroy_buffer(&bound_uniform->buffer);
 
     size_t alignment = shader_device_uniform_alignment();
 
@@ -226,7 +227,7 @@ ShaderBindGroupSamplerEntry *shader_update_sampler(
 
   if (bound_sampler != NULL) {
 
-    wgpuSamplerRelease(bound_sampler->sampler);
+    rem_destroy_sampler(&bound_sampler->sampler);
 
     // replace the value
     bound_sampler->compare = sampler->compare;
@@ -237,7 +238,7 @@ ShaderBindGroupSamplerEntry *shader_update_sampler(
     bound_sampler->magFilter = sampler->magFilter;
     bound_sampler->mipmapFilter = sampler->mipmapFilter;
 
-    bound_sampler->sampler = wgpuDeviceCreateSampler(context_device(), sampler);
+    bound_sampler->sampler = rem_new_sampler(sampler);
 
     // rebuild group
     shader_bind_group_refresh(bind_group, group_index,
@@ -267,16 +268,21 @@ ShaderBindGroupTextureEntry *shader_update_texture(
     // generate texture + texture view from data & size
     WGPUTextureView new_view;
     WGPUTexture gpu_texture;
-    buffer_create_texture(&gpu_texture, &new_view,
-                          &(CreateTextureDescriptor){
-                              .width = texture->width,
-                              .height = texture->height,
-                              .data = texture->data,
-                              .size = texture->size,
-                              .format = texture->format,
-                              .channels = texture->channels,
-                          },
-                          BufferTextureMemory_Free);
+
+    gpu_texture = rem_new_texture(&(WGPUTextureDescriptor){
+        .label = "Anonymous shader bindgroup texture",
+        .dimension = WGPUTextureDimension_2D,
+        .format = texture->format,
+        .size = {texture->width, texture->height, 1},
+        .mipLevelCount = 1,
+        .sampleCount = 1,
+        .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
+    });
+
+    rem_write_texture(gpu_texture, texture->data, texture->size,
+                      texture->channels, 0, REMWriteFlag_STBIFreeData);
+
+    new_view = rem_new_view(gpu_texture, NULL);
 
     shader_update_texture_view(shader, group_index, index, new_view,
                                bound_texture->format, flag);

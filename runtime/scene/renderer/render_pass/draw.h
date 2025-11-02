@@ -1,6 +1,7 @@
 #ifndef _RENDER_PASS_DRAW_H_
 #define _RENDER_PASS_DRAW_H_
 
+#include "backend/resource_manager.h"
 #include "core.h"
 #include "webgpu/webgpu.h"
 
@@ -116,7 +117,7 @@ void render_pass_list_draw(RenderPassList *list) {
     // release command encoder
     wgpuCommandEncoderRelease(command_encoder);
     wgpuCommandBufferRelease(render_buffer);
-    wgpuTextureViewRelease(swapchain_view);
+    rem_destroy_view(&swapchain_view);
   }
 }
 

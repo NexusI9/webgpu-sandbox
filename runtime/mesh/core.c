@@ -30,8 +30,6 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
   logger_add(LoggerFlag_MeshCreate, "%s", mesh->name);
 #endif
 
-  mesh->id = reg_register((void *)mesh, RegEntryType_Mesh);
-
   // init child list
   mesh->children.length = 0;
   mesh->children.capacity = MESH_CHILD_LENGTH;

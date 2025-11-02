@@ -315,7 +315,6 @@ void shader_build(Shader *);
 // on update
 void shader_uniform_update(ShaderBindGroup *);
 
-void shader_module_release(Shader *);
 const RenderPipeline *shader_pipeline(Shader *);
 void shader_pipeline_release_layout(Shader *);
 

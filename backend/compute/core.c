@@ -2,6 +2,7 @@
 #include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
 #include <string.h>
@@ -21,41 +22,36 @@ ComputePassStatus compute_pass_init(ComputePass *pass,
 
   logger_add(LoggerFlag_Process, "Initializing Renderer Compute Pass");
 
-  pass->sampler = wgpuDeviceCreateSampler(
-      context_device(), &(WGPUSamplerDescriptor){
-                            .label = "Compute Pass Common Sampler",
-                            .addressModeU = WGPUAddressMode_ClampToEdge,
-                            .addressModeV = WGPUAddressMode_ClampToEdge,
-                            .addressModeW = WGPUAddressMode_ClampToEdge,
-                            .magFilter = WGPUFilterMode_Linear,
-                            .minFilter = WGPUFilterMode_Linear,
-                            .mipmapFilter = WGPUMipmapFilterMode_Linear,
-                        });
+  pass->sampler = rem_new_sampler(&(WGPUSamplerDescriptor){
+      .label = "Compute Pass Common Sampler",
+      .addressModeU = WGPUAddressMode_ClampToEdge,
+      .addressModeV = WGPUAddressMode_ClampToEdge,
+      .addressModeW = WGPUAddressMode_ClampToEdge,
+      .magFilter = WGPUFilterMode_Linear,
+      .minFilter = WGPUFilterMode_Linear,
+      .mipmapFilter = WGPUMipmapFilterMode_Linear,
+  });
 
   const int max_dim = glm_max(desc->max_width, desc->max_height);
-  pass->destination_texture = wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Compute Pass Destination Texture",
-          .dimension = WGPUTextureDimension_2D,
-          .size = (WGPUExtent3D){max_dim, max_dim, 1},
-          .format = TEXTURE_FORMAT_OFFSCREEN,
-          .mipLevelCount = 1,
-          .sampleCount = 1,
-          .usage = WGPUTextureUsage_TextureBinding |
-                   WGPUTextureUsage_StorageBinding | WGPUTextureUsage_CopySrc |
-                   WGPUTextureUsage_CopyDst,
+  pass->destination_texture = rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Compute Pass Destination Texture",
+      .dimension = WGPUTextureDimension_2D,
+      .size = (WGPUExtent3D){max_dim, max_dim, 1},
+      .format = TEXTURE_FORMAT_OFFSCREEN,
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .usage = WGPUTextureUsage_TextureBinding |
+               WGPUTextureUsage_StorageBinding | WGPUTextureUsage_CopySrc |
+               WGPUTextureUsage_CopyDst,
 
-      });
+  });
 
-  buffer_create(&pass->buffer,
-                &(CreateBufferDescriptor){
-                    .label = "Compute Pass Common Buffer",
-                    .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
-                    .mappedAtCreation = false,
-                    .size = COMPUTE_PASS_BUFFER_MAX_SIZE,
-                    .data = (void *)0,
-                });
+  pass->buffer = rem_new_buffer(&(WGPUBufferDescriptor){
+      .label = "Compute Pass Common Buffer",
+      .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
+      .mappedAtCreation = false,
+      .size = COMPUTE_PASS_BUFFER_MAX_SIZE,
+  });
 
   return ComputePassStatus_Success;
 }

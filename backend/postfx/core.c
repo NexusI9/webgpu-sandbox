@@ -1,6 +1,7 @@
 #include "core.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_pipeline/render_shader/bloom/bloom.h"
 #include "backend/std_pipeline/render_shader/composite/composite.h"
@@ -52,16 +53,15 @@ static const struct {
 
 PostFxStatus post_fx_init(PostFx *fx, const PostFxDescriptor *desc) {
 
-  fx->sampler = wgpuDeviceCreateSampler(
-      context_device(), &(WGPUSamplerDescriptor){
-                            .label = "PostFX Common Sampler",
-                            .addressModeU = WGPUAddressMode_ClampToEdge,
-                            .addressModeV = WGPUAddressMode_ClampToEdge,
-                            .addressModeW = WGPUAddressMode_ClampToEdge,
-                            .magFilter = WGPUFilterMode_Linear,
-                            .minFilter = WGPUFilterMode_Linear,
-                            .mipmapFilter = WGPUMipmapFilterMode_Linear,
-                        });
+  fx->sampler = rem_new_sampler(&(WGPUSamplerDescriptor){
+      .label = "PostFX Common Sampler",
+      .addressModeU = WGPUAddressMode_ClampToEdge,
+      .addressModeV = WGPUAddressMode_ClampToEdge,
+      .addressModeW = WGPUAddressMode_ClampToEdge,
+      .magFilter = WGPUFilterMode_Linear,
+      .minFilter = WGPUFilterMode_Linear,
+      .mipmapFilter = WGPUMipmapFilterMode_Linear,
+  });
 
   fx->compute = desc->compute;
   fx->width = desc->width;
@@ -88,10 +88,8 @@ PostFxStatus post_fx_init(PostFx *fx, const PostFxDescriptor *desc) {
 
 PostFxStatus post_fx_destroy(PostFx *fx) {
 
-  if (fx->sampler) {
-    wgpuSamplerRelease(fx->sampler);
-    fx->sampler = NULL;
-  }
+  if (fx->sampler)
+    rem_destroy_sampler(&fx->sampler);
 
   for (size_t i = 0; i < POST_FX_TYPE_COUNT; i++)
     post_fx_effect_destroy(post_fx_effect(fx, 1 << i));
@@ -199,8 +197,8 @@ PostFxStatus post_fx_bloom_update_uniform(PostFx *fx,
                                           const PostFxEffectUniform uniform) {
   PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
   effect->uniform.bloom = uniform.bloom;
-  wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
-                       &effect->uniform.bloom, sizeof(BloomUniform));
+  rem_write_buffer(effect->buffer[0], 0, &effect->uniform.bloom,
+                   sizeof(BloomUniform), REMWriteFlag_None);
   return PostFxStatus_Success;
 }
 
@@ -209,8 +207,8 @@ post_fx_composite_update_uniform(PostFx *fx,
                                  const PostFxEffectUniform uniform) {
   PostFxEffect *effect = post_fx_effect(fx, PostFxType_Composite);
   effect->uniform.composite = uniform.composite;
-  wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
-                       &effect->uniform.composite, sizeof(CompositeUniform));
+  rem_write_buffer(effect->buffer[0], 0, &effect->uniform.composite,
+                   sizeof(CompositeUniform), REMWriteFlag_None);
   return PostFxStatus_Success;
 }
 
@@ -276,8 +274,7 @@ PostFxStatus post_fx_bloom_create(PostFx *fx) {
         post_fx_bloom_create_texture((int)(fx->width / uniform.downscale),
                                      (int)(fx->height / uniform.downscale));
 
-    effect->view[PostFxViewIndex_Bloom] =
-        wgpuTextureCreateView(effect->texture, NULL);
+    effect->view[PostFxViewIndex_Bloom] = rem_new_view(effect->texture, NULL);
 
     effect->uniform.bloom = uniform;
   }
@@ -359,10 +356,8 @@ PostFxStatus post_fx_bloom_destroy(PostFx *fx) {
   PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
   post_fx_remove_callback(fx, effect->draw_callback);
 
-  if (effect->view[PostFxViewIndex_Bloom]) {
-    wgpuTextureViewRelease(effect->view[PostFxViewIndex_Bloom]);
-    effect->view[PostFxViewIndex_Bloom] = NULL;
-  }
+  if (effect->view[PostFxViewIndex_Bloom])
+    rem_destroy_view(&effect->view[PostFxViewIndex_Bloom]);
 
   // switch composite view to fallback texture
   if (post_fx_effect_enabled(fx, PostFxType_Composite)) {
@@ -391,16 +386,11 @@ PostFxStatus post_fx_composite_destroy(PostFx *fx) {
  */
 PostFxStatus post_fx_effect_destroy(PostFxEffect *effect) {
 
-  if (effect->texture) {
-    wgpuTextureRelease(effect->texture);
-    effect->texture = NULL;
-  }
+  rem_destroy_texture(&effect->texture);
 
   for (uint8_t i = 0; i < POST_FX_MAX_BUFFER; i++)
-    if (effect->buffer[i]) {
-      wgpuBufferRelease(effect->buffer[i]);
-      effect->buffer[i] = NULL;
-    }
+    if (effect->buffer[i])
+      rem_destroy_buffer(&effect->buffer[i]);
 
   if (effect->bindgroup) {
     wgpuBindGroupRelease(effect->bindgroup);
@@ -450,16 +440,14 @@ PostFxStatus post_fx_bloom_update_bindgroup(PostFx *fx) {
       wgpuRenderPipelineGetBindGroupLayout(pipeline, 0);
 
   if (effect->buffer[0] == NULL)
-    effect->buffer[0] = wgpuDeviceCreateBuffer(
-        context_device(),
-        &(WGPUBufferDescriptor){
-            .label = "Bloom buffer",
-            .size = sizeof(BloomUniform),
-            .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
-        });
+    effect->buffer[0] = rem_new_buffer(&(WGPUBufferDescriptor){
+        .label = "Bloom buffer",
+        .size = sizeof(BloomUniform),
+        .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
+    });
 
-  wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
-                       &effect->uniform.bloom, sizeof(BloomUniform));
+  rem_write_buffer(effect->buffer[0], 0, &effect->uniform.bloom,
+                   sizeof(BloomUniform), REMWriteFlag_None);
 
   WGPUBindGroupEntry entries[3] = {
       {.binding = 0, .textureView = effect->view[PostFxViewIndex_Scene]},
@@ -495,16 +483,14 @@ PostFxStatus post_fx_composite_update_bindgroup(PostFx *fx) {
       wgpuRenderPipelineGetBindGroupLayout(pipeline, 0);
 
   if (effect->buffer[0] == NULL)
-    effect->buffer[0] = wgpuDeviceCreateBuffer(
-        context_device(),
-        &(WGPUBufferDescriptor){
-            .label = "Composite Buffer",
-            .size = sizeof(CompositeUniform),
-            .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
-        });
+    effect->buffer[0] = rem_new_buffer(&(WGPUBufferDescriptor){
+        .label = "Composite Buffer",
+        .size = sizeof(CompositeUniform),
+        .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
+    });
 
-  wgpuQueueWriteBuffer(context_queue(), effect->buffer[0], 0,
-                       &effect->uniform.composite, sizeof(CompositeUniform));
+  rem_write_buffer(effect->buffer[0], 0, &effect->uniform.composite,
+                   sizeof(CompositeUniform), REMWriteFlag_None);
 
   WGPUBindGroupEntry entries[4] = {
       {.binding = 0, .textureView = effect->view[PostFxViewIndex_Scene]},
@@ -552,24 +538,22 @@ PostFxStatus post_fx_remove_callback(PostFx *fx,
 
 WGPUTexture post_fx_bloom_create_texture(const int width, const int height) {
 
-  return wgpuDeviceCreateTexture(
-      context_device(),
-      &(WGPUTextureDescriptor){
-          .label = "Bloom texture",
-          .dimension = WGPUTextureDimension_2D,
-          .format = TEXTURE_FORMAT_OFFSCREEN,
-          .usage = WGPUTextureUsage_TextureBinding |
-                   WGPUTextureUsage_RenderAttachment |
-                   WGPUTextureUsage_StorageBinding | WGPUTextureUsage_CopyDst,
-          .sampleCount = 1,
-          .mipLevelCount = 1,
-          .size =
-              (WGPUExtent3D){
-                  .height = height,
-                  .width = width,
-                  .depthOrArrayLayers = 1,
-              },
-      });
+  return rem_new_texture(&(WGPUTextureDescriptor){
+      .label = "Bloom texture",
+      .dimension = WGPUTextureDimension_2D,
+      .format = TEXTURE_FORMAT_OFFSCREEN,
+      .usage = WGPUTextureUsage_TextureBinding |
+               WGPUTextureUsage_RenderAttachment |
+               WGPUTextureUsage_StorageBinding | WGPUTextureUsage_CopyDst,
+      .sampleCount = 1,
+      .mipLevelCount = 1,
+      .size =
+          (WGPUExtent3D){
+              .height = height,
+              .width = width,
+              .depthOrArrayLayers = 1,
+          },
+  });
 }
 
 /**
@@ -589,15 +573,14 @@ PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *fx,
                       effect->uniform.bloom.downscale)
       return PostFxStatus_SameAttribute;
     else
-      wgpuTextureRelease(effect->texture);
+      rem_destroy_texture(&effect->texture);
   }
 
   effect->texture = post_fx_bloom_create_texture(
       (int)(width / effect->uniform.bloom.downscale),
       (int)(height / effect->uniform.bloom.downscale));
 
-  effect->view[PostFxViewIndex_Bloom] =
-      wgpuTextureCreateView(effect->texture, NULL);
+  effect->view[PostFxViewIndex_Bloom] = rem_new_view(effect->texture, NULL);
   post_fx_bloom_update_bindgroup(fx);
 
   // update composite view as well

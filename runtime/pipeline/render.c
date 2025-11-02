@@ -5,6 +5,7 @@
 #include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/registry.h"
+#include "backend/resource_manager.h"
 #include "runtime/geometry/vertex/core.h"
 #include "runtime/texture/core.h"
 #include "utils/file.h"
@@ -19,7 +20,7 @@ void render_pipeline_create(RenderPipeline *pipeline,
                             const RenderPipelineCreateDescriptor *desc) {
 
   // Define core data
-  pipeline->id = reg_register(pipeline, RegEntryType_RenderPipeline);
+  pipeline->id = reg_register(reg_new_id(), pipeline, RegEntryType_RenderPipeline);
   pipeline->handle = NULL;
   pipeline->label = desc->label;
   pipeline->shader_pso = desc->pso;
@@ -32,7 +33,8 @@ void render_pipeline_create(RenderPipeline *pipeline,
   store_file(&source, desc->path);
 
   // compile shader module intro GPU device
-  buffer_create_shader(&pipeline->module, source, pipeline->label);
+  pipeline->module =
+      rem_new_shader_module(source, pipeline->label, REMWriteFlag_FreeData);
 
   /*
     DEFINE PIPELINE CACHED ATTRIBUTES
@@ -193,10 +195,7 @@ void render_pipeline_build(RenderPipeline *pipeline,
  */
 void render_pipeline_destroy(RenderPipeline *pipeline) {
 
-  // clearing module
-  wgpuShaderModuleRelease(pipeline->module);
-
-  wgpuShaderModuleRelease(pipeline->module);
+  rem_destroy_shader_module(&pipeline->module);
   wgpuRenderPipelineRelease(pipeline->handle);
   pipeline->handle = NULL;
 

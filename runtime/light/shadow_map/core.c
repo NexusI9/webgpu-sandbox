@@ -2,6 +2,7 @@
 
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
@@ -150,13 +151,12 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
   texture_descriptor_depth.format = SHADOW_DEPTH_FORMAT;
 
   // Create color texture
-  WGPUTexture color_texture =
-      wgpuDeviceCreateTexture(context_device(), &texture_descriptor_color);
+  WGPUTexture color_texture = rem_new_texture(&texture_descriptor_color);
 
   if (desc->color_texture)
     *desc->color_texture = color_texture;
 
-  WGPUTextureView color_view = wgpuTextureCreateView(
+  WGPUTextureView color_view = rem_new_view(
       color_texture, &(WGPUTextureViewDescriptor){
                          .label = "Light Shadow: global texture view - Color",
                          .format = SHADOW_COLOR_FORMAT,
@@ -174,13 +174,12 @@ void shadow_pass_texture_create(const ShadowPassTextureDescriptor *desc) {
   // Setup light depth texture
 
   // Create depth texture
-  WGPUTexture depth_texture =
-      wgpuDeviceCreateTexture(context_device(), &texture_descriptor_depth);
+  WGPUTexture depth_texture = rem_new_texture(&texture_descriptor_depth);
 
   if (desc->depth_texture)
     *desc->depth_texture = depth_texture;
 
-  WGPUTextureView depth_view = wgpuTextureCreateView(
+  WGPUTextureView depth_view = rem_new_view(
       depth_texture, &(WGPUTextureViewDescriptor){
                          .label = "Light Shadow: global texture view - Depth",
                          .dimension = desc->dimension,
@@ -218,17 +217,11 @@ void shadow_pass_update_resolution(RenderPass *pass,
 
   {
     // === clean up ===
-    if (pass->color.texture)
-      wgpuTextureRelease(pass->color.texture);
-
-    if (pass->depth.texture)
-      wgpuTextureRelease(pass->depth.texture);
-
-    if (pass->color.views[0])
-      wgpuTextureViewRelease(pass->color.views[0]);
-
-    if (pass->depth.views[0])
-      wgpuTextureViewRelease(pass->depth.views[0]);
+      rem_destroy_texture(&pass->color.texture);
+      rem_destroy_texture(&pass->depth.texture);
+    
+      rem_destroy_view(&pass->color.views[0]);
+      rem_destroy_view(&pass->depth.views[0]);
   }
 
   shadow_pass_texture_create(&(ShadowPassTextureDescriptor){

@@ -30,7 +30,7 @@ typedef struct {
 } ProbeReflection;
 
 typedef struct {
-  ProbeReflection *entries;
+  ProbeReflection **entries;
   size_t length;
   size_t capacity;
 } ProbeReflectionList;
