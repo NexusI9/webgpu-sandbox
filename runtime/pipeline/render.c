@@ -20,7 +20,6 @@ void render_pipeline_create(RenderPipeline *pipeline,
                             const RenderPipelineCreateDescriptor *desc) {
 
   // Define core data
-  pipeline->id = reg_register(reg_new_id(), pipeline, RegEntryType_RenderPipeline);
   pipeline->handle = NULL;
   pipeline->label = desc->label;
   pipeline->shader_pso = desc->pso;
@@ -195,12 +194,12 @@ void render_pipeline_build(RenderPipeline *pipeline,
  */
 void render_pipeline_destroy(RenderPipeline *pipeline) {
 
-  rem_destroy_shader_module(&pipeline->module);
+  //rem_destroy_shader_module(&pipeline->module);
   wgpuRenderPipelineRelease(pipeline->handle);
   pipeline->handle = NULL;
 
   // DO NOT uncomment, it causes crashes,
   // probably cause the layout is still in use
-  // wgpuPipelineLayoutRelease(pipeline->layout);
+  wgpuPipelineLayoutRelease(pipeline->layout);
   pipeline->layout = NULL;
 }

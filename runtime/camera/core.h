@@ -3,15 +3,17 @@
 
 #define CAMERA_MODE_COUNT 4
 
-#include <emscripten/html5.h>
 #include <cglm/cglm.h>
+#include <cglm/types.h>
+#include <emscripten/html5.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <cglm/types.h>
 
 #include "backend/clock.h"
 #include "backend/registry.h"
 #include "backend/ubo.h"
+
+typedef struct Camera Camera;
 
 typedef enum {
   CameraStatus_Success,
@@ -27,7 +29,7 @@ typedef enum {
 } CameraMode;
 
 typedef struct {
-  struct Camera *entries;
+  Camera **entries;
   size_t length;
   size_t capacity;
 } CameraList;
@@ -53,7 +55,7 @@ typedef struct {
   uint32_t _pad[39];
 } CameraUniform;
 
-typedef struct Camera {
+struct Camera {
 
   cclock *clock;
   reg_id_t id;
@@ -73,8 +75,7 @@ typedef struct Camera {
   CameraSensitivity sensitivity;
 
   CameraMode mode;
-
-} Camera;
+};
 
 void camera_create(Camera *, const CameraCreateDescriptor *);
 void camera_reset(Camera *);
@@ -90,4 +91,5 @@ void camera_set_position(Camera *, vec3);
 void camera_set_rotation(Camera *, vec3);
 void camera_update_view(Camera *);
 
+void camera_destroy(Camera *);
 #endif

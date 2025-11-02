@@ -3,9 +3,12 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
+#include "runtime/camera/core.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
+#include "runtime/pipeline/compute.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
@@ -27,7 +30,7 @@ typedef enum {
   REMStatus_UndefError,
 } REMStatus;
 
-#define REM_TYPE_COUNT 17
+#define REM_TYPE_COUNT 20
 typedef enum {
   REMType_Texture,
   REMType_View,
@@ -38,6 +41,9 @@ typedef enum {
   REMType_Gltf,
   REMType_Scene,
   REMType_Mesh,
+  REMType_Camera,
+  REMType_RenderPipeline,
+  REMType_ComputePipeline,
   REMType_Shader,
   REMType_PointLight,
   REMType_AmbientLight,
@@ -65,7 +71,10 @@ REM_STRUCT_ITEM(Sampler, WGPUSampler);
 
 REM_STRUCT_ITEM(Mesh, Mesh);
 REM_STRUCT_ITEM(Scene, Scene);
+REM_STRUCT_ITEM(RenderPipeline, RenderPipeline);
+REM_STRUCT_ITEM(ComputePipeline, ComputePipeline);
 REM_STRUCT_ITEM(Shader, Shader);
+REM_STRUCT_ITEM(Camera, Camera);
 
 REM_STRUCT_ITEM(PointLight, PointLight);
 REM_STRUCT_ITEM(AmbientLight, AmbientLight);
@@ -81,36 +90,13 @@ REM_STRUCT_ITEM(Mbin, const char *);
 
 REM_STRUCT_ITEM(Void, void *);
 
-/**
-   - Fixed Capacity Pools ensure fixed pointer location. (maybe will use Block
-   Pool system later)
-   - Hash ensure fast resource retrievment when releasing
+/* TODO:
+Add the following entities ?
+ - sem lists
+ - sem
 
-
-       Pools                      Hash table
-
-                                 ;    ...     ;
-   ;    ...     ;                |------------|
-   '------------'         .----> |  Handle*   |
-                         |       |------------|
-   .- mesh -----.        |       |            |
-   |   Mesh 1   | -------'       |------------|
-   |------------|                |            |
-   |   Mesh 2   | -------.       |------------|
-   |------------|        '-----> |  Handle*   |
-   |   Mesh 3   | -----.         |------------|
-   '------------'      |         |            |
-                       |         |------------|
-   .- scene ----.      '-------> |  Handle*   |
-   |  Scene 1   |                |------------|
-   |------------|                |            |
-   ;    ...     ;                |------------|
-                                 ;    ...     ;
-
-
-
+ make sure the remove their respective item->id = ....
  */
-
 typedef struct ResourceManager {
 
   HashTable entries[REM_TYPE_COUNT];
@@ -180,6 +166,11 @@ static const struct {
             .type_size = sizeof(REMShaderModule),
             .hash_generator = rem_generate_ptr_hash,
         },
+    /*
+
+      ==== ID BASED ====
+
+     */
     [REMType_Mbin] =
         {
             .label = "Mbin",
@@ -200,83 +191,92 @@ static const struct {
             .capacity = 1,
             .type_size = sizeof(REMScene),
             .hash_generator = rem_generate_id_hash,
-        }, // ok
+        },
     [REMType_Mesh] =
         {
             .label = "Mesh",
             .capacity = 127,
             .type_size = sizeof(REMMesh),
             .hash_generator = rem_generate_id_hash,
-        }, // ok
+        },
+    [REMType_RenderPipeline] =
+        {
+            .label = "Render Pipeline",
+            .capacity = 71,
+            .type_size = sizeof(REMRenderPipeline),
+            .hash_generator = rem_generate_id_hash,
+        },
+    [REMType_ComputePipeline] =
+        {
+            .label = "Compute Pipeline",
+            .capacity = 31,
+            .type_size = sizeof(REMComputePipeline),
+            .hash_generator = rem_generate_id_hash,
+        },
     [REMType_Shader] =
         {
             .label = "Shader",
             .capacity = 127,
             .type_size = sizeof(REMShader),
             .hash_generator = rem_generate_id_hash,
-        }, // ok
+        },
+    [REMType_Camera] =
+        {
+            .label = "Camera",
+            .capacity = 31,
+            .type_size = sizeof(REMCamera),
+            .hash_generator = rem_generate_id_hash,
+        },
     [REMType_PointLight] =
         {
             .label = "Point Light",
             .capacity = 37,
             .type_size = sizeof(REMPointLight),
             .hash_generator = rem_generate_id_hash,
-        }, // ok
+        },
     [REMType_AmbientLight] =
         {
             .label = "Ambient Light",
             .capacity = 37,
             .type_size = sizeof(REMAmbientLight),
             .hash_generator = rem_generate_id_hash,
-        }, // ok
+        },
     [REMType_SpotLight] =
         {
             .label = "Spot Light",
             .capacity = 37,
             .type_size = sizeof(REMSpotLight),
             .hash_generator = rem_generate_id_hash,
-        }, // ok
+        },
     [REMType_SunLight] =
         {
             .label = "Sun Light",
             .capacity = 37,
             .type_size = sizeof(REMSunLight),
             .hash_generator = rem_generate_id_hash,
-        }, // ok
+        },
     [REMType_PlaneReflection] =
         {
             .label = "Plane Reflection",
             .capacity = 17,
             .type_size = sizeof(REMPlaneReflection),
             .hash_generator = rem_generate_id_hash,
-        }, // to check
+        },
     [REMType_ProbeReflection] =
         {
             .label = "Probe Reflection",
             .capacity = 17,
             .type_size = sizeof(REMProbeReflection),
             .hash_generator = rem_generate_id_hash,
-        }, // to check
+        },
     [REMType_ProbeReflectionGrid] =
         {
             .label = "Probe Reflection Grid",
             .capacity = 17,
             .type_size = sizeof(REMProbeReflectionGrid),
             .hash_generator = rem_generate_id_hash,
-        }, // to check
+        },
 };
-
-/* TODO:
-Add the following entities:
- - render pipeline
- - compute pipeline
- - bindgroup
- - camera
- - sem lists
- - sem
-
- make sure the remove their respective item->id = ....
- */
 
 typedef enum {
   REMWriteFlag_None = 0,
@@ -294,6 +294,7 @@ WGPUTextureView rem_new_view(const WGPUTexture,
                              const WGPUTextureViewDescriptor *);
 
 WGPUBuffer rem_new_buffer(const WGPUBufferDescriptor *);
+
 WGPUSampler rem_new_sampler(const WGPUSamplerDescriptor *);
 
 WGPUShaderModule rem_new_shader_module(char *code, const char *label,
@@ -308,6 +309,9 @@ REMStatus rem_write_texture(WGPUTexture, void *, const size_t,
 Mesh *rem_new_mesh();
 Scene *rem_new_scene();
 Shader *rem_new_shader();
+Camera *rem_new_camera();
+RenderPipeline *rem_new_render_pipeline();
+ComputePipeline *rem_new_compute_pipeline();
 
 PointLight *rem_new_point_light();
 AmbientLight *rem_new_ambient_light();
@@ -327,6 +331,8 @@ REMStatus rem_destroy_shader_module(WGPUShaderModule *);
 REMStatus rem_destroy_shader(Shader *);
 REMStatus rem_destroy_mesh(Mesh *);
 REMStatus rem_destroy_scene(Scene *);
+REMStatus rem_destroy_render_pipeline(RenderPipeline *);
+REMStatus rem_destroy_compute_pipeline(ComputePipeline *);
 
 REMStatus rem_destroy_mbin(const char *);
 REMStatus rem_destroy_gltf(const char *);

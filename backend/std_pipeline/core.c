@@ -18,6 +18,7 @@
 #include "./render_shader/unlit/unlit.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/resource_manager.h"
 #include "backend/std_pipeline/compute_shader/kawase/kawase.h"
 #include "backend/std_pipeline/compute_shader/mipmap/mipmap.h"
 #include "backend/std_pipeline/render_shader/blit/blit.h"
@@ -30,8 +31,8 @@
 #include "webgpu/webgpu.h"
 
 // Global definitions
-RenderPipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
-ComputePipeline g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT] = {0};
+RenderPipeline *g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT] = {0};
+ComputePipeline *g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT] = {0};
 
 static inline WGPUPipelineLayout shader_pipeline_state_object_create(
     const WGPUBindGroupLayoutDescriptor *const *, const size_t,
@@ -91,7 +92,9 @@ void standard_render_pipelines_init(
     }
 
     const RenderPipelineStateObject *layout = standard_render_layouts[i];
-    RenderPipeline *cached_pipeline = &g_std_render_pipelines[i];
+
+    g_std_render_pipelines[i] = rem_new_render_pipeline();
+    RenderPipeline *cached_pipeline = g_std_render_pipelines[i];
 
     // create pipeline
     render_pipeline_create(cached_pipeline, &(RenderPipelineCreateDescriptor){
@@ -157,7 +160,8 @@ void standard_compute_pipelines_init() {
   for (ComputePipelineType i = 0; i < COMPUTE_PIPELINE_TYPE_COUNT; i++) {
 
     const ComputePipelineStateObject *layout = standard_compute_layouts[i];
-    ComputePipeline *cached_pipeline = &g_std_compute_pipelines[i];
+    g_std_compute_pipelines[i] = rem_new_compute_pipeline();
+    ComputePipeline *cached_pipeline = g_std_compute_pipelines[i];
 
     // create pipeline
     compute_pipeline_create(cached_pipeline, &(ComputePipelineCreateDescriptor){
@@ -206,9 +210,6 @@ WGPUPipelineLayout shader_pipeline_state_object_create(
 }
 
 void standard_render_pipelines_destroy() {
-  for (RenderPipelineType i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++) {
-    RenderPipeline *cached_pipeline = &g_std_render_pipelines[i];
-    wgpuRenderPipelineRelease(cached_pipeline->handle);
-    wgpuPipelineLayoutRelease(cached_pipeline->layout);
-  }
+  for (RenderPipelineType i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++)
+    rem_destroy_render_pipeline(g_std_render_pipelines[i]);
 }

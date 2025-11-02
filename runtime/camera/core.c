@@ -12,8 +12,6 @@
 
 void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
-  cam->id = reg_register(reg_new_id(), (void *)cam, RegEntryType_Camera);
-
   // set matrix and position to 0
   camera_reset(cam);
 
@@ -123,3 +121,7 @@ void camera_lookat(Camera *camera, vec3 position, vec3 target) {
 }
 
 mat4 *camera_view(Camera *camera) { return &camera->view; }
+
+void camera_destroy(Camera *camera) {
+  // TODO
+}

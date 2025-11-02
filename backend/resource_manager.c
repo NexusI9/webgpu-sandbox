@@ -5,6 +5,7 @@
 #include "backend/std_texture/core.h"
 #include "runtime/light/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/shader/core.h"
 #include "stb/stb_image.h"
@@ -125,9 +126,6 @@ bool rem_bucket_compare(const void *ptr, const void *obj) {
 
  */
 
-//---------------------------------------------//
-// TEXTURE
-//---------------------------------------------//
 WGPUTexture rem_new_texture(const WGPUTextureDescriptor *desc) {
 
   const REMType type = REMType_Texture;
@@ -195,9 +193,29 @@ REMStatus rem_write_texture(WGPUTexture texture, void *data, const size_t size,
   return REMStatus_Success;
 }
 
-//---------------------------------------------//
-// VIEW
-//---------------------------------------------//
+#define REM_NEW_WGPU_ITEM(Name, FuncName, Type, REMName, DescType, Creator)    \
+  Name rem_new_##FuncName(const DescType *desc) {                              \
+                                                                               \
+    const REMType type = Type;                                                 \
+                                                                               \
+    Name item = Creator(context_device(), desc);                               \
+                                                                               \
+    REMName *entry = hsht_new_entry(&g_rem.entries[type], item,                \
+                                    HashTableNewFlag_FixedCapacity);           \
+                                                                               \
+    if (entry == NULL) {                                                       \
+      rem_destroy_##FuncName(&item);                                           \
+      return NULL;                                                             \
+    }                                                                          \
+                                                                               \
+    entry->owner = 0;                                                          \
+    entry->key = 0;                                                            \
+    entry->type = type;                                                        \
+    entry->handle = item;                                                      \
+                                                                               \
+    return item;                                                               \
+  }
+
 WGPUTextureView rem_new_view(const WGPUTexture texture,
                              const WGPUTextureViewDescriptor *desc) {
 
@@ -221,53 +239,11 @@ WGPUTextureView rem_new_view(const WGPUTexture texture,
   return view;
 }
 
-//---------------------------------------------//
-// SAMPLER
-//---------------------------------------------//
-WGPUSampler rem_new_sampler(const WGPUSamplerDescriptor *desc) {
+REM_NEW_WGPU_ITEM(WGPUSampler, sampler, REMType_Sampler, REMSampler,
+                  WGPUSamplerDescriptor, wgpuDeviceCreateSampler);
 
-  const REMType type = REMType_Sampler;
-
-  WGPUSampler sampler = wgpuDeviceCreateSampler(context_device(), desc);
-
-  REMSampler *entry = hsht_new_entry(&g_rem.entries[type], sampler,
-                                     HashTableNewFlag_FixedCapacity);
-
-  if (entry == NULL)
-    return NULL;
-
-  entry->owner = 0;
-  entry->key = 0;
-  entry->type = type;
-  entry->handle = sampler;
-
-  return sampler;
-}
-
-//---------------------------------------------//
-// BUFFER
-//---------------------------------------------//
-WGPUBuffer rem_new_buffer(const WGPUBufferDescriptor *desc) {
-
-  const REMType type = REMType_Buffer;
-
-  WGPUBuffer buffer = wgpuDeviceCreateBuffer(context_device(), desc);
-
-  REMBuffer *entry = hsht_new_entry(&g_rem.entries[type], buffer,
-                                    HashTableNewFlag_FixedCapacity);
-
-  if (entry == NULL) {
-    rem_destroy_buffer(&buffer);
-    return NULL;
-  }
-
-  entry->owner = 0;
-  entry->key = 0;
-  entry->type = type;
-  entry->handle = buffer;
-
-  return buffer;
-}
+REM_NEW_WGPU_ITEM(WGPUBuffer, buffer, REMType_Buffer, REMBuffer,
+                  WGPUBufferDescriptor, wgpuDeviceCreateBuffer);
 
 REMStatus rem_write_buffer(WGPUBuffer buffer, const size_t offset, void *data,
                            const size_t size, const REMWriteFlag flag) {
@@ -292,9 +268,6 @@ REMStatus rem_write_buffer(WGPUBuffer buffer, const size_t offset, void *data,
   return REMStatus_Success;
 }
 
-//---------------------------------------------//
-// SHADER MODULE
-//---------------------------------------------//
 WGPUShaderModule rem_new_shader_module(char *code, const char *label,
                                        const REMWriteFlag flag) {
 
@@ -343,11 +316,7 @@ WGPUShaderModule rem_new_shader_module(char *code, const char *label,
 
  */
 
-//---------------------------------------------//
-// BASE
-//---------------------------------------------//
-#define REM_NEW_ENGINE_ITEM(Name, FuncName, ListName, REMItem, TypeEnum,       \
-                            RegisterType)                                      \
+#define REM_NEW_ENGINE_ITEM(Name, FuncName, REMItem, TypeEnum, RegisterType)   \
   Name *rem_new_##FuncName() {                                                 \
                                                                                \
     const reg_id_t id = reg_new_id();                                          \
@@ -369,40 +338,44 @@ WGPUShaderModule rem_new_shader_module(char *code, const char *label,
     return &entry->handle;                                                     \
   }
 
-REM_NEW_ENGINE_ITEM(Mesh, mesh, meshes, REMMesh, REMType_Mesh,
-                    RegEntryType_Mesh);
-REM_NEW_ENGINE_ITEM(Scene, scene, scenes, REMScene, REMType_Scene,
-                    RegEntryType_Scene);
+REM_NEW_ENGINE_ITEM(Mesh, mesh, REMMesh, REMType_Mesh, RegEntryType_Mesh);
 
-REM_NEW_ENGINE_ITEM(Shader, shader, shaders, REMShader, REMType_Shader,
+REM_NEW_ENGINE_ITEM(Scene, scene, REMScene, REMType_Scene, RegEntryType_Scene);
+
+REM_NEW_ENGINE_ITEM(Shader, shader, REMShader, REMType_Shader,
                     RegEntryType_Shader);
 
+REM_NEW_ENGINE_ITEM(Camera, camera, REMCamera, REMType_Camera,
+                    RegEntryType_Camera);
+
+REM_NEW_ENGINE_ITEM(RenderPipeline, render_pipeline, REMRenderPipeline,
+                    REMType_RenderPipeline, RegEntryType_RenderPipeline);
+
+REM_NEW_ENGINE_ITEM(ComputePipeline, compute_pipeline, REMComputePipeline,
+                    REMType_ComputePipeline, RegEntryType_ComputePipeline);
+
 // === Lights ===
-REM_NEW_ENGINE_ITEM(PointLight, point_light, point_lights, REMPointLight,
-                    REMType_PointLight, RegEntryType_PointLight);
+REM_NEW_ENGINE_ITEM(PointLight, point_light, REMPointLight, REMType_PointLight,
+                    RegEntryType_PointLight);
 
-REM_NEW_ENGINE_ITEM(AmbientLight, ambient_light, ambient_lights,
-                    REMAmbientLight, REMType_AmbientLight,
-                    RegEntryType_AmbientLight);
+REM_NEW_ENGINE_ITEM(AmbientLight, ambient_light, REMAmbientLight,
+                    REMType_AmbientLight, RegEntryType_AmbientLight);
 
-REM_NEW_ENGINE_ITEM(SpotLight, spot_light, spot_lights, REMSpotLight,
-                    REMType_SpotLight, RegEntryType_SpotLight);
+REM_NEW_ENGINE_ITEM(SpotLight, spot_light, REMSpotLight, REMType_SpotLight,
+                    RegEntryType_SpotLight);
 
-REM_NEW_ENGINE_ITEM(SunLight, sun_light, sun_lights, REMSunLight,
-                    REMType_SunLight, RegEntryType_SunLight);
+REM_NEW_ENGINE_ITEM(SunLight, sun_light, REMSunLight, REMType_SunLight,
+                    RegEntryType_SunLight);
 
 // === Probe / Reflection ===
-REM_NEW_ENGINE_ITEM(ProbeReflectionPlane, plane_reflection, plane_reflections,
-                    REMPlaneReflection, REMType_PlaneReflection,
-                    RegEntryType_ProbeReflectionPlane);
+REM_NEW_ENGINE_ITEM(ProbeReflectionPlane, plane_reflection, REMPlaneReflection,
+                    REMType_PlaneReflection, RegEntryType_ProbeReflectionPlane);
 
-REM_NEW_ENGINE_ITEM(ProbeReflection, probe_reflection, probe_reflections,
-                    REMProbeReflection, REMType_ProbeReflection,
-                    RegEntryType_ProbeReflection);
+REM_NEW_ENGINE_ITEM(ProbeReflection, probe_reflection, REMProbeReflection,
+                    REMType_ProbeReflection, RegEntryType_ProbeReflection);
 
 REM_NEW_ENGINE_ITEM(ProbeReflectionGrid, probe_reflection_grid,
-                    probe_reflection_grids, REMProbeReflectionGrid,
-                    REMType_ProbeReflectionGrid,
+                    REMProbeReflectionGrid, REMType_ProbeReflectionGrid,
                     RegEntryType_ProbeReflectionGrid);
 
 // Destroy item based on its handle pointer (wgpu Opaque Pointer objects)
@@ -462,6 +435,15 @@ REM_DESTROY_ENGINE_ITEM(shader, Shader, REMType_Shader, REMShader,
 REM_DESTROY_ENGINE_ITEM(mesh, Mesh, REMType_Mesh, REMMesh, mesh_destroy);
 
 REM_DESTROY_ENGINE_ITEM(scene, Scene, REMType_Scene, REMScene, scene_destroy);
+
+REM_DESTROY_ENGINE_ITEM(camera, Camera, REMType_Camera, REMCamera,
+                        camera_destroy);
+
+REM_DESTROY_ENGINE_ITEM(render_pipeline, RenderPipeline, REMType_RenderPipeline,
+                        REMRenderPipeline, render_pipeline_destroy);
+
+REM_DESTROY_ENGINE_ITEM(compute_pipeline, ComputePipeline, REMType_ComputePipeline,
+                        REMComputePipeline, compute_pipeline_destroy);
 
 REM_DESTROY_ENGINE_ITEM(point_light, PointLight, REMType_PointLight,
                         REMPointLight, point_light_destroy);

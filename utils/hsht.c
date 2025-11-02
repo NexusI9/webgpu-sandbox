@@ -149,10 +149,6 @@ void *hsht_find(HashTable *table, const void *key, size_t *real_index) {
 void *hsht_new_entry(HashTable *table, const void *key,
                      const HashTableNewFlag flag) {
 
-  // DEBUG
-  printf("list: %p | %lu | %lu\n", table->occupied_list.entries,
-         table->occupied_list.length, table->occupied_list.capacity);
-
   if (table->occupied_list.length >= table->capacity * 0.75) {
     if (flag & HashTableNewFlag_FixedCapacity) {
       logger_add(LoggerFlag_Error,

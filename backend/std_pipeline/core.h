@@ -39,8 +39,8 @@ typedef enum {
   ComputePipelineType_Kawase,
 } ComputePipelineType;
 
-extern RenderPipeline g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT];
-extern ComputePipeline g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT];
+extern RenderPipeline *g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT];
+extern ComputePipeline *g_std_compute_pipelines[COMPUTE_PIPELINE_TYPE_COUNT];
 
 EXTERN_C_BEGIN
 
@@ -50,12 +50,12 @@ void standard_compute_pipelines_init();
 
 static inline const RenderPipeline *
 std_render_pipeline(const RenderPipelineType type) {
-  return &g_std_render_pipelines[type];
+  return g_std_render_pipelines[type];
 }
 
 static inline const ComputePipeline *
 std_compute_pipeline(const ComputePipelineType type) {
-  return &g_std_compute_pipelines[type];
+  return g_std_compute_pipelines[type];
 }
 
 static inline RenderPipelineType
@@ -68,7 +68,6 @@ std_render_pipeline_type(const RenderPipeline *pipeline) {
 
   return (RenderPipelineType)RENDER_PIPELINE_UNDEFINED;
 }
-
 
 EXTERN_C_END
 
