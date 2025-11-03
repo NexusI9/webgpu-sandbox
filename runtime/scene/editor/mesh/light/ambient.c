@@ -4,6 +4,7 @@
 
 #include "backend/registry.h"
 #include "backend/resource_manager.h"
+#include "backend/theme/core.h"
 #include "runtime/light/core.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/scene/add.h"
@@ -11,8 +12,6 @@
 #include "runtime/scene/editor/mesh/builder/billboard.h"
 #include "runtime/scene/editor/mesh/list/list.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
-#include "runtime/scene/editor/ui/core.h"
-
 /**
    Insert Ambient light gizmo mesh to the list
  */
@@ -33,17 +32,17 @@ void sem_ambient_light_create(SceneEditorMeshList *list, AmbientLight *light,
   icon->target = light;
   icon->scene = desc->scene;
 
-  SceneEditorUIIconUV icon_uv =
-      desc->scene->editor.ui.icon_uv[SceneEditorUIIcon_AmbientLight];
+  const ThemeIconCell *icon_uv =
+      theme_icon_cell(&g_theme, ThemeIcon_AmbientLight);
 
   // create icon mesh
   sem_create_billboard(icon->mesh,
                        &(SEMCreateBillboardDescriptor){
-                           .view = desc->scene->editor.ui.atlas_texture.view,
+                           .view = theme_icon_atlas(&g_theme),
                            .position = &light->position,
                            .scale = &SEM_BILLBOARD_SCALE,
-                           .uv0 = {icon_uv.uv0[0], icon_uv.uv0[1]},
-                           .uv1 = {icon_uv.uv1[0], icon_uv.uv1[1]},
+                           .uv0 = {icon_uv->uv0[0], icon_uv->uv0[1]},
+                           .uv1 = {icon_uv->uv1[0], icon_uv->uv1[1]},
                        });
 
   // set callback

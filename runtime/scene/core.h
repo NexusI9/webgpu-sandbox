@@ -17,7 +17,6 @@
 #include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "debug/core.h"
 #include "editor/selection/gizmo/core.h"
-#include "editor/ui/core.h"
 #include "environment/core.h"
 #include "event/core.h"
 #include "renderer/core.h"
@@ -204,7 +203,6 @@ typedef struct {
 
   // selection sets
   SceneSelection selection;
-  SceneEditorUI ui;
   SceneEditorMeshListArray sem_list; // cam/ lights  lists
 
   struct {
@@ -354,7 +352,6 @@ struct Scene {
 typedef struct {
   const ViewportCreateDescriptor *viewport;
   const SceneRendererCreateDescriptor *renderer;
-  const SceneEditorUIConfig *ui;
 } SceneCreateDescriptor;
 
 typedef void (*scene_draw_callback)(Scene *, WGPURenderPassEncoder *);

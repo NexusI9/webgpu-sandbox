@@ -116,11 +116,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
           (void *)&scene->renderer,
           SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
               SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
-
-      scene_renderer_add_draw_callback(
-          &scene->renderer, scene_editor_ui_draw_callback, (void *)scene,
-          SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
-              SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
     }
   });
 }

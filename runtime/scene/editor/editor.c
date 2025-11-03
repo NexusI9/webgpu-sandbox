@@ -10,7 +10,6 @@
 #include "runtime/scene/add.h"
 #include "runtime/scene/build.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/editor/ui/core.h"
 #include "runtime/scene/layer.h"
 #include "runtime/scene/renderer/core.h"
 #include "runtime/scene/show.h"
@@ -29,10 +28,6 @@ void scene_editor_init(Scene *scene) {
   // init selection list & related events
   scene_selection_init(scene);
 
-  scene_editor_ui_init(&scene->editor.ui, &(SceneEditorUIDescriptor){
-                                              .clock = &scene->renderer.clock,
-                                              .dpi = context_dpi(),
-                                          });
 
   // init editor related gizmos
   scene_editor_gizmo_create_grid(scene);

@@ -40,7 +40,6 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
 #include "runtime/probe/uniform.h"
-#include "runtime/scene/editor/ui/tree.h"
 #include "runtime/scene/renderer/render_pass/visibility.h"
 #include "runtime/scene/stat.h"
 #include "utils/projection.h"
@@ -448,7 +447,7 @@ void scene_add_sem(Scene *scene, SceneEditorMeshList *list) {
   }
 
   // EDITORONLY
-  scene_editor_ui_tree_insert(&scene->editor.ui.tree, list->id);
+  // DELETE ME scene_editor_ui_tree_insert(&scene->editor.ui.tree, list->id);
 }
 
 SceneEditorMeshList *
@@ -619,9 +618,9 @@ void scene_add_mesh_core(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
     scene_selection_subscribe_mesh(&scene->editor.selection, mesh, mesh->id,
                                    selection_pipeline);
 
-  // EDITORONLY
-  if ((flag & SceneAddFlag_TreeHide) == 0 && mesh->parent == NULL)
-    scene_editor_ui_tree_insert(&scene->editor.ui.tree, mesh->id);
+  // EDITORONLY DELETEME
+  //if ((flag & SceneAddFlag_TreeHide) == 0 && mesh->parent == NULL)
+  //  scene_editor_ui_tree_insert(&scene->editor.ui.tree, mesh->id);
 }
 
 /**

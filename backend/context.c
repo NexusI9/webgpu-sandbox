@@ -3,10 +3,15 @@
 #include "backend/logger.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
+#include "backend/theme/configs/default/default.icon.h"
+#include "backend/theme/configs/default/default.size.h"
+#include "backend/theme/core.h"
 #include "emscripten/em_types.h"
 #include "emscripten/emscripten.h"
 #include "emscripten/html5_webgpu.h"
+#include "resources/tool/css2h/output/theme.default.h"
 #include "runtime/html_event/core.h"
+#include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
@@ -41,10 +46,30 @@ ContextStatus context_init(const ContextDescriptor *desc) {
   context_update_size(0, NULL, (void *)&g_context);
 
   // === Global Input & Event polling ===
-  
+
   TIMER("Resource Manager", { resource_manager_init(); });
 
   TIMER("Fallback Textures", { standard_textures_init(); });
+
+  TIMER("Default Theme", {
+    theme_init(&g_theme, &(ThemeDescriptor){
+                             .label = "Default Theme",
+                             .colors = theme_default_color,
+                             .sizes = theme_default_size,
+                             .dpi = g_context.dpi,
+                         });
+
+    theme_create_icon_atlas(
+        &g_theme, &(TextureAtlasDescriptor){
+                      .cell_count = {16, 16},
+                      .cell_size = {128, 128},
+                      .format = TEXTURE_FORMAT_OFFSCREEN,
+                      .label = "Scene UI Icon Atlas",
+                      .path = "./resources/assets/texture/ui/icon_atlas.png",
+    });
+
+    theme_set_icons_coordinates(&g_theme, theme_default_icon);
+  });
 
   TIMER("Standard Shaders", {
     standard_render_pipelines_init(desc->render.multisample_count);
@@ -61,9 +86,6 @@ ContextStatus context_init(const ContextDescriptor *desc) {
 
   // poll global input
   input_init(desc->input);
-
-  printf("context width: %d\n", context_width());
-  printf("context height: %d\n", context_height());
 
   return ContextStatus_Success;
 }

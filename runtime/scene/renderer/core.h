@@ -95,7 +95,7 @@ void scene_renderer_draw_layout_callback(void *);
 
 void scene_renderer_add_draw_callback(SceneRenderer *,
                                       scene_renderer_draw_callback, void *,
-                                      const SceneRendererDrawMode);
+                                      const int);
 
 scene_renderer_draw_callback
 scene_renderer_find_draw_callback(SceneRenderer *,

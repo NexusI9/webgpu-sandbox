@@ -11,10 +11,10 @@
 #include "backend/logger.h"
 #include "backend/postfx/core.h"
 #include "backend/profiler.h"
-#include "backend/ubo.h"
 #include "backend/stat.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
+#include "backend/ubo.h"
 #include "emscripten/html5.h"
 #include "emscripten/html5_webgpu.h"
 #include "render_pass/draw.h"
@@ -91,8 +91,7 @@ void scene_renderer_draw_layout_callback(void *data) {
  */
 void scene_renderer_add_draw_callback(SceneRenderer *renderer,
                                       scene_renderer_draw_callback callback,
-                                      void *data,
-                                      const SceneRendererDrawMode modes) {
+                                      void *data, const int modes) {
 
   // add hook to corressponding mode
   for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {

@@ -15,6 +15,27 @@ import os
 INPUT_DIR = "input"
 OUTPUT_DIR = "output"
 
+def count_label(filename):
+    return f"THEME_{filename.upper()}_COLOR_COUNT"
+
+def list_var_label(filename):
+    return f"theme_{filename.lower()}_color"
+
+def header_label(filename):
+    return f"_THEME_{filename.upper()}_H_"
+
+def enum_label(filename):
+    return f"Theme{filename.capitalize()}"
+
+def enum_entry(css_name, filename):
+    """Convert CSS variable name to C enum style"""
+    name = "_".join(word.capitalize() for word in css_name.split("-"))
+    prefix = enum_label(filename)
+    
+    if name.startswith(prefix):
+        return name
+    return  prefix + name
+
 def hex_to_rgba(hex_str):
     """Convert #RRGGBB or #RRGGBBAA to {r,g,b,a}"""
     hex_str = hex_str.strip()
@@ -34,14 +55,6 @@ def hex_to_rgba(hex_str):
         raise ValueError(f"Invalid hex color: {hex_str}")
     return f"{{ {r:.2f}f, {g:.2f}f, {b:.2f}f, {a:.2f}f }}"
 
-def enum_name(css_name, filename):
-    """Convert CSS variable name to C enum style"""
-    name = css_name.upper().replace("-", "_")
-    prefix = f"THEME_{filename.upper()}_"
-    
-    if name.startswith(prefix):
-        return name
-    return  prefix + name
 
 def process_css_file(css_path, header_path):
     colors = []
@@ -53,27 +66,27 @@ def process_css_file(css_path, header_path):
             match = re.match(r"\s*--([\w-]+):\s*#([0-9a-fA-F]{6,8});", line)
             if match:
                 name, hex_val = match.groups()
-                colors.append((enum_name(name, filename), hex_to_rgba(hex_val)))
+                colors.append((enum_entry(name, filename), hex_to_rgba(hex_val)))
     
     os.makedirs(os.path.dirname(header_path), exist_ok=True)
     with open(header_path, "w") as f:        
         # Header
         f.write("// Generated from {} with css2h\n\n".format(os.path.basename(css_path)))
-        f.write(f"#ifndef _THEME_{filename.upper()}_H_\n")
-        f.write(f"#define _THEME_{filename.upper()}_H_\n\n")
+        f.write(f"#ifndef {header_label(filename)}\n")
+        f.write(f"#define {header_label(filename)}\n\n")
         f.write("#include \"utils/color.h\"\n\n")
         
-        f.write(f"#define THEME_{filename.upper()}_COLOR_COUNT {len(colors)}\n\n")
+        f.write(f"#define {count_label(filename)} {len(colors)}\n\n")
         
         # Enum
         f.write("typedef enum {\n")
         for name, _ in colors:
             f.write(f"    {name},\n")
         f.write("}")
-        f.write(f" Theme{filename.capitalize()}Color;\n\n")
+        f.write(f" {enum_label(filename)}Color;\n\n")
         
         # Color array
-        f.write(f"static const color theme_{filename.lower()}_color[THEME_{filename.upper()}_COLOR_COUNT] =")
+        f.write(f"static const color {list_var_label(filename)}[{count_label(filename)}] =")
         f.write("{\n")
         for name, rgba in colors:
             f.write(f"    [{name}] = {rgba},\n")
