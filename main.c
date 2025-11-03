@@ -41,6 +41,8 @@ int main(int argc, const char *argv[]) {
           },
   });
 
+  
+
   Scene *main_scene = rem_new_scene();
 
   scene_create(main_scene,
