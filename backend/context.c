@@ -66,7 +66,7 @@ ContextStatus context_init(const ContextDescriptor *desc) {
                       .format = TEXTURE_FORMAT_OFFSCREEN,
                       .label = "Scene UI Icon Atlas",
                       .path = "./resources/assets/texture/ui/icon_atlas.png",
-    });
+                  });
 
     theme_set_icons_coordinates(&g_theme, theme_default_icon);
   });

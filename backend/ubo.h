@@ -8,13 +8,9 @@
 #include <string.h>
 #include <webgpu/webgpu.h>
 
+#include "backend/registry.h"
 #include "utils/defines.h"
 #include "utils/stli.h"
-
-#define UBO_CAPACITY 128
-#define UBO_MAX_TYPE_SIZE 65536
-#define UBO_UPDATE_QUEUE_CAPACITY 128
-#define UBO_INDEX_UNFOUND UINT32_MAX
 
 /**
 
@@ -68,6 +64,11 @@
 
  */
 
+#define UBO_CAPACITY 128
+#define UBO_MAX_TYPE_SIZE 65536
+#define UBO_UPDATE_QUEUE_CAPACITY 128
+#define UBO_INDEX_UNFOUND UINT32_MAX
+
 typedef size_t ubo_id_t;
 
 typedef enum {
@@ -76,15 +77,23 @@ typedef enum {
   UBOStatus_UndefError,
 } UBOStatus;
 
+// clang-format off
+#define UBO_LIST(_)                                  \
+  _(  Camera,            CameraUniform             ) \
+  _(  Viewport,          ViewportUniform           ) \
+  _(  Mesh,              MeshUniform               ) \
+  _(  ViewProjection,    ProjectionUniform         ) \
+  _(  LightList,         LightListUniform          ) \
+  _(  ProbeList,         ProbeListUniform          ) \
+  _(  Environment,       SceneEnvironmentUniform   )
+
+// clang-format on
 #define UBO_TYPE_COUNT 7
+
 typedef enum {
-  UBOType_Camera,
-  UBOType_Viewport,
-  UBOType_Mesh,
-  UBOType_ViewProjection,
-  UBOType_LightList,
-  UBOType_ProbeList,
-  UBOType_Environment,
+#define _(Name, Uniform) UBOType_##Name,
+  UBO_LIST(_)
+#undef _
 } UBOType;
 
 typedef struct {
@@ -108,6 +117,8 @@ typedef struct {
 } __attribute__((aligned(16))) UBOBuffer;
 
 typedef struct {
+
+  reg_id_t id;
   UBOBuffer buffers[UBO_TYPE_COUNT];
 
 } UBOManager;
@@ -117,6 +128,7 @@ EXTERN_C_BEGIN
 void ubo_draw_callback(void *);
 
 void ubo_init(UBOManager *);
+void ubo_destroy(UBOManager *);
 void ubo_upload(UBOManager *, const UBOType);
 
 /* ==== GETTERS ==== */
@@ -141,7 +153,7 @@ static inline void ubo_slot_init_alloc(UBOSlot *slot, size_t type_size) {
 }
 
 static inline void ubo_slot_set_uniform(UBOSlot *slot, const void *data,
-                                         const size_t type_size) {
+                                        const size_t type_size) {
   memcpy(slot->uniform, data, type_size);
 }
 
@@ -149,8 +161,8 @@ static inline void ubo_slot_set_uniform(UBOSlot *slot, const void *data,
    DELETEME ??
    Transfers the given UBOSlot to the manager
  */
-static inline UBOStatus ubo_copy_entry(UBOManager *manager,
-                                         const UBOType type, UBOSlot *slot) {
+static inline UBOStatus ubo_copy_entry(UBOManager *manager, const UBOType type,
+                                       UBOSlot *slot) {
 
   UBOSlot new_slot = ubo_new_entry(manager, type);
 
@@ -171,7 +183,7 @@ static inline ubo_id_t ubo_slot_id(const UBOSlot *slot) { return slot->id; }
 
 /* ==== UPDATE QUEUE ==== */
 StaticListStatus ubo_update_queue_insert(UBOManager *, const UBOType,
-                                          const ubo_id_t);
+                                         const ubo_id_t);
 StaticListStatus ubo_update_queue_shift(UBOManager *, const UBOType);
 
 EXTERN_C_END

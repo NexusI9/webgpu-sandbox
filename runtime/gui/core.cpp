@@ -72,7 +72,6 @@ GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
   logger_add(LoggerFlag_Process, "Intitializing Editor UI");
 
   {
-    gui->id = reg_register(reg_new_id(), gui, RegEntryType_SceneUI);
     gui->dpi = desc->dpi;
     gui->theme = desc->theme;
     gui->active_scene = desc->active_scene;
@@ -207,6 +206,8 @@ void gui_draw_callback(void *data) {
     wgpuTextureViewRelease(swapchain_view);
   }
 }
+
+void gui_destroy(Gui *gui) {}
 
 void gui_create_texture(Gui *ui) {
 

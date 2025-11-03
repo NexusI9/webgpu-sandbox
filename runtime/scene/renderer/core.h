@@ -12,8 +12,9 @@
 #include "backend/clock.h"
 #include "backend/compute/core.h"
 #include "backend/profiler.h"
-#include "backend/ubo.h"
+#include "backend/registry.h"
 #include "backend/stat.h"
+#include "backend/ubo.h"
 #include "render_pass/core.h"
 #include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/render.h"
@@ -54,6 +55,8 @@ typedef struct {
 
 typedef struct SceneRenderer {
 
+  reg_id_t id;
+
   cclock clock; // update clock delta on draw
   UBOManager ubo;
 
@@ -89,6 +92,7 @@ EXTERN_C_BEGIN
 void scene_renderer_init(SceneRenderer *,
                          const SceneRendererCreateDescriptor *);
 
+void renderer_destroy(SceneRenderer *);
 void scene_renderer_set_draw_mode(SceneRenderer *, const SceneRendererDrawMode);
 
 void scene_renderer_draw_layout_callback(void *);
@@ -107,7 +111,6 @@ void scene_renderer_draw(SceneRenderer *);
 static inline UBOManager *scene_renderer_ubo(SceneRenderer *renderer) {
   return &renderer->ubo;
 }
-
 
 static inline const SceneRendererDrawMode
 scene_renderer_draw_mode(SceneRenderer *renderer) {

@@ -49,75 +49,75 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
       scene_renderer_init(&scene->renderer, desc->renderer);
       scene_environment_init(&scene->environment);
       {
-        scene->environment.ubo_slot =
-            ubo_new_entry(&scene->renderer.ubo, UBOType_Environment);
+    scene->environment.ubo_slot =
+        ubo_new_entry(&scene->renderer.ubo, UBOType_Environment);
 
-        scene_environment_update_uniform(&scene->environment);
+    scene_environment_update_uniform(&scene->environment);
 
-        ubo_upload_entry(&scene->renderer.ubo, UBOType_Environment,
-                         &scene->environment.ubo_slot);
+    ubo_upload_entry(&scene->renderer.ubo, UBOType_Environment,
+                     &scene->environment.ubo_slot);
       }
-    }
+}
 
-    {
+{
 
-      /*  ===== LISTS ===== */
-      scene_mesh_list_init(scene);
-      scene_layer_init(&scene->layers);
-      scene_light_list_init(scene);
-      scene_probe_reflection_init(scene, context_multisample());
-    }
+  /*  ===== LISTS ===== */
+  scene_mesh_list_init(scene);
+  scene_layer_init(&scene->layers);
+  scene_light_list_init(scene);
+  scene_probe_reflection_init(scene, context_multisample());
+}
 
-    {
-      /*  ===== CAMERA & VIEWPORT =====  */
-      scene_camera_init(scene);
+{
+  /*  ===== CAMERA & VIEWPORT =====  */
+  scene_camera_init(scene);
 
-      viewport_create(&scene->viewport,
-                      &(ViewportCreateDescriptor){
-                          .fov = desc->viewport->fov,
-                          .near_clip = desc->viewport->near_clip,
-                          .far_clip = desc->viewport->far_clip,
-                          .width = scene_renderer_width(&scene->renderer),
-                          .height = scene_renderer_height(&scene->renderer),
-                      });
+  viewport_create(&scene->viewport,
+                  &(ViewportCreateDescriptor){
+                      .fov = desc->viewport->fov,
+                      .near_clip = desc->viewport->near_clip,
+                      .far_clip = desc->viewport->far_clip,
+                      .width = scene_renderer_width(&scene->renderer),
+                      .height = scene_renderer_height(&scene->renderer),
+                  });
 
-      {
-        scene->viewport.ubo_slot =
-            ubo_new_entry(&scene->renderer.ubo, UBOType_Viewport);
+  {
+    scene->viewport.ubo_slot =
+        ubo_new_entry(&scene->renderer.ubo, UBOType_Viewport);
 
-        viewport_uniform_update(&scene->viewport);
+    viewport_uniform_update(&scene->viewport);
 
-        ubo_upload_entry(&scene->renderer.ubo, UBOType_Viewport,
-                         &scene->viewport.ubo_slot);
-      }
-    }
+    ubo_upload_entry(&scene->renderer.ubo, UBOType_Viewport,
+                     &scene->viewport.ubo_slot);
+  }
+}
 
-    {
-      /*  ===== EVENT =====  */
-      scene_event_html(scene);
-      scene_draw_layouts_init(scene, context_multisample());
-    }
+{
+  /*  ===== EVENT =====  */
+  scene_event_html(scene);
+  scene_draw_layouts_init(scene, context_multisample());
+}
 
-    {
-      /*  ===== EDITOR =====  */
-      scene_stat_update_shader_count(scene);
-      scene_editor_init(scene); // EDITORONLY
-      scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
-                                          .camera = scene->active_camera,
-                                          .viewport = &scene->viewport,
-                                          .ubo = &scene->renderer.ubo,
-                                      });
-    }
+{
+  /*  ===== EDITOR =====  */
+  scene_stat_update_shader_count(scene);
+  scene_editor_init(scene); // EDITORONLY
+  scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
+                                      .camera = scene->active_camera,
+                                      .viewport = &scene->viewport,
+                                      .ubo = &scene->renderer.ubo,
+                                  });
+}
 
-    {
-      /* === DRAW CALLBACKS === */
-      scene_renderer_add_draw_callback(
-          &scene->renderer, scene_renderer_draw_layout_callback,
-          (void *)&scene->renderer,
-          SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
-              SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
-    }
-  });
+{
+  /* === DRAW CALLBACKS === */
+  scene_renderer_add_draw_callback(
+      &scene->renderer, scene_renderer_draw_layout_callback,
+      (void *)&scene->renderer,
+      SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
+          SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
+}
+});
 }
 
 /**
@@ -132,7 +132,6 @@ void scene_mesh_list_init(Scene *scene) {
   for (SceneMeshStates m = 0; m < SCENE_MESH_STATE_COUNT; m++)
     mesh_ref_list_create(scene_mesh_state(scene, m),
                          SCENE_MESH_LIST_DEFAULT_CAPACITY);
-
 }
 
 /**

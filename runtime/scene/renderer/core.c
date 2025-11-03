@@ -64,6 +64,9 @@ void scene_renderer_init(SceneRenderer *renderer,
           SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
 }
 
+
+void renderer_destroy(SceneRenderer * renderer){}
+
 /**
    Based on the renderer Draw Layouts, it first select the entry base on the
    renderer mode (texture/solid/wireframe).

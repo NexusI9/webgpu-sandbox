@@ -3,7 +3,9 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
+#include "backend/ubo.h"
 #include "runtime/camera/core.h"
+#include "runtime/gui/core.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
@@ -13,6 +15,7 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/renderer/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
 #include "utils/defines.h"
@@ -30,65 +33,67 @@ typedef enum {
   REMStatus_UndefError,
 } REMStatus;
 
-#define REM_TYPE_COUNT 20
-typedef enum {
-  REMType_Texture,
-  REMType_View,
-  REMType_ShaderModule,
-  REMType_Buffer,
-  REMType_Sampler,
-  REMType_Mbin,
-  REMType_Gltf,
-  REMType_Scene,
-  REMType_Mesh,
-  REMType_Camera,
-  REMType_RenderPipeline,
-  REMType_ComputePipeline,
-  REMType_Shader,
-  REMType_PointLight,
-  REMType_AmbientLight,
-  REMType_SpotLight,
-  REMType_SunLight,
-  REMType_PlaneReflection,
-  REMType_ProbeReflection,
-  REMType_ProbeReflectionGrid,
-} REMType;
+// WGPU
 
-#define REM_STRUCT_ITEM(Name, Handle)                                          \
+// clang-format off
+
+//      Type         |             Registry type           |         Label          |            Hash method         |   Capacity
+#define REM_WGPU_LIST(_)                                                                                                           \
+    _(WGPUTexture,             RegEntryType_WGPUObject,             texture,                 rem_generate_ptr_hash,          127 ) \
+    _(WGPUTextureView,         RegEntryType_WGPUObject,             view,                    rem_generate_ptr_hash,          683 ) \
+    _(WGPUBuffer,              RegEntryType_WGPUObject,             buffer,                  rem_generate_ptr_hash,          683 ) \
+    _(WGPUShaderModule,        RegEntryType_WGPUObject,             shader_module,           rem_generate_ptr_hash,          127 ) \
+    _(WGPUSampler,             RegEntryType_WGPUObject,             sampler,                 rem_generate_ptr_hash,          127 )                        
+
+
+#define REM_ENGINE_LIST(_)                                                                                                         \
+    _(Mesh,                   RegEntryType_Mesh,                    mesh,                    rem_generate_id_hash,           127 ) \
+    _(Scene,                  RegEntryType_Scene,                   scene,                   rem_generate_id_hash,             3 ) \
+    _(RenderPipeline,         RegEntryType_RenderPipeline,          render_pipeline,         rem_generate_id_hash,            71 ) \
+    _(ComputePipeline,        RegEntryType_ComputePipeline,         compute_pipeline,        rem_generate_id_hash,           127 ) \
+    _(Shader,                 RegEntryType_Shader,                  shader,                  rem_generate_id_hash,           127 ) \
+    _(Camera,                 RegEntryType_Camera,                  camera,                  rem_generate_id_hash,            31 ) \
+    _(SceneRenderer,          RegEntryType_Renderer,                renderer,                rem_generate_id_hash,             3 ) \
+    _(Gui,                    RegEntryType_Gui,                     gui,                     rem_generate_id_hash,             3 ) \
+    _(UBOManager,             RegEntryType_Ubo,                     ubo,                     rem_generate_id_hash,             1 ) \
+    _(PointLight,             RegEntryType_PointLight,              point_light,             rem_generate_id_hash,             7 ) \
+    _(AmbientLight,           RegEntryType_AmbientLight,            ambient_light,           rem_generate_id_hash,            37 ) \
+    _(SpotLight,              RegEntryType_SpotLight,               spot_light,              rem_generate_id_hash,            37 ) \
+    _(SunLight,               RegEntryType_SunLight,                sun_light,               rem_generate_id_hash,            37 ) \
+    _(ProbeReflectionPlane,   RegEntryType_ProbeReflectionPlane,    plane_reflection,        rem_generate_id_hash,            17 ) \
+    _(ProbeReflection,        RegEntryType_ProbeReflection,         probe_reflection,        rem_generate_id_hash,            17 ) \
+    _(ProbeReflectionGrid,    RegEntryType_ProbeReflectionGrid,     probe_reflection_grid,   rem_generate_id_hash,            17 )
+
+// clang-format on
+
+#define REM_TYPE_COUNT 21
+
+// === Generates Type Enums ===
+#define _(Type, RegistryType, Label, Hash, Capacity) REMType_##Type,
+typedef enum { REM_WGPU_LIST(_) REM_ENGINE_LIST(_) } REMType;
+#undef _
+
+// === Generate Structs ===
+#define REM_STRUCT_ITEM(Type, RegistryType, Label, Hash, Capacity)             \
   typedef struct {                                                             \
     reg_id_t owner;                                                            \
     uint32_t key;                                                              \
     REMType type;                                                              \
     bool occupied;                                                             \
-    Handle handle;                                                             \
-  } REM##Name;
+    Type handle;                                                               \
+  } REM##Type;
 
-REM_STRUCT_ITEM(Texture, WGPUTexture);
-REM_STRUCT_ITEM(View, WGPUTextureView);
-REM_STRUCT_ITEM(Buffer, WGPUBuffer);
-REM_STRUCT_ITEM(ShaderModule, WGPUShaderModule);
-REM_STRUCT_ITEM(Sampler, WGPUSampler);
+REM_WGPU_LIST(REM_STRUCT_ITEM);
+REM_ENGINE_LIST(REM_STRUCT_ITEM);
 
-REM_STRUCT_ITEM(Mesh, Mesh);
-REM_STRUCT_ITEM(Scene, Scene);
-REM_STRUCT_ITEM(RenderPipeline, RenderPipeline);
-REM_STRUCT_ITEM(ComputePipeline, ComputePipeline);
-REM_STRUCT_ITEM(Shader, Shader);
-REM_STRUCT_ITEM(Camera, Camera);
-
-REM_STRUCT_ITEM(PointLight, PointLight);
-REM_STRUCT_ITEM(AmbientLight, AmbientLight);
-REM_STRUCT_ITEM(SpotLight, SpotLight);
-REM_STRUCT_ITEM(SunLight, SunLight);
-
-REM_STRUCT_ITEM(ProbeReflection, ProbeReflection);
-REM_STRUCT_ITEM(PlaneReflection, ProbeReflectionPlane);
-REM_STRUCT_ITEM(ProbeReflectionGrid, ProbeReflectionGrid);
-
-REM_STRUCT_ITEM(Gltf, const char *);
-REM_STRUCT_ITEM(Mbin, const char *);
-
-REM_STRUCT_ITEM(Void, void *);
+// utils
+typedef struct {
+  reg_id_t owner;
+  uint32_t key;
+  REMType type;
+  bool occupied;
+  void *handle;
+} REMVoid;
 
 /* TODO:
 Add the following entities ?
@@ -125,157 +130,22 @@ void rem_bucket_set_occupied(const void *, const bool);
 bool rem_bucket_get_occupied(const void *);
 bool rem_bucket_compare(const void *, const void *);
 
+// === Define Config ===
 static const struct {
   const char *label;
   const size_t capacity;
   const size_t type_size;
   hsht_hash_generator hash_generator;
 } rem_config[] = {
-    [REMType_Texture] =
-        {
-            .label = "Texture",
-            .capacity = 997,
-            .type_size = sizeof(REMTexture),
-            .hash_generator = rem_generate_ptr_hash,
-        },
-    [REMType_View] =
-        {
-            .label = "View",
-            .capacity = 997,
-            .type_size = sizeof(REMView),
-            .hash_generator = rem_generate_ptr_hash,
-        },
-    [REMType_ShaderModule] =
-        {
-            .label = "Shader Module",
-            .capacity = 127,
-            .type_size = sizeof(REMShaderModule),
-            .hash_generator = rem_generate_ptr_hash,
-        },
-    [REMType_Buffer] =
-        {
-            .label = "Buffer",
-            .capacity = 997,
-            .type_size = sizeof(REMBuffer),
-            .hash_generator = rem_generate_ptr_hash,
-        },
-    [REMType_Sampler] =
-        {
-            .label = "Sampler",
-            .capacity = 127,
-            .type_size = sizeof(REMShaderModule),
-            .hash_generator = rem_generate_ptr_hash,
-        },
-    /*
-
-      ==== ID BASED ====
-
-     */
-    [REMType_Mbin] =
-        {
-            .label = "Mbin",
-            .capacity = 61,
-            .type_size = sizeof(REMMbin),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_Gltf] =
-        {
-            .label = "Gltf",
-            .capacity = 61,
-            .type_size = sizeof(REMGltf),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_Scene] =
-        {
-            .label = "Scene",
-            .capacity = 1,
-            .type_size = sizeof(REMScene),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_Mesh] =
-        {
-            .label = "Mesh",
-            .capacity = 127,
-            .type_size = sizeof(REMMesh),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_RenderPipeline] =
-        {
-            .label = "Render Pipeline",
-            .capacity = 71,
-            .type_size = sizeof(REMRenderPipeline),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_ComputePipeline] =
-        {
-            .label = "Compute Pipeline",
-            .capacity = 31,
-            .type_size = sizeof(REMComputePipeline),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_Shader] =
-        {
-            .label = "Shader",
-            .capacity = 127,
-            .type_size = sizeof(REMShader),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_Camera] =
-        {
-            .label = "Camera",
-            .capacity = 31,
-            .type_size = sizeof(REMCamera),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_PointLight] =
-        {
-            .label = "Point Light",
-            .capacity = 37,
-            .type_size = sizeof(REMPointLight),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_AmbientLight] =
-        {
-            .label = "Ambient Light",
-            .capacity = 37,
-            .type_size = sizeof(REMAmbientLight),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_SpotLight] =
-        {
-            .label = "Spot Light",
-            .capacity = 37,
-            .type_size = sizeof(REMSpotLight),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_SunLight] =
-        {
-            .label = "Sun Light",
-            .capacity = 37,
-            .type_size = sizeof(REMSunLight),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_PlaneReflection] =
-        {
-            .label = "Plane Reflection",
-            .capacity = 17,
-            .type_size = sizeof(REMPlaneReflection),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_ProbeReflection] =
-        {
-            .label = "Probe Reflection",
-            .capacity = 17,
-            .type_size = sizeof(REMProbeReflection),
-            .hash_generator = rem_generate_id_hash,
-        },
-    [REMType_ProbeReflectionGrid] =
-        {
-            .label = "Probe Reflection Grid",
-            .capacity = 17,
-            .type_size = sizeof(REMProbeReflectionGrid),
-            .hash_generator = rem_generate_id_hash,
-        },
+#define _(Type, RegistryType, Label, Hash, Capacity)                           \
+  [REMType_##Type] = {                                                         \
+      .label = #Type,                                                          \
+      .capacity = Capacity,                                                    \
+      .type_size = sizeof(REM##Type),                                          \
+      .hash_generator = Hash,                                                  \
+  },
+    REM_WGPU_LIST(_) REM_ENGINE_LIST(_)
+#undef _
 };
 
 typedef enum {
@@ -306,45 +176,18 @@ REMStatus rem_write_texture(WGPUTexture, void *, const size_t,
                             const TextureChannel, const size_t,
                             const REMWriteFlag);
 
-Mesh *rem_new_mesh();
-Scene *rem_new_scene();
-Shader *rem_new_shader();
-Camera *rem_new_camera();
-RenderPipeline *rem_new_render_pipeline();
-ComputePipeline *rem_new_compute_pipeline();
-
-PointLight *rem_new_point_light();
-AmbientLight *rem_new_ambient_light();
-SpotLight *rem_new_spot_light();
-SunLight *rem_new_sun_light();
-
-ProbeReflectionPlane *rem_new_plane_reflection();
-ProbeReflection *rem_new_probe_reflection();
-ProbeReflectionGrid *rem_new_probe_reflection_grid();
-
 REMStatus rem_destroy_texture(WGPUTexture *);
 REMStatus rem_destroy_sampler(WGPUSampler *);
 REMStatus rem_destroy_view(WGPUTextureView *);
 REMStatus rem_destroy_buffer(WGPUBuffer *);
 REMStatus rem_destroy_shader_module(WGPUShaderModule *);
 
-REMStatus rem_destroy_shader(Shader *);
-REMStatus rem_destroy_mesh(Mesh *);
-REMStatus rem_destroy_scene(Scene *);
-REMStatus rem_destroy_render_pipeline(RenderPipeline *);
-REMStatus rem_destroy_compute_pipeline(ComputePipeline *);
+// === Generate Engine creator / destructor functions
+#define REM_ENGINE_FUNC_ITEM(Type, RegistryType, Label, Hash, Capacity)        \
+  Type *rem_new_##Label();                                                     \
+  REMStatus rem_destroy_##Label(Type *);
 
-REMStatus rem_destroy_mbin(const char *);
-REMStatus rem_destroy_gltf(const char *);
-
-REMStatus rem_destroy_point_light(PointLight *);
-REMStatus rem_destroy_ambient_light(AmbientLight *);
-REMStatus rem_destroy_sun_light(SunLight *);
-REMStatus rem_destroy_spot_light(SpotLight *);
-
-REMStatus rem_destroy_plane_reflection(ProbeReflectionPlane *);
-REMStatus rem_destroy_probe_reflection(ProbeReflection *);
-REMStatus rem_destroy_probe_reflection_grid(ProbeReflectionGrid *);
+REM_ENGINE_LIST(REM_ENGINE_FUNC_ITEM);
 
 EXTERN_C_END
 

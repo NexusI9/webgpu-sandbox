@@ -34,7 +34,7 @@ typedef struct {
   GUITree tree;
   Scene *active_scene;
   Theme *theme;
-  
+
 } Gui;
 
 typedef struct {
@@ -47,6 +47,7 @@ typedef struct {
 EXTERN_C_BEGIN
 
 GUIStatus gui_init(Gui *, const GUIDescriptor *);
+void gui_destroy(Gui *);
 
 void gui_draw_callback(void *);
 

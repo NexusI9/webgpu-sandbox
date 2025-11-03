@@ -24,41 +24,9 @@ static const struct {
   const size_t size;
   const char *label;
 } ubo_type[UBO_TYPE_COUNT] = {
-    [UBOType_Camera] =
-        {
-            sizeof(CameraUniform),
-            "UBO Camera Buffer",
-        },
-    [UBOType_Viewport] =
-        {
-            sizeof(ViewportUniform),
-            "UBO Viewport Buffer",
-        },
-    [UBOType_Mesh] =
-        {
-            sizeof(MeshUniform),
-            "UBO Mesh Buffer",
-        },
-    [UBOType_ViewProjection] =
-        {
-            sizeof(ProjectionUniform),
-            "UBO View Projection Buffer",
-        },
-    [UBOType_LightList] =
-        {
-            sizeof(LightListUniform),
-            "Light List Uniform",
-        },
-    [UBOType_ProbeList] =
-        {
-            sizeof(ProbeListUniform),
-            "Probe List Uniform",
-        },
-    [UBOType_Environment] =
-        {
-            sizeof(SceneEnvironmentUniform),
-            "Environment Uniform",
-        },
+#define _(Name, Uniform) [UBOType_##Name] = {sizeof(Uniform), #Name},
+    UBO_LIST(_)
+#undef _
 };
 
 void ubo_init(UBOManager *manager) {
@@ -103,6 +71,8 @@ void ubo_init(UBOManager *manager) {
     });
   }
 }
+
+void ubo_destroy(UBOManager *manager) {}
 
 UBOStatus ubo_update_entry(UBOManager *manager, const UBOType type,
                            const UBOSlot *slot) {

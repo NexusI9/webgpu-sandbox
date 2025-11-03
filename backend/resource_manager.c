@@ -3,10 +3,13 @@
 #include "backend/logger.h"
 #include "backend/registry.h"
 #include "backend/std_texture/core.h"
+#include "backend/ubo.h"
+#include "runtime/gui/core.h"
 #include "runtime/light/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/plane.h"
+#include "runtime/scene/renderer/core.h"
 #include "runtime/shader/core.h"
 #include "stb/stb_image.h"
 #include "utils/dyli.h"
@@ -128,13 +131,13 @@ bool rem_bucket_compare(const void *ptr, const void *obj) {
 
 WGPUTexture rem_new_texture(const WGPUTextureDescriptor *desc) {
 
-  const REMType type = REMType_Texture;
+  const REMType type = REMType_WGPUTexture;
 
   // first generate hash source
   WGPUTexture texture = wgpuDeviceCreateTexture(context_device(), desc);
 
-  REMTexture *entry = hsht_new_entry(&g_rem.entries[type], texture,
-                                     HashTableNewFlag_FixedCapacity);
+  REMWGPUTexture *entry = hsht_new_entry(&g_rem.entries[type], texture,
+                                         HashTableNewFlag_FixedCapacity);
 
   if (entry == NULL) {
     rem_destroy_texture(&texture);
@@ -219,12 +222,12 @@ REMStatus rem_write_texture(WGPUTexture texture, void *data, const size_t size,
 WGPUTextureView rem_new_view(const WGPUTexture texture,
                              const WGPUTextureViewDescriptor *desc) {
 
-  const REMType type = REMType_View;
+  const REMType type = REMType_WGPUTextureView;
 
   WGPUTextureView view = wgpuTextureCreateView(texture, desc);
 
-  REMView *entry = hsht_new_entry(&g_rem.entries[type], view,
-                                  HashTableNewFlag_FixedCapacity);
+  REMWGPUTextureView *entry = hsht_new_entry(&g_rem.entries[type], view,
+                                             HashTableNewFlag_FixedCapacity);
 
   if (entry == NULL) {
     rem_destroy_view(&view);
@@ -239,10 +242,10 @@ WGPUTextureView rem_new_view(const WGPUTexture texture,
   return view;
 }
 
-REM_NEW_WGPU_ITEM(WGPUSampler, sampler, REMType_Sampler, REMSampler,
+REM_NEW_WGPU_ITEM(WGPUSampler, sampler, REMType_WGPUSampler, REMWGPUSampler,
                   WGPUSamplerDescriptor, wgpuDeviceCreateSampler);
 
-REM_NEW_WGPU_ITEM(WGPUBuffer, buffer, REMType_Buffer, REMBuffer,
+REM_NEW_WGPU_ITEM(WGPUBuffer, buffer, REMType_WGPUBuffer, REMWGPUBuffer,
                   WGPUBufferDescriptor, wgpuDeviceCreateBuffer);
 
 REMStatus rem_write_buffer(WGPUBuffer buffer, const size_t offset, void *data,
@@ -271,7 +274,7 @@ REMStatus rem_write_buffer(WGPUBuffer buffer, const size_t offset, void *data,
 WGPUShaderModule rem_new_shader_module(char *code, const char *label,
                                        const REMWriteFlag flag) {
 
-  const REMType type = REMType_ShaderModule;
+  const REMType type = REMType_WGPUShaderModule;
 
   WGPUShaderModuleWGSLDescriptor wgsl = {
       .chain.sType = WGPUSType_ShaderModuleWGSLDescriptor,
@@ -284,8 +287,8 @@ WGPUShaderModule rem_new_shader_module(char *code, const char *label,
                             .label = label,
                         });
 
-  REMShaderModule *entry = hsht_new_entry(&g_rem.entries[type], shader,
-                                          HashTableNewFlag_FixedCapacity);
+  REMWGPUShaderModule *entry = hsht_new_entry(&g_rem.entries[type], shader,
+                                              HashTableNewFlag_FixedCapacity);
 
   if (entry == NULL) {
     rem_destroy_shader_module(&shader);
@@ -305,82 +308,9 @@ WGPUShaderModule rem_new_shader_module(char *code, const char *label,
   return shader;
 }
 
-/*
-
-
-   ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
-   ▐▌   ▐▛▚▖▐▌▐▌     █  ▐▛▚▖▐▌▐▌
-   ▐▛▀▀▘▐▌ ▝▜▌▐▌▝▜▌  █  ▐▌ ▝▜▌▐▛▀▀▘
-   ▐▙▄▄▖▐▌  ▐▌▝▚▄▞▘▗▄█▄▖▐▌  ▐▌▐▙▄▄▖
-
-
- */
-
-#define REM_NEW_ENGINE_ITEM(Name, FuncName, REMItem, TypeEnum, RegisterType)   \
-  Name *rem_new_##FuncName() {                                                 \
-                                                                               \
-    const reg_id_t id = reg_new_id();                                          \
-    if (id == REG_MAX_OBJECTS)                                                 \
-      return NULL;                                                             \
-                                                                               \
-    REMItem *entry = hsht_new_entry(&g_rem.entries[TypeEnum], (void *)&id,     \
-                                    HashTableNewFlag_FixedCapacity);           \
-                                                                               \
-    if (entry == NULL)                                                         \
-      return NULL;                                                             \
-                                                                               \
-    reg_register(id, &entry->handle, RegisterType);                            \
-    entry->handle.id = id;                                                     \
-                                                                               \
-    entry->owner = 0;                                                          \
-    entry->key = 0;                                                            \
-    entry->type = TypeEnum;                                                    \
-    return &entry->handle;                                                     \
-  }
-
-REM_NEW_ENGINE_ITEM(Mesh, mesh, REMMesh, REMType_Mesh, RegEntryType_Mesh);
-
-REM_NEW_ENGINE_ITEM(Scene, scene, REMScene, REMType_Scene, RegEntryType_Scene);
-
-REM_NEW_ENGINE_ITEM(Shader, shader, REMShader, REMType_Shader,
-                    RegEntryType_Shader);
-
-REM_NEW_ENGINE_ITEM(Camera, camera, REMCamera, REMType_Camera,
-                    RegEntryType_Camera);
-
-REM_NEW_ENGINE_ITEM(RenderPipeline, render_pipeline, REMRenderPipeline,
-                    REMType_RenderPipeline, RegEntryType_RenderPipeline);
-
-REM_NEW_ENGINE_ITEM(ComputePipeline, compute_pipeline, REMComputePipeline,
-                    REMType_ComputePipeline, RegEntryType_ComputePipeline);
-
-// === Lights ===
-REM_NEW_ENGINE_ITEM(PointLight, point_light, REMPointLight, REMType_PointLight,
-                    RegEntryType_PointLight);
-
-REM_NEW_ENGINE_ITEM(AmbientLight, ambient_light, REMAmbientLight,
-                    REMType_AmbientLight, RegEntryType_AmbientLight);
-
-REM_NEW_ENGINE_ITEM(SpotLight, spot_light, REMSpotLight, REMType_SpotLight,
-                    RegEntryType_SpotLight);
-
-REM_NEW_ENGINE_ITEM(SunLight, sun_light, REMSunLight, REMType_SunLight,
-                    RegEntryType_SunLight);
-
-// === Probe / Reflection ===
-REM_NEW_ENGINE_ITEM(ProbeReflectionPlane, plane_reflection, REMPlaneReflection,
-                    REMType_PlaneReflection, RegEntryType_ProbeReflectionPlane);
-
-REM_NEW_ENGINE_ITEM(ProbeReflection, probe_reflection, REMProbeReflection,
-                    REMType_ProbeReflection, RegEntryType_ProbeReflection);
-
-REM_NEW_ENGINE_ITEM(ProbeReflectionGrid, probe_reflection_grid,
-                    REMProbeReflectionGrid, REMType_ProbeReflectionGrid,
-                    RegEntryType_ProbeReflectionGrid);
-
 // Destroy item based on its handle pointer (wgpu Opaque Pointer objects)
-#define REM_DESTROY_OPAQUE_ITEM(FuncName, HandleType, REMType, REMItem,        \
-                                Destructor)                                    \
+#define REM_DESTROY_WGPU_ITEM(FuncName, HandleType, REMType, REMItem,          \
+                              Destructor)                                      \
   REMStatus rem_destroy_##FuncName(HandleType *handle) {                       \
                                                                                \
     if (*handle == NULL)                                                       \
@@ -395,80 +325,73 @@ REM_NEW_ENGINE_ITEM(ProbeReflectionGrid, probe_reflection_grid,
     return REMStatus_UnfoundResource;                                          \
   }
 
-REM_DESTROY_OPAQUE_ITEM(texture, WGPUTexture, REMType_Texture, REMTexture,
-                        wgpuTextureRelease(*handle));
+REM_DESTROY_WGPU_ITEM(texture, WGPUTexture, REMType_WGPUTexture, REMTexture,
+                      wgpuTextureRelease(*handle));
 
-REM_DESTROY_OPAQUE_ITEM(view, WGPUTextureView, REMType_View, REMView, {
+REM_DESTROY_WGPU_ITEM(view, WGPUTextureView, REMType_WGPUTextureView, REMView, {
   if (is_std_texture_view(*handle))
     return REMStatus_ProtectedResource;
 
   wgpuTextureViewRelease(*handle);
 });
 
-REM_DESTROY_OPAQUE_ITEM(buffer, WGPUBuffer, REMType_Buffer, REMBuffer,
-                        wgpuBufferRelease(*handle));
+REM_DESTROY_WGPU_ITEM(buffer, WGPUBuffer, REMType_WGPUBuffer, REMBuffer,
+                      wgpuBufferRelease(*handle));
 
-REM_DESTROY_OPAQUE_ITEM(sampler, WGPUSampler, REMType_Sampler, REMSampler,
-                        wgpuSamplerRelease(*handle));
+REM_DESTROY_WGPU_ITEM(sampler, WGPUSampler, REMType_WGPUSampler, REMSampler,
+                      wgpuSamplerRelease(*handle));
 
-REM_DESTROY_OPAQUE_ITEM(shader_module, WGPUShaderModule, REMType_ShaderModule,
-                        REMShaderModule, wgpuShaderModuleRelease(*handle));
+REM_DESTROY_WGPU_ITEM(shader_module, WGPUShaderModule, REMType_WGPUShaderModule,
+                      REMShaderModule, wgpuShaderModuleRelease(*handle));
+
+/*
+
+
+   ▗▄▄▄▖▗▖  ▗▖ ▗▄▄▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
+   ▐▌   ▐▛▚▖▐▌▐▌     █  ▐▛▚▖▐▌▐▌
+   ▐▛▀▀▘▐▌ ▝▜▌▐▌▝▜▌  █  ▐▌ ▝▜▌▐▛▀▀▘
+   ▐▙▄▄▖▐▌  ▐▌▝▚▄▞▘▗▄█▄▖▐▌  ▐▌▐▙▄▄▖
+
+
+ */
+
+#define REM_NEW_ENGINE_ITEM(Type, RegistryType, Label, Hash, Capacity)         \
+  Type *rem_new_##Label() {                                                    \
+                                                                               \
+    const reg_id_t id = reg_new_id();                                          \
+    if (id == REG_MAX_OBJECTS)                                                 \
+      return NULL;                                                             \
+                                                                               \
+    REM##Type *entry =                                                         \
+        hsht_new_entry(&g_rem.entries[REMType_##Type], (void *)&id,            \
+                       HashTableNewFlag_FixedCapacity);                        \
+                                                                               \
+    if (entry == NULL)                                                         \
+      return NULL;                                                             \
+                                                                               \
+    reg_register(id, &entry->handle, RegistryType);                            \
+    entry->handle.id = id;                                                     \
+                                                                               \
+    entry->owner = 0;                                                          \
+    entry->key = 0;                                                            \
+    entry->type = REMType_##Type;                                              \
+    return &entry->handle;                                                     \
+  }
+
+REM_ENGINE_LIST(REM_NEW_ENGINE_ITEM);
 
 // Destroy item based on its handle id (engine objects)
-#define REM_DESTROY_ENGINE_ITEM(FuncName, HandleType, REMType, REMItem,        \
-                                Destructor)                                    \
-  REMStatus rem_destroy_##FuncName(HandleType *handle) {                       \
+#define REM_DESTROY_ENGINE_ITEM(Type, RegistryType, Label, Hash, Capacity)     \
+  REMStatus rem_destroy_##Label(Type *handle) {                                \
                                                                                \
     if (handle == NULL)                                                        \
       return REMStatus_NullResource;                                           \
                                                                                \
-    Destructor(handle);                                                        \
+    Label##_destroy(handle);                                                   \
                                                                                \
-    hsht_remove_entry(&g_rem.entries[REMType], &handle->id);                   \
+    hsht_remove_entry(&g_rem.entries[REMType_##Type], &handle->id);            \
                                                                                \
     return REMStatus_Success;                                                  \
   }
 
-REM_DESTROY_ENGINE_ITEM(shader, Shader, REMType_Shader, REMShader,
-                        shader_destroy);
-
-REM_DESTROY_ENGINE_ITEM(mesh, Mesh, REMType_Mesh, REMMesh, mesh_destroy);
-
-REM_DESTROY_ENGINE_ITEM(scene, Scene, REMType_Scene, REMScene, scene_destroy);
-
-REM_DESTROY_ENGINE_ITEM(camera, Camera, REMType_Camera, REMCamera,
-                        camera_destroy);
-
-REM_DESTROY_ENGINE_ITEM(render_pipeline, RenderPipeline, REMType_RenderPipeline,
-                        REMRenderPipeline, render_pipeline_destroy);
-
-REM_DESTROY_ENGINE_ITEM(compute_pipeline, ComputePipeline, REMType_ComputePipeline,
-                        REMComputePipeline, compute_pipeline_destroy);
-
-REM_DESTROY_ENGINE_ITEM(point_light, PointLight, REMType_PointLight,
-                        REMPointLight, point_light_destroy);
-
-REM_DESTROY_ENGINE_ITEM(ambient_light, AmbientLight, REMType_AmbientLight,
-                        REMAmbientLight, ambient_light_destroy);
-
-REM_DESTROY_ENGINE_ITEM(spot_light, SpotLight, REMType_SpotLight, REMSpotLight,
-                        spot_light_destroy);
-
-REM_DESTROY_ENGINE_ITEM(sun_light, SunLight, REMType_SunLight, REMSunLight,
-                        sun_light_destroy);
-
-REM_DESTROY_ENGINE_ITEM(plane_reflection, ProbeReflectionPlane,
-                        REMType_PlaneReflection, REMPlaneReflection,
-                        probe_reflection_plane_destroy);
-
-REM_DESTROY_ENGINE_ITEM(probe_reflection, ProbeReflection,
-                        REMType_ProbeReflection, REMProbeReflection,
-                        probe_reflection_destroy);
-
-REM_DESTROY_ENGINE_ITEM(probe_reflection_grid, ProbeReflectionGrid,
-                        REMType_ProbeReflectionGrid, REMProbeReflectionGrid,
-                        probe_reflection_grid_destroy);
-
-// TODO
-REMStatus rem_destroy_mbin(const char *handle) { return REMStatus_Success; }
-REMStatus rem_destroy_gltf(const char *handle) { return REMStatus_Success; }
+REM_ENGINE_LIST(REM_DESTROY_ENGINE_ITEM);

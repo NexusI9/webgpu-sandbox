@@ -25,6 +25,7 @@
 #include "runtime/viewport/core.h"
 
 int main(int argc, const char *argv[]) {
+
   (void)argc, (void)argv; // unused
 
   context_init(&(ContextDescriptor){
@@ -59,13 +60,13 @@ int main(int argc, const char *argv[]) {
 
   scene_set_draw_mode(main_scene, SceneRendererDrawMode_Solid);
 
-  Gui gui; 
-  gui_init(&gui, &(GUIDescriptor){
-    .active_scene = main_scene,
-    .theme = &g_theme,
-    .dpi = 2.0f,
-  });
-  
+  Gui *gui = rem_new_gui();
+  gui_init(gui, &(GUIDescriptor){
+                    .active_scene = main_scene,
+                    .theme = &g_theme,
+                    .dpi = g_context.dpi,
+                });
+
   // example_light(&main_scene);
   example_skybox(main_scene);
   example_gltf_spa(main_scene);
