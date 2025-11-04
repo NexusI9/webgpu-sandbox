@@ -42,7 +42,7 @@ typedef struct {
   const float *value;
 } SEMListTransform;
 
-typedef void (*sem_transform_axis_callback)(const SEMTransform *);
+typedef void (*sem_transform_callback)(const SEMTransform *);
 typedef void (*sem_transform_highlight_callback)(SEMHighlightCallback *);
 
 // Link each SEM a dedicated callback
@@ -54,7 +54,7 @@ struct SceneEditorMesh {
   // index of object (ex in LightList or CameraList), not sure about this
   // flow...
   size_t target_list_index;
-  sem_transform_axis_callback transform_callback[GIZMO_MODE_COUNT];
+  sem_transform_callback transform_callback[GIZMO_MODE_COUNT];
   sem_transform_highlight_callback select_callback;
   sem_transform_highlight_callback deselect_callback;
 };

@@ -2,8 +2,8 @@
 #include "backend/renderer/core.h"
 #include "backend/renderer/render_pass/core.h"
 #include "backend/renderer/shadow_map/draw.h"
-#include "runtime/scene/editor_mesh/core.h"
 #include "runtime/gizmo/core.h"
+#include "runtime/scene/editor_mesh/core.h"
 #include "runtime/scene/selection/core.h"
 #include "runtime/systems/gizmo_system.h"
 
@@ -376,20 +376,27 @@ void selection_system_mesh_shadow_transform(SceneSelectionTransform *desc) {
 
 static inline void
 selection_system_sem_transform_core(SceneEditorMesh *, vec3 *,
-                                    sem_transform_axis_callback,
+                                    sem_transform_callback,
                                     SceneSelectionTransform *);
 
 void selection_system_sem_transform_core(
     SceneEditorMesh *sem, vec3 *init_attribute,
-    sem_transform_axis_callback transform_callback,
-    SceneSelectionTransform *desc) {
+    sem_transform_callback transform_callback, SceneSelectionTransform *desc) {
 
   //  calculate offset from delta
   vec3 offset_attribute;
   glm_vec3_add(*init_attribute, *desc->delta, offset_attribute);
 
   // transform sem via their own callback
-  transform_callback(sem, offset_attribute);
+  transform_callback(&(SEMTransform){
+      .sem = sem,
+      .value = offset_attribute,
+      .renderer = desc->renderer,
+      .light_list = &desc->scene->lights,
+      .probe_list = &desc->scene->probes,
+      .ubo = desc->scene->ubo,
+  });
+  
   mesh_uniform_update(sem->mesh);
   ubo_update_queue_insert(desc->scene->ubo, UBOType_Mesh,
                           sem->mesh->ubo_slot.id);

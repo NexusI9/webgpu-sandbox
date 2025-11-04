@@ -92,7 +92,7 @@ void sem_list_sun_light_get_scale(SceneEditorMeshList *sem, vec3 value) {
   glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, value);
 }
 
-static const sem_transform_axis_callback
+static const sem_transform_callback
     light_transform_callback[][GIZMO_MODE_COUNT] = {
         [LightCreateFlag_None] =
             {

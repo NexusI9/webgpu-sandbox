@@ -95,7 +95,7 @@ void sem_list_point_light_get_scale(SceneEditorMeshList *list, vec3 value) {
 
  */
 
-static const sem_transform_axis_callback
+static const sem_transform_callback
     light_transform_callback[][GIZMO_MODE_COUNT] = {
         [LightCreateFlag_None] =
             {
