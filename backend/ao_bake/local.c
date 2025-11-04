@@ -20,7 +20,7 @@
    Compared to the global baking, the local use a vertex
    based approach and act as a cavity map rather than a standard AO map.
  */
-void ao_bake_local(SceneRendererTextureAO *ao,
+void ao_bake_local(RendererTextureAO *ao,
                    const AOBakeLocalDescriptor *desc) {
 
   Mesh *line = NULL;

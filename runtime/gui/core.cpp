@@ -32,8 +32,8 @@
 #include "runtime/scene/editor/selection/filter.h"
 #include "runtime/scene/editor/selection/gizmo/core.h"
 #include "runtime/scene/editor/selection/utils.h"
-#include "runtime/scene/renderer/core.h"
-#include "runtime/scene/renderer/render_pass/core.h"
+#include "backend/renderer/core.h"
+#include "backend/renderer/render_pass/core.h"
 #include "runtime/scene/show.h"
 #include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
@@ -104,10 +104,10 @@ GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
     ImGui_ImplWGPU_Init(&info);
   }
 
-  scene_renderer_add_draw_callback(
+  renderer_add_draw_callback(
       &gui->active_scene->renderer, gui_draw_callback, (void *)gui,
-      SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
-          SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
+      RendererDrawMode_Texture | RendererDrawMode_Solid |
+          RendererDrawMode_Wireframe | RendererDrawMode_Boundbox);
 
   return GUIStatus_Success;
 }

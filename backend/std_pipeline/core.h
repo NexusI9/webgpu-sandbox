@@ -1,5 +1,5 @@
-#ifndef _SCENE_RENDERER_STD_PIPELINE_CORE_H_
-#define _SCENE_RENDERER_STD_PIPELINE_CORE_H_
+#ifndef _RENDERER_STD_PIPELINE_CORE_H_
+#define _RENDERER_STD_PIPELINE_CORE_H_
 
 #include <stdint.h>
 #include <webgpu/webgpu.h>

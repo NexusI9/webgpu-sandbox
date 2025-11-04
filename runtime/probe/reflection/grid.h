@@ -10,7 +10,7 @@
 #include "backend/registry.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/probe/reflection/probe.h"
-#include "runtime/scene/renderer/render_pass/core.h"
+#include "backend/renderer/render_pass/core.h"
 #include "utils/dyli.h"
 
 #define PROBE_REFLECTION_RESOLUTION 512

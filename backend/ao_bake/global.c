@@ -20,7 +20,7 @@
    Bake global ambient occlusion to texture, meaning occlusion based on
    meshes in a scene using a raycasting method.
  */
-void ao_bake_global(SceneRendererTextureAO *ao,
+void ao_bake_global(RendererTextureAO *ao,
                     const AOBakeGlobalDescriptor *desc) {
 
   Mesh *line = NULL;

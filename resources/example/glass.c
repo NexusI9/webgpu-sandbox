@@ -22,7 +22,7 @@
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/environment/core.h"
-#include "runtime/scene/renderer/render_pass/core.h"
+#include "backend/renderer/render_pass/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
@@ -75,7 +75,7 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   shader_update_uniform_buffer(
       shader, shader->pipeline->bindings.probe->group,
       shader->pipeline->bindings.probe->list,
-      ubo_buffer_handle(&scene->renderer.ubo, UBOType_ProbeList), 0,
+      ubo_buffer_handle(scene->ubo, UBOType_ProbeList), 0,
       ShaderUpdateFlag_ReleasePrevious);
 
   // link probe color texture
@@ -154,8 +154,8 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
   shader_update_uniform_buffer(
       shader, shader->pipeline->bindings.probe->group,
       shader->pipeline->bindings.probe->list,
-      ubo_buffer_handle(&scene->renderer.ubo, UBOType_ProbeList), 0,
+      ubo_buffer_handle(scene->ubo, UBOType_ProbeList), 0,
       ShaderUpdateFlag_ReleasePrevious);
 
-  mesh_shader_texture_bind_probe(mesh, plane, &scene->renderer.ubo);
+  mesh_shader_texture_bind_probe(mesh, plane, scene->ubo);
 }

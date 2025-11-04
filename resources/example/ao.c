@@ -3,7 +3,7 @@
 #include "backend/ao_bake/core.h"
 #include "backend/context.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/renderer/core.h"
+#include "backend/renderer/core.h"
 #include "utils/color.h"
 
 void example_ao(Scene *scene, bool debug) {

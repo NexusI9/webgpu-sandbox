@@ -89,7 +89,7 @@ void scene_event_html_commons(Scene *scene) {
   // update camera controls
   Camera *camera = scene->active_camera;
   camera_mode_controller[camera->mode](camera);
-  ubo_update_queue_insert(&scene->renderer.ubo, UBOType_Camera,
+  ubo_update_queue_insert(scene->ubo, UBOType_Camera,
                           camera->ubo_slot.id);
 
   // update planar reflections probes views
@@ -101,12 +101,12 @@ void scene_event_html_commons(Scene *scene) {
     probe_reflection_plane_update_uniform(probe);
 
     // add to GPU update Queue
-    ubo_update_queue_insert(&scene->renderer.ubo, UBOType_Camera,
+    ubo_update_queue_insert(scene->ubo, UBOType_Camera,
                             probe->ubo_camera.id);
   }
 
   // add to GPU update Queue
-  ubo_update_queue_insert(&scene->renderer.ubo, UBOType_ProbeList,
+  ubo_update_queue_insert(scene->ubo, UBOType_ProbeList,
                           scene->probes.ubo_slot.id);
 }
 
@@ -115,7 +115,7 @@ void scene_event_html_update_meshes(Scene *data) {
   /*
     DELETEME ??
   // traverse the active pipelines from the render mode and
-  SceneRendererDrawMode draw_mode = scene_renderer_draw_mode(&scene->renderer);
+  RendererDrawMode draw_mode = renderer_draw_mode(&scene->renderer);
   RenderPassLayout *layout = &scene->renderer.draw.layouts[draw_mode];
 
   // traverse render pass configs of the layout

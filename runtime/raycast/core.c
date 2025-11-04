@@ -5,7 +5,7 @@
 #include <cglm/mat4.h>
 #include <cglm/vec3.h>
 
-#include "runtime/input/core.h"
+#include "runtime/systems/input/core.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "utils/vector/core.h"
 

@@ -13,11 +13,11 @@
 void UI::InspectorMesh::transform_update_callback(Scene *scene,
                                                   void *user_data) {
 
-  ubo_update_queue_insert(&scene->renderer.ubo, UBOType_Mesh,
+  ubo_update_queue_insert(scene->ubo, UBOType_Mesh,
                           ((Mesh *)user_data)->ubo_slot.id);
 
   scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
-                               &scene->editor.selection, &scene->renderer.ubo);
+                               &scene->editor.selection, scene->ubo);
 }
 
 void UI::InspectorMesh::draw() {

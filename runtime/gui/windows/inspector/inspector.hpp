@@ -14,7 +14,7 @@
 #include "runtime/gui/windows/inspector/inspector.render.hpp"
 #include "runtime/gui/windows/inspector/inspector.world.hpp"
 #include "runtime/gui/windows/inspector/tab.hpp"
-#include "runtime/scene/renderer/core.h"
+#include "backend/renderer/core.h"
 #include "runtime/viewport/core.h"
 
 namespace UI {

@@ -15,7 +15,7 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/renderer/core.h"
+#include "backend/renderer/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
 #include "utils/defines.h"
@@ -53,7 +53,7 @@ typedef enum {
     _(ComputePipeline,        RegEntryType_ComputePipeline,         compute_pipeline,        rem_generate_id_hash,           127 ) \
     _(Shader,                 RegEntryType_Shader,                  shader,                  rem_generate_id_hash,           127 ) \
     _(Camera,                 RegEntryType_Camera,                  camera,                  rem_generate_id_hash,            31 ) \
-    _(SceneRenderer,          RegEntryType_Renderer,                renderer,                rem_generate_id_hash,             3 ) \
+    _(Renderer,               RegEntryType_Renderer,                renderer,                rem_generate_id_hash,             3 ) \
     _(Gui,                    RegEntryType_Gui,                     gui,                     rem_generate_id_hash,             3 ) \
     _(UBOManager,             RegEntryType_Ubo,                     ubo,                     rem_generate_id_hash,             1 ) \
     _(PointLight,             RegEntryType_PointLight,              point_light,             rem_generate_id_hash,             7 ) \

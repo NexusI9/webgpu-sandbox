@@ -16,11 +16,11 @@ void UI::InspectorProbeReflectionPlane::transform_update_callback(
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
 
   for (size_t i = 0; i < list->length; i++)
-    ubo_update_queue_insert(&scene->renderer.ubo, UBOType_Mesh,
+    ubo_update_queue_insert(scene->ubo, UBOType_Mesh,
                             list->entries[i].mesh->ubo_slot.id);
 
   scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
-                               &scene->editor.selection, &scene->renderer.ubo);
+                               &scene->editor.selection, scene->ubo);
 }
 
 void UI::InspectorProbeReflectionPlane::properties_update_callback(
@@ -29,7 +29,7 @@ void UI::InspectorProbeReflectionPlane::properties_update_callback(
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
   ProbeReflectionPlane *probe = (ProbeReflectionPlane *)list->origin->target;
 
-  ubo_update_queue_insert(&scene->renderer.ubo, UBOType_ProbeList,
+  ubo_update_queue_insert(scene->ubo, UBOType_ProbeList,
                           scene->probes.ubo_slot.id);
 }
 

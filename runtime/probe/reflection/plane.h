@@ -13,8 +13,8 @@
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/mesh/core.h"
 #include "runtime/probe/uniform.h"
-#include "runtime/scene/renderer/render_pass/core.h"
-#include "runtime/scene/renderer/render_pass/render_pass.h"
+#include "backend/renderer/render_pass/core.h"
+#include "backend/renderer/render_pass/render_pass.h"
 #include "utils/dyli.h"
 #include "utils/name.h"
 

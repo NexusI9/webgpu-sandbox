@@ -8,8 +8,8 @@
 #include "runtime/gui/components/input.hpp"
 #include "runtime/gui/components/tree_item.hpp"
 #include "runtime/gui/core.h"
-#include "runtime/scene/renderer/core.h"
-#include "runtime/scene/renderer/render_pass/core.h"
+#include "backend/renderer/core.h"
+#include "backend/renderer/render_pass/core.h"
 #include <stdint.h>
 
 void UI::RenderTab::draw() {
@@ -27,15 +27,15 @@ void UI::RenderTab::draw() {
   if (UI::TreeItem(gui, "Resolution").draw()) {
 
     {
-      width = scene_renderer_width(&scene->renderer);
+      width = renderer_width(&scene->renderer);
       if (UI::DragInt(gui, "Width", &style, &width, 1.0f, 1, 10000).draw()) {
         // update renderer
-        scene_renderer_set_width(&scene->renderer, width);
+        renderer_set_width(&scene->renderer, width);
         // update viewport + uniform
         {
           viewport_set_width(&scene->viewport, width);
           viewport_uniform_update(&scene->viewport);
-          ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+          ubo_update_queue_insert(renderer_ubo(&scene->renderer),
                                   UBOType_Viewport,
                                   ubo_slot_id(&scene->viewport.ubo_slot));
         }
@@ -46,16 +46,16 @@ void UI::RenderTab::draw() {
     }
 
     {
-      height = scene_renderer_height(&scene->renderer);
+      height = renderer_height(&scene->renderer);
       if (UI::DragInt(gui, "Height", &style, &height, 1.0f, 1, 10000)
               .draw()) {
         // update renderer
-        scene_renderer_set_height(&scene->renderer, height);
+        renderer_set_height(&scene->renderer, height);
         // update viewport + uniform
         {
           viewport_set_height(&scene->viewport, height);
           viewport_uniform_update(&scene->viewport);
-          ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+          ubo_update_queue_insert(renderer_ubo(&scene->renderer),
                                   UBOType_Viewport,
                                   ubo_slot_id(&scene->viewport.ubo_slot));
         }
@@ -93,7 +93,7 @@ void UI::RenderTab::draw() {
             scene_update_render_pass_texture(scene, width, height, count, dpi);
 
             // update passes relative draw callbacks for each modes
-            for (uint8_t i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
+            for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
               render_pass_list_update_child_passes_callback(
                   &scene->renderer.draw.render_pass[i]);
 
@@ -115,9 +115,9 @@ void UI::RenderTab::draw() {
               // - Probe reflections
               //
 
-              for (int i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++) {
-                RenderPassList *pass_list = scene_renderer_pass_list(
-                    &scene->renderer, (const SceneRendererDrawMode)(1 << i));
+              for (int i = 0; i < RENDERER_DRAW_MODE_COUNT; i++) {
+                RenderPassList *pass_list = renderer_pass_list(
+                    &scene->renderer, (const RendererDrawMode)(1 << i));
                 for (size_t j = 0; j < pass_list->length; j++)
                   render_pass_refresh_mesh_drawn_list_pipeline(
                       &pass_list->passes[j]);
@@ -147,10 +147,10 @@ void UI::RenderTab::draw() {
     }
 
     {
-      dpi = (float)scene_renderer_dpi(&scene->renderer);
+      dpi = (float)renderer_dpi(&scene->renderer);
       if (UI::DragFloat(gui, "DPI", &style, &dpi, 0.01f, 1, 4).draw()) {
         // update renderer
-        scene_renderer_set_dpi(&scene->renderer, dpi);
+        renderer_set_dpi(&scene->renderer, dpi);
         // update scene render texture
         scene_update_render_pass_texture(scene, width, height, multisample,
                                          dpi);
@@ -167,7 +167,7 @@ void UI::RenderTab::draw() {
               .draw()) {
         viewport_set_fov(&scene->viewport, fov);
         viewport_uniform_update(&scene->viewport);
-        ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+        ubo_update_queue_insert(renderer_ubo(&scene->renderer),
                                 UBOType_Viewport,
                                 ubo_slot_id(&scene->viewport.ubo_slot));
       }
@@ -180,7 +180,7 @@ void UI::RenderTab::draw() {
               .draw()) {
         viewport_set_near_clip(&scene->viewport, near_clip);
         viewport_uniform_update(&scene->viewport);
-        ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+        ubo_update_queue_insert(renderer_ubo(&scene->renderer),
                                 UBOType_Viewport,
                                 ubo_slot_id(&scene->viewport.ubo_slot));
       }
@@ -194,7 +194,7 @@ void UI::RenderTab::draw() {
 
         viewport_set_far_clip(&scene->viewport, far_clip);
         viewport_uniform_update(&scene->viewport);
-        ubo_update_queue_insert(scene_renderer_ubo(&scene->renderer),
+        ubo_update_queue_insert(renderer_ubo(&scene->renderer),
                                 UBOType_Viewport,
                                 ubo_slot_id(&scene->viewport.ubo_slot));
       }
@@ -204,8 +204,8 @@ void UI::RenderTab::draw() {
 
   PostFx *texture_pass_fx =
       &render_pass_list_last_pass(
-           scene_renderer_mode_pass_list(&scene->renderer,
-                                         SceneRendererDrawMode_Texture))
+           renderer_mode_pass_list(&scene->renderer,
+                                         RendererDrawMode_Texture))
            ->post_fx;
 
   PostFxEffect *bloom = post_fx_effect(texture_pass_fx, PostFxType_Bloom);

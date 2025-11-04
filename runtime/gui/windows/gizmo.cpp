@@ -27,7 +27,7 @@ static void gui_update_gizmo_mode(Scene *scene, void *mode) {
   if (scene_selection_length(&scene->editor.selection)) {
     scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
                                  &scene->editor.selection,
-                                 &scene->renderer.ubo);
+                                 scene->ubo);
     scene_gizmo_show(scene);
   }
 }

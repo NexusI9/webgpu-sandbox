@@ -12,8 +12,8 @@
 #include "core.h"
 #include "probe.h"
 #include "runtime/scene/debug/view.h"
-#include "runtime/scene/renderer/render_pass/core.h"
-#include "runtime/scene/renderer/render_pass/draw.h"
+#include "backend/renderer/render_pass/core.h"
+#include "backend/renderer/render_pass/draw.h"
 #include "utils/dyli.h"
 #include "webgpu/webgpu.h"
 

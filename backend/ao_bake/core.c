@@ -20,7 +20,7 @@
 /**
    Create and cache Ambient Occlusion main array texture.
  */
-void ao_bake_init(SceneRendererTextureAO *ao,
+void ao_bake_init(RendererTextureAO *ao,
                   const AOBakeInitDescriptor *desc) {
 
   logger_add(LoggerFlag_Process, "Initializing Ambient Occlusion Texture...");
@@ -39,7 +39,7 @@ void ao_bake_init(SceneRendererTextureAO *ao,
   ao_bake_texture_list_create(&ao->texture_list, ao->layer_count);
 }
 
-void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
+void ao_bake_draw_mesh(RendererTextureAO *ao, Mesh *mesh,
                        const AOBakeDrawDescriptor *desc,
                        bool update_bind_view) {
 
@@ -125,7 +125,7 @@ void ao_bake_draw_mesh(SceneRendererTextureAO *ao, Mesh *mesh,
   }
 }
 
-void ao_bake_draw_list(SceneRendererTextureAO *ao,
+void ao_bake_draw_list(RendererTextureAO *ao,
                        const AOBakeDrawDescriptor *desc) {
 
   // first compute all texture CPU side

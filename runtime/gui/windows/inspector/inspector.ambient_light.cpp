@@ -15,11 +15,11 @@ void UI::InspectorAmbientLight::transform_update_callback(Scene *scene,
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
 
   for (size_t i = 0; i < list->length; i++)
-    ubo_update_queue_insert(&scene->renderer.ubo, UBOType_Mesh,
+    ubo_update_queue_insert(scene->ubo, UBOType_Mesh,
                             list->entries[i].mesh->ubo_slot.id);
 
   scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
-                               &scene->editor.selection, &scene->renderer.ubo);
+                               &scene->editor.selection, scene->ubo);
 }
 
 void UI::InspectorAmbientLight::properties_update_callback(Scene *scene,
@@ -28,7 +28,7 @@ void UI::InspectorAmbientLight::properties_update_callback(Scene *scene,
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
   AmbientLight *light = (AmbientLight *)list->origin->target;
   
-  ubo_update_queue_insert(&scene->renderer.ubo, UBOType_LightList,
+  ubo_update_queue_insert(scene->ubo, UBOType_LightList,
                           scene->lights.ubo_slot.id);
 }
 

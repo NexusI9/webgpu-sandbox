@@ -44,7 +44,7 @@ void camera_reset(Camera *c) {
   }
 }
 
-void camera_set_position(Camera *camera, vec3 new_position) {
+void camera_set_position(Camera *camera, const vec3 new_position) {
   // get the absolute value, need to transfom the new position into
   // the camera coordinate system (relative)
   // https://www.ogldev.org/www/tutorial13/tutorial13.html
@@ -57,8 +57,8 @@ void camera_set_position(Camera *camera, vec3 new_position) {
   camera_uniform_update(camera);
 }
 
-void camera_set_rotation(Camera *camera, vec3 new_rotation) {
-  glm_vec3_copy(new_rotation, camera->euler_rotation);
+void camera_set_rotation(Camera *camera, const vec3 new_rotation) {
+  glm_vec3_copy((float *)new_rotation, camera->euler_rotation);
 
   camera_update_view(camera);
   camera_uniform_update(camera);
@@ -105,7 +105,7 @@ void camera_update_view(Camera *camera) {
   glm_mat4_copy(new_view, camera->view);
 }
 
-void camera_lookat(Camera *camera, vec3 position, vec3 target) {
+void camera_lookat(Camera *camera, const vec3 position, const vec3 target) {
 
   matrix_lookat(&(UtilsMatrixLookatDescriptor){
       .dest_position = &camera->position,
@@ -113,8 +113,8 @@ void camera_lookat(Camera *camera, vec3 position, vec3 target) {
       .forward = &camera->forward,
       .right = &camera->right,
       .up = &camera->up,
-      .position = position,
-      .target = target,
+      .position = (float *)position,
+      .target = (float *)target,
   });
 
   camera_uniform_update(camera);

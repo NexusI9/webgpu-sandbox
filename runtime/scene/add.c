@@ -40,7 +40,7 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
 #include "runtime/probe/uniform.h"
-#include "runtime/scene/renderer/render_pass/visibility.h"
+#include "backend/renderer/render_pass/visibility.h"
 #include "runtime/scene/stat.h"
 #include "utils/projection.h"
 
@@ -102,12 +102,12 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
 
     for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
       light->ubo_projection[i] =
-          ubo_new_entry(&scene->renderer.ubo, UBOType_ViewProjection);
+          ubo_new_entry(scene->ubo, UBOType_ViewProjection);
 
     point_light_projection_update(light);
 
     for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
-      ubo_upload_entry(&scene->renderer.ubo, UBOType_ViewProjection,
+      ubo_upload_entry(scene->ubo, UBOType_ViewProjection,
                        &light->ubo_projection[i]);
 
     PointLightListShadow *shadow_list = &scene->lights.point.shadow;
@@ -118,8 +118,8 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
     light_list_point_shadow_insert(shadow_list, light);
 
     // recompute shadow map if render mode
-    if (scene_renderer_draw_mode(&scene->renderer) ==
-        SceneRendererDrawMode_Texture)
+    if (renderer_draw_mode(&scene->renderer) ==
+        RendererDrawMode_Texture)
       shadow_map_draw_point_light(
           &(ShadowMapDrawPointLightDescriptor){
               .light = light,
@@ -138,7 +138,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
   scene_add_sem(scene, sem);
 
   light_list_uniform_update(&scene->lights);
-  ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
+  ubo_upload_entry(scene->ubo, UBOType_LightList,
                    &scene->lights.ubo_slot);
 
   return sem;
@@ -183,10 +183,10 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
   if (flag & LightCreateFlag_Shadow) {
 
     light->ubo_projection =
-        ubo_new_entry(&scene->renderer.ubo, UBOType_ViewProjection);
+        ubo_new_entry(scene->ubo, UBOType_ViewProjection);
 
     spot_light_projection_update(light);
-    ubo_upload_entry(&scene->renderer.ubo, UBOType_ViewProjection,
+    ubo_upload_entry(scene->ubo, UBOType_ViewProjection,
                      &light->ubo_projection);
 
     SpotLightListShadow *shadow_list = &scene->lights.spot.shadow;
@@ -197,8 +197,8 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
     light_list_spot_shadow_insert(shadow_list, light);
 
     // recompute shadow map if render mode
-    if (scene_renderer_draw_mode(&scene->renderer) ==
-        SceneRendererDrawMode_Texture)
+    if (renderer_draw_mode(&scene->renderer) ==
+        RendererDrawMode_Texture)
       shadow_map_draw_spot_light(
           &(ShadowMapDrawSpotLightDescriptor){
               .light = light,
@@ -218,7 +218,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
 
   // update UBO
   light_list_uniform_update(&scene->lights);
-  ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
+  ubo_upload_entry(scene->ubo, UBOType_LightList,
                    &scene->lights.ubo_slot);
 
   return sem;
@@ -265,7 +265,7 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
   scene_add_sem(scene, sem);
 
   light_list_uniform_update(&scene->lights);
-  ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
+  ubo_upload_entry(scene->ubo, UBOType_LightList,
                    &scene->lights.ubo_slot);
 
   return sem;
@@ -310,10 +310,10 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   if (flag & LightCreateFlag_Shadow) {
 
     light->ubo_projection =
-        ubo_new_entry(&scene->renderer.ubo, UBOType_ViewProjection);
+        ubo_new_entry(scene->ubo, UBOType_ViewProjection);
 
     sun_light_projection_update(light);
-    ubo_upload_entry(&scene->renderer.ubo, UBOType_ViewProjection,
+    ubo_upload_entry(scene->ubo, UBOType_ViewProjection,
                      &light->ubo_projection);
 
     SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
@@ -325,8 +325,8 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
     light_list_sun_shadow_insert(shadow_list, light);
 
     // recompute shadow map if render mode
-    if (scene_renderer_draw_mode(&scene->renderer) ==
-        SceneRendererDrawMode_Texture)
+    if (renderer_draw_mode(&scene->renderer) ==
+        RendererDrawMode_Texture)
 
       shadow_map_draw_sun_light(
           &(ShadowMapDrawSunLightDescriptor){
@@ -346,7 +346,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
   scene_add_sem(scene, sem);
 
   light_list_uniform_update(&scene->lights);
-  ubo_upload_entry(&scene->renderer.ubo, UBOType_LightList,
+  ubo_upload_entry(scene->ubo, UBOType_LightList,
                    &scene->lights.ubo_slot);
 
   return sem;
@@ -427,9 +427,9 @@ void scene_add_sem(Scene *scene, SceneEditorMeshList *list) {
 
     {
       // build mesh depending on pipeline and scene render mode
-      mesh->ubo_slot = ubo_new_entry(&scene->renderer.ubo, UBOType_Mesh);
+      mesh->ubo_slot = ubo_new_entry(scene->ubo, UBOType_Mesh);
       mesh_uniform_update(mesh);
-      ubo_upload_entry(&scene->renderer.ubo, UBOType_Mesh, &mesh->ubo_slot);
+      ubo_upload_entry(scene->ubo, UBOType_Mesh, &mesh->ubo_slot);
       scene_build_mesh(scene, mesh, ScenePipeline_Fixed);
     }
 
@@ -479,7 +479,7 @@ scene_add_probe_reflection_grid(Scene *scene,
   // add probes to ubo list
   for (uint16_t i = 0; i < new_grid->probes.length; i++) {
     ProbeReflection *probe = new_grid->probes.entries[i];
-    UBOManager *ubo = &scene->renderer.ubo;
+    UBOManager *ubo = scene->ubo;
 
     {
       probe->ubo_uniform = probe_list_uniform_new_entry(
@@ -491,14 +491,14 @@ scene_add_probe_reflection_grid(Scene *scene,
       // add each views
       for (uint8_t v = 0; v < PROBE_REFLECTION_VIEW_COUNT; v++)
         probe->ubo_camera[v] =
-            ubo_new_entry(&scene->renderer.ubo, UBOType_Camera);
+            ubo_new_entry(scene->ubo, UBOType_Camera);
       probe_reflection_update_camera(probe);
     }
   }
 
   // update UBO for probe count
   probe_list_update_uniform(&scene->probes);
-  ubo_upload_entry(&scene->renderer.ubo, UBOType_ProbeList,
+  ubo_upload_entry(scene->ubo, UBOType_ProbeList,
                    &scene->probes.ubo_slot);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -512,12 +512,12 @@ scene_add_probe_reflection_plane(Scene *scene,
                                  ProbeReflectionPlaneDescriptor *desc,
                                  ProbeReflectionPlane **dest) {
 
-  // && scene->renderer.draw.mode == SceneRendererDrawMode_Texture
+  // && scene->renderer.draw.mode == RendererDrawMode_Texture
   // add draw callback if first probe
   if (scene->probes.reflection_plane.length == 0)
-    scene_renderer_add_draw_callback(
+    renderer_add_draw_callback(
         &scene->renderer, probe_reflection_plane_list_draw_callback,
-        (void *)scene, SceneRendererDrawMode_Texture);
+        (void *)scene, RendererDrawMode_Texture);
 
   ProbeReflectionPlane *probe =
       probe_reflection_plane_list_new_entry(&scene->probes.reflection_plane);
@@ -544,7 +544,7 @@ scene_add_probe_reflection_plane(Scene *scene,
       });
 
   // add probes to ubo list
-  UBOManager *ubo = &scene->renderer.ubo;
+  UBOManager *ubo = scene->ubo;
 
   {
     probe->ubo_uniform = probe_list_uniform_new_entry(
@@ -553,13 +553,13 @@ scene_add_probe_reflection_plane(Scene *scene,
   }
 
   {
-    probe->ubo_camera = ubo_new_entry(&scene->renderer.ubo, UBOType_Camera);
+    probe->ubo_camera = ubo_new_entry(scene->ubo, UBOType_Camera);
     probe_reflection_plane_update_camera(probe);
   }
 
   // update Probe List UBO for probe count
   probe_list_update_uniform(&scene->probes);
-  ubo_upload_entry(&scene->renderer.ubo, UBOType_ProbeList,
+  ubo_upload_entry(scene->ubo, UBOType_ProbeList,
                    &scene->probes.ubo_slot);
 
   // transfert gizmo mesh pointers to scene pipeline so they get rendered
@@ -601,7 +601,7 @@ void scene_add_mesh_core(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
   SceneSelectionType selection_pipeline = SceneSelectionType_Mesh;
 
   if ((pipeline & ScenePipeline_Dynamic_LitShadow) &&
-      scene->renderer.draw.mode == SceneRendererDrawMode_Texture) {
+      scene->renderer.draw.mode == RendererDrawMode_Texture) {
     shadow_map_draw_all(
         &(ShadowMapDrawAllDescriptor){
             .mesh_list = pipeline_mesh_list,
@@ -629,7 +629,7 @@ void scene_add_mesh_core(Scene *scene, Mesh *mesh, const ScenePipeline pipeline,
 void scene_render_pass_draw_list_enable_mesh(
     Scene *scene, const MeshRefList *pipeline_mesh_list, Mesh *mesh) {
 
-  for (SceneRendererDrawMode i = 0; i < SCENE_RENDERER_DRAW_MODE_COUNT; i++)
+  for (RendererDrawMode i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
     render_pass_list_enable_mesh(&scene->renderer.draw.render_pass[i], mesh);
 
   render_pass_enable_mesh(&scene->probes.reflection_probe.pass, mesh);
@@ -715,9 +715,9 @@ SceneStatus scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
       mesh_shader(mesh, MeshShader_Texture)->pipeline;
 
   // bind new mesh uniform to UBO and copy previous mesh uniform data
-  mesh->ubo_slot = ubo_new_entry(&scene->renderer.ubo, UBOType_Mesh);
+  mesh->ubo_slot = ubo_new_entry(scene->ubo, UBOType_Mesh);
   mesh_uniform_update(mesh);
-  ubo_upload_entry(&scene->renderer.ubo, UBOType_Mesh, &mesh->ubo_slot);
+  ubo_upload_entry(scene->ubo, UBOType_Mesh, &mesh->ubo_slot);
 
   ScenePipeline pipeline = scene_map_pipeline(mesh_pipeline);
 
@@ -758,9 +758,9 @@ void scene_add_mesh_pipeline(Scene *scene, Mesh *mesh,
                              const ScenePipeline pipeline, const char *layer,
                              const SceneAddFlag flag) {
 
-  mesh->ubo_slot = ubo_new_entry(&scene->renderer.ubo, UBOType_Mesh);
+  mesh->ubo_slot = ubo_new_entry(scene->ubo, UBOType_Mesh);
   mesh_uniform_update(mesh);
-  ubo_upload_entry(&scene->renderer.ubo, UBOType_Mesh, &mesh->ubo_slot);
+  ubo_upload_entry(scene->ubo, UBOType_Mesh, &mesh->ubo_slot);
 
   scene_build_mesh(scene, mesh, pipeline);
   scene_add_mesh_core(scene, mesh, pipeline, layer, flag);

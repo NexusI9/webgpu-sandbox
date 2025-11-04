@@ -1,0 +1,370 @@
+#include "scene_editor_mesh_system.h"
+#include "backend/renderer/shadow_map/draw.h"
+#include "runtime/light/list.h"
+#include "runtime/light/uniform.h"
+#include "runtime/probe/core.h"
+#include "runtime/probe/uniform.h"
+#include "runtime/scene/editor_mesh/core.h"
+
+void sem_list_system_toggle_visibility(SceneEditorMeshListArray *array,
+                                       Renderer *renderer,
+                                       const RegEntryType *types, size_t count,
+                                       bool active) {
+
+  for (size_t i = 0; i < array->length; i++) {
+
+    SceneEditorMeshList *sem_list = &array->entries[i];
+    const RegEntry *entry = reg_lookup(sem_list->id);
+
+    for (size_t j = 0; j < count; j++) {
+      if (entry->type == types[j]) {
+
+        for (size_t k = 0; k < sem_list->length; k++) {
+
+          if (active)
+            renderer_show_mesh(renderer, sem_list->entries[k].mesh);
+          else
+            renderer_hide_mesh(renderer, sem_list->entries[k].mesh);
+        }
+
+        break;
+      }
+    }
+  }
+}
+
+/*
+
+    ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▖ ▗▖▗▄▄▄▖▗▄▄▖
+    ▐▌     █  ▐▌   ▐▌ ▐▌  █ ▐▌
+    ▐▌     █  ▐▌▝▜▌▐▛▀▜▌  █  ▝▀▚▖
+    ▐▙▄▄▖▗▄█▄▖▝▚▄▞▘▐▌ ▐▌  █ ▗▄▄▞▘
+
+
+ */
+
+// Base transform
+
+void sem_point_light_set_position(const SEMTransform *desc) {
+
+  PointLight *light = (PointLight *)desc->sem->target;
+
+  glm_vec3_copy((float *)desc->value, light->position);
+
+  point_light_uniform_update(light);
+  ubo_update_queue_insert(desc->ubo, UBOType_LightList,
+                          desc->light_list->ubo_slot.id);
+
+  mesh_set_position(desc->sem->mesh, desc->value);
+}
+
+void sem_point_light_set_rotation(const SEMTransform *desc) {}
+void sem_point_light_set_scale(const SEMTransform *desc) {}
+
+void sem_list_point_light_set_position(const SEMListTransform *desc) {
+  for (size_t i = 0; i < desc->sem_list->length; i++) {
+    SceneEditorMesh *sem = &desc->sem_list->entries[i];
+    sem->transform_callback[GizmoMode_Position](&(const SEMTransform){
+        .light_list = desc->light_list,
+        .probe_list = desc->probe_list,
+        .renderer = desc->renderer,
+        .sem = sem,
+        .ubo = desc->ubo,
+        .value = desc->value,
+    });
+  }
+}
+void sem_list_point_light_set_rotation(const SEMListTransform *desc) {}
+void sem_list_point_light_set_scale(const SEMListTransform *desc) {}
+
+// Shadow transform
+static inline void sem_system_point_light_update_shadow(const SEMTransform *);
+static inline void sem_system_spot_light_update_shadow(const SEMTransform *);
+static inline void sem_system_sun_light_update_shadow(const SEMTransform *);
+
+void sem_system_point_light_update_shadow(const SEMTransform *desc) {
+
+  PointLight *light = (PointLight *)desc->sem->target;
+  UBOManager *ubo = desc->ubo;
+
+  if (renderer_draw_mode(desc->renderer) == RendererDrawMode_Texture) {
+
+    // update light views properties (CPU) + update UBO entries
+    point_light_projection_update(light);
+
+    // add to write queue (CPU > GPU)
+    for (uint8_t i = 0; i < PROJECTION_VIEW_COUNT; i++)
+      ubo_update_queue_insert(ubo, UBOType_ViewProjection,
+                              light->ubo_projection[i].id);
+
+    renderer_draw_shadow_map_point_light(
+        &(ShadowMapDrawPointLightDescriptor){
+            .light = light,
+            .pass = &desc->light_list->point.shadow.pass,
+            .texture_layer = desc->sem->target_list_index,
+            .command_encoder = NULL,
+            .profiler = &desc->renderer->profiler,
+        },
+        SCENE_DEBUG_UNDEFINED);
+  }
+}
+
+void sem_system_spot_light_update_shadow(const SEMTransform *desc) {
+
+  SpotLight *light = (SpotLight *)desc->sem->target;
+  UBOManager *ubo = desc->ubo;
+
+  if (renderer_draw_mode(desc->renderer) == RendererDrawMode_Texture) {
+
+    spot_light_projection_update(light);
+
+    ubo_update_queue_insert(ubo, UBOType_ViewProjection,
+                            light->ubo_projection.id);
+
+    renderer_draw_shadow_map_spot_light(
+        &(ShadowMapDrawSpotLightDescriptor){
+            .light = light,
+            .pass = &desc->light_list->spot.shadow.pass,
+            .texture_layer = desc->sem->target_list_index,
+            .command_encoder = NULL,
+            .profiler = &desc->renderer->profiler,
+        },
+        SCENE_DEBUG_UNDEFINED);
+  }
+}
+
+void sem_system_sun_light_update_shadow(const SEMTransform *desc) {
+
+  SunLight *light = (SunLight *)desc->sem->target;
+  UBOManager *ubo = desc->ubo;
+
+  if (renderer_draw_mode(desc->renderer) == RendererDrawMode_Texture) {
+
+    sun_light_projection_update(light);
+
+    ubo_update_queue_insert(ubo, UBOType_ViewProjection,
+                            light->ubo_projection.id);
+
+    renderer_draw_shadow_map_sun_light(
+        &(ShadowMapDrawSunLightDescriptor){
+            .light = light,
+            .pass = &desc->light_list->spot.shadow.pass,
+            .texture_layer = desc->light_list->spot.shadow.length +
+                             desc->sem->target_list_index,
+            .command_encoder = NULL,
+            .profiler = &desc->renderer->profiler,
+        },
+        SCENE_DEBUG_UNDEFINED);
+  }
+}
+
+void sem_system_point_light_shadow_set_position(const SEMTransform *desc) {
+
+  PointLight *light = (PointLight *)desc->sem->target;
+  UBOManager *ubo = desc->ubo;
+  LightList *lights = desc->light_list;
+
+  glm_vec3_copy((float *)desc->value, light->position);
+
+  point_light_uniform_update(light);
+  ubo_update_queue_insert(ubo, UBOType_LightList, lights->ubo_slot.id);
+
+  mesh_set_position(desc->sem->mesh, desc->value);
+  sem_system_point_light_update_shadow(desc);
+}
+
+void sem_system_point_light_shadow_set_rotation(const SEMTransform *desc) {}
+void sem_system_point_light_shadow_set_scale(const SEMTransform *desc) {}
+
+void sem_list_system_point_light_shadow_set_position(
+    const SEMListTransform *desc) {
+
+  for (size_t i = 0; i < desc->sem_list->length; i++) {
+    SceneEditorMesh *sem = &desc->sem_list->entries[i];
+    sem->transform_callback[GizmoMode_Position](&(const SEMTransform){
+        .light_list = desc->light_list,
+        .probe_list = desc->probe_list,
+        .renderer = desc->renderer,
+        .sem = sem,
+        .ubo = desc->ubo,
+        .value = desc->value,
+    });
+  }
+}
+void sem_point_list_light_shadow_set_rotation(const SEMListTransform *desc) {}
+void sem_point_list_light_shadow_set_scale(const SEMListTransform *desc) {}
+
+/*
+
+    ▗▄▄▖ ▗▄▖ ▗▖  ▗▖▗▄▄▄▖▗▄▄▖  ▗▄▖
+   ▐▌   ▐▌ ▐▌▐▛▚▞▜▌▐▌   ▐▌ ▐▌▐▌ ▐▌
+   ▐▌   ▐▛▀▜▌▐▌  ▐▌▐▛▀▀▘▐▛▀▚▖▐▛▀▜▌
+   ▝▚▄▄▖▐▌ ▐▌▐▌  ▐▌▐▙▄▄▖▐▌ ▐▌▐▌ ▐▌
+
+
+*/
+
+void sem_system_camera_set_position(const SEMTransform *desc) {
+
+  // transform target
+  camera_set_position(desc->sem->target, desc->value);
+
+  // transform mesh
+  mesh_set_position(desc->sem->mesh, desc->value);
+}
+
+/**
+
+                          ▗▄▄▖▗▄▄▖ ▗▄▄▄▖▗▄▄▄
+                         ▐▌   ▐▌ ▐▌  █  ▐▌  █
+                         ▐▌▝▜▌▐▛▀▚▖  █  ▐▌  █
+                         ▝▚▄▞▘▐▌ ▐▌▗▄█▄▖▐▙▄▄▀
+
+             ▗▄▄▖ ▗▄▄▄▖▗▄▄▄▖▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖▗▄▄▄▖ ▗▄▖ ▗▖  ▗▖
+             ▐▌ ▐▌▐▌   ▐▌   ▐▌   ▐▌   ▐▌     █    █  ▐▌ ▐▌▐▛▚▖▐▌
+             ▐▛▀▚▖▐▛▀▀▘▐▛▀▀▘▐▌   ▐▛▀▀▘▐▌     █    █  ▐▌ ▐▌▐▌ ▝▜▌
+             ▐▌ ▐▌▐▙▄▄▖▐▌   ▐▙▄▄▖▐▙▄▄▖▝▚▄▄▖  █  ▗▄█▄▖▝▚▄▞▘▐▌  ▐▌
+
+
+
+ */
+
+/**
+   Update the position list according to the origin on top the casual mesh
+   translation.
+ */
+void sem_system_probe_reflection_grid_bound_set_position(
+    const SEMTransform *desc) {
+
+  ProbeReflectionGrid *grid = (ProbeReflectionGrid *)desc->sem->target;
+  mesh_set_position(desc->sem->mesh, desc->value);
+}
+
+void sem_system_probe_reflection_grid_bound_set_scale(
+    const SEMTransform *desc) {
+  // mesh_set_scale(desc->mesh->mesh, desc->offset);
+}
+
+void sem_system_probe_reflection_grid_set_position(const SEMTransform *desc) {
+
+  mesh_set_position(desc->sem->mesh, desc->value);
+
+  ProbeReflection *probe = (ProbeReflection *)desc->sem->target;
+  glm_vec3_copy(desc->sem->mesh->position, probe->position);
+
+  ProbeList *probes = desc->probe_list;
+
+  // update uniform cpu side
+  probe_reflection_update_uniform(probe);
+
+  // add to upload queue
+  ubo_update_queue_insert(desc->ubo, UBOType_ProbeList, probes->ubo_slot.id);
+
+  // update view cpu side
+  probe_reflection_update_camera(probe);
+
+  // add to upload queue
+  for (uint8_t i = 0; i < PROBE_REFLECTION_VIEW_COUNT; i++)
+    ubo_update_queue_insert(desc->ubo, UBOType_Camera, probe->ubo_camera[i].id);
+}
+
+void sem_system_probe_reflection_grid_set_rotation(const SEMTransform *desc) {}
+
+void sem_system_probe_reflection_grid_set_scale_(const SEMTransform *desc) {
+  // print_vec3(desc->offset);
+}
+
+/**
+
+                       ▗▄▄▖ ▗▖    ▗▄▖ ▗▖  ▗▖▗▄▄▄▖
+                       ▐▌ ▐▌▐▌   ▐▌ ▐▌▐▛▚▖▐▌▐▌
+                       ▐▛▀▘ ▐▌   ▐▛▀▜▌▐▌ ▝▜▌▐▛▀▀▘
+                       ▐▌   ▐▙▄▄▖▐▌ ▐▌▐▌  ▐▌▐▙▄▄▖
+
+            ▗▄▄▖ ▗▄▄▄▖▗▄▄▄▖▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖▗▄▄▄▖ ▗▄▖ ▗▖  ▗▖
+            ▐▌ ▐▌▐▌   ▐▌   ▐▌   ▐▌   ▐▌     █    █  ▐▌ ▐▌▐▛▚▖▐▌
+            ▐▛▀▚▖▐▛▀▀▘▐▛▀▀▘▐▌   ▐▛▀▀▘▐▌     █    █  ▐▌ ▐▌▐▌ ▝▜▌
+            ▐▌ ▐▌▐▙▄▄▖▐▌   ▐▙▄▄▖▐▙▄▄▖▝▚▄▄▖  █  ▗▄█▄▖▝▚▄▞▘▐▌  ▐▌
+
+
+   The below function detects which scene meshes are within the probe
+   radius/bound-box and update each meshes uniform so subscribe or clear the
+   probes index and count so the mesh shader can reference the right probe index
+   for the reflection computing.
+
+   By default the meshes reflection only reflecte the skybox. However if a mesh
+   is within a probe reflection bound/radius, it takes the probe ID as to render
+   the respective reflection texture in the shader.
+
+   Note that only one reflection plane or grid can be active per mesh.
+
+   NOTE:
+   Currently this function in unused as automatically assigning reflected meshes
+   cause various issue in deciding if a mesh should be self-reflected or not, it
+   uselessly complexify the overall process.
+
+   As a solution to this we directly assign/ bind each mesh a probe directly to
+   have more efficient and optimized control on the probe reflection handle and
+   self reflection.
+ */
+void sem_system_probe_reflection_plane_update_mesh_uniform(
+    const SEMTransform *desc) {
+
+  MeshRefList *pipeline_mesh_list[SCENE_PIPELINE_REFLECTION_COUNT];
+  renderer_reflection_pipeline_meshes(desc->renderer, pipeline_mesh_list);
+
+  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)desc->sem->target;
+  UBOManager *ubo = desc->ubo;
+  ProbeList *probes = desc->probe_list;
+
+  probe_reflection_plane_update_boundbox(probe);
+
+  for (RendererPipeline i = 0; i < SCENE_PIPELINE_REFLECTION_COUNT; i++) {
+
+    const MeshRefList *pipeline = pipeline_mesh_list[i];
+
+    for (size_t j = 0; j < pipeline->length; j++) {
+
+      Mesh *pipeline_mesh = pipeline->entries[j];
+      MeshUniform *uniform = mesh_uniform(pipeline_mesh);
+      bool intersect = aabb_intersect(&probe->boundbox,
+                                      &pipeline_mesh->topology.boundbox.world);
+
+      if (intersect) {
+        mesh_uniform_set_probe_reflection_plane(pipeline_mesh, ubo);
+        render_pass_disable_mesh(&probes->reflection_plane.pass, pipeline_mesh);
+      } else {
+        mesh_uniform_clear_probe_reflection_plane(pipeline_mesh, ubo);
+        render_pass_enable_mesh(&probes->reflection_plane.pass, pipeline_mesh);
+      }
+    }
+  }
+}
+
+void sem_system_probe_reflection_plane_set_position(const SEMTransform *desc) {
+
+  mesh_set_position(desc->sem->mesh, desc->value);
+
+  ProbeReflectionPlane *probe = (ProbeReflectionPlane *)desc->sem->target;
+  glm_vec3_copy(desc->sem->mesh->position, probe->position);
+  probe->signed_distance = glm_dot(probe->normal, probe->position);
+
+  // update uniform cpu side
+  probe_reflection_plane_update_uniform(probe);
+
+  // add to upload queue
+  ubo_update_queue_insert(desc->ubo, UBOType_ProbeList,
+                          desc->probe_list->ubo_slot.id);
+
+  // update view cpu side
+  probe_reflection_plane_update_camera(probe);
+
+  // add to upload queue
+  ubo_update_queue_insert(desc->ubo, UBOType_Camera, probe->ubo_camera.id);
+}
+
+void sem_system_probe_reflection_plane_set_rotation(const SEMTransform *desc) {}
+
+void sem_system_probe_reflection_plane_set_scale(const SEMTransform *desc) {
+  // print_vec3(desc->offset);
+}

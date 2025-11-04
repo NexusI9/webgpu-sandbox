@@ -5,29 +5,29 @@
 #include "core.hpp"
 #include "runtime/scene/draw.h"
 #include "runtime/gui/components/button_group.hpp"
-#include "runtime/scene/renderer/core.h"
+#include "backend/renderer/core.h"
 
 namespace UI {
 
 class RenderMode : public Window {
 
-  static constexpr SceneRendererDrawMode
-      draw_modes[SCENE_RENDERER_DRAW_MODE_COUNT] = {
-          SceneRendererDrawMode_Boundbox,
-          SceneRendererDrawMode_Wireframe,
-          SceneRendererDrawMode_Solid,
-          SceneRendererDrawMode_Texture,
+  static constexpr RendererDrawMode
+      draw_modes[RENDERER_DRAW_MODE_COUNT] = {
+          RendererDrawMode_Boundbox,
+          RendererDrawMode_Wireframe,
+          RendererDrawMode_Solid,
+          RendererDrawMode_Texture,
       };
 
   static void update_render_mode(Scene *scene, void *mode) {
-    scene_set_draw_mode(scene, *(SceneRendererDrawMode *)mode);
+    scene_set_draw_mode(scene, *(RendererDrawMode *)mode);
   }
 
 public:
   RenderMode(Gui* gui, const char *label) : Window(gui, label) {}
   void draw() override;
 
-  static constexpr int count = SCENE_RENDERER_DRAW_MODE_COUNT;
+  static constexpr int count = RENDERER_DRAW_MODE_COUNT;
   static constexpr ButtonGroupItem buttons[count] = {
       {
           "mode_boundbox",

@@ -55,7 +55,7 @@ typedef struct {
   AOBakeTextureList texture_list;
   size_t layer_count;
   uint16_t size;
-} SceneRendererTextureAO;
+} RendererTextureAO;
 
 typedef struct {
   uint16_t sample_amount;
@@ -121,11 +121,11 @@ typedef struct {
   } debug;
 } AOBakeVertexDescriptor;
 
-void ao_bake_init(SceneRendererTextureAO *, const AOBakeInitDescriptor *);
+void ao_bake_init(RendererTextureAO *, const AOBakeInitDescriptor *);
 
-void ao_bake_draw_list(SceneRendererTextureAO *, const AOBakeDrawDescriptor *);
+void ao_bake_draw_list(RendererTextureAO *, const AOBakeDrawDescriptor *);
 
-void ao_bake_draw_mesh(SceneRendererTextureAO *, Mesh *,
+void ao_bake_draw_mesh(RendererTextureAO *, Mesh *,
                        const AOBakeDrawDescriptor *, bool);
 
 #endif

@@ -18,7 +18,7 @@ private:
   float fov = viewport_fov(&scene->viewport);
   float near_clip = viewport_near_clip(&scene->viewport);
   float far_clip = viewport_far_clip(&scene->viewport);
-  float dpi = (float)scene_renderer_dpi(&scene->renderer);
+  float dpi = (float)renderer_dpi(&scene->renderer);
   RenderPipelineMultisampleCount multisample = context_multisample();
 
   static constexpr RenderPipelineMultisampleCount multisample_count[2] = {

@@ -131,5 +131,5 @@ void example_gltf_podium(Scene *scene) {
       podium_name);
 
   if (podium)
-    mesh_shader_texture_bind_probe(podium, plane, &scene->renderer.ubo);
+    mesh_shader_texture_bind_probe(podium, plane, scene->ubo);
 }

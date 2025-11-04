@@ -9,7 +9,7 @@
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/probe/reflection/plane.h"
-#include "runtime/scene/renderer/core.h"
+#include "backend/renderer/core.h"
 #include "runtime/shader/core.h"
 #include "stb/stb_image.h"
 #include "utils/dyli.h"

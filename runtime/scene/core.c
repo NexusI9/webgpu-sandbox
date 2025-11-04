@@ -7,6 +7,7 @@
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/registry.h"
+#include "backend/renderer/core.h"
 #include "backend/stat.h"
 #include "backend/ubo.h"
 #include "debug/core.h"
@@ -26,7 +27,6 @@
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/environment/core.h"
-#include "runtime/scene/renderer/core.h"
 #include "runtime/scene/stat.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
@@ -37,24 +37,24 @@ static inline void scene_light_list_init(Scene *);
 static inline void scene_camera_init(Scene *);
 static inline void
 scene_probe_reflection_init(Scene *, const RenderPipelineMultisampleCount);
-
-static inline void scene_mesh_list_init(Scene *);
+static inline void scene__create_grid(Scene *);
 
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   TIMER("Scene Load", {
    
     {
+      scene->ubo = desc->ubo;
+        stat_init(&scene->stats);
       /*  ===== SCENE RENDER =====   */
-      scene_renderer_init(&scene->renderer, desc->renderer);
       scene_environment_init(&scene->environment);
       {
     scene->environment.ubo_slot =
-        ubo_new_entry(&scene->renderer.ubo, UBOType_Environment);
+        ubo_new_entry(scene->ubo, UBOType_Environment);
 
     scene_environment_update_uniform(&scene->environment);
 
-    ubo_upload_entry(&scene->renderer.ubo, UBOType_Environment,
+    ubo_upload_entry(scene->ubo, UBOType_Environment,
                      &scene->environment.ubo_slot);
       }
 }
@@ -62,7 +62,6 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 {
 
   /*  ===== LISTS ===== */
-  scene_mesh_list_init(scene);
   scene_layer_init(&scene->layers);
   scene_light_list_init(scene);
   scene_probe_reflection_init(scene, context_multisample());
@@ -72,66 +71,37 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
   /*  ===== CAMERA & VIEWPORT =====  */
   scene_camera_init(scene);
 
-  viewport_create(&scene->viewport,
-                  &(ViewportCreateDescriptor){
-                      .fov = desc->viewport->fov,
-                      .near_clip = desc->viewport->near_clip,
-                      .far_clip = desc->viewport->far_clip,
-                      .width = scene_renderer_width(&scene->renderer),
-                      .height = scene_renderer_height(&scene->renderer),
-                  });
+  viewport_create(&scene->viewport, &(ViewportCreateDescriptor){
+                                        .fov = desc->viewport->fov,
+                                        .near_clip = desc->viewport->near_clip,
+                                        .far_clip = desc->viewport->far_clip,
+                                        .width = context_width(),
+                                        .height = context_height(),
+                                    });
 
   {
-    scene->viewport.ubo_slot =
-        ubo_new_entry(&scene->renderer.ubo, UBOType_Viewport);
+    scene->viewport.ubo_slot = ubo_new_entry(scene->ubo, UBOType_Viewport);
 
     viewport_uniform_update(&scene->viewport);
 
-    ubo_upload_entry(&scene->renderer.ubo, UBOType_Viewport,
-                     &scene->viewport.ubo_slot);
+    ubo_upload_entry(scene->ubo, UBOType_Viewport, &scene->viewport.ubo_slot);
   }
 }
 
 {
   /*  ===== EVENT =====  */
   scene_event_html(scene);
-  scene_draw_layouts_init(scene, context_multisample());
 }
 
 {
   /*  ===== EDITOR =====  */
-  scene_stat_update_shader_count(scene);
-  scene_editor_init(scene); // EDITORONLY
   scene_debug_init(&scene->debug, &(SceneDebugDescriptor){
                                       .camera = scene->active_camera,
                                       .viewport = &scene->viewport,
-                                      .ubo = &scene->renderer.ubo,
+                                      .ubo = scene->ubo,
                                   });
 }
-
-{
-  /* === DRAW CALLBACKS === */
-  scene_renderer_add_draw_callback(
-      &scene->renderer, scene_renderer_draw_layout_callback,
-      (void *)&scene->renderer,
-      SceneRendererDrawMode_Texture | SceneRendererDrawMode_Solid |
-          SceneRendererDrawMode_Wireframe | SceneRendererDrawMode_Boundbox);
-}
 });
-}
-
-/**
-   Initialize scene mesh pool as well as pipelines
- */
-void scene_mesh_list_init(Scene *scene) {
-
-  for (ScenePipeline flag = 1; flag < (1 << SCENE_PIPELINE_COUNT); flag <<= 1)
-    mesh_ref_list_create(scene_pipeline(scene, flag),
-                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
-
-  for (SceneMeshStates m = 0; m < SCENE_MESH_STATE_COUNT; m++)
-    mesh_ref_list_create(scene_mesh_state(scene, m),
-                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
 }
 
 /**
@@ -142,7 +112,7 @@ void scene_camera_init(Scene *scene) {
   // create camera list, and set active camera
   camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
   scene->camera =
-      scene_init_main_camera(scene, scene_renderer_clock(&scene->renderer));
+      scene_init_main_camera(scene, renderer_clock(&scene->renderer));
 
   // set scene main camera as active
   scene->active_camera = scene->camera;
@@ -169,12 +139,12 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
 
                         });
 
-  camera->ubo_slot = ubo_new_entry(&scene->renderer.ubo, UBOType_Camera);
+  camera->ubo_slot = ubo_new_entry(scene->ubo, UBOType_Camera);
 
   // init main camera position
   camera_lookat(camera, (vec3){20.0f, 20.0f, 20.0f}, (vec3){0.0f, 0.0f, 0.0f});
 
-  ubo_upload_entry(&scene->renderer.ubo, UBOType_Camera, &camera->ubo_slot);
+  ubo_upload_entry(scene->ubo, UBOType_Camera, &camera->ubo_slot);
 
   return camera;
 }
@@ -203,8 +173,7 @@ void scene_probe_reflection_init(
       .draw_list = &reflection_draw_list,
   };
 
-  scene->probes.ubo_slot =
-      ubo_new_entry(&scene->renderer.ubo, UBOType_ProbeList);
+  scene->probes.ubo_slot = ubo_new_entry(scene->ubo, UBOType_ProbeList);
 
   probe_reflection_grid_list_create(&scene->probes.reflection_probe,
                                     &reflection_config);
@@ -230,8 +199,7 @@ void scene_light_list_init(Scene *scene) {
 
   light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
 
-  scene->lights.ubo_slot =
-      ubo_new_entry(&scene->renderer.ubo, UBOType_LightList);
+  scene->lights.ubo_slot = ubo_new_entry(scene->ubo, UBOType_LightList);
 
   // init shadow textures
   shadow_map_init(&(ShadowMapInitDescriptor){

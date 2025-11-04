@@ -3,14 +3,17 @@
 //  https://github.com/seyhajin/webgpu-wasm-c
 //  https://developer.chrome.com/docs/web-platform/webgpu/build-app?hl=en
 //  https://stackoverflow.com/questions/23997312/how-do-i-read-a-user-specified-file-in-an-emscripten-compiled-library
+//  https://bevy.org/learn/quick-start/getting-started/ecs/
 
 #include <stdbool.h>
 #include <webgpu/webgpu.h>
 
 // runtime
 #include "backend/context.h"
+#include "backend/renderer/core.h"
 #include "backend/resource_manager.h"
 #include "backend/theme/core.h"
+#include "backend/ubo.h"
 #include "resources/example/glass.h"
 #include "resources/example/gltf.h"
 #include "resources/example/light.h"
@@ -19,8 +22,6 @@
 #include "runtime/input/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/draw.h"
-#include "runtime/scene/renderer/core.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
 
@@ -41,37 +42,40 @@ int main(int argc, const char *argv[]) {
           },
   });
 
-  
+  Renderer *renderer = rem_new_renderer();
+  renderer_create(renderer,
+                  &(RendererCreateDescriptor){
+                      .background = (WGPUColor){0.14f, 0.14f, 0.14f, 1.0f},
+                      .dpi = 1.0,
+                  });
 
-  Scene *main_scene = rem_new_scene();
+  UBOManager *ubo = rem_new_ubo();
+  ubo_init(ubo);
 
-  scene_create(main_scene,
-               &(SceneCreateDescriptor){
-                   .renderer =
-                       &(SceneRendererCreateDescriptor){
-                           .background = (WGPUColor){0.14f, 0.14f, 0.14f, 1.0f},
-                           .dpi = 1.0,
-                       },
-                   .viewport =
-                       &(ViewportCreateDescriptor){
-                           .fov = 32.0f,
-                           .near_clip = 0.1f,
-                           .far_clip = 100.0f,
-                       },
-               });
+  Scene *scene = rem_new_scene();
+  scene_create(scene, &(SceneCreateDescriptor){
+                          .ubo = ubo,
+                          .viewport =
+                              &(ViewportCreateDescriptor){
+                                  .fov = 32.0f,
+                                  .near_clip = 0.1f,
+                                  .far_clip = 100.0f,
+                              },
+                      });
 
-  scene_set_draw_mode(main_scene, SceneRendererDrawMode_Solid);
+  renderer_set_draw_mode(renderer, RendererDrawMode_Solid);
+  renderer_draw_scene(renderer, scene);
 
   Gui *gui = rem_new_gui();
   gui_init(gui, &(GUIDescriptor){
-                    .active_scene = main_scene,
+                    .active_scene = scene,
                     .theme = &g_theme,
                     .dpi = g_context.dpi,
                 });
 
   // example_light(&main_scene);
-  example_skybox(main_scene);
-  example_gltf_spa(main_scene);
+  example_skybox(scene);
+  example_gltf_spa(scene);
 
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);
@@ -92,7 +96,7 @@ int main(int argc, const char *argv[]) {
    */
 
   // Update Loop
-  scene_renderer_draw(&main_scene->renderer);
+  renderer_draw(renderer);
 
   return 0;
 }

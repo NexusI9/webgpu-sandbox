@@ -79,7 +79,7 @@ struct Camera {
 
 void camera_create(Camera *, const CameraCreateDescriptor *);
 void camera_reset(Camera *);
-void camera_lookat(Camera *, vec3, vec3);
+void camera_lookat(Camera *, const vec3, const vec3);
 
 // get
 float camera_position(const Camera *);
@@ -87,8 +87,8 @@ float camera_euler_rotation(const Camera *);
 mat4 *camera_view(Camera *);
 
 // set
-void camera_set_position(Camera *, vec3);
-void camera_set_rotation(Camera *, vec3);
+void camera_set_position(Camera *, const vec3);
+void camera_set_rotation(Camera *, const vec3);
 void camera_update_view(Camera *);
 
 void camera_destroy(Camera *);

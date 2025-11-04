@@ -1,0 +1,24 @@
+#ifndef _SCENE_EDITOR_CAMERA_H_
+#define _SCENE_EDITOR_CAMERA_H_
+
+#include "runtime/camera/camera.h"
+
+#include <cglm/types.h>
+
+#include "runtime/camera/core.h"
+#include "runtime/mesh/mesh.h"
+#include "runtime/scene/core.h"
+
+EXTERN_C_BEGIN
+
+void sem_camera_create(SceneEditorMeshList *, Camera *,
+                       const SEMCreateDescriptor *);
+
+
+
+void sem_camera_lookat(SceneEditorMeshList *, vec3, vec3);
+void sem_camera_fov(SceneEditorMeshList *, float);
+
+EXTERN_C_END
+
+#endif

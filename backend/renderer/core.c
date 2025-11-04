@@ -1,0 +1,165 @@
+#include "core.h"
+
+#include <emscripten/emscripten.h>
+#include <stdint.h>
+#include <string.h>
+
+#include "backend/ao_bake/core.h"
+#include "backend/clock.h"
+#include "backend/compute/core.h"
+#include "backend/context.h"
+#include "backend/logger.h"
+#include "backend/postfx/core.h"
+#include "backend/profiler.h"
+#include "backend/renderer/render_pass/texture.h"
+#include "backend/renderer/shadow_map/draw.h"
+#include "backend/resource_manager.h"
+#include "backend/stat.h"
+#include "backend/std_pipeline/core.h"
+#include "backend/std_texture/core.h"
+#include "backend/ubo.h"
+#include "emscripten/html5.h"
+#include "emscripten/html5_webgpu.h"
+#include "render_pass/draw.h"
+#include "runtime/input/core.h"
+#include "runtime/texture/core.h"
+#include "webgpu/webgpu.h"
+
+static void renderer_render(void *);
+
+static inline void renderer_mesh_list_init(Renderer *);
+
+void renderer_create(Renderer *renderer, const RendererCreateDescriptor *rd) {
+
+  renderer->context.background = rd->background;
+  renderer->context.width = rd->width ? rd->width : context_width();
+  renderer->context.height = rd->height ? rd->height : context_height();
+  renderer->context.dpi = rd->dpi == RENDERER_DPI_AUTO
+                              ? emscripten_get_device_pixel_ratio()
+                              : rd->dpi;
+  renderer->draw_mode = RendererDrawMode_Solid;
+
+  renderer_mesh_list_init(renderer);
+  clock_init(&renderer->clock);
+  profiler_init(&renderer->profiler);
+
+  TIMER("AO Bake", {
+    ao_bake_init(&renderer->texture.ambient_occlusion,
+                 &(AOBakeInitDescriptor){
+                     .size = AO_TEXTURE_RESOLUTION,
+                     .layer_count = AO_LAYER_COUNT,
+                 });
+  });
+
+  {
+    // init various buffers
+    compute_pass_init(&renderer->compute_pass,
+                      &(ComputePassDescriptor){
+                          .max_height = context_height(),
+                          .max_width = context_width(),
+                      });
+  }
+}
+
+/**
+   Initialize scene mesh pool as well as pipelines
+ */
+void renderer_mesh_list_init(Renderer *rd) {
+
+  for (RendererPipeline flag = 1; flag < (1 << RENDERER_PIPELINE_COUNT);
+       flag <<= 1)
+    mesh_ref_list_create(renderer_pipeline(rd, flag),
+                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
+
+  for (RendererMeshStates m = 0; m < RENDERER_MESH_STATE_COUNT; m++)
+    mesh_ref_list_create(renderer_mesh_state(rd, m),
+                         SCENE_MESH_LIST_DEFAULT_CAPACITY);
+}
+
+void renderer_destroy(Renderer *renderer) {}
+
+/**
+   Based on the renderer Draw Layouts, it first select the entry base on the
+   renderer mode (texture/solid/wireframe).
+ */
+void renderer_draw_layout_callback(void *data) {
+  Renderer *renderer = (Renderer *)data;
+
+  // retrieve render mode
+  const RendererDrawMode mode = renderer->draw_mode;
+  render_pass_list_draw(&renderer->mesh_pass[__builtin_ctz(mode)]);
+}
+
+/**
+   Draw callbackas are basically list of functions that will be called during
+   the draw loop. Those hooks accept additional user data in argument. A current
+   example of hooks are:
+   [
+     update_camera_matrix(),
+     draw_pipelines()
+     ]
+
+   Note that the user data longevity is not handled by the hook, meaning it's
+   the developper responsibility to manage the lifecycle of the data
+   (allocating, freeing...)
+ */
+void renderer_add_draw_callback(Renderer *renderer,
+                                renderer_draw_callback callback, void *data,
+                                const int modes) {
+
+  // add hook to corressponding mode
+  for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++) {
+    if (modes & (1 << i)) {
+
+      // do not add if max hook reached
+      if (renderer->callbacks[i].length == RENDERER_MAX_HOOK) {
+        logger_add(LoggerFlag_Warning, "Max draw hook reached.\n");
+        return;
+      }
+
+      renderer->callbacks[i].entries[renderer->callbacks[i].length++] =
+          (RendererDrawCallback){callback, data};
+    }
+  }
+}
+
+/**
+   Renderer Main Loop, basically just loop through the registered callbacks.
+ */
+void renderer_render(void *desc) {
+  RendererRenderDescriptor *config = (RendererRenderDescriptor *)desc;
+
+  profiler_latency_end(&config->renderer->profiler,
+                       ProfilerLatencyType_MainLoop);
+  profiler_latency_start(&config->renderer->profiler,
+                         ProfilerLatencyType_MainLoop);
+
+  // Call draw callbacks of active renderere draw mode
+  RendererDrawCallbackList *callback_list =
+      &config->renderer->callbacks[__builtin_ctz(config->renderer->draw_mode)];
+
+  // call callbacks, pass renderer and data
+  for (size_t i = 0; i < callback_list->length; i++) {
+    RendererDrawCallback *cb = &callback_list->entries[i];
+    cb->callback(cb->data);
+  }
+
+  // update clock delta
+  clock_update_delta(&config->renderer->clock);
+}
+
+/**
+   Draw a scene with a specified draw mode along with the render pass that comes
+   with it (ao, shadow mapping...). Also call the main loop.
+ */
+void renderer_draw(Renderer *renderer) {
+  // call main loop
+  emscripten_set_main_loop_arg(
+      renderer_render, &(RendererRenderDescriptor){.renderer = renderer}, 0, 1);
+}
+
+// getters
+void renderer_set_draw_mode(Renderer *renderer, const RendererDrawMode mode) {
+  renderer->draw_mode = mode;
+}
+

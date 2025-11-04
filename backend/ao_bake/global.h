@@ -3,6 +3,6 @@
 
 #include "./core.h"
 
-void ao_bake_global(SceneRendererTextureAO *, const AOBakeGlobalDescriptor *desc);
+void ao_bake_global(RendererTextureAO *, const AOBakeGlobalDescriptor *desc);
 
 #endif

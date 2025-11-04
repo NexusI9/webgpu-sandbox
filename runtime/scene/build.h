@@ -2,7 +2,7 @@
 #define _SCENE_MESH_BUILD_H_
 #include "core.h"
 #include "runtime/mesh/core.h"
-#include "runtime/scene/renderer/core.h"
+#include "backend/renderer/core.h"
 
 /**
    Mesh Building process:

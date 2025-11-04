@@ -50,7 +50,7 @@ static inline void scene_build_mesh_boundbox(Scene *, Mesh *,
 SceneStatus scene_build_mesh(Scene *scene, Mesh *mesh,
                              const ScenePipeline pipeline) {
 
-  UBOManager *ubo = &scene->renderer.ubo;
+  UBOManager *ubo = scene->ubo;
 
   if (pipeline >= ScenePipeline_Fixed_Background) {
     /*
@@ -103,7 +103,7 @@ void scene_build_mesh_texture(Scene *scene, Mesh *mesh,
   logger_add(LoggerFlag_MeshBuild, "Texture %s", mesh->name);
 #endif
 
-  UBOManager *ubo = &scene->renderer.ubo;
+  UBOManager *ubo = scene->ubo;
 
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
@@ -166,7 +166,7 @@ void scene_build_mesh_solid(Scene *scene, Mesh *mesh,
   mesh_shader_create_standard(mesh, MeshShader_Solid);
 
   // bind views
-  mesh_shader_build_mvp(mesh, MeshShader_Solid, &scene->renderer.ubo);
+  mesh_shader_build_mvp(mesh, MeshShader_Solid, scene->ubo);
 }
 
 /**
@@ -183,11 +183,11 @@ void scene_build_mesh_outline(Scene *scene, Mesh *mesh,
   // create meshes' solid shader
   if (mesh_shader_create_standard(mesh, MeshShader_Outline) ==
       MeshStatus_Success)
-    mesh_shader_build_mvp(mesh, MeshShader_Outline, &scene->renderer.ubo);
+    mesh_shader_build_mvp(mesh, MeshShader_Outline, scene->ubo);
 
   if (mesh_shader_create_standard(mesh, MeshShader_Stencil) ==
       MeshStatus_Success)
-    mesh_shader_build_mvp(mesh, MeshShader_Stencil, &scene->renderer.ubo);
+    mesh_shader_build_mvp(mesh, MeshShader_Stencil, scene->ubo);
 }
 
 /**
@@ -221,7 +221,7 @@ void scene_build_mesh_wireframe(Scene *scene, Mesh *mesh,
                                &(color){0.0f, 0.0f, 0.0f, 1.0f},
                                ShaderUpdateFlag_None);
 
-    mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ubo);
+    mesh_shader_build_mvp(mesh, MeshShader_Wireframe, scene->ubo);
   }
 }
 
@@ -253,7 +253,7 @@ void scene_build_mesh_boundbox(Scene *scene, Mesh *mesh,
                                &(color){0.0f, 0.0f, 0.0f, 1.0f},
                                ShaderUpdateFlag_None);
 
-    mesh_shader_build_mvp(mesh, MeshShader_Wireframe, &scene->renderer.ubo);
+    mesh_shader_build_mvp(mesh, MeshShader_Wireframe, scene->ubo);
   }
 }
 
@@ -271,5 +271,5 @@ void scene_build_mesh_fixed(Scene *scene, Mesh *mesh,
   // compute boundbox bounds for collisions (lightweight)
   mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
                                        &mesh->topology.boundbox);
-  mesh_shader_build_mvp(mesh, MeshShader_Fixed, &scene->renderer.ubo);
+  mesh_shader_build_mvp(mesh, MeshShader_Fixed, scene->ubo);
 }

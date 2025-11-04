@@ -39,14 +39,13 @@ void mesh_update_model_matrix(Mesh *mesh) {
   // update topologies
   mesh_topology_boundbox_update(&mesh->topology.base, mesh->model,
                                 &mesh->topology.boundbox);
-
 }
 
 /**
    Apply scale to mesh transform matrix
  */
-void mesh_set_scale(Mesh *mesh, vec3 scale) {
-  glm_vec3_copy(scale, mesh->scale);
+void mesh_set_scale(Mesh *mesh, const vec3 scale) {
+  glm_vec3_copy((float *)scale, mesh->scale);
 
   mesh_update_model_matrix(mesh);
 
@@ -55,9 +54,9 @@ void mesh_set_scale(Mesh *mesh, vec3 scale) {
     mesh_set_scale(mesh->children.entries[i], scale);
 }
 
-void mesh_set_scale_axis(Mesh *mesh, vec3 value, const Axis axis) {
+void mesh_set_scale_axis(Mesh *mesh, const vec3 value, const Axis axis) {
   vec3 axis_value;
-  vec3_replace_axis(mesh->scale, value, axis, &axis_value);
+  vec3_replace_axis(mesh->scale, (float *)value, axis, &axis_value);
 
   mesh_set_scale(mesh, axis_value);
 }
@@ -65,8 +64,8 @@ void mesh_set_scale_axis(Mesh *mesh, vec3 value, const Axis axis) {
 /**
    Apply translation to mesh transform matrix
  */
-void mesh_set_position(Mesh *mesh, vec3 position) {
-  glm_vec3_copy(position, mesh->position);
+void mesh_set_position(Mesh *mesh, const vec3 position) {
+  glm_vec3_copy((float *)position, mesh->position);
 
   mesh_update_model_matrix(mesh);
 
@@ -75,9 +74,9 @@ void mesh_set_position(Mesh *mesh, vec3 position) {
     mesh_set_position(mesh->children.entries[i], position);
 }
 
-void mesh_set_position_axis(Mesh *mesh, vec3 value, const Axis axis) {
+void mesh_set_position_axis(Mesh *mesh, const vec3 value, const Axis axis) {
   vec3 axis_value;
-  vec3_replace_axis(mesh->position, value, axis, &axis_value);
+  vec3_replace_axis(mesh->position, (float *)value, axis, &axis_value);
 
   mesh_set_position(mesh, axis_value);
 }
@@ -85,9 +84,9 @@ void mesh_set_position_axis(Mesh *mesh, vec3 value, const Axis axis) {
 /**
    Set Euler rotation
  */
-void mesh_set_rotation(Mesh *mesh, vec3 rotation) {
+void mesh_set_rotation(Mesh *mesh, const vec3 rotation) {
   // cache euler rotation
-  glm_vec3_copy(rotation, mesh->rotation_euler);
+  glm_vec3_copy((float *)rotation, mesh->rotation_euler);
 
   // update quat from euler
   vec3 rad_rotation;
@@ -103,9 +102,9 @@ void mesh_set_rotation(Mesh *mesh, vec3 rotation) {
     mesh_set_rotation(mesh->children.entries[i], rotation);
 }
 
-void mesh_set_rotation_axis(Mesh *mesh, vec3 value, const Axis axis) {
+void mesh_set_rotation_axis(Mesh *mesh, const vec3 value, const Axis axis) {
   vec3 axis_value;
-  vec3_replace_axis(mesh->rotation_euler, value, axis, &axis_value);
+  vec3_replace_axis(mesh->rotation_euler, (float *)value, axis, &axis_value);
 
   mesh_set_rotation(mesh, axis_value);
 }
@@ -113,10 +112,10 @@ void mesh_set_rotation_axis(Mesh *mesh, vec3 value, const Axis axis) {
 /**
    Apply rotation to mesh transform matrix
  */
-void mesh_set_rotation_quat(Mesh *mesh, versor rotation) {
+void mesh_set_rotation_quat(Mesh *mesh, const versor rotation) {
 
   // cache quat rotation
-  glm_quat_copy(rotation, mesh->rotation_quat);
+  glm_quat_copy((float *)rotation, mesh->rotation_quat);
 
   // update mesh euler rotation
   mat4 rot;
@@ -137,15 +136,15 @@ void mesh_set_rotation_quat(Mesh *mesh, versor rotation) {
 /**
    Apply look at transformation to mesh
  */
-void mesh_lookat(Mesh *mesh, vec3 position, vec3 target) {
+void mesh_lookat(Mesh *mesh, const vec3 position, const vec3 target) {
 
   glm_mat4_identity(mesh->model);
 
   matrix_mesh_lookat(&(UtilsMatrixLookatDescriptor){
       .dest_position = &mesh->position,
       .dest_matrix = &mesh->model,
-      .position = position,
-      .target = target,
+      .position = (float *)position,
+      .target = (float *)target,
       .up = NULL,
       .forward = NULL,
       .right = NULL,
