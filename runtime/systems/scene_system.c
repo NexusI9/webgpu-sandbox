@@ -53,5 +53,4 @@ void scene_system_set_draw_mode(Scene *scene, Renderer *renderer,
 
   // update renderer drawn render pass configuration
   renderer_set_draw_mode(renderer, mode);
-
 }

@@ -122,7 +122,7 @@ SceneEditorMeshList *engine_scene_add_point_light(Engine *engine,
 
   PointLight *light;
   SceneEditorMeshList *sem_list =
-      scene_add_point_light(scene, desc, LightCreateFlag_None, &light);
+      scene_add_point_light(scene, desc, flag, &light);
 
   if (dest)
     *dest = light;
@@ -158,7 +158,7 @@ SceneEditorMeshList *engine_scene_add_spot_light(Engine *engine,
 
   SpotLight *light;
   SceneEditorMeshList *sem_list =
-      scene_add_spot_light(scene, desc, LightCreateFlag_None, &light);
+      scene_add_spot_light(scene, desc, flag, &light);
 
   if (dest)
     light = *dest;
@@ -193,7 +193,7 @@ SceneEditorMeshList *engine_scene_add_sun_light(Engine *engine,
 
   SunLight *light;
   SceneEditorMeshList *sem_list =
-      scene_add_sun_light(scene, desc, LightCreateFlag_None, &light);
+      scene_add_sun_light(scene, desc, flag, &light);
 
   if (dest)
     *dest = light;
