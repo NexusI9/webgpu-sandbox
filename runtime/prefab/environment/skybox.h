@@ -4,6 +4,7 @@
 #include <stddef.h>
 
 #include "backend/compute/mipmap.h"
+#include "runtime/engine/core.h"
 #include "runtime/prefab/prefab.h"
 #include "runtime/scene/core.h"
 #include "runtime/texture/core.h"
@@ -22,9 +23,8 @@ typedef struct {
   const TextureGradient stops;
 } PrefabSkyboxGradientCreateDescriptor;
 
-void prefab_skybox_create(Scene *, Renderer *,
-                          const PrefabSkyboxCreateDescriptor *);
+void prefab_skybox_create(Engine *engine, const PrefabSkyboxCreateDescriptor *);
 
 void prefab_skybox_gradient_create(
-    Scene *, Renderer *, const PrefabSkyboxGradientCreateDescriptor *);
+    Engine *engine, const PrefabSkyboxGradientCreateDescriptor *);
 #endif

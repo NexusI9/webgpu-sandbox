@@ -5,13 +5,14 @@
 
 #include "backend/context.h"
 #include "backend/resource_manager.h"
+#include "runtime/engine/add.h"
 #include "runtime/geometry/line/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
 #include "runtime/systems/scene_system.h"
 
-void example_line(Scene *scene, Renderer *renderer) {
+void example_line(Engine *engine) {
   Mesh *line = rem_new_mesh();
   line_create(line, &(LineCreateDescriptor){
                         .name = "line mesh",
@@ -25,6 +26,6 @@ void example_line(Scene *scene, Renderer *renderer) {
                  (vec3){0.0f, 1.0f, 0.0f}, &line->topology.base.attribute,
                  &line->topology.base.index);
 
-  scene_system_add_mesh(scene, renderer, line, NULL,
-                        SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
+  engine_scene_add_mesh(engine, line, NULL,
+                        EngineAddFlag_Unselectable | EngineAddFlag_TreeHide);
 }

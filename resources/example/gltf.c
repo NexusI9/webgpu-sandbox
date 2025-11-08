@@ -7,6 +7,7 @@
 #include "backend/std_pipeline/render_shader/bloom/bloom.h"
 #include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "resources/loader/loader.gltf.h"
+#include "runtime/engine/add.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
@@ -17,13 +18,12 @@
 #include "runtime/systems/scene_system.h"
 #include "runtime/texture/core.h"
 
-void example_gltf(Scene *scene, Renderer *renderer) {
+void example_gltf(Engine *engine) {
   loader_gltf_load(
       &(GLTFLoadDescriptor){
-          .scene = scene,
+          .engine = engine,
           .path = "./resources/assets/gltf/cube.gltf",
           .cgltf_options = &(cgltf_options){0},
-          .renderer = renderer,
           .options =
               &(LoaderGLTFOptions){
                   .max_texture_size = TextureResolution_512,
@@ -32,9 +32,9 @@ void example_gltf(Scene *scene, Renderer *renderer) {
       NULL);
 }
 
-void example_gltf_spa(Scene *scene, Renderer *renderer) {
+void example_gltf_spa(Engine *engine) {
 
-  //  scene_system_add_point_light(scene, renderer,
+  //  engine_scene_add_point_light(engine,
   //                        &(PointLightDescriptor){
   //                            .color = {0.4f, 0.0f, 1.0f, 1.0f},
   //                            .intensity = 7.0f,
@@ -46,8 +46,8 @@ void example_gltf_spa(Scene *scene, Renderer *renderer) {
   //                        },
   //                        LightCreateFlag_None, NULL);
 
-  scene_system_add_sun_light(
-      scene, renderer,
+  engine_scene_add_sun_light(
+      engine,
       &(SunLightDescriptor){
           .position = {10.8f, 12.0f, -15.0f},
           .color = {241.0f / 255.0f, 120.0f / 255.0f, 82.0f / 255.0f, 1.0f},
@@ -56,7 +56,7 @@ void example_gltf_spa(Scene *scene, Renderer *renderer) {
       },
       LightCreateFlag_Shadow, NULL);
 
-  scene_system_add_ambient_light(scene, renderer,
+  engine_scene_add_ambient_light(engine,
                                  &(AmbientLightDescriptor){
                                      .color = {0.0f, 0.4f, 1.0f, 1.0f},
                                      .intensity = 0.2f,
@@ -66,10 +66,9 @@ void example_gltf_spa(Scene *scene, Renderer *renderer) {
 
   loader_gltf_load(
       &(GLTFLoadDescriptor){
-          .scene = scene,
+          .engine = engine,
           .path = "./resources/assets/gltf/spa.gltf",
           .cgltf_options = &(cgltf_options){0},
-          .renderer = renderer,
           .options =
               &(LoaderGLTFOptions){
                   .max_texture_size = TextureResolution_512,
@@ -78,7 +77,8 @@ void example_gltf_spa(Scene *scene, Renderer *renderer) {
       NULL);
 
   // adjust Post FX
-  scene_system_set_post_fx_bloom(scene, renderer,
+  scene_system_set_post_fx_bloom(engine_get_active_scene(engine),
+                                 engine_get_renderer(engine),
                                  (BloomUniform){
                                      .blur = 2,
                                      .downscale = 3,
@@ -86,7 +86,8 @@ void example_gltf_spa(Scene *scene, Renderer *renderer) {
                                      .threshold = 0.300,
                                  });
 
-  scene_system_set_post_fx_composite(scene, renderer,
+  scene_system_set_post_fx_composite(engine_get_active_scene(engine),
+                                     engine_get_renderer(engine),
                                      (CompositeUniform){
                                          .exposure = 1.020,
                                          .bloom_intensity = 0.320f,
@@ -96,12 +97,12 @@ void example_gltf_spa(Scene *scene, Renderer *renderer) {
                                      });
 }
 
-void example_gltf_podium(Scene *scene, Renderer *renderer) {
+void example_gltf_podium(Engine *engine) {
 
   LoaderGLTFResult gltf_result;
   LoaderGLTFStatus status = loader_gltf_load(
       &(GLTFLoadDescriptor){
-          .scene = scene,
+          .engine = engine,
           .path = "./resources/assets/gltf/podium.gltf",
           .cgltf_options = &(cgltf_options){0},
           .options =
@@ -113,8 +114,8 @@ void example_gltf_podium(Scene *scene, Renderer *renderer) {
 
   // create a new planar reflection for the podium
   ProbeReflectionPlane *plane;
-  SceneEditorMeshList *plane_probe = scene_system_add_probe_reflection_plane(
-      scene, renderer,
+  SceneEditorMeshList *plane_probe = engine_scene_add_probe_reflection_plane(
+      engine,
       &(ProbeReflectionPlaneDescriptor){
           .far = 100.0f,
           .near = 0.1f,
@@ -122,7 +123,7 @@ void example_gltf_podium(Scene *scene, Renderer *renderer) {
           .position = {0.0f, 1.0f, 0.0f},
           .scale = {10.0f, 10.0f, 10.0f},
           .distance = 1.0f,
-          .camera = scene->active_camera,
+          .camera = engine_get_active_scene(engine)->active_camera,
       },
       &plane);
 
@@ -136,5 +137,6 @@ void example_gltf_podium(Scene *scene, Renderer *renderer) {
       podium_name);
 
   if (podium)
-    mesh_shader_texture_bind_probe(podium, plane, scene->ubo);
+    mesh_shader_texture_bind_probe(podium, plane,
+                                   engine_get_active_scene(engine)->ubo);
 }

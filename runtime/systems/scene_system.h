@@ -2,6 +2,7 @@
 #define _SCENE_SYSTEM_H_
 
 #include "backend/renderer/core.h"
+#include "runtime/gui/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/add.h"
@@ -11,72 +12,7 @@
 EXTERN_C_BEGIN
 
 void scene_system_set_draw_mode(Scene *, Renderer *, const RendererDrawMode);
-
-void scene_system_create_grid(Scene *, Renderer *);
-
-void scene_system_show_mesh(Scene *, Renderer *, Mesh *);
-void scene_system_hide_mesh(Scene *, Renderer *, Mesh *);
-
-void scene_system_show_mesh_ref_list(Scene *, Renderer *, MeshRefList *);
-void scene_system_hide_mesh_ref_list(Scene *, Renderer *, MeshRefList *);
-
-void scene_system_toggle_mesh_visibility(Scene *, Renderer *, Mesh *);
-
-// === Add Light ===
-SceneEditorMeshList *scene_system_add_point_light(Scene *, Renderer *,
-                                                  PointLightDescriptor *,
-                                                  const LightCreateFlag,
-                                                  PointLight **);
-
-SceneEditorMeshList *scene_system_add_spot_light(Scene *, Renderer *,
-                                                 SpotLightDescriptor *,
-                                                 const LightCreateFlag,
-                                                 SpotLight **);
-
-SceneEditorMeshList *scene_system_add_sun_light(Scene *, Renderer *,
-                                                SunLightDescriptor *,
-                                                const LightCreateFlag,
-                                                SunLight **);
-
-SceneEditorMeshList *scene_system_add_ambient_light(Scene *, Renderer *,
-                                                    AmbientLightDescriptor *,
-                                                    AmbientLight **);
-
-// === Add Probe ===
-SceneEditorMeshList *
-scene_system_add_probe_reflection_grid(Scene *, Renderer *,
-                                       ProbeReflectionGridDescriptor *,
-                                       ProbeReflectionGrid **);
-
-SceneEditorMeshList *
-scene_system_add_probe_reflection_plane(Scene *, Renderer *,
-                                        ProbeReflectionPlaneDescriptor *,
-                                        ProbeReflectionPlane **);
-
-// === Add Camera ===
-SceneEditorMeshList *scene_system_add_camera(Scene *, Renderer *,
-                                             const CameraCreateDescriptor *,
-                                             Camera **);
-
-// === Add Mesh ===
-SceneStatus scene_system_add_mesh(Scene *, Renderer *, Mesh *, const char *,
-                                  const SceneAddFlag);
-
-void scene_system_add_mesh_ref_list(Scene *, Renderer *, MeshRefList *,
-                                    const char *, const SceneAddFlag);
-
-void scene_system_add_mesh_pipeline(Scene *, Renderer *, Mesh *,
-                                    const RendererPipeline, const char *,
-                                    const SceneAddFlag);
-
-void scene_system_add_mesh_pipeline_ref_list(Scene *, Renderer *, MeshRefList *,
-                                             const RendererPipeline,
-                                             const char *, const SceneAddFlag);
-
-// === Remove Mesh ===
-void scene_system_remove_mesh(Scene *, Renderer *, Mesh *);
-void scene_system_remove_mesh_ref_list(Scene *, Renderer *, MeshRefList *);
-
+Mesh *scene_system_create_grid(Scene *, Renderer *);
 
 static inline void scene_system_set_post_fx_bloom(Scene *scene, Renderer *rd,
                                                   const BloomUniform bloom) {
@@ -180,7 +116,6 @@ static inline void scene_system_update_draw_call_count(Scene *scene,
 
   scene_stat_update_draw_call_count(scene, count);
 }
-
 
 EXTERN_C_END
 

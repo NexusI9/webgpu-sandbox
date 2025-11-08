@@ -30,7 +30,6 @@
    interfere.
  */
 void scene_selection_init(SceneSelection *selection) {
-  // FIXME maybe put a drescirptor to set initial filter capacity
 
   // GLUEME scene_selection_config(scene); use selection_system
   // create filters source list

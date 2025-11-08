@@ -3,12 +3,12 @@
 
 #include <cglm/types.h>
 
+#include "runtime/engine/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/scene.h"
 
-void example_primitive(Mesh *, vec3, Scene *, Renderer *,
-                       const RenderPipeline *);
+void example_primitive(Engine *, Mesh *, vec3, const RenderPipeline *);
 
 #endif

@@ -8,7 +8,6 @@
 
 EXTERN_C_BEGIN
 
-void gizmo_system_init(Gizmo *, Scene *, Renderer *);
 void gizmo_system_show(Gizmo *, Renderer *);
 void gizmo_system_hide(Gizmo *, Renderer *);
 

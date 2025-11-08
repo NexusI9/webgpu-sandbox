@@ -37,13 +37,6 @@
 
  */
 
-typedef enum {
-  SceneAddFlag_None = 0,
-  SceneAddFlag_Hide = 1 << 0,
-  SceneAddFlag_Unselectable = 1 << 1,
-  SceneAddFlag_TreeHide = 1 << 2,
-} SceneAddFlag;
-
 /* === Scene Editor Objects === */
 
 // light
@@ -71,9 +64,8 @@ SceneEditorMeshList *scene_add_camera(Scene *, const CameraCreateDescriptor *,
                                       Camera **);
 
 /* ===  Scene Meshes === */
-SceneStatus scene_add_mesh(Scene *, Mesh *, const char *, const SceneAddFlag);
-void scene_add_mesh_ref_list(Scene *, MeshRefList *, const char *,
-                             const SceneAddFlag);
+SceneStatus scene_add_mesh(Scene *, Mesh *, const char *);
+void scene_add_mesh_ref_list(Scene *, MeshRefList *, const char *);
 
 void scene_remove_mesh(Scene *, Mesh *);
 void scene_remove_mesh_ref_list(Scene *, MeshRefList *);

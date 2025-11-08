@@ -8,6 +8,8 @@
 #include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "resources/loader/loader.mbin.h"
+#include "runtime/engine/add.h"
+#include "runtime/engine/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/transform.h"
@@ -17,7 +19,7 @@
 #include "runtime/shader/core.h"
 #include "runtime/systems/scene_system.h"
 
-void example_gizmo(Scene *scene, Renderer *renderer) {
+void example_gizmo(Engine *engine) {
 
   Mesh *gizmo = rem_new_mesh();
   Primitive mbin_primitive;
@@ -39,7 +41,6 @@ void example_gizmo(Scene *scene, Renderer *renderer) {
 
   mesh_set_position(gizmo, (vec3){2.0f, 3.3f, 2.0f});
 
-  scene_system_add_mesh_pipeline(scene, renderer, gizmo,
-                                 RendererPipeline_Fixed_Front, NULL,
-                                 SceneAddFlag_None);
+  engine_scene_add_mesh_pipeline(engine, gizmo, RendererPipeline_Fixed_Front,
+                                 NULL, EngineAddFlag_None);
 }

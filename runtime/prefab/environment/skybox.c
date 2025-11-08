@@ -7,6 +7,7 @@
 #include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "include/stb/stb_image.h"
+#include "runtime/engine/add.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/pipeline/render.h"
@@ -28,7 +29,7 @@ static inline void prefab_skybox_upload_layer(const WGPUTexture,
                                               const Texture *, const size_t,
                                               const bool);
 
-static inline void prefab_skybox_create_from_texture(Scene *, Renderer *,
+static inline void prefab_skybox_create_from_texture(Engine *,
                                                      const WGPUTexture,
                                                      WGPUTextureView *,
                                                      const size_t, const mip_t);
@@ -71,11 +72,14 @@ WGPUTexture prefab_skybox_texture(const size_t resolution) {
 /**
    Create global view from previously generated cubemap texture and create mesh
  */
-void prefab_skybox_create_from_texture(Scene *scene, Renderer *renderer,
+void prefab_skybox_create_from_texture(Engine *engine,
                                        const WGPUTexture texture,
                                        WGPUTextureView *view,
                                        const size_t resolution,
                                        const mip_t blur) {
+
+  Renderer *renderer = engine_get_renderer(engine);
+  Scene *scene = engine_get_active_scene(engine);
 
   // mipmap generated texture
   compute_pass_mipmap(&renderer->compute_pass,
@@ -144,16 +148,19 @@ void prefab_skybox_create_from_texture(Scene *scene, Renderer *renderer,
   // alter pipeline (no depth test)
   const RenderPipeline *pipeline = shader_pipeline(shader);
 
-  scene_system_add_mesh_pipeline(
-      scene, renderer, skybox_mesh, RendererPipeline_Fixed_Background, NULL,
-      SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
+  engine_scene_add_mesh_pipeline(engine, skybox_mesh,
+                           RendererPipeline_Fixed_Background, NULL,
+                           EngineAddFlag_Unselectable | EngineAddFlag_TreeHide);
 }
 
 /**
    Create a skybox from a list of 6 textures.
  */
-void prefab_skybox_create(Scene *scene, Renderer *renderer,
+void prefab_skybox_create(Engine *engine,
                           const PrefabSkyboxCreateDescriptor *desc) {
+
+  Scene *scene = engine_get_active_scene(engine);
+  Renderer *renderer = engine_get_renderer(engine);
 
   // create global texture
   SceneEnvironmentSkybox *scene_skybox =
@@ -175,7 +182,7 @@ void prefab_skybox_create(Scene *scene, Renderer *renderer,
   for (uint8_t i = 0; i < TEXTURE_CUBE_LAYER; i++)
     prefab_skybox_upload_layer(*skybox_texture, &skybox_sides[i], i, false);
 
-  prefab_skybox_create_from_texture(scene, renderer, *skybox_texture,
+  prefab_skybox_create_from_texture(engine, *skybox_texture,
                                     skybox_cubemap_view, desc->resolution,
                                     desc->blur);
 }
@@ -184,11 +191,10 @@ void prefab_skybox_create(Scene *scene, Renderer *renderer,
    Create a gradient skybox from a list of gradient stops.
  */
 void prefab_skybox_gradient_create(
-    Scene *scene, Renderer *renderer,
-    const PrefabSkyboxGradientCreateDescriptor *desc) {
+    Engine *engine, const PrefabSkyboxGradientCreateDescriptor *desc) {
 
   SceneEnvironmentSkybox *scene_skybox =
-      scene_environment_skybox(&scene->environment);
+      scene_environment_skybox(&engine_get_active_scene(engine)->environment);
 
   WGPUTexture *skybox_texture = &scene_skybox->texture;
   WGPUTextureView *skybox_cubemap_view = &scene_skybox->view;
@@ -276,7 +282,6 @@ void prefab_skybox_gradient_create(
   stbi_image_free(gradient_texture.data);
   gradient_texture.data = NULL;
 
-  prefab_skybox_create_from_texture(scene, renderer, *skybox_texture,
-                                    skybox_cubemap_view, desc->resolution,
-                                    0.0f);
+  prefab_skybox_create_from_texture(
+      engine, *skybox_texture, skybox_cubemap_view, desc->resolution, 0.0f);
 }

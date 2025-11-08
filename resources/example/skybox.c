@@ -27,39 +27,37 @@ static const CubeMapPath netherworld_cubemap = {
 /**
    Create a picture based skybox in the given scene
  */
-void example_skybox(Scene *scene, Renderer *renderer) {
-  prefab_skybox_create(scene, renderer,
-                       &(PrefabSkyboxCreateDescriptor){
-                           .blur = 4,
-                           .resolution = TextureResolution_512,
-                           .path = lake_cubemap,
-                       });
+void example_skybox(Engine *engine) {
+  prefab_skybox_create(engine, &(PrefabSkyboxCreateDescriptor){
+                                   .blur = 4,
+                                   .resolution = TextureResolution_512,
+                                   .path = lake_cubemap,
+                               });
 }
 
 /**
    Create a gradient skybox in the given scene
  */
-void example_skybox_gradient(Scene *scene, Renderer *renderer) {
+void example_skybox_gradient(Engine *engine) {
 
   prefab_skybox_gradient_create(
-      scene, renderer,
-      &(PrefabSkyboxGradientCreateDescriptor){
-          .resolution = 32,
-          .stops =
-              {
-                  .length = 2,
-                  .capacity = 2,
-                  .entries =
-                      (TextureGradientStop[]){
-                          {
-                              .color = (uint8_t[]){240, 245, 255, 255},
-                              .position = 1.0f,
-                          },
-                          {
-                              .color = (uint8_t[]){51, 153, 255, 255},
-                              .position = 0.0f,
-                          },
+      engine, &(PrefabSkyboxGradientCreateDescriptor){
+                  .resolution = 32,
+                  .stops =
+                      {
+                          .length = 2,
+                          .capacity = 2,
+                          .entries =
+                              (TextureGradientStop[]){
+                                  {
+                                      .color = (uint8_t[]){240, 245, 255, 255},
+                                      .position = 1.0f,
+                                  },
+                                  {
+                                      .color = (uint8_t[]){51, 153, 255, 255},
+                                      .position = 0.0f,
+                                  },
+                              },
                       },
-              },
-      });
+              });
 }

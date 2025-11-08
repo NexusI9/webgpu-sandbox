@@ -18,12 +18,12 @@
 #include "resources/example/gltf.h"
 #include "resources/example/light.h"
 #include "resources/example/skybox.h"
+#include "runtime/engine/add.h"
+#include "runtime/engine/core.h"
 #include "runtime/gui/core.h"
 #include "runtime/input/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/core.h"
-#include "runtime/systems/light_system.h"
-#include "runtime/systems/probe_system.h"
 #include "runtime/systems/scene_system.h"
 #include "runtime/systems/selection_system.h"
 #include "runtime/systems/ubo_system.h"
@@ -47,46 +47,14 @@ int main(int argc, const char *argv[]) {
           },
   });
 
-  Renderer *renderer = rem_new_renderer();
-  renderer_create(renderer,
-                  &(RendererCreateDescriptor){
-                      .background = (WGPUColor){0.14f, 0.14f, 0.14f, 1.0f},
-                      .dpi = 1.0,
-                  });
+  Engine engine;
+  engine_init(&engine);
 
-  UBOManager *ubo = rem_new_ubo();
-  ubo_init(ubo);
-  ubo_system_register_draw_callback(ubo, renderer);
-
-  Scene *scene = rem_new_scene();
-  scene_create(scene, &(SceneCreateDescriptor){
-                          .ubo = ubo,
-                          .viewport =
-                              &(ViewportCreateDescriptor){
-                                  .fov = 32.0f,
-                                  .near_clip = 0.1f,
-                                  .far_clip = 100.0f,
-                              },
-                      });
-
-  scene_system_create_grid(scene, renderer);
-  selection_system_init(&scene->selection, scene, renderer);
-  light_system_init_shadow_map(&scene->lights, renderer);
-  probe_system_init_reflection_pass(&scene->probes, renderer);
-
-  scene_system_set_draw_mode(scene, renderer, RendererDrawMode_Solid);
-
-  Gui *gui = rem_new_gui();
-  gui_init(gui, &(GUIDescriptor){
-                    .active_scene = scene,
-                    .renderer = renderer,
-                    .theme = &g_theme,
-                    .dpi = g_context.dpi,
-                });
+  Scene *scene = engine_get_active_scene(&engine);
 
   // example_light(&main_scene);
-  example_skybox(scene, renderer);
-  example_gltf_spa(scene, renderer);
+  example_skybox(&engine);
+  example_gltf_spa(&engine);
 
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);
@@ -107,7 +75,7 @@ int main(int argc, const char *argv[]) {
    */
 
   // Update Loop
-  renderer_draw(renderer);
+  renderer_draw(engine.renderer);
 
   return 0;
 }

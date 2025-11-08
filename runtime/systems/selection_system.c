@@ -48,7 +48,6 @@ void selection_system_init(SceneSelection *selection, Scene *scene,
       RendererDrawMode_Texture | RendererDrawMode_Solid |
           RendererDrawMode_Wireframe | RendererDrawMode_Boundbox);
 
-  gizmo_system_init(&scene->gizmo, scene, renderer);
 }
 
 /**

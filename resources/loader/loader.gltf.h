@@ -5,6 +5,7 @@
 #include <webgpu/webgpu.h>
 
 #include "cgltf/cgltf.h"
+#include "runtime/engine/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/scene.h"
@@ -50,8 +51,7 @@ typedef struct {
 } LoaderGLTFResult;
 
 typedef struct {
-  Scene *scene;
-  Renderer *renderer;
+  Engine *engine;
   const char *path;
   const LoaderGLTFOptions *options;
   const cgltf_options *cgltf_options;

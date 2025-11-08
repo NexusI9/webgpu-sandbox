@@ -1,0 +1,41 @@
+#include "visibility_system.h"
+#include "runtime/engine/core.h"
+#include "runtime/systems/scene_system.h"
+
+void visibility_system_show_mesh(Scene *scene, Renderer *renderer, Mesh *mesh) {
+
+  renderer_show_mesh(renderer, mesh);
+  scene_system_update_vertex_count(scene, renderer);
+  scene_system_update_draw_call_count(scene, renderer);
+}
+
+void visibility_system_hide_mesh(Scene *scene, Renderer *renderer, Mesh *mesh) {
+
+  renderer_hide_mesh(renderer, mesh);
+  scene_system_update_vertex_count(scene, renderer);
+  scene_system_update_draw_call_count(scene, renderer);
+}
+
+void visibility_system_yshow_mesh_ref_list(Scene *scene, Renderer *renderer,
+                                           MeshRefList *list) {
+
+  renderer_show_mesh_ref_list(renderer, list);
+  scene_system_update_vertex_count(scene, renderer);
+  scene_system_update_draw_call_count(scene, renderer);
+}
+
+void visiblity_system_hide_mesh_ref_list(Scene *scene, Renderer *renderer,
+                                             MeshRefList *list) {
+
+  renderer_hide_mesh_ref_list(renderer, list);
+  scene_system_update_vertex_count(scene, renderer);
+  scene_system_update_draw_call_count(scene, renderer);
+}
+
+void visibility_system_toggle_mesh_visibility(Scene *scene, Renderer *renderer,
+                                         Mesh *mesh) {
+
+  renderer_visibility_toggle_mesh(renderer, mesh);
+  scene_system_update_vertex_count(scene, renderer);
+  scene_system_update_draw_call_count(scene, renderer);
+}

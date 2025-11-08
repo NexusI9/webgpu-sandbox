@@ -3,9 +3,10 @@
 
 #include <stdbool.h>
 
+#include "runtime/engine/core.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/scene.h"
 
-void example_ao(Scene *, Renderer *, bool);
+void example_ao(Engine *, bool);
 
 #endif

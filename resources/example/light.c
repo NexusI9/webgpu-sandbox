@@ -2,15 +2,16 @@
 
 #include <stddef.h>
 
+#include "runtime/engine/add.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
 #include "runtime/systems/scene_system.h"
 
-void example_light(Scene *scene, Renderer *renderer) {
+void example_light(Engine *engine) {
 
-  scene_system_add_point_light(scene, renderer,
+  engine_scene_add_point_light(engine,
                                &(PointLightDescriptor){
                                    .color = {0.4f, 0.0f, 1.0f, 1.0f},
                                    .intensity = 7.0f,
@@ -22,7 +23,7 @@ void example_light(Scene *scene, Renderer *renderer) {
                                },
                                LightCreateFlag_None, NULL);
 
-  scene_system_add_sun_light(scene, renderer,
+  engine_scene_add_sun_light(engine,
                              &(SunLightDescriptor){
                                  .position = {15.0f, 15.0f, 15.0f},
                                  .color = {0.0f, 0.4f, 1.0f, 1.0f},
@@ -31,9 +32,10 @@ void example_light(Scene *scene, Renderer *renderer) {
                              },
                              LightCreateFlag_Shadow, NULL);
 
+  // FIXME engine enable light shadow
+
   /*
-    scene_system_add_spot_light(scene,
-    renderer
+    engine_scene_add_spot_light(engine
                          &(SpotLightDescriptor){
                              .color = {1.0f, 1.0f, 1.0f, 1.0f},
                              .intensity = 2.0f,
@@ -43,9 +45,9 @@ void example_light(Scene *scene, Renderer *renderer) {
                              .target = {0.0f, 0.0f, 0.0f},
                              .position = {3.0f, 4.0f, -4.0f},
                          },
-                         LightShadow_Enabled, NULL);
+                         NULL);
   */
-  scene_system_add_ambient_light(scene, renderer,
+  engine_scene_add_ambient_light(engine,
                                  &(AmbientLightDescriptor){
                                      .color = {0.0f, 0.4f, 1.0f, 1.0f},
                                      .intensity = 0.2f,

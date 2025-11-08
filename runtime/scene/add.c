@@ -424,8 +424,7 @@ scene_add_probe_reflection_plane(Scene *scene,
 
  */
 
-SceneStatus scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
-                           const SceneAddFlag flag) {
+SceneStatus scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
 
   // bind new mesh uniform to UBO and copy previous mesh uniform data
   mesh_ref_list_insert(&scene->meshes, mesh);
@@ -441,8 +440,8 @@ SceneStatus scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer,
    pipeline. Meaning each meshes are going to be build depending on the pipeline
    and the current render mode.
  */
-void scene_add_mesh_ref_list(Scene *scene, MeshRefList *list, const char *layer,
-                             const SceneAddFlag flag) {
+void scene_add_mesh_ref_list(Scene *scene, MeshRefList *list,
+                             const char *layer) {
   for (size_t i = 0; i < list->length; i++)
-    scene_add_mesh(scene, list->entries[i], layer, flag);
+    scene_add_mesh(scene, list->entries[i], layer);
 }
