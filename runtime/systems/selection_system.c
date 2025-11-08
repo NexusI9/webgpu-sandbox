@@ -6,8 +6,8 @@
 #include "runtime/scene/editor_mesh/core.h"
 #include "runtime/scene/selection/core.h"
 #include "runtime/scene/selection/filter.h"
-#include "runtime/systems/gizmo_system.h"
 #include "runtime/systems/scene_system.h"
+#include "runtime/systems/visibility_system.h"
 
 // clang-format off
 static const selection_system_highlight_callback highlight_callbacks[] = {
@@ -142,9 +142,9 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
   if (scene_selection_length(selection) > 0) {
     selection_system_update_gizmo_pos_to_selection(&scene->gizmo, selection,
                                                    scene->ubo);
-    gizmo_system_show(&scene->gizmo, renderer);
+    visibility_system_show_gizmo(&scene->gizmo, renderer);
   } else {
-    gizmo_system_hide(&scene->gizmo, renderer);
+    visibility_system_hide_gizmo(&scene->gizmo, renderer);
   }
 
   highlight_callbacks[filter_index](selection, scene, renderer,
@@ -639,7 +639,7 @@ void selection_system_callback_raycast_mesh(
     selection_system_toggle_mesh(selection, scene, renderer, hit->mesh);
   else {
     scene_selection_empty(selection);
-    gizmo_system_hide(gizmo, renderer);
+    visibility_system_hide_gizmo(gizmo, renderer);
   }
 }
 
@@ -900,11 +900,11 @@ void selection_system_callback_key_sequence_select_all(KeyRecordSequence *seq,
   // if already selection => unselect everything
   if (scene_selection_length(selection)) {
     scene_selection_empty(selection);
-    gizmo_system_hide(gizmo, renderer);
+    visibility_system_hide_gizmo(gizmo, renderer);
   } else {
     scene_selection_all(selection);
     selection_system_update_gizmo_pos_to_selection(gizmo, selection, scene->ubo);
-    gizmo_system_hide(gizmo, renderer);
+    visibility_system_hide_gizmo(gizmo, renderer);
   }
 
   for(SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
@@ -935,13 +935,13 @@ void selection_system_callback_key_sequence_set_gizmo_mode(
     }
 
   // hide gizmo
-  gizmo_system_hide(gizmo, renderer);
+  visibility_system_hide_gizmo(gizmo, renderer);
 
   // show gizmo if has selection
   if (scene_selection_length(selection)) {
     // update location to selection average
     selection_system_update_gizmo_pos_to_selection(gizmo, selection, scene->ubo);
-    gizmo_system_show(gizmo, renderer);
+    visibility_system_show_gizmo(gizmo, renderer);
   }
 }
 

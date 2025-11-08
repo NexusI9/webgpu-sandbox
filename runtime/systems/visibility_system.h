@@ -14,6 +14,10 @@ void visibility_system_hide_mesh_ref_list(Scene *, Renderer *, MeshRefList *);
 void visibility_system_toggle_mesh_visibility(Scene *, Renderer *, Mesh *);
 
 
+void visibility_system_show_gizmo(Gizmo *, Renderer *);
+void visibility_system_hide_gizmo(Gizmo *, Renderer *);
+
+
 EXTERN_C_END
 
 #endif

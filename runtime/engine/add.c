@@ -86,7 +86,8 @@ void engine_scene_add_mesh_core(Engine *engine, Mesh *mesh,
                                   selection_pipeline);
 
   // EDITORONLY
-  if ((flag & EngineAddFlag_TreeHide) == 0 && mesh->parent == NULL)
+  if (engine->gui && (flag & EngineAddFlag_TreeHide) == 0 &&
+      mesh->parent == NULL)
     gui_tree_insert(&engine->gui->tree, mesh->id);
 }
 
@@ -326,7 +327,8 @@ void engine_scene_add_sem(Engine *engine, SceneEditorMeshList *list) {
   }
 
   // EDITORONLY
-  gui_tree_insert(&engine->gui->tree, list->id);
+  if (engine->gui)
+    gui_tree_insert(&engine->gui->tree, list->id);
 }
 
 // === Add Mesh ===

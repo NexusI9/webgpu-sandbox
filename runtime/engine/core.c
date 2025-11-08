@@ -61,6 +61,7 @@ EngineStatus engine_init(Engine *engine) {
   engine_init_shadow_map(&scene->lights, engine_get_renderer(engine));
   engine_init_reflection_pass(&scene->probes, engine_get_renderer(engine));
 
+  engine_init_gizmo(engine, &scene->gizmo);
   scene_system_set_draw_mode(scene, engine_get_renderer(engine),
                              RendererDrawMode_Solid);
 

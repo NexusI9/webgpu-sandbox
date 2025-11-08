@@ -6,8 +6,8 @@
 #include "runtime/gui/components/button_group.hpp"
 #include "runtime/gui/components/button_icon.hpp"
 #include "runtime/gui/core.h"
-#include "runtime/systems/gizmo_system.h"
 #include "runtime/systems/selection_system.h"
+#include "runtime/systems/visibility_system.h"
 
 static const struct {
   const GizmoMode mode;
@@ -22,13 +22,13 @@ static const struct {
 static void gui_update_gizmo_mode(Scene *scene, Renderer *renderer,
                                   void *mode) {
 
-  gizmo_system_hide(&scene->gizmo, renderer);
+  visibility_system_hide_gizmo(&scene->gizmo, renderer);
   gizmo_set_mode(&scene->gizmo, *(GizmoMode *)mode);
 
   if (scene_selection_length(&scene->selection)) {
     selection_system_update_gizmo_pos_to_selection(
         &scene->gizmo, &scene->selection, scene->ubo);
-    gizmo_system_show(&scene->gizmo, renderer);
+    visibility_system_show_gizmo(&scene->gizmo, renderer);
   }
 }
 
