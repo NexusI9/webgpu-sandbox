@@ -27,9 +27,11 @@ typedef void (*selection_system_highlight_callback)(SceneSelection *, Scene *,
                                                     SceneSelectionObjectList *,
                                                     void *);
 
+EXTERN_C_BEGIN
+
 void selection_system_init(SceneSelection *, Scene *, Renderer *);
 
-void selection_system_draw_callback(void *);
+void selection_system_draw_callback(Renderer *, void *);
 
 void selection_system_toggle_mesh(SceneSelection *, Scene *, Renderer *,
                                   Mesh *);
@@ -46,7 +48,6 @@ void selection_system_callback_sem_highlight(SceneSelection *, Scene *,
                                              void *);
 
 // === Transform callback ===
-
 void selection_system_callback_mesh_transform(SceneSelectionTransform *);
 void selection_system_callback_sem_transform(SceneSelectionTransform *);
 void selection_system_callback_mesh_shadow_transform(SceneSelectionTransform *);
@@ -94,4 +95,6 @@ void selection_system_callback_key_sequence_transform(KeyRecordSequence *,
 // === Gizmo ===
 void selection_system_update_gizmo_pos_to_selection(Gizmo *, SceneSelection *,
                                                     UBOManager *);
+
+EXTERN_C_END
 #endif

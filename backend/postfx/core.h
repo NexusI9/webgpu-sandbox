@@ -302,7 +302,7 @@ static inline void post_fx_composite_draw(PostFx *fx,
 
 static inline void post_fx_draw(PostFx *fx,
                                 WGPUCommandEncoder command_encoder) {
-  // loop through subscribed effects
+  // loop through registerd effects
   for (uint8_t i = 0; i < fx->callbacks.length; i++)
     fx->callbacks.entries[i](fx, command_encoder);
 }

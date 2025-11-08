@@ -7,7 +7,8 @@
 #include "runtime/light/uniform.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/transform.h"
-#include "runtime/scene/editor/mesh/light/point.h"
+#include "runtime/scene/editor_mesh/light/point.h"
+
 namespace UI {
 
 class InspectorPointLight : public Window {
@@ -24,8 +25,8 @@ private:
   SceneEditorMeshList *sem;
   const RegEntryType type;
 
-  static void transform_update_callback(Scene *, void *);
-  static void properties_update_callback(Scene *, void *);
+  static void transform_update_callback(Scene *, Renderer *, void *);
+  static void properties_update_callback(Scene *, Renderer *, void *);
 
   InspectorTreeList<SceneEditorMeshList> transform_attributes = {
       .label = "Transform",
@@ -38,7 +39,7 @@ private:
                           .label = "Position",
                           .accessor_callback =
                               sem_list_point_light_get_position,
-                          .mutator_callback = sem_list_point_light_set_position,
+                          .mutator_callback = nullptr,
                           .extra_callback = transform_update_callback,
                           .user_data = (void *)sem,
                       },
@@ -57,8 +58,7 @@ private:
                           .label = "Position",
                           .accessor_callback =
                               sem_list_point_light_get_position,
-                          .mutator_callback =
-                              sem_list_point_light_shadow_set_position,
+                          .mutator_callback = nullptr,
                           .extra_callback = properties_update_callback,
                           .user_data = (void *)sem,
                       },

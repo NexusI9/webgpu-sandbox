@@ -9,8 +9,9 @@
 #include "runtime/mesh/core.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
+#include "runtime/systems/scene_system.h"
 
-void example_line(Scene *scene) {
+void example_line(Scene *scene, Renderer *renderer) {
   Mesh *line = rem_new_mesh();
   line_create(line, &(LineCreateDescriptor){
                         .name = "line mesh",
@@ -24,6 +25,6 @@ void example_line(Scene *scene) {
                  (vec3){0.0f, 1.0f, 0.0f}, &line->topology.base.attribute,
                  &line->topology.base.index);
 
-  scene_add_mesh(scene, line, NULL,
-                 SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
+  scene_system_add_mesh(scene, renderer, line, NULL,
+                        SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
 }

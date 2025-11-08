@@ -11,6 +11,8 @@
 #include "backend/compute/kawase.h"
 #include "backend/compute/mipmap.h"
 #include "backend/registry.h"
+#include "backend/renderer/render_pass/draw.h"
+#include "backend/renderer/render_pass/visibility.h"
 #include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "core.h"
@@ -19,8 +21,6 @@
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/debug/view.h"
-#include "backend/renderer/render_pass/draw.h"
-#include "backend/renderer/render_pass/visibility.h"
 #include "runtime/texture/core.h"
 #include "utils/dyli.h"
 #include "utils/vector/core.h"
@@ -30,28 +30,11 @@
 
 DynamicListStatus
 probe_reflection_plane_list_create(ProbeReflectionPlaneList *list,
-                                   const ProbeReflectionListDescriptor *desc) {
+                                   const size_t capacity) {
 
-  return probe_reflection_list_create_core(&(ProbeReflectionCreateCore){
-      .probe_list =
-          &(ProbeReflectionCreateCoreList){
-              .entries = (void *)&list->entries,
-              .capacity = &list->capacity,
-              .length = &list->length,
-              .type_size = sizeof(ProbeReflectionPlane),
-              .label = "Probe Reflection Plane list",
-              .num = desc->capacity,
-          },
-      .render_pass =
-          &(ProbeReflectionCreateCorePass){
-              .draw_list = desc->draw_list,
-              .handle = &list->pass,
-              .view_dimension = WGPUTextureViewDimension_2DArray,
-              .resolution = desc->resolution,
-              .multisample = desc->multisample,
-              .layer_count = PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT,
-          },
-  });
+  return dyli_create((void *)&list->entries, &list->capacity, &list->length,
+                     sizeof(ProbeReflectionPlane), capacity,
+                     "Plane Reflection list");
 }
 
 DynamicListStatus

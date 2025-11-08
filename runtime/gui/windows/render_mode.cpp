@@ -1,11 +1,10 @@
 #include "render_mode.hpp"
+#include "backend/renderer/core.h"
 #include "imgui/imgui.h"
 #include "resources/tool/css2h/output/theme.default.h"
 #include "runtime/gui/components/button_group.hpp"
 #include "runtime/gui/components/button_icon.hpp"
 #include "runtime/gui/core.h"
-#include "runtime/scene/draw.h"
-#include "backend/renderer/core.h"
 
 void UI::RenderMode::draw() {
 
@@ -22,7 +21,7 @@ void UI::RenderMode::draw() {
   };
 
   UI::ButtonGroup(gui, label, buttons, count, &style,
-                  __builtin_ctz(renderer_draw_mode(&scene->renderer)),
+                  __builtin_ctz(renderer_draw_mode(renderer)),
                   ButtonGroupDirection_Horizontal)
       .draw();
 }

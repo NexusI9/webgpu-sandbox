@@ -7,6 +7,7 @@
 
 // #include "runtime/light/light.h"
 #include "backend/profiler.h"
+#include "backend/renderer/render_pass/core.h"
 #include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "runtime/light/core.h"
@@ -16,9 +17,11 @@
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/debug/core.h"
 #include "runtime/scene/debug/debug.h"
-#include "backend/renderer/render_pass/core.h"
+#include "utils/defines.h"
 #include "utils/projection.h"
 
+#include "backend/renderer/render_pass/core.h"
+#include "backend/renderer/render_pass/draw.h"
 #include "backend/std_pipeline/core.h"
 #include "core.h"
 #include "runtime/light/core.h"
@@ -26,8 +29,6 @@
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/debug/view.h"
-#include "backend/renderer/render_pass/core.h"
-#include "backend/renderer/render_pass/draw.h"
 #include "webgpu/webgpu.h"
 
 typedef struct {
@@ -82,25 +83,28 @@ typedef struct {
   Profiler *profiler;
 } ShadowMapDrawDescriptor;
 
+EXTERN_C_BEGIN
+
 static inline void
 renderer_draw_shadow_map_spot_light(const ShadowMapDrawSpotLightDescriptor *,
-                           const ShadowMapDebug *);
+                                    const ShadowMapDebug *);
 static inline void
 renderer_draw_shadow_map_sun_light(const ShadowMapDrawSunLightDescriptor *,
-                          const ShadowMapDebug *);
+                                   const ShadowMapDebug *);
 static inline void
 renderer_draw_shadow_map_dir_light(const ShadowMapDrawDirLightDescriptor *,
-                          const ShadowMapDebug *);
+                                   const ShadowMapDebug *);
 
 static inline void
 renderer_draw_shadow_map_point_light(const ShadowMapDrawPointLightDescriptor *,
-                            const ShadowMapDebug *);
+                                     const ShadowMapDebug *);
 
-static inline void renderer_draw_shadow_map_all(const ShadowMapDrawAllDescriptor *,
-                                       const ShadowMapDebug *);
+static inline void
+renderer_draw_shadow_map_all(const ShadowMapDrawAllDescriptor *,
+                             const ShadowMapDebug *);
 
 static inline void renderer_draw_shadow_map(const ShadowMapDrawDescriptor *,
-                                   const ShadowMapDebug *);
+                                            const ShadowMapDebug *);
 
 static int debug_view_count = 0;
 
@@ -127,7 +131,7 @@ static int debug_view_count = 0;
 
  */
 void renderer_draw_shadow_map(const ShadowMapDrawDescriptor *desc,
-                     const ShadowMapDebug *debug) {
+                              const ShadowMapDebug *debug) {
 
   /*  Create a new "nested" texture view for each layer that points back to the
      texture。Both "global Texture view" and "indexed Texture view" point toward
@@ -246,7 +250,7 @@ void renderer_draw_shadow_map(const ShadowMapDrawDescriptor *desc,
  */
 
 void renderer_draw_shadow_map_all(const ShadowMapDrawAllDescriptor *desc,
-                         const ShadowMapDebug *debug) {
+                                  const ShadowMapDebug *debug) {
 
   // logger_add(LoggerFlag_Process, "Computing all shadow maps...");
 
@@ -361,8 +365,9 @@ void renderer_draw_shadow_map_all(const ShadowMapDrawAllDescriptor *desc,
 
  */
 
-void renderer_draw_shadow_map_point_light(const ShadowMapDrawPointLightDescriptor *desc,
-                                 const ShadowMapDebug *debug) {
+void renderer_draw_shadow_map_point_light(
+    const ShadowMapDrawPointLightDescriptor *desc,
+    const ShadowMapDebug *debug) {
 
   // render scene and store depth map for each view
   for (size_t v = 0; v < desc->light->views.length; v++) {
@@ -384,8 +389,8 @@ void renderer_draw_shadow_map_point_light(const ShadowMapDrawPointLightDescripto
 /**
    Function to handle both spot and sun light drawing
  */
-void renderer_draw_shadow_map_dir_light(const ShadowMapDrawDirLightDescriptor *desc,
-                               const ShadowMapDebug *debug) {
+void renderer_draw_shadow_map_dir_light(
+    const ShadowMapDrawDirLightDescriptor *desc, const ShadowMapDebug *debug) {
 
   // Render scene (create shadow render pass to texture layer)
   for (size_t v = 0; v < desc->views->length; v++) {
@@ -400,8 +405,8 @@ void renderer_draw_shadow_map_dir_light(const ShadowMapDrawDirLightDescriptor *d
   }
 }
 
-void renderer_draw_shadow_map_sun_light(const ShadowMapDrawSunLightDescriptor *desc,
-                               const ShadowMapDebug *debug) {
+void renderer_draw_shadow_map_sun_light(
+    const ShadowMapDrawSunLightDescriptor *desc, const ShadowMapDebug *debug) {
 
   ShadowMapDrawDirLightDescriptor draw_desc = {
       .pass = desc->pass,
@@ -414,8 +419,8 @@ void renderer_draw_shadow_map_sun_light(const ShadowMapDrawSunLightDescriptor *d
   renderer_draw_shadow_map_dir_light(&draw_desc, debug);
 }
 
-void renderer_draw_shadow_map_spot_light(const ShadowMapDrawSpotLightDescriptor *desc,
-                                const ShadowMapDebug *debug) {
+void renderer_draw_shadow_map_spot_light(
+    const ShadowMapDrawSpotLightDescriptor *desc, const ShadowMapDebug *debug) {
 
   ShadowMapDrawDirLightDescriptor draw_desc = {
       .pass = desc->pass,
@@ -428,4 +433,5 @@ void renderer_draw_shadow_map_spot_light(const ShadowMapDrawSpotLightDescriptor 
   renderer_draw_shadow_map_dir_light(&draw_desc, debug);
 }
 
+EXTERN_C_END
 #endif

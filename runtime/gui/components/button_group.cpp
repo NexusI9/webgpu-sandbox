@@ -98,7 +98,8 @@ bool UI::ButtonGroup::draw() {
     if (clicked) {
       selected = i;
       if (items[i].on_click_callback)
-        items[i].on_click_callback(scene, items[i].user_data);
+        items[i].on_click_callback(gui->active_scene, gui->renderer,
+                                   items[i].user_data);
     }
 
     ImGui::PopID();

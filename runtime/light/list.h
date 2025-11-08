@@ -165,4 +165,6 @@ static inline size_t light_list_uniform_offset(const ubo_id_t id,
 
 LightListSlot light_list_uniform_new_entry(LightListUniform *, const LightType);
 
+void light_list_uniform_update(LightList *);
+
 #endif

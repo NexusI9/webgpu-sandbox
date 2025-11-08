@@ -3,9 +3,9 @@
 
 #include <stdbool.h>
 
-#include "runtime/scene/scene.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/scene.h"
 
-void example_ao(Scene*, bool);
+void example_ao(Scene *, Renderer *, bool);
 
 #endif

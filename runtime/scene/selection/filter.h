@@ -7,6 +7,7 @@
 #include "backend/logger.h"
 #include "backend/registry.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/ref_list.h"
 #include "utils/dyli.h"
 
 typedef enum {

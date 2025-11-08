@@ -1,16 +1,17 @@
 #include "inspector.world.hpp"
+#include "backend/renderer/shadow_map/core.h"
+#include "backend/renderer/shadow_map/draw.h"
+#include "backend/renderer/reflection/core.h"
 #include "imgui/imgui.h"
-#include "runtime/light/list.h"
-#include "runtime/light/shadow_map/core.h"
-#include "runtime/light/shadow_map/draw.h"
-#include "runtime/mesh/core.h"
-#include "runtime/pipeline/render.h"
-#include "runtime/scene/core.h"
 #include "runtime/gui/components/combobox_resolution.hpp"
 #include "runtime/gui/components/input.hpp"
 #include "runtime/gui/components/spacing.hpp"
 #include "runtime/gui/components/tree_item.hpp"
 #include "runtime/gui/core.h"
+#include "runtime/light/list.h"
+#include "runtime/mesh/core.h"
+#include "runtime/pipeline/render.h"
+#include "runtime/scene/core.h"
 #include "runtime/shader/update.h"
 #include "runtime/texture/core.h"
 #include "utils/name.h"
@@ -59,8 +60,8 @@ void UI::WorldTab::draw() {
       name_compose(default_value, "%d x %d", width, height);
 
       ImGui::PushID("dir_light_res");
-      UI::ComboboxResolution(gui, "Dir light resolution", default_value,
-                             &style, (TextureResolution)width,
+      UI::ComboboxResolution(gui, "Dir light resolution", default_value, &style,
+                             (TextureResolution)width,
                              on_resolution_change_dir_light)
           .draw();
       ImGui::PopID();
@@ -91,11 +92,11 @@ void UI::WorldTab::draw() {
 }
 
 void UI::WorldTab::on_resolution_change_point_light(
-    Scene *scene, const TextureResolution resolution) {
+    Scene *scene, Renderer *renderer, const TextureResolution resolution) {
 
   // update each lit shadowed mesh view
   MeshRefList *shadowed_meshlist =
-      scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow);
+      renderer_pipeline(renderer, RendererPipeline_Dynamic_LitShadow);
 
   RenderPass *pass = &scene->lights.point.shadow.pass;
   shadow_pass_update_resolution(pass, resolution,
@@ -122,18 +123,18 @@ void UI::WorldTab::on_resolution_change_point_light(
         .pass = pass,
         .texture_layer = i,
         .command_encoder = NULL,
-        .profiler = &scene->renderer.profiler,
+        .profiler = &renderer->profiler,
     };
-    shadow_map_draw_point_light(&desc, SCENE_DEBUG_UNDEFINED);
+    renderer_draw_shadow_map_point_light(&desc, SCENE_DEBUG_UNDEFINED);
   }
 }
 
 void UI::WorldTab::on_resolution_change_dir_light(
-    Scene *scene, const TextureResolution resolution) {
+    Scene *scene, Renderer *renderer, const TextureResolution resolution) {
 
   // update each lit shadowed mesh view
   MeshRefList *shadowed_meshlist =
-      scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow);
+      renderer_pipeline(renderer, RendererPipeline_Dynamic_LitShadow);
 
   RenderPass *pass = &scene->lights.spot.shadow.pass;
   shadow_pass_update_resolution(pass, resolution,
@@ -161,9 +162,9 @@ void UI::WorldTab::on_resolution_change_dir_light(
         .pass = pass,
         .texture_layer = light_list_sun_layer_index(&scene->lights, i),
         .command_encoder = NULL,
-        .profiler = &scene->renderer.profiler,
+        .profiler = &renderer->profiler,
     };
-    shadow_map_draw_sun_light(&desc, SCENE_DEBUG_UNDEFINED);
+    renderer_draw_shadow_map_sun_light(&desc, SCENE_DEBUG_UNDEFINED);
   }
 
   for (i = 0; i < scene->lights.spot.shadow.length; i++) {
@@ -172,22 +173,22 @@ void UI::WorldTab::on_resolution_change_dir_light(
         .pass = pass,
         .texture_layer = i,
         .command_encoder = NULL,
-        .profiler = &scene->renderer.profiler,
+        .profiler = &renderer->profiler,
     };
-    shadow_map_draw_spot_light(&desc, SCENE_DEBUG_UNDEFINED);
+    renderer_draw_shadow_map_spot_light(&desc, SCENE_DEBUG_UNDEFINED);
   }
 }
 
 void UI::WorldTab::on_resolution_change_plane_reflection(
-    Scene *scene, const TextureResolution resolution) {
+    Scene *scene, Renderer *renderer, const TextureResolution resolution) {
 
-  probe_reflection_list_update_resolution(&scene->probes.reflection_plane.pass,
-                                          resolution,
-                                          WGPUTextureViewDimension_2DArray);
+  renderer_probe_reflection_update_resolution(
+      &scene->probes.reflection_plane.pass, resolution,
+      WGPUTextureViewDimension_2DArray);
 
   // update each lit mesh reflection view
   MeshRefList *reflection_meshes[SCENE_PIPELINE_REFLECTION_COUNT];
-  scene_reflection_pipeline_meshes(scene, reflection_meshes);
+  renderer_reflection_pipeline_meshes(renderer, reflection_meshes);
   for (size_t j = 0; j < SCENE_PIPELINE_REFLECTION_COUNT; j++) {
     for (size_t k = 0; k < reflection_meshes[j]->length; k++) {
 

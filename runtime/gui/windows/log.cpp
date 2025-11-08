@@ -3,7 +3,6 @@
 #include "../imgui_style/style.carbon.hpp"
 #include "backend/theme/core.h"
 #include "imgui/imgui.h"
-#include "runtime/scene/show.h"
 
 typedef struct {
   const ThemeColor text;

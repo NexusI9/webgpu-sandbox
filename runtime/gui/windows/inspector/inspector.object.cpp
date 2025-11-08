@@ -1,6 +1,5 @@
 #include "inspector.object.hpp"
 #include "imgui/imgui.h"
-#include "runtime/scene/editor/selection/core.h"
 #include "runtime/gui/windows/inspector/inspector.ambient_light.hpp"
 #include "runtime/gui/windows/inspector/inspector.mesh.hpp"
 #include "runtime/gui/windows/inspector/inspector.point_light.hpp"
@@ -26,11 +25,11 @@ bool UI::ObjectTab::is_valid_type(const RegEntryType type) {
  */
 reg_id_t UI::ObjectTab::set_active_target() {
 
-  if (scene_selection_length(&scene->editor.selection)) {
+  if (scene_selection_length(&scene->selection)) {
     // get selection 1st entry
     for (int i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
       SceneSelectionObjectList *selection_list =
-          &scene->editor.selection.filters[i].selection;
+          &scene->selection.filters[i].selection;
       if (selection_list->length)
         return selection_list->entries[0].target;
     }
@@ -38,7 +37,7 @@ reg_id_t UI::ObjectTab::set_active_target() {
 
   MeshRefList *meshes[SCENE_DYNAMIC_PIPELINE_COUNT];
   size_t count;
-  scene_dynamic_pipelines(scene, meshes, &count);
+  renderer_dynamic_pipelines(renderer, meshes, &count);
   for (uint8_t i = 0; i < count; i++)
     for (size_t j = 0; j < meshes[i]->length; j++)
       return meshes[i]->entries[j]->id;

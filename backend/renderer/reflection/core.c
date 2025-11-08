@@ -140,9 +140,7 @@ void renderer_probe_reflection_create_pass(
       });
 }
 
-
-
-void probe_reflection_list_update_resolution(
+void renderer_probe_reflection_update_resolution(
     RenderPass *pass, const TextureResolution resolution,
     const WGPUTextureViewDimension view_dimension) {
 
@@ -174,7 +172,6 @@ void probe_reflection_list_update_resolution(
   pass->color.attachment.view = pass->color.views[0];
   pass->depth.attachment.view = pass->depth.views[0];
 }
-
 
 void probe_reflection_list_draw_preprocessor(const RenderPass *pass, Mesh *mesh,
                                              void *data) {

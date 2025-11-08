@@ -7,8 +7,8 @@
 #include "runtime/gui/components/button_icon.hpp"
 #include "runtime/gui/components/checkbox.hpp"
 #include "runtime/scene/core.h"
-#include "runtime/scene/editor/mesh/list/list.h"
-#include "runtime/scene/show.h"
+#include "runtime/systems/scene_editor_mesh_system.h"
+#include "runtime/systems/scene_system.h"
 
 int UI::Display::state = DisplayState_Activity | DisplayState_Grid |
                          DisplayState_Layout | DisplayState_Light |
@@ -23,15 +23,15 @@ void UI::Display::checkbox_update_state(bool active,
     state &= ~target;
 }
 
-void UI::Display::checkbox_on_change_base(Scene *scene, bool active,
-                                          void *user_data) {
+void UI::Display::checkbox_on_change_base(Scene *scene, Renderer *renderer,
+                                          bool active, void *user_data) {
 
   UI::DisplayState target = *(UI::DisplayState *)user_data;
   checkbox_update_state(active, target);
 }
 
-void UI::Display::checkbox_on_change_light(Scene *scene, bool active,
-                                           void *user_data) {
+void UI::Display::checkbox_on_change_light(Scene *scene, Renderer *renderer,
+                                           bool active, void *user_data) {
 
   UI::DisplayState target = *(UI::DisplayState *)user_data;
   checkbox_update_state(active, target);
@@ -46,12 +46,13 @@ void UI::Display::checkbox_on_change_light(Scene *scene, bool active,
       RegEntryType_SceneEditorMeshList_SpotLightShadow,
   };
 
-  sem_list_toggle_visibility(&scene->editor.sem_list, scene, light_type,
-                             sizeof(light_type) / sizeof(RegEntryType), active);
+  sem_list_system_toggle_visibility(&scene->editor_meshes, renderer, light_type,
+                                    sizeof(light_type) / sizeof(RegEntryType),
+                                    active);
 }
 
-void UI::Display::checkbox_on_change_probe(Scene *scene, bool active,
-                                           void *user_data) {
+void UI::Display::checkbox_on_change_probe(Scene *scene, Renderer *renderer,
+                                           bool active, void *user_data) {
 
   UI::DisplayState target = *(UI::DisplayState *)user_data;
   checkbox_update_state(active, target);
@@ -61,26 +62,27 @@ void UI::Display::checkbox_on_change_probe(Scene *scene, bool active,
       RegEntryType_SceneEditorMeshList_ProbeReflectionPlane,
   };
 
-  sem_list_toggle_visibility(&scene->editor.sem_list, scene, probe_type, 2,
-                             active);
+  sem_list_system_toggle_visibility(&scene->editor_meshes, renderer, probe_type,
+                                    2, active);
 }
 
-void UI::Display::checkbox_on_change_grid(Scene *scene, bool active,
-                                          void *user_data) {
+void UI::Display::checkbox_on_change_grid(Scene *scene, Renderer *renderer,
+                                          bool active, void *user_data) {
 
   UI::DisplayState target = *(UI::DisplayState *)user_data;
   checkbox_update_state(active, target);
 
   if (active)
-    scene_show_mesh(scene, scene->editor.gizmo.grid);
+    scene_system_show_mesh(scene, renderer, scene->grid);
   else
-    scene_hide_mesh(scene, scene->editor.gizmo.grid);
+    scene_system_hide_mesh(scene, renderer, scene->grid);
 }
 
 void UI::Display::draw() {
-  
+
   ImGui::SetNextWindowPos(
-      ImVec2(theme_size(gui->theme, ThemeSize_Gizmo_Margin), 0), ImGuiCond_Always);
+      ImVec2(theme_size(gui->theme, ThemeSize_Gizmo_Margin), 0),
+      ImGuiCond_Always);
   ImGui::Begin("Display Frame", nullptr,
                ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse |
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |

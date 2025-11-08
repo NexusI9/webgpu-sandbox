@@ -20,6 +20,7 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor_mesh/builder/wireframe.h"
 #include "runtime/scene/editor_mesh/list.h"
+#include "runtime/systems/scene_editor_mesh_system.h"
 #include "utils/color.h"
 
 void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
@@ -65,14 +66,13 @@ void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
   sem_create_wireframe(bound_cube->mesh, &wireframe_desc);
 
   mesh_set_scale(bound_cube->mesh, padded_size);
-  
- // FIXME
- // bound_cube->transform_callback[GizmoMode_Position] =
- //     sem_probe_reflection_grid_bound_set_position;
- // bound_cube->transform_callback[GizmoMode_Rotation] =
- //     sem_probe_reflection_grid_set_rotation;
- // bound_cube->transform_callback[GizmoMode_Scale] =
- //     sem_probe_reflection_grid_bound_set_scale;
+
+  bound_cube->transform_callback[GizmoMode_Position] =
+      sem_system_probe_reflection_grid_bound_set_position;
+  bound_cube->transform_callback[GizmoMode_Rotation] =
+      sem_system_probe_reflection_grid_set_rotation;
+  bound_cube->transform_callback[GizmoMode_Scale] =
+      sem_system_probe_reflection_grid_bound_set_scale;
 
   /*
 
@@ -95,16 +95,14 @@ void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
 
     mesh_set_scale(probe->mesh, (vec3){0.6f, 0.6f, 0.6f});
     mesh_set_position(probe->mesh, grid->probes.entries[i]->position);
-    
-    // FIXME
-    //probe->transform_callback[GizmoMode_Position] =
-    //    sem_probe_reflection_grid_set_position;
-    //probe->transform_callback[GizmoMode_Rotation] =
-    //    sem_probe_reflection_grid_set_rotation;
-    //probe->transform_callback[GizmoMode_Scale] =
-    //    sem_probe_reflection_grid_set_scale;
+
+    probe->transform_callback[GizmoMode_Position] =
+        sem_system_probe_reflection_grid_set_position;
+    probe->transform_callback[GizmoMode_Rotation] =
+        sem_system_probe_reflection_grid_set_rotation;
+    probe->transform_callback[GizmoMode_Scale] =
+        sem_system_probe_reflection_grid_set_scale;
 
     mesh_child_add(bound_cube->mesh, probe->mesh);
   }
 }
-

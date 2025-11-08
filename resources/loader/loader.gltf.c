@@ -1,6 +1,7 @@
 #include "loader.gltf.h"
 
 #include "backend/resource_manager.h"
+#include "runtime/systems/scene_system.h"
 #include "utils/system.h"
 #include <cglm/types.h>
 #include <cglm/util.h>
@@ -61,10 +62,10 @@ static inline void loader_gltf_primitie_vertex_lists_init(VertexAttribute *,
 
 // mesh utils
 static inline LoaderGLTFStatus
-loader_gltf_traverse_nodes(cgltf_data *, Scene *, const LoaderGLTFOptions *,
-                           LoaderGLTFResult *);
+loader_gltf_traverse_nodes(cgltf_data *, Scene *, Renderer *,
+                           const LoaderGLTFOptions *, LoaderGLTFResult *);
 static inline LoaderGLTFStatus
-loader_gltf_create_mesh(Scene *, cgltf_node *, Mesh *,
+loader_gltf_create_mesh(Scene *, Renderer *, cgltf_node *, Mesh *,
                         const LoaderGLTFOptions *, LoaderGLTFResult *);
 static inline void loader_gltf_mesh_position(cgltf_node *, Mesh *);
 
@@ -107,7 +108,8 @@ LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *desc,
     break;
 
   case cgltf_result_success:
-    return loader_gltf_traverse_nodes(data, desc->scene, desc->options, dest);
+    return loader_gltf_traverse_nodes(data, desc->scene, desc->renderer,
+                                      desc->options, dest);
     break;
 
   case cgltf_result_file_not_found:
@@ -145,13 +147,14 @@ bool loader_gltf_attribute_is_empty(const float *attr,
 }
 
 LoaderGLTFStatus loader_gltf_traverse_nodes(cgltf_data *data, Scene *scene,
+                                            Renderer *renderer,
                                             const LoaderGLTFOptions *options,
                                             LoaderGLTFResult *result) {
 
   for (size_t i = 0; i < data->nodes_count; i++) {
     cgltf_node *node = &data->nodes[i];
     if (node->mesh)
-      loader_gltf_create_mesh(scene, node, NULL, options, result);
+      loader_gltf_create_mesh(scene, renderer, node, NULL, options, result);
   }
 
   return LoaderGLTFStatus_Success;
@@ -292,8 +295,8 @@ void loader_gltf_primitive_vertex_index(VertexIndex *vert_index,
   };
 }
 
-LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_node *gl_node,
-                                         Mesh *parent,
+LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, Renderer *renderer,
+                                         cgltf_node *gl_node, Mesh *parent,
                                          const LoaderGLTFOptions *options,
                                          LoaderGLTFResult *result) {
 
@@ -404,7 +407,8 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_node *gl_node,
     mesh_topology_base_create(&target_mesh->topology.base, &vert_attr,
                               &vert_index);
 
-    scene_add_mesh(scene, target_mesh, NULL, SceneAddFlag_None);
+    scene_system_add_mesh(scene, renderer, target_mesh, NULL,
+                          SceneAddFlag_None);
 
     // ==== UPDATE STATS ===
     {
@@ -419,8 +423,8 @@ LoaderGLTFStatus loader_gltf_create_mesh(Scene *scene, cgltf_node *gl_node,
     }
 
     for (size_t i = 0; i < gl_node->children_count; i++)
-      loader_gltf_create_mesh(scene, gl_node->children[i], target_mesh, options,
-                              result);
+      loader_gltf_create_mesh(scene, renderer, gl_node->children[i],
+                              target_mesh, options, result);
   }
 
   return LoaderGLTFStatus_Success;

@@ -2,13 +2,14 @@
 #define _GUI_WINDOW_INSPECTOR_SUN_LIGHT_H_
 
 #include "backend/registry.h"
+#include "runtime/gui/windows/core.hpp"
+#include "runtime/gui/windows/inspector/inspector.hpp"
 #include "runtime/light/core.h"
 #include "runtime/light/uniform.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/transform.h"
-#include "runtime/scene/editor/mesh/light/sun.h"
-#include "runtime/gui/windows/core.hpp"
-#include "runtime/gui/windows/inspector/inspector.hpp"
+#include "runtime/scene/editor_mesh/list.h"
+#include "runtime/scene/editor_mesh/light/sun.h"
 
 namespace UI {
 
@@ -26,8 +27,8 @@ private:
   SunLight *light;
   SceneEditorMeshList *sem;
 
-  static void transform_update_callback(Scene *, void *);
-  static void properties_update_callback(Scene *, void *);
+  static void transform_update_callback(Scene *, Renderer *, void *);
+  static void properties_update_callback(Scene *, Renderer *, void *);
 
   InspectorTreeList<SceneEditorMeshList> transform_attributes = {
       .label = "Transform",
@@ -39,7 +40,7 @@ private:
                       {
                           .label = "Position",
                           .accessor_callback = sem_list_sun_light_get_position,
-                          .mutator_callback = sem_list_sun_light_set_position,
+                          .mutator_callback = NULL,
                           .extra_callback = transform_update_callback,
                           .user_data = (void *)sem,
                       },
@@ -57,8 +58,7 @@ private:
                       {
                           .label = "Position",
                           .accessor_callback = sem_list_sun_light_get_position,
-                          .mutator_callback =
-                              sem_list_sun_light_shadow_set_position,
+                          .mutator_callback = NULL,
                           .extra_callback = transform_update_callback,
                           .user_data = (void *)sem,
                       },

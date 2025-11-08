@@ -8,6 +8,8 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor_mesh/core.h"
 
+EXTERN_C_BEGIN
+
 void sem_list_system_toggle_visibility(SceneEditorMeshListArray *, Renderer *,
                                        const RegEntryType *, size_t, bool);
 
@@ -29,33 +31,33 @@ void sem_list_system_toggle_visibility(SceneEditorMeshListArray *, Renderer *,
 
 // clang-format on
 
+// === Camera & Lights ===
+
 // Mutator (general usage)
-#define SEM_LIST_GENERIC_MUTATOR(Type, Label)                                  \
+#define _(Type, Label)                                                         \
   void sem_list_system_##Label##_set_position(const SEMListTransform *);       \
   void sem_list_system_##Label##_set_rotation(const SEMListTransform *);       \
   void sem_list_system_##Label##_set_scale(const SEMListTransform *);
 
+SEM_GENERIC_ITEMS(_);
+SEM_LIGHT_ITEMS(_);
+SEM_SHADOW_ITEMS(_);
+#undef _
+
 // Mutator (used in gizmo)
-#define SEM_GENERIC_MUTATOR(Type, Label)                                       \
+#define _(Type, Label)                                                         \
   void sem_system_##Label##_set_position(const SEMTransform *);                \
   void sem_system_##Label##_set_rotation(const SEMTransform *);                \
   void sem_system_##Label##_set_scale(const SEMTransform *);
 
-// === Camera & Lights ===
-SEM_GENERIC_ITEMS(SEM_LIST_GENERIC_MUTATOR);
-SEM_GENERIC_ITEMS(SEM_GENERIC_MUTATOR);
-
-SEM_LIGHT_ITEMS(SEM_LIST_GENERIC_MUTATOR);
-SEM_LIGHT_ITEMS(SEM_GENERIC_MUTATOR);
-
-SEM_SHADOW_ITEMS(SEM_LIST_GENERIC_MUTATOR);
-SEM_SHADOW_ITEMS(SEM_GENERIC_MUTATOR);
+SEM_GENERIC_ITEMS(_);
+SEM_LIGHT_ITEMS(_);
+SEM_SHADOW_ITEMS(_);
+#undef _
 
 // === Probe Reflection Grid ===
-void sem_system_probe_reflection_grid_bound_set_position(
-    const SEMTransform *);
-void sem_system_probe_reflection_grid_bound_set_scale(
-    const SEMTransform *);
+void sem_system_probe_reflection_grid_bound_set_position(const SEMTransform *);
+void sem_system_probe_reflection_grid_bound_set_scale(const SEMTransform *);
 
 void sem_system_probe_reflection_grid_set_position(const SEMTransform *);
 void sem_system_probe_reflection_grid_set_rotation(const SEMTransform *);
@@ -69,4 +71,5 @@ void sem_system_probe_reflection_plane_set_position(const SEMTransform *);
 void sem_system_probe_reflection_plane_set_rotation(const SEMTransform *);
 void sem_system_probe_reflection_plane_set_scale(const SEMTransform *);
 
+EXTERN_C_END
 #endif

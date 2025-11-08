@@ -1,5 +1,5 @@
-#ifndef _SCENE_PASS_CONFIG_H_
-#define _SCENE_PASS_CONFIG_H_
+#ifndef _RENDER_PASS_LAYOUT_H_
+#define _RENDER_PASS_LAYOUT_H_
 
 #include "./core.h"
 #include "backend/context.h"
@@ -9,6 +9,7 @@
 #include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/shader.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -24,9 +25,7 @@
           L for each given render pass draw
                L the mesh list with this shader and this topology.
  */
-static inline void renderer_init_scene_draw_layouts(
-    Renderer *rd, Scene *scene,
-    const RenderPipelineMultisampleCount multisample) {
+static inline void renderer_init_draw_layouts(Renderer *renderer) {
 
   // Common gizmo draw list configuration
   const RenderPassDrawListDescriptor gizmo_draw_list = {
@@ -34,7 +33,8 @@ static inline void renderer_init_scene_draw_layouts(
       .entries =
           {
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Fixed_Front),
+                  .meshes =
+                      renderer_pipeline(renderer, RendererPipeline_Fixed_Front),
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_base,
               },
@@ -47,8 +47,8 @@ static inline void renderer_init_scene_draw_layouts(
       .entries =
           {
               {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Fixed_Selection),
+                  .meshes = renderer_pipeline(renderer,
+                                              RendererPipeline_Fixed_Selection),
                   .shader = MeshShader_Outline,
                   .topology_callback = mesh_topology_base,
               },
@@ -57,110 +57,114 @@ static inline void renderer_init_scene_draw_layouts(
   };
 
   const RenderPassDrawLayoutDescriptor stencil_layout = {
-      .meshes = scene_pipeline(scene, ScenePipeline_Fixed_Selection),
+      .meshes = renderer_pipeline(renderer, RendererPipeline_Fixed_Selection),
       .shader = MeshShader_Stencil,
       .topology_callback = mesh_topology_base,
   };
 
   // Texture draw configuration
   const RenderPassDrawListDescriptor texture_draw_list = {
-      .length = 9,
+      .length = 9 - 2,
       .entries =
           {
               {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Fixed_Background),
+                  .meshes = renderer_pipeline(
+                      renderer, RendererPipeline_Fixed_Background),
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_base,
               },
               stencil_layout,
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Lit),
-                  .shader = MeshShader_Texture,
-                  .topology_callback = mesh_topology_base,
-              },
-              {
                   .meshes =
-                      scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+                      renderer_pipeline(renderer, RendererPipeline_Dynamic_Lit),
                   .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_base,
               },
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Unlit),
+                  .meshes = renderer_pipeline(
+                      renderer, RendererPipeline_Dynamic_LitShadow),
                   .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_base,
               },
               {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Dynamic_LitAlpha),
+                  .meshes = renderer_pipeline(renderer,
+                                              RendererPipeline_Dynamic_Unlit),
+                  .shader = MeshShader_Texture,
+                  .topology_callback = mesh_topology_base,
+              },
+              {
+                  .meshes = renderer_pipeline(
+                      renderer, RendererPipeline_Dynamic_LitAlpha),
                   .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_base,
               },
               // Fixed
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
+                  .meshes = renderer_pipeline(renderer, RendererPipeline_Fixed),
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_override,
               },
-              // Debug
-              {
-                  .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
-                  .shader = MeshShader_Fixed,
-                  .topology_callback = mesh_topology_base,
-              },
-              {
-                  .meshes = &scene->debug.object_list[SceneDebugObject_View],
-                  .shader = MeshShader_Fixed,
-                  .topology_callback = mesh_topology_base,
-              },
+              // FIXME Debug
+              //{
+              //    .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
+              //    .shader = MeshShader_Fixed,
+              //    .topology_callback = mesh_topology_base,
+              //},
+              //{
+              //    .meshes = &scene->debug.object_list[SceneDebugObject_View],
+              //    .shader = MeshShader_Fixed,
+              //    .topology_callback = mesh_topology_base,
+              //},
           },
   };
 
   // Solid draw configuration
   const RenderPassDrawListDescriptor solid_draw_list = {
-      .length = 8,
+      .length = 8 - 2,
       .entries =
           {
               stencil_layout,
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Lit),
-                  .shader = MeshShader_Solid,
-                  .topology_callback = mesh_topology_base,
-              },
-              {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Unlit),
-                  .shader = MeshShader_Solid,
-                  .topology_callback = mesh_topology_base,
-              },
-              {
                   .meshes =
-                      scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+                      renderer_pipeline(renderer, RendererPipeline_Dynamic_Lit),
                   .shader = MeshShader_Solid,
                   .topology_callback = mesh_topology_base,
               },
               {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Dynamic_LitAlpha),
+                  .meshes = renderer_pipeline(renderer,
+                                              RendererPipeline_Dynamic_Unlit),
+                  .shader = MeshShader_Solid,
+                  .topology_callback = mesh_topology_base,
+              },
+              {
+                  .meshes = renderer_pipeline(
+                      renderer, RendererPipeline_Dynamic_LitShadow),
+                  .shader = MeshShader_Solid,
+                  .topology_callback = mesh_topology_base,
+              },
+              {
+                  .meshes = renderer_pipeline(
+                      renderer, RendererPipeline_Dynamic_LitAlpha),
                   .shader = MeshShader_Solid,
                   .topology_callback = mesh_topology_base,
               },
               // Fixed
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
+                  .meshes = renderer_pipeline(renderer, RendererPipeline_Fixed),
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_override,
               },
-              // Debug
-              {
-                  .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
-                  .shader = MeshShader_Fixed,
-                  .topology_callback = mesh_topology_base,
-              },
-              {
-                  .meshes = &scene->debug.object_list[SceneDebugObject_View],
-                  .shader = MeshShader_Fixed,
-                  .topology_callback = mesh_topology_base,
-              },
+              // FIXME Debug
+              //{
+              //    .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
+              //    .shader = MeshShader_Fixed,
+              //    .topology_callback = mesh_topology_base,
+              //},
+              //{
+              //    .meshes = &scene->debug.object_list[SceneDebugObject_View],
+              //    .shader = MeshShader_Fixed,
+              //    .topology_callback = mesh_topology_base,
+              //},
 
           },
 
@@ -168,96 +172,100 @@ static inline void renderer_init_scene_draw_layouts(
 
   // Wireframe draw configuration
   const RenderPassDrawListDescriptor wireframe_draw_list = {
-      .length = 7,
+      .length = 7 - 2,
       .entries =
           {
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Lit),
-                  .shader = MeshShader_Wireframe,
-                  .topology_callback = mesh_topology_wireframe,
-              },
-              {
                   .meshes =
-                      scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+                      renderer_pipeline(renderer, RendererPipeline_Dynamic_Lit),
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_wireframe,
               },
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Unlit),
+                  .meshes = renderer_pipeline(
+                      renderer, RendererPipeline_Dynamic_LitShadow),
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_wireframe,
               },
               {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Dynamic_LitAlpha),
+                  .meshes = renderer_pipeline(renderer,
+                                              RendererPipeline_Dynamic_Unlit),
+                  .shader = MeshShader_Wireframe,
+                  .topology_callback = mesh_topology_wireframe,
+              },
+              {
+                  .meshes = renderer_pipeline(
+                      renderer, RendererPipeline_Dynamic_LitAlpha),
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_wireframe,
               },
               // Fixed
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
+                  .meshes = renderer_pipeline(renderer, RendererPipeline_Fixed),
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_override,
               },
-              // Debug
-              {
-                  .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
-                  .shader = MeshShader_Fixed,
-                  .topology_callback = mesh_topology_base,
-              },
-              {
-                  .meshes = &scene->debug.object_list[SceneDebugObject_View],
-                  .shader = MeshShader_Fixed,
-                  .topology_callback = mesh_topology_base,
-              },
+              // FIXME Debug
+              //{
+              //    .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
+              //    .shader = MeshShader_Fixed,
+              //    .topology_callback = mesh_topology_base,
+              //},
+              //{
+              //    .meshes = &scene->debug.object_list[SceneDebugObject_View],
+              //    .shader = MeshShader_Fixed,
+              //    .topology_callback = mesh_topology_base,
+              //},
           },
 
   };
 
   // Boundbox draw configuration
   const RenderPassDrawListDescriptor boundbox_draw_list = {
-      .length = 7,
+      .length = 7 - 2,
       .entries =
           {
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Lit),
-                  .shader = MeshShader_Wireframe,
-                  .topology_callback = mesh_topology_boundbox,
-              },
-              {
                   .meshes =
-                      scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
+                      renderer_pipeline(renderer, RendererPipeline_Dynamic_Lit),
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_boundbox,
               },
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Dynamic_Unlit),
+                  .meshes = renderer_pipeline(
+                      renderer, RendererPipeline_Dynamic_LitShadow),
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_boundbox,
               },
               {
-                  .meshes =
-                      scene_pipeline(scene, ScenePipeline_Dynamic_LitAlpha),
+                  .meshes = renderer_pipeline(renderer,
+                                              RendererPipeline_Dynamic_Unlit),
+                  .shader = MeshShader_Wireframe,
+                  .topology_callback = mesh_topology_boundbox,
+              },
+              {
+                  .meshes = renderer_pipeline(
+                      renderer, RendererPipeline_Dynamic_LitAlpha),
                   .shader = MeshShader_Wireframe,
                   .topology_callback = mesh_topology_boundbox,
               },
               // Fixed
               {
-                  .meshes = scene_pipeline(scene, ScenePipeline_Fixed),
+                  .meshes = renderer_pipeline(renderer, RendererPipeline_Fixed),
                   .shader = MeshShader_Fixed,
                   .topology_callback = mesh_topology_override,
               },
-              // Debug
-              {
-                  .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
-                  .shader = MeshShader_Fixed,
-                  .topology_callback = mesh_topology_base,
-              },
-              {
-                  .meshes = &scene->debug.object_list[SceneDebugObject_View],
-                  .shader = MeshShader_Fixed,
-                  .topology_callback = mesh_topology_base,
-              },
+              // FIXME Debug
+              //{
+              //    .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
+              //    .shader = MeshShader_Fixed,
+              //    .topology_callback = mesh_topology_base,
+              //},
+              //{
+              //    .meshes = &scene->debug.object_list[SceneDebugObject_View],
+              //    .shader = MeshShader_Fixed,
+              //    .topology_callback = mesh_topology_base,
+              //},
           },
 
   };
@@ -275,11 +283,14 @@ static inline void renderer_init_scene_draw_layouts(
       [RendererDrawMode_Boundbox] = &boundbox_draw_list,
   };
 
-  RenderPassList *pass_list = rd->draw.render_pass;
+  RenderPassList *pass_list = renderer->mesh_pass;
 
-  const double ratio = renderer_dpi(rd);
-  const int render_width = renderer_width(rd) * ratio;
-  const int render_height = renderer_height(rd) * ratio;
+  const double ratio = renderer_dpi(renderer);
+  const int render_width = renderer_width(renderer) * ratio;
+  const int render_height = renderer_height(renderer) * ratio;
+
+  // TODO: make the multisample renderer specific
+  const RenderPipelineMultisampleCount multisample = context_multisample();
 
   for (uint8_t mode = 0; mode < RENDERER_DRAW_MODE_COUNT; mode++) {
 
@@ -329,7 +340,7 @@ static inline void renderer_init_scene_draw_layouts(
     RenderPassColorAttachment scene_color_attachment = {
         .attachment = {
             .view = shared_color_view,
-            .clearValue = rd->context.background,
+            .clearValue = renderer->context.background,
             .loadOp = WGPULoadOp_Clear,
             .storeOp = WGPUStoreOp_Store,
             .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
@@ -487,8 +498,8 @@ static inline void renderer_init_scene_draw_layouts(
         .scene_view = last_pass->color.resolve_view,
         .width = (const TextureResolution)render_width,
         .height = (const TextureResolution)render_height,
-        .compute = &rd->draw.compute_pass,
-        .profiler = &rd->profiler,
+        .compute = &renderer->compute_pass,
+        .profiler = &renderer->profiler,
     };
 
     post_fx_init(&last_pass->post_fx, &post_fx_desc);

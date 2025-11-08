@@ -2,11 +2,11 @@
 
 #include "backend/ao_bake/core.h"
 #include "backend/context.h"
-#include "runtime/scene/core.h"
 #include "backend/renderer/core.h"
+#include "runtime/scene/core.h"
 #include "utils/color.h"
 
-void example_ao(Scene *scene, bool debug) {
+void example_ao(Scene *scene, Renderer *renderer, bool debug) {
 
   AOBakeDrawDebug debug_options = {0};
 
@@ -18,20 +18,20 @@ void example_ao(Scene *scene, bool debug) {
     };
   }
 
-  ao_bake_draw_list(
-      &scene->renderer.texture.ambient_occlusion,
-      &(AOBakeDrawDescriptor){
-          .mesh_list = scene_pipeline(scene, ScenePipeline_Dynamic_LitShadow),
-          .global =
-              {
-                  AO_GLOBAL_RAY_AMOUNT,
-                  AO_GLOBAL_RAY_MAX_DISTANCE,
-              },
-          .local =
-              {
-                  AO_LOCAL_RAY_AMOUNT,
-                  AO_LOCAL_RAY_MAX_DISTANCE,
-              },
-          .debug = &debug_options,
-      });
+  ao_bake_draw_list(&renderer->texture.ambient_occlusion,
+                    &(AOBakeDrawDescriptor){
+                        .mesh_list = renderer_pipeline(
+                            renderer, RendererPipeline_Dynamic_LitShadow),
+                        .global =
+                            {
+                                AO_GLOBAL_RAY_AMOUNT,
+                                AO_GLOBAL_RAY_MAX_DISTANCE,
+                            },
+                        .local =
+                            {
+                                AO_LOCAL_RAY_AMOUNT,
+                                AO_LOCAL_RAY_MAX_DISTANCE,
+                            },
+                        .debug = &debug_options,
+                    });
 }

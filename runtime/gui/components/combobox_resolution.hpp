@@ -7,7 +7,7 @@
 namespace UI {
 
 typedef void (*combobox_resolution_on_select)(
-    Scene *, const TextureResolution reference_resolution);
+    Scene *, Renderer *, const TextureResolution reference_resolution);
 
 class ComboboxResolution : public Component {
 

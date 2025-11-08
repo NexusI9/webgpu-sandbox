@@ -4,7 +4,7 @@
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
 #include "runtime/pipeline/pipeline.h"
-#include "runtime/scene/editor/mesh/grid/grid.h"
+#include "runtime/scene/editor_mesh/grid/grid.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
@@ -24,7 +24,7 @@ static const WGPUBindGroupLayoutDescriptor grid_bind_group = {
                     (WGPUBufferBindingLayout){
                         .type = WGPUBufferBindingType_Uniform,
                         .hasDynamicOffset = false,
-                        .minBindingSize = sizeof(GizmoGridUniform),
+                        .minBindingSize = sizeof(GridUniform),
                     },
             },
         },

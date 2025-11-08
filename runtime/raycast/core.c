@@ -5,8 +5,8 @@
 #include <cglm/mat4.h>
 #include <cglm/vec3.h>
 
-#include "runtime/systems/input/core.h"
 #include "runtime/geometry/aabb/aabb.h"
+#include "runtime/input/core.h"
 #include "utils/vector/core.h"
 
 bool raycast_hit_aabb(const Raycast *ray, const AABB *box, float *distance) {

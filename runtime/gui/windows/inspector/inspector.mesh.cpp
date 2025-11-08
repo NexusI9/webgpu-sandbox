@@ -7,17 +7,17 @@
 #include "runtime/gui/windows/inspector/inspector.hpp"
 #include "runtime/gui/windows/vertex_viewer.hpp"
 #include "runtime/mesh/transform.h"
-#include "runtime/scene/editor/selection/utils.h"
-#include <cstdio>
+#include "runtime/systems/selection_system.h"
 
 void UI::InspectorMesh::transform_update_callback(Scene *scene,
+                                                  Renderer *renderer,
                                                   void *user_data) {
 
   ubo_update_queue_insert(scene->ubo, UBOType_Mesh,
                           ((Mesh *)user_data)->ubo_slot.id);
 
-  scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
-                               &scene->editor.selection, scene->ubo);
+  selection_system_update_gizmo_pos_to_selection(&scene->gizmo,
+                                                 &scene->selection, scene->ubo);
 }
 
 void UI::InspectorMesh::draw() {

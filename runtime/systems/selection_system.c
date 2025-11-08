@@ -5,15 +5,33 @@
 #include "runtime/gizmo/core.h"
 #include "runtime/scene/editor_mesh/core.h"
 #include "runtime/scene/selection/core.h"
+#include "runtime/scene/selection/filter.h"
 #include "runtime/systems/gizmo_system.h"
+#include "runtime/systems/scene_system.h"
+
+// clang-format off
+static const selection_system_highlight_callback highlight_callbacks[] = {
+    [SceneSelectionType_Mesh] = selection_system_callback_mesh_highlight,
+    [SceneSelectionType_MeshShadow] = selection_system_callback_mesh_highlight,
+    [SceneSelectionType_SEM] = selection_system_callback_sem_highlight,
+};
+
+  static const selection_system_transform_callback transform_callbacks[] = {
+      [SceneSelectionType_Mesh] = selection_system_callback_mesh_transform,
+      [SceneSelectionType_MeshShadow] = selection_system_callback_mesh_shadow_transform,
+      [SceneSelectionType_SEM] = selection_system_callback_sem_transform,
+  };
+// clang-format on
 
 void selection_system_init(SceneSelection *selection, Scene *scene,
                            Renderer *renderer) {
 
+  scene_selection_init(selection);
+
   selection_system_init_mouse_events(selection, scene, renderer);
   selection_system_init_key_events(selection, scene, renderer);
 
-  // TODO: improve
+  // TODO: for debug purpose
   // TODO: FREE MALLOC !!!!
   SelectionSystemCallbackData *payload =
       malloc(sizeof(SelectionSystemCallbackData));
@@ -29,6 +47,8 @@ void selection_system_init(SceneSelection *selection, Scene *scene,
       renderer, selection_system_draw_callback, (void *)payload,
       RendererDrawMode_Texture | RendererDrawMode_Solid |
           RendererDrawMode_Wireframe | RendererDrawMode_Boundbox);
+
+  gizmo_system_init(&scene->gizmo, scene, renderer);
 }
 
 /**
@@ -45,19 +65,11 @@ void selection_system_init(SceneSelection *selection, Scene *scene,
     According to those checkes we then transform the meshes.
 
  */
-void selection_system_draw_callback(void *data) {
+void selection_system_draw_callback(Renderer *renderer, void *data) {
 
   Scene *scene = ((SelectionSystemCallbackData *)data)->scene;
   SceneSelection *selection = ((SelectionSystemCallbackData *)data)->selection;
   Gizmo *gizmo = &scene->gizmo;
-
-  // clang-format off
-  static const selection_system_transform_callback transform_callbacks[] = {
-      [SceneSelectionType_Mesh] = selection_system_callback_mesh_transform,
-      [SceneSelectionType_MeshShadow] = selection_system_callback_mesh_shadow_transform,
-      [SceneSelectionType_SEM] = selection_system_callback_sem_transform,
-  };
-  // clang-format on
 
   if (gizmo->cache.init_distance != 0.0f) {
 
@@ -87,6 +99,7 @@ void selection_system_draw_callback(void *data) {
           .axis = gizmo->axis,
           .transform_mode = gizmo->mode,
           .scene = scene,
+          .renderer = renderer,
       };
       mesh_transform_callback(&transform);
 
@@ -109,8 +122,9 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
                                   Renderer *renderer, Mesh *mesh) {
 
   bool selected;
-  SceneSelectionFilter *filter =
-      scene_selection_find_filter_of_mesh(selection, mesh, &selected);
+  size_t filter_index;
+  SceneSelectionFilter *filter = scene_selection_find_filter_of_mesh(
+      selection, mesh, &selected, &filter_index);
 
   if (filter == NULL)
     return;
@@ -134,7 +148,8 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
     gizmo_system_hide(&scene->gizmo, renderer);
   }
 
-  return;
+  highlight_callbacks[filter_index](selection, scene, renderer,
+                                    &filter->selection, NULL);
 }
 
 /**
@@ -161,6 +176,7 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
    stencil.
 
  */
+
 void selection_system_callback_mesh_highlight(
     SceneSelection *selection, Scene *scene, Renderer *renderer,
     SceneSelectionObjectList *selected_objects, void *data) {
@@ -324,8 +340,8 @@ void selection_system_mesh_update_probe_uniform(
   }
 }
 
-void selection_system_mesh_transform_core(Mesh *mesh, vec3 *init_attribute,
-                                          SceneSelectionTransform *desc) {
+void selection_system_callback_mesh_transform_core(
+    Mesh *mesh, vec3 *init_attribute, SceneSelectionTransform *desc) {
 
   // calculate offset from delta
   vec3 offset_attribute;
@@ -339,27 +355,29 @@ void selection_system_mesh_transform_core(Mesh *mesh, vec3 *init_attribute,
 }
 
 /* Mesh based transform */
-void selection_system_mesh_transform(SceneSelectionTransform *desc) {
+void selection_system_callback_mesh_transform(SceneSelectionTransform *desc) {
 
   for (size_t i = 0; i < desc->selection->length; i++) {
     Mesh *mesh = desc->selection->entries[i].mesh;
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
 
     // transform mesh
-    selection_system_mesh_transform_core(mesh, init_attribute, desc);
+    selection_system_callback_mesh_transform_core(mesh, init_attribute, desc);
   }
 }
 
 /* Mesh shadow based transform.
    Note that this filter only incudes meshes that are in the LitShadow pipelines
  */
-void selection_system_mesh_shadow_transform(SceneSelectionTransform *desc) {
+
+void selection_system_callback_mesh_shadow_transform(
+    SceneSelectionTransform *desc) {
 
   for (size_t i = 0; i < desc->selection->length; i++) {
     Mesh *mesh = desc->selection->entries[i].mesh;
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
     // transform mesh
-    selection_system_mesh_transform_core(mesh, init_attribute, desc);
+    selection_system_callback_mesh_transform_core(mesh, init_attribute, desc);
   }
 
   // recalculate shadow maps
@@ -396,7 +414,7 @@ void selection_system_sem_transform_core(
       .probe_list = &desc->scene->probes,
       .ubo = desc->scene->ubo,
   });
-  
+
   mesh_uniform_update(sem->mesh);
   ubo_update_queue_insert(desc->scene->ubo, UBOType_Mesh,
                           sem->mesh->ubo_slot.id);
@@ -414,7 +432,7 @@ void selection_system_sem_transform_core(
    '------------------------------'-------------------------------'
 
  */
-void selection_system_sem_transform(SceneSelectionTransform *desc) {
+void selection_system_callback_sem_transform(SceneSelectionTransform *desc) {
 
   size_t offset = 0;
 
@@ -528,6 +546,12 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
   for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
     selection_system_config_lists[i] = &selection->filters[i].meshes;
 
+  SelectionSystemCallbackData callback_data = {
+      .scene = scene,
+      .renderer = renderer,
+      .selection = selection,
+  };
+
   /*
 
      ===== MESHES EVENTS =====
@@ -543,11 +567,7 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
                      .bound = CameraRaycastBound_OBB,
                      .viewport = &scene->viewport,
                      .callback = selection_system_callback_raycast_mesh,
-                     .data =
-                         (void *)&(SelectionSystemCallbackData){
-                             .scene = scene,
-                             .selection = selection,
-                         },
+                     .data = (void *)&callback_data,
                      .size = sizeof(SelectionSystemCallbackData),
                      .include =
                          {
@@ -584,11 +604,7 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
                        .exclude = {0},
                        .viewport = &scene->viewport,
                        .callback = selection_gizmo_mouse_events[i].callback,
-                       .data =
-                           (void *)&(SelectionSystemCallbackData){
-                               .scene = scene,
-                               .selection = selection,
-                           },
+                       .data = (void *)&callback_data,
                        .size = sizeof(SelectionSystemCallbackData),
                    });
 
@@ -597,11 +613,7 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
       .owner = scene->id,
       .callback = selection_system_callback_html_reset,
       .destructor = NULL,
-      .data =
-          (void *)&(SelectionSystemCallbackData){
-              .scene = scene,
-              .selection = selection,
-          },
+      .data = (void *)&callback_data,
       .size = sizeof(SelectionSystemCallbackData),
   });
 }
@@ -626,7 +638,6 @@ void selection_system_callback_raycast_mesh(
 
   if (cast_data->hits->length > 0 && hit)
     selection_system_toggle_mesh(selection, scene, renderer, hit->mesh);
-    // FIXME add filter highlight callback
   else {
     scene_selection_empty(selection);
     gizmo_system_hide(gizmo, renderer);
@@ -896,9 +907,13 @@ void selection_system_callback_key_sequence_select_all(KeyRecordSequence *seq,
     selection_system_update_gizmo_pos_to_selection(gizmo, selection, scene->ubo);
     gizmo_system_hide(gizmo, renderer);
   }
+
+  for(SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
+    highlight_callbacks[i](selection, scene, renderer, &selection->filters[i].selection, NULL);
+  
 }
 
-void selection_system_key_sequence_callback_set_gizmo_mode(
+void selection_system_callback_key_sequence_set_gizmo_mode(
     KeyRecordSequence *seq, void *data) {
 
   if (g_input.locked & InputLockState_Keyboard)

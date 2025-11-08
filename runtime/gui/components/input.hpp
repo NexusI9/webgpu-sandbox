@@ -168,7 +168,7 @@ private:
   const char *format;
   ImGuiSliderFlags flags;
 };
-
+ 
 // ===== Float4 =====
 class DragFloat4 : public InputBase {
 public:
@@ -251,12 +251,14 @@ private:
 
  */
 
+typedef void (*input_callback_extra)(Scene *, Renderer *, void *);
+
 // INT
 template <typename T> class InputIntCallback : public Component {
 
 public:
   InputIntCallback(T *target, Gui *gui, const char *label, int (*get)(T *),
-                   void (*set)(T *, int), void (*extra)(Scene *, void *),
+                   void (*set)(T *, const int), input_callback_extra extra,
                    void *user_data)
       : Component(gui, label), target(target), get(get), set(set), extra(extra),
         user_data(user_data) {}
@@ -265,8 +267,8 @@ public:
 private:
   T *target;
   int (*get)(T *);
-  void (*set)(T *, int);
-  void (*extra)(Scene *, void *);
+  void (*set)(T *, const int);
+  input_callback_extra extra;
   void *user_data;
   int value;
 };
@@ -276,7 +278,7 @@ template <typename T> class InputFloatCallback : public Component {
 
 public:
   InputFloatCallback(T *target, Gui *gui, const char *label, float (*get)(T *),
-                     void (*set)(T *, float), void (*extra)(Scene *, void *),
+                     void (*set)(T *, const float), input_callback_extra extra,
                      void *user_data)
       : Component(gui, label), target(target), get(get), set(set), extra(extra),
         user_data(user_data) {}
@@ -285,8 +287,8 @@ public:
 private:
   T *target;
   float (*get)(T *);
-  void (*set)(T *, float);
-  void (*extra)(Scene *, void *);
+  void (*set)(T *, const float);
+  input_callback_extra extra;
   void *user_data;
   float value;
 };
@@ -296,8 +298,8 @@ template <typename T> class InputVec3Callback : public Component {
 
 public:
   InputVec3Callback(T *target, Gui *gui, const char *label,
-                    void (*get)(T *, vec3), void (*set)(T *, vec3),
-                    void (*extra)(Scene *, void *), void *user_data)
+                    void (*get)(T *, vec3), void (*set)(T *, const vec3),
+                    input_callback_extra extra, void *user_data)
       : Component(gui, label), target(target), get(get), set(set), extra(extra),
         user_data(user_data) {}
   bool draw() override;
@@ -305,8 +307,8 @@ public:
 private:
   T *target;
   void (*get)(T *, vec3);
-  void (*set)(T *, vec3);
-  void (*extra)(Scene *, void *);
+  void (*set)(T *, const vec3);
+  input_callback_extra extra;
   void *user_data;
   vec3 value;
 };
@@ -316,8 +318,8 @@ template <typename T> class InputVec4Callback : public Component {
 
 public:
   InputVec4Callback(T *target, Gui *gui, const char *label,
-                    void (*get)(T *, vec4), void (*set)(T *, vec4),
-                    void (*extra)(Scene *, void *), void *user_data)
+                    void (*get)(T *, vec4), void (*set)(T *, const vec4),
+                    input_callback_extra extra, void *user_data)
       : Component(gui, label), target(target), get(get), set(set), extra(extra),
         user_data(user_data) {}
   bool draw() override;
@@ -325,8 +327,8 @@ public:
 private:
   T *target;
   void (*get)(T *, vec4);
-  void (*set)(T *, vec4);
-  void (*extra)(Scene *, void *);
+  void (*set)(T *, const vec4);
+  input_callback_extra extra;
   void *user_data;
   vec4 value;
 };
@@ -336,8 +338,8 @@ template <typename T> class InputColorCallback : public Component {
 
 public:
   InputColorCallback(T *target, Gui *gui, const char *label,
-                     void (*get)(T *, color), void (*set)(T *, color),
-                     void (*extra)(Scene *, void *), void *user_data)
+                     void (*get)(T *, color), void (*set)(T *, const color),
+                     input_callback_extra extra, void *user_data)
       : Component(gui, label), target(target), get(get), set(set), extra(extra),
         user_data(user_data) {}
   bool draw() override;
@@ -345,8 +347,8 @@ public:
 private:
   T *target;
   void (*get)(T *, color);
-  void (*set)(T *, color);
-  void (*extra)(Scene *, void *);
+  void (*set)(T *, const color);
+  input_callback_extra extra;
   void *user_data;
   color value;
 };
@@ -357,7 +359,7 @@ public:
   InputTextCallback(T *target, Gui *gui, const char *label,
                     const int buffer_size, const InputFlag flag,
                     const char *(*get)(T *), void (*set)(T *, const char *),
-                    void (*extra)(Scene *, void *), void *user_data)
+                    input_callback_extra extra, void *user_data)
       : Component(gui, label), target(target), buffer_size(buffer_size),
         flag(flag), get(get), set(set), extra(extra), user_data(user_data) {}
   bool draw() override;
@@ -368,7 +370,7 @@ private:
   const char *(*get)(T *);
   void (*set)(T *, const char *);
 
-  void (*extra)(Scene *, void *);
+  input_callback_extra extra;
   void *user_data;
 
   const int buffer_size;
@@ -380,7 +382,9 @@ private:
 template <typename T> bool InputIntCallback<T>::draw() {
 
   ImGui::Text("%s", label);
-  value = get(target);
+
+  if (get)
+    value = get(target);
 
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
@@ -393,7 +397,7 @@ template <typename T> bool InputIntCallback<T>::draw() {
     set(target, value);
 
     if (extra)
-      extra(scene, user_data);
+      extra(scene, renderer, user_data);
   }
 
   ImGui::Spacing();
@@ -403,7 +407,9 @@ template <typename T> bool InputIntCallback<T>::draw() {
 template <typename T> bool InputFloatCallback<T>::draw() {
 
   ImGui::Text("%s", label);
-  value = get(target);
+
+  if (get)
+    value = get(target);
 
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
@@ -413,10 +419,12 @@ template <typename T> bool InputFloatCallback<T>::draw() {
   input_style_end();
 
   if (input) {
-    set(target, value);
+
+    if (set)
+      set(target, value);
 
     if (extra)
-      extra(scene, user_data);
+      extra(scene, renderer, user_data);
   }
 
   ImGui::Spacing();
@@ -427,7 +435,8 @@ template <typename T> bool InputFloatCallback<T>::draw() {
 template <typename T> bool InputVec3Callback<T>::draw() {
 
   ImGui::Text("%s", label);
-  get(target, value);
+  if (get)
+    get(target, value);
 
   input_style_begin(gui);
   for (uint8_t i = 0; i < 3; i++) {
@@ -435,10 +444,11 @@ template <typename T> bool InputVec3Callback<T>::draw() {
     name_compose(input_id, "##%s%d", label, i);
 
     if (ImGui::DragFloat(input_id, &value[i], 0.1f)) {
-      set(target, value);
+      if (set)
+        set(target, value);
 
       if (extra)
-        extra(scene, user_data);
+        extra(scene, renderer, user_data);
     }
   }
   input_style_end();
@@ -451,7 +461,9 @@ template <typename T> bool InputVec3Callback<T>::draw() {
 template <typename T> bool InputVec4Callback<T>::draw() {
 
   ImGui::Text("%s", label);
-  get(target, value);
+
+  if (get)
+    get(target, value);
 
   input_style_begin(gui);
   for (uint8_t i = 0; i < 4; i++) {
@@ -459,10 +471,12 @@ template <typename T> bool InputVec4Callback<T>::draw() {
     name_compose(input_id, "##%s%d", label, i);
 
     if (ImGui::DragFloat(input_id, &value[i], 0.1f)) {
-      set(target, value);
+
+      if (set)
+        set(target, value);
 
       if (extra)
-        extra(scene, user_data);
+        extra(scene, renderer, user_data);
     }
   }
   input_style_end();
@@ -475,7 +489,9 @@ template <typename T> bool InputVec4Callback<T>::draw() {
 template <typename T> bool InputColorCallback<T>::draw() {
 
   ImGui::Text("%s", label);
-  get(target, value);
+
+  if (get)
+    get(target, value);
 
   name_t input_id;
   name_compose(input_id, "##%s_input", label);
@@ -488,10 +504,12 @@ template <typename T> bool InputColorCallback<T>::draw() {
   input_style_end();
 
   if (input) {
-    set(target, value);
+
+    if (set)
+      set(target, value);
 
     if (extra)
-      extra(scene, user_data);
+      extra(scene, renderer, user_data);
   }
 
   ImGui::Spacing();
@@ -502,7 +520,12 @@ template <typename T> bool InputColorCallback<T>::draw() {
 template <typename T> bool InputTextCallback<T>::draw() {
 
   ImGui::Text("%s", label);
-  const char *val = get(target);
+
+  const char *val;
+
+  if (get)
+    val = get(target);
+
   snprintf(value, max_buffer_size, "%s", val);
 
   name_t input_id;
@@ -517,10 +540,12 @@ template <typename T> bool InputTextCallback<T>::draw() {
   input_style_end();
 
   if (input) {
-    set(target, value);
+
+    if (set)
+      set(target, value);
 
     if (extra)
-      extra(scene, user_data);
+      extra(scene, renderer, user_data);
   }
 
   if (ImGui::IsItemActivated())

@@ -37,7 +37,7 @@ void UI::InfoTab::draw() {
       ImGui::PushTextWrapPos(ImGui::GetCursorPosX() +
                              ImGui::GetContentRegionAvail().x);
       ImGui::Text("%s: %d", stats_items[i].label,
-                  stat_get_count(&scene->renderer.stats, stats_items[i].value));
+                  stat_get_count(&scene->stats, stats_items[i].value));
       ImGui::PopTextWrapPos();
       ImGui::Separator();
     }

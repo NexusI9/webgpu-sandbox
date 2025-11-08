@@ -7,8 +7,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "./callback/key.h"
-#include "./callback/mouse.h"
 #include "./filter.h"
 #include "backend/registry.h"
 #include "emscripten/em_types.h"
@@ -16,23 +14,14 @@
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/selection/utils.h"
 #include "target_list.h"
 #include "utils/dyli.h"
 #include "utils/vector/vec3_list.h"
 
-void scene_selection_init_filters(SceneSelection *);
-
 /**
    Initialize the selection functionality on the scene main camera, meaning
    when a mesh is clicked, it displays the transform gizmo.
- */
-void scene_selection_init(SceneSelection *selection) {
-  // FIXME maybe put a drescirptor to set initial filter capacity
-  scene_selection_init_filters(selection);
-}
 
-/**
    Define selection rules for each selection lists (mesh or shader-based
    highlight). Configure the included and exclude the mesh reference lists from
    the scene to know which objects can be selected.
@@ -40,10 +29,10 @@ void scene_selection_init(SceneSelection *selection) {
    Note that both selection lists mutually exclude each others so they do not
    interfere.
  */
-void scene_selection_init_filters(SceneSelection *selection) {
+void scene_selection_init(SceneSelection *selection) {
+  // FIXME maybe put a drescirptor to set initial filter capacity
 
   // GLUEME scene_selection_config(scene); use selection_system
-
   // create filters source list
   for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
     SceneSelectionFilter *filter = &selection->filters[i];
@@ -158,7 +147,7 @@ void scene_selection_cache_initial_attributes(SceneSelection *selection,
  */
 SceneSelectionFilter *
 scene_selection_find_filter_of_mesh(SceneSelection *selection, Mesh *mesh,
-                                    bool *selected) {
+                                    bool *selected, size_t *filter_index) {
 
   for (size_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
     SceneSelectionFilter *filter = &selection->filters[i];
@@ -166,16 +155,26 @@ scene_selection_find_filter_of_mesh(SceneSelection *selection, Mesh *mesh,
     // first search in selected meshes (usually shorter)
     for (size_t j = 0; j < filter->selection.length; j++) {
       if (filter->selection.entries[j].mesh == mesh) {
+
         if (selected)
           *selected = true;
+
+        if (filter_index)
+          *filter_index = i;
+
         return filter;
       }
     }
 
     // then seach in wider mesh list if not found in selection
     if (mesh_ref_list_find(&filter->meshes, mesh, NULL)) {
+
       if (selected)
         *selected = false;
+
+      if (filter_index)
+        *filter_index = i;
+
       return filter;
     }
   }
@@ -201,9 +200,9 @@ void scene_selection_clear_initial_attributes(SceneSelection *selection) {
    - Mesh
    - Scene Editor Objects (SEM)
  */
-void scene_selection_subscribe_mesh(SceneSelection *selection, Mesh *mesh,
-                                    reg_id_t target,
-                                    const SceneSelectionType type) {
+void scene_selection_register_mesh(SceneSelection *selection, Mesh *mesh,
+                                   reg_id_t target,
+                                   const SceneSelectionType type) {
 
   // insert mesh to selection meshes
   mesh_ref_list_insert(&selection->filters[type].meshes, mesh);
@@ -214,9 +213,9 @@ void scene_selection_subscribe_mesh(SceneSelection *selection, Mesh *mesh,
   scene_selection_target_list_insert(target_list, target);
 }
 
-void scene_selection_subscribe_mesh_ref_list(SceneSelection *selection,
-                                             MeshRefList *list, reg_id_t target,
-                                             const SceneSelectionType type) {
+void scene_selection_register_mesh_ref_list(SceneSelection *selection,
+                                            MeshRefList *list, reg_id_t target,
+                                            const SceneSelectionType type) {
   for (size_t i = 0; i < list->length; i++)
-    scene_selection_subscribe_mesh(selection, list->entries[i], target, type);
+    scene_selection_register_mesh(selection, list->entries[i], target, type);
 }

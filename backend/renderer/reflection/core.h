@@ -4,6 +4,7 @@
 #include "backend/renderer/core.h"
 #include "backend/renderer/render_pass/core.h"
 #include "runtime/texture/core.h"
+#include "utils/defines.h"
 #include "webgpu/webgpu.h"
 
 #define PROBE_REFLECTION_MIPMAP_COUNT 1
@@ -17,6 +18,9 @@ typedef struct {
   RenderPass *handle;
 } RendererProbeReflectionDescriptor;
 
+EXTERN_C_BEGIN
+
+
 void renderer_probe_reflection_create_pass(
     Renderer *, const RendererProbeReflectionDescriptor *);
 
@@ -26,4 +30,5 @@ void renderer_probe_reflection_update_resolution(
 void probe_reflection_list_draw_preprocessor(const RenderPass *, Mesh *,
                                              void *);
 
+EXTERN_C_END
 #endif

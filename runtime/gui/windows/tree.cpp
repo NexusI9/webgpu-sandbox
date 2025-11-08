@@ -11,8 +11,7 @@
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/editor/selection/core.h"
-#include "runtime/scene/show.h"
+#include "runtime/systems/selection_system.h"
 #include "utils/name.h"
 
 void UI::Tree::draw_mesh(Mesh *mesh, const size_t index) {
@@ -25,21 +24,22 @@ void UI::Tree::draw_mesh(Mesh *mesh, const size_t index) {
   if (mesh->children.length)
     flag |= TreeItemFlag_HasChild;
 
-  UI::TreeItemMesh item = UI::TreeItemMesh(
-      gui, mesh->name, mesh->id, ThemeIcon_Mesh,
-      theme_size(gui->theme, ThemeSize_Button_InspectorTab), (TreeItemFlag)flag);
+  UI::TreeItemMesh item =
+      UI::TreeItemMesh(gui, mesh->name, mesh->id, ThemeIcon_Mesh,
+                       theme_size(gui->theme, ThemeSize_Button_InspectorTab),
+                       (TreeItemFlag)flag);
 
   bool draw_label = item.draw();
 
   if (item.clicked) {
-    scene_selection_toggle_mesh(scene, mesh);
+    selection_system_toggle_mesh(&scene->selection, scene, renderer, mesh);
     item.close_click();
   }
 
   {
     item.draw_visibility();
     if (ImGui::IsItemClicked())
-      scene_visibility_toggle_mesh(scene, mesh);
+      selection_system_toggle_mesh(&scene->selection, scene, renderer, mesh);
   }
 
   if (draw_label) {
@@ -71,7 +71,7 @@ void UI::Tree::draw_mesh_list(SceneEditorMeshList *list,
 
   UI::TreeItemMesh item =
       UI::TreeItemMesh(gui, list->name, list->id, icon,
-                       theme_size(gui->theme,ThemeSize_Button_InspectorTab),
+                       theme_size(gui->theme, ThemeSize_Button_InspectorTab),
                        index % 2 == 0 ? TreeItemFlag_AltBg : TreeItemFlag_None);
 
   if (item.draw()) {
@@ -79,7 +79,8 @@ void UI::Tree::draw_mesh_list(SceneEditorMeshList *list,
   }
 
   if (item.clicked) {
-    scene_selection_toggle_mesh(scene, list->entries->mesh);
+    selection_system_toggle_mesh(&scene->selection, scene, renderer,
+                                 list->entries->mesh);
     item.close_click();
   }
 
@@ -87,7 +88,8 @@ void UI::Tree::draw_mesh_list(SceneEditorMeshList *list,
 
   if (ImGui::IsItemClicked())
     for (size_t i = 0; i < list->length; i++)
-      scene_visibility_toggle_mesh(scene, list->entries[i].mesh);
+      selection_system_toggle_mesh(&scene->selection, scene, renderer,
+                                   list->entries[i].mesh);
 }
 
 void UI::Tree::draw() {

@@ -6,9 +6,8 @@
 #include "runtime/gui/components/button_group.hpp"
 #include "runtime/gui/components/button_icon.hpp"
 #include "runtime/gui/core.h"
-#include "runtime/scene/editor/selection/core.h"
-#include "runtime/scene/editor/selection/gizmo/core.h"
-#include "runtime/scene/editor/selection/utils.h"
+#include "runtime/systems/gizmo_system.h"
+#include "runtime/systems/selection_system.h"
 
 static const struct {
   const GizmoMode mode;
@@ -20,15 +19,16 @@ static const struct {
     {GizmoMode_Scale, "Scale", ThemeIcon_Gizmo_Scale},
 };
 
-static void gui_update_gizmo_mode(Scene *scene, void *mode) {
+static void gui_update_gizmo_mode(Scene *scene, Renderer *renderer,
+                                  void *mode) {
 
-  scene_gizmo_hide(scene);
-  scene->editor.gizmo.transform.mode = *(GizmoMode *)mode;
-  if (scene_selection_length(&scene->editor.selection)) {
-    scene_gizmo_pos_to_selection(&scene->editor.gizmo.transform,
-                                 &scene->editor.selection,
-                                 scene->ubo);
-    scene_gizmo_show(scene);
+  gizmo_system_hide(&scene->gizmo, renderer);
+  gizmo_set_mode(&scene->gizmo, *(GizmoMode *)mode);
+
+  if (scene_selection_length(&scene->selection)) {
+    selection_system_update_gizmo_pos_to_selection(
+        &scene->gizmo, &scene->selection, scene->ubo);
+    gizmo_system_show(&scene->gizmo, renderer);
   }
 }
 
@@ -76,6 +76,6 @@ void UI::Gizmo::draw() {
                           (void *)&mode_scale,
                       },
                   },
-                  3, &style, scene->editor.gizmo.transform.mode)
+                  3, &style, scene->gizmo.mode)
       .draw();
 }

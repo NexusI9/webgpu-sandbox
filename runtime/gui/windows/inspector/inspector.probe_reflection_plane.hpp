@@ -8,7 +8,6 @@
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/transform.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/editor/mesh/light/ambient.h"
 
 namespace UI {
 
@@ -25,8 +24,8 @@ private:
   SceneEditorMeshList *sem;
   ProbeReflectionPlane *probe;
 
-  static void transform_update_callback(Scene *, void *);
-  static void properties_update_callback(Scene *, void *);
+  static void transform_update_callback(Scene *, Renderer *, void *);
+  static void properties_update_callback(Scene *, Renderer *, void *);
 
   InspectorTreeList<SceneEditorMeshList> transform_attributes = {
       .label = "Transform",
@@ -37,10 +36,8 @@ private:
                   {
                       {
                           .label = "Position",
-                          .accessor_callback =
-                              sem_list_ambient_light_get_position,
-                          .mutator_callback =
-                              sem_list_ambient_light_set_position,
+                          .accessor_callback = nullptr,
+                          .mutator_callback = nullptr,
                           .extra_callback = transform_update_callback,
                           .user_data = (void *)sem,
                       },

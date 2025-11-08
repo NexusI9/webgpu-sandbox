@@ -125,8 +125,6 @@ typedef struct {
 
 EXTERN_C_BEGIN
 
-void ubo_draw_callback(void *);
-
 void ubo_init(UBOManager *);
 void ubo_destroy(UBOManager *);
 void ubo_upload(UBOManager *, const UBOType);
@@ -185,6 +183,7 @@ static inline ubo_id_t ubo_slot_id(const UBOSlot *slot) { return slot->id; }
 StaticListStatus ubo_update_queue_insert(UBOManager *, const UBOType,
                                          const ubo_id_t);
 StaticListStatus ubo_update_queue_shift(UBOManager *, const UBOType);
+
 
 EXTERN_C_END
 

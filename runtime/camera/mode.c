@@ -7,9 +7,10 @@
 #include <cglm/vec3.h>
 #include <stdint.h>
 
+#include "backend/clock.h"
 #include "core.h"
-#include "uniform.h"
 #include "runtime/input/core.h"
+#include "uniform.h"
 
 static void camera_target_from_yaw_pitch(Camera *, float, float);
 
@@ -45,7 +46,7 @@ void camera_mode_flying_controller(Camera *camera) {
   // Define new position
   uint8_t boost = input_key(INPUT_KEY_CAP) ? 3 : 1;
 
-  float velocity = camera->speed * boost * camera->clock->delta;
+  float velocity = camera->speed * boost * g_clock.delta;
   vec3 velo_vector = {velocity, velocity, velocity};
 
   vec3 velo_forward;
@@ -68,10 +69,10 @@ void camera_mode_flying_controller(Camera *camera) {
 
   // Define new target from yaw and pitch
   // mouse movement > yaw pitch > forward vector > target vector
-  float yaw = -g_input.mouse.movement.x * camera->sensitivity.rotate *
-              camera->clock->delta;
-  float pitch = g_input.mouse.movement.y * camera->sensitivity.rotate *
-                camera->clock->delta;
+  float yaw =
+      -g_input.mouse.movement.x * camera->sensitivity.rotate * g_clock.delta;
+  float pitch =
+      g_input.mouse.movement.y * camera->sensitivity.rotate * g_clock.delta;
 
   camera_target_from_yaw_pitch(camera, yaw, pitch);
 

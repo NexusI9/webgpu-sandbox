@@ -17,6 +17,7 @@
 #include "runtime/scene/environment/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
+#include "runtime/systems/scene_system.h"
 #include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
@@ -27,7 +28,8 @@ static inline void prefab_skybox_upload_layer(const WGPUTexture,
                                               const Texture *, const size_t,
                                               const bool);
 
-static inline void prefab_skybox_create_from_texture(Scene *, const WGPUTexture,
+static inline void prefab_skybox_create_from_texture(Scene *, Renderer *,
+                                                     const WGPUTexture,
                                                      WGPUTextureView *,
                                                      const size_t, const mip_t);
 
@@ -69,13 +71,14 @@ WGPUTexture prefab_skybox_texture(const size_t resolution) {
 /**
    Create global view from previously generated cubemap texture and create mesh
  */
-void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
+void prefab_skybox_create_from_texture(Scene *scene, Renderer *renderer,
+                                       const WGPUTexture texture,
                                        WGPUTextureView *view,
                                        const size_t resolution,
                                        const mip_t blur) {
 
   // mipmap generated texture
-  compute_pass_mipmap(&scene->renderer.draw.compute_pass,
+  compute_pass_mipmap(&renderer->compute_pass,
                       &(MipmapDescriptor){
                           .texture = texture,
                           .layer_count = TEXTURE_CUBE_LAYER,
@@ -141,15 +144,15 @@ void prefab_skybox_create_from_texture(Scene *scene, const WGPUTexture texture,
   // alter pipeline (no depth test)
   const RenderPipeline *pipeline = shader_pipeline(shader);
 
-  scene_add_mesh_pipeline(scene, skybox_mesh, ScenePipeline_Fixed_Background,
-                          NULL,
-                          SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
+  scene_system_add_mesh_pipeline(
+      scene, renderer, skybox_mesh, RendererPipeline_Fixed_Background, NULL,
+      SceneAddFlag_Unselectable | SceneAddFlag_TreeHide);
 }
 
 /**
    Create a skybox from a list of 6 textures.
  */
-void prefab_skybox_create(Scene *scene,
+void prefab_skybox_create(Scene *scene, Renderer *renderer,
                           const PrefabSkyboxCreateDescriptor *desc) {
 
   // create global texture
@@ -172,15 +175,17 @@ void prefab_skybox_create(Scene *scene,
   for (uint8_t i = 0; i < TEXTURE_CUBE_LAYER; i++)
     prefab_skybox_upload_layer(*skybox_texture, &skybox_sides[i], i, false);
 
-  prefab_skybox_create_from_texture(scene, *skybox_texture, skybox_cubemap_view,
-                                    desc->resolution, desc->blur);
+  prefab_skybox_create_from_texture(scene, renderer, *skybox_texture,
+                                    skybox_cubemap_view, desc->resolution,
+                                    desc->blur);
 }
 
 /**
    Create a gradient skybox from a list of gradient stops.
  */
 void prefab_skybox_gradient_create(
-    Scene *scene, const PrefabSkyboxGradientCreateDescriptor *desc) {
+    Scene *scene, Renderer *renderer,
+    const PrefabSkyboxGradientCreateDescriptor *desc) {
 
   SceneEnvironmentSkybox *scene_skybox =
       scene_environment_skybox(&scene->environment);
@@ -271,6 +276,7 @@ void prefab_skybox_gradient_create(
   stbi_image_free(gradient_texture.data);
   gradient_texture.data = NULL;
 
-  prefab_skybox_create_from_texture(scene, *skybox_texture, skybox_cubemap_view,
-                                    desc->resolution, 0.0f);
+  prefab_skybox_create_from_texture(scene, renderer, *skybox_texture,
+                                    skybox_cubemap_view, desc->resolution,
+                                    0.0f);
 }

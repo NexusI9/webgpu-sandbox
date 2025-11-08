@@ -2,12 +2,12 @@
 #define _SCENE_EDITOR_SELECTION_CORE_H_
 
 #include "backend/registry.h"
-#include "runtime/scene/core.h"
 
 #include <cglm/types.h>
 #include <stddef.h>
 
 #include "emscripten/html5.h"
+#include "runtime/gizmo/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/selection/filter.h"
 
@@ -32,15 +32,14 @@ void scene_selection_average_position(SceneSelection *, vec3 *);
 
 size_t scene_selection_length(SceneSelection *);
 
-void scene_selection_subscribe_mesh_ref_list(SceneSelection *, MeshRefList *,
-                                             reg_id_t,
-                                             const SceneSelectionType);
+void scene_selection_register_mesh_ref_list(SceneSelection *, MeshRefList *,
+                                            reg_id_t, const SceneSelectionType);
 
-void scene_selection_subscribe_mesh(SceneSelection *, Mesh *, reg_id_t,
-                                    const SceneSelectionType);
+void scene_selection_register_mesh(SceneSelection *, Mesh *, reg_id_t,
+                                   const SceneSelectionType);
 
-SceneSelectionFilter *scene_selection_find_filter_of_mesh(SceneSelection *, Mesh *,
-                                                       bool *);
+SceneSelectionFilter *
+scene_selection_find_filter_of_mesh(SceneSelection *, Mesh *, bool *, size_t *);
 
 void scene_selection_empty(SceneSelection *);
 void scene_selection_all(SceneSelection *);

@@ -45,37 +45,41 @@ void sem_list_system_toggle_visibility(SceneEditorMeshListArray *array,
 
 // Base transform
 
-void sem_point_light_set_position(const SEMTransform *desc) {
+#define _(Type, Label)                                                         \
+  void sem_system_##Label##_set_position(const SEMTransform *desc) {           \
+                                                                               \
+    Type *light = (Type *)desc->sem->target;                                   \
+                                                                               \
+    glm_vec3_copy((float *)desc->value, light->position);                      \
+                                                                               \
+    Label##_uniform_update(light);                                             \
+    mesh_set_position(desc->sem->mesh, desc->value);                           \
+                                                                               \
+    ubo_update_queue_insert(desc->ubo, UBOType_LightList,                      \
+                            desc->light_list->ubo_slot.id);                    \
+  }                                                                            \
+                                                                               \
+  void sem_system_##Label##_set_rotation(const SEMTransform *desc) {}          \
+  void sem_system_##Label##_set_scale(const SEMTransform *desc) {}             \
+                                                                               \
+  void sem_list_system_##Label##_set_position(const SEMListTransform *desc) {  \
+    for (size_t i = 0; i < desc->sem_list->length; i++) {                      \
+      SceneEditorMesh *sem = &desc->sem_list->entries[i];                      \
+      sem->transform_callback[GizmoMode_Position](&(const SEMTransform){       \
+          .light_list = desc->light_list,                                      \
+          .probe_list = desc->probe_list,                                      \
+          .renderer = desc->renderer,                                          \
+          .sem = sem,                                                          \
+          .ubo = desc->ubo,                                                    \
+          .value = desc->value,                                                \
+      });                                                                      \
+    }                                                                          \
+  }                                                                            \
+  void sem_list_system_##Label##_set_rotation(const SEMListTransform *desc) {} \
+  void sem_list_system_##Label##_set_scale(const SEMListTransform *desc) {}
 
-  PointLight *light = (PointLight *)desc->sem->target;
-
-  glm_vec3_copy((float *)desc->value, light->position);
-
-  point_light_uniform_update(light);
-  ubo_update_queue_insert(desc->ubo, UBOType_LightList,
-                          desc->light_list->ubo_slot.id);
-
-  mesh_set_position(desc->sem->mesh, desc->value);
-}
-
-void sem_point_light_set_rotation(const SEMTransform *desc) {}
-void sem_point_light_set_scale(const SEMTransform *desc) {}
-
-void sem_list_point_light_set_position(const SEMListTransform *desc) {
-  for (size_t i = 0; i < desc->sem_list->length; i++) {
-    SceneEditorMesh *sem = &desc->sem_list->entries[i];
-    sem->transform_callback[GizmoMode_Position](&(const SEMTransform){
-        .light_list = desc->light_list,
-        .probe_list = desc->probe_list,
-        .renderer = desc->renderer,
-        .sem = sem,
-        .ubo = desc->ubo,
-        .value = desc->value,
-    });
-  }
-}
-void sem_list_point_light_set_rotation(const SEMListTransform *desc) {}
-void sem_list_point_light_set_scale(const SEMListTransform *desc) {}
+SEM_LIGHT_ITEMS(_);
+#undef _
 
 // Shadow transform
 static inline void sem_system_point_light_update_shadow(const SEMTransform *);
@@ -158,6 +162,7 @@ void sem_system_sun_light_update_shadow(const SEMTransform *desc) {
   }
 }
 
+// TODO make macro
 void sem_system_point_light_shadow_set_position(const SEMTransform *desc) {
 
   PointLight *light = (PointLight *)desc->sem->target;
@@ -173,11 +178,46 @@ void sem_system_point_light_shadow_set_position(const SEMTransform *desc) {
   sem_system_point_light_update_shadow(desc);
 }
 
+void sem_system_spot_light_shadow_set_position(const SEMTransform *desc) {
+
+  SpotLight *light = (SpotLight *)desc->sem->target;
+  UBOManager *ubo = desc->ubo;
+  LightList *lights = desc->light_list;
+
+  glm_vec3_copy((float *)desc->value, light->position);
+
+  spot_light_uniform_update(light);
+  ubo_update_queue_insert(ubo, UBOType_LightList, lights->ubo_slot.id);
+
+  mesh_set_position(desc->sem->mesh, desc->value);
+  sem_system_spot_light_update_shadow(desc);
+}
+
+void sem_system_sun_light_shadow_set_position(const SEMTransform *desc) {
+
+  SunLight *light = (SunLight *)desc->sem->target;
+  UBOManager *ubo = desc->ubo;
+  LightList *lights = desc->light_list;
+
+  glm_vec3_copy((float *)desc->value, light->position);
+
+  sun_light_uniform_update(light);
+  ubo_update_queue_insert(ubo, UBOType_LightList, lights->ubo_slot.id);
+
+  mesh_set_position(desc->sem->mesh, desc->value);
+  sem_system_sun_light_update_shadow(desc);
+}
+
 void sem_system_point_light_shadow_set_rotation(const SEMTransform *desc) {}
 void sem_system_point_light_shadow_set_scale(const SEMTransform *desc) {}
 
-void sem_list_system_point_light_shadow_set_position(
-    const SEMListTransform *desc) {
+void sem_system_sun_light_shadow_set_rotation(const SEMTransform *desc) {}
+void sem_system_sun_light_shadow_set_scale(const SEMTransform *desc) {}
+
+void sem_system_spot_light_shadow_set_rotation(const SEMTransform *desc) {}
+void sem_system_spot_light_shadow_set_scale(const SEMTransform *desc) {}
+
+void sem_list_system_light_shadow_set_position(const SEMListTransform *desc) {
 
   for (size_t i = 0; i < desc->sem_list->length; i++) {
     SceneEditorMesh *sem = &desc->sem_list->entries[i];
@@ -191,8 +231,8 @@ void sem_list_system_point_light_shadow_set_position(
     });
   }
 }
-void sem_point_list_light_shadow_set_rotation(const SEMListTransform *desc) {}
-void sem_point_list_light_shadow_set_scale(const SEMListTransform *desc) {}
+void sem_list_light_shadow_set_rotation(const SEMListTransform *desc) {}
+void sem_list_light_shadow_set_scale(const SEMListTransform *desc) {}
 
 /*
 
@@ -288,7 +328,7 @@ void sem_system_probe_reflection_grid_set_scale_(const SEMTransform *desc) {
 
 
    The below function detects which scene meshes are within the probe
-   radius/bound-box and update each meshes uniform so subscribe or clear the
+   radius/bound-box and update each meshes uniform so register or clear the
    probes index and count so the mesh shader can reference the right probe index
    for the reflection computing.
 

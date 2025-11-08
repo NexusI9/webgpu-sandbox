@@ -1,18 +1,17 @@
 #ifndef _GUI_WINDOW_INSPECTOR_MESH_H_
 #define _GUI_WINDOW_INSPECTOR_MESH_H_
 
-#include "runtime/mesh/core.h"
-#include "runtime/mesh/transform.h"
 #include "runtime/gui/windows/core.hpp"
 #include "runtime/gui/windows/inspector/inspector.hpp"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/transform.h"
 
 namespace UI {
 
-  
 class InspectorMesh : public Window {
 
 public:
-  InspectorMesh(Gui* gui, const char *label, Mesh *mesh)
+  InspectorMesh(Gui *gui, const char *label, Mesh *mesh)
       : Window(gui, label), mesh(mesh) {}
 
   void draw() override;
@@ -20,7 +19,7 @@ public:
 private:
   Mesh *mesh;
 
-  static void transform_update_callback(Scene *, void *);
+  static void transform_update_callback(Scene *, Renderer *, void *);
 
   InspectorTreeList<Mesh> transform_attributes = {
       .label = "Transform",

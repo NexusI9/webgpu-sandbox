@@ -2,9 +2,9 @@
 #define _GUI_COMPONENTS_BUTTON_GROUP_H_
 
 #include "imgui/imgui.h"
-#include "runtime/scene/core.h"
 #include "runtime/gui/components/core.hpp"
 #include "runtime/gui/core.h"
+#include "runtime/scene/core.h"
 
 namespace UI {
 
@@ -18,7 +18,7 @@ typedef enum {
 typedef struct {
   const char *label;
   ThemeIcon icon;
-  void (*on_click_callback)(Scene *, void *);
+  void (*on_click_callback)(Scene *, Renderer *, void *);
   void *user_data;
   const char *tooltip;
 } ButtonGroupItem;
@@ -35,7 +35,7 @@ class ButtonGroup : public Component {
 
 public:
   ButtonGroup(
-      Gui* gui, const char *label, const ButtonGroupItem *items,
+      Gui *gui, const char *label, const ButtonGroupItem *items,
       const uint8_t items_length, const ButtonStyle *style,
       const uint8_t default_selected = BUTTON_GROUP_DEFAULT_SELECTED_NONE,
       const ButtonGroupDirection direction = ButtonGroupDirection_Vertical)

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "backend/registry.h"
+#include "backend/renderer/render_pass/visibility.h"
 #include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "resources/loader/loader.mbin.h"
@@ -21,7 +22,7 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor_mesh/builder/wireframe.h"
 #include "runtime/scene/editor_mesh/list.h"
-#include "backend/renderer/render_pass/visibility.h"
+#include "runtime/systems/scene_editor_mesh_system.h"
 #include "utils/color.h"
 
 void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
@@ -129,13 +130,12 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
     list->entries[i].target = probe;
     list->entries[i].target_list_index = SCENE_EDITOR_MESH_TARGET_UNDEFINED;
 
-    // FIXME
-    //list->entries[i].transform_callback[GizmoMode_Position] =
-    //    sem_probe_reflection_plane_set_position;
-    //list->entries[i].transform_callback[GizmoMode_Rotation] =
-    //    sem_probe_reflection_plane_set_rotation;
-    //list->entries[i].transform_callback[GizmoMode_Scale] =
-    //    sem_probe_reflection_plane_set_scale;
+    list->entries[i].transform_callback[GizmoMode_Position] =
+        sem_system_probe_reflection_plane_set_position;
+    list->entries[i].transform_callback[GizmoMode_Rotation] =
+        sem_system_probe_reflection_plane_set_rotation;
+    list->entries[i].transform_callback[GizmoMode_Scale] =
+        sem_system_probe_reflection_plane_set_scale;
 
     list->entries[i].select_callback = sem_wireframe_select_callback;
     list->entries[i].deselect_callback = sem_wireframe_deselect_callback;

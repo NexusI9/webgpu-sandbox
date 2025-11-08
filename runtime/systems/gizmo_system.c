@@ -1,5 +1,26 @@
 #include "gizmo_system.h"
 #include "backend/renderer/core.h"
+#include "runtime/systems/scene_system.h"
+
+// Create transform gizmos and add them to editor gizmo
+void gizmo_system_init(Gizmo *gizmo, Scene *scene, Renderer *renderer) {
+
+  gizmo_create(gizmo, &(GizmoCreateDescriptor){
+                          .camera = scene->active_camera,
+                          .viewport = &scene->viewport,
+                      });
+
+  for (size_t i = 0; i < GIZMO_MODE_COUNT; i++) {
+    for (size_t j = 0; j < gizmo->handles[i].length; j++) {
+      Mesh *mesh = gizmo->handles[i].entries[j];
+      scene_system_add_mesh_pipeline(
+          scene, renderer, mesh, RendererPipeline_Fixed_Front,
+          SCENE_LAYER_GIZMO,
+          SceneAddFlag_Hide | SceneAddFlag_Unselectable |
+              SceneAddFlag_TreeHide);
+    }
+  }
+}
 
 void gizmo_system_show(Gizmo *gizmo, Renderer *rd) {
 

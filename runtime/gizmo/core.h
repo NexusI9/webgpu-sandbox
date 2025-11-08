@@ -228,7 +228,6 @@ typedef void (*gizmo_create_handles_callback)(MeshRefList *, MeshRefList *,
 EXTERN_C_BEGIN
 void gizmo_create(Gizmo *, const GizmoCreateDescriptor *desc);
 
-
 void gizmo_update_mode(Gizmo *, MeshRefList *, GizmoMode);
 
 void gizmo_remove(Gizmo *, MeshRefList *);
@@ -237,8 +236,11 @@ void gizmo_set_position(Gizmo *, vec3);
 void gizmo_set_rotation(Gizmo *, vec3);
 
 void gizmo_set_active(Gizmo *, Camera *, Viewport *);
-
 void gizmo_set_axis_from_mesh(Gizmo *, const Mesh *);
+
+static inline void gizmo_set_mode(Gizmo *gizmo, const GizmoMode mode) {
+  gizmo->mode = mode;
+}
 
 /**
    Clear gizmo cached data. Used on HTML events mouse up so
@@ -270,8 +272,7 @@ static inline void gizmo_reset_color_uniform(Gizmo *gizmo) {
 static inline void gizmo_update_ubo(Gizmo *gizmo, UBOManager *ubo) {
   for (uint8_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
     ubo_update_queue_insert(
-        ubo, UBOType_Mesh,
-        gizmo->handles[gizmo->mode].entries[i]->ubo_slot.id);
+        ubo, UBOType_Mesh, gizmo->handles[gizmo->mode].entries[i]->ubo_slot.id);
 }
 
 EXTERN_C_END

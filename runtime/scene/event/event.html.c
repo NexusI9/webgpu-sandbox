@@ -115,8 +115,8 @@ void scene_event_html_update_meshes(Scene *data) {
   /*
     DELETEME ??
   // traverse the active pipelines from the render mode and
-  RendererDrawMode draw_mode = renderer_draw_mode(&scene->renderer);
-  RenderPassLayout *layout = &scene->renderer.draw.layouts[draw_mode];
+  RendererDrawMode draw_mode = renderer_draw_mode(renderer);
+  RenderPassLayout *layout = renderer.draw.layouts[draw_mode];
 
   // traverse render pass configs of the layout
   for (size_t i = 0; i < layout->length; i++) {

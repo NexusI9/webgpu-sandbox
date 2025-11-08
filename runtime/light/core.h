@@ -24,6 +24,14 @@ typedef enum {
   LightType_Sun = 3,
 } LightType;
 
+// clang-format off
+#define LIGHT_TYPES(_)\
+  _(  PointLight,      point     )\
+  _(  AmbientLight,    ambient   )\
+  _(  SpotLight,       spot      )\
+  _(  SunLight,        sun       )
+// clang-format on
+
 // light type
 // NOTE: use __attribute__ on list AS WELL AS entries (pointlights...) else
 // wrong alignment in list entries (i.e. _padding takes color.r value)
@@ -219,17 +227,20 @@ typedef struct {
  */
 
 // constructors
-void point_light_create(PointLight *, PointLightDescriptor *);
-void spot_light_create(SpotLight *, SpotLightDescriptor *);
-void ambient_light_create(AmbientLight *, AmbientLightDescriptor *);
-void sun_light_create(SunLight *, SunLightDescriptor *);
+#define _(Type, Label)                                                         \
+  void Label##_light_create(Type *, Type##Descriptor *);                       \
+  void Label##_light_destroy(Type *);                                          \
+                                                                               \
+  static inline const char *Label##_light_get_name(Type *light) {              \
+    return light->name;                                                        \
+  }                                                                            \
+                                                                               \
+  static inline void Label##_light_set_name(Type *light, const char *src) {    \
+    name_copy(src, light->name);                                               \
+  }
 
-void point_light_destroy(PointLight *);
-void spot_light_destroy(SpotLight *);
-void ambient_light_destroy(AmbientLight *);
-void sun_light_destroy(SunLight *);
-
-
+LIGHT_TYPES(_)
+#undef _
 
 // === Matrix Updates ===
 static inline void point_light_projection_update(PointLight *light) {
@@ -254,39 +265,6 @@ static inline void sun_light_projection_update(SunLight *light) {
 
   // transfert attribute to UBO slot
   projection_update_ubo_slot(&light->ubo_projection, &light->views);
-}
-
-static inline const char *point_light_get_name(PointLight *light) {
-  return light->name;
-}
-
-static inline void point_light_set_name(PointLight *light, const char *src) {
-  name_copy(src, light->name);
-}
-
-static inline const char *spot_light_get_name(SpotLight *light) {
-  return light->name;
-}
-
-static inline void spot_light_set_name(SpotLight *light, const char *src) {
-  name_copy(src, light->name);
-}
-
-static inline const char *sun_light_get_name(SunLight *light) {
-  return light->name;
-}
-
-static inline void sun_light_set_name(SunLight *light, const char *src) {
-  name_copy(src, light->name);
-}
-
-static inline const char *ambient_light_get_name(AmbientLight *light) {
-  return light->name;
-}
-
-static inline void ambient_light_set_name(AmbientLight *light,
-                                          const char *src) {
-  name_copy(src, light->name);
 }
 
 #endif

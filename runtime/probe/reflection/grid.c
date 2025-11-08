@@ -7,13 +7,13 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
+#include "backend/renderer/render_pass/core.h"
+#include "backend/renderer/render_pass/draw.h"
 #include "backend/resource_manager.h"
 #include "backend/std_texture/core.h"
 #include "core.h"
 #include "probe.h"
 #include "runtime/scene/debug/view.h"
-#include "backend/renderer/render_pass/core.h"
-#include "backend/renderer/render_pass/draw.h"
 #include "utils/dyli.h"
 #include "webgpu/webgpu.h"
 
@@ -86,29 +86,11 @@ void probe_reflection_grid_destroy(ProbeReflectionGrid *grid) {
 
 DynamicListStatus
 probe_reflection_grid_list_create(ProbeReflectionGridList *list,
-                                  const ProbeReflectionListDescriptor *desc) {
+                                  const size_t capacity) {
 
-  return probe_reflection_list_create_core(&(ProbeReflectionCreateCore){
-      .probe_list =
-          &(ProbeReflectionCreateCoreList){
-              .entries = (void *)&list->entries,
-              .capacity = &list->capacity,
-              .length = &list->length,
-              .type_size = sizeof(ProbeReflectionGrid),
-              .label = "Probe Reflection Grid list",
-              .num = desc->capacity,
-          },
-      .render_pass =
-          &(ProbeReflectionCreateCorePass){
-              .draw_list = desc->draw_list,
-              .handle = &list->pass,
-              .view_dimension = WGPUTextureViewDimension_CubeArray,
-              .resolution = desc->resolution,
-              .multisample = desc->multisample,
-              .layer_count = PROBE_REFLECTION_GRID_LIST_CAPACITY *
-                             PROBE_REFLECTION_LIST_MAX_COUNT,
-          },
-  });
+  return dyli_create((void *)&list->entries, &list->capacity, &list->length,
+                     sizeof(ProbeReflectionGrid), capacity,
+                     "Probe Reflection Grid list");
 }
 
 DynamicListStatus
@@ -163,80 +145,6 @@ probe_reflection_grid_list_remove(ProbeReflectionGridList *list,
 DynamicListStatus
 probe_reflection_grid_list_destroy(ProbeReflectionGridList *list) {
   return dyli_free((void *)list->entries, &list->capacity, &list->length);
-}
-
-void probe_reflection_grid_list_draw(ProbeReflectionGridList *list,
-                                     ProbeReflectionListDebug *debug) {
-
-  // then update probe list texture cube array based on each probes views
-  size_t layer = 0;
-
-  render_pass_im_begin(&list->pass);
-  {
-    for (size_t i = 0; i < list->length; i++) {
-
-      ProbeReflectionGrid *grid = list->entries[i];
-
-      TIMER("", {
-        logger_add(LoggerFlag_Process,
-                   "Rendering Probe Reflection Grid %lu/%lu", i + 1,
-                   list->length);
-
-        for (size_t j = 0; j < grid->probes.length; j++) {
-
-          ProbeReflection *probe = grid->probes.entries[j];
-
-          for (uint8_t k = 0; k < PROBE_REFLECTION_VIEW_COUNT; k++) {
-
-            // define target layer
-            WGPUTextureView target_color =
-                rem_new_view(list->pass.color.texture,
-                             &(WGPUTextureViewDescriptor){
-                                 .label = "Probe Reflection Target Color View",
-                                 .arrayLayerCount = 1,
-                                 .baseArrayLayer = layer,
-                                 .dimension = WGPUTextureViewDimension_2D,
-                                 .baseMipLevel = 0,
-                                 .mipLevelCount = 1,
-                             });
-
-            WGPUTextureView target_depth =
-                rem_new_view(list->pass.depth.texture,
-                             &(WGPUTextureViewDescriptor){
-                                 .label = "Probe Reflection Target Depth View",
-                                 .arrayLayerCount = 1,
-                                 .baseArrayLayer = layer,
-                                 .dimension = WGPUTextureViewDimension_2D,
-                                 .baseMipLevel = 0,
-                                 .mipLevelCount = 1,
-                             });
-
-            // update each mesh views/projections matrix
-            render_pass_update_all_preprocessor_data(
-                &list->pass, &(ProbeReflectionListPreprocessorData){
-                                 .camera_offset = probe->ubo_camera[k].id,
-                             });
-
-            // draw pass
-            render_pass_im_set_views(&list->pass, &(RenderPassDrawOptions){
-                                                      .color = target_color,
-                                                      .depth = target_depth,
-                                                  });
-            render_pass_im_draw(&list->pass);
-
-            if (debug && layer < debug->max_views)
-              scene_debug_view_create(debug->scene_debug, target_color);
-            else
-              rem_destroy_view(&target_color);
-
-            rem_destroy_view(&target_depth);
-            layer++;
-          }
-        }
-      });
-    }
-  }
-  render_pass_im_end(&list->pass);
 }
 
 size_t

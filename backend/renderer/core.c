@@ -11,6 +11,7 @@
 #include "backend/logger.h"
 #include "backend/postfx/core.h"
 #include "backend/profiler.h"
+#include "backend/renderer/draw_config.h"
 #include "backend/renderer/render_pass/texture.h"
 #include "backend/renderer/shadow_map/draw.h"
 #include "backend/resource_manager.h"
@@ -29,18 +30,17 @@ static void renderer_render(void *);
 
 static inline void renderer_mesh_list_init(Renderer *);
 
-void renderer_create(Renderer *renderer, const RendererCreateDescriptor *rd) {
+void renderer_create(Renderer *renderer, const RendererCreateDescriptor *desc) {
 
-  renderer->context.background = rd->background;
-  renderer->context.width = rd->width ? rd->width : context_width();
-  renderer->context.height = rd->height ? rd->height : context_height();
-  renderer->context.dpi = rd->dpi == RENDERER_DPI_AUTO
+  renderer->context.background = desc->background;
+  renderer->context.width = desc->width ? desc->width : context_width();
+  renderer->context.height = desc->height ? desc->height : context_height();
+  renderer->context.dpi = desc->dpi == RENDERER_DPI_AUTO
                               ? emscripten_get_device_pixel_ratio()
-                              : rd->dpi;
+                              : desc->dpi;
   renderer->draw_mode = RendererDrawMode_Solid;
 
   renderer_mesh_list_init(renderer);
-  clock_init(&renderer->clock);
   profiler_init(&renderer->profiler);
 
   TIMER("AO Bake", {
@@ -58,6 +58,15 @@ void renderer_create(Renderer *renderer, const RendererCreateDescriptor *rd) {
                           .max_height = context_height(),
                           .max_width = context_width(),
                       });
+  }
+
+  {
+    // Init pipelines
+    renderer_init_draw_layouts(renderer);
+    renderer_add_draw_callback(
+        renderer, renderer_draw_layout_callback, (void *)renderer,
+        RendererDrawMode_Texture | RendererDrawMode_Solid |
+            RendererDrawMode_Wireframe | RendererDrawMode_Boundbox);
   }
 }
 
@@ -82,9 +91,7 @@ void renderer_destroy(Renderer *renderer) {}
    Based on the renderer Draw Layouts, it first select the entry base on the
    renderer mode (texture/solid/wireframe).
  */
-void renderer_draw_layout_callback(void *data) {
-  Renderer *renderer = (Renderer *)data;
-
+void renderer_draw_layout_callback(Renderer *renderer, void *data) {
   // retrieve render mode
   const RendererDrawMode mode = renderer->draw_mode;
   render_pass_list_draw(&renderer->mesh_pass[__builtin_ctz(mode)]);
@@ -126,26 +133,25 @@ void renderer_add_draw_callback(Renderer *renderer,
 /**
    Renderer Main Loop, basically just loop through the registered callbacks.
  */
-void renderer_render(void *desc) {
-  RendererRenderDescriptor *config = (RendererRenderDescriptor *)desc;
+void renderer_render(void *data) {
 
-  profiler_latency_end(&config->renderer->profiler,
-                       ProfilerLatencyType_MainLoop);
-  profiler_latency_start(&config->renderer->profiler,
-                         ProfilerLatencyType_MainLoop);
+  Renderer *renderer = (Renderer *)data;
+
+  profiler_latency_end(&renderer->profiler, ProfilerLatencyType_MainLoop);
+  profiler_latency_start(&renderer->profiler, ProfilerLatencyType_MainLoop);
 
   // Call draw callbacks of active renderere draw mode
   RendererDrawCallbackList *callback_list =
-      &config->renderer->callbacks[__builtin_ctz(config->renderer->draw_mode)];
+      &renderer->callbacks[__builtin_ctz(renderer->draw_mode)];
 
   // call callbacks, pass renderer and data
   for (size_t i = 0; i < callback_list->length; i++) {
     RendererDrawCallback *cb = &callback_list->entries[i];
-    cb->callback(cb->data);
+    cb->callback(renderer, cb->data);
   }
 
   // update clock delta
-  clock_update_delta(&config->renderer->clock);
+  clock_update_delta(&g_clock);
 }
 
 /**
@@ -154,8 +160,7 @@ void renderer_render(void *desc) {
  */
 void renderer_draw(Renderer *renderer) {
   // call main loop
-  emscripten_set_main_loop_arg(
-      renderer_render, &(RendererRenderDescriptor){.renderer = renderer}, 0, 1);
+  emscripten_set_main_loop_arg(renderer_render, (void *)renderer, 0, 1);
 }
 
 // getters
@@ -163,3 +168,201 @@ void renderer_set_draw_mode(Renderer *renderer, const RendererDrawMode mode) {
   renderer->draw_mode = mode;
 }
 
+/**
+   Add mesh to the dynamic pipeline.
+   Depending on the mesh current texture pipeline, it will either dispatch the
+   mesh to the unlit or lit pipeline.
+   Basically if mesh texture shader has PBR pipeline it goes to the lit, if it
+   has Unlit pieline it goes to the unlit.
+
+   To add a mesh to the fixed pipelines (ex: Gizmo, Scene Editor Objects), the
+   scene_add_mesh_pipeline dedicated function shall be used.
+
+   The below function is designed for "common usage", meaning on a daily basis,
+   one will add dynamic assets to the scene, compared to the fixed elements
+   which are only used by the editor itself.
+ */
+RendererPipeline
+renderer_get_pso_pipeline(const RenderPipeline *render_pipeline) {
+
+  static const RendererPipeline
+      scene_pipeline_dispatch[RENDER_PIPELINE_TYPE_COUNT] = {
+          // Unlit
+          [RenderPipelineType_Billboard] = RendererPipeline_Dynamic_Unlit,
+          [RenderPipelineType_Unlit] = RendererPipeline_Dynamic_Unlit,
+          [RenderPipelineType_GlassProbeGrid] = RendererPipeline_Dynamic_Unlit,
+          [RenderPipelineType_GlassProbePlane] = RendererPipeline_Dynamic_Unlit,
+
+          // Lit
+          [RenderPipelineType_Reflection] = RendererPipeline_Dynamic_Lit,
+
+          // Shadow
+          [RenderPipelineType_Default] = RendererPipeline_Dynamic_LitShadow,
+          [RenderPipelineType_PBR] = RendererPipeline_Dynamic_LitShadow,
+          [RenderPipelineType_PBR_DoubleSided] =
+              RendererPipeline_Dynamic_LitShadow,
+
+          // Alpha
+          [RenderPipelineType_PBR_Alpha] = RendererPipeline_Dynamic_LitAlpha,
+
+          // Fixed
+          [RenderPipelineType_Grid] = RendererPipeline_Fixed,
+          [RenderPipelineType_Line] = RendererPipeline_Fixed,
+          [RenderPipelineType_Screen] = RendererPipeline_Fixed,
+          [RenderPipelineType_Shadow] = RendererPipeline_Fixed,
+          [RenderPipelineType_Solid] = RendererPipeline_Fixed,
+          [RenderPipelineType_Blit] = RendererPipeline_Fixed,
+
+          // Background
+          [RenderPipelineType_Skybox] = RendererPipeline_Fixed_Background,
+
+      };
+
+  RenderPipelineType pipeline_type = std_render_pipeline_type(render_pipeline);
+
+  if (pipeline_type == RENDER_PIPELINE_UNDEFINED) {
+    logger_add(LoggerFlag_Error,
+               "Couldn't find any valid type for mesh pipeline.");
+    return RendererPipeline_Undefined;
+  }
+
+  // dispatch mesh based on their global pipeline address (lit by default)
+  RendererPipeline pipeline = scene_pipeline_dispatch[pipeline_type];
+
+  if (pipeline == RendererPipeline_Undefined)
+    logger_add(LoggerFlag_Error,
+               "Couldn't find any scene pipeline for render pipeline: %d.");
+
+  return pipeline;
+}
+
+/**
+   Recreate scene render pass list textures based on the given dimensions and
+   multisample count. Since Scene render pass list texture is a mix of shared
+   texture we manually pick and update them.
+
+   Function primarily used in the UI when we adjust the scene width and height.
+ */
+void renderer_update_pass_texture(
+    Renderer *rd, int width, int height,
+    const RenderPipelineMultisampleCount multisample, const double dpi) {
+
+  int real_width = (int)(width * dpi);
+  int real_height = (int)(height * dpi);
+
+  // Update textures
+  for (uint8_t mode = 0; mode < RENDERER_DRAW_MODE_COUNT; mode++) {
+
+    RenderPassList *pass_list = &rd->mesh_pass[mode];
+
+    // === Color ===
+    {
+      // destroy previous and create new texture
+      WGPUTextureView shared_color_view;
+
+      RenderPassTextureDescriptor color_config = {
+          .format = TEXTURE_FORMAT_ONSCREEN,
+          .height = real_height,
+          .width = real_width,
+          .multisample = multisample,
+      };
+
+      render_pass_list_texture_create_shared_color(
+          pass_list, &color_config, NULL, &shared_color_view,
+          RenderPassTextureFlag_ReleasePrevious);
+
+      // replace each passes color views with resized one
+      for (int j = 0; j < RENDERER_MESH_PASS_COUNT; j++) {
+        RenderPass *pass = &pass_list->passes[j];
+        WGPUTextureView previous_resolve = pass->color.resolve_view;
+        RenderPipelineMultisampleCount previous_multisample = pass->multisample;
+
+        /*
+          If previously monosample it means the resolve texture/view corresponds
+          to the list shared view/ texture.
+
+          However we already release the shared view/texutre in the
+          create_shared_color function, so we set the child pass resolve
+          texture/view to NULL manually.
+
+          Monosample:
+
+               List                       Child Passes
+
+           .-----------.               .-- pass 1 -------.
+           |   Share   |       .-----> | Resolve Texture |
+           |-----------|      |        |-----------------|     .-------------.
+           |  Texture  |------+    .-> | Resolve View    | --> | Attachment  |
+           |-----------|      |   |    '-----------------'     '-------------'
+           |  View     |------|---+
+           '-----------'      |   |    .---pass 2--------.
+                              '------> | Resolve Texture |
+                                  |    |-----------------|     .-------------.
+                                  '--> | Resolve View    | --> | Attachment  |
+                                       '-----------------'     '-------------'
+
+         */
+        if (previous_multisample == PipelineMultisampleCount_1x) {
+          pass->color.resolve_texture = NULL;
+          pass->color.resolve_view = NULL;
+        }
+
+        pass->multisample = multisample;
+        pass->color.attachment.view = shared_color_view;
+
+        // Update resolve view for multisample passes
+        if (PipelineMultisampleCount_4x == pass->multisample)
+          render_pass_texture_create_monosample(
+              &pass->color.resolve_texture, &pass->color.resolve_view,
+              &color_config, RenderPassTextureFlag_ReleasePrevious);
+
+        if (PipelineMultisampleCount_1x == pass->multisample) {
+          pass->color.resolve_view = shared_color_view;
+          pass->color.resolve_texture = NULL;
+          pass->color.attachment.resolveTarget = NULL;
+        }
+
+        if (j == RENDERER_MESH_PASS_COUNT - 1) {
+
+          post_fx_update_scene_view(&pass->post_fx, pass->color.resolve_view);
+          if (RendererDrawMode_Texture & (1 << mode))
+            // recreate the bloom independent texture with the new resolution
+            post_fx_bloom_update_texture_resolution(&pass->post_fx, real_width,
+                                                    real_height);
+        }
+      }
+    }
+
+    // === Depth ===
+    {
+      // destroy previous and create new texture
+      WGPUTextureView shared_depth_view;
+
+      render_pass_list_texture_create_shared_depth(
+          pass_list,
+          &(RenderPassTextureDescriptor){
+              .format = TEXTURE_FORMAT_DEPTH_STENCIL,
+              .height = real_height,
+              .width = real_width,
+              .multisample = multisample,
+
+          },
+          NULL, &shared_depth_view, RenderPassTextureFlag_ReleasePrevious);
+
+      // replace each passes color views with resized one
+      for (int j = 0; j < RENDERER_MESH_PASS_COUNT - 1; j++)
+        pass_list->passes[j].depth.attachment.view = shared_depth_view;
+
+      // create individual depth texture for gizmo pass
+      render_pass_texture_create_depth(
+          &pass_list->passes[RendererMeshPass_Gizmo],
+          &(RenderPassTextureDescriptor){
+              .format = TEXTURE_FORMAT_DEPTH,
+              .height = real_height,
+              .width = real_width,
+              .multisample = multisample,
+          },
+          RenderPassTextureFlag_ReleasePrevious);
+    }
+  }
+}

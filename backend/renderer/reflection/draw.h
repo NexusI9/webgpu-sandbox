@@ -12,17 +12,21 @@
 #include "runtime/scene/core.h"
 #include "webgpu/webgpu.h"
 
-static inline void
-renderer_draw_plane_reflection(Renderer *rd, ProbeReflectionPlaneList *list) {
+EXTERN_C_BEGIN
+
+static inline void renderer_draw_plane_reflection(Renderer *renderer,
+                                                  void *data) {
 
   // temp
   ProbeReflectionListDebug *debug = NULL;
+  ProbeReflectionPlaneList *list = (ProbeReflectionPlaneList *)data;
 
   WGPUTextureView cached_view_color = list->pass.color.attachment.view;
   WGPUTextureView cached_view_depth = list->pass.depth.attachment.view;
 
   // then update probe list texture cube array based on each probes views
-  profiler_latency_start(&rd->profiler, ProfilerLatencyType_ReflectionPass);
+  profiler_latency_start(&renderer->profiler,
+                         ProfilerLatencyType_ReflectionPass);
   render_pass_im_begin(&list->pass);
   {
     for (size_t i = 0; i < list->length; i++) {
@@ -81,10 +85,10 @@ renderer_draw_plane_reflection(Renderer *rd, ProbeReflectionPlaneList *list) {
     }
   }
   render_pass_im_end(&list->pass);
-  profiler_latency_end(&rd->profiler, ProfilerLatencyType_ReflectionPass);
+  profiler_latency_end(&renderer->profiler, ProfilerLatencyType_ReflectionPass);
 
   // Kawase pass
-  profiler_latency_start(&rd->profiler, ProfilerLatencyType_KawasePass);
+  profiler_latency_start(&renderer->profiler, ProfilerLatencyType_KawasePass);
   {
     RenderPassDrawOptions src_views = {
         .color = cached_view_color,
@@ -97,9 +101,90 @@ renderer_draw_plane_reflection(Renderer *rd, ProbeReflectionPlaneList *list) {
         .layer_count = list->length,
         .pass_count = 3,
     };
-    compute_pass_kawase(&rd->compute_pass, &blur_desc);
+    compute_pass_kawase(&renderer->compute_pass, &blur_desc);
   }
-  profiler_latency_end(&rd->profiler, ProfilerLatencyType_KawasePass);
+  profiler_latency_end(&renderer->profiler, ProfilerLatencyType_KawasePass);
 }
+
+static inline void probe_reflection_grid_list_draw(Renderer *renderer,
+                                                   void *data) {
+
+  // then update probe list texture cube array based on each probes views
+  size_t layer = 0;
+
+  ProbeReflectionListDebug *debug = NULL;
+  ProbeReflectionGridList *list = (ProbeReflectionGridList *)data;
+
+  render_pass_im_begin(&list->pass);
+  {
+    for (size_t i = 0; i < list->length; i++) {
+
+      ProbeReflectionGrid *grid = list->entries[i];
+
+      logger_add(LoggerFlag_Process, "Rendering Probe Reflection Grid %lu/%lu",
+                 i + 1, list->length);
+
+      for (size_t j = 0; j < grid->probes.length; j++) {
+
+        ProbeReflection *probe = grid->probes.entries[j];
+
+        for (uint8_t k = 0; k < PROBE_REFLECTION_VIEW_COUNT; k++) {
+
+          WGPUTextureViewDescriptor color_view_desc = {
+              .label = "Probe Reflection Target Color View",
+              .arrayLayerCount = 1,
+              .baseArrayLayer = layer,
+              .dimension = WGPUTextureViewDimension_2D,
+              .baseMipLevel = 0,
+              .mipLevelCount = 1,
+          };
+
+          // define target layer
+          WGPUTextureView target_color =
+              rem_new_view(list->pass.color.texture, &color_view_desc);
+
+          WGPUTextureViewDescriptor depth_view_desc = {
+              .label = "Probe Reflection Target Depth View",
+              .arrayLayerCount = 1,
+              .baseArrayLayer = layer,
+              .dimension = WGPUTextureViewDimension_2D,
+              .baseMipLevel = 0,
+              .mipLevelCount = 1,
+          };
+
+          WGPUTextureView target_depth =
+              rem_new_view(list->pass.depth.texture, &depth_view_desc);
+
+          ProbeReflectionListPreprocessorData preprocessor_data = {
+              .camera_offset = probe->ubo_camera[k].id};
+
+          // update each mesh views/projections matrix
+          render_pass_update_all_preprocessor_data(&list->pass,
+                                                   &preprocessor_data);
+
+          // draw pass
+          RenderPassDrawOptions options = {
+              .color = target_color,
+              .depth = target_depth,
+          };
+
+          render_pass_im_set_views(&list->pass, &options);
+          render_pass_im_draw(&list->pass);
+
+          if (debug && layer < debug->max_views)
+            scene_debug_view_create(debug->scene_debug, target_color);
+          else
+            rem_destroy_view(&target_color);
+
+          rem_destroy_view(&target_depth);
+          layer++;
+        }
+      }
+    }
+  }
+  render_pass_im_end(&list->pass);
+}
+
+EXTERN_C_END
 
 #endif

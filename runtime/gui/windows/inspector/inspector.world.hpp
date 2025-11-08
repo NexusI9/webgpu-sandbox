@@ -10,14 +10,17 @@ namespace UI {
 class WorldTab : public InspectorTab {
 
 public:
-  WorldTab(Gui* gui, const ThemeIcon icon, const char *label)
+  WorldTab(Gui *gui, const ThemeIcon icon, const char *label)
       : InspectorTab(gui, icon, label) {}
   void draw() override;
 
 private:
-  static void on_resolution_change_point_light(Scene*, const TextureResolution);
-  static void on_resolution_change_dir_light(Scene*, const TextureResolution);
-  static void on_resolution_change_plane_reflection(Scene*, const TextureResolution);
+  static void on_resolution_change_point_light(Scene *, Renderer *,
+                                               const TextureResolution);
+  static void on_resolution_change_dir_light(Scene *, Renderer *,
+                                             const TextureResolution);
+  static void on_resolution_change_plane_reflection(Scene *, Renderer *,
+                                                    const TextureResolution);
 };
 
 } // namespace UI

@@ -5,14 +5,14 @@
 #include <time.h>
 
 typedef struct {
-
   double delta;
   clock_t current;
   clock_t last_time;
-
 } cclock;
 
-void clock_init(cclock*);
+extern cclock g_clock;
+
+void clock_init(cclock *);
 void clock_update_delta(cclock *);
 
 #endif

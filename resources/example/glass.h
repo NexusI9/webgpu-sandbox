@@ -3,13 +3,14 @@
 
 #include <stdbool.h>
 
-#include "runtime/scene/scene.h"
+#include "backend/renderer/core.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/scene.h"
 
-void example_glass_box(Scene *);
+void example_glass_box(Scene *, Renderer *);
 
-void example_glass_probe_grid(Scene *, bool);
+void example_glass_probe_grid(Scene *, Renderer *, bool);
 
-void example_glass_probe_plane(Scene *, bool);
+void example_glass_probe_plane(Scene *, Renderer *, bool);
 
 #endif

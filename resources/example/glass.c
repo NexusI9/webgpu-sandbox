@@ -4,6 +4,8 @@
 #include <stddef.h>
 
 #include "backend/context.h"
+#include "backend/renderer/reflection/draw.h"
+#include "backend/renderer/render_pass/core.h"
 #include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_pipeline/render_shader/glass_probe_grid/glass_probe_grid.h"
@@ -22,20 +24,20 @@
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/environment/core.h"
-#include "backend/renderer/render_pass/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
+#include "runtime/systems/scene_system.h"
 #include "runtime/texture/core.h"
 
-void example_glass_probe_grid(Scene *scene, bool debug) {
+void example_glass_probe_grid(Scene *scene, Renderer *renderer, bool debug) {
 
   SceneEditorMeshList *grid_probe =
-      scene_add_probe_reflection_grid(scene,
-                                      &(ProbeReflectionGridDescriptor){
-                                          .count = {3, 3, 3},
-                                          .scale = {30.0f, 30.0f, 30.0f},
-                                      },
-                                      NULL);
+      scene_system_add_probe_reflection_grid(scene, renderer,
+                                             &(ProbeReflectionGridDescriptor){
+                                                 .count = {3, 3, 3},
+                                                 .scale = {30.0f, 30.0f, 30.0f},
+                                             },
+                                             NULL);
 
   Mesh *mesh = rem_new_mesh();
 
@@ -56,7 +58,7 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
   mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});
   mesh_set_scale(mesh, (vec3){3.0f, 3.0f, 3.0f});
 
-  scene_add_mesh(scene, mesh, NULL, SceneAddFlag_None);
+  scene_system_add_mesh(scene, renderer, mesh, NULL, SceneAddFlag_None);
 
   // TODO: Put this in the scene build for automation ?
 
@@ -72,11 +74,10 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
 
   // link probe lists (position, radius)
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  shader_update_uniform_buffer(
-      shader, shader->pipeline->bindings.probe->group,
-      shader->pipeline->bindings.probe->list,
-      ubo_buffer_handle(scene->ubo, UBOType_ProbeList), 0,
-      ShaderUpdateFlag_ReleasePrevious);
+  shader_update_uniform_buffer(shader, shader->pipeline->bindings.probe->group,
+                               shader->pipeline->bindings.probe->list,
+                               ubo_buffer_handle(scene->ubo, UBOType_ProbeList),
+                               0, ShaderUpdateFlag_ReleasePrevious);
 
   // link probe color texture
   shader_update_texture_view(
@@ -99,17 +100,18 @@ void example_glass_probe_grid(Scene *scene, bool debug) {
       .max_views = 16,
   };
 
-  probe_reflection_grid_list_draw(&scene->probes.reflection_probe,
-                                  debug ? &debug_options : NULL);
+  // DELETEME ?
+  probe_reflection_grid_list_draw(renderer,
+                                  (void *)&scene->probes.reflection_probe);
 }
 
-void example_glass_probe_plane(Scene *scene, bool debug) {
+void example_glass_probe_plane(Scene *scene, Renderer *renderer, bool debug) {
 
   const float scale = 20.0f;
 
   ProbeReflectionPlane *plane;
-  SceneEditorMeshList *plane_probe = scene_add_probe_reflection_plane(
-      scene,
+  SceneEditorMeshList *plane_probe = scene_system_add_probe_reflection_plane(
+      scene, renderer,
       &(ProbeReflectionPlaneDescriptor){
           .far = 100.0f,
           .near = 0.1f,
@@ -138,7 +140,7 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
   mesh_set_rotation(mesh, (vec3){180.0f, 0.0f, 0.0f});
   mesh_set_scale(mesh, (vec3){scale, scale, scale});
 
-  scene_add_mesh(scene, mesh, NULL, SceneAddFlag_None);
+  scene_system_add_mesh(scene, renderer, mesh, NULL, SceneAddFlag_None);
 
   // link glass settings
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
@@ -151,11 +153,10 @@ void example_glass_probe_plane(Scene *scene, bool debug) {
                              ShaderUpdateFlag_None);
   // link UBO
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  shader_update_uniform_buffer(
-      shader, shader->pipeline->bindings.probe->group,
-      shader->pipeline->bindings.probe->list,
-      ubo_buffer_handle(scene->ubo, UBOType_ProbeList), 0,
-      ShaderUpdateFlag_ReleasePrevious);
+  shader_update_uniform_buffer(shader, shader->pipeline->bindings.probe->group,
+                               shader->pipeline->bindings.probe->list,
+                               ubo_buffer_handle(scene->ubo, UBOType_ProbeList),
+                               0, ShaderUpdateFlag_ReleasePrevious);
 
   mesh_shader_texture_bind_probe(mesh, plane, scene->ubo);
 }

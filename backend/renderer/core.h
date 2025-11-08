@@ -15,7 +15,6 @@
 #include "backend/registry.h"
 #include "backend/renderer/render_pass/visibility.h"
 #include "backend/stat.h"
-#include "backend/ubo.h"
 #include "render_pass/core.h"
 #include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/render.h"
@@ -33,6 +32,60 @@ typedef enum {
   RendererDrawMode_Solid = 1 << 2,
   RendererDrawMode_Texture = 1 << 3,
 } RendererDrawMode;
+
+/*
+  Renderer has a list of mesh and sublist of mesh pointers that are called
+  during certain render pass.
+  Nothe that the meshes children also holds pointers to this global list, hence
+  it's necessary to take care to handle them accordingly if a mesh is added or
+  removed from the global list.
+
+       Global List (Pool)        Pipeline Lists
+
+                                 [Lit/ Physical Meshes]
+                                 .----------.
+                       .-------> | 0x3948ef |
+                      |	         |----------|
+       .----------.   |  .-----> | 0x49da39 |
+       |  Mesh 1  | --' |        |----------|
+       |----------|     |  .-->  | 0xed93fa |
+       |  Mesh 3  | ----' |      '----------'
+       |----------|       |
+       |  Mesh 4  | ------'
+       |----------|
+       |  Mesh 5  | ------.
+       |----------|       |     [Unlit/ Flat Meshes]
+       |  Mesh 6  | ----. |     .----------.
+       |----------|     |  '--> | 0x48daec |
+       |  Mesh 7  | --. |       |----------|
+       '----------'   | '-----> | 0x7423bc |
+                      |         |----------|
+                      '-------> | 0x3e2baf |
+                                '----------'
+
+   Render pass and Scene Mesh Lists work hand in hand.
+   Meaning by pushing a mesh in a certain Scene Mesh List it will go through a
+   predefined Renderer pipeline.
+
+   The render passes are segmented in 2 global classes:
+   - Dynamic: Will change depending on Render mode (wireframe/solid/textured).
+   - Fixed: Is independant from Render mode.
+
+   Currently the scene offers the following Mesh List depending on requirements:
+
+   .----------.---------------.-----------.----------------.-------------------.
+   |   Name   |  Shadow Pass  |  AO Pass  |  Fixed/Dynamic | Common use case   |
+   |----------+---------------+-----------+----------------+-------------------|
+   |   Lit    |       Y       |     Y     |     Dynamic    | Physical objects  |
+   |----------+---------------+-----------+----------------+-------------------|
+   |  UnLit   |        -      |     -     |     Dynamic    | Flat objects/ UI  |
+   |----------+---------------+-----------+----------------+-------------------|
+   |  Fixed   |        -      |     -     |      Fixed     | Gizmo/ Debug      |
+   '----------'---------------'-----------'----------------'-------------------'
+
+ */
+
+typedef struct Renderer Renderer;
 
 typedef enum {
   RendererPipeline_Undefined = 0,
@@ -57,7 +110,6 @@ typedef enum {
 } RendererMeshPass;
 #define RENDERER_MESH_PASS_COUNT 3
 
-
 typedef enum {
   RendererMeshStates_Hidden,
 } RendererMeshStates;
@@ -71,14 +123,13 @@ typedef enum {
 } RendererStatus;
 
 typedef struct {
-  cclock *clock;
   WGPUColor background;
   const double dpi;
   const int width;
   const int height;
 } RendererCreateDescriptor;
 
-typedef void (*renderer_draw_callback)(void *);
+typedef void (*renderer_draw_callback)(Renderer *, void *);
 
 typedef struct {
   renderer_draw_callback callback;
@@ -90,11 +141,10 @@ typedef struct {
   ssize_t length;
 } RendererDrawCallbackList;
 
-typedef struct Renderer {
+struct Renderer {
 
   reg_id_t id;
 
-  cclock clock; // update clock delta on draw
   Profiler profiler;
 
   // References List (ptr)
@@ -123,19 +173,14 @@ typedef struct Renderer {
 
   RendererDrawMode draw_mode;
   RendererDrawCallbackList callbacks[RENDERER_DRAW_MODE_COUNT];
-  
+
   RenderPassList mesh_pass[RENDERER_DRAW_MODE_COUNT];
   RenderPassList plane_reflection_pass;
   RenderPassList probe_reflection_pass;
   RenderPassList shadow_map_pass;
-  
+
   ComputePass compute_pass;
-
-} Renderer;
-
-typedef struct {
-  Renderer *renderer;
-} RendererRenderDescriptor;
+};
 
 EXTERN_C_BEGIN
 
@@ -144,7 +189,7 @@ void renderer_create(Renderer *, const RendererCreateDescriptor *);
 void renderer_destroy(Renderer *);
 void renderer_set_draw_mode(Renderer *, const RendererDrawMode);
 
-void renderer_draw_layout_callback(void *);
+void renderer_draw_layout_callback(Renderer *, void *);
 
 void renderer_add_draw_callback(Renderer *, renderer_draw_callback, void *,
                                 const int);
@@ -157,10 +202,6 @@ void renderer_draw(Renderer *);
 // accessors
 static inline const RendererDrawMode renderer_draw_mode(Renderer *renderer) {
   return renderer->draw_mode;
-}
-
-static inline cclock *renderer_clock(Renderer *renderer) {
-  return &renderer->clock;
 }
 
 static inline RenderPassList *
@@ -203,11 +244,13 @@ static inline void renderer_reflection_pipeline_meshes(
     pipelines[i] = renderer_pipeline(rd, target_pipelines[i]);
 }
 
+RendererPipeline renderer_get_pso_pipeline(const RenderPipeline *);
+
 #define SCENE_DYNAMIC_PIPELINE_COUNT 3
 static inline void
 renderer_dynamic_pipelines(Renderer *rd,
-                        MeshRefList *list[SCENE_DYNAMIC_PIPELINE_COUNT],
-                        size_t *count) {
+                           MeshRefList *list[SCENE_DYNAMIC_PIPELINE_COUNT],
+                           size_t *count) {
 
   if (count)
     *count = SCENE_DYNAMIC_PIPELINE_COUNT;
@@ -236,7 +279,6 @@ renderer_mesh_pass_list(Renderer *renderer, const RendererDrawMode mode) {
 }
 
 // Scene related functions
-
 
 /**
 
@@ -276,12 +318,6 @@ static inline RendererStatus renderer_show_mesh(Renderer *rd, Mesh *mesh) {
   mesh_ref_list_remove(renderer_mesh_state(rd, RendererMeshStates_Hidden),
                        mesh);
 
-  // GLUEME
-  //{
-  //  scene_stat_update_draw_call_count(scene);
-  //  scene_stat_update_vertex_count(scene);
-  //}
-
   return RendererStatus_Success;
 }
 
@@ -297,12 +333,6 @@ static inline RendererStatus renderer_hide_mesh(Renderer *rd, Mesh *mesh) {
   mesh_ref_list_insert(renderer_mesh_state(rd, RendererMeshStates_Hidden),
                        mesh);
 
-  // GLUEME
-  //{
-  //  scene_stat_update_draw_call_count(scene);
-  //  scene_stat_update_vertex_count(scene);
-  //}
-
   return RendererStatus_Success;
 }
 
@@ -313,12 +343,6 @@ static inline RendererStatus renderer_show_mesh_ref_list(Renderer *rd,
     render_pass_list_enable_mesh_ref_list(
         renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i)), list);
 
-  // GLUEME
-  //{
-  //  scene_stat_update_draw_call_count(scene);
-  //  scene_stat_update_vertex_count(scene);
-  //}
-
   return RendererStatus_Success;
 }
 
@@ -328,12 +352,6 @@ static inline RendererStatus renderer_hide_mesh_ref_list(Renderer *rd,
   for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
     render_pass_list_disable_mesh_ref_list(
         renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i)), list);
-
-  // GLUEME
-  //{
-  //  scene_stat_update_draw_call_count(scene);
-  //  scene_stat_update_vertex_count(scene);
-  //}
 
   return RendererStatus_Success;
 }
@@ -351,6 +369,9 @@ static inline RendererStatus renderer_visibility_toggle_mesh(Renderer *rd,
   }
 }
 
+void renderer_update_pass_texture(Renderer *, int, int,
+                                  const RenderPipelineMultisampleCount,
+                                  const double);
 
 EXTERN_C_END
 

@@ -16,7 +16,19 @@
 #include "utils/dyli.h"
 #include "webgpu/webgpu.h"
 
-// ShaderBufferLifetime
+static inline void shader_update_error_null_value(const char *, const char *,
+                                                  const bind_group_index,
+                                                  const bind_index);
+
+void shader_update_error_null_value(const char *shader_name, const char *type,
+                                    const bind_group_index gp_index,
+                                    const bind_index index) {
+  logger_add(LoggerFlag_Error,
+             "Attempting to update shader '%s' with a null value of type '%s', "
+             "for bind group "
+             "%u, binding %u.",
+             shader_name, type, gp_index, index);
+}
 
 /*TODO: BATCH UPDATE : like add, take a bunch of entry and ONLY REBUILD at the
  * end of update*/
@@ -25,6 +37,11 @@ shader_update_texture_view(Shader *shader, const bind_group_index group_index,
                            const bind_index index, WGPUTextureView view,
                            WGPUTextureFormat format,
                            const ShaderUpdateFlag flag) {
+
+  if (!view) {
+    shader_update_error_null_value(shader->name, "view", group_index, index);
+    return NULL;
+  }
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupTextureEntry *bound_texture =
@@ -64,6 +81,12 @@ shader_update_uniform_data(Shader *shader, const bind_group_index group_index,
                            const bind_index index, void *data,
                            const ShaderUpdateFlag flag) {
 
+  if (!data) {
+    shader_update_error_null_value(shader->name, "buffer data", group_index,
+                                   index);
+    return NULL;
+  }
+
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
   ShaderBindGroupUniformEntry *bound_uniform =
@@ -102,6 +125,11 @@ ShaderBindGroupUniformEntry *
 shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
                              const bind_index index, WGPUBuffer buffer,
                              const size_t offset, const ShaderUpdateFlag flag) {
+
+  if (!buffer) {
+    shader_update_error_null_value(shader->name, "buffer", group_index, index);
+    return NULL;
+  }
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
 
@@ -220,6 +248,11 @@ ShaderBindGroupUniformEntry *shader_update_uniform_callback(
 ShaderBindGroupSamplerEntry *shader_update_sampler(
     Shader *shader, const bind_group_index group_index, const bind_index index,
     const WGPUSamplerDescriptor *sampler, const ShaderUpdateFlag flag) {
+
+  if (!sampler) {
+    shader_update_error_null_value(shader->name, "sampler", group_index, index);
+    return NULL;
+  }
 
   ShaderBindGroup *bind_group = shader_find_bind_group(shader, group_index);
   ShaderBindGroupSamplerEntry *bound_sampler =

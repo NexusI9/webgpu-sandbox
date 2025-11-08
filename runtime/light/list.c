@@ -1,6 +1,7 @@
 #include "list.h"
 
 #include "backend/logger.h"
+#include "backend/renderer/shadow_map/core.h"
 #include "backend/resource_manager.h"
 #include "backend/ubo.h"
 #include "core.h"
@@ -53,6 +54,7 @@ StaticListStatus light_list_create(LightList *list, size_t capacity) {
   for (size_t i = 0; i < 7; i++)
     stli_create(light_static_list[i].capacity, light_static_list[i].length,
                 capacity, light_static_list[i].label);
+
 
   return StaticListStatus_Success;
 }

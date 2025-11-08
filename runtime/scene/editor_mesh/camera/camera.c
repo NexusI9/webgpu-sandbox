@@ -20,6 +20,7 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/editor_mesh/list.h"
 #include "runtime/scene/editor_mesh/builder/builder.h"
+#include "runtime/systems/scene_editor_mesh_system.h"
 #include "utils/color.h"
 
 void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
@@ -58,10 +59,9 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
 
 
   // set callback
-  //FIXME
-  //icon->transform_callback[GizmoMode_Position] = sem_camera_set_position;
-  //icon->transform_callback[GizmoMode_Rotation] = sem_camera_set_rotation;
-  //icon->transform_callback[GizmoMode_Scale] = sem_camera_set_scale;
+  icon->transform_callback[GizmoMode_Position] = sem_system_camera_set_position;
+  icon->transform_callback[GizmoMode_Rotation] = sem_system_camera_set_rotation;
+  icon->transform_callback[GizmoMode_Scale] = sem_system_camera_set_scale;
 
   SceneEditorMesh *cube = sem_list_new_entry(list);
   cube->mesh = rem_new_mesh();
@@ -101,10 +101,9 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
   mesh_set_position(cube->mesh, (vec3){0.0f, 1.0f, 0.0f});
 
   // set callback
-  // FIXME
-  //cube->transform_callback[GizmoMode_Position] = sem_camera_set_position;
-  //cube->transform_callback[GizmoMode_Rotation] = sem_camera_set_rotation;
-  //cube->transform_callback[GizmoMode_Scale] = sem_camera_set_scale;
+  cube->transform_callback[GizmoMode_Position] = sem_system_camera_set_position;
+  cube->transform_callback[GizmoMode_Rotation] = sem_system_camera_set_rotation;
+  cube->transform_callback[GizmoMode_Scale] = sem_system_camera_set_scale;
 
   // set fov deformation
   sem_camera_fov(list, 90.0f);

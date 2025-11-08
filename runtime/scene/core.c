@@ -1,7 +1,5 @@
 #include "core.h"
 
-#include "./draw_config.h"
-#include "./editor/editor.h"
 #include "./layer.h"
 #include "backend/clock.h"
 #include "backend/context.h"
@@ -12,12 +10,10 @@
 #include "backend/ubo.h"
 #include "debug/core.h"
 #include "event/event.html.h"
-#include "renderer/render_pass/core.h"
 #include "runtime/camera/core.h"
 #include "runtime/camera/list.h"
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
-#include "runtime/light/shadow_map/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/list.h"
 #include "runtime/mesh/ref_list.h"
@@ -26,18 +22,16 @@
 #include "runtime/probe/reflection/core.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
+#include "runtime/scene/editor_mesh/list.h"
 #include "runtime/scene/environment/core.h"
 #include "runtime/scene/stat.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
+#include "utils/dyli.h"
 
 // initializers
-static inline Camera *scene_init_main_camera(Scene *, cclock *);
-static inline void scene_light_list_init(Scene *);
+static inline Camera *scene_init_main_camera(Scene *);
 static inline void scene_camera_init(Scene *);
-static inline void
-scene_probe_reflection_init(Scene *, const RenderPipelineMultisampleCount);
-static inline void scene__create_grid(Scene *);
 
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
@@ -61,10 +55,27 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
 {
 
-  /*  ===== LISTS ===== */
+  /*  ===== MESH | SEM | LAYERS | LIGHTS | PROBES LISTS ===== */
+  mesh_ref_list_create(&scene->meshes, SCENE_MESH_LIST_DEFAULT_CAPACITY);
+  sem_list_array_create(&scene->editor_meshes,
+                        SCENE_EDITOR_OBJECT_LIST_CAPACITY_DEFAULT);
+
   scene_layer_init(&scene->layers);
-  scene_light_list_init(scene);
-  scene_probe_reflection_init(scene, context_multisample());
+
+  {
+    light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
+    scene->lights.ubo_slot = ubo_new_entry(scene->ubo, UBOType_LightList);
+  }
+
+  {
+    scene->probes.ubo_slot = ubo_new_entry(scene->ubo, UBOType_ProbeList);
+
+    probe_reflection_grid_list_create(&scene->probes.reflection_probe,
+                                      PROBE_REFLECTION_GRID_LIST_CAPACITY);
+
+    probe_reflection_plane_list_create(&scene->probes.reflection_plane,
+                                       PROBE_REFLECTION_GRID_LIST_CAPACITY);
+  }
 }
 
 {
@@ -79,13 +90,9 @@ void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
                                         .height = context_height(),
                                     });
 
-  {
-    scene->viewport.ubo_slot = ubo_new_entry(scene->ubo, UBOType_Viewport);
-
-    viewport_uniform_update(&scene->viewport);
-
-    ubo_upload_entry(scene->ubo, UBOType_Viewport, &scene->viewport.ubo_slot);
-  }
+  scene->viewport.ubo_slot = ubo_new_entry(scene->ubo, UBOType_Viewport);
+  viewport_uniform_update(&scene->viewport);
+  ubo_upload_entry(scene->ubo, UBOType_Viewport, &scene->viewport.ubo_slot);
 }
 
 {
@@ -111,8 +118,7 @@ void scene_camera_init(Scene *scene) {
 
   // create camera list, and set active camera
   camera_list_create(&scene->cameras, SCENE_CAMERA_LIST_CAPACITY);
-  scene->camera =
-      scene_init_main_camera(scene, renderer_clock(&scene->renderer));
+  scene->camera = scene_init_main_camera(scene);
 
   // set scene main camera as active
   scene->active_camera = scene->camera;
@@ -121,14 +127,13 @@ void scene_camera_init(Scene *scene) {
 /**
    Define scene main edit camera
  */
-Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
+Camera *scene_init_main_camera(Scene *scene) {
 
   Camera *camera = camera_list_new_camera(&scene->cameras);
 
   // create main camera
   camera_create(camera, &(CameraCreateDescriptor){
                             .speed = 20.0f,
-                            .clock = clock,
                             .mode = CameraMode_Edit,
                             .sensitivity =
                                 {
@@ -149,39 +154,6 @@ Camera *scene_init_main_camera(Scene *scene, cclock *clock) {
   return camera;
 }
 
-void scene_probe_reflection_init(
-    Scene *scene, const RenderPipelineMultisampleCount multisample) {
-
-  const ScenePipeline reflection_pipelines[2] = {
-      ScenePipeline_Dynamic_LitShadow,
-      ScenePipeline_Dynamic_Lit,
-  };
-
-  RenderPassDrawListDescriptor reflection_draw_list = {.length = 2};
-  for (uint8_t i = 0; i < 2; i++)
-    reflection_draw_list.entries[i] = (RenderPassDrawLayoutDescriptor){
-        .shader = MeshShader_Reflection,
-        .topology_callback = mesh_topology_base,
-        .meshes = scene_pipeline(scene, reflection_pipelines[i]),
-        .mesh_preprocessor_callback = probe_reflection_list_draw_preprocessor,
-    };
-
-  ProbeReflectionListDescriptor reflection_config = {
-      .capacity = PROBE_REFLECTION_GRID_LIST_CAPACITY,
-      .multisample = multisample,
-      .resolution = TextureResolution_512,
-      .draw_list = &reflection_draw_list,
-  };
-
-  scene->probes.ubo_slot = ubo_new_entry(scene->ubo, UBOType_ProbeList);
-
-  probe_reflection_grid_list_create(&scene->probes.reflection_probe,
-                                    &reflection_config);
-
-  probe_reflection_plane_list_create(&scene->probes.reflection_plane,
-                                     &reflection_config);
-}
-
 /**
    Quick access to a scene layer mesh list.
  */
@@ -193,34 +165,6 @@ MeshRefList *scene_layer_meshes(Scene *scene, const char *name) {
     return NULL;
 
   return &layer->meshes;
-}
-
-void scene_light_list_init(Scene *scene) {
-
-  light_list_create(&scene->lights, LIGHT_MAX_CAPACITY);
-
-  scene->lights.ubo_slot = ubo_new_entry(scene->ubo, UBOType_LightList);
-
-  // init shadow textures
-  shadow_map_init(&(ShadowMapInitDescriptor){
-      .lights = &scene->lights,
-      .draw_list =
-          &(RenderPassDrawListDescriptor){
-              .length = 1,
-              .entries =
-                  {
-                      {
-                          .shader = MeshShader_Shadow,
-                          .topology_callback = mesh_topology_base,
-                          .mesh_preprocessor_callback =
-                              shadow_map_pass_preprocessor_callback,
-                          .mesh_preprocessor_data = (void *)NULL,
-                          .meshes = scene_pipeline(
-                              scene, ScenePipeline_Dynamic_LitShadow),
-                      },
-                  },
-          },
-  });
 }
 
 void scene_destroy(Scene *scene) {

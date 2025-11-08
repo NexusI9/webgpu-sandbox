@@ -19,11 +19,6 @@ typedef enum {
 } ProbeReflectionUBOField;
 
 typedef struct {
-  const RenderPassDrawListDescriptor *draw_list;
-  const size_t capacity;
-} ProbeReflectionListDescriptor;
-
-typedef struct {
   SceneDebug *scene_debug;
   const uint8_t max_views;
 } ProbeReflectionListDebug;
@@ -42,11 +37,5 @@ typedef struct {
   const char *label;
 } ProbeReflectionCreateList;
 
-EXTERN_C_BEGIN
-
-DynamicListStatus
-probe_reflection_list_create_core(const ProbeReflectionCreateList *);
-
-EXTERN_C_END
 
 #endif

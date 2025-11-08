@@ -7,14 +7,14 @@
 
 #include "./core.h"
 #include "backend/registry.h"
+#include "backend/renderer/render_pass/core.h"
+#include "backend/renderer/render_pass/render_pass.h"
 #include "backend/ubo.h"
 #include "cglm/cglm.h"
 #include "runtime/camera/core.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/mesh/core.h"
 #include "runtime/probe/uniform.h"
-#include "backend/renderer/render_pass/core.h"
-#include "backend/renderer/render_pass/render_pass.h"
 #include "utils/dyli.h"
 #include "utils/name.h"
 
@@ -60,9 +60,8 @@ typedef struct {
 } ProbeReflectionPlaneDescriptor;
 
 /* === Plane List === */
-DynamicListStatus
-probe_reflection_plane_list_create(ProbeReflectionPlaneList *,
-                                   const ProbeReflectionListDescriptor *);
+DynamicListStatus probe_reflection_plane_list_create(ProbeReflectionPlaneList *,
+                                                     const size_t);
 
 DynamicListStatus probe_reflection_plane_list_insert(ProbeReflectionPlaneList *,
                                                      ProbeReflectionPlane *);

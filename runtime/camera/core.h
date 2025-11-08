@@ -41,7 +41,6 @@ typedef struct {
 } CameraSensitivity;
 
 typedef struct {
-  cclock *clock;
   float speed;
   CameraMode mode;
   CameraSensitivity sensitivity;
@@ -57,7 +56,6 @@ typedef struct {
 
 struct Camera {
 
-  cclock *clock;
   reg_id_t id;
 
   vec3 position;

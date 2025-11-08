@@ -22,6 +22,11 @@
 #include "runtime/input/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/core.h"
+#include "runtime/systems/light_system.h"
+#include "runtime/systems/probe_system.h"
+#include "runtime/systems/scene_system.h"
+#include "runtime/systems/selection_system.h"
+#include "runtime/systems/ubo_system.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
 
@@ -51,6 +56,7 @@ int main(int argc, const char *argv[]) {
 
   UBOManager *ubo = rem_new_ubo();
   ubo_init(ubo);
+  ubo_system_register_draw_callback(ubo, renderer);
 
   Scene *scene = rem_new_scene();
   scene_create(scene, &(SceneCreateDescriptor){
@@ -63,19 +69,24 @@ int main(int argc, const char *argv[]) {
                               },
                       });
 
-  renderer_set_draw_mode(renderer, RendererDrawMode_Solid);
-  renderer_draw_scene(renderer, scene);
+  scene_system_create_grid(scene, renderer);
+  selection_system_init(&scene->selection, scene, renderer);
+  light_system_init_shadow_map(&scene->lights, renderer);
+  probe_system_init_reflection_pass(&scene->probes, renderer);
+
+  scene_system_set_draw_mode(scene, renderer, RendererDrawMode_Solid);
 
   Gui *gui = rem_new_gui();
   gui_init(gui, &(GUIDescriptor){
                     .active_scene = scene,
+                    .renderer = renderer,
                     .theme = &g_theme,
                     .dpi = g_context.dpi,
                 });
 
   // example_light(&main_scene);
-  example_skybox(scene);
-  example_gltf_spa(scene);
+  example_skybox(scene, renderer);
+  example_gltf_spa(scene, renderer);
 
   // example_ao(&main_scene, true);
   // example_glass_box(&main_scene);

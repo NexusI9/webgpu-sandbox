@@ -21,8 +21,6 @@
 #include "runtime/light/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/draw.h"
-#include "runtime/scene/editor/selection/core.h"
 #include "webgpu/webgpu.h"
 #include <cstdio>
 #include <cstdlib>

@@ -1,5 +1,6 @@
 #include "context.h"
 #include "./resource_manager.h"
+#include "backend/clock.h"
 #include "backend/logger.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_texture/core.h"
@@ -70,6 +71,8 @@ ContextStatus context_init(const ContextDescriptor *desc) {
 
     theme_set_icons_coordinates(&g_theme, theme_default_icon);
   });
+
+  TIMER("Clock", { clock_init(&g_clock); });
 
   TIMER("Standard Shaders", {
     standard_render_pipelines_init(desc->render.multisample_count);

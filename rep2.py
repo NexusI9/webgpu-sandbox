@@ -8,7 +8,7 @@ EXTENSIONS = (".c", ".cpp", ".h", ".hpp")
 
 # Replacement rules (order matters to avoid conflicts)
 REPLACEMENTS = [
-    ("&scene->ubo", "scene->ubo"),
+    ("scene_system_scene_render_pass_texture(scene,", "renderer_update_pass_texture("),
 ]
 
 # Folders to exclude

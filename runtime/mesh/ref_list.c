@@ -62,7 +62,7 @@ DynamicListStatus mesh_ref_list_remove_at_index(MeshRefList *list,
  */
 Mesh *mesh_ref_list_find(const MeshRefList *list, const Mesh *mesh,
                          size_t *index) {
-
+  
   for (size_t i = 0; i < list->length; i++)
     if (list->entries[i] == mesh) {
       if (index)

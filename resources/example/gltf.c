@@ -14,14 +14,16 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
+#include "runtime/systems/scene_system.h"
 #include "runtime/texture/core.h"
 
-void example_gltf(Scene *scene) {
+void example_gltf(Scene *scene, Renderer *renderer) {
   loader_gltf_load(
       &(GLTFLoadDescriptor){
           .scene = scene,
           .path = "./resources/assets/gltf/cube.gltf",
           .cgltf_options = &(cgltf_options){0},
+          .renderer = renderer,
           .options =
               &(LoaderGLTFOptions){
                   .max_texture_size = TextureResolution_512,
@@ -30,9 +32,9 @@ void example_gltf(Scene *scene) {
       NULL);
 }
 
-void example_gltf_spa(Scene *scene) {
+void example_gltf_spa(Scene *scene, Renderer *renderer) {
 
-  //  scene_add_point_light(scene,
+  //  scene_system_add_point_light(scene, renderer,
   //                        &(PointLightDescriptor){
   //                            .color = {0.4f, 0.0f, 1.0f, 1.0f},
   //                            .intensity = 7.0f,
@@ -44,8 +46,8 @@ void example_gltf_spa(Scene *scene) {
   //                        },
   //                        LightCreateFlag_None, NULL);
 
-  scene_add_sun_light(
-      scene,
+  scene_system_add_sun_light(
+      scene, renderer,
       &(SunLightDescriptor){
           .position = {10.8f, 12.0f, -15.0f},
           .color = {241.0f / 255.0f, 120.0f / 255.0f, 82.0f / 255.0f, 1.0f},
@@ -54,19 +56,20 @@ void example_gltf_spa(Scene *scene) {
       },
       LightCreateFlag_Shadow, NULL);
 
-  scene_add_ambient_light(scene,
-                          &(AmbientLightDescriptor){
-                              .color = {0.0f, 0.4f, 1.0f, 1.0f},
-                              .intensity = 0.2f,
-                              .position = {-2.0f, 3.0f, 3.3f},
-                          },
-                          NULL);
+  scene_system_add_ambient_light(scene, renderer,
+                                 &(AmbientLightDescriptor){
+                                     .color = {0.0f, 0.4f, 1.0f, 1.0f},
+                                     .intensity = 0.2f,
+                                     .position = {-2.0f, 3.0f, 3.3f},
+                                 },
+                                 NULL);
 
   loader_gltf_load(
       &(GLTFLoadDescriptor){
           .scene = scene,
           .path = "./resources/assets/gltf/spa.gltf",
           .cgltf_options = &(cgltf_options){0},
+          .renderer = renderer,
           .options =
               &(LoaderGLTFOptions){
                   .max_texture_size = TextureResolution_512,
@@ -75,14 +78,16 @@ void example_gltf_spa(Scene *scene) {
       NULL);
 
   // adjust Post FX
-  scene_post_fx_set_bloom(scene, (BloomUniform){
+  scene_system_set_post_fx_bloom(scene, renderer,
+                                 (BloomUniform){
                                      .blur = 2,
                                      .downscale = 3,
                                      .knee = 0.450,
                                      .threshold = 0.300,
                                  });
 
-  scene_post_fx_set_composite(scene, (CompositeUniform){
+  scene_system_set_post_fx_composite(scene, renderer,
+                                     (CompositeUniform){
                                          .exposure = 1.020,
                                          .bloom_intensity = 0.320f,
                                          .gamma = 0.920,
@@ -91,7 +96,7 @@ void example_gltf_spa(Scene *scene) {
                                      });
 }
 
-void example_gltf_podium(Scene *scene) {
+void example_gltf_podium(Scene *scene, Renderer *renderer) {
 
   LoaderGLTFResult gltf_result;
   LoaderGLTFStatus status = loader_gltf_load(
@@ -108,18 +113,18 @@ void example_gltf_podium(Scene *scene) {
 
   // create a new planar reflection for the podium
   ProbeReflectionPlane *plane;
-  SceneEditorMeshList *plane_probe =
-      scene_add_probe_reflection_plane(scene,
-                                       &(ProbeReflectionPlaneDescriptor){
-                                           .far = 100.0f,
-                                           .near = 0.1f,
-                                           .normal = {0.0f, 1.0f, 0.0f},
-                                           .position = {0.0f, 1.0f, 0.0f},
-                                           .scale = {10.0f, 10.0f, 10.0f},
-                                           .distance = 1.0f,
-                                           .camera = scene->active_camera,
-                                       },
-                                       &plane);
+  SceneEditorMeshList *plane_probe = scene_system_add_probe_reflection_plane(
+      scene, renderer,
+      &(ProbeReflectionPlaneDescriptor){
+          .far = 100.0f,
+          .near = 0.1f,
+          .normal = {0.0f, 1.0f, 0.0f},
+          .position = {0.0f, 1.0f, 0.0f},
+          .scale = {10.0f, 10.0f, 10.0f},
+          .distance = 1.0f,
+          .camera = scene->active_camera,
+      },
+      &plane);
 
   const char *podium_name = "podium";
   Mesh *podium = mesh_ref_list_find_by_name(

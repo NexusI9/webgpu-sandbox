@@ -17,7 +17,6 @@ void camera_create(Camera *cam, const CameraCreateDescriptor *cd) {
 
   // assign additional attributes
   cam->speed = cd->speed;
-  cam->clock = cd->clock;
   cam->mode = cd->mode;
   cam->sensitivity = cd->sensitivity;
 }

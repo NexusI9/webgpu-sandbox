@@ -16,24 +16,17 @@ typedef struct {
   float size;
   float cell_size;
   float thickness;
-} GizmoGridUniform;
+} GridUniform;
+
 
 typedef struct {
-
-  GizmoGridUniform uniform;
-
-} GizmoGridCreateDescriptor;
-
-typedef struct {
-
-  GizmoGridUniform uniform;
-
+  GridUniform uniform;
   Camera *camera;
   Viewport *viewport;
 
 } GizmoGrid;
 
 
-void sem_grid_create(Mesh *, GizmoGridCreateDescriptor *);
+void sem_grid_create(Mesh *, const GridUniform *);
 
 #endif

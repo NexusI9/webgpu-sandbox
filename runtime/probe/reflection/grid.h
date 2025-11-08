@@ -8,9 +8,9 @@
 
 #include "./core.h"
 #include "backend/registry.h"
+#include "backend/renderer/render_pass/core.h"
 #include "runtime/geometry/aabb/aabb.h"
 #include "runtime/probe/reflection/probe.h"
-#include "backend/renderer/render_pass/core.h"
 #include "utils/dyli.h"
 
 #define PROBE_REFLECTION_RESOLUTION 512
@@ -19,8 +19,8 @@
 #define PROBE_REFLECTION_GRID_MAX_COUNT 3
 // N^3 max probes per grid
 #define PROBE_REFLECTION_LIST_MAX_COUNT                                        \
-  PROBE_REFLECTION_GRID_MAX_COUNT *PROBE_REFLECTION_GRID_MAX_COUNT             \
-      *PROBE_REFLECTION_GRID_MAX_COUNT
+  PROBE_REFLECTION_GRID_MAX_COUNT                                              \
+  *PROBE_REFLECTION_GRID_MAX_COUNT *PROBE_REFLECTION_GRID_MAX_COUNT
 
 // 16 grid per list
 #define PROBE_REFLECTION_GRID_LIST_CAPACITY 8
@@ -51,7 +51,6 @@ typedef struct {
   const char *name;
 } ProbeReflectionGridDescriptor;
 
-
 void probe_reflection_grid_create(ProbeReflectionGrid *,
                                   ProbeReflectionGridDescriptor *);
 
@@ -71,9 +70,8 @@ static inline void probe_reflection_grid_set_name(ProbeReflectionGrid *grid,
 
 /* === Probe Grid List  === */
 
-DynamicListStatus
-probe_reflection_grid_list_create(ProbeReflectionGridList *,
-                                  const ProbeReflectionListDescriptor *);
+DynamicListStatus probe_reflection_grid_list_create(ProbeReflectionGridList *,
+                                                    const size_t);
 
 DynamicListStatus probe_reflection_grid_list_insert(ProbeReflectionGridList *,
                                                     ProbeReflectionGrid *);
@@ -85,9 +83,6 @@ DynamicListStatus probe_reflection_grid_list_remove(ProbeReflectionGridList *,
                                                     ProbeReflectionGrid *);
 
 DynamicListStatus probe_reflection_grid_list_destroy(ProbeReflectionGridList *);
-
-void probe_reflection_grid_list_draw(ProbeReflectionGridList *,
-                                     ProbeReflectionListDebug *);
 
 size_t probe_reflection_grid_list_probe_count(ProbeReflectionGridList *);
 #endif

@@ -11,9 +11,10 @@
 #include "runtime/primitive/cube.h"
 #include "runtime/scene/add.h"
 #include "runtime/shader/core.h"
+#include "runtime/systems/scene_system.h"
 
 void example_primitive(Mesh *cube, vec3 position, Scene *scene,
-                       const RenderPipeline *pipeline) {
+                       Renderer *renderer, const RenderPipeline *pipeline) {
 
   Primitive cube_prim = primitive_cube();
   // cube = scene_new_mesh(scene);
@@ -30,5 +31,5 @@ void example_primitive(Mesh *cube, vec3 position, Scene *scene,
 
   mesh_set_position(cube, position);
 
-  scene_add_mesh(scene, cube, NULL, SceneAddFlag_None);
+  scene_system_add_mesh(scene, renderer, cube, NULL, SceneAddFlag_None);
 }

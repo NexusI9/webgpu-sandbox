@@ -1,13 +1,13 @@
 #ifndef _LOADER_GLTF_H_
 #define _LOADER_GLTF_H_
 
-#include <webgpu/webgpu.h>
 #include <stddef.h>
+#include <webgpu/webgpu.h>
 
-#include "runtime/scene/scene.h"
 #include "cgltf/cgltf.h"
 #include "runtime/mesh/core.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/scene.h"
 #include "runtime/texture/core.h"
 
 typedef enum {
@@ -51,11 +51,13 @@ typedef struct {
 
 typedef struct {
   Scene *scene;
+  Renderer *renderer;
   const char *path;
   const LoaderGLTFOptions *options;
   const cgltf_options *cgltf_options;
 } GLTFLoadDescriptor;
 
-LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *, LoaderGLTFResult *);
+LoaderGLTFStatus loader_gltf_load(const GLTFLoadDescriptor *,
+                                  LoaderGLTFResult *);
 
 #endif

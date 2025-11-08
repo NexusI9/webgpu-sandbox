@@ -3,17 +3,13 @@
 
 #include <stddef.h>
 
-#include "runtime/texture/texture.h"
+#include "backend/compute/mipmap.h"
 #include "runtime/prefab/prefab.h"
 #include "runtime/scene/core.h"
 #include "runtime/texture/core.h"
 #include "runtime/texture/create.h"
+#include "runtime/texture/texture.h"
 #include "runtime/texture/write.h"
-#include "runtime/scene/core.h"
-#include "runtime/texture/core.h"
-#include "runtime/texture/create.h"
-#include "runtime/texture/write.h"
-#include "backend/compute/mipmap.h"
 
 typedef struct {
   const mip_t blur;
@@ -26,8 +22,9 @@ typedef struct {
   const TextureGradient stops;
 } PrefabSkyboxGradientCreateDescriptor;
 
-void prefab_skybox_create(Scene *, const PrefabSkyboxCreateDescriptor *);
+void prefab_skybox_create(Scene *, Renderer *,
+                          const PrefabSkyboxCreateDescriptor *);
 
 void prefab_skybox_gradient_create(
-    Scene *, const PrefabSkyboxGradientCreateDescriptor *);
+    Scene *, Renderer *, const PrefabSkyboxGradientCreateDescriptor *);
 #endif

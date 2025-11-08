@@ -217,7 +217,7 @@ post_fx_composite_update_uniform(PostFx *fx,
    1. validate if not already created
    2. define core attributes: pipeline, view(s), uniforms
    3. create bindgroup
-   4. update fx callbacks and length (i.e. subscribe to draw loop)
+   4. update fx callbacks and length (i.e. register to draw loop)
  */
 PostFxStatus post_fx_blit_create(PostFx *fx) {
 

@@ -3,6 +3,7 @@
 
 #include "backend/clock.h"
 #include "backend/registry.h"
+#include "backend/renderer/core.h"
 #include "backend/theme/core.h"
 #include "emscripten/html5.h"
 #include "runtime/gui/tree.h"
@@ -33,6 +34,8 @@ typedef struct {
 
   GUITree tree;
   Scene *active_scene;
+  Renderer *renderer; // TODO make a gui_system instead of passing scene and
+                      // renderer in it
   Theme *theme;
 
 } Gui;
@@ -41,6 +44,7 @@ typedef struct {
   double dpi;
   Theme *theme;
   Scene *active_scene;
+  Renderer *renderer;
 } GUIDescriptor;
 
 // prevent c++ mangling
@@ -49,7 +53,7 @@ EXTERN_C_BEGIN
 GUIStatus gui_init(Gui *, const GUIDescriptor *);
 void gui_destroy(Gui *);
 
-void gui_draw_callback(void *);
+void gui_draw_callback(Renderer *, void *);
 
 bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent,
                       void *userData);

@@ -15,16 +15,6 @@ void sem_list_ambient_light_get_position(SceneEditorMeshList *, vec3);
 void sem_list_ambient_light_get_rotation(SceneEditorMeshList *, vec3);
 void sem_list_ambient_light_get_scale(SceneEditorMeshList *, vec3);
 
-// mutator (general usage)
-void sem_list_ambient_light_set_position(SceneEditorMeshList *, vec3);
-void sem_list_ambient_light_set_rotation(SceneEditorMeshList *, vec3);
-void sem_list_ambient_light_set_scale(SceneEditorMeshList *, vec3);
-
-// mutator (used in gizmo)
-void sem_ambient_light_set_position(SceneEditorMesh *, vec3);
-void sem_ambient_light_set_rotation(SceneEditorMesh *, vec3);
-void sem_ambient_light_set_scale(SceneEditorMesh *, vec3);
-
 EXTERN_C_END
 
 #endif

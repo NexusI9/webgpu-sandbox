@@ -53,7 +53,7 @@ void UI::ClockTab::draw() {
   const size_t length = 6;
   for (int i = 0; i < length; i++)
     bars[i].value =
-        profiler_latency_get_elapsed(&scene->renderer.profiler, bars[i].type);
+        profiler_latency_get_elapsed(&renderer->profiler, bars[i].type);
 
   // sort
   qsort(bars, length, sizeof(ClockTabBar), qsort_callback);

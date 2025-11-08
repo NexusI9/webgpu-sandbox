@@ -75,14 +75,7 @@ SceneStatus scene_add_mesh(Scene *, Mesh *, const char *, const SceneAddFlag);
 void scene_add_mesh_ref_list(Scene *, MeshRefList *, const char *,
                              const SceneAddFlag);
 
-void scene_add_mesh_pipeline(Scene *, Mesh *, const ScenePipeline, const char *,
-                             const SceneAddFlag);
-
-void scene_add_mesh_pipeline_ref_list(Scene *, MeshRefList *,
-                                      const ScenePipeline, const char *,
-                                      const SceneAddFlag);
-
-void scene_remove_mesh(Scene *, Mesh *, const ScenePipeline);
-void scene_remove_mesh_ref_list(Scene *, MeshRefList *, const ScenePipeline);
+void scene_remove_mesh(Scene *, Mesh *);
+void scene_remove_mesh_ref_list(Scene *, MeshRefList *);
 
 #endif

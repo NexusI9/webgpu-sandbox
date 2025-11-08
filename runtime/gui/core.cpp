@@ -1,9 +1,12 @@
 #include "core.h"
 #include "./imgui_style/style.carbon.hpp"
+#include "backend/clock.h"
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/profiler.h"
 #include "backend/registry.h"
+#include "backend/renderer/core.h"
+#include "backend/renderer/render_pass/core.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/theme/core.h"
 #include "backend/ubo.h"
@@ -27,14 +30,6 @@
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/draw.h"
-#include "runtime/scene/editor/selection/core.h"
-#include "runtime/scene/editor/selection/filter.h"
-#include "runtime/scene/editor/selection/gizmo/core.h"
-#include "runtime/scene/editor/selection/utils.h"
-#include "backend/renderer/core.h"
-#include "backend/renderer/render_pass/core.h"
-#include "runtime/scene/show.h"
 #include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
@@ -75,6 +70,7 @@ GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
     gui->dpi = desc->dpi;
     gui->theme = desc->theme;
     gui->active_scene = desc->active_scene;
+    gui->renderer = desc->renderer;
     gui_create_texture(gui);
     gui_tree_create(&gui->tree, GUI_TREE_CAPACITY);
 
@@ -104,22 +100,21 @@ GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
     ImGui_ImplWGPU_Init(&info);
   }
 
-  renderer_add_draw_callback(
-      &gui->active_scene->renderer, gui_draw_callback, (void *)gui,
-      RendererDrawMode_Texture | RendererDrawMode_Solid |
-          RendererDrawMode_Wireframe | RendererDrawMode_Boundbox);
+  renderer_add_draw_callback(gui->renderer, gui_draw_callback, (void *)gui,
+                             RendererDrawMode_Texture | RendererDrawMode_Solid |
+                                 RendererDrawMode_Wireframe |
+                                 RendererDrawMode_Boundbox);
 
   return GUIStatus_Success;
 }
 
-void gui_draw_callback(void *data) {
+void gui_draw_callback(Renderer *renderer, void *data) {
+
   Gui *gui = (Gui *)data;
 
-  profiler_latency_end(&gui->active_scene->renderer.profiler,
-                       ProfilerLatencyType_UIPass);
+  profiler_latency_end(&gui->renderer->profiler, ProfilerLatencyType_UIPass);
 
-  profiler_latency_start(&gui->active_scene->renderer.profiler,
-                         ProfilerLatencyType_UIPass);
+  profiler_latency_start(&gui->renderer->profiler, ProfilerLatencyType_UIPass);
 
   WGPUCommandEncoderDescriptor com_enc_desc = {.label = "Scene UI Command"};
   WGPUCommandEncoder command_encoder =
@@ -158,7 +153,7 @@ void gui_draw_callback(void *data) {
     ImGuiIO &io = ImGui::GetIO();
     io.DisplaySize.x = gui_size(gui, context_width());
     io.DisplaySize.y = gui_size(gui, context_height());
-    io.DeltaTime = gui->active_scene->renderer.clock.delta;
+    io.DeltaTime = g_clock.delta;
     io.FontGlobalScale = gui->dpi;
     io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
     io.MousePos =

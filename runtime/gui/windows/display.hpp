@@ -17,24 +17,24 @@ typedef enum {
 class Display : public Window {
 
 public:
-  Display(Gui* gui, const char *label) : Window(gui, label) {}
+  Display(Gui *gui, const char *label) : Window(gui, label) {}
   static int state;
   void draw() override;
 
 private:
   static constexpr int filter_length = 5;
 
-  static void checkbox_on_change_base(Scene *, bool, void *);
-  static void checkbox_on_change_grid(Scene *, bool, void *);
-  static void checkbox_on_change_probe(Scene *, bool, void *);
-  static void checkbox_on_change_light(Scene *, bool, void *);
+  static void checkbox_on_change_base(Scene *, Renderer *, bool, void *);
+  static void checkbox_on_change_grid(Scene *, Renderer *, bool, void *);
+  static void checkbox_on_change_probe(Scene *, Renderer *, bool, void *);
+  static void checkbox_on_change_light(Scene *, Renderer *, bool, void *);
   static inline void checkbox_update_state(bool, const DisplayState);
 
   static constexpr struct {
     const DisplayState target_state;
     const ThemeIcon icon;
     const char *label;
-    void (*on_change)(Scene *, bool, void *);
+    void (*on_change)(Scene *, Renderer *, bool, void *);
   } filters[filter_length] = {
       {
           DisplayState_Layout,

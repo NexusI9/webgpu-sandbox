@@ -4,6 +4,5 @@
 #include "core.h"
 #include "list.h"
 #include "uniform.h"
-#include "shadow_map/shadow_map.h"
 
 #endif

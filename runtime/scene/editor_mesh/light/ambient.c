@@ -9,8 +9,9 @@
 #include "runtime/mesh/transform.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/editor_mesh/list.h"
 #include "runtime/scene/editor_mesh/builder/builder.h"
+#include "runtime/scene/editor_mesh/list.h"
+#include "runtime/systems/scene_editor_mesh_system.h"
 
 /**
    Insert Ambient light gizmo mesh to the list
@@ -45,9 +46,12 @@ void sem_ambient_light_create(SceneEditorMeshList *list, AmbientLight *light,
                        });
 
   // set callback
-  icon->transform_callback[GizmoMode_Position] = sem_ambient_light_set_position;
-  icon->transform_callback[GizmoMode_Rotation] = sem_ambient_light_set_rotation;
-  icon->transform_callback[GizmoMode_Scale] = sem_ambient_light_set_scale;
+  icon->transform_callback[GizmoMode_Position] =
+      sem_system_ambient_light_set_position;
+  icon->transform_callback[GizmoMode_Rotation] =
+      sem_system_ambient_light_set_rotation;
+  icon->transform_callback[GizmoMode_Scale] =
+      sem_system_ambient_light_set_scale;
 }
 
 // accessor
@@ -62,24 +66,3 @@ void sem_list_ambient_light_get_rotation(SceneEditorMeshList *list,
 void sem_list_ambient_light_get_scale(SceneEditorMeshList *list, vec3 value) {
   glm_vec3_copy((vec3){0.0f, 0.0f, 0.0f}, value);
 }
-
-void sem_list_ambient_light_set_position(SceneEditorMeshList *list,
-                                         vec3 value) {
-  for (size_t i = 0; i < list->length; i++) {
-    SceneEditorMesh *sem = &list->entries[i];
-    sem->transform_callback[GizmoMode_Position](sem, value);
-  }
-}
-
-void sem_list_ambient_light_set_rotation(SceneEditorMeshList *sem, vec3 value) {
-
-}
-
-void sem_list_ambient_light_set_scale(SceneEditorMeshList *sem, vec3 value) {}
-
-// mutator
-void sem_ambient_light_set_position(SceneEditorMesh *sem, vec3 value) {
-  mesh_set_position(sem->mesh, value);
-}
-void sem_ambient_light_set_rotation(SceneEditorMesh *sem, vec3 value) {}
-void sem_ambient_light_set_scale(SceneEditorMesh *sem, vec3 value) {}

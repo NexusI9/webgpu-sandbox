@@ -12,7 +12,7 @@
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
 
-void sem_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
+void sem_grid_create(Mesh *mesh, const GridUniform *uniform) {
 
   Primitive plane = primitive_plane();
 
@@ -28,11 +28,11 @@ void sem_grid_create(Mesh *mesh, GizmoGridCreateDescriptor *gd) {
             });
 
   mesh_set_scale(mesh, (vec3){
-                           gd->uniform.size,
-                           gd->uniform.size,
-                           gd->uniform.size,
+                           uniform->size,
+                           uniform->size,
+                           uniform->size,
                        });
 
   shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
-                             &gd->uniform, ShaderUpdateFlag_None);
+                             (void *)uniform, ShaderUpdateFlag_None);
 }

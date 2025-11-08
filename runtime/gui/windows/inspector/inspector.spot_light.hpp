@@ -1,20 +1,19 @@
 #ifndef _GUI_WINDOW_INSPECTOR_SPOT_LIGHT_H_
 #define _GUI_WINDOW_INSPECTOR_SPOT_LIGHT_H_
 
+#include "runtime/gui/windows/core.hpp"
+#include "runtime/gui/windows/inspector/inspector.hpp"
 #include "runtime/light/core.h"
 #include "runtime/light/uniform.h"
 #include "runtime/mesh/core.h"
-#include "runtime/mesh/transform.h"
-#include "runtime/scene/editor/mesh/light/spot.h"
-#include "runtime/gui/windows/core.hpp"
-#include "runtime/gui/windows/inspector/inspector.hpp"
+#include "runtime/scene/editor_mesh/light/spot.h"
 
 namespace UI {
 
 class InspectorSpotLight : public Window {
 
 public:
-  InspectorSpotLight(Gui* gui, const char *label, SceneEditorMeshList *sem,
+  InspectorSpotLight(Gui *gui, const char *label, SceneEditorMeshList *sem,
                      const RegEntryType type)
       : Window(gui, label), sem(sem), type(type) {}
 
@@ -25,8 +24,8 @@ private:
   SceneEditorMeshList *sem;
   const RegEntryType type;
 
-  static void transform_update_callback(Scene *, void *);
-  static void properties_update_callback(Scene *, void *);
+  static void transform_update_callback(Scene *, Renderer *, void *);
+  static void properties_update_callback(Scene *, Renderer *, void *);
 
   InspectorTreeList<SceneEditorMeshList> transform_attributes = {
       .label = "Transform",
@@ -38,7 +37,7 @@ private:
                       {
                           .label = "Position",
                           .accessor_callback = sem_list_spot_light_get_position,
-                          .mutator_callback = sem_list_spot_light_set_position,
+                          .mutator_callback = nullptr,
                           .extra_callback = transform_update_callback,
                           .user_data = (void *)sem,
                       },
@@ -56,8 +55,7 @@ private:
                       {
                           .label = "Position",
                           .accessor_callback = sem_list_spot_light_get_position,
-                          .mutator_callback =
-                              sem_list_spot_light_shadow_set_position,
+                          .mutator_callback = nullptr,
                           .extra_callback = transform_update_callback,
                           .user_data = (void *)sem,
                       },

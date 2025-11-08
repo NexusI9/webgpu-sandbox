@@ -1,30 +1,29 @@
 #ifndef _GUI_WINDOW_RENDER_MODE_H_
 #define _GUI_WINDOW_RENDER_MODE_H_
 
+#include "backend/renderer/core.h"
 #include "backend/theme/core.h"
 #include "core.hpp"
-#include "runtime/scene/draw.h"
 #include "runtime/gui/components/button_group.hpp"
-#include "backend/renderer/core.h"
+#include "runtime/systems/scene_system.h"
 
 namespace UI {
 
 class RenderMode : public Window {
 
-  static constexpr RendererDrawMode
-      draw_modes[RENDERER_DRAW_MODE_COUNT] = {
-          RendererDrawMode_Boundbox,
-          RendererDrawMode_Wireframe,
-          RendererDrawMode_Solid,
-          RendererDrawMode_Texture,
-      };
+  static constexpr RendererDrawMode draw_modes[RENDERER_DRAW_MODE_COUNT] = {
+      RendererDrawMode_Boundbox,
+      RendererDrawMode_Wireframe,
+      RendererDrawMode_Solid,
+      RendererDrawMode_Texture,
+  };
 
-  static void update_render_mode(Scene *scene, void *mode) {
-    scene_set_draw_mode(scene, *(RendererDrawMode *)mode);
+  static void update_render_mode(Scene *scene, Renderer *renderer, void *mode) {
+    scene_system_set_draw_mode(scene, renderer, *(RendererDrawMode *)mode);
   }
 
 public:
-  RenderMode(Gui* gui, const char *label) : Window(gui, label) {}
+  RenderMode(Gui *gui, const char *label) : Window(gui, label) {}
   void draw() override;
 
   static constexpr int count = RENDERER_DRAW_MODE_COUNT;

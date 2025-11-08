@@ -4,6 +4,7 @@
 #include "../core.hpp"
 #include "backend/context.h"
 #include "backend/registry.h"
+#include "backend/renderer/core.h"
 #include "backend/ubo.h"
 #include "imgui/imgui_impl_wgpu.h"
 #include "runtime/gui/components/input.hpp"
@@ -14,40 +15,42 @@
 #include "runtime/gui/windows/inspector/inspector.render.hpp"
 #include "runtime/gui/windows/inspector/inspector.world.hpp"
 #include "runtime/gui/windows/inspector/tab.hpp"
-#include "backend/renderer/core.h"
+#include "runtime/scene/editor_mesh/core.h"
 #include "runtime/viewport/core.h"
 
 namespace UI {
 
+typedef void (*inspector_tree_extra_callback)(Scene *, Renderer *, void *);
+
 template <typename T> struct InspectorTreeIntAttribute {
   const char *label;
-  void (*mutator_callback)(T *, int);
+  void (*mutator_callback)(T *, const int);
   int (*accessor_callback)(T *);
-  void (*extra_callback)(Scene *, void *);
+  inspector_tree_extra_callback extra_callback;
   void *user_data;
 };
 
 template <typename T> struct InspectorTreeFloatAttribute {
   const char *label;
-  void (*mutator_callback)(T *, float);
+  void (*mutator_callback)(T *, const float);
   float (*accessor_callback)(T *);
-  void (*extra_callback)(Scene *, void *);
+  inspector_tree_extra_callback extra_callback;
   void *user_data;
 };
 
 template <typename T> struct InspectorTreeVec3Attribute {
   const char *label;
-  void (*mutator_callback)(T *, vec3);
+  void (*mutator_callback)(T *, const vec3);
   void (*accessor_callback)(T *, vec3);
-  void (*extra_callback)(Scene *, void *);
+  inspector_tree_extra_callback extra_callback;
   void *user_data;
 };
 
 template <typename T> struct InspectorTreeVec4Attribute {
   const char *label;
-  void (*mutator_callback)(T *, vec4);
+  void (*mutator_callback)(T *, const vec4);
   void (*accessor_callback)(T *, vec4);
-  void (*extra_callback)(Scene *, void *);
+  inspector_tree_extra_callback extra_callback;
   void *user_data;
 };
 

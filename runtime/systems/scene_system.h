@@ -2,18 +2,84 @@
 #define _SCENE_SYSTEM_H_
 
 #include "backend/renderer/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/pipeline/render.h"
+#include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/stat.h"
 
-void scene_system_set_draw_mode(Scene *, Renderer *,
-                                      const RendererDrawMode);
+EXTERN_C_BEGIN
 
-void scene_system_scene_render_pass_texture(
-    Scene *, Renderer *, int, int, const RenderPipelineMultisampleCount,
-    const double);
+void scene_system_set_draw_mode(Scene *, Renderer *, const RendererDrawMode);
 
-static inline void
-scene_system_set_scene_post_fx_bloom(Scene *scene, Renderer *rd,
-                                     const BloomUniform bloom) {
+void scene_system_create_grid(Scene *, Renderer *);
+
+void scene_system_show_mesh(Scene *, Renderer *, Mesh *);
+void scene_system_hide_mesh(Scene *, Renderer *, Mesh *);
+
+void scene_system_show_mesh_ref_list(Scene *, Renderer *, MeshRefList *);
+void scene_system_hide_mesh_ref_list(Scene *, Renderer *, MeshRefList *);
+
+void scene_system_toggle_mesh_visibility(Scene *, Renderer *, Mesh *);
+
+// === Add Light ===
+SceneEditorMeshList *scene_system_add_point_light(Scene *, Renderer *,
+                                                  PointLightDescriptor *,
+                                                  const LightCreateFlag,
+                                                  PointLight **);
+
+SceneEditorMeshList *scene_system_add_spot_light(Scene *, Renderer *,
+                                                 SpotLightDescriptor *,
+                                                 const LightCreateFlag,
+                                                 SpotLight **);
+
+SceneEditorMeshList *scene_system_add_sun_light(Scene *, Renderer *,
+                                                SunLightDescriptor *,
+                                                const LightCreateFlag,
+                                                SunLight **);
+
+SceneEditorMeshList *scene_system_add_ambient_light(Scene *, Renderer *,
+                                                    AmbientLightDescriptor *,
+                                                    AmbientLight **);
+
+// === Add Probe ===
+SceneEditorMeshList *
+scene_system_add_probe_reflection_grid(Scene *, Renderer *,
+                                       ProbeReflectionGridDescriptor *,
+                                       ProbeReflectionGrid **);
+
+SceneEditorMeshList *
+scene_system_add_probe_reflection_plane(Scene *, Renderer *,
+                                        ProbeReflectionPlaneDescriptor *,
+                                        ProbeReflectionPlane **);
+
+// === Add Camera ===
+SceneEditorMeshList *scene_system_add_camera(Scene *, Renderer *,
+                                             const CameraCreateDescriptor *,
+                                             Camera **);
+
+// === Add Mesh ===
+SceneStatus scene_system_add_mesh(Scene *, Renderer *, Mesh *, const char *,
+                                  const SceneAddFlag);
+
+void scene_system_add_mesh_ref_list(Scene *, Renderer *, MeshRefList *,
+                                    const char *, const SceneAddFlag);
+
+void scene_system_add_mesh_pipeline(Scene *, Renderer *, Mesh *,
+                                    const RendererPipeline, const char *,
+                                    const SceneAddFlag);
+
+void scene_system_add_mesh_pipeline_ref_list(Scene *, Renderer *, MeshRefList *,
+                                             const RendererPipeline,
+                                             const char *, const SceneAddFlag);
+
+// === Remove Mesh ===
+void scene_system_remove_mesh(Scene *, Renderer *, Mesh *);
+void scene_system_remove_mesh_ref_list(Scene *, Renderer *, MeshRefList *);
+
+
+static inline void scene_system_set_post_fx_bloom(Scene *scene, Renderer *rd,
+                                                  const BloomUniform bloom) {
 
   // retrieve the pass fx of the last texture pass
   // TODO: make the access more easy; rn not intuitive
@@ -27,8 +93,8 @@ scene_system_set_scene_post_fx_bloom(Scene *scene, Renderer *rd,
 }
 
 static inline void
-scene_system_set_scene_post_fx(Scene *scene, Renderer *rd,
-                               const CompositeUniform composite) {
+scene_system_set_post_fx_composite(Scene *scene, Renderer *rd,
+                                   const CompositeUniform composite) {
   // retrieve the pass fx of the last texture pass
   PostFx *texture_pass_fx =
       &render_pass_list_last_pass(
@@ -42,8 +108,8 @@ scene_system_set_scene_post_fx(Scene *scene, Renderer *rd,
 /**
    Get the number of drawn vertex in the current active scene render pass list.
  */
-static inline size_t scene_system_get_scene_vertex_count(Scene *scene,
-                                                         Renderer *rd) {
+static inline void scene_system_update_vertex_count(Scene *scene,
+                                                    Renderer *rd) {
 
   int count = 0;
 
@@ -62,14 +128,14 @@ static inline size_t scene_system_get_scene_vertex_count(Scene *scene,
                      .length *
                  denom;
 
-  return count;
+  scene_stat_update_vertex_count(scene, count);
 }
 
 /**
    Get the number of render and compute pipelines from the registry
  */
-static inline size_t scene_system_get_scene_shader_count(Scene *scene,
-                                                         Renderer *rd) {
+static inline void scene_system_update_scene_shader_count(Scene *scene,
+                                                          Renderer *rd) {
   int count = 0;
 
   for (size_t i = 0; i < reg_length(); i++) {
@@ -79,14 +145,14 @@ static inline size_t scene_system_get_scene_shader_count(Scene *scene,
       count++;
   }
 
-  return count;
+  scene_stat_update_shader_count(scene, count);
 }
 
 /**
    Get the number of textures entities from the registry
  */
-static inline size_t renderer_get_scene_texture_count(Scene *scene,
-                                                      Renderer *rd) {
+static inline void scene_system_update_scene_texture_count(Scene *scene,
+                                                           Renderer *rd) {
 
   int count = 0;
 
@@ -96,14 +162,14 @@ static inline size_t renderer_get_scene_texture_count(Scene *scene,
       count++;
   }
 
-  return count;
+  scene_stat_update_texture_count(scene, count);
 }
 
 /**
    Get the number of drawn meshes in the current active scene render pass list.
  */
-static inline size_t renderer_get_scene_draw_call_count(Scene *scene,
-                                                        Renderer *rd) {
+static inline void scene_system_update_draw_call_count(Scene *scene,
+                                                       Renderer *rd) {
 
   int count = 0;
   RenderPassList *active_list = renderer_mesh_pass_list(rd, rd->draw_mode);
@@ -112,23 +178,10 @@ static inline size_t renderer_get_scene_draw_call_count(Scene *scene,
     for (size_t j = 0; j < active_list->passes[i].draw_list.length; j++)
       count += active_list->passes[i].draw_list.entries[j].drawn_meshes.length;
 
-  return count;
+  scene_stat_update_draw_call_count(scene, count);
 }
 
-static inline RendererStatus renderer_draw_scene(Scene *scene, Renderer *rd) {
-  // FIXME
-  // Maybe don't use add/remove system to ensure drawing 1 scene at a time
-  renderer_add_draw_callback(rd, ubo_draw_callback, (void *)scene->ubo,
-                             RendererDrawMode_Texture | RendererDrawMode_Solid |
-                                 RendererDrawMode_Wireframe |
-                                 RendererDrawMode_Boundbox);
 
-  renderer_add_draw_callback(rd, renderer_draw_layout_callback, (void *)rd,
-                             RendererDrawMode_Texture | RendererDrawMode_Solid |
-                                 RendererDrawMode_Wireframe |
-                                 RendererDrawMode_Boundbox);
-
-  return RendererStatus_Success;
-}
+EXTERN_C_END
 
 #endif
