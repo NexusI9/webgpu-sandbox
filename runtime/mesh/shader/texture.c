@@ -37,8 +37,8 @@ void mesh_shader_texture_update_lights(Mesh *mesh, const MeshShader shader_type,
 
   Shader *shader = mesh_shader(mesh, shader_type);
   shader_update_uniform_buffer(shader,
-                               shader->pipeline->bindings.light_list->group,
-                               shader->pipeline->bindings.light_list->list,
+                               shader_pipeline(shader)->bindings.light_list->group,
+                               shader_pipeline(shader)->bindings.light_list->list,
                                ubo_buffer_handle(ubo, UBOType_LightList), 0,
                                ShaderUpdateFlag_ReleasePrevious);
 }
@@ -52,7 +52,7 @@ void mesh_shader_texture_update_shadow_maps(Mesh *mesh,
                                             WGPUTextureView spot_texture_view) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
+  const RenderPipelineBinding *bindings = &shader_pipeline(shader)->bindings;
 
   // create texture views
 #ifdef RENDER_SHADOW_AS_COLOR
@@ -84,7 +84,7 @@ void mesh_shader_texture_update_probes(Mesh *mesh,
                                        UBOManager *ubo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
+  const RenderPipelineBinding *bindings = &shader_pipeline(shader)->bindings;
 
   // update plane texture
   if (bindings->probe->reflection_plane_texture != PIPELINE_BINDING_UNDEFINED)
@@ -107,7 +107,7 @@ void mesh_shader_texture_update_environment(Mesh *mesh,
                                             UBOManager *ubo) {
 
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  const RenderPipelineBinding *bindings = &shader->pipeline->bindings;
+  const RenderPipelineBinding *bindings = &shader_pipeline(shader)->bindings;
 
   // update skybox texture
   if (bindings->probe->skybox_texture != PIPELINE_BINDING_UNDEFINED)

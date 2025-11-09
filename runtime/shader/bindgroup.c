@@ -269,7 +269,7 @@ void shader_bind_group_release(ShaderBindGroup *shader_bind_group) {
  */
 void shader_bind_group_build(ShaderBindGroup *group,
                              bind_group_index group_index,
-                             const WGPURenderPipeline *pipeline) {
+                             const WGPURenderPipeline pipeline) {
 
   uint16_t total_length = shader_bind_group_entries_count(group);
 
@@ -286,12 +286,12 @@ void shader_bind_group_build(ShaderBindGroup *group,
 
   // realize bind group
   group->bind_group = wgpuDeviceCreateBindGroup(
-      context_device(), &(WGPUBindGroupDescriptor){
-                            .layout = wgpuRenderPipelineGetBindGroupLayout(
-                                *pipeline, group_index),
-                            .entryCount = total_length,
-                            .entries = converted_entries,
-                        });
+      context_device(),
+      &(WGPUBindGroupDescriptor){
+          .layout = wgpuRenderPipelineGetBindGroupLayout(pipeline, group_index),
+          .entryCount = total_length,
+          .entries = converted_entries,
+      });
 
   // release layouts
   free(converted_entries);
@@ -307,7 +307,7 @@ void shader_bind_group_build(ShaderBindGroup *group,
  */
 void shader_bind_group_refresh(ShaderBindGroup *group,
                                bind_group_index group_index,
-                               const WGPURenderPipeline *pipeline) {
+                               const WGPURenderPipeline pipeline) {
 #ifdef VERBOSE_BINDING_PHASE
   logger_add(LoggerFlag_Print, "\t\t\t(refresh)");
 #endif

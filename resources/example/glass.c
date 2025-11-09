@@ -37,11 +37,11 @@ void example_glass_probe_grid(Engine *engine, bool debug) {
 
   SceneEditorMeshList *grid_probe =
       engine_scene_add_probe_reflection_grid(engine,
-                                       &(ProbeReflectionGridDescriptor){
-                                           .count = {3, 3, 3},
-                                           .scale = {30.0f, 30.0f, 30.0f},
-                                       },
-                                       NULL);
+                                             &(ProbeReflectionGridDescriptor){
+                                                 .count = {3, 3, 3},
+                                                 .scale = {30.0f, 30.0f, 30.0f},
+                                             },
+                                             NULL);
 
   Mesh *mesh = rem_new_mesh();
 
@@ -78,24 +78,25 @@ void example_glass_probe_grid(Engine *engine, bool debug) {
 
   // link probe lists (position, radius)
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-  shader_update_uniform_buffer(shader, shader->pipeline->bindings.probe->group,
-                               shader->pipeline->bindings.probe->list,
+  shader_update_uniform_buffer(shader,
+                               shader_pipeline(shader)->bindings.probe->group,
+                               shader_pipeline(shader)->bindings.probe->list,
                                ubo_buffer_handle(scene->ubo, UBOType_ProbeList),
                                0, ShaderUpdateFlag_ReleasePrevious);
 
   // link probe color texture
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture),
-      shader->pipeline->bindings.probe->group,
-      shader->pipeline->bindings.probe->reflection_grid_texture,
+      shader_pipeline(shader)->bindings.probe->group,
+      shader_pipeline(shader)->bindings.probe->reflection_grid_texture,
       scene->probes.reflection_probe.pass.color.attachment.view,
       TEXTURE_FORMAT_OFFSCREEN, ShaderUpdateFlag_ReleasePrevious);
 
   // DELETEME (linked in scene add directly ??)
   shader_update_texture_view(
       mesh_shader(mesh, MeshShader_Texture),
-      shader->pipeline->bindings.probe->group,
-      shader->pipeline->bindings.probe->skybox_texture,
+      shader_pipeline(shader)->bindings.probe->group,
+      shader_pipeline(shader)->bindings.probe->skybox_texture,
       scene_environment_skybox(&scene->environment)->view,
       TEXTURE_FORMAT_OFFSCREEN, ShaderUpdateFlag_ReleasePrevious);
 
@@ -158,10 +159,12 @@ void example_glass_probe_plane(Engine *engine, bool debug) {
   // link UBO
   Shader *shader = mesh_shader(mesh, MeshShader_Texture);
   shader_update_uniform_buffer(
-      shader, shader->pipeline->bindings.probe->group,
-      shader->pipeline->bindings.probe->list,
-      ubo_buffer_handle(engine_get_active_scene(engine)->ubo, UBOType_ProbeList), 0,
-      ShaderUpdateFlag_ReleasePrevious);
+      shader, shader_pipeline(shader)->bindings.probe->group,
+      shader_pipeline(shader)->bindings.probe->list,
+      ubo_buffer_handle(engine_get_active_scene(engine)->ubo,
+                        UBOType_ProbeList),
+      0, ShaderUpdateFlag_ReleasePrevious);
 
-  mesh_shader_texture_bind_probe(mesh, plane, engine_get_active_scene(engine)->ubo);
+  mesh_shader_texture_bind_probe(mesh, plane,
+                                 engine_get_active_scene(engine)->ubo);
 }

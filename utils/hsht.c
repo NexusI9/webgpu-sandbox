@@ -126,11 +126,23 @@ void *hsht_find(HashTable *table, const void *key, size_t *real_index) {
   size_t start = table->generator(key) % table->capacity;
   size_t index = start;
 
+  // DEBUG
+  if (strcmp(table->label, "RenderPipeline") == 0)
+    printf("start: %lu \n", start);
+
   while (table->get_occupied((void *)(char *)table->entries +
                              (index * table->type_size))) {
 
+    // DEBUG
+    if (strcmp(table->label, "RenderPipeline") == 0)
+      printf("occupied \n");
+
     void *current_entry =
         (void *)(char *)table->entries + (index * table->type_size);
+
+    // DEBUG
+    if (strcmp(table->label, "RenderPipeline") == 0)
+      printf("comparator result: %d\n", table->comparator(key, current_entry));
 
     if (table->comparator(key, current_entry)) {
       if (real_index)
@@ -194,7 +206,12 @@ HashTableStatus hsht_remove_entry(HashTable *table, const void *key) {
   if (result == NULL)
     return HashTableStatus_UnfoundEntry;
 
-  hsht_unregister_occupied_entry(table, key);
+  // DEBUG
+  if (strcmp(table->label, "RenderPipeline") == 0)
+    printf("remove result: %p\n", result);
+
+  DynamicListStatus unregister = hsht_unregister_occupied_entry(table, key);
+
   memset(result, 0, table->type_size);
 
   if (table->set_occupied)
@@ -238,8 +255,6 @@ DynamicListStatus hsht_register_occupied_entry(HashTable *table,
 
 DynamicListStatus hsht_unregister_occupied_entry(HashTable *table,
                                                  const void *key) {
-
-  HashTableOccupiedSlot *slot = NULL;
 
   for (size_t i = 0; i < table->occupied_list.length; i++) {
     if (table->occupied_list.entries[i].key == key)

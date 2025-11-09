@@ -5,6 +5,7 @@
 #include "backend/compute/kawase.h"
 #include "backend/context.h"
 #include "backend/profiler.h"
+#include "backend/std_pipeline/core.h"
 #include "backend/std_pipeline/render_shader/bloom/bloom.h"
 #include "backend/std_pipeline/render_shader/composite/composite.h"
 #include "runtime/pipeline/render.h"
@@ -88,7 +89,7 @@ struct PostFxEffect {
 
   // cached bindgroup created with the effect parameter (view, unfiroms...)
   WGPUBindGroup bindgroup;
-  const RenderPipeline *pipeline;
+  RenderPipeline *const *pipeline;
 
   // effect view are either created from texture above of directly shared from
   // an external source
@@ -200,7 +201,7 @@ static inline void post_fx_blit_draw(PostFx *fx,
   {
     // POST FX
     wgpuRenderPassEncoderSetPipeline(
-        pass, post_fx_effect(fx, PostFxType_Blit)->pipeline->handle);
+        pass, (*post_fx_effect(fx, PostFxType_Blit)->pipeline)->handle);
     wgpuRenderPassEncoderSetBindGroup(
         pass, 0, post_fx_effect(fx, PostFxType_Blit)->bindgroup, 0, NULL);
     wgpuRenderPassEncoderDraw(pass, 3, 1, 0, 0);
@@ -232,7 +233,8 @@ static inline void post_fx_bloom_draw(PostFx *fx,
         wgpuCommandEncoderBeginRenderPass(command_encoder, &pass_desc);
     {
       // POST FX
-      wgpuRenderPassEncoderSetPipeline(pass, effect->pipeline->handle);
+      wgpuRenderPassEncoderSetPipeline(
+          pass, (*post_fx_effect(fx, PostFxType_Bloom)->pipeline)->handle);
       wgpuRenderPassEncoderSetBindGroup(pass, 0, effect->bindgroup, 0, NULL);
       wgpuRenderPassEncoderDraw(pass, 3, 1, 0, 0);
     }
@@ -286,9 +288,9 @@ static inline void post_fx_composite_draw(PostFx *fx,
     WGPURenderPassEncoder pass =
         wgpuCommandEncoderBeginRenderPass(command_encoder, &pass_desc);
     {
-      // POST FX
+      // POST F
       wgpuRenderPassEncoderSetPipeline(
-          pass, post_fx_effect(fx, PostFxType_Composite)->pipeline->handle);
+          pass, (*post_fx_effect(fx, PostFxType_Composite)->pipeline)->handle);
       wgpuRenderPassEncoderSetBindGroup(
           pass, 0, post_fx_effect(fx, PostFxType_Composite)->bindgroup, 0,
           NULL);

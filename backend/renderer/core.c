@@ -187,35 +187,38 @@ renderer_get_pso_pipeline(const RenderPipeline *render_pipeline) {
 
   static const RendererPipeline
       scene_pipeline_dispatch[RENDER_PIPELINE_TYPE_COUNT] = {
+
+          // clang-format off
+	  
           // Unlit
-          [RenderPipelineType_Billboard] = RendererPipeline_Dynamic_Unlit,
-          [RenderPipelineType_Unlit] = RendererPipeline_Dynamic_Unlit,
-          [RenderPipelineType_GlassProbeGrid] = RendererPipeline_Dynamic_Unlit,
-          [RenderPipelineType_GlassProbePlane] = RendererPipeline_Dynamic_Unlit,
+          [RenderPipelineType_Billboard]        =  RendererPipeline_Dynamic_Unlit,
+          [RenderPipelineType_Unlit]            =  RendererPipeline_Dynamic_Unlit,
+          [RenderPipelineType_GlassProbeGrid]   =  RendererPipeline_Dynamic_Unlit,
+          [RenderPipelineType_GlassProbePlane]  =  RendererPipeline_Dynamic_Unlit,
 
           // Lit
-          [RenderPipelineType_Reflection] = RendererPipeline_Dynamic_Lit,
+          [RenderPipelineType_Reflection]       =  RendererPipeline_Dynamic_Lit,
 
           // Shadow
-          [RenderPipelineType_Default] = RendererPipeline_Dynamic_LitShadow,
-          [RenderPipelineType_PBR] = RendererPipeline_Dynamic_LitShadow,
-          [RenderPipelineType_PBR_DoubleSided] =
-              RendererPipeline_Dynamic_LitShadow,
+          [RenderPipelineType_Default]          =  RendererPipeline_Dynamic_LitShadow,
+          [RenderPipelineType_PBR]              =  RendererPipeline_Dynamic_LitShadow,
+          [RenderPipelineType_PBR_DoubleSided]  =  RendererPipeline_Dynamic_LitShadow,
 
           // Alpha
-          [RenderPipelineType_PBR_Alpha] = RendererPipeline_Dynamic_LitAlpha,
+          [RenderPipelineType_PBR_Alpha]        =  RendererPipeline_Dynamic_LitAlpha,
 
           // Fixed
-          [RenderPipelineType_Grid] = RendererPipeline_Fixed,
-          [RenderPipelineType_Line] = RendererPipeline_Fixed,
-          [RenderPipelineType_Screen] = RendererPipeline_Fixed,
-          [RenderPipelineType_Shadow] = RendererPipeline_Fixed,
-          [RenderPipelineType_Solid] = RendererPipeline_Fixed,
-          [RenderPipelineType_Blit] = RendererPipeline_Fixed,
+          [RenderPipelineType_Grid]             =  RendererPipeline_Fixed,
+          [RenderPipelineType_Line]             =  RendererPipeline_Fixed,
+          [RenderPipelineType_Screen]           =  RendererPipeline_Fixed,
+          [RenderPipelineType_Shadow]           =  RendererPipeline_Fixed,
+          [RenderPipelineType_Solid]            =  RendererPipeline_Fixed,
+          [RenderPipelineType_Blit]             =  RendererPipeline_Fixed,
 
           // Background
-          [RenderPipelineType_Skybox] = RendererPipeline_Fixed_Background,
+          [RenderPipelineType_Skybox]           =  RendererPipeline_Fixed_Background,
 
+          // clang-format on
       };
 
   RenderPipelineType pipeline_type = std_render_pipeline_type(render_pipeline);
@@ -323,7 +326,7 @@ void renderer_update_pass_texture(
         }
 
         if (j == RENDERER_MESH_PASS_COUNT - 1) {
-
+	  
           post_fx_update_scene_view(&pass->post_fx, pass->color.resolve_view);
           if (RendererDrawMode_Texture & (1 << mode))
             // recreate the bloom independent texture with the new resolution

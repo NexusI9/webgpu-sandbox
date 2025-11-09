@@ -108,11 +108,12 @@ uint32_t rem_generate_id_hash(const void *id) {
 bool rem_bucket_get_occupied(const void *obj) {
   return (bool)(((REMVoid *)obj)->occupied);
 }
+
 void rem_bucket_set_occupied(const void *obj, const bool state) {
   ((REMVoid *)obj)->occupied = state;
 }
 
-bool rem_bucket_compare(const void *ptr, const void *obj) {
+bool rem_bucket_compare_ptr(const void *ptr, const void *obj) {
   return ptr == ((REMVoid *)obj)->handle;
 }
 
@@ -318,7 +319,8 @@ WGPUShaderModule rem_new_shader_module(char *code, const char *label,
                                                                                \
     Destructor;                                                                \
                                                                                \
-    hsht_remove_entry(&g_rem.entries[REMType], (void *)*handle);               \
+    HashTableStatus remove =                                                   \
+        hsht_remove_entry(&g_rem.entries[REMType], (void *)*handle);           \
                                                                                \
     *handle = NULL;                                                            \
                                                                                \
@@ -389,7 +391,15 @@ REM_ENGINE_LIST(REM_NEW_ENGINE_ITEM);
                                                                                \
     Label##_destroy(handle);                                                   \
                                                                                \
-    hsht_remove_entry(&g_rem.entries[REMType_##Type], &handle->id);            \
+    printf("DEBUG handle: %p\n", handle);                                      \
+                                                                               \
+    HashTableStatus remove = hsht_remove_entry(&g_rem.entries[REMType_##Type], \
+                                               (void *)&handle->id);           \
+                                                                               \
+    if (remove != HashTableStatus_Success)                                     \
+      return REMStatus_UnfoundResource;                                        \
+                                                                               \
+    handle = NULL;                                                             \
                                                                                \
     return REMStatus_Success;                                                  \
   }

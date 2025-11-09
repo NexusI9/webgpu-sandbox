@@ -11,6 +11,7 @@
 #include "runtime/mesh/draw.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/pipeline/render.h"
+#include "runtime/shader/core.h"
 #include "texture.h"
 #include "utils/dyli.h"
 #include "utils/stli.h"
@@ -248,7 +249,7 @@ void render_pass_refresh_mesh_drawn_list_pipeline(RenderPass *pass) {
     for (size_t l = 0; l < layout->drawn_meshes.length; l++) {
       MeshDrawPacket *pack = &layout->drawn_meshes.entries[l];
       Shader *layout_shader = mesh_shader(pack->mesh, layout->shader);
-      pack->pipeline = layout_shader->pipeline->handle;
+      pack->pipeline = shader_pipeline(layout_shader)->handle;
     }
   }
 }

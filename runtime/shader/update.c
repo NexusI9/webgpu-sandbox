@@ -62,7 +62,7 @@ shader_update_texture_view(Shader *shader, const bind_group_index group_index,
 
     // rebuild group
     shader_bind_group_refresh(bind_group, group_index,
-                              &shader_pipeline(shader)->handle);
+                              shader_pipeline(shader)->handle);
 
   } else {
     logger_add(
@@ -159,7 +159,7 @@ shader_update_uniform_buffer(Shader *shader, const bind_group_index group_index,
     bound_uniform->offset = 0;
 
     shader_bind_group_refresh(bind_group, group_index,
-                              &shader_pipeline(shader)->handle);
+                              shader_pipeline(shader)->handle);
 
   } else {
     logger_add(
@@ -275,7 +275,7 @@ ShaderBindGroupSamplerEntry *shader_update_sampler(
 
     // rebuild group
     shader_bind_group_refresh(bind_group, group_index,
-                              &shader_pipeline(shader)->handle);
+                              shader_pipeline(shader)->handle);
 
   } else {
     logger_add(

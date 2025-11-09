@@ -218,7 +218,7 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
 
   // retrieve the model-view-projection binding index from the pipeline
   Shader *shader = mesh_shader(mesh, shader_type);
-  const PipelineBindingMVP *mvp = shader->pipeline->bindings.mvp;
+  const PipelineBindingMVP *mvp = shader_pipeline(shader)->bindings.mvp;
 
   ShaderBindGroupUniformEntry entries[3] = {
       // viewport

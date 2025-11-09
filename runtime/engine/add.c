@@ -343,8 +343,7 @@ EngineStatus engine_scene_add_mesh(Engine *engine, Mesh *mesh,
   Scene *scene = engine_get_active_scene(engine);
   SceneStatus add_result = scene_add_mesh(scene, mesh, layer);
 
-  const RenderPipeline *mesh_pso =
-      mesh_shader(mesh, MeshShader_Texture)->pipeline;
+  RenderPipeline *mesh_pso = *mesh_shader(mesh, MeshShader_Texture)->pipeline;
 
   RendererPipeline pipeline = renderer_get_pso_pipeline(mesh_pso);
 

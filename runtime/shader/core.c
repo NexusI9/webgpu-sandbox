@@ -58,13 +58,14 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 #ifdef VERBOSE_CREATING_PHASE
   logger_add(LoggerFlag_ShaderCreate, "%s", shader->name);
 #endif
+
   shader->pipeline = sd->pipeline;
 
   // define bind groups length
   shader->bind_groups.length = 0;
 
   // generate empty bindgroups based on pipeline layout (CPU Side)
-  shader_bind_group_create_from_layout(shader, shader->pipeline->shader_pso);
+  shader_bind_group_create_from_layout(shader, (*shader->pipeline)->shader_pso);
 
   // create gpu bindgroups from generated layout (GPU side)
   shader_build(shader);
@@ -81,7 +82,7 @@ void shader_destroy(Shader *shader) {
 }
 
 const RenderPipeline *shader_pipeline(Shader *shader) {
-  return shader->pipeline;
+  return (*shader->pipeline);
 }
 
 /**
@@ -149,7 +150,7 @@ void shader_build(Shader *shader) {
 #ifdef VERBOSE_BINDING_PHASE
     logger_add(LoggerFlag_Print, "\t\t\t└ Bingroup: %d", i);
 #endif
-    shader_bind_group_build(group, i, &shader->pipeline->handle);
+    shader_bind_group_build(group, i, (*shader->pipeline)->handle);
   }
 
   // TODO: properly release pipeline when deleting mesh

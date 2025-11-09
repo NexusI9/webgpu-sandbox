@@ -95,12 +95,11 @@ static inline void mesh_create_draw_packet(MeshTopology topo, Shader *shader,
   pack->index = topo.index->buffer;
   pack->length = topo.index->length;
   pack->bindgroup_list = &shader->bind_groups;
-  pack->pipeline = shader->pipeline->handle;
+  pack->pipeline = (*shader->pipeline)->handle;
 
   pack->shader_name = shader->name;
   pack->mesh = mesh;
 }
-
 
 /**
    Mesh main draw from default vertex and index buffer

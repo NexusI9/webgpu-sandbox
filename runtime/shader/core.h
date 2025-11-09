@@ -43,7 +43,7 @@
 typedef struct {
   const char *path;
   const char *name;
-  const RenderPipeline *pipeline;
+  RenderPipeline *const *pipeline;
 } ShaderCreateDescriptor;
 
 // bind group
@@ -299,7 +299,7 @@ typedef struct {
   char *name;
   reg_id_t id;
   // pipelines
-  const RenderPipeline *pipeline;
+  RenderPipeline *const *pipeline;
 
   ShaderBindGroupList bind_groups;
 

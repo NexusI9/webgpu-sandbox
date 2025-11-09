@@ -46,11 +46,12 @@ EXTERN_C_BEGIN
 
 void standard_render_pipelines_init(const RenderPipelineMultisampleCount);
 void standard_render_pipelines_destroy();
+void standard_render_pipelines_clear_handles();
 void standard_compute_pipelines_init();
 
-static inline const RenderPipeline *
+static inline RenderPipeline *const *
 std_render_pipeline(const RenderPipelineType type) {
-  return g_std_render_pipelines[type];
+  return &g_std_render_pipelines[type];
 }
 
 static inline const ComputePipeline *
@@ -62,7 +63,7 @@ static inline RenderPipelineType
 std_render_pipeline_type(const RenderPipeline *pipeline) {
 
   for (uint8_t i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++) {
-    if (std_render_pipeline((RenderPipelineType)i) == pipeline)
+    if (*std_render_pipeline((RenderPipelineType)i) == pipeline)
       return (RenderPipelineType)i;
   }
 

@@ -108,7 +108,7 @@ void UI::WorldTab::on_resolution_change_point_light(
     Mesh *mesh = shadowed_meshlist->entries[j];
     Shader *shader = mesh_shader(mesh, MeshShader_Texture);
     const PipelineBindingLightList *binding =
-        shader->pipeline->bindings.light_list;
+        shader_pipeline(shader)->bindings.light_list;
 
     shader_update_texture_view(shader, binding->group, binding->point_texture,
                                pass->depth.attachment.view, SHADOW_DEPTH_FORMAT,
@@ -146,7 +146,7 @@ void UI::WorldTab::on_resolution_change_dir_light(
     Mesh *mesh = shadowed_meshlist->entries[j];
     Shader *shader = mesh_shader(mesh, MeshShader_Texture);
     const PipelineBindingLightList *binding =
-        shader->pipeline->bindings.light_list;
+        shader_pipeline(shader)->bindings.light_list;
 
     shader_update_texture_view(shader, binding->group,
                                binding->directional_texture,
@@ -194,7 +194,7 @@ void UI::WorldTab::on_resolution_change_plane_reflection(
 
       Mesh *mesh = reflection_meshes[j]->entries[k];
       Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-      const PipelineBindingProbe *binding = shader->pipeline->bindings.probe;
+      const PipelineBindingProbe *binding = shader_pipeline(shader)->bindings.probe;
 
       shader_update_texture_view(
           shader, binding->group, binding->reflection_plane_texture,

@@ -20,8 +20,7 @@
 /**
    Create and cache Ambient Occlusion main array texture.
  */
-void ao_bake_init(RendererTextureAO *ao,
-                  const AOBakeInitDescriptor *desc) {
+void ao_bake_init(RendererTextureAO *ao, const AOBakeInitDescriptor *desc) {
 
   logger_add(LoggerFlag_Process, "Initializing Ambient Occlusion Texture...");
 
@@ -80,7 +79,7 @@ void ao_bake_draw_mesh(RendererTextureAO *ao, Mesh *mesh,
       Shader *shader = mesh_shader(mesh, MeshShader_Texture);
       ShaderBindGroup *bind_group = shader_get_bind_group(shader, AO_group);
       shader_bind_group_refresh(bind_group, AO_group,
-                                &shader->pipeline->handle);
+                                shader_pipeline(shader)->handle);
     } else {
       logger_add(LoggerFlag_Warning,
                  "New AO texture couldn't be created, AO Bake aborted.");

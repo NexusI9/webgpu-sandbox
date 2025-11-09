@@ -30,10 +30,10 @@ void shader_bind_group_create_from_layout(Shader *,
 
 WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *);
 void shader_bind_group_build(ShaderBindGroup *, bind_group_index,
-                             const WGPURenderPipeline *);
+                             const WGPURenderPipeline);
 void shader_bind_group_release(ShaderBindGroup *);
 void shader_bind_group_refresh(ShaderBindGroup *, bind_group_index,
-                               const WGPURenderPipeline *);
+                               const WGPURenderPipeline);
 
 ShaderBindGroup *shader_get_bind_group(Shader *, bind_group_index);
 

@@ -6,9 +6,9 @@
 #include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/renderer/render_pass/core.h"
 #include "backend/resource_manager.h"
 #include "runtime/pipeline/render.h"
-#include "backend/renderer/render_pass/core.h"
 #include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
 
@@ -17,7 +17,6 @@ static inline void render_pass_texture_view_destroy(WGPUTexture *,
 
 void render_pass_texture_view_destroy(WGPUTexture *texture,
                                       WGPUTextureView *view) {
-
   rem_destroy_texture(texture);
   rem_destroy_view(view);
 }

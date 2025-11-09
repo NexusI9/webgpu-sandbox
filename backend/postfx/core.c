@@ -74,13 +74,13 @@ PostFxStatus post_fx_init(PostFx *fx, const PostFxDescriptor *desc) {
   for (size_t i = 0; i < POST_FX_TYPE_COUNT; i++) {
     PostFxEffect *effect = post_fx_effect(fx, 1 << i);
 
+    // clang-format off
     effect->constructor = post_fx_effect_config[1 << i].constructor;
     effect->destructor = post_fx_effect_config[1 << i].destructor;
-    effect->bindgroup_update_callback =
-        post_fx_effect_config[1 << i].bindgroup_update_callback;
+    effect->bindgroup_update_callback = post_fx_effect_config[1 << i].bindgroup_update_callback;
     effect->draw_callback = post_fx_effect_config[1 << i].draw_callback;
-    effect->uniform_update_callback =
-        post_fx_effect_config[1 << i].uniform_update_callback;
+    effect->uniform_update_callback = post_fx_effect_config[1 << i].uniform_update_callback;
+    // clang-format on
   }
 
   return PostFxStatus_Success;
@@ -410,7 +410,7 @@ PostFxStatus post_fx_blit_update_bindgroup(PostFx *fx) {
     effect->bindgroup = NULL;
   }
 
-  const WGPURenderPipeline pipeline = effect->pipeline->handle;
+  const WGPURenderPipeline pipeline = (*effect->pipeline)->handle;
   const WGPUBindGroupLayout bind_group_layout =
       wgpuRenderPipelineGetBindGroupLayout(pipeline, 0);
 
@@ -435,7 +435,7 @@ PostFxStatus post_fx_bloom_update_bindgroup(PostFx *fx) {
   if (effect->bindgroup)
     wgpuBindGroupRelease(effect->bindgroup);
 
-  const WGPURenderPipeline pipeline = effect->pipeline->handle;
+  const WGPURenderPipeline pipeline = (*effect->pipeline)->handle;
   const WGPUBindGroupLayout bind_group_layout =
       wgpuRenderPipelineGetBindGroupLayout(pipeline, 0);
 
@@ -478,7 +478,7 @@ PostFxStatus post_fx_composite_update_bindgroup(PostFx *fx) {
     effect->bindgroup = NULL;
   }
 
-  const WGPURenderPipeline pipeline = effect->pipeline->handle;
+  const WGPURenderPipeline pipeline = (*effect->pipeline)->handle;
   const WGPUBindGroupLayout bind_group_layout =
       wgpuRenderPipelineGetBindGroupLayout(pipeline, 0);
 

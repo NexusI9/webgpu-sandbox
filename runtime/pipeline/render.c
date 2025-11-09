@@ -186,7 +186,8 @@ void render_pipeline_build(RenderPipeline *pipeline,
     render_pipeline_destroy(pipeline);
 
   pipeline->handle =
-      wgpuDeviceCreateRenderPipeline(context_device(), &pipeline->descriptor);
+    wgpuDeviceCreateRenderPipeline(context_device(), &pipeline->descriptor);
+
 }
 
 /**
