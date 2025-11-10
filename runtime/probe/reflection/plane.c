@@ -106,6 +106,7 @@ void probe_reflection_plane_create(ProbeReflectionPlane *probe,
   vec3_tangent(probe->normal, probe->tangent);
   vec3_bitangent(probe->normal, probe->tangent, probe->bitangent);
 
+  probe->id = reg_register(probe, RegEntryType_ProbeReflectionPlane);
   probe->near = desc->near;
   probe->far = desc->far;
   probe->distance = desc->distance;

@@ -36,6 +36,7 @@ typedef enum {
   HashTableStatus_AllocFail,
   HashTableStatus_UnfoundEntry,
   HashTableStatus_NotInit,
+  HashTableStatus_MissingCallback,
   HashTableStatus_UndefError,
 } HashTableStatus;
 
@@ -45,6 +46,7 @@ typedef bool (*hsht_bucket_compare)(const void *, const void *);
 typedef hash_t (*hsht_hash_generator)(const void *);
 typedef bool (*hsht_bucket_get_occupied)(const void *);
 typedef void (*hsht_bucket_set_occupied)(const void *, const bool);
+typedef void *(*hsht_hash_get_key)(const void *);
 
 typedef struct {
   const void *key;
@@ -56,18 +58,19 @@ typedef struct {
   const char *label;
   void *entries;
   size_t capacity;
+  size_t length;
   size_t type_size;
 
+  // callback used to compare two entries during the linear probing
   hsht_bucket_compare comparator;
+  // callback resposible for generating the hash from the given key
   hsht_hash_generator generator;
+  // callback used to check if a bucket is occupied
   hsht_bucket_get_occupied get_occupied;
+  // callback used to mark a bucket as occupied or not
   hsht_bucket_set_occupied set_occupied;
-
-  struct {
-    HashTableOccupiedSlot *entries;
-    size_t capacity;
-    size_t length;
-  } occupied_list;
+  // callback responsible to retrieve the key from the bucket
+  hsht_hash_get_key get_key;
 
 } HashTable;
 
@@ -80,6 +83,7 @@ typedef struct {
   hsht_hash_generator generator_callback;
   hsht_bucket_get_occupied get_occupied_callback;
   hsht_bucket_set_occupied set_occupied_callback;
+  hsht_hash_get_key get_key_callback;
 
 } HashTableDescriptor;
 
@@ -145,12 +149,13 @@ void *hsht_new_entry(HashTable *, const void *, const HashTableNewFlag);
 HashTableStatus hsht_remove_entry(HashTable *, const void *);
 
 HashTableStatus hsht_expand(HashTable *, const size_t);
-HashTableStatus hsht_rehash(HashTable *, const size_t);
 
 void *hsht_find(HashTable *, const void *, size_t *);
 
 HashTableStatus hsht_empty(void *, size_t *, size_t, const char *);
 
 HashTableStatus hsht_destroy(void **, size_t *, size_t *, const char *);
+
+static inline size_t hsht_length(HashTable *tb) { return tb->length; }
 
 #endif

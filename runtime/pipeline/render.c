@@ -20,6 +20,7 @@ void render_pipeline_create(RenderPipeline *pipeline,
                             const RenderPipelineCreateDescriptor *desc) {
 
   // Define core data
+  pipeline->id = reg_register(pipeline, RegEntryType_RenderPipeline);
   pipeline->handle = NULL;
   pipeline->label = desc->label;
   pipeline->shader_pso = desc->pso;
@@ -186,8 +187,7 @@ void render_pipeline_build(RenderPipeline *pipeline,
     render_pipeline_destroy(pipeline);
 
   pipeline->handle =
-    wgpuDeviceCreateRenderPipeline(context_device(), &pipeline->descriptor);
-
+      wgpuDeviceCreateRenderPipeline(context_device(), &pipeline->descriptor);
 }
 
 /**
@@ -195,7 +195,10 @@ void render_pipeline_build(RenderPipeline *pipeline,
  */
 void render_pipeline_destroy(RenderPipeline *pipeline) {
 
-  //rem_destroy_shader_module(&pipeline->module);
+  // DEBUG
+  printf("----\nDestroy pipeline: %p | %p\n", pipeline, pipeline->handle);
+
+  // rem_destroy_shader_module(&pipeline->module);
   wgpuRenderPipelineRelease(pipeline->handle);
   pipeline->handle = NULL;
 

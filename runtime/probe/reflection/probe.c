@@ -26,6 +26,7 @@
 
 void probe_reflection_create(ProbeReflection *probe, vec3 position) {
 
+  probe->id = reg_register(probe, RegEntryType_ProbeReflection);
   glm_vec3_copy(position, probe->position);
 
   for (uint8_t i = 0; i < PROBE_REFLECTION_VIEW_COUNT; i++) {

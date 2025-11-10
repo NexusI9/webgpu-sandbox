@@ -5,6 +5,7 @@
 
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/registry.h"
 #include "backend/resource_manager.h"
 #include "runtime/camera/core.h"
 #include "runtime/light/list.h"
@@ -32,6 +33,8 @@ static const struct {
 void ubo_init(UBOManager *manager) {
 
   logger_add(LoggerFlag_Process, "Initializing UBO Manager");
+
+  manager->id = reg_register(manager, RegEntryType_Ubo);
 
   const uint16_t alignment = 16;
   const uint16_t min_size = 256;
@@ -185,4 +188,3 @@ StaticListStatus ubo_update_queue_shift(UBOManager *manager,
   return stli_shift((void *)queue->entries, &queue->length, sizeof(ubo_id_t),
                     "UBO Update Queue");
 }
-

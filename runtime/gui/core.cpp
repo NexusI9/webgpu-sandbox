@@ -67,6 +67,7 @@ GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
   logger_add(LoggerFlag_Process, "Intitializing Editor UI");
 
   {
+    gui->id = reg_register(gui, RegEntryType_Gui);
     gui->dpi = desc->dpi;
     gui->theme = desc->theme;
     gui->active_scene = desc->active_scene;

@@ -100,9 +100,6 @@ void standard_render_pipelines_init(
 
     g_std_render_pipelines[i] = rem_new_render_pipeline();
 
-    // DEBUG
-    printf("New render pipeline: %p\n", g_std_render_pipelines[i]);
-
     RenderPipeline *cached_pipeline = g_std_render_pipelines[i];
 
     // create pipeline
@@ -159,6 +156,10 @@ void standard_render_pipelines_init(
         layout->bind_groups, layout->bind_groups_count, NULL);
 
     render_pipeline_build(cached_pipeline, &temp_layout);
+
+    // DEBUG
+    printf("New render pipeline: %p | %p\n", g_std_render_pipelines[i],
+           g_std_render_pipelines[i]->handle);
   }
 }
 

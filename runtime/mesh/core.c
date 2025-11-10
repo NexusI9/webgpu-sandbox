@@ -23,6 +23,8 @@ static inline Mesh *mesh_children_list_check_init(Mesh *);
 
 void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 
+  mesh->id = reg_register(mesh, RegEntryType_Mesh);
+
   // set name
   mesh_set_name(mesh, md->name);
 
@@ -126,5 +128,5 @@ DynamicListStatus mesh_child_add(Mesh *parent, Mesh *child) {
 }
 
 void mesh_destroy(Mesh *mesh) {
-  //TODO
+  // TODO
 }

@@ -27,6 +27,7 @@ float probe_reflection_point(size_t x, uint16_t count, float size) {
 void probe_reflection_grid_create(ProbeReflectionGrid *grid,
                                   ProbeReflectionGridDescriptor *desc) {
 
+  grid->id = reg_register(grid, RegEntryType_ProbeReflectionGrid);
   probe_reflection_grid_set_name(grid, desc->name == 0 ? "Probe Reflection Grid"
                                                        : desc->name);
 

@@ -77,7 +77,7 @@ static inline reg_id_t reg_new_id() {
   return g_reg_id++;
 }
 
-reg_id_t reg_register(const reg_id_t, void *, RegEntryType);
+reg_id_t reg_register(void *, RegEntryType);
 
 static inline const int reg_length() { return g_reg_id; }
 

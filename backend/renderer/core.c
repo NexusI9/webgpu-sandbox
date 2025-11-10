@@ -32,6 +32,7 @@ static inline void renderer_mesh_list_init(Renderer *);
 
 void renderer_create(Renderer *renderer, const RendererCreateDescriptor *desc) {
 
+  renderer->id = reg_register(renderer, RegEntryType_Renderer);
   renderer->context.background = desc->background;
   renderer->context.width = desc->width ? desc->width : context_width();
   renderer->context.height = desc->height ? desc->height : context_height();
@@ -326,7 +327,7 @@ void renderer_update_pass_texture(
         }
 
         if (j == RENDERER_MESH_PASS_COUNT - 1) {
-	  
+
           post_fx_update_scene_view(&pass->post_fx, pass->color.resolve_view);
           if (RendererDrawMode_Texture & (1 << mode))
             // recreate the bloom independent texture with the new resolution

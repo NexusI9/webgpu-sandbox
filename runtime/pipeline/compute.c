@@ -13,6 +13,7 @@ void compute_pipeline_create(ComputePipeline *pipeline,
                              const ComputePipelineCreateDescriptor *desc) {
 
   // Define core data
+  pipeline->id = reg_register(pipeline, RegEntryType_ComputePipeline);
   pipeline->handle = NULL;
   pipeline->label = desc->label;
   pipeline->shader_pso = desc->pso;
@@ -57,7 +58,7 @@ void compute_pipeline_build(ComputePipeline *pipeline,
  */
 void compute_pipeline_destroy(ComputePipeline *pipeline) {
 
-  //rem_destroy_shader_module(&pipeline->module);
+  // rem_destroy_shader_module(&pipeline->module);
   wgpuComputePipelineRelease(pipeline->handle);
   pipeline->handle = NULL;
 

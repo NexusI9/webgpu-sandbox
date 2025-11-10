@@ -35,12 +35,8 @@ static inline const size_t rem_type_init_capacity(const REMType type) {
   return rem_config[type].capacity;
 }
 
-static inline const hsht_hash_generator rem_type_hash_gen(const REMType type) {
-  return rem_config[type].hash_generator;
-}
-
 static inline const size_t rem_type_length(const REMType type) {
-  return g_rem.entries[type].occupied_list.length;
+  return g_rem.pools[type].length;
 }
 
 REMStatus resource_manager_init() {
@@ -50,17 +46,30 @@ REMStatus resource_manager_init() {
   REMStatus status = REMStatus_Success;
   size_t total_bytes = 0;
 
+  // === init global hash table ===
+  hsht_create(&g_rem.hash_table,
+              &(HashTableDescriptor){
+                  .type_size = sizeof(REMBucket),
+                  .label = "Resource Manager Hash Table",
+                  .capacity = REM_HASH_CAPACITY,
+                  .generator_callback = rem_generate_hash,
+                  .comparator_callback = rem_bucket_compare,
+                  .get_occupied_callback = rem_bucket_get_occupied,
+                  .set_occupied_callback = rem_bucket_set_occupied,
+                  .get_key_callback = rem_bucket_get_key,
+              });
+
+  // === init per engine type pools ===
   for (REMType i = 0; i < REM_TYPE_COUNT; i++) {
-    if (hsht_create(&g_rem.entries[i],
-                    &(HashTableDescriptor){
-                        .type_size = rem_type_size(i),
-                        .label = rem_type_label(i),
-                        .capacity = rem_type_init_capacity(i),
-                        .generator_callback = rem_type_hash_gen(i),
-                        .comparator_callback = rem_bucket_compare,
-                        .get_occupied_callback = rem_bucket_get_occupied,
-                        .set_occupied_callback = rem_bucket_set_occupied,
-                    }) == HashTableStatus_Success) {
+
+    g_rem.pools[i].type_size = rem_type_size(i);
+    g_rem.pools[i].label = rem_type_label(i);
+
+    const size_t capacity = rem_type_init_capacity(i);
+
+    if (dyli_create((void **)&g_rem.pools[i].entries, &g_rem.pools[i].capacity,
+                    &g_rem.pools[i].length, g_rem.pools[i].type_size, capacity,
+                    g_rem.pools[i].label) == DynamicListStatus_Success) {
 
       total_bytes += rem_config[i].type_size * rem_config[i].capacity;
 
@@ -68,7 +77,6 @@ REMStatus resource_manager_init() {
           LoggerFlag_Print, "- %s: %lu bytes (type size: %lu, capacity: %lu)",
           rem_config[i].label, rem_config[i].type_size * rem_config[i].capacity,
           rem_config[i].type_size, rem_config[i].capacity);
-
     } else {
       logger_add(LoggerFlag_Error,
                  "- %s: Couldn't allocate memory with a "
@@ -99,22 +107,22 @@ REMStatus resource_manager_init() {
 
  */
 
-uint32_t rem_generate_ptr_hash(const void *ptr) { return hsht_hash_ptr(ptr); }
-
-uint32_t rem_generate_id_hash(const void *id) {
-  return hsht_hash_id(*(reg_id_t *)id);
-}
+uint32_t rem_generate_hash(const void *ptr) { return hsht_hash_ptr(ptr); }
 
 bool rem_bucket_get_occupied(const void *obj) {
-  return (bool)(((REMVoid *)obj)->occupied);
+  return (bool)(((REMBucket *)obj)->occupied);
 }
 
-void rem_bucket_set_occupied(const void *obj, const bool state) {
-  ((REMVoid *)obj)->occupied = state;
+void rem_bucket_set_occupied(const void *bucket, const bool state) {
+  ((REMBucket *)bucket)->occupied = state;
 }
 
-bool rem_bucket_compare_ptr(const void *ptr, const void *obj) {
-  return ptr == ((REMVoid *)obj)->handle;
+bool rem_bucket_compare(const void *key, const void *bucket) {
+  return key == ((REMBucket *)bucket)->handle;
+}
+
+void *rem_bucket_get_key(const void *bucket) {
+  return ((REMBucket *)bucket)->handle;
 }
 
 /*
@@ -137,8 +145,8 @@ WGPUTexture rem_new_texture(const WGPUTextureDescriptor *desc) {
   // first generate hash source
   WGPUTexture texture = wgpuDeviceCreateTexture(context_device(), desc);
 
-  REMWGPUTexture *entry = hsht_new_entry(&g_rem.entries[type], texture,
-                                         HashTableNewFlag_FixedCapacity);
+  REMBucket *entry =
+      hsht_new_entry(&g_rem.hash_table, texture, HashTableNewFlag_None);
 
   if (entry == NULL) {
     rem_destroy_texture(&texture);
@@ -147,6 +155,7 @@ WGPUTexture rem_new_texture(const WGPUTextureDescriptor *desc) {
 
   entry->owner = 0;
   entry->key = 0;
+  entry->pool_id = DYLI_INVALID_INDEX;
   entry->type = type;
   entry->handle = texture;
 
@@ -204,8 +213,8 @@ REMStatus rem_write_texture(WGPUTexture texture, void *data, const size_t size,
                                                                                \
     Name item = Creator(context_device(), desc);                               \
                                                                                \
-    REMName *entry = hsht_new_entry(&g_rem.entries[type], item,                \
-                                    HashTableNewFlag_FixedCapacity);           \
+    REMBucket *entry =                                                         \
+        hsht_new_entry(&g_rem.hash_table, item, HashTableNewFlag_None);        \
                                                                                \
     if (entry == NULL) {                                                       \
       rem_destroy_##FuncName(&item);                                           \
@@ -214,6 +223,7 @@ REMStatus rem_write_texture(WGPUTexture texture, void *data, const size_t size,
                                                                                \
     entry->owner = 0;                                                          \
     entry->key = 0;                                                            \
+    entry->pool_id = DYLI_INVALID_INDEX;                                       \
     entry->type = type;                                                        \
     entry->handle = item;                                                      \
                                                                                \
@@ -227,14 +237,15 @@ WGPUTextureView rem_new_view(const WGPUTexture texture,
 
   WGPUTextureView view = wgpuTextureCreateView(texture, desc);
 
-  REMWGPUTextureView *entry = hsht_new_entry(&g_rem.entries[type], view,
-                                             HashTableNewFlag_FixedCapacity);
+  REMBucket *entry =
+      hsht_new_entry(&g_rem.hash_table, view, HashTableNewFlag_None);
 
   if (entry == NULL) {
     rem_destroy_view(&view);
     return NULL;
   }
 
+  entry->pool_id = DYLI_INVALID_INDEX;
   entry->owner = 0;
   entry->key = 0;
   entry->type = type;
@@ -288,8 +299,8 @@ WGPUShaderModule rem_new_shader_module(char *code, const char *label,
                             .label = label,
                         });
 
-  REMWGPUShaderModule *entry = hsht_new_entry(&g_rem.entries[type], shader,
-                                              HashTableNewFlag_FixedCapacity);
+  REMBucket *entry =
+      hsht_new_entry(&g_rem.hash_table, shader, HashTableNewFlag_None);
 
   if (entry == NULL) {
     rem_destroy_shader_module(&shader);
@@ -301,6 +312,7 @@ WGPUShaderModule rem_new_shader_module(char *code, const char *label,
     code = NULL;
   }
 
+  entry->pool_id = DYLI_INVALID_INDEX;
   entry->owner = 0;
   entry->key = 0;
   entry->type = REMType_Shader;
@@ -320,7 +332,7 @@ WGPUShaderModule rem_new_shader_module(char *code, const char *label,
     Destructor;                                                                \
                                                                                \
     HashTableStatus remove =                                                   \
-        hsht_remove_entry(&g_rem.entries[REMType], (void *)*handle);           \
+        hsht_remove_entry(&g_rem.hash_table, (void *)*handle);                 \
                                                                                \
     *handle = NULL;                                                            \
                                                                                \
@@ -357,46 +369,73 @@ REM_DESTROY_WGPU_ITEM(shader_module, WGPUShaderModule, REMType_WGPUShaderModule,
 
  */
 
-#define REM_NEW_ENGINE_ITEM(Type, RegistryType, Label, Hash, Capacity)         \
+// === NEW ENGINE ITEM===
+#define _(Type, RegistryType, Label, Capacity)                                 \
   Type *rem_new_##Label() {                                                    \
                                                                                \
-    const reg_id_t id = reg_new_id();                                          \
-    if (id == REG_MAX_OBJECTS)                                                 \
+    const REMType type = REMType_##Type;                                       \
+                                                                               \
+    void *new_item =                                                           \
+        dyli_new_entry((void **)&g_rem.pools[type].entries,                    \
+                       &g_rem.pools[type].capacity, &g_rem.pools[type].length, \
+                       g_rem.pools[type].type_size, g_rem.pools[type].label);  \
+                                                                               \
+    if (new_item == NULL)                                                      \
       return NULL;                                                             \
                                                                                \
-    REM##Type *entry =                                                         \
-        hsht_new_entry(&g_rem.entries[REMType_##Type], (void *)&id,            \
-                       HashTableNewFlag_FixedCapacity);                        \
+    REMBucket *new_bucket = hsht_new_entry(                                    \
+        &g_rem.hash_table, (void *)new_item, HashTableNewFlag_None);           \
                                                                                \
-    if (entry == NULL)                                                         \
+    if (type == REMType_RenderPipeline) {                                      \
+      printf("DEBUG new item: %p => new bucket: %p\n", new_item, new_bucket);  \
+    }                                                                          \
+                                                                               \
+    if (new_bucket == NULL)                                                    \
       return NULL;                                                             \
                                                                                \
-    reg_register(id, &entry->handle, RegistryType);                            \
-    entry->handle.id = id;                                                     \
+    new_bucket->handle = new_item;                                             \
+    new_bucket->pool_id = g_rem.pools[type].length - 1;                        \
+    new_bucket->owner = 0;                                                     \
+    new_bucket->key = 0;                                                       \
+    new_bucket->type = REMType_##Type;                                         \
                                                                                \
-    entry->owner = 0;                                                          \
-    entry->key = 0;                                                            \
-    entry->type = REMType_##Type;                                              \
-    return &entry->handle;                                                     \
+    return new_bucket->handle;                                                 \
   }
 
-REM_ENGINE_LIST(REM_NEW_ENGINE_ITEM);
+REM_ENGINE_LIST(_);
+#undef _
 
 // Destroy item based on its handle id (engine objects)
-#define REM_DESTROY_ENGINE_ITEM(Type, RegistryType, Label, Hash, Capacity)     \
+#define _(Type, RegistryType, Label, Capacity)                                 \
   REMStatus rem_destroy_##Label(Type *handle) {                                \
+                                                                               \
+    const REMType type = REMType_##Type;                                       \
                                                                                \
     if (handle == NULL)                                                        \
       return REMStatus_NullResource;                                           \
                                                                                \
     Label##_destroy(handle);                                                   \
                                                                                \
-    printf("DEBUG handle: %p\n", handle);                                      \
+    REMBucket *bucket = hsht_find(&g_rem.hash_table, handle, NULL);            \
                                                                                \
-    HashTableStatus remove = hsht_remove_entry(&g_rem.entries[REMType_##Type], \
-                                               (void *)&handle->id);           \
+    if (type == REMType_RenderPipeline) {                                      \
+      printf("bucket: %p\n", bucket);                                          \
+      printf("handle: %p\n", bucket->handle);                                  \
+      printf("pool id: %lu\n", bucket->pool_id);                               \
+    }                                                                          \
                                                                                \
-    if (remove != HashTableStatus_Success)                                     \
+    if (!bucket)                                                               \
+      return REMStatus_UnfoundResource;                                        \
+                                                                               \
+    HashTableStatus remove_hash =                                              \
+        hsht_remove_entry(&g_rem.hash_table, handle);                          \
+                                                                               \
+    DynamicListStatus remove_pool = dyli_remove_at_index(                      \
+        (void *)g_rem.pools[type].entries, &g_rem.pools[type].length,          \
+        g_rem.pools[type].type_size, bucket->pool_id,                          \
+        g_rem.pools[type].label);                                              \
+                                                                               \
+    if (remove_hash != HashTableStatus_Success)                                \
       return REMStatus_UnfoundResource;                                        \
                                                                                \
     handle = NULL;                                                             \
@@ -404,4 +443,5 @@ REM_ENGINE_LIST(REM_NEW_ENGINE_ITEM);
     return REMStatus_Success;                                                  \
   }
 
-REM_ENGINE_LIST(REM_DESTROY_ENGINE_ITEM);
+REM_ENGINE_LIST(_);
+#undef _

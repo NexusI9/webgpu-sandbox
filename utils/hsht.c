@@ -1,14 +1,9 @@
 #include "hsht.h"
+#include "backend/logger.h"
 #include "utils/dyli.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-
-static inline DynamicListStatus
-hsht_register_occupied_entry(HashTable *, const void *, void *);
-
-static inline DynamicListStatus hsht_unregister_occupied_entry(HashTable *,
-                                                               const void *);
 
 HashTableStatus hsht_create(HashTable *table, const HashTableDescriptor *desc) {
 
@@ -29,69 +24,15 @@ HashTableStatus hsht_create(HashTable *table, const HashTableDescriptor *desc) {
   table->generator = desc->generator_callback;
   table->get_occupied = desc->get_occupied_callback;
   table->set_occupied = desc->set_occupied_callback;
-
-  // keep track of occupied slot in a linear dynamic list so it's easier to
-  // rehash on expand.
-  if (dyli_create((void *)&table->occupied_list.entries,
-                  &table->occupied_list.capacity, &table->occupied_list.length,
-                  sizeof(HashTableOccupiedSlot), desc->capacity,
-                  desc->label) != DynamicListStatus_Success) {
-    logger_add(LoggerFlag_Error,
-               "Couldn't create new hash table '%s' occupied list.\n",
-               desc->label);
-    return HashTableStatus_AllocFail;
-  }
-
-  return HashTableStatus_Success;
-}
-
-/**
-   Overall flow:
-   - Traverse occupied slots
-   - Get key and generate hash % old_capacity
-   - Temporarily Cache the data from the slot
-   - Reset slot back to 0
-   - Generate hash % current_capacity
-   - copy cached data to new slot
- */
-HashTableStatus hsht_rehash(HashTable *table, const size_t previous_capacity) {
-
-  for (size_t i = 0; i < table->occupied_list.length; i++) {
-
-    HashTableOccupiedSlot *slot = &table->occupied_list.entries[i];
-
-    hash_t old_hash = table->generator(slot->key) % previous_capacity;
-    void *cached_slot = malloc(table->type_size);
-
-    if (cached_slot == NULL) {
-      logger_add(LoggerFlag_Error,
-                 "Unable to allocate resources to Hash Table '%s' rehashing.\n",
-                 table->label);
-      return HashTableStatus_AllocFail;
-    }
-
-    memcpy(cached_slot, slot->entry, table->type_size); // cache
-    memset((void *)slot->entry, 0, table->type_size);   // clean
-
-    void *new_entry = hsht_new_entry(table, slot->key, HashTableNewFlag_None);
-
-    if (new_entry == NULL) {
-      logger_add(
-          LoggerFlag_Error,
-          "Unable to create new entry while rehashing hash table '%s'.\n",
-          table->label);
-      return HashTableStatus_UndefError;
-    }
-
-    memcpy(new_entry, cached_slot, table->type_size);
-
-    free(cached_slot);
-  }
+  table->get_key = desc->get_key_callback;
 
   return HashTableStatus_Success;
 }
 
 HashTableStatus hsht_expand(HashTable *table, const size_t scale) {
+
+  // DEBUG
+  printf("Expanding table\n");
 
   if (table->capacity == 0) {
     logger_add(LoggerFlag_Error,
@@ -101,10 +42,11 @@ HashTableStatus hsht_expand(HashTable *table, const size_t scale) {
     return HashTableStatus_NotInit;
   }
 
+  void *old_entries = table->entries;
   const size_t old_capacity = table->capacity;
   const size_t new_capacity = scale * table->capacity;
 
-  void *temp = (void *)realloc(table->entries, new_capacity * table->type_size);
+  void *temp = (void *)calloc(new_capacity, table->type_size);
 
   if (temp == NULL) {
     logger_add(LoggerFlag_Error,
@@ -113,10 +55,43 @@ HashTableStatus hsht_expand(HashTable *table, const size_t scale) {
     return HashTableStatus_AllocFail;
   }
 
+  if (!table->get_key) {
+    logger_add(LoggerFlag_Error,
+               "Hash table '%s' is missing get_key "
+               "callback, unable to expand it.",
+               table->label);
+    free(temp);
+    return HashTableStatus_MissingCallback;
+  }
+
   table->entries = temp;
   table->capacity = new_capacity;
+  table->length = 0;
 
-  hsht_rehash(table, old_capacity);
+  // rehash
+  for (size_t i = 0; i < old_capacity; i++) {
+
+    char *old_entry = (char *)old_entries + i * table->type_size;
+
+    if (table->get_occupied((void *)old_entry)) {
+
+      void *old_entry_key = table->get_key(old_entry);
+
+      void *new_entry =
+          hsht_new_entry(table, old_entry_key, HashTableNewFlag_None);
+
+      if (!new_entry) {
+        logger_add(LoggerFlag_Warning,
+                   "While expanding hash table '%s', unable to get new entry.",
+                   table->label);
+        continue;
+      }
+
+      memcpy(new_entry, old_entry, table->type_size);
+    }
+  }
+
+  free(old_entries);
 
   return HashTableStatus_Success;
 }
@@ -126,23 +101,11 @@ void *hsht_find(HashTable *table, const void *key, size_t *real_index) {
   size_t start = table->generator(key) % table->capacity;
   size_t index = start;
 
-  // DEBUG
-  if (strcmp(table->label, "RenderPipeline") == 0)
-    printf("start: %lu \n", start);
-
   while (table->get_occupied((void *)(char *)table->entries +
                              (index * table->type_size))) {
 
-    // DEBUG
-    if (strcmp(table->label, "RenderPipeline") == 0)
-      printf("occupied \n");
-
     void *current_entry =
         (void *)(char *)table->entries + (index * table->type_size);
-
-    // DEBUG
-    if (strcmp(table->label, "RenderPipeline") == 0)
-      printf("comparator result: %d\n", table->comparator(key, current_entry));
 
     if (table->comparator(key, current_entry)) {
       if (real_index)
@@ -158,17 +121,20 @@ void *hsht_find(HashTable *table, const void *key, size_t *real_index) {
   return NULL;
 }
 
+/**
+   Return a hash-table slot based on the provided key
+ */
 void *hsht_new_entry(HashTable *table, const void *key,
                      const HashTableNewFlag flag) {
 
-  if (table->occupied_list.length >= table->capacity * 0.75) {
+  if (table->length >= table->capacity * 0.75) {
     if (flag & HashTableNewFlag_FixedCapacity) {
       logger_add(LoggerFlag_Error,
                  "Unable to generate new entry in Hash table '%s' has a fixed "
                  "capacity of %lu for %lu occupied buckets.",
-                 table->label, table->capacity, table->occupied_list.length);
+                 table->label, table->capacity, table->length);
       return NULL;
-    } else if (hsht_expand(table->entries, 2) != HashTableStatus_Success)
+    } else if (hsht_expand(table, 2) != HashTableStatus_Success)
       return NULL;
   }
 
@@ -189,12 +155,16 @@ void *hsht_new_entry(HashTable *table, const void *key,
 
   void *entry = (void *)((char *)(table->entries) + index * table->type_size);
 
-  hsht_register_occupied_entry(table, key, entry);
+  // DEBUG
+  printf("%p => %lu  => %p\n", key, start,
+         (char *)(table->entries) + (index * table->type_size));
 
   memset(entry, 0, table->type_size);
 
   if (table->set_occupied)
     table->set_occupied(entry, true);
+
+  table->length++;
 
   return entry;
 }
@@ -205,12 +175,6 @@ HashTableStatus hsht_remove_entry(HashTable *table, const void *key) {
 
   if (result == NULL)
     return HashTableStatus_UnfoundEntry;
-
-  // DEBUG
-  if (strcmp(table->label, "RenderPipeline") == 0)
-    printf("remove result: %p\n", result);
-
-  DynamicListStatus unregister = hsht_unregister_occupied_entry(table, key);
 
   memset(result, 0, table->type_size);
 
@@ -238,30 +202,4 @@ HashTableStatus hsht_destroy(void **entries, size_t *capacity, size_t *length,
   *entries = NULL;
 
   return HashTableStatus_Success;
-}
-
-DynamicListStatus hsht_register_occupied_entry(HashTable *table,
-                                               const void *key, void *entry) {
-
-  return dyli_insert(
-      (void *)&table->occupied_list.entries, &table->occupied_list.capacity,
-      &table->occupied_list.length, sizeof(HashTableOccupiedSlot),
-      &(HashTableOccupiedSlot){
-          .key = key,
-          .entry = entry,
-      },
-      1, table->label);
-}
-
-DynamicListStatus hsht_unregister_occupied_entry(HashTable *table,
-                                                 const void *key) {
-
-  for (size_t i = 0; i < table->occupied_list.length; i++) {
-    if (table->occupied_list.entries[i].key == key)
-      return dyli_remove_at_index(
-          (void *)table->occupied_list.entries, &table->occupied_list.length,
-          sizeof(HashTableOccupiedSlot), i, table->label);
-  }
-
-  return DynamicListStatus_UnfoundEntry;
 }

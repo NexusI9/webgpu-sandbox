@@ -9,7 +9,9 @@ reg_id_t g_reg_id = 1;
    Add object pointer to register with a given id, id can obtained with
    reg_new_id()
  */
-reg_id_t reg_register(const reg_id_t id, void *ptr, RegEntryType type) {
+reg_id_t reg_register(void *ptr, RegEntryType type) {
+
+  const reg_id_t id = reg_new_id();
 
   // assign object to global register
   g_reg[id].ptr = ptr;

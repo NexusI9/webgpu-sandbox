@@ -3,6 +3,7 @@
 
 #include "backend/logger.h"
 #include "backend/registry.h"
+#include "backend/renderer/core.h"
 #include "backend/ubo.h"
 #include "runtime/camera/core.h"
 #include "runtime/gui/core.h"
@@ -15,10 +16,10 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/probe/reflection/probe.h"
 #include "runtime/scene/core.h"
-#include "backend/renderer/core.h"
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
 #include "utils/defines.h"
+#include "utils/dyli.h"
 #include "utils/hsht.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
@@ -37,63 +38,70 @@ typedef enum {
 
 // clang-format off
 
-//      Type         |             Registry type           |         Label          |            Hash method         |   Capacity
-#define REM_WGPU_LIST(_)                                                                                                           \
-    _(WGPUTexture,             RegEntryType_WGPUObject,             texture,                 rem_generate_ptr_hash,          127 ) \
-    _(WGPUTextureView,         RegEntryType_WGPUObject,             view,                    rem_generate_ptr_hash,          683 ) \
-    _(WGPUBuffer,              RegEntryType_WGPUObject,             buffer,                  rem_generate_ptr_hash,          683 ) \
-    _(WGPUShaderModule,        RegEntryType_WGPUObject,             shader_module,           rem_generate_ptr_hash,          127 ) \
-    _(WGPUSampler,             RegEntryType_WGPUObject,             sampler,                 rem_generate_ptr_hash,          127 )                        
+//      Type         |             Registry type           |         Label          |        Pool Capacity
+#define REM_WGPU_LIST(_)                                                                                                                                  \
+    _(WGPUTexture,             RegEntryType_WGPUObject,             texture,                     128        ) \
+    _(WGPUTextureView,         RegEntryType_WGPUObject,             view,                        624        ) \
+    _(WGPUBuffer,              RegEntryType_WGPUObject,             buffer,                      624        ) \
+    _(WGPUShaderModule,        RegEntryType_WGPUObject,             shader_module,               128        ) \
+    _(WGPUSampler,             RegEntryType_WGPUObject,             sampler,                     128        )                        
 
 
-#define REM_ENGINE_LIST(_)                                                                                                         \
-    _(Mesh,                   RegEntryType_Mesh,                    mesh,                    rem_generate_id_hash,           127 ) \
-    _(Scene,                  RegEntryType_Scene,                   scene,                   rem_generate_id_hash,             3 ) \
-    _(RenderPipeline,         RegEntryType_RenderPipeline,          render_pipeline,         rem_generate_id_hash,            71 ) \
-    _(ComputePipeline,        RegEntryType_ComputePipeline,         compute_pipeline,        rem_generate_id_hash,           127 ) \
-    _(Shader,                 RegEntryType_Shader,                  shader,                  rem_generate_id_hash,           127 ) \
-    _(Camera,                 RegEntryType_Camera,                  camera,                  rem_generate_id_hash,            31 ) \
-    _(Renderer,               RegEntryType_Renderer,                renderer,                rem_generate_id_hash,             3 ) \
-    _(Gui,                    RegEntryType_Gui,                     gui,                     rem_generate_id_hash,             3 ) \
-    _(UBOManager,             RegEntryType_Ubo,                     ubo,                     rem_generate_id_hash,             1 ) \
-    _(PointLight,             RegEntryType_PointLight,              point_light,             rem_generate_id_hash,             7 ) \
-    _(AmbientLight,           RegEntryType_AmbientLight,            ambient_light,           rem_generate_id_hash,            37 ) \
-    _(SpotLight,              RegEntryType_SpotLight,               spot_light,              rem_generate_id_hash,            37 ) \
-    _(SunLight,               RegEntryType_SunLight,                sun_light,               rem_generate_id_hash,            37 ) \
-    _(ProbeReflectionPlane,   RegEntryType_ProbeReflectionPlane,    plane_reflection,        rem_generate_id_hash,            17 ) \
-    _(ProbeReflection,        RegEntryType_ProbeReflection,         probe_reflection,        rem_generate_id_hash,            17 ) \
-    _(ProbeReflectionGrid,    RegEntryType_ProbeReflectionGrid,     probe_reflection_grid,   rem_generate_id_hash,            17 )
+#define REM_ENGINE_LIST(_)                                                                                                                                \
+    _(Mesh,                   RegEntryType_Mesh,                    mesh,                        128        ) \
+    _(Scene,                  RegEntryType_Scene,                   scene,                         2        ) \
+    _(RenderPipeline,         RegEntryType_RenderPipeline,          render_pipeline,              64        ) \
+    _(ComputePipeline,        RegEntryType_ComputePipeline,         compute_pipeline,            128        ) \
+    _(Shader,                 RegEntryType_Shader,                  shader,                      128        ) \
+    _(Camera,                 RegEntryType_Camera,                  camera,                       32        ) \
+    _(Renderer,               RegEntryType_Renderer,                renderer,                      2        ) \
+    _(Gui,                    RegEntryType_Gui,                     gui,                           2        ) \
+    _(UBOManager,             RegEntryType_Ubo,                     ubo,                           1        ) \
+    _(PointLight,             RegEntryType_PointLight,              point_light,                   6        ) \
+    _(AmbientLight,           RegEntryType_AmbientLight,            ambient_light,                32        ) \
+    _(SpotLight,              RegEntryType_SpotLight,               spot_light,                   32        ) \
+    _(SunLight,               RegEntryType_SunLight,                sun_light,                    32        ) \
+    _(ProbeReflectionPlane,   RegEntryType_ProbeReflectionPlane,    plane_reflection,             16        ) \
+    _(ProbeReflection,        RegEntryType_ProbeReflection,         probe_reflection,             16        ) \
+    _(ProbeReflectionGrid,    RegEntryType_ProbeReflectionGrid,     probe_reflection_grid,        16        )
 
 // clang-format on
 
 #define REM_TYPE_COUNT 21
+#define REM_HASH_CAPACITY 2048
 
 // === Generates Type Enums ===
-#define _(Type, RegistryType, Label, Hash, Capacity) REMType_##Type,
+#define _(Type, RegistryType, Label, PoolCapacity) REMType_##Type,
 typedef enum { REM_WGPU_LIST(_) REM_ENGINE_LIST(_) } REMType;
 #undef _
 
 // === Generate Structs ===
-#define REM_STRUCT_ITEM(Type, RegistryType, Label, Hash, Capacity)             \
-  typedef struct {                                                             \
-    reg_id_t owner;                                                            \
-    uint32_t key;                                                              \
-    REMType type;                                                              \
-    bool occupied;                                                             \
-    Type handle;                                                               \
-  } REM##Type;
 
-REM_WGPU_LIST(REM_STRUCT_ITEM);
-REM_ENGINE_LIST(REM_STRUCT_ITEM);
-
-// utils
 typedef struct {
   reg_id_t owner;
   uint32_t key;
   REMType type;
   bool occupied;
+  size_t pool_id;
   void *handle;
-} REMVoid;
+} REMBucket;
+
+// === Generate Pools for Engine Objects ===
+// We use a pointer-based hashing, so we first need to generate our items in
+// respective pools. The we will link each pool pointer to the Resource Bucket
+// handle. Note that since WGPU entities are already opaque pointers, we don't
+// need to alocate pools for them. Pools a just a way to more easily control
+// each resource allocation and a way uniformize the hash system by only using
+// pointers as hashing keys.
+#define _(Type, RegistryType, Label, PoolCapacity)                             \
+  typedef struct {                                                             \
+    size_t capacity;                                                           \
+    size_t length;                                                             \
+    Type *entries;                                                             \
+  } REMPool##Type;
+
+REM_ENGINE_LIST(_);
+#undef _
 
 /* TODO:
 Add the following entities ?
@@ -104,7 +112,8 @@ Add the following entities ?
  */
 typedef struct ResourceManager {
 
-  HashTable entries[REM_TYPE_COUNT];
+  DynamicList pools[REM_TYPE_COUNT];
+  HashTable hash_table;
 
 } ResourceManager;
 
@@ -124,25 +133,23 @@ extern ResourceManager g_rem;
   constructor (wgpuDeviceCreate.... vs item_create()) and destructor
   (wgpuResourceRelease() vs item_destroy())
  */
-uint32_t rem_generate_ptr_hash(const void *);
-uint32_t rem_generate_id_hash(const void *);
+uint32_t rem_generate_hash(const void *);
 void rem_bucket_set_occupied(const void *, const bool);
 bool rem_bucket_get_occupied(const void *);
 bool rem_bucket_compare(const void *, const void *);
+void *rem_bucket_get_key(const void *);
 
 // === Define Config ===
 static const struct {
   const char *label;
   const size_t capacity;
   const size_t type_size;
-  hsht_hash_generator hash_generator;
 } rem_config[] = {
-#define _(Type, RegistryType, Label, Hash, Capacity)                           \
+#define _(Type, RegistryType, Label, PoolCapacity)                             \
   [REMType_##Type] = {                                                         \
       .label = #Type,                                                          \
-      .capacity = Capacity,                                                    \
-      .type_size = sizeof(REM##Type),                                          \
-      .hash_generator = Hash,                                                  \
+      .capacity = PoolCapacity,                                                \
+      .type_size = sizeof(Type),                                               \
   },
     REM_WGPU_LIST(_) REM_ENGINE_LIST(_)
 #undef _
@@ -183,11 +190,12 @@ REMStatus rem_destroy_buffer(WGPUBuffer *);
 REMStatus rem_destroy_shader_module(WGPUShaderModule *);
 
 // === Generate Engine creator / destructor functions
-#define REM_ENGINE_FUNC_ITEM(Type, RegistryType, Label, Hash, Capacity)        \
+#define _(Type, RegistryType, Label, PoolCapacity)                             \
   Type *rem_new_##Label();                                                     \
   REMStatus rem_destroy_##Label(Type *);
 
-REM_ENGINE_LIST(REM_ENGINE_FUNC_ITEM);
+REM_ENGINE_LIST(_);
+#undef _
 
 EXTERN_C_END
 

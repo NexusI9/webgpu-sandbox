@@ -36,8 +36,9 @@ static inline void scene_camera_init(Scene *);
 void scene_create(Scene *scene, const SceneCreateDescriptor *desc) {
 
   TIMER("Scene Load", {
-   
+    
     {
+      scene->id = reg_register(scene, RegEntryType_Scene);
       scene->ubo = desc->ubo;
         stat_init(&scene->stats);
       /*  ===== SCENE RENDER =====   */

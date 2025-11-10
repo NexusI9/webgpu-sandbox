@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#define DYLI_INVALID_INDEX ((size_t)-1)
+#define DYLI_INVALID_INDEX SIZE_MAX
 #define DYLI_DEFAULT_EXPAND_THRESHOLD 1
 
 typedef enum {
@@ -18,10 +18,11 @@ typedef enum {
 } DynamicListStatus;
 
 typedef struct {
-  void **entries;
-  size_t *capacity;
-  size_t *length;
+  void *entries;
+  size_t capacity;
+  size_t length;
   size_t type_size;
+  const char *label;
 } DynamicList;
 
 EXTERN_C_BEGIN
@@ -52,6 +53,7 @@ void *dyli_new_entry(void **, size_t *, size_t *, size_t, const char *);
 
 DynamicListStatus dyli_clone(const void *, const size_t, void **, size_t *,
                              size_t *, size_t, const char *);
+
 
 EXTERN_C_END
 

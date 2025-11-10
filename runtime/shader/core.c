@@ -52,7 +52,7 @@
 
 void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 
-  // set name
+  shader->id = reg_register(shader, RegEntryType_Shader);
   shader->name = strdup(sd->name);
 
 #ifdef VERBOSE_CREATING_PHASE

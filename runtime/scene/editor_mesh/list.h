@@ -57,7 +57,7 @@ static inline void sem_list_set_name(SceneEditorMeshList *list,
 DynamicListStatus sem_list_create(SceneEditorMeshList *list, size_t capacity,
                                   const char *name, const RegEntryType type) {
 
-  list->id = reg_register(reg_new_id(), list, type);
+  list->id = reg_register(list, type);
   sem_list_set_name(list, name == 0 ? "Scene Editor Mesh List" : name);
 
   return dyli_create((void **)&list->entries, &list->capacity, &list->length,
@@ -83,7 +83,7 @@ SceneEditorMesh *sem_list_new_entry(SceneEditorMeshList *list) {
       sizeof(SceneEditorMesh), "Scene Editor Mesh list");
 
   if (entry)
-    entry->id = reg_register(reg_new_id(), entry, RegEntryType_SceneEditorMesh);
+    entry->id = reg_register(entry, RegEntryType_SceneEditorMesh);
 
   return entry;
 }
