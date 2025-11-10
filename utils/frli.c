@@ -47,7 +47,7 @@ FreeListStatus frli_free(void **entries, size_t *capacity, size_t *length) {
  * Reuses any empty slot (zeroed), otherwise expands.
  */
 void *frli_new_entry(void **entries, size_t *capacity, size_t *length,
-                     size_t type_size, const char *label) {
+                     size_t type_size, size_t *index, const char *label) {
 
   if (*entries == NULL || *capacity == 0) {
     logger_add(LoggerFlag_Error,
@@ -77,29 +77,30 @@ void *frli_new_entry(void **entries, size_t *capacity, size_t *length,
 
     if (is_free) {
       memset(slot, 0, type_size);
-      if (i >= *length)
-        *length = i + 1;
+
+      if (index)
+        *index = i;
+
+      (*length)++;
       return slot;
     }
   }
 
-  void *slot = (char *)(*entries) + (*length * type_size);
-  memset(slot, 0, type_size);
-  (*length)++;
-  return slot;
+  return NULL;
 }
 
 /**
  * Remove an entry by pointer, marking it as free (zeroed).
  * Does NOT shift memory.
  */
-FreeListStatus frli_remove(void *entries, size_t *length, size_t type_size,
-                           void *entry, const char *label) {
-  char *base = (char *)entries;
-  for (size_t i = 0; i < *length; i++) {
-    char *slot = base + (i * type_size);
-    if (slot == (char *)entry) {
+FreeListStatus frli_remove(void *entries, const size_t capacity, size_t *length,
+                           size_t type_size, void *entry, const char *label) {
+
+  for (size_t i = 0; i < capacity; i++) {
+    char *slot = (char *)entries + (i * type_size);
+    if (slot == entry) {
       memset(slot, 0, type_size);
+      (*length)--;
       return FreeListStatus_Success;
     }
   }
@@ -111,14 +112,16 @@ FreeListStatus frli_remove(void *entries, size_t *length, size_t type_size,
 /**
  * Remove by index (mark as free instead of shifting).
  */
-FreeListStatus frli_remove_at_index(void *entries, size_t *length,
-                                    size_t type_size, const size_t index,
-                                    const char *label) {
-  if (index >= *length)
-    return FreeListStatus_UnfoundEntry;
+FreeListStatus frli_remove_at_index(void *entries, const size_t capacity,
+                                    size_t *length, size_t type_size,
+                                    const size_t index, const char *label) {
+  if (index >= capacity)
+    return FreeListStatus_OutOfBound;
 
   char *slot = (char *)entries + (index * type_size);
   memset(slot, 0, type_size);
+
+  (*length)--;
   return FreeListStatus_Success;
 }
 
@@ -130,10 +133,12 @@ FreeListStatus frli_append(const void *src_entries, const size_t src_length,
                            size_t *dest_length, size_t type_size,
                            const char *label) {
 
-  while (*dest_length + src_length >= *dest_capacity) {
-    if (frli_expand(dest_entries, dest_capacity, dest_length, type_size, 2,
-                    label) != FreeListStatus_Success)
-      return FreeListStatus_AllocFail;
+  if (*dest_length + src_length >= *dest_capacity) {
+    logger_add(LoggerFlag_Error,
+               "The source list has a length reach out of bound destination's "
+               "capacity list. (%lu against %lu).",
+               src_length, *dest_length);
+    return FreeListStatus_OutOfBound;
   }
 
   memcpy((char *)(*dest_entries) + (*dest_length * type_size), src_entries,
@@ -150,10 +155,13 @@ FreeListStatus frli_replace(const void *src_entries, const size_t src_length,
                             size_t *dest_length, size_t type_size,
                             const char *label) {
 
-  while (src_length > *dest_capacity) {
-    if (frli_expand(dest_entries, dest_capacity, dest_length, type_size, 2,
-                    label) != FreeListStatus_Success)
-      return FreeListStatus_AllocFail;
+  if (src_length > *dest_capacity) {
+    logger_add(
+        LoggerFlag_Error,
+        "The source list has a length greater that the destination's capacity "
+        "list. (%lu against %lu).",
+        src_length, *dest_length);
+    return FreeListStatus_OutOfBound;
   }
 
   memcpy(*dest_entries, src_entries, src_length * type_size);

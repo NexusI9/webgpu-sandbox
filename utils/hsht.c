@@ -31,9 +31,6 @@ HashTableStatus hsht_create(HashTable *table, const HashTableDescriptor *desc) {
 
 HashTableStatus hsht_expand(HashTable *table, const size_t scale) {
 
-  // DEBUG
-  printf("Expanding table\n");
-
   if (table->capacity == 0) {
     logger_add(LoggerFlag_Error,
                "Hash table '%s' has a capaicty of 0. Make sure it's been "
@@ -154,10 +151,6 @@ void *hsht_new_entry(HashTable *table, const void *key,
   }
 
   void *entry = (void *)((char *)(table->entries) + index * table->type_size);
-
-  // DEBUG
-  printf("%p => %lu  => %p\n", key, start,
-         (char *)(table->entries) + (index * table->type_size));
 
   memset(entry, 0, table->type_size);
 

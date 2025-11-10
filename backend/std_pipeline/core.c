@@ -157,9 +157,6 @@ void standard_render_pipelines_init(
 
     render_pipeline_build(cached_pipeline, &temp_layout);
 
-    // DEBUG
-    printf("New render pipeline: %p | %p\n", g_std_render_pipelines[i],
-           g_std_render_pipelines[i]->handle);
   }
 }
 

@@ -13,6 +13,7 @@
 #include "runtime/shader/core.h"
 #include "stb/stb_image.h"
 #include "utils/dyli.h"
+#include "utils/frli.h"
 #include "utils/hsht.h"
 #include "utils/stli.h"
 #include "webgpu/webgpu.h"
@@ -67,9 +68,9 @@ REMStatus resource_manager_init() {
 
     const size_t capacity = rem_type_init_capacity(i);
 
-    if (dyli_create((void **)&g_rem.pools[i].entries, &g_rem.pools[i].capacity,
+    if (frli_create((void **)&g_rem.pools[i].entries, &g_rem.pools[i].capacity,
                     &g_rem.pools[i].length, g_rem.pools[i].type_size, capacity,
-                    g_rem.pools[i].label) == DynamicListStatus_Success) {
+                    g_rem.pools[i].label) == FreeListStatus_Success) {
 
       total_bytes += rem_config[i].type_size * rem_config[i].capacity;
 
@@ -375,10 +376,11 @@ REM_DESTROY_WGPU_ITEM(shader_module, WGPUShaderModule, REMType_WGPUShaderModule,
                                                                                \
     const REMType type = REMType_##Type;                                       \
                                                                                \
-    void *new_item =                                                           \
-        dyli_new_entry((void **)&g_rem.pools[type].entries,                    \
-                       &g_rem.pools[type].capacity, &g_rem.pools[type].length, \
-                       g_rem.pools[type].type_size, g_rem.pools[type].label);  \
+    size_t index = 0;                                                          \
+    void *new_item = frli_new_entry(                                           \
+        (void **)&g_rem.pools[type].entries, &g_rem.pools[type].capacity,      \
+        &g_rem.pools[type].length, g_rem.pools[type].type_size, &index,        \
+        g_rem.pools[type].label);                                              \
                                                                                \
     if (new_item == NULL)                                                      \
       return NULL;                                                             \
@@ -386,15 +388,11 @@ REM_DESTROY_WGPU_ITEM(shader_module, WGPUShaderModule, REMType_WGPUShaderModule,
     REMBucket *new_bucket = hsht_new_entry(                                    \
         &g_rem.hash_table, (void *)new_item, HashTableNewFlag_None);           \
                                                                                \
-    if (type == REMType_RenderPipeline) {                                      \
-      printf("DEBUG new item: %p => new bucket: %p\n", new_item, new_bucket);  \
-    }                                                                          \
-                                                                               \
     if (new_bucket == NULL)                                                    \
       return NULL;                                                             \
                                                                                \
     new_bucket->handle = new_item;                                             \
-    new_bucket->pool_id = g_rem.pools[type].length - 1;                        \
+    new_bucket->pool_id = index;                                               \
     new_bucket->owner = 0;                                                     \
     new_bucket->key = 0;                                                       \
     new_bucket->type = REMType_##Type;                                         \
@@ -418,22 +416,19 @@ REM_ENGINE_LIST(_);
                                                                                \
     REMBucket *bucket = hsht_find(&g_rem.hash_table, handle, NULL);            \
                                                                                \
-    if (type == REMType_RenderPipeline) {                                      \
-      printf("bucket: %p\n", bucket);                                          \
-      printf("handle: %p\n", bucket->handle);                                  \
-      printf("pool id: %lu\n", bucket->pool_id);                               \
-    }                                                                          \
-                                                                               \
     if (!bucket)                                                               \
       return REMStatus_UnfoundResource;                                        \
                                                                                \
+    if (type == REMType_RenderPipeline)                                        \
+      printf("// DEBUG remove at index: %lu\n", bucket->pool_id);              \
+                                                                               \
+    FreeListStatus remove_pool = frli_remove_at_index(                         \
+        (void *)g_rem.pools[type].entries, g_rem.pools[type].capacity,         \
+        &g_rem.pools[type].length, g_rem.pools[type].type_size,                \
+        bucket->pool_id, g_rem.pools[type].label);                             \
+                                                                               \
     HashTableStatus remove_hash =                                              \
         hsht_remove_entry(&g_rem.hash_table, handle);                          \
-                                                                               \
-    DynamicListStatus remove_pool = dyli_remove_at_index(                      \
-        (void *)g_rem.pools[type].entries, &g_rem.pools[type].length,          \
-        g_rem.pools[type].type_size, bucket->pool_id,                          \
-        g_rem.pools[type].label);                                              \
                                                                                \
     if (remove_hash != HashTableStatus_Success)                                \
       return REMStatus_UnfoundResource;                                        \

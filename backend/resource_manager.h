@@ -19,7 +19,7 @@
 #include "runtime/shader/core.h"
 #include "runtime/texture/core.h"
 #include "utils/defines.h"
-#include "utils/dyli.h"
+#include "utils/frli.h"
 #include "utils/hsht.h"
 #include "webgpu/webgpu.h"
 #include <stddef.h>
@@ -112,7 +112,7 @@ Add the following entities ?
  */
 typedef struct ResourceManager {
 
-  DynamicList pools[REM_TYPE_COUNT];
+  FreeList pools[REM_TYPE_COUNT];
   HashTable hash_table;
 
 } ResourceManager;

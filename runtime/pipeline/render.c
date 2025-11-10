@@ -195,9 +195,6 @@ void render_pipeline_build(RenderPipeline *pipeline,
  */
 void render_pipeline_destroy(RenderPipeline *pipeline) {
 
-  // DEBUG
-  printf("----\nDestroy pipeline: %p | %p\n", pipeline, pipeline->handle);
-
   // rem_destroy_shader_module(&pipeline->module);
   wgpuRenderPipelineRelease(pipeline->handle);
   pipeline->handle = NULL;
