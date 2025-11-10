@@ -419,9 +419,6 @@ REM_ENGINE_LIST(_);
     if (!bucket)                                                               \
       return REMStatus_UnfoundResource;                                        \
                                                                                \
-    if (type == REMType_RenderPipeline)                                        \
-      printf("// DEBUG remove at index: %lu\n", bucket->pool_id);              \
-                                                                               \
     FreeListStatus remove_pool = frli_remove_at_index(                         \
         (void *)g_rem.pools[type].entries, g_rem.pools[type].capacity,         \
         &g_rem.pools[type].length, g_rem.pools[type].type_size,                \
