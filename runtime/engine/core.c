@@ -6,6 +6,7 @@
 #include "backend/renderer/reflection/draw.h"
 #include "backend/renderer/shadow_map/draw.h"
 #include "backend/resource_manager.h"
+#include "backend/std_pipeline/core.h"
 #include "runtime/engine/add.h"
 #include "runtime/light/list.h"
 #include "runtime/scene/add.h"
@@ -103,8 +104,9 @@ EngineStatus engine_set_active_scene(Engine *engine, Scene *scene) {
 void engine_init_reflection_pass(ProbeList *list, Renderer *renderer) {
 
   RendererBatchMeshLists reflective_mesh_lists;
-  renderer_batch_get_mesh_list_with_flags(
-      &renderer->batches, RendererBatchFlag_Reflection, &reflective_mesh_lists);
+  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches,
+                                             RenderPipelineType_Reflection,
+                                             &reflective_mesh_lists);
 
   RenderPassLayoutListDescriptor reflection_draw_list = {
       .length = reflective_mesh_lists.length,
@@ -145,8 +147,8 @@ void engine_init_reflection_pass(ProbeList *list, Renderer *renderer) {
 void engine_init_shadow_map(LightList *list, Renderer *renderer) {
 
   RendererBatchMeshLists shadow_mesh_lists;
-  renderer_batch_get_mesh_list_with_flags(
-      &renderer->batches, RendererBatchFlag_Shadow, &shadow_mesh_lists);
+  renderer_batch_get_mesh_list_from_pipeline(
+      &renderer->batches, RenderPipelineType_Shadow, &shadow_mesh_lists);
 
   RenderPassLayoutListDescriptor shadow_draw_list = {
       .length = shadow_mesh_lists.length,
@@ -155,11 +157,11 @@ void engine_init_shadow_map(LightList *list, Renderer *renderer) {
   for (uint8_t i = 0; i < shadow_mesh_lists.length; i++)
     shadow_draw_list.entries[i] = (RenderPassDrawLayoutDescriptor){
         .shader = MeshShader_Shadow,
+        .pipeline = RenderPipelineType_Shadow,
         .topology_callback = mesh_topology_base,
         .mesh_preprocessor_callback = shadow_map_pass_preprocessor_callback,
         .mesh_preprocessor_data = (void *)NULL,
         .meshes = shadow_mesh_lists.entries[i],
-
     };
 
   shadow_map_init(&(ShadowMapInitDescriptor){

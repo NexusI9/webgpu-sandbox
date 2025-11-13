@@ -13,6 +13,7 @@
 #include "runtime/light/core.h"
 #include "runtime/light/list.h"
 #include "runtime/mesh/core.h"
+
 #include "runtime/mesh/mesh.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/debug/core.h"
@@ -204,7 +205,10 @@ void renderer_draw_shadow_map(const ShadowMapDrawDescriptor *desc,
       render_pass_im_begin(desc->pass);
     {
 
-      LightShadowData light_data = {desc->ubo_offset};
+	// DEBUG
+	printf("UBO Offset: %lu\n", desc->ubo_offset);
+	
+      LightShadowData light_data = {.view_offset = desc->ubo_offset};
       render_pass_update_preprocessor_data(desc->pass, 0, &light_data);
 
       RenderPassDrawOptions layer_views = {

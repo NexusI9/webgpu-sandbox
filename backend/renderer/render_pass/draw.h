@@ -48,7 +48,6 @@ static inline void render_pass_im_set_views(RenderPass *,
 
 // Pass List
 static inline void render_pass_list_draw(RenderPassList *);
-static inline void list_tmp(RenderPassList *);
 
 /**
    ▗▄▄▖  ▗▄▖  ▗▄▄▖ ▗▄▄▖    ▗▖   ▗▄▄▄▖ ▗▄▄▖▗▄▄▄▖

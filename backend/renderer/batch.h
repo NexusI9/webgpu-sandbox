@@ -96,9 +96,8 @@ RendererBatchStatus
 renderer_batch_get_configuration_keys(RendererBatchKeyList *);
 
 // === Mesh List Accessors ===
-RendererBatchStatus
-renderer_batch_get_mesh_list_from_pipeline(HashTable *, const RenderPipeline *,
-                                           RendererBatchMeshLists *);
+RendererBatchStatus renderer_batch_get_mesh_list_from_pipeline(
+    HashTable *, const RenderPipelineType, RendererBatchMeshLists *);
 
 MeshRefList *renderer_batch_get_mesh_list_from_key(HashTable *,
                                                    const RendererBatchKey *);

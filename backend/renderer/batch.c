@@ -1,5 +1,6 @@
 #include "batch.h"
 #include "backend/logger.h"
+#include "backend/renderer/core.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
@@ -10,6 +11,13 @@
 static const RendererBatchKey renderer_batch_config[] = {
 
     // Unlit
+    {
+        "Skybox",
+        RenderPipelineType_Skybox,
+        RendererBatchFlag_Fixed,
+        RendererBatchLayer_Default,
+        RendererDrawMode_Texture,
+    },
     {
         "Billboard",
         RenderPipelineType_Billboard,
@@ -105,11 +113,14 @@ static const RendererBatchKey renderer_batch_config[] = {
         RendererDrawMode_All,
     },
     {
-        "Line",
+        "Line", // For SEM that use lines we will use another config with
+                // a fixed flag, cause for "Line based SEM" we use to set the
+                // texture shader as Line and use the wireframe topology as the
+                // base.
         RenderPipelineType_Line,
-        RendererBatchFlag_Fixed,
+        RendererBatchFlag_None,
         RendererBatchLayer_Default,
-        RendererDrawMode_All,
+        RendererDrawMode_Wireframe | RendererDrawMode_Boundbox,
     },
     {
         "Screen",
@@ -128,16 +139,9 @@ static const RendererBatchKey renderer_batch_config[] = {
     {
         "Solid",
         RenderPipelineType_Solid,
-        RendererBatchFlag_Fixed,
+        RendererBatchFlag_None,
         RendererBatchLayer_Default,
         RendererDrawMode_Solid,
-    },
-    {
-        "Skybox",
-        RenderPipelineType_Skybox,
-        RendererBatchFlag_Fixed,
-        RendererBatchLayer_Default,
-        RendererDrawMode_Texture,
     },
 
 };
@@ -321,14 +325,11 @@ renderer_batch_get_key_from_descriptor(const RendererBatchKeyDescriptor *desc) {
 /**
    Retrieve the mesh lists from all the keys that use the given pipeline type.
  */
-RendererBatchStatus
-renderer_batch_get_mesh_list_from_pipeline(HashTable *table,
-                                           const RenderPipeline *pipeline,
-                                           RendererBatchMeshLists *result) {
+RendererBatchStatus renderer_batch_get_mesh_list_from_pipeline(
+    HashTable *table, const RenderPipelineType pipeline_type,
+    RendererBatchMeshLists *result) {
 
   *result = (RendererBatchMeshLists){0};
-
-  const RenderPipelineType pipeline_type = std_render_pipeline_type(pipeline);
 
   for (uint8_t i = 0; i < renderer_batch_config_length; i++) {
 

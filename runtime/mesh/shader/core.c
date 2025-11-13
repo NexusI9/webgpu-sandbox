@@ -194,10 +194,6 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
   Shader *shader = mesh_shader(mesh, shader_type);
   const PipelineBindingMVP *mvp = shader_pipeline(shader)->bindings.mvp;
 
-  // DEBUG
-  printf("Mesh: %p | %s\n", mesh, mesh->name);
-  printf("Shader: %p | %s\n", shader, shader->name);
-
   ShaderBindGroupUniformEntry entries[3] = {
       // viewport
       {

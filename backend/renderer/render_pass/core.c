@@ -6,6 +6,7 @@
 
 #include "backend/logger.h"
 #include "backend/postfx/core.h"
+#include "backend/std_pipeline/core.h"
 #include "draw.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/draw.h"
@@ -183,7 +184,8 @@ void render_pass_draw_list_copy(const RenderPassLayoutListDescriptor *src,
     d->src_meshes = s->meshes;
 
     // DEBUG
-    printf("[%lu] pipeline: %d | shader: %d \n", i, d->pipeline, d->shader);
+    printf("[%lu] pipeline: %s | shader: %d \n", i,
+           std_render_pipeline_label(d->pipeline), d->shader);
 
     mesh_draw_packet_list_create(&d->drawn_meshes, MESH_REF_LIST_CAPACITY);
   }
@@ -262,14 +264,8 @@ void render_pass_sync_drawn_layouts(RenderPass *pass) {
 
   pass->draw_list.drawn_length = 0;
 
-  // DEBUG
-  printf("sync\n");
-
   for (size_t i = 0; i < pass->draw_list.stagged_length; i++) {
     RenderPassDrawLayout *stagged_layout = &pass->draw_list.stagged_entries[i];
-
-    // DEBUG
-    printf("length: %lu\n", stagged_layout->drawn_meshes.length);
 
     if (stagged_layout->drawn_meshes.length)
       pass->draw_list.drawn_entries[pass->draw_list.drawn_length++] =

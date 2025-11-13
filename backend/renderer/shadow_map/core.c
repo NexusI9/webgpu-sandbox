@@ -200,6 +200,11 @@ void shadow_map_pass_preprocessor_callback(const RenderPass *pass, Mesh *mesh,
 
   LightShadowData *data = (LightShadowData *)userData;
 
+  // DEBUG
+  printf("Mesh: %s \n", mesh->name);
+  printf("userData: %p", userData);
+  printf("View offset: %lu\n", data->view_offset);
+  
   // update each mesh shadow uniforms with current light view
   shader_update_bind_group_offset(mesh_shader(mesh, MeshShader_Shadow), 0, 0,
                                   data->view_offset, ShaderUpdateFlag_None);
