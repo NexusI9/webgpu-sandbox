@@ -44,7 +44,7 @@ void sem_create_billboard(Mesh *mesh,
                               });
 
   // assign billboard shader
-  mesh_shader_create_fixed(
+  mesh_shader_create(
       mesh, &(ShaderCreateDescriptor){
                 .name = "SEM billboard shader",
                 .pipeline = std_render_pipeline(RenderPipelineType_Billboard),
@@ -57,22 +57,11 @@ void sem_create_billboard(Mesh *mesh,
   mesh_set_scale(mesh, *desc->scale);
 
   // bind texture + sampler
-  shader_update_texture_view(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
+  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 0,
                              desc->view, TEXTURE_FORMAT_OFFSCREEN,
                              ShaderUpdateFlag_ReleasePrevious);
 
-  shader_update_sampler(mesh_shader(mesh, MeshShader_Fixed), 1, 1,
-                        &(WGPUSamplerDescriptor){
-                            .addressModeU = WGPUAddressMode_Repeat,
-                            .addressModeV = WGPUAddressMode_Repeat,
-                            .addressModeW = WGPUAddressMode_Repeat,
-                            .minFilter = WGPUFilterMode_Linear,
-                            .magFilter = WGPUFilterMode_Linear,
-                            .compare = WGPUCompareFunction_Undefined,
-                        },
-                        ShaderUpdateFlag_None);
-
   const uint32_t size = 0;
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 2,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 2,
                              (void *)&size, ShaderUpdateFlag_None);
 }

@@ -8,7 +8,7 @@ EXTENSIONS = (".c", ".cpp", ".h", ".hpp")
 
 # Replacement rules (order matters to avoid conflicts)
 REPLACEMENTS = [
-    ("scene_system_scene_render_pass_texture(scene,", "renderer_update_pass_texture("),
+    ("RenderPassDrawList", "RenderPassLayoutList"),
 ]
 
 # Folders to exclude

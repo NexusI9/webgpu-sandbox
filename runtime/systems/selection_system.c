@@ -1,8 +1,10 @@
 #include "selection_system.h"
+#include "backend/renderer/batch.h"
 #include "backend/renderer/core.h"
 #include "backend/renderer/render_pass/core.h"
 #include "backend/renderer/shadow_map/draw.h"
 #include "runtime/gizmo/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/scene/editor_mesh/core.h"
 #include "runtime/scene/selection/core.h"
 #include "runtime/scene/selection/filter.h"
@@ -43,11 +45,8 @@ void selection_system_init(SceneSelection *selection, Scene *scene,
         .scene = scene,
     };
 
-  renderer_add_draw_callback(
-      renderer, selection_system_draw_callback, (void *)payload,
-      RendererDrawMode_Texture | RendererDrawMode_Solid |
-          RendererDrawMode_Wireframe | RendererDrawMode_Boundbox);
-
+  renderer_add_draw_callback(renderer, selection_system_draw_callback,
+                             (void *)payload, RendererDrawMode_All);
 }
 
 /**
@@ -180,75 +179,79 @@ void selection_system_callback_mesh_highlight(
     SceneSelection *selection, Scene *scene, Renderer *renderer,
     SceneSelectionObjectList *selected_objects, void *data) {
 
-  MeshRefList *selection_list =
-      renderer_pipeline(renderer, RendererPipeline_Fixed_Selection);
-
-  RendererMeshPass target_pass[2] = {
-      RendererMeshPass_Default,
-      RendererMeshPass_Outline,
-  };
-
   SceneSelectionType target_type[2] = {
       SceneSelectionType_Mesh,
       SceneSelectionType_MeshShadow,
   };
 
+  RendererBatchLayer target_layers[2] = {
+      RendererBatchLayer_Default,
+      RendererBatchLayer_Outline,
+  };
+
   const color highlight_color = {1.0f, 0.0f, 0.0f, 1.0f};
   const color default_color = {0.0f, 0.0f, 0.0f, 1.0f};
 
-  // enable mesh in each fixed selection of each pass (outline + stencil) in all
-  // draw modes
+  // enable mesh in each fixed selection of each pass (outline + stencil) in
+  // all draw modes
   for (RendererDrawMode i = 0; i < RENDERER_DRAW_MODE_COUNT; i++) {
 
     RenderPassList *pass_list = &renderer->mesh_pass[i];
+    RendererBatchMeshLists selection_meshes;
+    renderer_batch_get_mesh_list_with_flags(
+        &renderer->batches, RendererBatchFlag_Selection, &selection_meshes);
 
-    switch ((1 << i)) {
+    for (size_t j = 0; j < selection_meshes.length; j++) {
 
-      // update line effect
-    case RendererDrawMode_Boundbox:
-    case RendererDrawMode_Wireframe:
+      switch ((1 << i)) {
 
-      // disable all
-      for (SceneSelectionType i = 0; i < 2; i++) {
-        for (size_t j = 0; j < selection->filters[i].meshes.length; j++) {
-          Mesh *mesh = selection->filters[i].meshes.entries[j];
-          shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1,
-                                     0, (void *)&default_color,
-                                     ShaderUpdateFlag_None);
-        }
-      }
+        // update line effect
+      case RendererDrawMode_Boundbox:
+      case RendererDrawMode_Wireframe:
 
-      // enable selected
-      for (size_t k = 0; k < selected_objects->length; k++) {
-        Mesh *mesh = selected_objects->entries[k].mesh;
-        shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1,
-                                   0, (void *)&highlight_color,
-                                   ShaderUpdateFlag_None);
-      }
-
-      break;
-
-      // update outline effect
-    case RendererDrawMode_Solid:
-    case RendererDrawMode_Texture:
-
-      for (int j = 0; j < 2; j++) {
-        RenderPass *pass = &pass_list->passes[target_pass[j]];
-
-        RenderPassDrawLayout *layout =
-            render_pass_find_layout_from_source_list(pass, selection_list);
-
-        if (layout) {
-
-          render_pass_layout_disable_all_mesh(layout);
-
-          for (size_t k = 0; k < selected_objects->length; k++) {
-            Mesh *mesh = selected_objects->entries[k].mesh;
-            render_pass_layout_enable_mesh(layout, mesh);
+        // disable all
+        for (SceneSelectionType i = 0; i < 2; i++) {
+          for (size_t j = 0; j < selection->filters[i].meshes.length; j++) {
+            Mesh *mesh = selection->filters[i].meshes.entries[j];
+            shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe),
+                                       1, 0, (void *)&default_color,
+                                       ShaderUpdateFlag_None);
           }
         }
+
+        // enable selected
+        for (size_t k = 0; k < selected_objects->length; k++) {
+          Mesh *mesh = selected_objects->entries[k].mesh;
+          shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1,
+                                     0, (void *)&highlight_color,
+                                     ShaderUpdateFlag_None);
+        }
+
+        break;
+
+        // update outline effect
+      case RendererDrawMode_Solid:
+      case RendererDrawMode_Texture:
+
+        for (int j = 0; j < 2; j++) {
+          RenderPass *pass = &pass_list->passes[target_layers[j]];
+
+          RenderPassDrawLayout *layout =
+              render_pass_find_layout_from_source_list(
+                  pass, selection_meshes.entries[j]);
+
+          if (layout) {
+
+            render_pass_layout_disable_all_mesh(layout);
+
+            for (size_t k = 0; k < selected_objects->length; k++) {
+              Mesh *mesh = selected_objects->entries[k].mesh;
+              render_pass_layout_enable_mesh(layout, mesh);
+            }
+          }
+        }
+        break;
       }
-      break;
     }
   }
 };
@@ -257,8 +260,8 @@ void selection_system_callback_mesh_highlight(
    For SEM Object we use a OOP approach (similar to the transform callback)
    where each SEM Mesh has its own transform and highlight callback.
 
-   Since SEM are such polymorphic objects, it just easier and less messy to hook
-   each mesh a transform and highlight callback.
+   Since SEM are such polymorphic objects, it just easier and less messy to
+   hook each mesh a transform and highlight callback.
  */
 void selection_system_callback_sem_highlight(SceneSelection *selection,
                                              Scene *scene, Renderer *renderer,
@@ -366,7 +369,8 @@ void selection_system_callback_mesh_transform(SceneSelectionTransform *desc) {
 }
 
 /* Mesh shadow based transform.
-   Note that this filter only incudes meshes that are in the LitShadow pipelines
+   Note that this filter only incudes meshes that are in the LitShadow
+   pipelines
  */
 
 void selection_system_callback_mesh_shadow_transform(
@@ -380,15 +384,21 @@ void selection_system_callback_mesh_shadow_transform(
   }
 
   // recalculate shadow maps
-  if (desc->renderer->draw_mode == RendererDrawMode_Texture)
-    renderer_draw_shadow_map_all(
-        &(ShadowMapDrawAllDescriptor){
-            .mesh_list = renderer_pipeline(desc->renderer,
-                                           RendererPipeline_Dynamic_LitShadow),
-            .lights = &desc->scene->lights,
-            .profiler = &desc->renderer->profiler,
-        },
-        SCENE_DEBUG_UNDEFINED);
+  if (desc->renderer->draw_mode == RendererDrawMode_Texture) {
+
+    RendererBatchMeshLists shadow_meshes;
+    renderer_batch_get_mesh_list_with_flags(
+        &desc->renderer->batches, RendererBatchFlag_Shadow, &shadow_meshes);
+
+    for (size_t i = 0; i < shadow_meshes.length; i++)
+      renderer_draw_shadow_map_all(
+          &(ShadowMapDrawAllDescriptor){
+              .mesh_list = shadow_meshes.entries[i],
+              .lights = &desc->scene->lights,
+              .profiler = &desc->renderer->profiler,
+          },
+          SCENE_DEBUG_UNDEFINED);
+  }
 }
 
 static inline void
@@ -513,13 +523,14 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
   /**
       ===================== ADD SELECTION RELATED EVENTS ===================
 
-     1. Add a right click raycast: push/pop meshes from the selection pipeline.
+     1. Add a right click raycast: push/pop meshes from the selection
+     pipeline.
 
      2. Add a left click raycast: on gizmo transform only to define selected
      axis.
 
-     3. Add a draw callback: to poll mouse events and loop through selection to
-     apply transform.
+     3. Add a draw callback: to poll mouse events and loop through selection
+     to apply transform.
 
      4. Add a html event on mouse up
 
@@ -718,7 +729,7 @@ void selection_system_callback_raycast_gizmo_hover(
 
     gizmo_reset_color_uniform(gizmo);
     // update hovered gizmo color
-    shader_update_uniform_data(mesh_shader(hit->mesh, MeshShader_Fixed), 1, 0,
+    shader_update_uniform_data(mesh_shader(hit->mesh, MeshShader_Texture), 1, 0,
                                (void *)COLOR_GIZMO_HOVER,
                                ShaderUpdateFlag_None);
   } else {
@@ -958,8 +969,6 @@ void selection_system_callback_key_sequence_transform(
   Renderer *renderer = user_data->renderer;
   Gizmo *gizmo = &scene->gizmo;
   
-  MeshRefList *selection_list =
-      renderer_pipeline(renderer, RendererPipeline_Fixed_Selection);
 
   // use the length as a flag to detect if gizmo already active or not
   if (scene_selection_length(selection) == 0)

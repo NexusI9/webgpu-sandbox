@@ -130,14 +130,14 @@ void prefab_skybox_create_from_texture(Engine *engine,
                                      });
 
   // assign shader
-  mesh_shader_create_fixed(skybox_mesh, &(ShaderCreateDescriptor){
-                                            .name = "skybox shader",
-                                            .pipeline = std_render_pipeline(
-                                                RenderPipelineType_Skybox),
-                                        });
+  mesh_shader_create(skybox_mesh, &(ShaderCreateDescriptor){
+                                      .name = "skybox shader",
+                                      .pipeline = std_render_pipeline(
+                                          RenderPipelineType_Skybox),
+                                  });
 
   // update texture and sampler
-  Shader *shader = mesh_shader(skybox_mesh, MeshShader_Fixed);
+  Shader *shader = mesh_shader(skybox_mesh, MeshShader_Texture);
   shader_update_texture_view(shader, 1, 0, *view, TEXTURE_FORMAT_OFFSCREEN,
                              ShaderUpdateFlag_ReleasePrevious);
 
@@ -148,9 +148,8 @@ void prefab_skybox_create_from_texture(Engine *engine,
   // alter pipeline (no depth test)
   const RenderPipeline *pipeline = shader_pipeline(shader);
 
-  engine_scene_add_mesh_pipeline(engine, skybox_mesh,
-                           RendererPipeline_Fixed_Background, NULL,
-                           EngineAddFlag_Unselectable | EngineAddFlag_TreeHide);
+  engine_scene_add_mesh(engine, skybox_mesh, NULL,
+                        EngineAddFlag_Unselectable | EngineAddFlag_TreeHide);
 }
 
 /**

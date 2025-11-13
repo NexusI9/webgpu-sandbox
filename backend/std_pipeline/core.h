@@ -7,36 +7,47 @@
 #include "runtime/pipeline/pipeline.h"
 
 // Standards pipelines
-#define RENDER_PIPELINE_TYPE_COUNT 20
+#define RENDER_PIPELINE_TYPE_COUNT 21
 #define RENDER_PIPELINE_UNDEFINED FLT_MAX
 
+#define STD_RENDER_PIPELINES(_)                                                \
+  _(Billboard)                                                                 \
+  _(Default)                                                                   \
+  _(Grid)                                                                      \
+  _(Line)                                                                      \
+  _(PBR)                                                                       \
+  _(PBR_DoubleSided)                                                           \
+  _(PBR_Alpha)                                                                 \
+  _(Screen)                                                                    \
+  _(Shadow)                                                                    \
+  _(Skybox)                                                                    \
+  _(Solid)                                                                     \
+  _(Unlit)                                                                     \
+  _(Unlit_Stencil)                                                             \
+  _(GlassProbeGrid)                                                            \
+  _(GlassProbePlane)                                                           \
+  _(Reflection)                                                                \
+  _(Blit)                                                                      \
+  _(Outline)                                                                   \
+  _(Stencil)                                                                   \
+  _(Bloom)                                                                     \
+  _(Composite)
+
 typedef enum {
-  RenderPipelineType_Billboard,
-  RenderPipelineType_Default,
-  RenderPipelineType_Grid,
-  RenderPipelineType_Line,
-  RenderPipelineType_PBR,
-  RenderPipelineType_PBR_DoubleSided,
-  RenderPipelineType_PBR_Alpha,
-  RenderPipelineType_Screen,
-  RenderPipelineType_Shadow,
-  RenderPipelineType_Skybox,
-  RenderPipelineType_Solid,
-  RenderPipelineType_Unlit,
-  RenderPipelineType_GlassProbeGrid,
-  RenderPipelineType_GlassProbePlane,
-  RenderPipelineType_Reflection,
-  RenderPipelineType_Blit,
-  RenderPipelineType_Outline,
-  RenderPipelineType_Stencil,
-  RenderPipelineType_Bloom,
-  RenderPipelineType_Composite,
+#define _(Label) RenderPipelineType_##Label,
+  STD_RENDER_PIPELINES(_)
+#undef _
 } RenderPipelineType;
+
+#define STD_COMPUTE_PIPELINES(_)                                               \
+  _(Mipmap)                                                                    \
+  _(Kawase)
 
 #define COMPUTE_PIPELINE_TYPE_COUNT 2
 typedef enum {
-  ComputePipelineType_Mipmap,
-  ComputePipelineType_Kawase,
+#define _(Label) ComputePipelineType_##Label,
+  STD_COMPUTE_PIPELINES(_)
+#undef _
 } ComputePipelineType;
 
 extern RenderPipeline *g_std_render_pipelines[RENDER_PIPELINE_TYPE_COUNT];
@@ -69,6 +80,9 @@ std_render_pipeline_type(const RenderPipeline *pipeline) {
 
   return (RenderPipelineType)RENDER_PIPELINE_UNDEFINED;
 }
+
+const char* std_render_pipeline_label(const RenderPipelineType);
+const char* std_compute_pipeline_label(const ComputePipelineType);
 
 EXTERN_C_END
 

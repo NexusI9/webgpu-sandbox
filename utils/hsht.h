@@ -125,7 +125,7 @@ static inline hash_t hsht_hash_key(const char *key) {
   return hash;
 }
 
-static inline hash_t hash_djb2(const char *key) {
+static inline hash_t hsht_hash_djb2(const char *key) {
 
   unsigned long hash = 5381;
   int c;
@@ -135,6 +135,17 @@ static inline hash_t hash_djb2(const char *key) {
   }
 
   return hash;
+}
+
+// 32-bit FNV-1a hash
+static inline uint32_t hsht_hash_fnv1a32(const void *data, size_t len) {
+    const uint8_t *bytes = (const uint8_t *)data;
+    uint32_t hash = 2166136261u; // FNV offset basis
+    for (size_t i = 0; i < len; i++) {
+        hash ^= bytes[i];
+        hash *= 16777619u; // FNV prime
+    }
+    return hash;
 }
 
 typedef enum {

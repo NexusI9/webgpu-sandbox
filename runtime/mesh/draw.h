@@ -17,7 +17,6 @@ typedef struct {
   size_t length;
   WGPUBuffer attribute;
   WGPUBuffer index;
-  WGPURenderPipeline pipeline;
   ShaderBindGroupList *bindgroup_list;
   // --- cold path / conditionnaly used ---
   Mesh *mesh;              // needed for preprocessor callback
@@ -95,8 +94,6 @@ static inline void mesh_create_draw_packet(MeshTopology topo, Shader *shader,
   pack->index = topo.index->buffer;
   pack->length = topo.index->length;
   pack->bindgroup_list = &shader->bind_groups;
-  pack->pipeline = (*shader->pipeline)->handle;
-
   pack->shader_name = shader->name;
   pack->mesh = mesh;
 }
@@ -106,11 +103,6 @@ static inline void mesh_create_draw_packet(MeshTopology topo, Shader *shader,
  */
 static inline void mesh_draw(MeshDrawPacket *pack,
                              WGPURenderPassEncoder render_pass) {
-
-  // draw shader
-  // if shader is null, use default shader
-  shader_draw(pack->bindgroup_list, pack->pipeline, pack->shader_name,
-              render_pass);
 
   WGPUBuffer attribute_buffer = pack->attribute;
   WGPUBuffer index_buffer = pack->index;

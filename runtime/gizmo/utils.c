@@ -34,7 +34,7 @@ void gizmo_create_mesh(Mesh *mesh, Primitive *primitive, const color *rgba) {
                               });
 
   // add shader
-  mesh_shader_create_fixed(
+  mesh_shader_create(
       mesh, &(ShaderCreateDescriptor){
                 .pipeline = std_render_pipeline(RenderPipelineType_Unlit),
                 .name = "Gizmo shader",
@@ -42,10 +42,10 @@ void gizmo_create_mesh(Mesh *mesh, Primitive *primitive, const color *rgba) {
 
   // add color uniform
   const float fixed_size = GIZMO_SIZE;
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
                              (void *)rgba, ShaderUpdateFlag_None);
 
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 1,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 1,
                              (void *)&fixed_size, ShaderUpdateFlag_None);
 
   // scale gizmo (cpu side as well, so the hitbox are correct dimension)

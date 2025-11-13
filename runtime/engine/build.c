@@ -1,29 +1,19 @@
 #include "build.h"
+#include "backend/renderer/batch.h"
 #include "runtime/engine/core.h"
 #include "runtime/geometry/line/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/shader/core.h"
 #include "runtime/mesh/shader/texture.h"
-
-typedef void (*engine_builder_callback)(Engine *, Mesh *,
-                                        const RenderPipeline *);
+#include "runtime/pipeline/render.h"
 
 // pipeline builders
 static inline void engine_build_mesh_texture(Scene *, Mesh *,
-                                             const RendererPipeline);
-
-static inline void engine_build_mesh_solid(Scene *, Mesh *,
-                                           const RendererPipeline);
-
-static inline void engine_build_mesh_wireframe(Scene *, Mesh *,
-                                               const RendererPipeline);
-
-static inline void engine_build_mesh_outline(Scene *, Mesh *,
-                                             const RendererPipeline);
-
-static inline void engine_build_mesh_fixed(Scene *, Mesh *,
-                                           const RendererPipeline);
-
-static inline void engine_build_mesh_boundbox(Scene *, Mesh *,
-                                              const RendererPipeline);
+                                             const RendererBatchFlag);
+static inline void engine_build_mesh_solid(Scene *, Mesh *);
+static inline void engine_build_mesh_wireframe(Scene *, Mesh *);
+static inline void engine_build_mesh_outline(Scene *, Mesh *);
+static inline void engine_build_mesh_boundbox(Scene *, Mesh *);
 
 /**
    ▗▄▄▄ ▗▄▄▄▖ ▗▄▄▖▗▄▄▖  ▗▄▖▗▄▄▄▖▗▄▄▖▗▖ ▗▖▗▄▄▄▖▗▄▄▖
@@ -35,44 +25,22 @@ static inline void engine_build_mesh_boundbox(Scene *, Mesh *,
    which the mesh will be added to.
  */
 EngineStatus engine_build_mesh(Engine *engine, Mesh *mesh,
-                              const RendererPipeline pipeline) {
+                               const RendererBatchFlag flag) {
 
   Scene *scene = engine_get_active_scene(engine);
+  Renderer *renderer = engine_get_renderer(engine);
   UBOManager *ubo = scene->ubo;
 
-  if (pipeline >= RendererPipeline_Fixed_Background) {
-    /*
-      === Fixed rendering ===
+  // EDITORONLY
+  engine_build_mesh_outline(scene, mesh);
+  engine_build_mesh_texture(scene, mesh, flag);
 
-     (NOT part of shader/topology creation automation, meaning
-     it's the developer responsibility to create the relative topology and
-     shaders.)
-    */
-
-    engine_build_mesh_fixed(scene, mesh, pipeline);
-
-  } else {
-
-    {
-      // EDITORONLY
-      engine_build_mesh_outline(scene, mesh, pipeline);
-    }
-
-    {
-      engine_build_mesh_boundbox(scene, mesh, pipeline);
-      engine_build_mesh_solid(scene, mesh, pipeline);
-      engine_build_mesh_wireframe(scene, mesh, pipeline);
-      engine_build_mesh_texture(scene, mesh, pipeline);
-    }
+  // only build those for dynamic meshes
+  if ((flag & RendererBatchFlag_Fixed) == 0) {
+    engine_build_mesh_boundbox(scene, mesh);
+    engine_build_mesh_solid(scene, mesh);
+    engine_build_mesh_wireframe(scene, mesh);
   }
-
-  return EngineStatus_Success;
-}
-
-EngineStatus engine_build_mesh_ref_list(Engine *engine, MeshRefList *list,
-                                const RendererPipeline pipeline) {
-  for (size_t i = 0; i < list->length; i++)
-    engine_build_mesh(engine, list->entries[i], pipeline);
 
   return EngineStatus_Success;
 }
@@ -87,7 +55,7 @@ EngineStatus engine_build_mesh_ref_list(Engine *engine, MeshRefList *list,
    Establish pipeline from previously set bind groups
  */
 void engine_build_mesh_texture(Scene *scene, Mesh *mesh,
-                               const RendererPipeline pipeline) {
+                               const RendererBatchFlag flags) {
 
 #ifdef VERBOSE_BUILDING_PHASE
   logger_add(LoggerFlag_MeshBuild, "Texture %s", mesh->name);
@@ -101,11 +69,20 @@ void engine_build_mesh_texture(Scene *scene, Mesh *mesh,
 
   // bind views
   mesh_shader_build_mvp(mesh, MeshShader_Texture, ubo);
-  mesh_shader_build_mvp(mesh, MeshShader_Reflection, ubo);
 
-  if (pipeline &
-      (RendererPipeline_Dynamic_Unlit | RendererPipeline_Dynamic_LitAlpha |
-       RendererPipeline_Dynamic_LitShadow | RendererPipeline_Dynamic_Lit)) {
+  /*
+  TODO: For now although we use a hash based pipeline routing it is still a
+  pre-configured 1 to 1 configuration where 1 renderer pipeline = 1
+  configuration. In the future make it more versatile by creating the
+  configuration on the fly.
+
+  In this case we need to retrieve the renderer batch configuration to get the
+  pipeline configuration flags as to determine if we need to bind lights,
+  shadow maps or reflections relative resources.
+ */
+  if (RendererBatchFlag_Reflection & flags) {
+
+    mesh_shader_build_mvp(mesh, MeshShader_Reflection, ubo);
 
     mesh_shader_texture_update_environment(
         mesh, scene->environment.skybox.view,
@@ -116,16 +93,13 @@ void engine_build_mesh_texture(Scene *scene, Mesh *mesh,
         scene->probes.reflection_probe.pass.color.attachment.view, ubo);
   }
 
-  if (pipeline &
-      (RendererPipeline_Dynamic_LitShadow | RendererPipeline_Dynamic_Lit |
-       RendererPipeline_Dynamic_LitAlpha)) {
+  if (RendererBatchFlag_Lit & flags) {
 
     mesh_shader_texture_update_lights(mesh, MeshShader_Texture, ubo);
     mesh_shader_texture_update_lights(mesh, MeshShader_Reflection, ubo);
   }
 
-  if (pipeline & (RendererPipeline_Dynamic_LitShadow |
-                  RendererPipeline_Dynamic_LitAlpha)) {
+  if (RendererBatchFlag_Shadow & flags) {
 
     mesh_shader_texture_update_shadow_maps(
         mesh, scene->lights.point.shadow.pass.depth.attachment.view,
@@ -142,8 +116,7 @@ void engine_build_mesh_texture(Scene *scene, Mesh *mesh,
    Build meshes Solid shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void engine_build_mesh_solid(Scene *scene, Mesh *mesh,
-                             const RendererPipeline pipeline) {
+void engine_build_mesh_solid(Scene *scene, Mesh *mesh) {
 
 #ifdef VERBOSE_BUILDING_PHASE
   logger_add(LoggerFlag_MeshBuild, "Solid %s", mesh->name);
@@ -164,8 +137,7 @@ void engine_build_mesh_solid(Scene *scene, Mesh *mesh,
    Build meshes Solid shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void engine_build_mesh_outline(Scene *scene, Mesh *mesh,
-                               const RendererPipeline pipeline) {
+void engine_build_mesh_outline(Scene *scene, Mesh *mesh) {
 
 #ifdef VERBOSE_BUILDING_PHASE
   logger_add(LoggerFlag_MeshBuild, "Outline %s", mesh->name);
@@ -185,8 +157,7 @@ void engine_build_mesh_outline(Scene *scene, Mesh *mesh,
    Build meshes Wireframe shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void engine_build_mesh_wireframe(Scene *scene, Mesh *mesh,
-                                 const RendererPipeline pipeline) {
+void engine_build_mesh_wireframe(Scene *scene, Mesh *mesh) {
 
 #ifdef VERBOSE_BUILDING_PHASE
   logger_add(LoggerFlag_MeshBuild, "Wireframe %s", mesh->name);
@@ -220,8 +191,7 @@ void engine_build_mesh_wireframe(Scene *scene, Mesh *mesh,
    Build meshes Boundbox shader in each scene list
    Establish pipeline from previously set bind groups
  */
-void engine_build_mesh_boundbox(Scene *scene, Mesh *mesh,
-                                const RendererPipeline pipeline) {
+void engine_build_mesh_boundbox(Scene *scene, Mesh *mesh) {
 
 #ifdef VERBOSE_BUILDING_PHASE
   logger_add(LoggerFlag_MeshBuild, "Boundbox %s", mesh->name);
@@ -246,21 +216,4 @@ void engine_build_mesh_boundbox(Scene *scene, Mesh *mesh,
 
     mesh_shader_build_mvp(mesh, MeshShader_Wireframe, scene->ubo);
   }
-}
-
-/**
-   Build Fixed mesh layer.
-   Fixed layer use the Override shader* as default shader.
- */
-void engine_build_mesh_fixed(Scene *scene, Mesh *mesh,
-                             const RendererPipeline pipeline) {
-
-#ifdef VERBOSE_BUILDING_PHASE
-  logger_add(LoggerFlag_MeshBuild, "Fixed %s", mesh->name);
-#endif
-
-  // compute boundbox bounds for collisions (lightweight)
-  mesh_topology_boundbox_compute_bound(&mesh->topology.base, mesh->model,
-                                       &mesh->topology.boundbox);
-  mesh_shader_build_mvp(mesh, MeshShader_Fixed, scene->ubo);
 }

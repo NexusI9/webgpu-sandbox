@@ -33,7 +33,7 @@ static void renderer_render(void *);
 
 static inline void renderer_mesh_list_init(Renderer *);
 
-typedef RenderPassLayoutListDescriptor
+typedef RenderPassDrawListDescriptor
     renderer_draw_lists[RENDERER_DRAW_MODE_COUNT][RENDERER_BATCH_LAYER_COUNT];
 
 static inline void renderer_pass_layout_from_batch(Renderer *,

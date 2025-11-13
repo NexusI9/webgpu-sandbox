@@ -12,7 +12,6 @@ EXTERN_C_BEGIN
 
 /* custom */
 MeshStatus mesh_shader_create(Mesh *, const ShaderCreateDescriptor *);
-MeshStatus mesh_shader_create_fixed(Mesh *, const ShaderCreateDescriptor *);
 
 /* builtins */
 MeshStatus mesh_shader_create_standard(Mesh *, const MeshShader);

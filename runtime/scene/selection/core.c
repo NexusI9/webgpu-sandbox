@@ -46,6 +46,7 @@ void scene_selection_init(SceneSelection *selection) {
     dyli_create((void *)&filter->selection.entries, &filter->selection.capacity,
                 &filter->selection.length, sizeof(SceneSelectionObject),
                 MESH_REF_LIST_CAPACITY, "Scene Selection Object List");
+
   }
 }
 

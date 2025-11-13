@@ -1,10 +1,12 @@
 #include "scene_editor_mesh_system.h"
+#include "backend/renderer/batch.h"
 #include "backend/renderer/shadow_map/draw.h"
 #include "runtime/light/list.h"
 #include "runtime/light/uniform.h"
 #include "runtime/probe/core.h"
 #include "runtime/probe/uniform.h"
 #include "runtime/scene/editor_mesh/core.h"
+#include <stdint.h>
 
 void sem_list_system_toggle_visibility(SceneEditorMeshListArray *array,
                                        Renderer *renderer,
@@ -350,8 +352,10 @@ void sem_system_probe_reflection_grid_set_scale_(const SEMTransform *desc) {
 void sem_system_probe_reflection_plane_update_mesh_uniform(
     const SEMTransform *desc) {
 
-  MeshRefList *pipeline_mesh_list[SCENE_PIPELINE_REFLECTION_COUNT];
-  renderer_reflection_pipeline_meshes(desc->renderer, pipeline_mesh_list);
+  RendererBatchMeshLists reflection_meshes;
+  renderer_batch_get_mesh_list_with_flags(&desc->renderer->batches,
+                                          RendererBatchFlag_Reflection,
+                                          &reflection_meshes);
 
   ProbeReflectionPlane *probe = (ProbeReflectionPlane *)desc->sem->target;
   UBOManager *ubo = desc->ubo;
@@ -359,9 +363,9 @@ void sem_system_probe_reflection_plane_update_mesh_uniform(
 
   probe_reflection_plane_update_boundbox(probe);
 
-  for (RendererPipeline i = 0; i < SCENE_PIPELINE_REFLECTION_COUNT; i++) {
+  for (uint8_t i = 0; i < reflection_meshes.length; i++) {
 
-    const MeshRefList *pipeline = pipeline_mesh_list[i];
+    const MeshRefList *pipeline = reflection_meshes.entries[i];
 
     for (size_t j = 0; j < pipeline->length; j++) {
 

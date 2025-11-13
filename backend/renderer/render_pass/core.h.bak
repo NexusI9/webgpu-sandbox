@@ -106,7 +106,7 @@ typedef struct {
 typedef struct {
   RenderPassDrawLayoutDescriptor entries[RENDER_PASS_MAX_DRAW_LIST];
   size_t length;
-} RenderPassLayoutListDescriptor;
+} RenderPassDrawListDescriptor;
 
 // Descriptor
 typedef struct {
@@ -135,7 +135,7 @@ struct RenderPass {
   RenderPassColor color;
   RenderPassDepth depth;
   RenderPipelineMultisampleCount multisample;
-  RenderPassLayoutList draw_list;
+  RenderPassDrawList draw_list;
   render_pass_draw_callback draw_callback;
   WGPUCommandEncoder command_encoder;
   PostFx post_fx;
@@ -188,7 +188,7 @@ typedef struct {
   int width;
   int height;
   RenderPipelineMultisampleCount multisample;
-  const RenderPassLayoutListDescriptor *draw_list;
+  const RenderPassDrawListDescriptor *draw_list;
 } RenderPassCreateDescriptor;
 
 struct RenderPassDrawOptions {
@@ -211,8 +211,8 @@ static inline RenderPass *render_pass_list_last_pass(RenderPassList *list) {
 
 /* === Pass === */
 
-void render_pass_draw_list_copy(const RenderPassLayoutListDescriptor *,
-                                RenderPassLayoutList *);
+void render_pass_draw_list_copy(const RenderPassDrawListDescriptor *,
+                                RenderPassDrawList *);
 
 void render_pass_create(RenderPass *, const RenderPassCreateDescriptor *);
 RenderPassStatus render_pass_update_preprocessor_data(RenderPass *, uint8_t,

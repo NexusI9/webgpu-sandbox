@@ -12,8 +12,8 @@ void example_child(Engine *engine) {
 
   Scene *scene = engine_get_active_scene(engine);
 
-  const RenderPipeline *pipeline =
-      *std_render_pipeline(RenderPipelineType_Default);
+  RenderPipeline *const *pipeline =
+      std_render_pipeline(RenderPipelineType_Default);
 
   Mesh *parent_cube;
   example_primitive(engine, parent_cube, (vec3){3.0f, 2.0f, 1.0f}, pipeline);

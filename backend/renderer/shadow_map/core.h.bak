@@ -15,7 +15,7 @@
 #define SHADOW_MAP_SIZE 512
 
 typedef struct {
-  const RenderPassLayoutListDescriptor *draw_list;
+  const RenderPassDrawListDescriptor *draw_list;
   LightList *lights;
 } ShadowMapInitDescriptor;
 

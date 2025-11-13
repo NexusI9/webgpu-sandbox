@@ -1,4 +1,5 @@
 #include "inspector.object.hpp"
+#include "backend/renderer/batch.h"
 #include "imgui/imgui.h"
 #include "runtime/gui/windows/inspector/inspector.ambient_light.hpp"
 #include "runtime/gui/windows/inspector/inspector.mesh.hpp"
@@ -35,12 +36,13 @@ reg_id_t UI::ObjectTab::set_active_target() {
     }
   }
 
-  MeshRefList *meshes[SCENE_DYNAMIC_PIPELINE_COUNT];
-  size_t count;
-  renderer_dynamic_pipelines(renderer, meshes, &count);
-  for (uint8_t i = 0; i < count; i++)
-    for (size_t j = 0; j < meshes[i]->length; j++)
-      return meshes[i]->entries[j]->id;
+  RendererBatchMeshLists dynamic_meshes;
+  renderer_batch_get_mesh_list_without_flags(
+      &renderer->batches, RendererBatchFlag_Fixed, &dynamic_meshes);
+
+  for (uint8_t i = 0; i < dynamic_meshes.length; i++)
+    for (size_t j = 0; j < dynamic_meshes.entries[i]->length; j++)
+      return dynamic_meshes.entries[i]->entries[j]->id;
 
   // TODO Make fallback id more robust
   return REG_OWNER_UNDEFINED;
@@ -57,8 +59,7 @@ void UI::ObjectTab::draw() {
     switch (active_object->type) {
 
     case RegEntryType_Mesh:
-      InspectorMesh(gui, "Mesh properties", (Mesh *)active_object->ptr)
-          .draw();
+      InspectorMesh(gui, "Mesh properties", (Mesh *)active_object->ptr).draw();
       break;
 
     case RegEntryType_SceneEditorMeshList_ProbeReflectionPlane:

@@ -49,7 +49,7 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
                                              .capacity = index_capacity,
                                          });
 
-  mesh_shader_create_fixed(
+  mesh_shader_create(
       mesh, &(ShaderCreateDescriptor){
                 .pipeline = std_render_pipeline(RenderPipelineType_Line),
                 .name = "Line",

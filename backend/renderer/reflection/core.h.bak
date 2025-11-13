@@ -13,7 +13,7 @@ typedef struct {
   const size_t layer_count;
   const WGPUTextureViewDimension view_dimension;
   const TextureResolution resolution;
-  const RenderPassLayoutListDescriptor *draw_list;
+  const RenderPassDrawListDescriptor *draw_list;
   const RenderPipelineMultisampleCount multisample;
   RenderPass *handle;
 } RendererProbeReflectionDescriptor;

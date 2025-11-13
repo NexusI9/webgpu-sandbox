@@ -11,7 +11,7 @@
 
 static const WGPUBindGroupLayoutDescriptor billboard_material_bind_group = {
     // Group 1
-    .label = "Group 1 (Material Data)",
+    .label = "Billboard Group 1 (Material Data)",
     .entryCount = 3,
     .entries =
         (WGPUBindGroupLayoutEntry[3]){

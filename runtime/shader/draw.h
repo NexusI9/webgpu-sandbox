@@ -5,22 +5,26 @@
 #include "utils/defines.h"
 #include "webgpu/webgpu.h"
 
-
 EXTERN_C_BEGIN
 
 /**
    Update method called as such: scene update => mesh update => shader update
+   We use two types of shader draw method:
+   1. basic one 'shader_draw' in which we smply bind the shader bindgroup
+   2. 'draw_defined_pipeline' in which we priorly set a specific pipeline before
+   binding the bindgroup.
+
+   Such segmentation is due because for some dynamic pipelines (lit shadow, )
+
  */
 #ifdef VERBOSE_SHADER_BIND_GROUP_OFFSET
 static int bg_offset_count = 0;
 static const int bg_print_count = 800;
 #endif
+
 static inline void shader_draw(ShaderBindGroupList *bindgroup_list,
-                               WGPURenderPipeline pipeline, const char *name,
+                               const char *name,
                                WGPURenderPassEncoder render_pass) {
-  
-  // bind pipeline to render
-  wgpuRenderPassEncoderSetPipeline(render_pass, pipeline);
 
 #ifdef VERBOSE_SHADER_BIND_GROUP_OFFSET
   {
@@ -54,6 +58,15 @@ static inline void shader_draw(ShaderBindGroupList *bindgroup_list,
   }
 }
 
+static inline void
+shader_draw_defined_pipeline(ShaderBindGroupList *bindgroup_list,
+                             WGPURenderPipeline pipeline, const char *name,
+                             WGPURenderPassEncoder render_pass) {
+
+  // bind pipeline to render
+  wgpuRenderPassEncoderSetPipeline(render_pass, pipeline);
+  shader_draw(bindgroup_list, name, render_pass);
+}
 
 EXTERN_C_END
 

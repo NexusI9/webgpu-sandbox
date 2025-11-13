@@ -132,7 +132,7 @@ VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
     return NULL;
   }
 
-  hash_t hash = hash_djb2(new_group->name) % set->capacity;
+  hash_t hash = hsht_hash_djb2(new_group->name) % set->capacity;
 
   // init new vertex group
   VertexGroup *vgroup = &set->entries[hash];
@@ -163,7 +163,7 @@ VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
 }
 
 VertexGroup *vertex_group_set_find(VertexGroupSet *set, vgroup_key key) {
-  vgroup_hash hash = hash_djb2(key) % set->capacity;
+  vgroup_hash hash = hsht_hash_djb2(key) % set->capacity;
 
   vgroup_hash init_hash = hash;
   while (true) {
@@ -188,7 +188,7 @@ VertexGroup *vertex_group_set_find(VertexGroupSet *set, vgroup_key key) {
 
 VertexGroupStatus vertex_group_set_delete(VertexGroupSet *set, vgroup_key key) {
 
-  vgroup_hash hash = hash_djb2(key) % set->capacity;
+  vgroup_hash hash = hsht_hash_djb2(key) % set->capacity;
 
   // init new vertex group
   VertexGroup *vgroup = vertex_group_set_find(set, key);

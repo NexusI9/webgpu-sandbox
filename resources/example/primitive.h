@@ -9,6 +9,6 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/scene.h"
 
-void example_primitive(Engine *, Mesh *, vec3, const RenderPipeline *);
+void example_primitive(Engine *, Mesh *, vec3, RenderPipeline *const *);
 
 #endif

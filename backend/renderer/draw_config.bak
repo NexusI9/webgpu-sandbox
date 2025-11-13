@@ -35,7 +35,7 @@ static inline void renderer_init_draw_layouts(Renderer *renderer) {
               {
                   .meshes =
                       renderer_pipeline(renderer, RendererPipeline_Fixed_Front),
-                  .shader = MeshShader_Fixed,
+                  .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_base,
               },
 
@@ -70,7 +70,7 @@ static inline void renderer_init_draw_layouts(Renderer *renderer) {
               {
                   .meshes = renderer_pipeline(
                       renderer, RendererPipeline_Fixed_Background),
-                  .shader = MeshShader_Fixed,
+                  .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_base,
               },
               stencil_layout,
@@ -101,18 +101,18 @@ static inline void renderer_init_draw_layouts(Renderer *renderer) {
               // Fixed
               {
                   .meshes = renderer_pipeline(renderer, RendererPipeline_Fixed),
-                  .shader = MeshShader_Fixed,
+                  .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_override,
               },
               // FIXME Debug
               //{
               //    .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
-              //    .shader = MeshShader_Fixed,
+              //    .shader = MeshShader_Texture,
               //    .topology_callback = mesh_topology_base,
               //},
               //{
               //    .meshes = &scene->debug.object_list[SceneDebugObject_View],
-              //    .shader = MeshShader_Fixed,
+              //    .shader = MeshShader_Texture,
               //    .topology_callback = mesh_topology_base,
               //},
           },
@@ -151,18 +151,18 @@ static inline void renderer_init_draw_layouts(Renderer *renderer) {
               // Fixed
               {
                   .meshes = renderer_pipeline(renderer, RendererPipeline_Fixed),
-                  .shader = MeshShader_Fixed,
+                  .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_override,
               },
               // FIXME Debug
               //{
               //    .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
-              //    .shader = MeshShader_Fixed,
+              //    .shader = MeshShader_Texture,
               //    .topology_callback = mesh_topology_base,
               //},
               //{
               //    .meshes = &scene->debug.object_list[SceneDebugObject_View],
-              //    .shader = MeshShader_Fixed,
+              //    .shader = MeshShader_Texture,
               //    .topology_callback = mesh_topology_base,
               //},
 
@@ -202,18 +202,18 @@ static inline void renderer_init_draw_layouts(Renderer *renderer) {
               // Fixed
               {
                   .meshes = renderer_pipeline(renderer, RendererPipeline_Fixed),
-                  .shader = MeshShader_Fixed,
+                  .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_override,
               },
               // FIXME Debug
               //{
               //    .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
-              //    .shader = MeshShader_Fixed,
+              //    .shader = MeshShader_Texture,
               //    .topology_callback = mesh_topology_base,
               //},
               //{
               //    .meshes = &scene->debug.object_list[SceneDebugObject_View],
-              //    .shader = MeshShader_Fixed,
+              //    .shader = MeshShader_Texture,
               //    .topology_callback = mesh_topology_base,
               //},
           },
@@ -252,18 +252,18 @@ static inline void renderer_init_draw_layouts(Renderer *renderer) {
               // Fixed
               {
                   .meshes = renderer_pipeline(renderer, RendererPipeline_Fixed),
-                  .shader = MeshShader_Fixed,
+                  .shader = MeshShader_Texture,
                   .topology_callback = mesh_topology_override,
               },
               // FIXME Debug
               //{
               //    .meshes = &scene->debug.object_list[SceneDebugObject_Ray],
-              //    .shader = MeshShader_Fixed,
+              //    .shader = MeshShader_Texture,
               //    .topology_callback = mesh_topology_base,
               //},
               //{
               //    .meshes = &scene->debug.object_list[SceneDebugObject_View],
-              //    .shader = MeshShader_Fixed,
+              //    .shader = MeshShader_Texture,
               //    .topology_callback = mesh_topology_base,
               //},
           },

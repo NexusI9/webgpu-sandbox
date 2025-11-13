@@ -52,7 +52,7 @@ typedef enum {
     _(Scene,                  RegEntryType_Scene,                   scene,                         2        ) \
     _(RenderPipeline,         RegEntryType_RenderPipeline,          render_pipeline,              64        ) \
     _(ComputePipeline,        RegEntryType_ComputePipeline,         compute_pipeline,            128        ) \
-    _(Shader,                 RegEntryType_Shader,                  shader,                      128        ) \
+    _(Shader,                 RegEntryType_Shader,                  shader,                      256        ) \
     _(Camera,                 RegEntryType_Camera,                  camera,                       32        ) \
     _(Renderer,               RegEntryType_Renderer,                renderer,                      2        ) \
     _(Gui,                    RegEntryType_Gui,                     gui,                           2        ) \

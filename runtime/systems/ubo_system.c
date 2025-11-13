@@ -4,9 +4,7 @@
 void ubo_system_register_draw_callback(UBOManager *ubo, Renderer *renderer) {
 
   renderer_add_draw_callback(renderer, ubo_system_draw_callback, (void *)ubo,
-                             RendererDrawMode_Texture | RendererDrawMode_Solid |
-                                 RendererDrawMode_Wireframe |
-                                 RendererDrawMode_Boundbox);
+                             RendererDrawMode_All);
 }
 
 void ubo_system_draw_callback(Renderer *renderer, void *data) {

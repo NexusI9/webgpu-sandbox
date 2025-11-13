@@ -18,7 +18,7 @@ static inline void
 shadow_map_create_render_pass(RenderPass *, WGPUTexture, WGPUTexture,
                               WGPUTextureView, WGPUTextureView,
                               const TextureResolution, const TextureResolution,
-                              const RenderPassLayoutListDescriptor *);
+                              const RenderPassDrawListDescriptor *);
 
 /**
                              For each shadow light:
@@ -243,7 +243,7 @@ void shadow_map_create_render_pass(
     RenderPass *pass, WGPUTexture color_texture, WGPUTexture depth_texture,
     WGPUTextureView color_view, WGPUTextureView depth_view,
     const TextureResolution width, const TextureResolution height,
-    const RenderPassLayoutListDescriptor *draw_list) {
+    const RenderPassDrawListDescriptor *draw_list) {
 
   // set render pass
   render_pass_create(

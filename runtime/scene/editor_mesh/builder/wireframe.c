@@ -38,17 +38,17 @@ void sem_create_wireframe(Mesh *mesh,
   mesh_topology_wireframe_create(&base_topo, wireframe_topo);
 
   // set wireframe shader
-  mesh_shader_create_fixed(
+  mesh_shader_create(
       mesh, &(ShaderCreateDescriptor){
                 .name = "SEM wireframe shader",
                 .pipeline = std_render_pipeline(RenderPipelineType_Line),
             });
 
   const float line_thickness = LINE_THICKNESS_BASE;
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 1,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 1,
                              (void *)&line_thickness, ShaderUpdateFlag_None);
 
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
                              desc->color, ShaderUpdateFlag_None);
 
   // set override topology and shader as wireframe
@@ -60,7 +60,7 @@ void sem_create_wireframe(Mesh *mesh,
  */
 void sem_wireframe_select_callback(SEMHighlightCallback *desc) {
 
-  Shader *shader = mesh_shader(desc->sem->mesh, MeshShader_Fixed);
+  Shader *shader = mesh_shader(desc->sem->mesh, MeshShader_Texture);
 
   const float line_thickness = LINE_THICKNESS_STRONG;
   shader_update_uniform_data(shader, 1, 1, (void *)&line_thickness,
@@ -71,7 +71,7 @@ void sem_wireframe_select_callback(SEMHighlightCallback *desc) {
 
 void sem_wireframe_deselect_callback(SEMHighlightCallback *desc) {
 
-  Shader *shader = mesh_shader(desc->sem->mesh, MeshShader_Fixed);
+  Shader *shader = mesh_shader(desc->sem->mesh, MeshShader_Texture);
 
   const float line_thickness = LINE_THICKNESS_BASE;
   shader_update_uniform_data(shader, 1, 1, (void *)&line_thickness,

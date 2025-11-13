@@ -37,7 +37,7 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
                               });
 
   // set view texture
-  mesh_shader_create_fixed(
+  mesh_shader_create(
       mesh, &(ShaderCreateDescriptor){
                 .pipeline = std_render_pipeline(RenderPipelineType_Screen),
                 .name = "Debug view billboard shader",
@@ -58,11 +58,11 @@ void scene_debug_view_create(SceneDebug *debug, const WGPUTextureView view) {
   mesh_set_position(mesh, new_position);
 
   // bind model matrix
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 0, 0,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 0, 0,
                              mesh_uniform(mesh), ShaderUpdateFlag_None);
 
   // bind texture view
-  shader_update_texture_view(mesh_shader(mesh, MeshShader_Fixed), 1, 0, view,
+  shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture), 1, 0, view,
                              TEXTURE_FORMAT_OFFSCREEN,
                              ShaderUpdateFlag_ReleasePrevious);
 

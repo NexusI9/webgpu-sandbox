@@ -47,7 +47,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
                                   });
 
   // set view texture
-  mesh_shader_create_fixed(
+  mesh_shader_create(
       new_view, &(ShaderCreateDescriptor){
                     .pipeline = std_render_pipeline(RenderPipelineType_Screen),
                     .name = "Debug view billboard shader",
@@ -98,26 +98,16 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
   for (size_t i = 0; i < 3; i++) {
     ShaderBindGroupUniformEntry *entry = &entries[i];
-    shader_update_uniform_data(mesh_shader(new_view, MeshShader_Fixed), 0,
+    shader_update_uniform_data(mesh_shader(new_view, MeshShader_Texture), 0,
                                entry->binding, entry->data,
                                ShaderUpdateFlag_None);
   }
 
   // bind texture view
-  shader_update_texture_view(mesh_shader(new_view, MeshShader_Fixed), 1, 0,
+  shader_update_texture_view(mesh_shader(new_view, MeshShader_Texture), 1, 0,
                              view->texture_view, TEXTURE_FORMAT_OFFSCREEN,
                              ShaderUpdateFlag_ReleasePrevious);
 
-  // bind sampler
-  /*shader_update_sampler(mesh_shader(new_view, MeshShader_Fixed), 1, 1,
-                        &(WGPUSamplerDescriptor){
-                            .addressModeU = WGPUAddressMode_ClampToEdge,
-                            .addressModeV = WGPUAddressMode_ClampToEdge,
-                            .addressModeW = WGPUAddressMode_ClampToEdge,
-                            .minFilter = WGPUFilterMode_Linear,
-                            .magFilter = WGPUFilterMode_Linear,
-                            .compare = WGPUCompareFunction_Undefined,
-                        });*/
 }
 
 void debug_view_compute_position(DebugView *debug_view, vec3 result) {

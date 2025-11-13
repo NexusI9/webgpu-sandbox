@@ -137,7 +137,7 @@ SceneLayer *scene_layer_set_create_layer(SceneLayerSet *set, const char *name) {
     return NULL;
   }
 
-  hash_t hash = hash_djb2(name) % set->capacity;
+  hash_t hash = hsht_hash_djb2(name) % set->capacity;
 
   // init new layer
   SceneLayer *layer = &set->entries[hash];
@@ -168,7 +168,7 @@ SceneLayer *scene_layer_set_create_layer(SceneLayerSet *set, const char *name) {
  */
 SceneLayer *scene_layer_set_find(SceneLayerSet *set, const char *name) {
 
-  hash_t hash = hash_djb2(name) % set->capacity;
+  hash_t hash = hsht_hash_djb2(name) % set->capacity;
 
   hash_t init_hash = hash;
 
@@ -198,7 +198,7 @@ SceneLayer *scene_layer_set_find(SceneLayerSet *set, const char *name) {
  */
 int scene_layer_set_delete(SceneLayerSet *set, const char *name) {
 
-  hash_t hash = hash_djb2(name) % set->capacity;
+  hash_t hash = hsht_hash_djb2(name) % set->capacity;
 
   SceneLayer *layer = scene_layer_set_find(set, name);
 

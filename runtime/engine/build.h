@@ -1,6 +1,7 @@
 #ifndef _ENGINE_BUILD_H_
 #define _ENGINE_BUILD_H_
 
+#include "backend/renderer/batch.h"
 #include "core.h"
 
 /*
@@ -47,9 +48,6 @@
 
  */
 
-EngineStatus engine_build_mesh(Engine *, Mesh *, const RendererPipeline);
-
-EngineStatus engine_build_mesh_ref_list(Engine *, MeshRefList *,
-                                        const RendererPipeline);
+EngineStatus engine_build_mesh(Engine *, Mesh *, const RendererBatchFlag);
 
 #endif

@@ -21,7 +21,7 @@ void sem_grid_create(Mesh *mesh, const GridUniform *uniform) {
                                   .primitive = &plane,
                               });
 
-  mesh_shader_create_fixed(
+  mesh_shader_create(
       mesh, &(ShaderCreateDescriptor){
                 .pipeline = std_render_pipeline(RenderPipelineType_Grid),
                 .name = "grid",
@@ -33,6 +33,6 @@ void sem_grid_create(Mesh *mesh, const GridUniform *uniform) {
                            uniform->size,
                        });
 
-  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Fixed), 1, 0,
+  shader_update_uniform_data(mesh_shader(mesh, MeshShader_Texture), 1, 0,
                              (void *)uniform, ShaderUpdateFlag_None);
 }

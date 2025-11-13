@@ -263,7 +263,7 @@ static inline void gizmo_clear_active(Gizmo *gizmo) {
 static inline void gizmo_reset_color_uniform(Gizmo *gizmo) {
   for (uint8_t i = 0; i < gizmo->interactive_handles[gizmo->mode].length; i++) {
     Mesh *handle = gizmo->interactive_handles[gizmo->mode].entries[i];
-    shader_update_uniform_data(mesh_shader(handle, MeshShader_Fixed), 1, 0,
+    shader_update_uniform_data(mesh_shader(handle, MeshShader_Texture), 1, 0,
                                (void *)gizmo_handle_color[i % 6],
                                ShaderUpdateFlag_None);
   }

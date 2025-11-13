@@ -1,4 +1,5 @@
 #include "scene_system.h"
+#include "backend/renderer/batch.h"
 #include "backend/renderer/core.h"
 #include "backend/renderer/reflection/draw.h"
 #include "backend/renderer/render_pass/texture.h"
@@ -42,13 +43,18 @@ void scene_system_set_draw_mode(Scene *scene, Renderer *renderer,
   // update light / reflections
   if (mode == RendererDrawMode_Texture) {
 
-    renderer_draw_shadow_map_all(
-        &(ShadowMapDrawAllDescriptor){
-            .mesh_list =
-                renderer_pipeline(renderer, RendererPipeline_Dynamic_LitShadow),
-            .lights = &scene->lights,
-            .profiler = &renderer->profiler},
-        SCENE_DEBUG_UNDEFINED);
+    RendererBatchMeshLists shadow_meshes;
+    renderer_batch_get_mesh_list_with_flags(
+        &renderer->batches, RendererBatchFlag_Shadow, &shadow_meshes);
+
+    for (size_t i = 0; i < shadow_meshes.length; i++)
+      renderer_draw_shadow_map_all(
+          &(ShadowMapDrawAllDescriptor){
+              .mesh_list = shadow_meshes.entries[i],
+              .lights = &scene->lights,
+              .profiler = &renderer->profiler,
+          },
+          SCENE_DEBUG_UNDEFINED);
   }
 
   // update renderer drawn render pass configuration

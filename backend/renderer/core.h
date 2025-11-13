@@ -16,22 +16,26 @@
 #include "backend/renderer/render_pass/visibility.h"
 #include "backend/stat.h"
 #include "render_pass/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/texture/core.h"
 #include "runtime/texture/texture.h"
+#include "utils/hsht.h"
 #include "webgpu/webgpu.h"
 
 #define RENDERER_MAX_HOOK 6
 #define RENDERER_DPI_AUTO 0
-#define RENDERER_DRAW_MODE_COUNT 4
 
 typedef enum {
+  RendererDrawMode_None = 0,
   RendererDrawMode_Boundbox = 1 << 0,
   RendererDrawMode_Wireframe = 1 << 1,
   RendererDrawMode_Solid = 1 << 2,
   RendererDrawMode_Texture = 1 << 3,
+  RendererDrawMode_All = ~0,
 } RendererDrawMode;
+#define RENDERER_DRAW_MODE_COUNT 4
 
 /*
   Renderer has a list of mesh and sublist of mesh pointers that are called
@@ -88,29 +92,6 @@ typedef enum {
 typedef struct Renderer Renderer;
 
 typedef enum {
-  RendererPipeline_Undefined = 0,
-  // Dynamic
-  RendererPipeline_Dynamic_Unlit = 1 << 0,
-  RendererPipeline_Dynamic_Lit = 1 << 1,
-  RendererPipeline_Dynamic_LitShadow = 1 << 2,
-  RendererPipeline_Dynamic_LitAlpha = 1 << 3,
-  // Fixed
-  RendererPipeline_Fixed_Background = 1 << 4,
-  RendererPipeline_Fixed = 1 << 5,
-  RendererPipeline_Fixed_Selection = 1 << 6,
-  RendererPipeline_Fixed_Front = 1 << 7,
-  RendererPipeline_Fixed_UI = 1 << 8,
-} RendererPipeline;
-#define RENDERER_PIPELINE_COUNT 9
-
-typedef enum {
-  RendererMeshPass_Default,
-  RendererMeshPass_Outline,
-  RendererMeshPass_Gizmo,
-} RendererMeshPass;
-#define RENDERER_MESH_PASS_COUNT 3
-
-typedef enum {
   RendererMeshStates_Hidden,
 } RendererMeshStates;
 #define RENDERER_MESH_STATE_COUNT 1
@@ -148,7 +129,7 @@ struct Renderer {
   Profiler profiler;
 
   // References List (ptr)
-  MeshRefList pipelines[RENDERER_PIPELINE_COUNT];
+  HashTable batches;
 
   /*
     Versatile list used to store mesh pointers depending on numerous states
@@ -223,40 +204,6 @@ static inline double renderer_dpi(Renderer *rd) { return rd->context.dpi; }
 static inline MeshRefList *renderer_mesh_state(Renderer *rd,
                                                const RendererMeshStates state) {
   return &rd->mesh_state[state];
-}
-
-static inline MeshRefList *renderer_pipeline(Renderer *rd,
-                                             const RendererPipeline pipeline) {
-  return &rd->pipelines[__builtin_ctz(pipeline)];
-}
-
-#define SCENE_PIPELINE_REFLECTION_COUNT 3
-static inline void renderer_reflection_pipeline_meshes(
-    Renderer *rd, MeshRefList *pipelines[SCENE_PIPELINE_REFLECTION_COUNT]) {
-
-  const RendererPipeline target_pipelines[SCENE_PIPELINE_REFLECTION_COUNT] = {
-      RendererPipeline_Dynamic_Unlit,
-      RendererPipeline_Dynamic_Lit,
-      RendererPipeline_Dynamic_LitShadow,
-  };
-
-  for (uint8_t i = 0; i < SCENE_PIPELINE_REFLECTION_COUNT; i++)
-    pipelines[i] = renderer_pipeline(rd, target_pipelines[i]);
-}
-
-RendererPipeline renderer_get_pso_pipeline(const RenderPipeline *);
-
-#define SCENE_DYNAMIC_PIPELINE_COUNT 3
-static inline void
-renderer_dynamic_pipelines(Renderer *rd,
-                           MeshRefList *list[SCENE_DYNAMIC_PIPELINE_COUNT],
-                           size_t *count) {
-
-  if (count)
-    *count = SCENE_DYNAMIC_PIPELINE_COUNT;
-
-  for (size_t i = 0; i < SCENE_DYNAMIC_PIPELINE_COUNT; i++)
-    list[i] = renderer_pipeline(rd, (RendererPipeline)(1 << i));
 }
 
 // mutators

@@ -90,44 +90,6 @@ void UI::RenderTab::draw() {
             for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
               render_pass_list_update_child_passes_callback(
                   &renderer->mesh_pass[i]);
-
-            {
-              //
-              // since mesh packets are "shallow copy" of the source mesh list,
-              // we need to make sure to sync and update all mesh packets
-              // WGPURenderPipeline since it still refers to the previous one
-              // (now released).
-              //
-              // Note: We specifically added the "mesh" property at the end of
-              // the Packet struct since we new we may access it not very
-              // frequently.
-              //
-              // We need to update all the entities that use pass
-              // which means:
-              // - Scene renderer
-              // - Lights
-              // - Probe reflections
-              //
-
-              for (int i = 0; i < RENDERER_DRAW_MODE_COUNT; i++) {
-                RenderPassList *pass_list = renderer_mesh_pass_list(
-                    renderer, (const RendererDrawMode)(1 << i));
-                for (size_t j = 0; j < pass_list->length; j++)
-                  render_pass_refresh_mesh_drawn_list_pipeline(
-                      &pass_list->passes[j]);
-              }
-
-              RenderPass *pass_to_refresh[] = {
-                  &scene->lights.point.shadow.pass,
-                  &scene->lights.spot.shadow.pass,
-                  &scene->probes.reflection_plane.pass,
-                  &scene->probes.reflection_plane.pass,
-              };
-
-              for (uint8_t i = 0; i < 4; i++)
-                render_pass_refresh_mesh_drawn_list_pipeline(
-                    pass_to_refresh[i]);
-            }
           }
 
           // Set the initial focus when opening the combo (for keyboard

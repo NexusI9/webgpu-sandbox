@@ -1,6 +1,7 @@
 #ifndef _ENGINE_ADD_H_
 #define _ENGINE_ADD_H_
 
+#include "backend/renderer/batch.h"
 #include "core.h"
 #include "runtime/light/list.h"
 
@@ -10,6 +11,8 @@ typedef enum {
   EngineAddFlag_Unselectable = 1 << 1,
   EngineAddFlag_TreeHide = 1 << 2,
 } EngineAddFlag;
+
+#define ENGINE_ADD_AUTO_BATCH 0
 
 Scene *engine_add_scene(Engine *, const SceneCreateDescriptor *);
 
@@ -44,20 +47,16 @@ SceneEditorMeshList *
 engine_scene_add_camera(Engine *, const CameraCreateDescriptor *, Camera **);
 
 // === Add Mesh ===
+
+// automatically assign the mesh within the default renderer batch based on its
+// render pipeline type.
 EngineStatus engine_scene_add_mesh(Engine *, Mesh *, const char *,
                                    const EngineAddFlag);
 
-EngineStatus engine_scene_add_mesh_ref_list(Engine *, MeshRefList *,
-                                            const char *, const EngineAddFlag);
-
-EngineStatus engine_scene_add_mesh_pipeline(Engine *, Mesh *,
-                                            const RendererPipeline,
-                                            const char *, const EngineAddFlag);
-
-EngineStatus engine_scene_add_mesh_pipeline_ref_list(Engine *, MeshRefList *,
-                                                     const RendererPipeline,
-                                                     const char *,
-                                                     const EngineAddFlag);
+// manually enter the batch descriptor
+EngineStatus engine_scene_add_mesh_custom(Engine *, Mesh *, const char *,
+                                          const RendererBatchKeyDescriptor *,
+                                          const EngineAddFlag);
 
 // === Remove Mesh ===
 EngineStatus engine_scene_remove_mesh(Engine *, Mesh *);

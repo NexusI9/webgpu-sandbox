@@ -1,23 +1,29 @@
 #include "add.h"
 #include "backend/logger.h"
+#include "backend/renderer/batch.h"
 #include "backend/renderer/reflection/draw.h"
 #include "backend/renderer/shadow_map/draw.h"
 #include "backend/resource_manager.h"
+#include "backend/std_pipeline/core.h"
 #include "runtime/engine/build.h"
 #include "runtime/engine/core.h"
+#include "runtime/mesh/core.h"
+#include "runtime/mesh/shader/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/selection/core.h"
 #include "runtime/scene/stat.h"
+#include <stdint.h>
 
 static inline void engine_scene_add_sem(Engine *, SceneEditorMeshList *);
 
-static inline void engine_enable_mesh_in_pipelines(Engine *,
-                                                   const MeshRefList *, Mesh *);
+static inline void engine_enable_mesh_in_passes(Engine *, const MeshRefList *,
+                                                Mesh *);
 
-static inline void engine_scene_add_mesh_core(Engine *, Mesh *,
-                                              const RendererPipeline,
-                                              const char *,
-                                              const EngineAddFlag);
+static inline void engine_add_mesh_core(Engine *, Mesh *, const char *,
+                                        const RendererBatchKey *,
+                                        const EngineAddFlag);
 
 Scene *engine_add_scene(Engine *engine, const SceneCreateDescriptor *desc) {
 
@@ -42,60 +48,11 @@ Scene *engine_add_scene(Engine *engine, const SceneCreateDescriptor *desc) {
   return scene;
 }
 
-void engine_scene_add_mesh_core(Engine *engine, Mesh *mesh,
-                                const RendererPipeline pipeline,
-                                const char *layer, const EngineAddFlag flag) {
-
-  Scene *scene = engine_get_active_scene(engine);
-  Renderer *renderer = engine_get_renderer(engine);
-
-  {
-    // add to scene layers ('Default' layer if NULL)
-    if (layer == NULL)
-      layer = SCENE_LAYER_DEFAULT;
-    scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
-  }
-
-  MeshRefList *pipeline_mesh_list = renderer_pipeline(renderer, pipeline);
-
-  // actually show the mesh
-  if ((flag & EngineAddFlag_Hide) == 0) {
-    mesh_ref_list_insert(pipeline_mesh_list, mesh);
-    engine_enable_mesh_in_pipelines(engine, pipeline_mesh_list, mesh);
-  }
-
-  // Update Shadow maps if added to Dynamic_Lit pipeline
-  SceneSelectionType selection_pipeline = SceneSelectionType_Mesh;
-
-  if ((pipeline & RendererPipeline_Dynamic_LitShadow) &&
-      renderer->draw_mode == RendererDrawMode_Texture) {
-    renderer_draw_shadow_map_all(
-        &(ShadowMapDrawAllDescriptor){
-            .mesh_list = pipeline_mesh_list,
-            .lights = &scene->lights,
-            .profiler = &renderer->profiler,
-        },
-        SCENE_DEBUG_UNDEFINED);
-
-    selection_pipeline = SceneSelectionType_MeshShadow;
-  }
-
-  // EDITORONLY (add mesh to selection)
-  if ((flag & EngineAddFlag_Unselectable) == 0)
-    scene_selection_register_mesh(&scene->selection, mesh, mesh->id,
-                                  selection_pipeline);
-
-  // EDITORONLY
-  if (engine->gui && (flag & EngineAddFlag_TreeHide) == 0 &&
-      mesh->parent == NULL)
-    gui_tree_insert(&engine->gui->tree, mesh->id);
-}
-
 /**
   Update passes draw list (sync with their respective scene pipeline)
  */
-void engine_enable_mesh_in_pipelines(Engine *engine,
-                                     const MeshRefList *pipeline, Mesh *mesh) {
+void engine_enable_mesh_in_passes(Engine *engine, const MeshRefList *pipeline,
+                                  Mesh *mesh) {
 
   Scene *scene = engine_get_active_scene(engine);
   Renderer *renderer = engine_get_renderer(engine);
@@ -301,29 +258,26 @@ void engine_scene_add_sem(Engine *engine, SceneEditorMeshList *list) {
   Scene *scene = engine_get_active_scene(engine);
   Renderer *renderer = engine_get_renderer(engine);
 
-  MeshRefList *pipeline_mesh_list =
-      renderer_pipeline(renderer, RendererPipeline_Fixed);
-
   for (size_t i = 0; i < list->length; i++) {
-    SceneEditorMesh *sem = &list->entries[i];
-    Mesh *mesh = sem->mesh;
+    Mesh *mesh = list->entries[i].mesh;
 
-    {
-      scene_add_mesh(scene, mesh, NULL);
-      engine_build_mesh(engine, mesh, RendererPipeline_Fixed);
-    }
+    engine_scene_add_mesh_custom(
+        engine, mesh, NULL,
+        // default configuration for Scene Editor Meshes
+        &(RendererBatchKeyDescriptor){
+            .flags = RendererBatchFlag_Fixed,
+            .layer = RendererBatchLayer_Default,
+            .pipeline = std_render_pipeline_type(
+                (*mesh_shader(mesh, MeshShader_Texture)->pipeline)),
+            .draw_mode = RendererDrawMode_All,
+        },
+        // Note that we do not add the mesh to ui
+        // tree since we actually add the whole
+        // List id below. Same for the selection.
+        EngineAddFlag_TreeHide | EngineAddFlag_Unselectable);
 
-    {
-      // insert to scene pipeline and show it
-      mesh_ref_list_insert(pipeline_mesh_list, mesh);
-      engine_enable_mesh_in_pipelines(engine, pipeline_mesh_list, mesh);
-    }
-
-    {
-      // add to scene selection (SEM pipeline) with target
-      scene_selection_register_mesh(&scene->selection, mesh, list->id,
-                                    SceneSelectionType_SEM);
-    }
+    scene_selection_register_mesh(&scene->selection, mesh, list->id,
+                                  SceneSelectionType_SEM);
   }
 
   // EDITORONLY
@@ -332,6 +286,67 @@ void engine_scene_add_sem(Engine *engine, SceneEditorMeshList *list) {
 }
 
 // === Add Mesh ===
+
+void engine_add_mesh_core(Engine *engine, Mesh *mesh, const char *layer,
+                          const RendererBatchKey *batch,
+                          const EngineAddFlag flag) {
+
+  Scene *scene = engine_get_active_scene(engine);
+  Renderer *renderer = engine_get_renderer(engine);
+  SceneSelectionType selection_type = SceneSelectionType_Mesh;
+  const RenderPipeline *pipeline = *std_render_pipeline(batch->pipeline);
+  RendererBatchMeshLists mesh_lists;
+  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches, pipeline,
+                                             &mesh_lists);
+
+  if (mesh_lists.length == 0) {
+    logger_add(
+        LoggerFlag_Error,
+        "Unable to locate Mesh List of mesh '%s', make sure the Renderer Batch "
+        "configuration is correct and match with an existing one.");
+    return;
+  }
+
+  {
+    // add to scene layers ('Default' layer if NULL)
+    if (layer == NULL)
+      layer = SCENE_LAYER_DEFAULT;
+    scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
+  }
+
+  for (size_t i = 0; i < mesh_lists.length; i++) {
+
+    // actually show the mesh
+    if ((flag & EngineAddFlag_Hide) == 0) {
+      mesh_ref_list_insert(mesh_lists.entries[i], mesh);
+      engine_enable_mesh_in_passes(engine, mesh_lists.entries[i], mesh);
+    }
+
+    // Update Shadow maps if added to Dynamic_Lit pipeline
+    if ((batch->flags & RendererBatchFlag_Shadow) &&
+        renderer->draw_mode == RendererDrawMode_Texture) {
+      renderer_draw_shadow_map_all(
+          &(ShadowMapDrawAllDescriptor){
+              .mesh_list = mesh_lists.entries[i],
+              .lights = &scene->lights,
+              .profiler = &renderer->profiler,
+          },
+          SCENE_DEBUG_UNDEFINED);
+
+      selection_type = SceneSelectionType_MeshShadow;
+    }
+  }
+
+  // EDITORONLY (add mesh to selection)
+  if ((flag & EngineAddFlag_Unselectable) == 0)
+    scene_selection_register_mesh(&scene->selection, mesh, mesh->id,
+                                  selection_type);
+
+  // EDITORONLY
+  if (engine->gui && (flag & EngineAddFlag_TreeHide) == 0 &&
+      mesh->parent == NULL)
+    gui_tree_insert(&engine->gui->tree, mesh->id);
+}
 
 /*
    Automatically map renderer pipeline based on mesh pso pointer
@@ -343,69 +358,63 @@ EngineStatus engine_scene_add_mesh(Engine *engine, Mesh *mesh,
   Scene *scene = engine_get_active_scene(engine);
   SceneStatus add_result = scene_add_mesh(scene, mesh, layer);
 
-  RenderPipeline *mesh_pso = *mesh_shader(mesh, MeshShader_Texture)->pipeline;
+  static const MeshShader dynamic_shaders[] = {
+      MeshShader_Texture,
+      MeshShader_Solid,
+      MeshShader_Wireframe,
+  };
+  static const uint8_t dynamic_shaders_length =
+      sizeof(dynamic_shaders) / sizeof(dynamic_shaders[0]);
 
-  RendererPipeline pipeline = renderer_get_pso_pipeline(mesh_pso);
+  // For dynamic objects we manually add them to the solid/wireframe/boundbox
+  // batch so they get drawn during those mode.
+  for (uint8_t i = 0; i < dynamic_shaders_length; i++) {
 
-  if (pipeline == RendererPipeline_Undefined)
-    return EngineStatus_InvalidPipeline;
+    const RenderPipeline *pipeline =
+        *mesh_shader(mesh, dynamic_shaders[i])->pipeline;
 
-  // build mesh depending on pipeline and scene render mode
-  engine_build_mesh(engine, mesh, pipeline);
+    const RendererBatchKey *batch_config =
+        renderer_batch_get_key_from_pipeline(pipeline);
 
-  engine_scene_add_mesh_core(engine, mesh, pipeline, layer, flag);
+    // only build mesh once
+    if (i == 0)
+      engine_build_mesh(engine, mesh, batch_config->flags);
+    
+    engine_add_mesh_core(engine, mesh, layer, batch_config, flag);
+
+    // exit after applying the Texture for fixed mesh (since they won't change
+    // shaders on different draw mode)
+    if (batch_config->flags & RendererBatchFlag_Fixed)
+      break;
+  }
 
   return EngineStatus_Success;
 }
 
-// DELETEME ?
-EngineStatus engine_scene_add_mesh_ref_list(Engine *engine, MeshRefList *list,
-                                            const char *layer,
-                                            const EngineAddFlag flag) {
-
-  Scene *scene = engine_get_active_scene(engine);
-  scene_add_mesh_ref_list(scene, list, layer);
-
-  return EngineStatus_Success;
-}
-
-/**
-   Function mostly used for Scene Editor Objects like Gizmo, Lights and Camera.
-   Casual Meshes go through the scene_add_mesh(...) function.
-
-   The key difference is that the scen_add_mesh will dispatch/ define the mesh
-   to the scene pipeline automatically based on the pipeline pointer (if
-   pipeline == pbr, then goes to lit shadow scene list). However in this fixed
-   method, we provide the scene pipeline so it will stay the same no matter the
-   render draw mode.
+/*
+   Automatically map renderer pipeline based on mesh pso pointer
  */
-EngineStatus engine_scene_add_mesh_pipeline(Engine *engine, Mesh *mesh,
-                                            const RendererPipeline pipeline,
-                                            const char *layer,
-                                            const EngineAddFlag flag) {
+EngineStatus
+engine_scene_add_mesh_custom(Engine *engine, Mesh *mesh, const char *layer,
+                             const RendererBatchKeyDescriptor *batch,
+                             const EngineAddFlag flag) {
 
   Scene *scene = engine_get_active_scene(engine);
-
   SceneStatus add_result = scene_add_mesh(scene, mesh, layer);
-  engine_build_mesh(engine, mesh, pipeline);
-  engine_scene_add_mesh_core(engine, mesh, pipeline, layer, flag);
 
-  return EngineStatus_Success;
-}
+  // get source batch from descriptor
+  const RendererBatchKey *source_batch =
+      renderer_batch_get_key_from_descriptor(batch);
 
-/**
-   DELETEME ?
-   Add a list of mesh pointers (presumably from the scene mesh pool) to a
-   pipeline. Meaning each meshes are going to be build depending on the pipeline
-   and the current render mode.
- */
-EngineStatus engine_scene_add_mesh_pipeline_ref_list(
-    Engine *engine, MeshRefList *list, const RendererPipeline pipeline,
-    const char *layer, const EngineAddFlag flag) {
+  if (source_batch == NULL) {
+    logger_add(LoggerFlag_Error,
+               "Unable to locate the configured batch for mesh '%s', make sure "
+               "the batch configuration matches with one in the configuration.",
+               mesh->name);
+    return EngineStatus_UnfoundEntity;
+  }
 
-  for (size_t i = 0; i < list->length; i++)
-    engine_scene_add_mesh_pipeline(engine, list->entries[i], pipeline, layer,
-                                   flag);
+  engine_add_mesh_core(engine, mesh, layer, source_batch, flag);
 
   return EngineStatus_Success;
 }

@@ -106,7 +106,7 @@ void engine_init_reflection_pass(ProbeList *list, Renderer *renderer) {
   renderer_batch_get_mesh_list_with_flags(
       &renderer->batches, RendererBatchFlag_Reflection, &reflective_mesh_lists);
 
-  RenderPassLayoutListDescriptor reflection_draw_list = {
+  RenderPassDrawListDescriptor reflection_draw_list = {
       .length = reflective_mesh_lists.length,
   };
 
@@ -148,7 +148,7 @@ void engine_init_shadow_map(LightList *list, Renderer *renderer) {
   renderer_batch_get_mesh_list_with_flags(
       &renderer->batches, RendererBatchFlag_Shadow, &shadow_mesh_lists);
 
-  RenderPassLayoutListDescriptor shadow_draw_list = {
+  RenderPassDrawListDescriptor shadow_draw_list = {
       .length = shadow_mesh_lists.length,
   };
 

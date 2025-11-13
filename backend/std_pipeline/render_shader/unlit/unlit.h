@@ -46,11 +46,32 @@ static const WGPUPrimitiveState unlit_prim = {
 };
 
 static const WGPUDepthStencilState unlit_stencil = {
-    .format = TEXTURE_FORMAT_DEPTH, // USED BECAUSE OF GIZMO, BUT
+    .format = TEXTURE_FORMAT_DEPTH_STENCIL, // USED BECAUSE OF GIZMO, BUT
+                                            // MAYBE NEED TO CREATE A NE
+                                            // DEDICATED PIPELINE FOR GIZMO
+    .depthWriteEnabled = true,
+    .depthCompare = WGPUCompareFunction_Less,
+};
+
+static const WGPUDepthStencilState unlit_depth = {
+    .format = TEXTURE_FORMAT_DEPTH, // FIXME USED BECAUSE OF GIZMO, BUT
                                     // MAYBE NEED TO CREATE A NE
                                     // DEDICATED PIPELINE FOR GIZMO
     .depthWriteEnabled = true,
     .depthCompare = WGPUCompareFunction_Less,
+};
+
+static const RenderPipelineStateObject layout_unlit_stencil = {
+    .label = "Pipeline Bind Groups - Unlit Stencil",
+    .shader_path = "./backend/std_pipeline/render_shader/unlit/unlit.wgsl",
+    .bind_groups_count = 2,
+    .bind_groups = {&mvp_layout, &unlint_layout_bind_group},
+    .bindings = {.mvp = &mvp_binding},
+    .pipeline_attributes =
+        {
+            .stencil_state = &unlit_stencil,
+            .primitive_state = &unlit_prim,
+        },
 };
 
 static const RenderPipelineStateObject layout_unlit = {
@@ -61,7 +82,7 @@ static const RenderPipelineStateObject layout_unlit = {
     .bindings = {.mvp = &mvp_binding},
     .pipeline_attributes =
         {
-            .stencil_state = &unlit_stencil,
+            .stencil_state = &unlit_depth,
             .primitive_state = &unlit_prim,
         },
 };

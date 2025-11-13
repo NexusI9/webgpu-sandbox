@@ -42,34 +42,35 @@ static inline WGPUPipelineLayout shader_pipeline_state_object_create(
 static const RenderPipelineStateObject
     *standard_render_layouts[RENDER_PIPELINE_TYPE_COUNT] = {
         // clang-format off
-        [RenderPipelineType_Billboard]        =   &layout_billboard,
-        [RenderPipelineType_Default]          =   &layout_default,
-        [RenderPipelineType_Line]             =   &layout_line,
-        [RenderPipelineType_Unlit]            =   &layout_unlit,
-        [RenderPipelineType_Grid]             =   &layout_grid,
-        [RenderPipelineType_PBR]              =   &layout_pbr,
-        [RenderPipelineType_PBR_DoubleSided]  =   &layout_pbr_double_sided,
-        [RenderPipelineType_PBR_Alpha]        =   &layout_pbr_alpha,
-        [RenderPipelineType_Screen]           =   &layout_screen,
-        [RenderPipelineType_Shadow]           =   &layout_shadow,
-        [RenderPipelineType_Skybox]           =   &layout_skybox,
-        [RenderPipelineType_Solid]            =   &layout_solid,
-        [RenderPipelineType_GlassProbeGrid]   =   &layout_glass_probe_grid,
-        [RenderPipelineType_GlassProbePlane]  =   &layout_glass_probe_plane,
-        [RenderPipelineType_Reflection]       =   &layout_reflection,
-        [RenderPipelineType_Blit]             =   &layout_blit,
-        [RenderPipelineType_Outline]          =   &layout_outline,
-        [RenderPipelineType_Stencil]          =   &layout_stencil,
-        [RenderPipelineType_Bloom]            =   &layout_bloom,
-        [RenderPipelineType_Composite]        =   &layout_composite,
+        [ RenderPipelineType_Billboard       ]   =   &layout_billboard,
+        [ RenderPipelineType_Default         ]   =   &layout_default,
+        [ RenderPipelineType_Line            ]   =   &layout_line,
+	[ RenderPipelineType_Unlit_Stencil   ]   =   &layout_unlit_stencil,
+        [ RenderPipelineType_Unlit           ]   =   &layout_unlit,
+        [ RenderPipelineType_Grid            ]   =   &layout_grid,
+        [ RenderPipelineType_PBR             ]   =   &layout_pbr,
+        [ RenderPipelineType_PBR_DoubleSided ]   =   &layout_pbr_double_sided,
+        [ RenderPipelineType_PBR_Alpha       ]   =   &layout_pbr_alpha,
+        [ RenderPipelineType_Screen          ]   =   &layout_screen,
+        [ RenderPipelineType_Shadow          ]   =   &layout_shadow,
+        [ RenderPipelineType_Skybox          ]   =   &layout_skybox,
+        [ RenderPipelineType_Solid           ]   =   &layout_solid,
+        [ RenderPipelineType_GlassProbeGrid  ]   =   &layout_glass_probe_grid,
+        [ RenderPipelineType_GlassProbePlane ]   =   &layout_glass_probe_plane,
+        [ RenderPipelineType_Reflection      ]   =   &layout_reflection,
+        [ RenderPipelineType_Blit            ]   =   &layout_blit,
+        [ RenderPipelineType_Outline         ]   =   &layout_outline,
+        [ RenderPipelineType_Stencil         ]   =   &layout_stencil,
+        [ RenderPipelineType_Bloom           ]   =   &layout_bloom,
+        [ RenderPipelineType_Composite       ]   =   &layout_composite,
         // clang-format on
 };
 
 static const ComputePipelineStateObject
     *standard_compute_layouts[COMPUTE_PIPELINE_TYPE_COUNT] = {
         // clang-format off
-        [ComputePipelineType_Mipmap]          =   &layout_mipmap,
-        [ComputePipelineType_Kawase]          =   &layout_kawase,
+        [ ComputePipelineType_Mipmap         ]   =   &layout_mipmap,
+        [ ComputePipelineType_Kawase         ]   =   &layout_kawase,
         // clang-format on
 };
 
@@ -156,7 +157,6 @@ void standard_render_pipelines_init(
         layout->bind_groups, layout->bind_groups_count, NULL);
 
     render_pipeline_build(cached_pipeline, &temp_layout);
-
   }
 }
 
@@ -219,4 +219,24 @@ WGPUPipelineLayout shader_pipeline_state_object_create(
 void standard_render_pipelines_destroy() {
   for (RenderPipelineType i = 0; i < RENDER_PIPELINE_TYPE_COUNT; i++)
     rem_destroy_render_pipeline(g_std_render_pipelines[i]);
+}
+
+const char *std_render_pipeline_label(const RenderPipelineType type) {
+
+  static const char *labels[] = {
+#define _(Pipeline) #Pipeline,
+      STD_RENDER_PIPELINES(_)
+#undef _
+  };
+
+  return labels[type];
+}
+const char *std_compute_pipeline_label(const ComputePipelineType type) {
+  static const char *labels[] = {
+#define _(Pipeline) #Pipeline,
+      STD_COMPUTE_PIPELINES(_)
+#undef _
+  };
+
+  return labels[type];
 }

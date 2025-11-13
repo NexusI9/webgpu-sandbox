@@ -75,7 +75,13 @@ static const struct {
 MeshStatus mesh_shader_create_standard(Mesh *mesh,
                                        const MeshShader shader_type) {
 
-  if (shader_type < 2 || shader_type > MESH_STD_SHADER_COUNT) {
+  // clang-format off
+  if (MeshShader_Shadow    != shader_type &&
+      MeshShader_Solid     != shader_type &&
+      MeshShader_Wireframe != shader_type &&
+      MeshShader_Outline   != shader_type &&
+      MeshShader_Stencil   != shader_type) {
+    // clang-format on
     logger_add(
         LoggerFlag_Warning,
         "Attempting to create a standard mesh shader for '%s' with an invalid "
@@ -163,38 +169,6 @@ MeshStatus mesh_shader_create(Mesh *mesh, const ShaderCreateDescriptor *desc) {
 }
 
 /**
-   Set texture shader.
- */
-MeshStatus mesh_shader_create_fixed(Mesh *mesh,
-                                    const ShaderCreateDescriptor *desc) {
-
-  if (mesh_shader(mesh, MeshShader_Fixed) != NULL) {
-    logger_add(
-        LoggerFlag_Info,
-        "Fixed shader for '%s' is already created, skip shader creation.",
-        mesh->name);
-    return MeshStatus_AlreadyCreated;
-  }
-
-  Shader *fixed_shader = rem_new_shader();
-
-  if (fixed_shader == NULL) {
-    logger_add(LoggerFlag_Error,
-               "Unable to create fixed shader for mesh '%s'. Max capacity "
-               "reached.",
-               mesh->name);
-    return MeshStatus_AllocFail;
-  }
-
-  mesh_set_shader(mesh, MeshShader_Fixed, fixed_shader);
-
-  // alias to shader_create
-  shader_create(fixed_shader, desc);
-
-  return MeshStatus_Success;
-}
-
-/**
    Build Mesh, Camera and Projection matrix to a given mesh shader.
    It replaces the initial bound values by the ones provided by the scene
    (active camera matrix, viewport data).
@@ -219,6 +193,10 @@ void mesh_shader_build_mvp(Mesh *mesh, const MeshShader shader_type,
   // retrieve the model-view-projection binding index from the pipeline
   Shader *shader = mesh_shader(mesh, shader_type);
   const PipelineBindingMVP *mvp = shader_pipeline(shader)->bindings.mvp;
+
+  // DEBUG
+  printf("Mesh: %p | %s\n", mesh, mesh->name);
+  printf("Shader: %p | %s\n", shader, shader->name);
 
   ShaderBindGroupUniformEntry entries[3] = {
       // viewport

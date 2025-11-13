@@ -44,11 +44,10 @@ typedef struct {
   size_t length;
 } MeshRefList;
 
-#define MESH_STD_SHADER_COUNT 8
+#define MESH_STD_SHADER_COUNT 7
 
 typedef enum {
   MeshShader_Texture,
-  MeshShader_Fixed,
   MeshShader_Shadow,
   MeshShader_Reflection,
   MeshShader_Solid,

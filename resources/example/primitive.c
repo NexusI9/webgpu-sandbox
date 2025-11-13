@@ -15,7 +15,7 @@
 #include "runtime/systems/scene_system.h"
 
 void example_primitive(Engine *engine, Mesh *cube, vec3 position,
-                       const RenderPipeline *pipeline) {
+                       RenderPipeline *const *pipeline) {
 
   Primitive cube_prim = primitive_cube();
   // cube = scene_new_mesh(scene);
