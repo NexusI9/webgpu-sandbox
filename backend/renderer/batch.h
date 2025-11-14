@@ -13,6 +13,7 @@ typedef enum {
   RendererBatchStatus_AllocFail,
   RendererBatchStatus_OutOfBound,
   RendererBatchStatus_InitFail,
+  RendererBatchStatus_UnfoundBatch,
   RendererBatchStatus_UndefError,
 } RendererBatchStatus;
 
@@ -87,7 +88,7 @@ void *renderer_batch_get_key(const void *);
 
 // === Keys Accessors ===
 const RendererBatchKey *
-renderer_batch_get_key_from_pipeline(const RenderPipeline *);
+renderer_batch_get_key_from_pipeline(const RenderPipelineType);
 
 const RendererBatchKey *
 renderer_batch_get_key_from_descriptor(const RendererBatchKeyDescriptor *);

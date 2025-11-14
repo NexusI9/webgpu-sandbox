@@ -22,13 +22,15 @@ static const struct {
 static void gui_update_gizmo_mode(Scene *scene, Renderer *renderer,
                                   void *mode) {
 
-  visibility_system_hide_gizmo(&scene->gizmo, renderer);
+  visibility_system_hide_mesh_ref_list(
+      scene, renderer, &scene->gizmo.handles[scene->gizmo.mode]);
   gizmo_set_mode(&scene->gizmo, *(GizmoMode *)mode);
 
   if (scene_selection_length(&scene->selection)) {
     selection_system_update_gizmo_pos_to_selection(
         &scene->gizmo, &scene->selection, scene->ubo);
-    visibility_system_show_gizmo(&scene->gizmo, renderer);
+    visibility_system_show_mesh_ref_list(
+        scene, renderer, &scene->gizmo.handles[scene->gizmo.mode]);
   }
 }
 

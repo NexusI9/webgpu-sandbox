@@ -184,8 +184,8 @@ void render_pass_draw_list_copy(const RenderPassLayoutListDescriptor *src,
     d->src_meshes = s->meshes;
 
     // DEBUG
-    printf("[%lu] pipeline: %s | shader: %d \n", i,
-           std_render_pipeline_label(d->pipeline), d->shader);
+    printf("[%lu] pipeline: %s | shader: %d | mesh list: %p \n", i,
+           std_render_pipeline_label(d->pipeline), d->shader, d->src_meshes);
 
     mesh_draw_packet_list_create(&d->drawn_meshes, MESH_REF_LIST_CAPACITY);
   }

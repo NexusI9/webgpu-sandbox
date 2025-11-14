@@ -230,6 +230,10 @@ static inline RenderPassStatus render_pass_enable_mesh(RenderPass *pass,
 
   RenderPassDrawLayout *layout = render_pass_find_layout_from_mesh(pass, mesh);
 
+
+  // DEBUG
+  printf("pass: %s | mesh: %s | layout: %p\n", pass->label, mesh->name, layout);
+  
   if (layout == NULL)
     return RenderPassStatus_LayoutUnfound;
 

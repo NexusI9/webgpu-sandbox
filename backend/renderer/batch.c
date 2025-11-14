@@ -293,9 +293,7 @@ void *renderer_batch_get_key(const void *bucket) {
  */
 
 const RendererBatchKey *
-renderer_batch_get_key_from_pipeline(const RenderPipeline *render_pipeline) {
-
-  RenderPipelineType pipeline_type = std_render_pipeline_type(render_pipeline);
+renderer_batch_get_key_from_pipeline(const RenderPipelineType pipeline_type) {
 
   if (pipeline_type == RENDER_PIPELINE_UNDEFINED) {
     logger_add(LoggerFlag_Error,
@@ -339,6 +337,15 @@ RendererBatchStatus renderer_batch_get_mesh_list_from_pipeline(
     if (bucket && config_key->pipeline == pipeline_type &&
         result->length < RENDER_BATCH_LIST_CAPACITY)
       result->entries[result->length++] = &bucket->meshes;
+  }
+
+  if (result->length == 0) {
+    logger_add(LoggerFlag_Error,
+               "Unable to locate Mesh List for pipeline '%s', make sure the "
+               "Renderer Batch "
+               "configuration is correct and match with an existing one.",
+               std_render_pipeline_label(pipeline_type));
+    return RendererBatchStatus_UnfoundBatch;
   }
 
   return RendererBatchStatus_Success;

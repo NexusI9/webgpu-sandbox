@@ -18,8 +18,7 @@
 
 static inline void engine_scene_add_sem(Engine *, SceneEditorMeshList *);
 
-static inline void engine_enable_mesh_in_passes(Engine *, const MeshRefList *,
-                                                Mesh *);
+static inline void engine_enable_mesh_in_passes(Engine *, Mesh *);
 
 static inline void engine_add_mesh_core(Engine *, Mesh *, const char *,
                                         const RendererBatchKey *,
@@ -51,8 +50,7 @@ Scene *engine_add_scene(Engine *engine, const SceneCreateDescriptor *desc) {
 /**
   Update passes draw list (sync with their respective scene pipeline)
  */
-void engine_enable_mesh_in_passes(Engine *engine, const MeshRefList *pipeline,
-                                  Mesh *mesh) {
+void engine_enable_mesh_in_passes(Engine *engine, Mesh *mesh) {
 
   Scene *scene = engine_get_active_scene(engine);
   Renderer *renderer = engine_get_renderer(engine);
@@ -286,7 +284,6 @@ void engine_scene_add_sem(Engine *engine, SceneEditorMeshList *list) {
 }
 
 // === Add Mesh ===
-
 void engine_add_mesh_core(Engine *engine, Mesh *mesh, const char *layer,
                           const RendererBatchKey *batch,
                           const EngineAddFlag flag) {
@@ -294,23 +291,6 @@ void engine_add_mesh_core(Engine *engine, Mesh *mesh, const char *layer,
   Scene *scene = engine_get_active_scene(engine);
   Renderer *renderer = engine_get_renderer(engine);
   SceneSelectionType selection_type = SceneSelectionType_Mesh;
-  RendererBatchMeshLists mesh_lists;
-
-  // DEBUG
-  printf("Adding Mesh: %s\n", mesh->name);
-  printf("  - Pipeline: %s\n", std_render_pipeline_label(batch->pipeline));
-  printf("  - Batch name: %s\n", batch->label);
-
-  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches,
-                                             batch->pipeline, &mesh_lists);
-
-  if (mesh_lists.length == 0) {
-    logger_add(
-        LoggerFlag_Error,
-        "Unable to locate Mesh List of mesh '%s', make sure the Renderer Batch "
-        "configuration is correct and match with an existing one.");
-    return;
-  }
 
   {
     // add to scene layers ('Default' layer if NULL)
@@ -319,15 +299,15 @@ void engine_add_mesh_core(Engine *engine, Mesh *mesh, const char *layer,
     scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
   }
 
+  RendererBatchMeshLists mesh_lists;
+  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches,
+                                             batch->pipeline, &mesh_lists);
+
   for (size_t i = 0; i < mesh_lists.length; i++) {
 
-    // actually show the mesh
-    if ((flag & EngineAddFlag_Hide) == 0) {
-      mesh_ref_list_insert(mesh_lists.entries[i], mesh);
-      engine_enable_mesh_in_passes(engine, mesh_lists.entries[i], mesh);
-    }
+    // insert mesh in each target batch mesh list
+    mesh_ref_list_insert(mesh_lists.entries[i], mesh);
 
-    // Update Shadow maps if added to Dynamic_Lit pipeline
     if ((batch->flags & RendererBatchFlag_Shadow) &&
         renderer->draw_mode == RendererDrawMode_Texture) {
       renderer_draw_shadow_map_all(
@@ -342,7 +322,11 @@ void engine_add_mesh_core(Engine *engine, Mesh *mesh, const char *layer,
     }
   }
 
-  // EDITORONLY (add mesh to selection)
+  // Actually shows the mesh on scene
+  if ((flag & EngineAddFlag_Hide) == 0)
+    engine_enable_mesh_in_passes(engine, mesh);
+
+  // EDITORONLY
   if ((flag & EngineAddFlag_Unselectable) == 0)
     scene_selection_register_mesh(&scene->selection, mesh, mesh->id,
                                   selection_type);
@@ -375,17 +359,22 @@ EngineStatus engine_scene_add_mesh(Engine *engine, Mesh *mesh,
   // batch so they get drawn during those mode.
   for (uint8_t i = 0; i < dynamic_shaders_length; i++) {
 
-    const RenderPipeline *pipeline =
-        *mesh_shader(mesh, dynamic_shaders[i])->pipeline;
+    const RenderPipelineType pipeline = std_render_pipeline_type(
+        *mesh_shader(mesh, dynamic_shaders[i])->pipeline);
 
     const RendererBatchKey *batch_config =
         renderer_batch_get_key_from_pipeline(pipeline);
 
     // only build mesh once
-    if (i == 0)
+    if (i == 0) {
       engine_build_mesh(engine, mesh, batch_config->flags);
-
-    engine_add_mesh_core(engine, mesh, layer, batch_config, flag);
+      engine_add_mesh_core(engine, mesh, layer, batch_config, flag);
+    } else {
+      // only add them to the pass list (do not add them to tree etc...)
+      engine_add_mesh_core(engine, mesh, layer, batch_config,
+                           flag | EngineAddFlag_TreeHide |
+                               EngineAddFlag_Unselectable);
+    }
 
     // exit after applying the Texture for fixed mesh (since they won't change
     // shaders on different draw mode)

@@ -123,6 +123,7 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
   size_t filter_index;
   SceneSelectionFilter *filter = scene_selection_find_filter_of_mesh(
       selection, mesh, &selected, &filter_index);
+  Gizmo *gizmo = &scene->gizmo;
 
   if (filter == NULL)
     return;
@@ -141,9 +142,11 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
   if (scene_selection_length(selection) > 0) {
     selection_system_update_gizmo_pos_to_selection(&scene->gizmo, selection,
                                                    scene->ubo);
-    visibility_system_show_gizmo(&scene->gizmo, renderer);
+    visibility_system_show_mesh_ref_list(scene, renderer,
+                                         &gizmo->handles[gizmo->mode]);
   } else {
-    visibility_system_hide_gizmo(&scene->gizmo, renderer);
+    visibility_system_hide_mesh_ref_list(scene, renderer,
+                                         &gizmo->handles[gizmo->mode]);
   }
 
   highlight_callbacks[filter_index](selection, scene, renderer,
@@ -636,8 +639,8 @@ void selection_system_callback_raycast_mesh(
   Scene *scene = ((SelectionSystemCallbackData *)user_data)->scene;
   SceneSelection *selection = ((SelectionSystemCallbackData *)user_data)->selection;
   Renderer *renderer = ((SelectionSystemCallbackData *)user_data)->renderer;
-  // clang-format off
-  
+  // clang-format on
+
   Gizmo *gizmo = &scene->gizmo;
 
   // else retrieve first hit only (closest to camera)
@@ -650,7 +653,8 @@ void selection_system_callback_raycast_mesh(
     selection_system_toggle_mesh(selection, scene, renderer, hit->mesh);
   else {
     scene_selection_empty(selection);
-    visibility_system_hide_gizmo(gizmo, renderer);
+    visibility_system_hide_mesh_ref_list(scene, renderer,
+                                         &gizmo->handles[gizmo->mode]);
   }
 }
 
@@ -681,8 +685,7 @@ void selection_system_callback_raycast_gizmo_down(
       gizmo_set_axis_from_mesh(gizmo, hit);
 
       // cache scene selection initial attributes
-      scene_selection_cache_initial_attributes(selection,
-                                                gizmo->mode);
+      scene_selection_cache_initial_attributes(selection, gizmo->mode);
 
       // set active handle from current mode and initialize offset
       gizmo_set_active(gizmo, scene->active_camera, &scene->viewport);
@@ -863,7 +866,8 @@ static const struct {
     },
 };
 
-void selection_system_init_key_events(SceneSelection* selection ,Scene *scene, Renderer* renderer) {
+void selection_system_init_key_events(SceneSelection *selection, Scene *scene,
+                                      Renderer *renderer) {
 
   // TODO: improve
   // TODO: FREE MALLOC !!!!
@@ -876,7 +880,7 @@ void selection_system_init_key_events(SceneSelection* selection ,Scene *scene, R
         .renderer = renderer,
         .scene = scene,
     };
-  
+
   for (size_t i = 0; i < seq_count; i++) {
 
     // dispatch to global input key record sequence
@@ -902,7 +906,7 @@ void selection_system_callback_key_sequence_select_all(KeyRecordSequence *seq,
   if (g_input.locked & InputLockState_Keyboard)
     return;
 
-  SelectionSystemCallbackData* user_data = (SelectionSystemCallbackData*)data;
+  SelectionSystemCallbackData *user_data = (SelectionSystemCallbackData *)data;
   Scene *scene = user_data->scene;
   SceneSelection *selection = user_data->selection;
   Renderer *renderer = user_data->renderer;
@@ -911,16 +915,19 @@ void selection_system_callback_key_sequence_select_all(KeyRecordSequence *seq,
   // if already selection => unselect everything
   if (scene_selection_length(selection)) {
     scene_selection_empty(selection);
-    visibility_system_hide_gizmo(gizmo, renderer);
+    visibility_system_hide_mesh_ref_list(scene, renderer,
+                                         &gizmo->handles[gizmo->mode]);
   } else {
     scene_selection_all(selection);
-    selection_system_update_gizmo_pos_to_selection(gizmo, selection, scene->ubo);
-    visibility_system_hide_gizmo(gizmo, renderer);
+    selection_system_update_gizmo_pos_to_selection(gizmo, selection,
+                                                   scene->ubo);
+    visibility_system_hide_mesh_ref_list(scene, renderer,
+                                         &gizmo->handles[gizmo->mode]);
   }
 
-  for(SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
-    highlight_callbacks[i](selection, scene, renderer, &selection->filters[i].selection, NULL);
-  
+  for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
+    highlight_callbacks[i](selection, scene, renderer,
+                           &selection->filters[i].selection, NULL);
 }
 
 void selection_system_callback_key_sequence_set_gizmo_mode(
@@ -929,12 +936,11 @@ void selection_system_callback_key_sequence_set_gizmo_mode(
   if (g_input.locked & InputLockState_Keyboard)
     return;
 
-  SelectionSystemCallbackData* user_data = (SelectionSystemCallbackData*)data;
+  SelectionSystemCallbackData *user_data = (SelectionSystemCallbackData *)data;
   Scene *scene = user_data->scene;
   SceneSelection *selection = user_data->selection;
   Renderer *renderer = user_data->renderer;
   Gizmo *gizmo = &scene->gizmo;
-
 
   // search for same sequence in static array and assign mode to gizmo
   for (size_t i = 0; i < seq_count_mode; i++)
@@ -946,13 +952,17 @@ void selection_system_callback_key_sequence_set_gizmo_mode(
     }
 
   // hide gizmo
-  visibility_system_hide_gizmo(gizmo, renderer);
+
+  visibility_system_hide_mesh_ref_list(scene, renderer,
+                                       &gizmo->handles[gizmo->mode]);
 
   // show gizmo if has selection
   if (scene_selection_length(selection)) {
     // update location to selection average
-    selection_system_update_gizmo_pos_to_selection(gizmo, selection, scene->ubo);
-    visibility_system_show_gizmo(gizmo, renderer);
+    selection_system_update_gizmo_pos_to_selection(gizmo, selection,
+                                                   scene->ubo);
+    visibility_system_hide_mesh_ref_list(scene, renderer,
+                                         &gizmo->handles[gizmo->mode]);
   }
 }
 
@@ -962,13 +972,11 @@ void selection_system_callback_key_sequence_transform(
   if (g_input.locked & InputLockState_Keyboard)
     return;
 
-
-  SelectionSystemCallbackData* user_data = (SelectionSystemCallbackData*)data;
+  SelectionSystemCallbackData *user_data = (SelectionSystemCallbackData *)data;
   Scene *scene = user_data->scene;
   SceneSelection *selection = user_data->selection;
   Renderer *renderer = user_data->renderer;
   Gizmo *gizmo = &scene->gizmo;
-  
 
   // use the length as a flag to detect if gizmo already active or not
   if (scene_selection_length(selection) == 0)
@@ -996,8 +1004,7 @@ void selection_system_callback_key_sequence_transform(
       gizmo->axis = key_seq_axis;
 
       // cache scene selection initial attributes
-      scene_selection_cache_initial_attributes(selection,
-                                               gizmo->mode);
+      scene_selection_cache_initial_attributes(selection, gizmo->mode);
 
       // set active handle from current mode and initialize offset
       gizmo_set_active(gizmo, scene->active_camera, &scene->viewport);
@@ -1005,18 +1012,16 @@ void selection_system_callback_key_sequence_transform(
   }
 }
 
-
 /**
    Set the gizmo active handle to NULL which acts as a trigger.
    This wall the loop callback doesn't move the meshes anymore if the mouse is
    down again.
  */
-bool selection_system_callback_html_reset(int eventType,
-                                    const EmscriptenMouseEvent *mouseEvent,
-                                    void *userData) {
+bool selection_system_callback_html_reset(
+    int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData) {
 
-
-    SelectionSystemCallbackData* user_data = (SelectionSystemCallbackData*)userData;
+  SelectionSystemCallbackData *user_data =
+      (SelectionSystemCallbackData *)userData;
   Scene *scene = user_data->scene;
   SceneSelection *selection = user_data->selection;
   Gizmo *gizmo = &scene->gizmo;
