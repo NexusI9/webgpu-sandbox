@@ -141,8 +141,9 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
   if (scene_selection_length(selection) > 0) {
     selection_system_update_gizmo_pos_to_selection(&scene->gizmo, selection,
                                                    scene->ubo);
-    //visibility_system_show_mesh_ref_list(scene, renderer,
-    //                                     &gizmo->handles[gizmo->mode]);
+    
+    visibility_system_show_mesh_ref_list(scene, renderer,
+                                         &gizmo->handles[gizmo->mode]);
   } else {
     visibility_system_hide_mesh_ref_list(scene, renderer,
                                          &gizmo->handles[gizmo->mode]);

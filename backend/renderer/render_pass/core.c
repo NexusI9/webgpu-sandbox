@@ -271,4 +271,5 @@ void render_pass_sync_drawn_layouts(RenderPass *pass) {
       pass->draw_list.drawn_entries[pass->draw_list.drawn_length++] =
           stagged_layout;
   }
+
 }

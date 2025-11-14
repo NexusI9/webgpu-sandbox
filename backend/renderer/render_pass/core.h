@@ -39,6 +39,7 @@ typedef enum {
   RenderPassStatus_OutOfBoundDrawIndex,
   RenderPassStatus_LayoutUnfound,
   RenderPassStatus_DrawListUpdateError,
+  RenderPassStatus_MeshAlreadyEnabled,
   RenderPassStatus_UndefError,
 } RenderPassStatus;
 
@@ -85,13 +86,13 @@ typedef struct {
 } RenderPassDrawLayout;
 
 typedef struct {
-  
+
   RenderPassDrawLayout stagged_entries[RENDER_PASS_MAX_DRAW_LIST];
   size_t stagged_length;
-  
+
   RenderPassDrawLayout *drawn_entries[RENDER_PASS_MAX_DRAW_LIST];
   size_t drawn_length;
-  
+
 } RenderPassLayoutList;
 
 typedef struct {

@@ -144,13 +144,20 @@ render_pass_find_layout_from_source_list(RenderPass *pass,
 static inline RenderPassStatus
 render_pass_layout_enable_mesh(RenderPassDrawLayout *layout, Mesh *mesh) {
 
-  MeshDrawPacket *pack = mesh_draw_packet_list_new_entry(&layout->drawn_meshes);
-  if (pack) {
+  // prevent adding it twice if already in it
+  MeshDrawPacket *pack =
+      mesh_draw_packet_list_find_by_mesh(&layout->drawn_meshes, mesh, NULL);
+
+  if (pack)
+    return RenderPassStatus_MeshAlreadyEnabled;
+
+  pack = mesh_draw_packet_list_new_entry(&layout->drawn_meshes);
+  
+  if (pack)
     mesh_create_draw_packet(layout->topology_callback(mesh),
                             mesh_shader(mesh, layout->shader), mesh, pack);
-  } else {
+  else
     return RenderPassStatus_DrawListUpdateError;
-  }
 
   return RenderPassStatus_Success;
 }
@@ -247,7 +254,7 @@ static inline RenderPassStatus render_pass_disable_mesh(RenderPass *pass,
 
   if (layout == NULL)
     return RenderPassStatus_LayoutUnfound;
-  
+
   RenderPassStatus disable = render_pass_layout_disable_mesh(layout, mesh);
   render_pass_sync_drawn_layouts(pass);
 
