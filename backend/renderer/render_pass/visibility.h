@@ -339,7 +339,7 @@ render_pass_list_disable_mesh_ref_list(RenderPassList *list,
 
   for (uint8_t i = 0; i < list->length; i++)
     for (size_t j = 0; j < meshes->length; j++)
-      render_pass_enable_mesh(&list->passes[i], meshes->entries[j]);
+      render_pass_disable_mesh(&list->passes[i], meshes->entries[j]);
 
   return RenderPassStatus_Success;
 }
