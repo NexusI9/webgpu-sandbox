@@ -19,13 +19,6 @@ static const RendererBatchKey renderer_batch_config[] = {
         RendererDrawMode_Texture,
     },
     {
-        "Billboard",
-        RenderPipelineType_Billboard,
-        RendererBatchFlag_Fixed,
-        RendererBatchLayer_Default,
-        RendererDrawMode_All,
-    },
-    {
         "Unlit",
         RenderPipelineType_Unlit_Stencil,
         RendererBatchFlag_Reflection,
@@ -142,6 +135,13 @@ static const RendererBatchKey renderer_batch_config[] = {
         RendererBatchFlag_None,
         RendererBatchLayer_Default,
         RendererDrawMode_Solid,
+    },
+    {
+        "Billboard",
+        RenderPipelineType_Billboard,
+        RendererBatchFlag_Fixed,
+        RendererBatchLayer_Default,
+        RendererDrawMode_All,
     },
 
 };

@@ -295,9 +295,14 @@ void engine_add_mesh_core(Engine *engine, Mesh *mesh, const char *layer,
   Renderer *renderer = engine_get_renderer(engine);
   SceneSelectionType selection_type = SceneSelectionType_Mesh;
   RendererBatchMeshLists mesh_lists;
-  
-  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches, batch->pipeline,
-                                             &mesh_lists);
+
+  // DEBUG
+  printf("Adding Mesh: %s\n", mesh->name);
+  printf("  - Pipeline: %s\n", std_render_pipeline_label(batch->pipeline));
+  printf("  - Batch name: %s\n", batch->label);
+
+  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches,
+                                             batch->pipeline, &mesh_lists);
 
   if (mesh_lists.length == 0) {
     logger_add(
@@ -376,11 +381,6 @@ EngineStatus engine_scene_add_mesh(Engine *engine, Mesh *mesh,
     const RendererBatchKey *batch_config =
         renderer_batch_get_key_from_pipeline(pipeline);
 
-    // DEBUG
-    printf("Adding Mesh: %s\n", mesh->name);
-    printf("  - Pipeline: %s\n", pipeline->label);
-    printf("  - Batch name: %s\n", batch_config->label);
-
     // only build mesh once
     if (i == 0)
       engine_build_mesh(engine, mesh, batch_config->flags);
@@ -419,6 +419,7 @@ engine_scene_add_mesh_custom(Engine *engine, Mesh *mesh, const char *layer,
     return EngineStatus_UnfoundEntity;
   }
 
+  engine_build_mesh(engine, mesh, source_batch->flags);
   engine_add_mesh_core(engine, mesh, layer, source_batch, flag);
 
   return EngineStatus_Success;
