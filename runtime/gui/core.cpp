@@ -101,11 +101,6 @@ GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
     ImGui_ImplWGPU_Init(&info);
   }
 
-  renderer_add_draw_callback(gui->renderer, gui_draw_callback, (void *)gui,
-                             RendererDrawMode_Texture | RendererDrawMode_Solid |
-                                 RendererDrawMode_Wireframe |
-                                 RendererDrawMode_Boundbox);
-
   return GUIStatus_Success;
 }
 

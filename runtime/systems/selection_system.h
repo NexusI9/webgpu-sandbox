@@ -27,6 +27,9 @@ typedef void (*selection_system_highlight_callback)(SceneSelection *, Scene *,
                                                     SceneSelectionObjectList *,
                                                     void *);
 
+// TODO: Not sure about have a global var for it...
+extern SelectionSystemCallbackData selection_system_event_payload;
+
 EXTERN_C_BEGIN
 
 void selection_system_init(SceneSelection *, Scene *, Renderer *);

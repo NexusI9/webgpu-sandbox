@@ -77,9 +77,6 @@ void renderer_create(Renderer *renderer, const RendererCreateDescriptor *desc) {
     renderer_draw_lists draw_lists = {0};
     renderer_pass_layout_from_batch(renderer, draw_lists);
     renderer_pass_create(renderer, draw_lists);
-
-    renderer_add_draw_callback(renderer, renderer_draw_layout_callback,
-                               (void *)renderer, RendererDrawMode_All);
   }
 }
 

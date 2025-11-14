@@ -1,6 +1,7 @@
 #ifndef _RENDER_PASS_VISBILITY_H_
 #define _RENDER_PASS_VISBILITY_H_
 
+#include "backend/logger.h"
 #include "core.h"
 #include "runtime/mesh/draw.h"
 #include "runtime/mesh/shader/core.h"
@@ -230,10 +231,6 @@ static inline RenderPassStatus render_pass_enable_mesh(RenderPass *pass,
 
   RenderPassDrawLayout *layout = render_pass_find_layout_from_mesh(pass, mesh);
 
-
-  // DEBUG
-  printf("pass: %s | mesh: %s | layout: %p\n", pass->label, mesh->name, layout);
-  
   if (layout == NULL)
     return RenderPassStatus_LayoutUnfound;
 
@@ -250,7 +247,7 @@ static inline RenderPassStatus render_pass_disable_mesh(RenderPass *pass,
 
   if (layout == NULL)
     return RenderPassStatus_LayoutUnfound;
-
+  
   RenderPassStatus disable = render_pass_layout_disable_mesh(layout, mesh);
   render_pass_sync_drawn_layouts(pass);
 

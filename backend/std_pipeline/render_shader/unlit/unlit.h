@@ -84,6 +84,7 @@ static const RenderPipelineStateObject layout_unlit = {
         {
             .stencil_state = &unlit_depth,
             .primitive_state = &unlit_prim,
+            .blend_state = &blend_alpha,
         },
 };
 

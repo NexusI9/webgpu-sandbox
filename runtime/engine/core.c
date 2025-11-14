@@ -39,7 +39,6 @@ EngineStatus engine_init(Engine *engine) {
     // === UBO ===
     ubo = rem_new_ubo();
     ubo_init(ubo);
-    ubo_system_register_draw_callback(ubo, engine_get_renderer(engine));
   }
 
   Scene *scene;
@@ -70,6 +69,27 @@ EngineStatus engine_init(Engine *engine) {
                  .theme = &g_theme,
                  .dpi = g_context.dpi,
              });
+  }
+
+  {
+    // === Loop Callbacks ===
+
+    // clang-format off
+    renderer_add_draw_callback(engine_get_renderer(engine),
+                               ubo_system_draw_callback,
+			       (void *)ubo,
+                               RendererDrawMode_All);
+
+    renderer_add_draw_callback(engine_get_renderer(engine),
+			       renderer_draw_layout_callback,
+			       (void *)engine_get_renderer(engine),
+			       RendererDrawMode_All);
+
+    renderer_add_draw_callback(engine_get_renderer(engine),
+			       gui_draw_callback,
+			       (void *)engine_get_gui(engine),
+                               RendererDrawMode_All);
+    // clang-format on
   }
 
   scene_system_create_grid(scene, engine_get_renderer(engine));

@@ -10,6 +10,7 @@
 #include "runtime/scene/selection/filter.h"
 #include "runtime/systems/scene_system.h"
 #include "runtime/systems/visibility_system.h"
+#include <stdint.h>
 
 // clang-format off
 static const selection_system_highlight_callback highlight_callbacks[] = {
@@ -18,35 +19,32 @@ static const selection_system_highlight_callback highlight_callbacks[] = {
     [SceneSelectionType_SEM] = selection_system_callback_sem_highlight,
 };
 
-  static const selection_system_transform_callback transform_callbacks[] = {
-      [SceneSelectionType_Mesh] = selection_system_callback_mesh_transform,
-      [SceneSelectionType_MeshShadow] = selection_system_callback_mesh_shadow_transform,
-      [SceneSelectionType_SEM] = selection_system_callback_sem_transform,
-  };
+static const selection_system_transform_callback transform_callbacks[] = {
+    [SceneSelectionType_Mesh] = selection_system_callback_mesh_transform,
+    [SceneSelectionType_MeshShadow] = selection_system_callback_mesh_shadow_transform,
+    [SceneSelectionType_SEM] = selection_system_callback_sem_transform,
+};
 // clang-format on
+
+SelectionSystemCallbackData selection_system_event_payload = {0};
 
 void selection_system_init(SceneSelection *selection, Scene *scene,
                            Renderer *renderer) {
+
+  selection_system_event_payload = (SelectionSystemCallbackData){
+      .selection = selection,
+      .renderer = renderer,
+      .scene = scene,
+  };
 
   scene_selection_init(selection);
 
   selection_system_init_mouse_events(selection, scene, renderer);
   selection_system_init_key_events(selection, scene, renderer);
 
-  // TODO: for debug purpose
-  // TODO: FREE MALLOC !!!!
-  SelectionSystemCallbackData *payload =
-      malloc(sizeof(SelectionSystemCallbackData));
-
-  if (payload)
-    *payload = (SelectionSystemCallbackData){
-        .selection = selection,
-        .renderer = renderer,
-        .scene = scene,
-    };
-
   renderer_add_draw_callback(renderer, selection_system_draw_callback,
-                             (void *)payload, RendererDrawMode_All);
+                             (void *)&selection_system_event_payload,
+                             RendererDrawMode_All);
 }
 
 /**
@@ -123,7 +121,6 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
   size_t filter_index;
   SceneSelectionFilter *filter = scene_selection_find_filter_of_mesh(
       selection, mesh, &selected, &filter_index);
-  Gizmo *gizmo = &scene->gizmo;
 
   if (filter == NULL)
     return;
@@ -139,11 +136,13 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
   }
 
   // handle gizmo
+  Gizmo *gizmo = &scene->gizmo;
+
   if (scene_selection_length(selection) > 0) {
     selection_system_update_gizmo_pos_to_selection(&scene->gizmo, selection,
                                                    scene->ubo);
-    visibility_system_show_mesh_ref_list(scene, renderer,
-                                         &gizmo->handles[gizmo->mode]);
+    //visibility_system_show_mesh_ref_list(scene, renderer,
+    //                                     &gizmo->handles[gizmo->mode]);
   } else {
     visibility_system_hide_mesh_ref_list(scene, renderer,
                                          &gizmo->handles[gizmo->mode]);
@@ -559,12 +558,6 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
   for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
     selection_system_config_lists[i] = &selection->filters[i].meshes;
 
-  SelectionSystemCallbackData callback_data = {
-      .scene = scene,
-      .renderer = renderer,
-      .selection = selection,
-  };
-
   /*
 
      ===== MESHES EVENTS =====
@@ -580,8 +573,8 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
                      .bound = CameraRaycastBound_OBB,
                      .viewport = &scene->viewport,
                      .callback = selection_system_callback_raycast_mesh,
-                     .data = (void *)&callback_data,
-                     .size = sizeof(SelectionSystemCallbackData),
+                     .data = (void *)&selection_system_event_payload,
+                     .size = 0,
                      .include =
                          {
                              .lists = selection_system_config_lists,
@@ -617,8 +610,8 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
                        .exclude = {0},
                        .viewport = &scene->viewport,
                        .callback = selection_gizmo_mouse_events[i].callback,
-                       .data = (void *)&callback_data,
-                       .size = sizeof(SelectionSystemCallbackData),
+                       .data = (void *)&selection_system_event_payload,
+                       .size = 0,
                    });
 
   // reset on mouse up
@@ -626,8 +619,8 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
       .owner = scene->id,
       .callback = selection_system_callback_html_reset,
       .destructor = NULL,
-      .data = (void *)&callback_data,
-      .size = sizeof(SelectionSystemCallbackData),
+      .data = (void *)&selection_system_event_payload,
+      .size = 0,
   });
 }
 
@@ -655,6 +648,10 @@ void selection_system_callback_raycast_mesh(
     scene_selection_empty(selection);
     visibility_system_hide_mesh_ref_list(scene, renderer,
                                          &gizmo->handles[gizmo->mode]);
+
+    for (uint8_t i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
+      highlight_callbacks[i](selection, scene, renderer,
+                             &selection->filters[i].selection, NULL);
   }
 }
 
@@ -869,18 +866,6 @@ static const struct {
 void selection_system_init_key_events(SceneSelection *selection, Scene *scene,
                                       Renderer *renderer) {
 
-  // TODO: improve
-  // TODO: FREE MALLOC !!!!
-  SelectionSystemCallbackData *payload =
-      malloc(sizeof(SelectionSystemCallbackData));
-
-  if (payload)
-    *payload = (SelectionSystemCallbackData){
-        .selection = selection,
-        .renderer = renderer,
-        .scene = scene,
-    };
-
   for (size_t i = 0; i < seq_count; i++) {
 
     // dispatch to global input key record sequence
@@ -893,7 +878,7 @@ void selection_system_init_key_events(SceneSelection *selection, Scene *scene,
           .sequence = seq->sequence,
           .callback = seq->callback,
           .length = seq->length,
-          .data = payload,
+          .data = &selection_system_event_payload,
           .owner = scene->id,
       });
     }

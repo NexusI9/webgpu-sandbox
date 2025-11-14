@@ -24,6 +24,7 @@ static void gui_update_gizmo_mode(Scene *scene, Renderer *renderer,
 
   visibility_system_hide_mesh_ref_list(
       scene, renderer, &scene->gizmo.handles[scene->gizmo.mode]);
+
   gizmo_set_mode(&scene->gizmo, *(GizmoMode *)mode);
 
   if (scene_selection_length(&scene->selection)) {

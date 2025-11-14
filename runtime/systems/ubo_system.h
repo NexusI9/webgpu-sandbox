@@ -6,8 +6,6 @@
 
 EXTERN_C_BEGIN
 
-void ubo_system_register_draw_callback(UBOManager *, Renderer *);
-
 void ubo_system_draw_callback(Renderer *, void *);
 
 EXTERN_C_END
