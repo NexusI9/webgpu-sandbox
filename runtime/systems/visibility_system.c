@@ -41,8 +41,8 @@ void visibility_system_hide_mesh_ref_list(Scene *scene, Renderer *renderer,
   scene_system_update_draw_call_count(scene, renderer);
 }
 
-void visibility_system_toggle_mesh_visibility(Scene *scene, Renderer *renderer,
-                                              Mesh *mesh) {
+void visibility_system_toggle_mesh(Scene *scene, Renderer *renderer,
+                                   Mesh *mesh) {
 
   renderer_visibility_toggle_mesh(renderer, RendererDrawMode_All,
                                   RendererLayer_All, mesh);
@@ -50,4 +50,3 @@ void visibility_system_toggle_mesh_visibility(Scene *scene, Renderer *renderer,
   scene_system_update_vertex_count(scene, renderer);
   scene_system_update_draw_call_count(scene, renderer);
 }
-

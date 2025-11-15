@@ -75,7 +75,7 @@ void engine_enable_mesh_in_passes(Engine *engine, Mesh *mesh,
       RenderPass *pass = &pass_list->passes[j];
 
       for (size_t k = 0; k < source_lists.length; k++) {
-        RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
+        RenderPassLayout *layout = render_pass_find_layout_from_source_list(
             pass, source_lists.entries[k]);
 
         if (layout) {

@@ -12,6 +12,7 @@
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/core.h"
 #include "runtime/systems/selection_system.h"
+#include "runtime/systems/visibility_system.h"
 #include "utils/name.h"
 
 void UI::Tree::draw_mesh(Mesh *mesh, const size_t index) {
@@ -39,7 +40,7 @@ void UI::Tree::draw_mesh(Mesh *mesh, const size_t index) {
   {
     item.draw_visibility();
     if (ImGui::IsItemClicked())
-      selection_system_toggle_mesh(&scene->selection, scene, renderer, mesh);
+      visibility_system_toggle_mesh(scene, renderer, mesh);
   }
 
   if (draw_label) {

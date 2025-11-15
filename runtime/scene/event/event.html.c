@@ -122,7 +122,7 @@ void scene_event_html_update_meshes(Scene *data) {
   for (size_t i = 0; i < layout->length; i++) {
     RenderPassLayoutList *draw_list = &layout->entries[i];
     for (size_t j = 0; j < draw_list->length; j++) {
-      RenderPassDrawLayout *mesh_lists = &draw_list->entries[j];
+      RenderPassLayout *mesh_lists = &draw_list->entries[j];
       // update bind views of each meshes in each rende pass pipelines
       for (size_t k = 0; k < mesh_lists->meshes->length; k++) {
 

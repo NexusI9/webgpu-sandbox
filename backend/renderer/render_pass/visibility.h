@@ -2,6 +2,7 @@
 #define _RENDER_PASS_VISBILITY_H_
 
 #include "backend/logger.h"
+#include "backend/std_pipeline/core.h"
 #include "core.h"
 #include "runtime/mesh/draw.h"
 #include "runtime/mesh/shader/core.h"
@@ -107,25 +108,27 @@
   Target the right render pass draw layout based on the provided ref list
   pointer
  */
-static inline RenderPassDrawLayout *
-render_pass_find_layout_from_mesh(RenderPass *pass, const Mesh *mesh) {
+static inline void
+render_pass_find_layout_from_mesh(RenderPass *pass, const Mesh *mesh,
+                                  RenderPassLayoutRefList *dest) {
 
-  for (uint16_t i = 0; i < pass->draw_list.stagged_length; i++) {
-    const MeshRefList *ref_list = pass->draw_list.stagged_entries[i].src_meshes;
-    if (mesh_ref_list_find(ref_list, mesh, NULL) != NULL)
-      return &pass->draw_list.stagged_entries[i];
+  *dest = (RenderPassLayoutRefList){0};
+
+  for (uint16_t i = 0; i < pass->stagged_list.length; i++) {
+    const MeshRefList *ref_list = pass->stagged_list.entries[i].src_meshes;
+    if (mesh_ref_list_find(ref_list, mesh, NULL) != NULL &&
+        dest->length < RENDER_PASS_MAX_DRAW_LIST)
+      dest->entries[dest->length++] = &pass->stagged_list.entries[i];
   }
-
-  return NULL;
 }
 
-static inline RenderPassDrawLayout *
+static inline RenderPassLayout *
 render_pass_find_layout_from_source_list(RenderPass *pass,
                                          const MeshRefList *source_list) {
 
-  for (uint16_t i = 0; i < pass->draw_list.stagged_length; i++)
-    if (pass->draw_list.stagged_entries[i].src_meshes == source_list)
-      return &pass->draw_list.stagged_entries[i];
+  for (uint16_t i = 0; i < pass->stagged_list.length; i++)
+    if (pass->stagged_list.entries[i].src_meshes == source_list)
+      return &pass->stagged_list.entries[i];
 
   return NULL;
 }
@@ -142,7 +145,7 @@ render_pass_find_layout_from_source_list(RenderPass *pass,
  */
 
 static inline RenderPassStatus
-render_pass_layout_enable_mesh(RenderPassDrawLayout *layout, Mesh *mesh) {
+render_pass_layout_enable_mesh(RenderPassLayout *layout, Mesh *mesh) {
 
   // prevent adding it twice if already in it
   MeshDrawPacket *pack =
@@ -163,11 +166,15 @@ render_pass_layout_enable_mesh(RenderPassDrawLayout *layout, Mesh *mesh) {
 }
 
 static inline RenderPassStatus
-render_pass_layout_disable_mesh(RenderPassDrawLayout *layout, Mesh *mesh) {
+render_pass_layout_disable_mesh(RenderPassLayout *layout, Mesh *mesh) {
 
   size_t index;
   MeshDrawPacket *pack =
       mesh_draw_packet_list_find_by_mesh(&layout->drawn_meshes, mesh, &index);
+
+  // DEBUG
+  printf("Disable mesh: %s | %s => packet: %p | index: %lu\n",
+         std_render_pipeline_label(layout->pipeline), mesh->name, pack, index);
 
   if (pack && mesh_draw_packet_list_remove_at_index(
                   &layout->drawn_meshes, index) == DynamicListStatus_Success) {
@@ -178,7 +185,7 @@ render_pass_layout_disable_mesh(RenderPassDrawLayout *layout, Mesh *mesh) {
 }
 
 static inline RenderPassStatus
-render_pass_layout_enable_mesh_ref_list(RenderPassDrawLayout *layout,
+render_pass_layout_enable_mesh_ref_list(RenderPassLayout *layout,
                                         MeshRefList *list) {
 
   for (size_t i = 0; i < list->length; i++)
@@ -188,7 +195,7 @@ render_pass_layout_enable_mesh_ref_list(RenderPassDrawLayout *layout,
 }
 
 static inline RenderPassStatus
-render_pass_layout_disable_mesh_ref_list(RenderPassDrawLayout *layout,
+render_pass_layout_disable_mesh_ref_list(RenderPassLayout *layout,
                                          MeshRefList *list) {
 
   for (size_t i = 0; i < list->length; i++)
@@ -198,7 +205,7 @@ render_pass_layout_disable_mesh_ref_list(RenderPassDrawLayout *layout,
 }
 
 static inline RenderPassStatus
-render_pass_layout_enable_all_mesh(RenderPassDrawLayout *layout) {
+render_pass_layout_enable_all_mesh(RenderPassLayout *layout) {
 
   const MeshRefList *src_list = layout->src_meshes;
   MeshDrawPacketList *pack_list = &layout->drawn_meshes;
@@ -217,7 +224,7 @@ render_pass_layout_enable_all_mesh(RenderPassDrawLayout *layout) {
 }
 
 static inline RenderPassStatus
-render_pass_layout_disable_all_mesh(RenderPassDrawLayout *layout) {
+render_pass_layout_disable_all_mesh(RenderPassLayout *layout) {
   mesh_draw_packet_list_empty(&layout->drawn_meshes);
   return RenderPassStatus_Success;
 }
@@ -236,29 +243,44 @@ render_pass_layout_disable_all_mesh(RenderPassDrawLayout *layout) {
 static inline RenderPassStatus render_pass_enable_mesh(RenderPass *pass,
                                                        Mesh *mesh) {
 
-  RenderPassDrawLayout *layout = render_pass_find_layout_from_mesh(pass, mesh);
+  RenderPassLayoutRefList layout_list;
+  render_pass_find_layout_from_mesh(pass, mesh, &layout_list);
 
-  if (layout == NULL)
-    return RenderPassStatus_LayoutUnfound;
+  RenderPassStatus status = RenderPassStatus_Success;
 
-  RenderPassStatus enable = render_pass_layout_enable_mesh(layout, mesh);
+  for (size_t i = 0; i < layout_list.length; i++) {
+
+    RenderPassStatus enable =
+        render_pass_layout_enable_mesh(layout_list.entries[i], mesh);
+    if (enable != RenderPassStatus_Success)
+      status = enable;
+  }
+
   render_pass_sync_drawn_layouts(pass);
 
-  return enable;
+  return status;
 }
 
 static inline RenderPassStatus render_pass_disable_mesh(RenderPass *pass,
                                                         Mesh *mesh) {
 
-  RenderPassDrawLayout *layout = render_pass_find_layout_from_mesh(pass, mesh);
+  RenderPassLayoutRefList layout_list;
+  render_pass_find_layout_from_mesh(pass, mesh, &layout_list);
 
-  if (layout == NULL)
-    return RenderPassStatus_LayoutUnfound;
+  RenderPassStatus status = RenderPassStatus_Success;
 
-  RenderPassStatus disable = render_pass_layout_disable_mesh(layout, mesh);
+  for (size_t i = 0; i < layout_list.length; i++) {
+
+    RenderPassStatus disable =
+        render_pass_layout_disable_mesh(layout_list.entries[i], mesh);
+
+    if (disable != RenderPassStatus_Success)
+      status = disable;
+  }
+
   render_pass_sync_drawn_layouts(pass);
 
-  return disable;
+  return status;
 }
 
 static inline RenderPassStatus
@@ -281,8 +303,8 @@ render_pass_disable_mesh_ref_list(RenderPass *pass, MeshRefList *meshes) {
 
 static inline RenderPassStatus render_pass_enable_all_mesh(RenderPass *pass) {
 
-  for (uint16_t i = 0; i < pass->draw_list.stagged_length; i++) {
-    RenderPassDrawLayout *layout = &pass->draw_list.stagged_entries[i];
+  for (uint16_t i = 0; i < pass->stagged_list.length; i++) {
+    RenderPassLayout *layout = &pass->stagged_list.entries[i];
     render_pass_layout_enable_all_mesh(layout);
   }
 
@@ -291,8 +313,8 @@ static inline RenderPassStatus render_pass_enable_all_mesh(RenderPass *pass) {
 
 static inline RenderPassStatus render_pass_disable_all_mesh(RenderPass *pass) {
 
-  for (uint16_t i = 0; i < pass->draw_list.stagged_length; i++) {
-    RenderPassDrawLayout *layout = &pass->draw_list.stagged_entries[i];
+  for (uint16_t i = 0; i < pass->stagged_list.length; i++) {
+    RenderPassLayout *layout = &pass->stagged_list.entries[i];
     render_pass_layout_disable_all_mesh(layout);
   }
 

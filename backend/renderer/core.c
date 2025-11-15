@@ -352,7 +352,7 @@ void renderer_pass_layout_from_batch(Renderer *renderer,
         const size_t length = draw_lists[mode][layer].length;
 
         draw_lists[mode][layer].entries[length] =
-            (RenderPassDrawLayoutDescriptor){
+            (RenderPassLayoutDescriptor){
                 .pipeline = key->pipeline,
                 .shader = draw_mode_attributes[target_mode].shader,
                 .topology_callback =

@@ -282,6 +282,10 @@ renderer_hide_mesh(Renderer *rd, const RendererDrawMode draw_mode,
       RenderPassList *plist =
           renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i));
 
+      // DEBUG
+      printf("Checking drawmode: %d | pass list length: %lu\n", i,
+             plist->length);
+
       for (size_t j = 0; j < plist->length; j++) {
         if (layers & (1 << j)) {
           RenderPass *pass = &plist->passes[j];

@@ -54,12 +54,13 @@ static inline void scene_system_update_vertex_count(Scene *scene,
   float denom = 1.0f / 3;
 
   for (size_t i = 0; i < active_list->length; i++)
-    for (size_t j = 0; j < active_list->passes[i].draw_list.stagged_length; j++)
+    for (size_t j = 0; j < active_list->passes[i].stagged_list.length; j++)
       for (size_t k = 0;
-           k < active_list->passes[i].draw_list.stagged_entries[j].drawn_meshes.length;
+           k <
+           active_list->passes[i].stagged_list.entries[j].drawn_meshes.length;
            k++)
         count += active_list->passes[i]
-                     .draw_list.stagged_entries[j]
+                     .stagged_list.entries[j]
                      .drawn_meshes.entries[k]
                      .length *
                  denom;
@@ -111,8 +112,10 @@ static inline void scene_system_update_draw_call_count(Scene *scene,
   RenderPassList *active_list = renderer_mesh_pass_list(rd, rd->draw_mode);
 
   for (size_t i = 0; i < active_list->length; i++)
-    for (size_t j = 0; j < active_list->passes[i].draw_list.stagged_length; j++)
-      count += active_list->passes[i].draw_list.stagged_entries[j].drawn_meshes.length;
+    for (size_t j = 0; j < active_list->passes[i].stagged_list.length; j++)
+      count += active_list->passes[i]
+                   .stagged_list.entries[j]
+                   .drawn_meshes.length;
 
   scene_stat_update_draw_call_count(scene, count);
 }

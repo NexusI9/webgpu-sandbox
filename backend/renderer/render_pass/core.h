@@ -83,17 +83,17 @@ typedef struct {
                                  // enable/disable mesh to the draw meshes.
   MeshDrawPacketList
       drawn_meshes; // Compact and cache friendly data from mesh and shader
-} RenderPassDrawLayout;
+} RenderPassLayout;
 
 typedef struct {
-
-  RenderPassDrawLayout stagged_entries[RENDER_PASS_MAX_DRAW_LIST];
-  size_t stagged_length;
-
-  RenderPassDrawLayout *drawn_entries[RENDER_PASS_MAX_DRAW_LIST];
-  size_t drawn_length;
-
+  RenderPassLayout entries[RENDER_PASS_MAX_DRAW_LIST];
+  size_t length;
 } RenderPassLayoutList;
+
+typedef struct {
+  RenderPassLayout *entries[RENDER_PASS_MAX_DRAW_LIST];
+  size_t length;
+} RenderPassLayoutRefList;
 
 typedef struct {
   MeshShader shader;
@@ -102,10 +102,10 @@ typedef struct {
   render_pass_mesh_preprocessor_callback mesh_preprocessor_callback;
   void *mesh_preprocessor_data;
   const MeshRefList *meshes;
-} RenderPassDrawLayoutDescriptor;
+} RenderPassLayoutDescriptor;
 
 typedef struct {
-  RenderPassDrawLayoutDescriptor entries[RENDER_PASS_MAX_DRAW_LIST];
+  RenderPassLayoutDescriptor entries[RENDER_PASS_MAX_DRAW_LIST];
   size_t length;
 } RenderPassLayoutListDescriptor;
 
@@ -136,7 +136,10 @@ struct RenderPass {
   RenderPassColor color;
   RenderPassDepth depth;
   RenderPipelineMultisampleCount multisample;
-  RenderPassLayoutList draw_list;
+
+  RenderPassLayoutList stagged_list;
+  RenderPassLayoutRefList drawn_list;
+
   render_pass_draw_callback draw_callback;
   WGPUCommandEncoder command_encoder;
   PostFx post_fx;

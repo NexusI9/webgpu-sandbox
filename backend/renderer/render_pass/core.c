@@ -45,7 +45,7 @@ void render_pass_create(RenderPass *pass,
     render_pass_init_depth(pass, desc);
 
   if (desc->draw_list)
-    render_pass_draw_list_copy(desc->draw_list, &pass->draw_list);
+    render_pass_draw_list_copy(desc->draw_list, &pass->stagged_list);
 }
 
 void render_pass_init_color(RenderPass *pass,
@@ -165,12 +165,12 @@ void render_pass_draw_list_copy(const RenderPassLayoutListDescriptor *src,
                                 RenderPassLayoutList *dest) {
 
   size_t length = glm_imin(src->length, RENDER_PASS_MAX_DRAW_LIST);
-  dest->stagged_length = length;
+  dest->length = length;
 
   for (size_t i = 0; i < length; i++) {
 
-    const RenderPassDrawLayoutDescriptor *s = &src->entries[i];
-    RenderPassDrawLayout *d = &dest->stagged_entries[i];
+    const RenderPassLayoutDescriptor *s = &src->entries[i];
+    RenderPassLayout *d = &dest->entries[i];
 
     d->shader = s->shader;
     d->pipeline = s->pipeline;
@@ -191,15 +191,15 @@ void render_pass_draw_list_copy(const RenderPassLayoutListDescriptor *src,
 RenderPassStatus render_pass_update_preprocessor_data(RenderPass *pass,
                                                       uint8_t index,
                                                       void *data) {
-  if (index > pass->draw_list.stagged_length) {
+  if (index > pass->stagged_list.length) {
     logger_add(LoggerFlag_Warning,
                "Trying to update an out of bound (%d) render pass "
                "preprocessor data. Target render pass has %lu draw lists.",
-               index, pass->draw_list.stagged_length);
+               index, pass->stagged_list.length);
     return RenderPassStatus_OutOfBoundDrawIndex;
   }
 
-  pass->draw_list.stagged_entries[index].mesh_preprocessor_data = data;
+  pass->stagged_list.entries[index].mesh_preprocessor_data = data;
 
   return RenderPassStatus_Success;
 }
@@ -207,9 +207,9 @@ RenderPassStatus render_pass_update_preprocessor_data(RenderPass *pass,
 RenderPassStatus render_pass_update_all_preprocessor_data(RenderPass *pass,
                                                           void *data) {
 
-  for (size_t i = 0; i < pass->draw_list.stagged_length; i++)
-    if (pass->draw_list.stagged_entries[i].mesh_preprocessor_callback)
-      pass->draw_list.stagged_entries[i].mesh_preprocessor_data = data;
+  for (size_t i = 0; i < pass->stagged_list.length; i++)
+    if (pass->stagged_list.entries[i].mesh_preprocessor_callback)
+      pass->stagged_list.entries[i].mesh_preprocessor_data = data;
 
   return RenderPassStatus_Success;
 }
@@ -259,13 +259,12 @@ WGPUTextureView render_pass_view_depth(RenderPass *pass, size_t index) {
 */
 void render_pass_sync_drawn_layouts(RenderPass *pass) {
 
-  pass->draw_list.drawn_length = 0;
+  pass->drawn_list.length = 0;
 
-  for (size_t i = 0; i < pass->draw_list.stagged_length; i++) {
-    RenderPassDrawLayout *stagged_layout = &pass->draw_list.stagged_entries[i];
+  for (size_t i = 0; i < pass->stagged_list.length; i++) {
+    RenderPassLayout *stagged_layout = &pass->stagged_list.entries[i];
 
     if (stagged_layout->drawn_meshes.length)
-      pass->draw_list.drawn_entries[pass->draw_list.drawn_length++] =
-          stagged_layout;
+      pass->drawn_list.entries[pass->drawn_list.length++] = stagged_layout;
   }
 }

@@ -240,7 +240,7 @@ void selection_system_callback_mesh_highlight(
           RenderPass *pass =
               &pass_list->passes[__builtin_ctz(target_layers[k])];
 
-          RenderPassDrawLayout *layout =
+          RenderPassLayout *layout =
               render_pass_find_layout_from_source_list(
                   pass, selection_meshes.entries[j]);
 

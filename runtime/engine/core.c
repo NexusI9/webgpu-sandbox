@@ -133,7 +133,7 @@ void engine_init_reflection_pass(ProbeList *list, Renderer *renderer) {
   };
 
   for (uint8_t i = 0; i < reflective_mesh_lists.length; i++)
-    reflection_draw_list.entries[i] = (RenderPassDrawLayoutDescriptor){
+    reflection_draw_list.entries[i] = (RenderPassLayoutDescriptor){
         .shader = MeshShader_Reflection,
         .topology_callback = mesh_topology_base,
         .meshes = reflective_mesh_lists.entries[i],
@@ -175,7 +175,7 @@ void engine_init_shadow_map(LightList *list, Renderer *renderer) {
   };
 
   for (uint8_t i = 0; i < shadow_mesh_lists.length; i++)
-    shadow_draw_list.entries[i] = (RenderPassDrawLayoutDescriptor){
+    shadow_draw_list.entries[i] = (RenderPassLayoutDescriptor){
         .shader = MeshShader_Shadow,
         .pipeline = RenderPipelineType_Shadow,
         .topology_callback = mesh_topology_base,
