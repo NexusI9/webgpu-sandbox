@@ -7,10 +7,11 @@
 #include "runtime/probe/core.h"
 #include "runtime/probe/uniform.h"
 #include "runtime/scene/editor_mesh/core.h"
+#include "runtime/scene/selection/core.h"
 #include <stdint.h>
 
 void sem_list_system_toggle_visibility(SceneEditorMeshListArray *array,
-                                       Renderer *renderer,
+                                       Scene *scene, Renderer *renderer,
                                        const RegEntryType *types, size_t count,
                                        bool active) {
 
@@ -24,12 +25,17 @@ void sem_list_system_toggle_visibility(SceneEditorMeshListArray *array,
 
         for (size_t k = 0; k < sem_list->length; k++) {
 
-          if (active)
+          Mesh *mesh = sem_list->entries[k].mesh;
+
+          if (active) {
             renderer_show_mesh(renderer, RendererDrawMode_All,
-                               RendererLayer_All, sem_list->entries[k].mesh);
-          else
+                               RendererLayer_All, mesh);
+          }
+
+          else {
             renderer_hide_mesh(renderer, RendererDrawMode_All,
                                RendererLayer_All, sem_list->entries[k].mesh);
+          }
         }
 
         break;

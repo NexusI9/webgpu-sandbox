@@ -35,14 +35,10 @@ typedef struct {
   size_t capacity;
 } SceneSelectionTargetList;
 
-
-/* Callbacks */
-
-
+// linked attribtutes ( mesh[i] + targets[i] => Selection Object )
 typedef struct {
-  // linked attribtutes ( mesh[i] + targets[i] => Selection Object )
   MeshRefList meshes;
-  
+
   SceneSelectionTargetList targets;
   SceneSelectionObjectList selection;
 

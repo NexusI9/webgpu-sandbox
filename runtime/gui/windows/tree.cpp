@@ -1,6 +1,9 @@
 #include "tree.hpp"
 #include "backend/logger.h"
 #include "backend/registry.h"
+#include "backend/renderer/batch.h"
+#include "backend/renderer/core.h"
+#include "backend/std_pipeline/core.h"
 #include "backend/theme/core.h"
 #include "imgui/imgui.h"
 #include "runtime/gui/components/button_icon.hpp"
@@ -8,9 +11,12 @@
 #include "runtime/gui/core.h"
 #include "runtime/light/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/shader/core.h"
 #include "runtime/probe/reflection/grid.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/core.h"
+#include "runtime/scene/selection/core.h"
+#include "runtime/scene/selection/filter.h"
 #include "runtime/systems/selection_system.h"
 #include "runtime/systems/visibility_system.h"
 #include "utils/name.h"
@@ -37,10 +43,28 @@ void UI::Tree::draw_mesh(Mesh *mesh, const size_t index) {
     item.close_click();
   }
 
-  {
-    item.draw_visibility();
-    if (ImGui::IsItemClicked())
-      visibility_system_toggle_mesh(scene, renderer, mesh);
+  item.draw_visibility();
+  if (ImGui::IsItemClicked()) {
+
+    RendererStatus mesh_state =
+        visibility_system_toggle_mesh(scene, renderer, mesh);
+
+    const RenderPipelineType pipeline = std_render_pipeline_type(
+        (*mesh_shader(mesh, MeshShader_Texture)->pipeline));
+
+    const RendererBatchKey *batch =
+        renderer_batch_get_key_from_pipeline(pipeline);
+
+    const SceneSelectionType selection_type =
+        (batch->flags & RendererBatchFlag_Shadow)
+            ? SceneSelectionType_MeshShadow
+            : SceneSelectionType_Mesh;
+
+    if (RendererStatus_MeshVisible == mesh_state)
+      scene_selection_register_mesh(&scene->selection, mesh, mesh->id,
+                                    selection_type);
+    else if (RendererStatus_MeshHidden == mesh_state)
+      scene_selection_unregister_mesh(&scene->selection, mesh, selection_type);
   }
 
   if (draw_label) {

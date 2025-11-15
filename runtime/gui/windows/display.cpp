@@ -37,7 +37,7 @@ void UI::Display::checkbox_on_change_light(Scene *scene, Renderer *renderer,
   UI::DisplayState target = *(UI::DisplayState *)user_data;
   checkbox_update_state(active, target);
 
-  static const RegEntryType light_type[7] = {
+  static const RegEntryType light_type[] = {
       RegEntryType_SceneEditorMeshList_AmbientLight,
       RegEntryType_SceneEditorMeshList_PointLight,
       RegEntryType_SceneEditorMeshList_SunLight,
@@ -47,9 +47,11 @@ void UI::Display::checkbox_on_change_light(Scene *scene, Renderer *renderer,
       RegEntryType_SceneEditorMeshList_SpotLightShadow,
   };
 
-  sem_list_system_toggle_visibility(&scene->editor_meshes, renderer, light_type,
-                                    sizeof(light_type) / sizeof(RegEntryType),
-                                    active);
+  static const int light_type_count =
+      sizeof(light_type) / sizeof(light_type[0]);
+
+  sem_list_system_toggle_visibility(&scene->editor_meshes, scene, renderer,
+                                    light_type, light_type_count, active);
 }
 
 void UI::Display::checkbox_on_change_probe(Scene *scene, Renderer *renderer,
@@ -58,13 +60,16 @@ void UI::Display::checkbox_on_change_probe(Scene *scene, Renderer *renderer,
   UI::DisplayState target = *(UI::DisplayState *)user_data;
   checkbox_update_state(active, target);
 
-  static const RegEntryType probe_type[2] = {
+  static const RegEntryType probe_type[] = {
       RegEntryType_SceneEditorMeshList_ProbeReflectionGrid,
       RegEntryType_SceneEditorMeshList_ProbeReflectionPlane,
   };
 
-  sem_list_system_toggle_visibility(&scene->editor_meshes, renderer, probe_type,
-                                    2, active);
+  static const int probe_type_count =
+      sizeof(probe_type) / sizeof(probe_type[0]);
+
+  sem_list_system_toggle_visibility(&scene->editor_meshes, scene, renderer,
+                                    probe_type, probe_type_count, active);
 }
 
 void UI::Display::checkbox_on_change_grid(Scene *scene, Renderer *renderer,

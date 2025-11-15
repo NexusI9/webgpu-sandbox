@@ -10,8 +10,9 @@
 
 EXTERN_C_BEGIN
 
-void sem_list_system_toggle_visibility(SceneEditorMeshListArray *, Renderer *,
-                                       const RegEntryType *, size_t, bool);
+void sem_list_system_toggle_visibility(SceneEditorMeshListArray *, Scene *,
+                                       Renderer *, const RegEntryType *, size_t,
+                                       bool);
 
 // clang-format off
 #define SEM_GENERIC_ITEMS(_)                   \

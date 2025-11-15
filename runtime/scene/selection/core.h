@@ -38,6 +38,9 @@ void scene_selection_register_mesh_ref_list(SceneSelection *, MeshRefList *,
 void scene_selection_register_mesh(SceneSelection *, Mesh *, reg_id_t,
                                    const SceneSelectionType);
 
+void scene_selection_unregister_mesh(SceneSelection *, Mesh *,
+                                     const SceneSelectionType);
+
 SceneSelectionFilter *
 scene_selection_find_filter_of_mesh(SceneSelection *, Mesh *, bool *, size_t *);
 

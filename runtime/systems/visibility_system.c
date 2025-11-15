@@ -6,6 +6,7 @@
 #include "runtime/engine/core.h"
 #include "runtime/gizmo/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/scene/selection/core.h"
 #include "runtime/systems/scene_system.h"
 #include <stdint.h>
 
@@ -19,9 +20,9 @@ static const uint8_t mesh_std_shaders_length =
     sizeof(mesh_std_shaders) / sizeof(mesh_std_shaders[0]);
 
 static inline void
-visibility_system_enable_in_light_reflection(Scene *, Renderer *, Mesh *);
+visibility_system_enable_mesh_in_light_reflection(Scene *, Renderer *, Mesh *);
 static inline void
-visibility_system_disable_in_light_reflection(Scene *, Renderer *, Mesh *);
+visibility_system_disable_mesh_in_light_reflection(Scene *, Renderer *, Mesh *);
 
 void visibility_system_enable_in_light_reflection(Scene *scene,
                                                   Renderer *renderer,
@@ -117,8 +118,8 @@ void visibility_system_hide_mesh(Scene *scene, Renderer *renderer, Mesh *mesh) {
   scene_system_update_draw_call_count(scene, renderer);
 }
 
-void visibility_system_toggle_mesh(Scene *scene, Renderer *renderer,
-                                   Mesh *mesh) {
+RendererStatus visibility_system_toggle_mesh(Scene *scene, Renderer *renderer,
+                                             Mesh *mesh) {
 
   RendererStatus mesh_state;
   for (uint8_t i = 0; i < mesh_std_shaders_length; i++) {
@@ -149,6 +150,8 @@ void visibility_system_toggle_mesh(Scene *scene, Renderer *renderer,
 
   scene_system_update_vertex_count(scene, renderer);
   scene_system_update_draw_call_count(scene, renderer);
+
+  return mesh_state;
 }
 
 void visibility_system_show_mesh_ref_list(Scene *scene, Renderer *renderer,

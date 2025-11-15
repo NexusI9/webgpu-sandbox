@@ -21,7 +21,7 @@ public:
         id(id) {}
   bool draw() override;
   bool draw_visibility();
-  bool clicked;
+  bool clicked = false;
   void close_click() { clicked = false; }
   /*
     Need to be called at the end of the click condition (similar to TreePop)

@@ -46,7 +46,6 @@ void scene_selection_init(SceneSelection *selection) {
     dyli_create((void *)&filter->selection.entries, &filter->selection.capacity,
                 &filter->selection.length, sizeof(SceneSelectionObject),
                 MESH_REF_LIST_CAPACITY, "Scene Selection Object List");
-
   }
 }
 
@@ -204,13 +203,31 @@ void scene_selection_register_mesh(SceneSelection *selection, Mesh *mesh,
                                    reg_id_t target,
                                    const SceneSelectionType type) {
 
+  // already exists
+  if (mesh_ref_list_find(&selection->filters[type].meshes, mesh, NULL) != NULL)
+    return;
+
   // insert mesh to selection meshes
   mesh_ref_list_insert(&selection->filters[type].meshes, mesh);
 
   // push target id
   SceneSelectionTargetList *target_list = &selection->filters[type].targets;
-
   scene_selection_target_list_insert(target_list, target);
+}
+
+void scene_selection_unregister_mesh(SceneSelection *selection, Mesh *mesh,
+                                     const SceneSelectionType type) {
+
+  size_t index;
+  mesh_ref_list_find(&selection->filters[type].meshes, mesh, &index);
+
+  if (index == DYLI_INVALID_INDEX) // ERRHANDLE
+    return;
+
+  mesh_ref_list_remove_at_index(&selection->filters[type].meshes, index);
+
+  SceneSelectionTargetList *target_list = &selection->filters[type].targets;
+  scene_selection_target_remove_at_index(target_list, index);
 }
 
 void scene_selection_register_mesh_ref_list(SceneSelection *selection,
@@ -219,3 +236,9 @@ void scene_selection_register_mesh_ref_list(SceneSelection *selection,
   for (size_t i = 0; i < list->length; i++)
     scene_selection_register_mesh(selection, list->entries[i], target, type);
 }
+
+/*
+  Find the mesh filter and insert it into the drawn liset
+ */
+void scene_selection_enable_mesh(SceneSelection *selection, Mesh *mesh) {}
+void scene_selection_disable_mesh(SceneSelection *selection, Mesh *mesh) {}

@@ -214,7 +214,8 @@ void selection_system_callback_mesh_highlight(
 
         // disable all
         for (SceneSelectionType i = 0; i < 2; i++) {
-          for (size_t j = 0; j < selection->filters[i].meshes.length; j++) {
+          for (size_t j = 0; j < selection->filters[i].meshes.length;
+               j++) {
             Mesh *mesh = selection->filters[i].meshes.entries[j];
             shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe),
                                        1, 0, (void *)&default_color,
