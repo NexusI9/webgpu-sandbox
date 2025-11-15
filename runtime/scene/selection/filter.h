@@ -42,6 +42,7 @@ typedef struct {
 typedef struct {
   // linked attribtutes ( mesh[i] + targets[i] => Selection Object )
   MeshRefList meshes;
+  
   SceneSelectionTargetList targets;
   SceneSelectionObjectList selection;
 

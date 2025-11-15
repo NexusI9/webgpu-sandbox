@@ -53,24 +53,29 @@ void visibility_system_disable_in_light_reflection(Scene *scene,
    it. However by doing so it also enable the mesh in unwanted layouts such as
    the Selections-related layouts.
    As a result when we hid/shown the mesh it also activated them in the
-   selection, which is not the desiger result.
+   selection, which is not the desired result.
 
    To address this we had two solution: either add a "black-list"/ "exclusion
-   system", to not enable the mesh in certain pipeline, however this would
+   system", to not enable the mesh in certain pipelines, however this would
    require to have a bit/ flag based pipeline system, which has some limitation
    in terms of amount (what if in the future we need 1 << 64+ pipelines).
    Or we can just take advantage of the batch renderer flexibility to instead
    target specific batch that have the pipeline we want.
 
-   We now switch the approach: instead of simply enabling by
-   "mesh pointer", we now enable by "Pipeline Type".
-   Meaning in all draw modes, we only enable the mesh within the layouts' that
-   own a certain pipeline.
+   We now switch the approach: instead of simply enabling by  "mesh pointer", we
+   now enable by "Pipeline Type". Meaning in all draw modes, we only enable the
+   mesh within the layouts' that own a certain pipeline.
 
    Such new approach ensure we only target the desired layout. To do so we
    basically retrieve each pipelines from the Mesh Standards Shaders that are
    used during the draw modes (Solid/ Texture and Wireframe) and only enable the
    mesh in each shader repsectives pipelines.
+
+   Mesh
+     -> Shaders [Tex,Sol,Wir]
+                    -> Pipelines Type
+                                 -> Source List
+                                           -> Render Layout
  */
 void visibility_system_show_mesh(Scene *scene, Renderer *renderer, Mesh *mesh) {
 

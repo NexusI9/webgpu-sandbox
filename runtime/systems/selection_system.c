@@ -240,9 +240,8 @@ void selection_system_callback_mesh_highlight(
           RenderPass *pass =
               &pass_list->passes[__builtin_ctz(target_layers[k])];
 
-          RenderPassLayout *layout =
-              render_pass_find_layout_from_source_list(
-                  pass, selection_meshes.entries[j]);
+          RenderPassLayout *layout = render_pass_find_layout_from_source_list(
+              pass, selection_meshes.entries[j]);
 
           if (layout) {
 
@@ -941,7 +940,6 @@ void selection_system_callback_key_sequence_set_gizmo_mode(
     }
 
   // hide gizmo
-
   visibility_system_hide_mesh_ref_list(scene, renderer,
                                        &gizmo->handles[gizmo->mode]);
 
