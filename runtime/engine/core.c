@@ -205,7 +205,7 @@ void engine_init_gizmo(Engine *engine, Gizmo *gizmo) {
       Mesh *mesh = gizmo->handles[i].entries[j];
       engine_scene_add_mesh_custom(engine, mesh, SCENE_LAYER_GIZMO,
                                    &(RendererBatchKeyDescriptor){
-                                       .layer = RendererBatchLayer_Gizmo,
+                                       .layer = RendererLayer_Gizmo,
                                        .flags = RendererBatchFlag_Fixed,
                                        .pipeline = RenderPipelineType_Unlit,
                                        .draw_mode = RendererDrawMode_All,

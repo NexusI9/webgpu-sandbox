@@ -24,9 +24,11 @@ void sem_list_system_toggle_visibility(SceneEditorMeshListArray *array,
         for (size_t k = 0; k < sem_list->length; k++) {
 
           if (active)
-            renderer_show_mesh(renderer, sem_list->entries[k].mesh);
+            renderer_show_mesh(renderer, RendererDrawMode_All,
+                               RendererLayer_All, sem_list->entries[k].mesh);
           else
-            renderer_hide_mesh(renderer, sem_list->entries[k].mesh);
+            renderer_hide_mesh(renderer, RendererDrawMode_All,
+                               RendererLayer_All, sem_list->entries[k].mesh);
         }
 
         break;

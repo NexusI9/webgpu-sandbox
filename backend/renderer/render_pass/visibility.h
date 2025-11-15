@@ -152,7 +152,7 @@ render_pass_layout_enable_mesh(RenderPassDrawLayout *layout, Mesh *mesh) {
     return RenderPassStatus_MeshAlreadyEnabled;
 
   pack = mesh_draw_packet_list_new_entry(&layout->drawn_meshes);
-  
+
   if (pack)
     mesh_create_draw_packet(layout->topology_callback(mesh),
                             mesh_shader(mesh, layout->shader), mesh, pack);

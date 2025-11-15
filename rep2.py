@@ -8,7 +8,8 @@ EXTENSIONS = (".c", ".cpp", ".h", ".hpp")
 
 # Replacement rules (order matters to avoid conflicts)
 REPLACEMENTS = [
-    ("RenderPassDrawList", "RenderPassLayoutList"),
+    ("RendererBatchLayer", "RendererLayer"),
+    ("RENDERER_BATCH_LAYER", "RENDERER_LAYER"),
 ]
 
 # Folders to exclude

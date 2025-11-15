@@ -210,8 +210,6 @@ void render_pass_im_end(RenderPass *pass) {
   wgpuCommandBufferRelease(render_buffer);
 }
 
-// DEBUG
-static size_t t = 0;
 void render_pass_im_draw(RenderPass *pass) {
 
   const WGPURenderPassDescriptor pass_desc = {
@@ -223,6 +221,7 @@ void render_pass_im_draw(RenderPass *pass) {
 
   WGPURenderPassEncoder pass_encoder =
       wgpuCommandEncoderBeginRenderPass(pass->command_encoder, &pass_desc);
+
 
   // Go through and draw each mode render pass
   // Draw meshes
@@ -239,32 +238,11 @@ void render_pass_im_draw(RenderPass *pass) {
     WGPURenderPipeline pipeline =
         (*std_render_pipeline(layout->pipeline))->handle;
 
-    // DEBUG
-    if (t < 300) {
-      printf("Pipeline label: %s\n",
-             (*std_render_pipeline(layout->pipeline))->label);
-    }
-
-    if (packets->length == 0)
-      continue;
-
     wgpuRenderPassEncoderSetPipeline(pass_encoder, pipeline);
-
-    // DEBUG
-    if (t < 300) {
-      printf("packets length: %lu\n", packets->length);
-    }
 
     // draw mesh with layout callbacks
     for (size_t k = 0; k < packets->length; k++) {
       MeshDrawPacket *pack = &packets->entries[k];
-
-      // DEBUG
-      if (t++ < 300) {
-        printf("pipeline: [%d] %s | mesh: %s | shader: %s\n", layout->pipeline,
-               std_render_pipeline_label(layout->pipeline), pack->mesh->name,
-               pack->shader_name);
-      }
 
       if (mesh_preprocessor)
         mesh_preprocessor(pass, pack->mesh, layout->mesh_preprocessor_data);

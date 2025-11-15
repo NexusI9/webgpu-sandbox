@@ -44,8 +44,6 @@ void render_pass_create(RenderPass *pass,
   if (desc->depth)
     render_pass_init_depth(pass, desc);
 
-  // DEBUG
-  printf("copying: %s\n", pass->label);
   if (desc->draw_list)
     render_pass_draw_list_copy(desc->draw_list, &pass->draw_list);
 }
@@ -166,8 +164,6 @@ void render_pass_list_update_child_passes_callback(RenderPassList *list) {
 void render_pass_draw_list_copy(const RenderPassLayoutListDescriptor *src,
                                 RenderPassLayoutList *dest) {
 
-  // DEBUG
-  printf("length: %lu | max: %u\n", src->length, RENDER_PASS_MAX_DRAW_LIST);
   size_t length = glm_imin(src->length, RENDER_PASS_MAX_DRAW_LIST);
   dest->stagged_length = length;
 
@@ -183,9 +179,10 @@ void render_pass_draw_list_copy(const RenderPassLayoutListDescriptor *src,
     d->mesh_preprocessor_data = s->mesh_preprocessor_data;
     d->src_meshes = s->meshes;
 
-    // DEBUG
-    printf("[%lu] pipeline: %s | shader: %d | mesh list: %p \n", i,
-           std_render_pipeline_label(d->pipeline), d->shader, d->src_meshes);
+    //// DELETEME (useful debug)
+    // printf("[%lu] pipeline: %s | shader: %d | mesh list: %p \n", i,
+    //        std_render_pipeline_label(d->pipeline), d->shader,
+    //        d->src_meshes->entries);
 
     mesh_draw_packet_list_create(&d->drawn_meshes, MESH_REF_LIST_CAPACITY);
   }
@@ -271,5 +268,4 @@ void render_pass_sync_drawn_layouts(RenderPass *pass) {
       pass->draw_list.drawn_entries[pass->draw_list.drawn_length++] =
           stagged_layout;
   }
-
 }

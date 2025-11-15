@@ -1,13 +1,17 @@
 #include "add.h"
 #include "backend/logger.h"
 #include "backend/renderer/batch.h"
+#include "backend/renderer/core.h"
 #include "backend/renderer/reflection/draw.h"
+#include "backend/renderer/render_pass/core.h"
+#include "backend/renderer/render_pass/visibility.h"
 #include "backend/renderer/shadow_map/draw.h"
 #include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/engine/build.h"
 #include "runtime/engine/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/ref_list.h"
 #include "runtime/mesh/shader/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/add.h"
@@ -18,7 +22,8 @@
 
 static inline void engine_scene_add_sem(Engine *, SceneEditorMeshList *);
 
-static inline void engine_enable_mesh_in_passes(Engine *, Mesh *);
+static inline void engine_enable_mesh_in_passes(Engine *, Mesh *,
+                                                const RenderPipelineType);
 
 static inline void engine_add_mesh_core(Engine *, Mesh *, const char *,
                                         const RendererBatchKey *,
@@ -50,16 +55,40 @@ Scene *engine_add_scene(Engine *engine, const SceneCreateDescriptor *desc) {
 /**
   Update passes draw list (sync with their respective scene pipeline)
  */
-void engine_enable_mesh_in_passes(Engine *engine, Mesh *mesh) {
+void engine_enable_mesh_in_passes(Engine *engine, Mesh *mesh,
+                                  const RenderPipelineType pipeline) {
 
   Scene *scene = engine_get_active_scene(engine);
   Renderer *renderer = engine_get_renderer(engine);
 
-  for (RendererDrawMode i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
-    render_pass_list_enable_mesh(&renderer->mesh_pass[i], mesh);
+  RendererBatchMeshLists source_lists;
+  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches, pipeline,
+                                             &source_lists);
+
+  // enable in all batch except selection related ones
+  for (RendererDrawMode i = 0; i < RENDERER_DRAW_MODE_COUNT; i++) {
+
+    RenderPassList *pass_list =
+        renderer_mesh_pass_list(renderer, (RendererDrawMode)(1 << i));
+
+    for (size_t j = 0; j < pass_list->length; j++) {
+      RenderPass *pass = &pass_list->passes[j];
+
+      for (size_t k = 0; k < source_lists.length; k++) {
+        RenderPassDrawLayout *layout = render_pass_find_layout_from_source_list(
+            pass, source_lists.entries[k]);
+
+        if (layout) {
+          render_pass_layout_enable_mesh(layout, mesh);
+          render_pass_sync_drawn_layouts(pass);
+        }
+      }
+    }
+  }
 
   render_pass_enable_mesh(&scene->probes.reflection_probe.pass, mesh);
   render_pass_enable_mesh(&scene->probes.reflection_plane.pass, mesh);
+  
   render_pass_enable_mesh(&scene->lights.point.shadow.pass, mesh);
   render_pass_enable_mesh(&scene->lights.spot.shadow.pass, mesh);
 
@@ -264,7 +293,7 @@ void engine_scene_add_sem(Engine *engine, SceneEditorMeshList *list) {
         // default configuration for Scene Editor Meshes
         &(RendererBatchKeyDescriptor){
             .flags = RendererBatchFlag_Fixed,
-            .layer = RendererBatchLayer_Default,
+            .layer = RendererLayer_Default,
             .pipeline = std_render_pipeline_type(
                 (*mesh_shader(mesh, MeshShader_Texture)->pipeline)),
             .draw_mode = RendererDrawMode_All,
@@ -322,19 +351,36 @@ void engine_add_mesh_core(Engine *engine, Mesh *mesh, const char *layer,
     }
   }
 
-  // Actually shows the mesh on scene
+  // Actually show the mesh
   if ((flag & EngineAddFlag_Hide) == 0)
-    engine_enable_mesh_in_passes(engine, mesh);
+    engine_enable_mesh_in_passes(engine, mesh, batch->pipeline);
 
   // EDITORONLY
-  if ((flag & EngineAddFlag_Unselectable) == 0)
+  if ((flag & EngineAddFlag_Unselectable) == 0) {
+
+    // register mesh to the selection system so it can be detected with
+    // raycast and be highlighted with the right callback.
     scene_selection_register_mesh(&scene->selection, mesh, mesh->id,
                                   selection_type);
 
+    // add to "selection" batch meshes list (stencil & outline) so we can
+    // enable them on hightlight.
+    if (SceneSelectionType_Mesh == selection_type ||
+        SceneSelectionType_MeshShadow == selection_type) {
+
+      RendererBatchMeshLists selection_lists;
+      renderer_batch_get_mesh_list_with_flags(
+          &renderer->batches, RendererBatchFlag_Selection, &selection_lists);
+
+      for (size_t i = 0; i < selection_lists.length; i++)
+        mesh_ref_list_insert(selection_lists.entries[i], mesh);
+    }
+  }
+
   // EDITORONLY
-  if (engine->gui && (flag & EngineAddFlag_TreeHide) == 0 &&
+  if (engine_get_gui(engine) && (flag & EngineAddFlag_TreeHide) == 0 &&
       mesh->parent == NULL)
-    gui_tree_insert(&engine->gui->tree, mesh->id);
+    gui_tree_insert(&engine_get_gui(engine)->tree, mesh->id);
 }
 
 /*

@@ -1,7 +1,6 @@
 #ifndef _RENDERER_BATCH_H_
 #define _RENDERER_BATCH_H_
 
-#include "backend/renderer/core.h"
 #include "backend/std_pipeline/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
@@ -34,24 +33,35 @@ typedef enum {
 } RendererBatchFlag;
 
 typedef enum {
-  RendererBatchLayer_Default,
-  RendererBatchLayer_Outline,
-  RendererBatchLayer_Gizmo,
-} RendererBatchLayer;
-#define RENDERER_BATCH_LAYER_COUNT 3
+  RendererLayer_Default = 1 << 0,
+  RendererLayer_Outline = 1 << 1,
+  RendererLayer_Gizmo = 1 << 2,
+  RendererLayer_All = ~0,
+} RendererLayer;
+#define RENDERER_LAYER_COUNT 3
+
+typedef enum {
+  RendererDrawMode_None = 0,
+  RendererDrawMode_Boundbox = 1 << 0,
+  RendererDrawMode_Wireframe = 1 << 1,
+  RendererDrawMode_Solid = 1 << 2,
+  RendererDrawMode_Texture = 1 << 3,
+  RendererDrawMode_All = ~0,
+} RendererDrawMode;
+#define RENDERER_DRAW_MODE_COUNT 4
 
 typedef struct {
   const char *label;
   RenderPipelineType pipeline;
   RendererBatchFlag flags;
-  RendererBatchLayer layer;
+  RendererLayer layer;
   RendererDrawMode draw_mode;
 } RendererBatchKey;
 
 typedef struct {
   RenderPipelineType pipeline;
   RendererBatchFlag flags;
-  RendererBatchLayer layer;
+  RendererLayer layer;
   RendererDrawMode draw_mode;
 } RendererBatchKeyDescriptor;
 
@@ -112,7 +122,7 @@ renderer_batch_get_mesh_list_without_flags(HashTable *, const RendererBatchFlag,
                                            RendererBatchMeshLists *);
 
 RendererBatchStatus
-renderer_batch_get_mesh_list_from_layer(HashTable *, const RendererBatchLayer,
+renderer_batch_get_mesh_list_from_layer(HashTable *, const RendererLayer,
                                         RendererBatchMeshLists *);
 
 EXTERN_C_END

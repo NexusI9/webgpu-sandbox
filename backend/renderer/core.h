@@ -13,6 +13,7 @@
 #include "backend/compute/core.h"
 #include "backend/profiler.h"
 #include "backend/registry.h"
+#include "backend/renderer/batch.h"
 #include "backend/renderer/render_pass/visibility.h"
 #include "backend/stat.h"
 #include "render_pass/core.h"
@@ -26,16 +27,6 @@
 
 #define RENDERER_MAX_HOOK 6
 #define RENDERER_DPI_AUTO 0
-
-typedef enum {
-  RendererDrawMode_None = 0,
-  RendererDrawMode_Boundbox = 1 << 0,
-  RendererDrawMode_Wireframe = 1 << 1,
-  RendererDrawMode_Solid = 1 << 2,
-  RendererDrawMode_Texture = 1 << 3,
-  RendererDrawMode_All = ~0,
-} RendererDrawMode;
-#define RENDERER_DRAW_MODE_COUNT 4
 
 /*
   Renderer has a list of mesh and sublist of mesh pointers that are called
@@ -256,11 +247,22 @@ renderer_mesh_pass_list(Renderer *renderer, const RendererDrawMode mode) {
 /**
    Show the mesh by pushing it to the pipeline ref list
  */
-static inline RendererStatus renderer_show_mesh(Renderer *rd, Mesh *mesh) {
+static inline RendererStatus
+renderer_show_mesh(Renderer *rd, const RendererDrawMode draw_mode,
+                   const RendererLayer layers, Mesh *mesh) {
 
   for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
-    render_pass_list_enable_mesh(
-        renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i)), mesh);
+    if (draw_mode & (1 << i)) {
+      RenderPassList *plist =
+          renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i));
+
+      for (size_t j = 0; j < plist->length; j++) {
+        if (layers & (1 << j)) {
+          RenderPass *pass = &plist->passes[j];
+          render_pass_enable_mesh(pass, mesh);
+        }
+      }
+    }
 
   mesh_ref_list_remove(renderer_mesh_state(rd, RendererMeshStates_Hidden),
                        mesh);
@@ -271,11 +273,22 @@ static inline RendererStatus renderer_show_mesh(Renderer *rd, Mesh *mesh) {
 /**
    Hide the mesh by removing it from the pipelines ref list.
  */
-static inline RendererStatus renderer_hide_mesh(Renderer *rd, Mesh *mesh) {
+static inline RendererStatus
+renderer_hide_mesh(Renderer *rd, const RendererDrawMode draw_mode,
+                   const RendererLayer layers, Mesh *mesh) {
 
   for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
-    render_pass_list_disable_mesh(
-        renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i)), mesh);
+    if (draw_mode & (1 << i)) {
+      RenderPassList *plist =
+          renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i));
+
+      for (size_t j = 0; j < plist->length; j++) {
+        if (layers & (1 << j)) {
+          RenderPass *pass = &plist->passes[j];
+          render_pass_disable_mesh(pass, mesh);
+        }
+      }
+    }
 
   mesh_ref_list_insert(renderer_mesh_state(rd, RendererMeshStates_Hidden),
                        mesh);
@@ -283,35 +296,36 @@ static inline RendererStatus renderer_hide_mesh(Renderer *rd, Mesh *mesh) {
   return RendererStatus_Success;
 }
 
-static inline RendererStatus renderer_show_mesh_ref_list(Renderer *rd,
-                                                         MeshRefList *list) {
+static inline RendererStatus
+renderer_show_mesh_ref_list(Renderer *rd, const RendererDrawMode draw_mode,
+                            const RendererLayer layers, MeshRefList *list) {
 
-  for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
-    render_pass_list_enable_mesh_ref_list(
-        renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i)), list);
-
-  return RendererStatus_Success;
-}
-
-static inline RendererStatus renderer_hide_mesh_ref_list(Renderer *rd,
-                                                         MeshRefList *list) {
-
-  for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
-    render_pass_list_disable_mesh_ref_list(
-        renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i)), list);
+  for (size_t i = 0; i < list->length; i++)
+    renderer_show_mesh(rd, draw_mode, layers, list->entries[i]);
 
   return RendererStatus_Success;
 }
 
-static inline RendererStatus renderer_visibility_toggle_mesh(Renderer *rd,
-                                                             Mesh *mesh) {
+static inline RendererStatus
+renderer_hide_mesh_ref_list(Renderer *rd, const RendererDrawMode draw_mode,
+                            const RendererLayer layers, MeshRefList *list) {
+
+  for (size_t i = 0; i < list->length; i++)
+    renderer_hide_mesh(rd, draw_mode, layers, list->entries[i]);
+
+  return RendererStatus_Success;
+}
+
+static inline RendererStatus
+renderer_visibility_toggle_mesh(Renderer *rd, const RendererDrawMode draw_mode,
+                                const RendererLayer layers, Mesh *mesh) {
 
   if (mesh_ref_list_find(renderer_mesh_state(rd, RendererMeshStates_Hidden),
                          mesh, NULL)) {
-    renderer_show_mesh(rd, mesh);
+    renderer_show_mesh(rd, draw_mode, layers, mesh);
     return RendererStatus_MeshVisible;
   } else {
-    renderer_hide_mesh(rd, mesh);
+    renderer_hide_mesh(rd, draw_mode, layers, mesh);
     return RendererStatus_MeshHidden;
   }
 }

@@ -141,7 +141,7 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
   if (scene_selection_length(selection) > 0) {
     selection_system_update_gizmo_pos_to_selection(&scene->gizmo, selection,
                                                    scene->ubo);
-    
+
     visibility_system_show_mesh_ref_list(scene, renderer,
                                          &gizmo->handles[gizmo->mode]);
   } else {
@@ -187,9 +187,9 @@ void selection_system_callback_mesh_highlight(
       SceneSelectionType_MeshShadow,
   };
 
-  RendererBatchLayer target_layers[2] = {
-      RendererBatchLayer_Default,
-      RendererBatchLayer_Outline,
+  RendererLayer target_layers[2] = {
+      RendererLayer_Default,
+      RendererLayer_Outline,
   };
 
   const color highlight_color = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -236,8 +236,9 @@ void selection_system_callback_mesh_highlight(
       case RendererDrawMode_Solid:
       case RendererDrawMode_Texture:
 
-        for (int j = 0; j < 2; j++) {
-          RenderPass *pass = &pass_list->passes[target_layers[j]];
+        for (int k = 0; k < 2; k++) {
+          RenderPass *pass =
+              &pass_list->passes[__builtin_ctz(target_layers[k])];
 
           RenderPassDrawLayout *layout =
               render_pass_find_layout_from_source_list(
@@ -247,11 +248,13 @@ void selection_system_callback_mesh_highlight(
 
             render_pass_layout_disable_all_mesh(layout);
 
-            for (size_t k = 0; k < selected_objects->length; k++) {
-              Mesh *mesh = selected_objects->entries[k].mesh;
+            for (size_t l = 0; l < selected_objects->length; l++) {
+              Mesh *mesh = selected_objects->entries[l].mesh;
               render_pass_layout_enable_mesh(layout, mesh);
             }
           }
+
+          render_pass_sync_drawn_layouts(pass);
         }
         break;
       }

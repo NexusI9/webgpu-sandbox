@@ -34,7 +34,7 @@ static void renderer_render(void *);
 static inline void renderer_mesh_list_init(Renderer *);
 
 typedef RenderPassLayoutListDescriptor
-    renderer_draw_lists[RENDERER_DRAW_MODE_COUNT][RENDERER_BATCH_LAYER_COUNT];
+    renderer_draw_lists[RENDERER_DRAW_MODE_COUNT][RENDERER_LAYER_COUNT];
 
 static inline void renderer_pass_layout_from_batch(Renderer *,
                                                    renderer_draw_lists);
@@ -211,7 +211,7 @@ void renderer_update_pass_texture(
           RenderPassTextureFlag_ReleasePrevious);
 
       // replace each passes color views with resized one
-      for (int j = 0; j < RENDERER_BATCH_LAYER_COUNT; j++) {
+      for (int j = 0; j < RENDERER_LAYER_COUNT; j++) {
         RenderPass *pass = &pass_list->passes[j];
         WGPUTextureView previous_resolve = pass->color.resolve_view;
         RenderPipelineMultisampleCount previous_multisample = pass->multisample;
@@ -261,7 +261,7 @@ void renderer_update_pass_texture(
           pass->color.attachment.resolveTarget = NULL;
         }
 
-        if (j == RENDERER_BATCH_LAYER_COUNT - 1) {
+        if (j == RENDERER_LAYER_COUNT - 1) {
 
           post_fx_update_scene_view(&pass->post_fx, pass->color.resolve_view);
           if (RendererDrawMode_Texture & (1 << mode))
@@ -289,12 +289,12 @@ void renderer_update_pass_texture(
           NULL, &shared_depth_view, RenderPassTextureFlag_ReleasePrevious);
 
       // replace each passes color views with resized one
-      for (int j = 0; j < RENDERER_BATCH_LAYER_COUNT - 1; j++)
+      for (int j = 0; j < RENDERER_LAYER_COUNT - 1; j++)
         pass_list->passes[j].depth.attachment.view = shared_depth_view;
 
       // create individual depth texture for gizmo pass
       render_pass_texture_create_depth(
-          &pass_list->passes[RendererBatchLayer_Gizmo],
+          &pass_list->passes[__builtin_ctz(RendererLayer_Gizmo)],
           &(RenderPassTextureDescriptor){
               .format = TEXTURE_FORMAT_DEPTH,
               .height = real_height,
@@ -333,15 +333,14 @@ void renderer_pass_layout_from_batch(Renderer *renderer,
 
   for (uint8_t mode = 0; mode < RENDERER_DRAW_MODE_COUNT; mode++) {
 
-    for (RendererBatchLayer layer = 0; layer < RENDERER_BATCH_LAYER_COUNT;
-         layer++) {
+    for (uint8_t layer = 0; layer < RENDERER_LAYER_COUNT; layer++) {
 
       for (size_t k = 0; k < config_keys.length; k++) {
 
         const RendererBatchKey *key = config_keys.entries[k];
 
         // skip if not in current layer or draw mode
-        if (key->layer != layer || (key->draw_mode & (1 << mode)) == 0)
+        if (key->layer != (1 << layer) || (key->draw_mode & (1 << mode)) == 0)
           continue;
 
         // edge case for Fixed mesh that always draw 'texture shader' and
@@ -461,7 +460,7 @@ void renderer_pass_create(Renderer *renderer, renderer_draw_lists draw_lists) {
         .height = render_height,
         .color = &scene_color_attachment,
         .depth = &scene_depth_attachment,
-        .draw_list = &draw_lists[mode][RendererBatchLayer_Default],
+        .draw_list = &draw_lists[mode][__builtin_ctz(RendererLayer_Default)],
     };
 
     render_pass_list_insert_pass(&pass_list[mode], &scene_pass);
@@ -511,7 +510,7 @@ void renderer_pass_create(Renderer *renderer, renderer_draw_lists draw_lists) {
         .height = render_height,
         .color = &outline_color_attachment,
         .depth = &outline_depth_attachment,
-        .draw_list = &draw_lists[mode][RendererBatchLayer_Outline],
+        .draw_list = &draw_lists[mode][__builtin_ctz(RendererLayer_Outline)],
     };
 
     render_pass_list_insert_pass(&pass_list[mode], &outline_pass);
@@ -557,7 +556,7 @@ void renderer_pass_create(Renderer *renderer, renderer_draw_lists draw_lists) {
         .height = render_height,
         .color = &gizmo_color_attachment,
         .depth = &gizmo_depth_attachment,
-        .draw_list = &draw_lists[mode][RendererBatchLayer_Gizmo],
+        .draw_list = &draw_lists[mode][__builtin_ctz(RendererLayer_Gizmo)],
     };
 
     RenderPass *last_pass =

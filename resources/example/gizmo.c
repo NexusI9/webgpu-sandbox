@@ -45,7 +45,7 @@ void example_gizmo(Engine *engine) {
   engine_scene_add_mesh_custom(engine, gizmo, NULL,
                                &(RendererBatchKeyDescriptor){
                                    .flags = RendererBatchFlag_Fixed,
-                                   .layer = RendererBatchLayer_Gizmo,
+                                   .layer = RendererLayer_Gizmo,
                                    .pipeline = RenderPipelineType_Line,
                                    .draw_mode = RendererDrawMode_All,
                                },
