@@ -204,9 +204,6 @@ void renderer_draw_shadow_map(const ShadowMapDrawDescriptor *desc,
     if (desc->command_encoder == NULL)
       render_pass_im_begin(desc->pass);
     {
-
-	// DEBUG
-	printf("UBO Offset: %lu\n", desc->ubo_offset);
 	
       LightShadowData light_data = {.view_offset = desc->ubo_offset};
       render_pass_update_preprocessor_data(desc->pass, 0, &light_data);
