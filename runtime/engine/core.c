@@ -184,6 +184,7 @@ void engine_init_shadow_map(LightList *list, Renderer *renderer) {
         .meshes = shadow_mesh_lists.entries[i],
     };
 
+
   shadow_map_init(&(ShadowMapInitDescriptor){
       .lights = list,
       .draw_list = &shadow_draw_list,

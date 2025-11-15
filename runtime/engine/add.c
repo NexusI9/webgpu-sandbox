@@ -88,7 +88,7 @@ void engine_enable_mesh_in_passes(Engine *engine, Mesh *mesh,
 
   render_pass_enable_mesh(&scene->probes.reflection_probe.pass, mesh);
   render_pass_enable_mesh(&scene->probes.reflection_plane.pass, mesh);
-  
+
   render_pass_enable_mesh(&scene->lights.point.shadow.pass, mesh);
   render_pass_enable_mesh(&scene->lights.spot.shadow.pass, mesh);
 
@@ -313,6 +313,80 @@ void engine_scene_add_sem(Engine *engine, SceneEditorMeshList *list) {
 }
 
 // === Add Mesh ===
+
+static inline void
+engine_add_mesh_core_insert_pipeline_batch(Engine *, Mesh *,
+                                           const RenderPipelineType);
+
+static inline void engine_add_mesh_core_insert_shadow_batch(Engine *, Mesh *);
+
+static inline void
+engine_add_mesh_core_insert_selection_batch(Engine *, Mesh *,
+                                            const SceneSelectionType);
+
+void engine_add_mesh_core_insert_pipeline_batch(
+    Engine *engine, Mesh *mesh, const RenderPipelineType pipeline) {
+
+  Renderer *renderer = engine_get_renderer(engine);
+
+  RendererBatchMeshLists mesh_lists;
+  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches, pipeline,
+                                             &mesh_lists);
+
+  // insert mesh in each batch that have this pipeline type
+  for (size_t i = 0; i < mesh_lists.length; i++)
+    mesh_ref_list_insert(mesh_lists.entries[i], mesh);
+}
+
+void engine_add_mesh_core_insert_shadow_batch(Engine *engine, Mesh *mesh) {
+
+  Scene *scene = engine_get_active_scene(engine);
+  Renderer *renderer = engine_get_renderer(engine);
+
+  RendererBatchMeshLists shadow_mesh_lists;
+  renderer_batch_get_mesh_list_from_pipeline(
+      &renderer->batches, RenderPipelineType_Shadow, &shadow_mesh_lists);
+
+  for (size_t i = 0; i < shadow_mesh_lists.length; i++) {
+
+    mesh_ref_list_insert(shadow_mesh_lists.entries[i], mesh);
+
+    // eventually trigger de draw shadow to update scene shadow
+    if (renderer->draw_mode == RendererDrawMode_Texture) {
+      renderer_draw_shadow_map_all(
+          &(ShadowMapDrawAllDescriptor){
+              .mesh_list = shadow_mesh_lists.entries[i],
+              .lights = &scene->lights,
+              .profiler = &renderer->profiler,
+          },
+          SCENE_DEBUG_UNDEFINED);
+    }
+  }
+}
+
+void engine_add_mesh_core_insert_selection_batch(
+    Engine *engine, Mesh *mesh, const SceneSelectionType selection_type) {
+
+  Scene *scene = engine_get_active_scene(engine);
+  Renderer *renderer = engine_get_renderer(engine);
+
+  scene_selection_register_mesh(&scene->selection, mesh, mesh->id,
+                                selection_type);
+
+  // add to "selection" batch meshes list (stencil & outline) so we can
+  // enable them on hightlight.
+  if (SceneSelectionType_Mesh == selection_type ||
+      SceneSelectionType_MeshShadow == selection_type) {
+
+    RendererBatchMeshLists selection_lists;
+    renderer_batch_get_mesh_list_with_flags(
+        &renderer->batches, RendererBatchFlag_Selection, &selection_lists);
+
+    for (size_t i = 0; i < selection_lists.length; i++)
+      mesh_ref_list_insert(selection_lists.entries[i], mesh);
+  }
+}
+
 void engine_add_mesh_core(Engine *engine, Mesh *mesh, const char *layer,
                           const RendererBatchKey *batch,
                           const EngineAddFlag flag) {
@@ -321,63 +395,49 @@ void engine_add_mesh_core(Engine *engine, Mesh *mesh, const char *layer,
   Renderer *renderer = engine_get_renderer(engine);
   SceneSelectionType selection_type = SceneSelectionType_Mesh;
 
-  {
-    // add to scene layers ('Default' layer if NULL)
-    if (layer == NULL)
-      layer = SCENE_LAYER_DEFAULT;
-    scene_layer_set_insert_mesh(&scene->layers, layer, mesh);
+  /*
+     LAYER:
+     add to scene layers ('Default' layer if NULL)
+  */
+  scene_layer_set_insert_mesh(&scene->layers,
+                              layer ? layer : SCENE_LAYER_DEFAULT, mesh);
+
+  /*
+     PIPELINE:
+     insert the mesh in each renderer batch that have the same pipeline as the
+     provided one.
+   */
+  engine_add_mesh_core_insert_pipeline_batch(engine, mesh, batch->pipeline);
+
+  /*
+     SHADOW:
+     if batch has a shadow flag, it means we need to insert the mesh in
+     the batch that owns all the 'shadowable' meshes.
+   */
+  if ((batch->flags & RendererBatchFlag_Shadow)) {
+    engine_add_mesh_core_insert_shadow_batch(engine, mesh);
+    selection_type = SceneSelectionType_MeshShadow;
   }
 
-  RendererBatchMeshLists mesh_lists;
-  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches,
-                                             batch->pipeline, &mesh_lists);
-
-  for (size_t i = 0; i < mesh_lists.length; i++) {
-
-    // insert mesh in each target batch mesh list
-    mesh_ref_list_insert(mesh_lists.entries[i], mesh);
-
-    if ((batch->flags & RendererBatchFlag_Shadow) &&
-        renderer->draw_mode == RendererDrawMode_Texture) {
-      renderer_draw_shadow_map_all(
-          &(ShadowMapDrawAllDescriptor){
-              .mesh_list = mesh_lists.entries[i],
-              .lights = &scene->lights,
-              .profiler = &renderer->profiler,
-          },
-          SCENE_DEBUG_UNDEFINED);
-
-      selection_type = SceneSelectionType_MeshShadow;
-    }
-  }
-
-  // Actually show the mesh
-  if ((flag & EngineAddFlag_Hide) == 0)
+  /*
+     VISIBILITY:
+     Actually enable and show the mesh in each batch that share this pipeline
+  */
+  if ((EngineAddFlag_Hide & flag) == 0)
     engine_enable_mesh_in_passes(engine, mesh, batch->pipeline);
 
-  // EDITORONLY
-  if ((flag & EngineAddFlag_Unselectable) == 0) {
+  /*
+     [EDITORONLY] SELECTION:
+     register mesh to the selection system so it can be
+     detected with raycast and be highlighted with the right callback.
+   */
+  if ((EngineAddFlag_Unselectable & flag) == 0)
+    engine_add_mesh_core_insert_selection_batch(engine, mesh, selection_type);
 
-    // register mesh to the selection system so it can be detected with
-    // raycast and be highlighted with the right callback.
-    scene_selection_register_mesh(&scene->selection, mesh, mesh->id,
-                                  selection_type);
-
-    // add to "selection" batch meshes list (stencil & outline) so we can
-    // enable them on hightlight.
-    if (SceneSelectionType_Mesh == selection_type ||
-        SceneSelectionType_MeshShadow == selection_type) {
-
-      RendererBatchMeshLists selection_lists;
-      renderer_batch_get_mesh_list_with_flags(
-          &renderer->batches, RendererBatchFlag_Selection, &selection_lists);
-
-      for (size_t i = 0; i < selection_lists.length; i++)
-        mesh_ref_list_insert(selection_lists.entries[i], mesh);
-    }
-  }
-
-  // EDITORONLY
+  /*
+     [EDITORONLY] TREE:
+     Add the mesh to the GUI tree
+  */
   if (engine_get_gui(engine) && (flag & EngineAddFlag_TreeHide) == 0 &&
       mesh->parent == NULL)
     gui_tree_insert(&engine_get_gui(engine)->tree, mesh->id);
