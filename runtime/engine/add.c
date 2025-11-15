@@ -18,6 +18,7 @@
 #include "runtime/scene/core.h"
 #include "runtime/scene/selection/core.h"
 #include "runtime/scene/stat.h"
+#include "runtime/systems/visibility_system.h"
 #include <stdint.h>
 
 static inline void engine_scene_add_sem(Engine *, SceneEditorMeshList *);
@@ -61,37 +62,7 @@ void engine_enable_mesh_in_passes(Engine *engine, Mesh *mesh,
   Scene *scene = engine_get_active_scene(engine);
   Renderer *renderer = engine_get_renderer(engine);
 
-  RendererBatchMeshLists source_lists;
-  renderer_batch_get_mesh_list_from_pipeline(&renderer->batches, pipeline,
-                                             &source_lists);
-
-  // enable in all batch except selection related ones
-  for (RendererDrawMode i = 0; i < RENDERER_DRAW_MODE_COUNT; i++) {
-
-    RenderPassList *pass_list =
-        renderer_mesh_pass_list(renderer, (RendererDrawMode)(1 << i));
-
-    for (size_t j = 0; j < pass_list->length; j++) {
-      RenderPass *pass = &pass_list->passes[j];
-
-      for (size_t k = 0; k < source_lists.length; k++) {
-        RenderPassLayout *layout = render_pass_find_layout_from_source_list(
-            pass, source_lists.entries[k]);
-
-        if (layout) {
-          render_pass_layout_enable_mesh(layout, mesh);
-          render_pass_sync_drawn_layouts(pass);
-        }
-      }
-    }
-  }
-
-  render_pass_enable_mesh(&scene->probes.reflection_probe.pass, mesh);
-  render_pass_enable_mesh(&scene->probes.reflection_plane.pass, mesh);
-
-  render_pass_enable_mesh(&scene->lights.point.shadow.pass, mesh);
-  render_pass_enable_mesh(&scene->lights.spot.shadow.pass, mesh);
-
+  visibility_system_show_mesh(scene, renderer, mesh);
   scene_stat_update_draw_call_count(scene, 0);
   scene_stat_update_vertex_count(scene, 0);
 }

@@ -10,28 +10,31 @@
 #define RENDER_PIPELINE_TYPE_COUNT 21
 #define RENDER_PIPELINE_UNDEFINED FLT_MAX
 
+// clang-format off
 #define STD_RENDER_PIPELINES(_)                                                \
-  _(Billboard)                                                                 \
-  _(Default)                                                                   \
-  _(Grid)                                                                      \
-  _(Line)                                                                      \
-  _(PBR)                                                                       \
-  _(PBR_DoubleSided)                                                           \
-  _(PBR_Alpha)                                                                 \
-  _(Screen)                                                                    \
-  _(Shadow)                                                                    \
-  _(Skybox)                                                                    \
-  _(Solid)                                                                     \
-  _(Unlit)                                                                     \
-  _(Unlit_Stencil)                                                             \
-  _(GlassProbeGrid)                                                            \
-  _(GlassProbePlane)                                                           \
-  _(Reflection)                                                                \
-  _(Blit)                                                                      \
-  _(Outline)                                                                   \
-  _(Stencil)                                                                   \
-  _(Bloom)                                                                     \
-  _(Composite)
+  _( Billboard        )                                                        \
+  _( Default          )                                                        \
+  _( Grid             )                                                        \
+  _( Line             )                                                        \
+  _( PBR              )                                                        \
+  _( PBR_DoubleSided  )                                                        \
+  _( PBR_Alpha        )                                                        \
+  _( Screen           )                                                        \
+  _( Shadow           )                                                        \
+  _( Skybox           )                                                        \
+  _( Solid            )                                                        \
+  _( Unlit            )                                                        \
+  _( Unlit_Stencil    )                                                        \
+  _( GlassProbeGrid   )                                                        \
+  _( GlassProbePlane  )                                                        \
+  _( Reflection       )                                                        \
+  _( Blit             )                                                        \
+  _( Outline          )                                                        \
+  _( Stencil          )                                                        \
+  _( Bloom            )                                                        \
+  _( Composite        )
+// clang-format on
+
 
 typedef enum {
 #define _(Label) RenderPipelineType_##Label,
@@ -81,8 +84,8 @@ std_render_pipeline_type(const RenderPipeline *pipeline) {
   return (RenderPipelineType)RENDER_PIPELINE_UNDEFINED;
 }
 
-const char* std_render_pipeline_label(const RenderPipelineType);
-const char* std_compute_pipeline_label(const ComputePipelineType);
+const char *std_render_pipeline_label(const RenderPipelineType);
+const char *std_compute_pipeline_label(const ComputePipelineType);
 
 EXTERN_C_END
 

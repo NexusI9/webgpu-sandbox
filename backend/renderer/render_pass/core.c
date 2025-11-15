@@ -253,7 +253,7 @@ WGPUTextureView render_pass_view_depth(RenderPass *pass, size_t index) {
   All default stagging layout, however some of them might not have any drawn
   mesh, so we need a second list with the layout that have drawn meshes.
 
-  We basically register or unregister a layout from the list depending on it
+  We basically register or unregister a layout from the list depending on its
   drawn meshes length. Cause if they don't have any drawn mesh, there is no
   point calling setRenderPipeline
 */

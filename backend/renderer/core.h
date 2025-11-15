@@ -16,6 +16,7 @@
 #include "backend/renderer/batch.h"
 #include "backend/renderer/render_pass/visibility.h"
 #include "backend/stat.h"
+#include "backend/std_pipeline/core.h"
 #include "render_pass/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/pipeline.h"
@@ -91,6 +92,7 @@ typedef enum {
   RendererStatus_Success,
   RendererStatus_MeshVisible,
   RendererStatus_MeshHidden,
+  RendererStatus_LayoutUnfound,
   RendererStatus_UndefError,
 } RendererStatus;
 
@@ -216,123 +218,6 @@ renderer_mesh_pass_list(Renderer *renderer, const RendererDrawMode mode) {
   return &renderer->mesh_pass[__builtin_ctz(mode)];
 }
 
-// Scene related functions
-
-/**
-
-   .---------------------------------------------------------------------.
-   |                ADD               |              REMOVE              |
-   |---------------------------------------------------------------------|
-   |   Add and Remove functions basically mounts, unmounts the mesh      |
-   |   from the scene. Meaning they build the mesh shader internally     |
-   |   and show it visually by adding it to the pipeline list.           |
-   |   Those 2 functions should only be used for first and last instan-  |
-   |   tiation of the mesh.                                              |
-   |                                                                     |
-   |   .------------ ⚙ ------------.    .------------ ◉ -------------.  |
-   |   |    BUILD    |   UNBUILD    |    |     SHOW    |     HIDE     |  |
-   |   |----------------------------|    |----------------------------|  |
-   |   | Build and Unbuild function | => | Show and Hide functions    |  |
-   |   | only handle the mesh       | => | operate at a visual level  |  |
-   |   | internal binding. It does  | => | only. They only pop or push|  |
-   |   | not visually add the mesh  | => | the mesh from the pipeline |  |
-   |   | to the scene pipeline.     | => | array. However it's        |  |
-   |   | Building only "prepares"   | => | important to make sure the |  |
-   |   | the mesh for the drawcall. |    | mesh is Built priorly.     |  |
-   |   '----------------------------'    '----------------------------'  |
-   '---------------------------------------------------------------------'
-
- */
-
-/**
-   Show the mesh by pushing it to the pipeline ref list
- */
-static inline RendererStatus
-renderer_show_mesh(Renderer *rd, const RendererDrawMode draw_mode,
-                   const RendererLayer layers, Mesh *mesh) {
-
-  for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
-    if (draw_mode & (1 << i)) {
-      RenderPassList *plist =
-          renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i));
-
-      for (size_t j = 0; j < plist->length; j++) {
-        if (layers & (1 << j)) {
-          RenderPass *pass = &plist->passes[j];
-          render_pass_enable_mesh(pass, mesh);
-        }
-      }
-    }
-
-  mesh_ref_list_remove(renderer_mesh_state(rd, RendererMeshStates_Hidden),
-                       mesh);
-
-  return RendererStatus_Success;
-}
-
-/**
-   Hide the mesh by removing it from the pipelines ref list.
- */
-static inline RendererStatus
-renderer_hide_mesh(Renderer *rd, const RendererDrawMode draw_mode,
-                   const RendererLayer layers, Mesh *mesh) {
-
-  for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
-    if (draw_mode & (1 << i)) {
-      RenderPassList *plist =
-          renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i));
-
-      // DEBUG
-      printf("Checking drawmode: %d | pass list length: %lu\n", i,
-             plist->length);
-
-      for (size_t j = 0; j < plist->length; j++) {
-        if (layers & (1 << j)) {
-          RenderPass *pass = &plist->passes[j];
-          render_pass_disable_mesh(pass, mesh);
-        }
-      }
-    }
-
-  mesh_ref_list_insert(renderer_mesh_state(rd, RendererMeshStates_Hidden),
-                       mesh);
-
-  return RendererStatus_Success;
-}
-
-static inline RendererStatus
-renderer_show_mesh_ref_list(Renderer *rd, const RendererDrawMode draw_mode,
-                            const RendererLayer layers, MeshRefList *list) {
-
-  for (size_t i = 0; i < list->length; i++)
-    renderer_show_mesh(rd, draw_mode, layers, list->entries[i]);
-
-  return RendererStatus_Success;
-}
-
-static inline RendererStatus
-renderer_hide_mesh_ref_list(Renderer *rd, const RendererDrawMode draw_mode,
-                            const RendererLayer layers, MeshRefList *list) {
-
-  for (size_t i = 0; i < list->length; i++)
-    renderer_hide_mesh(rd, draw_mode, layers, list->entries[i]);
-
-  return RendererStatus_Success;
-}
-
-static inline RendererStatus
-renderer_visibility_toggle_mesh(Renderer *rd, const RendererDrawMode draw_mode,
-                                const RendererLayer layers, Mesh *mesh) {
-
-  if (mesh_ref_list_find(renderer_mesh_state(rd, RendererMeshStates_Hidden),
-                         mesh, NULL)) {
-    renderer_show_mesh(rd, draw_mode, layers, mesh);
-    return RendererStatus_MeshVisible;
-  } else {
-    renderer_hide_mesh(rd, draw_mode, layers, mesh);
-    return RendererStatus_MeshHidden;
-  }
-}
 
 void renderer_update_pass_texture(Renderer *, int, int,
                                   const RenderPipelineMultisampleCount,

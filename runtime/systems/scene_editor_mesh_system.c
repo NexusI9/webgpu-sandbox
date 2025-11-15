@@ -1,6 +1,7 @@
 #include "scene_editor_mesh_system.h"
 #include "backend/renderer/batch.h"
 #include "backend/renderer/shadow_map/draw.h"
+#include "backend/renderer/visibility.h"
 #include "runtime/light/list.h"
 #include "runtime/light/uniform.h"
 #include "runtime/probe/core.h"

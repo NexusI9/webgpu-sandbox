@@ -144,6 +144,10 @@ render_pass_find_layout_from_source_list(RenderPass *pass,
 
  */
 
+/**
+   Insert the packet that has the mesh in the drawn list. Also prevents adding
+   it twice.
+ */
 static inline RenderPassStatus
 render_pass_layout_enable_mesh(RenderPassLayout *layout, Mesh *mesh) {
 
@@ -165,16 +169,15 @@ render_pass_layout_enable_mesh(RenderPassLayout *layout, Mesh *mesh) {
   return RenderPassStatus_Success;
 }
 
+/**
+   Remove the packet that has the mesh from the drawn list.
+ */
 static inline RenderPassStatus
 render_pass_layout_disable_mesh(RenderPassLayout *layout, Mesh *mesh) {
 
   size_t index;
   MeshDrawPacket *pack =
       mesh_draw_packet_list_find_by_mesh(&layout->drawn_meshes, mesh, &index);
-
-  // DEBUG
-  printf("Disable mesh: %s | %s => packet: %p | index: %lu\n",
-         std_render_pipeline_label(layout->pipeline), mesh->name, pack, index);
 
   if (pack && mesh_draw_packet_list_remove_at_index(
                   &layout->drawn_meshes, index) == DynamicListStatus_Success) {
@@ -184,25 +187,6 @@ render_pass_layout_disable_mesh(RenderPassLayout *layout, Mesh *mesh) {
   return RenderPassStatus_DrawListUpdateError;
 }
 
-static inline RenderPassStatus
-render_pass_layout_enable_mesh_ref_list(RenderPassLayout *layout,
-                                        MeshRefList *list) {
-
-  for (size_t i = 0; i < list->length; i++)
-    render_pass_layout_enable_mesh(layout, list->entries[i]);
-
-  return RenderPassStatus_Success;
-}
-
-static inline RenderPassStatus
-render_pass_layout_disable_mesh_ref_list(RenderPassLayout *layout,
-                                         MeshRefList *list) {
-
-  for (size_t i = 0; i < list->length; i++)
-    render_pass_layout_enable_mesh(layout, list->entries[i]);
-
-  return RenderPassStatus_Success;
-}
 
 static inline RenderPassStatus
 render_pass_layout_enable_all_mesh(RenderPassLayout *layout) {
