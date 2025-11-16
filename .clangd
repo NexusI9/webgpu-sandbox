@@ -1,5 +1,5 @@
 CompileFlags:
-  Add: [-I/usr/local/Cellar/emscripten/4.0.1/libexec/cache/sysroot/include/, -I/Users/elkhantour/Documents/C/webgpu-expe/include/, -I/Users/elkhantour/Documents/C/webgpu-expe/]
+  Add: [-I/usr/local/Cellar/emscripten/4.0.1/libexec/cache/sysroot/include/, -I/Users/elkhantour/Documents/C/nkengine/vendor/, -I/Users/elkhantour/Documents/C/nkengine/src/]
 
 ---
 # Fragment specific to C++ source files
