@@ -94,7 +94,7 @@ void UI::Inspector::draw() {
         // draw content
         if (active_tab >= 0) {
           ImGui::BeginChild("##page",
-                            ImVec2(page_width - 2.0f * bar_width - gap, 0),
+                            ImVec2(page_width - 1.5f * bar_width - gap, 0),
                             true, ImGuiWindowFlags_NoScrollWithMouse);
 
           // header

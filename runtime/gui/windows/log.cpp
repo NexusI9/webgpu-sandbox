@@ -97,8 +97,7 @@ void UI::Log::draw() {
       ImVec2(theme_size(gui->theme, ThemeSize_Log_IconScale),
              theme_size(gui->theme, ThemeSize_Log_IconScale));
 
-  ImGui::BeginChild("Logs", ImVec2(ImGui::GetContentRegionAvail().x * 0.5f, 0),
-                    true);
+  ImGui::BeginChild("Logs", ImVec2(ImGui::GetContentRegionAvail().x, 0), true);
   {
     ImGui::Text("%s", label);
     ImGui::BeginChild("Logs entries", ImVec2(0, 0), true);
@@ -107,7 +106,8 @@ void UI::Log::draw() {
 
         const LoggerLook *look = &logger_looks[g_logger.flags[i]];
         const ThemeIconCell *uv = theme_icon_cell(gui->theme, look->icon);
-        const float *background_color = theme_color(gui->theme, look->background);
+        const float *background_color =
+            theme_color(gui->theme, look->background);
         const float *timestamp_color = theme_color(gui->theme, look->timestamp);
         const float *text_color = theme_color(gui->theme, look->text);
         const char *message = g_logger.messages[i];

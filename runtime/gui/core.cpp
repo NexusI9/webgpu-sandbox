@@ -172,7 +172,7 @@ void gui_draw_callback(Renderer *renderer, void *data) {
       if (UI::Display::state & UI::DisplayState_Layout) {
         gui_create_top_bar(gui);
         gui_create_right_panel(gui);
-        // DEBUG gui_create_bottom_panel(gui);
+        gui_create_bottom_panel(gui);
         UI::Gizmo(gui, "Gizmo").draw();
       }
 
@@ -274,8 +274,8 @@ void gui_create_bottom_panel(Gui *gui) {
                    ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
   {
     UI::Log(gui, "Log").draw();
-    ImGui::SameLine();
-    UI::Browser(gui, "Browser").draw();
+    // ImGui::SameLine();
+    //  UI::Browser(gui, "Browser").draw();
   }
 
   ImGui::End();
