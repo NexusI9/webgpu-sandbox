@@ -45,16 +45,17 @@ void camera_raycast_check_bounds(
   camera_raycast_hit_list_empty(cam_desc->hits);
 
   // go though each meshes of each ref lists and check bound
-  for (size_t l = 0; l < cam_desc->include.length; l++) {
+  for (size_t l = 0; l < cam_desc->include->length; l++) {
 
-    MeshRefList *ref_list = cam_desc->include.lists[l];
+    MeshRefList *ref_list = cam_desc->include->lists[l];
 
     // printf("include length: %lu\n", ref_list->length);
     for (size_t m = 0; m < ref_list->length; m++) {
       Mesh *mesh = ref_list->entries[m];
 
       // check if mesh belongs in exclude list
-      if (camera_raycast_is_excluded(&cam_desc->exclude, mesh))
+      if (cam_desc->exclude &&
+          camera_raycast_is_excluded(cam_desc->exclude, mesh))
         continue;
 
       AABB boundbox = mesh->topology.boundbox.world;
@@ -97,6 +98,7 @@ void camera_raycast_check_bounds(
   // dispatch to callback if hits
   cam_desc->callback(
       &(CameraRaycastCallback){
+          .label = cam_desc->label,
           .raycast = &ray,
           .hits = hits,
           .last_hit = &cam_desc->last_hit,
@@ -152,14 +154,22 @@ bool camera_raycast_event_destructor(void *data) {
   CameraRaycastCallbackData *cast_data = (CameraRaycastCallbackData *)data;
 
   // free mesh reference lists
-  if (cast_data->include.length) {
-    free(cast_data->include.lists);
-    cast_data->include.lists = NULL;
+  if ((CameraRaycastAlloc_IncludeList & cast_data->alloc) &&
+      cast_data->include) {
+    free(cast_data->include);
+    cast_data->include = NULL;
   }
 
-  if (cast_data->exclude.length) {
-    free(cast_data->exclude.lists);
-    cast_data->exclude.lists = NULL;
+  if ((CameraRaycastAlloc_ExcludeList & cast_data->alloc) &&
+      cast_data->exclude) {
+    free(cast_data->exclude);
+    cast_data->exclude = NULL;
+  }
+
+  // free user data
+  if ((CameraRaycastAlloc_Data & cast_data->alloc) && cast_data->data) {
+    free(cast_data->data);
+    cast_data->data = NULL;
   }
 
   // free raycast hits list
@@ -168,12 +178,6 @@ bool camera_raycast_event_destructor(void *data) {
 
   free(cast_data->hits);
   cast_data->hits = NULL;
-
-  // free user data (optional)
-  if (cast_data->data) {
-    free(cast_data->data);
-    cast_data->data = NULL;
-  }
 
   return EM_FALSE;
 }

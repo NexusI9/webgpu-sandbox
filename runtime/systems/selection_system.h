@@ -2,6 +2,8 @@
 #define _SELECTION_SYSTEM_H_
 
 #include "backend/renderer/core.h"
+#include "runtime/gizmo/core.h"
+#include "runtime/mesh/ref_list.h"
 #include "runtime/scene/core.h"
 #include "runtime/scene/selection/core.h"
 
@@ -29,6 +31,7 @@ typedef void (*selection_system_highlight_callback)(SceneSelection *, Scene *,
 
 // TODO: Not sure about have a global var for it...
 extern SelectionSystemCallbackData selection_system_event_payload;
+extern MeshRefListArray selection_system_gizmo_raycast_list;
 
 EXTERN_C_BEGIN
 
@@ -98,6 +101,8 @@ void selection_system_callback_key_sequence_transform(KeyRecordSequence *,
 // === Gizmo ===
 void selection_system_update_gizmo_pos_to_selection(Gizmo *, SceneSelection *,
                                                     UBOManager *);
+
+void selection_system_update_gizmo_raycast_list(Gizmo *, const GizmoMode);
 
 EXTERN_C_END
 #endif

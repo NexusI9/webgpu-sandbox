@@ -3,21 +3,18 @@
 
 #include <string.h>
 
-#include "runtime/mesh/mesh.h"
-#include "runtime/camera/core.h"
-#include "runtime/raycast/raycast.h"
-#include "runtime/viewport/viewport.h"
-#include "runtime/html_event/html_event.h"
-#include "runtime/input/input.h"
+#include "./hit_list.h"
 #include "emscripten/em_types.h"
 #include "emscripten/html5.h"
-#include "./hit_list.h"
+#include "runtime/camera/core.h"
+#include "runtime/html_event/html_event.h"
+#include "runtime/input/input.h"
+#include "runtime/mesh/mesh.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/raycast/core.h"
+#include "runtime/raycast/raycast.h"
 #include "runtime/viewport/core.h"
-#include "runtime/mesh/ref_list.h"
-#include "runtime/raycast/core.h"
-#include "runtime/viewport/core.h"
+#include "runtime/viewport/viewport.h"
 
 /**
    2 different types of raycast methods:
@@ -80,7 +77,16 @@ typedef enum {
   CameraRaycastEvent_MouseDown,
 } CameraRaycastEvent;
 
+typedef enum {
+  CameraRaycastAlloc_None = 0,
+  CameraRaycastAlloc_IncludeList = 1 << 0,
+  CameraRaycastAlloc_ExcludeList = 1 << 1,
+  CameraRaycastAlloc_Data = 1 << 2,
+  CameraRaycastAlloc_All = ~0,
+} CameraRaycastAlloc;
+
 typedef struct {
+  const char *label;
   Raycast *raycast;
   CameraRaycastHitList *hits;
   // use last hit to prevent spamming update on hover
@@ -96,6 +102,7 @@ typedef void (*camera_raycast_destructor)(void *);
 typedef struct {
 
   // raycast relative objects
+  const char *label;
   Camera *camera;
   Viewport *viewport;
   CameraRaycastSpace space;
@@ -103,8 +110,8 @@ typedef struct {
   CameraRaycastBound bound;
 
   // mesh lists to check
-  MeshRefListArray include;
-  MeshRefListArray exclude;
+  MeshRefListArray *include;
+  MeshRefListArray *exclude;
 
   // raycast result list
   CameraRaycastHitList *hits;
@@ -114,12 +121,15 @@ typedef struct {
   camera_raycast_callback callback;
   void *data;
   size_t size;
+  // used for destructor to know which data shall be freed
+  CameraRaycastAlloc alloc;
 
 } CameraRaycastCallbackData;
 
 typedef struct {
 
   // raycast
+  const char *label;
   Viewport *viewport;
   CameraRaycastTarget target;
   CameraRaycastEvent event;
@@ -128,8 +138,8 @@ typedef struct {
   CameraRaycastBound bound;
 
   // targets lists
-  MeshRefListArray include;
-  MeshRefListArray exclude;
+  MeshRefListArray *include;
+  MeshRefListArray *exclude;
 
   // callback
   camera_raycast_callback callback;
@@ -139,6 +149,7 @@ typedef struct {
 } CameraRaycastDescriptor;
 
 // raycast to screen center
-void camera_raycast(Camera *, const CameraRaycastDescriptor *);
+void camera_raycast(Camera *, const CameraRaycastDescriptor *,
+                    const CameraRaycastAlloc);
 
 #endif

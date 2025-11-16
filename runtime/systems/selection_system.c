@@ -3,8 +3,10 @@
 #include "backend/renderer/core.h"
 #include "backend/renderer/render_pass/core.h"
 #include "backend/renderer/shadow_map/draw.h"
+#include "runtime/camera/raycast/core.h"
 #include "runtime/gizmo/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/ref_list.h"
 #include "runtime/scene/editor_mesh/core.h"
 #include "runtime/scene/selection/core.h"
 #include "runtime/scene/selection/filter.h"
@@ -27,6 +29,7 @@ static const selection_system_transform_callback transform_callbacks[] = {
 // clang-format on
 
 SelectionSystemCallbackData selection_system_event_payload = {0};
+MeshRefListArray selection_system_gizmo_raycast_list = {0};
 
 void selection_system_init(SceneSelection *selection, Scene *scene,
                            Renderer *renderer) {
@@ -214,8 +217,7 @@ void selection_system_callback_mesh_highlight(
 
         // disable all
         for (SceneSelectionType i = 0; i < 2; i++) {
-          for (size_t j = 0; j < selection->filters[i].meshes.length;
-               j++) {
+          for (size_t j = 0; j < selection->filters[i].meshes.length; j++) {
             Mesh *mesh = selection->filters[i].meshes.entries[j];
             shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe),
                                        1, 0, (void *)&default_color,
@@ -542,6 +544,47 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
 
    */
 
+  /*
+
+     ===== MESHES EVENTS =====
+
+   */
+
+  // right click raycast on scene main camera (to select meshes)
+  camera_raycast(
+      scene->camera,
+      &(CameraRaycastDescriptor){
+          .label = "Selection System - Mesh Raycast Callback",
+          .target = CameraRaycastTarget_MousePosition,
+          .event = CameraRaycastEvent_MouseDown,
+          .space = CameraRaycastSpace_WorldSpace,
+          .bound = CameraRaycastBound_OBB,
+          .viewport = &scene->viewport,
+          .callback = selection_system_callback_raycast_mesh,
+          .data = (void *)&selection_system_event_payload,
+          .size = 0,
+          .include =
+              &(MeshRefListArray){
+                  .lists =
+                      {
+                          &selection->filters[SceneSelectionType_Mesh].meshes,
+                          &selection->filters[SceneSelectionType_MeshShadow]
+                               .meshes,
+                          &selection->filters[SceneSelectionType_SEM].meshes,
+                      },
+                  .length = SCENE_SELECTION_TYPE_COUNT,
+                  .capacity = SCENE_SELECTION_TYPE_COUNT,
+              },
+          .exclude = 0,
+      },
+      CameraRaycastAlloc_All);
+
+  /*
+
+     ===== GIZMO EVENTS =====
+
+   */
+
   static const struct {
     CameraRaycastEvent event;
     camera_raycast_callback callback;
@@ -556,67 +599,29 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
       },
   };
 
-  // cache selection exclude layer (ex: grid...)
-
-  MeshRefList *selection_system_config_lists[SCENE_SELECTION_TYPE_COUNT];
-  for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
-    selection_system_config_lists[i] = &selection->filters[i].meshes;
-
-  /*
-
-     ===== MESHES EVENTS =====
-
-   */
-
-  // right click raycast on scene main camera (to select meshes)
-  camera_raycast(scene->camera,
-                 &(CameraRaycastDescriptor){
-                     .target = CameraRaycastTarget_MousePosition,
-                     .event = CameraRaycastEvent_MouseDown,
-                     .space = CameraRaycastSpace_WorldSpace,
-                     .bound = CameraRaycastBound_OBB,
-                     .viewport = &scene->viewport,
-                     .callback = selection_system_callback_raycast_mesh,
-                     .data = (void *)&selection_system_event_payload,
-                     .size = 0,
-                     .include =
-                         {
-                             .lists = selection_system_config_lists,
-                             .length = SCENE_SELECTION_TYPE_COUNT,
-                         },
-                     .exclude = {0},
-                 });
-
-  /*
-
-     ===== GIZMO EVENTS =====
-
-   */
-
-  // left click raycast on scene main camera (to select gizmo transform)
-  SceneLayer *gizmo_layer =
-      scene_layer_set_find(&scene->layers, SCENE_LAYER_GIZMO);
+  mesh_ref_list_array_create(&selection_system_gizmo_raycast_list);
+  mesh_ref_list_array_insert(
+      &selection_system_gizmo_raycast_list,
+      &scene->gizmo.interactive_handles[scene->gizmo.mode]);
 
   // map selection gizmo mouse events
   for (uint8_t i = 0; i < 2; i++)
     camera_raycast(scene->camera,
                    &(CameraRaycastDescriptor){
+                       .label = "Selection System - Gizmo Raycast Callback",
                        .target = CameraRaycastTarget_MousePosition,
                        .event = selection_gizmo_mouse_events[i].event,
                        // use scree-space since gizmo have fixed scale
                        .space = CameraRaycastSpace_ScreenSpace,
                        .screen_space_size = GIZMO_SIZE, // Gizmo size
-                       .include =
-                           {
-                               .lists = (MeshRefList *[]){&gizmo_layer->meshes},
-                               .length = 1,
-                           },
-                       .exclude = {0},
+                       .include = &selection_system_gizmo_raycast_list,
+                       .exclude = 0,
                        .viewport = &scene->viewport,
                        .callback = selection_gizmo_mouse_events[i].callback,
                        .data = (void *)&selection_system_event_payload,
                        .size = 0,
-                   });
+                   },
+                   CameraRaycastAlloc_None);
 
   // reset on mouse up
   html_event_add_mouse_up(&(HTMLEventMouse){
@@ -712,12 +717,14 @@ void selection_system_callback_raycast_gizmo_hover(
   // Since we recieve multiple hits (gizmo-mode agnostic) we need to filter down
   // and select the hit from the right gizmo_mode, else we may hover the rotate
   // gizmo being in the position mode.
-  for (size_t i = 0; i < cast_data->hits->length; i++)
+  for (size_t i = 0; i < cast_data->hits->length; i++) {
+
     if (mesh_ref_list_find(&gizmo->interactive_handles[gizmo->mode],
                            cast_data->hits->entries[i].mesh, NULL)) {
       hit = &cast_data->hits->entries[i];
       break;
     }
+  }
 
   if (hit == NULL) {
     if (cast_data->last_hit->mesh != NULL &&
@@ -736,7 +743,6 @@ void selection_system_callback_raycast_gizmo_hover(
     shader_update_uniform_data(mesh_shader(hit->mesh, MeshShader_Texture), 1, 0,
                                (void *)COLOR_GIZMO_HOVER,
                                ShaderUpdateFlag_None);
-  } else {
   }
 }
 
@@ -944,6 +950,8 @@ void selection_system_callback_key_sequence_set_gizmo_mode(
   visibility_system_hide_mesh_ref_list(scene, renderer,
                                        &gizmo->handles[gizmo->mode]);
 
+  selection_system_update_gizmo_raycast_list(gizmo, gizmo->mode);
+
   // show gizmo if has selection
   if (scene_selection_length(selection)) {
     // update location to selection average
@@ -1036,4 +1044,15 @@ void selection_system_update_gizmo_pos_to_selection(Gizmo *gizmo,
 
   // update ubo matrix buffer
   gizmo_update_ubo(gizmo, ubo);
+}
+
+/**
+   Updates the mesh list in the raycast event system so it only targets the
+   handles from the active Gizmo mode.
+ */
+void selection_system_update_gizmo_raycast_list(Gizmo *gizmo,
+                                                const GizmoMode mode) {
+
+  selection_system_gizmo_raycast_list.lists[0] =
+      &gizmo->interactive_handles[mode];
 }

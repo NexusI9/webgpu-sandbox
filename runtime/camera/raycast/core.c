@@ -11,6 +11,7 @@
 #include "runtime/html_event/add.h"
 #include "runtime/html_event/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/mesh/ref_list.h"
 
 /**
     ▗▄▄▖ ▗▄▖ ▗▄▄▖ ▗▄▄▄▖
@@ -23,23 +24,8 @@
 static inline void camera_raycast_create_event(Camera *,
                                                const CameraRaycastDescriptor *,
                                                em_mouse_callback_func,
-                                               html_event_mouse);
-
-static inline MeshRefList **malloc_reflist(MeshRefList **, size_t);
-
-/**
-   Allocate mesh_list on the heap
- */
-MeshRefList **malloc_ref_list(const MeshRefListArray *array) {
-
-  MeshRefList **alloc_list = malloc(array->length * sizeof(MeshRefList *));
-  if (alloc_list == NULL)
-    return NULL;
-
-  memcpy(alloc_list, array->lists, array->length * sizeof(MeshRefList *));
-
-  return alloc_list;
-}
+                                               html_event_mouse,
+                                               const CameraRaycastAlloc);
 
 /**
    Since the html event and the loop are not part of the same "timeline"
@@ -50,26 +36,24 @@ MeshRefList **malloc_ref_list(const MeshRefListArray *array) {
 void camera_raycast_create_event(Camera *cam,
                                  const CameraRaycastDescriptor *desc,
                                  em_mouse_callback_func em_callback,
-                                 html_event_mouse html_event_callback) {
+                                 html_event_mouse html_event_callback,
+                                 const CameraRaycastAlloc alloc) {
 
   // === ALLOCATE MESH REFERENCES ===
-  MeshRefList **alloc_include = NULL;
-  MeshRefList **alloc_exclude = NULL;
+  MeshRefListArray *include = desc->include, *exclude = desc->exclude;
 
-  if (desc->include.length > 0)
-    alloc_include = malloc_ref_list(&desc->include);
-
-  if (desc->exclude.length > 0)
-    alloc_exclude = malloc_ref_list(&desc->exclude);
-
-  if ((desc->include.length > 0 && alloc_include == NULL) ||
-      (desc->exclude.length > 0 && alloc_exclude == NULL)) {
-    logger_add(LoggerFlag_Warning,
-               "Couldn't allocate raycast mesh ref list.\n");
-    return;
+  if ((CameraRaycastAlloc_IncludeList & alloc) && desc->include) {
+    include = malloc(sizeof(MeshRefListArray));
+    mesh_ref_list_array_copy(desc->include, include);
   }
 
-  // === ALLOCATE HIT LIST === (sorted from closest hit to further)
+  if ((CameraRaycastAlloc_ExcludeList & alloc) && desc->exclude) {
+    exclude = malloc(sizeof(MeshRefListArray));
+    mesh_ref_list_array_copy(desc->exclude, exclude);
+  }
+
+  // === ALLOCATE HIT LIST ===
+  // (sorted from closest hit to further)
   CameraRaycastHitList *hits_list = malloc(sizeof(CameraRaycastHitList));
   if (hits_list == NULL || camera_raycast_hit_list_create(
                                hits_list, CAMERA_RAYCAST_HIT_LIST_MAX_HIT) !=
@@ -80,12 +64,9 @@ void camera_raycast_create_event(Camera *cam,
   }
 
   // === USER DATA ===
-  
   void *alloc_data = desc->data;
 
-  // allocate and copy if size > 0
-  // TODO: Make a more explicit system like _alloc or smth
-  if (desc->size > 0) {
+  if ((CameraRaycastAlloc_Data & alloc) && desc->size > 0) {
     alloc_data = malloc(desc->size);
     if (alloc_data == NULL) {
       logger_add(LoggerFlag_Error, "Couldn't allocate camera raycast 'data'\n");
@@ -97,9 +78,11 @@ void camera_raycast_create_event(Camera *cam,
   // convert data (add camera and hit list)
   const CameraRaycastCallbackData data = {
       // cb attributes
+      .label = desc->label,
       .callback = desc->callback,
       .data = alloc_data,
       .size = desc->size, // DELETEME ?
+      .alloc = alloc,
 
       // cast attributes
       .camera = cam,
@@ -110,17 +93,8 @@ void camera_raycast_create_event(Camera *cam,
       .bound = desc->bound,
 
       // bound attributes
-      .include =
-          {
-              .lists = alloc_include,
-              .length = desc->include.length,
-          },
-      .exclude =
-          {
-              .lists = alloc_exclude,
-              .length = desc->exclude.length,
-          }
-
+      .include = include,
+      .exclude = exclude,
   };
 
   // add listener
@@ -155,25 +129,22 @@ void camera_raycast_create_event(Camera *cam,
    target. Useful for Flying or orbit mode in which cursor is usually hidden.
  */
 
-// look up tables callbacks
+// define event type
 static const html_event_mouse html_event_callbacks[] = {
     [CameraRaycastEvent_MouseDown] = html_event_add_mouse_down,
     [CameraRaycastEvent_MouseHover] = html_event_add_mouse_move,
 };
 
+// define target callback (mouse position | screen center)
 static const em_mouse_callback_func em_mouse_callbacks[] = {
     [CameraRaycastTarget_MousePosition] = camera_raycast_event_callback_mouse,
     [CameraRaycastTarget_ScreenCenter] = camera_raycast_event_callback_center,
 };
 
-void camera_raycast(Camera *cam, const CameraRaycastDescriptor *desc) {
-
-  // define event type
+void camera_raycast(Camera *cam, const CameraRaycastDescriptor *desc,
+                    const CameraRaycastAlloc alloc) {
   html_event_mouse html_event_callback = html_event_callbacks[desc->event];
-
-  // define target callback (mouse position | screen center)
   em_mouse_callback_func em_callback = em_mouse_callbacks[desc->target];
-
   camera_raycast_create_event(cam, desc, camera_raycast_event_callback_mouse,
-                              html_event_callback);
+                              html_event_callback, alloc);
 }

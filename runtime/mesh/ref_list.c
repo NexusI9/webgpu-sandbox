@@ -7,20 +7,13 @@
 #include "backend/logger.h"
 #include "core.h"
 #include "utils/dyli.h"
+#include "utils/stli.h"
 
 DynamicListStatus mesh_ref_list_create(MeshRefList *list,
                                        const size_t capacity) {
 
   return dyli_create((void *)&list->entries, &list->capacity, &list->length,
                      sizeof(Mesh *), capacity, "Mesh reference list");
-}
-
-DynamicListStatus mesh_ref_list_array_create(MeshRefListArray *list_array,
-                                             const size_t capacity) {
-
-  return dyli_create((void *)&list_array->lists, &list_array->capacity,
-                     &list_array->length, sizeof(MeshRefList *), capacity,
-                     "Mesh reference list array");
 }
 
 Mesh *mesh_ref_list_insert(MeshRefList *list, Mesh *mesh) {
@@ -62,7 +55,7 @@ DynamicListStatus mesh_ref_list_remove_at_index(MeshRefList *list,
  */
 Mesh *mesh_ref_list_find(const MeshRefList *list, const Mesh *mesh,
                          size_t *index) {
-  
+
   for (size_t i = 0; i < list->length; i++)
     if (list->entries[i] == mesh) {
       if (index)
@@ -188,4 +181,36 @@ Mesh *mesh_ref_list_find_by_name(const MeshRefList *list, const char *name) {
       return list->entries[i];
 
   return NULL;
+}
+
+StaticListStatus mesh_ref_list_array_create(MeshRefListArray *list_array) {
+
+  return stli_create(&list_array->capacity, &list_array->length,
+                     MESH_REF_LIST_CAPACITY, "Mesh reference list array");
+}
+
+StaticListStatus mesh_ref_list_array_copy(const MeshRefListArray *src,
+                                          MeshRefListArray *dest) {
+
+  memcpy(dest->lists, src->lists, src->length * sizeof(MeshRefList *));
+
+  dest->length = src->length;
+  dest->capacity = src->capacity;
+
+  return StaticListStatus_Success;
+}
+
+StaticListStatus mesh_ref_list_array_destroy(MeshRefListArray *list) {
+
+  list->capacity = 0;
+  list->length = 0;
+
+  return StaticListStatus_Success;
+}
+
+StaticListStatus mesh_ref_list_array_insert(MeshRefListArray *array,
+                                            MeshRefList *list) {
+
+  return stli_insert((void *)array->lists, array->capacity, &array->length,
+                     sizeof(MeshRefList *), &list, "Mesh reference list array");
 }

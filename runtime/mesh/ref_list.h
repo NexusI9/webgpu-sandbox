@@ -11,16 +11,17 @@
 #define MESH_REF_LIST_UNFOUND_ENTRY SIZE_MAX
 
 typedef struct {
-  MeshRefList **lists;
+  MeshRefList *lists[MESH_REF_LIST_CAPACITY];
   size_t capacity;
   size_t length;
 } MeshRefListArray;
 
 EXTERN_C_BEGIN
 
+// === Mesh Ref List ===
+
 // creators
 DynamicListStatus mesh_ref_list_create(MeshRefList *, const size_t);
-DynamicListStatus mesh_ref_list_array_create(MeshRefListArray *, const size_t);
 Mesh *mesh_ref_list_insert(MeshRefList *, Mesh *);
 Mesh *mesh_ref_list_new_entry(MeshRefList *);
 
@@ -44,6 +45,13 @@ Mesh *mesh_ref_list_find(const MeshRefList *, const Mesh *, size_t *);
 void mesh_ref_list_print(MeshRefList *);
 
 void mesh_ref_list_average_position(MeshRefList *, vec3 *);
+
+// === Mesh Ref List Array ===
+StaticListStatus mesh_ref_list_array_create(MeshRefListArray *);
+StaticListStatus mesh_ref_list_array_insert(MeshRefListArray *, MeshRefList *);
+StaticListStatus mesh_ref_list_array_copy(const MeshRefListArray *,
+                                          MeshRefListArray *);
+StaticListStatus mesh_ref_list_array_destroy(MeshRefListArray *);
 
 EXTERN_C_END
 #endif
