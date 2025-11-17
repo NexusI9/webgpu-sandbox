@@ -1,34 +1,8 @@
 #include "glass.h"
 
-#include <cglm/types.h>
-#include <stddef.h>
-
-#include "backend/context.h"
-#include "backend/renderer/reflection/draw.h"
-#include "backend/renderer/render_pass/core.h"
-#include "backend/resource_manager.h"
-#include "backend/std_pipeline/core.h"
-#include "backend/std_pipeline/render_shader/glass_probe_grid/glass_probe_grid.h"
-#include "backend/ubo.h"
-#include "runtime/engine/add.h"
-#include "runtime/mesh/core.h"
-#include "runtime/mesh/shader/core.h"
-#include "runtime/mesh/shader/texture.h"
-#include "runtime/mesh/transform.h"
-#include "runtime/pipeline/render.h"
-#include "runtime/primitive/core.h"
-#include "runtime/primitive/icosphere.h"
-#include "runtime/primitive/plane.h"
-#include "runtime/probe/reflection/core.h"
-#include "runtime/probe/reflection/grid.h"
-#include "runtime/probe/reflection/plane.h"
-#include "runtime/scene/add.h"
-#include "runtime/scene/core.h"
-#include "runtime/scene/environment/core.h"
-#include "runtime/shader/core.h"
-#include "runtime/shader/update.h"
-#include "runtime/systems/scene_system.h"
-#include "runtime/texture/core.h"
+#include "../include/resource_manager.h"
+#include "../include/reflection.h"
+#include "../include/mesh.h"
 
 void example_glass_probe_grid(Engine *engine, bool debug) {
 

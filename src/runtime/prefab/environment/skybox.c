@@ -1,6 +1,5 @@
 #include "skybox.h"
 
-#include "backend/buffer.h"
 #include "backend/compute/mipmap.h"
 #include "backend/context.h"
 #include "backend/logger.h"

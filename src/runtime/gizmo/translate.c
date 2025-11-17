@@ -19,12 +19,11 @@ void gizmo_position_create(MeshRefList *visual_list,
                            MeshRefList *interactive_list,
                            const GizmoCreateDescriptor *desc) {
 
-  gizmo_create_handles(
-      visual_list, interactive_list,
-      &(GizmoCreateMeshDescriptor){
-          .mbin_path = "./resources/assets/mbin/translate.mbin",
-          .offset = {0.0f, 0.1f, 0.0f},
-      });
+  gizmo_create_handles(visual_list, interactive_list,
+                       &(GizmoCreateMeshDescriptor){
+                           .mbin_path = RESOURCES_PATH_MBIN(translate.mbin),
+                           .offset = {0.0f, 0.1f, 0.0f},
+                       });
 
   {
     Primitive prim_plane = primitive_plane();

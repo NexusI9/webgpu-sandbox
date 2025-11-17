@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "anchor.h"
-#include "backend/buffer.h"
 #include "backend/logger.h"
 #include "backend/resource_manager.h"
 #include "runtime/geometry/vertex/core.h"

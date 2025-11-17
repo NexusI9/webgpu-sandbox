@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/resource_manager.h"

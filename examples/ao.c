@@ -1,13 +1,5 @@
 #include "ao.h"
 
-#include "backend/ao_bake/core.h"
-#include "backend/context.h"
-#include "backend/renderer/batch.h"
-#include "backend/renderer/core.h"
-#include "runtime/engine/core.h"
-#include "runtime/scene/core.h"
-#include "utils/color.h"
-
 void example_ao(Engine *engine, bool debug) {
 
   AOBakeDrawDebug debug_options = {0};

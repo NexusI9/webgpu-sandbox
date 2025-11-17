@@ -2,7 +2,6 @@
 #include "backend/resource_manager.h"
 #include "runtime/texture/core.h"
 
-#include "backend/buffer.h"
 #include "backend/logger.h"
 #include "runtime/texture/create.h"
 #include "webgpu/webgpu.h"

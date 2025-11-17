@@ -5,20 +5,13 @@
 #include "runtime/mesh/mesh.h"
 #include "runtime/pipeline/pipeline.h"
 #include "runtime/pipeline/render.h"
+#include "runtime/probe/reflection/core.h"
 #include "runtime/probe/reflection/plane.h"
 #include "runtime/scene/environment/core.h"
 #include "runtime/viewport/viewport.h"
 
 #include <webgpu/webgpu.h>
 
-typedef struct {
-  float roughness;
-  float frost_scale;
-  float frost_strength;
-  float _pad;
-  color color;
-  vec4 _pad1;
-} __attribute__((aligned(16))) GlassUniform;
 
 static const WGPUBindGroupLayoutDescriptor glass_probe_plane_bind_group = {
     .label = "Group 1 (Glass + Environment + Probes)",
@@ -103,8 +96,7 @@ static const PipelineBindingEnvironment glass_env_plane = {
 
 static const RenderPipelineStateObject layout_glass_probe_plane = {
     .label = "Pipeline Bind Groups - Glass Probe Plane",
-    .shader_path = "./backend/std_pipeline/render_shader/glass_probe_plane/"
-                   "glass_probe_plane.wgsl",
+    .shader_path = RESOURCES_PATH_SHADER(glass_probe_plane.wgsl),
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &glass_probe_plane_bind_group},
     .bindings =

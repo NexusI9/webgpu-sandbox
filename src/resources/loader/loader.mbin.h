@@ -5,7 +5,6 @@
 
 #include "runtime/geometry/vertex/vertex.h"
 #include "runtime/primitive/primitive.h"
-#include "resources/tool/obj2mbin/lib/mbin.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/index.h"
 #include "runtime/primitive/core.h"
@@ -16,6 +15,13 @@ typedef uint32_t mbin_length_t;
    1. either directly push mesh in scene list
    2. or provide data to create scene mesh (++ flexibility)
  */
+
+typedef uint32_t mbin_int;
+typedef float mbin_vertex_t;
+typedef mbin_int mbin_index_t;
+typedef mbin_int mbin_data_t;
+typedef uint8_t vec_dimension_t;
+
 
 typedef enum {
   MBINLoaderStatus_Success,
@@ -28,6 +34,21 @@ typedef struct {
   VertexAttribute *vertex;
   VertexIndex *index;
 } MBINLoadDescriptor;
+
+#pragma pack(push, 1)
+typedef struct {
+  mbin_int vertex_length;
+  mbin_int vertex_size_type;
+  mbin_int index_length;
+  mbin_int index_size_type;
+  mbin_data_t data[]; // NOTE: Avoid using pointers (meaningless in for binary)
+} MBINFile;
+#pragma pack(pop)
+
+typedef union {
+  mbin_index_t u;
+  mbin_vertex_t f;
+} MBIN_U32Float;
 
 typedef struct {
   const char *path;

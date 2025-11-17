@@ -12,7 +12,6 @@
 #include "backend/ubo.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_wgpu.h"
-#include "resources/tool/css2h/output/theme.default.h"
 #include "runtime/gui/windows/browser.hpp"
 #include "runtime/gui/windows/display.hpp"
 #include "runtime/gui/windows/gizmo.hpp"
@@ -88,8 +87,8 @@ GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
     gui_style_carbon(gui);
 
     ImGuiIO &io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF(
-        "./resources/assets/font/GolosText-Regular.ttf", 14.0f);
+    io.Fonts->AddFontFromFileTTF(RESOURCES_PATH_FONT(GolosText-Regular.ttf),
+                                 14.0f);
 
     ImGui_ImplWGPU_InitInfo info;
 

@@ -1,5 +1,4 @@
 #include "kawase.h"
-#include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"

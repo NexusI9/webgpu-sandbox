@@ -46,7 +46,7 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
   Primitive primitive_cube;
   // TODO: cache MBIN
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
-      .path = "./resources/assets/mbin/cube.mbin",
+      .path = RESOURCES_PATH_MBIN(cube.mbin),
       .primitive = &primitive_cube,
   });
 
@@ -77,7 +77,7 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
   Primitive primitive;
   // TODO: cache MBIN
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
-      .path = "./resources/assets/mbin/plane.mbin",
+      .path = RESOURCES_PATH_MBIN(plane.mbin),
       .primitive = &primitive,
   });
 
@@ -107,7 +107,7 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
   Primitive primitive_arrow;
   // TODO: cache MBIN
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
-      .path = "./resources/assets/mbin/arrow.mbin",
+      .path = RESOURCES_PATH_MBIN(arrow.mbin),
       .primitive = &primitive_arrow,
   });
 

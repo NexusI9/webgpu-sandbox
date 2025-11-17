@@ -1,12 +1,6 @@
 #include "child.h"
 
-#include <cglm/types.h>
-
-#include "backend/renderer/core.h"
-#include "backend/std_pipeline/core.h"
 #include "primitive.h"
-#include "runtime/mesh/core.h"
-#include "runtime/pipeline/render.h"
 
 void example_child(Engine *engine) {
 

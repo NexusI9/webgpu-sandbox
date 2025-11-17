@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 #include "anchor.h"
-#include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/resource_manager.h"
 #include "runtime/geometry/edge/core.h"

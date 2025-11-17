@@ -6,11 +6,11 @@
 #include "backend/std_texture/core.h"
 #include "backend/theme/configs/default/default.icon.h"
 #include "backend/theme/configs/default/default.size.h"
+#include "backend/theme/configs/default/default.theme.h"
 #include "backend/theme/core.h"
 #include "emscripten/em_types.h"
 #include "emscripten/emscripten.h"
 #include "emscripten/html5_webgpu.h"
-#include "resources/tool/css2h/output/theme.default.h"
 #include "runtime/html_event/core.h"
 #include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
@@ -60,14 +60,14 @@ ContextStatus context_init(const ContextDescriptor *desc) {
                              .dpi = g_context.dpi,
                          });
 
-    theme_create_icon_atlas(
-        &g_theme, &(TextureAtlasDescriptor){
-                      .cell_count = {16, 16},
-                      .cell_size = {128, 128},
-                      .format = TEXTURE_FORMAT_OFFSCREEN,
-                      .label = "Scene UI Icon Atlas",
-                      .path = "./resources/assets/texture/ui/icon_atlas.png",
-                  });
+    theme_create_icon_atlas(&g_theme,
+                            &(TextureAtlasDescriptor){
+                                .cell_count = {16, 16},
+                                .cell_size = {128, 128},
+                                .format = TEXTURE_FORMAT_OFFSCREEN,
+                                .label = "Scene UI Icon Atlas",
+                                .path = RESOURCES_PATH_TEXTURE(icon_atlas.png),
+                            });
 
     theme_set_icons_coordinates(&g_theme, theme_default_icon);
   });

@@ -33,8 +33,7 @@ static const WGPUDepthStencilState reflection_stencil = {
 
 static const RenderPipelineStateObject layout_reflection = {
     .label = "Pipeline Bind Groups - Reflection",
-    .shader_path = "../backend/std_pipeline/render_shader/reflection/"
-                   "reflection.wgsl",
+    .shader_path = RESOURCES_PATH_SHADER(reflection.wgsl),
     .bind_groups_count = 3,
     .bind_groups =
         {

@@ -2,7 +2,6 @@
 #include "backend/context.h"
 #include "backend/theme/core.h"
 #include "imgui/imgui.h"
-#include "resources/tool/css2h/output/theme.default.h"
 #include "runtime/gui/components/button_group.hpp"
 #include "runtime/gui/components/button_icon.hpp"
 #include "runtime/gui/core.h"

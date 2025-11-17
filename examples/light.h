@@ -1,10 +1,8 @@
 #ifndef _EXAMPLE_LIGHT_H_
 #define _EXAMPLE_LIGHT_H_
 
-#include "runtime/engine/core.h"
-#include "runtime/scene/core.h"
-#include "runtime/scene/scene.h"
+#include "../include/engine.h"
 
-void example_light(Engine*);
+void example_light(Engine *);
 
 #endif

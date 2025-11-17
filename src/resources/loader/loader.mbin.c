@@ -5,7 +5,6 @@
 #include <stdlib.h>
 
 #include "backend/logger.h"
-#include "resources/tool/obj2mbin/lib/mbin.h"
 #include "string.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/index.h"

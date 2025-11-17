@@ -30,7 +30,7 @@ static const WGPUDepthStencilState outline_stencil = {
 
 static const RenderPipelineStateObject layout_outline = {
     .label = "Pipeline Bind Groups - Outline",
-    .shader_path = "./backend/std_pipeline/render_shader/outline/outline.wgsl",
+    .shader_path = RESOURCES_PATH_SHADER(outline.wgsl),
     .bind_groups_count = 1,
     .bind_groups = {&mvp_layout},
     .bindings = {.mvp = &mvp_binding},

@@ -1,14 +1,5 @@
 #include "light.h"
 
-#include <stddef.h>
-
-#include "runtime/engine/add.h"
-#include "runtime/light/core.h"
-#include "runtime/light/list.h"
-#include "runtime/scene/add.h"
-#include "runtime/scene/core.h"
-#include "runtime/systems/scene_system.h"
-
 void example_light(Engine *engine) {
 
   engine_scene_add_point_light(engine,

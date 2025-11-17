@@ -18,8 +18,8 @@
 #include "runtime/primitive/core.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
-#include "runtime/scene/editor_mesh/list.h"
 #include "runtime/scene/editor_mesh/builder/builder.h"
+#include "runtime/scene/editor_mesh/list.h"
 #include "runtime/systems/scene_editor_mesh_system.h"
 #include "utils/color.h"
 
@@ -53,10 +53,9 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
   // create box mesh
   Primitive cube_primitive;
   loader_mbin_load_primitive(&(MBINLoadPrimitiveDescriptor){
-      .path = "./resources/assets/mbin/cube.mbin",
+      .path = RESOURCES_PATH_MBIN(cube.mbin),
       .primitive = &cube_primitive,
   });
-
 
   // set callback
   icon->transform_callback[GizmoMode_Position] = sem_system_camera_set_position;
@@ -108,7 +107,6 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
   // set fov deformation
   sem_camera_fov(list, 90.0f);
 }
-
 
 void sem_camera_lookat(SceneEditorMeshList *list, vec3 position, vec3 target) {
 

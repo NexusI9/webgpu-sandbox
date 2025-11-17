@@ -1,28 +1,14 @@
 #include "gltf.h"
 
-#include <cgltf/cgltf.h>
-#include <stddef.h>
-
-#include "backend/context.h"
-#include "backend/std_pipeline/render_shader/bloom/bloom.h"
-#include "backend/std_pipeline/render_shader/composite/composite.h"
-#include "resources/loader/loader.gltf.h"
-#include "runtime/engine/add.h"
-#include "runtime/light/list.h"
-#include "runtime/mesh/core.h"
-#include "runtime/mesh/ref_list.h"
-#include "runtime/mesh/shader/texture.h"
-#include "runtime/probe/reflection/plane.h"
-#include "runtime/scene/add.h"
-#include "runtime/scene/core.h"
-#include "runtime/systems/scene_system.h"
-#include "runtime/texture/core.h"
+#include "../include/loader.h"
+#include "../include/mesh.h"
+#include "../include/systems.h"
 
 void example_gltf(Engine *engine) {
   loader_gltf_load(
       &(GLTFLoadDescriptor){
           .engine = engine,
-          .path = "./resources/assets/gltf/cube.gltf",
+          .path = RESOURCES_PATH_GLTF(cube.gltf),
           .cgltf_options = &(cgltf_options){0},
           .options =
               &(LoaderGLTFOptions){
@@ -67,7 +53,7 @@ void example_gltf_spa(Engine *engine) {
   loader_gltf_load(
       &(GLTFLoadDescriptor){
           .engine = engine,
-          .path = "./resources/assets/gltf/spa.gltf",
+          .path = RESOURCES_PATH_GLTF(spa.gltf),
           .cgltf_options = &(cgltf_options){0},
           .options =
               &(LoaderGLTFOptions){
@@ -103,7 +89,7 @@ void example_gltf_podium(Engine *engine) {
   LoaderGLTFStatus status = loader_gltf_load(
       &(GLTFLoadDescriptor){
           .engine = engine,
-          .path = "./resources/assets/gltf/podium.gltf",
+          .path = RESOURCES_PATH_GLTF(podium.gltf),
           .cgltf_options = &(cgltf_options){0},
           .options =
               &(LoaderGLTFOptions){

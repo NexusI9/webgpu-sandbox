@@ -1,9 +1,7 @@
 #ifndef _EXAMPLE_GLTF_H_
 #define _EXAMPLE_GLTF_H_
 
-#include "runtime/engine/core.h"
-#include "runtime/scene/core.h"
-#include "runtime/scene/scene.h"
+#include "../include/engine.h"
 
 void example_gltf(Engine *);
 void example_gltf_podium(Engine *);

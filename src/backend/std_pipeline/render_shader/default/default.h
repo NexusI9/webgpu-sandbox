@@ -1,9 +1,9 @@
 #ifndef _PIPELINE_LAYOUT_DEFAULT_H_
 #define _PIPELINE_LAYOUT_DEFAULT_H_
 
-#include "runtime/pipeline/render.h"
 #include "runtime/camera/camera.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
@@ -11,8 +11,7 @@
 
 static const RenderPipelineStateObject layout_default = {
     .label = "Pipeline Bind Groups - Default",
-    .shader_path =
-        "./backend/std_pipeline/render_shader/default/default.wgsl",
+    .shader_path = RESOURCES_PATH_SHADER(default.wgsl),
     .bind_groups_count = 1,
     .bind_groups = {&mvp_layout},
     .bindings = {.mvp = &mvp_binding},

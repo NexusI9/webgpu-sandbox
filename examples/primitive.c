@@ -1,19 +1,5 @@
 #include "primitive.h"
 
-#include <stddef.h>
-
-#include "backend/context.h"
-#include "runtime/engine/add.h"
-#include "runtime/mesh/core.h"
-#include "runtime/mesh/shader/core.h"
-#include "runtime/mesh/transform.h"
-#include "runtime/pipeline/render.h"
-#include "runtime/primitive/core.h"
-#include "runtime/primitive/cube.h"
-#include "runtime/scene/add.h"
-#include "runtime/shader/core.h"
-#include "runtime/systems/scene_system.h"
-
 void example_primitive(Engine *engine, Mesh *cube, vec3 position,
                        RenderPipeline *const *pipeline) {
 

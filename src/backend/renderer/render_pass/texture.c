@@ -3,7 +3,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "backend/buffer.h"
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/renderer/render_pass/core.h"

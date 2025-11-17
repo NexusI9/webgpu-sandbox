@@ -5,7 +5,6 @@
 #include "backend/stat.h"
 #include "backend/std_pipeline/core.h"
 #include "imgui/imgui.h"
-#include "resources/tool/css2h/output/theme.default.h"
 #include "runtime/gui/components/button_icon.hpp"
 #include "runtime/gui/components/input.hpp"
 #include "runtime/gui/components/spacing.hpp"

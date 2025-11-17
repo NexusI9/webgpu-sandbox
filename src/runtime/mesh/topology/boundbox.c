@@ -3,7 +3,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "backend/buffer.h"
 #include "backend/resource_manager.h"
 #include "core.h"
 #include "runtime/geometry/aabb/aabb.h"

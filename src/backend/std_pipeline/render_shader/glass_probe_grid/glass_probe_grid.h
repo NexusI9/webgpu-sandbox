@@ -15,8 +15,7 @@
 
 static const RenderPipelineStateObject layout_glass_probe_grid = {
     .label = "Pipeline Bind Groups - Glass Probe Grid",
-    .shader_path = "./backend/std_pipeline/render_shader/glass_probe_grid/"
-                   "glass_probe_grid.wgsl",
+    .shader_path = RESOURCES_PATH_SHADER(glass_probe_grid.wgsl),
     .bind_groups_count = 2,
     .bind_groups = {&mvp_layout, &glass_probe_plane_bind_group},
     .bindings =

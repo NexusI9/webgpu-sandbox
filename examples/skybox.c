@@ -1,28 +1,16 @@
 #include "skybox.h"
 
-#include <stdint.h>
-
-#include "runtime/prefab/environment/skybox.h"
-#include "runtime/texture/core.h"
-#include "runtime/texture/write.h"
+#include "../include/prefab.h"
 
 static const CubeMapPath lake_cubemap = {
-    .right = "./resources/assets/texture/skybox/lake/right.jpg",
-    .left = "./resources/assets/texture/skybox/lake/left.jpg",
-    .top = "./resources/assets/texture/skybox/lake/top.jpg",
-    .bottom = "./resources/assets/texture/skybox/lake/bottom.jpg",
-    .front = "./resources/assets/texture/skybox/lake/front.jpg",
-    .back = "./resources/assets/texture/skybox/lake/back.jpg",
+    .right = RESOURCES_PATH_TEXTURE(right.jpg),
+    .left = RESOURCES_PATH_TEXTURE(left.jpg),
+    .top = RESOURCES_PATH_TEXTURE(top.jpg),
+    .bottom = RESOURCES_PATH_TEXTURE(bottom.jpg),
+    .front = RESOURCES_PATH_TEXTURE(front.jpg),
+    .back = RESOURCES_PATH_TEXTURE(back.jpg),
 };
 
-static const CubeMapPath netherworld_cubemap = {
-    .right = "./resources/assets/texture/skybox/netherworld/right.jpg",
-    .left = "./resources/assets/texture/skybox/netherworld/left.jpg",
-    .top = "./resources/assets/texture/skybox/netherworld/top.jpg",
-    .bottom = "./resources/assets/texture/skybox/netherworld/bottom.jpg",
-    .front = "./resources/assets/texture/skybox/netherworld/front.jpg",
-    .back = "./resources/assets/texture/skybox/netherworld/back.jpg",
-};
 
 /**
    Create a picture based skybox in the given scene
