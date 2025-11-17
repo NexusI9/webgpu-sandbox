@@ -24,6 +24,8 @@ file(GLOB_RECURSE ENGINE_C_EXAMPLES "examples/*.c")
 # Define the target as an INTERFACE library before setting its properties
 add_library(nkengine_vendor_includes INTERFACE)
 
+# The target_include_directories command tells the compiler:
+# "Add this path to your search list (-I<path>)."
 target_include_directories(nkengine_vendor_includes INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vendor>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
