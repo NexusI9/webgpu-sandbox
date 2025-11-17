@@ -1,6 +1,7 @@
 #ifndef _GUI_WINDOW_INSPECTOR_RENDER_H_
 #define _GUI_WINDOW_INSPECTOR_RENDER_H_
 
+#include "backend/renderer/core.h"
 #include "runtime/gui/windows/inspector/tab.hpp"
 
 namespace UI {
@@ -19,7 +20,7 @@ private:
   float near_clip = viewport_near_clip(&scene->viewport);
   float far_clip = viewport_far_clip(&scene->viewport);
   float dpi = (float)renderer_dpi(renderer);
-  RenderPipelineMultisampleCount multisample = context_multisample();
+  RenderPipelineMultisampleCount multisample = renderer_multisample(renderer);
 
   static constexpr RenderPipelineMultisampleCount multisample_count[2] = {
       PipelineMultisampleCount_1x,

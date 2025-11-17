@@ -9,6 +9,7 @@
 #include "backend/std_pipeline/core.h"
 #include "runtime/engine/add.h"
 #include "runtime/light/list.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/scene/add.h"
 #include "runtime/systems/scene_system.h"
 #include "runtime/systems/selection_system.h"
@@ -31,6 +32,7 @@ EngineStatus engine_init(Engine *engine) {
                     &(RendererCreateDescriptor){
                         .background = (WGPUColor){0.14f, 0.14f, 0.14f, 1.0f},
                         .dpi = 1.0,
+			.multisample = PipelineMultisampleCount_1x,
                     });
   }
 

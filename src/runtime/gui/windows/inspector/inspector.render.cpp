@@ -63,11 +63,11 @@ void UI::RenderTab::draw() {
     {
 
       char default_value[12];
-      snprintf(default_value, 12, "x%d", context_multisample());
+      snprintf(default_value, 12, "x%d", renderer_multisample(renderer));
 
       UI::Combobox combobox = UI::Combobox(gui, "MSAA", &style, default_value);
 
-      multisample = context_multisample();
+      multisample = renderer_multisample(renderer);
       if (combobox.draw()) {
         for (int i = 0; i < IM_ARRAYSIZE(multisample_count); ++i) {
 
@@ -77,7 +77,7 @@ void UI::RenderTab::draw() {
           snprintf(value, 12, "x%d", multisample_count[i]);
           if (ImGui::Selectable(value, is_selected)) {
             RenderPipelineMultisampleCount count = multisample_count[i];
-            context_set_multisample(count);
+            renderer_set_multisample(renderer, count);
 
             // rebuild pipelines
             standard_render_pipelines_destroy();

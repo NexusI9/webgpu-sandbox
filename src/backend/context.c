@@ -12,6 +12,8 @@
 #include "emscripten/emscripten.h"
 #include "emscripten/html5_webgpu.h"
 #include "runtime/html_event/core.h"
+#include "runtime/input/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
 #include "string.h"
@@ -39,7 +41,6 @@ ContextStatus context_init(const ContextDescriptor *desc) {
   g_context.device = emscripten_webgpu_get_device();
   g_context.queue = wgpuDeviceGetQueue(g_context.device);
   g_context.dpi = emscripten_get_device_pixel_ratio();
-  g_context.multisample = desc->render.multisample_count;
 
   wgpuInstanceRequestAdapter(g_context.instance, NULL,
                              context_req_adapter_callback, (void *)&g_context);
@@ -75,7 +76,7 @@ ContextStatus context_init(const ContextDescriptor *desc) {
   TIMER("Clock", { clock_init(&g_clock); });
 
   TIMER("Standard Shaders", {
-    standard_render_pipelines_init(desc->render.multisample_count);
+    standard_render_pipelines_init(PipelineMultisampleCount_1x);
     standard_compute_pipelines_init();
   });
 
@@ -88,7 +89,10 @@ ContextStatus context_init(const ContextDescriptor *desc) {
                                  context_update_size);
 
   // poll global input
-  input_init(desc->input);
+  input_init(&(InputDescriptor){
+      .mouse_sensitivity = 1.0f,
+      .wheel_sensitivity = 1.0f,
+  });
 
   return ContextStatus_Success;
 }

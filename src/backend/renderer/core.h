@@ -97,6 +97,7 @@ typedef enum {
 
 typedef struct {
   WGPUColor background;
+  const RenderPipelineMultisampleCount multisample;
   const double dpi;
   const int width;
   const int height;
@@ -117,27 +118,14 @@ typedef struct {
 struct Renderer {
 
   reg_id_t id;
-
   Profiler profiler;
 
-  // References List (ptr)
+  double dpi;
+  WGPUColor background;
+  int width, height;
+  RenderPipelineMultisampleCount multisample;
+
   HashTable batches;
-
-  /*
-    Versatile list used to store mesh pointers depending on numerous states
-    (such as built, hidden...). Having such array allows to:
-      - Prevent having booleans polluting the Mesh struct
-      - Data-Oriented friendly approach so each Meshes with the same states can
-        be easily access and given per array instructions.
-      - Faster access to meshes sharing the same states.
-   */
-  MeshRefList mesh_state[RENDERER_MESH_STATE_COUNT];
-
-  struct {
-    double dpi;
-    WGPUColor background;
-    int width, height;
-  } context;
 
   // cached texture shared throughout parent scene objects
   struct {
@@ -153,6 +141,16 @@ struct Renderer {
   RenderPassList shadow_map_pass;
 
   ComputePass compute_pass;
+
+  /*
+  Versatile list used to store mesh pointers depending on numerous states
+  (such as built, hidden...). Having such array allows to:
+    - Prevent having booleans polluting the Mesh struct
+    - Data-Oriented friendly approach so each Meshes with the same states can
+      be easily access and given per array instructions.
+    - Faster access to meshes sharing the same states.
+ */
+  MeshRefList mesh_state[RENDERER_MESH_STATE_COUNT];
 };
 
 EXTERN_C_BEGIN
@@ -187,11 +185,13 @@ renderer_mode_mesh_pass_list(Renderer *rd, const RendererDrawMode mode) {
   return &rd->mesh_pass[__builtin_ctz(mode)];
 }
 
-static inline int renderer_width(Renderer *rd) { return rd->context.width; }
-
-static inline int renderer_height(Renderer *rd) { return rd->context.height; }
-
-static inline double renderer_dpi(Renderer *rd) { return rd->context.dpi; }
+static inline const int renderer_width(Renderer *rd) { return rd->width; }
+static inline const int renderer_height(Renderer *rd) { return rd->height; }
+static inline const double renderer_dpi(Renderer *rd) { return rd->dpi; }
+static inline const RenderPipelineMultisampleCount
+renderer_multisample(Renderer *rd) {
+  return rd->multisample;
+}
 
 static inline MeshRefList *renderer_mesh_state(Renderer *rd,
                                                const RendererMeshStates state) {
@@ -201,22 +201,27 @@ static inline MeshRefList *renderer_mesh_state(Renderer *rd,
 // mutators
 
 static inline void renderer_set_width(Renderer *rd, const int value) {
-  rd->context.width = value;
+  rd->width = value;
 }
 
 static inline void renderer_set_height(Renderer *rd, const int value) {
-  rd->context.height = value;
+  rd->height = value;
 }
 
 static inline void renderer_set_dpi(Renderer *rd, const double value) {
-  rd->context.dpi = glm_max(1, value);
+  rd->dpi = glm_max(1, value);
+}
+
+static inline void
+renderer_set_multisample(Renderer *rd,
+                         const RenderPipelineMultisampleCount value) {
+  rd->multisample = value;
 }
 
 static inline RenderPassList *
 renderer_mesh_pass_list(Renderer *renderer, const RendererDrawMode mode) {
   return &renderer->mesh_pass[__builtin_ctz(mode)];
 }
-
 
 void renderer_update_pass_texture(Renderer *, int, int,
                                   const RenderPipelineMultisampleCount,

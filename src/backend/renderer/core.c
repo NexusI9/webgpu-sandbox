@@ -44,10 +44,11 @@ static inline void renderer_pass_create(Renderer *, renderer_draw_lists);
 void renderer_create(Renderer *renderer, const RendererCreateDescriptor *desc) {
 
   renderer->id = reg_register(renderer, RegEntryType_Renderer);
-  renderer->context.background = desc->background;
-  renderer->context.width = desc->width ? desc->width : context_width();
-  renderer->context.height = desc->height ? desc->height : context_height();
-  renderer->context.dpi = desc->dpi == RENDERER_DPI_AUTO
+  renderer->background = desc->background;
+  renderer->multisample = desc->multisample;
+  renderer->width = desc->width ? desc->width : context_width();
+  renderer->height = desc->height ? desc->height : context_height();
+  renderer->dpi = desc->dpi == RENDERER_DPI_AUTO
                               ? emscripten_get_device_pixel_ratio()
                               : desc->dpi;
   renderer->draw_mode = RendererDrawMode_Solid;
@@ -377,8 +378,7 @@ void renderer_pass_create(Renderer *renderer, renderer_draw_lists draw_lists) {
   const int render_width = renderer_width(renderer) * ratio;
   const int render_height = renderer_height(renderer) * ratio;
 
-  // TODO: make the multisample renderer specific
-  const RenderPipelineMultisampleCount multisample = context_multisample();
+  const RenderPipelineMultisampleCount multisample = renderer->multisample;
   static const char *pass_name[] = {"Boundbox", "Wireframe", "Solid",
                                     "Texture"};
 
@@ -430,7 +430,7 @@ void renderer_pass_create(Renderer *renderer, renderer_draw_lists draw_lists) {
     RenderPassColorAttachment scene_color_attachment = {
         .attachment = {
             .view = shared_color_view,
-            .clearValue = renderer->context.background,
+            .clearValue = renderer->background,
             .loadOp = WGPULoadOp_Clear,
             .storeOp = WGPUStoreOp_Store,
             .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
