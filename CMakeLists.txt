@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
 # ----------------------------
-# Engine Paths (relative to nkengine root)
+# Engine Paths (relative to engine root)
 # ----------------------------
 set(ENGINE_SRC_DIR "src")
 
@@ -22,11 +22,11 @@ file(GLOB_RECURSE ENGINE_C_EXAMPLES "examples/*.c")
 # These paths are PUBLIC for the consuming project (nkproject)
 # ----------------------------
 # Define the target as an INTERFACE library before setting its properties
-add_library(nkengine_vendor_includes INTERFACE)
+add_library(${PROJECT_NAME}_vendor_includes INTERFACE)
 
 # The target_include_directories command tells the compiler:
 # "Add this path to your search list (-I<path>)."
-target_include_directories(nkengine_vendor_includes INTERFACE
+target_include_directories(${PROJECT_NAME}_vendor_includes INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/vendor>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/examples>
@@ -68,7 +68,7 @@ file(GLOB_RECURSE CGLTF
           )
 
 # Create a static library for all vendors
-add_library(engine_vendors STATIC ${IMGUI} ${CGLM} ${STB} ${CGLTF})
+add_library(${PROJECT_NAME}_vendors STATIC ${IMGUI} ${CGLM} ${STB} ${CGLTF})
 
 # ----------------------------
 # 2. Preprocess WGSL shaders
@@ -100,7 +100,7 @@ endforeach()
 # ----------------------------
 # 3. Engine Library Definition
 # ----------------------------
-add_library(nkengine STATIC
+add_library(${PROJECT_NAME} STATIC
     ${ENGINE_C_SRC}
     ${ENGINE_CXX_SRC}
     ${ENGINE_C_EXAMPLES}
@@ -108,14 +108,14 @@ add_library(nkengine STATIC
 )
 
 # Apply engine-specific macros
-target_compile_options(nkengine PUBLIC ${MACROS})
-target_compile_options(nkengine PRIVATE ${ASAN})
+target_compile_options(${PROJECT_NAME} PUBLIC ${MACROS})
+target_compile_options(${PROJECT_NAME} PRIVATE ${ASAN})
 
 # Link the engine to its vendor libraries and set public includes
-target_link_libraries(nkengine PUBLIC engine_vendors)
-target_link_libraries(nkengine PUBLIC nkengine_vendor_includes)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_vendors)
+target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_vendor_includes)
 
 # Required for Emscripten's WebGPU support if targeting WASM
-target_link_libraries(nkengine PUBLIC webgpu)
+target_link_libraries(${PROJECT_NAME} PUBLIC webgpu)
 
-target_link_libraries(nkengine PRIVATE ${ASAN})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${ASAN})
