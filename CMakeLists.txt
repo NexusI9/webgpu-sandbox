@@ -51,7 +51,7 @@ set(ASAN
 )
 
 # ----------------------------
-# 1. Vendor Library (imgui, cglm, stb, cgltf)
+# Vendor Library (imgui, cglm, stb, cgltf)
 # ----------------------------
 file(GLOB_RECURSE IMGUI
           "vendor/imgui/*.cpp"
@@ -71,7 +71,7 @@ file(GLOB_RECURSE CGLTF
 add_library(${PROJECT_NAME}_vendors STATIC ${IMGUI} ${CGLM} ${STB} ${CGLTF})
 
 # ----------------------------
-# 2. Preprocess WGSL shaders
+# Preprocess WGSL shaders
 # ----------------------------
 # This custom command will generate the .wgsl files inside the build directory
 # and the engine library will depend on them.
@@ -97,8 +97,63 @@ foreach(wgsl_in ${WGSL_IN_FILES})
     list(APPEND WGSL_OUT_FILES ${wgsl_out})
 endforeach()
 
+
 # ----------------------------
-# 3. Engine Library Definition
+# Preload resources (Requires relative paths to work correctly)
+# ----------------------------
+
+# Define resource map and extensions (Paths are relative to the project source)
+set(RES_MAP
+    "${ENGINE_SRC_DIR}/backend/std_pipeline/render_shader:shaders"
+    "${ENGINE_SRC_DIR}/backend/std_pipeline/compute_shader:shaders"
+    "${ENGINE_SRC_DIR}/resources/assets/gltf:gltf"
+    "${ENGINE_SRC_DIR}/resources/assets/font:fonts"
+    "${ENGINE_SRC_DIR}/resources/assets/texture:textures"
+    "${ENGINE_SRC_DIR}/resources/assets/mbin:mbin"
+)
+set(RES_EXTENSIONS wgsl jpg png ttf mbin gltf)
+
+
+# Generate the PRELOAD_FLAGS_STRING
+set(PRELOAD_ARGS_LIST "")
+foreach(res_map IN LISTS RES_MAP)
+    string(REPLACE ":" ";" parts "${res_map}")
+    list(GET parts 0 SRC_DIR)
+    list(GET parts 1 DST_DIR)
+
+    set(FILES "")
+    foreach(ext IN LISTS RES_EXTENSIONS)
+        file(GLOB_RECURSE ONE_EXT "${SRC_DIR}/*.${ext}")
+        list(APPEND FILES ${ONE_EXT})
+    endforeach()
+
+    foreach(f IN LISTS FILES)
+        get_filename_component(fname "${f}" NAME)
+        
+        # Calculate the relative source path from the project build directory to the file
+        file(RELATIVE_PATH RELATIVE_FILE_PATH 
+            "${CMAKE_BINARY_DIR}" 
+            "${f}"
+        )
+        
+        # Create the full argument string: source_path@virtual_path
+        set(PRELOAD_ARGUMENT "${RELATIVE_FILE_PATH}@${DST_DIR}/${fname}")
+
+        # Append BOTH the flag and the argument as separate list elements 
+        # (Using old-school string JOIN to assign to LINK_FLAGS later)
+        list(APPEND PRELOAD_ARGS_LIST "--preload-file")
+        list(APPEND PRELOAD_ARGS_LIST "${PRELOAD_ARGUMENT}")
+    endforeach()
+endforeach()
+
+# Convert the list into a single, space-separated string for LINK_FLAGS
+string(JOIN " " PRELOAD_FLAGS_STRING ${PRELOAD_ARGS_LIST})
+
+# Export to parent scope
+set(${PROJECT_NAME}_PRELOAD_FLAGS ${PRELOAD_FLAGS_STRING} PARENT_SCOPE)
+
+# ----------------------------
+# Engine Library Definition
 # ----------------------------
 add_library(${PROJECT_NAME} STATIC
     ${ENGINE_C_SRC}
