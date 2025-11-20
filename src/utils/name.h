@@ -1,6 +1,9 @@
 #ifndef _NAME_H_
 #define _NAME_H_
 
+#include <stdarg.h>
+#include <stdio.h>
+
 #define NAME_LEN 1024
 typedef char name_t[NAME_LEN];
 

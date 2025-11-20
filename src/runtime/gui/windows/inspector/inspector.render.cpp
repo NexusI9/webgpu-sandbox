@@ -79,23 +79,11 @@ void UI::RenderTab::draw() {
             RenderPipelineMultisampleCount count = multisample_count[i];
             renderer_set_multisample(renderer, count);
 
-            // rebuild pipelines
-            standard_render_pipelines_destroy();
-            standard_render_pipelines_init(count);
-
-            // update scene render texture
-            renderer_update_pass_texture(renderer, width, height, count, dpi);
-
-            // update passes relative draw callbacks for each modes
-            for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
-              render_pass_list_update_child_passes_callback(
-                  &renderer->mesh_pass[i]);
+            // Set the initial focus when opening the combo (for keyboard
+            // navigation)
+            if (is_selected)
+              ImGui::SetItemDefaultFocus();
           }
-
-          // Set the initial focus when opening the combo (for keyboard
-          // navigation)
-          if (is_selected)
-            ImGui::SetItemDefaultFocus();
         }
 
         combobox.end();

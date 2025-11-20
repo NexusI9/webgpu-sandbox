@@ -27,6 +27,8 @@
 
 #define RENDERER_MAX_HOOK 6
 #define RENDERER_DPI_AUTO 0
+#define RENDERER_WIDTH_AUTO 0
+#define RENDERER_HEIGHT_AUTO 0
 
 /*
   Renderer has a list of mesh and sublist of mesh pointers that are called
@@ -97,7 +99,6 @@ typedef enum {
 
 typedef struct {
   WGPUColor background;
-  const RenderPipelineMultisampleCount multisample;
   const double dpi;
   const int width;
   const int height;
@@ -170,6 +171,12 @@ renderer_draw_callback renderer_find_draw_callback(Renderer *,
 
 void renderer_draw(Renderer *);
 
+void renderer_update_pass_texture(Renderer *, int, int,
+                                  const RenderPipelineMultisampleCount,
+                                  const double);
+
+void renderer_create_layouts(Renderer *);
+
 // accessors
 static inline const RendererDrawMode renderer_draw_mode(Renderer *renderer) {
   return renderer->draw_mode;
@@ -216,16 +223,28 @@ static inline void
 renderer_set_multisample(Renderer *rd,
                          const RenderPipelineMultisampleCount value) {
   rd->multisample = value;
+
+  // rebuild pipelines
+  // TODO: dangerous since we update the global pipelines, what if we use
+  // multiple render ? Cache the std pipelines with different multisample ? Add
+  // it as a batch attribute ? Currently ok cause we only rely on one renderer,
+  // but smelly and highly prone to errors.
+  standard_render_pipelines_destroy();
+  standard_render_pipelines_init(value);
+
+  // update scene render texture
+  renderer_update_pass_texture(rd, renderer_width(rd), renderer_height(rd),
+                               value, renderer_dpi(rd));
+
+  // update passes relative draw callbacks for each modes
+  for (uint8_t i = 0; i < RENDERER_DRAW_MODE_COUNT; i++)
+    render_pass_list_update_child_passes_callback(&rd->mesh_pass[i]);
 }
 
 static inline RenderPassList *
 renderer_mesh_pass_list(Renderer *renderer, const RendererDrawMode mode) {
   return &renderer->mesh_pass[__builtin_ctz(mode)];
 }
-
-void renderer_update_pass_texture(Renderer *, int, int,
-                                  const RenderPipelineMultisampleCount,
-                                  const double);
 
 EXTERN_C_END
 

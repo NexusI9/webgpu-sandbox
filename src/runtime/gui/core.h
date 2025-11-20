@@ -14,23 +14,20 @@
 #define _GUI_MAX_SCENE_COUNT 1
 
 typedef enum {
-  GUIStatus_Success,
-  GUIStatus_UndefError,
-} GUIStatus;
-
-typedef struct {
-  const double dpi;
-} GUIConfig;
+  GuiStatus_Success,
+  GuiStatus_UndefError,
+} GuiStatus;
 
 typedef struct {
 
   reg_id_t id;
   double dpi;
   WGPURenderPassEncoder pass_encoder;
-  WGPUQuerySet query;
+  WGPUCommandEncoder command_encoder;
 
   WGPUTexture depth_texture;
   WGPUTextureView depth_view;
+  WGPUTextureView swapchain_view;
 
   GUITree tree;
   Scene *active_scene;
@@ -45,14 +42,20 @@ typedef struct {
   Theme *theme;
   Scene *active_scene;
   Renderer *renderer;
-} GUIDescriptor;
+} GuiDescriptor;
 
 // prevent c++ mangling
 EXTERN_C_BEGIN
 
-GUIStatus gui_init(Gui *, const GUIDescriptor *);
+GuiStatus gui_init(Gui *, const GuiDescriptor *);
 void gui_destroy(Gui *);
 
+// TODO, separate this into the editor, I think the GUI object should be more
+// flexible, cause it's sutruct is already versatile, but chat if we want
+// another draw_callback. It feels like the current callback ties it too much to
+// the scene editor. The approach should rather be: Scene Editor is a KIND of
+// GUI. Same for the components, they should be under the scene editor
+// directory, not gui
 void gui_draw_callback(Renderer *, void *);
 
 bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent,
@@ -61,6 +64,9 @@ bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent,
 static inline int gui_size(const Gui *ui, const int size) {
   return size * ui->dpi;
 }
+
+
+
 
 EXTERN_C_END
 

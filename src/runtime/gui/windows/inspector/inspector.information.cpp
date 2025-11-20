@@ -1,4 +1,5 @@
 #include "inspector.information.hpp"
+#include "backend/context.h"
 #include "backend/theme/core.h"
 #include "imgui/imgui.h"
 #include "runtime/gui/components/spacing.hpp"

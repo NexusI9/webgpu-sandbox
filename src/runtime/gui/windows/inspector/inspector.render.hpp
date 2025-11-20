@@ -1,6 +1,7 @@
 #ifndef _GUI_WINDOW_INSPECTOR_RENDER_H_
 #define _GUI_WINDOW_INSPECTOR_RENDER_H_
 
+#include "backend/context.h"
 #include "backend/renderer/core.h"
 #include "runtime/gui/windows/inspector/tab.hpp"
 

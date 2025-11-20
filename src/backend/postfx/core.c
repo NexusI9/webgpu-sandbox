@@ -1,6 +1,7 @@
 #include "core.h"
 #include "backend/context.h"
 #include "backend/logger.h"
+#include "backend/postfx/draw.h"
 #include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
 #include "backend/std_pipeline/render_shader/bloom/bloom.h"

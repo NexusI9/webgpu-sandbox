@@ -34,6 +34,7 @@ typedef enum {
   REMStatus_UndefError,
 } REMStatus;
 
+
 // WGPU
 
 // clang-format off
@@ -46,6 +47,7 @@ typedef enum {
     _(WGPUShaderModule,        RegEntryType_WGPUObject,             shader_module,               128        ) \
     _(WGPUSampler,             RegEntryType_WGPUObject,             sampler,                     128        )                        
 
+#define REM_WGPU_ITEM_COUNT 5
 
 #define REM_ENGINE_LIST(_)                                                                                                                                \
     _(Mesh,                   RegEntryType_Mesh,                    mesh,                        128        ) \

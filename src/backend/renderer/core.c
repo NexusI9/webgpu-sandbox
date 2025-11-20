@@ -25,6 +25,7 @@
 #include "render_pass/draw.h"
 #include "runtime/input/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/texture/core.h"
 #include "utils/name.h"
 #include "webgpu/webgpu.h"
@@ -45,40 +46,39 @@ void renderer_create(Renderer *renderer, const RendererCreateDescriptor *desc) {
 
   renderer->id = reg_register(renderer, RegEntryType_Renderer);
   renderer->background = desc->background;
-  renderer->multisample = desc->multisample;
   renderer->width = desc->width ? desc->width : context_width();
   renderer->height = desc->height ? desc->height : context_height();
-  renderer->dpi = desc->dpi == RENDERER_DPI_AUTO
-                              ? emscripten_get_device_pixel_ratio()
-                              : desc->dpi;
   renderer->draw_mode = RendererDrawMode_Solid;
+  renderer->multisample = PipelineMultisampleCount_1x; // matches context
+  renderer->dpi = desc->dpi == RENDERER_DPI_AUTO
+                      ? emscripten_get_device_pixel_ratio()
+                      : desc->dpi;
 
-  renderer_mesh_list_init(renderer);
   profiler_init(&renderer->profiler);
 
-  TIMER("AO Bake", {
-    ao_bake_init(&renderer->texture.ambient_occlusion,
-                 &(AOBakeInitDescriptor){
-                     .size = AO_TEXTURE_RESOLUTION,
-                     .layer_count = AO_LAYER_COUNT,
-                 });
-  });
+  // init various buffers
+  compute_pass_init(&renderer->compute_pass, &(ComputePassDescriptor){
+                                                 .max_height = context_height(),
+                                                 .max_width = context_width(),
+                                             });
+}
 
-  {
-    // init various buffers
-    compute_pass_init(&renderer->compute_pass,
-                      &(ComputePassDescriptor){
-                          .max_height = context_height(),
-                          .max_width = context_width(),
-                      });
-  }
+/**
+   Generate the layouts from the batches and create the respective render pass
+   configuration for each passes/layers (scene/outline/gizmo...)
 
-  {
-    // Init batch and mesh render pass
-    renderer_draw_lists draw_lists = {0};
-    renderer_pass_layout_from_batch(renderer, draw_lists);
-    renderer_pass_create(renderer, draw_lists);
-  }
+    We do not include this feature in the renderer initial creation function
+    cause this process is mostly related to the case of wanting a 3D projectw
+    with pipelines etc...
+
+    For simplier cases of just wanting the renderer for handling the loops
+    callback, we won't need such functions.
+ */
+void renderer_create_layouts(Renderer *renderer) {
+  renderer_mesh_list_init(renderer);
+  renderer_draw_lists draw_lists = {0};
+  renderer_pass_layout_from_batch(renderer, draw_lists);
+  renderer_pass_create(renderer, draw_lists);
 }
 
 /**
@@ -167,6 +167,13 @@ void renderer_render(void *data) {
    with it (ao, shadow mapping...). Also call the main loop.
  */
 void renderer_draw(Renderer *renderer) {
+
+  if (renderer == NULL) {
+    logger_add(LoggerFlag_Error,
+               "Unable to start renderer main loop as renderer is NULL.");
+    return;
+  }
+
   // call main loop
   emscripten_set_main_loop_arg(renderer_render, (void *)renderer, 0, 1);
 }
@@ -352,17 +359,16 @@ void renderer_pass_layout_from_batch(Renderer *renderer,
 
         const size_t length = draw_lists[mode][layer].length;
 
-        draw_lists[mode][layer].entries[length] =
-            (RenderPassLayoutDescriptor){
-                .pipeline = key->pipeline,
-                .shader = draw_mode_attributes[target_mode].shader,
-                .topology_callback =
-                    draw_mode_attributes[target_mode].topology_callback,
-                .meshes = renderer_batch_get_mesh_list_from_key(
-                    &renderer->batches, key),
-                .mesh_preprocessor_callback = NULL,
-                .mesh_preprocessor_data = NULL,
-            };
+        draw_lists[mode][layer].entries[length] = (RenderPassLayoutDescriptor){
+            .pipeline = key->pipeline,
+            .shader = draw_mode_attributes[target_mode].shader,
+            .topology_callback =
+                draw_mode_attributes[target_mode].topology_callback,
+            .meshes =
+                renderer_batch_get_mesh_list_from_key(&renderer->batches, key),
+            .mesh_preprocessor_callback = NULL,
+            .mesh_preprocessor_data = NULL,
+        };
 
         draw_lists[mode][layer].length++;
       }

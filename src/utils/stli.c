@@ -11,7 +11,7 @@ StaticListStatus stli_create(size_t *capacity, size_t *length, const size_t num,
 }
 
 StaticListStatus stli_insert(void *entries, size_t capacity, size_t *length,
-                             size_t type_size, void *entry, const char *label) {
+                             size_t type_size, const void *entry, const char *label) {
 
   if (capacity == *length)
     return StaticListStatus_MaxCapacity;
@@ -22,7 +22,7 @@ StaticListStatus stli_insert(void *entries, size_t capacity, size_t *length,
 }
 
 StaticListStatus stli_remove(void *entries, size_t *length, size_t type_size,
-                             void *entry, const char *label) {
+                             const void *entry, const char *label) {
 
   if (*length == 0)
     return StaticListStatus_EmptyList;
@@ -75,7 +75,7 @@ void *stli_new_entry(void *entries, size_t capacity, size_t *length,
   return (char *)entries + type_size * (*length)++;
 }
 
-void *stli_find(void *entries, size_t length, size_t type_size, void *entry,
+void *stli_find(void *entries, size_t length, size_t type_size, const void *entry,
                 size_t *index, const char *label) {
 
   for (size_t i = 0; i < length; i++)

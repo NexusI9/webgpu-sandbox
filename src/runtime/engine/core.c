@@ -1,4 +1,5 @@
 #include "core.h"
+#include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/renderer/batch.h"
 #include "backend/renderer/core.h"
@@ -32,8 +33,8 @@ EngineStatus engine_init(Engine *engine) {
                     &(RendererCreateDescriptor){
                         .background = (WGPUColor){0.14f, 0.14f, 0.14f, 1.0f},
                         .dpi = 1.0,
-			.multisample = PipelineMultisampleCount_1x,
                     });
+    renderer_create_layouts(engine_get_renderer(engine));
   }
 
   UBOManager *ubo;
@@ -65,11 +66,11 @@ EngineStatus engine_init(Engine *engine) {
     // === GUI ===
     engine->gui = rem_new_gui();
     gui_init(engine_get_gui(engine),
-             &(GUIDescriptor){
+             &(GuiDescriptor){
                  .active_scene = scene,
                  .renderer = engine_get_renderer(engine),
                  .theme = &g_theme,
-                 .dpi = g_context.dpi,
+                 .dpi = context_dpi(),
              });
   }
 
@@ -100,6 +101,12 @@ EngineStatus engine_init(Engine *engine) {
 
   engine_init_shadow_map(&scene->lights, engine_get_renderer(engine));
   engine_init_reflection_pass(&scene->probes, engine_get_renderer(engine));
+
+  ao_bake_init(&engine_get_renderer(engine)->texture.ambient_occlusion,
+               &(AOBakeInitDescriptor){
+                   .size = AO_TEXTURE_RESOLUTION,
+                   .layer_count = AO_LAYER_COUNT,
+               });
 
   engine_init_gizmo(engine, &scene->gizmo);
   scene_system_set_draw_mode(scene, engine_get_renderer(engine),
@@ -185,7 +192,6 @@ void engine_init_shadow_map(LightList *list, Renderer *renderer) {
         .mesh_preprocessor_data = (void *)NULL,
         .meshes = shadow_mesh_lists.entries[i],
     };
-
 
   shadow_map_init(&(ShadowMapInitDescriptor){
       .lights = list,

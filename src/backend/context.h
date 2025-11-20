@@ -1,6 +1,7 @@
 #ifndef _CONTEXT_H_
 #define _CONTEXT_H_
 
+#include "backend/resource_manager.h"
 #include "runtime/input/core.h"
 #include "runtime/pipeline/render.h"
 #include <webgpu/webgpu.h>
@@ -10,6 +11,7 @@ typedef enum {
   ContextStatus_WGPUInitError,
   ContextStatus_UndefError,
 } ContextStatus;
+
 
 typedef struct {
   WGPUInstance instance;
@@ -24,7 +26,8 @@ typedef struct {
 } Context;
 
 typedef struct {
-  const char *html_target;
+  // target surface
+  const char *html_target;  
 } ContextDescriptor;
 
 extern Context g_context;
@@ -43,7 +46,6 @@ static inline const char *context_target() { return g_context.html_target; }
 static inline double context_dpi() { return g_context.dpi; }
 static inline void context_set_width(int value) { g_context.width = value; }
 static inline void context_set_height(int value) { g_context.height = value; }
-
 
 EXTERN_C_END
 

@@ -5,6 +5,7 @@
 #include "runtime/gui/core.h"
 #include "runtime/light/core.h"
 #include "runtime/mesh/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/scene/add.h"
 #include "runtime/scene/core.h"
 #include <stdint.h>

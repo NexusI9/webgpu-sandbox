@@ -23,6 +23,13 @@
 #define INPUT_MAX_MOVEMENT 20
 
 typedef enum {
+  InputMouseButton_Left,
+  InputMouseButton_Middle,
+  InputMouseButton_Right,
+  InputMouseButton_COUNT,
+} InputMouseButton;
+
+typedef enum {
   InputMouseState_Up,
   InputMouseState_Down,
 } InputMouseState;
@@ -41,7 +48,7 @@ typedef struct {
 
   struct {
     int x, y;
-    InputMouseState state;
+    InputMouseState state[InputMouseButton_COUNT];
     float sensitivity;
 
     struct {
@@ -56,6 +63,12 @@ typedef struct {
       double deltaX, deltaY;
       float sensitivity;
     } wheel;
+
+    struct {
+      int x, y;
+    } pan;
+
+    float zoom;
 
   } mouse;
 

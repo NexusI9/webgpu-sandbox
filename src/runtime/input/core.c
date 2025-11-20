@@ -51,12 +51,12 @@ bool input_mouse_move(int eventType, const EmscriptenMouseEvent *mouseEvent,
 
 bool input_mouse_down(int eventType, const EmscriptenMouseEvent *mouseEvent,
                       void *userData) {
-  g_input.mouse.state = InputMouseState_Down;
+  g_input.mouse.state[mouseEvent->button] = InputMouseState_Down;
   return EM_FALSE;
 }
 bool input_mouse_up(int eventType, const EmscriptenMouseEvent *mouseEvent,
                     void *usetData) {
-  g_input.mouse.state = InputMouseState_Up;
+  g_input.mouse.state[mouseEvent->button] = InputMouseState_Up;
   return EM_FALSE;
 }
 

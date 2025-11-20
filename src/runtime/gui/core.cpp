@@ -1,4 +1,6 @@
 #include "core.h"
+#include "./draw.h"
+#include "./draw.hpp"
 #include "./imgui_style/style.carbon.hpp"
 #include "backend/clock.h"
 #include "backend/context.h"
@@ -36,9 +38,6 @@
 #include <cstring>
 #include <stdint.h>
 
-/* TODO: make context available in the scene editor ui, but may interfere witht
- * the "pure C" approach since UI is included in Scene.
- */
 static ImGuiContext *imgui_context;
 
 // ui init
@@ -61,7 +60,7 @@ bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *e,
   return EM_TRUE;
 }
 
-GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
+GuiStatus gui_init(Gui *gui, const GuiDescriptor *desc) {
 
   logger_add(LoggerFlag_Process, "Intitializing Editor UI");
 
@@ -87,7 +86,7 @@ GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
     gui_style_carbon(gui);
 
     ImGuiIO &io = ImGui::GetIO();
-    io.Fonts->AddFontFromFileTTF(RESOURCES_PATH_FONT(GolosText-Regular.ttf),
+    io.Fonts->AddFontFromFileTTF(RESOURCES_PATH_FONT(GolosText_Regular.ttf),
                                  14.0f);
 
     ImGui_ImplWGPU_InitInfo info;
@@ -100,7 +99,7 @@ GUIStatus gui_init(Gui *gui, const GUIDescriptor *desc) {
     ImGui_ImplWGPU_Init(&info);
   }
 
-  return GUIStatus_Success;
+  return GuiStatus_Success;
 }
 
 void gui_draw_callback(Renderer *renderer, void *data) {
@@ -108,61 +107,10 @@ void gui_draw_callback(Renderer *renderer, void *data) {
   Gui *gui = (Gui *)data;
 
   profiler_latency_end(&gui->renderer->profiler, ProfilerLatencyType_UIPass);
-
   profiler_latency_start(&gui->renderer->profiler, ProfilerLatencyType_UIPass);
 
-  WGPUCommandEncoderDescriptor com_enc_desc = {.label = "Scene UI Command"};
-  WGPUCommandEncoder command_encoder =
-      wgpuDeviceCreateCommandEncoder(context_device(), &com_enc_desc);
-
-  WGPUTextureView swapchain_view =
-      wgpuSwapChainGetCurrentTextureView(context_swapchain());
-
-  WGPURenderPassColorAttachment color_attachment = {
-      .view = swapchain_view,
-      .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-      .resolveTarget = NULL,
-      .loadOp = WGPULoadOp_Load,
-      .storeOp = WGPUStoreOp_Store,
-      .clearValue = {0.0f, 0.0f, 0.0f, 1.0f},
-  };
-
-  WGPURenderPassDepthStencilAttachment depth_attachment = {
-      .view = gui->depth_view,
-      .depthLoadOp = WGPULoadOp_Clear,
-      .depthStoreOp = WGPUStoreOp_Store,
-      .depthClearValue = 1.0f,
-      .depthReadOnly = false,
-  };
-
-  WGPURenderPassDescriptor render_pass_desc = {
-      .colorAttachmentCount = 1,
-      .colorAttachments = &color_attachment,
-      .depthStencilAttachment = &depth_attachment,
-  };
-
-  gui->pass_encoder =
-      wgpuCommandEncoderBeginRenderPass(command_encoder, &render_pass_desc);
-
-  {
-    ImGuiIO &io = ImGui::GetIO();
-    io.DisplaySize.x = gui_size(gui, context_width());
-    io.DisplaySize.y = gui_size(gui, context_height());
-    io.DeltaTime = g_clock.delta;
-    io.FontGlobalScale = gui->dpi;
-    io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-    io.MousePos =
-        ImVec2(gui_size(gui, g_input.mouse.x), gui_size(gui, g_input.mouse.y));
-    io.MouseDown[0] = g_input.mouse.state;
-    io.MouseWheel = g_input.mouse.wheel.deltaY;
-    io.MouseWheelH = g_input.mouse.wheel.deltaX;
-
-    if (io.WantCaptureMouse)
-      g_input.locked |= InputLockState_Mouse;
-    else if (g_input.locked & InputLockState_Mouse)
-      g_input.locked ^= InputLockState_Mouse;
-  }
-
+  gui_draw_begin(gui);
+  gui_draw_update_io(gui);
   {
     ImGui_ImplWGPU_NewFrame();
     ImGui::NewFrame();
@@ -187,14 +135,7 @@ void gui_draw_callback(Renderer *renderer, void *data) {
     ImGui::Render();
     ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), gui->pass_encoder);
   }
-
-  {
-    wgpuRenderPassEncoderEnd(gui->pass_encoder);
-    WGPUCommandBuffer command_buffer =
-        wgpuCommandEncoderFinish(command_encoder, NULL);
-    wgpuQueueSubmit(context_queue(), 1, &command_buffer);
-    wgpuTextureViewRelease(swapchain_view);
-  }
+  gui_draw_end(gui);
 }
 
 void gui_destroy(Gui *gui) {}
