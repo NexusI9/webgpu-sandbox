@@ -73,6 +73,8 @@ typedef struct {
   TextureWriteMethod write_method;
 } TextureWriteTriangleGradientDescriptor;
 
+EXTERN_C_BEGIN
+
 void texture_write(unsigned char, texture_data, TextureWriteMethod);
 
 void texture_write_gradient(Texture *, const TextureGradient *,
@@ -86,5 +88,7 @@ void texture_write_triangle_gradient(
     const TextureWriteTriangleGradientDescriptor *);
 void texture_write_line(const TextureWriteLineDescriptor *);
 void texture_write_pixel(Texture *, int, vec2, TextureWriteMethod);
+
+EXTERN_C_END
 
 #endif

@@ -8,7 +8,7 @@
 #include "emscripten/html5.h"
 #include "runtime/gui/tree.h"
 #include "runtime/scene/core.h"
-#include "runtime/texture/atlas.h"
+#include "runtime/texture/sprite_sheet.h"
 #include <webgpu/webgpu.h>
 
 #define _GUI_MAX_SCENE_COUNT 1
@@ -61,12 +61,14 @@ void gui_draw_callback(Renderer *, void *);
 bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent,
                       void *userData);
 
-static inline int gui_size(const Gui *ui, const int size) {
+static inline int gui_scale(const Gui *ui, const int size) {
   return size * ui->dpi;
 }
 
-
-
+static inline void gui_scale_vec2(const Gui *ui, const vec2 src, vec2 dest) {
+  dest[0] = gui_scale(ui, src[0]);
+  dest[1] = gui_scale(ui, src[1]);
+}
 
 EXTERN_C_END
 

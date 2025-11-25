@@ -8,6 +8,7 @@
 #include "runtime/geometry/vertex/index.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/index.h"
+#include "utils/defines.h"
 
 typedef struct {
 
@@ -16,6 +17,9 @@ typedef struct {
 
 } Primitive;
 
+EXTERN_C_BEGIN
+
 void primitive_destroy(Primitive*);
 
+EXTERN_C_END
 #endif

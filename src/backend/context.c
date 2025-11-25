@@ -14,7 +14,7 @@
 #include "runtime/html_event/core.h"
 #include "runtime/input/core.h"
 #include "runtime/pipeline/render.h"
-#include "runtime/texture/atlas.h"
+#include "runtime/texture/sprite_sheet.h"
 #include "runtime/texture/core.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
@@ -62,7 +62,7 @@ ContextStatus context_init(const ContextDescriptor *desc) {
                          });
 
     theme_create_icon_atlas(&g_theme,
-                            &(TextureAtlasDescriptor){
+                            &(TextureSpriteSheetDescriptor){
                                 .cell_count = {16, 16},
                                 .cell_size = {128, 128},
                                 .format = TEXTURE_FORMAT_OFFSCREEN,

@@ -5,6 +5,9 @@
 
 #include "core.h"
 
+EXTERN_C_BEGIN
+
 void texture_read_pixel(const Texture *, const ivec2, float *);
 
+EXTERN_C_END
 #endif

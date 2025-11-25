@@ -3,6 +3,9 @@
 
 #include "core.h"
 
+EXTERN_C_BEGIN
+
 Primitive primitive_icosphere();
 
+EXTERN_C_END
 #endif

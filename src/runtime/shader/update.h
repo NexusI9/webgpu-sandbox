@@ -12,7 +12,7 @@
 
 typedef enum {
   ShaderUpdateFlag_None = 0,
-  ShaderUpdateFlag_KeepPrevious = 1 << 0,
+  ShaderUpdateFlag_KeepPrevious = 1 << 0, // DELETEME
   ShaderUpdateFlag_ReleasePrevious = 1 << 1,
 } ShaderUpdateFlag;
 
@@ -50,6 +50,7 @@ shader_update_uniform_callback(Shader *, const bind_group_index,
                                const bind_index, const ShaderUniformUpdate *,
                                const ShaderUpdateFlag);
 
+// TODO: since we use 'WGPU{Type}' for all the update function, why still use the WGPU{Type}Descriptor for this one? Replace to WPGUSampler 
 ShaderBindGroupSamplerEntry *
 shader_update_sampler(Shader *, const bind_group_index, const bind_index,
                       const WGPUSamplerDescriptor *, const ShaderUpdateFlag);

@@ -22,7 +22,7 @@ void UI::WorldTab::draw() {
 
   const InputStyle style = {
       .direction = InputDirection_Vertical,
-      .label_width = gui_size(gui, 85),
+      .label_width = gui_scale(gui, 85),
   };
 
   if (UI::TreeItem(gui, "Skybox").draw()) {

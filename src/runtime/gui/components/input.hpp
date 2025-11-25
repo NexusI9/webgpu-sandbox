@@ -8,7 +8,6 @@
 #include "runtime/input/core.h"
 #include "utils/color.h"
 #include "utils/name.h"
-#include <cstdio>
 
 namespace UI {
 

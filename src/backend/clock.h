@@ -15,4 +15,6 @@ extern cclock g_clock;
 void clock_init(cclock *);
 void clock_update_delta(cclock *);
 
+static inline double clock_delta(cclock *clock) { return clock->delta; }
+
 #endif

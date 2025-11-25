@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include <webgpu/webgpu.h>
 
+#include "utils/defines.h"
+
 #include "core.h"
 
 typedef float vattr_t;
@@ -13,6 +15,8 @@ typedef struct {
   size_t capacity;
   WGPUBuffer buffer;
 } VertexAttribute;
+
+EXTERN_C_BEGIN
 
 void vertex_attribute_find_equal_attr(Vertex *, VertexAttribute *,
                                       VertexAttributeType, VertexAttribute *);
@@ -44,4 +48,5 @@ void vertex_attribute_set_uv_add(VertexAttribute *, const vertex_uv);
 VertexStatus vertex_attribute_copy(VertexAttribute *, VertexAttribute *);
 void vertex_attribute_destroy(VertexAttribute *);
 
+EXTERN_C_END
 #endif

@@ -16,7 +16,7 @@ void UI::RenderTab::draw() {
 
   const InputStyle style = {
       .direction = InputDirection_Horizontal,
-      .label_width = gui_size(gui, 85),
+      .label_width = gui_scale(gui, 85),
   };
 
   ImGui::BeginChild("##render_properties", ImVec2(0, 0), true,

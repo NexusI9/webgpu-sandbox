@@ -1,6 +1,6 @@
 #include "core.h"
 #include "./draw.h"
-#include "./draw.hpp"
+#include "./io.hpp"
 #include "./imgui_style/style.carbon.hpp"
 #include "backend/clock.h"
 #include "backend/context.h"
@@ -31,7 +31,6 @@
 #include "runtime/mesh/core.h"
 #include "runtime/pipeline/render.h"
 #include "runtime/scene/core.h"
-#include "runtime/texture/atlas.h"
 #include "runtime/texture/core.h"
 #include "runtime/viewport/core.h"
 #include "stdio.h"
@@ -149,8 +148,8 @@ void gui_create_texture(Gui *ui) {
         .dimension = WGPUTextureDimension_2D,
         .size =
             {
-                .width = (uint32_t)gui_size(ui, context_width()),
-                .height = (uint32_t)gui_size(ui, context_height()),
+                .width = (uint32_t)gui_scale(ui, context_width()),
+                .height = (uint32_t)gui_scale(ui, context_height()),
                 .depthOrArrayLayers = 1,
             },
         .mipLevelCount = 1,

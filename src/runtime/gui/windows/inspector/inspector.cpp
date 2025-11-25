@@ -30,7 +30,7 @@ void UI::Inspector::draw() {
 
   const float page_width = theme_size(gui->theme, ThemeSize_RightPanel_Width);
   const float bar_width = theme_size(gui->theme, ThemeSize_RightPanelTab_Width);
-  const float gap = gui_size(gui, 4.f);
+  const float gap = gui_scale(gui, 4.f);
   const float btn_size = theme_size(gui->theme, ThemeSize_Button_InspectorTab);
   const ImVec2 icon_size{btn_size, btn_size};
 

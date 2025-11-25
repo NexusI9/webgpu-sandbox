@@ -7,7 +7,9 @@
 #include "runtime/viewport/viewport.h"
 
 #include "../commons.h"
+#include <cglm/cglm.h>
 #include <webgpu/webgpu.h>
+
 
 static const WGPUBindGroupLayoutDescriptor screen_layout_mesh = {
     // Group 0: Mesh
@@ -32,7 +34,7 @@ static const WGPUBindGroupLayoutDescriptor screen_layout_mesh = {
 static const WGPUBindGroupLayoutDescriptor screen_layout_texture = {
     // Group 1: Texture + Sampler
     .label = "Group 1 - Screen Texture",
-    .entryCount = 2,
+    .entryCount = 3,
     .entries =
         (WGPUBindGroupLayoutEntry[]){
             {
@@ -55,7 +57,26 @@ static const WGPUBindGroupLayoutDescriptor screen_layout_texture = {
                         .type = WGPUSamplerBindingType_Filtering,
                     },
             },
+            {
+                // texture_coordinates
+                .binding = 2,
+                .visibility = WGPUShaderStage_Fragment,
+                .buffer =
+                    (WGPUBufferBindingLayout){
+                        .type = WGPUBufferBindingType_Uniform,
+                        .minBindingSize = sizeof(TextureCoordinatesUniform),
+			.hasDynamicOffset = false,
+                    },
+            },
         },
+};
+
+static const WGPUDepthStencilState screen_depth_stencil = {
+    .format = TEXTURE_FORMAT_DEPTH, // FOR UI (DEFAULT IS
+                                    // TEXTURE_FORMAT_DEPTH_STENCIL), MAYBE NEED
+                                    // TO CREATE ANOTHER PIPELINE "SCREEN_UI"
+    .depthWriteEnabled = false,
+    .depthCompare = WGPUCompareFunction_Undefined,
 };
 
 static const RenderPipelineStateObject layout_screen = {
@@ -64,6 +85,7 @@ static const RenderPipelineStateObject layout_screen = {
     .bind_groups_count = 2,
     .bind_groups = {&screen_layout_mesh, &screen_layout_texture},
     .bindings = {.mvp = &mvp_binding},
+    .pipeline_attributes = {.stencil_state = &screen_depth_stencil},
 };
 
 #endif

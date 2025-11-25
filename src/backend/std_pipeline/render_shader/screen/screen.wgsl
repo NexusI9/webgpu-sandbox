@@ -20,12 +20,18 @@ struct Mesh {
   probe_reflection_grid_count: u32,
 }
 
-const SSBO_CAPACITY : u32 = 32u;
+struct TextureCoordinates {
+  offset: vec2<f32>,
+  scale: vec2<f32>,
+  color: vec4<f32>,
+ }
+
 @group(0) @binding(0) var<uniform> uMesh : Mesh;
 
 @group(1) @binding(0) var texture : texture_2d<f32>;
 @group(1) @binding(1) var texture_sampler : sampler;
-
+@group(1) @binding(2) var<uniform> uTexture : TextureCoordinates;
+  
 // vertex shader
   @vertex
 fn vs_main(input: VertexIn) -> VertexOut {
@@ -47,6 +53,7 @@ fn vs_main(input: VertexIn) -> VertexOut {
 fn fs_main(@location(1) vUv: vec2<f32>,
     @location(0) vCol: vec3<f32>) -> @location(0) vec4<f32> {
 
-    let t: vec4<f32> = vec4<f32>(0.0f, 0.0f, 0.0f, 1.0f);
-    return t + textureSample(texture, texture_sampler, vUv);
+    var tex = textureSample(texture, texture_sampler, vUv * uTexture.scale + uTexture.offset);
+
+    return mix(uTexture.color, tex, tex.a);
 }

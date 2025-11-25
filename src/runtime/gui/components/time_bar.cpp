@@ -23,7 +23,7 @@ bool UI::TimeBar::draw() {
 
   ImGui::Text("%s", label);
   ImGui::SameLine();
-  ImGui::SetCursorPosX(surface.x - gui_size(gui, 60));
+  ImGui::SetCursorPosX(surface.x - gui_scale(gui, 60));
   ImGui::Text("%.2fms", value);
 
   return false;

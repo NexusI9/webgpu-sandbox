@@ -87,7 +87,7 @@ compute_pass_kawase_inline(ComputePass *pass, const KawaseDescriptor *desc,
         {.binding = 3, .buffer = pass->buffer, .size = sizeof(KawaseUniform)},
     };
 
-    // cache 2 bind groups per layer
+    // TODO: cache 2 bind groups per layer
     WGPUBindGroup bind_group_a = wgpuDeviceCreateBindGroup(
         context_device(), &(WGPUBindGroupDescriptor){
                               .layout = bind_group_layout,
@@ -95,6 +95,7 @@ compute_pass_kawase_inline(ComputePass *pass, const KawaseDescriptor *desc,
                               .entries = entries,
                           });
 
+    // swap views
     entries[0].textureView = b_view;
     entries[2].textureView = a_view;
     WGPUBindGroup bind_group_b = wgpuDeviceCreateBindGroup(

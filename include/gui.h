@@ -3,5 +3,6 @@
 
 #include "runtime/gui/core.h"
 #include "runtime/gui/draw.h"
+#include "runtime/gui/sprite.h"
 
 #endif

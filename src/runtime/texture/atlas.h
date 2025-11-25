@@ -1,44 +1,57 @@
 #ifndef _TEXTURE_ATLAS_H_
 #define _TEXTURE_ATLAS_H_
 
+#include "backend/logger.h"
 #include "runtime/texture/core.h"
 #include <cglm/cglm.h>
 #include <webgpu/webgpu.h>
 
-#define TEXTURE_ATLAS_MAX_COL 64
-#define TEXTURE_ATLAS_MAX_ROW 64
+#define TEXTURE_ATLAS_MAX_LAYER 12
 
 typedef struct {
-  char *label;
+  const char *label;
   WGPUTexture texture;
-  WGPUTextureView view;
-  WGPUTextureFormat format;
-  WGPUSampler sampler;
-  ivec2 cell_size;
-  ivec2 cell_count;
-  int width;
-  int height;
+  WGPUTextureView view[TEXTURE_ATLAS_MAX_LAYER];
 } TextureAtlas;
 
 typedef struct {
   const char *label;
-  const char *path;
-  ivec2 cell_count;
-  ivec2 cell_size;
-  WGPUTextureFormat format;
+  vec2 size;
+  vec2 uv0, uv1;
+} TextureAtlasRegion;
+
+typedef struct {
+  const char *label;
+
+  struct {
+    const char *paths[12];
+    uint8_t count;
+  } layers;
+
+  const TextureResolution resolution;
+
 } TextureAtlasDescriptor;
 
 EXTERN_C_BEGIN
 
 TextureStatus texture_atlas_create(TextureAtlas *,
                                    const TextureAtlasDescriptor *);
-TextureStatus texture_atlas_cell_uv(TextureAtlas *, ivec2, vec2, vec2);
+
 TextureStatus texture_atlas_destroy(TextureAtlas *);
 
-static inline TextureStatus texture_atlas_cell_size(TextureAtlas *atlas,
-                                                    ivec2 dest) {
-  glm_ivec2_copy(atlas->cell_size, dest);
-  return TextureStatus_Success;
+static inline WGPUTextureView texture_atlas_layer_view(TextureAtlas *atlas,
+                                                       const uint8_t layer) {
+
+  if (layer > wgpuTextureGetDepthOrArrayLayers(atlas->texture)) {
+    logger_add(LoggerFlag_Warning,
+               "Attempting to access a layer index (%u) superior to the max "
+               "layer count (%u) of texture atlas %s",
+               layer, wgpuTextureGetDepthOrArrayLayers(atlas->texture),
+               atlas->label);
+    return NULL;
+  }
+
+  return atlas->view[layer];
 }
 
 EXTERN_C_END

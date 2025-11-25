@@ -11,13 +11,13 @@
 static inline void gui_draw_update_io(Gui *gui) {
 
   ImGuiIO &io = ImGui::GetIO();
-  io.DisplaySize.x = gui_size(gui, context_width());
-  io.DisplaySize.y = gui_size(gui, context_height());
+  io.DisplaySize.x = gui_scale(gui, context_width());
+  io.DisplaySize.y = gui_scale(gui, context_height());
   io.DeltaTime = g_clock.delta;
   io.FontGlobalScale = gui->dpi;
   io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
   io.MousePos =
-      ImVec2(gui_size(gui, g_input.mouse.x), gui_size(gui, g_input.mouse.y));
+      ImVec2(gui_scale(gui, g_input.mouse.x), gui_scale(gui, g_input.mouse.y));
 
   io.MouseDown[ImGuiMouseButton_Left] =
       g_input.mouse.state[InputMouseButton_Left];

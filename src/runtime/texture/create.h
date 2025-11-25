@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "core.h"
+#include "utils/defines.h"
 #include "webgpu/webgpu.h"
 
 #define TEXTURE_CUBE_LAYER 6
@@ -40,11 +41,15 @@ typedef struct {
   const CubeMapPath *path;
 } TextureCreateCubeMapDescriptor;
 
+EXTERN_C_BEGIN
+
 void texture_create(Texture *, const TextureCreateDescriptor *);
 TextureStatus texture_create_from_file(Texture *,
                                        const TextureCreateFileDescriptor *);
 TextureStatus
 texture_create_cubemap_from_file(Texture[TEXTURE_CUBE_LAYER],
                                  const TextureCreateCubeMapDescriptor *);
+
+EXTERN_C_END
 
 #endif

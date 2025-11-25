@@ -2,7 +2,7 @@
 #define _THEME_H_
 
 #include "backend/logger.h"
-#include "runtime/texture/atlas.h"
+#include "runtime/texture/sprite_sheet.h"
 #include "utils/color.h"
 #include "utils/defines.h"
 #include "webgpu/webgpu.h"
@@ -239,7 +239,7 @@ typedef struct {
   ThemeIconCell icons[THEME_ICON_COUNT];
 
   double dpi;
-  TextureAtlas atlas_texture;
+  TextureSpriteSheet sprite_sheet_texture;
 
 } Theme;
 
@@ -257,15 +257,17 @@ EXTERN_C_BEGIN
 ThemeStatus theme_init(Theme *, const ThemeDescriptor *);
 
 static inline ThemeStatus
-theme_create_icon_atlas(Theme *theme, const TextureAtlasDescriptor *desc) {
-  texture_atlas_create(&theme->atlas_texture, desc);
+theme_create_icon_atlas(Theme *theme,
+                        const TextureSpriteSheetDescriptor *desc) {
+  texture_sprite_sheet_create(&theme->sprite_sheet_texture, desc);
   return ThemeStatus_Success;
 }
 
-static inline ThemeStatus theme_set_icons_coordinates(Theme *theme, const ivec2* coo) {
+static inline ThemeStatus theme_set_icons_coordinates(Theme *theme,
+                                                      const ivec2 *coo) {
 
-  if (theme->atlas_texture.cell_size[0] == 0 ||
-      theme->atlas_texture.cell_size[0] == 0) {
+  if (theme->sprite_sheet_texture.cell_size[0] == 0 ||
+      theme->sprite_sheet_texture.cell_size[0] == 0) {
     logger_add(LoggerFlag_Error,
                "Current theme atlas texture has a cell size of 0, make sure "
                "the texture atlas is initialized correctly.");
@@ -274,8 +276,9 @@ static inline ThemeStatus theme_set_icons_coordinates(Theme *theme, const ivec2*
 
   for (uint8_t i = 0; i < THEME_ICON_COUNT; i++) {
     glm_ivec2_copy((int *)coo[i], theme->icons[i].cell);
-    texture_atlas_cell_uv(&theme->atlas_texture, theme->icons[i].cell,
-                          theme->icons[i].uv0, theme->icons[i].uv1);
+    texture_sprite_sheet_cell_uv(&theme->sprite_sheet_texture,
+                                 theme->icons[i].cell, theme->icons[i].uv0,
+                                 theme->icons[i].uv1);
   }
 
   return ThemeStatus_Success;
@@ -296,7 +299,7 @@ static inline const ThemeIconCell *theme_icon_cell(const Theme *theme,
 }
 
 static inline WGPUTextureView theme_icon_atlas(const Theme *theme) {
-  return theme->atlas_texture.view;
+  return theme->sprite_sheet_texture.view;
 }
 
 static inline int theme_scale_size(const Theme *theme, const int size) {

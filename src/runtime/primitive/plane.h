@@ -8,6 +8,10 @@ typedef enum {
   PrimitivePlaneUp_z,
 } PrimitivePlaneUp;
 
+EXTERN_C_BEGIN
+
 Primitive primitive_plane();
+
+EXTERN_C_END
 
 #endif

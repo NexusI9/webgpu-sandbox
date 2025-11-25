@@ -13,8 +13,9 @@
 
 Input g_input = {0};
 
-bool input_key_down(int eventType, const EmscriptenKeyboardEvent *keyEvent,
-                    void *userData) {
+bool input_callback_key_down(int eventType,
+                             const EmscriptenKeyboardEvent *keyEvent,
+                             void *userData) {
 
   unsigned int keyCode = keyEvent->keyCode;
   if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == false)
@@ -23,8 +24,9 @@ bool input_key_down(int eventType, const EmscriptenKeyboardEvent *keyEvent,
   return false;
 }
 
-bool input_key_up(int eventType, const EmscriptenKeyboardEvent *keyEvent,
-                  void *userData) {
+bool input_callback_key_up(int eventType,
+                           const EmscriptenKeyboardEvent *keyEvent,
+                           void *userData) {
 
   unsigned int keyCode = keyEvent->keyCode;
   if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == true)
@@ -33,8 +35,9 @@ bool input_key_up(int eventType, const EmscriptenKeyboardEvent *keyEvent,
   return false;
 }
 
-bool input_mouse_move(int eventType, const EmscriptenMouseEvent *mouseEvent,
-                      void *userData) {
+bool input_callback_mouse_move(int eventType,
+                               const EmscriptenMouseEvent *mouseEvent,
+                               void *userData) {
 
   // movement
   g_input.mouse.movement.x = MIN(mouseEvent->movementX, INPUT_MAX_MOVEMENT);
@@ -49,22 +52,32 @@ bool input_mouse_move(int eventType, const EmscriptenMouseEvent *mouseEvent,
   return false;
 }
 
-bool input_mouse_down(int eventType, const EmscriptenMouseEvent *mouseEvent,
-                      void *userData) {
+bool input_callback_mouse_down(int eventType,
+                               const EmscriptenMouseEvent *mouseEvent,
+                               void *userData) {
   g_input.mouse.state[mouseEvent->button] = InputMouseState_Down;
   return EM_FALSE;
 }
-bool input_mouse_up(int eventType, const EmscriptenMouseEvent *mouseEvent,
-                    void *usetData) {
+
+bool input_callback_mouse_up(int eventType,
+                             const EmscriptenMouseEvent *mouseEvent,
+                             void *usetData) {
   g_input.mouse.state[mouseEvent->button] = InputMouseState_Up;
   return EM_FALSE;
 }
 
-bool input_wheel(int eventType, const EmscriptenWheelEvent *wheelEvent,
-                 void *userData) {
+bool input_callback_wheel(int eventType, const EmscriptenWheelEvent *wheelEvent,
+                          void *userData) {
 
   g_input.mouse.wheel.deltaX = wheelEvent->deltaX;
   g_input.mouse.wheel.deltaY = wheelEvent->deltaY;
+
+  g_input.mouse.pan.x += wheelEvent->deltaX;
+  g_input.mouse.pan.y += wheelEvent->deltaY;
+
+  // zoom
+  if (input_key(INPUT_KEY_CMD))
+    g_input.mouse.zoom += wheelEvent->deltaY;
 
   // returning true call preventDefault
   return EM_TRUE;
@@ -86,34 +99,34 @@ void input_init(const InputDescriptor *desc) {
 
   // key down/up event listener
   html_event_add_key_down(&(HTMLEventKey){
-      .callback = input_key_down,
+      .callback = input_callback_key_down,
       .data = NULL,
       .size = 0,
   });
 
   html_event_add_key_up(&(HTMLEventKey){
-      .callback = input_key_up,
+      .callback = input_callback_key_up,
       .data = NULL,
       .size = 0,
   });
 
   // mouse move event listener
   html_event_add_mouse_move(&(HTMLEventMouse){
-      .callback = input_mouse_move,
+      .callback = input_callback_mouse_move,
       .data = NULL,
       .size = 0,
   });
 
   // mouse down event listener
   html_event_add_mouse_down(&(HTMLEventMouse){
-      .callback = input_mouse_down,
+      .callback = input_callback_mouse_down,
       .data = NULL,
       .size = 0,
   });
 
   // mouse move event listener
   html_event_add_mouse_up(&(HTMLEventMouse){
-      .callback = input_mouse_up,
+      .callback = input_callback_mouse_up,
       .data = NULL,
       .size = 0,
   });
@@ -121,7 +134,7 @@ void input_init(const InputDescriptor *desc) {
   // scroll event listener
   // emscripten_set_wheel_callback(target, NULL, false, input_wheel);
   html_event_add_wheel(&(HTMLEventWheel){
-      .callback = input_wheel,
+      .callback = input_callback_wheel,
       .data = NULL,
       .size = 0,
   });

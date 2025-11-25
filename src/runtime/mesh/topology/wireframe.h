@@ -22,6 +22,8 @@ typedef struct {
   MeshTopologyAnchorList anchors;
 } MeshTopologyWireframe;
 
+EXTERN_C_BEGIN
+
 int mesh_topology_wireframe_create(MeshTopology *, MeshTopologyWireframe *);
 
 MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *);
@@ -29,4 +31,5 @@ MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *);
 int mesh_topology_wireframe_update(const MeshTopologyBase *,
                                    MeshTopologyWireframe *);
 
+EXTERN_C_END
 #endif

@@ -11,6 +11,7 @@
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/core.h"
 #include "runtime/geometry/vertex/index.h"
+#include "utils/defines.h"
 
 #define MESH_TOPOLOGY_ANCHOR_LIST_DEFAULT_CAPACITY 1023
 #define MESH_TOPOLOGY_ANCHOR_DEFAULT_CAPACITY 32
@@ -38,6 +39,8 @@ typedef struct {
   size_t length;
   size_t capacity;
 } MeshTopologyAnchorList;
+
+EXTERN_C_BEGIN
 
 /**
    Anchors provide implementation to help with topology manipulation.
@@ -93,4 +96,5 @@ mesh_topology_anchor_list_new_index(MeshTopologyAnchorList *, vindex_t);
 
 void mesh_topology_anchor_list_destroy(MeshTopologyAnchorList *);
 
+EXTERN_C_END
 #endif

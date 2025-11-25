@@ -12,10 +12,10 @@ bool UI::TreeItemMesh::draw() {
 
   pos = ImGui::GetCursorPos();
   screen_pos = ImGui::GetCursorScreenPos();
-  const float height = gui_size(gui, this->height);
-  const float border_radius = gui_size(gui, this->border_radius);
-  const float top_padding = gui_size(gui, this->top_padding);
-  const float left_padding = gui_size(gui, this->left_padding);
+  const float height = gui_scale(gui, this->height);
+  const float border_radius = gui_scale(gui, this->border_radius);
+  const float top_padding = gui_scale(gui, this->top_padding);
+  const float left_padding = gui_scale(gui, this->left_padding);
   const ImVec2 dim = ImVec2(ImGui::GetContentRegionAvail().x, height);
 
   name_t inv_name;
@@ -46,7 +46,7 @@ bool UI::TreeItemMesh::draw() {
     // DrawList Rect filled are not interactive elements
     ImGui::InvisibleButton(id_bg,
                            ImVec2(ImGui::GetContentRegionAvail().x -
-                                      gui_size(gui, icon_size),
+                                      gui_scale(gui, icon_size),
                                   dim.y));
 
     // set it back for the actual background color...
@@ -71,7 +71,7 @@ bool UI::TreeItemMesh::draw() {
 
     const ThemeIconCell *uv = theme_icon_cell(gui->theme, icon);
     // vertical alignment
-    ImGui::SetCursorPosY(pos.y + gui_size(gui, top_padding));
+    ImGui::SetCursorPosY(pos.y + gui_scale(gui, top_padding));
     ImGui::Image((ImTextureRef)theme_icon_atlas(gui->theme),
                  ImVec2(icon_size, icon_size), ImVec2(uv->uv0[0], uv->uv0[1]),
                  ImVec2(uv->uv1[0], uv->uv1[1]));
@@ -85,7 +85,7 @@ bool UI::TreeItemMesh::draw() {
   {
     // reset cursor to initial pos and overlay the tree on top of the label
     ImGui::SetCursorPosX(pos.x);
-    ImGui::SetCursorPosY(pos.y + gui_size(gui, top_padding));
+    ImGui::SetCursorPosY(pos.y + gui_scale(gui, top_padding));
 
     ImGuiTreeNodeFlags flags =
         ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_AllowItemOverlap;
@@ -113,8 +113,8 @@ bool UI::TreeItemMesh::draw_visibility() {
 
   ImGui::SetCursorPos(
       ImVec2(ImGui::GetWindowContentRegionMax().x -
-                 gui_size(gui, icon_size),
-             pos.y + gui_size(gui, this->top_padding)));
+                 gui_scale(gui, icon_size),
+             pos.y + gui_scale(gui, this->top_padding)));
 
   ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
   ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0, 0, 0, 0));

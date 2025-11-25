@@ -44,6 +44,12 @@ typedef enum {
   TextureStatus_UndefError,
 } TextureStatus;
 
+typedef struct {
+  vec2 offset;
+  vec2 scale;
+  vec4 color;
+} TextureCoordinatesUniform;
+
 typedef unsigned char *texture_data;
 
 typedef struct {
@@ -58,6 +64,8 @@ typedef struct {
 // cached textel sizes since they use expensive divide operation
 extern float g_texture_resolution_texel_size[TextureResolution_2048 + 1];
 
+EXTERN_C_BEGIN
+
 void texture_save(Texture *, const char *);
 void texture_free(Texture *);
 
@@ -69,5 +77,7 @@ static inline float texture_size_texel(const TextureResolution size) {
 
   return g_texture_resolution_texel_size[size];
 }
+
+EXTERN_C_END
 
 #endif

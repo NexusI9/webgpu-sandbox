@@ -1,84 +1,63 @@
 #include "atlas.h"
-#include "backend/resource_manager.h"
-#include "runtime/texture/core.h"
 
 #include "backend/logger.h"
-#include "runtime/texture/create.h"
+#include "backend/resource_manager.h"
+#include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 
 TextureStatus texture_atlas_create(TextureAtlas *atlas,
                                    const TextureAtlasDescriptor *desc) {
 
-  if (desc->cell_count[0] > TEXTURE_ATLAS_MAX_ROW ||
-      desc->cell_count[1] > TEXTURE_ATLAS_MAX_COL) {
-    logger_add(LoggerFlag_Error,
-               "Attempting to set a cell count out of maximum allowed cell "
-               "count: [%d,%d], trying to set [%d, %d].",
-               TEXTURE_ATLAS_MAX_ROW, TEXTURE_ATLAS_MAX_COL,
-               desc->cell_count[0], desc->cell_count[1]);
-    return TextureStatus_CellOutOfBound;
-  }
+  atlas->label = desc->label;
 
-  Texture texture;
-  TextureStatus create =
-      texture_create_from_file(&texture, &(TextureCreateFileDescriptor){
-                                             .channels = TextureChannel_RGBA,
-                                             .flip = false,
-                                             .height = TEXTURE_HEIGHT_AUTO,
-                                             .width = TEXTURE_WIDTH_AUTO,
-                                             .path = desc->path,
-                                         });
+  uint8_t layer_count =
+      (uint8_t)fminf(desc->layers.count, TEXTURE_ATLAS_MAX_LAYER);
 
-  if (create != TextureStatus_Success) {
-    logger_add(LoggerFlag_Error, "Couldn't create texture atlas %s.",
-               desc->label);
-    return create;
-  }
-
-  if (desc->label)
-    atlas->label = strdup(desc->label);
+  if (desc->layers.count > TEXTURE_ATLAS_MAX_LAYER)
+    logger_add(LoggerFlag_Warning,
+               "Attempting to access a layer index (%u) superior to the max "
+               "layer count (%u) of texture atlas %s",
+               layer_count, TEXTURE_ATLAS_MAX_LAYER, atlas->label);
 
   atlas->texture = rem_new_texture(&(WGPUTextureDescriptor){
-      .label = "Atlas Texture",
+      .label = "Module Atlas Texture",
       .dimension = WGPUTextureDimension_2D,
       .format = TEXTURE_FORMAT_OFFSCREEN,
       .mipLevelCount = 1,
       .sampleCount = 1,
-      .usage = WGPUTextureUsage_TextureBinding | WGPUTextureUsage_CopyDst,
-      .size = {texture.width, texture.height, 1},
+      .size =
+          {
+              desc->resolution,
+              desc->resolution,
+              layer_count,
+          },
+      .usage = WGPUTextureUsage_CopyDst | WGPUTextureUsage_TextureBinding,
   });
 
-  rem_write_texture(atlas->texture, texture.data, texture.size,
-                    texture.channels, 0, REMWriteFlag_STBIFreeData);
+  for (uint8_t i = 0; i < layer_count; i++) {
 
-  atlas->view = rem_new_view(atlas->texture, NULL);
+    Texture texture;
+    texture_create_from_file(&texture, &(TextureCreateFileDescriptor){
+                                           .path = desc->layers.paths[i],
+                                           .channels = TextureChannel_RGBA,
+                                           .flip = false,
+                                           .width = desc->resolution,
+                                           .height = desc->resolution,
+                                       });
 
-  atlas->width = texture.width;
-  atlas->height = texture.height;
-  glm_ivec2_copy((int *)desc->cell_count, atlas->cell_count);
-  glm_ivec2_copy((int *)desc->cell_size, atlas->cell_size);
+    rem_write_texture(atlas->texture, texture.data, texture.size,
+                      texture.channels, i, REMWriteFlag_STBIFreeData);
 
-  return TextureStatus_Success;
-}
-
-TextureStatus texture_atlas_cell_uv(TextureAtlas *atlas, ivec2 cell, vec2 uv0,
-                                    vec2 uv1) {
-
-  if (cell[0] > atlas->cell_count[0] || cell[1] > atlas->cell_count[1]) {
-    logger_add(
-        LoggerFlag_Warning,
-        "Attempting to reach a cell out of texture atlas %s. Maximum cell "
-        "count: [%d,%d], trying to reach [%d, %d].",
-        atlas->label, atlas->cell_count[0], atlas->cell_count[1], cell[0],
-        cell[1]);
-    return TextureStatus_CellOutOfBound;
-  }
-
-  ivec2 dimension = {atlas->width, atlas->height};
-
-  for (int i = 0; i < 2; i++) {
-    uv0[i] = (float)cell[i] * atlas->cell_size[i] / dimension[i];
-    uv1[i] = (float)(cell[i] + 1) * atlas->cell_size[i] / dimension[i];
+    atlas->view[i] = rem_new_view(atlas->texture,
+                                  &(WGPUTextureViewDescriptor){
+                                      .label = "Module Atlas Texture View",
+                                      .arrayLayerCount = 1,
+                                      .baseArrayLayer = i,
+                                      .mipLevelCount = 1,
+                                      .aspect = WGPUTextureAspect_All,
+                                      .dimension = WGPUTextureViewDimension_2D,
+                                  });
   }
 
   return TextureStatus_Success;
@@ -86,19 +65,10 @@ TextureStatus texture_atlas_cell_uv(TextureAtlas *atlas, ivec2 cell, vec2 uv0,
 
 TextureStatus texture_atlas_destroy(TextureAtlas *atlas) {
 
-  if (atlas->label) {
-    free(atlas->label);
-    atlas->label = NULL;
-  }
+  for (uint8_t i = 0; i < wgpuTextureGetDepthOrArrayLayers(atlas->texture); i++)
+    rem_destroy_view(&atlas->view[i]);
 
-  if (atlas->sampler)
-    rem_destroy_sampler(&atlas->sampler);
-
-  if (atlas->texture)
-    rem_destroy_texture(&atlas->texture);
-
-  if (atlas->view)
-    rem_destroy_view(&atlas->view);
+  rem_destroy_texture(&atlas->texture);
 
   return TextureStatus_Success;
 }

@@ -119,7 +119,7 @@ mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
    Cache siblings anchor for each vertex.
  */
 void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
-  
+
   MeshTopologyAnchorList hashed_list; // temp
 
   // init new list
@@ -214,34 +214,14 @@ void mesh_topology_base_update_buffer(MeshTopologyBase *base) {
 
   {
     // === Vertex attributes ===
-    rem_destroy_buffer(&base->attribute.buffer);
-
     const size_t va_size = base->attribute.length * sizeof(vattr_t);
-
-    base->attribute.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
-        .label = "Base Topology Vertex Attributes",
-        .mappedAtCreation = false,
-        .size = va_size,
-        .usage = WGPUBufferUsage_Vertex | WGPUBufferUsage_CopyDst,
-    });
-
     rem_write_buffer(base->attribute.buffer, 0, (void *)base->attribute.entries,
                      va_size, REMWriteFlag_None);
   }
 
   {
     // === Vertex indexes ===
-    rem_destroy_buffer(&base->index.buffer);
-
     const size_t vi_size = base->index.length * sizeof(vindex_t);
-
-    base->index.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
-        .label = "BoundBox Topology Vertex Indexes",
-        .mappedAtCreation = false,
-        .size = vi_size,
-        .usage = WGPUBufferUsage_Index | WGPUBufferUsage_CopyDst,
-    });
-
     rem_write_buffer(base->index.buffer, 0, (void *)base->index.entries,
                      vi_size, REMWriteFlag_None);
   }

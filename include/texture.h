@@ -2,6 +2,7 @@
 #define _INCLUDE_ENGINE_TEXTURE_H_
 
 #include "runtime/texture/atlas.h"
+#include "runtime/texture/sprite_sheet.h"
 #include "runtime/texture/core.h"
 #include "runtime/texture/create.h"
 #include "runtime/texture/processing.h"

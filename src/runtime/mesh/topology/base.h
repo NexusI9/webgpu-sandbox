@@ -9,6 +9,7 @@
 #include "runtime/geometry/vertex/group.h"
 #include "runtime/geometry/vertex/index.h"
 #include "runtime/geometry/vertex/vertex.h"
+#include "utils/defines.h"
 
 typedef enum {
   MeshTopologyBaseStatus_Success,
@@ -23,6 +24,8 @@ typedef struct {
   VertexGroupSet group;
   MeshTopologyAnchorList siblings;
 } MeshTopologyBase;
+
+EXTERN_C_BEGIN
 
 MeshTopology mesh_topology_base_vertex(MeshTopologyBase *);
 
@@ -43,4 +46,6 @@ void mesh_topology_base_set_position(MeshTopologyBase *, const VertexGroup *,
                                      vec3 *);
 
 void mesh_topology_base_update_buffer(MeshTopologyBase *);
+
+EXTERN_C_END
 #endif

@@ -5,6 +5,7 @@
 
 typedef vec4 color;
 
+// TODO: move in theme or smth
 static const color COLOR_GIZMO_X = {0.91f, 0.29f, 0.23f, 1.0f};
 static const color COLOR_GIZMO_Y = {0.54f, 0.75f, 0.27f, 1.0f};
 static const color COLOR_GIZMO_Z = {0.23f, 0.40f, 0.91f, 1.0f};
@@ -12,5 +13,16 @@ static const color COLOR_GIZMO_XY = {0.91f, 0.29f, 0.23f, 0.6f};
 static const color COLOR_GIZMO_YZ = {0.54f, 0.75f, 0.27f, 0.6f};
 static const color COLOR_GIZMO_XZ = {0.23f, 0.40f, 0.91f, 0.6f};
 static const color COLOR_GIZMO_HOVER = {0.95f, 0.91f, 0.18f, 1.0f};
+// TODO END
+
+
+
+static inline void color_lerp(const color start, const color end, const float t,
+                              color dest) {
+  const float inv_t = 1.0f - t;
+
+  for (uint8_t i = 0; i < 4; i++)
+    dest[i] = start[i] * inv_t + end[i] * t;
+}
 
 #endif

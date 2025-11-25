@@ -26,6 +26,8 @@ typedef struct {
   AABB local;
 } MeshTopologyBoundbox;
 
+EXTERN_C_BEGIN
+
 void mesh_topology_boundbox_compute_bound(const MeshTopologyBase *, mat4,
                                           MeshTopologyBoundbox *);
 
@@ -38,4 +40,5 @@ MeshTopologyBoundboxStatus
 mesh_topology_boundbox_update(const MeshTopologyBase *, mat4,
                               MeshTopologyBoundbox *);
 
+EXTERN_C_END
 #endif
