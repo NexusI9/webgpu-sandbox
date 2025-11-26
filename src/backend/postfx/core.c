@@ -364,12 +364,11 @@ PostFxStatus post_fx_bloom_destroy(PostFx *fx) {
   PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
 
   post_fx_effect_destroy(effect);
+  
+  rem_destroy_view(&effect->views[PostFxViewIndex_Bloom]);
+  
   post_fx_state_disable_effect(fx, PostFxType_Bloom);
-
   post_fx_remove_callback(fx, effect->draw_callback);
-
-  if (effect->views[PostFxViewIndex_Bloom])
-    rem_destroy_view(&effect->views[PostFxViewIndex_Bloom]);
 
   // switch composite view to fallback texture
   if (post_fx_effect_enabled(fx, PostFxType_Composite)) {
@@ -384,7 +383,7 @@ PostFxStatus post_fx_bloom_destroy(PostFx *fx) {
 PostFxStatus post_fx_composite_destroy(PostFx *fx) {
   post_fx_effect_destroy(post_fx_effect(fx, PostFxType_Composite));
   post_fx_state_disable_effect(fx, PostFxType_Composite);
-
+  
   PostFxEffect *effect = post_fx_effect(fx, PostFxType_Composite);
   post_fx_remove_callback(fx, effect->draw_callback);
 
@@ -393,7 +392,7 @@ PostFxStatus post_fx_composite_destroy(PostFx *fx) {
 
 /**
    Common destroyer functions
-   We do not automatically destroy views, cause views might be shared accross
+   WARNING: We do not automatically destroy views, cause views might be shared accross
    other enities, so it would be dangerous to automatically batch release them.
  */
 PostFxStatus post_fx_effect_destroy(PostFxEffect *effect) {
@@ -404,10 +403,6 @@ PostFxStatus post_fx_effect_destroy(PostFxEffect *effect) {
   for (i = 0; i < POST_FX_BUFFER_CAPACITY; i++)
     if (effect->buffers[i])
       rem_destroy_buffer(&effect->buffers[i]);
-
-  for (i = 0; i < POST_FX_VIEW_CAPACITY; i++)
-    if (effect->views[i])
-      rem_destroy_view(&effect->views[i]);
 
   for (i = 0; i < POST_FX_COMPUTE_CAPACITY; i++)
     compute_pass_destroy(&effect->compute_passes[i]);
