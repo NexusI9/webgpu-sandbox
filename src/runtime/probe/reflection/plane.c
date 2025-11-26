@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include "backend/compute/kawase.h"
-#include "backend/compute/mipmap.h"
 #include "backend/registry.h"
 #include "backend/renderer/render_pass/draw.h"
 #include "backend/renderer/render_pass/visibility.h"

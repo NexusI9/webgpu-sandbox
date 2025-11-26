@@ -96,12 +96,7 @@ static inline void renderer_draw_plane_reflection(Renderer *renderer,
     };
     render_pass_im_set_views(&list->pass, &src_views);
 
-    KawaseDescriptor blur_desc = {
-        .texture = list->pass.color.texture,
-        .layer_count = list->length,
-        .pass_count = 3,
-    };
-    compute_pass_kawase(&renderer->compute_pass, &blur_desc);
+    compute_pass_kawase_draw(&renderer->compute_pass, 3);
   }
   profiler_latency_end(&renderer->profiler, ProfilerLatencyType_KawasePass);
 }

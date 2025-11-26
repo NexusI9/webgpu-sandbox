@@ -1,4 +1,6 @@
 #include "core.h"
+#include "backend/compute/core.h"
+#include "backend/compute/kawase.h"
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/renderer/batch.h"
@@ -151,26 +153,31 @@ void engine_init_reflection_pass(ProbeList *list, Renderer *renderer) {
 
   // grid reflection
   renderer_probe_reflection_create_pass(
-      renderer, &(RendererProbeReflectionDescriptor){
-                    .layer_count = PROBE_REFLECTION_LIST_MAX_COUNT *
-                                   PROBE_REFLECTION_VIEW_COUNT,
-                    .draw_list = &reflection_draw_list,
-                    .handle = &list->reflection_probe.pass,
-                    .multisample = PipelineMultisampleCount_1x,
-                    .resolution = TextureResolution_512,
-                    .view_dimension = WGPUTextureViewDimension_CubeArray,
-                });
+      renderer, &list->reflection_probe.pass,
+      &(RendererProbeReflectionDescriptor){
+          .layer_count =
+              PROBE_REFLECTION_LIST_MAX_COUNT * PROBE_REFLECTION_VIEW_COUNT,
+          .draw_list = &reflection_draw_list,
+          .multisample = PipelineMultisampleCount_1x,
+          .resolution = TextureResolution_512,
+          .view_dimension = WGPUTextureViewDimension_CubeArray,
+      });
 
   // plane relfection
   renderer_probe_reflection_create_pass(
-      renderer, &(RendererProbeReflectionDescriptor){
-                    .layer_count = PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT,
-                    .draw_list = &reflection_draw_list,
-                    .handle = &list->reflection_plane.pass,
-                    .multisample = PipelineMultisampleCount_1x,
-                    .resolution = TextureResolution_512,
-                    .view_dimension = WGPUTextureViewDimension_2DArray,
-                });
+      renderer, &list->reflection_plane.pass,
+      &(RendererProbeReflectionDescriptor){
+          .layer_count = PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT,
+          .draw_list = &reflection_draw_list,
+          .multisample = PipelineMultisampleCount_1x,
+          .resolution = TextureResolution_512,
+          .view_dimension = WGPUTextureViewDimension_2DArray,
+      });
+
+  compute_pass_kawase_create(&list->reflection_plane.kawase, &(ComputePassDescriptor){
+    .label = "Plane Reflection Kawase Pass",
+    .source_texture = list->reflection_plane.pass.color.texture,
+  });
 }
 
 void engine_init_shadow_map(LightList *list, Renderer *renderer) {

@@ -6,12 +6,15 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-#define KAWASE_WORKGROUP 8
-
 typedef enum {
   KawaseStatus_Success,
+  KawaseStatus_OutOfBound,
+  KawaseStatus_InitFail,
   KawaseStatus_UndefError,
 } KawaseStatus;
+
+static const int KAWASE_WORKGROUP = 8;
+static const int KAWASE_BUFFER_UNIFORM = 0;
 
 typedef struct {
   vec2 texel_size;
@@ -20,17 +23,21 @@ typedef struct {
   vec4 _pad2;
 } KawaseUniform;
 
-typedef struct {
-  WGPUTexture texture;
-  const size_t layer_count;
-  const uint32_t pass_count;
-} KawaseDescriptor;
+KawaseStatus compute_pass_kawase_create(ComputePass *,
+                                        const ComputePassDescriptor *);
+
+KawaseStatus compute_pass_kawase_update_source_texture(ComputePass *,
+                                                       const WGPUTexture);
+
+static inline void compute_pass_kawase_destroy(ComputePass *pass) {
+  compute_pass_destroy(pass);
+}
 
 KawaseStatus
-compute_pass_kawase(ComputePass *,
-                    const KawaseDescriptor *); // builtin command encoder
+compute_pass_kawase_draw(ComputePass *,
+                         const uint32_t); // builtin command encoder
 
-KawaseStatus compute_pass_kawase_inline(ComputePass *, const KawaseDescriptor *,
-                                        const WGPUCommandEncoder);
+KawaseStatus compute_pass_kawase_draw_inline(ComputePass *, const uint32_t,
+                                             const WGPUCommandEncoder);
 
 #endif

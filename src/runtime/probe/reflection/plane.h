@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "./core.h"
+#include "backend/compute/core.h"
 #include "backend/registry.h"
 #include "backend/renderer/render_pass/core.h"
 #include "backend/renderer/render_pass/render_pass.h"
@@ -46,6 +47,7 @@ typedef struct {
   size_t capacity;
   size_t length;
   RenderPass pass;
+  ComputePass kawase;
 } ProbeReflectionPlaneList;
 
 typedef struct {

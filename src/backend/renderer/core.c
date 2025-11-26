@@ -55,12 +55,6 @@ void renderer_create(Renderer *renderer, const RendererCreateDescriptor *desc) {
                       : desc->dpi;
 
   profiler_init(&renderer->profiler);
-
-  // init various buffers
-  compute_pass_init(&renderer->compute_pass, &(ComputePassDescriptor){
-                                                 .max_height = context_height(),
-                                                 .max_width = context_width(),
-                                             });
 }
 
 /**
@@ -600,7 +594,6 @@ void renderer_pass_create(Renderer *renderer, renderer_draw_lists draw_lists) {
         .scene_view = last_pass->color.resolve_view,
         .width = (const TextureResolution)render_width,
         .height = (const TextureResolution)render_height,
-        .compute = &renderer->compute_pass,
         .profiler = &renderer->profiler,
     };
 

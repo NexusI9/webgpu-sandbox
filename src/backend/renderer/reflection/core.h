@@ -1,6 +1,7 @@
 #ifndef _RENDERER_PROBE_CORE_H_
 #define _RENDERER_PROBE_CORE_H_
 
+#include "backend/compute/core.h"
 #include "backend/renderer/core.h"
 #include "backend/renderer/render_pass/core.h"
 #include "runtime/texture/core.h"
@@ -15,14 +16,12 @@ typedef struct {
   const TextureResolution resolution;
   const RenderPassLayoutListDescriptor *draw_list;
   const RenderPipelineMultisampleCount multisample;
-  RenderPass *handle;
 } RendererProbeReflectionDescriptor;
 
 EXTERN_C_BEGIN
 
-
 void renderer_probe_reflection_create_pass(
-    Renderer *, const RendererProbeReflectionDescriptor *);
+    Renderer *, RenderPass *, const RendererProbeReflectionDescriptor *);
 
 void renderer_probe_reflection_update_resolution(
     RenderPass *, const TextureResolution, const WGPUTextureViewDimension);

@@ -87,7 +87,8 @@ void probe_reflection_list_create_texture(
 }
 
 void renderer_probe_reflection_create_pass(
-    Renderer *renderer, const RendererProbeReflectionDescriptor *desc) {
+    Renderer *renderer, RenderPass *handle,
+    const RendererProbeReflectionDescriptor *desc) {
 
   // create list textures array
   WGPUTexture color_texture, depth_texture;
@@ -105,7 +106,7 @@ void renderer_probe_reflection_create_pass(
 
   // create render pass preset
   render_pass_create(
-      desc->handle,
+      handle,
       &(RenderPassCreateDescriptor){
           .type = RenderPassType_OffScreen,
           .label = "Probe Reflection List Render Pass",
@@ -172,6 +173,8 @@ void renderer_probe_reflection_update_resolution(
   pass->color.attachment.view = pass->color.views[0];
   pass->depth.attachment.view = pass->depth.views[0];
 }
+
+
 
 void probe_reflection_list_draw_preprocessor(const RenderPass *pass, Mesh *mesh,
                                              void *data) {

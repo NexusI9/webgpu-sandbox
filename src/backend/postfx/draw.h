@@ -1,6 +1,7 @@
 #ifndef _POST_FX_DRAW_H_
 #define _POST_FX_DRAW_H_
 
+#include "backend/compute/kawase.h"
 #include "backend/context.h"
 #include "core.h"
 
@@ -38,10 +39,10 @@ static inline void post_fx_blit_draw(PostFx *fx,
 static inline void post_fx_bloom_draw(PostFx *fx,
                                       WGPUCommandEncoder command_encoder) {
 
-  const PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
+  PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
   WGPURenderPassColorAttachment color_attachment = {
       .depthSlice = WGPU_DEPTH_SLICE_UNDEFINED,
-      .view = effect->view[PostFxViewIndex_Bloom],
+      .view = effect->views[PostFxViewIndex_Bloom],
       .loadOp = WGPULoadOp_Load,
       .storeOp = WGPUStoreOp_Store,
   };
@@ -66,12 +67,9 @@ static inline void post_fx_bloom_draw(PostFx *fx,
 
     wgpuRenderPassEncoderEnd(pass);
 
-    KawaseDescriptor blur_desc = {
-        .texture = effect->texture,
-        .layer_count = 1,
-        .pass_count = effect->uniform.bloom.blur,
-    };
-    compute_pass_kawase_inline(fx->compute, &blur_desc, command_encoder);
+    ComputePass *kawase_pass = &effect->compute_passes[POST_FX_BLOOM_KAWASE];
+    compute_pass_kawase_draw_inline(kawase_pass, effect->uniform.bloom.blur,
+                                    command_encoder);
   }
   profiler_latency_end(fx->profiler, ProfilerLatencyType_BloomPass);
 }

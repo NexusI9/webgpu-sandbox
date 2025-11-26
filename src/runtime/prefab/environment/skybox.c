@@ -1,11 +1,11 @@
 #include "skybox.h"
 
+#include "backend/compute/core.h"
 #include "backend/compute/mipmap.h"
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/resource_manager.h"
 #include "backend/std_pipeline/core.h"
-#include "stb/stb_image.h"
 #include "runtime/engine/add.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
@@ -19,6 +19,7 @@
 #include "runtime/shader/update.h"
 #include "runtime/systems/scene_system.h"
 #include "runtime/texture/core.h"
+#include "stb/stb_image.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
@@ -80,12 +81,15 @@ void prefab_skybox_create_from_texture(Engine *engine,
   Renderer *renderer = engine_get_renderer(engine);
   Scene *scene = engine_get_active_scene(engine);
 
+  ComputePass mipmap;
+  compute_pass_mipmap_create(&mipmap, &(ComputePassDescriptor){
+                                          .label = "Skybox Mipmap",
+                                          .source_texture = texture,
+                                      });
+
   // mipmap generated texture
-  compute_pass_mipmap(&renderer->compute_pass,
-                      &(MipmapDescriptor){
-                          .texture = texture,
-                          .layer_count = TEXTURE_CUBE_LAYER,
-                      });
+  compute_pass_mipmap_draw(&mipmap);
+  compute_pass_destroy(&mipmap);
 
   // create global texture view
   const mip_t mip_count = mipmap_count(resolution, resolution);

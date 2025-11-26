@@ -4,25 +4,20 @@
 #include "backend/resource_manager.h"
 #include "runtime/texture/core.h"
 #include "webgpu/webgpu.h"
+#include <stdint.h>
 #include <string.h>
 
-/**
-   Initialize the key/commons elements of the differents compute passes (kawase,
-   mipmaps) at ot prevent create/destroy those during the pass call which often
-   happens in hot path so we can't afford extensive gpu write.
+ComputePassStatus compute_pass_create(ComputePass *pass,
+                                      const ComputePassDescriptor *desc) {
 
-   For the texture destination we basically create a texture that has the size
-   of the swapchain as the max size and then proceed to draw on it in certain
-   region. It acts as a temporary canvas on which we may draw stuff during the
-   compute process.
- */
-ComputePassStatus compute_pass_init(ComputePass *pass,
-                                    const ComputePassDescriptor *desc) {
-
-  logger_add(LoggerFlag_Process, "Initializing Renderer Compute Pass");
+  pass->label = desc->label;
+  pass->source_texture = desc->source_texture;
+  pass->width = wgpuTextureGetWidth(pass->source_texture);
+  pass->height = wgpuTextureGetHeight(pass->source_texture);
+  pass->layer_count = wgpuTextureGetDepthOrArrayLayers(pass->source_texture);
 
   pass->sampler = rem_new_sampler(&(WGPUSamplerDescriptor){
-      .label = "Compute Pass Common Sampler",
+      .label = "Compute Pass Sampler",
       .addressModeU = WGPUAddressMode_ClampToEdge,
       .addressModeV = WGPUAddressMode_ClampToEdge,
       .addressModeW = WGPUAddressMode_ClampToEdge,
@@ -31,11 +26,10 @@ ComputePassStatus compute_pass_init(ComputePass *pass,
       .mipmapFilter = WGPUMipmapFilterMode_Linear,
   });
 
-  const int max_dim = glm_max(desc->max_width, desc->max_height);
-  pass->destination_texture = rem_new_texture(&(WGPUTextureDescriptor){
+  pass->buffer_texture = rem_new_texture(&(WGPUTextureDescriptor){
       .label = "Compute Pass Destination Texture",
       .dimension = WGPUTextureDimension_2D,
-      .size = (WGPUExtent3D){max_dim, max_dim, 1},
+      .size = (WGPUExtent3D){pass->width, pass->height, 1},
       .format = TEXTURE_FORMAT_OFFSCREEN,
       .mipLevelCount = 1,
       .sampleCount = 1,
@@ -45,12 +39,29 @@ ComputePassStatus compute_pass_init(ComputePass *pass,
 
   });
 
-  pass->buffer = rem_new_buffer(&(WGPUBufferDescriptor){
-      .label = "Compute Pass Common Buffer",
-      .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
-      .mappedAtCreation = false,
-      .size = COMPUTE_PASS_BUFFER_MAX_SIZE,
-  });
+  memset(pass->buffers, 0, sizeof(pass->buffers));
+  memset(pass->bindgroups, 0, sizeof(pass->bindgroups));
+  memset(pass->views, 0, sizeof(pass->views));
+
+  return ComputePassStatus_Success;
+}
+
+ComputePassStatus compute_pass_destroy(ComputePass *pass) {
+
+  rem_destroy_sampler(&pass->sampler);
+  rem_destroy_texture(&pass->buffer_texture);
+
+  for (uint8_t i = 0; i < COMPUTE_PASS_BUFFER_CAPACITY; i++)
+    rem_destroy_buffer(&pass->buffers[i]);
+
+  for (uint8_t i = 0; i < COMPUTE_PASS_VIEW_CAPACITY; i++)
+    rem_destroy_view(&pass->views[i]);
+
+  for (uint8_t i = 0; i < COMPUTE_PASS_BINDGROUP_CAPACITY; i++)
+    if (pass->bindgroups[i]) {
+      wgpuBindGroupRelease(pass->bindgroups[i]);
+      pass->bindgroups[i] = NULL;
+    }
 
   return ComputePassStatus_Success;
 }

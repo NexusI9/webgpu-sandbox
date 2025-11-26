@@ -1,4 +1,6 @@
 #include "core.h"
+#include "backend/compute/core.h"
+#include "backend/compute/kawase.h"
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/postfx/draw.h"
@@ -64,7 +66,6 @@ PostFxStatus post_fx_init(PostFx *fx, const PostFxDescriptor *desc) {
       .mipmapFilter = WGPUMipmapFilterMode_Linear,
   });
 
-  fx->compute = desc->compute;
   fx->width = desc->width;
   fx->height = desc->height;
   fx->scene_view = desc->scene_view;
@@ -130,7 +131,7 @@ PostFxStatus post_fx_update_scene_view(PostFx *fx, const WGPUTextureView view) {
   for (uint8_t i = 0; i < POST_FX_TYPE_COUNT; i++) {
     PostFxEffect *effect = post_fx_effect(fx, 1 << i);
 
-    effect->view[PostFxViewIndex_Scene] = fx->scene_view;
+    effect->views[PostFxViewIndex_Scene] = fx->scene_view;
 
     if (post_fx_effect_enabled(fx, 1 << i) && effect->bindgroup_update_callback)
       effect->bindgroup_update_callback(fx);
@@ -152,16 +153,16 @@ PostFxStatus post_fx_update_effect_view(PostFx *fx, const PostFxType type,
                "Attempting to update view of an unknown post fx type (%d)",
                type);
     return PostFxStatus_UnknownType;
-  } else if (index >= POST_FX_MAX_BUFFER) {
+  } else if (index >= POST_FX_BUFFER_CAPACITY) {
     logger_add(LoggerFlag_Error,
                "Attempting to update a post fx out of bound view (%d), "
                "maximum views allowed: %d",
-               index, POST_FX_MAX_BUFFER);
+               index, POST_FX_BUFFER_CAPACITY);
     return PostFxStatus_MaxCapacity;
   }
 
   PostFxEffect *effect = post_fx_effect(fx, type);
-  effect->view[index] = view;
+  effect->views[index] = view;
 
   if (effect->bindgroup_update_callback)
     effect->bindgroup_update_callback(fx);
@@ -198,7 +199,7 @@ PostFxStatus post_fx_bloom_update_uniform(PostFx *fx,
                                           const PostFxEffectUniform uniform) {
   PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
   effect->uniform.bloom = uniform.bloom;
-  rem_write_buffer(effect->buffer[0], 0, &effect->uniform.bloom,
+  rem_write_buffer(effect->buffers[0], 0, &effect->uniform.bloom,
                    sizeof(BloomUniform), REMWriteFlag_None);
   return PostFxStatus_Success;
 }
@@ -208,7 +209,7 @@ post_fx_composite_update_uniform(PostFx *fx,
                                  const PostFxEffectUniform uniform) {
   PostFxEffect *effect = post_fx_effect(fx, PostFxType_Composite);
   effect->uniform.composite = uniform.composite;
-  rem_write_buffer(effect->buffer[0], 0, &effect->uniform.composite,
+  rem_write_buffer(effect->buffers[0], 0, &effect->uniform.composite,
                    sizeof(CompositeUniform), REMWriteFlag_None);
   return PostFxStatus_Success;
 }
@@ -237,7 +238,7 @@ PostFxStatus post_fx_blit_create(PostFx *fx) {
   // === Define core attributes ===
   {
     effect->pipeline = std_render_pipeline(pipeline_type);
-    effect->view[PostFxViewIndex_Scene] = fx->scene_view;
+    effect->views[PostFxViewIndex_Scene] = fx->scene_view;
     effect->texture = NULL;
   }
 
@@ -270,12 +271,12 @@ PostFxStatus post_fx_bloom_create(PostFx *fx) {
   // === Define core attributes ===
   {
     effect->pipeline = std_render_pipeline(pipeline_type);
-    effect->view[PostFxViewIndex_Scene] = fx->scene_view;
+    effect->views[PostFxViewIndex_Scene] = fx->scene_view;
     effect->texture =
         post_fx_bloom_create_texture((int)(fx->width / uniform.downscale),
                                      (int)(fx->height / uniform.downscale));
 
-    effect->view[PostFxViewIndex_Bloom] = rem_new_view(effect->texture, NULL);
+    effect->views[PostFxViewIndex_Bloom] = rem_new_view(effect->texture, NULL);
 
     effect->uniform.bloom = uniform;
   }
@@ -283,11 +284,20 @@ PostFxStatus post_fx_bloom_create(PostFx *fx) {
   effect->bindgroup_update_callback(fx);
   post_fx_add_callback(fx, effect->draw_callback);
 
+  // === Create Kawase Compute pass ===
+  {
+    compute_pass_kawase_create(&effect->compute_passes[KAWASE_BUFFER_UNIFORM],
+                               &(ComputePassDescriptor){
+                                   .label = "Bloom FX - Kawase Compute Pass",
+                                   .source_texture = effect->texture,
+                               });
+  }
+
   // if composite is created, replace the view with the bloom view
   if (post_fx_effect_enabled(fx, PostFxType_Composite)) {
     PostFxEffect *composite = post_fx_effect(fx, PostFxType_Composite);
-    composite->view[PostFxViewIndex_Bloom] =
-        effect->view[PostFxViewIndex_Bloom];
+    composite->views[PostFxViewIndex_Bloom] =
+        effect->views[PostFxViewIndex_Bloom];
     composite->bindgroup_update_callback(fx);
   }
 
@@ -314,7 +324,7 @@ PostFxStatus post_fx_composite_create(PostFx *fx) {
 
     // requires Post Fx Bloom to be setup (TODO: will be replace by fallback
     // texture in future)
-    if (post_fx_effect(fx, PostFxType_Bloom)->view[PostFxViewIndex_Bloom] ==
+    if (post_fx_effect(fx, PostFxType_Bloom)->views[PostFxViewIndex_Bloom] ==
         NULL) {
       logger_add(LoggerFlag_Error,
                  "Composite effect require bloom post fx to be created");
@@ -327,9 +337,9 @@ PostFxStatus post_fx_composite_create(PostFx *fx) {
   // === Define core attributes ===
   {
     effect->pipeline = std_render_pipeline(pipeline_type);
-    effect->view[PostFxViewIndex_Scene] = fx->scene_view;
-    effect->view[PostFxViewIndex_Bloom] =
-        post_fx_effect(fx, PostFxType_Bloom)->view[PostFxViewIndex_Bloom];
+    effect->views[PostFxViewIndex_Scene] = fx->scene_view;
+    effect->views[PostFxViewIndex_Bloom] =
+        post_fx_effect(fx, PostFxType_Bloom)->views[PostFxViewIndex_Bloom];
     effect->uniform.composite = uniform;
   }
 
@@ -351,19 +361,20 @@ PostFxStatus post_fx_blit_destroy(PostFx *fx) {
 
 PostFxStatus post_fx_bloom_destroy(PostFx *fx) {
 
-  post_fx_effect_destroy(post_fx_effect(fx, PostFxType_Bloom));
+  PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
+
+  post_fx_effect_destroy(effect);
   post_fx_state_disable_effect(fx, PostFxType_Bloom);
 
-  PostFxEffect *effect = post_fx_effect(fx, PostFxType_Bloom);
   post_fx_remove_callback(fx, effect->draw_callback);
 
-  if (effect->view[PostFxViewIndex_Bloom])
-    rem_destroy_view(&effect->view[PostFxViewIndex_Bloom]);
+  if (effect->views[PostFxViewIndex_Bloom])
+    rem_destroy_view(&effect->views[PostFxViewIndex_Bloom]);
 
   // switch composite view to fallback texture
   if (post_fx_effect_enabled(fx, PostFxType_Composite)) {
     PostFxEffect *composite = post_fx_effect(fx, PostFxType_Composite);
-    composite->view[PostFxViewIndex_Bloom] =
+    composite->views[PostFxViewIndex_Bloom] =
         std_texture_view(TextureViewType_FloatBlack);
     composite->bindgroup_update_callback(fx);
   }
@@ -389,9 +400,17 @@ PostFxStatus post_fx_effect_destroy(PostFxEffect *effect) {
 
   rem_destroy_texture(&effect->texture);
 
-  for (uint8_t i = 0; i < POST_FX_MAX_BUFFER; i++)
-    if (effect->buffer[i])
-      rem_destroy_buffer(&effect->buffer[i]);
+  uint8_t i;
+  for (i = 0; i < POST_FX_BUFFER_CAPACITY; i++)
+    if (effect->buffers[i])
+      rem_destroy_buffer(&effect->buffers[i]);
+
+  for (i = 0; i < POST_FX_VIEW_CAPACITY; i++)
+    if (effect->views[i])
+      rem_destroy_view(&effect->views[i]);
+
+  for (i = 0; i < POST_FX_COMPUTE_CAPACITY; i++)
+    compute_pass_destroy(&effect->compute_passes[i]);
 
   if (effect->bindgroup) {
     wgpuBindGroupRelease(effect->bindgroup);
@@ -416,7 +435,7 @@ PostFxStatus post_fx_blit_update_bindgroup(PostFx *fx) {
       wgpuRenderPipelineGetBindGroupLayout(pipeline, 0);
 
   WGPUBindGroupEntry entries[2] = {
-      {.binding = 0, .textureView = effect->view[PostFxViewIndex_Scene]},
+      {.binding = 0, .textureView = effect->views[PostFxViewIndex_Scene]},
       {.binding = 1, .sampler = fx->sampler},
   };
   WGPUBindGroupDescriptor bg_desc = {
@@ -440,22 +459,22 @@ PostFxStatus post_fx_bloom_update_bindgroup(PostFx *fx) {
   const WGPUBindGroupLayout bind_group_layout =
       wgpuRenderPipelineGetBindGroupLayout(pipeline, 0);
 
-  if (effect->buffer[0] == NULL)
-    effect->buffer[0] = rem_new_buffer(&(WGPUBufferDescriptor){
+  if (effect->buffers[0] == NULL)
+    effect->buffers[0] = rem_new_buffer(&(WGPUBufferDescriptor){
         .label = "Bloom buffer",
         .size = sizeof(BloomUniform),
         .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
     });
 
-  rem_write_buffer(effect->buffer[0], 0, &effect->uniform.bloom,
+  rem_write_buffer(effect->buffers[0], 0, &effect->uniform.bloom,
                    sizeof(BloomUniform), REMWriteFlag_None);
 
   WGPUBindGroupEntry entries[3] = {
-      {.binding = 0, .textureView = effect->view[PostFxViewIndex_Scene]},
+      {.binding = 0, .textureView = effect->views[PostFxViewIndex_Scene]},
       {.binding = 1, .sampler = fx->sampler},
       {
           .binding = 2,
-          .buffer = effect->buffer[0],
+          .buffer = effect->buffers[0],
           .size = sizeof(BloomUniform),
       },
   };
@@ -483,23 +502,23 @@ PostFxStatus post_fx_composite_update_bindgroup(PostFx *fx) {
   const WGPUBindGroupLayout bind_group_layout =
       wgpuRenderPipelineGetBindGroupLayout(pipeline, 0);
 
-  if (effect->buffer[0] == NULL)
-    effect->buffer[0] = rem_new_buffer(&(WGPUBufferDescriptor){
+  if (effect->buffers[0] == NULL)
+    effect->buffers[0] = rem_new_buffer(&(WGPUBufferDescriptor){
         .label = "Composite Buffer",
         .size = sizeof(CompositeUniform),
         .usage = WGPUBufferUsage_Uniform | WGPUBufferUsage_CopyDst,
     });
 
-  rem_write_buffer(effect->buffer[0], 0, &effect->uniform.composite,
+  rem_write_buffer(effect->buffers[0], 0, &effect->uniform.composite,
                    sizeof(CompositeUniform), REMWriteFlag_None);
 
   WGPUBindGroupEntry entries[4] = {
-      {.binding = 0, .textureView = effect->view[PostFxViewIndex_Scene]},
-      {.binding = 1, .textureView = effect->view[PostFxViewIndex_Bloom]},
+      {.binding = 0, .textureView = effect->views[PostFxViewIndex_Scene]},
+      {.binding = 1, .textureView = effect->views[PostFxViewIndex_Bloom]},
       {.binding = 2, .sampler = fx->sampler},
       {
           .binding = 3,
-          .buffer = effect->buffer[0],
+          .buffer = effect->buffers[0],
           .size = sizeof(CompositeUniform),
       },
   };
@@ -581,13 +600,17 @@ PostFxStatus post_fx_bloom_update_texture_resolution(PostFx *fx,
       (int)(width / effect->uniform.bloom.downscale),
       (int)(height / effect->uniform.bloom.downscale));
 
-  effect->view[PostFxViewIndex_Bloom] = rem_new_view(effect->texture, NULL);
+  // TODO: destroy previous view ??
+  effect->views[PostFxViewIndex_Bloom] = rem_new_view(effect->texture, NULL);
   post_fx_bloom_update_bindgroup(fx);
+
+  compute_pass_kawase_update_source_texture(
+      &effect->compute_passes[POST_FX_BLOOM_KAWASE], effect->texture);
 
   // update composite view as well
   if (fx->state & PostFxType_Composite) {
-    post_fx_effect(fx, PostFxType_Composite)->view[PostFxViewIndex_Bloom] =
-        effect->view[PostFxViewIndex_Bloom];
+    post_fx_effect(fx, PostFxType_Composite)->views[PostFxViewIndex_Bloom] =
+        effect->views[PostFxViewIndex_Bloom];
     post_fx_composite_update_bindgroup(fx);
   }
 

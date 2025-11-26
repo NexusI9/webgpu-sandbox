@@ -77,7 +77,11 @@ typedef PostFxStatus (*post_fx_uniform_update)(PostFx *,
                                                const PostFxEffectUniform);
 typedef void (*post_fx_draw_callback)(PostFx *, WGPUCommandEncoder);
 
-#define POST_FX_MAX_BUFFER 6
+static const int POST_FX_BUFFER_CAPACITY = 6;
+static const int POST_FX_VIEW_CAPACITY = 6;
+static const int POST_FX_COMPUTE_CAPACITY = 3;
+
+static const int POST_FX_BLOOM_KAWASE = 0;
 
 union PostFxEffectUniform {
   CompositeUniform composite;
@@ -92,8 +96,10 @@ struct PostFxEffect {
 
   // effect view are either created from texture above of directly shared from
   // an external source
-  WGPUTextureView view[POST_FX_MAX_BUFFER];
-  WGPUBuffer buffer[POST_FX_MAX_BUFFER];
+  WGPUTextureView views[POST_FX_VIEW_CAPACITY];
+  WGPUBuffer buffers[POST_FX_BUFFER_CAPACITY];
+  // compute passes for various effects (used to blur the bloom)
+  ComputePass compute_passes[POST_FX_COMPUTE_CAPACITY];
   // optional texture if we want the post fx to use a independent texture
   WGPUTexture texture;
 
@@ -113,7 +119,6 @@ struct PostFx {
   WGPUSampler sampler; // common sampler used in each effect
   PostFxEffect effects[POST_FX_TYPE_COUNT];
   WGPUTextureView scene_view; // view from which the effect will be applied on
-  ComputePass *compute; // scene renderer compute pass (used to blur the bloom)
   TextureResolution width, height;
   Profiler *profiler;
 
@@ -124,7 +129,6 @@ struct PostFx {
 };
 
 typedef struct {
-  ComputePass *compute;
   Profiler *profiler;
   WGPUTextureView scene_view;
   const TextureResolution width, height;
