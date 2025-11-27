@@ -58,6 +58,12 @@ void gui_destroy(Gui *);
 // directory, not gui
 void gui_draw_callback(Renderer *, void *);
 
+void gui_create_color_texture(const uint32_t, const uint32_t, WGPUTexture *,
+                              WGPUTextureView *);
+
+void gui_create_depth_texture(const uint32_t, const uint32_t, WGPUTexture *,
+                              WGPUTextureView *);
+
 bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent,
                       void *userData);
 

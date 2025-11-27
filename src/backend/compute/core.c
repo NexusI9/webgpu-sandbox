@@ -15,6 +15,7 @@ ComputePassStatus compute_pass_create(ComputePass *pass,
   pass->width = wgpuTextureGetWidth(pass->source_texture);
   pass->height = wgpuTextureGetHeight(pass->source_texture);
   pass->layer_count = wgpuTextureGetDepthOrArrayLayers(pass->source_texture);
+  pass->buffer_texture = desc->buffer_texture;
 
   pass->sampler = rem_new_sampler(&(WGPUSamplerDescriptor){
       .label = "Compute Pass Sampler",
@@ -26,18 +27,19 @@ ComputePassStatus compute_pass_create(ComputePass *pass,
       .mipmapFilter = WGPUMipmapFilterMode_Linear,
   });
 
-  pass->buffer_texture = rem_new_texture(&(WGPUTextureDescriptor){
-      .label = "Compute Pass Destination Texture",
-      .dimension = WGPUTextureDimension_2D,
-      .size = (WGPUExtent3D){pass->width, pass->height, 1},
-      .format = TEXTURE_FORMAT_OFFSCREEN,
-      .mipLevelCount = 1,
-      .sampleCount = 1,
-      .usage = WGPUTextureUsage_TextureBinding |
-               WGPUTextureUsage_StorageBinding | WGPUTextureUsage_CopySrc |
-               WGPUTextureUsage_CopyDst,
+  if (pass->buffer_texture == NULL)
+    pass->buffer_texture = rem_new_texture(&(WGPUTextureDescriptor){
+        .label = "Compute Pass Destination Texture",
+        .dimension = WGPUTextureDimension_2D,
+        .size = (WGPUExtent3D){pass->width, pass->height, 1},
+        .format = TEXTURE_FORMAT_OFFSCREEN,
+        .mipLevelCount = 1,
+        .sampleCount = 1,
+        .usage = WGPUTextureUsage_TextureBinding |
+                 WGPUTextureUsage_StorageBinding | WGPUTextureUsage_CopySrc |
+                 WGPUTextureUsage_CopyDst,
 
-  });
+    });
 
   memset(pass->buffers, 0, sizeof(pass->buffers));
   memset(pass->bindgroups, 0, sizeof(pass->bindgroups));

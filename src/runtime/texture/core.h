@@ -32,6 +32,7 @@ typedef enum {
   TextureResolution_512 = 512,
   TextureResolution_1024 = 1024,
   TextureResolution_2048 = 2048,
+  TextureResolution_4096 = 4096,
 } TextureResolution;
 
 typedef TextureResolution texture_size_t[2];
@@ -62,7 +63,7 @@ typedef struct {
 } Texture;
 
 // cached textel sizes since they use expensive divide operation
-extern float g_texture_resolution_texel_size[TextureResolution_2048 + 1];
+extern float g_texture_resolution_texel_size[TextureResolution_4096 + 1];
 
 EXTERN_C_BEGIN
 
@@ -72,7 +73,7 @@ void texture_free(Texture *);
 static inline float texture_size_texel(const TextureResolution size) {
 
   if (g_texture_resolution_texel_size[size] == 0 &&
-      size <= TextureResolution_2048)
+      size <= TextureResolution_4096)
     g_texture_resolution_texel_size[size] = 1.0f / size;
 
   return g_texture_resolution_texel_size[size];

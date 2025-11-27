@@ -11,10 +11,6 @@
 #include <math.h>
 #include <stdint.h>
 
-static inline void compute_pass_kawase_dispatch(WGPUComputePassEncoder,
-                                                const TextureResolution,
-                                                const TextureResolution);
-
 static inline void compute_pass_kawase_cache_resources(ComputePass *);
 
 KawaseStatus compute_pass_kawase_create(ComputePass *pass,
@@ -35,7 +31,6 @@ KawaseStatus compute_pass_kawase_create(ComputePass *pass,
   }
 
   compute_pass_create(pass, desc);
-
 
   pass->buffers[KAWASE_BUFFER_UNIFORM] = rem_new_buffer(&(WGPUBufferDescriptor){
       .label = "Kawase Pass Buffer",
@@ -122,7 +117,7 @@ void compute_pass_kawase_cache_resources(ComputePass *pass) {
     pass->views[index] = rem_new_view(a_tex, &a_desc);
     pass->views[index + 1] = rem_new_view(b_tex, &b_desc);
 
-    WGPUBindGroupEntry entries[4] = {
+    WGPUBindGroupEntry entries[] = {
         {.binding = 0, .textureView = pass->views[index]},
         {.binding = 1, .sampler = pass->sampler},
         {.binding = 2, .textureView = pass->views[index + 1]},
@@ -131,11 +126,12 @@ void compute_pass_kawase_cache_resources(ComputePass *pass) {
          .size = sizeof(KawaseUniform)},
     };
 
-    // TODO: cache 2 bind groups per layer
+    const int entries_count = sizeof(entries) / sizeof(entries[0]);
+
     pass->bindgroups[index] = wgpuDeviceCreateBindGroup(
         context_device(), &(WGPUBindGroupDescriptor){
                               .layout = bind_group_layout,
-                              .entryCount = 4,
+                              .entryCount = entries_count,
                               .entries = entries,
                           });
 
@@ -145,7 +141,7 @@ void compute_pass_kawase_cache_resources(ComputePass *pass) {
     pass->bindgroups[index + 1] = wgpuDeviceCreateBindGroup(
         context_device(), &(WGPUBindGroupDescriptor){
                               .layout = bind_group_layout,
-                              .entryCount = 4,
+                              .entryCount = entries_count,
                               .entries = entries,
                           });
   }
@@ -162,8 +158,19 @@ compute_pass_kawase_draw_inline(ComputePass *pass, const uint32_t pass_count,
 
   // Using a predefined set of offset seems to give smoother result than
   // increment offset by K (1.0f) each pass count.
-  static const int offset_count = 5;
-  static const float offset[] = {0.5f, 1.5f, 2.5f, 2.5f, 3.0f};
+  // static const int offset_count = 5;
+  // static const float offset[] = {0.5f, 1.5f, 2.5f, 2.5f, 3.0f};
+
+  static const int offset_count = 32;
+  static const float offset[32] = {
+      0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f, 9.5f, 10.5f, 11.5f,
+      12.5f, 13.5f, 14.5f, 15.5f,
+
+      // softening plateau (more Kawase-like)
+      16.0f, 16.5f, 17.0f, 17.5f, 18.0f, 18.5f, 19.0f, 19.5f,
+
+      // tail falloff (slower growth)
+      20.0f, 20.5f, 21.0f, 21.5f, 22.0f, 22.5f, 23.0f, 23.5f};
 
   KawaseUniform uniform = {
       .texel_size =
@@ -171,7 +178,7 @@ compute_pass_kawase_draw_inline(ComputePass *pass, const uint32_t pass_count,
               texture_size_texel(pass->width),
               texture_size_texel(pass->height),
           },
-      .offset = 0.5f,
+      .offset = offset[0],
   };
 
   WGPUTexture a_tex = pass->source_texture;
@@ -199,7 +206,8 @@ compute_pass_kawase_draw_inline(ComputePass *pass, const uint32_t pass_count,
       wgpuComputePassEncoderSetBindGroup(
           compute_pass, 0, (j % 2 == 0) ? bind_group_a : bind_group_b, 0, NULL);
 
-      compute_pass_kawase_dispatch(compute_pass, pass->width, pass->height);
+      compute_pass_dispatch(compute_pass, KAWASE_WORKGROUP, pass->width,
+                            pass->height);
 
       /* === PASS END === */
       wgpuComputePassEncoderEnd(compute_pass);
@@ -227,14 +235,4 @@ compute_pass_kawase_draw_inline(ComputePass *pass, const uint32_t pass_count,
   }
 
   return KawaseStatus_Success;
-}
-
-void compute_pass_kawase_dispatch(WGPUComputePassEncoder pass,
-                                  const TextureResolution width,
-                                  const TextureResolution height) {
-
-  uint32_t dispatch_x = (width + KAWASE_WORKGROUP - 1) / KAWASE_WORKGROUP;
-  uint32_t dispatch_y = (height + KAWASE_WORKGROUP - 1) / KAWASE_WORKGROUP;
-
-  wgpuComputePassEncoderDispatchWorkgroups(pass, dispatch_x, dispatch_y, 1);
 }

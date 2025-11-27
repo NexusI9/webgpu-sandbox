@@ -1,7 +1,7 @@
 #include "core.h"
 #include "./draw.h"
-#include "./io.hpp"
 #include "./imgui_style/style.carbon.hpp"
+#include "./io.hpp"
 #include "backend/clock.h"
 #include "backend/context.h"
 #include "backend/logger.h"
@@ -35,12 +35,8 @@
 #include "runtime/viewport/core.h"
 #include "stdio.h"
 #include <cstring>
-#include <stdint.h>
 
 static ImGuiContext *imgui_context;
-
-// ui init
-static inline void gui_create_texture(Gui *);
 
 // layouts
 static inline void gui_create_top_bar(Gui *);
@@ -69,7 +65,11 @@ GuiStatus gui_init(Gui *gui, const GuiDescriptor *desc) {
     gui->theme = desc->theme;
     gui->active_scene = desc->active_scene;
     gui->renderer = desc->renderer;
-    gui_create_texture(gui);
+
+    gui_create_depth_texture((uint32_t)gui_scale(gui, context_width()),
+                             (uint32_t)gui_scale(gui, context_height()),
+                             &gui->depth_texture, &gui->depth_view);
+
     gui_tree_create(&gui->tree, GUI_TREE_CAPACITY);
 
     HTMLEventKey keydown_desc = {
@@ -108,7 +108,8 @@ void gui_draw_callback(Renderer *renderer, void *data) {
   profiler_latency_end(&gui->renderer->profiler, ProfilerLatencyType_UIPass);
   profiler_latency_start(&gui->renderer->profiler, ProfilerLatencyType_UIPass);
 
-  gui_draw_begin(gui);
+  gui_command_begin(gui);
+  gui_draw_swapchain_begin(gui);
   gui_draw_update_io(gui);
   {
     ImGui_ImplWGPU_NewFrame();
@@ -134,45 +135,78 @@ void gui_draw_callback(Renderer *renderer, void *data) {
     ImGui::Render();
     ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), gui->pass_encoder);
   }
-  gui_draw_end(gui);
+  gui_draw_swapchain_end(gui);
+  gui_command_end(gui);
 }
 
 void gui_destroy(Gui *gui) {}
 
-void gui_create_texture(Gui *ui) {
+void gui_create_color_texture(const uint32_t width, const uint32_t height,
+                              WGPUTexture *texture, WGPUTextureView *view) {
 
-  // Depth texture
-  {
-    WGPUTextureDescriptor tex_desc = {
-        .label = "Scene UI Depth Texture",
-        .dimension = WGPUTextureDimension_2D,
-        .size =
-            {
-                .width = (uint32_t)gui_scale(ui, context_width()),
-                .height = (uint32_t)gui_scale(ui, context_height()),
-                .depthOrArrayLayers = 1,
-            },
-        .mipLevelCount = 1,
-        .sampleCount = 1,
-        .format = TEXTURE_FORMAT_DEPTH,
-        .usage = WGPUTextureUsage_RenderAttachment,
-    };
+  WGPUTextureDescriptor tex_desc = {
+      .label = "UI Color Texture",
+      .dimension = WGPUTextureDimension_2D,
+      .size =
+          {
+              .width = width,
+              .height = height,
+              .depthOrArrayLayers = 1,
+          },
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .format = TEXTURE_FORMAT_ONSCREEN,
+      .usage = WGPUTextureUsage_RenderAttachment,
+  };
 
-    ui->depth_texture = wgpuDeviceCreateTexture(context_device(), &tex_desc);
+  *texture = wgpuDeviceCreateTexture(context_device(), &tex_desc);
 
-    WGPUTextureViewDescriptor view_desc = {
-        .label = "Scene UI Depth View",
-        .format = TEXTURE_FORMAT_DEPTH,
-        .dimension = WGPUTextureViewDimension_2D,
-        .aspect = WGPUTextureAspect_DepthOnly,
-        .baseMipLevel = 0,
-        .mipLevelCount = 1,
-        .baseArrayLayer = 0,
-        .arrayLayerCount = 1,
-    };
+  WGPUTextureViewDescriptor view_desc = {
+      .label = "UI Color View",
+      .format = TEXTURE_FORMAT_ONSCREEN,
+      .dimension = WGPUTextureViewDimension_2D,
+      .aspect = WGPUTextureAspect_All,
+      .baseMipLevel = 0,
+      .mipLevelCount = 1,
+      .baseArrayLayer = 0,
+      .arrayLayerCount = 1,
+  };
 
-    ui->depth_view = wgpuTextureCreateView(ui->depth_texture, &view_desc);
-  }
+  *view = wgpuTextureCreateView(*texture, &view_desc);
+}
+
+void gui_create_depth_texture(const uint32_t width, const uint32_t height,
+                              WGPUTexture *texture, WGPUTextureView *view) {
+
+  WGPUTextureDescriptor tex_desc = {
+      .label = "Scene UI Depth Texture",
+      .dimension = WGPUTextureDimension_2D,
+      .size =
+          {
+              .width = width,
+              .height = height,
+              .depthOrArrayLayers = 1,
+          },
+      .mipLevelCount = 1,
+      .sampleCount = 1,
+      .format = TEXTURE_FORMAT_DEPTH,
+      .usage = WGPUTextureUsage_RenderAttachment,
+  };
+
+  *texture = wgpuDeviceCreateTexture(context_device(), &tex_desc);
+
+  WGPUTextureViewDescriptor view_desc = {
+      .label = "Scene UI Depth View",
+      .format = TEXTURE_FORMAT_DEPTH,
+      .dimension = WGPUTextureViewDimension_2D,
+      .aspect = WGPUTextureAspect_DepthOnly,
+      .baseMipLevel = 0,
+      .mipLevelCount = 1,
+      .baseArrayLayer = 0,
+      .arrayLayerCount = 1,
+  };
+
+  *view = wgpuTextureCreateView(*texture, &view_desc);
 }
 
 void gui_create_right_panel(Gui *gui) {

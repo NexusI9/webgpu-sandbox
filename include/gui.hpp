@@ -12,6 +12,9 @@
 #include "runtime/gui/components/tree_item.hpp"
 #include "runtime/gui/components/frame.hpp"
 #include "runtime/gui/components/switch.hpp"
+
+#include "runtime/gui/windows/fullscreen.hpp"
+
 #include "runtime/gui/io.hpp"
 #include "runtime/gui/utils.hpp"
 

@@ -35,7 +35,6 @@
   _( Composite        )
 // clang-format on
 
-
 typedef enum {
 #define _(Label) RenderPipelineType_##Label,
   STD_RENDER_PIPELINES(_)
@@ -44,9 +43,10 @@ typedef enum {
 
 #define STD_COMPUTE_PIPELINES(_)                                               \
   _(Mipmap)                                                                    \
-  _(Kawase)
+  _(Kawase)                                                                    \
+  _(BGRA2RGBA)
 
-#define COMPUTE_PIPELINE_TYPE_COUNT 2
+#define COMPUTE_PIPELINE_TYPE_COUNT 3
 typedef enum {
 #define _(Label) ComputePipelineType_##Label,
   STD_COMPUTE_PIPELINES(_)

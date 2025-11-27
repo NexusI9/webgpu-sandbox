@@ -3,6 +3,7 @@
 
 #include "core.h"
 #include "runtime/texture/core.h"
+#include "utils/defines.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
@@ -16,6 +17,8 @@ typedef enum {
 } MipmapStatus;
 
 typedef uint32_t mip_t;
+
+EXTERN_C_BEGIN
 
 MipmapStatus compute_pass_mipmap_create(ComputePass *,
                                         const ComputePassDescriptor *);
@@ -33,4 +36,6 @@ static inline mip_t mipmap_count(const TextureResolution width,
                                  const TextureResolution height) {
   return floorf(log2f(glm_max(width, height))) + 1;
 }
+
+EXTERN_C_END
 #endif

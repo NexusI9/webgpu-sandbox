@@ -4,14 +4,18 @@
 #include "backend/context.h"
 #include "core.h"
 #include "utils/defines.h"
+#include "webgpu/webgpu.h"
 
 EXTERN_C_BEGIN
 
-static inline void gui_draw_begin(Gui *gui) {
+static inline void gui_command_begin(Gui *gui) {
 
   WGPUCommandEncoderDescriptor com_enc_desc = {.label = "Scene UI Command"};
   gui->command_encoder =
       wgpuDeviceCreateCommandEncoder(context_device(), &com_enc_desc);
+}
+
+static inline void gui_draw_swapchain_begin(Gui *gui) {
 
   gui->swapchain_view = wgpuSwapChainGetCurrentTextureView(context_swapchain());
 
@@ -40,11 +44,14 @@ static inline void gui_draw_begin(Gui *gui) {
 
   gui->pass_encoder = wgpuCommandEncoderBeginRenderPass(gui->command_encoder,
                                                         &render_pass_desc);
-
 }
 
-static inline void gui_draw_end(Gui *gui) {
+static inline void gui_draw_swapchain_end(Gui *gui) {
   wgpuRenderPassEncoderEnd(gui->pass_encoder);
+}
+
+static inline void gui_command_end(Gui *gui) {
+
   WGPUCommandBuffer command_buffer =
       wgpuCommandEncoderFinish(gui->command_encoder, NULL);
   wgpuQueueSubmit(context_queue(), 1, &command_buffer);

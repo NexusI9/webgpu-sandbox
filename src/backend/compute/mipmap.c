@@ -95,11 +95,13 @@ void compute_pass_mipmap_cache_resources(ComputePass *pass) {
       pass->views[view_index + 1] =
           rem_new_view(pass->source_texture, &dst_view_desc);
 
-      WGPUBindGroupEntry entries[3] = {
+      WGPUBindGroupEntry entries[] = {
           {.binding = 0, .textureView = pass->views[view_index]},
           {.binding = 1, .sampler = pass->sampler},
           {.binding = 2, .textureView = pass->views[view_index + 1]},
       };
+
+      const int entries_count = sizeof(entries) / sizeof(entries[0]);
 
       const uint32_t group_index = i * (mip_count - 1) + (j - 1);
 
@@ -107,7 +109,7 @@ void compute_pass_mipmap_cache_resources(ComputePass *pass) {
           context_device(), &(WGPUBindGroupDescriptor){
                                 .layout = wgpuComputePipelineGetBindGroupLayout(
                                     mipmap_pipeline, 0),
-                                .entryCount = 3,
+                                .entryCount = entries_count,
                                 .entries = entries,
                             });
     }

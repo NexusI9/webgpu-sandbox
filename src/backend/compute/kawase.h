@@ -3,6 +3,7 @@
 
 #include "./core.h"
 #include "runtime/texture/core.h"
+#include "utils/defines.h"
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
@@ -23,11 +24,14 @@ typedef struct {
   vec4 _pad2;
 } KawaseUniform;
 
+EXTERN_C_BEGIN
+
 KawaseStatus compute_pass_kawase_create(ComputePass *,
                                         const ComputePassDescriptor *);
 
 KawaseStatus compute_pass_kawase_update_source_texture(ComputePass *,
                                                        const WGPUTexture);
+
 
 static inline void compute_pass_kawase_destroy(ComputePass *pass) {
   compute_pass_destroy(pass);
@@ -40,4 +44,5 @@ compute_pass_kawase_draw(ComputePass *,
 KawaseStatus compute_pass_kawase_draw_inline(ComputePass *, const uint32_t,
                                              const WGPUCommandEncoder);
 
+EXTERN_C_END
 #endif

@@ -20,6 +20,7 @@
 #include "backend/context.h"
 #include "backend/logger.h"
 #include "backend/resource_manager.h"
+#include "backend/std_pipeline/compute_shader/bgra2rgba/bgra2rgba.h"
 #include "backend/std_pipeline/compute_shader/kawase/kawase.h"
 #include "backend/std_pipeline/compute_shader/mipmap/mipmap.h"
 #include "backend/std_pipeline/render_shader/blit/blit.h"
@@ -71,6 +72,7 @@ static const ComputePipelineStateObject
         // clang-format off
         [ ComputePipelineType_Mipmap         ]   =   &layout_mipmap,
         [ ComputePipelineType_Kawase         ]   =   &layout_kawase,
+	[ ComputePipelineType_BGRA2RGBA      ]   =   &layout_bgra2rgba,
         // clang-format on
 };
 
