@@ -206,4 +206,9 @@ static inline void vec3_bitangent(vec3 n, vec3 t, vec3 dest) {
   glm_vec3_normalize(dest);
 }
 
+static inline void vec2_avg(const vec2 a, const vec2 b, vec2 dest) {
+  dest[0] = (a[0] + b[0]) / 2;
+  dest[1] = (a[1] + b[1]) / 2;
+}
+
 #endif

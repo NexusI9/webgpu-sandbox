@@ -4,5 +4,6 @@
 #include "../src/utils/defines.h"
 #include "../src/utils/name.h"
 #include "../src/utils/color.h"
+#include "../src/utils/flag.h"
 
 #endif

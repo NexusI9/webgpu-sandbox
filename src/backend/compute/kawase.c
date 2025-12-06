@@ -161,8 +161,7 @@ compute_pass_kawase_draw_inline(ComputePass *pass, const uint32_t pass_count,
   // static const int offset_count = 5;
   // static const float offset[] = {0.5f, 1.5f, 2.5f, 2.5f, 3.0f};
 
-  static const int offset_count = 32;
-  static const float offset[32] = {
+  static const float offset[] = {
       0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f, 6.5f, 7.5f, 8.5f, 9.5f, 10.5f, 11.5f,
       12.5f, 13.5f, 14.5f, 15.5f,
 
@@ -171,6 +170,8 @@ compute_pass_kawase_draw_inline(ComputePass *pass, const uint32_t pass_count,
 
       // tail falloff (slower growth)
       20.0f, 20.5f, 21.0f, 21.5f, 22.0f, 22.5f, 23.0f, 23.5f};
+
+  static const int offset_count = sizeof(offset) / sizeof(offset[0]);
 
   KawaseUniform uniform = {
       .texel_size =

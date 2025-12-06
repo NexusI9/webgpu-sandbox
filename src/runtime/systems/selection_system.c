@@ -5,6 +5,7 @@
 #include "backend/renderer/shadow_map/draw.h"
 #include "runtime/camera/raycast/core.h"
 #include "runtime/gizmo/core.h"
+#include "runtime/input/core.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/ref_list.h"
 #include "runtime/scene/editor_mesh/core.h"
@@ -130,7 +131,7 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
 
   if (!selected) {
 
-    if (input_key(INPUT_KEY_CAP) == false)
+    if (input_key(INPUT_KEY_SHIFT) == false)
       scene_selection_empty(selection);
 
     scene_selection_filter_selection_add_mesh(filter, mesh, NULL);
@@ -728,7 +729,7 @@ void selection_system_callback_raycast_gizmo_hover(
 
   if (hit == NULL) {
     if (cast_data->last_hit->mesh != NULL &&
-        g_input.mouse.state == InputMouseState_Up)
+        g_input.mouse.state[InputMouseButton_Left] == InputMouseState_Up)
       gizmo_reset_color_uniform(gizmo);
     return;
   }
@@ -736,7 +737,7 @@ void selection_system_callback_raycast_gizmo_hover(
   // update only once
   if (cast_data->last_hit->mesh != hit->mesh &&
       // if mouse is down >> lock
-      g_input.mouse.state == InputMouseState_Up) {
+      g_input.mouse.state[InputMouseButton_Left] == InputMouseState_Up) {
 
     gizmo_reset_color_uniform(gizmo);
     // update hovered gizmo color

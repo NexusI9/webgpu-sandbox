@@ -11,11 +11,11 @@
 
 EXTERN_C_BEGIN
 
-static inline ImColor im_color(color col) {
+static inline ImColor im_color(const color col) {
   return ImColor(col[0], col[1], col[2], col[3]);
 }
 
-static inline ImVec2 im_vec2(vec2 val) { return ImVec2(val[0], val[1]); }
+static inline ImVec2 im_vec2(const vec2 val) { return ImVec2(val[0], val[1]); }
 
 static inline void glm_vec2(ImVec2 val, vec2 dest) {
   glm_vec2_copy((vec2){val.x, val.y}, dest);

@@ -76,7 +76,7 @@ bool input_callback_wheel(int eventType, const EmscriptenWheelEvent *wheelEvent,
   g_input.mouse.pan.y += wheelEvent->deltaY;
 
   // zoom
-  if (input_key(INPUT_KEY_CMD))
+  if (input_key(INPUT_KEY_LEFTWINDOW))
     g_input.mouse.zoom += wheelEvent->deltaY;
 
   // returning true call preventDefault

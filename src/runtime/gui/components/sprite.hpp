@@ -33,10 +33,24 @@ public:
                  im_vec2((float *)region->uv1));
   }
 
+  bool clicked(const ImGuiMouseButton button) {
+    if (ImGui::IsMouseClicked(button) && hovered())
+      return true;
+
+    return false;
+  }
+
+  bool hovered() {
+    if (ImGui::IsMouseHoveringRect(start, end))
+      return true;
+
+    return false;
+  }
+
   const TextureAtlasRegion *region;
-  const ImVec2 get_start(){ return start; }
-  const ImVec2 get_end(){ return end; }
-  
+  const ImVec2 get_start() { return start; }
+  const ImVec2 get_end() { return end; }
+
 private:
   WGPUTextureView view;
   ImVec2 start, end;

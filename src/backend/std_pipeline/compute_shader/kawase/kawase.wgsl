@@ -1,8 +1,8 @@
 struct KawaseUniform {
-  texel_size : vec2<f32>,    // (1.0/width, 1.0/height)
-               offset : f32, // current Kawase offset (1,2,3...)
-                        _pad : f32,
-                               _pad2 : vec4<f32>,
+  texel_size: vec2<f32>,    // (1.0/width, 1.0/height)
+               offset: f32, // current Kawase offset (1,2,3...)
+                        _pad: f32,
+                               _pad2: vec4<f32>,
 };
 
 @group(0) @binding(0) var src_texture : texture_2d<f32>;
@@ -19,29 +19,36 @@ struct KawaseUniform {
 //   [] https://github.com/butterw/bShaders/blob/master/blurKawase_15.hlsl
 //
 //   [] https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf
-@compute @workgroup_size(8, 8) fn
-    main(@builtin(global_invocation_id) id : vec3<u32>) {
+@compute @workgroup_size(8, 8)fn main(@builtin(global_invocation_id) id: vec3<u32>) {
 
-  let dims = textureDimensions(src_texture);
+    let dims = textureDimensions(src_texture);
 
-  let uv = (vec2<f32>(id.xy) + 0.5f) / vec2<f32>(dims);
-  let res = uKawase.texel_size;
-  let i = uKawase.offset;
+    let uv = (vec2<f32>(id.xy) + 0.5f) / vec2<f32>(dims);
 
-  // Center sample
-  var col = textureSampleLevel(src_texture, src_sampler, uv, 0.0);
+    let r = uKawase.offset;
+    let texel = uKawase.texel_size;
 
+    let o = vec2<f32>(r) * texel;
+
+  // DELETEME
+  // Center sample var col = textureSampleLevel(src_texture, src_sampler, uv, 0.0);
   // Diagonal samples
-  col +=
-      textureSampleLevel(src_texture, src_sampler, uv + vec2(i, i) * res, 0.0);
-  col +=
-      textureSampleLevel(src_texture, src_sampler, uv + vec2(i, -i) * res, 0.0);
-  col +=
-      textureSampleLevel(src_texture, src_sampler, uv + vec2(-i, i) * res, 0.0);
-  col += textureSampleLevel(src_texture, src_sampler, uv + vec2(-i, -i) * res,
-                            0.0);
+  // col += textureSampleLevel(src_texture, src_sampler, uv + vec2(i, i) * res, 0.0);
+  // col += textureSampleLevel(src_texture, src_sampler, uv + vec2(i, -i) * res, 0.0);
+  // col += textureSampleLevel(src_texture, src_sampler, uv + vec2(-i, i) * res, 0.0);
+  // col += textureSampleLevel(src_texture, src_sampler, uv + vec2(-i, -i) * res, 0.0);
+  // col = col / 4.0;
 
-  col = col / 4.0;
+    var col = textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(o.x, 0.0), 0.0);
+    col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(-o.x, 0.0), 0.0);
+    col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(0.0, o.y), 0.0);
+    col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(0.0, -o.y), 0.0);
+    col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(o.x, o.y), 0.0);
+    col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(o.x, -o.y), 0.0);
+    col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(-o.x, o.y), 0.0);
+    col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(-o.x, -o.y), 0.0);
 
-  textureStore(dst_texture, vec2<i32>(id.xy), col);
+    col = col * 0.125;
+
+    textureStore(dst_texture, vec2<i32>(id.xy), col);
 }

@@ -64,9 +64,6 @@ void gui_create_color_texture(const uint32_t, const uint32_t, WGPUTexture *,
 void gui_create_depth_texture(const uint32_t, const uint32_t, WGPUTexture *,
                               WGPUTextureView *);
 
-bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent,
-                      void *userData);
-
 static inline int gui_scale(const Gui *ui, const int size) {
   return size * ui->dpi;
 }
@@ -75,6 +72,9 @@ static inline void gui_scale_vec2(const Gui *ui, const vec2 src, vec2 dest) {
   dest[0] = gui_scale(ui, src[0]);
   dest[1] = gui_scale(ui, src[1]);
 }
+
+bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent,
+                      void *userData);
 
 EXTERN_C_END
 

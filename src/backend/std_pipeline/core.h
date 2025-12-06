@@ -44,9 +44,10 @@ typedef enum {
 #define STD_COMPUTE_PIPELINES(_)                                               \
   _(Mipmap)                                                                    \
   _(Kawase)                                                                    \
-  _(BGRA2RGBA)
+  _(BGRA2RGBA)                                                                 \
+  _(Colormap)
 
-#define COMPUTE_PIPELINE_TYPE_COUNT 3
+#define COMPUTE_PIPELINE_TYPE_COUNT 4
 typedef enum {
 #define _(Label) ComputePipelineType_##Label,
   STD_COMPUTE_PIPELINES(_)
