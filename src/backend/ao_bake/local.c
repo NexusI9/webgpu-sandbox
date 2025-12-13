@@ -50,7 +50,7 @@ void ao_bake_local(RendererTextureAO *ao,
      UPDATE: It kinda sucks as it clearly highlights the triangles too much
    */
 
-  for (size_t i = 0; i < mesh_index->length; i += 3) {
+  for (size_t i = 0; i < mesh_index->count; i += 3) {
 
     float ao_factor[3]; // point a,b,c ao factor
     vec3 uv[3];
@@ -115,7 +115,7 @@ void ao_bake_local(RendererTextureAO *ao,
       texture_write_triangle_gradient(&(TextureWriteTriangleGradientDescriptor){
           .source = desc->texture,
           .destination = &desc->texture->data,
-          .length = 1,
+          .count = 1,
           .write_method = TextureWriteMethod_Mul,
           .points =
               (TextureTriangleGradientDescriptor[]){

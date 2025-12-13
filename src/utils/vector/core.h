@@ -36,8 +36,8 @@ typedef struct {
   ivec2 b;
 } ivec2_pair;
 
-static inline bool vec_equal(float *a, float *b, uint8_t length) {
-  for (int i = 0; i < length; i++) {
+static inline bool vec_equal(float *a, float *b, uint8_t count) {
+  for (int i = 0; i < count; i++) {
     if (a[i] != b[i])
       return false;
   }
@@ -45,8 +45,8 @@ static inline bool vec_equal(float *a, float *b, uint8_t length) {
   return true;
 }
 
-static inline bool ivec_equal(int *a, int *b, uint8_t length) {
-  for (int i = 0; i < length; i++) {
+static inline bool ivec_equal(int *a, int *b, uint8_t count) {
+  for (int i = 0; i < count; i++) {
     if (a[i] != b[i])
       return false;
   }
@@ -77,14 +77,14 @@ static inline bool ivec4_equal(ivec4 a, ivec4 b) {
    Compute baycentric weights {u,v,w} of a point between 3 others
  */
 static inline void vec_baycentric(const vec2 A, const vec2 B, const vec2 C,
-                                  const vec2 P, const VectorLength length,
+                                  const vec2 P, const VectorLength count,
                                   float *u, float *v, float *w) {
 
-  float v0[length], v1[length], v2[length];
+  float v0[count], v1[count], v2[count];
   float d00, d01, d11, d20, d21 = 0.0f;
   int i;
 
-  for (i = 0; i < length; i++) {
+  for (i = 0; i < count; i++) {
     v0[i] = B[i] - A[i];
     v1[i] = C[i] - A[i];
     v2[i] = P[i] - A[i];
@@ -107,9 +107,9 @@ static inline void vec_baycentric(const vec2 A, const vec2 B, const vec2 C,
   *u = 1.0f - *v - *w;
 }
 
-static inline void ivec_to_vec(const int *src, const VectorLength length,
+static inline void ivec_to_vec(const int *src, const VectorLength count,
                                float *dest) {
-  for (VectorLength_t l = 0; l < length; l++)
+  for (VectorLength_t l = 0; l < count; l++)
     dest[l] = (float)src[l];
 }
 

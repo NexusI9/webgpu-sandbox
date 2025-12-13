@@ -30,7 +30,7 @@ typedef enum {
 
 typedef struct {
   Camera **entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } CameraList;
 

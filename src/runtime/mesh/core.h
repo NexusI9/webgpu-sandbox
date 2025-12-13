@@ -24,8 +24,8 @@
 #include "utils/name.h"
 #include "webgpu/webgpu.h"
 
-#define MESH_CHILD_LENGTH 6
-#define MESH_NAME_MAX_LENGTH 64
+#define MESH_CHILD_COUNT 6
+#define MESH_NAME_MAX_COUNT 64
 #define MESH_INDEX_FORMAT WGPUIndexFormat_Uint32
 
 typedef struct Mesh Mesh;
@@ -41,7 +41,7 @@ typedef enum {
 typedef struct {
   struct Mesh **entries;
   size_t capacity;
-  size_t length;
+  size_t count;
 } MeshRefList;
 
 #define MESH_STD_SHADER_COUNT 7

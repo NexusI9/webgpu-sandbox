@@ -14,7 +14,7 @@ bool UI::ButtonGroup::draw() {
   ImVec2 pos = ImGui::GetCursorScreenPos();
   ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
-  for (int i = 0; i < items_length; i++) {
+  for (int i = 0; i < items_count; i++) {
 
     ImVec2 btn_pos = ImVec2(
         direction == ButtonGroupDirection_Vertical ? pos.x
@@ -50,7 +50,7 @@ bool UI::ButtonGroup::draw() {
                          ImDrawFlags_RoundCornersBottomLeft;
     }
 
-    else if (i == items_length - 1) {
+    else if (i == items_count - 1) {
       radius = style->border_radius;
       flags |= direction == ButtonGroupDirection_Vertical
                    ? ImDrawFlags_RoundCornersBottomLeft |

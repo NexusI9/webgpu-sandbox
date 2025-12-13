@@ -83,7 +83,7 @@ mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
   bound->attribute = (VertexAttribute){
       .entries = calloc(attr_len, sizeof(vattr_t)),
       .capacity = attr_len,
-      .length = 0,
+      .count = 0,
       .buffer = NULL,
   };
 
@@ -92,7 +92,7 @@ mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
   bound->index = (VertexIndex){
       .entries = calloc(index_len, sizeof(vindex_t)),
       .capacity = index_len,
-      .length = 0,
+      .count = 0,
       .buffer = NULL,
   };
 
@@ -104,7 +104,7 @@ mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
 
   // upload to gpu
   {
-    const size_t va_size = bound->attribute.length * sizeof(vattr_t);
+    const size_t va_size = bound->attribute.count * sizeof(vattr_t);
 
     bound->attribute.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
         .label = "BoundBox Topology Vertex Attributes",
@@ -119,7 +119,7 @@ mesh_topology_boundbox_create(MeshTopologyBase *base, mat4 model_matrix,
   }
 
   {
-    const size_t vi_size = bound->index.length * sizeof(vindex_t);
+    const size_t vi_size = bound->index.count * sizeof(vindex_t);
     bound->index.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
         .label = "BoundBox Topology Vertex Indexes",
         .mappedAtCreation = false,
@@ -181,7 +181,7 @@ mesh_topology_boundbox_update(const MeshTopologyBase *base, mat4 model,
   // update buffer
   /*wgpuQueueWriteBuffer(queue, bound->attribute.buffer, 0,
                        bound->attribute.entries,
-                       bound->attribute.length * sizeof(vattr_t));*/
+                       bound->attribute.count * sizeof(vattr_t));*/
 
   return MeshTopologyBoundboxStatus_Success;
 }

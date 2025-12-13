@@ -119,7 +119,7 @@ EngineStatus engine_init(Engine *engine) {
 
 EngineStatus engine_set_active_scene(Engine *engine, Scene *scene) {
 
-  for (uint8_t i = 0; i < engine->scenes.length; i++) {
+  for (uint8_t i = 0; i < engine->scenes.count; i++) {
     if (engine->scenes.entries[i] == scene) {
       engine->scenes.active = scene;
       return EngineStatus_Success;
@@ -140,10 +140,10 @@ void engine_init_reflection_pass(ProbeList *list, Renderer *renderer) {
                                              &reflective_mesh_lists);
 
   RenderPassLayoutListDescriptor reflection_draw_list = {
-      .length = reflective_mesh_lists.length,
+      .count = reflective_mesh_lists.count,
   };
 
-  for (uint8_t i = 0; i < reflective_mesh_lists.length; i++)
+  for (uint8_t i = 0; i < reflective_mesh_lists.count; i++)
     reflection_draw_list.entries[i] = (RenderPassLayoutDescriptor){
         .shader = MeshShader_Reflection,
         .topology_callback = mesh_topology_base,
@@ -187,10 +187,10 @@ void engine_init_shadow_map(LightList *list, Renderer *renderer) {
       &renderer->batches, RenderPipelineType_Shadow, &shadow_mesh_lists);
 
   RenderPassLayoutListDescriptor shadow_draw_list = {
-      .length = shadow_mesh_lists.length,
+      .count = shadow_mesh_lists.count,
   };
 
-  for (uint8_t i = 0; i < shadow_mesh_lists.length; i++)
+  for (uint8_t i = 0; i < shadow_mesh_lists.count; i++)
     shadow_draw_list.entries[i] = (RenderPassLayoutDescriptor){
         .shader = MeshShader_Shadow,
         .pipeline = RenderPipelineType_Shadow,
@@ -217,7 +217,7 @@ void engine_init_gizmo(Engine *engine, Gizmo *gizmo) {
                       });
 
   for (size_t i = 0; i < GIZMO_MODE_COUNT; i++) {
-    for (size_t j = 0; j < gizmo->handles[i].length; j++) {
+    for (size_t j = 0; j < gizmo->handles[i].count; j++) {
       Mesh *mesh = gizmo->handles[i].entries[j];
       engine_scene_add_mesh_custom(engine, mesh, SCENE_LAYER_GIZMO,
                                    &(RendererBatchKeyDescriptor){

@@ -124,19 +124,19 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
   mesh_topology_wireframe_store_unique_edges(&edges, src_topo);
 
   // arrays from edges
-  size_t vertex_capacity = edges.length * LINE_VERTEX_COUNT * VERTEX_STRIDE;
+  size_t vertex_capacity = edges.count * LINE_VERTEX_COUNT * VERTEX_STRIDE;
   dest_topo->attribute = (VertexAttribute){
       .entries = malloc(vertex_capacity * sizeof(vattr_t)),
       .capacity = vertex_capacity,
-      .length = 0,
+      .count = 0,
       .buffer = NULL,
   };
 
-  size_t index_capacity = edges.length * LINE_INDEX_COUNT;
+  size_t index_capacity = edges.count * LINE_INDEX_COUNT;
   dest_topo->index = (VertexIndex){
       .entries = malloc(index_capacity * sizeof(vindex_t)),
       .capacity = index_capacity,
-      .length = 0,
+      .count = 0,
       .buffer = NULL,
   };
 
@@ -147,7 +147,7 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
 
   // create mapped anchor list
   mesh_topology_anchor_list_create(&dest_topo->anchors,
-                                   src_topo->index->length);
+                                   src_topo->index->count);
 
   // create points from unique edges
   mesh_topology_wireframe_create_points(&edges, &hashed_anchors, src_topo,
@@ -158,7 +158,7 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
 
   {
     // upload vertex attributes
-    const size_t va_size = dest_topo->attribute.length * sizeof(vattr_t);
+    const size_t va_size = dest_topo->attribute.count * sizeof(vattr_t);
 
     dest_topo->attribute.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
         .label = "Wireframe Topology Vertex Attributes",
@@ -174,7 +174,7 @@ int mesh_topology_wireframe_create(MeshTopology *src_topo,
 
   {
     // upload vertex index
-    const size_t vi_size = dest_topo->index.length * sizeof(vindex_t);
+    const size_t vi_size = dest_topo->index.count * sizeof(vindex_t);
 
     dest_topo->index.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
         .label = "Wireframe Topology Vertex Indexes",
@@ -208,7 +208,7 @@ MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *topo) {
 int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
                                    MeshTopologyWireframe *dest_topo) {
 
-  for (size_t b = 0; b < base_topo->index.length; b++) {
+  for (size_t b = 0; b < base_topo->index.count; b++) {
 
     vindex_t base_index = base_topo->index.entries[b];
     vattr_t *base_vertex =
@@ -219,7 +219,7 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
 
     //  adjust anchor's linked index attributes
     if (anchor != NULL) {
-      for (size_t w = 0; w < anchor->length; w++) {
+      for (size_t w = 0; w < anchor->count; w++) {
         vindex_t wireframe_index = anchor->entries[w];
         vattr_t *wireframe_vertex =
             &dest_topo->attribute.entries[wireframe_index * VERTEX_STRIDE];
@@ -235,7 +235,7 @@ int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
 
   // update buffer or use map_write for direct link with CPU
   rem_write_buffer(dest_topo->attribute.buffer, 0, dest_topo->attribute.entries,
-                   dest_topo->attribute.length * sizeof(vattr_t),
+                   dest_topo->attribute.count * sizeof(vattr_t),
                    REMWriteFlag_None);
 
   return MeshTopologyWireframeStatus_Success;
@@ -251,7 +251,7 @@ void mesh_topology_wireframe_create_points(EdgeHashSet *edges,
                                            MeshTopologyWireframe *dest_topo) {
   vec3 color = {0};
 
-  for (size_t l = 0; l < edges->length; l++) {
+  for (size_t l = 0; l < edges->count; l++) {
 
     size_t index = edges->occupied[l];
     EdgeBucket *current_edge = &edges->entries[index];
@@ -292,7 +292,7 @@ void mesh_topology_wireframe_create_points(EdgeHashSet *edges,
      */
 
     // append base anchor
-    size_t index_len = dest_topo->index.length;
+    size_t index_len = dest_topo->index.count;
     vindex_t temp_base_index[] = {
         dest_topo->index.entries[index_len - 6],
         dest_topo->index.entries[index_len - 1],
@@ -318,8 +318,8 @@ void mesh_topology_wireframe_store_unique_edges(EdgeHashSet *edges,
   // store edges
 
   /* Check if source topology is a 'line' of 'face' type structure
-     Line type have an even index length ( len(i) % 2 == 0)
-     Whereas Face type have an odd index length as they are composed of
+     Line type have an even index count ( len(i) % 2 == 0)
+     Whereas Face type have an odd index count as they are composed of
      triangles.
      If the source topology is a Line type, then we need to triangulate first
      before.
@@ -327,7 +327,7 @@ void mesh_topology_wireframe_store_unique_edges(EdgeHashSet *edges,
 
   bool is_face = mesh_topology_wireframe_is_face(src_topo->index);
   int stride = is_face ? 3 : 2;
-  for (int i = 0; i < src_topo->index->length; i += stride) {
+  for (int i = 0; i < src_topo->index->count; i += stride) {
 
     unsigned int a = src_topo->index->entries[i];
     unsigned int b = src_topo->index->entries[i + 1];
@@ -356,7 +356,7 @@ bool mesh_topology_wireframe_is_face(VertexIndex *index) {
 
   vindex_t *id = index->entries;
 
-  for (size_t i = 1; i < MIN(6, index->length); i++) {
+  for (size_t i = 1; i < MIN(6, index->count); i++) {
     if (id[i] != id[i - 1] + 1)
       return true;
   }

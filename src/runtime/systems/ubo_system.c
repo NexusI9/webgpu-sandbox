@@ -9,7 +9,7 @@ void ubo_system_draw_callback(Renderer *renderer, void *data) {
   for (UBOType type = 0; type < UBO_TYPE_COUNT; type++) {
     UBOBufferUpdateQueue *queue = &manager->buffers[type].update_queue;
 
-    while (queue->length > 0) {
+    while (queue->count > 0) {
       ubo_id_t id = queue->entries[0];
 
       ubo_upload_entry(manager, type,

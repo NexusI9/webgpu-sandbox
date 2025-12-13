@@ -28,7 +28,7 @@ void shader_add_uniform(Shader *shader,
   if (shader_validate_binding(shader) == SHADER_BIND_VALID) {
     /*
       Steps:
-        - Increment bind group length
+        - Increment bind group count
         - Create Buffer (GPU side)
           a. Allocate space in GPU
           b. Write data in buffer
@@ -45,7 +45,7 @@ void shader_add_uniform(Shader *shader,
 
       ShaderBindGroupUniformEntryDescriptor *src = &bd->entries[i];
       ShaderBindGroupUniformEntry *dest =
-          &bind_group->uniforms.entries[bind_group->uniforms.length++];
+          &bind_group->uniforms.entries[bind_group->uniforms.count++];
 
       // copy common attributes
       dest->binding = src->binding;
@@ -154,7 +154,7 @@ void shader_add_texture(Shader *shader,
 
     for (int i = 0; i < desc->entry_count; i++) {
 
-      if (current_bind_group->textures.length ==
+      if (current_bind_group->textures.count ==
           current_bind_group->textures.capacity) {
         logger_add(LoggerFlag_Print,
                    "Texture array reached maximum capacity\n");
@@ -164,7 +164,7 @@ void shader_add_texture(Shader *shader,
       ShaderBindGroupTextureEntryDescriptor *src = &desc->entries[i];
       ShaderBindGroupTextureEntry *dest =
           &current_bind_group->textures
-               .entries[current_bind_group->textures.length++];
+               .entries[current_bind_group->textures.count++];
 
       // copy common attributes
       dest->binding = src->binding;
@@ -217,7 +217,7 @@ void shader_add_texture_view(Shader *shader,
 
     for (int i = 0; i < desc->entry_count; i++) {
 
-      if (current_bind_group->textures.length ==
+      if (current_bind_group->textures.count ==
           current_bind_group->textures.capacity) {
         logger_add(LoggerFlag_Print,
                    "Texture array reached maximum capacity\n");
@@ -228,7 +228,7 @@ void shader_add_texture_view(Shader *shader,
       ShaderBindGroupTextureViewEntryDescriptor *current_entry =
           &desc->entries[i];
       current_bind_group->textures
-          .entries[current_bind_group->textures.length++] =
+          .entries[current_bind_group->textures.count++] =
           (ShaderBindGroupTextureEntry){
               .texture_view = current_entry->texture_view,
               .binding = current_entry->binding,
@@ -255,7 +255,7 @@ void shader_add_sampler(Shader *shader,
 
     for (int i = 0; i < desc->entry_count; i++) {
 
-      if (current_bind_group->samplers.length ==
+      if (current_bind_group->samplers.count ==
           current_bind_group->samplers.capacity) {
         logger_add(LoggerFlag_Print,
                    "Sampler array reached maximum capacity\n");
@@ -266,7 +266,7 @@ void shader_add_sampler(Shader *shader,
       ShaderBindGroupSamplerEntryDescriptor *src = &desc->entries[i];
       ShaderBindGroupSamplerEntry *dest =
           &current_bind_group->samplers
-               .entries[current_bind_group->samplers.length++];
+               .entries[current_bind_group->samplers.count++];
 
       // copy common attributes
       dest->binding = src->binding;

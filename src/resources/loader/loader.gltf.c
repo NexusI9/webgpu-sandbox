@@ -170,8 +170,8 @@ float *loader_gltf_attributes(const cgltf_accessor *accessor) {
 
 void loader_gltf_primitive_vertex_lists_init(VertexAttribute *attributes,
                                              size_t count) {
-  attributes->length = count;
-  attributes->capacity = attributes->length;
+  attributes->count = count;
+  attributes->capacity = attributes->count;
   attributes->entries =
       (vattr_t *)calloc(attributes->capacity, sizeof(vattr_t));
 }
@@ -290,7 +290,7 @@ void loader_gltf_primitive_vertex_index(VertexIndex *vert_index,
   *vert_index = (VertexIndex){
       .entries = index_data,
       .capacity = index_count,
-      .length = index_count,
+      .count = index_count,
   };
 }
 
@@ -413,10 +413,10 @@ LoaderGLTFStatus loader_gltf_create_mesh(Engine *engine, cgltf_node *gl_node,
       if (result) {
         result->stats.mesh_count++;
         result->stats.vertex_count +=
-            target_mesh->topology.base.attribute.length / VERTEX_STRIDE;
+            target_mesh->topology.base.attribute.count / VERTEX_STRIDE;
 
-        if (result->meshes.length < LOADER_GLTF_RESULT_MESH_COUNT)
-          result->meshes.entries[result->meshes.length++] = target_mesh;
+        if (result->meshes.count < LOADER_GLTF_RESULT_MESH_COUNT)
+          result->meshes.entries[result->meshes.count++] = target_mesh;
       }
     }
 
@@ -435,7 +435,7 @@ LoaderGLTFStatus loader_gltf_create_mesh(Engine *engine, cgltf_node *gl_node,
 void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
                                const LoaderGLTFOptions *options) {
 
-  const uint8_t texture_length = 5;
+  const uint8_t texture_count = 5;
 
   // TODO: check how to handle if object already has a AO Texture imported ?
   // overwrite ?
@@ -478,7 +478,7 @@ void loader_gltf_bind_textures(Mesh *mesh, cgltf_material *material,
   const WGPUTextureView fallback_texture =
       std_texture_view(TextureViewType_Float);
 
-  for (int t = 0; t < texture_length; t++) {
+  for (int t = 0; t < texture_count; t++) {
 
     void *data;
     size_t size;

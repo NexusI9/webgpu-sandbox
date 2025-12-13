@@ -137,9 +137,9 @@ MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
   // map referenced primitive vertex attribuets
   VertexAttribute *vert_attr = &desc->primitive->vertex;
 
-  vert_attr->capacity = mbin->vertex_length;
-  vert_attr->length = mbin->vertex_length;
-  vert_attr->entries = malloc(sizeof(vattr_t) * vert_attr->length);
+  vert_attr->capacity = mbin->vertex_count;
+  vert_attr->count = mbin->vertex_count;
+  vert_attr->entries = malloc(sizeof(vattr_t) * vert_attr->count);
 
   if (vert_attr->entries == NULL) {
     logger_add(LoggerFlag_Error, "Couldn't allocate memory for vertex attribute");
@@ -148,25 +148,25 @@ MBINLoaderStatus loader_mbin_load_primitive(MBINLoadPrimitiveDescriptor *desc) {
 
   // manually copy and convert mbin file uint to float via union
   MBIN_U32Float converter;
-  for (size_t v = 0; v < mbin->vertex_length; v++) {
+  for (size_t v = 0; v < mbin->vertex_count; v++) {
     converter.u = mbin->data[v];
     vert_attr->entries[v] = converter.f;
   }
 
   // map referenced primitive index attributes
   VertexIndex *index_attr = &desc->primitive->index;
-  index_attr->capacity = mbin->index_length;
-  index_attr->length = mbin->index_length;
+  index_attr->capacity = mbin->index_count;
+  index_attr->count = mbin->index_count;
 
-  index_attr->entries = malloc(sizeof(vindex_t) * mbin->index_length);
+  index_attr->entries = malloc(sizeof(vindex_t) * mbin->index_count);
 
   if (index_attr->entries == NULL) {
     logger_add(LoggerFlag_Error, "Couldn't allocate memory for vertex attribute\n");
     return MBINLoaderStatus_AllocFail;
   }
 
-  memcpy(index_attr->entries, mbin->data + mbin->vertex_length,
-         sizeof(mbin_data_t) * mbin->index_length);
+  memcpy(index_attr->entries, mbin->data + mbin->vertex_count,
+         sizeof(mbin_data_t) * mbin->index_count);
 
   return MBINLoaderStatus_Success;
 }

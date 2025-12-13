@@ -21,7 +21,7 @@
      |----------|            |      Gizmo List
      |  Mesh 2  | -----------|   .-------------.
      |----------|            '-> |  meshes [*] |
-     |  Mesh n  |                |  length 2   |
+     |  Mesh n  |                |  count 2   |
      '----------'                |  -          |
                              .-> |  target *   |
       Gizmo Pool            |    '-------------'
@@ -60,7 +60,7 @@ DynamicListStatus sem_list_create(SceneEditorMeshList *list, size_t capacity,
   list->id = reg_register(list, type);
   sem_list_set_name(list, name == 0 ? "Scene Editor Mesh List" : name);
 
-  return dyli_create((void **)&list->entries, &list->capacity, &list->length,
+  return dyli_create((void **)&list->entries, &list->capacity, &list->count,
                      sizeof(SceneEditorMesh), capacity,
                      "Scene Editor Mesh list");
 }
@@ -68,7 +68,7 @@ DynamicListStatus sem_list_create(SceneEditorMeshList *list, size_t capacity,
 SceneEditorMesh *sem_list_insert(SceneEditorMeshList *list,
                                  SceneEditorMesh *entry) {
 
-  if (dyli_insert((void **)&list->entries, &list->capacity, &list->length,
+  if (dyli_insert((void **)&list->entries, &list->capacity, &list->count,
                   sizeof(SceneEditorMesh), (void *)entry, 1,
                   "Scene Editor Mesh list") != DynamicListStatus_Success)
     return NULL;
@@ -79,7 +79,7 @@ SceneEditorMesh *sem_list_insert(SceneEditorMeshList *list,
 SceneEditorMesh *sem_list_new_entry(SceneEditorMeshList *list) {
 
   SceneEditorMesh *entry = (SceneEditorMesh *)dyli_new_entry(
-      (void **)&list->entries, &list->capacity, &list->length,
+      (void **)&list->entries, &list->capacity, &list->count,
       sizeof(SceneEditorMesh), "Scene Editor Mesh list");
 
   if (entry)
@@ -90,7 +90,7 @@ SceneEditorMesh *sem_list_new_entry(SceneEditorMeshList *list) {
 
 DynamicListStatus sem_list_remove(SceneEditorMeshList *list,
                                   SceneEditorMesh *entry) {
-  return dyli_remove((void *)list->entries, &list->length,
+  return dyli_remove((void *)list->entries, &list->count,
                      sizeof(SceneEditorMesh), (void *)entry,
                      "Scene Editor Mesh list");
 }
@@ -107,7 +107,7 @@ static inline SceneEditorMesh *sem_list_get_origin(SceneEditorMeshList *list) {
 
 static inline DynamicListStatus
 sem_list_array_create(SceneEditorMeshListArray *array, size_t capacity) {
-  return dyli_create((void **)&array->entries, &array->capacity, &array->length,
+  return dyli_create((void **)&array->entries, &array->capacity, &array->count,
                      sizeof(SceneEditorMeshList), capacity,
                      "Scene Editor Mesh List Array");
 }
@@ -117,7 +117,7 @@ sem_list_array_new_entry(SceneEditorMeshListArray *array,
                          const RegEntryType type) {
 
   SceneEditorMeshList *list = (SceneEditorMeshList *)dyli_new_entry(
-      (void **)&array->entries, &array->capacity, &array->length,
+      (void **)&array->entries, &array->capacity, &array->count,
       sizeof(SceneEditorMeshList), "Scene Editor Mesh List Array");
 
   return list;
@@ -126,7 +126,7 @@ sem_list_array_new_entry(SceneEditorMeshListArray *array,
 static inline DynamicListStatus
 sem_list_array_remove(SceneEditorMeshListArray *array,
                       SceneEditorMeshList *entry) {
-  return dyli_remove((void *)array->entries, &array->length,
+  return dyli_remove((void *)array->entries, &array->count,
                      sizeof(SceneEditorMeshList), (void *)entry,
                      "Scene Editor Mesh List Array");
 }

@@ -75,7 +75,7 @@ void scene_debug_view_compute_position(MeshRefList *views, vec3 result) {
   float col = -init_offset;
   float row = init_offset;
 
-  for (size_t v = 0; v < views->length; v++) {
+  for (size_t v = 0; v < views->count; v++) {
     col += VIEW_MARGIN / 100.0f + views->entries[v]->scale[0];
 
     // skip to new line

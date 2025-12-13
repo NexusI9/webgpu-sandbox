@@ -79,7 +79,7 @@ void probe_reflection_update_camera(ProbeReflection *probe) {
 
 DynamicListStatus probe_reflection_list_create(ProbeReflectionList *list,
                                                const size_t capacity) {
-  return dyli_create((void *)&list->entries, &list->capacity, &list->length,
+  return dyli_create((void *)&list->entries, &list->capacity, &list->count,
                      sizeof(ProbeReflection *), capacity,
                      "Probe Reflection list");
 }
@@ -87,19 +87,19 @@ DynamicListStatus probe_reflection_list_create(ProbeReflectionList *list,
 DynamicListStatus probe_reflection_list_insert(ProbeReflectionList *list,
                                                ProbeReflection *entry) {
 
-  // temporary (shader require static length for now)
-  if (list->length == PROBE_REFLECTION_LIST_MAX_COUNT)
+  // temporary (shader require static count for now)
+  if (list->count == PROBE_REFLECTION_LIST_MAX_COUNT)
     return DynamicListStatus_UndefError;
 
-  return dyli_insert((void *)&list->entries, &list->capacity, &list->length,
+  return dyli_insert((void *)&list->entries, &list->capacity, &list->count,
                      sizeof(ProbeReflection *), (void *)&entry, 1,
                      "Probe Reflection list");
 }
 
 ProbeReflection *probe_reflection_list_new_entry(ProbeReflectionList *list) {
 
-  // temporary (shader require static length for now)
-  if (list->length == PROBE_REFLECTION_LIST_MAX_COUNT)
+  // temporary (shader require static count for now)
+  if (list->count == PROBE_REFLECTION_LIST_MAX_COUNT)
     return NULL;
 
   ProbeReflection *probe = rem_new_probe_reflection();
@@ -123,13 +123,13 @@ ProbeReflection *probe_reflection_list_new_entry(ProbeReflectionList *list) {
 
 DynamicListStatus probe_reflection_list_remove(ProbeReflectionList *list,
                                                ProbeReflection *entry) {
-  return dyli_remove((void *)list->entries, &list->length,
+  return dyli_remove((void *)list->entries, &list->count,
                      sizeof(ProbeReflection *), (void *)entry,
                      "Probe Reflection list");
 }
 
 DynamicListStatus probe_reflection_list_destroy(ProbeReflectionList *list) {
-  return dyli_free((void *)list->entries, &list->capacity, &list->length);
+  return dyli_free((void *)list->entries, &list->capacity, &list->count);
 }
 
 void probe_reflection_destroy(ProbeReflection *probe) {

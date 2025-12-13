@@ -261,7 +261,7 @@ static inline void gizmo_clear_active(Gizmo *gizmo) {
    Use a lookup table coupled with a linear search to pick the right pointer.
  */
 static inline void gizmo_reset_color_uniform(Gizmo *gizmo) {
-  for (uint8_t i = 0; i < gizmo->interactive_handles[gizmo->mode].length; i++) {
+  for (uint8_t i = 0; i < gizmo->interactive_handles[gizmo->mode].count; i++) {
     Mesh *handle = gizmo->interactive_handles[gizmo->mode].entries[i];
     shader_update_uniform_data(mesh_shader(handle, MeshShader_Texture), 1, 0,
                                (void *)gizmo_handle_color[i % 6],
@@ -270,7 +270,7 @@ static inline void gizmo_reset_color_uniform(Gizmo *gizmo) {
 }
 
 static inline void gizmo_update_ubo(Gizmo *gizmo, UBOManager *ubo) {
-  for (uint8_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
+  for (uint8_t i = 0; i < gizmo->handles[gizmo->mode].count; i++)
     ubo_update_queue_insert(
         ubo, UBOType_Mesh, gizmo->handles[gizmo->mode].entries[i]->ubo_slot.id);
 }

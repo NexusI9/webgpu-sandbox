@@ -15,7 +15,7 @@ typedef ivec2 EdgeKey;
 
 typedef struct {
   Edge *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } EdgeList;
 
@@ -27,7 +27,7 @@ typedef struct {
 typedef struct {
   EdgeBucket *entries;
   size_t *occupied;
-  size_t length;
+  size_t count;
   size_t capacity;
 } EdgeHashSet;
 

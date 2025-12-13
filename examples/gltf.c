@@ -116,8 +116,8 @@ void example_gltf_podium(Engine *engine) {
   const char *podium_name = "podium";
   Mesh *podium = mesh_ref_list_find_by_name(
       &(MeshRefList){
-          .capacity = gltf_result.meshes.length,
-          .length = gltf_result.meshes.length,
+          .capacity = gltf_result.meshes.count,
+          .count = gltf_result.meshes.count,
           .entries = gltf_result.meshes.entries,
       },
       podium_name);

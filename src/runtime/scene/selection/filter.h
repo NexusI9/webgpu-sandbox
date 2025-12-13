@@ -26,12 +26,12 @@ typedef struct {
 typedef struct {
   SceneSelectionObject *entries;
   size_t capacity;
-  size_t length;
+  size_t count;
 } SceneSelectionObjectList;
 
 typedef struct {
   reg_id_t *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } SceneSelectionTargetList;
 
@@ -71,14 +71,14 @@ scene_selection_filter_selection_empty(SceneSelectionFilter *);
 DynamicListStatus
 scene_selection_filter_selection_empty(SceneSelectionFilter *filter) {
   return dyli_empty((void *)filter->selection.entries,
-                    &filter->selection.length, sizeof(SceneSelectionObject));
+                    &filter->selection.count, sizeof(SceneSelectionObject));
 }
 
 SceneSelectionObject *
 scene_selection_filter_selection_find_mesh(SceneSelectionFilter *filter,
                                            Mesh *mesh, size_t *index) {
 
-  for (size_t i = 0; i < filter->selection.length; i++)
+  for (size_t i = 0; i < filter->selection.count; i++)
     if (filter->selection.entries[i].mesh == mesh) {
       if (index)
         *index = i;
@@ -118,9 +118,9 @@ SceneSelectionFilterStatus scene_selection_filter_selection_add_mesh(
     logger_add(LoggerFlag_Warning,
                "Selection mesh not found within the selection filter.");
     return SceneSelectionFilterStatus_MeshUnfound;
-  } else if (index > filter->targets.length) {
+  } else if (index > filter->targets.count) {
     logger_add(LoggerFlag_Warning,
-               "Selection mesh index is superior to target length.");
+               "Selection mesh index is superior to target count.");
     return SceneSelectionFilterStatus_MeshUnfound;
   }
 
@@ -134,10 +134,10 @@ SceneSelectionFilterStatus scene_selection_filter_selection_add_mesh(
 
   DynamicListStatus insert =
       dyli_insert((void **)&selection->entries, &selection->capacity,
-                  &selection->length, sizeof(SceneSelectionObject),
+                  &selection->count, sizeof(SceneSelectionObject),
                   (void *)&object, 1, "Scene Selection Object List");
 
-  for (size_t i = 0; i < mesh->children.length; i++)
+  for (size_t i = 0; i < mesh->children.count; i++)
     scene_selection_filter_selection_add_mesh(filter, mesh->children.entries[i],
                                               NULL);
 
@@ -161,10 +161,10 @@ scene_selection_filter_selection_remove_mesh(SceneSelectionFilter *filter,
   SceneSelectionObjectList *selection_list = &filter->selection;
 
   DynamicListStatus remove = dyli_remove_at_index(
-      (void *)selection_list->entries, &selection_list->length,
+      (void *)selection_list->entries, &selection_list->count,
       sizeof(SceneSelectionObject), index, "Scene Selection Object List");
 
-  for (size_t i = 0; i < mesh->children.length; i++)
+  for (size_t i = 0; i < mesh->children.count; i++)
     scene_selection_filter_selection_remove_mesh(filter,
                                                  mesh->children.entries[i]);
 

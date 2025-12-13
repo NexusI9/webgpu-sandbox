@@ -124,7 +124,7 @@ struct PostFx {
 
   struct {
     post_fx_draw_callback entries[POST_FX_TYPE_COUNT];
-    uint8_t length;
+    uint8_t count;
   } callbacks;
 };
 
@@ -185,7 +185,7 @@ static inline bool post_fx_effect_enabled(PostFx *fx, const PostFxType type) {
 static inline void post_fx_draw(PostFx *fx,
                                 WGPUCommandEncoder command_encoder) {
   // loop through registerd effects
-  for (uint8_t i = 0; i < fx->callbacks.length; i++)
+  for (uint8_t i = 0; i < fx->callbacks.count; i++)
     fx->callbacks.entries[i](fx, command_encoder);
 }
 

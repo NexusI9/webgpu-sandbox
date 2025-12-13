@@ -77,9 +77,9 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
   logger_add(LoggerFlag_Process, "Creating scene shadow map textures...");
 
   // create multi layered light texture (passed to the renderpass)
-  const size_t point_light_length = desc->lights->point.shadow.length;
-  const size_t spot_light_length = desc->lights->spot.shadow.length;
-  const size_t sun_light_length = desc->lights->sun.shadow.length;
+  const size_t point_light_count = desc->lights->point.shadow.count;
+  const size_t spot_light_count = desc->lights->spot.shadow.count;
+  const size_t sun_light_count = desc->lights->sun.shadow.count;
 
   struct {
     const size_t layer_count;
@@ -87,12 +87,12 @@ void shadow_map_init(const ShadowMapInitDescriptor *desc) {
     RenderPass *pass;
   } light_config[] = {
       {
-          MAX(point_light_length, LIGHT_MAX_CAPACITY) * LIGHT_POINT_VIEWS,
+          MAX(point_light_count, LIGHT_MAX_CAPACITY) * LIGHT_POINT_VIEWS,
           WGPUTextureViewDimension_CubeArray,
           &desc->lights->point.shadow.pass,
       },
       {
-          MAX(spot_light_length + sun_light_length, LIGHT_MAX_CAPACITY),
+          MAX(spot_light_count + sun_light_count, LIGHT_MAX_CAPACITY),
           WGPUTextureViewDimension_2DArray,
           &desc->lights->spot.shadow.pass,
       },

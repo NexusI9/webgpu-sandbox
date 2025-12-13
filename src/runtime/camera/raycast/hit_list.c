@@ -24,12 +24,12 @@ CameraRaycastHitListStatus camera_raycast_hit_list_create(CameraRaycastHitList *
 
   list->entries = calloc(capacity, sizeof(CameraRaycastHit));
   list->capacity = capacity;
-  list->length = 0;
+  list->count = 0;
 
   if (list->entries == NULL) {
     logger_add(LoggerFlag_Error, "Couldn't allocate camera raycast hit list entries.");
     list->capacity = 0;
-    list->length = 0;
+    list->count = 0;
     return CameraRaycastHitListStatus_AllocFail;
   }
 
@@ -45,7 +45,7 @@ void camera_raycast_hit_list_empty(CameraRaycastHitList *list) {
 
   if (list->entries != NULL) {
     memset(list->entries, 0, list->capacity * sizeof(CameraRaycastHit));
-    list->length = 0;
+    list->count = 0;
   }
 }
 
@@ -62,9 +62,9 @@ void camera_raycast_hit_list_empty(CameraRaycastHitList *list) {
 void camera_raycast_hit_list_sort(CameraRaycastHitList *list) {
 
   // none or only 1 entry, skip comparison
-  if (list->length < 2 || list->entries == NULL)
+  if (list->count < 2 || list->entries == NULL)
     return;
 
-  qsort(list->entries, list->length, sizeof(CameraRaycastHit),
+  qsort(list->entries, list->count, sizeof(CameraRaycastHit),
         camera_raycast_hit_list_sort_func);
 }

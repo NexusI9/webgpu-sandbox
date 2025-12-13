@@ -59,7 +59,7 @@ void ao_bake_draw_mesh(RendererTextureAO *ao, Mesh *mesh,
     if (new_entry) {
       new_entry->owner = mesh;
       texture = &new_entry->texture;
-      layer = ao->texture_list.length - 1;
+      layer = ao->texture_list.count - 1;
 
       WGPUTextureView layer_view = rem_new_view(
           ao->texture, &(WGPUTextureViewDescriptor){
@@ -128,11 +128,11 @@ void ao_bake_draw_list(RendererTextureAO *ao,
                        const AOBakeDrawDescriptor *desc) {
 
   // first compute all texture CPU side
-  for (int t = 0; t < desc->mesh_list->length; t++)
+  for (int t = 0; t < desc->mesh_list->count; t++)
     ao_bake_draw_mesh(ao, desc->mesh_list->entries[t], desc, false);
 
   // once computed, apply post-process and write to GPU
-  for (size_t i = 0; i < ao->texture_list.length; i++) {
+  for (size_t i = 0; i < ao->texture_list.count; i++) {
 
     Texture *texture = &ao->texture_list.entries[i].texture;
 

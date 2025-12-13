@@ -30,13 +30,13 @@ typedef union {
 
 typedef struct {
   vindex_t *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } MeshTopologyAnchor;
 
 typedef struct {
   MeshTopologyAnchor *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } MeshTopologyAnchorList;
 

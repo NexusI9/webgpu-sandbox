@@ -70,7 +70,7 @@ PostFxStatus post_fx_init(PostFx *fx, const PostFxDescriptor *desc) {
   fx->height = desc->height;
   fx->scene_view = desc->scene_view;
   fx->profiler = desc->profiler;
-  fx->callbacks.length = 0;
+  fx->callbacks.count = 0;
 
   // define effect callbacks
   for (size_t i = 0; i < POST_FX_TYPE_COUNT; i++) {
@@ -219,7 +219,7 @@ post_fx_composite_update_uniform(PostFx *fx,
    1. validate if not already created
    2. define core attributes: pipeline, view(s), uniforms
    3. create bindgroup
-   4. update fx callbacks and length (i.e. register to draw loop)
+   4. update fx callbacks and count (i.e. register to draw loop)
  */
 PostFxStatus post_fx_blit_create(PostFx *fx) {
 
@@ -531,12 +531,12 @@ PostFxStatus post_fx_composite_update_bindgroup(PostFx *fx) {
 
 PostFxStatus post_fx_add_callback(PostFx *fx, post_fx_draw_callback callback) {
 
-  if (fx->callbacks.length == POST_FX_TYPE_COUNT) {
+  if (fx->callbacks.count == POST_FX_TYPE_COUNT) {
     logger_add(LoggerFlag_Error, "Post fx callback list reached max capacity.");
     return PostFxStatus_MaxCapacity;
   }
 
-  fx->callbacks.entries[fx->callbacks.length++] = callback;
+  fx->callbacks.entries[fx->callbacks.count++] = callback;
 
   return PostFxStatus_Success;
 }
@@ -545,7 +545,7 @@ PostFxStatus post_fx_remove_callback(PostFx *fx,
                                      post_fx_draw_callback callback) {
 
   StaticListStatus remove = stli_remove(
-      fx->callbacks.entries, (size_t *)&fx->callbacks.length,
+      fx->callbacks.entries, (size_t *)&fx->callbacks.count,
       sizeof(post_fx_draw_callback), &callback, "Postfx callback list");
 
   return PostFxStatus_Success;

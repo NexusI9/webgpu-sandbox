@@ -15,7 +15,7 @@ typedef uint32_t vindex_t;
 
 typedef struct {
   vindex_t *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
   WGPUBuffer buffer;
 } VertexIndex;

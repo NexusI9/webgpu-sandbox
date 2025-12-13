@@ -102,7 +102,7 @@ void UI::Log::draw() {
     ImGui::Text("%s", label);
     ImGui::BeginChild("Logs entries", ImVec2(0, 0), true);
     {
-      for (size_t i = 0; i < g_logger.length; i++) {
+      for (size_t i = 0; i < g_logger.count; i++) {
 
         const LoggerLook *look = &logger_looks[g_logger.flags[i]];
         const ThemeIconCell *uv = theme_icon_cell(gui->theme, look->icon);

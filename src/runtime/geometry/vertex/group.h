@@ -21,13 +21,13 @@ typedef uint32_t vgroup_hash;
 typedef struct {
   char *name;
   vindex_t *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } VertexGroup;
 
 typedef struct {
   VertexGroup *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } VertexGroupSet;
 

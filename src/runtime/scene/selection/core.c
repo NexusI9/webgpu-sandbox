@@ -44,7 +44,7 @@ void scene_selection_init(SceneSelection *selection) {
                                        MESH_REF_LIST_CAPACITY);
 
     dyli_create((void *)&filter->selection.entries, &filter->selection.capacity,
-                &filter->selection.length, sizeof(SceneSelectionObject),
+                &filter->selection.count, sizeof(SceneSelectionObject),
                 MESH_REF_LIST_CAPACITY, "Scene Selection Object List");
   }
 }
@@ -63,28 +63,28 @@ void scene_selection_average_position(SceneSelection *selection, vec3 *dest) {
     vec3 filter_avg;
     glm_vec3_zero(filter_avg);
 
-    for (size_t j = 0; j < filter->selection.length; j++) {
+    for (size_t j = 0; j < filter->selection.count; j++) {
       SceneSelectionObject *object = &filter->selection.entries[j];
       glm_vec3_add(object->mesh->position, filter_avg, filter_avg);
     }
-    glm_vec3_scale(filter_avg, 1.0f / glm_max(filter->selection.length, 1),
+    glm_vec3_scale(filter_avg, 1.0f / glm_max(filter->selection.count, 1),
                    filter_avg);
 
     glm_vec3_add(*dest, filter_avg, *dest);
 
-    if (filter->selection.length > 0)
+    if (filter->selection.count > 0)
       denom++;
   }
 
   glm_vec3_scale(*dest, 1.0f / glm_max(denom, 1), *dest);
 }
 
-size_t scene_selection_length(SceneSelection *selection) {
-  size_t length = 0;
+size_t scene_selection_count(SceneSelection *selection) {
+  size_t count = 0;
   for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
-    length += selection->filters[i].selection.length;
+    count += selection->filters[i].selection.count;
 
-  return length;
+  return count;
 }
 
 /**
@@ -131,7 +131,7 @@ void scene_selection_cache_initial_attributes(SceneSelection *selection,
 
     SceneSelectionFilter *filter = &selection->filters[i];
 
-    for (size_t j = 0; j < filter->selection.length; j++) {
+    for (size_t j = 0; j < filter->selection.count; j++) {
       SceneSelectionObject *object = &filter->selection.entries[j];
       vec3 attribute;
       mesh_transform_attribute[mode](object->mesh, attribute);
@@ -152,7 +152,7 @@ scene_selection_find_filter_of_mesh(SceneSelection *selection, Mesh *mesh,
     SceneSelectionFilter *filter = &selection->filters[i];
 
     // first search in selected meshes (usually shorter)
-    for (size_t j = 0; j < filter->selection.length; j++) {
+    for (size_t j = 0; j < filter->selection.count; j++) {
       if (filter->selection.entries[j].mesh == mesh) {
 
         if (selected)
@@ -186,7 +186,7 @@ scene_selection_find_filter_of_mesh(SceneSelection *selection, Mesh *mesh,
  */
 void scene_selection_clear_initial_attributes(SceneSelection *selection) {
   for (SceneSelectionType i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++)
-    for (size_t j = 0; j < selection->filters[i].selection.length; j++)
+    for (size_t j = 0; j < selection->filters[i].selection.count; j++)
       glm_vec3_zero(
           selection->filters[i].selection.entries[j].initial_attribute);
 }
@@ -233,7 +233,7 @@ void scene_selection_unregister_mesh(SceneSelection *selection, Mesh *mesh,
 void scene_selection_register_mesh_ref_list(SceneSelection *selection,
                                             MeshRefList *list, reg_id_t target,
                                             const SceneSelectionType type) {
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     scene_selection_register_mesh(selection, list->entries[i], target, type);
 }
 

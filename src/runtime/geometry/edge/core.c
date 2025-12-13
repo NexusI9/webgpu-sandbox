@@ -27,7 +27,7 @@ void edge_hash_set_create(EdgeHashSet *set, size_t capacity) {
 
   set->entries = calloc(capacity, sizeof(EdgeBucket));
   set->occupied = calloc(capacity, sizeof(size_t));
-  set->length = 0;
+  set->count = 0;
 
   if (set->entries == NULL) {
     logger_add(LoggerFlag_Print, "Couldn't allocate memory for new hash set.\n");
@@ -44,7 +44,7 @@ void edge_hash_set_destroy(EdgeHashSet *set) {
   set->occupied = NULL;
   set->entries = NULL;
   set->capacity = 0;
-  set->length = 0;
+  set->count = 0;
 }
 
 bool edge_hash_set_insert(EdgeHashSet *set, EdgeKey key) {
@@ -54,9 +54,9 @@ bool edge_hash_set_insert(EdgeHashSet *set, EdgeKey key) {
     return false;
 
   // check capacity
-  if (set->length >= set->capacity * 0.75) {
+  if (set->count >= set->capacity * 0.75) {
     /*
-      If length reach 75% of capacity we expand list as beyond 75%
+      If count reach 75% of capacity we expand list as beyond 75%
       the probing performance become heavier
      */
     size_t new_capacity = set->capacity * 2;
@@ -96,10 +96,10 @@ bool edge_hash_set_insert(EdgeHashSet *set, EdgeKey key) {
   new_bucket->occupied = true;
 
   // insert new occupied index
-  set->occupied[set->length] = index;
+  set->occupied[set->count] = index;
 
-  // update length
-  set->length++;
+  // update count
+  set->count++;
   return true;
 }
 

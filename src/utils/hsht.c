@@ -63,7 +63,7 @@ HashTableStatus hsht_expand(HashTable *table, const size_t scale) {
 
   table->entries = temp;
   table->capacity = new_capacity;
-  table->length = 0;
+  table->count = 0;
 
   // rehash
   for (size_t i = 0; i < old_capacity; i++) {
@@ -124,12 +124,12 @@ void *hsht_find(HashTable *table, const void *key, size_t *real_index) {
 void *hsht_new_entry(HashTable *table, const void *key,
                      const HashTableNewFlag flag) {
 
-  if (table->length >= table->capacity * 0.75) {
+  if (table->count >= table->capacity * 0.75) {
     if (flag & HashTableNewFlag_FixedCapacity) {
       logger_add(LoggerFlag_Error,
                  "Unable to generate new entry in Hash table '%s' has a fixed "
                  "capacity of %lu for %lu occupied buckets.",
-                 table->label, table->capacity, table->length);
+                 table->label, table->capacity, table->count);
       return NULL;
     } else if (hsht_expand(table, 2) != HashTableStatus_Success)
       return NULL;
@@ -157,7 +157,7 @@ void *hsht_new_entry(HashTable *table, const void *key,
   if (table->set_occupied)
     table->set_occupied(entry, true);
 
-  table->length++;
+  table->count++;
 
   return entry;
 }
@@ -177,19 +177,19 @@ HashTableStatus hsht_remove_entry(HashTable *table, const void *key) {
   return HashTableStatus_Success;
 }
 
-HashTableStatus hsht_empty(void *entries, size_t *length, size_t type_size,
+HashTableStatus hsht_empty(void *entries, size_t *count, size_t type_size,
                            const char *label) {
 
-  memset(entries, 0, *length * type_size);
+  memset(entries, 0, *count * type_size);
 
   return HashTableStatus_Success;
 }
 
-HashTableStatus hsht_destroy(void **entries, size_t *capacity, size_t *length,
+HashTableStatus hsht_destroy(void **entries, size_t *capacity, size_t *count,
                              const char *label) {
 
   *capacity = 0;
-  *length = 0;
+  *count = 0;
 
   free(*entries);
   *entries = NULL;

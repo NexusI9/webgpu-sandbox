@@ -42,7 +42,7 @@ Primitive primitive_cube() {
       .vertex =
           {
               .entries = cube_vertex_data,
-              .length = sizeof(cube_vertex_data) / sizeof(cube_vertex_data[0]),
+              .count = sizeof(cube_vertex_data) / sizeof(cube_vertex_data[0]),
 	      .capacity = sizeof(cube_vertex_data) / sizeof(cube_vertex_data[0])
           },
 
@@ -50,7 +50,7 @@ Primitive primitive_cube() {
       .index =
           {
               .entries = cube_index_data,
-              .length = sizeof(cube_index_data) / sizeof(cube_index_data[0]),
+              .count = sizeof(cube_index_data) / sizeof(cube_index_data[0]),
 	      .capacity = sizeof(cube_index_data) / sizeof(cube_index_data[0])
           },
   };

@@ -13,7 +13,7 @@ void UI::InspectorSpotLight::transform_update_callback(Scene *scene,
 
   SceneEditorMeshList *list = (SceneEditorMeshList *)user_data;
 
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     ubo_update_queue_insert(scene->ubo, UBOType_Mesh,
                             list->entries[i].mesh->ubo_slot.id);
 

@@ -37,7 +37,7 @@ void scene_selection_filter_set_all_active(SceneSelectionFilter *filter) {
   SceneSelectionObjectList *selection = &filter->selection;
 
   // map targets to mesh
-  for (size_t i = 0; i < filter->meshes.length; i++) {
+  for (size_t i = 0; i < filter->meshes.count; i++) {
     Mesh *mesh = filter->meshes.entries[i];
     scene_selection_filter_selection_add_mesh(filter, mesh, &i);
   }

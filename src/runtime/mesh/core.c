@@ -33,12 +33,12 @@ void mesh_create(Mesh *mesh, const MeshCreateDescriptor *md) {
 #endif
 
   // init child list
-  mesh->children.length = 0;
-  mesh->children.capacity = MESH_CHILD_LENGTH;
+  mesh->children.count = 0;
+  mesh->children.capacity = MESH_CHILD_COUNT;
   mesh->children.entries = NULL;
 
   // set vertices & index for base topology
-  if (md->vertex.length > 0 && md->index.length)
+  if (md->vertex.count > 0 && md->index.count)
     mesh_topology_base_create(&mesh->topology.base, &md->vertex, &md->index);
 
   // init model matrix and transforms
@@ -81,7 +81,7 @@ Mesh *mesh_children_list_check_init(Mesh *parent) {
 
   if (parent->children.entries == NULL)
     dyli_create((void *)&parent->children.entries, &parent->children.capacity,
-                &parent->children.length, sizeof(Mesh *), 16,
+                &parent->children.count, sizeof(Mesh *), 16,
                 "Mesh children list");
 
   return *parent->children.entries;
@@ -94,7 +94,7 @@ Mesh *mesh_child_new(Mesh *parent) {
 
   Mesh *child = dyli_new_entry(
       (void *)&parent->children.entries, &parent->children.capacity,
-      &parent->children.length, sizeof(Mesh *), "Mesh child list");
+      &parent->children.count, sizeof(Mesh *), "Mesh child list");
 
   if (child == NULL) {
     logger_add(LoggerFlag_Warning,
@@ -116,7 +116,7 @@ DynamicListStatus mesh_child_add(Mesh *parent, Mesh *child) {
 
   DynamicListStatus insert =
       dyli_insert((void *)&parent->children.entries, &parent->children.capacity,
-                  &parent->children.length, sizeof(Mesh *), (void *)&child, 1,
+                  &parent->children.count, sizeof(Mesh *), (void *)&child, 1,
                   "Mesh children list");
 
   if (insert == DynamicListStatus_Success) {

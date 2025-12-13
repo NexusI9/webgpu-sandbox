@@ -103,7 +103,7 @@ typedef struct {
 
 typedef struct {
   ubo_id_t entries[UBO_UPDATE_QUEUE_CAPACITY];
-  size_t length;
+  size_t count;
   size_t capacity;
 } UBOBufferUpdateQueue;
 
@@ -111,7 +111,7 @@ typedef struct {
   uint8_t entries[UBO_CAPACITY * UBO_MAX_TYPE_SIZE];
   UBOBufferUpdateQueue update_queue;
   size_t capacity;
-  size_t length;
+  size_t count;
   WGPUBuffer handle;
   size_t type_size;
 } __attribute__((aligned(16))) UBOBuffer;
@@ -131,7 +131,7 @@ void ubo_upload(UBOManager *, const UBOType);
 
 /* ==== GETTERS ==== */
 WGPUBuffer ubo_buffer_handle(UBOManager *, const UBOType);
-size_t ubo_length(UBOManager *, const UBOType);
+size_t ubo_count(UBOManager *, const UBOType);
 size_t ubo_find_index(UBOManager *, const UBOType, void *);
 void *ubo_entry(UBOManager *, const UBOType, ubo_id_t);
 

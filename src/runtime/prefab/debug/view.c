@@ -24,13 +24,13 @@ static void debug_view_compute_position(DebugView *, vec3);
 
 void debug_view_create(DebugView *debug_view,
                        const DebugViewCreateDescriptor *desc) {
-  debug_view->length = 0;
+  debug_view->count = 0;
   debug_view->capacity = VIEW_MAX_CAPACITY;
 }
 
 void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
 
-  if (debug_view->length == debug_view->capacity) {
+  if (debug_view->count == debug_view->capacity) {
     logger_add(LoggerFlag_Print,
                "Debug view Currently holding max capacity, no more views "
                "can be added\n");
@@ -38,7 +38,7 @@ void debug_view_add(DebugView *debug_view, const ViewDescriptor *view) {
   }
 
   // create view mesh
-  Mesh *new_view = &debug_view->mesh[debug_view->length++];
+  Mesh *new_view = &debug_view->mesh[debug_view->count++];
   Primitive plane = primitive_plane();
 
   mesh_create_primitive(new_view, &(MeshCreatePrimitiveDescriptor){
@@ -116,7 +116,7 @@ void debug_view_compute_position(DebugView *debug_view, vec3 result) {
   float col = init_offset;
   float row = init_offset;
 
-  for (size_t v = 1; v < debug_view->length; v++) {
+  for (size_t v = 1; v < debug_view->count; v++) {
     col += VIEW_MARGIN / 100.0f + debug_view->mesh[v].scale[0];
 
     // skip to new line
@@ -130,4 +130,4 @@ void debug_view_compute_position(DebugView *debug_view, vec3 result) {
   result[2] = row;
 }
 
-size_t debug_view_length(DebugView *db_view) { return db_view->length; }
+size_t debug_view_count(DebugView *db_view) { return db_view->count; }

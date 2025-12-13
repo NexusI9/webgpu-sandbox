@@ -61,27 +61,27 @@ template <typename T> struct InspectorTreeList {
   const char *label;
 
   struct {
-    size_t length;
+    size_t count;
     InspectorTreeIntAttribute<T> entries[INSPECTOR_TREE_CAPACITY];
   } int_list;
 
   struct {
-    size_t length;
+    size_t count;
     InspectorTreeFloatAttribute<T> entries[INSPECTOR_TREE_CAPACITY];
   } float_list;
 
   struct {
-    size_t length;
+    size_t count;
     InspectorTreeVec3Attribute<T> entries[INSPECTOR_TREE_CAPACITY];
   } vec3_list;
 
   struct {
-    size_t length;
+    size_t count;
     InspectorTreeVec4Attribute<T> entries[INSPECTOR_TREE_CAPACITY];
   } vec4_list;
 
   struct {
-    size_t length;
+    size_t count;
     InspectorTreeVec4Attribute<T> entries[INSPECTOR_TREE_CAPACITY];
   } color_list;
 };
@@ -104,7 +104,7 @@ static inline void inspector_tree_list_draw(T *target,
     size_t i;
 
     ImGui::PushItemWidth(-1);
-    for (i = 0; i < list->int_list.length; i++)
+    for (i = 0; i < list->int_list.count; i++)
       UI::InputIntCallback<T>(target, gui, list->int_list.entries[i].label,
                               list->int_list.entries[i].accessor_callback,
                               list->int_list.entries[i].mutator_callback,
@@ -112,7 +112,7 @@ static inline void inspector_tree_list_draw(T *target,
                               list->int_list.entries[i].user_data)
           .draw();
 
-    for (i = 0; i < list->float_list.length; i++)
+    for (i = 0; i < list->float_list.count; i++)
       UI::InputFloatCallback<T>(target, gui, list->float_list.entries[i].label,
                                 list->float_list.entries[i].accessor_callback,
                                 list->float_list.entries[i].mutator_callback,
@@ -120,7 +120,7 @@ static inline void inspector_tree_list_draw(T *target,
                                 list->float_list.entries[i].user_data)
           .draw();
 
-    for (i = 0; i < list->vec3_list.length; i++)
+    for (i = 0; i < list->vec3_list.count; i++)
       UI::InputVec3Callback<T>(target, gui, list->vec3_list.entries[i].label,
                                list->vec3_list.entries[i].accessor_callback,
                                list->vec3_list.entries[i].mutator_callback,
@@ -128,7 +128,7 @@ static inline void inspector_tree_list_draw(T *target,
                                list->vec3_list.entries[i].user_data)
           .draw();
 
-    for (i = 0; i < list->vec4_list.length; i++)
+    for (i = 0; i < list->vec4_list.count; i++)
       UI::InputVec4Callback<T>(target, gui, list->vec4_list.entries[i].label,
                                list->vec4_list.entries[i].accessor_callback,
                                list->vec4_list.entries[i].mutator_callback,
@@ -136,7 +136,7 @@ static inline void inspector_tree_list_draw(T *target,
                                list->vec4_list.entries[i].user_data)
           .draw();
 
-    for (i = 0; i < list->color_list.length; i++)
+    for (i = 0; i < list->color_list.count; i++)
       UI::InputColorCallback<T>(target, gui, list->color_list.entries[i].label,
                                 list->color_list.entries[i].accessor_callback,
                                 list->color_list.entries[i].mutator_callback,

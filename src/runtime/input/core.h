@@ -120,7 +120,7 @@ typedef enum InputKey {
   INPUT_KEY_SINGLEQUOTE = 222
 } InputKey;
 
-static const int INPUT_KEY_LENGTH = 128;
+static const int INPUT_KEY_COUNT = 128;
 static const int INPUT_MAX_MOVEMENT = 20;
 static const char *INPUT_EVENT_DEFAULT_TARGET = "body";
 
@@ -145,7 +145,7 @@ typedef enum {
 typedef struct {
 
   int locked; // need to look when focused on ui
-  bool keys[INPUT_KEY_LENGTH];
+  bool keys[INPUT_KEY_COUNT];
   KeyRecordSequenceList sequence_listener;
 
   struct {

@@ -26,12 +26,12 @@ bool UI::ObjectTab::is_valid_type(const RegEntryType type) {
  */
 reg_id_t UI::ObjectTab::set_active_target() {
 
-  if (scene_selection_length(&scene->selection)) {
+  if (scene_selection_count(&scene->selection)) {
     // get selection 1st entry
     for (int i = 0; i < SCENE_SELECTION_TYPE_COUNT; i++) {
       SceneSelectionObjectList *selection_list =
           &scene->selection.filters[i].selection;
-      if (selection_list->length)
+      if (selection_list->count)
         return selection_list->entries[0].target;
     }
   }
@@ -40,8 +40,8 @@ reg_id_t UI::ObjectTab::set_active_target() {
   renderer_batch_get_mesh_list_without_flags(
       &renderer->batches, RendererBatchFlag_Fixed, &dynamic_meshes);
 
-  for (uint8_t i = 0; i < dynamic_meshes.length; i++)
-    for (size_t j = 0; j < dynamic_meshes.entries[i]->length; j++)
+  for (uint8_t i = 0; i < dynamic_meshes.count; i++)
+    for (size_t j = 0; j < dynamic_meshes.entries[i]->count; j++)
       return dynamic_meshes.entries[i]->entries[j]->id;
 
   // TODO Make fallback id more robust

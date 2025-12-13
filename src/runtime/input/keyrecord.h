@@ -67,7 +67,7 @@ typedef void (*input_keyrec_callback)(KeyRecordSequence *, void *);
 
 struct KeyRecordSequence {
   keyrec_t *sequence;
-  size_t length;
+  size_t count;
   input_keyrec_callback callback;
   void *data;
   reg_id_t owner;
@@ -77,12 +77,12 @@ typedef struct {
   KeyRecord record;
   KeyRecordSequence *entries;
   size_t capacity;
-  size_t length;
+  size_t count;
 } KeyRecordSequenceList;
 
 typedef struct {
   KeyRecordSequence entries[INPUT_KEY_RECORD_MAX_RESULT];
-  size_t length;
+  size_t count;
 } KeyRecordSequenceListResult;
 
 // Core

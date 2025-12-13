@@ -32,7 +32,7 @@ private:
       .label = "Transform",
       .vec3_list =
           {
-              .length = 1,
+              .count = 1,
               .entries =
                   {
                       {
@@ -51,7 +51,7 @@ private:
       .label = "Properties",
       .float_list =
           {
-              .length = 1,
+              .count = 1,
               .entries =
                   {
                       {
@@ -65,7 +65,7 @@ private:
           },
       .color_list =
           {
-              .length = 1,
+              .count = 1,
               .entries =
                   {
                       {

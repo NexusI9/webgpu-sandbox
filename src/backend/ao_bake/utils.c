@@ -46,7 +46,7 @@ float ao_bake_vertex(const AOBakeVertexDescriptor *desc) {
     glm_vec3_add(world_position, ray_direction, ray_direction);
 
     // traverse mesh triangles
-    for (size_t t = 0; t < desc->mesh->topology.base.index.length; t += 3) {
+    for (size_t t = 0; t < desc->mesh->topology.base.index.count; t += 3) {
       Triangle triangle;
       ao_bake_mesh_triangle(&triangle, desc->mesh, t);
       vec3 hit;
@@ -79,7 +79,7 @@ bool ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
 
   // Raycast from ray origin (source surface) towards each compare mesh
   // triangles
-  for (size_t i = 0; i < desc->compare_mesh->topology.base.index.length;
+  for (size_t i = 0; i < desc->compare_mesh->topology.base.index.count;
        i += 3) {
     Triangle compare_triangle;
     ao_bake_mesh_triangle(&compare_triangle, desc->compare_mesh, i);

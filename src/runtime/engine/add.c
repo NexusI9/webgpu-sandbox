@@ -32,7 +32,7 @@ static inline void engine_add_mesh_core(Engine *, Mesh *, const char *,
 
 Scene *engine_add_scene(Engine *engine, const SceneCreateDescriptor *desc) {
 
-  if (engine->scenes.length >= ENGINE_SCENE_CAPACITY) {
+  if (engine->scenes.count >= ENGINE_SCENE_CAPACITY) {
     logger_add(LoggerFlag_Error, "Engine reached max scene capacity (%lu)",
                ENGINE_SCENE_CAPACITY);
     return NULL;
@@ -48,7 +48,7 @@ Scene *engine_add_scene(Engine *engine, const SceneCreateDescriptor *desc) {
     return NULL;
   }
 
-  engine->scenes.entries[engine->scenes.length++] = scene;
+  engine->scenes.entries[engine->scenes.count++] = scene;
 
   return scene;
 }
@@ -92,7 +92,7 @@ SceneEditorMeshList *engine_scene_add_point_light(Engine *engine,
         &(ShadowMapDrawPointLightDescriptor){
             .light = light,
             .pass = &scene->lights.point.shadow.pass,
-            .texture_layer = shadow_list->length,
+            .texture_layer = shadow_list->count,
             .command_encoder = NULL,
             .profiler = &renderer->profiler,
         },
@@ -127,7 +127,7 @@ SceneEditorMeshList *engine_scene_add_spot_light(Engine *engine,
         &(ShadowMapDrawSpotLightDescriptor){
             .light = light,
             .pass = &shadow_list->pass,
-            .texture_layer = shadow_list->length,
+            .texture_layer = shadow_list->count,
             .command_encoder = NULL,
             .profiler = &renderer->profiler,
         },
@@ -160,7 +160,7 @@ SceneEditorMeshList *engine_scene_add_sun_light(Engine *engine,
 
     SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
     const size_t target_index =
-        light_list_sun_layer_index(&scene->lights, shadow_list->length);
+        light_list_sun_layer_index(&scene->lights, shadow_list->count);
 
     renderer_draw_shadow_map_sun_light(
         &(ShadowMapDrawSunLightDescriptor){
@@ -213,7 +213,7 @@ engine_scene_add_probe_reflection_plane(Engine *engine,
   Renderer *renderer = engine_get_renderer(engine);
 
   // add draw callback if first probe
-  if (scene->probes.reflection_plane.length == 0)
+  if (scene->probes.reflection_plane.count == 0)
     renderer_add_draw_callback(renderer, renderer_draw_plane_reflection,
                                (void *)scene, RendererDrawMode_Texture);
 
@@ -256,7 +256,7 @@ void engine_scene_add_sem(Engine *engine, SceneEditorMeshList *list) {
   Scene *scene = engine_get_active_scene(engine);
   Renderer *renderer = engine_get_renderer(engine);
 
-  for (size_t i = 0; i < list->length; i++) {
+  for (size_t i = 0; i < list->count; i++) {
     Mesh *mesh = list->entries[i].mesh;
 
     engine_scene_add_mesh_custom(
@@ -305,7 +305,7 @@ void engine_add_mesh_core_insert_pipeline_batch(
                                              &mesh_lists);
 
   // insert mesh in each batch that have this pipeline type
-  for (size_t i = 0; i < mesh_lists.length; i++)
+  for (size_t i = 0; i < mesh_lists.count; i++)
     mesh_ref_list_insert(mesh_lists.entries[i], mesh);
 }
 
@@ -318,7 +318,7 @@ void engine_add_mesh_core_insert_shadow_batch(Engine *engine, Mesh *mesh) {
   renderer_batch_get_mesh_list_from_pipeline(
       &renderer->batches, RenderPipelineType_Shadow, &shadow_mesh_lists);
 
-  for (size_t i = 0; i < shadow_mesh_lists.length; i++) {
+  for (size_t i = 0; i < shadow_mesh_lists.count; i++) {
 
     mesh_ref_list_insert(shadow_mesh_lists.entries[i], mesh);
 
@@ -353,7 +353,7 @@ void engine_add_mesh_core_insert_selection_batch(
     renderer_batch_get_mesh_list_with_flags(
         &renderer->batches, RendererBatchFlag_Selection, &selection_lists);
 
-    for (size_t i = 0; i < selection_lists.length; i++)
+    for (size_t i = 0; i < selection_lists.count; i++)
       mesh_ref_list_insert(selection_lists.entries[i], mesh);
   }
 }
@@ -429,12 +429,12 @@ EngineStatus engine_scene_add_mesh(Engine *engine, Mesh *mesh,
       MeshShader_Solid,
       MeshShader_Wireframe,
   };
-  static const uint8_t dynamic_shaders_length =
+  static const uint8_t dynamic_shaders_count =
       sizeof(dynamic_shaders) / sizeof(dynamic_shaders[0]);
 
   // For dynamic objects we manually add them to the solid/wireframe/boundbox
   // batch so they get drawn during those mode.
-  for (uint8_t i = 0; i < dynamic_shaders_length; i++) {
+  for (uint8_t i = 0; i < dynamic_shaders_count; i++) {
 
     const RenderPipelineType pipeline = std_render_pipeline_type(
         *mesh_shader(mesh, dynamic_shaders[i])->pipeline);

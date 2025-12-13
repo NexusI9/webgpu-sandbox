@@ -9,7 +9,7 @@
 #include "runtime/geometry/vertex/index.h"
 #include "runtime/primitive/core.h"
 
-typedef uint32_t mbin_length_t;
+typedef uint32_t mbin_count_t;
 
 /* TODO: unify mesh loading system:
    1. either directly push mesh in scene list
@@ -37,9 +37,9 @@ typedef struct {
 
 #pragma pack(push, 1)
 typedef struct {
-  mbin_int vertex_length;
+  mbin_int vertex_count;
   mbin_int vertex_size_type;
-  mbin_int index_length;
+  mbin_int index_count;
   mbin_int index_size_type;
   mbin_data_t data[]; // NOTE: Avoid using pointers (meaningless in for binary)
 } MBINFile;

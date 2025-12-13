@@ -40,7 +40,7 @@ RendererStatus renderer_show_mesh(Renderer *rd,
       RenderPassList *plist =
           renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i));
 
-      for (size_t j = 0; j < plist->length; j++) {
+      for (size_t j = 0; j < plist->count; j++) {
         if (layers & (1 << j)) {
           RenderPass *pass = &plist->passes[j];
           render_pass_enable_mesh(pass, mesh);
@@ -66,7 +66,7 @@ RendererStatus renderer_hide_mesh(Renderer *rd,
       RenderPassList *plist =
           renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i));
 
-      for (size_t j = 0; j < plist->length; j++) {
+      for (size_t j = 0; j < plist->count; j++) {
         if (layers & (1 << j)) {
           RenderPass *pass = &plist->passes[j];
           render_pass_disable_mesh(pass, mesh);
@@ -85,7 +85,7 @@ RendererStatus renderer_show_mesh_ref_list(Renderer *rd,
                                            const RendererLayer layers,
                                            MeshRefList *list) {
 
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     renderer_show_mesh(rd, draw_mode, layers, list->entries[i]);
 
   return RendererStatus_Success;
@@ -96,7 +96,7 @@ RendererStatus renderer_hide_mesh_ref_list(Renderer *rd,
                                            const RendererLayer layers,
                                            MeshRefList *list) {
 
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     renderer_hide_mesh(rd, draw_mode, layers, list->entries[i]);
 
   return RendererStatus_Success;
@@ -131,10 +131,10 @@ RendererStatus renderer_show_mesh_in_pipeline(Renderer *rd,
     RenderPassList *pass_list =
         renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i));
 
-    for (size_t j = 0; j < pass_list->length; j++) {
+    for (size_t j = 0; j < pass_list->count; j++) {
       RenderPass *pass = &pass_list->passes[j];
 
-      for (size_t k = 0; k < source_lists.length; k++) {
+      for (size_t k = 0; k < source_lists.count; k++) {
         RenderPassLayout *layout = render_pass_find_layout_from_source_list(
             pass, source_lists.entries[k]);
 
@@ -164,10 +164,10 @@ RendererStatus renderer_hide_mesh_in_pipeline(Renderer *rd,
     RenderPassList *pass_list =
         renderer_mesh_pass_list(rd, (RendererDrawMode)(1 << i));
 
-    for (size_t j = 0; j < pass_list->length; j++) {
+    for (size_t j = 0; j < pass_list->count; j++) {
       RenderPass *pass = &pass_list->passes[j];
 
-      for (size_t k = 0; k < source_lists.length; k++) {
+      for (size_t k = 0; k < source_lists.count; k++) {
         RenderPassLayout *layout = render_pass_find_layout_from_source_list(
             pass, source_lists.entries[k]);
 

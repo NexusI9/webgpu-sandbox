@@ -23,7 +23,7 @@ typedef struct {
 } TextureGradientStop;
 
 typedef struct {
-  size_t length;
+  size_t count;
   size_t capacity;
   TextureGradientStop *entries;
 } TextureGradient;
@@ -69,7 +69,7 @@ typedef struct {
   const Texture *source;
   texture_data *destination;
   TextureTriangleGradientDescriptor *points;
-  size_t length;
+  size_t count;
   TextureWriteMethod write_method;
 } TextureWriteTriangleGradientDescriptor;
 

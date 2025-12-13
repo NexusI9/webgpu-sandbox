@@ -98,7 +98,7 @@ SceneEditorMeshList *scene_add_point_light(Scene *scene,
 
     PointLightListShadow *shadow_list = &scene->lights.point.shadow;
 
-    sem_desc.target_list_index = shadow_list->length;
+    sem_desc.target_list_index = shadow_list->count;
     sem_point_light_shadow_create(sem, light, &sem_desc);
 
     light_list_point_shadow_insert(shadow_list, light);
@@ -157,7 +157,7 @@ SceneEditorMeshList *scene_add_spot_light(Scene *scene,
 
     SpotLightListShadow *shadow_list = &scene->lights.spot.shadow;
 
-    sem_desc.target_list_index = shadow_list->length;
+    sem_desc.target_list_index = shadow_list->count;
     sem_spot_light_shadow_create(sem, light, &sem_desc);
 
     light_list_spot_shadow_insert(shadow_list, light);
@@ -205,7 +205,7 @@ SceneEditorMeshList *scene_add_ambient_light(Scene *scene,
                            &(SEMCreateDescriptor){
                                .camera = scene->active_camera,
                                .viewport = &scene->viewport,
-                               .target_list_index = list->length - 1,
+                               .target_list_index = list->count - 1,
                            });
 
   light_list_uniform_update(&scene->lights);
@@ -257,7 +257,7 @@ SceneEditorMeshList *scene_add_sun_light(Scene *scene, SunLightDescriptor *desc,
                      &light->ubo_projection);
 
     SunLightListShadow *shadow_list = &scene->lights.sun.shadow;
-    sem_desc.target_list_index = shadow_list->length;
+    sem_desc.target_list_index = shadow_list->count;
     sem_sun_light_shadow_create(sem, light, &sem_desc);
     light_list_sun_shadow_insert(shadow_list, light);
 
@@ -310,7 +310,7 @@ SceneEditorMeshList *scene_add_camera(Scene *scene,
                     &(SEMCreateDescriptor){
                         .camera = scene->active_camera,
                         .viewport = &scene->viewport,
-                        .target_list_index = scene->cameras.length - 1,
+                        .target_list_index = scene->cameras.count - 1,
                     });
 
   return sem;
@@ -342,7 +342,7 @@ scene_add_probe_reflection_grid(Scene *scene,
                                    });
 
   // add probes to ubo list
-  for (uint16_t i = 0; i < new_grid->probes.length; i++) {
+  for (uint16_t i = 0; i < new_grid->probes.count; i++) {
     ProbeReflection *probe = new_grid->probes.entries[i];
     UBOManager *ubo = scene->ubo;
 
@@ -442,6 +442,6 @@ SceneStatus scene_add_mesh(Scene *scene, Mesh *mesh, const char *layer) {
  */
 void scene_add_mesh_ref_list(Scene *scene, MeshRefList *list,
                              const char *layer) {
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     scene_add_mesh(scene, list->entries[i], layer);
 }

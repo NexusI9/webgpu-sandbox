@@ -18,7 +18,7 @@ bool input_callback_key_down(int eventType,
                              void *userData) {
 
   unsigned int keyCode = keyEvent->keyCode;
-  if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == false)
+  if (keyCode < INPUT_KEY_COUNT && g_input.keys[keyCode] == false)
     g_input.keys[keyCode] = true;
 
   return false;
@@ -29,7 +29,7 @@ bool input_callback_key_up(int eventType,
                            void *userData) {
 
   unsigned int keyCode = keyEvent->keyCode;
-  if (keyCode < INPUT_KEY_LENGTH && g_input.keys[keyCode] == true)
+  if (keyCode < INPUT_KEY_COUNT && g_input.keys[keyCode] == true)
     g_input.keys[keyCode] = false;
 
   return false;
@@ -146,7 +146,7 @@ void input_init(const InputDescriptor *desc) {
 
 bool input_key(unsigned int key) {
 
-  if (key < INPUT_KEY_LENGTH)
+  if (key < INPUT_KEY_COUNT)
     return g_input.keys[key];
 
   return false;
@@ -182,7 +182,7 @@ KeyRecordStatus input_key_sequence_destroy_by_id(reg_id_t id) {
       keyrec_find_sequence_by_id(&g_input.sequence_listener, id);
 
   // destroy/ free them
-  for (size_t i = 0; i < result.length; i++)
+  for (size_t i = 0; i < result.count; i++)
     keyrec_destroy_sequence(&g_input.sequence_listener,
                             &g_input.sequence_listener.entries[i]);
 

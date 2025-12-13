@@ -121,12 +121,12 @@ void renderer_add_draw_callback(Renderer *renderer,
     if (modes & (1 << i)) {
 
       // do not add if max hook reached
-      if (renderer->callbacks[i].length == RENDERER_MAX_HOOK) {
+      if (renderer->callbacks[i].count == RENDERER_MAX_HOOK) {
         logger_add(LoggerFlag_Warning, "Max draw hook reached.\n");
         return;
       }
 
-      renderer->callbacks[i].entries[renderer->callbacks[i].length++] =
+      renderer->callbacks[i].entries[renderer->callbacks[i].count++] =
           (RendererDrawCallback){callback, data};
     }
   }
@@ -147,7 +147,7 @@ void renderer_render(void *data) {
       &renderer->callbacks[__builtin_ctz(renderer->draw_mode)];
 
   // call callbacks, pass renderer and data
-  for (size_t i = 0; i < callback_list->length; i++) {
+  for (size_t i = 0; i < callback_list->count; i++) {
     RendererDrawCallback *cb = &callback_list->entries[i];
     cb->callback(renderer, cb->data);
   }
@@ -337,7 +337,7 @@ void renderer_pass_layout_from_batch(Renderer *renderer,
 
     for (uint8_t layer = 0; layer < RENDERER_LAYER_COUNT; layer++) {
 
-      for (size_t k = 0; k < config_keys.length; k++) {
+      for (size_t k = 0; k < config_keys.count; k++) {
 
         const RendererBatchKey *key = config_keys.entries[k];
 
@@ -351,9 +351,9 @@ void renderer_pass_layout_from_batch(Renderer *renderer,
             (RendererBatchFlag_Fixed & key->flags) ? RendererDrawMode_Texture
                                                    : (1 << mode);
 
-        const size_t length = draw_lists[mode][layer].length;
+        const size_t count = draw_lists[mode][layer].count;
 
-        draw_lists[mode][layer].entries[length] = (RenderPassLayoutDescriptor){
+        draw_lists[mode][layer].entries[count] = (RenderPassLayoutDescriptor){
             .pipeline = key->pipeline,
             .shader = draw_mode_attributes[target_mode].shader,
             .topology_callback =
@@ -364,7 +364,7 @@ void renderer_pass_layout_from_batch(Renderer *renderer,
             .mesh_preprocessor_data = NULL,
         };
 
-        draw_lists[mode][layer].length++;
+        draw_lists[mode][layer].count++;
       }
     }
   }

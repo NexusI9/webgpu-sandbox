@@ -37,7 +37,7 @@ VertexGroupStatus vertex_group_expand(VertexGroup *group) {
 VertexGroupStatus vertex_group_create(VertexGroup *group, size_t capacity, const char *name) {
 
   group->entries = calloc(capacity, sizeof(vindex_t));
-  group->length = 0;
+  group->count = 0;
   group->capacity = capacity;
   group->name = strdup(name);
 
@@ -51,17 +51,17 @@ VertexGroupStatus vertex_group_create(VertexGroup *group, size_t capacity, const
 }
 
 VertexGroup *vertex_group_insert(VertexGroup *group, vindex_t *index_list,
-                                 size_t length) {
+                                 size_t count) {
 
-  while (group->length + length > group->capacity) {
+  while (group->count + count > group->capacity) {
     if (vertex_group_expand(group) != VertexGroupStatus_Success) {
       logger_add(LoggerFlag_Error, "Couldn't insert new vertex group value.");
       return NULL;
     }
   }
 
-  memcpy(&group->entries[group->length], index_list, length * sizeof(vindex_t));
-  group->length += length;
+  memcpy(&group->entries[group->count], index_list, count * sizeof(vindex_t));
+  group->count += count;
 
   return group;
 }
@@ -73,7 +73,7 @@ void vertex_group_free(VertexGroup *group) {
   free(group->name);
   group->name = NULL;
 
-  group->length = 0;
+  group->count = 0;
   group->capacity = 0;
 }
 
@@ -112,7 +112,7 @@ VertexGroupStatus vertex_group_set_expand(VertexGroupSet *set) {
 VertexGroupStatus vertex_group_set_create(VertexGroupSet *set, size_t capacity) {
 
   set->entries = calloc(capacity, sizeof(VertexGroup));
-  set->length = 0;
+  set->count = 0;
   set->capacity = capacity;
 
   if (set->entries == NULL) {
@@ -127,7 +127,7 @@ VertexGroupStatus vertex_group_set_create(VertexGroupSet *set, size_t capacity) 
 VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
                                      VertexGroup *new_group) {
 
-  if (set->length >= set->capacity * 0.75 &&
+  if (set->count >= set->capacity * 0.75 &&
       vertex_group_set_expand(set) != VertexGroupStatus_Success) {
     return NULL;
   }
@@ -151,13 +151,13 @@ VertexGroup *vertex_group_set_insert(VertexGroupSet *set,
     vgroup = &set->entries[hash];
   }
 
-  vertex_group_create(vgroup, new_group->length, new_group->name);
+  vertex_group_create(vgroup, new_group->count, new_group->name);
 
   // copy data to new group
   memcpy(vgroup->entries, new_group->entries,
-         new_group->length * sizeof(vindex_t));
-  vgroup->length = new_group->length;
-  vgroup->capacity = new_group->length;
+         new_group->count * sizeof(vindex_t));
+  vgroup->count = new_group->count;
+  vgroup->capacity = new_group->count;
 
   return vgroup;
 }
@@ -195,7 +195,7 @@ VertexGroupStatus vertex_group_set_delete(VertexGroupSet *set, vgroup_key key) {
 
   if (vgroup && vgroup->entries != NULL) {
     vertex_group_free(vgroup);
-    set->length--;
+    set->count--;
     return VertexGroupStatus_Success;
   }
 
@@ -215,5 +215,5 @@ void vertex_group_set_free(VertexGroupSet *set) {
   free(set->entries);
   set->entries = NULL;
   set->capacity = 0;
-  set->length = 0;
+  set->count = 0;
 }

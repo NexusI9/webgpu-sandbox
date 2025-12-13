@@ -23,7 +23,7 @@ typedef struct {
 typedef struct {
   CameraRaycastHit *entries;
   size_t capacity;
-  size_t length;
+  size_t count;
 } CameraRaycastHitList;
 
 CameraRaycastHitListStatus camera_raycast_hit_list_create(CameraRaycastHitList *, size_t);

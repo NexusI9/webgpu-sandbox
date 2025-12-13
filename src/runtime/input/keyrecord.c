@@ -24,7 +24,7 @@ KeyRecordStatus keyrec_sequence_listener_create(KeyRecordSequenceList *listener,
 
   // init listener dynamic list
   DynamicListStatus list = dyli_create(
-      (void *)&listener->entries, &listener->capacity, &listener->length,
+      (void *)&listener->entries, &listener->capacity, &listener->count,
       sizeof(KeyRecordSequence), capacity, "Key Record Sequence List");
 
   if (list != DynamicListStatus_Success)
@@ -43,19 +43,19 @@ KeyRecordStatus keyrec_add_sequence(KeyRecordSequenceList *listener,
                                     KeyRecordSequence *seq) {
 
   // duplicate sequence keys
-  keyrec_t *temp = (keyrec_t *)malloc(sizeof(keyrec_t) * seq->length);
+  keyrec_t *temp = (keyrec_t *)malloc(sizeof(keyrec_t) * seq->count);
 
   if (temp == NULL) {
     logger_add(LoggerFlag_Warning, "Could not allocate memory for Key Record sequence.");
     return KeyRecordStatus_AllocFail;
   }
 
-  memcpy(temp, seq->sequence, sizeof(keyrec_t) * seq->length);
+  memcpy(temp, seq->sequence, sizeof(keyrec_t) * seq->count);
   seq->sequence = temp;
 
   // insert in sequence list
   DynamicListStatus insert = dyli_insert(
-      (void *)&listener->entries, &listener->capacity, &listener->length,
+      (void *)&listener->entries, &listener->capacity, &listener->count,
       sizeof(KeyRecordSequence), (void *)seq, 1, "Key Record Sequence List");
 
   if (insert != DynamicListStatus_Success) {
@@ -73,12 +73,12 @@ KeyRecordStatus keyrec_destroy_sequence(KeyRecordSequenceList *list,
   free(seq->sequence);
   seq->callback = NULL;
   seq->data = NULL;
-  seq->length = 0;
+  seq->count = 0;
   seq->owner = REG_OWNER_UNDEFINED;
 
   // shift list entries
   DynamicListStatus remove =
-      dyli_remove((void *)list->entries, &list->length,
+      dyli_remove((void *)list->entries, &list->count,
                   sizeof(KeyRecordSequence), seq, "Key Record Sequence List");
 
   if (remove != DynamicListStatus_Success) {
@@ -104,10 +104,10 @@ bool keyrec_html_keydown_callback(int enventType,
   keyrec_update(&listener->record, keyCode, true);
 
   // traverse callbacks and check if matches
-  for (size_t i = 0; i < listener->length; i++)
+  for (size_t i = 0; i < listener->count; i++)
     // if record history match sequence, call entry callback
     if (keyrec_match(&listener->record, listener->entries[i].sequence,
-                     listener->entries[i].length))
+                     listener->entries[i].count))
       listener->entries[i].callback(&listener->entries[i],
                                     listener->entries[i].data);
 
@@ -144,12 +144,12 @@ void keyrec_update(KeyRecord *record, const keyrec_t key, bool pressed) {
 
  */
 
-bool keyrec_match(KeyRecord *record, const keyrec_t *seq, const size_t length) {
+bool keyrec_match(KeyRecord *record, const keyrec_t *seq, const size_t count) {
 
   const keyrec_t mask = 0x01;
   keyrec_t cursor = 0;
 
-  for (size_t i = length; i-- > 0;) {
+  for (size_t i = count; i-- > 0;) {
 
     keyrec_t current_char = seq[i];
 
@@ -173,10 +173,10 @@ keyrec_find_sequence_by_id(KeyRecordSequenceList *list, reg_id_t id) {
 
   KeyRecordSequenceListResult result = {0};
 
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     if (list->entries[i].owner == id &&
-        result.length < INPUT_KEY_RECORD_MAX_RESULT)
-      result.entries[result.length++] = list->entries[i];
+        result.count < INPUT_KEY_RECORD_MAX_RESULT)
+      result.entries[result.count++] = list->entries[i];
 
   return result;
 }
@@ -185,6 +185,6 @@ void keyrec_flush(KeyRecord *record) {
   memset(record->key, 0, INPUT_KEY_RECORD_MAX_KEYS * sizeof(keyrec_t));
 }
 
-bool keyrec_sequence_equal(keyrec_t *a, keyrec_t *b, size_t length) {
-  return memcmp(a, b, length * sizeof(keyrec_t)) == 0;
+bool keyrec_sequence_equal(keyrec_t *a, keyrec_t *b, size_t count) {
+  return memcmp(a, b, count * sizeof(keyrec_t)) == 0;
 }

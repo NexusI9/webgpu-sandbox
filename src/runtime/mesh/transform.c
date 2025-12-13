@@ -50,7 +50,7 @@ void mesh_set_scale(Mesh *mesh, const vec3 scale) {
   mesh_update_model_matrix(mesh);
 
   // update children
-  for (size_t i = 0; i < mesh->children.length; i++)
+  for (size_t i = 0; i < mesh->children.count; i++)
     mesh_set_scale(mesh->children.entries[i], scale);
 }
 
@@ -70,7 +70,7 @@ void mesh_set_position(Mesh *mesh, const vec3 position) {
   mesh_update_model_matrix(mesh);
 
   // update children
-  for (size_t i = 0; i < mesh->children.length; i++)
+  for (size_t i = 0; i < mesh->children.count; i++)
     mesh_set_position(mesh->children.entries[i], position);
 }
 
@@ -98,7 +98,7 @@ void mesh_set_rotation(Mesh *mesh, const vec3 rotation) {
   mesh_update_model_matrix(mesh);
 
   // update children
-  for (size_t i = 0; i < mesh->children.length; i++)
+  for (size_t i = 0; i < mesh->children.count; i++)
     mesh_set_rotation(mesh->children.entries[i], rotation);
 }
 
@@ -129,7 +129,7 @@ void mesh_set_rotation_quat(Mesh *mesh, const versor rotation) {
   mesh_update_model_matrix(mesh);
 
   // update children
-  for (size_t i = 0; i < mesh->children.length; i++)
+  for (size_t i = 0; i < mesh->children.count; i++)
     mesh_set_rotation_quat(mesh->children.entries[i], rotation);
 }
 

@@ -53,16 +53,16 @@ static inline void scene_system_update_vertex_count(Scene *scene,
 
   float denom = 1.0f / 3;
 
-  for (size_t i = 0; i < active_list->length; i++)
-    for (size_t j = 0; j < active_list->passes[i].stagged_list.length; j++)
+  for (size_t i = 0; i < active_list->count; i++)
+    for (size_t j = 0; j < active_list->passes[i].stagged_list.count; j++)
       for (size_t k = 0;
            k <
-           active_list->passes[i].stagged_list.entries[j].drawn_meshes.length;
+           active_list->passes[i].stagged_list.entries[j].drawn_meshes.count;
            k++)
         count += active_list->passes[i]
                      .stagged_list.entries[j]
                      .drawn_meshes.entries[k]
-                     .length *
+                     .count *
                  denom;
 
   scene_stat_update_vertex_count(scene, count);
@@ -75,7 +75,7 @@ static inline void scene_system_update_scene_shader_count(Scene *scene,
                                                           Renderer *rd) {
   int count = 0;
 
-  for (size_t i = 0; i < reg_length(); i++) {
+  for (size_t i = 0; i < reg_count(); i++) {
     const RegEntry *entry = reg_lookup(i);
     if (entry->type == RegEntryType_RenderPipeline ||
         entry->type == RegEntryType_ComputePipeline)
@@ -93,7 +93,7 @@ static inline void scene_system_update_scene_texture_count(Scene *scene,
 
   int count = 0;
 
-  for (size_t i = 0; i < reg_length(); i++) {
+  for (size_t i = 0; i < reg_count(); i++) {
     const RegEntry *entry = reg_lookup(i);
     if (entry->type == RegEntryType_Texture)
       count++;
@@ -111,11 +111,11 @@ static inline void scene_system_update_draw_call_count(Scene *scene,
   int count = 0;
   RenderPassList *active_list = renderer_mesh_pass_list(rd, rd->draw_mode);
 
-  for (size_t i = 0; i < active_list->length; i++)
-    for (size_t j = 0; j < active_list->passes[i].stagged_list.length; j++)
+  for (size_t i = 0; i < active_list->count; i++)
+    for (size_t j = 0; j < active_list->passes[i].stagged_list.count; j++)
       count += active_list->passes[i]
                    .stagged_list.entries[j]
-                   .drawn_meshes.length;
+                   .drawn_meshes.count;
 
   scene_stat_update_draw_call_count(scene, count);
 }

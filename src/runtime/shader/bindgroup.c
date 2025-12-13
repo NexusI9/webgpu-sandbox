@@ -58,17 +58,17 @@ void shader_bind_group_create(Shader *shader, bind_group_index index) {
 
   // init Uniforms array
   dyli_create((void *)&uniform_group->entries, &uniform_group->capacity,
-              &uniform_group->length, sizeof(ShaderBindGroupUniformEntry),
+              &uniform_group->count, sizeof(ShaderBindGroupUniformEntry),
               SHADER_UNIFORMS_DEFAULT_CAPACITY, "Shader uniform list");
 
   // init Texture array
   dyli_create((void *)&texture_group->entries, &texture_group->capacity,
-              &texture_group->length, sizeof(ShaderBindGroupTextureEntry),
+              &texture_group->count, sizeof(ShaderBindGroupTextureEntry),
               SHADER_UNIFORMS_DEFAULT_CAPACITY, "Shader texture list");
 
   // init Sampler array
   dyli_create((void *)&sampler_group->entries, &sampler_group->capacity,
-              &sampler_group->length, sizeof(ShaderBindGroupSamplerEntry),
+              &sampler_group->count, sizeof(ShaderBindGroupSamplerEntry),
               SHADER_UNIFORMS_DEFAULT_CAPACITY, "Shader sampler list");
 
   // dynamics uniforms
@@ -83,69 +83,69 @@ void shader_bind_group_create(Shader *shader, bind_group_index index) {
 
   // init Uniforms Dynamics array
   dyli_create((void *)&uniform_dyna->entries, &uniform_dyna->capacity,
-              &uniform_dyna->length, sizeof(ShaderBindGroupUniformEntry *),
+              &uniform_dyna->count, sizeof(ShaderBindGroupUniformEntry *),
               SHADER_UNIFORMS_DEFAULT_CAPACITY, "Shader uniform dynamic list");
 
   // init Texture Dynamics array
   dyli_create((void *)&texture_dyna->entries, &texture_dyna->capacity,
-              &texture_dyna->length, sizeof(ShaderBindGroupTextureEntry *),
+              &texture_dyna->count, sizeof(ShaderBindGroupTextureEntry *),
               SHADER_UNIFORMS_DEFAULT_CAPACITY, "Shader texture dynamic list");
 
   // init Sampler Dynamics array
   dyli_create((void *)&sampler_dyna->entries, &sampler_dyna->capacity,
-              &sampler_dyna->length, sizeof(ShaderBindGroupSamplerEntry *),
+              &sampler_dyna->count, sizeof(ShaderBindGroupSamplerEntry *),
               SHADER_UNIFORMS_DEFAULT_CAPACITY, "Shader sampler dynamic list");
 
-  shader->bind_groups.length++;
+  shader->bind_groups.count++;
 }
 
 /**
-   Freeing all shader's bind groups allocation and reseting the length
+   Freeing all shader's bind groups allocation and reseting the count
  */
 void shader_bind_group_clear(Shader *shader) {
 
   // traverse static/dynamic entries
 
-  for (size_t b = 0; b < shader->bind_groups.length; b++) {
+  for (size_t b = 0; b < shader->bind_groups.count; b++) {
     ShaderBindGroup *current_group = &shader->bind_groups.entries[b];
 
     // reseting uniforms
     dyli_free((void *)&current_group->uniforms.entries,
               &current_group->uniforms.capacity,
-              &current_group->uniforms.length);
+              &current_group->uniforms.count);
 
     // reseting textures
     dyli_free((void *)&current_group->textures.entries,
               &current_group->textures.capacity,
-              &current_group->textures.length);
+              &current_group->textures.count);
 
     // reseting samplers
     dyli_free((void *)&current_group->samplers.entries,
               &current_group->samplers.capacity,
-              &current_group->samplers.length);
+              &current_group->samplers.count);
 
     // dynamics
 
     // reseting uniforms
     dyli_free((void *)&current_group->uniforms_dynamics.entries,
               &current_group->uniforms_dynamics.capacity,
-              &current_group->uniforms_dynamics.length);
+              &current_group->uniforms_dynamics.count);
 
     // reseting textures
     dyli_free((void *)&current_group->textures_dynamics.entries,
               &current_group->textures_dynamics.capacity,
-              &current_group->textures.length);
+              &current_group->textures.count);
 
     // reseting samplers
     dyli_free((void *)&current_group->samplers_dynamics.entries,
               &current_group->samplers_dynamics.capacity,
-              &current_group->samplers_dynamics.length);
+              &current_group->samplers_dynamics.count);
 
     wgpuBindGroupRelease(current_group->bind_group);
     current_group->bind_group = NULL;
   }
 
-  shader->bind_groups.length = 0;
+  shader->bind_groups.count = 0;
 }
 
 void shader_convert_uniforms(ShaderBindGroup *bindgroup,
@@ -154,7 +154,7 @@ void shader_convert_uniforms(ShaderBindGroup *bindgroup,
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
 
-  for (int j = 0; j < bindgroup->uniforms.length; j++) {
+  for (int j = 0; j < bindgroup->uniforms.count; j++) {
     ShaderBindGroupUniformEntry *current_entry =
         &bindgroup->uniforms.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
@@ -172,7 +172,7 @@ void shader_convert_textures(ShaderBindGroup *bindgroup,
   // map shader bind group entry to WGPU bind group entry
   // (basically the same just without data and callback attributes)
 
-  for (int j = 0; j < bindgroup->textures.length; j++) {
+  for (int j = 0; j < bindgroup->textures.count; j++) {
 
     ShaderBindGroupTextureEntry *current_entry =
         &bindgroup->textures.entries[j];
@@ -186,7 +186,7 @@ void shader_convert_textures(ShaderBindGroup *bindgroup,
 void shader_convert_samplers(ShaderBindGroup *bindgroup,
                              WGPUBindGroupEntry *entries, bind_index *index) {
 
-  for (int j = 0; j < bindgroup->samplers.length; j++) {
+  for (int j = 0; j < bindgroup->samplers.count; j++) {
     ShaderBindGroupSamplerEntry *current_entry =
         &bindgroup->samplers.entries[j];
     entries[(*index)++] = (WGPUBindGroupEntry){
@@ -225,20 +225,20 @@ ShaderBindGroup *shader_get_bind_group(Shader *shader,
  */
 WGPUBindGroupEntry *shader_bind_group_convert(ShaderBindGroup *group) {
 
-  uint16_t total_length = shader_bind_group_entries_count(group);
+  uint16_t total_count = shader_bind_group_entries_count(group);
 
   WGPUBindGroupEntry *converted_entries =
-      malloc(total_length * sizeof(WGPUBindGroupEntry));
+      malloc(total_count * sizeof(WGPUBindGroupEntry));
 
-  uint16_t length = 0;
+  uint16_t count = 0;
   // bind uniforms
-  shader_convert_uniforms(group, converted_entries, &length);
+  shader_convert_uniforms(group, converted_entries, &count);
 
   // bind textures
-  shader_convert_textures(group, converted_entries, &length);
+  shader_convert_textures(group, converted_entries, &count);
 
   // bind samplers
-  shader_convert_samplers(group, converted_entries, &length);
+  shader_convert_samplers(group, converted_entries, &count);
 
   return converted_entries;
 }
@@ -271,14 +271,14 @@ void shader_bind_group_build(ShaderBindGroup *group,
                              bind_group_index group_index,
                              const WGPURenderPipeline pipeline) {
 
-  uint16_t total_length = shader_bind_group_entries_count(group);
+  uint16_t total_count = shader_bind_group_entries_count(group);
 
 #ifdef VERBOSE_BINDING_PHASE
   logger_add(LoggerFlag_Print,
              "\t\t\t\t└ Uniforms: %lu\n\t\t\t\t└ Textures: "
              "%lu\n\t\t\t\t└ Samplers: %lu",
-             group->uniforms.length, group->textures.length,
-             group->samplers.length);
+             group->uniforms.count, group->textures.count,
+             group->samplers.count);
 #endif
 
   // convert shader bind group to WGPU bind group
@@ -289,7 +289,7 @@ void shader_bind_group_build(ShaderBindGroup *group,
       context_device(),
       &(WGPUBindGroupDescriptor){
           .layout = wgpuRenderPipelineGetBindGroupLayout(pipeline, group_index),
-          .entryCount = total_length,
+          .entryCount = total_count,
           .entries = converted_entries,
       });
 

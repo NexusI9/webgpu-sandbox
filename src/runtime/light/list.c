@@ -11,48 +11,48 @@ StaticListStatus light_list_create(LightList *list, size_t capacity) {
 
   const struct {
     size_t *capacity;
-    size_t *length;
+    size_t *count;
     const char *label;
   } light_static_list[7] = {
       {
           .capacity = &list->point.base.capacity,
-          .length = &list->point.base.length,
+          .count = &list->point.base.count,
           .label = "Point Light List Base",
       },
       {
           .capacity = &list->point.shadow.capacity,
-          .length = &list->point.shadow.length,
+          .count = &list->point.shadow.count,
           .label = "Point Light List Shadow",
       },
       {
           .capacity = &list->spot.base.capacity,
-          .length = &list->spot.base.length,
+          .count = &list->spot.base.count,
           .label = "Spot Light List Base",
       },
       {
           .capacity = &list->spot.shadow.capacity,
-          .length = &list->spot.shadow.length,
+          .count = &list->spot.shadow.count,
           .label = "Spot Light List Shadow",
       },
       {
           .capacity = &list->sun.base.capacity,
-          .length = &list->sun.base.length,
+          .count = &list->sun.base.count,
           .label = "Sun Light List Base",
       },
       {
           .capacity = &list->sun.shadow.capacity,
-          .length = &list->sun.shadow.length,
+          .count = &list->sun.shadow.count,
           .label = "Sun Light List Shadow",
       },
       {
           .capacity = &list->ambient.capacity,
-          .length = &list->ambient.length,
+          .count = &list->ambient.count,
           .label = "Ambient Light List Base",
       },
   };
 
   for (size_t i = 0; i < 7; i++)
-    stli_create(light_static_list[i].capacity, light_static_list[i].length,
+    stli_create(light_static_list[i].capacity, light_static_list[i].count,
                 capacity, light_static_list[i].label);
 
 
@@ -67,7 +67,7 @@ StaticListStatus light_list_create(LightList *list, size_t capacity) {
     if (light == NULL)                                                         \
       return NULL;                                                             \
                                                                                \
-    if (stli_insert((void *)list->entries, list->capacity, &list->length,      \
+    if (stli_insert((void *)list->entries, list->capacity, &list->count,      \
                     sizeof(Type *), (void *)&light,                            \
                     Label) != StaticListStatus_Success)                        \
       return NULL;                                                             \
@@ -84,14 +84,14 @@ LIGHT_LIST_NEW(SunLight, sun_light, SunLightListBase, "Sun Light");
   StaticListStatus light_list_##FuncName##_shadow_insert(List *list,           \
                                                          Type *light) {        \
                                                                                \
-    return stli_insert((void *)list->entries, list->capacity, &list->length,   \
+    return stli_insert((void *)list->entries, list->capacity, &list->count,   \
                        sizeof(Type *), (void *)&light, Label);                 \
   }
 
 #define LIGHT_LIST_SHADOW_REMOVE(List, FuncName, Type, Label)                  \
   StaticListStatus light_list_##FuncName##_shadow_remove(List *list,           \
                                                          Type *light) {        \
-    return stli_remove((void *)list->entries, &list->length, sizeof(Type *),   \
+    return stli_remove((void *)list->entries, &list->count, sizeof(Type *),   \
                        (void *)light, Label);                                  \
   }
 

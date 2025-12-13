@@ -34,6 +34,6 @@ void scene_debug_ray_add_point(Mesh *line, vec3 origin, vec3 target,
 void scene_debug_ray_build(SceneDebug *debug, Mesh *line) {
   line_update_buffer(line);
   mesh_ref_list_insert(&debug->object_list[SceneDebugObject_Ray], line);
-  printf("debug ray length: %lu\n",
-         debug->object_list[SceneDebugObject_Ray].length);
+  printf("debug ray count: %lu\n",
+         debug->object_list[SceneDebugObject_Ray].count);
 }

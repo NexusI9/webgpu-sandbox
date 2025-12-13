@@ -71,7 +71,7 @@ struct SceneEditorMeshList {
   // Mesh list composing the SEM (light handle, spot target...)
   SceneEditorMesh *entries;
   size_t capacity;
-  size_t length;
+  size_t count;
 
   // Since Editor Mesh List may have multiple targets and meshes, we still need
   // to define a refernce/ main mesh, i.e. the origin.
@@ -83,7 +83,7 @@ struct SceneEditorMeshList {
 typedef struct {
   SceneEditorMeshList *entries;
   size_t capacity;
-  size_t length;
+  size_t count;
 } SceneEditorMeshListArray;
 
 typedef struct {

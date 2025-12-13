@@ -33,7 +33,7 @@ static inline void shader_draw(ShaderBindGroupList *bindgroup_list,
   }
 #endif
 
-  for (int i = 0; i < bindgroup_list->length; i++) {
+  for (int i = 0; i < bindgroup_list->count; i++) {
 
     ShaderBindGroup *bind_group = &bindgroup_list->entries[i];
 

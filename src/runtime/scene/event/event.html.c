@@ -93,7 +93,7 @@ void scene_event_html_commons(Scene *scene) {
                           camera->ubo_slot.id);
 
   // update planar reflections probes views
-  for (size_t i = 0; i < scene->probes.reflection_plane.length; i++) {
+  for (size_t i = 0; i < scene->probes.reflection_plane.count; i++) {
     ProbeReflectionPlane *probe = &scene->probes.reflection_plane.entries[i];
 
     // update CPU side
@@ -119,12 +119,12 @@ void scene_event_html_update_meshes(Scene *data) {
   RenderPassLayout *layout = renderer.draw.layouts[draw_mode];
 
   // traverse render pass configs of the layout
-  for (size_t i = 0; i < layout->length; i++) {
+  for (size_t i = 0; i < layout->count; i++) {
     RenderPassLayoutList *draw_list = &layout->entries[i];
-    for (size_t j = 0; j < draw_list->length; j++) {
+    for (size_t j = 0; j < draw_list->count; j++) {
       RenderPassLayout *mesh_lists = &draw_list->entries[j];
       // update bind views of each meshes in each rende pass pipelines
-      for (size_t k = 0; k < mesh_lists->meshes->length; k++) {
+      for (size_t k = 0; k < mesh_lists->meshes->count; k++) {
 
         // target mesh and shader
         Mesh *mesh = mesh_lists->meshes->entries[k];

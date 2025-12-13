@@ -18,7 +18,7 @@ typedef enum {
 typedef struct {
   void *entries;
   size_t capacity;
-  size_t length;
+  size_t count;
   size_t type_size;
   const char *label;
 } FreeList;

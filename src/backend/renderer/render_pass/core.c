@@ -54,7 +54,7 @@ void render_pass_init_color(RenderPass *pass,
   // assign color attributes
   pass->color.texture = desc->color->texture;
   pass->color.attachment = desc->color->attachment;
-  pass->color.views_length = 1;
+  pass->color.views_count = 1;
 
   render_pass_texture_create_color(pass,
                                    &(RenderPassTextureDescriptor){
@@ -71,7 +71,7 @@ void render_pass_init_depth(RenderPass *pass,
 
   pass->depth.texture = desc->depth->texture;
   pass->depth.attachment = desc->depth->attachment;
-  pass->depth.views_length = 1;
+  pass->depth.views_count = 1;
 
   if (pass->depth.attachment.view == NULL)
     render_pass_texture_create_depth(pass,
@@ -84,20 +84,20 @@ void render_pass_init_depth(RenderPass *pass,
                                      RenderPassTextureFlag_None);
 }
 
-void render_pass_list_create(RenderPassList *list) { list->length = 0; }
+void render_pass_list_create(RenderPassList *list) { list->count = 0; }
 
 RenderPass *
 render_pass_list_insert_pass(RenderPassList *list,
                              const RenderPassCreateDescriptor *desc) {
 
-  if (list->length == RENDER_PASS_MAX_DRAW_LIST) {
+  if (list->count == RENDER_PASS_MAX_DRAW_LIST) {
     logger_add(LoggerFlag_Warning,
                "Render pass list reached maxed capacity (%d)",
                RENDER_PASS_MAX_DRAW_LIST);
     return NULL;
   }
 
-  RenderPass *new_pass = &list->passes[list->length++];
+  RenderPass *new_pass = &list->passes[list->count++];
   render_pass_create(new_pass, desc);
   render_pass_list_update_child_passes_callback(list);
   return new_pass;
@@ -110,12 +110,12 @@ render_pass_list_insert_pass(RenderPassList *list,
 void render_pass_list_update_child_passes_callback(RenderPassList *list) {
 
   // reset previous pass callback to default
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     list->passes[i].draw_callback = render_pass_im_draw;
 
   // set last pass resolve
   {
-    RenderPass *last_pass = &list->passes[list->length - 1];
+    RenderPass *last_pass = &list->passes[list->count - 1];
 
     if (PipelineMultisampleCount_1x == last_pass->multisample)
       last_pass->draw_callback = render_pass_draw_callback_resolve_monosample;
@@ -164,10 +164,10 @@ void render_pass_list_update_child_passes_callback(RenderPassList *list) {
 void render_pass_draw_list_copy(const RenderPassLayoutListDescriptor *src,
                                 RenderPassLayoutList *dest) {
 
-  size_t length = glm_imin(src->length, RENDER_PASS_MAX_DRAW_LIST);
-  dest->length = length;
+  size_t count = glm_imin(src->count, RENDER_PASS_MAX_DRAW_LIST);
+  dest->count = count;
 
-  for (size_t i = 0; i < length; i++) {
+  for (size_t i = 0; i < count; i++) {
 
     const RenderPassLayoutDescriptor *s = &src->entries[i];
     RenderPassLayout *d = &dest->entries[i];
@@ -191,11 +191,11 @@ void render_pass_draw_list_copy(const RenderPassLayoutListDescriptor *src,
 RenderPassStatus render_pass_update_preprocessor_data(RenderPass *pass,
                                                       uint8_t index,
                                                       void *data) {
-  if (index > pass->stagged_list.length) {
+  if (index > pass->stagged_list.count) {
     logger_add(LoggerFlag_Warning,
                "Trying to update an out of bound (%d) render pass "
                "preprocessor data. Target render pass has %lu draw lists.",
-               index, pass->stagged_list.length);
+               index, pass->stagged_list.count);
     return RenderPassStatus_OutOfBoundDrawIndex;
   }
 
@@ -207,7 +207,7 @@ RenderPassStatus render_pass_update_preprocessor_data(RenderPass *pass,
 RenderPassStatus render_pass_update_all_preprocessor_data(RenderPass *pass,
                                                           void *data) {
 
-  for (size_t i = 0; i < pass->stagged_list.length; i++)
+  for (size_t i = 0; i < pass->stagged_list.count; i++)
     if (pass->stagged_list.entries[i].mesh_preprocessor_callback)
       pass->stagged_list.entries[i].mesh_preprocessor_data = data;
 
@@ -218,26 +218,26 @@ StaticListStatus render_pass_view_color_insert(RenderPass *pass,
                                                WGPUTextureView view) {
 
   return stli_insert((void *)pass->color.views, RENDER_PASS_VIEW_CAPACITY,
-                     &pass->color.views_length, sizeof(WGPUTextureView),
+                     &pass->color.views_count, sizeof(WGPUTextureView),
                      (void *)&view, "Render Pass Color View List");
 }
 
 StaticListStatus render_pass_view_depth_insert(RenderPass *pass,
                                                WGPUTextureView view) {
   return stli_insert((void *)pass->depth.views, RENDER_PASS_VIEW_CAPACITY,
-                     &pass->depth.views_length, sizeof(WGPUTextureView),
+                     &pass->depth.views_count, sizeof(WGPUTextureView),
                      (void *)&view, "Render Pass Depth View List");
 }
 
 StaticListStatus render_pass_view_color_remove(RenderPass *pass,
                                                WGPUTextureView view) {
-  return stli_remove((void *)pass->color.views, &pass->color.views_length,
+  return stli_remove((void *)pass->color.views, &pass->color.views_count,
                      sizeof(WGPUTextureView), (void *)view,
                      "Render Pass Color View List");
 }
 StaticListStatus render_pass_view_depth_remove(RenderPass *pass,
                                                WGPUTextureView view) {
-  return stli_remove((void *)pass->depth.views, &pass->depth.views_length,
+  return stli_remove((void *)pass->depth.views, &pass->depth.views_count,
                      sizeof(WGPUTextureView), (void *)view,
                      "Render Pass Color View List");
 }
@@ -254,17 +254,17 @@ WGPUTextureView render_pass_view_depth(RenderPass *pass, size_t index) {
   mesh, so we need a second list with the layout that have drawn meshes.
 
   We basically register or unregister a layout from the list depending on its
-  drawn meshes length. Cause if they don't have any drawn mesh, there is no
+  drawn meshes count. Cause if they don't have any drawn mesh, there is no
   point calling setRenderPipeline
 */
 void render_pass_sync_drawn_layouts(RenderPass *pass) {
 
-  pass->drawn_list.length = 0;
+  pass->drawn_list.count = 0;
 
-  for (size_t i = 0; i < pass->stagged_list.length; i++) {
+  for (size_t i = 0; i < pass->stagged_list.count; i++) {
     RenderPassLayout *stagged_layout = &pass->stagged_list.entries[i];
 
-    if (stagged_layout->drawn_meshes.length)
-      pass->drawn_list.entries[pass->drawn_list.length++] = stagged_layout;
+    if (stagged_layout->drawn_meshes.count)
+      pass->drawn_list.entries[pass->drawn_list.count++] = stagged_layout;
   }
 }

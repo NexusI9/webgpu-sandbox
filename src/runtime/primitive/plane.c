@@ -33,7 +33,7 @@ Primitive primitive_plane() {
       .vertex =
           {
               .entries = plane_vertex_data,
-              .length =
+              .count =
                   sizeof(plane_vertex_data) / sizeof(plane_vertex_data[0]),
 	      .capacity =
                   sizeof(plane_vertex_data) / sizeof(plane_vertex_data[0]),
@@ -43,7 +43,7 @@ Primitive primitive_plane() {
       .index =
           {
               .entries = plane_index_data,
-              .length = sizeof(plane_index_data) / sizeof(plane_index_data[0]),
+              .count = sizeof(plane_index_data) / sizeof(plane_index_data[0]),
 	      .capacity = sizeof(plane_index_data) / sizeof(plane_index_data[0]),
           },
   };

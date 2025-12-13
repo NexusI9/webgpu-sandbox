@@ -7,14 +7,14 @@
 
 /**
    Allocate necessary resource for dynamic list and update the capacity and
-   length.
+   count.
  */
-DynamicListStatus dyli_create(void **entries, size_t *capacity, size_t *length,
+DynamicListStatus dyli_create(void **entries, size_t *capacity, size_t *count,
                               size_t type_size, size_t num, const char *label) {
 
   *entries = calloc(num, type_size);
   *capacity = num;
-  *length = 0;
+  *count = 0;
 
   if (*entries == NULL) {
     logger_add(LoggerFlag_Error, "Couldn't create new dynamic list: %s\n",
@@ -29,7 +29,7 @@ DynamicListStatus dyli_create(void **entries, size_t *capacity, size_t *length,
 /**
    Expand the dynamic list of 2n capacity.
  */
-DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
+DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *count,
                               size_t type_size, size_t scale,
                               const char *label) {
 
@@ -57,102 +57,102 @@ DynamicListStatus dyli_expand(void **entries, size_t *capacity, size_t *length,
   return DynamicListStatus_Success;
 }
 
-DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *length,
-                              size_t type_size, void *entry, size_t count,
+DynamicListStatus dyli_insert(void **entries, size_t *capacity, size_t *count,
+                              size_t type_size, void *entry, size_t amount,
                               const char *label) {
 
   if (*entries == NULL || *capacity == 0) {
     logger_add(LoggerFlag_Error,
                "Dynamic list '%s' not initialized, insertion aborted. "
-               "(Entries: <%p>, capacity: %lu, length: %lu)",
-               label, *entries, *capacity, *length);
+               "(Entries: <%p>, capacity: %lu, count: %lu)",
+               label, *entries, *capacity, *count);
     return DynamicListStatus_NotInit;
   }
 
-  while (*capacity < *length + count) {
-    if (dyli_expand(entries, capacity, length, type_size, 2, label) !=
+  while (*capacity < *count + amount) {
+    if (dyli_expand(entries, capacity, count, type_size, 2, label) !=
         DynamicListStatus_Success)
       return DynamicListStatus_UndefError;
   }
 
-  char *target = (char *)(*entries) + (*length * type_size);
-  memcpy(target, entry, type_size * count);
-  *length += count;
+  char *target = (char *)(*entries) + (*count * type_size);
+  memcpy(target, entry, type_size * amount);
+  *count += amount;
 
   return DynamicListStatus_Success;
 }
 
 DynamicListStatus dyli_insert_at(void **entries, size_t *capacity,
-                                 size_t *length, size_t type_size,
+                                 size_t *count, size_t type_size,
                                  const void *entry, size_t index,
                                  float expand_threshold, const char *label) {
-  if (!entries || !*entries || !capacity || !length) {
+  if (!entries || !*entries || !capacity || !count) {
     logger_add(LoggerFlag_Error,
                "Dynamic list '%s' invalid or uninitialized (entries: %p).",
                label, *entries);
     return DynamicListStatus_NotInit;
   }
 
-  if (index > *length) {
+  if (index > *count) {
     logger_add(LoggerFlag_Error,
-               "Dynamic list '%s' insert index %zu out of range (length=%zu).",
-               label, index, *length);
+               "Dynamic list '%s' insert index %zu out of range (count=%zu).",
+               label, index, *count);
     return DynamicListStatus_OutOfBound;
   }
 
   float usage =
-      (*capacity > 0) ? ((float)(*length) / (float)(*capacity)) : 1.0f;
+      (*capacity > 0) ? ((float)(*count) / (float)(*capacity)) : 1.0f;
   if (usage >= expand_threshold) {
-    if (dyli_expand(entries, capacity, length, type_size, 2, label) !=
+    if (dyli_expand(entries, capacity, count, type_size, 2, label) !=
         DynamicListStatus_Success) {
       return DynamicListStatus_UndefError;
     }
   }
 
-  if (index < *length) {
+  if (index < *count) {
     char *base = (char *)(*entries);
     memmove(base + (index + 1) * type_size, base + index * type_size,
-            (*length - index) * type_size);
+            (*count - index) * type_size);
   }
 
   memcpy((char *)(*entries) + index * type_size, entry, type_size);
-  (*length)++;
+  (*count)++;
 
   return DynamicListStatus_Success;
 }
 
-DynamicListStatus dyli_empty(void *entries, size_t *length, size_t type_size) {
+DynamicListStatus dyli_empty(void *entries, size_t *count, size_t type_size) {
 
-  memset(entries, 0, (*length) * type_size);
-  *length = 0;
+  memset(entries, 0, (*count) * type_size);
+  *count = 0;
   return DynamicListStatus_Success;
 }
 
-DynamicListStatus dyli_free(void **entries, size_t *capacity, size_t *length) {
+DynamicListStatus dyli_free(void **entries, size_t *capacity, size_t *count) {
 
   // free set
   free(*entries);
   *entries = NULL;
   *capacity = 0;
-  *length = 0;
+  *count = 0;
 
   return DynamicListStatus_Success;
 }
 
-DynamicListStatus dyli_remove(void *entries, size_t *length, size_t type_size,
+DynamicListStatus dyli_remove(void *entries, size_t *count, size_t type_size,
                               void *entry, const char *label) {
 
   void **list = (void **)entries;
   void *target = *(void **)entry;
 
-  for (size_t i = 0; i < *length; i++) {
+  for (size_t i = 0; i < *count; i++) {
 
     if (list[i] == target) {
 
-      if (i < *length - 1)
-        memmove(&list[i], &list[i + 1], (*length - i - 1) * type_size);
+      if (i < *count - 1)
+        memmove(&list[i], &list[i + 1], (*count - i - 1) * type_size);
 
-      (*length)--;
+      (*count)--;
       return DynamicListStatus_Success;
     }
   }
@@ -160,62 +160,62 @@ DynamicListStatus dyli_remove(void *entries, size_t *length, size_t type_size,
   return DynamicListStatus_UnfoundEntry;
 }
 
-DynamicListStatus dyli_remove_at_index(void *entries, size_t *length,
+DynamicListStatus dyli_remove_at_index(void *entries, size_t *count,
                                        size_t type_size, const size_t index,
                                        const char *label) {
-  if (index >= *length)
+  if (index >= *count)
     return DynamicListStatus_UnfoundEntry;
 
   char *list = (char *)entries;
 
-  if (index < *length - 1) {
+  if (index < *count - 1) {
     memmove(list + index * type_size, list + (index + 1) * type_size,
-            (*length - index - 1) * type_size);
+            (*count - index - 1) * type_size);
   }
 
-  (*length)--;
+  (*count)--;
   return DynamicListStatus_Success;
 }
 
-void *dyli_new_entry(void **entries, size_t *capacity, size_t *length,
+void *dyli_new_entry(void **entries, size_t *capacity, size_t *count,
                      size_t type_size, const char *label) {
 
   if (*entries == NULL || *capacity == 0) {
     logger_add(LoggerFlag_Error,
                "Dynamic list '%s' not initialized, new entry aborted. "
-               "(Entries: <%p>, capacity: %lu, length: %lu)",
-               label, *entries, *capacity, *length);
+               "(Entries: <%p>, capacity: %lu, count: %lu)",
+               label, *entries, *capacity, *count);
     return NULL;
   }
 
   // Ensure capacity first
-  if (*length == *capacity) {
-    if (dyli_expand(entries, capacity, length, type_size, 2, label) !=
+  if (*count == *capacity) {
+    if (dyli_expand(entries, capacity, count, type_size, 2, label) !=
         DynamicListStatus_Success)
       return NULL;
   }
 
   // Compute pointer to new slot
-  void *slot = (char *)(*entries) + ((*length) * type_size);
+  void *slot = (char *)(*entries) + ((*count) * type_size);
 
   // Zero-init for safety
   memset(slot, 0, type_size);
 
-  // Increment length AFTER assignment
-  (*length)++;
+  // Increment count AFTER assignment
+  (*count)++;
 
   return slot;
 }
 
-DynamicListStatus dyli_append(const void *src_entries, const size_t src_length,
+DynamicListStatus dyli_append(const void *src_entries, const size_t src_count,
                               void **dest_entries, size_t *dest_capacity,
-                              size_t *dest_length, size_t type_size,
+                              size_t *dest_count, size_t type_size,
                               const char *label) {
 
-  while (*dest_length + src_length >= *dest_capacity) {
+  while (*dest_count + src_count >= *dest_capacity) {
 
     size_t new_capacity =
-        (*dest_capacity > 0) ? 2 * *dest_capacity : src_length;
+        (*dest_capacity > 0) ? 2 * *dest_capacity : src_count;
 
     void *temp_entries = realloc(*dest_entries, new_capacity * type_size);
 
@@ -229,23 +229,23 @@ DynamicListStatus dyli_append(const void *src_entries, const size_t src_length,
     }
   }
 
-  memcpy((char *)(*dest_entries) + (*dest_length * type_size), src_entries,
-         src_length * type_size);
+  memcpy((char *)(*dest_entries) + (*dest_count * type_size), src_entries,
+         src_count * type_size);
 
-  *dest_length += src_length;
+  *dest_count += src_count;
 
   return DynamicListStatus_Success;
 }
 
-DynamicListStatus dyli_replace(const void *src_entries, const size_t src_length,
+DynamicListStatus dyli_replace(const void *src_entries, const size_t src_count,
                                void **dest_entries, size_t *dest_capacity,
-                               size_t *dest_length, size_t type_size,
+                               size_t *dest_count, size_t type_size,
                                const char *label) {
 
-  while (src_length > *dest_capacity) {
+  while (src_count > *dest_capacity) {
 
     size_t new_capacity =
-        (*dest_capacity > 0) ? 2 * *dest_capacity : src_length;
+        (*dest_capacity > 0) ? 2 * *dest_capacity : src_count;
 
     void *temp_entries = realloc(*dest_entries, new_capacity * type_size);
 
@@ -259,19 +259,19 @@ DynamicListStatus dyli_replace(const void *src_entries, const size_t src_length,
     }
   }
 
-  memcpy((char *)(*dest_entries), src_entries, src_length * type_size);
+  memcpy((char *)(*dest_entries), src_entries, src_count * type_size);
 
-  *dest_length = src_length;
+  *dest_count = src_count;
 
   return DynamicListStatus_Success;
 }
 
-DynamicListStatus dyli_clone(const void *src_entries, const size_t src_length,
+DynamicListStatus dyli_clone(const void *src_entries, const size_t src_count,
                              void **dest_entries, size_t *dest_capacity,
-                             size_t *dest_length, size_t type_size,
+                             size_t *dest_count, size_t type_size,
                              const char *label) {
 
-  size_t new_capacity = src_length;
+  size_t new_capacity = src_count;
   void *temp_entries = malloc(new_capacity * type_size);
 
   if (!temp_entries) {
@@ -279,12 +279,12 @@ DynamicListStatus dyli_clone(const void *src_entries, const size_t src_length,
     return DynamicListStatus_AllocFail;
   }
 
-  memcpy(temp_entries, src_entries, src_length * type_size);
+  memcpy(temp_entries, src_entries, src_count * type_size);
 
   free(*dest_entries);
   *dest_entries = temp_entries;
   *dest_capacity = new_capacity;
-  *dest_length = src_length;
+  *dest_count = src_count;
 
   return DynamicListStatus_Success;
 }

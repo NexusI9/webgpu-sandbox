@@ -79,7 +79,7 @@ void sem_probe_reflection_grid_create(SceneEditorMeshList *list,
     ===== Create Probes Cubes =====
 
    */
-  for (size_t i = 0; i < grid->probes.length; i++) {
+  for (size_t i = 0; i < grid->probes.count; i++) {
 
     SceneEditorMesh *probe = sem_list_new_entry(list);
     probe->mesh = rem_new_mesh();

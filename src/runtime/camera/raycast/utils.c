@@ -11,8 +11,8 @@
  */
 bool camera_raycast_is_excluded(const MeshRefListArray *array, Mesh *mesh) {
   bool is_excluded = false;
-  for (size_t i = 0; i < array->length; i++)
-    for (size_t j = 0; j < array->lists[i]->length; j++)
+  for (size_t i = 0; i < array->count; i++)
+    for (size_t j = 0; j < array->lists[i]->count; j++)
       if (mesh == array->lists[i]->entries[j])
         is_excluded = true;
 

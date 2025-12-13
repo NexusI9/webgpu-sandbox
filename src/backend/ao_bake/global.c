@@ -31,7 +31,7 @@ void ao_bake_global(RendererTextureAO *ao,
   logger_add(LoggerFlag_Process, "Baking Global AO for mesh: %s", mesh->name);
 
   // COMPARE MESH
-  for (size_t c = 0; c < desc->mesh_list->length; c++) {
+  for (size_t c = 0; c < desc->mesh_list->count; c++) {
 
     Mesh *compare_mesh = desc->mesh_list->entries[c];
 
@@ -46,7 +46,7 @@ void ao_bake_global(RendererTextureAO *ao,
         ao_bake_texture_list_find(&ao->texture_list, compare_mesh, NULL);
 
     // go through the mesh triangles and check if it's occluded
-    for (size_t i = 0; i < mesh->topology.base.index.length; i += 3) {
+    for (size_t i = 0; i < mesh->topology.base.index.count; i += 3) {
 
       Triangle source_triangle;
       ao_bake_mesh_triangle(&source_triangle, mesh, i);

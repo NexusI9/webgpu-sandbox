@@ -16,7 +16,7 @@ void example_ao(Engine *engine, bool debug) {
   renderer_batch_get_mesh_list_with_flags(&engine_get_renderer(engine)->batches,
                                           RendererBatchFlag_Lit, &lit_meshes);
 
-  for (size_t i = 0; i < lit_meshes.length; i++)
+  for (size_t i = 0; i < lit_meshes.count; i++)
     ao_bake_draw_list(&engine_get_renderer(engine)->texture.ambient_occlusion,
                       &(AOBakeDrawDescriptor){
                           .mesh_list = lit_meshes.entries[i],

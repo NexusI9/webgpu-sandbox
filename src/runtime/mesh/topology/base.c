@@ -51,7 +51,7 @@ mesh_topology_base_create_vertex_attribute(MeshTopologyBase *base,
   if (base->attribute.buffer)
     rem_destroy_buffer(&base->attribute.buffer);
 
-  base->attribute.length = va->length;
+  base->attribute.count = va->count;
   base->attribute.capacity = va->capacity;
 
   // copy vertex attributes
@@ -59,8 +59,8 @@ mesh_topology_base_create_vertex_attribute(MeshTopologyBase *base,
   base->attribute.entries = calloc(va->capacity, sizeof(vattr_t));
   memcpy(base->attribute.entries, va->entries, vattr_size);
 
-  if (base->attribute.length) {
-    const size_t va_size = base->attribute.length * sizeof(vattr_t);
+  if (base->attribute.count) {
+    const size_t va_size = base->attribute.count * sizeof(vattr_t);
 
     base->attribute.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
         .label = "Base Topology Vertex Attributes",
@@ -89,15 +89,15 @@ mesh_topology_base_create_vertex_index(MeshTopologyBase *base,
   if (base->index.buffer)
     rem_destroy_buffer(&base->index.buffer);
 
-  base->index.length = vi->length;
+  base->index.count = vi->count;
   base->index.capacity = vi->capacity;
 
   const size_t vi_capacity = vi->capacity * sizeof(vindex_t);
   base->index.entries = calloc(vi->capacity, sizeof(vindex_t));
   memcpy(base->index.entries, vi->entries, vi_capacity);
 
-  if (base->index.length) {
-    const size_t vi_size = base->index.length * sizeof(vindex_t);
+  if (base->index.count) {
+    const size_t vi_size = base->index.count * sizeof(vindex_t);
 
     base->index.buffer = rem_new_buffer(&(WGPUBufferDescriptor){
         .label = "BoundBox Topology Vertex Indexes",
@@ -127,7 +127,7 @@ void mesh_topology_base_create_anchor(MeshTopologyBase *base) {
                                    MESH_TOPOLOGY_ANCHOR_LIST_DEFAULT_CAPACITY);
 
   // 1. store based on position (hash)
-  for (size_t i = 0; i < base->index.length; i++) {
+  for (size_t i = 0; i < base->index.count; i++) {
     vindex_t base_index = base->index.entries[i];
     vattr_t *base_vertex = &base->attribute.entries[base_index * VERTEX_STRIDE];
 
@@ -162,18 +162,18 @@ void mesh_topology_base_set_scale(MeshTopologyBase *base,
 
   MeshTopologyAnchorList *anchors = &base->siblings;
 
-  for (size_t i = 0; i < select->length; i++) {
+  for (size_t i = 0; i < select->count; i++) {
     vindex_t index = select->entries[i];
     MeshTopologyAnchor *index_anchor = &anchors->entries[index];
     mesh_topology_anchor_merge(anchors, index_anchor->entries,
-                               index_anchor->length, &combined_anchor);
+                               index_anchor->count, &combined_anchor);
   }
 
   // apply transform with all combined anchors
   vertex_transform_set_scale(
       &(VertexGroup){
           .entries = combined_anchor.entries,
-          .length = combined_anchor.length,
+          .count = combined_anchor.count,
       },
       &base->attribute, scale);
 }
@@ -189,18 +189,18 @@ void mesh_topology_base_set_position(MeshTopologyBase *base,
 
   MeshTopologyAnchorList *anchors = &base->siblings;
 
-  for (size_t i = 0; i < select->length; i++) {
+  for (size_t i = 0; i < select->count; i++) {
     vindex_t index = select->entries[i];
     MeshTopologyAnchor *index_anchor = &anchors->entries[index];
     mesh_topology_anchor_merge(anchors, index_anchor->entries,
-                               index_anchor->length, &combined_anchor);
+                               index_anchor->count, &combined_anchor);
   }
 
   // apply transform with all combined anchors
   vertex_transform_set_position(
       &(VertexGroup){
           .entries = combined_anchor.entries,
-          .length = combined_anchor.length,
+          .count = combined_anchor.count,
       },
       &base->attribute, translate);
 }
@@ -214,14 +214,14 @@ void mesh_topology_base_update_buffer(MeshTopologyBase *base) {
 
   {
     // === Vertex attributes ===
-    const size_t va_size = base->attribute.length * sizeof(vattr_t);
+    const size_t va_size = base->attribute.count * sizeof(vattr_t);
     rem_write_buffer(base->attribute.buffer, 0, (void *)base->attribute.entries,
                      va_size, REMWriteFlag_None);
   }
 
   {
     // === Vertex indexes ===
-    const size_t vi_size = base->index.length * sizeof(vindex_t);
+    const size_t vi_size = base->index.count * sizeof(vindex_t);
     rem_write_buffer(base->index.buffer, 0, (void *)base->index.entries,
                      vi_size, REMWriteFlag_None);
   }

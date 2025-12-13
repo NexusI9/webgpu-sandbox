@@ -18,7 +18,7 @@ static inline void html_event_check_callback(HTMLEventType, void *);
 
 // Event lists inserts
 static HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
-                                         size_t *length, size_t *capacity,
+                                         size_t *count, size_t *capacity,
                                          size_t type_size,
                                          HTMLEventType event_type,
                                          void *event_callback);
@@ -95,7 +95,7 @@ void html_event_check_callback(HTMLEventType type, void *event_callback) {
 }
 
 HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
-                                  size_t *length, size_t *capacity,
+                                  size_t *count, size_t *capacity,
                                   size_t type_size, HTMLEventType event_type,
                                   void *event_callback) {
 
@@ -106,7 +106,7 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
 
     // allocate new list
     *capacity = HTML_EVENT_DEFAULT_CAPACITY;
-    *length = 0;
+    *count = 0;
     *entries = malloc(type_size * (*capacity));
 
     if (*entries == NULL) {
@@ -117,7 +117,7 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
   }
 
   // check html event list capacity
-  if (*length == *capacity) {
+  if (*count == *capacity) {
 
     size_t new_capacity = 2 * (*capacity);
     void *temp = realloc(*entries, new_capacity * type_size);
@@ -134,7 +134,7 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
   // once we've checked if event list can store new event, we dynamically
   // retrieve entry pointer position at the byte level
   HTMLEventVoid *cast_entry =
-      (HTMLEventVoid *)((char *)(*entries) + (*length) * type_size);
+      (HTMLEventVoid *)((char *)(*entries) + (*count) * type_size);
 
   // append new event object to list
   memcpy(cast_entry, event, type_size);
@@ -155,7 +155,7 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
     }
   }
 
-  (*length)++;
+  (*count)++;
 
   return HTMLEventStatus_Success;
 }
@@ -166,7 +166,7 @@ HTMLEventStatus html_event_insert(HTMLEventVoid *event, void **entries,
 HTMLEventStatus html_event_add_mouse_down(HTMLEventMouse *event) {
 
   void *entries = &g_html_event.mouse_down.entries;
-  size_t *length = &g_html_event.mouse_down.length;
+  size_t *count = &g_html_event.mouse_down.count;
   size_t *capacity = &g_html_event.mouse_down.capacity;
   size_t type_size = sizeof(HTMLEventMouse);
   HTMLEventType event_type = HTMLEventType_MouseDown;
@@ -180,7 +180,7 @@ HTMLEventStatus html_event_add_mouse_down(HTMLEventMouse *event) {
           .size = event->size,
           .owner = event->owner,
       },
-      entries, length, capacity, type_size, event_type, event_callback);
+      entries, count, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -189,7 +189,7 @@ HTMLEventStatus html_event_add_mouse_down(HTMLEventMouse *event) {
 HTMLEventStatus html_event_add_mouse_up(HTMLEventMouse *event) {
 
   void *entries = &g_html_event.mouse_up.entries;
-  size_t *length = &g_html_event.mouse_up.length;
+  size_t *count = &g_html_event.mouse_up.count;
   size_t *capacity = &g_html_event.mouse_up.capacity;
   size_t type_size = sizeof(HTMLEventMouse);
   HTMLEventType event_type = HTMLEventType_MouseUp;
@@ -203,7 +203,7 @@ HTMLEventStatus html_event_add_mouse_up(HTMLEventMouse *event) {
           .size = event->size,
           .owner = event->owner,
       },
-      entries, length, capacity, type_size, event_type, event_callback);
+      entries, count, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -212,7 +212,7 @@ HTMLEventStatus html_event_add_mouse_up(HTMLEventMouse *event) {
 HTMLEventStatus html_event_add_mouse_move(HTMLEventMouse *event) {
 
   void *entries = &g_html_event.mouse_move.entries;
-  size_t *length = &g_html_event.mouse_move.length;
+  size_t *count = &g_html_event.mouse_move.count;
   size_t *capacity = &g_html_event.mouse_move.capacity;
   size_t type_size = sizeof(HTMLEventMouse);
   HTMLEventType event_type = HTMLEventType_MouseMove;
@@ -226,7 +226,7 @@ HTMLEventStatus html_event_add_mouse_move(HTMLEventMouse *event) {
           .size = event->size,
           .owner = event->owner,
       },
-      entries, length, capacity, type_size, event_type, event_callback);
+      entries, count, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -235,7 +235,7 @@ HTMLEventStatus html_event_add_mouse_move(HTMLEventMouse *event) {
 HTMLEventStatus html_event_add_wheel(HTMLEventWheel *event) {
 
   void *entries = &g_html_event.wheel.entries;
-  size_t *length = &g_html_event.wheel.length;
+  size_t *count = &g_html_event.wheel.count;
   size_t *capacity = &g_html_event.wheel.capacity;
   size_t type_size = sizeof(HTMLEventWheel);
   HTMLEventType event_type = HTMLEventType_Wheel;
@@ -249,7 +249,7 @@ HTMLEventStatus html_event_add_wheel(HTMLEventWheel *event) {
           .size = event->size,
           .owner = event->owner,
       },
-      entries, length, capacity, type_size, event_type, event_callback);
+      entries, count, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -258,7 +258,7 @@ HTMLEventStatus html_event_add_wheel(HTMLEventWheel *event) {
 HTMLEventStatus html_event_add_key_down(HTMLEventKey *event) {
 
   void *entries = &g_html_event.key_down.entries;
-  size_t *length = &g_html_event.key_down.length;
+  size_t *count = &g_html_event.key_down.count;
   size_t *capacity = &g_html_event.key_down.capacity;
   size_t type_size = sizeof(HTMLEventKey);
   HTMLEventType event_type = HTMLEventType_KeyDown;
@@ -272,7 +272,7 @@ HTMLEventStatus html_event_add_key_down(HTMLEventKey *event) {
           .size = event->size,
           .owner = event->owner,
       },
-      entries, length, capacity, type_size, event_type, event_callback);
+      entries, count, capacity, type_size, event_type, event_callback);
 }
 
 /**
@@ -281,7 +281,7 @@ HTMLEventStatus html_event_add_key_down(HTMLEventKey *event) {
 HTMLEventStatus html_event_add_key_up(HTMLEventKey *event) {
 
   void *entries = &g_html_event.key_up.entries;
-  size_t *length = &g_html_event.key_up.length;
+  size_t *count = &g_html_event.key_up.count;
   size_t *capacity = &g_html_event.key_up.capacity;
   size_t type_size = sizeof(HTMLEventKey);
   HTMLEventType event_type = HTMLEventType_KeyUp;
@@ -295,5 +295,5 @@ HTMLEventStatus html_event_add_key_up(HTMLEventKey *event) {
           .size = event->size,
           .owner = event->owner,
       },
-      entries, length, capacity, type_size, event_type, event_callback);
+      entries, count, capacity, type_size, event_type, event_callback);
 }

@@ -83,7 +83,7 @@ void gizmo_update_mode(Gizmo *gizmo, MeshRefList *dest_list, GizmoMode mode) {
    scene (in case the selection went back to 0 as instance).
  */
 void gizmo_remove(Gizmo *gizmo, MeshRefList *dest_list) {
-  for (size_t i = 0; i < gizmo->handles[gizmo->mode].length; i++)
+  for (size_t i = 0; i < gizmo->handles[gizmo->mode].count; i++)
     mesh_ref_list_remove(dest_list, gizmo->handles[gizmo->mode].entries[i]);
 }
 
@@ -93,7 +93,7 @@ void gizmo_remove(Gizmo *gizmo, MeshRefList *dest_list) {
 
 void gizmo_set_position(Gizmo *gizmo, vec3 position) {
 
-  for (size_t i = 0; i < gizmo->handles[gizmo->mode].length; i++) {
+  for (size_t i = 0; i < gizmo->handles[gizmo->mode].count; i++) {
     Mesh *mesh = gizmo->handles[gizmo->mode].entries[i];
     mesh_set_position(mesh, position);
     mesh_uniform_update(mesh);
@@ -102,7 +102,7 @@ void gizmo_set_position(Gizmo *gizmo, vec3 position) {
 
 void gizmo_set_rotation_add(Gizmo *gizmo, vec3 value, const Axis axis) {
 
-  for (size_t i = 0; i < gizmo->handles[gizmo->mode].length; i++) {
+  for (size_t i = 0; i < gizmo->handles[gizmo->mode].count; i++) {
     Mesh *mesh = gizmo->handles[gizmo->mode].entries[i];
     mesh_set_rotation_axis_add(mesh, value, axis);
     mesh_uniform_update(mesh);
@@ -118,7 +118,7 @@ void gizmo_set_rotation_add(Gizmo *gizmo, vec3 value, const Axis axis) {
  */
 void gizmo_set_axis_from_mesh(Gizmo *gizmo, const Mesh *mesh) {
 
-  for (size_t j = 0; j < gizmo->interactive_handles[gizmo->mode].length; j++)
+  for (size_t j = 0; j < gizmo->interactive_handles[gizmo->mode].count; j++)
     if (gizmo->interactive_handles[gizmo->mode].entries[j] == mesh)
       gizmo->axis = j;
 }

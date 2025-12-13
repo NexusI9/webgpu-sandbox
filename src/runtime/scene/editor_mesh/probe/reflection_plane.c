@@ -125,7 +125,7 @@ void sem_probe_reflection_plane_create(SceneEditorMeshList *list,
   mesh_child_add(probe_cube->mesh, probe_arrow->mesh);
 
   // apply sem commons attributes
-  for (uint8_t i = 0; i < list->length; i++) {
+  for (uint8_t i = 0; i < list->count; i++) {
 
     list->entries[i].target = probe;
     list->entries[i].target_list_index = SCENE_EDITOR_MESH_TARGET_UNDEFINED;

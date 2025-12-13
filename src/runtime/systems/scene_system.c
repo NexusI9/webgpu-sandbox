@@ -47,7 +47,7 @@ void scene_system_set_draw_mode(Scene *scene, Renderer *renderer,
     renderer_batch_get_mesh_list_with_flags(
         &renderer->batches, RendererBatchFlag_Shadow, &shadow_meshes);
 
-    for (size_t i = 0; i < shadow_meshes.length; i++)
+    for (size_t i = 0; i < shadow_meshes.count; i++)
       renderer_draw_shadow_map_all(
           &(ShadowMapDrawAllDescriptor){
               .mesh_list = shadow_meshes.entries[i],

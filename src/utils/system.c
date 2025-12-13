@@ -33,9 +33,9 @@ void print_mat4(const mat4 matrix) {
   }
 }
 
-void print_list_float(float *list, size_t length, size_t stride) {
+void print_list_float(float *list, size_t count, size_t stride) {
 
-  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < count; i++) {
 
     printf("%f\t", list[i]);
 
@@ -43,13 +43,13 @@ void print_list_float(float *list, size_t length, size_t stride) {
       printf("\n");
   }
 
-  if (length % stride != 0)
+  if (count % stride != 0)
     printf("\n");
 }
 
-void print_list_uint16(uint16_t *list, size_t length, size_t stride) {
+void print_list_uint16(uint16_t *list, size_t count, size_t stride) {
 
-  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < count; i++) {
 
     printf("%u\t", list[i]);
 
@@ -58,13 +58,13 @@ void print_list_uint16(uint16_t *list, size_t length, size_t stride) {
   }
   printf("\n");
 
-  if (length % stride != 0)
+  if (count % stride != 0)
     printf("\n");
 }
 
-void print_list_uint32(uint32_t *list, size_t length, size_t stride) {
+void print_list_uint32(uint32_t *list, size_t count, size_t stride) {
 
-  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < count; i++) {
 
     printf("%u\t", list[i]);
 
@@ -73,7 +73,7 @@ void print_list_uint32(uint32_t *list, size_t length, size_t stride) {
   }
   printf("\n");
 
-  if (length % stride != 0)
+  if (count % stride != 0)
     printf("\n");
 }
 
@@ -89,7 +89,7 @@ void print_mesh_tree(Mesh *mesh, uint16_t level) {
 
   level++;
 
-  for (int i = 0; i < mesh->children.length; i++)
+  for (int i = 0; i < mesh->children.count; i++)
     print_mesh_tree(mesh->children.entries[i], level);
 }
 

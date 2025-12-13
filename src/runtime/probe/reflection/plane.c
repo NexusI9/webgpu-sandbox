@@ -31,7 +31,7 @@ DynamicListStatus
 probe_reflection_plane_list_create(ProbeReflectionPlaneList *list,
                                    const size_t capacity) {
 
-  return dyli_create((void *)&list->entries, &list->capacity, &list->length,
+  return dyli_create((void *)&list->entries, &list->capacity, &list->count,
                      sizeof(ProbeReflectionPlane), capacity,
                      "Plane Reflection list");
 }
@@ -41,10 +41,10 @@ probe_reflection_plane_list_insert(ProbeReflectionPlaneList *list,
                                    ProbeReflectionPlane *entry) {
 
   // temporary (shader only accept static array for now)
-  if (list->length == PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT)
+  if (list->count == PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT)
     return DynamicListStatus_UndefError;
 
-  return dyli_insert((void *)&list->entries, &list->capacity, &list->length,
+  return dyli_insert((void *)&list->entries, &list->capacity, &list->count,
                      sizeof(ProbeReflectionPlane), (void *)entry, 1,
                      "Probe Reflection Plane list");
 }
@@ -53,7 +53,7 @@ ProbeReflectionPlane *
 probe_reflection_plane_list_new_entry(ProbeReflectionPlaneList *list) {
 
   // temporary (shader only accept static array for now)
-  if (list->length == PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT)
+  if (list->count == PROBE_REFLECTION_PLANE_LIST_LAYER_COUNT)
     return NULL;
 
   ProbeReflectionPlane *plane = rem_new_plane_reflection();
@@ -73,7 +73,7 @@ probe_reflection_plane_list_new_entry(ProbeReflectionPlaneList *list) {
     return NULL;
   }
 
-  plane->texture_layer = list->length - 1;
+  plane->texture_layer = list->count - 1;
 
   return plane;
 }
@@ -81,14 +81,14 @@ probe_reflection_plane_list_new_entry(ProbeReflectionPlaneList *list) {
 DynamicListStatus
 probe_reflection_plane_list_remove(ProbeReflectionPlaneList *list,
                                    ProbeReflectionPlane *entry) {
-  return dyli_remove((void *)list->entries, &list->length,
+  return dyli_remove((void *)list->entries, &list->count,
                      sizeof(ProbeReflectionPlane), (void *)entry,
                      "Probe Reflection Plane list");
 }
 
 DynamicListStatus
 probe_reflection_plane_list_destroy(ProbeReflectionPlaneList *list) {
-  return dyli_free((void *)list->entries, &list->capacity, &list->length);
+  return dyli_free((void *)list->entries, &list->capacity, &list->count);
 }
 
 void probe_reflection_plane_create(ProbeReflectionPlane *probe,

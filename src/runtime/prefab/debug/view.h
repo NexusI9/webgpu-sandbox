@@ -26,13 +26,13 @@ typedef struct {
 
 typedef struct {
   Mesh mesh[VIEW_MAX_CAPACITY];
-  size_t length;
+  size_t count;
   size_t capacity;
 
 } DebugView;
 
 void debug_view_create(DebugView *, const DebugViewCreateDescriptor *);
 void debug_view_add(DebugView *, const ViewDescriptor *);
-size_t debug_view_length(DebugView *);
+size_t debug_view_count(DebugView *);
 
 #endif

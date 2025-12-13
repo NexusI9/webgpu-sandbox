@@ -45,7 +45,7 @@ typedef struct {
 typedef struct {
   ProbeReflectionPlane *entries;
   size_t capacity;
-  size_t length;
+  size_t count;
   RenderPass pass;
   ComputePass kawase;
 } ProbeReflectionPlaneList;

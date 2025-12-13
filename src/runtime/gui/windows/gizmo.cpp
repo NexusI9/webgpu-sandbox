@@ -28,7 +28,7 @@ static void gui_update_gizmo_mode(Scene *scene, Renderer *renderer,
   
   selection_system_update_gizmo_raycast_list(&scene->gizmo, scene->gizmo.mode);
 
-  if (scene_selection_length(&scene->selection)) {
+  if (scene_selection_count(&scene->selection)) {
     selection_system_update_gizmo_pos_to_selection(
         &scene->gizmo, &scene->selection, scene->ubo);
     visibility_system_show_mesh_ref_list(

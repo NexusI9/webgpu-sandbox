@@ -104,7 +104,7 @@ void render_pass_list_draw(RenderPassList *list) {
       wgpuSwapChainGetCurrentTextureView(context_swapchain());
 
   // Go through and draw each mode render pass
-  for (size_t i = 0; i < list->length; i++) {
+  for (size_t i = 0; i < list->count; i++) {
     RenderPass *pass = &list->passes[i];
     pass->command_encoder = command_encoder;
     render_pass_draw(pass);
@@ -226,7 +226,7 @@ void render_pass_im_draw(RenderPass *pass) {
   // Go through and draw each mode render pass
   // Draw meshes
   // loop through mesh lists and draw meshes
-  for (size_t j = 0; j < pass->drawn_list.length; j++) {
+  for (size_t j = 0; j < pass->drawn_list.count; j++) {
 
     // retrieve layout
     RenderPassLayout *layout = pass->drawn_list.entries[j];
@@ -241,7 +241,7 @@ void render_pass_im_draw(RenderPass *pass) {
     wgpuRenderPassEncoderSetPipeline(pass_encoder, pipeline);
 
     // draw mesh with layout callbacks
-    for (size_t k = 0; k < packets->length; k++) {
+    for (size_t k = 0; k < packets->count; k++) {
       MeshDrawPacket *pack = &packets->entries[k];
 
       if (mesh_preprocessor)

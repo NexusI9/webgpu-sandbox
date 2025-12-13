@@ -84,14 +84,14 @@ void sem_camera_create(SceneEditorMeshList *list, Camera *camera,
                             &(VertexGroup){
                                 .name = "front",
                                 .entries = (vindex_t[]){0, 2, 4, 10},
-                                .length = 4,
+                                .count = 4,
                                 .capacity = 4,
                             });
 
     vertex_group_set_insert(cube_group, &(VertexGroup){
                                             .name = "back",
                                             .entries = (vindex_t[]){1, 9, 7, 8},
-                                            .length = 4,
+                                            .count = 4,
                                             .capacity = 4,
                                         });
   }

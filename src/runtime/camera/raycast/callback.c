@@ -45,12 +45,12 @@ void camera_raycast_check_bounds(
   camera_raycast_hit_list_empty(cam_desc->hits);
 
   // go though each meshes of each ref lists and check bound
-  for (size_t l = 0; l < cam_desc->include->length; l++) {
+  for (size_t l = 0; l < cam_desc->include->count; l++) {
 
     MeshRefList *ref_list = cam_desc->include->lists[l];
 
-    // printf("include length: %lu\n", ref_list->length);
-    for (size_t m = 0; m < ref_list->length; m++) {
+    // printf("include count: %lu\n", ref_list->count);
+    for (size_t m = 0; m < ref_list->count; m++) {
       Mesh *mesh = ref_list->entries[m];
 
       // check if mesh belongs in exclude list
@@ -80,14 +80,14 @@ void camera_raycast_check_bounds(
       // check if raycast within mesh bound
       // add mesh pointer to temp ref list and sort by hit distance
       // (closer mesh first)
-      if (hit && hits->length < hits->capacity) {
+      if (hit && hits->count < hits->capacity) {
 
         // add mesh and distance to hit list
-        hits->entries[hits->length].mesh = mesh;
-        hits->entries[hits->length].distance = ray.distance;
+        hits->entries[hits->count].mesh = mesh;
+        hits->entries[hits->count].distance = ray.distance;
 
-        // update list length
-        hits->length++;
+        // update list count
+        hits->count++;
 
         // sort new entry
         camera_raycast_hit_list_sort(cam_desc->hits);

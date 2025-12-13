@@ -34,7 +34,7 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
   mesh_topology_base_create_vertex_attribute(&mesh->topology.base,
                                              &(VertexAttribute){
                                                  .entries = vertex_attributes,
-                                                 .length = 0,
+                                                 .count = 0,
                                                  .capacity = attribute_capacity,
                                              });
 
@@ -45,7 +45,7 @@ void line_create(Mesh *mesh, const LineCreateDescriptor *desc) {
   mesh_topology_base_create_vertex_index(&mesh->topology.base,
                                          &(VertexIndex){
                                              .entries = vertex_index,
-                                             .length = 0,
+                                             .count = 0,
                                              .capacity = index_capacity,
                                          });
 
@@ -107,7 +107,7 @@ void line_create_plane(const LineCreatePlaneDescriptor *desc) {
 
    */
 
-  size_t vertex_offset = desc->vertex->length;
+  size_t vertex_offset = desc->vertex->count;
   size_t vertex_count = 4;
   vec3 normal = {0.0f, 1.0f, 0.0f};
   vec2 uv = {0.0f, 0.0f};
@@ -130,20 +130,20 @@ void line_create_plane(const LineCreatePlaneDescriptor *desc) {
                   vertex_offset + 3 * VERTEX_STRIDE, desc->vertex->entries);
 
   // add indices (A-B-C & A-C-D)
-  size_t vertex_length = desc->vertex->length / VERTEX_STRIDE;
+  size_t vertex_length = desc->vertex->count / VERTEX_STRIDE;
 
-  desc->index->entries[desc->index->length] = (vindex_t)vertex_length;
-  desc->index->entries[desc->index->length + 1] = (vindex_t)vertex_length + 1;
-  desc->index->entries[desc->index->length + 2] = (vindex_t)vertex_length + 2;
-  desc->index->entries[desc->index->length + 3] = (vindex_t)vertex_length + 2;
-  desc->index->entries[desc->index->length + 4] = (vindex_t)vertex_length + 3;
-  desc->index->entries[desc->index->length + 5] = (vindex_t)vertex_length;
+  desc->index->entries[desc->index->count] = (vindex_t)vertex_length;
+  desc->index->entries[desc->index->count + 1] = (vindex_t)vertex_length + 1;
+  desc->index->entries[desc->index->count + 2] = (vindex_t)vertex_length + 2;
+  desc->index->entries[desc->index->count + 3] = (vindex_t)vertex_length + 2;
+  desc->index->entries[desc->index->count + 4] = (vindex_t)vertex_length + 3;
+  desc->index->entries[desc->index->count + 5] = (vindex_t)vertex_length;
 
-  // update index length
-  desc->index->length += 6;
+  // update index count
+  desc->index->count += 6;
 
-  // update vertex length
-  desc->vertex->length += vertex_count * VERTEX_STRIDE;
+  // update vertex count
+  desc->vertex->count += vertex_count * VERTEX_STRIDE;
 }
 
 /**
@@ -156,7 +156,7 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
                     VertexAttribute *vertex_attribute,
                     VertexIndex *vertex_index) {
 
-  if (vertex_attribute->length == vertex_attribute->capacity) {
+  if (vertex_attribute->count == vertex_attribute->capacity) {
     logger_add(LoggerFlag_Warning,
                "Line vertex attribute reached max capacity.");
     return;
@@ -173,23 +173,23 @@ void line_add_point(vec3 p1, vec3 p2, vec3 color,
     float side = (p < 2) ? 1.0f : -1.0f;
 
     line_set_vertex(base, opposite, color, (vec2){side, dir_mul},
-                    vertex_attribute->length, vertex_attribute->entries);
+                    vertex_attribute->count, vertex_attribute->entries);
 
-    vertex_attribute->length += VERTEX_STRIDE;
+    vertex_attribute->count += VERTEX_STRIDE;
   }
 
   // update index array
-  size_t vertex_length =
-      (vertex_attribute->length / VERTEX_STRIDE) - LINE_VERTEX_COUNT;
+  size_t vertex_count =
+      (vertex_attribute->count / VERTEX_STRIDE) - LINE_VERTEX_COUNT;
 
-  vertex_index->entries[vertex_index->length] = (vindex_t)vertex_length;
-  vertex_index->entries[vertex_index->length + 1] = (vindex_t)vertex_length + 1;
-  vertex_index->entries[vertex_index->length + 2] = (vindex_t)vertex_length + 2;
-  vertex_index->entries[vertex_index->length + 3] = (vindex_t)vertex_length;
-  vertex_index->entries[vertex_index->length + 4] = (vindex_t)vertex_length + 2;
-  vertex_index->entries[vertex_index->length + 5] = (vindex_t)vertex_length + 3;
+  vertex_index->entries[vertex_index->count] = (vindex_t)vertex_count;
+  vertex_index->entries[vertex_index->count + 1] = (vindex_t)vertex_count + 1;
+  vertex_index->entries[vertex_index->count + 2] = (vindex_t)vertex_count + 2;
+  vertex_index->entries[vertex_index->count + 3] = (vindex_t)vertex_count;
+  vertex_index->entries[vertex_index->count + 4] = (vindex_t)vertex_count + 2;
+  vertex_index->entries[vertex_index->count + 5] = (vindex_t)vertex_count + 3;
 
-  vertex_index->length += 6;
+  vertex_index->count += 6;
 }
 
 void line_update_buffer(Mesh *mesh) {

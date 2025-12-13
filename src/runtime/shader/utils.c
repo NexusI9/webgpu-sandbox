@@ -8,8 +8,8 @@
  */
 uint16_t shader_bind_group_entries_count(const ShaderBindGroup *group) {
 
-  return group->uniforms.length + group->textures.length +
-         group->samplers.length;
+  return group->uniforms.count + group->textures.count +
+         group->samplers.count;
 
 }
 
@@ -19,10 +19,10 @@ uint16_t shader_bind_group_entries_count(const ShaderBindGroup *group) {
  */
 
 // TODO add more validation by uniforms type (UNIFORM/ TEX/ SAMPLER...) check
-// if it doesn't overflow with max accepted length
+// if it doesn't overflow with max accepted count
 bool shader_validate_binding(Shader *shader) {
 
-  if (shader->bind_groups.length >= SHADER_MAX_BIND_GROUP) {
+  if (shader->bind_groups.count >= SHADER_MAX_BIND_GROUP) {
     logger_add(LoggerFlag_Error, "Bind group list at full capacity.");
     return SHADER_BIND_UNVALID;
   }

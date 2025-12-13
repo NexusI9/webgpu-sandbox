@@ -58,7 +58,7 @@ typedef struct {
   const char *label;
   void *entries;
   size_t capacity;
-  size_t length;
+  size_t count;
   size_t type_size;
 
   // callback used to compare two entries during the linear probing
@@ -167,6 +167,6 @@ HashTableStatus hsht_empty(void *, size_t *, size_t, const char *);
 
 HashTableStatus hsht_destroy(void **, size_t *, size_t *, const char *);
 
-static inline size_t hsht_length(HashTable *tb) { return tb->length; }
+static inline size_t hsht_count(HashTable *tb) { return tb->count; }
 
 #endif

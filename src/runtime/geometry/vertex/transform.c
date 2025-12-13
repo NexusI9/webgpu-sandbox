@@ -24,7 +24,7 @@ void vertex_transform_set_scale(const VertexGroup *index,
   vec3 origin;
   vertex_transform_origin(index, attribute, &origin);
 
-  for (size_t i = 0; i < index->length; i++) {
+  for (size_t i = 0; i < index->count; i++) {
 
     vindex_t id = index->entries[i];
 
@@ -51,7 +51,7 @@ void vertex_transform_set_scale(const VertexGroup *index,
 void vertex_transform_set_position(const VertexGroup *index,
                                 VertexAttribute *attribute, vec3 *translation) {
 
-  for (size_t i = 0; i < index->length; i++) {
+  for (size_t i = 0; i < index->count; i++) {
 
     vindex_t id = index->entries[i];
 
@@ -88,7 +88,7 @@ static void vertex_transform_origin(const VertexGroup *index,
   // init
   glm_vec3_zero(*dest);
 
-  for (size_t i = 0; i < index->length; i++) {
+  for (size_t i = 0; i < index->count; i++) {
 
     vindex_t id = index->entries[i];
 
@@ -101,7 +101,7 @@ static void vertex_transform_origin(const VertexGroup *index,
   }
 
   // divide
-  glm_vec3_div(*dest, (vec3){index->length, index->length, index->length},
+  glm_vec3_div(*dest, (vec3){index->count, index->count, index->count},
                *dest);
 }
 

@@ -61,8 +61,8 @@ void shader_create(Shader *shader, const ShaderCreateDescriptor *sd) {
 
   shader->pipeline = sd->pipeline;
 
-  // define bind groups length
-  shader->bind_groups.length = 0;
+  // define bind groups count
+  shader->bind_groups.count = 0;
 
   // generate empty bindgroups based on pipeline layout (CPU Side)
   shader_bind_group_create_from_layout(shader, (*shader->pipeline)->shader_pso);
@@ -95,7 +95,7 @@ void shader_uniform_update(ShaderBindGroup *group) {
   // update bindgroup entries (callback)
   ShaderBindGroupUniformsDynamics *dynamic_uniforms = &group->uniforms_dynamics;
 
-  for (int j = 0; j < dynamic_uniforms->length; j++) {
+  for (int j = 0; j < dynamic_uniforms->count; j++) {
 
     ShaderBindGroupUniformEntry *current_entry = dynamic_uniforms->entries[j];
 
@@ -133,7 +133,7 @@ void shader_build(Shader *shader) {
   // build bind group entries for each individual group index
 
   // Create Shader GPUBindGroup for each bindgroups
-  for (int i = 0; i < shader->bind_groups.length; i++) {
+  for (int i = 0; i < shader->bind_groups.count; i++) {
 
     ShaderBindGroup *group = &shader->bind_groups.entries[i];
 

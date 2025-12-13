@@ -43,7 +43,7 @@ typedef struct {
 
   struct {
     Scene *entries[ENGINE_SCENE_CAPACITY];
-    uint8_t length;
+    uint8_t count;
     Scene *active;
   } scenes;
 

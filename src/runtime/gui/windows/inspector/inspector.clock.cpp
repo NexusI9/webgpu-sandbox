@@ -50,13 +50,13 @@ void UI::ClockTab::draw() {
   };
 
   // fetch all value
-  const size_t length = 6;
-  for (int i = 0; i < length; i++)
+  const size_t count = 6;
+  for (int i = 0; i < count; i++)
     bars[i].value =
         profiler_latency_get_elapsed(&renderer->profiler, bars[i].type);
 
   // sort
-  qsort(bars, length, sizeof(ClockTabBar), qsort_callback);
+  qsort(bars, count, sizeof(ClockTabBar), qsort_callback);
 
   TimeBarStyle style = {
       .background = (ImVec4 &)*theme_color(gui->theme, ThemeColor_Surface_Low),
@@ -66,7 +66,7 @@ void UI::ClockTab::draw() {
   };
 
   // display time bar
-  for (int i = 0; i < length; i++) {
+  for (int i = 0; i < count; i++) {
     UI::TimeBar(gui, bars[i].label, bars[i].value, max_value, &style).draw();
     ImGui::Spacing();
   }

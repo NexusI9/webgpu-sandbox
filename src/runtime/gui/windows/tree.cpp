@@ -28,7 +28,7 @@ void UI::Tree::draw_mesh(Mesh *mesh, const size_t index) {
   if (index % 2 == 0)
     flag |= TreeItemFlag_AltBg;
 
-  if (mesh->children.length)
+  if (mesh->children.count)
     flag |= TreeItemFlag_HasChild;
 
   UI::TreeItemMesh item =
@@ -68,7 +68,7 @@ void UI::Tree::draw_mesh(Mesh *mesh, const size_t index) {
   }
 
   if (draw_label) {
-    for (size_t i = 0; i < mesh->children.length; i++)
+    for (size_t i = 0; i < mesh->children.count; i++)
       draw_mesh(mesh->children.entries[i], i);
     ImGui::TreePop();
   }
@@ -112,7 +112,7 @@ void UI::Tree::draw_mesh_list(SceneEditorMeshList *list,
   item.draw_visibility();
 
   if (ImGui::IsItemClicked())
-    for (size_t i = 0; i < list->length; i++)
+    for (size_t i = 0; i < list->count; i++)
       selection_system_toggle_mesh(&scene->selection, scene, renderer,
                                    list->entries[i].mesh);
 }
@@ -126,7 +126,7 @@ void UI::Tree::draw() {
   ImGui::BeginChild("Tree items", ImVec2(0, 0), true);
   {
     size_t index = 0;
-    for (size_t i = 0; i < gui->tree.length; i++) {
+    for (size_t i = 0; i < gui->tree.count; i++) {
 
       const RegEntry *entry = reg_lookup(gui->tree.entries[i]);
 

@@ -25,7 +25,7 @@ typedef struct {
 
 typedef struct {
   mat4 projection;
-  uint8_t length;
+  uint8_t count;
   mat4 views[PROJECTION_VIEW_COUNT];
   mat4 combined[PROJECTION_VIEW_COUNT];
 } Projection;
@@ -51,7 +51,7 @@ void projection_sun(Projection *, const vec3, const float);
  */
 static inline void projection_update_ubo_slot(UBOSlot *slot,
                                                Projection *views) {
-  for (uint8_t i = 0; i < views->length; i++) {
+  for (uint8_t i = 0; i < views->count; i++) {
     ProjectionUniform uniform;
     glm_mat4_copy(views->combined[i], uniform.view);
     ubo_slot_set_uniform(&slot[i], (void *)&uniform,

@@ -22,7 +22,7 @@ void UI::Registry::draw() {
         ImGui::TableSetupColumn("Address");
         ImGui::TableHeadersRow();
 
-        for (int i = 1; i < reg_length(); i++) {
+        for (int i = 1; i < reg_count(); i++) {
 
           const RegEntry *entry = reg_lookup(i);
 

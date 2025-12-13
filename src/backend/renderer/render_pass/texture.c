@@ -220,7 +220,7 @@ void render_pass_list_texture_create_shared_color(
 
   // replace all passes views with the shared one
   if (flag & RenderPassTextureFlag_AssignChildPasses)
-    for (uint16_t i = 0; i < list->length; i++) {
+    for (uint16_t i = 0; i < list->count; i++) {
       RenderPass *pass = &list->passes[i];
 
       // eventually release the old one
@@ -250,7 +250,7 @@ void render_pass_list_texture_create_shared_depth(
 
   // replace all passes views with the shared one
   if (flag & RenderPassTextureFlag_AssignChildPasses)
-    for (uint16_t i = 0; i < list->length; i++) {
+    for (uint16_t i = 0; i < list->count; i++) {
       RenderPass *pass = &list->passes[i];
 
       // eventually release the old one

@@ -45,7 +45,7 @@ typedef struct {
 
   struct {
     Mesh *entries[LOADER_GLTF_RESULT_MESH_COUNT];
-    size_t length;
+    size_t count;
   } meshes;
 
 } LoaderGLTFResult;

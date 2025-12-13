@@ -42,7 +42,7 @@ ShaderBindGroupUniformEntry *shader_find_uniform(Shader *shader,
     return NULL;
   }
   
-  for (size_t i = 0; i < uniforms->length; i++) {
+  for (size_t i = 0; i < uniforms->count; i++) {
     if (uniforms->entries[i].binding == index) {
       if (list_index)
         *list_index = i;
@@ -73,7 +73,7 @@ ShaderBindGroupTextureEntry *shader_find_texture(Shader *shader,
     return NULL;
   }
 
-  for (size_t i = 0; i < textures->length; i++)
+  for (size_t i = 0; i < textures->count; i++)
     if (textures->entries[i].binding == index) {
       if (list_index)
         *list_index = i;
@@ -103,7 +103,7 @@ ShaderBindGroupSamplerEntry *shader_find_sampler(Shader *shader,
     return NULL;
   }
 
-  for (size_t i = 0; i < samplers->length; i++)
+  for (size_t i = 0; i < samplers->count; i++)
     if (samplers->entries[i].binding == index) {
       if (list_index)
         *list_index = i;

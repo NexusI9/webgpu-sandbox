@@ -51,7 +51,7 @@ typedef struct {
 
 typedef struct {
   HTMLEventMouse *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } HTMLEventMouseList;
 
@@ -66,7 +66,7 @@ typedef struct {
 
 typedef struct {
   HTMLEventWheel *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } HTMLEventWheelList;
 
@@ -81,7 +81,7 @@ typedef struct {
 
 typedef struct {
   HTMLEventKey *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } HTMLEventKeyList;
 

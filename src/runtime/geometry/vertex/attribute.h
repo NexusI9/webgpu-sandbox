@@ -11,7 +11,7 @@ typedef float vattr_t;
 
 typedef struct {
   vattr_t *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
   WGPUBuffer buffer;
 } VertexAttribute;

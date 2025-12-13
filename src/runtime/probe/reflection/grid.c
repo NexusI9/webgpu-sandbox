@@ -89,7 +89,7 @@ DynamicListStatus
 probe_reflection_grid_list_create(ProbeReflectionGridList *list,
                                   const size_t capacity) {
 
-  return dyli_create((void *)&list->entries, &list->capacity, &list->length,
+  return dyli_create((void *)&list->entries, &list->capacity, &list->count,
                      sizeof(ProbeReflectionGrid), capacity,
                      "Probe Reflection Grid list");
 }
@@ -99,10 +99,10 @@ probe_reflection_grid_list_insert(ProbeReflectionGridList *list,
                                   ProbeReflectionGrid *entry) {
 
   // temporary (shader only accept static array for now)
-  if (list->length == PROBE_REFLECTION_GRID_LIST_CAPACITY)
+  if (list->count == PROBE_REFLECTION_GRID_LIST_CAPACITY)
     return DynamicListStatus_UndefError;
 
-  return dyli_insert((void *)&list->entries, &list->capacity, &list->length,
+  return dyli_insert((void *)&list->entries, &list->capacity, &list->count,
                      sizeof(ProbeReflectionGrid *), (void *)&entry, 1,
                      "Probe Reflection Grid list");
 }
@@ -111,7 +111,7 @@ ProbeReflectionGrid *
 probe_reflection_grid_list_new_entry(ProbeReflectionGridList *list) {
 
   // temporary (shader only accept static array for now)
-  if (list->length == PROBE_REFLECTION_GRID_LIST_CAPACITY)
+  if (list->count == PROBE_REFLECTION_GRID_LIST_CAPACITY)
     return NULL;
 
   ProbeReflectionGrid *grid = rem_new_probe_reflection_grid();
@@ -138,22 +138,22 @@ probe_reflection_grid_list_new_entry(ProbeReflectionGridList *list) {
 DynamicListStatus
 probe_reflection_grid_list_remove(ProbeReflectionGridList *list,
                                   ProbeReflectionGrid *entry) {
-  return dyli_remove((void *)list->entries, &list->length,
+  return dyli_remove((void *)list->entries, &list->count,
                      sizeof(ProbeReflectionGrid *), (void *)entry,
                      "Probe Reflection Grid list");
 }
 
 DynamicListStatus
 probe_reflection_grid_list_destroy(ProbeReflectionGridList *list) {
-  return dyli_free((void *)list->entries, &list->capacity, &list->length);
+  return dyli_free((void *)list->entries, &list->capacity, &list->count);
 }
 
 size_t
 probe_reflection_grid_list_probe_count(ProbeReflectionGridList *grid_list) {
 
   size_t count = 0;
-  for (size_t i = 0; i < grid_list->length; i++)
-    count += grid_list->entries[i]->probes.length;
+  for (size_t i = 0; i < grid_list->count; i++)
+    count += grid_list->entries[i]->probes.count;
 
   return count;
 }

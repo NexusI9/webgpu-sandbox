@@ -80,7 +80,7 @@ void scene_layer_free(SceneLayer *layer) {
  */
 Mesh *scene_layer_find(SceneLayer *layer, Mesh *mesh) {
 
-  for (size_t i = 0; i < layer->meshes.length; i++)
+  for (size_t i = 0; i < layer->meshes.count; i++)
     if (layer->meshes.entries[i]->id == mesh->id)
       return mesh;
 
@@ -110,7 +110,7 @@ static int scene_layer_set_expand(SceneLayerSet *);
  */
 DynamicListStatus scene_layer_set_create(SceneLayerSet *set, size_t capacity) {
 
-  return dyli_create((void *)&set->entries, &set->capacity, &set->length,
+  return dyli_create((void *)&set->entries, &set->capacity, &set->count,
                      sizeof(SceneLayer), SCENE_LAYER_SET_CAPACITY,
                      "Scene layer set");
 }
@@ -120,7 +120,7 @@ DynamicListStatus scene_layer_set_create(SceneLayerSet *set, size_t capacity) {
  */
 int scene_layer_set_expand(SceneLayerSet *set) {
 
-  return dyli_expand((void *)&set->entries, &set->capacity, &set->length,
+  return dyli_expand((void *)&set->entries, &set->capacity, &set->count,
                      sizeof(SceneLayer), 2, "Scene layer set");
 }
 
@@ -130,8 +130,8 @@ int scene_layer_set_expand(SceneLayerSet *set) {
  */
 SceneLayer *scene_layer_set_create_layer(SceneLayerSet *set, const char *name) {
 
-  if (set->length >= set->capacity * 0.75 &&
-      dyli_expand((void *)&set->entries, &set->capacity, &set->length,
+  if (set->count >= set->capacity * 0.75 &&
+      dyli_expand((void *)&set->entries, &set->capacity, &set->count,
                   sizeof(SceneLayer), 2,
                   "Scene Layer Set") != DynamicListStatus_Success) {
     return NULL;
@@ -204,7 +204,7 @@ int scene_layer_set_delete(SceneLayerSet *set, const char *name) {
 
   if (layer && layer->meshes.entries != NULL) {
     scene_layer_free(layer);
-    set->length--;
+    set->count--;
     return SceneLayerStatus_Success;
   }
 
@@ -218,11 +218,11 @@ int scene_layer_set_delete(SceneLayerSet *set, const char *name) {
 void scene_layer_set_free(SceneLayerSet *set) {
 
   // free layers
-  for (size_t l = 0; l < set->length; l++)
+  for (size_t l = 0; l < set->count; l++)
     scene_layer_free(&set->entries[l]);
 
   // free set
-  dyli_free((void *)&set->entries, &set->capacity, &set->length);
+  dyli_free((void *)&set->entries, &set->capacity, &set->count);
 }
 
 /**
@@ -250,7 +250,7 @@ Mesh *scene_layer_set_insert_mesh(SceneLayerSet *set, const char *name,
 
 void scene_layer_set_insert_mesh_ref_list(SceneLayerSet *set, const char *name,
                                           MeshRefList *list) {
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     scene_layer_set_insert_mesh(set, name, list->entries[i]);
 }
 

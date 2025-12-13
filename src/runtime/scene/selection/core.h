@@ -30,7 +30,7 @@ void scene_selection_init(SceneSelection *);
 
 void scene_selection_average_position(SceneSelection *, vec3 *);
 
-size_t scene_selection_length(SceneSelection *);
+size_t scene_selection_count(SceneSelection *);
 
 void scene_selection_register_mesh_ref_list(SceneSelection *, MeshRefList *,
                                             reg_id_t, const SceneSelectionType);

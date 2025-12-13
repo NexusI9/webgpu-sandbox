@@ -30,13 +30,13 @@ void verbose_print(const LoggerFlag flag, const char *message) {
 
 void logger_add(const LoggerFlag flag, const char *fmt, ...) {
 
-  size_t index = (g_logger.length++) % LOGGER_MAX_ENTRY;
+  size_t index = (g_logger.count++) % LOGGER_MAX_ENTRY;
 
   g_logger.flags[index] = flag;
 
   va_list args;
   va_start(args, fmt);
-  vsnprintf(g_logger.messages[index], LOGGER_MESSAGE_LENGTH, fmt, args);
+  vsnprintf(g_logger.messages[index], LOGGER_MESSAGE_COUNT, fmt, args);
   va_end(args);
 
   verbose_print(flag, g_logger.messages[index]);

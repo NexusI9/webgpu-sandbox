@@ -115,7 +115,7 @@ static const sem_transform_callback
 void sem_point_light_update_transform_callback(SceneEditorMeshList *list,
                                                const LightCreateFlag flag) {
 
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     for (GizmoMode j = 0; j < GIZMO_MODE_COUNT; j++)
       list->entries[i].transform_callback[j] =
           light_transform_callback[flag][i];

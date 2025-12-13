@@ -15,19 +15,19 @@ VertexStatus vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
 
   dest->capacity = src->capacity;
   dest->buffer = src->buffer;
-  dest->length = src->length;
+  dest->count = src->count;
 
-  size_t length = dest->length * sizeof(vindex_t);
-  dest->entries = malloc(length);
+  size_t count = dest->count * sizeof(vindex_t);
+  dest->entries = malloc(count);
   if (dest->entries == NULL) {
     logger_add(LoggerFlag_Error, "Couldn't allocate memory for vertex index.");
     dest->buffer = NULL;
     dest->capacity = 0;
-    dest->length = 0;
+    dest->count = 0;
     return VertexStatus_AllocFail;
   }
 
-  memcpy(dest->entries, src->entries, length);
+  memcpy(dest->entries, src->entries, count);
 
   return VertexStatus_Success;
 }
@@ -35,12 +35,12 @@ VertexStatus vertex_index_copy(VertexIndex *src, VertexIndex *dest) {
 void vertex_index_destroy(VertexIndex *vi) {
   free(vi->entries);
   vi->entries = NULL;
-  vi->length = 0;
+  vi->count = 0;
   vi->capacity = 0;
 }
 
 void vertex_index_print(VertexIndex *vi) {
-  for (size_t i = 0; i < vi->length; i++)
+  for (size_t i = 0; i < vi->count; i++)
     printf("%u ", vi->entries[i]);
   printf("\n");
 }
@@ -48,7 +48,7 @@ void vertex_index_print(VertexIndex *vi) {
 VertexStatus vertex_index_create(VertexIndex *vi, size_t capacity,
                                  WGPUBuffer buffer) {
 
-  vi->length = 0;
+  vi->count = 0;
   vi->capacity = capacity;
   vi->entries = calloc(vi->capacity, sizeof(vindex_t));
   vi->buffer = buffer;
@@ -64,11 +64,11 @@ VertexStatus vertex_index_create(VertexIndex *vi, size_t capacity,
 }
 
 VertexStatus vertex_index_insert(VertexIndex *vi, vindex_t *index_list,
-                                 size_t length) {
+                                 size_t count) {
 
   // check capacity
-  if (vi->length + length >= vi->capacity) {
-    size_t new_capacity = vi->length + (2 * vi->capacity);
+  if (vi->count + count >= vi->capacity) {
+    size_t new_capacity = vi->count + (2 * vi->capacity);
     vindex_t *temp =
         (vindex_t *)realloc(vi->entries, new_capacity * sizeof(vindex_t));
 
@@ -82,10 +82,10 @@ VertexStatus vertex_index_insert(VertexIndex *vi, vindex_t *index_list,
   }
 
   // insert new values
-  memcpy(&vi->entries[length], index_list, length * sizeof(vindex_t));
+  memcpy(&vi->entries[count], index_list, count * sizeof(vindex_t));
 
-  // incr length
-  vi->length += length;
+  // incr count
+  vi->count += count;
 
   return VertexStatus_Success;
 }

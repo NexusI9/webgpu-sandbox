@@ -15,7 +15,7 @@ void sem_list_system_toggle_visibility(SceneEditorMeshListArray *array,
                                        const RegEntryType *types, size_t count,
                                        bool active) {
 
-  for (size_t i = 0; i < array->length; i++) {
+  for (size_t i = 0; i < array->count; i++) {
 
     SceneEditorMeshList *sem_list = &array->entries[i];
     const RegEntry *entry = reg_lookup(sem_list->id);
@@ -23,7 +23,7 @@ void sem_list_system_toggle_visibility(SceneEditorMeshListArray *array,
     for (size_t j = 0; j < count; j++) {
       if (entry->type == types[j]) {
 
-        for (size_t k = 0; k < sem_list->length; k++) {
+        for (size_t k = 0; k < sem_list->count; k++) {
 
           Mesh *mesh = sem_list->entries[k].mesh;
 
@@ -74,7 +74,7 @@ void sem_list_system_toggle_visibility(SceneEditorMeshListArray *array,
   void sem_system_##Label##_set_scale(const SEMTransform *desc) {}             \
                                                                                \
   void sem_list_system_##Label##_set_position(const SEMListTransform *desc) {  \
-    for (size_t i = 0; i < desc->sem_list->length; i++) {                      \
+    for (size_t i = 0; i < desc->sem_list->count; i++) {                      \
       SceneEditorMesh *sem = &desc->sem_list->entries[i];                      \
       sem->transform_callback[GizmoMode_Position](&(const SEMTransform){       \
           .light_list = desc->light_list,                                      \
@@ -164,7 +164,7 @@ void sem_system_sun_light_update_shadow(const SEMTransform *desc) {
         &(ShadowMapDrawSunLightDescriptor){
             .light = light,
             .pass = &desc->light_list->spot.shadow.pass,
-            .texture_layer = desc->light_list->spot.shadow.length +
+            .texture_layer = desc->light_list->spot.shadow.count +
                              desc->sem->target_list_index,
             .command_encoder = NULL,
             .profiler = &desc->renderer->profiler,
@@ -230,7 +230,7 @@ void sem_system_spot_light_shadow_set_scale(const SEMTransform *desc) {}
 
 void sem_list_system_light_shadow_set_position(const SEMListTransform *desc) {
 
-  for (size_t i = 0; i < desc->sem_list->length; i++) {
+  for (size_t i = 0; i < desc->sem_list->count; i++) {
     SceneEditorMesh *sem = &desc->sem_list->entries[i];
     sem->transform_callback[GizmoMode_Position](&(const SEMTransform){
         .light_list = desc->light_list,
@@ -372,11 +372,11 @@ void sem_system_probe_reflection_plane_update_mesh_uniform(
 
   probe_reflection_plane_update_boundbox(probe);
 
-  for (uint8_t i = 0; i < reflection_meshes.length; i++) {
+  for (uint8_t i = 0; i < reflection_meshes.count; i++) {
 
     const MeshRefList *pipeline = reflection_meshes.entries[i];
 
-    for (size_t j = 0; j < pipeline->length; j++) {
+    for (size_t j = 0; j < pipeline->count; j++) {
 
       Mesh *pipeline_mesh = pipeline->entries[j];
       MeshUniform *uniform = mesh_uniform(pipeline_mesh);

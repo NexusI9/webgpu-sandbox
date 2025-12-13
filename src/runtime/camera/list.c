@@ -10,7 +10,7 @@
  */
 DynamicListStatus camera_list_create(CameraList *list, size_t capacity) {
 
-  return dyli_create((void *)&list->entries, &list->capacity, &list->length,
+  return dyli_create((void *)&list->entries, &list->capacity, &list->count,
                      sizeof(Camera *), capacity, "Camera list");
 }
 
@@ -18,7 +18,7 @@ DynamicListStatus camera_list_create(CameraList *list, size_t capacity) {
    Insert existing camera in the list
  */
 DynamicListStatus camera_list_insert(CameraList *list, Camera *camera) {
-  return dyli_insert((void *)&list->entries, &list->capacity, &list->length,
+  return dyli_insert((void *)&list->entries, &list->capacity, &list->count,
                      sizeof(Camera *), (void *)&camera, 1, "Camera list");
 }
 

@@ -36,14 +36,14 @@ Primitive primitive_icosphere() {
         .vertex =
             {
                 .entries = icosphere_vertex_data,
-                .length = sizeof(icosphere_vertex_data) / sizeof(icosphere_vertex_data[0]),
+                .count = sizeof(icosphere_vertex_data) / sizeof(icosphere_vertex_data[0]),
                 .capacity = sizeof(icosphere_vertex_data) / sizeof(icosphere_vertex_data[0])
             },
 
         .index =
             {
                 .entries = icosphere_index_data,
-                .length = sizeof(icosphere_index_data) / sizeof(icosphere_index_data[0]),
+                .count = sizeof(icosphere_index_data) / sizeof(icosphere_index_data[0]),
                 .capacity = sizeof(icosphere_index_data) / sizeof(icosphere_index_data[0])
             },
     };

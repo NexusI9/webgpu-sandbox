@@ -22,7 +22,7 @@ public:
   void draw() override;
 
 private:
-  static constexpr int filter_length = 5;
+  static constexpr int filter_count = 5;
 
   static void checkbox_on_change_base(Scene *, Renderer *, bool, void *);
   static void checkbox_on_change_grid(Scene *, Renderer *, bool, void *);
@@ -35,7 +35,7 @@ private:
     const ThemeIcon icon;
     const char *label;
     void (*on_change)(Scene *, Renderer *, bool, void *);
-  } filters[filter_length] = {
+  } filters[filter_count] = {
       {
           DisplayState_Layout,
           ThemeIcon_Layout,

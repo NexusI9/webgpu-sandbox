@@ -113,7 +113,7 @@ typedef struct {
 
 typedef struct {
   RendererDrawCallback entries[RENDERER_MAX_HOOK];
-  ssize_t length;
+  size_t count;
 } RendererDrawCallbackList;
 
 struct Renderer {

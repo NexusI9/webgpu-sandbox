@@ -63,7 +63,7 @@ void ubo_init(UBOManager *manager) {
 
     UBOBuffer *ubo = &manager->buffers[i];
     ubo->type_size = ubo_type[i].size;
-    ubo->length = 0;
+    ubo->count = 0;
     ubo->capacity = UBO_CAPACITY * UBO_MAX_TYPE_SIZE;
     ubo->update_queue.capacity = UBO_UPDATE_QUEUE_CAPACITY;
     ubo->handle = rem_new_buffer(&(WGPUBufferDescriptor){
@@ -93,7 +93,7 @@ UBOStatus ubo_update_entry(UBOManager *manager, const UBOType type,
          ubo->type_size);
 
   // TODO improve index incrementation (currently very unsafe)
-  manager->buffers[type].length = slot->id + 1;
+  manager->buffers[type].count = slot->id + 1;
 
   return UBOStatus_Success;
 }
@@ -127,20 +127,20 @@ UBOSlot ubo_new_entry(UBOManager *manager, const UBOType type) {
 
   return (UBOSlot){
       .uniform = stli_new_entry((void *)ubo->entries, ubo->capacity,
-                                &ubo->length, ubo->type_size, "UBO Manager"),
-      .id = ubo->length,
+                                &ubo->count, ubo->type_size, "UBO Manager"),
+      .id = ubo->count,
   };
 }
 
 StaticListStatus ubo_remove_entry(UBOManager *manager, const UBOType type,
                                   ubo_id_t index) {
   UBOBuffer *ubo = &manager->buffers[type];
-  return stli_remove((void *)ubo->entries, &ubo->length, ubo->type_size,
+  return stli_remove((void *)ubo->entries, &ubo->count, ubo->type_size,
                      &ubo->entries[index], "UBO Manager");
 }
 
-size_t ubo_length(UBOManager *ubo, const UBOType type) {
-  return ubo->buffers[type].length;
+size_t ubo_count(UBOManager *ubo, const UBOType type) {
+  return ubo->buffers[type].count;
 }
 
 void *ubo_entry(UBOManager *ubo, const UBOType type, ubo_id_t index) {
@@ -149,7 +149,7 @@ void *ubo_entry(UBOManager *ubo, const UBOType type, ubo_id_t index) {
 }
 
 size_t ubo_find_index(UBOManager *manager, const UBOType type, void *data) {
-  for (size_t i = 0; i < ubo_length(manager, UBOType_Mesh); i++)
+  for (size_t i = 0; i < ubo_count(manager, UBOType_Mesh); i++)
     if (ubo_entry(manager, UBOType_Mesh, i) == data)
       return i;
 
@@ -178,13 +178,13 @@ StaticListStatus ubo_update_queue_insert(UBOManager *manager,
 
   UBOBufferUpdateQueue *queue = &manager->buffers[type].update_queue;
 
-  return stli_insert((void *)queue->entries, queue->capacity, &queue->length,
+  return stli_insert((void *)queue->entries, queue->capacity, &queue->count,
                      sizeof(ubo_id_t), (void *)&id, "UBO Update Queue");
 }
 
 StaticListStatus ubo_update_queue_shift(UBOManager *manager,
                                         const UBOType type) {
   UBOBufferUpdateQueue *queue = &manager->buffers[type].update_queue;
-  return stli_shift((void *)queue->entries, &queue->length, sizeof(ubo_id_t),
+  return stli_shift((void *)queue->entries, &queue->count, sizeof(ubo_id_t),
                     "UBO Update Queue");
 }

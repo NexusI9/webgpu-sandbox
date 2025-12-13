@@ -16,7 +16,7 @@ static inline void vertex_attribute_add(VertexAttribute *, const float *,
                                         const size_t);
 
 void vertex_attribute_print(VertexAttribute *va) {
-  for (size_t i = 0; i < va->length; i++) {
+  for (size_t i = 0; i < va->count; i++) {
     printf("%f ", va->entries[i]);
     if (i % VERTEX_STRIDE == VERTEX_STRIDE - 1)
       printf("\n");
@@ -36,7 +36,7 @@ void vertex_attribute_print(VertexAttribute *va) {
  */
 void vertex_attribute_replace(VertexAttribute *va, const float *val,
                               VertexAttributeOffset offset, size_t type_size) {
-  for (size_t i = offset; i < va->length; i += VertexAttributeOffset_End)
+  for (size_t i = offset; i < va->count; i += VertexAttributeOffset_End)
     memcpy(&va->entries[i], val, type_size);
 }
 
@@ -127,7 +127,7 @@ void vertex_attribute_add(VertexAttribute *va, const float *val,
                           VertexAttributeOffset offset, size_t type_size) {
 
   size_t count = type_size / sizeof(vattr_t);
-  for (size_t i = offset; i < va->length; i += VertexAttributeOffset_End) {
+  for (size_t i = offset; i < va->count; i += VertexAttributeOffset_End) {
     vattr_t *dst = (vattr_t *)&va->entries[i];
     for (size_t j = 0; j < count; j++)
       dst[j] += val[j];
@@ -185,20 +185,20 @@ VertexStatus vertex_attribute_copy(VertexAttribute *src,
 
   dest->capacity = src->capacity;
   dest->buffer = src->buffer;
-  dest->length = src->length;
+  dest->count = src->count;
 
-  size_t length = dest->length * sizeof(vattr_t);
-  dest->entries = malloc(length);
+  size_t count = dest->count * sizeof(vattr_t);
+  dest->entries = malloc(count);
   if (dest->entries == NULL) {
     logger_add(LoggerFlag_Error,
                "Couldn't allocate memory for vertex attribute.");
     dest->buffer = NULL;
     dest->capacity = 0;
-    dest->length = 0;
+    dest->count = 0;
     return VertexStatus_AllocFail;
   }
 
-  memcpy(dest->entries, src->entries, length);
+  memcpy(dest->entries, src->entries, count);
 
   return VertexStatus_Success;
 }
@@ -206,7 +206,7 @@ VertexStatus vertex_attribute_copy(VertexAttribute *src,
 void vertex_attribute_destroy(VertexAttribute *va) {
   free(va->entries);
   va->entries = NULL;
-  va->length = 0;
+  va->count = 0;
   va->capacity = 0;
 }
 
@@ -221,20 +221,20 @@ void vertex_attribute_find_equal_attr(Vertex *source,
                                       VertexAttributeType attribute,
                                       VertexAttribute *destination) {
 
-  for (size_t i = 0; i < vertex_attribute->length; i += VERTEX_STRIDE) {
+  for (size_t i = 0; i < vertex_attribute->count; i += VERTEX_STRIDE) {
 
-    if (destination->length == destination->capacity)
+    if (destination->count == destination->capacity)
       return;
 
     Vertex compare = vertex_from_array(&vertex_attribute->entries[i]);
     float *v_src = &vertex_attribute->entries[i];
-    float *v_dest = &destination->entries[destination->length];
+    float *v_dest = &destination->entries[destination->count];
 
     // position match
     if (attribute == VertexAttributeType_Position &&
         vec3_equal(source->position, compare.position)) {
       vertex_copy(v_src, v_dest);
-      destination->length += VERTEX_STRIDE;
+      destination->count += VERTEX_STRIDE;
       continue;
     }
 
@@ -242,7 +242,7 @@ void vertex_attribute_find_equal_attr(Vertex *source,
     if (attribute == VertexAttributeType_Normal &&
         vec3_equal(source->normal, compare.normal)) {
       vertex_copy(v_src, v_dest);
-      destination->length += VERTEX_STRIDE;
+      destination->count += VERTEX_STRIDE;
       continue;
     }
 
@@ -250,7 +250,7 @@ void vertex_attribute_find_equal_attr(Vertex *source,
     if (attribute == VertexAttributeType_Tangent &&
         vec3_equal(source->tangent, compare.tangent)) {
       vertex_copy(v_src, v_dest);
-      destination->length += VERTEX_STRIDE;
+      destination->count += VERTEX_STRIDE;
       continue;
     }
 
@@ -258,7 +258,7 @@ void vertex_attribute_find_equal_attr(Vertex *source,
     if (attribute == VertexAttributeType_Color &&
         vec3_equal(source->color, compare.color)) {
       vertex_copy(v_src, v_dest);
-      destination->length += VERTEX_STRIDE;
+      destination->count += VERTEX_STRIDE;
       continue;
     }
 
@@ -266,7 +266,7 @@ void vertex_attribute_find_equal_attr(Vertex *source,
     if (attribute == VertexAttributeType_Uv &&
         vec2_equal(source->uv, compare.uv)) {
       vertex_copy(v_src, v_dest);
-      destination->length += VERTEX_STRIDE;
+      destination->count += VERTEX_STRIDE;
       continue;
     }
   }

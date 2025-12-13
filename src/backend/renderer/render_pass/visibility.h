@@ -114,11 +114,11 @@ render_pass_find_layout_from_mesh(RenderPass *pass, const Mesh *mesh,
 
   *dest = (RenderPassLayoutRefList){0};
 
-  for (uint16_t i = 0; i < pass->stagged_list.length; i++) {
+  for (uint16_t i = 0; i < pass->stagged_list.count; i++) {
     const MeshRefList *ref_list = pass->stagged_list.entries[i].src_meshes;
     if (mesh_ref_list_find(ref_list, mesh, NULL) != NULL &&
-        dest->length < RENDER_PASS_MAX_DRAW_LIST)
-      dest->entries[dest->length++] = &pass->stagged_list.entries[i];
+        dest->count < RENDER_PASS_MAX_DRAW_LIST)
+      dest->entries[dest->count++] = &pass->stagged_list.entries[i];
   }
 }
 
@@ -126,7 +126,7 @@ static inline RenderPassLayout *
 render_pass_find_layout_from_source_list(RenderPass *pass,
                                          const MeshRefList *source_list) {
 
-  for (uint16_t i = 0; i < pass->stagged_list.length; i++)
+  for (uint16_t i = 0; i < pass->stagged_list.count; i++)
     if (pass->stagged_list.entries[i].src_meshes == source_list)
       return &pass->stagged_list.entries[i];
 
@@ -196,7 +196,7 @@ render_pass_layout_enable_all_mesh(RenderPassLayout *layout) {
 
   mesh_draw_packet_list_empty(pack_list);
 
-  for (size_t i = 0; i < src_list->length; i++) {
+  for (size_t i = 0; i < src_list->count; i++) {
     Mesh *mesh = src_list->entries[i];
     MeshDrawPacket *pack = mesh_draw_packet_list_new_entry(pack_list);
     if (pack)
@@ -232,7 +232,7 @@ static inline RenderPassStatus render_pass_enable_mesh(RenderPass *pass,
 
   RenderPassStatus status = RenderPassStatus_Success;
 
-  for (size_t i = 0; i < layout_list.length; i++) {
+  for (size_t i = 0; i < layout_list.count; i++) {
 
     RenderPassStatus enable =
         render_pass_layout_enable_mesh(layout_list.entries[i], mesh);
@@ -253,7 +253,7 @@ static inline RenderPassStatus render_pass_disable_mesh(RenderPass *pass,
 
   RenderPassStatus status = RenderPassStatus_Success;
 
-  for (size_t i = 0; i < layout_list.length; i++) {
+  for (size_t i = 0; i < layout_list.count; i++) {
 
     RenderPassStatus disable =
         render_pass_layout_disable_mesh(layout_list.entries[i], mesh);
@@ -270,7 +270,7 @@ static inline RenderPassStatus render_pass_disable_mesh(RenderPass *pass,
 static inline RenderPassStatus
 render_pass_enable_mesh_ref_list(RenderPass *pass, MeshRefList *meshes) {
 
-  for (size_t i = 0; i < meshes->length; i++)
+  for (size_t i = 0; i < meshes->count; i++)
     render_pass_enable_mesh(pass, meshes->entries[i]);
 
   return RenderPassStatus_Success;
@@ -279,7 +279,7 @@ render_pass_enable_mesh_ref_list(RenderPass *pass, MeshRefList *meshes) {
 static inline RenderPassStatus
 render_pass_disable_mesh_ref_list(RenderPass *pass, MeshRefList *meshes) {
 
-  for (size_t i = 0; i < meshes->length; i++)
+  for (size_t i = 0; i < meshes->count; i++)
     render_pass_disable_mesh(pass, meshes->entries[i]);
 
   return RenderPassStatus_Success;
@@ -287,7 +287,7 @@ render_pass_disable_mesh_ref_list(RenderPass *pass, MeshRefList *meshes) {
 
 static inline RenderPassStatus render_pass_enable_all_mesh(RenderPass *pass) {
 
-  for (uint16_t i = 0; i < pass->stagged_list.length; i++) {
+  for (uint16_t i = 0; i < pass->stagged_list.count; i++) {
     RenderPassLayout *layout = &pass->stagged_list.entries[i];
     render_pass_layout_enable_all_mesh(layout);
   }
@@ -297,7 +297,7 @@ static inline RenderPassStatus render_pass_enable_all_mesh(RenderPass *pass) {
 
 static inline RenderPassStatus render_pass_disable_all_mesh(RenderPass *pass) {
 
-  for (uint16_t i = 0; i < pass->stagged_list.length; i++) {
+  for (uint16_t i = 0; i < pass->stagged_list.count; i++) {
     RenderPassLayout *layout = &pass->stagged_list.entries[i];
     render_pass_layout_disable_all_mesh(layout);
   }
@@ -318,7 +318,7 @@ static inline RenderPassStatus render_pass_disable_all_mesh(RenderPass *pass) {
 static inline RenderPassStatus
 render_pass_list_enable_mesh(RenderPassList *list, Mesh *mesh) {
 
-  for (uint8_t i = 0; i < list->length; i++)
+  for (uint8_t i = 0; i < list->count; i++)
     render_pass_enable_mesh(&list->passes[i], mesh);
 
   return RenderPassStatus_Success;
@@ -326,7 +326,7 @@ render_pass_list_enable_mesh(RenderPassList *list, Mesh *mesh) {
 
 static inline RenderPassStatus
 render_pass_list_disable_mesh(RenderPassList *list, Mesh *mesh) {
-  for (uint8_t i = 0; i < list->length; i++)
+  for (uint8_t i = 0; i < list->count; i++)
     render_pass_disable_mesh(&list->passes[i], mesh);
 
   return RenderPassStatus_Success;
@@ -336,8 +336,8 @@ static inline RenderPassStatus
 render_pass_list_enable_mesh_ref_list(RenderPassList *list,
                                       MeshRefList *meshes) {
 
-  for (uint8_t i = 0; i < list->length; i++)
-    for (size_t j = 0; j < meshes->length; j++)
+  for (uint8_t i = 0; i < list->count; i++)
+    for (size_t j = 0; j < meshes->count; j++)
       render_pass_enable_mesh(&list->passes[i], meshes->entries[j]);
 
   return RenderPassStatus_Success;
@@ -347,8 +347,8 @@ static inline RenderPassStatus
 render_pass_list_disable_mesh_ref_list(RenderPassList *list,
                                        MeshRefList *meshes) {
 
-  for (uint8_t i = 0; i < list->length; i++)
-    for (size_t j = 0; j < meshes->length; j++)
+  for (uint8_t i = 0; i < list->count; i++)
+    for (size_t j = 0; j < meshes->count; j++)
       render_pass_disable_mesh(&list->passes[i], meshes->entries[j]);
 
   return RenderPassStatus_Success;
@@ -357,7 +357,7 @@ render_pass_list_disable_mesh_ref_list(RenderPassList *list,
 static inline RenderPassStatus
 render_pass_list_disable_all_mesh(RenderPassList *list) {
 
-  for (uint16_t i = 0; i < list->length; i++)
+  for (uint16_t i = 0; i < list->count; i++)
     render_pass_disable_all_mesh(&list->passes[i]);
 
   return RenderPassStatus_Success;
@@ -366,7 +366,7 @@ render_pass_list_disable_all_mesh(RenderPassList *list) {
 static inline RenderPassStatus
 render_pass_list_enable_all_mesh(RenderPassList *list) {
 
-  for (uint16_t i = 0; i < list->length; i++)
+  for (uint16_t i = 0; i < list->count; i++)
     render_pass_enable_all_mesh(&list->passes[i]);
 
   return RenderPassStatus_Success;

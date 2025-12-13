@@ -105,8 +105,8 @@ void UI::WorldTab::on_resolution_change_point_light(
                                 WGPUTextureViewDimension_CubeArray);
 
   // update each mesh bound shadow view
-  for (size_t i = 0; i < shadow_meshes.length; i++) {
-    for (size_t j = 0; j < shadow_meshes.entries[i]->length; j++) {
+  for (size_t i = 0; i < shadow_meshes.count; i++) {
+    for (size_t j = 0; j < shadow_meshes.entries[i]->count; j++) {
       Mesh *mesh = shadow_meshes.entries[i]->entries[j];
       Shader *shader = mesh_shader(mesh, MeshShader_Texture);
       const PipelineBindingLightList *binding =
@@ -120,7 +120,7 @@ void UI::WorldTab::on_resolution_change_point_light(
 
   // redraw lights with new resolution
   size_t i;
-  for (i = 0; i < scene->lights.point.shadow.length; i++) {
+  for (i = 0; i < scene->lights.point.shadow.count; i++) {
     ShadowMapDrawPointLightDescriptor desc = {
         .light = scene->lights.point.shadow.entries[i],
         .pass = pass,
@@ -145,8 +145,8 @@ void UI::WorldTab::on_resolution_change_dir_light(
                                 WGPUTextureViewDimension_2DArray);
 
   // update each mesh bound shadow view
-  for (size_t i = 0; i < shadow_meshes.length; i++) {
-    for (size_t j = 0; j < shadow_meshes.entries[i]->length; j++) {
+  for (size_t i = 0; i < shadow_meshes.count; i++) {
+    for (size_t j = 0; j < shadow_meshes.entries[i]->count; j++) {
       Mesh *mesh = shadow_meshes.entries[i]->entries[j];
       Shader *shader = mesh_shader(mesh, MeshShader_Texture);
       const PipelineBindingLightList *binding =
@@ -161,7 +161,7 @@ void UI::WorldTab::on_resolution_change_dir_light(
 
   // redraw lights with new resolution
   size_t i;
-  for (i = 0; i < scene->lights.sun.shadow.length; i++) {
+  for (i = 0; i < scene->lights.sun.shadow.count; i++) {
     ShadowMapDrawSunLightDescriptor desc = {
         .light = scene->lights.sun.shadow.entries[i],
         .pass = pass,
@@ -172,7 +172,7 @@ void UI::WorldTab::on_resolution_change_dir_light(
     renderer_draw_shadow_map_sun_light(&desc, SCENE_DEBUG_UNDEFINED);
   }
 
-  for (i = 0; i < scene->lights.spot.shadow.length; i++) {
+  for (i = 0; i < scene->lights.spot.shadow.count; i++) {
     ShadowMapDrawSpotLightDescriptor desc = {
         .light = scene->lights.spot.shadow.entries[i],
         .pass = pass,
@@ -196,8 +196,8 @@ void UI::WorldTab::on_resolution_change_plane_reflection(
       &renderer->batches, RendererBatchFlag_Shadow, &reflection_meshes);
 
   // update each lit mesh reflection view
-  for (size_t j = 0; j < reflection_meshes.length; j++) {
-    for (size_t k = 0; k < reflection_meshes.entries[j]->length; k++) {
+  for (size_t j = 0; j < reflection_meshes.count; j++) {
+    for (size_t k = 0; k < reflection_meshes.entries[j]->count; k++) {
 
       Mesh *mesh = reflection_meshes.entries[j]->entries[k];
       Shader *shader = mesh_shader(mesh, MeshShader_Texture);

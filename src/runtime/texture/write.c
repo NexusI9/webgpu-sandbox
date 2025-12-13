@@ -12,7 +12,7 @@
    Replace the texture value based on a float list.
    Note that the value will be replaced based on the texture channels;
    as a result it's necessary to ensure that the value is the same
-   length as the texture channels.
+   count as the texture channels.
  */
 void texture_write_fill(Texture *texture, const uint8_t *new_pixel) {
 
@@ -143,7 +143,7 @@ void texture_write_triangle_gradient(
   unsigned int channels = desc->source->channels;
   texture_data *out = desc->destination;
 
-  for (size_t e = 0; e < desc->length; e++) {
+  for (size_t e = 0; e < desc->count; e++) {
 
     const ivec2 A = {
         desc->points[e].a.position[0],
@@ -223,7 +223,7 @@ void texture_write_alpha(Texture *texture, uint8_t value) {
 void texture_write_gradient(Texture *texture, const TextureGradient *gradient,
                             TextureWriteMethod method) {
 
-  for (size_t g = 0; g < gradient->length; g += 2) {
+  for (size_t g = 0; g < gradient->count; g += 2) {
 
     // get 2 stops in chain
     const TextureGradientStop *start =

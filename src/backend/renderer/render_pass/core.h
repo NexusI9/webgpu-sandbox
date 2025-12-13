@@ -87,12 +87,12 @@ typedef struct {
 
 typedef struct {
   RenderPassLayout entries[RENDER_PASS_MAX_DRAW_LIST];
-  size_t length;
+  size_t count;
 } RenderPassLayoutList;
 
 typedef struct {
   RenderPassLayout *entries[RENDER_PASS_MAX_DRAW_LIST];
-  size_t length;
+  size_t count;
 } RenderPassLayoutRefList;
 
 typedef struct {
@@ -106,7 +106,7 @@ typedef struct {
 
 typedef struct {
   RenderPassLayoutDescriptor entries[RENDER_PASS_MAX_DRAW_LIST];
-  size_t length;
+  size_t count;
 } RenderPassLayoutListDescriptor;
 
 // Descriptor
@@ -115,14 +115,14 @@ typedef struct {
   WGPUTexture resolve_texture;
   WGPUTextureView resolve_view;
   WGPUTextureView views[RENDER_PASS_VIEW_CAPACITY];
-  size_t views_length;
+  size_t views_count;
   WGPURenderPassColorAttachment attachment;
 } RenderPassColor;
 
 typedef struct {
   WGPUTexture texture;
   WGPUTextureView views[RENDER_PASS_VIEW_CAPACITY];
-  size_t views_length;
+  size_t views_count;
   WGPURenderPassDepthStencilAttachment attachment;
 } RenderPassDepth;
 
@@ -161,7 +161,7 @@ struct RenderPassList {
   } shared;
 
   RenderPass passes[RENDER_PASS_MAX_DRAW_LIST];
-  size_t length;
+  size_t count;
   render_pass_list_draw_callback draw_callback;
 };
 
@@ -210,7 +210,7 @@ RenderPass *render_pass_list_insert_pass(RenderPassList *,
 void render_pass_list_update_child_passes_callback(RenderPassList *);
 
 static inline RenderPass *render_pass_list_last_pass(RenderPassList *list) {
-  return &list->passes[list->length - 1];
+  return &list->passes[list->count - 1];
 }
 
 /* === Pass === */

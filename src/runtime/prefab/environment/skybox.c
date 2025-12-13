@@ -207,10 +207,10 @@ void prefab_skybox_gradient_create(
   // define stops start and end (i.e. top and bottom color)
   const TextureGradient *grad = &desc->stops;
   TextureGradientStop *start = &grad->entries[0];
-  TextureGradientStop *end = &grad->entries[desc->stops.length - 1];
+  TextureGradientStop *end = &grad->entries[desc->stops.count - 1];
 
   // define end/ start based on stops position
-  for (size_t i = 0; i < grad->length; i++) {
+  for (size_t i = 0; i < grad->count; i++) {
     TextureGradientStop *stop = &grad->entries[0];
     if (start->position < stop->position)
       start = stop;

@@ -30,7 +30,7 @@ typedef struct {
 } SceneLayer;
 
 typedef struct {
-  size_t length;
+  size_t count;
   size_t capacity;
   SceneLayer *entries;
 } SceneLayerSet;

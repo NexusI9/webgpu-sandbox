@@ -47,7 +47,7 @@ typedef struct {
 typedef struct {
   AOBakeTextureListEntry *entries;
   size_t capacity;
-  size_t length;
+  size_t count;
 } AOBakeTextureList;
 
 typedef struct {

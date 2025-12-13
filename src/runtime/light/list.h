@@ -29,45 +29,45 @@ typedef struct {
 
 // light list
 typedef struct {
-  size_t length;
+  size_t count;
   size_t capacity;
   PointLight *entries[LIGHT_MAX_CAPACITY];
 } PointLightListBase;
 
 typedef struct {
-  size_t length;
+  size_t count;
   size_t capacity;
   PointLight *entries[LIGHT_MAX_CAPACITY];
   RenderPass pass;
 } PointLightListShadow;
 
 typedef struct {
-  size_t length;
+  size_t count;
   size_t capacity;
   SpotLight *entries[LIGHT_MAX_CAPACITY];
 } SpotLightListBase;
 
 typedef struct {
-  size_t length;
+  size_t count;
   size_t capacity;
   SpotLight *entries[LIGHT_MAX_CAPACITY];
   RenderPass pass;
 } SpotLightListShadow;
 
 typedef struct {
-  size_t length;
+  size_t count;
   size_t capacity;
   AmbientLight *entries[LIGHT_MAX_CAPACITY];
 } AmbientLightList;
 
 typedef struct {
-  size_t length;
+  size_t count;
   size_t capacity;
   SunLight *entries[LIGHT_MAX_CAPACITY];
 } SunLightListBase;
 
 typedef struct {
-  size_t length;
+  size_t count;
   size_t capacity;
   SunLight *entries[LIGHT_MAX_CAPACITY];
   // uses Spotlight list shadow depth and color map
@@ -138,7 +138,7 @@ StaticListStatus light_list_spot_shadow_remove(SpotLightListShadow *,
                                                SpotLight *);
 
 static inline size_t light_list_sun_layer_index(LightList *list, size_t index) {
-  return list->spot.shadow.length + index;
+  return list->spot.shadow.count + index;
 }
 
 /**

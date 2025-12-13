@@ -26,7 +26,7 @@ void point_light_uniform_update(PointLight *light) {
   Projection points_views;
   projection_point(&points_views, light->position, light->near, light->far);
 
-  for (uint8_t v = 0; v < points_views.length; v++)
+  for (uint8_t v = 0; v < points_views.count; v++)
     glm_mat4_copy(points_views.combined[v], uniform->views[v]);
 }
 
@@ -56,7 +56,7 @@ void spot_light_uniform_update(SpotLight *light) {
   Projection spot_view;
   projection_spot(&spot_view, light->position, light->target, light->angle);
 
-  for (uint8_t v = 0; v < spot_view.length; v++)
+  for (uint8_t v = 0; v < spot_view.count; v++)
     glm_mat4_copy(spot_view.combined[v], uniform->view);
 }
 
@@ -72,12 +72,12 @@ void sun_light_uniform_update(SunLight *light) {
   Projection sun_view;
   projection_sun(&sun_view, light->position, light->size);
 
-  for (uint8_t v = 0; v < sun_view.length; v++)
+  for (uint8_t v = 0; v < sun_view.count; v++)
     glm_mat4_copy(sun_view.combined[v], uniform->view);
 }
 
 /**
-   Only recalulcate the length of each light list, doesn't handle the per light
+   Only recalulcate the count of each light list, doesn't handle the per light
    uniform update. Since each lights have they uniform pointing to the UBO list,
    we can directly use the dedicated methods 'light_T_uniform_update()' to
    update the light uniform.
@@ -88,9 +88,9 @@ void light_list_uniform_update(LightList *list) {
 
   LightListUniform *uniform = (LightListUniform *)list->ubo_slot.uniform;
 
-  uniform->ambient_count = list->ambient.length;
-  uniform->point_count = list->point.base.length;
-  uniform->spot_count = list->spot.base.length;
-  uniform->sun_count = list->sun.base.length;
+  uniform->ambient_count = list->ambient.count;
+  uniform->point_count = list->point.base.count;
+  uniform->spot_count = list->spot.base.count;
+  uniform->sun_count = list->sun.base.count;
 
 }

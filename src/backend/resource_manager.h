@@ -98,7 +98,7 @@ typedef struct {
 #define _(Type, RegistryType, Label, PoolCapacity)                             \
   typedef struct {                                                             \
     size_t capacity;                                                           \
-    size_t length;                                                             \
+    size_t count;                                                             \
     Type *entries;                                                             \
   } REMPool##Type;
 

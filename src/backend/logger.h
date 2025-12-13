@@ -10,7 +10,7 @@
 
 #define LOGGER_MAX_ENTRY 2048
 #define LOGGER_FLAG_COUNT 11
-#define LOGGER_MESSAGE_LENGTH 256
+#define LOGGER_MESSAGE_COUNT 256
 
 #ifdef VERBOSE
 #ifdef VERBOSE_LINE
@@ -43,10 +43,10 @@ typedef enum {
 } LoggerFlag;
 
 typedef struct {
-  char messages[LOGGER_MAX_ENTRY][LOGGER_MESSAGE_LENGTH];
+  char messages[LOGGER_MAX_ENTRY][LOGGER_MESSAGE_COUNT];
   uint64_t timestamps[LOGGER_MAX_ENTRY];
   LoggerFlag flags[LOGGER_MAX_ENTRY];
-  size_t length;
+  size_t count;
 } Logger;
 
 extern Logger g_logger;

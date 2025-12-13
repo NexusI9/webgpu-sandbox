@@ -79,7 +79,7 @@ static inline reg_id_t reg_new_id() {
 
 reg_id_t reg_register(void *, RegEntryType);
 
-static inline const int reg_length() { return g_reg_id; }
+static inline const int reg_count() { return g_reg_id; }
 
 static inline const RegEntry *reg_lookup(reg_id_t id) {
   if (id >= REG_MAX_OBJECTS) {

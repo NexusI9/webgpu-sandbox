@@ -16,7 +16,7 @@ static const MeshShader mesh_std_shaders[] = {
     MeshShader_Wireframe,
 };
 
-static const uint8_t mesh_std_shaders_length =
+static const uint8_t mesh_std_shaders_count =
     sizeof(mesh_std_shaders) / sizeof(mesh_std_shaders[0]);
 
 static inline void
@@ -80,7 +80,7 @@ void visibility_system_disable_in_light_reflection(Scene *scene,
  */
 void visibility_system_show_mesh(Scene *scene, Renderer *renderer, Mesh *mesh) {
 
-  for (uint8_t i = 0; i < mesh_std_shaders_length; i++) {
+  for (uint8_t i = 0; i < mesh_std_shaders_count; i++) {
 
     Shader *shader = mesh_shader(mesh, mesh_std_shaders[i]);
 
@@ -100,7 +100,7 @@ void visibility_system_show_mesh(Scene *scene, Renderer *renderer, Mesh *mesh) {
 
 void visibility_system_hide_mesh(Scene *scene, Renderer *renderer, Mesh *mesh) {
 
-  for (uint8_t i = 0; i < mesh_std_shaders_length; i++) {
+  for (uint8_t i = 0; i < mesh_std_shaders_count; i++) {
 
     Shader *shader = mesh_shader(mesh, mesh_std_shaders[i]);
 
@@ -122,7 +122,7 @@ RendererStatus visibility_system_toggle_mesh(Scene *scene, Renderer *renderer,
                                              Mesh *mesh) {
 
   RendererStatus mesh_state;
-  for (uint8_t i = 0; i < mesh_std_shaders_length; i++) {
+  for (uint8_t i = 0; i < mesh_std_shaders_count; i++) {
 
     Shader *shader = mesh_shader(mesh, mesh_std_shaders[i]);
 
@@ -157,7 +157,7 @@ RendererStatus visibility_system_toggle_mesh(Scene *scene, Renderer *renderer,
 void visibility_system_show_mesh_ref_list(Scene *scene, Renderer *renderer,
                                           MeshRefList *list) {
 
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     visibility_system_show_mesh(scene, renderer, list->entries[i]);
 
   scene_system_update_vertex_count(scene, renderer);
@@ -167,7 +167,7 @@ void visibility_system_show_mesh_ref_list(Scene *scene, Renderer *renderer,
 void visibility_system_hide_mesh_ref_list(Scene *scene, Renderer *renderer,
                                           MeshRefList *list) {
 
-  for (size_t i = 0; i < list->length; i++)
+  for (size_t i = 0; i < list->count; i++)
     visibility_system_hide_mesh(scene, renderer, list->entries[i]);
 
   scene_system_update_vertex_count(scene, renderer);

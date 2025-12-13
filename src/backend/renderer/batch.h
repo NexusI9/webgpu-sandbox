@@ -76,12 +76,12 @@ typedef struct {
 #define RENDER_BATCH_LIST_CAPACITY 32
 typedef struct {
   MeshRefList *entries[RENDER_BATCH_LIST_CAPACITY];
-  size_t length;
+  size_t count;
 } RendererBatchMeshLists;
 
 typedef struct {
   const RendererBatchKey *entries[RENDER_BATCH_LIST_CAPACITY];
-  size_t length;
+  size_t count;
 } RendererBatchKeyList;
 
 EXTERN_C_BEGIN

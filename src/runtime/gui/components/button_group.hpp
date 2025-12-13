@@ -36,17 +36,17 @@ class ButtonGroup : public Component {
 public:
   ButtonGroup(
       Gui *gui, const char *label, const ButtonGroupItem *items,
-      const uint8_t items_length, const ButtonStyle *style,
+      const uint8_t items_count, const ButtonStyle *style,
       const uint8_t default_selected = BUTTON_GROUP_DEFAULT_SELECTED_NONE,
       const ButtonGroupDirection direction = ButtonGroupDirection_Vertical)
-      : Component(gui, label), items(items), items_length(items_length),
+      : Component(gui, label), items(items), items_count(items_count),
         style(style), direction(direction), selected(default_selected) {}
   bool draw() override;
 
 private:
   uint8_t selected;
   const ButtonGroupItem *items;
-  const uint8_t items_length;
+  const uint8_t items_count;
   const ButtonStyle *style;
   const ButtonGroupDirection direction;
 };

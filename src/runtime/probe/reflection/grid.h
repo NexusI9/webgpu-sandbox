@@ -40,7 +40,7 @@ typedef struct {
 typedef struct {
   ProbeReflectionGrid **entries;
   size_t capacity;
-  size_t length;
+  size_t count;
   RenderPass pass;
 } ProbeReflectionGridList;
 

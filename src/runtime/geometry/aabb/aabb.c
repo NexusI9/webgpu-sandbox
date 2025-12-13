@@ -27,12 +27,12 @@ bool aabb_within_distance(const AABB *a, const AABB *b, const float distance,
   return sq <= max_distance;
 }
 
-void aabb_from_vec3(AABB *bound, vec3 *pos, const size_t length) {
+void aabb_from_vec3(AABB *bound, vec3 *pos, const size_t count) {
 
   glm_vec3_copy((vec3){FLT_MAX, FLT_MAX, FLT_MAX}, bound->min);
   glm_vec3_copy((vec3){-FLT_MAX, -FLT_MAX, -FLT_MAX}, bound->max);
 
-  for (size_t i = 0; i < length; i++) {
+  for (size_t i = 0; i < count; i++) {
     glm_vec3_minv(bound->min, pos[i], bound->min);
     glm_vec3_maxv(bound->max, pos[i], bound->max);
   }
@@ -43,7 +43,7 @@ void aabb_from_vert_attr(AABB *bound, const VertexAttribute *va) {
   glm_vec3_copy((vec3){FLT_MAX, FLT_MAX, FLT_MAX}, bound->min);
   glm_vec3_copy((vec3){-FLT_MAX, -FLT_MAX, -FLT_MAX}, bound->max);
 
-  for (size_t i = 0; i < va->length; i += VERTEX_STRIDE) {
+  for (size_t i = 0; i < va->count; i += VERTEX_STRIDE) {
     vattr_t *current = &va->entries[i];
     glm_vec3_minv(bound->min, current, bound->min);
     glm_vec3_maxv(bound->max, current, bound->max);

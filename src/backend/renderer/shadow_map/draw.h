@@ -294,9 +294,9 @@ void renderer_draw_shadow_map_all(const ShadowMapDrawAllDescriptor *desc,
 
   MeshRefList *target_mesh_list = desc->mesh_list;
 
-  const size_t point_length = desc->lights->point.shadow.length;
-  const size_t spot_length = desc->lights->spot.shadow.length;
-  const size_t sun_length = desc->lights->sun.shadow.length;
+  const size_t point_count = desc->lights->point.shadow.count;
+  const size_t spot_count = desc->lights->spot.shadow.count;
+  const size_t sun_count = desc->lights->sun.shadow.count;
 
   debug_view_count = 0;
 
@@ -306,7 +306,7 @@ void renderer_draw_shadow_map_all(const ShadowMapDrawAllDescriptor *desc,
   WGPUCommandEncoder point_encoder =
       render_pass_im_begin(&desc->lights->point.shadow.pass);
   {
-    for (size_t p = 0; p < point_length; p++) {
+    for (size_t p = 0; p < point_count; p++) {
       ShadowMapDrawPointLightDescriptor point_draw_desc = {
           .texture_layer = p,
           .light = desc->lights->point.shadow.entries[p],
@@ -325,7 +325,7 @@ void renderer_draw_shadow_map_all(const ShadowMapDrawAllDescriptor *desc,
     /*
       ==== Spot Lights ====
     */
-    for (size_t p = 0; p < spot_length; p++) {
+    for (size_t p = 0; p < spot_count; p++) {
       ShadowMapDrawSpotLightDescriptor spot_draw_desc = {
           .texture_layer = p,
           .light = desc->lights->spot.shadow.entries[p],
@@ -339,14 +339,14 @@ void renderer_draw_shadow_map_all(const ShadowMapDrawAllDescriptor *desc,
     /*
       ==== Sun Lights ====
     */
-    for (size_t p = 0; p < sun_length; p++) {
+    for (size_t p = 0; p < sun_count; p++) {
 
       ShadowMapDrawSunLightDescriptor sun_draw_desc = {
           // TODO: currently use spot light color_map, maybe make a linked
           // pointer
           // to the same map but include it in the sun light list struct
           // itself.
-          .texture_layer = spot_length + p,
+          .texture_layer = spot_count + p,
           .command_encoder = dir_encoder,
           .pass = &desc->lights->spot.shadow.pass,
           .light = desc->lights->sun.shadow.entries[p],
@@ -371,10 +371,10 @@ void renderer_draw_shadow_map_point_light(
     const ShadowMapDebug *debug) {
 
   // render scene and store depth map for each view
-  for (size_t v = 0; v < desc->light->views.length; v++) {
+  for (size_t v = 0; v < desc->light->views.count; v++) {
 
     // Render scene (create shadow render pass to texture layer)
-    size_t layer = desc->texture_layer * desc->light->views.length + v;
+    size_t layer = desc->texture_layer * desc->light->views.count + v;
 
     ShadowMapDrawDescriptor draw_desc = {
         .pass = desc->pass,
@@ -394,7 +394,7 @@ void renderer_draw_shadow_map_dir_light(
     const ShadowMapDrawDirLightDescriptor *desc, const ShadowMapDebug *debug) {
 
   // Render scene (create shadow render pass to texture layer)
-  for (size_t v = 0; v < desc->views->length; v++) {
+  for (size_t v = 0; v < desc->views->count; v++) {
     ShadowMapDrawDescriptor draw_desc = {
         .pass = desc->pass,
         .texture_layer = desc->texture_layer,

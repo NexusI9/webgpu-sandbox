@@ -53,7 +53,7 @@ void selection_system_init(SceneSelection *selection, Scene *scene,
 
 /**
    To transform the selected meshes and gizmo we poll the mouse event and check
-   if the selection pipeline has length.
+   if the selection pipeline has count.
 
    Basically our camera raycast/ html events are only used to:
      1. push/pop mesh from the selection array (on right click)
@@ -142,7 +142,7 @@ void selection_system_toggle_mesh(SceneSelection *selection, Scene *scene,
   // handle gizmo
   Gizmo *gizmo = &scene->gizmo;
 
-  if (scene_selection_length(selection) > 0) {
+  if (scene_selection_count(selection) > 0) {
     selection_system_update_gizmo_pos_to_selection(&scene->gizmo, selection,
                                                    scene->ubo);
 
@@ -208,7 +208,7 @@ void selection_system_callback_mesh_highlight(
     renderer_batch_get_mesh_list_with_flags(
         &renderer->batches, RendererBatchFlag_Selection, &selection_meshes);
 
-    for (size_t j = 0; j < selection_meshes.length; j++) {
+    for (size_t j = 0; j < selection_meshes.count; j++) {
 
       switch ((1 << i)) {
 
@@ -218,7 +218,7 @@ void selection_system_callback_mesh_highlight(
 
         // disable all
         for (SceneSelectionType i = 0; i < 2; i++) {
-          for (size_t j = 0; j < selection->filters[i].meshes.length; j++) {
+          for (size_t j = 0; j < selection->filters[i].meshes.count; j++) {
             Mesh *mesh = selection->filters[i].meshes.entries[j];
             shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe),
                                        1, 0, (void *)&default_color,
@@ -227,7 +227,7 @@ void selection_system_callback_mesh_highlight(
         }
 
         // enable selected
-        for (size_t k = 0; k < selected_objects->length; k++) {
+        for (size_t k = 0; k < selected_objects->count; k++) {
           Mesh *mesh = selected_objects->entries[k].mesh;
           shader_update_uniform_data(mesh_shader(mesh, MeshShader_Wireframe), 1,
                                      0, (void *)&highlight_color,
@@ -251,7 +251,7 @@ void selection_system_callback_mesh_highlight(
 
             render_pass_layout_disable_all_mesh(layout);
 
-            for (size_t l = 0; l < selected_objects->length; l++) {
+            for (size_t l = 0; l < selected_objects->count; l++) {
               Mesh *mesh = selected_objects->entries[l].mesh;
               render_pass_layout_enable_mesh(layout, mesh);
             }
@@ -279,19 +279,19 @@ void selection_system_callback_sem_highlight(SceneSelection *selection,
 
   // disable selected ones
   SceneEditorMeshListArray *sem_array = &scene->editor_meshes;
-  for (size_t i = 0; i < sem_array->length; i++)
-    for (size_t j = 0; j < sem_array->entries[i].length; j++) {
+  for (size_t i = 0; i < sem_array->count; i++)
+    for (size_t j = 0; j < sem_array->entries[i].count; j++) {
       SceneEditorMesh *sem = &sem_array->entries[i].entries[j];
       if (sem->deselect_callback)
         sem->deselect_callback(&(SEMHighlightCallback){sem});
     }
 
   // enable selected ones
-  for (size_t i = 0; i < list->length; i++) {
+  for (size_t i = 0; i < list->count; i++) {
     const RegEntry *reg_obj = reg_lookup(list->entries[i].target);
     SceneEditorMeshList *sem_list = (SceneEditorMeshList *)reg_obj->ptr;
 
-    for (size_t j = 0; j < sem_list->length; j++) {
+    for (size_t j = 0; j < sem_list->count; j++) {
       SceneEditorMesh *sem = &sem_list->entries[j];
       if (sem->select_callback)
         sem->select_callback(&(SEMHighlightCallback){sem});
@@ -329,7 +329,7 @@ void selection_system_mesh_update_probe_uniform(
 
   MeshUniform *uniform = mesh_uniform(mesh);
 
-  for (i = 0; i < plane_list->length; i++) {
+  for (i = 0; i < plane_list->count; i++) {
 
     ProbeReflectionPlane *probe = &plane_list->entries[i];
     bool intersect =
@@ -341,7 +341,7 @@ void selection_system_mesh_update_probe_uniform(
       mesh_uniform_clear_probe_reflection_plane(mesh, ubo);
   }
 
-  for (i = 0; i < grid_list->length; i++) {
+  for (i = 0; i < grid_list->count; i++) {
 
     ProbeReflectionGrid *grid = grid_list->entries[i];
     bool intersect =
@@ -368,7 +368,7 @@ void selection_system_callback_mesh_transform_core(
 /* Mesh based transform */
 void selection_system_callback_mesh_transform(SceneSelectionTransform *desc) {
 
-  for (size_t i = 0; i < desc->selection->length; i++) {
+  for (size_t i = 0; i < desc->selection->count; i++) {
     Mesh *mesh = desc->selection->entries[i].mesh;
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
 
@@ -385,7 +385,7 @@ void selection_system_callback_mesh_transform(SceneSelectionTransform *desc) {
 void selection_system_callback_mesh_shadow_transform(
     SceneSelectionTransform *desc) {
 
-  for (size_t i = 0; i < desc->selection->length; i++) {
+  for (size_t i = 0; i < desc->selection->count; i++) {
     Mesh *mesh = desc->selection->entries[i].mesh;
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
     // transform mesh
@@ -399,7 +399,7 @@ void selection_system_callback_mesh_shadow_transform(
     renderer_batch_get_mesh_list_with_flags(
         &desc->renderer->batches, RendererBatchFlag_Shadow, &shadow_meshes);
 
-    for (size_t i = 0; i < shadow_meshes.length; i++)
+    for (size_t i = 0; i < shadow_meshes.count; i++)
       renderer_draw_shadow_map_all(
           &(ShadowMapDrawAllDescriptor){
               .mesh_list = shadow_meshes.entries[i],
@@ -454,7 +454,7 @@ void selection_system_callback_sem_transform(SceneSelectionTransform *desc) {
 
   size_t offset = 0;
 
-  for (size_t i = 0; i < desc->selection->length; i++) {
+  for (size_t i = 0; i < desc->selection->count; i++) {
 
     vec3 *init_attribute = &desc->selection->entries[i].initial_attribute;
     Mesh *mesh = desc->selection->entries[i].mesh;
@@ -462,7 +462,7 @@ void selection_system_callback_sem_transform(SceneSelectionTransform *desc) {
     const RegEntry *reg_entry = reg_lookup(desc->selection->entries[i].target);
     SceneEditorMeshList *sem_list = (SceneEditorMeshList *)reg_entry->ptr;
 
-    for (size_t i = 0; i < sem_list->length; i++) {
+    for (size_t i = 0; i < sem_list->count; i++) {
       SceneEditorMesh *sem = &sem_list->entries[i];
       selection_system_sem_transform_core(
           sem, init_attribute, sem->transform_callback[desc->transform_mode],
@@ -485,7 +485,7 @@ void selection_system_callback_sem_transform(SceneSelectionTransform *desc) {
    Callback called during the scene main camera raycast mouse click.
    Define the logic for the selection process such as:
    - Adding / Removing meshes from the selection pipeline
-   - Showing / Hidding the transform gizmo based on hit length
+   - Showing / Hidding the transform gizmo based on hit count
 
     1. Manipulate each method (mesh/ shader) source list
     2. If method has a destination then transfert source -> destination
@@ -573,7 +573,7 @@ void selection_system_init_mouse_events(SceneSelection *selection, Scene *scene,
                                .meshes,
                           &selection->filters[SceneSelectionType_SEM].meshes,
                       },
-                  .length = SCENE_SELECTION_TYPE_COUNT,
+                  .count = SCENE_SELECTION_TYPE_COUNT,
                   .capacity = SCENE_SELECTION_TYPE_COUNT,
               },
           .exclude = 0,
@@ -652,7 +652,7 @@ void selection_system_callback_raycast_mesh(
   if (mouseEvent->button != 2)
     return;
 
-  if (cast_data->hits->length > 0 && hit)
+  if (cast_data->hits->count > 0 && hit)
     selection_system_toggle_mesh(selection, scene, renderer, hit->mesh);
   else {
     scene_selection_empty(selection);
@@ -718,7 +718,7 @@ void selection_system_callback_raycast_gizmo_hover(
   // Since we recieve multiple hits (gizmo-mode agnostic) we need to filter down
   // and select the hit from the right gizmo_mode, else we may hover the rotate
   // gizmo being in the position mode.
-  for (size_t i = 0; i < cast_data->hits->length; i++) {
+  for (size_t i = 0; i < cast_data->hits->count; i++) {
 
     if (mesh_ref_list_find(&gizmo->interactive_handles[gizmo->mode],
                            cast_data->hits->entries[i].mesh, NULL)) {
@@ -763,7 +763,7 @@ void selection_system_callback_raycast_gizmo_hover(
 
 typedef struct {
   keyrec_t sequence[3];
-  size_t length;
+  size_t count;
   input_keyrec_callback callback;
   Axis axis;
   GizmoMode mode;
@@ -779,7 +779,7 @@ static SelectionKeySequence selection_key_sequences_select[1] = {
     // select all
     {
         .sequence = {'A'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_select_all,
     },
 };
@@ -788,19 +788,19 @@ static SelectionKeySequence selection_key_sequences_mode[3] = {
     // mode switch
     {
         .sequence = {'G'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_set_gizmo_mode,
         .mode = GizmoMode_Position,
     },
     {
         .sequence = {'S'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_set_gizmo_mode,
         .mode = GizmoMode_Scale,
     },
     {
         .sequence = {'R'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_set_gizmo_mode,
         .mode = GizmoMode_Rotation,
     },
@@ -810,21 +810,21 @@ static SelectionKeySequence selection_key_sequences_transform[6] = {
     // transform view/general
     {
         .sequence = {'G'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_transform,
         .axis = Axis_View,
         .mode = GizmoMode_Position,
     },
     {
         .sequence = {'R'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_transform,
         .axis = Axis_View,
         .mode = GizmoMode_Rotation,
     },
     {
         .sequence = {'S'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_transform,
         .axis = Axis_XYZ,
         .mode = GizmoMode_Scale,
@@ -832,19 +832,19 @@ static SelectionKeySequence selection_key_sequences_transform[6] = {
     // transform axis
     {
         .sequence = {'X'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_transform,
         .axis = Axis_X,
     },
     {
         .sequence = {'Y'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_transform,
         .axis = Axis_Y,
     },
     {
         .sequence = {'Z'},
-        .length = 1,
+        .count = 1,
         .callback = selection_system_callback_key_sequence_transform,
         .axis = Axis_Z,
     },
@@ -858,19 +858,19 @@ static const uint8_t seq_count = 3;
  */
 static const struct {
   SelectionKeySequence *sequences;
-  size_t length;
+  size_t count;
 } selection_key_sequences[3] = {
     {
         .sequences = selection_key_sequences_select,
-        .length = seq_count_select,
+        .count = seq_count_select,
     },
     {
         .sequences = selection_key_sequences_transform,
-        .length = seq_count_transform,
+        .count = seq_count_transform,
     },
     {
         .sequences = selection_key_sequences_mode,
-        .length = seq_count_mode,
+        .count = seq_count_mode,
     },
 };
 
@@ -881,14 +881,14 @@ void selection_system_init_key_events(SceneSelection *selection, Scene *scene,
 
     // dispatch to global input key record sequence
     SelectionKeySequence *sequences = selection_key_sequences[i].sequences;
-    size_t count = selection_key_sequences[i].length;
+    size_t count = selection_key_sequences[i].count;
 
     for (size_t j = 0; j < count; j++) {
       SelectionKeySequence *seq = &sequences[j];
       input_key_sequence_add(&(KeyRecordSequence){
           .sequence = seq->sequence,
           .callback = seq->callback,
-          .length = seq->length,
+          .count = seq->count,
           .data = &selection_system_event_payload,
           .owner = scene->id,
       });
@@ -909,7 +909,7 @@ void selection_system_callback_key_sequence_select_all(KeyRecordSequence *seq,
   Gizmo *gizmo = &scene->gizmo;
 
   // if already selection => unselect everything
-  if (scene_selection_length(selection)) {
+  if (scene_selection_count(selection)) {
     scene_selection_empty(selection);
     visibility_system_hide_mesh_ref_list(scene, renderer,
                                          &gizmo->handles[gizmo->mode]);
@@ -941,7 +941,7 @@ void selection_system_callback_key_sequence_set_gizmo_mode(
   // search for same sequence in static array and assign mode to gizmo
   for (size_t i = 0; i < seq_count_mode; i++)
     if (keyrec_sequence_equal(selection_key_sequences_mode[i].sequence,
-                              seq->sequence, seq->length)) {
+                              seq->sequence, seq->count)) {
       gizmo->mode = selection_key_sequences_mode[i].mode;
       // reset hover colored on change mode
       gizmo_reset_color_uniform(gizmo);
@@ -954,7 +954,7 @@ void selection_system_callback_key_sequence_set_gizmo_mode(
   selection_system_update_gizmo_raycast_list(gizmo, gizmo->mode);
 
   // show gizmo if has selection
-  if (scene_selection_length(selection)) {
+  if (scene_selection_count(selection)) {
     // update location to selection average
     selection_system_update_gizmo_pos_to_selection(gizmo, selection,
                                                    scene->ubo);
@@ -975,8 +975,8 @@ void selection_system_callback_key_sequence_transform(
   Renderer *renderer = user_data->renderer;
   Gizmo *gizmo = &scene->gizmo;
 
-  // use the length as a flag to detect if gizmo already active or not
-  if (scene_selection_length(selection) == 0)
+  // use the count as a flag to detect if gizmo already active or not
+  if (scene_selection_count(selection) == 0)
     return;
 
   // cache scene selection initial attributes
@@ -987,7 +987,7 @@ void selection_system_callback_key_sequence_transform(
     SelectionKeySequence *key_seq = &selection_key_sequences_transform[i];
     // find equal key sequence
     if (keyrec_sequence_equal(current_seq->sequence, key_seq->sequence,
-                              current_seq->length)) {
+                              current_seq->count)) {
 
       Axis key_seq_axis = key_seq->axis;
       GizmoMode key_seq_mode = key_seq->mode;

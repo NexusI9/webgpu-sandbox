@@ -13,7 +13,7 @@
 typedef struct {
   MeshRefList *lists[MESH_REF_LIST_CAPACITY];
   size_t capacity;
-  size_t length;
+  size_t count;
 } MeshRefListArray;
 
 EXTERN_C_BEGIN

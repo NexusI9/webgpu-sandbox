@@ -34,7 +34,7 @@ const vec3 projection_cubemaps_ups[PROJECTION_VIEW_COUNT] = {
 void projection_point(Projection *views, const vec3 light_position,
                       const float near, const float far) {
 
-  views->length = PROJECTION_VIEW_COUNT;
+  views->count = PROJECTION_VIEW_COUNT;
 
   mat4 projection;
   glm_perspective(glm_rad(90.0f), 1.0f, near, far, projection);
@@ -47,7 +47,7 @@ void projection_point(Projection *views, const vec3 light_position,
 
   glm_mat4_copy(projection, views->projection);
 
-  for (int v = 0; v < views->length; v++) {
+  for (int v = 0; v < views->count; v++) {
 
     vec3 direction;
     glm_vec3_add((float *)light_position,
@@ -68,7 +68,7 @@ void projection_point(Projection *views, const vec3 light_position,
 void projection_spot(Projection *views, const vec3 light_position,
                      const vec3 light_target, const float angle) {
 
-  views->length = 1;
+  views->count = 1;
 
   vec3 up = {0.0f, 1.0f, 0.0f};
 
@@ -81,7 +81,7 @@ void projection_spot(Projection *views, const vec3 light_position,
 
   glm_mat4_copy(projection, views->projection);
 
-  for (int v = 0; v < views->length; v++) {
+  for (int v = 0; v < views->count; v++) {
     mat4 view;
     glm_lookat((float *)light_position, (float *)light_target, up, view);
 
@@ -99,7 +99,7 @@ void projection_spot(Projection *views, const vec3 light_position,
 void projection_sun(Projection *views, const vec3 light_position,
                     const float size) {
 
-  views->length = 1;
+  views->count = 1;
 
   vec3 up = {0.0f, 1.0f, 0.0f};
 
@@ -117,7 +117,7 @@ void projection_sun(Projection *views, const vec3 light_position,
 
   glm_mat4_copy(ortho, views->projection);
 
-  for (int v = 0; v < views->length; v++) {
+  for (int v = 0; v < views->count; v++) {
     mat4 view;
     glm_lookat(view_position, (vec3){0.0f, 0.0f, 0.0f}, up, view);
 
@@ -129,7 +129,7 @@ void projection_sun(Projection *views, const vec3 light_position,
 void projection_mirror(Projection *projection, const vec3 n, const float d,
                        const Camera *camera, const Viewport *viewport) {
 
-  projection->length = 1;
+  projection->count = 1;
 
   // compute mirrored view
   vec3 mir_pos, mir_fwd, mir_up, mir_target;

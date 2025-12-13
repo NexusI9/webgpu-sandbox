@@ -9,7 +9,7 @@
 
 typedef struct {
   vec3 *entries;
-  size_t length;
+  size_t count;
   size_t capacity;
 } Vec3List;
 

@@ -96,7 +96,7 @@ void UI::Display::draw() {
 
   if (ImGui::BeginCombo("##Display", "Display",
                         ImGuiComboFlags_WidthFitPreview)) {
-    for (int i = 0; i < filter_length; i++)
+    for (int i = 0; i < filter_count; i++)
       UI::Checkbox(gui, filters[i].label, (state & filters[i].target_state),
                    filters[i].icon, filters[i].on_change,
                    (void *)&filters[i].target_state)

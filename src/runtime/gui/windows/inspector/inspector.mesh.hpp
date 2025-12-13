@@ -25,7 +25,7 @@ private:
       .label = "Transform",
       .vec3_list =
           {
-              .length = 3,
+              .count = 3,
               .entries =
                   {
                       {

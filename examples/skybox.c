@@ -33,7 +33,7 @@ void example_skybox_gradient(Engine *engine) {
                   .resolution = 32,
                   .stops =
                       {
-                          .length = 2,
+                          .count = 2,
                           .capacity = 2,
                           .entries =
                               (TextureGradientStop[]){

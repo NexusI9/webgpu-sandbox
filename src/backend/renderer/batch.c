@@ -146,7 +146,7 @@ static const RendererBatchKey renderer_batch_config[] = {
 
 };
 
-static const size_t renderer_batch_config_length =
+static const size_t renderer_batch_config_count =
     sizeof(renderer_batch_config) / sizeof(renderer_batch_config[0]);
 
 /**
@@ -190,7 +190,7 @@ RendererBatchStatus renderer_batch_init(HashTable *table,
   }
 
   // pre-compute above configuration slots and init mesh ref lists
-  for (uint8_t i = 0; i < renderer_batch_config_length; i++) {
+  for (uint8_t i = 0; i < renderer_batch_config_count; i++) {
 
     RendererBatchBucket *bucket =
         hsht_new_entry(table, &renderer_batch_config[i], HashTableNewFlag_None);
@@ -301,7 +301,7 @@ renderer_batch_get_key_from_pipeline(const RenderPipelineType pipeline_type) {
     return NULL;
   }
 
-  for (uint8_t i = 0; i < renderer_batch_config_length; i++)
+  for (uint8_t i = 0; i < renderer_batch_config_count; i++)
     if (renderer_batch_config[i].pipeline == pipeline_type)
       return &renderer_batch_config[i];
 
@@ -311,7 +311,7 @@ renderer_batch_get_key_from_pipeline(const RenderPipelineType pipeline_type) {
 const RendererBatchKey *
 renderer_batch_get_key_from_descriptor(const RendererBatchKeyDescriptor *desc) {
 
-  for (uint8_t i = 0; i < renderer_batch_config_length; i++)
+  for (uint8_t i = 0; i < renderer_batch_config_count; i++)
     if (renderer_batch_config[i].flags == desc->flags &&
         renderer_batch_config[i].layer == desc->layer &&
         renderer_batch_config[i].pipeline == desc->pipeline)
@@ -329,17 +329,17 @@ RendererBatchStatus renderer_batch_get_mesh_list_from_pipeline(
 
   *result = (RendererBatchMeshLists){0};
 
-  for (uint8_t i = 0; i < renderer_batch_config_length; i++) {
+  for (uint8_t i = 0; i < renderer_batch_config_count; i++) {
 
     const RendererBatchKey *config_key = &renderer_batch_config[i];
     RendererBatchBucket *bucket = hsht_find(table, config_key, NULL);
 
     if (bucket && config_key->pipeline == pipeline_type &&
-        result->length < RENDER_BATCH_LIST_CAPACITY)
-      result->entries[result->length++] = &bucket->meshes;
+        result->count < RENDER_BATCH_LIST_CAPACITY)
+      result->entries[result->count++] = &bucket->meshes;
   }
 
-  if (result->length == 0) {
+  if (result->count == 0) {
     logger_add(LoggerFlag_Error,
                "Unable to locate Mesh List for pipeline '%s', make sure the "
                "Renderer Batch "
@@ -375,14 +375,14 @@ renderer_batch_get_mesh_list_with_flags(HashTable *table,
 
   *result = (RendererBatchMeshLists){0};
 
-  for (uint8_t i = 0; i < renderer_batch_config_length; i++) {
+  for (uint8_t i = 0; i < renderer_batch_config_count; i++) {
 
     const RendererBatchKey *config_key = &renderer_batch_config[i];
     RendererBatchBucket *bucket = hsht_find(table, config_key, NULL);
 
     if (bucket && (config_key->flags & flag) &&
-        result->length < RENDER_BATCH_LIST_CAPACITY)
-      result->entries[result->length++] = &bucket->meshes;
+        result->count < RENDER_BATCH_LIST_CAPACITY)
+      result->entries[result->count++] = &bucket->meshes;
   }
 
   return RendererBatchStatus_Success;
@@ -395,14 +395,14 @@ renderer_batch_get_mesh_list_without_flags(HashTable *table,
 
   *result = (RendererBatchMeshLists){0};
 
-  for (uint8_t i = 0; i < renderer_batch_config_length; i++) {
+  for (uint8_t i = 0; i < renderer_batch_config_count; i++) {
 
     const RendererBatchKey *config_key = &renderer_batch_config[i];
     RendererBatchBucket *bucket = hsht_find(table, config_key, NULL);
 
     if (bucket && (config_key->flags & flag) == 0 &&
-        result->length < RENDER_BATCH_LIST_CAPACITY)
-      result->entries[result->length++] = &bucket->meshes;
+        result->count < RENDER_BATCH_LIST_CAPACITY)
+      result->entries[result->count++] = &bucket->meshes;
   }
 
   return RendererBatchStatus_Success;
@@ -415,14 +415,14 @@ renderer_batch_get_mesh_list_from_layer(HashTable *table,
 
   *result = (RendererBatchMeshLists){0};
 
-  for (uint8_t i = 0; i < renderer_batch_config_length; i++) {
+  for (uint8_t i = 0; i < renderer_batch_config_count; i++) {
 
     const RendererBatchKey *config_key = &renderer_batch_config[i];
     RendererBatchBucket *bucket = hsht_find(table, config_key, NULL);
 
     if (bucket && (config_key->layer & layer) &&
-        result->length < RENDER_BATCH_LIST_CAPACITY)
-      result->entries[result->length++] = &bucket->meshes;
+        result->count < RENDER_BATCH_LIST_CAPACITY)
+      result->entries[result->count++] = &bucket->meshes;
   }
 
   return RendererBatchStatus_Success;
@@ -431,18 +431,18 @@ renderer_batch_get_mesh_list_from_layer(HashTable *table,
 RendererBatchStatus
 renderer_batch_get_configuration_keys(RendererBatchKeyList *list) {
 
-  if (renderer_batch_config_length > RENDER_BATCH_LIST_CAPACITY) {
+  if (renderer_batch_config_count > RENDER_BATCH_LIST_CAPACITY) {
     logger_add(
         LoggerFlag_Warning,
-        "The current Renderer Batch configuration's length (%lu) overpass key "
+        "The current Renderer Batch configuration's count (%lu) overpass key "
         "list max allowed capacity (%u).",
-        renderer_batch_config_length, RENDER_BATCH_LIST_CAPACITY);
+        renderer_batch_config_count, RENDER_BATCH_LIST_CAPACITY);
     return RendererBatchStatus_OutOfBound;
   }
 
-  list->length = renderer_batch_config_length;
+  list->count = renderer_batch_config_count;
 
-  for (uint8_t i = 0; i < list->length; i++)
+  for (uint8_t i = 0; i < list->count; i++)
     list->entries[i] = &renderer_batch_config[i];
 
   return RendererBatchStatus_Success;

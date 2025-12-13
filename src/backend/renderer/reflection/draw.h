@@ -29,7 +29,7 @@ static inline void renderer_draw_plane_reflection(Renderer *renderer,
                          ProfilerLatencyType_ReflectionPass);
   render_pass_im_begin(&list->pass);
   {
-    for (size_t i = 0; i < list->length; i++) {
+    for (size_t i = 0; i < list->count; i++) {
 
       ProbeReflectionPlane *probe = &list->entries[i];
 
@@ -112,14 +112,14 @@ static inline void probe_reflection_grid_list_draw(Renderer *renderer,
 
   render_pass_im_begin(&list->pass);
   {
-    for (size_t i = 0; i < list->length; i++) {
+    for (size_t i = 0; i < list->count; i++) {
 
       ProbeReflectionGrid *grid = list->entries[i];
 
       logger_add(LoggerFlag_Process, "Rendering Probe Reflection Grid %lu/%lu",
-                 i + 1, list->length);
+                 i + 1, list->count);
 
-      for (size_t j = 0; j < grid->probes.length; j++) {
+      for (size_t j = 0; j < grid->probes.count; j++) {
 
         ProbeReflection *probe = grid->probes.entries[j];
 

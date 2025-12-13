@@ -202,7 +202,7 @@ ShaderBindGroupUniformEntry *shader_update_uniform_callback(
 
         dyli_insert((void *)&bind_group->uniforms_dynamics.entries,
                     &bind_group->uniforms_dynamics.capacity,
-                    &bind_group->uniforms_dynamics.length,
+                    &bind_group->uniforms_dynamics.count,
                     sizeof(ShaderBindGroupUniformEntry *),
                     (void *)&bound_uniform, 1, "Shader dynamic uniform");
 

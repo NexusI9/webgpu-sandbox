@@ -30,7 +30,7 @@ typedef struct {
 typedef struct {
   void **entries;
   size_t *capacity;
-  size_t *length;
+  size_t *count;
   const size_t num;
   const size_t type_size;
   RenderPass *pass;

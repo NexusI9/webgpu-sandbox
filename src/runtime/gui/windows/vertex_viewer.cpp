@@ -86,7 +86,7 @@ void UI::VertexViewer::draw() {
               ImGui::TableSetupColumn(v_data[i].columns[j]);
             ImGui::TableHeadersRow();
 
-            for (j = 0; j < mesh->topology.base.attribute.length;
+            for (j = 0; j < mesh->topology.base.attribute.count;
                  j += VERTEX_STRIDE) {
               ImGui::TableNextRow();
 

@@ -38,14 +38,14 @@ void triangle_rand_dist_trilinear(float x1, float y1, float z1, vec3 p1,
   glm_vec3_copy((vec3){x, y, z}, dest);
 }
 
-void triangle_rand_list_div(float *list, int length, float k) {
-  for (int i = 0; i < length; i++)
+void triangle_rand_list_div(float *list, int count, float k) {
+  for (int i = 0; i < count; i++)
     list[i] /= k;
 }
 
-void triangle_rand_gen_list(int length, float *dest) {
+void triangle_rand_gen_list(int count, float *dest) {
 
-  for (int i = 0; i < length; i++)
+  for (int i = 0; i < count; i++)
     dest[i] = log(randf());
 }
 
