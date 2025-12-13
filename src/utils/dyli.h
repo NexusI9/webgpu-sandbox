@@ -25,6 +25,13 @@ typedef struct {
   const char *label;
 } DynamicList;
 
+#define DYNAMIC_LIST(Type)                                                     \
+  struct {                                                                     \
+    Type *entries;                                                             \
+    size_t count;                                                              \
+    size_t capacity;                                                           \
+  }
+
 EXTERN_C_BEGIN
 
 DynamicListStatus dyli_create(void **, size_t *, size_t *, size_t, size_t,
@@ -53,7 +60,6 @@ void *dyli_new_entry(void **, size_t *, size_t *, size_t, const char *);
 
 DynamicListStatus dyli_clone(const void *, const size_t, void **, size_t *,
                              size_t *, size_t, const char *);
-
 
 EXTERN_C_END
 

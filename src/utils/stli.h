@@ -14,6 +14,12 @@ typedef enum {
   StaticListStatus_DuplicateEntry,
 } StaticListStatus;
 
+#define STATIC_LIST(Type, Capacity)                                            \
+  struct {                                                                     \
+    Type entries[Capacity];                                                    \
+    size_t count;                                                              \
+  }
+
 EXTERN_C_BEGIN
 
 StaticListStatus stli_create(size_t *, size_t *, const size_t, const char *);

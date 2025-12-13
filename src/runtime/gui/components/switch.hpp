@@ -34,11 +34,8 @@ public:
   // Constructor (optional initial state)
   Switch(bool initial = false) : enabled(initial) {}
 
-  // Draws the switch, returns updated state
-  bool Draw(const char *label = nullptr) {
-    ImDrawList *dl = ImGui::GetWindowDrawList();
-    ImVec2 pos = ImGui::GetCursorScreenPos();
-
+  // Logic part only
+  bool Update(const char *label = nullptr) {
     // Reserve space for the switch
     ImGui::InvisibleButton(label ? label : "##switch", ImVec2(width, height));
     bool clicked = ImGui::IsItemClicked();
@@ -46,12 +43,24 @@ public:
     if (clicked)
       enabled = !enabled;
 
+    return enabled;
+  }
+
+  // Visual only (no logic, use Draw() for logic + visual)
+  bool Render() {
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+
+    // Use Dummy as "boundbox", useful if we don't render direcly after update
+    ImGui::SetCursorPos(pos);
+    ImGui::Dummy(ImVec2(width, height));
+
     // Colors depending on state
     ImU32 bg_color = enabled ? bg_color_active : bg_color_default;
     ImU32 border_color = enabled ? border_color_active : border_color_default;
     ImU32 dot_color = enabled ? dot_color_active : dot_color_default;
 
     // Draw background rounded rect
+    ImDrawList *dl = ImGui::GetWindowDrawList();
     dl->AddRectFilled(pos, ImVec2(pos.x + width, pos.y + height), bg_color,
                       border_radius);
     if (border_width > 0.0f)
@@ -68,6 +77,12 @@ public:
     dl->AddRectFilled(dot_min, dot_max, dot_color, dot_border_radius);
 
     return enabled;
+  }
+
+  // Update (logic) + Render (visual)
+  bool Draw(const char *label) {
+    Update(label);
+    return Render();
   }
 
   // Optionally get/set state
