@@ -78,15 +78,16 @@ add_library(${PROJECT_NAME}_vendors STATIC ${IMGUI} ${CGLM} ${STB} ${CGLTF})
 # This custom command will generate the .wgsl files inside the build directory
 # and the engine library will depend on them.
 set(WGSL_OUT_FILES "")
+
+# Use CMAKE_BINARY_DIR for a clean, reliable output location (relative to the build root)
+set(WGSL_OUT_DIR "${CMAKE_BINARY_DIR}/generated_shaders")
+file(MAKE_DIRECTORY ${WGSL_OUT_DIR})
+
 file(GLOB_RECURSE WGSL_IN_FILES "${ENGINE_SRC_DIR}/backend/std_pipeline/*.wgsl.in")
 foreach(wgsl_in ${WGSL_IN_FILES})
+
     get_filename_component(fname ${wgsl_in} NAME_WE)
-    
-    # Use CMAKE_BINARY_DIR for a clean, reliable output location (relative to the build root)
-    set(wgsl_out "${CMAKE_BINARY_DIR}/generated_shaders/${fname}.wgsl")
-    
-    # Ensure the output directory exists
-    file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/generated_shaders")
+    set(wgsl_out "${WGSL_OUT_DIR}/${fname}.wgsl")
 
     add_custom_command(
         OUTPUT ${wgsl_out}
@@ -108,6 +109,7 @@ endforeach()
 set(RES_MAP
     "${ENGINE_SRC_DIR}/backend/std_pipeline/render_shader:shaders"
     "${ENGINE_SRC_DIR}/backend/std_pipeline/compute_shader:shaders"
+    "${WGSL_OUT_DIR}:shaders"
     "${ENGINE_SRC_DIR}/resources/assets/gltf:gltf"
     "${ENGINE_SRC_DIR}/resources/assets/font:fonts"
     "${ENGINE_SRC_DIR}/resources/assets/texture:textures"

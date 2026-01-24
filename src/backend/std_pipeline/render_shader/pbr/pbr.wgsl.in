@@ -784,6 +784,7 @@ fn fs_main(@location(0) vNormal: vec3<f32>,
     let out_color = mix(combined, uEnvironment.fog.color, fog_k);
 
     //return vec4<f32>(albedo.a, 0.0f, 0.0f, 1.0f);
-    return out_color;
-    //return vec4<f32>(abs(vTangent), 1.0f);
+    //return out_color;
+    return vec4<f32>(vec3<f32>(material.occlusion), 1.0f);
+      //return vec4<f32>(abs(vTangent), 1.0f);
 }

@@ -8,6 +8,7 @@
 #include "backend/resource_manager.h"
 #include "runtime/mesh/core.h"
 #include "runtime/mesh/shader/core.h"
+#include "runtime/pipeline/render.h"
 #include "runtime/shader/bindgroup.h"
 #include "runtime/shader/core.h"
 #include "runtime/shader/update.h"
@@ -71,14 +72,16 @@ void ao_bake_draw_mesh(RendererTextureAO *ao, Mesh *mesh,
                            .dimension = WGPUTextureViewDimension_2D,
                        });
 
-      const bind_group_index AO_group = 1;
-      shader_update_texture_view(mesh_shader(mesh, MeshShader_Texture),
-                                 AO_group, 8, layer_view, AO_TEXTURE_FORMAT,
+      static const bind_group_index AO_GROUP = 1;
+      static const bind_index AO_TEXTURE_BINDING = 4;
+      Shader *shader = mesh_shader(mesh, MeshShader_Texture);
+
+      shader_update_texture_view(shader, AO_GROUP, AO_TEXTURE_BINDING,
+                                 layer_view, AO_TEXTURE_FORMAT,
                                  ShaderUpdateFlag_ReleasePrevious);
 
-      Shader *shader = mesh_shader(mesh, MeshShader_Texture);
-      ShaderBindGroup *bind_group = shader_get_bind_group(shader, AO_group);
-      shader_bind_group_refresh(bind_group, AO_group,
+      ShaderBindGroup *bind_group = shader_get_bind_group(shader, AO_GROUP);
+      shader_bind_group_refresh(bind_group, AO_GROUP,
                                 shader_pipeline(shader)->handle);
     } else {
       logger_add(LoggerFlag_Warning,

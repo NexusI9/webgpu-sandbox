@@ -88,6 +88,16 @@ std_render_pipeline_type(const RenderPipeline *pipeline) {
 const char *std_render_pipeline_label(const RenderPipelineType);
 const char *std_compute_pipeline_label(const ComputePipelineType);
 
+static inline const RenderPipelineBinding *
+std_render_pipeline_bindings(const RenderPipelineType type) {
+  return &(*std_render_pipeline(type))->bindings;
+}
+
+static inline const ComputePipelineBinding *
+std_compute_pipeline_bindings(const ComputePipelineType type) {
+  return &std_compute_pipeline(type)->bindings;
+}
+
 EXTERN_C_END
 
 #endif
