@@ -73,8 +73,8 @@ static inline void gui_scale_vec2(const Gui *ui, const vec2 src, vec2 dest) {
   dest[1] = gui_scale(ui, src[1]);
 }
 
-bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *keyEvent,
-                      void *userData);
+bool keydown_callback(int, const EmscriptenKeyboardEvent *, void *);
+bool wheel_callback(int, const EmscriptenWheelEvent *, void *);
 
 EXTERN_C_END
 

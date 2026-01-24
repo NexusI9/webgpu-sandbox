@@ -83,7 +83,7 @@ typedef struct {
   reg_id_t owner;
   uint32_t key;
   REMType type;
-  bool occupied;
+  HashTableBucketState state;
   size_t pool_id;
   void *handle;
 } REMBucket;
@@ -136,8 +136,8 @@ extern ResourceManager g_rem;
   (wgpuResourceRelease() vs item_destroy())
  */
 uint32_t rem_generate_hash(const void *);
-void rem_bucket_set_occupied(const void *, const bool);
-bool rem_bucket_get_occupied(const void *);
+void rem_bucket_set_bucket_state(const void *, const HashTableBucketState);
+HashTableBucketState rem_bucket_get_bucket_state(const void *);
 bool rem_bucket_compare(const void *, const void *);
 void *rem_bucket_get_key(const void *);
 

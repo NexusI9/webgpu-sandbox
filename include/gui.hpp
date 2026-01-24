@@ -15,6 +15,7 @@
 #include "runtime/gui/components/gradient_rect.hpp"
 
 #include "runtime/gui/windows/fullscreen.hpp"
+#include "runtime/gui/windows/dock.hpp"
 
 #include "runtime/gui/io.hpp"
 #include "runtime/gui/utils.hpp"

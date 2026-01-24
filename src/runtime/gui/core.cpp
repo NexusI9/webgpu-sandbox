@@ -12,6 +12,7 @@
 #include "backend/std_pipeline/core.h"
 #include "backend/theme/core.h"
 #include "backend/ubo.h"
+#include "emscripten/html5.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_wgpu.h"
 #include "runtime/gui/windows/browser.hpp"
@@ -55,6 +56,15 @@ bool keydown_callback(int eventType, const EmscriptenKeyboardEvent *e,
   return EM_TRUE;
 }
 
+bool wheel_callback(int eventType, const EmscriptenWheelEvent *e,
+                    void *userData) {
+  ImGuiIO &io = ImGui::GetIO();
+
+  io.AddMouseWheelEvent(input_wheel_x() * input_wheel_sensitivity(),
+                        input_wheel_y() * input_wheel_sensitivity());
+  return EM_FALSE;
+}
+
 GuiStatus gui_init(Gui *gui, const GuiDescriptor *desc) {
 
   logger_add(LoggerFlag_Process, "Intitializing Editor UI");
@@ -77,6 +87,12 @@ GuiStatus gui_init(Gui *gui, const GuiDescriptor *desc) {
         .owner = gui->id,
     };
     html_event_add_key_down(&keydown_desc);
+
+    HTMLEventWheel wheel_desc = {
+        .callback = wheel_callback,
+        .owner = gui->id,
+    };
+    html_event_add_wheel(&wheel_desc);
   }
 
   {

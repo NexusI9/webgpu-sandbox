@@ -7,7 +7,7 @@
 typedef enum {
   GuiSpriteAnchor_TopLeft,
   GuiSpriteAnchor_TopMiddle,
-  GuiSpriteAnchor_RightMiddle,
+  GuiSpriteAnchor_TopRight,
   GuiSpriteAnchor_MiddleLeft,
   GuiSpriteAnchor_Center,
   GuiSpriteAnchor_MiddleRight,

@@ -76,6 +76,7 @@ void *frli_new_entry(void **entries, size_t *capacity, size_t *count,
     }
 
     if (is_free) {
+
       memset(slot, 0, type_size);
 
       if (index)

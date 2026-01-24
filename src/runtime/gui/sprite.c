@@ -24,9 +24,9 @@ void gui_sprite_set_endpoints(const vec2 position, const vec2 size,
     top = y;
     break;
 
-  case GuiSpriteAnchor_RightMiddle:
+  case GuiSpriteAnchor_TopRight:
     left = x - w;
-    top = y - h * 0.5f;
+    top = y;
     break;
 
   case GuiSpriteAnchor_MiddleLeft:

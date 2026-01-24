@@ -50,13 +50,13 @@ REMStatus resource_manager_init() {
   // === init global hash table ===
   hsht_create(&g_rem.hash_table,
               &(HashTableDescriptor){
-                  .type_size = sizeof(REMBucket),
+                  .bucket_size = sizeof(REMBucket),
                   .label = "Resource Manager Hash Table",
                   .capacity = REM_HASH_CAPACITY,
                   .generator_callback = rem_generate_hash,
                   .comparator_callback = rem_bucket_compare,
-                  .get_occupied_callback = rem_bucket_get_occupied,
-                  .set_occupied_callback = rem_bucket_set_occupied,
+                  .get_bucket_state_callback = rem_bucket_get_bucket_state,
+                  .set_bucket_state_callback = rem_bucket_set_bucket_state,
                   .get_key_callback = rem_bucket_get_key,
               });
 
@@ -110,12 +110,12 @@ REMStatus resource_manager_init() {
 
 uint32_t rem_generate_hash(const void *ptr) { return hsht_hash_ptr(ptr); }
 
-bool rem_bucket_get_occupied(const void *obj) {
-  return (bool)(((REMBucket *)obj)->occupied);
+HashTableBucketState rem_bucket_get_bucket_state(const void *obj) {
+  return (bool)(((REMBucket *)obj)->state);
 }
 
-void rem_bucket_set_occupied(const void *bucket, const bool state) {
-  ((REMBucket *)bucket)->occupied = state;
+void rem_bucket_set_bucket_state(const void *bucket, const HashTableBucketState state) {
+  ((REMBucket *)bucket)->state = state;
 }
 
 bool rem_bucket_compare(const void *key, const void *bucket) {

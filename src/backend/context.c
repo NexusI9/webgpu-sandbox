@@ -14,8 +14,8 @@
 #include "runtime/html_event/core.h"
 #include "runtime/input/core.h"
 #include "runtime/pipeline/render.h"
-#include "runtime/texture/sprite_sheet.h"
 #include "runtime/texture/core.h"
+#include "runtime/texture/sprite_sheet.h"
 #include "string.h"
 #include "webgpu/webgpu.h"
 

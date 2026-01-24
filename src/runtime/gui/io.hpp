@@ -26,10 +26,7 @@ static inline void gui_draw_update_io(Gui *gui) {
       g_input.mouse.state[InputMouseButton_Middle];
 
   io.MouseDown[ImGuiMouseButton_Right] =
-      g_input.mouse.state[InputMouseButton_Right];
-
-  io.MouseWheel = g_input.mouse.wheel.deltaY;
-  io.MouseWheelH = g_input.mouse.wheel.deltaX;
+      g_input.mouse.state[InputMouseButton_Right];  
 
   if (io.WantCaptureMouse)
     g_input.locked |= InputLockState_Mouse;

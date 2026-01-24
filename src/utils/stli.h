@@ -18,6 +18,7 @@ typedef enum {
   struct {                                                                     \
     Type entries[Capacity];                                                    \
     size_t count;                                                              \
+    size_t capacity;                                                           \
   }
 
 EXTERN_C_BEGIN

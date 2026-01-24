@@ -7,7 +7,7 @@
 
 HashTableStatus hsht_create(HashTable *table, const HashTableDescriptor *desc) {
 
-  table->entries = calloc(desc->capacity, desc->type_size);
+  table->entries = calloc(desc->capacity, desc->bucket_size);
   table->capacity = desc->capacity;
 
   if (table->entries == NULL) {
@@ -17,13 +17,13 @@ HashTableStatus hsht_create(HashTable *table, const HashTableDescriptor *desc) {
     return HashTableStatus_AllocFail;
   }
 
-  table->type_size = desc->type_size;
+  table->bucket_size = desc->bucket_size;
   table->label = desc->label;
 
   table->comparator = desc->comparator_callback;
   table->generator = desc->generator_callback;
-  table->get_occupied = desc->get_occupied_callback;
-  table->set_occupied = desc->set_occupied_callback;
+  table->get_bucket_state = desc->get_bucket_state_callback;
+  table->set_bucket_state = desc->set_bucket_state_callback;
   table->get_key = desc->get_key_callback;
 
   return HashTableStatus_Success;
@@ -43,7 +43,7 @@ HashTableStatus hsht_expand(HashTable *table, const size_t scale) {
   const size_t old_capacity = table->capacity;
   const size_t new_capacity = scale * table->capacity;
 
-  void *temp = (void *)calloc(new_capacity, table->type_size);
+  void *temp = (void *)calloc(new_capacity, table->bucket_size);
 
   if (temp == NULL) {
     logger_add(LoggerFlag_Error,
@@ -68,9 +68,10 @@ HashTableStatus hsht_expand(HashTable *table, const size_t scale) {
   // rehash
   for (size_t i = 0; i < old_capacity; i++) {
 
-    char *old_entry = (char *)old_entries + i * table->type_size;
+    char *old_entry = (char *)old_entries + i * table->bucket_size;
 
-    if (table->get_occupied((void *)old_entry)) {
+    if (table->get_bucket_state((void *)old_entry) ==
+        HashTableBucketState_Occupied) {
 
       void *old_entry_key = table->get_key(old_entry);
 
@@ -84,7 +85,7 @@ HashTableStatus hsht_expand(HashTable *table, const size_t scale) {
         continue;
       }
 
-      memcpy(new_entry, old_entry, table->type_size);
+      memcpy(new_entry, old_entry, table->bucket_size);
     }
   }
 
@@ -98,11 +99,12 @@ void *hsht_find(HashTable *table, const void *key, size_t *real_index) {
   size_t start = table->generator(key) % table->capacity;
   size_t index = start;
 
-  while (table->get_occupied((void *)(char *)table->entries +
-                             (index * table->type_size))) {
+  while (table->get_bucket_state((void *)(char *)table->entries +
+                                 (index * table->bucket_size)) !=
+         HashTableBucketState_Empty) {
 
     void *current_entry =
-        (void *)(char *)table->entries + (index * table->type_size);
+        (void *)(char *)table->entries + (index * table->bucket_size);
 
     if (table->comparator(key, current_entry)) {
       if (real_index)
@@ -138,10 +140,12 @@ void *hsht_new_entry(HashTable *table, const void *key,
   size_t start = table->generator(key) % table->capacity;
   size_t index = start;
 
-  while (table->get_occupied((void *)(char *)(table->entries) +
-                             (index * table->type_size))) {
+  
+  while (table->get_bucket_state((void *)(char *)(table->entries) +
+                                 (index * table->bucket_size)) !=
+         HashTableBucketState_Empty) {
 
-    void *current = (char *)(table->entries) + index * table->type_size;
+    void *current = (char *)(table->entries) + index * table->bucket_size;
     if (table->comparator(key, current))
       return current;
 
@@ -150,12 +154,12 @@ void *hsht_new_entry(HashTable *table, const void *key,
       return NULL;
   }
 
-  void *entry = (void *)((char *)(table->entries) + index * table->type_size);
+  void *entry = (void *)((char *)(table->entries) + index * table->bucket_size);
 
-  memset(entry, 0, table->type_size);
+  memset(entry, 0, table->bucket_size);
 
-  if (table->set_occupied)
-    table->set_occupied(entry, true);
+  if (table->set_bucket_state)
+    table->set_bucket_state(entry, HashTableBucketState_Occupied);
 
   table->count++;
 
@@ -169,18 +173,18 @@ HashTableStatus hsht_remove_entry(HashTable *table, const void *key) {
   if (result == NULL)
     return HashTableStatus_UnfoundEntry;
 
-  memset(result, 0, table->type_size);
+  memset(result, 0, table->bucket_size);
 
-  if (table->set_occupied)
-    table->set_occupied(result, false);
+  if (table->set_bucket_state)
+    table->set_bucket_state(result, HashTableBucketState_Tombstone);
 
   return HashTableStatus_Success;
 }
 
-HashTableStatus hsht_empty(void *entries, size_t *count, size_t type_size,
+HashTableStatus hsht_empty(void *entries, size_t *count, size_t bucket_size,
                            const char *label) {
 
-  memset(entries, 0, *count * type_size);
+  memset(entries, 0, *count * bucket_size);
 
   return HashTableStatus_Success;
 }

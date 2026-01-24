@@ -66,7 +66,7 @@ typedef struct {
 } RendererBatchKeyDescriptor;
 
 typedef struct {
-  bool occupied;
+  HashTableBucketState state;
   const char *label;
   RendererBatchKey key;
   MeshRefList meshes;
@@ -91,8 +91,8 @@ RendererBatchStatus renderer_batch_init(HashTable *, const size_t);
 
 // === Hash Utils ===
 uint32_t renderer_batch_generate_hash(const void *);
-void renderer_batch_set_occupied(const void *, const bool);
-bool renderer_batch_get_occupied(const void *);
+void renderer_batch_set_bucket_state(const void *, const HashTableBucketState);
+HashTableBucketState renderer_batch_get_bucket_state(const void *);
 bool renderer_batch_compare(const void *, const void *);
 void *renderer_batch_get_key(const void *);
 

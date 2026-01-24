@@ -7,6 +7,7 @@ namespace UI {
 
 class Frame {
 public:
+  static constexpr ImVec2 SIZE_AUTO = ImVec2(0, 0);
   ImVec2 position = ImVec2(0, 0);
   ImVec2 size = ImVec2(0, 0); // 0 = auto size to content
 

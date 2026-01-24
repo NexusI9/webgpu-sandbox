@@ -187,6 +187,7 @@ void standard_compute_pipelines_init() {
 
     compute_pipeline_build(cached_pipeline, &temp_layout);
   }
+
 }
 
 /**

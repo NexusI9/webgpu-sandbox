@@ -27,10 +27,26 @@ public:
     this->end[0] = end[0], this->end[1] = end[1];
   }
 
+  void set_position_x(float pos, const GuiSpriteAnchor anchor) {
+    set_position(ImVec2(pos, start.y), anchor);
+  }
+
+  void set_position_y(float pos, const GuiSpriteAnchor anchor) {
+    set_position(ImVec2(start.x, pos), anchor);
+  }
+
   void draw() {
     ImDrawList *dl = ImGui::GetWindowDrawList();
     dl->AddImage((ImTextureRef)view, start, end, im_vec2((float *)region->uv0),
                  im_vec2((float *)region->uv1));
+  }
+
+  void draw_at(ImVec2 offset) {
+    ImDrawList *dl = ImGui::GetWindowDrawList();
+    dl->AddImage((ImTextureRef)view,
+                 ImVec2(start.x + offset.x, start.y + offset.y),
+                 ImVec2(end.x + offset.x, end.y + offset.y),
+                 im_vec2((float *)region->uv0), im_vec2((float *)region->uv1));
   }
 
   bool clicked(const ImGuiMouseButton button) {
@@ -50,6 +66,7 @@ public:
   const TextureAtlasRegion *region;
   const ImVec2 get_start() { return start; }
   const ImVec2 get_end() { return end; }
+  const WGPUTextureView get_view() { return view; }
 
 private:
   WGPUTextureView view;

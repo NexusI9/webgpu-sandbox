@@ -40,12 +40,18 @@ typedef enum {
   HashTableStatus_UndefError,
 } HashTableStatus;
 
+typedef enum {
+  HashTableBucketState_Empty,
+  HashTableBucketState_Tombstone,
+  HashTableBucketState_Occupied,
+} HashTableBucketState;
+
 typedef uint32_t hash_t;
 
 typedef bool (*hsht_bucket_compare)(const void *, const void *);
 typedef hash_t (*hsht_hash_generator)(const void *);
-typedef bool (*hsht_bucket_get_occupied)(const void *);
-typedef void (*hsht_bucket_set_occupied)(const void *, const bool);
+typedef HashTableBucketState (*hsht_bucket_get_state)(const void *);
+typedef void (*hsht_bucket_set_state)(const void *, const HashTableBucketState);
 typedef void *(*hsht_hash_get_key)(const void *);
 
 typedef struct {
@@ -59,16 +65,16 @@ typedef struct {
   void *entries;
   size_t capacity;
   size_t count;
-  size_t type_size;
+  size_t bucket_size;
 
   // callback used to compare two entries during the linear probing
   hsht_bucket_compare comparator;
   // callback resposible for generating the hash from the given key
   hsht_hash_generator generator;
-  // callback used to check if a bucket is occupied
-  hsht_bucket_get_occupied get_occupied;
+  // callback used to check if a bucket is either occupied, tombstone or empty
+  hsht_bucket_get_state get_bucket_state;
   // callback used to mark a bucket as occupied or not
-  hsht_bucket_set_occupied set_occupied;
+  hsht_bucket_set_state set_bucket_state;
   // callback responsible to retrieve the key from the bucket
   hsht_hash_get_key get_key;
 
@@ -77,12 +83,12 @@ typedef struct {
 typedef struct {
   const char *label;
   const size_t capacity;
-  const size_t type_size;
+  const size_t bucket_size;
 
   hsht_bucket_compare comparator_callback;
   hsht_hash_generator generator_callback;
-  hsht_bucket_get_occupied get_occupied_callback;
-  hsht_bucket_set_occupied set_occupied_callback;
+  hsht_bucket_get_state get_bucket_state_callback;
+  hsht_bucket_set_state set_bucket_state_callback;
   hsht_hash_get_key get_key_callback;
 
 } HashTableDescriptor;
@@ -139,13 +145,13 @@ static inline hash_t hsht_hash_djb2(const char *key) {
 
 // 32-bit FNV-1a hash
 static inline uint32_t hsht_hash_fnv1a32(const void *data, size_t len) {
-    const uint8_t *bytes = (const uint8_t *)data;
-    uint32_t hash = 2166136261u; // FNV offset basis
-    for (size_t i = 0; i < len; i++) {
-        hash ^= bytes[i];
-        hash *= 16777619u; // FNV prime
-    }
-    return hash;
+  const uint8_t *bytes = (const uint8_t *)data;
+  uint32_t hash = 2166136261u; // FNV offset basis
+  for (size_t i = 0; i < len; i++) {
+    hash ^= bytes[i];
+    hash *= 16777619u; // FNV prime
+  }
+  return hash;
 }
 
 typedef enum {

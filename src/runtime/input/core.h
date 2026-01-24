@@ -190,6 +190,14 @@ void input_disable_all_keys();
 
 void input_init(const InputDescriptor *);
 
+static inline void input_set_mouse_sensitivity(const float value) {
+  g_input.mouse.sensitivity = value;
+}
+
+static inline void input_set_wheel_sensitivity(const float value) {
+  g_input.mouse.wheel.sensitivity = value;
+}
+
 bool input_key(unsigned int);
 
 void input_wheel_reset();
@@ -215,6 +223,11 @@ static inline float input_wheel_x() {
 static inline float input_wheel_y() {
   return (float)g_input.mouse.wheel.deltaY;
 }
+
+static inline float input_wheel_sensitivity() {
+  return (float)g_input.mouse.wheel.sensitivity;
+}
+
 static inline void input_wheel(vec2 dest) {
   glm_vec2_copy((vec2){(float)g_input.mouse.wheel.deltaX,
                        (float)g_input.mouse.wheel.deltaY},

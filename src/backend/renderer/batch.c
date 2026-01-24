@@ -174,17 +174,18 @@ RendererBatchStatus renderer_batch_init(HashTable *table,
                                         const size_t capacity) {
 
   // init hash table
-  if (hsht_create(table,
-                  &(HashTableDescriptor){
-                      .label = "Renderer Batch",
-                      .capacity = capacity,
-                      .comparator_callback = renderer_batch_compare,
-                      .generator_callback = renderer_batch_generate_hash,
-                      .get_key_callback = renderer_batch_get_key,
-                      .get_occupied_callback = renderer_batch_get_occupied,
-                      .set_occupied_callback = renderer_batch_set_occupied,
-                      .type_size = sizeof(RendererBatchBucket),
-                  }) != HashTableStatus_Success) {
+  if (hsht_create(
+          table,
+          &(HashTableDescriptor){
+              .label = "Renderer Batch",
+              .capacity = capacity,
+              .comparator_callback = renderer_batch_compare,
+              .generator_callback = renderer_batch_generate_hash,
+              .get_key_callback = renderer_batch_get_key,
+              .get_bucket_state_callback = renderer_batch_get_bucket_state,
+              .set_bucket_state_callback = renderer_batch_set_bucket_state,
+              .bucket_size = sizeof(RendererBatchBucket),
+          }) != HashTableStatus_Success) {
     logger_add(LoggerFlag_Error, "Unable to create renderer batch.");
     return RendererBatchStatus_InitFail;
   }
@@ -204,7 +205,7 @@ RendererBatchStatus renderer_batch_init(HashTable *table,
     mesh_ref_list_create(&bucket->meshes, MESH_REF_LIST_CAPACITY);
     bucket->label = renderer_batch_config[i].label;
     bucket->key = renderer_batch_config[i];
-    bucket->occupied = true;
+    bucket->state = HashTableBucketState_Occupied;
   }
 
   return RendererBatchStatus_Success;
@@ -249,12 +250,13 @@ uint32_t renderer_batch_generate_hash(const void *ptr) {
   return hash;
 }
 
-bool renderer_batch_get_occupied(const void *obj) {
-  return (((RendererBatchBucket *)obj)->occupied);
+HashTableBucketState renderer_batch_get_bucket_state(const void *obj) {
+  return (((RendererBatchBucket *)obj)->state);
 }
 
-void renderer_batch_set_occupied(const void *bucket, const bool state) {
-  ((RendererBatchBucket *)bucket)->occupied = state;
+void renderer_batch_set_bucket_state(const void *bucket,
+                                 const HashTableBucketState state) {
+  ((RendererBatchBucket *)bucket)->state = state;
 }
 
 bool renderer_batch_compare(const void *k, const void *data) {

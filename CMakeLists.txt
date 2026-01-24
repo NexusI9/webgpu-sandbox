@@ -43,8 +43,10 @@ set(MACROS
     -DAO_BAKE_HIT_COUNT
 )
 
+
+# -fsanitize=address creates too much locals and throw wasm error
+# see: https://github.com/emscripten-core/emscripten/issues/19346#issuecomment-1673579716
 set(ASAN
-    -fsanitize=address
     -fsanitize=undefined
     -ferror-limit=0
     -g

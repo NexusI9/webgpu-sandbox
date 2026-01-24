@@ -30,14 +30,6 @@ struct KawaseUniform {
 
     let o = vec2<f32>(r) * texel;
 
-  // DELETEME
-  // Center sample var col = textureSampleLevel(src_texture, src_sampler, uv, 0.0);
-  // Diagonal samples
-  // col += textureSampleLevel(src_texture, src_sampler, uv + vec2(i, i) * res, 0.0);
-  // col += textureSampleLevel(src_texture, src_sampler, uv + vec2(i, -i) * res, 0.0);
-  // col += textureSampleLevel(src_texture, src_sampler, uv + vec2(-i, i) * res, 0.0);
-  // col += textureSampleLevel(src_texture, src_sampler, uv + vec2(-i, -i) * res, 0.0);
-  // col = col / 4.0;
 
     var col = textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(o.x, 0.0), 0.0);
     col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(-o.x, 0.0), 0.0);
@@ -46,9 +38,5 @@ struct KawaseUniform {
     col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(o.x, o.y), 0.0);
     col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(o.x, -o.y), 0.0);
     col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(-o.x, o.y), 0.0);
-    col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(-o.x, -o.y), 0.0);
-
-    col = col * 0.125;
-
-    textureStore(dst_texture, vec2<i32>(id.xy), col);
+    col += textureSampleLevel(src_texture, src_sampler, uv + vec2<f32>(-o.x, -o.y), 0.0);    col = col * 0.125;    textureStore(dst_texture, vec2<i32>(id.xy), col);
 }

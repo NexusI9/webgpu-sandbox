@@ -421,8 +421,8 @@ LoaderGLTFStatus loader_gltf_create_mesh(Engine *engine, cgltf_node *gl_node,
     }
 
     for (size_t i = 0; i < gl_node->children_count; i++)
-      loader_gltf_create_mesh(engine, gl_node->children[i],
-                              target_mesh, options, result);
+      loader_gltf_create_mesh(engine, gl_node->children[i], target_mesh,
+                              options, result);
   }
 
   return LoaderGLTFStatus_Success;
