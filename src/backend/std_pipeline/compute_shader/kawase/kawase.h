@@ -58,4 +58,5 @@ static const ComputePipelineStateObject layout_kawase = {
     .bind_groups = {&kawase_bind_group},
 };
 
+
 #endif

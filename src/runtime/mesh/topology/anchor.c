@@ -165,7 +165,7 @@ void mesh_topology_anchor_merge(const MeshTopologyAnchorList *list,
      The mapped version will help to directly target the cluster based on the
      base index.
 
-     This extra step is due to the fact that out cluster list is created based
+     This extra step is due to the fact that our cluster list is created based
    on unique edges, which doesn't include all the base index topology.
 
  */
@@ -378,7 +378,7 @@ void mesh_topology_anchor_list_map(MeshTopologyAnchorList *hashed,
   // get each base index position
   for (size_t i = 0; i < base->index->count; i++) {
 
-    // get index position
+    // get base index position
     vindex_t base_index = base->index->entries[i];
     Vertex base_vertex = vertex_from_array(
         &base->attribute->entries[base_index * VERTEX_STRIDE]);

@@ -187,7 +187,6 @@ void standard_compute_pipelines_init() {
 
     compute_pipeline_build(cached_pipeline, &temp_layout);
   }
-
 }
 
 /**
@@ -198,16 +197,20 @@ WGPUPipelineLayout shader_pipeline_state_object_create(
     const WGPUBindGroupLayoutDescriptor *const *bind_groups, const size_t count,
     WGPUBindGroupLayout *outLayout) {
 
-  const size_t layout_size = sizeof(WGPUBindGroupLayout) * count;
+  WGPUBindGroupLayout *layouts = NULL;
+  outLayout = NULL;
+  
+  if (count > 0) {
+    const size_t layout_size = sizeof(WGPUBindGroupLayout) * count;
+    layouts = malloc(layout_size);
 
-  WGPUBindGroupLayout *layouts = malloc(layout_size);
+    for (size_t i = 0; i < count; i++)
+      layouts[i] =
+          wgpuDeviceCreateBindGroupLayout(context_device(), bind_groups[i]);
 
-  for (size_t i = 0; i < count; i++)
-    layouts[i] =
-        wgpuDeviceCreateBindGroupLayout(context_device(), bind_groups[i]);
-
-  if (outLayout != NULL)
-    memcpy(outLayout, layouts, layout_size);
+    if (outLayout != NULL)
+      memcpy(outLayout, layouts, layout_size);
+  }
 
   WGPUPipelineLayout pipeline_layout = wgpuDeviceCreatePipelineLayout(
       context_device(), &(WGPUPipelineLayoutDescriptor){

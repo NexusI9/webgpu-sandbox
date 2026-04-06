@@ -12,7 +12,6 @@ typedef enum {
   ContextStatus_UndefError,
 } ContextStatus;
 
-
 typedef struct {
   WGPUInstance instance;
   WGPUDevice device;
@@ -27,7 +26,7 @@ typedef struct {
 
 typedef struct {
   // target surface
-  const char *html_target;  
+  const char *html_target;
 } ContextDescriptor;
 
 extern Context g_context;
@@ -46,6 +45,12 @@ static inline const char *context_target() { return g_context.html_target; }
 static inline double context_dpi() { return g_context.dpi; }
 static inline void context_set_width(int value) { g_context.width = value; }
 static inline void context_set_height(int value) { g_context.height = value; }
+
+// error callbacks
+void context_handle_device_lost(WGPUDeviceLostReason, const char *, void *);
+void context_handle_device_error(WGPUErrorType, const char *, void *);
+void context_error_callback(WGPUErrorType, const char *, void *);
+void context_handle_uncaptured_error(WGPUErrorType, char const *, void*);
 
 EXTERN_C_END
 

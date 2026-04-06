@@ -110,7 +110,19 @@ static const sem_transform_callback
                 [GizmoMode_Rotation] = sem_system_point_light_set_rotation,
                 [GizmoMode_Scale] = sem_system_point_light_set_scale,
             },
-};
+    };
+
+
+/**
+   Insert Shadowed Sun light gizmo mesh to the list
+ */
+void sem_point_light_shadow_create(SceneEditorMeshList *list, PointLight *light,
+                                 const SEMCreateDescriptor *desc) {
+
+  sem_point_light_create_common(list, light, desc, LightCreateFlag_Shadow);
+  sem_point_light_update_transform_callback(list, LightCreateFlag_Shadow);
+}
+
 
 void sem_point_light_update_transform_callback(SceneEditorMeshList *list,
                                                const LightCreateFlag flag) {

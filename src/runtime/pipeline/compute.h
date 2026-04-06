@@ -61,4 +61,11 @@ void compute_pipeline_build(ComputePipeline *, const WGPUPipelineLayout *);
 
 void compute_pipeline_destroy(ComputePipeline *);
 
+void compute_pipeline_handle_validation_error(WGPUErrorType, char const *,
+                                              void *);
+
+void compute_pipeline_compilation_info_callback(
+    WGPUCompilationInfoRequestStatus, struct WGPUCompilationInfo const *,
+    void *);
+
 #endif

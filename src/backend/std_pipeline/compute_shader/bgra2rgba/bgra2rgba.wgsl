@@ -2,7 +2,7 @@
 @group(0) @binding(1) var src_sampler : sampler;
 @group(0) @binding(2) var dst_texture : texture_storage_2d<rgba8unorm, write>;
 
-@compute @workgroup_size(8, 8)
+@compute @workgroup_size(8,8)
 fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
     let size = textureDimensions(src_texture);
 

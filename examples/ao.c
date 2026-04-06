@@ -8,7 +8,7 @@ void example_ao(Engine *engine, bool debug) {
     debug_options = (AOBakeDrawDebug){
         .debug_scene = &engine_get_active_scene(engine)->debug,
         .color = &(color){0.0f, 1.0f, 0.0f, 1.0f},
-        .max_ray = 20,
+        .max_ray = 1,
     };
   }
 

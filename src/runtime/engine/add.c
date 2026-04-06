@@ -463,7 +463,7 @@ EngineStatus engine_scene_add_mesh(Engine *engine, Mesh *mesh,
 }
 
 /*
-   Automatically map renderer pipeline based on mesh pso pointer
+  Manually Define the mesh Renderer Batch configuration
  */
 EngineStatus
 engine_scene_add_mesh_custom(Engine *engine, Mesh *mesh, const char *layer,

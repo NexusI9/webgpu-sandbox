@@ -13,7 +13,7 @@ fn luminance(c: vec3<f32>) -> f32 {
     return dot(c, vec3<f32>(0.2126, 0.7152, 0.0722));
 }
   
-@compute @workgroup_size(8, 8)
+@compute @workgroup_size(8,8)
 fn main(@builtin(global_invocation_id) gid: vec3<u32>) {
 
     let size = textureDimensions(src_texture);

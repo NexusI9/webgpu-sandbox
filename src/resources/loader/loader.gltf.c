@@ -636,6 +636,9 @@ LoaderGLTFStatus loader_gltf_extract_texture(
 
         unsigned char *n_data = malloc(n_w * n_h * forced_channel);
 
+	// DEBUG
+	printf("data: %p | %p, n_data: %p", data, *data, n_data);
+	
         if (n_data == NULL) {
           logger_add(
               LoggerFlag_Warning,

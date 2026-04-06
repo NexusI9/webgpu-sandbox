@@ -114,7 +114,8 @@ HashTableBucketState rem_bucket_get_bucket_state(const void *obj) {
   return (bool)(((REMBucket *)obj)->state);
 }
 
-void rem_bucket_set_bucket_state(const void *bucket, const HashTableBucketState state) {
+void rem_bucket_set_bucket_state(const void *bucket,
+                                 const HashTableBucketState state) {
   ((REMBucket *)bucket)->state = state;
 }
 
@@ -294,21 +295,32 @@ WGPUShaderModule rem_new_shader_module(char *code, const char *label,
       .code = code,
   };
 
+  wgpuDevicePushErrorScope(context_device(), WGPUErrorFilter_Validation);
+
   WGPUShaderModule shader = wgpuDeviceCreateShaderModule(
       context_device(), &(WGPUShaderModuleDescriptor){
                             .nextInChain = (WGPUChainedStruct *)(&wgsl),
                             .label = label,
                         });
 
+  wgpuShaderModuleGetCompilationInfo(
+      shader, compute_pipeline_compilation_info_callback, shader);
+
+  wgpuDevicePopErrorScope(context_device(),
+                          compute_pipeline_handle_validation_error,
+                          (void *)shader);
+
   REMBucket *entry =
       hsht_new_entry(&g_rem.hash_table, shader, HashTableNewFlag_None);
 
-  if (entry == NULL) {
+  
+   if (entry == NULL) {
     rem_destroy_shader_module(&shader);
     return NULL;
   }
 
-  if ((flag & REMWriteFlag_FreeData) && code) {
+
+   if ((flag & REMWriteFlag_FreeData) && code) {
     free(code);
     code = NULL;
   }
@@ -379,7 +391,7 @@ REM_DESTROY_WGPU_ITEM(shader_module, WGPUShaderModule, REMType_WGPUShaderModule,
     size_t index = 0;                                                          \
     void *new_item = frli_new_entry(                                           \
         (void **)&g_rem.pools[type].entries, &g_rem.pools[type].capacity,      \
-        &g_rem.pools[type].count, g_rem.pools[type].type_size, &index,        \
+        &g_rem.pools[type].count, g_rem.pools[type].type_size, &index,         \
         g_rem.pools[type].label);                                              \
                                                                                \
     if (new_item == NULL)                                                      \
@@ -421,7 +433,7 @@ REM_ENGINE_LIST(_);
                                                                                \
     FreeListStatus remove_pool = frli_remove_at_index(                         \
         (void *)g_rem.pools[type].entries, g_rem.pools[type].capacity,         \
-        &g_rem.pools[type].count, g_rem.pools[type].type_size,                \
+        &g_rem.pools[type].count, g_rem.pools[type].type_size,                 \
         bucket->pool_id, g_rem.pools[type].label);                             \
                                                                                \
     HashTableStatus remove_hash =                                              \

@@ -47,6 +47,11 @@ ContextStatus context_init(const ContextDescriptor *desc) {
 
   context_update_size(0, NULL, (void *)&g_context);
 
+  wgpuDeviceSetUncapturedErrorCallback(g_context.device,
+                                       context_handle_uncaptured_error, NULL);
+
+  // === Debug & Error Handling ===
+
   // === Global Input & Event polling ===
 
   TIMER("Resource Manager", { resource_manager_init(); });
@@ -153,4 +158,18 @@ ContextStatus context_close() {
   wgpuInstanceRelease(g_context.instance);
 
   return ContextStatus_Success;
+}
+
+void context_handle_device_error(WGPUErrorType type, const char *message,
+                                 void *userdata) {
+  printf("WebGPU error (%d): %s\n", type, message);
+}
+
+void handle_device_lost(WGPUDeviceLostReason reason, const char *message,
+                        void *userdata) {
+  printf("Device lost: %s\n", message);
+}
+
+void context_handle_uncaptured_error(WGPUErrorType type, char const *message, void* userdata){
+  printf("Uncaptured Error: %s\n", message);
 }

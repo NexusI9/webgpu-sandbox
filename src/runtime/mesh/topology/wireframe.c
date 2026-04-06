@@ -202,7 +202,7 @@ MeshTopology mesh_topology_wireframe_vertex(MeshTopologyWireframe *topo) {
 }
 
 /**
-   Travert the base topology index, retrieve the position and update relative
+   Traverse the base topology index, retrieve the position and update relative
    wireframe vertex attribute based on achor's index.
  */
 int mesh_topology_wireframe_update(const MeshTopologyBase *base_topo,
@@ -292,7 +292,7 @@ void mesh_topology_wireframe_create_points(EdgeHashSet *edges,
      */
 
     // append base anchor
-    size_t index_len = dest_topo->index.count;
+    const size_t index_len = dest_topo->index.count;
     vindex_t temp_base_index[] = {
         dest_topo->index.entries[index_len - 6],
         dest_topo->index.entries[index_len - 1],
@@ -325,8 +325,8 @@ void mesh_topology_wireframe_store_unique_edges(EdgeHashSet *edges,
      before.
    */
 
-  bool is_face = mesh_topology_wireframe_is_face(src_topo->index);
-  int stride = is_face ? 3 : 2;
+  const bool is_face = mesh_topology_wireframe_is_face(src_topo->index);
+  const int stride = is_face ? 3 : 2;
   for (int i = 0; i < src_topo->index->count; i += stride) {
 
     unsigned int a = src_topo->index->entries[i];

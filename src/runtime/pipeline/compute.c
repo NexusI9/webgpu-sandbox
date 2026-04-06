@@ -37,8 +37,9 @@ void compute_pipeline_build(ComputePipeline *pipeline,
   // update bind group layout
   pipeline->layout = *layout;
 
-  if (pipeline->handle)
-    compute_pipeline_destroy(pipeline);
+  // DEBUG
+  // if (pipeline->handle)
+  //  compute_pipeline_destroy(pipeline);
 
   pipeline->handle = wgpuDeviceCreateComputePipeline(
       context_device(), &(WGPUComputePipelineDescriptor){
@@ -50,6 +51,9 @@ void compute_pipeline_build(ComputePipeline *pipeline,
                                     .entryPoint = "main",
                                 },
                         });
+
+  // DEBUG
+  printf("Pipeline Module: %p\n", pipeline->module);
 }
 
 /**
@@ -65,4 +69,62 @@ void compute_pipeline_destroy(ComputePipeline *pipeline) {
   // probably cause the layout is still in use
   wgpuPipelineLayoutRelease(pipeline->layout);
   pipeline->layout = NULL;
+}
+
+// TODO: move to logger
+void compute_pipeline_handle_validation_error(WGPUErrorType type,
+                                              char const *message,
+                                              void *userdata) {
+
+  WGPUShaderModule module = (WGPUShaderModule)userdata;
+  // DEBUG
+  printf("Validation error for module: %p\n", module);
+  printf("Validation error message: %s\n", message);
+  // wgpuShaderModuleGetCompilationInfo(
+  //     module, compute_pipeline_compilation_info_callback, NULL);
+}
+
+// TODO: move to logger
+void compute_pipeline_compilation_info_callback(
+    WGPUCompilationInfoRequestStatus status, const WGPUCompilationInfo *info,
+    void *userdata) {
+
+  printf("Get info of: %p\n", userdata);
+
+  if (status != WGPUCompilationInfoRequestStatus_Success) {
+    printf("Failed to get compilation info!\n");
+    return;
+  }
+
+  // Print the number of messages
+  printf("Shader compilation messages: %lu\n", info->messageCount);
+
+  // Iterate over messages
+  for (uint32_t i = 0; i < info->messageCount; i++) {
+    const WGPUCompilationMessage *msg = &info->messages[i];
+
+    // Map message type to string
+    const char *typeStr = "Unknown";
+    switch (msg->type) {
+    case WGPUCompilationMessageType_Error:
+      typeStr = "Error";
+      break;
+    case WGPUCompilationMessageType_Warning:
+      typeStr = "Warning";
+      break;
+    case WGPUCompilationMessageType_Info:
+      typeStr = "Info";
+      break;
+    case WGPUCompilationMessageType_Force32:
+      typeStr = "Force32";
+      break;
+    }
+
+    printf("[%s] %s\n", typeStr, msg->message);
+
+    // Optional: print location if available
+    if (msg->lineNum != 0 || msg->linePos != 0) {
+      printf("  at line %llu, column %llu\n", msg->lineNum, msg->linePos);
+    }
+  }
 }

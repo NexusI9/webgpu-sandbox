@@ -1,9 +1,9 @@
 #include "core.h"
 
-#include <math.h>
-#include <stdint.h>
 #include <cglm/vec2.h>
 #include <cglm/vec3.h>
+#include <math.h>
+#include <stdint.h>
 
 #include "utils/math.h"
 

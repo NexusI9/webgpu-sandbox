@@ -58,4 +58,6 @@ static const ComputePipelineStateObject layout_colormap = {
     .bind_groups = {&colormap_bind_group},
 };
 
+
+
 #endif

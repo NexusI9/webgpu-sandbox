@@ -7,7 +7,7 @@
 #include "webgpu/webgpu.h"
 #include <stdint.h>
 
-#define MIPMAP_WORKGROUP 8
+static const uint8_t MIPMAP_WORKGROUP = 8;
 
 typedef enum {
   MipmapStatus_Success,

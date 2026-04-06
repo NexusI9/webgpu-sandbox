@@ -4,15 +4,10 @@
 
 // check article:
 // https://eliemichel.github.io/LearnWebGPU/basic-compute/image-processing/mipmap-generation.html
-@compute @workgroup_size(8, 8) fn
-    main(@builtin(global_invocation_id) id : vec3<u32>) {
+@compute @workgroup_size(8,8)
+fn main(@builtin(global_invocation_id) id: vec3<u32>) {
+    let offset = vec2<u32>(0u, 1u);
+    let color = (textureLoad(src_texture, 2u * id.xy + offset.xx, 0) + textureLoad(src_texture, 2u * id.xy + offset.xy, 0) + textureLoad(src_texture, 2u * id.xy + offset.yx, 0) + textureLoad(src_texture, 2u * id.xy + offset.yy, 0)) * 0.25;
 
-  let offset = vec2<u32>(0u, 1u);
-  let color = (textureLoad(src_texture, 2u * id.xy + offset.xx, 0) +
-               textureLoad(src_texture, 2u * id.xy + offset.xy, 0) +
-               textureLoad(src_texture, 2u * id.xy + offset.yx, 0) +
-               textureLoad(src_texture, 2u * id.xy + offset.yy, 0)) *
-              0.25f;
-
-  textureStore(dst_texture, vec2<i32>(id.xy), color);
+   textureStore(dst_texture, vec2<i32>(id.xy), color);
 }

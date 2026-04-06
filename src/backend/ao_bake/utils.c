@@ -1,23 +1,23 @@
 #include "utils.h"
 
-#include <stdint.h>
 #include <cglm/mat4.h>
 #include <cglm/types.h>
 #include <cglm/util.h>
 #include <cglm/vec2.h>
 #include <cglm/vec3.h>
+#include <stdint.h>
 
-#include "utils/point.h"
+#include "core.h"
+#include "runtime/geometry/triangle/core.h"
 #include "runtime/geometry/vertex/attribute.h"
 #include "runtime/geometry/vertex/core.h"
 #include "runtime/geometry/vertex/index.h"
+#include "runtime/mesh/core.h"
 #include "runtime/scene/debug/ray.h"
+#include "runtime/texture/core.h"
 #include "runtime/texture/processing.h"
 #include "runtime/texture/write.h"
-#include "core.h"
-#include "runtime/geometry/triangle/core.h"
-#include "runtime/mesh/core.h"
-#include "runtime/texture/core.h"
+#include "utils/point.h"
 
 #ifdef AO_BAKE_HIT_COUNT
 int g_debug_ao_bake_hit_count = 0;
@@ -70,7 +70,7 @@ float ao_bake_vertex(const AOBakeVertexDescriptor *desc) {
 }
 
 /**
-   Raycast from the source surage towards a certain direction an check if the
+   Raycast from the source surface towards a certain direction an check if the
    ray traverse a triangle of the compared mesh
  */
 bool ao_bake_raycast(const AOBakeRaycastDescriptor *desc) {
