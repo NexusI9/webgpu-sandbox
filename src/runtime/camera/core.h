@@ -75,6 +75,7 @@ struct Camera {
   CameraMode mode;
 };
 
+
 void camera_create(Camera *, const CameraCreateDescriptor *);
 void camera_reset(Camera *);
 void camera_lookat(Camera *, const vec3, const vec3);

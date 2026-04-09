@@ -120,6 +120,10 @@ void ao_bake_draw_mesh(RendererTextureAO *ao, Mesh *mesh,
                         });
     });
 
+  // We put this step as optional cause during the draw_list method we first to
+  // compute the "raw" AO one by one and then batch process all of them.
+  // This prevent processing multiple time "already-processed" texture and
+  // leading to unwanted result (i.e. blurred 10 times)
   if (update_bind_view) {
     ao_bake_process_texture(texture);
     rem_write_texture(ao->texture, texture->data, texture->size,

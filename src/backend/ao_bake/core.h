@@ -1,24 +1,24 @@
 #ifndef _AO_BAKE_CORE_H_
 #define _AO_BAKE_CORE_H_
 
-#include <stdint.h>
 #include <cglm/types.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "runtime/camera/camera.h"
+#include "runtime/geometry/triangle/core.h"
 #include "runtime/geometry/triangle/triangle.h"
+#include "runtime/geometry/vertex/core.h"
+#include "runtime/mesh/core.h"
 #include "runtime/mesh/mesh.h"
+#include "runtime/scene/debug/core.h"
 #include "runtime/scene/debug/debug.h"
+#include "runtime/texture/core.h"
 #include "runtime/texture/texture.h"
 #include "runtime/viewport/viewport.h"
 #include "utils/color.h"
 #include "webgpu/webgpu.h"
-#include "runtime/geometry/triangle/core.h"
-#include "runtime/geometry/vertex/core.h"
-#include "runtime/mesh/core.h"
-#include "runtime/scene/debug/core.h"
-#include "runtime/texture/core.h"
 
 // AO Texture
 #define AO_TEXTURE_RESOLUTION TextureResolution_128
@@ -63,7 +63,7 @@ typedef struct {
 } AOBakeSettings;
 
 typedef struct {
-  
+
   uint16_t size;
   uint16_t layer_count;
 } AOBakeInitDescriptor;
@@ -121,11 +121,37 @@ typedef struct {
   } debug;
 } AOBakeVertexDescriptor;
 
-void ao_bake_init(RendererTextureAO *, const AOBakeInitDescriptor *);
+/**
+ * @brief      Initialise AO baking necessary resources
+ *
+ * @param      storage    The object storing the different textures
+ * @param      descriptor The configuration and settings
+ *
+ */
+void ao_bake_init(RendererTextureAO *storage,
+                  const AOBakeInitDescriptor *descriptor);
 
-void ao_bake_draw_list(RendererTextureAO *, const AOBakeDrawDescriptor *);
+/**
+ * @brief      Draw and compoute AO for the meshes provided in the descriptor
+ *
+ * @param      storage    The object storing the different textures
+ * @param      descriptor The configuration and settings
+ *
+ */
+void ao_bake_draw_list(RendererTextureAO *storage,
+                       const AOBakeDrawDescriptor *descriptor);
 
-void ao_bake_draw_mesh(RendererTextureAO *, Mesh *,
-                       const AOBakeDrawDescriptor *, bool);
+/**
+ * @brief      Draw and compoute AO for the the given mesh
+ *
+ * @param      storage    The object storing the different textures
+ * @param      mesh       The mesh to draw AO from
+ * @param      descriptor The configuration and settings
+ * @param      write      Write the computed AO onto the texture 
+ *
+ */
+void ao_bake_draw_mesh(RendererTextureAO *storage, Mesh *mesh,
+                       const AOBakeDrawDescriptor *descriptor,
+                       bool write);
 
 #endif
