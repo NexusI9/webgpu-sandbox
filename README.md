@@ -18,11 +18,15 @@ Added blit and post-processing effects: bloom, gamma correction, exposure, and d
 
 ![Post-processing effects — bloom, gamma correction, exposure](docs/images/post-effects.jpg)
 
+---
+
 **24 november 2025**
 
 Refined ambient occlusion raytracing, speeding up the baking process by 87%.
 
 ![Refined ambient occlusion](docs/images/ao-refined.jpg)
+
+---
 
 **14 october 2025**
 
@@ -32,6 +36,8 @@ I am considering a switch to a React-based interface for faster future iteration
 
 ![Editor UI — tree view, inspector, rendering modes](docs/images/editor-ui.jpg)
 
+---
+
 **4 september 2025**
 
 Added probe & planar reflections (in progress). I used a Kawase blur to blur the downscaled reflection render, however it's still fairly slow.
@@ -39,11 +45,15 @@ Added probe & planar reflections (in progress). I used a Kawase blur to blur the
 ![First tries of probe and planar reflections](docs/images/reflections.jpg)
 ![Probe and planar reflections](docs/images/reflections-1.jpg)
 
+---
+
 **28 august 2025**
 
 Added Gizmo / lights / cameras UI.
 
 ![Gizmo, lights and cameras UI](docs/images/gizmo-ui.jpg)
+
+---
 
 **5 may 2025**
 
@@ -52,11 +62,15 @@ Furthermore, baking AO directly on the model would require a UV editor, which me
 
 ![First ambient occlusion baking attempt](docs/images/ao-v1.jpg)
 
+---
+
 **19 april 2025**
 
 Implemented shadow mapping.
 
 ![Shadow mapping](docs/images/shadow-mapping.jpg)
+
+---
 
 **23 march 2025**
 
