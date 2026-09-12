@@ -8,47 +8,58 @@ The engine is an experimental R&D project rather than a production-ready product
 
 ## Installation
 
-Not available yet — the project is still in development. Setup instructions will be added once a first usable build is ready.
+Not available yet since the project is still in development. The setup instructions will be added once a first usable build is ready.
 
 ## Log
 
 **12 december 2025**
-Added blit and post-processing effects: bloom, gamma correction, exposure, and dynamic multisample update.
+
+Added blit and post-processing effects: bloom, gamma correction, exposure, and dynamic multisample/resolution update.
 
 ![Post-processing effects — bloom, gamma correction, exposure](docs/images/post-effects.png)
 
 **24 november 2025**
-Refined ambient occlusion, speeding up the baking process by 87%.
+
+Refined ambient occlusion raytracing, speeding up the baking process by 87%.
 
 ![Refined ambient occlusion](docs/images/ao-refined.png)
 
 **14 october 2025**
-Implemented the Editor UI in C++ with ImGui for faster productivity — tree view, rendering modes (bounding box, wireframe, solid, textured), inspector attributes, plus a log and profiler. Considering a switch to a React-based interface for faster future iteration.
+
+Implemented the Editor UI in C++ with ImGui for faster productivity. The UI includes a tree view, rendering modes (bounding box, wireframe, solid, textured), inspector attributes, plus a log and profiler. 
+
+I am considering a switch to a React-based interface for faster future iteration, however the communication with the core engine will be trickier.
 
 ![Editor UI — tree view, inspector, rendering modes](docs/images/editor-ui.png)
 
 **4 september 2025**
-Added probe & planar reflections (in progress). Using a Kawase blur to blur the downscaled reflection render — still fairly slow.
+
+Added probe & planar reflections (in progress). I used a Kawase blur to blur the downscaled reflection render, however it's still fairly slow.
 
 ![First tries of probe and planar reflections](docs/images/reflections.png)
 ![Probe and planar reflections](docs/images/reflections-1.png)
 
 **28 august 2025**
+
 Added Gizmo / lights / cameras UI.
 
 ![Gizmo, lights and cameras UI](docs/images/gizmo-ui.png)
 
 **5 may 2025**
-First attempt at ambient occlusion baking. Slow, and results weren't good enough. Baking AO directly on the model would require a UV editor, which means offering more mesh-editing control than the project's scope and timeline allow — considering baking AO in Blender instead.
+
+First attempt at ambient occlusion baking via raytracing. It's quite slow, and results are not good enough. 
+Furthermore, baking AO directly on the model would require a UV editor, which means offering more mesh-editing control than the project's scope and timeline allow, so I am considering baking AO directly in Blender instead.
 
 ![First ambient occlusion baking attempt](docs/images/ao-v1.png)
 
 **19 april 2025**
+
 Implemented shadow mapping.
 
 ![Shadow mapping](docs/images/shadow-mapping.png)
 
 **23 march 2025**
+
 Basic geometry loading (glTF) with flat shading.
 
 ![Basic geometry loading with flat shading](docs/images/gltf-flat-shading.png)
